@@ -51,6 +51,10 @@ bool CmdProxy::ReplaceIfDepreciated(std::string &command) {
             << command
             << " is depreciated and will be removed. Please migrate to: "
             << d_it->second;
+        // insert old command into arguments (for dacs)
+        if (d_it->second == "dac") {
+            args.insert(args.begin(), command);
+        }
         command = d_it->second;
         return true;
     }
@@ -905,16 +909,42 @@ std::string CmdProxy::TemperatureValues(int action) {
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;
     os << cmd << ' ';
+
+    // get dac name
+    std::string dacname;
+    if (args.size() > 0) {
+        dacname = args[0];
+        try {
+            int dacIndex = StringTo<int>(args[0]);
+            if (det->getDetectorType().squash(defs::GENERIC) !=
+                defs::CHIPTESTBOARD) {
+                throw sls::RuntimeError(
+                    "Dac indices can only be used for chip test board. Use "
+                    "daclist "
+                    "to get list of dac names for current detector.");
+            }
+            dacname = "dac " + std::to_string(dacIndex);
+        } catch (const std::invalid_argument &e) {
+            ;
+        }
+    }
+
     if (action == defs::HELP_ACTION) {
-        os << "[dac index] [dac or mV value] [(optional unit) mV] "
-              "\n\t[Ctb] Dac."
-           << '\n';
-    } else if (det->getDetectorType().squash(defs::GENERIC) !=
-               defs::CHIPTESTBOARD) {
-        throw sls::RuntimeError(
-            "Dac command can only be used for chip test board. Use daclist to "
-            "get list of dac commands for current detector.");
+        // for ctb: args 0, dacname = dac 0
+        if (args.size() == 0 || args[0] != dacname) {
+            os << "[dac name] [dac or mV value] [(optional unit) mV] "
+                  "\n\t[Ctb] Use dac index for dac name."
+               << '\n';
+        } else if (dacname == "vthreshold") {
+            os << "vthreshold [dac or mV value][(optional unit) mV] "
+                  "\n\t[Eiger][Mythen3] Detector threshold voltage for single "
+                  "photon counters.\n\t[Eiger] Sets vcmp_ll, vcmp_lr, vcmp_rl, "
+                  "vcmp_rr and vcp to the same value. \n\t[Mythen3] Sets vth1, "
+                  "vth2 and vth3 to the same value."
+               << '\n';
+        }
     } else if (action == defs::GET_ACTION) {
+        defs::dacIndex dacIndex = StringTo<defs::dacIndex>(dacname);
         bool mv = false;
         if (args.size() == 2) {
             if ((args[1] != "mv") && (args[1] != "mV")) {
@@ -925,12 +955,11 @@ std::string CmdProxy::Dac(int action) {
         } else if (args.size() > 2) {
             WrongNumberOfParameters(1);
         }
-        auto t =
-            det->getDAC(static_cast<defs::dacIndex>(StringTo<int>(args[0])), mv,
-                        std::vector<int>{det_id});
+        auto t = det->getDAC(dacIndex, mv, std::vector<int>{det_id});
         os << args[0] << ' ' << OutString(t)
            << (args.size() > 1 ? " mV\n" : "\n");
     } else if (action == defs::PUT_ACTION) {
+        defs::dacIndex dacIndex = StringTo<defs::dacIndex>(dacname);
         bool mv = false;
         if (args.size() == 3) {
             if ((args[2] != "mv") && (args[2] != "mV")) {
@@ -941,8 +970,8 @@ std::string CmdProxy::Dac(int action) {
         } else if (args.size() > 3 || args.size() < 2) {
             WrongNumberOfParameters(2);
         }
-        det->setDAC(static_cast<defs::dacIndex>(StringTo<int>(args[0])),
-                    StringTo<int>(args[1]), mv, std::vector<int>{det_id});
+        det->setDAC(dacIndex, StringTo<int>(args[1]), mv,
+                    std::vector<int>{det_id});
         os << args[0] << ' ' << args[1] << (args.size() > 2 ? " mV\n" : "\n");
     } else {
         throw sls::RuntimeError("Unknown action");

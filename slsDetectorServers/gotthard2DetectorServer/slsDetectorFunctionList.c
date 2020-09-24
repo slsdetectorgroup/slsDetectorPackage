@@ -1303,9 +1303,10 @@ void updatingRegisters() {
             set64BitReg(0, SET_TRIGGER_DELAY_LSB_REG,
                         SET_TRIGGER_DELAY_MSB_REG);
             LOG(logINFO,
-                ("\tDelay reg: %lld\n", get64BitReg(SET_TRIGGER_DELAY_LSB_REG,
-                                                    SET_TRIGGER_DELAY_MSB_REG) /
-                                            (1E-9 * systemFrequency)));
+                ("\tDelay reg: %lldns\n",
+                 (long long int)(get64BitReg(SET_TRIGGER_DELAY_LSB_REG,
+                                             SET_TRIGGER_DELAY_MSB_REG) /
+                                 (1E-9 * systemFrequency))));
             // frame reg
             set64BitReg(numBurstsReg, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
             LOG(logINFO, ("\tFrame reg (bursts): %lld\n",
@@ -1313,8 +1314,9 @@ void updatingRegisters() {
             // period reg
             set64BitReg(burstPeriodReg, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
             LOG(logINFO, ("\tPeriod reg (burst period): %lldns\n",
-                          get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /
-                              (1E-9 * systemFrequency)));
+                          (long long int)(get64BitReg(SET_PERIOD_LSB_REG,
+                                                      SET_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
             // int. frame reg
             bus_w(ASIC_INT_FRAMES_REG,
                   bus_r(ASIC_INT_FRAMES_REG) & ~ASIC_INT_FRAMES_MSK);
@@ -1328,10 +1330,10 @@ void updatingRegisters() {
             // int. period reg
             set64BitReg(periodReg, ASIC_INT_PERIOD_LSB_REG,
                         ASIC_INT_PERIOD_MSB_REG);
-            LOG(logINFO,
-                ("\tInt. Period reg (period): %lldns\n",
-                 get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG) /
-                     (1E-9 * systemFrequency)));
+            LOG(logINFO, ("\tInt. Period reg (period): %lldns\n",
+                          (long long int)(get64BitReg(ASIC_INT_PERIOD_LSB_REG,
+                                                      ASIC_INT_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
             // extra frame reg (N.A)
         }
         // trigger
@@ -1344,19 +1346,21 @@ void updatingRegisters() {
             // delay reg
             set64BitReg(delayReg, SET_TRIGGER_DELAY_LSB_REG,
                         SET_TRIGGER_DELAY_MSB_REG);
-            LOG(logINFO, ("\tDelay reg (delay): %lldns\n",
-                          get64BitReg(SET_TRIGGER_DELAY_LSB_REG,
-                                      SET_TRIGGER_DELAY_MSB_REG) /
-                              (1E-9 * systemFrequency)));
+            LOG(logINFO,
+                ("\tDelay reg (delay): %lldns\n",
+                 (long long int)(get64BitReg(SET_TRIGGER_DELAY_LSB_REG,
+                                             SET_TRIGGER_DELAY_MSB_REG) /
+                                 (1E-9 * systemFrequency))));
             // frame reg
             set64BitReg(1, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
             LOG(logINFO, ("\tFrame reg: %lld\n",
                           get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG)));
             // period reg
             set64BitReg(0, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
-            LOG(logINFO, ("\tPeriod reg: %lld\n",
-                          get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /
-                              (1E-9 * systemFrequency)));
+            LOG(logINFO, ("\tPeriod reg: %lldns\n",
+                          (long long int)(get64BitReg(SET_PERIOD_LSB_REG,
+                                                      SET_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
             // int. frame reg
             bus_w(ASIC_INT_FRAMES_REG,
                   bus_r(ASIC_INT_FRAMES_REG) & ~ASIC_INT_FRAMES_MSK);
@@ -1370,10 +1374,10 @@ void updatingRegisters() {
             // int. period reg
             set64BitReg(periodReg, ASIC_INT_PERIOD_LSB_REG,
                         ASIC_INT_PERIOD_MSB_REG);
-            LOG(logINFO,
-                ("\tInt. Period reg (period): %lldns\n",
-                 get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG) /
-                     (1E-9 * systemFrequency)));
+            LOG(logINFO, ("\tInt. Period reg (period): %lldns\n",
+                          (long long int)(get64BitReg(ASIC_INT_PERIOD_LSB_REG,
+                                                      ASIC_INT_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
             // extra frame reg (N.A)
         }
     }
@@ -1390,9 +1394,10 @@ void updatingRegisters() {
             set64BitReg(0, SET_TRIGGER_DELAY_LSB_REG,
                         SET_TRIGGER_DELAY_MSB_REG);
             LOG(logINFO,
-                ("\tDelay reg: %lld\n", get64BitReg(SET_TRIGGER_DELAY_LSB_REG,
-                                                    SET_TRIGGER_DELAY_MSB_REG) /
-                                            (1E-9 * systemFrequency)));
+                ("\tDelay reg: %lldns\n",
+                 (long long int)(get64BitReg(SET_TRIGGER_DELAY_LSB_REG,
+                                             SET_TRIGGER_DELAY_MSB_REG) /
+                                 (1E-9 * systemFrequency))));
             // frame reg
             set64BitReg(numFramesReg, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
             LOG(logINFO, ("\tFrame reg (frames): %lld\n",
@@ -1400,8 +1405,9 @@ void updatingRegisters() {
             // period reg
             set64BitReg(periodReg, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
             LOG(logINFO, ("\tPeriod reg (period): %lldns\n",
-                          get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /
-                              (1E-9 * systemFrequency)));
+                          (long long int)(get64BitReg(SET_PERIOD_LSB_REG,
+                                                      SET_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
             // int. frame reg
             bus_w(ASIC_INT_FRAMES_REG,
                   bus_r(ASIC_INT_FRAMES_REG) & ~ASIC_INT_FRAMES_MSK);
@@ -1413,10 +1419,10 @@ void updatingRegisters() {
                            ASIC_INT_FRAMES_OFST)));
             // int. period reg
             set64BitReg(0, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
-            LOG(logINFO,
-                ("\tInt. Period reg: %lld\n",
-                 get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG) /
-                     (1E-9 * systemFrequency)));
+            LOG(logINFO, ("\tInt. Period reg: %lldns\n",
+                          (long long int)(get64BitReg(ASIC_INT_PERIOD_LSB_REG,
+                                                      ASIC_INT_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
             // extra frame reg
             set64BitReg(numFramesReg, ASIC_CONT_FRAMES_LSB_REG,
                         ASIC_CONT_FRAMES_MSB_REG);
@@ -1434,10 +1440,11 @@ void updatingRegisters() {
             // delay reg
             set64BitReg(delayReg, SET_TRIGGER_DELAY_LSB_REG,
                         SET_TRIGGER_DELAY_MSB_REG);
-            LOG(logINFO, ("\tDelay reg (delay): %lldns\n",
-                          get64BitReg(SET_TRIGGER_DELAY_LSB_REG,
-                                      SET_TRIGGER_DELAY_MSB_REG) /
-                              (1E-9 * systemFrequency)));
+            LOG(logINFO,
+                ("\tDelay reg (delay): %lldns\n",
+                 (long long int)(get64BitReg(SET_TRIGGER_DELAY_LSB_REG,
+                                             SET_TRIGGER_DELAY_MSB_REG) /
+                                 (1E-9 * systemFrequency))));
             // frame reg
             set64BitReg(1, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
             LOG(logINFO, ("\tFrame reg: %lld\n",
@@ -1445,8 +1452,9 @@ void updatingRegisters() {
             // period reg
             set64BitReg(0, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
             LOG(logINFO, ("\tPeriod reg: %lld\n",
-                          get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /
-                              (1E-9 * systemFrequency)));
+                          (long long int)(get64BitReg(SET_PERIOD_LSB_REG,
+                                                      SET_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
             // int. frame reg
             bus_w(ASIC_INT_FRAMES_REG,
                   bus_r(ASIC_INT_FRAMES_REG) & ~ASIC_INT_FRAMES_MSK);
@@ -1458,10 +1466,10 @@ void updatingRegisters() {
                            ASIC_INT_FRAMES_OFST)));
             // int. period reg
             set64BitReg(0, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
-            LOG(logINFO,
-                ("\tInt. Period reg: %lld\n",
-                 get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG) /
-                     (1E-9 * systemFrequency)));
+            LOG(logINFO, ("\tInt. Period reg: %lldns\n",
+                          (long long int)(get64BitReg(ASIC_INT_PERIOD_LSB_REG,
+                                                      ASIC_INT_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
             // extra frame reg
             set64BitReg(numTriggersReg, ASIC_CONT_FRAMES_LSB_REG,
                         ASIC_CONT_FRAMES_MSB_REG);

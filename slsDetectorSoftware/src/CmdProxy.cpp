@@ -34,7 +34,11 @@ void CmdProxy::Call(const std::string &command,
     args = arguments;
     det_id = detector_id;
 
-    ReplaceIfDepreciated(cmd);
+    std::string temp;
+    while (temp != cmd) {
+        temp = cmd;
+        ReplaceIfDepreciated(cmd);
+    }
 
     auto it = functions.find(cmd);
     if (it != functions.end()) {

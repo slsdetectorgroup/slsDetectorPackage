@@ -1746,14 +1746,16 @@ class Detector(CppDetectorApi):
         return self.getDetectorType()
 
     @property
+    @element
     def rx_frameindex(self):
         """Current frame index received in receiver during acquisition."""
-        return element_if_equal(self.getRxCurrentFrameIndex())
+        return self.getRxCurrentFrameIndex()
 
     @property
+    @element
     def rx_missingpackets(self):
         """Gets the number of missing packets for each port in receiver."""
-        return element_if_equal(self.getNumMissingPackets())
+        return self.getNumMissingPackets()
 
     """
 
@@ -1851,65 +1853,71 @@ class Detector(CppDetectorApi):
 
     @parallel.setter
     def parallel(self, value):
-        self.setParallelMode(value)
+        ut.set_using_dict(self.setParallelMode, value)
 
     @property
+    @element
     def partialreset(self):
         """[Eiger] Sets up detector to do partial or complete reset at start of acquisition. 0 complete reset, 1 partial reset. Default is complete reset.
         Note
         -----
         Advanced Function!
         """
-        return element_if_equal(self.getPartialReset())
+        return self.getPartialReset()
 
     @partialreset.setter
     def partialreset(self, value):
-        self.setPartialReset(value)
+        ut.set_using_dict(self.setPartialReset, value)
 
     @property
+    @element
     def tengiga(self):
         """[Eiger][Ctb][Moench][Mythen3] 10GbE Enable."""
-        return element_if_equal(self.getTenGiga())
+        return self.getTenGiga()
 
     @tengiga.setter
     def tengiga(self, value):
-        self.setTenGiga(value)
+        ut.set_using_dict(self.setTenGiga, value)
 
     @property
+    @element
     def overflow(self):
         """[Eiger] Enable or disable show overflow flag in 32 bit mode. Default is disabled. """
-        return element_if_equal(self.getOverFlowMode())
+        return self.getOverFlowMode()
 
     @overflow.setter
     def overflow(self, value):
-        self.setOverFlowMode(value)
+        ut.set_using_dict(self.setOverFlowMode, value)
 
     @property
+    @element
     def flowcontrol10g(self):
         """[Eiger][Jungfrau] Enable or disable 10GbE Flow Control."""
-        return element_if_equal(self.getTenGigaFlowControl())
+        return self.getTenGigaFlowControl()
 
     @flowcontrol10g.setter
     def flowcontrol10g(self, enable):
-        self.setTenGigaFlowControl(enable)
+        ut.set_using_dict(self.setTenGigaFlowControl, enable)
 
     @property
+    @element
     def interruptsubframe(self):
         """[Eiger] Enable last subframe interrupt at required exposure time. Disabling will wait for last sub frame to finish exposing. Default is disabled."""
-        return element_if_equal(self.getInterruptSubframe())
+        return self.getInterruptSubframe()
 
     @interruptsubframe.setter
     def interruptsubframe(self, value):
-        self.setInterruptSubframe(value)
+        ut.set_using_dict(self.setInterruptSubframe, value)
 
     @property
+    @element
     def gappixels(self):
         """[Eiger][Jungfrau] Include Gap pixels in client data call back in Detecor api. Will not be in detector streaming, receiver file or streaming. Default is disabled. """
-        return element_if_equal(self.getRxAddGapPixels())
+        return self.getRxAddGapPixels()
 
     @gappixels.setter
     def gappixels(self, value):
-        self.setRxAddGapPixels(value)
+        ut.set_using_dict(self.setRxAddGapPixels, value)
 
     @property
     def measuredperiod(self):
@@ -1921,8 +1929,8 @@ class Detector(CppDetectorApi):
         Can be measured with minimum 2 frames in an acquisition. 
         :setter: Not implemented
         """
-        res = self.getMeasuredPeriod()
-        return element_if_equal([it.total_seconds() for it in res])
+        return ut.reduce_time(self.getMeasuredPeriod())
+       
 
     @property
     def measuredsubperiod(self):
@@ -1932,8 +1940,7 @@ class Detector(CppDetectorApi):
         -----
         :setter: Not implemented
         """
-        res = self.getMeasuredSubFramePeriod()
-        return element_if_equal([it.total_seconds() for it in res])
+        return ut.reduce_time(self.getMeasuredSubFramePeriod())
 
     """
     Jungfrau specific
@@ -1953,7 +1960,7 @@ class Detector(CppDetectorApi):
 
     @auto_comp_disable.setter
     def auto_comp_disable(self, value):
-        self.setAutoCompDisable(value)
+        ut.set_using_dict(self.setAutoCompDisable, value)
 
 
     @property
@@ -1981,7 +1988,7 @@ class Detector(CppDetectorApi):
 
     @storagecells.setter
     def storagecells(self, n_cells):
-        self.setNumberOfAdditionalStorageCells(n_cells)
+        ut.set_using_dict(self.setNumberOfAdditionalStorageCells, n_cells)
 
     @property
     @element
@@ -1998,10 +2005,9 @@ class Detector(CppDetectorApi):
 
     @storagecell_start.setter
     def storagecell_start(self, value):
-        self.setStorageCellStart(value)
+        ut.set_using_dict(self.setStorageCellStart, value)
 
     @property
-    @element
     def storagecell_delay(self):
         """
         [Jungfrau] Additional time delay between 2 consecutive exposures in burst mode, accepts either a value in seconds or datetime.timedelta
@@ -2024,7 +2030,7 @@ class Detector(CppDetectorApi):
 
     @storagecell_delay.setter
     def storagecell_delay(self, t):
-        self.setStorageCellDelay(t)
+        ut.set_time_using_dict(self.setStorageCellDelay, t)
 
     @property
     @element
@@ -2040,7 +2046,7 @@ class Detector(CppDetectorApi):
 
     @temp_threshold.setter
     def temp_threshold(self, value):
-        self.setThresholdTemperature(value)
+        ut.set_using_dict(self.setThresholdTemperature, value)
 
     @property
     @element
@@ -2057,9 +2063,16 @@ class Detector(CppDetectorApi):
 
     @temp_event.setter
     def temp_event(self, value):
-        if value != 0:
-            raise ValueError("Value needs to be 0 for reset. Setting not allowed")
-        self.resetTemperatureEvent()
+        modules = []
+        if isinstance(value, dict):
+            if any(value.values()):
+                raise ValueError("Value needs to be 0 for reset. Setting not allowed")
+            modules = list(value.keys())
+        else:
+            if value != 0:
+                raise ValueError("Value needs to be 0 for reset. Setting not allowed")
+            
+        self.resetTemperatureEvent(modules)
 
     @property
     @element
@@ -2076,7 +2089,7 @@ class Detector(CppDetectorApi):
 
     @temp_control.setter
     def temp_control(self, value):
-        self.setTemperatureControl(value)
+        ut.set_using_dict(self.setTemperatureControl, value)
 
     @property
     @element
@@ -2090,7 +2103,7 @@ class Detector(CppDetectorApi):
 
     @selinterface.setter
     def selinterface(self, i):
-        self.selectUDPInterface(i)
+        ut.set_using_dict(self.selectUDPInterface, i)
 
     """
     ---------------------------<<<Gotthard2 specific>>>---------------------------
@@ -2168,7 +2181,7 @@ class Detector(CppDetectorApi):
 
     @veto.setter
     def veto(self, value):
-        self.setVeto(value)
+        ut.set_using_dict(self.setVeto, value)
 
     @property
     @element
@@ -2228,7 +2241,7 @@ class Detector(CppDetectorApi):
         Example
         ---------
 
-        d.vetofile = '/path/to/file.txt' #set for all chips
+        d.vetofile = -1, '/path/to/file.txt' #set for all chips
         d.vetofile = 3, '/path/to/file.txt' # set for chip 3
 
         """
@@ -2236,15 +2249,9 @@ class Detector(CppDetectorApi):
 
     @vetofile.setter
     def vetofile(self, args):
-        if isinstance(args, str):
-            chip_index = -1
-            fname = args
-        elif isinstance(args, (tuple, list)):
-            chip_index, fname = args
-        else:
-            raise ValueError("unknow argument to vetofile")
-
-        self.setVetoFile(chip_index, fname)
+        if not isinstance(args, tuple):
+            args = (args,)
+        ut.set_using_dict(self.setVetoFile, *args)
 
     @property 
     def vetophoton(self):
@@ -2263,8 +2270,9 @@ class Detector(CppDetectorApi):
 
     @vetophoton.setter
     def vetophoton(self, args):
-        chip_index, n_photons, photon_energy, fname = args
-        self.setVetoPhoton(chip_index, n_photons, photon_energy, fname)
+        if not isinstance(args, tuple):
+            args = (args,)
+        ut.set_using_dict(self.setVetoPhoton, *args)
 
     @property
     @element
@@ -2279,8 +2287,9 @@ class Detector(CppDetectorApi):
 
     @vetoref.setter
     def vetoref(self, args):
-        gain_index, value = args
-        self.setVetoReference(gain_index, value)
+        if not isinstance(args, tuple):
+            args = (args,)
+        ut.set_using_dict(self.setVetoReference, *args)
 
 
     """
@@ -2347,7 +2356,8 @@ class Detector(CppDetectorApi):
 
     @counters.setter
     def counters(self, values):
-        self.setCounterMask(list_to_bitmask(values))
+        values = ut.make_bitmask(values)
+        ut.set_using_dict(self.setCounterMask, values)
 
     """
     <<<CTB>>>
@@ -2388,18 +2398,20 @@ class Detector(CppDetectorApi):
 
     @samples.setter
     def samples(self, nsamples):
-        self.setNumberOfAnalogSamples(nsamples)
+        ut.set_using_dict(self.setNumberOfAnalogSamples, nsamples)
 
     @property
+    @element
     def runclk(self):
         """[Ctb][Moench] Run clock in MHz."""
-        return element_if_equal(self.getRUNClock())
+        return self.getRUNClock()
 
     @runclk.setter
     def runclk(self, freq):
-        self.setRUNClock(freq)
+        ut.set_using_dict(self.setRUNClock, freq)
 
     @property
+    @element
     def romode(self):
         """
         [CTB] Readout mode of detector. Enum: readoutMode
@@ -2415,31 +2427,34 @@ class Detector(CppDetectorApi):
         >>> d.romode
         readoutMode.ANALOG_ONLY
         """
-        return element_if_equal(self.getReadoutMode())
+        return self.getReadoutMode()
 
     @romode.setter
     def romode(self, mode):
-        self.setReadoutMode(mode)
+        ut.set_using_dict(self.setReadoutMode, mode)
 
     @property
+    @element
     def asamples(self):
         """[Ctb][Moench] Number of analog samples expected. """
         return element_if_equal(self.getNumberOfAnalogSamples())
 
     @asamples.setter
     def asamples(self, N):
-        self.setNumberOfAnalogSamples(N)
+        ut.set_using_dict(self.setNumberOfAnalogSamples, N)
 
     @property
+    @element
     def dsamples(self):
         """[CTB] Number of digital samples expected. """
-        return element_if_equal(self.getNumberOfDigitalSamples())
+        return self.getNumberOfDigitalSamples()
 
     @dsamples.setter
     def dsamples(self, N):
-        self.setNumberOfDigitalSamples(N)
+        ut.set_using_dict(self.setNumberOfDigitalSamples, N)
 
     @property
+    @element
     def dbitphase(self):
         """[Ctb][Jungfrau] Phase shift of clock to latch digital bits. Absolute phase shift.
 
@@ -2447,40 +2462,44 @@ class Detector(CppDetectorApi):
         -----
         [Ctb]Changing dbitclk also resets dbitphase and sets to previous values.
         """
-        return element_if_equal(self.getDBITPhase())
+        return self.getDBITPhase()
 
     @dbitphase.setter
     def dbitphase(self, value):
-        self.setDBITPhase(value)
+        ut.set_using_dict(self.setDBITPhase, value)
 
     @property
+    @element
     def dbitclk(self):
         """[Ctb] Clock for latching the digital bits in MHz."""
-        return element_if_equal(self.getDBITClock())
+        return self.getDBITClock()
 
     @dbitclk.setter
     def dbitclk(self, value):
-        self.setDBITClock(value)
+        ut.set_using_dict(self.setDBITClock, value)
 
     @property
+    @element
     def dbitpipeline(self):
         """[Ctb] Pipeline of the clock for latching digital bits. """
-        return element_if_equal(self.getDBITPipeline())
+        return self.getDBITPipeline()
 
     @dbitpipeline.setter
     def dbitpipeline(self, value):
-        self.setDBITPipeline(value)
+        ut.set_using_dict(self.setDBITPipeline, value)
 
     @property
+    @element
     def maxdbitphaseshift(self):
         """[CTB][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits.
         Note
         -----
         :setter: Not Implemented
         """
-        return element_if_equal(self.getMaxDBITPhaseShift())
+        return self.getMaxDBITPhaseShift()
 
     @property
+    @element
     def rx_dbitlist(self):
         """
         [Ctb] List of digital signal bits read out. 
@@ -2498,31 +2517,34 @@ class Detector(CppDetectorApi):
         >>> d.rxdbitlist
         []
         """
-        return element_if_equal(self.getRxDbitList())
+        return self.getRxDbitList()
 
     @rx_dbitlist.setter
     def rx_dbitlist(self, value):
-        self.setRxDbitList(value)
+        ut.set_using_dict(self.setRxDbitList, value)
 
     @property
+    @element
     def rx_dbitoffset(self):
         """[Ctb] Offset in bytes in digital data to skip in receiver."""
-        return element_if_equal(self.getRxDbitOffset())
+        return self.getRxDbitOffset()
 
     @rx_dbitoffset.setter
     def rx_dbitoffset(self, value):
-        self.setRxDbitOffset(value)
+        ut.set_using_dict(self.setRxDbitOffset, value)
 
     @property
+    @element
     def maxadcphaseshift(self):
         """[Jungfrau][CTB][Moench] Absolute maximum Phase shift of ADC clock.
         Note
         -----
         :setter: Not Implemented
         """
-        return element_if_equal(self.getMaxADCPhaseShift())
+        return self.getMaxADCPhaseShift()
 
     @property
+    @element
     def adcphase(self):
         """[Gotthard][Jungfrau][CTB][Moench] Sets phase shift of ADC clock. 
 
@@ -2534,11 +2556,11 @@ class Detector(CppDetectorApi):
 
         :getter: Not implemented for Gotthard
         """
-        return element_if_equal(self.getADCPhase())
+        return self.getADCPhase()
 
     @adcphase.setter
     def adcphase(self, value):
-        self.setADCPhase(value)
+        ut.set_using_dict(self.setADCPhase, value)
 
     @property
     def adcpipeline(self):

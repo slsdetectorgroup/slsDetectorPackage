@@ -93,20 +93,6 @@ def test_element_if_equal_int_fails():
     assert element_if_equal([5, 6, 7]) == [5, 6, 7]
 
 
-def test_get_set_bits():
-    assert (get_set_bits(0) == [])
-    assert get_set_bits(7) == [0, 1, 2]
-
-
-def test_list_to_mask():
-    assert (list_to_bitmask([0, 1, 2]) == 7)
-    assert (list_to_bitmask([]) == 0)
-    assert (list_to_bitmask([0]) == 1)
-    assert (list_to_bitmask([1]) == 2)
-    assert (list_to_bitmask([3]) == 8)
-    assert (list_to_bitmask([1, 1, 1]) == 2)
-
-
 def test_make_timedelta_from_double():
     t = 1.7
     r = make_timedelta(t)
@@ -242,6 +228,7 @@ def test_make_string_path_from_dict():
         1: "/something/else"
     }
 
+
 class DummyClass:
     def __init__(self):
         self.args = []
@@ -257,27 +244,32 @@ class DummyClass:
             raise TypeError
         self.args.append((*args, i))
 
+
 def test_set_using_dict_single_int():
     c = DummyClass()
     set_using_dict(c.call, 5)
-    assert c.args == [(5,)]
+    assert c.args == [(5, )]
+
 
 def test_set_using_dict_two_ints():
     c = DummyClass()
     set_using_dict(c.call, 1, 2)
-    assert c.args == [(1,2)]
+    assert c.args == [(1, 2)]
+
 
 def test_set_using_dict_passing_dict():
     c = DummyClass()
-    set_using_dict(c.call, {0: 5, 8:3, 9:7})
+    set_using_dict(c.call, {0: 5, 8: 3, 9: 7})
     assert len(c.args) == 3
     assert c.args == [(5, [0]), (3, [8]), (7, [9])]
 
+
 def test_set_using_dict_calling_int_id():
     c = DummyClass()
-    set_using_dict(c.call_int_id, {0: "hej", 8:3, 9:7})
+    set_using_dict(c.call_int_id, {0: "hej", 8: 3, 9: 7})
     assert len(c.args) == 3
     assert c.args == [("hej", 0), (3, 8), (7, 9)]
+
 
 def test_set_using_dict_pass_multiple_args():
     c = DummyClass()
@@ -285,7 +277,32 @@ def test_set_using_dict_pass_multiple_args():
     assert len(c.args) == 1
     assert c.args == [("a", "b", "c")]
 
+
 def test_set_using_dict_passing_dict_with_multiple_args():
     c = DummyClass()
     set_using_dict(c.call, {0: ("a", "b"), 1: ("c", "d")})
     assert c.args == [("a", "b", [0]), ("c", "d", [1])]
+
+
+def test_get_set_bits():
+    assert (get_set_bits(0) == [])
+    assert get_set_bits(7) == [0, 1, 2]
+
+
+def test_list_to_mask():
+    assert (list_to_bitmask([0, 1, 2]) == 7)
+    assert (list_to_bitmask([]) == 0)
+    assert (list_to_bitmask([0]) == 1)
+    assert (list_to_bitmask([1]) == 2)
+    assert (list_to_bitmask([3]) == 8)
+    assert (list_to_bitmask([1, 1, 1]) == 2)
+
+
+def test_make_bitmask_from_list_of_int():
+    assert make_bitmask([0, 1, 2]) == 0b111
+    assert make_bitmask([0, 1, 7]) == 0b10000011
+    assert make_bitmask([1, 1, 1]) == 0b10
+
+
+def test_make_bitmask_from_dict():
+    assert make_bitmask({0: [0, 1], 1: [0, 1, 7]}) == {0: 0b11, 1: 0b10000011}

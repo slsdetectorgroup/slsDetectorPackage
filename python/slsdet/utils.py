@@ -40,6 +40,14 @@ def list_to_bitmask(values):
         mask += 1 << v
     return mask
 
+def make_bitmask(args):
+    if isinstance(args, list):
+        return list_to_bitmask(args)
+    elif isinstance(args, dict):
+        return {key: list_to_bitmask(value) for key, value in args.items()}
+    else:
+        raise ValueError("Cannot convert arg to bitmask")
+
 
 def to_geo(value):
     if isinstance(value, _slsdet.xy):

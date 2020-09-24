@@ -906,25 +906,27 @@ std::string CmdProxy::TemperatureValues(int action) {
     return os.str();
 }
 
-
-
 /* dacs */
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;
     os << cmd << ' ';
 
+    // dac indices only for ctb
     if (args.size() > 0 && action != defs::HELP_ACTION) {
         if (is_int(args[0]) &&
             det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
             throw sls::RuntimeError(
-                "Dac indices can only be used for chip test board. Use "
-                "daclist "
+                "Dac indices can only be used for chip test board. Use daclist "
                 "to get list of dac names for current detector.");
         }
     }
 
     if (action == defs::HELP_ACTION) {
-        os << args[0] << ' ' << GetDacHelp(args[0]) << '\n';
+        if (args.size() == 0) {
+            os << GetHelpDac(std::to_string(0)) << '\n';
+        } else {
+            os << args[0] << ' ' << GetHelpDac(args[0]) << '\n';
+        }
     } else if (action == defs::GET_ACTION) {
         if (args.empty())
             WrongNumberOfParameters(1); // This prints slightly wrong
@@ -942,8 +944,7 @@ std::string CmdProxy::Dac(int action) {
             WrongNumberOfParameters(1);
         }
         auto t = det->getDAC(dacIndex, mV, std::vector<int>{det_id});
-        os << args[0] << ' ' << OutString(t)
-           << (mV ? " mV\n" : "\n");
+        os << args[0] << ' ' << OutString(t) << (mV ? " mV\n" : "\n");
     } else if (action == defs::PUT_ACTION) {
         if (args.empty())
             WrongNumberOfParameters(1); // This prints slightly wrong

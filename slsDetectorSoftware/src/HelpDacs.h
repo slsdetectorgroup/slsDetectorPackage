@@ -1,7 +1,7 @@
-#include "string.h"
+#include "string_utils.h"
 
-std::string GetDacHelp(std::string dac) {
-    if (dac.find("dac") != std::string::npos) {
+std::string GetHelpDac(std::string dac) {
+    if (sls::is_int(dac)) {
         return std::string("[dac name] [dac or mV value] [(optional unit) mV] "
                            "\n\t[Ctb] Use dac index for dac name.");
     }

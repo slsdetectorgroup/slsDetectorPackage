@@ -947,6 +947,7 @@ class CmdProxy {
         /* Gotthard2 Specific */
         {"bursts", &CmdProxy::bursts},
         {"burstperiod", &CmdProxy::burstperiod},
+        {"burstsl", &CmdProxy::burstsl},
         {"inj_ch", &CmdProxy::InjectChannel},
         {"vetophoton", &CmdProxy::VetoPhoton},
         {"vetoref", &CmdProxy::VetoReference},
@@ -1249,12 +1250,12 @@ class CmdProxy {
     GET_COMMAND(framesl, getNumberOfFramesLeft,
                 "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] "
                 "Number of frames left in acquisition."
-                "\n\t[Gotthard2] only in continuous mode.");
+                "\n\t[Gotthard2] only in continuous auto mode.");
 
     GET_COMMAND(triggersl, getNumberOfTriggersLeft,
                 "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] "
-                "Number of triggers left in acquisition."
-                "\n\t[Gotthard2] only in continuous mode.");
+                "Number of triggers left in acquisition. Only when external "
+                "trigger used.");
 
     TIME_GET_COMMAND(delayl, getDelayAfterTriggerLeft,
                      "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench]"
@@ -2115,6 +2116,10 @@ class CmdProxy {
         burstperiod, getBurstPeriod, setBurstPeriod,
         "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] "
         "Period between 2 bursts. Only in burst mode and auto timing mode.");
+
+    GET_COMMAND(burstsl, getNumberOfBurstsLeft,
+                "\n\t[Gotthard2] Number of bursts left in acquisition. Only in "
+                "burst auto mode.");
 
     INTEGER_COMMAND_VEC_ID(
         cdsgain, getCDSGain, setCDSGain, StringTo<bool>,

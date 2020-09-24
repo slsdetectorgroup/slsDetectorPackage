@@ -267,6 +267,9 @@ int64_t getNumTriggersLeft();
 int64_t getDelayAfterTriggerLeft();
 int64_t getPeriodLeft();
 #endif
+#ifdef GOTTHARD2D
+int64_t getNumBurstsLeft();
+#endif
 #ifdef GOTTHARDD
 int64_t getExpTimeLeft();
 #endif

@@ -1031,11 +1031,21 @@ int64_t getBurstPeriod() {
 }
 
 int64_t getNumFramesLeft() {
-    return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
+    // continuous and auto
+    if ((burstMode == CONTINUOUS_INTERNAL ||
+         burstMode == CONTINUOUS_EXTERNAL) &&
+        getTiming() == AUTO_TIMING) {
+        return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
+    }
+    return -1;
 }
 
 int64_t getNumTriggersLeft() {
-    return get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
+    // trigger
+    if (getTiming() == TRIGGER_EXPOSURE) {
+        return get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
+    }
+    return -1;
 }
 
 int64_t getDelayAfterTriggerLeft() {
@@ -1046,6 +1056,15 @@ int64_t getDelayAfterTriggerLeft() {
 int64_t getPeriodLeft() {
     return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) /
            (1E-9 * systemFrequency);
+}
+
+int64_t getNumBurstsLeft() {
+    // burst and auto
+    if ((burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) &&
+        getTiming() == AUTO_TIMING) {
+        return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
+    }
+    return -1;
 }
 
 int64_t getFramesFromStart() {

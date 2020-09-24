@@ -161,6 +161,21 @@ void qTabMeasurement::ShowTriggerDelay() {
             // show burst, burstperiod, not trigger or delay
             showTrigger = false;
         }
+
+        // frame and period are disabled for cont trigger in g2
+        bool enableFramePeriod = true;
+        if ((comboBurstMode->currentIndex() ==
+                 slsDetectorDefs::CONTINUOUS_INTERNAL ||
+             comboBurstMode->currentIndex() ==
+                 slsDetectorDefs::CONTINUOUS_EXTERNAL) &&
+            (comboTimingMode->currentIndex() == TRIGGER)) {
+            enableFramePeriod = false;
+        }
+        lblNumFrames->setEnabled(enableFramePeriod);
+        spinNumFrames->setEnabled(enableFramePeriod);
+        lblPeriod->setEnabled(enableFramePeriod);
+        spinPeriod->setEnabled(enableFramePeriod);
+        comboPeriodUnit->setEnabled(enableFramePeriod);
     }
 
     if (showTrigger) {

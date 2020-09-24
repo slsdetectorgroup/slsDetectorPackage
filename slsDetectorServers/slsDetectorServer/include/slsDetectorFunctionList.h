@@ -341,6 +341,9 @@ int getADC(enum ADCINDEX ind);
 int setHighVoltage(int val);
 
 // parameters - timing, extsig
+#ifdef GOTTHARD2D
+void updatingRegisters();
+#endif
 void setTiming(enum timingMode arg);
 enum timingMode getTiming();
 #ifdef MYTHEN3D

@@ -1,4 +1,5 @@
 #include "CmdProxy.h"
+#include "HelpDacs.h"
 #include "TimeHelper.h"
 #include "ToString.h"
 #include "bit_utils.h"
@@ -930,19 +931,7 @@ std::string CmdProxy::Dac(int action) {
     }
 
     if (action == defs::HELP_ACTION) {
-        // for ctb: args 0, dacname = dac 0
-        if (args.size() == 0 || args[0] != dacname) {
-            os << "[dac name] [dac or mV value] [(optional unit) mV] "
-                  "\n\t[Ctb] Use dac index for dac name."
-               << '\n';
-        } else if (dacname == "vthreshold") {
-            os << "vthreshold [dac or mV value][(optional unit) mV] "
-                  "\n\t[Eiger][Mythen3] Detector threshold voltage for single "
-                  "photon counters.\n\t[Eiger] Sets vcmp_ll, vcmp_lr, vcmp_rl, "
-                  "vcmp_rr and vcp to the same value. \n\t[Mythen3] Sets vth1, "
-                  "vth2 and vth3 to the same value."
-               << '\n';
-        }
+        os << GetDacHelp(dacname) << '\n';
     } else if (action == defs::GET_ACTION) {
         defs::dacIndex dacIndex = StringTo<defs::dacIndex>(dacname);
         bool mv = false;

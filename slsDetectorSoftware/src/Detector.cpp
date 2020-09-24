@@ -1353,6 +1353,10 @@ void Detector::setBurstPeriod(ns value, Positions pos) {
     pimpl->Parallel(&Module::setBurstPeriod, pos, value.count());
 }
 
+Result<int64_t> Detector::getNumberOfBurstsLeft(Positions pos) const {
+    return pimpl->Parallel(&Module::getNumberOfBurstsLeft, pos);
+}
+
 Result<std::array<int, 2>> Detector::getInjectChannel(Positions pos) {
     return pimpl->Parallel(&Module::getInjectChannel, pos);
 }

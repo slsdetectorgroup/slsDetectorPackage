@@ -342,7 +342,7 @@ class Detector(CppDetectorApi):
     def framesl(self):
         """
         [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Number of frames left in acquisition.\n
-        [Gotthard2] only in continuous mode.
+        [Gotthard2] only in continuous auto mode.
         :setter: Not Implemented
         """
         return self.getNumberOfFramesLeft()
@@ -1492,7 +1492,7 @@ class Detector(CppDetectorApi):
         [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Number of triggers left in acquisition.\n
         Note
         ----
-        [Gotthard2] only in continuous mode.
+        Only when external trigger used.
         :setter: Not Implemented
         """
         return self.getNumberOfTriggersLeft()
@@ -2118,6 +2118,18 @@ class Detector(CppDetectorApi):
     @bursts.setter
     def bursts(self, value):
         self.setNumberOfBursts(value)
+
+    @property
+    @element
+    def burstsl(self):
+        """
+        [Gotthard2] Number of bursts left in acquisition.\n
+        Note
+        ----
+        Only in burst auto mode.
+        :setter: Not Implemented
+        """
+        return self.getNumberOfBurstsLeft()
 
     @property
     @element

@@ -357,6 +357,7 @@ void function_table() {
     flist[F_SET_BAD_CHANNELS] = &set_bad_channels;
     flist[F_RECONFIGURE_UDP] = &reconfigure_udp;
     flist[F_VALIDATE_UDP_CONFIG] = &validate_udp_configuration;
+    flist[F_GET_BURSTS_LEFT] = &get_bursts_left;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8067,4 +8068,19 @@ int validate_udp_configuration(int file_des) {
     }
 
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_bursts_left(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int64_t retval = -1;
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // get only
+    retval = getNumBurstsLeft();
+    LOG(logDEBUG1, ("retval num bursts left %lld\n", (long long int)retval));
+#endif
+    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }

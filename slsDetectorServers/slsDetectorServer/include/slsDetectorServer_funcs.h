@@ -239,3 +239,4 @@ int get_bad_channels(int);
 int set_bad_channels(int);
 int reconfigure_udp(int);
 int validate_udp_configuration(int);
+int get_bursts_left(int);

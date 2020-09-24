@@ -965,6 +965,10 @@ void init_det(py::module &m) {
              (void (Detector::*)(sls::ns, sls::Positions)) &
                  Detector::setBurstPeriod,
              py::arg(), py::arg() = Positions{})
+        .def("getNumberOfBurstsLeft",
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
+                 Detector::getNumberOfBurstsLeft,
+             py::arg() = Positions{})
         .def("getInjectChannel",
              (Result<std::array<int, 2>>(Detector::*)(sls::Positions)) &
                  Detector::getInjectChannel,

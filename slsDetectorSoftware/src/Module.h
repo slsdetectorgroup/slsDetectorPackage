@@ -372,6 +372,7 @@ class Module : public virtual slsDetectorDefs {
     void setNumberOfBursts(int64_t value);
     int64_t getBurstPeriod() const;
     void setBurstPeriod(int64_t value);
+    int64_t getNumberOfBurstsLeft() const;
     std::array<int, 2> getInjectChannel() const;
     void setInjectChannel(const int offsetChannel, const int incrementChannel);
     void sendVetoPhoton(const int chipIndex,

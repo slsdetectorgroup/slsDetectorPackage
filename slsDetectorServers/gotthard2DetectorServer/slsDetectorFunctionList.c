@@ -994,7 +994,7 @@ int64_t getPeriod() {
         // trigger
         if (getTiming() == TRIGGER_EXPOSURE) {
             // #frames limited in cont trigger mode
-            return periodReg;
+            return periodReg / (1E-9 * systemFrequency);
         }
         // auto
         return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /

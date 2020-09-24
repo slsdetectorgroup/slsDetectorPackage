@@ -122,6 +122,9 @@ def make_ip(arg):
 def make_mac(arg):
     return _make(arg, _slsdet.MacAddr)
 
+def make_path(arg):
+    return _make(arg, Path)
+    
 def _make(arg, transform):
     """Helper function for make_mac and make_ip special cases for
     dict, list and tuple. Otherwise just calls transform"""

@@ -9,6 +9,7 @@ from slsdet.utils import *
 from slsdet import IpAddr, MacAddr
 import datetime as dt
 import pathlib
+from pathlib import Path
 
 
 def test_iterable():
@@ -196,3 +197,11 @@ def test_make_mac_from_tuple():
     arg = ("84:a9:aa:24:32:88", "84:a9:3e:24:32:aa")
     assert make_mac(arg) == (MacAddr("84:a9:aa:24:32:88"),
                              MacAddr("84:a9:3e:24:32:aa"))
+
+def test_make_path_from_str():
+    assert make_path("/") == Path("/")
+    assert make_path("/home") == Path("/home")
+
+def test_make_path_from_list():
+    arg = ["/", "/home", "/another/path"]
+    assert make_path(arg) == [Path(p) for p in arg]

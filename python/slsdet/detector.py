@@ -1125,13 +1125,11 @@ class Detector(CppDetectorApi):
 
     @udp_srcmac.setter
     def udp_srcmac(self, mac):
-        if isinstance(mac, (list, tuple)):
-            for i, m in enumerate(mac):
-                self.setSourceUDPMAC(MacAddr(m), [i])
-        else:
-            self.setSourceUDPMAC(MacAddr(mac))
+        mac = ut.make_mac(mac)
+        ut.set_using_dict(self.setSourceUDPMAC, mac)
 
     @property
+    @element
     def udp_srcmac2(self):
         """
         [Jungfrau][Gotthard2] Mac address of the receiver (source) udp interface 2. 
@@ -1146,17 +1144,15 @@ class Detector(CppDetectorApi):
         d.udp_srcmac2
         00:1b:31:01:8a:de
         """
-        return element_if_equal(self.getSourceUDPMAC2())
+        return self.getSourceUDPMAC2()
 
     @udp_srcmac2.setter
     def udp_srcmac2(self, mac):
-        if isinstance(mac, (list, tuple)):
-            for i, m in enumerate(mac):
-                self.setSourceUDPMAC2(MacAddr(m), [i])
-        else:
-            self.setSourceUDPMAC2(MacAddr(mac))
+        mac = ut.make_mac(mac)
+        ut.set_using_dict(self.setSourceUDPMAC2, mac)
 
     @property
+    @element
     def udp_srcip(self):
         """
         Ip address of the detector (source) udp interface. 
@@ -1171,13 +1167,15 @@ class Detector(CppDetectorApi):
         >>> d.udp_srcip
         192.168.1.127
         """
-        return element_if_equal(self.getSourceUDPIP())
+        return self.getSourceUDPIP()
 
     @udp_srcip.setter
     def udp_srcip(self, ip):
-        self.setSourceUDPIP(IpAddr(ip))
+        ip = ut.make_ip(ip)
+        ut.set_using_dict(self.setSourceUDPIP, ip)
 
     @property
+    @element
     def udp_srcip2(self):
         """
         [Jungfrau][Gotthard2] Ip address of the detector (source) udp interface 2. 
@@ -1193,13 +1191,15 @@ class Detector(CppDetectorApi):
         >>> d.udp_srcip2
         192.168.1.127
         """
-        return element_if_equal(self.getSourceUDPIP2())
+        return self.getSourceUDPIP2()
 
     @udp_srcip2.setter
     def udp_srcip2(self, ip):
-        self.setSourceUDPIP2(IpAddr(ip))
+        ip = ut.make_ip(ip)
+        ut.set_using_dict(self.setSourceUDPIP2, ip)
 
     @property
+    @element
     def udp_dstport(self):
         """
         Port number of the receiver (destination) udp interface. 
@@ -1209,13 +1209,14 @@ class Detector(CppDetectorApi):
         Ports for each module is calculated (incremented by 1 if no 2nd interface) \n
         To set ports for individual modules, use setDestinationUDPPort.
         """
-        return element_if_equal(self.getDestinationUDPPort())
+        return self.getDestinationUDPPort()
 
     @udp_dstport.setter
     def udp_dstport(self, port):
-        self.setDestinationUDPPort(port)
+        ut.set_using_dict(self.setDestinationUDPPort, port)
 
     @property
+    @element
     def udp_dstport2(self):
         """
         Port number of the receiver (destination) udp interface. 
@@ -1228,13 +1229,14 @@ class Detector(CppDetectorApi):
         Ports for each module is calculated (incremented by 2) \n
         To set ports for individual modules, use setDestinationUDPPort2.
         """
-        return element_if_equal(self.getDestinationUDPPort2())
+        return self.getDestinationUDPPort2()
 
     @udp_dstport2.setter
     def udp_dstport2(self, port):
-        self.setDestinationUDPPort2(port)
+        ut.set_using_dict(self.setDestinationUDPPort2, port)
 
     @property
+    @element
     def highvoltage(self):
         """High voltage to the sensor in Voltage.
 
@@ -1244,11 +1246,11 @@ class Detector(CppDetectorApi):
         [Eiger][Mythen3][Gotthard2] 0 - 200 \n
         [Jungfrau][Ctb][Moench] 0, 60 - 200
         """
-        return element_if_equal(self.getHighVoltage())
+        return self.getHighVoltage()
 
     @highvoltage.setter
     def highvoltage(self, v):
-        self.setHighVoltage(v)
+        ut.set_using_dict(self.setHighVoltage, v)
 
     @property
     def user(self):
@@ -1258,9 +1260,10 @@ class Detector(CppDetectorApi):
         return self.getUserDetails()
 
     @property
+    @element
     def settingspath(self):
         """[Eiger] Directory where settings files are loaded from/to."""
-        return element_if_equal(self.getSettingsPath())
+        return ut.make_path(self.getSettingsPath())
 
     @settingspath.setter
     def settingspath(self, path):

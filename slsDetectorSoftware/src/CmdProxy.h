@@ -616,7 +616,6 @@ class CmdProxy {
         /** temperature */
 
         /** dacs */
-        {"vthreshold", "dac"},
         {"vtr", "vtrim"},
         {"vrf", "vrpreamp"},
         {"vrs", "vrshaper"},
@@ -628,6 +627,10 @@ class CmdProxy {
         {"viinsh", "vishaper"},
         {"vpl", "vcal_n"},
         {"vph", "vcal_p"},
+        {"vthreshold", "dac"},
+        {"vsvp", "dac"},
+        {"vsvn", "dac"},
+        {"vtrim", "dac"},
 
         /* acquisition */
         {"busy", "clearbusy"},
@@ -766,9 +769,9 @@ class CmdProxy {
 
         /* dacs */
         //{"vthreshold", &CmdProxy::vthreshold},
-        {"vsvp", &CmdProxy::vsvp},
-        {"vsvn", &CmdProxy::vsvn},
-        {"vtrim", &CmdProxy::vtrim},
+        //{"vsvp", &CmdProxy::vsvp},
+        //{"vsvn", &CmdProxy::vsvn},
+        //{"vtrim", &CmdProxy::vtrim},
         {"vrpreamp", &CmdProxy::vrpreamp},
         {"vrshaper", &CmdProxy::vrshaper},
         {"vtgstv", &CmdProxy::vtgstv},
@@ -1372,7 +1375,7 @@ class CmdProxy {
          "[dac or mV value][(optional unit) mV] \n\t[Eiger][Mythen3] "
          "Detector threshold voltage for single photon counters.\n\t[Eiger] "
          "Sets vcmp_ll, vcmp_lr, vcmp_rl, vcmp_rr and vcp to the same value. "
-         "\n\t[Mythen3] Sets vth1, vth2 and vth3 to the same value.");*/
+         "\n\t[Mythen3] Sets vth1, vth2 and vth3 to the same value.");
 
     DAC_COMMAND(vsvp, getDAC, setDAC, defs::VSVP,
                 "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
@@ -1386,7 +1389,7 @@ class CmdProxy {
     DAC_COMMAND(vtrim, getDAC, setDAC, defs::VTRIM,
                 "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? \n\t[Mythen3] Dac for "
-                "the voltage defining the trim bit size."); // TODO
+                "the voltage defining the trim bit size."); // TODO*/
 
     DAC_COMMAND(vrpreamp, getDAC, setDAC, defs::VRPREAMP,
                 "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "

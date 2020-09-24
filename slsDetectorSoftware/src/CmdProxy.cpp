@@ -931,7 +931,7 @@ std::string CmdProxy::Dac(int action) {
     }
 
     if (action == defs::HELP_ACTION) {
-        os << GetDacHelp(dacname) << '\n';
+        os << args[0] << ' ' << GetDacHelp(dacname) << '\n';
     } else if (action == defs::GET_ACTION) {
         defs::dacIndex dacIndex = StringTo<defs::dacIndex>(dacname);
         bool mv = false;

@@ -2631,7 +2631,13 @@ void *start_timer(void *arg) {
     }
     int repeatPeriodNs = getBurstPeriod();
     int numFrames = getNumFrames();
+    // continuous trigger mode, #frames = 1
     int64_t periodNs = getPeriod();
+    if (getTiming() == TRIGGER_EXPOSURE && (burstMode == CONTINUOUS_INTERNAL ||
+                                            burstMode == CONTINUOUS_EXTERNAL)) {
+        numFrames = 1;
+        periodNs = 0;
+    }
     int64_t expUs = getExpTime() / 1000;
     int imagesize = NCHAN * NCHIP * 2;
     int datasize = imagesize;
@@ -2832,15 +2838,7 @@ void readFrame(int *ret, char *mess) {
 #endif
 
     *ret = (int)OK;
-    // frames left to give status
-    int64_t retval = getNumFramesLeft() + 1;
-
-    if (retval > 0) {
-        LOG(logERROR, ("No data and run stopped: %lld frames left\n",
-                       (long long int)retval));
-    } else {
-        LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
-    }
+    LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 }
 
 u_int32_t runBusy() {

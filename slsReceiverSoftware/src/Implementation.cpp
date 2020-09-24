@@ -167,11 +167,10 @@ void Implementation::setDetectorType(const detectorType d) {
                 &activated, &deactivatedPaddingEnable, &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, myDetectorType, fifo_ptr, &fileFormatType, fileWriteEnable,
-                &masterFileWriteEnable, &dataStreamEnable,
-                &streamingFrequency, &streamingTimerInMs, &streamingStartFnum,
-                &framePadding, &activated, &deactivatedPaddingEnable,
-                &silentMode, &ctbDbitList, &ctbDbitOffset,
-                &ctbAnalogDataBytes));
+                &masterFileWriteEnable, &dataStreamEnable, &streamingFrequency,
+                &streamingTimerInMs, &streamingStartFnum, &framePadding,
+                &activated, &deactivatedPaddingEnable, &silentMode,
+                &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
         } catch (...) {
             listener.clear();
             dataProcessor.clear();
@@ -841,10 +840,10 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 auto fifo_ptr = fifo[i].get();
                 listener.push_back(sls::make_unique<Listener>(
                     i, myDetectorType, fifo_ptr, &status, &udpPortNum[i],
-                    &eth[i], &numberOfTotalFrames,
-                    &udpSocketBufferSize, &actualUDPSocketBufferSize,
-                    &framesPerFile, &frameDiscardMode, &activated,
-                    &deactivatedPaddingEnable, &silentMode));
+                    &eth[i], &numberOfTotalFrames, &udpSocketBufferSize,
+                    &actualUDPSocketBufferSize, &framesPerFile,
+                    &frameDiscardMode, &activated, &deactivatedPaddingEnable,
+                    &silentMode));
                 listener[i]->SetGeneralData(generalData);
 
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
@@ -852,8 +851,8 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable,
                     &streamingFrequency, &streamingTimerInMs,
                     &streamingStartFnum, &framePadding, &activated,
-                    &deactivatedPaddingEnable, &silentMode,
-                    &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
+                    &deactivatedPaddingEnable, &silentMode, &ctbDbitList,
+                    &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
             } catch (...) {
                 listener.clear();
@@ -1123,18 +1122,31 @@ void Implementation::setAdditionalJsonParameter(const std::string &key,
  * ************************************************/
 void Implementation::updateTotalNumberOfFrames() {
     int64_t repeats = numberOfTriggers;
-    // gotthard2: auto mode
-    // burst mode: (bursts instead of triggers)
-    // continuous mode: no bursts or triggers
-    if (myDetectorType == GOTTHARD2 && timingMode == AUTO_TIMING) {
-        if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
-            repeats = numberOfBursts;
-        } else {
-            repeats = 1;
+    int64_t numFrames = numberOfFrames;
+    // gotthard2
+    if (myDetectorType == GOTTHARD2) {
+        // auto
+        if (timingMode == AUTO_TIMING) {
+            // burst mode, repeats = #bursts
+            if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
+                repeats = numberOfBursts;
+            }
+            // continuous, repeats = 1 (no trigger as well)
+            else {
+                repeats = 1;
+            }
+        }
+        // trigger
+        else {
+            // continuous, numFrames is limited
+            if (burstMode == CONTINUOUS_INTERNAL ||
+                burstMode == CONTINUOUS_EXTERNAL) {
+                numFrames = 1;
+            }
         }
     }
-    numberOfTotalFrames = numberOfFrames * repeats *
-                          (int64_t)(numberOfAdditionalStorageCells + 1);
+    numberOfTotalFrames =
+        numFrames * repeats * (int64_t)(numberOfAdditionalStorageCells + 1);
     if (numberOfTotalFrames == 0) {
         throw sls::RuntimeError("Invalid total number of frames to receive: 0");
     }

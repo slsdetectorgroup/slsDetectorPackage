@@ -14,11 +14,11 @@ class UdpRxSocket {
 
   public:
     UdpRxSocket(int port, ssize_t packet_size, const char *hostname = nullptr,
-                size_t kernel_buffer_size = 0);
+                int kernel_buffer_size = 0);
     ~UdpRxSocket();
     bool ReceivePacket(char *dst) noexcept;
-    size_t getBufferSize() const;
-    void setBufferSize(ssize_t size);
+    int getBufferSize() const;
+    void setBufferSize(int size);
     ssize_t getPacketSize() const noexcept;
     void Shutdown();
 

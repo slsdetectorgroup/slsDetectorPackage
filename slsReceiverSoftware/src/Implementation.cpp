@@ -946,12 +946,12 @@ void Implementation::setUDPPortNumber2(const uint32_t i) {
     LOG(logINFO) << "UDP Port Number[1]: " << udpPortNum[1];
 }
 
-int64_t Implementation::getUDPSocketBufferSize() const {
+int Implementation::getUDPSocketBufferSize() const {
     return udpSocketBufferSize;
 }
 
-void Implementation::setUDPSocketBufferSize(const int64_t s) {
-    int64_t size = (s == 0) ? udpSocketBufferSize : s;
+void Implementation::setUDPSocketBufferSize(const int s) {
+    int size = (s == 0) ? udpSocketBufferSize : s;
     size_t listSize = listener.size();
     if (myDetectorType == JUNGFRAU && (int)listSize != numUDPInterfaces) {
         throw sls::RuntimeError(
@@ -964,7 +964,7 @@ void Implementation::setUDPSocketBufferSize(const int64_t s) {
     }
 }
 
-int64_t Implementation::getActualUDPSocketBufferSize() const {
+int Implementation::getActualUDPSocketBufferSize() const {
     return actualUDPSocketBufferSize;
 }
 

@@ -2680,10 +2680,11 @@ std::string CmdProxy::ExecuteCommand(int action) {
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get.");
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
+        std::string command;
+        for (auto &i: args) {
+            command += (i + ' ');
         }
-        auto t = det->executeCommand(args[0], std::vector<int>{det_id});
+        auto t = det->executeCommand(command, std::vector<int>{det_id});
         os << OutString(t) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");

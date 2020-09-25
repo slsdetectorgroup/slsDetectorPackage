@@ -44,6 +44,26 @@ The easiest way to configure options is to use the ccmake utility.
     ccmake .
 
 
+Build using cmk.sh script
+-------------------------
+.. code-block:: bash
+
+    # new build and make with 9 parallel threads
+    ./cmk.sh -cbj9
+
+    # build with python
+    ./cmk.sh -bpj9
+
+    # build with GUI
+    ./cmk.sh -bgj9
+
+    # build with hdf5
+    ./cmk.sh -hj9 -d [path of hdf5 dir]
+
+    # get all options
+    ./cmk.sh -?
+
+
 Install binaries using conda
 --------------------------------
 

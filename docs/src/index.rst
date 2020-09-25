@@ -54,6 +54,12 @@ Welcome to slsDetectorPackage's documentation!
     :caption: Servers
 
     servers
+    serverupgrade
+
+.. toctree::
+    :caption: Firmware
+
+    firmware 
 
 .. Indices and tables
 .. ==================

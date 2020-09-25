@@ -1,2 +1,114 @@
-Draft
-- dr 4, 8, 16 in eiger -> speed 0, 32 stays same (speed 1)
+SLS Detector Package 5.0.0-rc1 released on 25.09.2020 (Release Candidate 1)
+===========================================================================
+
+    CONTENTS
+    --------
+    1.  Firmware Requirements
+    2.  Download, Documentation & Support
+
+
+1. Firmware Requirements
+========================
+        
+        Eiger
+        =====  
+        Minimum compatible version  : 27
+        Latest compatible version   : 27
+        
+        Jungfrau
+        ========       
+        Minimum compatible version (PCB v1.0)  : 24.07.2020 (v0.8)
+        Latest compatible version  (PCB v1.0)  : 24.07.2020 (v0.8)
+        Minimum compatible version (PCB v2.0)  : 21.07.2020 (v2.1)
+        Latest compatible version  (PCB v2.0)  : 21.07.2020 (v2.1)
+
+        Gotthard
+        ========   
+        Minimum compatible version  : 11.01.2013
+        Latest compatible version   : 08.02.2018 (50um and 25um Master)
+                                      09.02.2018 (25 um Slave) 
+
+        Mythen3
+        =======
+        Minimum compatible version  : 25.09.2020
+        Latest compatible version   : 25.09.2020
+
+        Gotthard2
+        =========
+        Minimum compatible version  : 25.09.2020
+        Latest compatible version   : 25.09.2020
+
+        Moench
+        ======
+        Minimum compatible version : 02.03.2020
+        Latest compatible version  : 02.03.2020 
+
+        Ctb
+        ===
+        Minimum compatible version : 27.11.2019
+        Latest compatible version  : 27.11.2019
+
+
+        Detector Upgrade
+        ================
+        Eiger      Remotely via bit files
+        Jungfrau   Remotely using sls_detector_put programfpga <pof>
+        Gotthard   Cannot be upgraded remotely. Requires programming via USB blaster
+        Mythen3    Remotely using sls_detector_put programfpga <rbf>
+        Gotthard2  Remotely using sls_detector_put programfpga <rbf> 
+        Moench     Remotely using sls_detector_put programfpga <pof>
+        Ctb        Remotely using sls_detector_put programfpga <pof>
+
+        Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+    Please refer to the link below for more details on the firmware versions.
+    https://www.psi.ch/en/detectors/firmware
+
+    
+2. Download, Documentation & Support
+====================================
+
+    Download
+    --------
+    
+    The Source Code (Default C++ API):
+         https://github.com/slsdetectorgroup/slsDetectorPackage
+            
+    Documentation
+    -------------
+    
+    Installation:
+        https://slsdetectorgroup.github.io/devdoc/installation.html#
+
+    Consuming slsDetectorPackage:
+        https://slsdetectorgroup.github.io/devdoc/consuming.html
+        
+    Command Line Documentation:
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+        
+    C++ API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+       
+    C++ API Example:
+        https://slsdetectorgroup.github.io/devdoc/examples.html#
+        
+    Python API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/pygettingstarted.html
+
+    Python API Example:
+        https://slsdetectorgroup.github.io/devdoc/pyexamples.html
+
+    TroubleShooting:
+        https://www.psi.ch/en/detectors/troubleshooting
+        
+    Further Documentation:
+        https://www.psi.ch/en/detectors/users-support
+        
+    
+    Support
+    -------
+
+        dhanya.thattil@psi.ch
+        erik.frojdh@psi.ch
+        anna.bergamaschi@psi.ch

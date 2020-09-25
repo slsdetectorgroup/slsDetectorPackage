@@ -45,6 +45,8 @@ set(SPHINX_SOURCE_FILES
   src/ToString.rst
   src/examples.rst
   src/pygettingstarted.rst
+  src/firmware.rst
+  src/serverupgrade.rst
   
 )
 

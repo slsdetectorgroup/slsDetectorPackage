@@ -2930,9 +2930,8 @@ class Detector(CppDetectorApi):
     @v_limit.setter
     def v_limit(self, value):
         value = ut.merge_args(dacIndex.V_LIMIT, value, True)
-        print(f'{value=}')
         ut.set_using_dict(self.setDAC, *value)
-        # self.setDAC(dacIndex.V_LIMIT, value, True)
+
 
     @property
     @element

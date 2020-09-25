@@ -195,7 +195,6 @@ def add_argument_before(a, args):
     """Add a before the other arguments. Also works with
     dict that holds args to several modules. Always puts the
     args in a dict to be compatible with set_using_dict"""
-    print(f'{args=}')
     if isinstance(args, tuple):
         return (a, *args)
     elif isinstance(args, dict):

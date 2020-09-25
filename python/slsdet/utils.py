@@ -228,22 +228,32 @@ def pop_dict(args):
         if isinstance(a, dict):
             return args.pop(i), i
 
+def tuplify(args):
+    if not isinstance(args, tuple):
+        return (args, )
+    else:
+        return args
 
 def merge_args(*args):
-    #find and pop dict since it holds the arguments
     n_dict = sum(isinstance(a, dict) for a in args)
-    if n_dict == 0:
-        return args
+    
+    if n_dict == 0: #no dict just make a tuple of arguments
+        ret = []
+        for a in args:
+            if isinstance(a, tuple):
+                ret.extend(a)
+            else:
+                ret.append(a)
+        return tuple(ret)
 
     elif n_dict == 1:
         args = [a for a in args] #these are the args to be added
         values,pos = pop_dict(args)
         ret = {}
         for k, v in values.items():
-            if not isinstance(v, tuple):
-                v = (v,)
+            v = tuplify(v)
             items = [a for a in args]
-            items.insert(pos, *v)
+            items[pos:pos] = v
             ret[k] = tuple(items)
         return (ret,)
 

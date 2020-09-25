@@ -334,3 +334,9 @@ def test_add_argument_after_dict():
 def test_merge_args():
     assert merge_args("a", "b", 1) == ("a", "b", 1)
     assert merge_args({0:1, 1:2}, "a") == ({0: (1, "a"), 1: (2, "a")},)
+
+def test_merge_args_tuple():
+    assert merge_args(*("a", "b"), 5) == ("a", "b", 5)
+
+def test_merge_args_dict_with_tuple():
+    assert merge_args({0: (1,2)}, 3) == ({0: (1,2,3)},)

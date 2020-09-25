@@ -951,6 +951,8 @@ int Implementation::getUDPSocketBufferSize() const {
 }
 
 void Implementation::setUDPSocketBufferSize(const int s) {
+    // custom setup is not 0 (must complain if set up didnt work)
+    // testing default setup at startup, argument is 0 to use default values
     int size = (s == 0) ? udpSocketBufferSize : s;
     size_t listSize = listener.size();
     if (myDetectorType == JUNGFRAU && (int)listSize != numUDPInterfaces) {
@@ -959,8 +961,8 @@ void Implementation::setUDPSocketBufferSize(const int s) {
             " do not match listener size " + std::to_string(listSize));
     }
 
-    for (unsigned int i = 0; i < listSize; ++i) {
-        listener[i]->CreateDummySocketForUDPSocketBufferSize(size);
+    for (auto &l : listener) {
+        l->CreateDummySocketForUDPSocketBufferSize(size);
     }
     // custom and didnt set, throw error
     if (s != 0 && udpSocketBufferSize != s) {

@@ -907,16 +907,16 @@ void Detector::setPartialFramesPadding(bool value, Positions pos) {
     pimpl->Parallel(&Module::setPartialFramesPadding, pos, value);
 }
 
-Result<int64_t> Detector::getRxUDPSocketBufferSize(Positions pos) const {
+Result<int> Detector::getRxUDPSocketBufferSize(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverUDPSocketBufferSize, pos);
 }
 
-void Detector::setRxUDPSocketBufferSize(int64_t udpsockbufsize, Positions pos) {
+void Detector::setRxUDPSocketBufferSize(int udpsockbufsize, Positions pos) {
     pimpl->Parallel(&Module::setReceiverUDPSocketBufferSize, pos,
                     udpsockbufsize);
 }
 
-Result<int64_t> Detector::getRxRealUDPSocketBufferSize(Positions pos) const {
+Result<int> Detector::getRxRealUDPSocketBufferSize(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverRealUDPSocketBufferSize, pos);
 }
 

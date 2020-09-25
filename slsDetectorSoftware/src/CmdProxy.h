@@ -1568,9 +1568,9 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         rx_udpsocksize, getRxUDPSocketBufferSize, setRxUDPSocketBufferSize,
-        StringTo<int64_t>,
+        StringTo<int>,
         "[n_size]\n\tUDP socket buffer size in receiver. Tune rmem_default and "
-        "rmem_max accordingly.");
+        "rmem_max accordingly. Max value is INT_MAX/2.");
 
     GET_COMMAND(rx_realudpsocksize, getRxRealUDPSocketBufferSize,
                 "\n\tActual udp socket buffer size. Double the size of "

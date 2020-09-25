@@ -108,9 +108,9 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t getUDPPortNumber2() const;
     /* [Eiger][Jungfrau] */
     void setUDPPortNumber2(const uint32_t i);
-    int64_t getUDPSocketBufferSize() const;
-    void setUDPSocketBufferSize(const int64_t s);
-    int64_t getActualUDPSocketBufferSize() const;
+    int getUDPSocketBufferSize() const;
+    void setUDPSocketBufferSize(const int s);
+    int getActualUDPSocketBufferSize() const;
 
     /**************************************************
      *                                                 *
@@ -302,8 +302,8 @@ class Implementation : private virtual slsDetectorDefs {
     std::array<std::string, MAX_NUMBER_OF_LISTENING_THREADS> eth;
     std::array<uint32_t, MAX_NUMBER_OF_LISTENING_THREADS> udpPortNum{
         {DEFAULT_UDP_PORTNO, DEFAULT_UDP_PORTNO + 1}};
-    int64_t udpSocketBufferSize{0};
-    int64_t actualUDPSocketBufferSize{0};
+    int udpSocketBufferSize{0};
+    int actualUDPSocketBufferSize{0};
 
     // zmq parameters
     bool dataStreamEnable{false};

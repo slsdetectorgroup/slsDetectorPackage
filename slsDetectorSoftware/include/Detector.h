@@ -717,17 +717,17 @@ class Detector {
     /** Default: padding enabled. Disabling padding is the fastest */
     void setPartialFramesPadding(bool value, Positions pos = {});
 
-    Result<int64_t> getRxUDPSocketBufferSize(Positions pos = {}) const;
+    Result<int> getRxUDPSocketBufferSize(Positions pos = {}) const;
 
     /** UDP socket buffer size in receiver. Tune rmem_default and rmem_max
-     * accordingly */
-    void setRxUDPSocketBufferSize(int64_t udpsockbufsize, Positions pos = {});
+     * accordingly. Max value is INT_MAX/2. */
+    void setRxUDPSocketBufferSize(int udpsockbufsize, Positions pos = {});
 
     /** TODO:
      * Gets actual udp socket buffer size. Double the size of rx_udpsocksize due
      * to kernel bookkeeping.
      */
-    Result<int64_t> getRxRealUDPSocketBufferSize(Positions pos = {}) const;
+    Result<int> getRxRealUDPSocketBufferSize(Positions pos = {}) const;
 
     Result<bool> getRxLock(Positions pos = {});
 

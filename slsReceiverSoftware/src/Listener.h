@@ -41,9 +41,9 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * @param sm pointer to silent mode
      */
     Listener(int ind, detectorType dtype, Fifo *f, std::atomic<runStatus> *s,
-             uint32_t *portno, std::string *e, uint64_t *nf,
-             int64_t *us, int64_t *as, uint32_t *fpf, frameDiscardPolicy *fdp,
-             bool *act, bool *depaden, bool *sm);
+             uint32_t *portno, std::string *e, uint64_t *nf, int *us, int *as,
+             uint32_t *fpf, frameDiscardPolicy *fdp, bool *act, bool *depaden,
+             bool *sm);
 
     /**
      * Destructor
@@ -98,7 +98,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * to set & get actual buffer size
      * @param s UDP socket buffer size to be set
      */
-    void CreateDummySocketForUDPSocketBufferSize(int64_t s);
+    void CreateDummySocketForUDPSocketBufferSize(int s);
 
     /**
      * Set hard coded (calculated but not from detector) row and column
@@ -173,10 +173,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     uint64_t *numImages;
 
     /** UDP Socket Buffer Size */
-    int64_t *udpSocketBufferSize;
+    int *udpSocketBufferSize;
 
     /** actual UDP Socket Buffer Size (double due to kernel bookkeeping) */
-    int64_t *actualUDPSocketBufferSize;
+    int *actualUDPSocketBufferSize;
 
     /** frames per file */
     uint32_t *framesPerFile;

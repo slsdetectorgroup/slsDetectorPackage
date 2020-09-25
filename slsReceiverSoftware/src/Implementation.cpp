@@ -946,12 +946,14 @@ void Implementation::setUDPPortNumber2(const uint32_t i) {
     LOG(logINFO) << "UDP Port Number[1]: " << udpPortNum[1];
 }
 
-int64_t Implementation::getUDPSocketBufferSize() const {
+int Implementation::getUDPSocketBufferSize() const {
     return udpSocketBufferSize;
 }
 
-void Implementation::setUDPSocketBufferSize(const int64_t s) {
-    int64_t size = (s == 0) ? udpSocketBufferSize : s;
+void Implementation::setUDPSocketBufferSize(const int s) {
+    // custom setup is not 0 (must complain if set up didnt work)
+    // testing default setup at startup, argument is 0 to use default values
+    int size = (s == 0) ? udpSocketBufferSize : s;
     size_t listSize = listener.size();
     if (myDetectorType == JUNGFRAU && (int)listSize != numUDPInterfaces) {
         throw sls::RuntimeError(
@@ -959,12 +961,17 @@ void Implementation::setUDPSocketBufferSize(const int64_t s) {
             " do not match listener size " + std::to_string(listSize));
     }
 
-    for (unsigned int i = 0; i < listSize; ++i) {
-        listener[i]->CreateDummySocketForUDPSocketBufferSize(size);
+    for (auto &l : listener) {
+        l->CreateDummySocketForUDPSocketBufferSize(size);
+    }
+    // custom and didnt set, throw error
+    if (s != 0 && udpSocketBufferSize != s) {
+        throw sls::RuntimeError("Could not set udp socket buffer size. (No "
+                                "CAP_NET_ADMIN privileges?)");
     }
 }
 
-int64_t Implementation::getActualUDPSocketBufferSize() const {
+int Implementation::getActualUDPSocketBufferSize() const {
     return actualUDPSocketBufferSize;
 }
 

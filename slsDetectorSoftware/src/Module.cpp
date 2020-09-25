@@ -844,17 +844,17 @@ void Module::setPartialFramesPadding(bool padding) {
     sendToReceiver(F_SET_RECEIVER_PADDING, static_cast<int>(padding), nullptr);
 }
 
-int64_t Module::getReceiverUDPSocketBufferSize() const {
-    int64_t arg = GET_FLAG;
-    return sendToReceiver<int64_t>(F_RECEIVER_UDP_SOCK_BUF_SIZE, arg);
+int Module::getReceiverUDPSocketBufferSize() const {
+    int arg = GET_FLAG;
+    return sendToReceiver<int>(F_RECEIVER_UDP_SOCK_BUF_SIZE, arg);
 }
 
-int64_t Module::getReceiverRealUDPSocketBufferSize() const {
-    return sendToReceiver<int64_t>(F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE);
+int Module::getReceiverRealUDPSocketBufferSize() const {
+    return sendToReceiver<int>(F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE);
 }
 
-void Module::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
-    sendToReceiver<int64_t>(F_RECEIVER_UDP_SOCK_BUF_SIZE, udpsockbufsize);
+void Module::setReceiverUDPSocketBufferSize(int udpsockbufsize) {
+    sendToReceiver<int>(F_RECEIVER_UDP_SOCK_BUF_SIZE, udpsockbufsize);
 }
 
 bool Module::getReceiverLock() const {

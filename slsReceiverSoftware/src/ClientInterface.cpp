@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <limits.h>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -1138,15 +1139,22 @@ int ClientInterface::get_additional_json_header(Interface &socket) {
 }
 
 int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
-    auto index = socket.Receive<int64_t>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting UDP Socket Buffer size: " << index;
-        impl()->setUDPSocketBufferSize(index);
+    auto size = socket.Receive<int>();
+    if (size == 0) {
+        throw RuntimeError("Receiver socket buffer size must be > 0.");
     }
-    int64_t retval = impl()->getUDPSocketBufferSize();
-    if (index != 0)
-        validate(index, retval,
+    if (size > 0) {
+        verifyIdle(socket);
+        if (size > INT_MAX / 2) {
+            throw RuntimeError(
+                "Receiver socket buffer size exceeded max (INT_MAX/2)");
+        }
+        LOG(logDEBUG1) << "Setting UDP Socket Buffer size: " << size;
+        impl()->setUDPSocketBufferSize(size);
+    }
+    int retval = impl()->getUDPSocketBufferSize();
+    if (size != 0)
+        validate(size, retval,
                  "set udp socket buffer size (No CAP_NET_ADMIN privileges?)",
                  DEC);
     LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;

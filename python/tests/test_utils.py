@@ -321,3 +321,16 @@ def test_add_argument_before_dict():
     assert add_argument_before("another", {9: "string"}) == ({
         9: ("another", "string")
     }, )
+
+
+def test_add_argument_after():
+    assert add_argument_after("a", 5) == ("a", 5)
+    assert add_argument_after(("a", "b"), 3) == ("a", "b", 3)
+
+def test_add_argument_after_dict():
+    assert add_argument_after({0: "a"}, "b") == ({0: ("a", "b")},)
+    assert add_argument_after({0: ("a", 1)}, True) == ({0: ("a", 1, True)}, )
+
+def test_merge_args():
+    assert merge_args("a", "b", 1) == ("a", "b", 1)
+    assert merge_args({0:1, 1:2}, "a") == ({0: (1, "a"), 1: (2, "a")},)

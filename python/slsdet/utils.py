@@ -206,4 +206,46 @@ def add_argument_before(a, args):
                 ret[key] = (a, value)
         return (ret,)
     return a, args
-    
+
+def add_argument_after(args, a):
+    """Add a before the other arguments. Also works with
+    dict that holds args to several modules. Always puts the
+    args in a dict to be compatible with set_using_dict"""
+    if isinstance(args, tuple):
+        return (*args, a)
+    elif isinstance(args, dict):
+        ret = {}
+        for key, value in args.items():
+            if isinstance(value, tuple):
+                ret[key] = (*value, a)
+            else:
+                ret[key] = (value, a)
+        return (ret,)
+    return args, a
+
+def pop_dict(args):
+    for i,a in enumerate(args):
+        if isinstance(a, dict):
+            return args.pop(i), i
+
+
+def merge_args(*args):
+    #find and pop dict since it holds the arguments
+    n_dict = sum(isinstance(a, dict) for a in args)
+    if n_dict == 0:
+        return args
+
+    elif n_dict == 1:
+        args = [a for a in args] #these are the args to be added
+        values,pos = pop_dict(args)
+        ret = {}
+        for k, v in values.items():
+            if not isinstance(v, tuple):
+                v = (v,)
+            items = [a for a in args]
+            items.insert(pos, *v)
+            ret[k] = tuple(items)
+        return (ret,)
+
+    else:
+        raise ValueError("Multiple dictionaries passes cannot merge args")

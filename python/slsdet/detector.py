@@ -2657,10 +2657,7 @@ class Detector(CppDetectorApi):
 
     @patlimits.setter
     def patlimits(self, args):
-        if isinstance(args, tuple):
-            args = (-1, *args)
-        elif isinstance(args, dict):
-            args = ({k:(-1, *v) for k,v in args.items()},)
+        args = ut.merge_args(-1, args)
         ut.set_using_dict(self.setPatternLoopAddresses, *args)
 
     @property
@@ -2714,7 +2711,7 @@ class Detector(CppDetectorApi):
 
     @patwait0.setter
     def patwait0(self, addr):
-        addr = ut.add_argument_before(0, addr)
+        addr = ut.merge_args(0, addr)
         ut.set_using_dict(self.setPatternWaitAddr, *addr)
 
     @property
@@ -2734,7 +2731,7 @@ class Detector(CppDetectorApi):
 
     @patwait1.setter
     def patwait1(self, addr):
-        addr = ut.add_argument_before(1, addr)
+        addr = ut.merge_args(1, addr)
         ut.set_using_dict(self.setPatternWaitAddr, *addr)
 
     @property
@@ -2754,37 +2751,45 @@ class Detector(CppDetectorApi):
 
     @patwait2.setter
     def patwait2(self, addr):
-        addr = ut.add_argument_before(2, addr)
+        addr = ut.merge_args(2, addr)
         ut.set_using_dict(self.setPatternWaitAddr, *addr)
 
     @property
+    @element
     def patwaittime0(self):
         """[Ctb][Moench][Mythen3] Wait 0 time in clock cycles."""
-        return element_if_equal(self.getPatternWaitTime(0))
+        return self.getPatternWaitTime(0)
 
     @patwaittime0.setter
     def patwaittime0(self, nclk):
-        self.setPatternWaitTime(0, nclk)
+        nclk = ut.merge_args(0, nclk)
+        ut.set_using_dict(self.setPatternWaitTime, *nclk)
 
     @property
+    @element
     def patwaittime1(self):
         """[Ctb][Moench][Mythen3] Wait 1 time in clock cycles."""
-        return element_if_equal(self.getPatternWaitTime(1))
+        return self.getPatternWaitTime(1)
 
     @patwaittime1.setter
     def patwaittime1(self, nclk):
-        self.setPatternWaitTime(1, nclk)
+        nclk = ut.merge_args(1, nclk)
+        ut.set_using_dict(self.setPatternWaitTime, *nclk)
 
     @property
+    @element
     def patwaittime2(self):
         """[Ctb][Moench][Mythen3] Wait 2 time in clock cycles."""
-        return element_if_equal(self.getPatternWaitTime(2))
+        return self.getPatternWaitTime(2)
 
     @patwaittime2.setter
     def patwaittime2(self, nclk):
-        self.setPatternWaitTime(2, nclk)
+        nclk = ut.merge_args(2, nclk)
+        ut.set_using_dict(self.setPatternWaitTime, *nclk)
+
 
     @property
+    @element
     def patloop0(self):
         """[Ctb][Moench][Mythen3] Limits (start and stop address) of loop 0.
         
@@ -2796,13 +2801,15 @@ class Detector(CppDetectorApi):
         >>> [hex(l) for l in d.patloop0]
         ['0x0', '0x18c']
         """
-        return element_if_equal(self.getPatternLoopAddresses(0))
+        return self.getPatternLoopAddresses(0)
 
     @patloop0.setter
     def patloop0(self, addr):
-        self.setPatternLoopAddresses(0, addr[0], addr[1])
+        addr = ut.merge_args(0, addr)
+        ut.set_using_dict(self.setPatternLoopAddresses, *addr)
 
     @property
+    @element
     def patloop1(self):
         """[Ctb][Moench][Mythen3] Limits (start and stop address) of loop 1.
         
@@ -2815,13 +2822,15 @@ class Detector(CppDetectorApi):
         ['0x0', '0x18c']
         
         """
-        return element_if_equal(self.getPatternLoopAddresses(1))
+        return self.getPatternLoopAddresses(1)
 
     @patloop1.setter
     def patloop1(self, addr):
-        self.setPatternLoopAddresses(1, addr[0], addr[1])
+        addr = ut.merge_args(1, addr)
+        ut.set_using_dict(self.setPatternLoopAddresses, *addr)
 
     @property
+    @element
     def patloop2(self):
         """[Ctb][Moench][Mythen3] Limits (start and stop address) of loop 2.
         
@@ -2834,38 +2843,45 @@ class Detector(CppDetectorApi):
         ['0x0', '0x18c']
         
         """
-        return element_if_equal(self.getPatternLoopAddresses(2))
+        return self.getPatternLoopAddresses(2)
 
     @patloop2.setter
     def patloop2(self, addr):
-        self.setPatternLoopAddresses(2, addr[0], addr[1])
+        addr = ut.merge_args(2, addr)
+        ut.set_using_dict(self.setPatternLoopAddresses, *addr)
 
     @property
+    @element
     def patnloop0(self):
         """[Ctb][Moench][Mythen3] Number of cycles of loop 0."""
-        return element_if_equal(self.getPatternLoopCycles(0))
+        return self.getPatternLoopCycles(0)
 
     @patnloop0.setter
     def patnloop0(self, n):
-        self.setPatternLoopCycles(0, n)
+        n = ut.merge_args(0, n)
+        ut.set_using_dict(self.setPatternLoopCycles, *n)
 
     @property
+    @element
     def patnloop1(self):
         """[Ctb][Moench][Mythen3] Number of cycles of loop 1."""
-        return element_if_equal(self.getPatternLoopCycles(1))
+        return self.getPatternLoopCycles(1)
 
     @patnloop1.setter
     def patnloop1(self, n):
-        self.setPatternLoopCycles(1, n)
+        n = ut.merge_args(1, n)
+        ut.set_using_dict(self.setPatternLoopCycles, *n)
 
     @property
+    @element
     def patnloop2(self):
         """[Ctb][Moench][Mythen3] Number of cycles of loop 2."""
-        return element_if_equal(self.getPatternLoopCycles(2))
+        return self.getPatternLoopCycles(2)
 
     @patnloop2.setter
     def patnloop2(self, n):
-        self.setPatternLoopCycles(2, n)
+        n = ut.merge_args(2, n)
+        ut.set_using_dict(self.setPatternLoopCycles, *n)
 
     @property
     @element
@@ -2875,7 +2891,8 @@ class Detector(CppDetectorApi):
 
     @v_a.setter
     def v_a(self, value):
-        self.setDAC(dacIndex.V_POWER_A, value, True)
+        value = ut.merge_args(dacIndex.V_POWER_A, value, True)
+        ut.set_using_dict(self.setDAC, *value)
 
     @property
     @element
@@ -2885,7 +2902,8 @@ class Detector(CppDetectorApi):
 
     @v_b.setter
     def v_b(self, value):
-        self.setDAC(dacIndex.V_POWER_B, value, True)
+        value = ut.merge_args(dacIndex.V_POWER_B, value, True)
+        ut.set_using_dict(self.setDAC, *value)
 
     @property
     @element
@@ -2895,7 +2913,8 @@ class Detector(CppDetectorApi):
 
     @v_c.setter
     def v_c(self, value):
-        self.setDAC(dacIndex.V_POWER_C, value, True)
+        value = ut.merge_args(dacIndex.V_POWER_C, value, True)
+        ut.set_using_dict(self.setDAC, *value)
 
     @property
     @element
@@ -2905,7 +2924,8 @@ class Detector(CppDetectorApi):
 
     @v_d.setter
     def v_d(self, value):
-        self.setDAC(dacIndex.V_POWER_D, value, True)
+        value = ut.merge_args(dacIndex.V_POWER_D, value, True)
+        ut.set_using_dict(self.setDAC, *value)
 
     @property
     @element
@@ -2919,7 +2939,8 @@ class Detector(CppDetectorApi):
 
     @v_io.setter
     def v_io(self, value):
-        self.setDAC(dacIndex.V_POWER_IO, value, True)
+        value = ut.merge_args(dacIndex.V_POWER_IO, value, True)
+        ut.set_using_dict(self.setDAC, *value)
 
     @property
     @element

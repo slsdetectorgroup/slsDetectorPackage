@@ -21,14 +21,12 @@ const std::string Listener::TypeName = "Listener";
 
 Listener::Listener(int ind, detectorType dtype, Fifo *f,
                    std::atomic<runStatus> *s, uint32_t *portno, std::string *e,
-                   uint64_t *nf, int64_t *us, int64_t *as,
-                   uint32_t *fpf, frameDiscardPolicy *fdp, bool *act,
-                   bool *depaden, bool *sm)
+                   uint64_t *nf, int *us, int *as, uint32_t *fpf,
+                   frameDiscardPolicy *fdp, bool *act, bool *depaden, bool *sm)
     : ThreadObject(ind, TypeName), fifo(f), myDetectorType(dtype), status(s),
-      udpPortNumber(portno), eth(e), numImages(nf),
-      udpSocketBufferSize(us), actualUDPSocketBufferSize(as),
-      framesPerFile(fpf), frameDiscardMode(fdp), activated(act),
-      deactivatedPaddingEnable(depaden), silentMode(sm) {
+      udpPortNumber(portno), eth(e), numImages(nf), udpSocketBufferSize(us),
+      actualUDPSocketBufferSize(as), framesPerFile(fpf), frameDiscardMode(fdp),
+      activated(act), deactivatedPaddingEnable(depaden), silentMode(sm) {
     LOG(logDEBUG) << "Listener " << ind << " created";
 }
 
@@ -142,7 +140,7 @@ void Listener::ShutDownUDPSocket() {
     }
 }
 
-void Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
+void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
     LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port "
                  << *udpPortNumber;
 
@@ -151,7 +149,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
         return;
     }
 
-    int64_t temp = *udpSocketBufferSize;
+    int temp = *udpSocketBufferSize;
     *udpSocketBufferSize = s;
 
     // if eth is mistaken with ip address

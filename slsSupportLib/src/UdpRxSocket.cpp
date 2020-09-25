@@ -14,7 +14,7 @@
 namespace sls {
 
 UdpRxSocket::UdpRxSocket(int port, ssize_t packet_size, const char *hostname,
-                         size_t kernel_buffer_size)
+                         int kernel_buffer_size)
     : packet_size_(packet_size) {
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -73,15 +73,15 @@ ssize_t UdpRxSocket::ReceiveDataOnly(char *dst) noexcept {
     return r;
 }
 
-size_t UdpRxSocket::getBufferSize() const {
-    size_t ret = 0;
+int UdpRxSocket::getBufferSize() const {
+    int ret = 0;
     socklen_t optlen = sizeof(ret);
     if (getsockopt(sockfd_, SOL_SOCKET, SO_RCVBUF, &ret, &optlen) == -1)
         throw RuntimeError("Could not get socket buffer size");
     return ret;
 }
 
-void UdpRxSocket::setBufferSize(ssize_t size) {
+void UdpRxSocket::setBufferSize(int size) {
     if (setsockopt(sockfd_, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size)))
         throw RuntimeError("Could not set socket buffer size");
 }

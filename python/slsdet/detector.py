@@ -1298,7 +1298,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def rx_udpsocksize(self):
-        """UDP socket buffer size in receiver. Tune rmem_default and rmem_max accordingly."""
+        """UDP socket buffer size in receiver. Tune rmem_default and rmem_max accordingly. Max size: INT_MAX/2."""
         return self.getRxUDPSocketBufferSize()
 
     @rx_udpsocksize.setter

@@ -236,9 +236,9 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverFramesDiscardPolicy(frameDiscardPolicy f);
     bool getPartialFramesPadding() const;
     void setPartialFramesPadding(bool padding);
-    int64_t getReceiverUDPSocketBufferSize() const;
-    int64_t getReceiverRealUDPSocketBufferSize() const;
-    void setReceiverUDPSocketBufferSize(int64_t udpsockbufsize);
+    int getReceiverUDPSocketBufferSize() const;
+    int getReceiverRealUDPSocketBufferSize() const;
+    void setReceiverUDPSocketBufferSize(int udpsockbufsize);
     bool getReceiverLock() const;
     void setReceiverLock(bool lock);
     sls::IpAddr getReceiverLastClientIP() const;

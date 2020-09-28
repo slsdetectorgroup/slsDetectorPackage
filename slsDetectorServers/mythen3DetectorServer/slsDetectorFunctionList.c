@@ -1592,7 +1592,14 @@ int enableTenGigabitEthernet(int val) {
         else {
             bus_w(addr, bus_r(addr) & (~PKT_CONFIG_1G_INTERFACE_MSK));
         }
-        updatePacketizing();
+        // stop server does not know dr in virtual mode
+#ifdef VIRTUAL
+        if (isControlServer) {
+#endif
+            updatePacketizing();
+#ifdef VIRTUAL
+        }
+#endif
     }
     int oneG = ((bus_r(addr) & PKT_CONFIG_1G_INTERFACE_MSK) >>
                 PKT_CONFIG_1G_INTERFACE_OFST);

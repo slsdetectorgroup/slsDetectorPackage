@@ -116,6 +116,9 @@ qDetectorMain::qDetectorMain(int multiId, const std::string &fname,
 
 qDetectorMain::~qDetectorMain() {
     disconnect(tabs, SIGNAL(currentChanged(int)), this, SLOT(Refresh(int)));
+    for (int i = 0; i < NumberOfTabs; ++i) {
+        delete scroll[i];
+    }
 }
 
 void qDetectorMain::SetUpWidgetWindow() {
@@ -141,7 +144,7 @@ void qDetectorMain::SetUpWidgetWindow() {
 
     //	creating the scroll area widgets for the tabs
     for (int i = 0; i < NumberOfTabs; ++i) {
-        scroll[i] = sls::make_unique<QScrollArea>();
+        scroll[i] = new QScrollArea();
         scroll[i]->setFrameShape(QFrame::NoFrame);
     }
     // setting the tab widgets to the scrollareas
@@ -153,13 +156,13 @@ void qDetectorMain::SetUpWidgetWindow() {
     scroll[DEBUGGING]->setWidget(tabDebugging);
     scroll[DEVELOPER]->setWidget(tabDeveloper);
     // inserting all the tabs
-    tabs->insertTab(MEASUREMENT, scroll[MEASUREMENT].get(), "Measurement");
-    tabs->insertTab(DATAOUTPUT, scroll[DATAOUTPUT].get(), "Data Output");
-    tabs->insertTab(PLOT, scroll[PLOT].get(), "Plot");
-    tabs->insertTab(SETTINGS, scroll[SETTINGS].get(), "Settings");
-    tabs->insertTab(ADVANCED, scroll[ADVANCED].get(), "Advanced");
-    tabs->insertTab(DEBUGGING, scroll[DEBUGGING].get(), "Debugging");
-    tabs->insertTab(DEVELOPER, scroll[DEVELOPER].get(), "Developer");
+    tabs->insertTab(MEASUREMENT, scroll[MEASUREMENT], "Measurement");
+    tabs->insertTab(DATAOUTPUT, scroll[DATAOUTPUT], "Data Output");
+    tabs->insertTab(PLOT, scroll[PLOT], "Plot");
+    tabs->insertTab(SETTINGS, scroll[SETTINGS], "Settings");
+    tabs->insertTab(ADVANCED, scroll[ADVANCED], "Advanced");
+    tabs->insertTab(DEBUGGING, scroll[DEBUGGING], "Debugging");
+    tabs->insertTab(DEVELOPER, scroll[DEVELOPER], "Developer");
     // no scroll buttons this way
     tabs->insertTab(MESSAGES, tabMessages, "Terminal");
 

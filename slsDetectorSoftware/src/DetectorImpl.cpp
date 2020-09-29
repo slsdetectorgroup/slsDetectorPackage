@@ -465,8 +465,8 @@ void DetectorImpl::readFrameFromReceiver() {
     }
     bool data = false;
     bool completeImage = false;
-    char *image = nullptr;
-    char *multiframe = nullptr;
+    std::unique_ptr<char[]> image{nullptr};
+    std::unique_ptr<char[]> multiframe{nullptr};
     char *multigappixels = nullptr;
     int multisize = 0;
     // only first message header
@@ -484,9 +484,10 @@ void DetectorImpl::readFrameFromReceiver() {
         // reset data
         data = false;
         if (multiframe != nullptr) {
-            memset(multiframe, 0xFF, multisize);
+            memset(multiframe.get(), 0xFF, multisize);
         }
-        completeImage = true;
+
+        completeImage = (numRunning == (int)zmqSocket.size());
 
         // get each frame
         for (unsigned int isocket = 0; isocket < zmqSocket.size(); ++isocket) {
@@ -503,6 +504,7 @@ void DetectorImpl::readFrameFromReceiver() {
                         // parse error, version error or end of acquisition for
                         // socket
                         runningList[isocket] = false;
+                        completeImage = false;
                         --numRunning;
                         continue;
                     }
@@ -512,9 +514,9 @@ void DetectorImpl::readFrameFromReceiver() {
                         // allocate
                         size = zHeader.imageSize;
                         multisize = size * zmqSocket.size();
-                        image = new char[size];
-                        multiframe = new char[multisize];
-                        memset(multiframe, 0xFF, multisize);
+                        image = sls::make_unique<char[]>(size);
+                        multiframe = sls::make_unique<char[]>(multisize);
+                        memset(multiframe.get(), 0xFF, multisize);
                         // dynamic range
                         dynamicRange = zHeader.dynamicRange;
                         bytesPerPixel = (float)dynamicRange / 8;
@@ -576,7 +578,7 @@ void DetectorImpl::readFrameFromReceiver() {
 
                 // DATA
                 data = true;
-                zmqSocket[isocket]->ReceiveData(isocket, image, size);
+                zmqSocket[isocket]->ReceiveData(isocket, image.get(), size);
 
                 // creating multi image
                 {
@@ -596,18 +598,18 @@ void DetectorImpl::readFrameFromReceiver() {
 
                     if (eiger && (flippedDataX != 0U)) {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
-                            memcpy((multiframe) +
+                            memcpy((multiframe.get()) +
                                        ((yoffset + (nPixelsY - 1 - i)) *
                                         rowoffset) +
                                        xoffset,
-                                   image + (i * singledetrowoffset),
+                                   image.get() + (i * singledetrowoffset),
                                    singledetrowoffset);
                         }
                     } else {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
-                            memcpy((multiframe) + ((yoffset + i) * rowoffset) +
-                                       xoffset,
-                                   image + (i * singledetrowoffset),
+                            memcpy((multiframe.get()) +
+                                       ((yoffset + i) * rowoffset) + xoffset,
+                                   image.get() + (i * singledetrowoffset),
                                    singledetrowoffset);
                         }
                     }
@@ -623,12 +625,13 @@ void DetectorImpl::readFrameFromReceiver() {
 
         // send data to callback
         if (data) {
-            char *callbackImage = multiframe;
+            char *callbackImage = multiframe.get();
             int imagesize = multisize;
 
             if (gapPixels) {
-                int n = InsertGapPixels(multiframe, multigappixels, quadEnable,
-                                        dynamicRange, nDetPixelsX, nDetPixelsY);
+                int n = InsertGapPixels(multiframe.get(), multigappixels,
+                                        quadEnable, dynamicRange, nDetPixelsX,
+                                        nDetPixelsY);
                 callbackImage = multigappixels;
                 imagesize = n;
             }
@@ -659,8 +662,6 @@ void DetectorImpl::readFrameFromReceiver() {
     }
 
     // free resources
-    delete[] image;
-    delete[] multiframe;
     delete[] multigappixels;
 }
 

@@ -439,6 +439,9 @@ void setupDetector() {
     setInitialExtSignals();
     // 10G UDP
     enableTenGigabitEthernet(1);
+#ifdef VIRTUAL
+    enableTenGigabitEthernet(0);
+#endif
 
     // check module type attached if not in debug mode
     {

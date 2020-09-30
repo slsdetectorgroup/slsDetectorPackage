@@ -85,6 +85,7 @@ We have three different packages available:
     conda config --set channel_priority strict
 
     #cerate an environment with our library, then activate
+    #replace 2020.07.20.dev0 with the required tag
     conda create -n myenv slsdetlib=2020.07.23.dev0
     conda activate myenv
 

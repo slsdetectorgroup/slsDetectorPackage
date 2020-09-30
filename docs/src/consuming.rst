@@ -6,7 +6,7 @@ slsDetectorPackage there are a few different ways to
 consume our package. The recommended way is to use one of the 
 CMake approaches. 
 
-
+One can test with :ref:`detector simulators<Virtual Detector Servers>` before testing the API with a real detector or when a real detector is not at hand.
 
 CMake: slsDetectorPackage as submodule in your project
 ---------------------------------------

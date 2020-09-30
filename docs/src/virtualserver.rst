@@ -1,0 +1,152 @@
+.. _Virtual Detector Servers:
+Detector Simulators
+===================
+
+Compilation
+-----------
+
+* Using CMake, turn on the option 
+    .. code-block:: bash  
+        
+        SLS_USE_SIMULATOR=ON
+
+* Using cmk.sh script,
+     .. code-block:: bash  
+        
+        ./cmk.sh -b**s**j9 #option s is for simulator
+
+
+Binaries
+^^^^^^^^
+    .. code-block:: bash  
+
+        eigerDetectorServerMaster_virtual
+        eigerDetectorServerSlaveTop_virtual
+        eigerDetectorServerSlaveBottom_virtual
+        jungfrauDetectorServer_virtual
+        gotthardDetectorServer_virtual
+        gotthard2DetectorServer_virtual
+        mythen3DetectorServer_virtual
+        moenchDetectorServer_virtual
+        ctbDetectorServer_virtual
+
+
+Arguments
+---------
+
+The arguments are the same as the normal server.
+    .. code-block:: bash  
+
+        Possible arguments are:
+        -v, --version            : Software version
+        -p, --port <port>        : TCP communication port with client. 
+        -g, --nomodule           : [Mythen3][Gotthard2] Generic or No Module mode. Skips detector type checks.
+        -f, --phaseshift <value> : [Gotthard] only. Sets phase shift. 
+        -d, --devel              : Developer mode. Skips firmware checks. 
+        -u, --update             : Update mode. Skips firmware checks and initial detector setup. 
+        -s, --stopserver         : Stop server. Do not use as it is created by control server 
+
+When using multiple modules, the most important one for the virtual server is to have different ports for each virtual server.
+    .. code-block:: bash  
+
+        # will start control server at port 1912 and stop server at port 1913
+        mythen3DetectorServer --port 1912 &
+
+        # will start second control server at port 1914 and stop server at port 1915
+        mythen3DetectorServer --port 1914 &
+
+
+Client
+------
+
+.. code-block:: bash  
+
+    # hostname should include the port (if not default)
+    sls_detector_put hostname localhost:1912+localhost:1914+
+
+    # or use virtual command, instead of hostname
+    # connects to 2 servers at localhost 
+    # (control servers: 1912, 1914; stop servers: 1913, 1915)
+    sls_detector_put virtual 2 1912 
+
+Use the same in the config file.
+
+
+Sample Config file
+^^^^^^^^^^^^^^^^^^
+
+For a Single Module
+    .. code-block:: bash  
+
+        # connects to control port 1912
+        hostname localhost:1912+
+
+        # connects to receiver at ports 2012
+        rx_hostname mpc1922:2012+
+
+        # sets destination udp ports (not needed, default is 50001)
+        udp_dstport 50012
+
+        # source udp ips must be same subnet at destintaion udp ips
+        udp_srcip 192.168.1.112
+
+        # destination udp ip picked up from rx_hostname (if auto)
+        udp_dstip auto
+
+For Multiple Modules
+    .. code-block:: bash  
+
+        # connects to control ports 1912, 1914 and stop ports 1913, 1915
+        virtual 2 1912
+        # or hostname localhost:1912+localhost:1914+
+
+        # connects to receivers at ports 2012 and 2014
+        rx_hostname mpc1922:2012+mpc1922:2014+
+
+        # sets differernt destination udp ports
+        0:udp_dstport 50012
+        1:udp_dstport 50014
+
+        # source udp ips must be same subnet at destintaion udp ips
+        0:udp_srcip 192.168.1.112
+        1:udp_srcip 192.168.1.114
+
+        # destination udp ip picked up from rx_hostname (if auto)
+        udp_dstip auto
+
+
+Receivers
+----------
+Same as if you would use an actual detector
+
+For a Single Module
+    .. code-block:: bash  
+
+        slsReceiver -t2012
+
+
+For Multiple Modules
+    .. code-block:: bash  
+
+        # slsMultiReceiver [starting port] [number of receivers] [print each frame header for debugging]
+        slsMultiReceiver 2012 2 0 
+
+Gui
+----
+| Same as if you would use an actual detector.
+| Compile with SLS_USE_GUI=ON in cmake or -g option in cmk.sh script.
+
+.. code-block:: bash  
+
+    slsDetectorGui
+
+Limitations
+-----------
+
+#. Data coming out of virtual server is fake. Value at each pixel/ channel is incremented by 1.
+
+#. A stop will stop the virtual acquisition only at the start of every new frame.
+
+#. Triggers are counted as number of virtual frames. trigger command to send a software trigger (Mythen3 & Eiger) is not implemented in virtual server.
+
+#. firmware version and serial number will give 0.

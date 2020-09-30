@@ -48,6 +48,8 @@ Build using cmk.sh script
 -------------------------
 .. code-block:: bash
 
+    The binaries are generated in slsDetectorPackage/build/bin directory.
+
     # new build and make with 9 parallel threads
     ./cmk.sh -cbj9
 

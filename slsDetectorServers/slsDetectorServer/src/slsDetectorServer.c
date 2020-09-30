@@ -61,7 +61,8 @@ int main(int argc, char *argv[]) {
         "\t-d, --devel              : Developer mode. Skips firmware checks. \n"
         "\t-u, --update             : Update mode. Skips firmware checks and "
         "initial detector setup. \n"
-        "\t-s, --stopserver         : Stop server. Do not use as created by "
+        "\t-s, --stopserver         : Stop server. Do not use as it is created "
+        "by "
         "control server \n\n",
         argv[0]);
 

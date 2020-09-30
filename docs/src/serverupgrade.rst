@@ -1,10 +1,15 @@
-Server Upgrade
-=================
+Detector Server Upgrade
+=======================
 
 
 
 Eiger
 -------------
+
+
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/eigerDetectorServer/bin/eigerDetectorServer_developer
+
 
 #. Kill old server and copy new server
     .. code-block:: bash
@@ -34,6 +39,10 @@ Eiger
 Jungfrau
 -------------
 
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/jungfrauDetectorServer/bin/jungfrauDetectorServer_developer
+
+#. Install tftp and copy detector server binary to tftp folder
 #. Program from console (only from 5.0.0-rc1)
     .. code-block:: bash
 
@@ -43,6 +52,11 @@ Jungfrau
 
 Gotthard
 ---------
+
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/gotthardDetectorServer/bin/gotthardDetectorServer_developer
+
+#. Install tftp and copy detector server binary to tftp folder
 #. Program from console (only from 5.0.0-rc1)
     .. code-block:: bash
 
@@ -54,6 +68,10 @@ Gotthard
 Mythen3
 -------
 
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/mythen3DetectorServer/bin/mythen3DetectorServer_developer
+
+#. Install tftp and copy detector server binary to tftp folder
 #. Program from console (only from 5.0.0-rc1)
     .. code-block:: bash
 
@@ -63,6 +81,11 @@ Mythen3
 
 Gotthard2
 ----------
+
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/gotthard2DetectorServer/bin/gotthard2DetectorServer_developer
+
+#. Install tftp and copy detector server binary to tftp folder
 #. Program from console (only from 5.0.0-rc1)
     .. code-block:: bash
 
@@ -72,6 +95,11 @@ Gotthard2
 
 Moench
 ------
+
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/moenchDetectorServer/bin/moenchDetectorServer_developer
+
+#. Install tftp and copy detector server binary to tftp folder
 #. Program from console (only from 5.0.0-rc1)
     .. code-block:: bash
 
@@ -81,6 +109,11 @@ Moench
 
 Ctb
 ---
+
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/ctbDetectorServer/bin/ctbDetectorServer_developer
+
+#. Install tftp and copy detector server binary to tftp folder
 #. Program from console (only from 5.0.0-rc1)
     .. code-block:: bash
 

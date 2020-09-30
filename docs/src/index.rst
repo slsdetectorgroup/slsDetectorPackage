@@ -51,15 +51,17 @@ Welcome to slsDetectorPackage's documentation!
     ToString
 
 .. toctree::
-    :caption: Servers
+    :caption: Firmware
+
+    firmware 
+
+.. toctree::
+    :caption: Detector Server
 
     servers
     serverupgrade
 
-.. toctree::
-    :caption: Firmware
 
-    firmware 
 
 .. Indices and tables
 .. ==================

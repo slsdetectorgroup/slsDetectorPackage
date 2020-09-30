@@ -22,6 +22,11 @@ Compatibility
 `Older versions <https://www.psi.ch/en/detectors/latest-installation>`_
 
 
+Corrsponding Detector Server 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/eigerDetectorServer/bin/eigerDetectorServer_developer
+
 Upgrade
 ^^^^^^^^
 #. Tftp must be already installed on your pc to use the bcp executable.
@@ -116,6 +121,12 @@ Compatibility
 `Older versions <https://www.psi.ch/en/detectors/latest-installation>`_
 
 
+Corrsponding Detector Server 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/jungfrauDetectorServer/bin/jungfrauDetectorServer_developer
+
+
 Upgrade (from v4.x.x)
 ^^^^^^^^^^^^^^^^^^^^
 #. Tftp must be installed on pc.
@@ -153,7 +164,7 @@ Upgrade (from v4.x.x)
         sls_detector_put hostname bchipxxx
         sls_detector_put programfpga xxx.pof
 
-#. After programming, kill update server using Ctrl + C.
+#. After programming, kill 'update server' using Ctrl + C in server console.
 
 #. Enable server respawning if needed
     .. code-block:: bash
@@ -200,10 +211,14 @@ Compatibility
 
         Minimum compatible version  : 11.01.2013
         Latest compatible version   : 08.02.2018 (50um and 25um Master)
-                                  09.02.2018 (25 um Slave)  
+                                      09.02.2018 (25 um Slave)  
     
 `Older versions <https://www.psi.ch/en/detectors/latest-installation>`_
 
+Corrsponding Detector Server 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/gotthardDetectorServer/bin/gotthardDetectorServer_developer
 
 Upgrade
 ^^^^^^^^
@@ -243,6 +258,10 @@ Compatibility
         Minimum compatible version : 25.09.2020
         Latest compatible version  : 25.09.2020
     
+Corrsponding Detector Server 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/mythen3DetectorServer/bin/mythen3DetectorServer_developer
 
 Upgrade (from v5.0.0-rc1)
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -276,6 +295,10 @@ Compatibility
         Minimum compatible version : 25.09.2020
         Latest compatible version  : 25.09.2020
     
+Corrsponding Detector Server 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/gotthard2DetectorServer/bin/gotthard2DetectorServer_developer
 
 Upgrade (from v5.0.0-rc1)
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -309,6 +332,10 @@ Compatibility
         Minimum compatible version : 02.03.2020
         Latest compatible version  : 02.03.2020 
     
+Corrsponding Detector Server 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/moenchDetectorServer/bin/moenchDetectorServer_developer
 
 Upgrade (from v5.0.0-rc1)
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -341,6 +368,10 @@ Compatibility
         Minimum compatible version : 27.11.2019
         Latest compatible version  : 27.11.2019
     
+Corrsponding Detector Server 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| **Location:**
+| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/ctbDetectorServer/bin/ctbDetectorServer_developer
 
 Upgrade (from v5.0.0-rc1)
 ^^^^^^^^^^^^^^^^^^^^^^^^

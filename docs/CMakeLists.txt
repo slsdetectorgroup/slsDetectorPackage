@@ -48,6 +48,7 @@ set(SPHINX_SOURCE_FILES
   src/firmware.rst
   src/serverupgrade.rst
   src/virtualserver.rst
+  src/serverdefaults.rst
   
 )
 

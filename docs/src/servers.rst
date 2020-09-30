@@ -1,108 +1,25 @@
-Default values
-==============================================
+Detector Servers
+=================
 
-Some general intro 
+Detector Servers include:
+   * Control server [default port: 1952]
+      * Almost all client communication.
+   * Stop server [default port: 1953]
+      *  Client requests for detector status, stop acquisition, temperature, advanced read/write registers.
 
-Mythen3
--------------
+When using a blocking acquire command (sls_detector_acquire or Detector::acquire), the control server is blocked until end of acquisition. However, stop server commands could be used in parallel.
 
-.. csv-table:: Default values
-   :file: mythen3.csv
-   :widths: 35, 35
-   :header-rows: 1
+.. _Detector Server Arguments:
+Arguments
+---------
 
-DACS
-^^^^^^^^^^^^^
+    .. code-block:: bash  
 
-.. csv-table:: Mythen3 DACS
-   :file: mythen3-dacs.csv
-   :widths: 35, 35
-   :header-rows: 1
-
-Gotthard2
--------------
-
-.. csv-table:: Default values
-   :file: gotthard2.csv
-   :widths: 35, 35
-   :header-rows: 1
-
-DACS
-^^^^^^^^^^^^^
-
-.. csv-table:: Gotthard 2 DACS
-   :file: gotthard2-dacs.csv
-   :widths: 35, 35
-   :header-rows: 1
-
-Moench
--------------
-
-.. csv-table:: Default values
-   :file: moench.csv
-   :widths: 35, 35
-   :header-rows: 1
-
-DACS
-^^^^^^^^^^^^^
-
-.. csv-table:: Moench DACS
-   :file: moench-dacs.csv
-   :widths: 35, 35
-   :header-rows: 1
-
-Ctb
--------------
-
-.. csv-table:: Default values
-   :file: ctb.csv
-   :widths: 35, 35
-   :header-rows: 1
-
-Eiger
--------------
-
-.. csv-table:: Default values
-   :file: eiger.csv
-   :widths: 35, 35
-   :header-rows: 1
-
-DACS
-^^^^^^^^^^^^^
-
-.. csv-table:: Eiger DACS
-   :file: eiger-dacs.csv
-   :widths: 35, 35
-   :header-rows: 1
-
-Jungfrau
--------------
-
-.. csv-table:: Default values
-   :file: jungfrau.csv
-   :widths: 35, 35
-   :header-rows: 1
-
-DACS
-^^^^^^^^^^^^^
-
-.. csv-table:: Jungfrau DACS
-   :file: jungfrau-dacs.csv
-   :widths: 35, 35
-   :header-rows: 1
-
-Gotthard
--------------
-
-.. csv-table:: Default values
-   :file: gotthard.csv
-   :widths: 35, 35
-   :header-rows: 1
-
-DACS
-^^^^^^^^^^^^^
-
-.. csv-table:: Gotthard DACS
-   :file: gotthard-dacs.csv
-   :widths: 35, 35
-   :header-rows: 1
+        Possible arguments are:
+        -v, --version            : Software version
+        -p, --port <port>        : TCP communication port with client. 
+        -g, --nomodule           : [Mythen3][Gotthard2] Generic or No Module mode. Skips detector type checks.
+        -f, --phaseshift <value> : [Gotthard] only. Sets phase shift. 
+        -d, --devel              : Developer mode. Skips firmware checks. 
+        -u, --update             : Update mode. Skips firmware checks and initial detector setup. 
+        -s, --stopserver         : Stop server. Do not use as it is created by control server 

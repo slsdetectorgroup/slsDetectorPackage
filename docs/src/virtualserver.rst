@@ -34,26 +34,16 @@ Binaries
 Arguments
 ---------
 
-The arguments are the same as the normal server.
-    .. code-block:: bash  
-
-        Possible arguments are:
-        -v, --version            : Software version
-        -p, --port <port>        : TCP communication port with client. 
-        -g, --nomodule           : [Mythen3][Gotthard2] Generic or No Module mode. Skips detector type checks.
-        -f, --phaseshift <value> : [Gotthard] only. Sets phase shift. 
-        -d, --devel              : Developer mode. Skips firmware checks. 
-        -u, --update             : Update mode. Skips firmware checks and initial detector setup. 
-        -s, --stopserver         : Stop server. Do not use as it is created by control server 
+The arguments are the same as the :ref:`normal server arguments<Detector Server Arguments>`.
 
 When using multiple modules, the most important one for the virtual server is to have different ports for each virtual server.
     .. code-block:: bash  
 
         # will start control server at port 1912 and stop server at port 1913
-        mythen3DetectorServer --port 1912 &
+        jungfrauDetectorServer --port 1912 &
 
         # will start second control server at port 1914 and stop server at port 1915
-        mythen3DetectorServer --port 1914 &
+        jungfrauDetectorServer --port 1914 &
 
 
 Client

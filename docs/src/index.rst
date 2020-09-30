@@ -61,6 +61,7 @@ Welcome to slsDetectorPackage's documentation!
     servers
     serverupgrade
     virtualserver
+    serverdefaults
 
 
 

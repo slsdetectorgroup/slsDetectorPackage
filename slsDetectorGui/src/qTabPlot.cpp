@@ -685,6 +685,9 @@ void qTabPlot::SetStreamingFrequency() {
             LOG(logINFO) << "Setting Streaming Frequency to " << freqVal;
             det->setRxZmqFrequency(freqVal);
         } else {
+            LOG(logINFO) << "Setting Streaming Frequency to " << 0
+                         << " (timer)";
+            det->setRxZmqFrequency(0);
             LOG(logINFO) << "Setting Streaming Timer to " << timeVal << " "
                          << qDefs::getUnitString(timeUnit);
             auto timeMS = qDefs::getMSTime(std::make_pair(timeVal, timeUnit));

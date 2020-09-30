@@ -36,7 +36,7 @@ Arguments
 
 The arguments are the same as the :ref:`normal server arguments<Detector Server Arguments>`.
 
-When using multiple modules, the most important one for the virtual server is to have different ports for each virtual server.
+When using multiple modules, use different ports for each virtual server.
     .. code-block:: bash  
 
         # will start control server at port 1912 and stop server at port 1913

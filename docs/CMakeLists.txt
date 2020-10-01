@@ -39,7 +39,7 @@ set(SPHINX_SOURCE_FILES
   src/pyenums.rst
   src/pyexamples.rst
   src/servers.rst
-  src/receiver.rst
+  src/receiver_api.rst
   src/result.rst
   src/type_traits.rst
   src/ToString.rst
@@ -49,6 +49,8 @@ set(SPHINX_SOURCE_FILES
   src/serverupgrade.rst
   src/virtualserver.rst
   src/serverdefaults.rst
+  src/quick_start_guide.rst
+  src/troubleshooting.rst
   
 )
 

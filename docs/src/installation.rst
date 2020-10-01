@@ -16,6 +16,7 @@
     manage the dependencies.
     
 
+.. _Installation:
 
 Installation
 ==============================================

@@ -25,7 +25,7 @@ Welcome to slsDetectorPackage's documentation!
 
     detector
     result
-    receiver
+    receiver_api
     examples
 
 .. toctree::
@@ -42,6 +42,7 @@ Welcome to slsDetectorPackage's documentation!
     :maxdepth: 2
 
     commandline  
+    quick_start_guide
 
 .. toctree::
     :caption: Developer
@@ -52,17 +53,23 @@ Welcome to slsDetectorPackage's documentation!
 
 .. toctree::
     :caption: Firmware
+    :maxdepth: 2
 
     firmware 
 
 .. toctree::
     :caption: Detector Server
+    :maxdepth: 2
 
     servers
     serverupgrade
     virtualserver
     serverdefaults
 
+.. toctree::
+    :caption: Troubleshooting
+
+    troubleshooting
 
 
 .. Indices and tables

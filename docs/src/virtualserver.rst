@@ -91,7 +91,7 @@ For Multiple Modules
         # or hostname localhost:1912+localhost:1914+
 
         # connects to receivers at ports 2012 and 2014
-        rx_hostname mpc1922:2012+mpc1922:2014+
+        rx_hostname mpc1922:2012+mpc1922:2013+
 
         # sets differernt destination udp ports
         0:udp_dstport 50012

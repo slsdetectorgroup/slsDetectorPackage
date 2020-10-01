@@ -112,8 +112,8 @@ Compatibility
     .. code-block:: bash
 
         # PCB v1.0
-        Minimum compatible version : 24.07.2020 (v0.8)
-        Latest compatible version  : 24.07.2020 (v0.8)
+        Minimum compatible version : 24.07.2020 (v1.1)
+        Latest compatible version  : 24.07.2020 (v1.1)
         # PCB v2.0
         Minimum compatible version : 21.07.2020 (v2.1)
         Latest compatible version  : 21.07.2020 (v2.1) 

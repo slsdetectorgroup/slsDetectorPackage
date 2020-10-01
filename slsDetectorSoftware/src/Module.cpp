@@ -419,11 +419,12 @@ void Module::stopAcquisition() {
         }
     } catch (...) {
         // if receiver crashed, stop detector in any case
-        sendToDetectorStop(F_STOP_ACQUISITION);
-        return;
+        zmqstreaming = false;
     }
+
     sendToDetectorStop(F_STOP_ACQUISITION);
     shm()->stoppedFlag = true;
+
     // if rxr streaming and acquisition finished, restream dummy stop packet
     if (zmqstreaming && (s == IDLE) && (r == IDLE)) {
         restreamStopFromReceiver();

@@ -75,6 +75,12 @@ void qTabPlot::SetupWidgetWindow() {
     Select1DPlot(is1d);
     Initialization();
     Refresh();
+
+    // set default timer
+    spinTimeGap->setValue(DEFAULT_STREAMING_TIMER_IN_MS);
+    // set to streaming timer
+    stackedTimeInterval->setCurrentIndex(0);
+    comboFrequency->setCurrentIndex(0);
 }
 
 void qTabPlot::Initialization() {

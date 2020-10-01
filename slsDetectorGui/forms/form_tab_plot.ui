@@ -2191,7 +2191,7 @@ Displays minimum, maximum and sum of values for each plot.
              <double>999999.000000000000000</double>
             </property>
             <property name="value">
-             <double>200.000000000000000</double>
+             <double>500.000000000000000</double>
             </property>
            </widget>
           </item>

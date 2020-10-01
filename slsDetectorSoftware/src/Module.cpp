@@ -411,10 +411,16 @@ void Module::stopAcquisition() {
     // get status before stopping acquisition
     runStatus s = ERROR, r = ERROR;
     bool zmqstreaming = false;
-    if (shm()->useReceiverFlag && getReceiverStreaming()) {
-        zmqstreaming = true;
-        s = getRunStatus();
-        r = getReceiverStatus();
+    try {
+        if (shm()->useReceiverFlag && getReceiverStreaming()) {
+            zmqstreaming = true;
+            s = getRunStatus();
+            r = getReceiverStatus();
+        }
+    } catch (...) {
+        // if receiver crashed, stop detector in any case
+        sendToDetectorStop(F_STOP_ACQUISITION);
+        return;
     }
     sendToDetectorStop(F_STOP_ACQUISITION);
     shm()->stoppedFlag = true;

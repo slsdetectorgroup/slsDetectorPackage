@@ -1650,7 +1650,7 @@ class CmdProxy {
         "zmq\n\tDefault: 1, Means every frame is streamed out. \n\tIf 2, every "
         "second frame is streamed out. \n\tIf 0, streaming timer is the "
         "timeout, after which current frame is sent out. (default timeout is "
-        "200 ms). Usually used for gui purposes.");
+        "500 ms). Usually used for gui purposes.");
 
     INTEGER_COMMAND_VEC_ID(
         rx_zmqstartfnum, getRxZmqStartingFrame, setRxZmqStartingFrame,

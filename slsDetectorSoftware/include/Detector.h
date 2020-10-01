@@ -826,7 +826,7 @@ class Detector {
     /** Frequency of frames streamed out from receiver via zmq. \n Default: 1,
      * Means every frame is streamed out. \n If 2, every second frame is
      * streamed out. \n If 0, streaming timer is the timeout, after which
-     * current frame is sent out. (default timeout is 200 ms). Usually used for
+     * current frame is sent out. (default timeout is 500 ms). Usually used for
      * gui purposes.
      */
     void setRxZmqFrequency(int freq, Positions pos = {});
@@ -835,7 +835,7 @@ class Detector {
 
     /**
      * If receiver streaming frequency is 0 (default), then this timer between
-     * each data stream is set. Default is 200 ms.
+     * each data stream is set. Default is 500 ms.
      */
     void setRxZmqTimer(int time_in_ms, Positions pos = {});
 

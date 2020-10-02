@@ -1,0 +1,32 @@
+# file name prefix
+fname measurement1
+
+# file acquisition index
+findex 3000
+
+# dynamic range (only for Mythen3 and Eiger)
+dr 32
+
+# settings 
+settings veryhighgain
+
+# exposure time
+exptime 100us
+
+# period
+period 2ms
+
+# frames per trigger
+frames 30000
+
+# timing mode
+timing trigger
+
+# triggers
+triggers 10
+
+# delay after trigger
+delay 1ms
+
+
+

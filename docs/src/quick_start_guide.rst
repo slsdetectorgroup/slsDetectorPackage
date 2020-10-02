@@ -50,6 +50,7 @@ Refer :ref:`Sample Config file` to create config file.
 
 Sample Config file
 ^^^^^^^^^^^^^^^^^^
+There are sample config files for each detector in slsDetectorPackage/examples folder.
 
 For a Single Module
     .. code-block:: bash  
@@ -71,6 +72,33 @@ For a Single Module
         # destination udp ip picked up from rx_hostname (if auto)
         udp_dstip auto
 
+        # set file path
+        fpath /tmp
+
+For a Single Module with custom Receiver (not slsReceiver)
+    .. code-block:: bash  
+
+        # connects to module
+        hostname bchipxxx
+
+        # sets destination udp ports (not needed, default is 50001)
+        udp_dstport 50012
+
+        # source udp ips must be same subnet at destintaion udp ips
+        udp_srcip 192.168.1.112
+
+        # destination udp ip 
+        udp_dstip 192.168.1.100
+
+        # source udp mac 
+        udp_srcmac aa:bb:cc:dd:ee:ff
+        
+        # destination udp mac 
+        udp_dstmac 3c:ab:98:bf:50:60
+
+        # set file path
+        fpath /tmp
+
 For Multiple Modules
     .. code-block:: bash  
 
@@ -91,6 +119,8 @@ For Multiple Modules
         # destination udp ip picked up from rx_hostname (if auto)
         udp_dstip auto
 
+        # set file path
+        fpath /tmp
 
 Gui
 ----

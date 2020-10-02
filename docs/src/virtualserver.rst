@@ -83,6 +83,9 @@ For a Single Module
         # destination udp ip picked up from rx_hostname (if auto)
         udp_dstip auto
 
+        # set file path
+        fpath /tmp
+
 For Multiple Modules
     .. code-block:: bash  
 
@@ -104,6 +107,8 @@ For Multiple Modules
         # destination udp ip picked up from rx_hostname (if auto)
         udp_dstip auto
 
+        # set file path
+        fpath /tmp
 
 Receivers
 ----------

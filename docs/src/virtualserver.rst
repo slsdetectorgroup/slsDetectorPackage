@@ -64,6 +64,7 @@ Use the same in the config file.
 
 Sample Config file
 ^^^^^^^^^^^^^^^^^^
+There are sample config files for each detector in slsDetectorPackage/examples folder.
 
 For a Single Module
     .. code-block:: bash  

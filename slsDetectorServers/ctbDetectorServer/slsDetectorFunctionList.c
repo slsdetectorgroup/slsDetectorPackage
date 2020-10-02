@@ -164,10 +164,10 @@ void basictests() {
     // check for API compatibility - old server
     if (sw_fw_apiversion > REQRD_FRMWR_VRSN) {
         sprintf(initErrorMessage,
-                "This detector software software version (0x%llx) is "
-                "incompatible.\n"
-                "Please update detector software (min. 0x%llx) to be "
-                "compatible with this firmware.\n",
+                "This firmware-software api version (0x%llx) is incompatible "
+                "with the software's minimum required firmware version "
+                "(0x%llx).\nPlease update detector software to be compatible "
+                "with this firmware.\n",
                 (long long int)sw_fw_apiversion,
                 (long long int)REQRD_FRMWR_VRSN);
         LOG(logERROR, (initErrorMessage));

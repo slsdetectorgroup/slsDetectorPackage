@@ -156,13 +156,13 @@ void basictests() {
 
     // check for API compatibility - old server
     if (sw_fw_apiversion > REQUIRED_FIRMWARE_VERSION) {
-        sprintf(
-            initErrorMessage,
-            "This detector software software version (%lld) is incompatible.\n"
-            "Please update detector software (min. %lld) to be compatible with "
-            "this firmware.\n",
-            (long long int)sw_fw_apiversion,
-            (long long int)REQUIRED_FIRMWARE_VERSION);
+        sprintf(initErrorMessage,
+                "This firmware-software api version (0x%llx) is incompatible "
+                "with the software's minimum required firmware version "
+                "(0x%llx).\nPlease update detector software to be compatible "
+                "with this firmware.\n",
+                (long long int)sw_fw_apiversion,
+                (long long int)REQUIRED_FIRMWARE_VERSION);
         LOG(logERROR, (initErrorMessage));
         initError = FAIL;
         return;

@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 #elif GOTTHARD2D
             version = APIGOTTHARD2;
 #endif
-            LOG(logINFOBLUE, ("SLS Detector Server Version: %s (0x%x)\n",
+            LOG(logINFO, ("SLS Detector Server Version: %s (0x%x)\n",
                               GITBRANCH, version));
             exit(EXIT_SUCCESS);
 

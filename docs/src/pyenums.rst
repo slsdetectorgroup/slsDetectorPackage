@@ -70,12 +70,6 @@ exposed to Python through pybind11.
 .. autoclass:: masterFlags
     :undoc-members:
 
-.. autoclass:: frameModeType
-    :undoc-members:
-
-.. autoclass:: detectorModeType
-    :undoc-members:
-
 .. autoclass:: burstMode
     :undoc-members:
 

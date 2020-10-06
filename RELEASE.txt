@@ -1,4 +1,4 @@
-SLS Detector Package 5.0.0-rc2 released on 05.10.2020 (Release Candidate 2)
+SLS Detector Package 5.0.0-rc2 released on 07.10.2020 (Release Candidate 2)
 ===========================================================================
 
     CONTENTS
@@ -12,58 +12,56 @@ SLS Detector Package 5.0.0-rc2 released on 05.10.2020 (Release Candidate 2)
         
         Eiger
         =====  
-        Minimum compatible version  : 27
-        Latest compatible version   : 27
+        Compatible version : 08.09.2020 (v27)
         
         Jungfrau
         ========       
-        Minimum compatible version (PCB v1.0)  : 24.07.2020 (v1.1)
-        Latest compatible version  (PCB v1.0)  : 24.07.2020 (v1.1)
-        Minimum compatible version (PCB v2.0)  : 21.07.2020 (v2.1)
-        Latest compatible version  (PCB v2.0)  : 21.07.2020 (v2.1)
+        Compatible version : 24.07.2020 (v1.1, PCB v1.0) 
+                           : 21.07.2020 (v2.1, PCB v2.0)
 
         Gotthard
         ========   
-        Minimum compatible version  : 11.01.2013
-        Latest compatible version   : 08.02.2018 (50um and 25um Master)
-                                      09.02.2018 (25 um Slave) 
+        Compatible version : 08.02.2018 (50um and 25um Master)
+                           : 09.02.2018 (25 um Slave) 
 
         Mythen3
         =======
-        Minimum compatible version  : 25.09.2020
-        Latest compatible version   : 25.09.2020
+        Compatible version : 25.09.2020 (v1.1)
 
         Gotthard2
         =========
-        Minimum compatible version  : 25.09.2020
-        Latest compatible version   : 25.09.2020
+        Compatible version : 25.09.2020 (development)
 
         Moench
         ======
-        Minimum compatible version : 02.03.2020
-        Latest compatible version  : 02.03.2020 
+        Compatible version : 10.05.2020 (v1.0)
 
         Ctb
         ===
-        Minimum compatible version : 27.11.2019
-        Latest compatible version  : 27.11.2019
+        Compatible version : 10.05.2019 (v1.0)
 
 
         Detector Upgrade
         ================
-        Eiger      Remotely via bit files
-        Jungfrau   Remotely using sls_detector_put programfpga <pof>
-        Gotthard   Cannot be upgraded remotely. Requires programming via USB blaster
-        Mythen3    Remotely using sls_detector_put programfpga <rbf>
-        Gotthard2  Remotely using sls_detector_put programfpga <rbf> 
-        Moench     Remotely using sls_detector_put programfpga <pof>
-        Ctb        Remotely using sls_detector_put programfpga <pof>
+
+        The following can be upgraded remotely:
+        Eiger      via bit files
+        Jungfrau   via command <.pof>
+        Mythen3    via command <.rbf>
+        Gotthard2  via command <.rbf> 
+        Moench     via command <.pof>
+        Ctb        via command <.pof>
+
+        The following cannot be upgraded remotely:
+        Gotthard   
 
         Instructions available at
-        https://slsdetectorgroup.github.io/devdoc/firmware.html
+            https://slsdetectorgroup.github.io/devdoc/firmware.html
+        and
+            https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
 
-    Please refer to the link below for more details on the firmware versions.
-    https://www.psi.ch/en/detectors/firmware
+        Please refer to the link below for more details on the firmware versions.
+            https://www.psi.ch/en/detectors/firmware
 
     
 2. Download, Documentation & Support
@@ -72,7 +70,7 @@ SLS Detector Package 5.0.0-rc2 released on 05.10.2020 (Release Candidate 2)
     Download
     --------
     
-    The Source Code (Default C++ API):
+    The Source Code:
          https://github.com/slsdetectorgroup/slsDetectorPackage
             
     Documentation
@@ -80,12 +78,24 @@ SLS Detector Package 5.0.0-rc2 released on 05.10.2020 (Release Candidate 2)
     
     Installation:
         https://slsdetectorgroup.github.io/devdoc/installation.html#
+        
+    Firmware Upgrade:
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+    Detector Server upgrade:
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+    Detector Simulators:
+        https://slsdetectorgroup.github.io/devdoc/virtualserver.html
 
     Consuming slsDetectorPackage:
         https://slsdetectorgroup.github.io/devdoc/consuming.html
         
     Command Line Documentation:
         https://slsdetectorgroup.github.io/devdoc/commandline.html
+
+    Quick Start Guide:
+        https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
         
     C++ API Documentation:
         https://slsdetectorgroup.github.io/devdoc/detector.html
@@ -100,12 +110,15 @@ SLS Detector Package 5.0.0-rc2 released on 05.10.2020 (Release Candidate 2)
         https://slsdetectorgroup.github.io/devdoc/pyexamples.html
 
     TroubleShooting:
-        https://www.psi.ch/en/detectors/troubleshooting
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html
         
     Further Documentation:
-        https://www.psi.ch/en/detectors/users-support
+        https://www.psi.ch/en/detectors/documentation
         
-    
+    Old Release notes:
+        https://www.psi.ch/en/detectors/latest-installation
+
+
     Support
     -------
 

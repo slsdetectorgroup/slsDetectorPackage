@@ -5,31 +5,43 @@ Firmware Upgrade
 
 Eiger
 -------------
-.. note ::
-    | Eiger firmware can be upgraded remotely.
-    | The programming executable (bcp) and corresponding bit files are provided by the SLS Detector group.
 
-
-Compatibility 
+Download 
 ^^^^^^^^^^^^^
+- `bcp script <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/eiger/bcp>`__
 
-**Release candidate 5.0.0-rc1**
-    .. code-block:: bash
+- detector server corresponding to package in slsDetectorPackage/serverBin
 
-        Minimum compatible version  : 27
-        Latest compatible version   : 27  
-    
-`Older versions <https://www.psi.ch/en/detectors/latest-installation>`_
+- bit files
+    .. list-table:: 
+       :widths: 20 20 20 20 20
+       :header-rows: 1
 
+       * - slsDetectorPackage
+         - Hardware
+         - Release Date
+         - Link
+         - Comments
+       * - v5.0.0-rcx
+         - 
+         - 08.09.2020
+         - `v27 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/eiger/v27/>`__
+         - 
+       * - v4.0.0 - v4.2.0
+         - 
+         - 30.07.2019
+         - `v24 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/eiger/v24/>`__
+         - 
+       * - v3.1.0 - v3.1.5
+         - 
+         - 17.08.2017
+         - `v20 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/eiger/v20/>`__
+         -
 
-Corrsponding Detector Server 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/eigerDetectorServer/bin/eigerDetectorServer_developer
 
 Upgrade
 ^^^^^^^^
-#. Tftp must be already installed on your pc to use the bcp executable.
+#. Tftp must be already installed on your pc to use the bcp script.
 
 #. Kill the on-board servers and copy new servers to the board. 
 
@@ -99,36 +111,46 @@ Upgrade
 
 Jungfrau
 -------------
-.. note ::
-    | Jungfrau firmware can be upgraded remotely.
-    | The corresponding programming file (pof) is provided by the SLS Detector group.
 
-
-Compatibility 
+Download 
 ^^^^^^^^^^^^^
+- detector server corresponding to package in slsDetectorPackage/serverBin
 
-**Release candidate 5.0.0-rc1**
+- pof files
+    .. list-table:: 
+       :widths: 20 20 20 20 20
+       :header-rows: 1
 
-    .. code-block:: bash
+       * - slsDetectorPackage
+         - Hardware
+         - Release Date
+         - Link
+         - Comments
+       * - v5.0.0-rcx
+         - 2.0
+         - 21.07.2020
+         - `v2.1 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/jungfrau/v2_1/jungfrau_v2_1.pof>`__
+         - 
+       * - v5.0.0-rcx
+         - 1.0
+         - 24.07.2020
+         - `v1.1 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/jungfrau/v1_1/jungfrau_v1_1.pof>`__
+         - 
+       * - v4.0.1 - v4.2.0
+         - 1.0
+         - 06.12.2018
+         - `v0.7 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/jungfrau/v0_7/jungfrau_v0_7.pof>`__
+         - 
+       * - v3.1.0 - v3.1.5
+         - 1.0
+         - 13.11.2017
+         - `v0.6 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/jungfrau/v0_6/jungfrau_v0_6.pof>`__
+         -
 
-        # PCB v1.0
-        Minimum compatible version : 24.07.2020 (v1.1)
-        Latest compatible version  : 24.07.2020 (v1.1)
-        # PCB v2.0
-        Minimum compatible version : 21.07.2020 (v2.1)
-        Latest compatible version  : 21.07.2020 (v2.1) 
-    
-`Older versions <https://www.psi.ch/en/detectors/latest-installation>`_
-
-
-Corrsponding Detector Server 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/jungfrauDetectorServer/bin/jungfrauDetectorServer_developer
 
 
 Upgrade (from v4.x.x)
-^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 #. Tftp must be installed on pc.
 
 #. Update client package to the latest (5.0.0-rc1).
@@ -179,8 +201,8 @@ Upgrade (from v4.x.x)
         jungfrauDetectorServervxxx --stop-server 1953
 
 
-Upgrade (from v5.0.0-rc1)
-^^^^^^^^^^^^^^^^^^^^^^^^
+Upgrade (from v5.0.0-rcx)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Program from console
     .. code-block:: bash
@@ -197,33 +219,45 @@ Upgrade (from v5.0.0-rc1)
 Gotthard
 ---------
 
+Download 
+^^^^^^^^^^^^^
+- detector server corresponding to package in slsDetectorPackage/serverBin
+
+- pof files
+    .. list-table:: 
+       :widths: 15 15 15 15 5
+       :header-rows: 1
+
+       * - slsDetectorPackage
+         - Hardware
+         - Release Date
+         - Link
+         - Comments
+       * - All versions
+         - 50um
+         - 08.02.2018
+         - `50um <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/gotthard_I/50um/gotthard_I_50um.pof>`__
+         - 
+       * - All versions
+         - 25um (master)
+         - 08.02.2018
+         - `25um (master) <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/gotthard_I/25um/master/gotthard_I_25um_master.pof>`__
+         - 
+       * - All versions
+         - 25um (slave)
+         - 09.02.2018
+         - `25um (slave) <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/gotthard_I/25um/slave/gotthard_I_25um_slave.pof>`__
+         - 
+
+
+
+Upgrade
+^^^^^^^^
 .. warning ::
     | Gotthard firmware cannot be upgraded remotely and requires the use of USB-Blaster.
     | It is generally updated by the SLS Detector group.
 
-
-Compatibility 
-^^^^^^^^^^^^^
-
-**Release candidate 5.0.0-rc1**
-
-    .. code-block:: bash
-
-        Minimum compatible version  : 11.01.2013
-        Latest compatible version   : 08.02.2018 (50um and 25um Master)
-                                      09.02.2018 (25 um Slave)  
-    
-`Older versions <https://www.psi.ch/en/detectors/latest-installation>`_
-
-Corrsponding Detector Server 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/gotthardDetectorServer/bin/gotthardDetectorServer_developer
-
-Upgrade
-^^^^^^^^
-
-#. Download `Altera Quartus software or Quartus programmer <https://fpgasoftware.intel.com/20.1/?edition=standard&platform=linux&product=qprogrammer#tabs-4>`_.
+#. Download `Altera Quartus software or Quartus programmer <https://fpgasoftware.intel.com/20.1/?edition=standard&platform=linux&product=qprogrammer#tabs-4>`__.
    
 
 #. Start Quartus programmer, click on Hardware Setup. In the "Currently selected hardware" window, select USB-Blaster.
@@ -243,28 +277,30 @@ Upgrade
 
 Mythen3
 -------
-.. note ::
-    | Mythen3 firmware can be upgraded remotely.
-    | The corresponding programming file (rbf) is provided by the SLS Detector group.
 
-
-Compatibility 
+Download 
 ^^^^^^^^^^^^^
+- detector server corresponding to package in slsDetectorPackage/serverBin
 
-**Release candidate 5.0.0-rc1**
+- rbf files
+    .. list-table:: 
+       :widths: 20 20 20 20 20
+       :header-rows: 1
 
-    .. code-block:: bash
+       * - slsDetectorPackage
+         - Hardware
+         - Release Date
+         - Link
+         - Comments
+       * - v5.0.0-rcx
+         - 
+         - 25.09.2020
+         - 
+         - 
 
-        Minimum compatible version : 25.09.2020
-        Latest compatible version  : 25.09.2020
-    
-Corrsponding Detector Server 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/mythen3DetectorServer/bin/mythen3DetectorServer_developer
 
-Upgrade (from v5.0.0-rc1)
-^^^^^^^^^^^^^^^^^^^^^^^^
+Upgrade (from v5.0.0-rcx)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Program from console
     .. code-block:: bash
@@ -279,29 +315,30 @@ Upgrade (from v5.0.0-rc1)
 
 
 Gotthard2
-----------
-.. note ::
-    | Gotthard2 firmware can be upgraded remotely.
-    | The corresponding programming file (rbf) is provided by the SLS Detector group.
+-------------
 
-
-Compatibility 
+Download 
 ^^^^^^^^^^^^^
+- detector server corresponding to package in slsDetectorPackage/serverBin
 
-**Release candidate 5.0.0-rc1**
+- rbf files
+    .. list-table:: 
+       :widths: 20 20 20 20 20
+       :header-rows: 1
 
-    .. code-block:: bash
+       * - slsDetectorPackage
+         - Hardware
+         - Release Date
+         - Link
+         - Comments
+       * - v5.0.0-rcx
+         - 
+         - 25.09.2020
+         - 
+         - 
 
-        Minimum compatible version : 25.09.2020
-        Latest compatible version  : 25.09.2020
-    
-Corrsponding Detector Server 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/gotthard2DetectorServer/bin/gotthard2DetectorServer_developer
-
-Upgrade (from v5.0.0-rc1)
-^^^^^^^^^^^^^^^^^^^^^^^^
+Upgrade (from v5.0.0-rcx)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Program from console
     .. code-block:: bash
@@ -316,29 +353,35 @@ Upgrade (from v5.0.0-rc1)
 
 
 Moench
-------
-.. note ::
-    | Moench firmware can be upgraded remotely.
-    | The corresponding programming file (pof) is provided by the SLS Detector group.
+-------
 
-
-Compatibility 
+Download 
 ^^^^^^^^^^^^^
+- detector server corresponding to package in slsDetectorPackage/serverBin
 
-**Release candidate 5.0.0-rc1**
+- pof files
+    .. list-table:: 
+       :widths: 20 20 20 20 20
+       :header-rows: 1
 
-    .. code-block:: bash
+       * - slsDetectorPackage
+         - Hardware
+         - Release Date
+         - Link
+         - Comments
+       * - v5.0.0-rcx
+         - EPCQ128
+         - 05.10.2020
+         - `v1.0 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/moench/EPCQ128/v1_0/moench_v1_0_201005.pof>`__
+         - 
+       * - v5.0.0-rcx
+         - EPCS128
+         - 05.10.2020
+         - `v1.0 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/moench/EPCS128/v1_0/moench_v1_0_201005.pof>`__
+         - 
 
-        Minimum compatible version : 02.03.2020
-        Latest compatible version  : 02.03.2020 
-    
-Corrsponding Detector Server 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/moenchDetectorServer/bin/moenchDetectorServer_developer
-
-Upgrade (from v5.0.0-rc1)
-^^^^^^^^^^^^^^^^^^^^^^^^
+Upgrade (from v5.0.0-rcx)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Program from console
     .. code-block:: bash
@@ -352,29 +395,35 @@ Upgrade (from v5.0.0-rc1)
         sls_detector_put programfpga xxx.pof
 
 Ctb
----
-.. note ::
-    | Ctb firmware can be upgraded remotely.
-    | The corresponding programming file (pof) is provided by the SLS Detector group.
+----
 
-
-Compatibility 
+Download 
 ^^^^^^^^^^^^^
+- detector server corresponding to package in slsDetectorPackage/serverBin
 
-**Release candidate 5.0.0-rc1**
+- pof files
+    .. list-table:: 
+       :widths: 20 20 20 20 20
+       :header-rows: 1
 
-    .. code-block:: bash
+       * - slsDetectorPackage
+         - Hardware
+         - Release Date
+         - Link
+         - Comments
+       * - v5.0.0-rcx
+         - EPCQ128
+         - 05.10.2020
+         - `v1.0 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/ctb/EPCQ128/v1_0/ctb_v1_0_201005.pof>`__
+         - 
+       * - v5.0.0-rcx
+         - EPCS128
+         - 05.10.2020
+         - `v1.0 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/ctb/EPCS128/v1_0/ctb_v1_0_201005.pof>`__
+         - 
 
-        Minimum compatible version : 27.11.2019
-        Latest compatible version  : 27.11.2019
-    
-Corrsponding Detector Server 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/ctbDetectorServer/bin/ctbDetectorServer_developer
-
-Upgrade (from v5.0.0-rc1)
-^^^^^^^^^^^^^^^^^^^^^^^^
+Upgrade (from v5.0.0-rcx)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Program from console
     .. code-block:: bash

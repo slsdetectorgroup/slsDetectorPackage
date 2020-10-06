@@ -7,8 +7,7 @@ Eiger
 -------------
 
 
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/eigerDetectorServer/bin/eigerDetectorServer_developer
+**Location:** slsDetectorPackage/serverBin/ folder for every release.
 
 
 #. Kill old server and copy new server
@@ -39,11 +38,10 @@ Eiger
 Jungfrau
 -------------
 
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/jungfrauDetectorServer/bin/jungfrauDetectorServer_developer
+**Location:** slsDetectorPackage/serverBin/ folder for every release.
 
 #. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rc1)
+#. Program from console (only from 5.0.0-rcx)
     .. code-block:: bash
 
         # copies new server from pc tftp folder, respawns and reboots
@@ -53,11 +51,10 @@ Jungfrau
 Gotthard
 ---------
 
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/gotthardDetectorServer/bin/gotthardDetectorServer_developer
+**Location:** slsDetectorPackage/serverBin/ folder for every release.
 
 #. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rc1)
+#. Program from console (only from 5.0.0-rcx)
     .. code-block:: bash
 
         # copies new server from pc tftp folder, respawns and reboots
@@ -68,11 +65,10 @@ Gotthard
 Mythen3
 -------
 
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/mythen3DetectorServer/bin/mythen3DetectorServer_developer
+**Location:** slsDetectorPackage/serverBin/ folder for every release.
 
 #. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rc1)
+#. Program from console (only from 5.0.0-rcx)
     .. code-block:: bash
 
         # copies new server from pc tftp folder and reboots (does not respawn)
@@ -82,11 +78,10 @@ Mythen3
 Gotthard2
 ----------
 
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/gotthard2DetectorServer/bin/gotthard2DetectorServer_developer
+**Location:** slsDetectorPackage/serverBin/ folder for every release.
 
 #. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rc1)
+#. Program from console (only from 5.0.0-rcx)
     .. code-block:: bash
 
         # copies new server from pc tftp folder and reboots (does not respawn)
@@ -96,11 +91,10 @@ Gotthard2
 Moench
 ------
 
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/moenchDetectorServer/bin/moenchDetectorServer_developer
+**Location:** slsDetectorPackage/serverBin/ folder for every release.
 
 #. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rc1)
+#. Program from console (only from 5.0.0-rcx)
     .. code-block:: bash
 
         # copies new server from pc tftp folder, respawns and reboots
@@ -110,11 +104,10 @@ Moench
 Ctb
 ---
 
-| **Location:**
-| 5.0.0-rc1: slsDetectorPackage/slsDetectorServer/ctbDetectorServer/bin/ctbDetectorServer_developer
+**Location:** slsDetectorPackage/serverBin/ folder for every release.
 
 #. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rc1)
+#. Program from console (only from 5.0.0-rcx)
     .. code-block:: bash
 
         # copies new server from pc tftp folder, respawns and reboots

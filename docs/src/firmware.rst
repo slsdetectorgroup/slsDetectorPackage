@@ -14,13 +14,13 @@ Download
 
 - bit files
     .. list-table:: 
-       :widths: 20 20 20 20 20
+       :widths: 25 10 30 25 10
        :header-rows: 1
 
-       * - slsDetectorPackage
+       * - Software
          - Hardware
-         - Release Date
-         - Link
+         - Firmware Date
+         - Firmware Link
          - Comments
        * - v5.0.0-rcx
          - 
@@ -118,13 +118,13 @@ Download
 
 - pof files
     .. list-table:: 
-       :widths: 20 20 20 20 20
+       :widths: 25 10 30 25 10
        :header-rows: 1
 
-       * - slsDetectorPackage
+       * - Software
          - Hardware
-         - Release Date
-         - Link
+         - Firmware Date
+         - Firmware Link
          - Comments
        * - v5.0.0-rcx
          - 2.0
@@ -228,10 +228,10 @@ Download
        :widths: 15 15 15 15 5
        :header-rows: 1
 
-       * - slsDetectorPackage
+       * - Software
          - Hardware
-         - Release Date
-         - Link
+         - Firmware Date
+         - Firmware Link
          - Comments
        * - All versions
          - 50um
@@ -284,13 +284,13 @@ Download
 
 - rbf files
     .. list-table:: 
-       :widths: 20 20 20 20 20
+       :widths: 25 10 30 25 10
        :header-rows: 1
 
-       * - slsDetectorPackage
+       * - Software
          - Hardware
-         - Release Date
-         - Link
+         - Firmware Date
+         - Firmware Link
          - Comments
        * - v5.0.0-rcx
          - 
@@ -323,13 +323,13 @@ Download
 
 - rbf files
     .. list-table:: 
-       :widths: 20 20 20 20 20
+       :widths: 25 10 30 25 10
        :header-rows: 1
 
-       * - slsDetectorPackage
+       * - Software
          - Hardware
-         - Release Date
-         - Link
+         - Firmware Date
+         - Firmware Link
          - Comments
        * - v5.0.0-rcx
          - 
@@ -361,13 +361,13 @@ Download
 
 - pof files
     .. list-table:: 
-       :widths: 20 20 20 20 20
+       :widths: 25 10 30 25 10
        :header-rows: 1
 
-       * - slsDetectorPackage
+       * - Software
          - Hardware
-         - Release Date
-         - Link
+         - Firmware Date
+         - Firmware Link
          - Comments
        * - v5.0.0-rcx
          - EPCQ128
@@ -403,13 +403,13 @@ Download
 
 - pof files
     .. list-table:: 
-       :widths: 20 20 20 20 20
+       :widths: 25 10 30 25 10
        :header-rows: 1
 
-       * - slsDetectorPackage
+       * - Software
          - Hardware
-         - Release Date
-         - Link
+         - Firmware Date
+         - Firmware Link
          - Comments
        * - v5.0.0-rcx
          - EPCQ128

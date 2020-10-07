@@ -2,26 +2,22 @@
 #include "clogger.h"
 
 #include <errno.h>
-#include <semaphore.h>
+#include <pthread.h>
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <unistd.h>
 
-#define SHM_NAME "sls_server_shared_memory"
-#ifdef EIGERD
-#define SHM_VERSION 0x200915
-#else
-#define SHM_VERSION 0x200625
-#endif
-#define SHM_KEY  5678
-#define MEM_SIZE 128
+#define SHM_NAME    "sls_server_shared_memory"
+#define SHM_VERSION 0x201007
+#define SHM_KEY     5678
+#define MEM_SIZE    128
 
 typedef struct Memory {
     int version;
-    sem_t semStatus;
+    pthread_mutex_t lockStatus;
 #ifdef EIGERD
-    sem_t semLocalLink;
+    pthread_mutex_t lockLocalLink;
 #endif
     enum runStatus scanStatus; // idle, running or error
     int scanStop;
@@ -87,14 +83,47 @@ int sharedMemory_create(int port) {
 
 int sharedMemory_initialize() {
     shm->version = SHM_VERSION;
-    if (sem_init(&(shm->semStatus), 1, 1) != 0) {
-        LOG(logERROR, ("Failed to initialize semaphore semStatus for "
+
+    pthread_mutexattr_t lockStatusAttribute;
+    if (pthread_mutexattr_init(&lockStatusAttribute) != 0) {
+        LOG(logERROR,
+            ("Failed to initialize mutex attribute for lockStatus for "
+             "shared memory\n"));
+        return FAIL;
+    }
+
+    if (pthread_mutexattr_setpshared(&lockStatusAttribute,
+                                     PTHREAD_PROCESS_SHARED) != 0) {
+        LOG(logERROR, ("Failed to set attribute property to process shared for "
+                       "lockStatus for shared memory\n"));
+        return FAIL;
+    }
+
+    if (pthread_mutex_init(&(shm->lockStatus), &lockStatusAttribute) != 0) {
+        LOG(logERROR, ("Failed to initialize pthread_mutex_t lockStatus for "
                        "shared memory\n"));
         return FAIL;
     }
+
 #ifdef EIGERD
-    if (sem_init(&(shm->semLocalLink), 1, 1) != 0) {
-        LOG(logERROR, ("Failed to initialize semaphore semLocalLink for "
+    pthread_mutexattr_t lockLocalLinkAttribute;
+    if (pthread_mutexattr_init(&lockLocalLinkAttribute) != 0) {
+        LOG(logERROR,
+            ("Failed to initialize mutex attribute for lockLocalLink for "
+             "shared memory\n"));
+        return FAIL;
+    }
+
+    if (pthread_mutexattr_setpshared(&lockLocalLinkAttribute,
+                                     PTHREAD_PROCESS_SHARED) != 0) {
+        LOG(logERROR, ("Failed to set attribute property to process shared for "
+                       "lockLocalLink for shared memory\n"));
+        return FAIL;
+    }
+
+    if (pthread_mutex_init(&(shm->lockLocalLink), &lockLocalLinkAttribute) !=
+        0) {
+        LOG(logERROR, ("Failed to initialize pthread_mutex_t lockLocalLink for "
                        "shared memory\n"));
         return FAIL;
     }
@@ -155,9 +184,9 @@ int sharedMemory_remove() {
     return OK;
 }
 
-void sharedMemory_lockStatus() { sem_wait(&(shm->semStatus)); }
+void sharedMemory_lockStatus() { pthread_mutex_lock(&(shm->lockStatus)); }
 
-void sharedMemory_unlockStatus() { sem_post(&(shm->semStatus)); }
+void sharedMemory_unlockStatus() { pthread_mutex_unlock(&(shm->lockStatus)); }
 
 #ifdef VIRTUAL
 void sharedMemory_setStatus(enum runStatus s) {
@@ -218,7 +247,9 @@ int sharedMemory_getScanStop() {
 }
 
 #ifdef EIGERD
-void sharedMemory_lockLocalLink() { sem_wait(&(shm->semLocalLink)); }
+void sharedMemory_lockLocalLink() { pthread_mutex_lock(&(shm->lockLocalLink)); }
 
-void sharedMemory_unlockLocalLink() { sem_post(&(shm->semLocalLink)); }
+void sharedMemory_unlockLocalLink() {
+    pthread_mutex_unlock(&(shm->lockLocalLink));
+}
 #endif

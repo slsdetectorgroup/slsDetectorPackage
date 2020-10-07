@@ -84,6 +84,9 @@ int sharedMemory_create(int port) {
 int sharedMemory_initialize() {
     shm->version = SHM_VERSION;
 
+// powerpc, Nios and normal pc allows setting mutex attribute to shared
+#if defined(EIGERD) || defined(GOTTHARD2D) || defined(MYTHEN3D) ||             \
+    defined(VIRTUAL)
     pthread_mutexattr_t lockStatusAttribute;
     if (pthread_mutexattr_init(&lockStatusAttribute) != 0) {
         LOG(logERROR,
@@ -104,6 +107,15 @@ int sharedMemory_initialize() {
                        "shared memory\n"));
         return FAIL;
     }
+
+// only blackfins cannot set mutex attribute (but it is shared by default)
+#else
+    if (pthread_mutex_init(&(shm->lockStatus), NULL) != 0) {
+        LOG(logERROR, ("Failed to initialize pthread_mutex_t lockStatus for "
+                       "shared memory\n"));
+        return FAIL;
+    }
+#endif
 
 #ifdef EIGERD
     pthread_mutexattr_t lockLocalLinkAttribute;

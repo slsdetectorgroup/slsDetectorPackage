@@ -1042,6 +1042,8 @@ Result<int> Detector::getRxZmqPort(Positions pos) const {
 }
 
 void Detector::setRxZmqPort(int port, int module_id) {
+    bool previouslyReceiverStreaming =
+        getRxZmqDataStream(std::vector<int>{module_id}).squash(false);
     if (module_id == -1) {
         std::vector<int> port_list = getPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
@@ -1050,6 +1052,10 @@ void Detector::setRxZmqPort(int port, int module_id) {
         }
     } else {
         pimpl->Parallel(&Module::setReceiverStreamingPort, {module_id}, port);
+    }
+    if (previouslyReceiverStreaming) {
+        setRxZmqDataStream(false, std::vector<int>{module_id});
+        setRxZmqDataStream(true, std::vector<int>{module_id});
     }
 }
 
@@ -1071,6 +1077,7 @@ Result<int> Detector::getClientZmqPort(Positions pos) const {
 }
 
 void Detector::setClientZmqPort(int port, int module_id) {
+    int previouslyClientStreaming = pimpl->getDataStreamingToClient();
     if (module_id == -1) {
         std::vector<int> port_list = getPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
@@ -1079,6 +1086,10 @@ void Detector::setClientZmqPort(int port, int module_id) {
         }
     } else {
         pimpl->Parallel(&Module::setClientStreamingPort, {module_id}, port);
+    }
+    if (previouslyClientStreaming != 0) {
+        pimpl->setDataStreamingToClient(false);
+        pimpl->setDataStreamingToClient(true);
     }
 }
 

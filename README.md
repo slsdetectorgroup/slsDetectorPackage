@@ -1,3 +1,8 @@
+### Note
+
+Please do not update to any xxxx.xx.xx.dev0 tags. They are not releases, but tags for internal usage.
+Use only releases with tags such as x.x.x or x.x.x-rcx.
+
 ### Documentation
 Detailed documentation can be found on the [official site.](https://www.psi.ch/detectors/users-support)
 

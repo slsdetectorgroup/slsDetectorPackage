@@ -278,8 +278,13 @@ Upgrade
 Mythen3
 -------
 
+.. note :: 
+
+  As it is still in developement, the rbf files must be picked up from the SLS Detector Group.
+
 Download 
 ^^^^^^^^^^^^^
+
 - detector server corresponding to package in slsDetectorPackage/serverBin
 
 - rbf files
@@ -296,7 +301,7 @@ Download
          - 
          - 25.09.2020
          - 
-         - 
+         - development
 
 
 Upgrade (from v5.0.0-rcx)
@@ -317,6 +322,10 @@ Upgrade (from v5.0.0-rcx)
 Gotthard2
 -------------
 
+.. note :: 
+
+  As it is still in developement, the rbf files must be picked up from the SLS Detector Group.
+
 Download 
 ^^^^^^^^^^^^^
 - detector server corresponding to package in slsDetectorPackage/serverBin
@@ -335,7 +344,7 @@ Download
          - 
          - 25.09.2020
          - 
-         - 
+         - development
 
 Upgrade (from v5.0.0-rcx)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

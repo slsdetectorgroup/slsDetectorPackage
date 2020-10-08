@@ -130,6 +130,8 @@ class Implementation : private virtual slsDetectorDefs {
     void setStreamingPort(const uint32_t i);
     sls::IpAddr getStreamingSourceIP() const;
     void setStreamingSourceIP(const sls::IpAddr ip);
+    int getStreamingHwm() const;
+    void setStreamingHwm(const int i);
     std::map<std::string, std::string> getAdditionalJsonHeader() const;
     void setAdditionalJsonHeader(const std::map<std::string, std::string> &c);
     std::string getAdditionalJsonParameter(const std::string &key) const;
@@ -312,6 +314,7 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t streamingStartFnum{0};
     uint32_t streamingPort{0};
     sls::IpAddr streamingSrcIP = sls::IpAddr{};
+    int streamingHwm{-1};
     std::map<std::string, std::string> additionalJsonHeader;
 
     // detector parameters

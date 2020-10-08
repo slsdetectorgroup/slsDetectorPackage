@@ -40,6 +40,7 @@ class qDefs : public QWidget {
     static const int Q_FONT_SIZE = 9;
     static const int DATA_GAIN_PLOT_RATIO = 5;
     static const int MIN_HEIGHT_GAIN_PLOT_1D = 75;
+    static const int GUI_ZMQ_RCV_HWM = 2;
 
     static void DisplayExceptions(std::string emsg, std::string src) {
         try {

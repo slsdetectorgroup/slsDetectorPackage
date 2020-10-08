@@ -75,18 +75,28 @@ void DataStreamer::SetAdditionalJsonHeader(
 }
 
 void DataStreamer::CreateZmqSockets(int *nunits, uint32_t port,
-                                    const sls::IpAddr ip) {
+                                    const sls::IpAddr ip, int hwm) {
     uint32_t portnum = port + index;
     std::string sip = ip.str();
     try {
         zmqSocket = new ZmqSocket(portnum, (ip != 0 ? sip.c_str() : nullptr));
+        // set if custom
+        if (hwm >= 0) {
+            zmqSocket->SetSendHighWaterMark(hwm);
+            if (zmqSocket->GetSendHighWaterMark() != hwm) {
+                throw sls::RuntimeError(
+                    "Could not set zmq send high water mark to " +
+                    std::to_string(hwm));
+            }
+        }
     } catch (...) {
         LOG(logERROR) << "Could not create Zmq socket on port " << portnum
                       << " for Streamer " << index;
         throw;
     }
     LOG(logINFO) << index << " Streamer: Zmq Server started at "
-                 << zmqSocket->GetZmqServerAddress();
+                 << zmqSocket->GetZmqServerAddress()
+                 << "[hwm: " << zmqSocket->GetSendHighWaterMark() << "]";
 }
 
 void DataStreamer::CloseZmqSocket() {

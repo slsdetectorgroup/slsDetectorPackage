@@ -3,7 +3,6 @@
 #include "ui_form_tab_plot.h"
 
 class qDrawPlot;
-class QButtonGroup;
 
 class qTabPlot : public QWidget, private Ui::TabPlotObject {
     Q_OBJECT
@@ -35,6 +34,8 @@ class qTabPlot : public QWidget, private Ui::TabPlotObject {
     void CheckAspectRatio();
     void SetZRange();
     void SetStreamingFrequency();
+    void SetStreamingHwm(int value);
+    void SetReceivingHwm(int value);
 
   signals:
     void DisableZoomSignal(bool);
@@ -45,14 +46,14 @@ class qTabPlot : public QWidget, private Ui::TabPlotObject {
     void Select1DPlot(bool enable);
     void GetGapPixels();
     void GetStreamingFrequency();
+    void GetStreamingHwm();
+    void GetReceivingHwm();
     void SetXYRange();
     void MaintainAspectRatio(int dimension);
 
     sls::Detector *det;
     qDrawPlot *plot;
     bool is1d;
-
-    QButtonGroup *btnGroupPlotType{nullptr};
 
     /** default plot and axis titles */
     static QString defaultPlotTitle;

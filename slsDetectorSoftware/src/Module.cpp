@@ -431,6 +431,10 @@ void Module::stopAcquisition() {
     }
 }
 
+void Module::restreamStopFromReceiver() {
+    sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER);
+}
+
 void Module::startAndReadAll() {
     shm()->stoppedFlag = false;
     sendToDetector(F_START_AND_READ_ALL);
@@ -1039,6 +1043,14 @@ void Module::setClientStreamingIP(const sls::IpAddr ip) {
         throw RuntimeError("Invalid client zmq ip address");
     }
     shm()->zmqip = ip;
+}
+
+int Module::getReceiverStreamingHwm() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_HWM);
+}
+
+void Module::setReceiverStreamingHwm(const int limit) {
+    sendToReceiver(F_SET_RECEIVER_STREAMING_HWM, limit, nullptr);
 }
 
 //  Eiger Specific
@@ -2779,10 +2791,6 @@ void Module::checkDetectorVersionCompatibility() {
 void Module::checkReceiverVersionCompatibility() {
     // TODO! Verify that this works as intended when version don't match
     sendToReceiver(F_RECEIVER_CHECK_VERSION, int64_t(APIRECEIVER), nullptr);
-}
-
-void Module::restreamStopFromReceiver() {
-    sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER);
 }
 
 int Module::sendModule(sls_detector_module *myMod, sls::ClientSocket &client) {

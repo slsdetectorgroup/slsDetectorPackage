@@ -887,6 +887,26 @@ class Detector {
      * if enabled.
      */
     void setClientZmqIp(const IpAddr ip, Positions pos = {});
+
+    int getClientZmqHwm() const;
+
+    /** Client's zmq receive high water mark. \n Default is the zmq library's
+     * default (1000), can also be set here using -1. \n This is a high number
+     * and can be set to 2 for gui purposes. \n One must also set the receiver's
+     * send high water mark to similar value. Final effect is sum of them.
+     */
+    void setClientZmqHwm(const int limit);
+
+    Result<int> getRxZmqHwm(Positions pos = {}) const;
+
+    /** Receiver's zmq send high water mark. \n Default is the zmq library's
+     * default (1000) \n This is a high number and can be set to 2 for gui
+     * purposes. \n One must also set the client's receive high water mark to
+     * similar value. Final effect is sum of them. Also restarts receiver zmq
+     * streaming if enabled. \n Can set to -1 to set default.
+     */
+    void setRxZmqHwm(const int limit);
+
     ///@{
 
     /** @name Eiger Specific */

@@ -48,6 +48,8 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
         PrintError();
         throw sls::ZmqSocketError("Could not set ZMQ_LINGER");
     }
+    LOG(logDEBUG) << "Default receive high water mark:"
+                  << GetReceiveHighWaterMark();
 }
 
 ZmqSocket::ZmqSocket(const uint32_t portnumber, const char *ethip)
@@ -63,6 +65,7 @@ ZmqSocket::ZmqSocket(const uint32_t portnumber, const char *ethip)
         PrintError();
         throw sls::ZmqSocketError("Could not create socket");
     }
+    LOG(logDEBUG) << "Default send high water mark:" << GetSendHighWaterMark();
 
     // construct address, can be refactored with libfmt
     std::ostringstream oss;
@@ -78,6 +81,44 @@ ZmqSocket::ZmqSocket(const uint32_t portnumber, const char *ethip)
     // sleep to allow a slow-joiner
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
 };
+
+int ZmqSocket::GetSendHighWaterMark() {
+    int value = 0;
+    size_t value_size = sizeof(value);
+    if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_SNDHWM, &value,
+                       &value_size)) {
+        PrintError();
+        throw sls::ZmqSocketError("Could not get ZMQ_SNDHWM");
+    }
+    return value;
+}
+
+void ZmqSocket::SetSendHighWaterMark(int limit) {
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SNDHWM, &limit,
+                       sizeof(limit))) {
+        PrintError();
+        throw sls::ZmqSocketError("Could not set ZMQ_SNDHWM");
+    }
+}
+
+int ZmqSocket::GetReceiveHighWaterMark() {
+    int value = 0;
+    size_t value_size = sizeof(value);
+    if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_RCVHWM, &value,
+                       &value_size)) {
+        PrintError();
+        throw sls::ZmqSocketError("Could not get ZMQ_SNDHWM");
+    }
+    return value;
+}
+
+void ZmqSocket::SetReceiveHighWaterMark(int limit) {
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_RCVHWM, &limit,
+                       sizeof(limit))) {
+        PrintError();
+        throw sls::ZmqSocketError("Could not set ZMQ_SNDHWM");
+    }
+}
 
 int ZmqSocket::Connect() {
     if (zmq_connect(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {

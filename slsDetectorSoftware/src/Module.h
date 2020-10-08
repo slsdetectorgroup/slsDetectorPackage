@@ -161,6 +161,7 @@ class Module : public virtual slsDetectorDefs {
     void stopReceiver();
     void startAcquisition();
     void stopAcquisition();
+    void restreamStopFromReceiver();
     void startAndReadAll();
     runStatus getRunStatus() const;
     runStatus getReceiverStatus() const;
@@ -290,6 +291,8 @@ class Module : public virtual slsDetectorDefs {
     void setClientStreamingPort(int port);
     sls::IpAddr getClientStreamingIP() const;
     void setClientStreamingIP(const sls::IpAddr ip);
+    int getReceiverStreamingHwm() const;
+    void setReceiverStreamingHwm(const int limit);
 
     /**************************************************
      *                                                *
@@ -665,7 +668,6 @@ class Module : public virtual slsDetectorDefs {
 
     void checkDetectorVersionCompatibility();
     void checkReceiverVersionCompatibility();
-    void restreamStopFromReceiver();
     void setModule(sls_detector_module &module, bool trimbits = true);
     int sendModule(sls_detector_module *myMod, sls::ClientSocket &client);
     void updateReceiverStreamingIP();

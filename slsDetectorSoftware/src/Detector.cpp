@@ -643,7 +643,7 @@ Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
 }
 
 void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
-    int previouslyClientStreaming = pimpl->getDataStreamingToClient();
+    bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
     bool useReceiver = getUseReceiverFlag().squash(false);
     bool previouslyReceiverStreaming = false;
     if (useReceiver) {
@@ -656,7 +656,7 @@ void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
         setRxZmqPort(startingPort, -1);
     }
     // redo the zmq sockets if enabled
-    if (previouslyClientStreaming != 0) {
+    if (previouslyClientStreaming) {
         pimpl->setDataStreamingToClient(false);
         pimpl->setDataStreamingToClient(true);
     }
@@ -1042,6 +1042,8 @@ Result<int> Detector::getRxZmqPort(Positions pos) const {
 }
 
 void Detector::setRxZmqPort(int port, int module_id) {
+    bool previouslyReceiverStreaming =
+        getRxZmqDataStream(std::vector<int>{module_id}).squash(false);
     if (module_id == -1) {
         std::vector<int> port_list = getPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
@@ -1050,6 +1052,10 @@ void Detector::setRxZmqPort(int port, int module_id) {
         }
     } else {
         pimpl->Parallel(&Module::setReceiverStreamingPort, {module_id}, port);
+    }
+    if (previouslyReceiverStreaming) {
+        setRxZmqDataStream(false, std::vector<int>{module_id});
+        setRxZmqDataStream(true, std::vector<int>{module_id});
     }
 }
 
@@ -1071,6 +1077,7 @@ Result<int> Detector::getClientZmqPort(Positions pos) const {
 }
 
 void Detector::setClientZmqPort(int port, int module_id) {
+    bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
     if (module_id == -1) {
         std::vector<int> port_list = getPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
@@ -1080,6 +1087,10 @@ void Detector::setClientZmqPort(int port, int module_id) {
     } else {
         pimpl->Parallel(&Module::setClientStreamingPort, {module_id}, port);
     }
+    if (previouslyClientStreaming) {
+        pimpl->setDataStreamingToClient(false);
+        pimpl->setDataStreamingToClient(true);
+    }
 }
 
 Result<IpAddr> Detector::getClientZmqIp(Positions pos) const {
@@ -1087,11 +1098,30 @@ Result<IpAddr> Detector::getClientZmqIp(Positions pos) const {
 }
 
 void Detector::setClientZmqIp(const IpAddr ip, Positions pos) {
-    int previouslyClientStreaming = pimpl->getDataStreamingToClient();
+    bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
     pimpl->Parallel(&Module::setClientStreamingIP, pos, ip);
-    if (previouslyClientStreaming != 0) {
+    if (previouslyClientStreaming) {
         pimpl->setDataStreamingToClient(false);
         pimpl->setDataStreamingToClient(true);
+    }
+}
+
+int Detector::getClientZmqHwm() const { return pimpl->getClientStreamingHwm(); }
+
+void Detector::setClientZmqHwm(const int limit) {
+    pimpl->setClientStreamingHwm(limit);
+}
+
+Result<int> Detector::getRxZmqHwm(Positions pos) const {
+    return pimpl->Parallel(&Module::getReceiverStreamingHwm, pos);
+}
+
+void Detector::setRxZmqHwm(const int limit) {
+    bool previouslyReceiverStreaming = getRxZmqDataStream().squash(false);
+    pimpl->Parallel(&Module::setReceiverStreamingHwm, {}, limit);
+    if (previouslyReceiverStreaming) {
+        setRxZmqDataStream(false, {});
+        setRxZmqDataStream(true, {});
     }
 }
 

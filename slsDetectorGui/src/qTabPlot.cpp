@@ -1,8 +1,6 @@
 #include "qTabPlot.h"
 #include "qDefs.h"
 #include "qDrawPlot.h"
-#include <QAbstractButton>
-#include <QButtonGroup>
 #include <QStackedLayout>
 #include <QStandardItemModel>
 
@@ -20,14 +18,9 @@ qTabPlot::qTabPlot(QWidget *parent, sls::Detector *detector, qDrawPlot *p)
     LOG(logDEBUG) << "Plot ready";
 }
 
-qTabPlot::~qTabPlot() { delete btnGroupPlotType; }
+qTabPlot::~qTabPlot() {}
 
 void qTabPlot::SetupWidgetWindow() {
-    // button group for plot type
-    btnGroupPlotType = new QButtonGroup(this);
-    btnGroupPlotType->addButton(radioNoPlot, 0);
-    btnGroupPlotType->addButton(radioDataGraph, 1);
-
     // 1D and 2D options
     stackedWidget1D->setCurrentIndex(0);
     stackedWidget2D->setCurrentIndex(0);
@@ -76,19 +69,18 @@ void qTabPlot::SetupWidgetWindow() {
     Initialization();
     Refresh();
 
-    // set default timer
-    spinTimeGap->setValue(DEFAULT_STREAMING_TIMER_IN_MS);
-    // set to streaming timer
-    stackedTimeInterval->setCurrentIndex(0);
-    comboFrequency->setCurrentIndex(0);
+    // set zmq high water mark to GUI_ZMQ_RCV_HWM (2)
+    spinSndHwm->setValue(qDefs::GUI_ZMQ_RCV_HWM);
+    spinRcvHwm->setValue(qDefs::GUI_ZMQ_RCV_HWM);
 }
 
 void qTabPlot::Initialization() {
-    // Plot arguments box
-    connect(btnGroupPlotType, SIGNAL(buttonClicked(int)), this,
-            SLOT(SetPlot()));
-
     // Plotting frequency box
+    connect(chkNoPlot, SIGNAL(toggled(bool)), this, SLOT(SetPlot()));
+    connect(spinSndHwm, SIGNAL(valueChanged(int)), this,
+            SLOT(SetStreamingHwm(int)));
+    connect(spinRcvHwm, SIGNAL(valueChanged(int)), this,
+            SLOT(SetReceivingHwm(int)));
     connect(comboFrequency, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetStreamingFrequency()));
     connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this,
@@ -214,13 +206,18 @@ void qTabPlot::Select1DPlot(bool enable) {
 
 void qTabPlot::SetPlot() {
     bool plotEnable = false;
-    if (radioNoPlot->isChecked()) {
+    if (chkNoPlot->isChecked()) {
         LOG(logINFO) << "Setting Plot Type: No Plot";
-    } else if (radioDataGraph->isChecked()) {
+    } else {
         LOG(logINFO) << "Setting Plot Type: Datagraph";
         plotEnable = true;
     }
-    boxFrequency->setEnabled(plotEnable);
+    comboFrequency->setEnabled(plotEnable);
+    lblSndHwm->setEnabled(plotEnable);
+    spinSndHwm->setEnabled(plotEnable);
+    lblRcvHwm->setEnabled(plotEnable);
+    spinRcvHwm->setEnabled(plotEnable);
+    stackedTimeInterval->setEnabled(plotEnable);
     box1D->setEnabled(plotEnable);
     box2D->setEnabled(plotEnable);
     boxSave->setEnabled(plotEnable);
@@ -705,17 +702,68 @@ void qTabPlot::SetStreamingFrequency() {
                  &qTabPlot::GetStreamingFrequency)
 }
 
+void qTabPlot::GetStreamingHwm() {
+    LOG(logDEBUG) << "Getting Streaming Hwm for receiver";
+    disconnect(spinSndHwm, SIGNAL(valueChanged(int)), this,
+               SLOT(SetStreamingHwm(int)));
+    try {
+        int value = det->getRxZmqHwm().tsquash(
+            "Inconsistent streaming hwm for all receivers.");
+        LOG(logDEBUG) << "Got streaming hwm for receiver " << value;
+        spinSndHwm->setValue(value);
+    }
+    CATCH_DISPLAY("Could not get streaming hwm for receiver.",
+                  "qTabPlot::GetStreamingHwm")
+    connect(spinSndHwm, SIGNAL(valueChanged(int)), this,
+            SLOT(SetStreamingHwm(int)));
+}
+
+void qTabPlot::SetStreamingHwm(int value) {
+    LOG(logINFO) << "Setting Streaming Hwm for receiver to " << value;
+    try {
+        det->setRxZmqHwm(value);
+    }
+    CATCH_HANDLE("Could not set streaming hwm for receiver.",
+                 "qTabPlot::SetStreamingHwm", this, &qTabPlot::GetStreamingHwm)
+}
+
+void qTabPlot::GetReceivingHwm() {
+    LOG(logDEBUG) << "Getting Receiving Hwm for client";
+    try {
+        int value = det->getClientZmqHwm();
+        LOG(logDEBUG) << "Got receiving hwm for client " << value;
+    }
+    CATCH_DISPLAY("Could not get receiving hwm for client.",
+                  "qTabPlot::GetReceivingHwm")
+}
+
+void qTabPlot::SetReceivingHwm(int value) {
+    LOG(logINFO) << "Setting Streaming Hwm to " << value;
+    try {
+        det->setClientZmqHwm(value);
+    }
+    CATCH_HANDLE("Could not set receiving hwm from client.",
+                 "qTabPlot::SetReceivingHwm", this, &qTabPlot::GetReceivingHwm)
+}
+
 void qTabPlot::Refresh() {
     LOG(logDEBUG) << "**Updating Plot Tab";
 
     if (!plot->GetIsRunning()) {
-        boxPlotType->setEnabled(true);
+        boxFrequency->setEnabled(true);
 
         // streaming frequency
-        if (!radioNoPlot->isChecked()) {
-            boxFrequency->setEnabled(true);
+        if (!chkNoPlot->isChecked()) {
+            comboFrequency->setEnabled(true);
+            stackedTimeInterval->setEnabled(true);
+            lblSndHwm->setEnabled(true);
+            spinSndHwm->setEnabled(true);
+            lblRcvHwm->setEnabled(true);
+            spinRcvHwm->setEnabled(true);
         }
         GetStreamingFrequency();
+        GetStreamingHwm();
+        GetReceivingHwm();
         // gain plot, gap pixels enable
         switch (det->getDetectorType().squash()) {
         case slsDetectorDefs::EIGER:
@@ -734,7 +782,6 @@ void qTabPlot::Refresh() {
             break;
         }
     } else {
-        boxPlotType->setEnabled(false);
         boxFrequency->setEnabled(false);
         chkGainPlot->setEnabled(false);
         chkGainPlot1D->setEnabled(false);

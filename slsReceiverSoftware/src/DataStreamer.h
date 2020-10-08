@@ -86,8 +86,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param nunits pointer to number of theads/ units per detector
      * @param port streaming port start index
      * @param ip streaming source ip
+     * @param hwm streaming high water mark
      */
-    void CreateZmqSockets(int *nunits, uint32_t port, const sls::IpAddr ip);
+    void CreateZmqSockets(int *nunits, uint32_t port, const sls::IpAddr ip,
+                          int hwm);
 
     /**
      * Shuts down and deletes Zmq Sockets

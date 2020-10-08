@@ -110,23 +110,23 @@ TEST_CASE("adcvpp", "[.cmd][.new]") {
         {
             std::ostringstream oss;
             proxy.Call("adcvpp", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcvpp 1\n");
+            REQUIRE(oss.str() == "dac adcvpp 1\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("adcvpp", {"1140", "mv"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcvpp 1140 mv\n");
+            REQUIRE(oss.str() == "dac adcvpp 1140 mV\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("adcvpp", {"mv"}, -1, GET, oss);
-            REQUIRE(oss.str() == "adcvpp 1140 mv\n");
+            REQUIRE(oss.str() == "dac adcvpp 1140 mV\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setDAC(defs::ADC_VPP, prev_val[i], false, {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("adcvpp", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac adcvpp", {}, -1, GET));
     }
 }
 
@@ -777,7 +777,7 @@ TEST_CASE("adc", "[.cmd][.new]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
-        for (int i = 0; i <= 8; ++i) {
+        for (int i = 0; i <= 7; ++i) {
             REQUIRE_NOTHROW(proxy.Call("adc", {std::to_string(i)}, -1, GET));
             REQUIRE_THROWS(proxy.Call("adc", {"0"}, -1, PUT));
         }

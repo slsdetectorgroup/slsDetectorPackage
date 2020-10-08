@@ -485,6 +485,8 @@ std::string ToString(const defs::dacIndex s) {
         return std::string("vipre_cds");
     case defs::IBIAS_SFP:
         return std::string("ibias_sfp");
+    case defs::ADC_VPP:
+        return std::string("adcvpp");
     case defs::TRIMBIT_SCAN:
         return std::string("trimbit_scan");
     case defs::HIGH_VOLTAGE:
@@ -696,31 +698,31 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::DAC_3;
     if (s == "dac 4" || s == "4")
         return defs::DAC_4;
-    if (s == "dac 5"|| s == "5")
+    if (s == "dac 5" || s == "5")
         return defs::DAC_5;
-    if (s == "dac 6"|| s == "6")
+    if (s == "dac 6" || s == "6")
         return defs::DAC_6;
-    if (s == "dac 7"|| s == "7")
+    if (s == "dac 7" || s == "7")
         return defs::DAC_7;
-    if (s == "dac 8"|| s == "8")
+    if (s == "dac 8" || s == "8")
         return defs::DAC_8;
-    if (s == "dac 9"|| s == "9")
+    if (s == "dac 9" || s == "9")
         return defs::DAC_9;
-    if (s == "dac 10"|| s == "10")
+    if (s == "dac 10" || s == "10")
         return defs::DAC_10;
-    if (s == "dac 11"|| s == "11")
+    if (s == "dac 11" || s == "11")
         return defs::DAC_11;
-    if (s == "dac 12"|| s == "12")
+    if (s == "dac 12" || s == "12")
         return defs::DAC_12;
-    if (s == "dac 13"|| s == "13")
+    if (s == "dac 13" || s == "13")
         return defs::DAC_13;
-    if (s == "dac 14"|| s == "14")
+    if (s == "dac 14" || s == "14")
         return defs::DAC_14;
-    if (s == "dac 15"|| s == "15")
+    if (s == "dac 15" || s == "15")
         return defs::DAC_15;
-    if (s == "dac 16"|| s == "16")
+    if (s == "dac 16" || s == "16")
         return defs::DAC_16;
-    if (s == "dac 17"|| s == "17")
+    if (s == "dac 17" || s == "17")
         return defs::DAC_17;
     if (s == "vsvp")
         return defs::VSVP;
@@ -844,6 +846,8 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::VIPRE_CDS;
     if (s == "ibias_sfp")
         return defs::IBIAS_SFP;
+    if (s == "adcvpp")
+        return defs::ADC_VPP;
     if (s == "trimbit_scan")
         return defs::TRIMBIT_SCAN;
     if (s == "highvoltage")

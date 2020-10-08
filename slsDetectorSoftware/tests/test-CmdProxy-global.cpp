@@ -28,9 +28,9 @@ void test_dac(defs::dacIndex index, const std::string &dacname, int dacvalue) {
     // other detectors
     else {
         proxy.Call(dacname, {dacstr}, -1, PUT, oss_set);
-        REQUIRE(oss_set.str() == dacname + " " + dacstr + "\n");
+        REQUIRE(oss_set.str() == "dac " + dacname + " " + dacstr + "\n");
         proxy.Call(dacname, {}, -1, GET, oss_get);
-        REQUIRE(oss_get.str() == dacname + " " + dacstr + "\n");
+        REQUIRE(oss_get.str() == "dac " + dacname + " " + dacstr + "\n");
     }
     // Reset all dacs to previous value
     for (int i = 0; i != det.size(); ++i) {

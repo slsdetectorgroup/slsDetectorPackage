@@ -1051,6 +1051,36 @@ TEST_CASE("extsig", "[.cmd][.new]") {
     }
 }
 
+TEST_CASE("parallel", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::EIGER || det_type == defs::MYTHEN3) {
+        auto prev_val = det.getParallelMode();
+        {
+            std::ostringstream oss;
+            proxy.Call("parallel", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "parallel 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("parallel", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "parallel 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("parallel", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "parallel 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setParallelMode(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("parallel", {}, -1, GET));
+    }
+}
+
 /** temperature */
 
 TEST_CASE("templist", "[.cmd][.new]") {
@@ -1115,6 +1145,46 @@ TEST_CASE("dacvalues", "[.cmd][.new]") {
 }
 
 /* acquisition */
+
+TEST_CASE("trigger", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("trigger", {}, -1, GET));
+    auto det_type = det.getDetectorType().squash();
+    if (det_type != defs::EIGER && det_type != defs::MYTHEN3) {
+        REQUIRE_THROWS(proxy.Call("trigger", {}, -1, PUT));
+    } else if (det_type == defs::MYTHEN3) {
+        REQUIRE_NOTHROW(proxy.Call("trigger", {}, -1, PUT));
+    } else if (det_type == defs::EIGER) {
+        auto prev_timing =
+            det.getTimingMode().tsquash("inconsistent timing mode in test");
+        auto prev_frames =
+            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+        auto prev_exptime =
+            det.getExptime().tsquash("inconsistent exptime in test");
+        auto prev_period =
+            det.getPeriod().tsquash("inconsistent period in test");
+        det.setTimingMode(defs::TRIGGER_EXPOSURE);
+        det.setNumberOfFrames(1);
+        det.setExptime(std::chrono::milliseconds(1));
+        det.setPeriod(std::chrono::milliseconds(1));
+        auto startingfnum = det.getStartingFrameNumber().tsquash(
+            "inconsistent frame nr in test");
+        det.startDetector();
+        {
+            std::ostringstream oss;
+            proxy.Call("trigger", {}, -1, PUT, oss);
+            REQUIRE(oss.str() == "trigger successful\n");
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        auto currentfnum = det.getStartingFrameNumber().tsquash(
+            "inconsistent frame nr in test");
+        REQUIRE(startingfnum + 1 == currentfnum);
+        det.stopDetector();
+        det.setTimingMode(prev_timing);
+        det.setNumberOfFrames(prev_frames);
+    }
+}
 
 TEST_CASE("clearbusy", "[.cmd][.new]") {
     Detector det;
@@ -1755,6 +1825,33 @@ TEST_CASE("zmqip", "[.cmd][.new]") {
     for (int i = 0; i != det.size(); ++i) {
         det.setRxZmqIP(zmqip[i], {i});
     }
+}
+
+TEST_CASE("zmqhwm", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getClientZmqHwm();
+    {
+        std::ostringstream oss;
+        proxy.Call("zmqhwm", {"50"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "zmqhwm 50\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("zmqhwm", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "zmqhwm 50\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("zmqhwm", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "zmqhwm 0\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("zmqhwm", {"-1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "zmqhwm -1\n");
+    }
+    det.setClientZmqHwm(prev_val);
 }
 
 /* Advanced */

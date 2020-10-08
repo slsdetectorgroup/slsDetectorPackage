@@ -53,12 +53,12 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs][.new]") {
             {
                 std::ostringstream oss;
                 proxy.Call("vthreshold", {"1234"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "vthreshold 1234\n");
+                REQUIRE(oss.str() == "dac vthreshold 1234\n");
             }
             {
                 std::ostringstream oss;
                 proxy.Call("vthreshold", {}, -1, GET, oss);
-                REQUIRE(oss.str() == "vthreshold 1234\n");
+                REQUIRE(oss.str() == "dac vthreshold 1234\n");
             }
 
             // Reset dacs after test

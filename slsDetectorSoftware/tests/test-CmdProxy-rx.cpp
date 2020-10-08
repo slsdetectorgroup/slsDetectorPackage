@@ -706,6 +706,34 @@ TEST_CASE("rx_zmqip", "[.cmd][.rx][.new]") {
     }
 }
 
+TEST_CASE("rx_zmqhwm", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val =
+        det.getRxZmqHwm().tsquash("Inconsistent values for rx_zmqhwm to test");
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_zmqhwm", {"50"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_zmqhwm 50\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_zmqhwm", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_zmqhwm 50\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_zmqhwm", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_zmqhwm 0\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_zmqhwm", {"-1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_zmqhwm -1\n");
+    }
+    det.setRxZmqHwm(prev_val);
+}
+
 /* CTB Specific */
 
 TEST_CASE("rx_dbitlist", "[.cmd][.rx][.new]") {

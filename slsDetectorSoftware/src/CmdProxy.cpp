@@ -1257,7 +1257,40 @@ std::string CmdProxy::ReceiverHostname(int action) {
     return os.str();
 }
 /* File */
+
 /* ZMQ Streaming Parameters (Receiver<->Client) */
+
+std::string CmdProxy::ZMQHWM(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_limit] \n\tClient's zmq receive high water mark. Default is "
+              "the zmq library's default (1000), can also be set here using "
+              "-1. \n This is a high number and can be set to 2 for gui "
+              "purposes. \n One must also set the receiver's send high water "
+              "mark to similar value. Final effect is sum of them.\n\t Setting "
+              "it via command line is useful only before zmq enabled (before "
+              "opening gui)."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getClientZmqHwm();
+        os << t << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        int t = StringTo<int>(args[0]);
+        det->setClientZmqHwm(t);
+        os << det->getClientZmqHwm() << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Eiger Specific */
 
 std::string CmdProxy::Threshold(int action) {
@@ -2681,7 +2714,7 @@ std::string CmdProxy::ExecuteCommand(int action) {
         throw sls::RuntimeError("Cannot get.");
     } else if (action == defs::PUT_ACTION) {
         std::string command;
-        for (auto &i: args) {
+        for (auto &i : args) {
             command += (i + ' ');
         }
         auto t = det->executeCommand(command, std::vector<int>{det_id});

@@ -93,6 +93,18 @@ class ZmqSocket {
      */
     ZmqSocket(const uint32_t portnumber, const char *ethip);
 
+    /** Returns high water mark for outbound messages */
+    int GetSendHighWaterMark();
+
+    /** Sets high water mark for outbound messages. Default 1000 (zmqlib) */
+    void SetSendHighWaterMark(int limit);
+
+    /** Returns high water mark for inbound messages */
+    int GetReceiveHighWaterMark();
+
+    /** Sets high water mark for inbound messages. Default 1000 (zmqlib) */
+    void SetReceiveHighWaterMark(int limit);
+
     /**
      * Returns Port Number
      * @returns Port Number

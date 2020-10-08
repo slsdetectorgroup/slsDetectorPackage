@@ -75,7 +75,7 @@
    <property name="spacing">
     <number>6</number>
    </property>
-   <item row="1" column="4" colspan="4">
+   <item row="1" column="3" colspan="4">
     <widget class="QGroupBox" name="box2D">
      <property name="enabled">
       <bool>true</bool>
@@ -1388,7 +1388,7 @@ Displays minimum, maximum and sum of values for each plot.
      </layout>
     </widget>
    </item>
-   <item row="2" column="0" colspan="7">
+   <item row="2" column="0" colspan="6">
     <widget class="QGroupBox" name="boxPlotAxis">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -1789,7 +1789,7 @@ Displays minimum, maximum and sum of values for each plot.
      </layout>
     </widget>
    </item>
-   <item row="2" column="7">
+   <item row="2" column="6">
     <widget class="QGroupBox" name="boxSave">
      <property name="enabled">
       <bool>true</bool>
@@ -1990,23 +1990,7 @@ Displays minimum, maximum and sum of values for each plot.
      </layout>
     </widget>
    </item>
-   <item row="0" column="3">
-    <spacer name="horizontalSpacer_6">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>10</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="0" column="4" colspan="4">
+   <item row="0" column="0" colspan="7">
     <widget class="QGroupBox" name="boxFrequency">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -2016,7 +2000,7 @@ Displays minimum, maximum and sum of values for each plot.
      </property>
      <property name="minimumSize">
       <size>
-       <width>0</width>
+       <width>350</width>
        <height>65</height>
       </size>
      </property>
@@ -2024,7 +2008,7 @@ Displays minimum, maximum and sum of values for each plot.
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the pace at which the receiver streams out images. Images in between the timeout or frequency are not sent out.&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Time Interval&lt;/span&gt;: Streaming time interval when an image should be streamed. &lt;br/&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Every nth Image&lt;/span&gt;: Only every nth image is streamed. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="title">
-      <string>Receiver Streaming Frequency / Timer</string>
+      <string>Receiver Streaming</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -2052,6 +2036,33 @@ Displays minimum, maximum and sum of values for each plot.
        <number>0</number>
       </property>
       <item row="0" column="0">
+       <widget class="QCheckBox" name="chkNoPlot">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>80</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;
+Displays minimum, maximum and sum of values for each plot.
+&lt;nobr&gt;</string>
+        </property>
+        <property name="text">
+         <string>No Plot</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="11">
        <widget class="QComboBox" name="comboFrequency">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -2061,13 +2072,13 @@ Displays minimum, maximum and sum of values for each plot.
         </property>
         <property name="minimumSize">
          <size>
-          <width>150</width>
+          <width>135</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>16777215</width>
+          <width>135</width>
           <height>16777215</height>
          </size>
         </property>
@@ -2150,29 +2161,25 @@ Displays minimum, maximum and sum of values for each plot.
         </item>
        </widget>
       </item>
-      <item row="0" column="1">
-       <spacer name="horizontalSpacer_14">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Expanding</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
+      <item row="0" column="13">
+       <widget class="QStackedWidget" name="stackedTimeInterval">
+        <property name="maximumSize">
          <size>
-          <width>80</width>
-          <height>20</height>
+          <width>150</width>
+          <height>16777215</height>
          </size>
         </property>
-       </spacer>
-      </item>
-      <item row="0" column="2">
-       <widget class="QStackedWidget" name="stackedTimeInterval">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="pageTimeGap">
          <layout class="QHBoxLayout" name="horizontalLayout_14">
+          <property name="spacing">
+           <number>2</number>
+          </property>
+          <property name="leftMargin">
+           <number>2</number>
+          </property>
           <item>
            <widget class="QDoubleSpinBox" name="spinTimeGap">
             <property name="sizePolicy">
@@ -2181,11 +2188,17 @@ Displays minimum, maximum and sum of values for each plot.
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="maximumSize">
+             <size>
+              <width>90</width>
+              <height>30</height>
+             </size>
+            </property>
             <property name="keyboardTracking">
              <bool>false</bool>
             </property>
             <property name="decimals">
-             <number>3</number>
+             <number>2</number>
             </property>
             <property name="maximum">
              <double>999999.000000000000000</double>
@@ -2238,6 +2251,9 @@ Displays minimum, maximum and sum of values for each plot.
         </widget>
         <widget class="QWidget" name="pageFrequency">
          <layout class="QHBoxLayout" name="horizontalLayout_13">
+          <property name="leftMargin">
+           <number>2</number>
+          </property>
           <item>
            <widget class="QSpinBox" name="spinNthFrame">
             <property name="sizePolicy">
@@ -2267,78 +2283,8 @@ Displays minimum, maximum and sum of values for each plot.
         </widget>
        </widget>
       </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QGroupBox" name="boxPlotType">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>350</width>
-       <height>65</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="title">
-      <string>Plot Type</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-     </property>
-     <property name="flat">
-      <bool>false</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_5">
-      <property name="leftMargin">
-       <number>6</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>6</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <property name="horizontalSpacing">
-       <number>2</number>
-      </property>
-      <property name="verticalSpacing">
-       <number>0</number>
-      </property>
-      <item row="0" column="2">
-       <widget class="QRadioButton" name="radioDataGraph">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Data Graph</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <spacer name="horizontalSpacer_5">
+      <item row="0" column="10">
+       <spacer name="horizontalSpacer_18">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -2347,22 +2293,159 @@ Displays minimum, maximum and sum of values for each plot.
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>10</width>
+          <width>30</width>
           <height>20</height>
          </size>
         </property>
        </spacer>
       </item>
-      <item row="0" column="0">
-       <widget class="QRadioButton" name="radioNoPlot">
+      <item row="0" column="2">
+       <widget class="QLabel" name="lblSndHwm">
+        <property name="text">
+         <string>Snd Hwm: </string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <spacer name="horizontalSpacer_25">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>30</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="4">
+       <spacer name="horizontalSpacer_14">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>30</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="6">
+       <widget class="QSpinBox" name="spinRcvHwm">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High water mark for inbound messages for gui.&lt;/p&gt;&lt;p&gt; #zmqhwm#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="statusTip">
+         <string/>
+        </property>
+        <property name="whatsThis">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="prefix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>-1</number>
+        </property>
+        <property name="maximum">
+         <number>99999</number>
+        </property>
+        <property name="value">
+         <number>1000</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QSpinBox" name="spinSndHwm">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High water mark for outbound messages for receiver.&lt;/p&gt;&lt;p&gt;#rx_zmqhwm#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="statusTip">
+         <string/>
+        </property>
+        <property name="whatsThis">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="prefix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>-1</number>
+        </property>
+        <property name="maximum">
+         <number>99999</number>
+        </property>
+        <property name="value">
+         <number>1000</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="5">
+       <widget class="QLabel" name="lblRcvHwm">
         <property name="text">
-         <string>No Plot</string>
+         <string>Rcv Hwm: </string>
         </property>
        </widget>
       </item>
@@ -2370,7 +2453,6 @@ Displays minimum, maximum and sum of values for each plot.
     </widget>
    </item>
   </layout>
-  <zorder>boxPlotType</zorder>
   <zorder>box1D</zorder>
   <zorder>boxFrequency</zorder>
   <zorder>box2D</zorder>
@@ -2378,8 +2460,6 @@ Displays minimum, maximum and sum of values for each plot.
   <zorder>boxSave</zorder>
  </widget>
  <tabstops>
-  <tabstop>radioNoPlot</tabstop>
-  <tabstop>radioDataGraph</tabstop>
   <tabstop>comboFrequency</tabstop>
   <tabstop>spinTimeGap</tabstop>
   <tabstop>comboTimeGapUnit</tabstop>

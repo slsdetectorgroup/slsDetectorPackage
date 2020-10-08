@@ -206,6 +206,8 @@ int ClientInterface::functionTable(){
     flist[F_SET_RECEIVER_RATE_CORRECT]      =   &ClientInterface::set_rate_correct;
     flist[F_SET_RECEIVER_SCAN]              =   &ClientInterface::set_scan;
     flist[F_RECEIVER_SET_THRESHOLD]         =   &ClientInterface::set_threshold;
+    flist[F_GET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::get_streaming_hwm;
+    flist[F_SET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::set_streaming_hwm;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -1656,5 +1658,22 @@ int ClientInterface::set_threshold(Interface &socket) {
         functionNotImplemented();
     verifyIdle(socket);
     impl()->setThresholdEnergy(arg);
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_streaming_hwm(Interface &socket) {
+    int retval = impl()->getStreamingHwm();
+    LOG(logDEBUG1) << "zmq send hwm limit:" << retval;
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::set_streaming_hwm(Interface &socket) {
+    auto limit = socket.Receive<int>();
+    if (limit < -1) {
+        throw RuntimeError("Invalid zmq send hwm limit " +
+                           std::to_string(limit));
+    }
+    verifyIdle(socket);
+    impl()->setStreamingHwm(limit);
     return socket.Send(OK);
 }

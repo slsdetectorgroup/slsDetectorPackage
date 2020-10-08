@@ -235,6 +235,36 @@
         return os.str();                                                       \
     }
 
+/** int, set no id, get id */
+#define INTEGER_COMMAND_SET_NOID_GET_ID(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR) \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            if (!args.empty()) {                                               \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            auto t = det->GETFCN(std::vector<int>{det_id});                    \
+            os << OutString(t) << '\n';                                        \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (det_id != -1) {                                                \
+                throw sls::RuntimeError(                                       \
+                    "Cannot execute this at module level");                    \
+            }                                                                  \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            auto val = CONV(args[0]);                                          \
+            det->SETFCN(val);                                                  \
+            os << args.front() << '\n';                                        \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
 /** int, no id */
 #define INTEGER_COMMAND_NOID(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)            \
     std::string CMDNAME(const int action) {                                    \
@@ -868,6 +898,8 @@ class CmdProxy {
         {"zmqport", &CmdProxy::zmqport},
         {"rx_zmqip", &CmdProxy::rx_zmqip},
         {"zmqip", &CmdProxy::zmqip},
+        {"zmqhwm", &CmdProxy::ZMQHWM},
+        {"rx_zmqhwm", &CmdProxy::rx_zmqhwm},
 
         /* Eiger Specific */
         {"subexptime", &CmdProxy::subexptime},
@@ -1071,6 +1103,7 @@ class CmdProxy {
     std::string ReceiverHostname(int action);
     /* File */
     /* ZMQ Streaming Parameters (Receiver<->Client) */
+    std::string ZMQHWM(int action);
     /* Eiger Specific */
     std::string Threshold(int action);
     std::string ThresholdNoTb(int action);
@@ -1691,6 +1724,15 @@ class CmdProxy {
         "receiver zmq Ip Address (from rx_hostname). Modified only when using "
         "an intermediate process between receiver and client(gui). Also "
         "restarts client zmq streaming if enabled.");
+
+    INTEGER_COMMAND_SET_NOID_GET_ID(
+        rx_zmqhwm, getRxZmqHwm, setRxZmqHwm, StringTo<int>,
+        "[n_value]\n\tReceiver's zmq send high water mark. Default is the zmq "
+        "library's default (1000). This is a high number and can be set to 2 "
+        "for gui purposes. One must also set the client's receive high water "
+        "mark to similar value. Final effect is sum of them. Also restarts "
+        "receiver zmq streaming if enabled. Can set to -1 to set default "
+        "value.");
 
     /* Eiger Specific */
 

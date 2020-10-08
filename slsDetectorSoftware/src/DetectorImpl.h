@@ -16,7 +16,7 @@ class detectorData;
 #include <vector>
 
 #define MULTI_SHMAPIVERSION 0x190809
-#define MULTI_SHMVERSION    0x200319
+#define MULTI_SHMVERSION    0x201007
 #define SHORT_STRING_LENGTH 50
 
 #include <future>
@@ -62,6 +62,8 @@ struct sharedMultiSlsDetector {
     bool acquiringFlag;
     bool initialChecks;
     bool gapPixels;
+    /** high water mark of listening tcp port (only data) */
+    int zmqHwm;
 };
 
 class DetectorImpl : public virtual slsDetectorDefs {
@@ -240,6 +242,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     bool getDataStreamingToClient();
     void setDataStreamingToClient(bool enable);
+    int getClientStreamingHwm() const;
+    void setClientStreamingHwm(const int limit);
 
     /**
      * register callback for accessing acquisition final data
@@ -324,12 +328,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     void updateDetectorSize();
 
-    /**
-     * Create Receiving Data Sockets
-     * @param destroy is true to destroy all the sockets
-     * @returns OK or FAIL
-     */
-    int createReceivingDataSockets(const bool destroy = false);
+    int destroyReceivingDataSockets();
+    int createReceivingDataSockets();
 
     /**
      * Reads frames from receiver through a constant socket
@@ -386,6 +386,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     /** ZMQ Socket - Receiver to Client */
     std::vector<std::unique_ptr<ZmqSocket>> zmqSocket;
+
+    /** number of zmq sockets running currently */
+    volatile int numZmqRunning{0};
 
     /** mutex to synchronize main and data processing threads */
     mutable std::mutex mp;

@@ -876,7 +876,8 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         (int *)nd, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
-                        &numThreads, streamingPort, streamingSrcIP);
+                        &numThreads, streamingPort, streamingSrcIP,
+                        streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
 
@@ -1004,7 +1005,8 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         (int *)nd, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
-                        &numThreads, streamingPort, streamingSrcIP);
+                        &numThreads, streamingPort, streamingSrcIP,
+                        streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
                 } catch (...) {
@@ -1061,6 +1063,14 @@ sls::IpAddr Implementation::getStreamingSourceIP() const {
 void Implementation::setStreamingSourceIP(const sls::IpAddr ip) {
     streamingSrcIP = ip;
     LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
+}
+
+int Implementation::getStreamingHwm() const { return streamingHwm; }
+
+void Implementation::setStreamingHwm(const int i) {
+    streamingHwm = i;
+    LOG(logINFO) << "Streaming Hwm: "
+                 << (i == -1 ? "Default (-1)" : std::to_string(streamingHwm));
 }
 
 std::map<std::string, std::string>

@@ -2053,9 +2053,7 @@ Displays minimum, maximum and sum of values for each plot.
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;nobr&gt;
-Displays minimum, maximum and sum of values for each plot.
-&lt;nobr&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, there is no call back and no images are plotted.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>No Plot</string>

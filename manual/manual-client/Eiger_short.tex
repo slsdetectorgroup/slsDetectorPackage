@@ -316,7 +316,11 @@ You can then reset to zero the number of frames caught (in releases<5.0), then  
 \item {\tt{sls\_detector\_put 0-receiver start}} 
 \item {\tt{sls\_detector\_put 0-status start}} 
 \end{enumerate}
-In release \textcolor{red}{5.0} it is not needed to reset the frames caughts.
+In release \textcolor{red}{5.0} it is not needed to reset the frames caughts and the commands are:
+ \begin{enumerate}
+\item \textcolor{red}{{\tt{sls\_detector\_put 0-rx\_start}}} 
+\item \textcolor{red}{{\tt{sls\_detector\_put 0-start}}} 
+\end{enumerate}
 
 You can poll the detector status using:
 \begin{verbatim}
@@ -325,17 +329,17 @@ sls_detector_get 0-status
 When the detector is {\tt{idle}}, then the acquisition is done but the receiver could still be receiving data. If you want, you can check if the receiver is finished receiving as many frames as you were expecting (this is optional but required for many many frames acquisition or when using some delays to send data at very high frame rate.
 \begin{enumerate}
 \setcounter{enumi}{3}
-\item {\tt{sls\_detector\_get framescaught}} 
+\item {\tt{sls\_detector\_get framescaught}} (\textcolor{red}{rx\_framescaught})
 \end{enumerate}
 Then you can stop the receiver as well now:
 \begin{enumerate}
 \setcounter{enumi}{4}
-\item {\tt{sls\_detector\_put 0-receiver stop}} 
+\item {\tt{sls\_detector\_put 0-receiver stop} (\textcolor{red}{sls\_detector\_put 0-rx\_stop})}
 \end{enumerate}
 
 The detector will not accept other commands while acquiring. If an acquisition wishes to be properly aborted, then:
 \begin{itemize}
-\item {\tt{sls\_detector\_put 0-status stop}} 
+\item {\tt{sls\_detector\_put 0-status stop} (\textcolor{red}{sls\_detector\_put 0-stop})} 
 \end{itemize}
 this same command can be used after a non proper abortion of the acquisition to reset to normal status the detector.
 
@@ -1056,9 +1060,9 @@ Note that if one wants to  reconstruct the real time the detector was acquiring 
 \subsection{Offline image reconstruction}
 The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore. However, it can be retrieved from \\
 {\tt{git clone https://github.com/slsdetectorgroup/slsImageReconstruction.git slsImageReconstruction}}.\\
-Checkout the {\tt{v3.1}} branch if in a 3.1.X release, the {\tt{v4.0.0}} branch if in 4.0.X release, or the {\tt{v4.1}} branch if in 4.1.X release of the {\tt{slsDetector}} code. There is a {\tt{developer}} branch that has newer updates but needs to be tested.
+Checkout the {\tt{v3.1}} branch if in a 3.1.X release, the {\tt{v4.0.0}} branch if in 4.0.X release, or the {\tt{v4.1}} branch if in 4.1.X release of the {\tt{slsDetector}} code. There is a {\tt{developer}} branch that is following the 5.X chnages but it is not officila yet.
 
-Three possible conversions are possible: into \textbf{cbf}, \textbf{hdf5}. \textbf{tiff} and  \textbf{root} format. The detector writes 2 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
+Four possible conversions are possible: into \textbf{cbf}, \textbf{hdf5}. \textbf{tiff} and  \textbf{root} format. The detector writes 2 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
 
 Note that the number of images per file in the 3.1.X release is hardcoded and needs to match whatever you are using in \\
 {\tt{slsDetectorsPackage/slsReceiverSoftware/include/sls\_receiver\_defs.h}}:

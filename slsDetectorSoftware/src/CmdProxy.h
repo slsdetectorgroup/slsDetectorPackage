@@ -784,7 +784,7 @@ class CmdProxy {
         {"triggersl", &CmdProxy::triggersl},
         {"delayl", &CmdProxy::delayl},
         {"periodl", &CmdProxy::periodl},
-        {"dr", &CmdProxy::DynamicRange},
+        {"dr", &CmdProxy::dr},
         {"drlist", &CmdProxy::drlist},
         {"timing", &CmdProxy::timing},
         {"timinglist", &CmdProxy::timinglist},
@@ -1219,17 +1219,17 @@ class CmdProxy {
 
     /* acquisition parameters */
 
-    INTEGER_COMMAND_NOID(
+    INTEGER_COMMAND_SET_NOID_GET_ID(
         frames, getNumberOfFrames, setNumberOfFrames, StringTo<int64_t>,
         "[n_frames]\n\tNumber of frames per acquisition. In "
         "trigger mode, number of frames per trigger. \n\tCannot be set in "
         "modular level. \n\tIn scan mode, number of frames is set to number of "
         "steps.\n\t[Gotthard2] Burst mode has a maximum of 2720 frames.");
 
-    INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
-                         StringTo<int64_t>,
-                         "[n_triggers]\n\tNumber of triggers per aquire. Set "
-                         "timing mode to use triggers.");
+    INTEGER_COMMAND_SET_NOID_GET_ID(
+        triggers, getNumberOfTriggers, setNumberOfTriggers, StringTo<int64_t>,
+        "[n_triggers]\n\tNumber of triggers per aquire. Set "
+        "timing mode to use triggers.");
 
     TIME_COMMAND(
         period, getPeriod, setPeriod,
@@ -1259,6 +1259,15 @@ class CmdProxy {
                      "\n\t[Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2]"
                      " Period left for current frame."
                      "\n\t[Gotthard2] only in continuous mode.");
+
+    INTEGER_COMMAND_SET_NOID_GET_ID(
+        dr, getDynamicRange, setDynamicRange, StringTo<int>,
+        "[value]\n\tDynamic Range or number of bits per "
+        "pixel in detector.\n\t"
+        "[Eiger] Options: 4, 8, 16, 32. If set to 32, also sets "
+        "clkdivider to 2, else to 0.\n\t"
+        "[Mythen3] Options: 8, 16, 32\n\t"
+        "[Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16");
 
     GET_COMMAND_NOID(drlist, getDynamicRangeList,
                      "\n\tGets the list of dynamic ranges for this detector.");
@@ -1820,7 +1829,7 @@ class CmdProxy {
         "0 or this mode disabled(comparator enabled throughout). 1 enables "
         "mode. 0 disables mode. ");
 
-    INTEGER_COMMAND_NOID(
+    INTEGER_COMMAND_SET_NOID_GET_ID(
         storagecells, getNumberOfAdditionalStorageCells,
         setNumberOfAdditionalStorageCells, StringTo<int>,
         "[0-15]\n\t[Jungfrau] Number of additional storage cells. Default is "
@@ -1845,7 +1854,7 @@ class CmdProxy {
                      "left for current frame. ");
 
     /* Gotthard2 Specific */
-    INTEGER_COMMAND_NOID(
+    INTEGER_COMMAND_SET_NOID_GET_ID(
         bursts, getNumberOfBursts, setNumberOfBursts, StringTo<int64_t>,
         "[n_bursts]\n\t[Gotthard2] Number of bursts per aquire. Only in auto "
         "timing mode and burst mode. Use timing command to set timing mode and "

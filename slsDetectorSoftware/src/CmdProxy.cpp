@@ -486,39 +486,6 @@ std::string CmdProxy::Exptime(int action) {
     return os.str();
 }
 
-std::string CmdProxy::DynamicRange(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "[value]\n\tDynamic Range or number of bits per "
-              "pixel in detector.\n\t"
-              "[Eiger] Options: 4, 8, 16, 32. If set to 32, also sets "
-              "clkdivider to 2, else to 0.\n\t"
-              "[Mythen3] Options: 8, 16, 32\n\t"
-              "[Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16"
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getDynamicRange(std::vector<int>{det_id});
-        os << OutString(t) << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        if (det_id != -1) {
-            throw sls::RuntimeError(
-                "Cannot execute dynamic range at module level");
-        }
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
-        }
-        det->setDynamicRange(StringTo<int>(args[0]));
-        os << args.front() << '\n';
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
 std::string CmdProxy::Speed(int action) {
     std::ostringstream os;
     os << cmd << ' ';

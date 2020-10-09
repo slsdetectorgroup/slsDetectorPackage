@@ -133,7 +133,8 @@ Compile with SLS_USE_GUI=ON in cmake or -g option in cmk.sh script. One can also
 
 
 .. note ::
-    | The streaming frequency (commmand: rx_zmqfreq) is set by default in the receiver to 1 (send every frame).
-    | At Gui startup, this value is set to 0. It will set to use a timer of 500 ms. Hence, every frame will not be streamed to the gui. This is done to reduce the load for fast and large detectors for display purposes.
-    | One can still change this setting in the gui in the Plot tab (Plotting frequency) or from the command line (rx_zmqfreq).
-    | First frame is always streamed out, no matter if timer or frequency is used.
+    | The streaming high water mark (commmand: rx_zmqhwm) and the receiving high water mark (command: zmqhwm) is by default the lib zmq's default (currently 1000).
+    | At Gui startup, these values are set to 2. Hence, for very fast detectors, many frames will be dropped to be able to view the latest in the gui.
+    | One can still change this setting in the gui in the Plot tab (ZMQ Streaming), from the command line or API.
+    | Both hwm's can be set to a -1 to use the lib's default.
+    | Since the dummy end of acquisition packet streamed from receiver might also be lost, receiver restreams until gui acknowledges.

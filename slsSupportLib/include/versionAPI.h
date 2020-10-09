@@ -1,5 +1,5 @@
 /** API versions */
-#define GITBRANCH   "5.0.0-rc2"
+#define GITBRANCH   "developer"
 #define APICTB 0x201008
 #define APIGOTTHARD 0x201008
 #define APIGOTTHARD2 0x201008
@@ -9,4 +9,4 @@
 #define APIEIGER 0x201008
 #define APILIB 0x201008
 #define APIRECEIVER 0x201008
-#define APIGUI 0x201008
+#define APIGUI 0x201009

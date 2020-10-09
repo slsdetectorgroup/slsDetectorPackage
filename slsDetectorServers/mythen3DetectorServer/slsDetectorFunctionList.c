@@ -50,6 +50,8 @@ uint32_t clkDivider[NUM_CLOCKS] = {};
 
 int highvoltage = 0;
 int detPos[2] = {};
+int64_t exptimeReg[3] = {0, 0, 0};
+int64_t gateDelayReg[3] = {0, 0, 0};
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -693,7 +695,7 @@ void updateGatePeriod() {
             }
         }
     }
-    LOG(logINFO, ("\tSetting Gate Period to %lld ns\n", (long long int)max));
+    LOG(logINFO, ("\tUpdating Gate Period to %lld ns\n", (long long int)max));
     max *= (1E-9 * getFrequency(SYSTEM_C0));
     set64BitReg(max, ASIC_EXP_GATE_PERIOD_LSB_REG,
                 ASIC_EXP_GATE_PERIOD_MSB_REG);
@@ -726,14 +728,22 @@ int setExpTime(int gateIndex, int64_t val) {
         return FAIL;
     }
     if (val < 0) {
-        LOG(logERROR, ("Invalid exptime (index:%d): %lld ns\n", gateIndex,
-                       (long long int)val));
+        LOG(logERROR,
+            ("Invalid exptime%d : %lld ns\n", gateIndex, (long long int)val));
         return FAIL;
     }
-    LOG(logINFO, ("Setting exptime %lld ns (index:%d)\n", (long long int)val,
-                  gateIndex));
+    LOG(logINFO,
+        ("Setting exptime%d to %lld ns\n", gateIndex, (long long int)val));
     val *= (1E-9 * getFrequency(SYSTEM_C0));
-    set64BitReg(val, alsb, amsb);
+
+    // set in register only if counter enabled
+    exptimeReg[gateIndex] = val;
+    if (getCounterMask() & (1 << gateIndex)) {
+        set64BitReg(val, alsb, amsb);
+    } else {
+        LOG(logWARNING, ("Writing 0 to reg (counter disabled)\n"));
+        set64BitReg(0, alsb, amsb);
+    }
 
     // validate for tolerance
     int64_t retval = getExpTime(gateIndex);
@@ -767,7 +777,15 @@ int64_t getExpTime(int gateIndex) {
         LOG(logERROR, ("Invalid gate index: %d\n", gateIndex));
         return -1;
     }
-    return get64BitReg(alsb, amsb) / (1E-9 * getFrequency(SYSTEM_C0));
+
+    uint64_t retval = 0;
+    // read from register if counter enabled
+    if (getCounterMask() & (1 << gateIndex)) {
+        retval = get64BitReg(alsb, amsb);
+    } else {
+        retval = exptimeReg[gateIndex];
+    }
+    return retval / (1E-9 * getFrequency(SYSTEM_C0));
 }
 
 int setGateDelay(int gateIndex, int64_t val) {
@@ -791,14 +809,22 @@ int setGateDelay(int gateIndex, int64_t val) {
         return FAIL;
     }
     if (val < 0) {
-        LOG(logERROR, ("Invalid gate delay (index:%d): %lld ns\n", gateIndex,
+        LOG(logERROR, ("Invalid gate delay%d : %lld ns\n", gateIndex,
                        (long long int)val));
         return FAIL;
     }
-    LOG(logINFO, ("Setting gate delay %lld ns (index:%d)\n", (long long int)val,
-                  gateIndex));
+    LOG(logINFO,
+        ("Setting gate delay%d to %lld ns\n", gateIndex, (long long int)val));
     val *= (1E-9 * getFrequency(SYSTEM_C0));
-    set64BitReg(val, alsb, amsb);
+
+    // set in register only if counter enabled
+    gateDelayReg[gateIndex] = val;
+    if (getCounterMask() & (1 << gateIndex)) {
+        set64BitReg(val, alsb, amsb);
+    } else {
+        LOG(logWARNING, ("Writing 0 to reg (counter disabled)\n"));
+        set64BitReg(0, alsb, amsb);
+    }
 
     // validate for tolerance
     int64_t retval = getGateDelay(gateIndex);
@@ -832,7 +858,15 @@ int64_t getGateDelay(int gateIndex) {
         LOG(logERROR, ("Invalid gate index: %d\n", gateIndex));
         return -1;
     }
-    return get64BitReg(alsb, amsb) / (1E-9 * getFrequency(SYSTEM_C0));
+
+    uint64_t retval = 0;
+    // read from register if counter enabled
+    if (getCounterMask() & (1 << gateIndex)) {
+        retval = get64BitReg(alsb, amsb);
+    } else {
+        retval = gateDelayReg[gateIndex];
+    }
+    return retval / (1E-9 * getFrequency(SYSTEM_C0));
 }
 
 void setCounterMask(uint32_t arg) {
@@ -847,7 +881,11 @@ void setCounterMask(uint32_t arg) {
     LOG(logDEBUG, ("Config Reg: 0x%x\n", bus_r(addr)));
 
     updatePacketizing();
-    updateGatePeriod();
+    LOG(logINFO, ("\tUpdating Exptime and Gate Delay\n"));
+    for (int i = 0; i < 3; ++i) {
+        setExpTime(i, exptimeReg[i]);
+        setGateDelay(i, gateDelayReg[i]);
+    }
 }
 
 uint32_t getCounterMask() {
@@ -856,6 +894,7 @@ uint32_t getCounterMask() {
 }
 
 void updatePacketizing() {
+    LOG(logINFO, ("\tUpdating Packetizing\n"));
     const int ncounters = __builtin_popcount(getCounterMask());
     const int tgEnable = enableTenGigabitEthernet(-1);
     int packetsPerFrame = 0;

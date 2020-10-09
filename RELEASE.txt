@@ -1,4 +1,4 @@
-SLS Detector Package 5.0.0-rc2 released on 08.10.2020 (Release Candidate 2)
+SLS Detector Package 5.0.0-rc2 released on 09.10.2020 (Release Candidate 2)
 ===========================================================================
 
     CONTENTS

@@ -515,7 +515,7 @@ void setASICDefaults() {
     bus_w(ASIC_RDO_CONFIG_REG, val);
 }
 
-void setASICDefaults() {
+void setADIFDefaults() {
     uint32_t addr = ADIF_CONFIG_REG;
     bus_w(addr, ((bus_r(addr) & ~ADIF_ADDTNL_OFST_MSK) & ~ADIF_PIPELINE_MSK));
     bus_w(addr,

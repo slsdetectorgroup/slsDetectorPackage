@@ -148,6 +148,16 @@
 
 #define DTA_OFFSET_REG                  (0x24 * REG_OFFSET + BASE_CONTROL)
 
+
+/* Formatting for adif core -----------------------------------------------*/
+#define ADIF_CONFIG_REG                 (0x00 * REG_OFFSET + BASE_ADIF)
+
+#define ADIF_ADDTNL_OFST_OFST           (0)
+#define ADIF_ADDTNL_OFST_MSK            (0x00000003 << ADIF_ADDTNL_OFST_OFST)
+#define ADIF_PIPELINE_OFST              (4)
+#define ADIF_PIPELINE_MSK               (0x0000000F << ADIF_PIPELINE_OFST)
+
+
 /* Formatting for data core -----------------------------------------------*/
 #define FMT_CONFIG_REG                  (0x00 * REG_OFFSET + BASE_FMT)
 

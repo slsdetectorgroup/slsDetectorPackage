@@ -120,6 +120,7 @@ int setDefaultDacs();
 #endif
 #ifdef MYTHEN3D
 void setASICDefaults();
+void setADIFDefaults();
 #endif
 #if defined(GOTTHARD2D) || defined(EIGERD)
 int readConfigFile();

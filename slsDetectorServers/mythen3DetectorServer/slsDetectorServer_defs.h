@@ -39,14 +39,17 @@
 #define DEFAULT_TIMING_MODE         (AUTO_TIMING)
 #define DEFAULT_READOUT_C0          (10) //(100000000) // rdo_clk, 100 MHz
 #define DEFAULT_READOUT_C1          (10) //(100000000) // smp sample clk (x2), 100 MHz
-#define DEFAULT_SYSTEM_C0           (20) // (50000000) // run_clk, 50 MHz
+#define DEFAULT_SYSTEM_C0           (10) //(100000000) // run_clk, 100 MHz
 #define DEFAULT_SYSTEM_C1           (10) //(100000000) // sync_clk, 100 MHz
 #define DEFAULT_SYSTEM_C2           (10) //(100000000) // str_clk, 100 MHz
 #define DEFAULT_SYSTEM_C3           (5)  //(200000000) // smp_clk, 200 MHz
 // (DEFAULT_SYSTEM_C3 only for timing receiver) should not be changed
+#define DEFAULT_TRIMMING_RUN_CLKDIV (40) // (25000000) // 25 MHz
 
 #define DEFAULT_ASIC_LATCHING_NUM_PULSES (10)
 #define DEFAULT_MSTR_OTPT_P1_NUM_PULSES  (20)
+#define DEFAULT_ADIF_PIPELINE_VAL        (8)
+#define DEFAULT_ADIF_ADD_OFST_VAL        (0)
 
 /* Firmware Definitions */
 #define MAX_TIMESLOT_VAL        (0xFFFFFF)

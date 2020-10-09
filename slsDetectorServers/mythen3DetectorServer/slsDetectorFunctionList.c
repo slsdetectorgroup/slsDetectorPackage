@@ -418,6 +418,7 @@ void setupDetector() {
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
     setDefaultDacs();
     setASICDefaults();
+    setADIFDefaults();
 
     // dynamic range
     setDynamicRange(DEFAULT_DYNAMIC_RANGE);
@@ -512,6 +513,17 @@ void setASICDefaults() {
         ((DEFAULT_ASIC_LATCHING_NUM_PULSES << ASICRDO_CNFG_RESSTRG_LNGTH_OFST) &
          ASICRDO_CNFG_RESSTRG_LNGTH_MSK);
     bus_w(ASIC_RDO_CONFIG_REG, val);
+}
+
+void setASICDefaults() {
+    uint32_t addr = ADIF_CONFIG_REG;
+    bus_w(addr, ((bus_r(addr) & ~ADIF_ADDTNL_OFST_MSK) & ~ADIF_PIPELINE_MSK));
+    bus_w(addr,
+          (bus_r(addr) | ((DEFAULT_ADIF_PIPELINE_VAL << ADIF_PIPELINE_OFST) &
+                          ADIF_PIPELINE_MSK)));
+    bus_w(addr,
+          (bus_r(addr) | ((DEFAULT_ADIF_ADD_OFST_VAL << ADIF_ADDTNL_OFST_OFST) &
+                          ADIF_ADDTNL_OFST_MSK)));
 }
 
 /* firmware functions (resets) */
@@ -1025,9 +1037,24 @@ int setTrimbits(int *trimbits) {
     LOG(logINFO, ("Trimbits validated\n"));
     trimmingPrint = logDEBUG5;
 
+    // remember previous run clock
+    uint32_t prevRunClk = clkDivider[SYSTEM_C0];
+
+    // set to trimming clock
+    if (setClockDivider(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV) == FAIL) {
+        LOG(logERROR,
+            ("Could not start trimming. Could not set to trimming clock\n"));
+        return FAIL;
+    }
+
+    // trimming
+    int error = 0;
     uint64_t patword = 0;
     int iaddr = 0;
     for (int ichip = 0; ichip < NCHIP; ichip++) {
+        if (error != 0) {
+            break;
+        }
         LOG(logDEBUG1, (" Chip %d\n", ichip));
         iaddr = 0;
         patword = 0;
@@ -1118,8 +1145,8 @@ int setTrimbits(int *trimbits) {
         if (iaddr >= MAX_PATTERN_LENGTH) {
             LOG(logERROR, ("Addr 0x%x is past max_address_length 0x%x!\n",
                            iaddr, MAX_PATTERN_LENGTH));
-            trimmingPrint = logINFO;
-            return FAIL;
+            error = 1;
+            break;
         }
 
         // set pattern wait address
@@ -1141,12 +1168,25 @@ int setTrimbits(int *trimbits) {
         startPattern();
     }
 
-    // copy trimbits locally
-    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
-        detectorChans[ichan] = trimbits[ichan];
+    if (error == 0) {
+        // copy trimbits locally
+        for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
+            detectorChans[ichan] = trimbits[ichan];
+        }
+        LOG(logINFO, ("All trimbits have been loaded\n"));
     }
+
     trimmingPrint = logINFO;
-    LOG(logINFO, ("All trimbits have been loaded\n"));
+    // set back to previous clock
+    if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
+        LOG(logERROR, ("Could not set to previous run clock after trimming\n"));
+        return FAIL;
+    }
+
+    if (error != 0) {
+        return FAIL;
+    }
+
     return OK;
 }
 

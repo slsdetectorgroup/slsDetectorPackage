@@ -983,6 +983,7 @@ mount -t tmpfs none /mnt/ramdisk -o size=10G
 \end{verbatim}
 check how many GB memory you can allocate, to avoid swapping otherwise
 
+
 \section{Offline processing and monitoring}
 
 \subsection{Data out of the detector: UDP packets}\label{UDP}
@@ -1064,12 +1065,21 @@ Checkout the {\tt{v3.1}} branch if in a 3.1.X release, the {\tt{v4.0.0}} branch 
 
 Four possible conversions are possible: into \textbf{cbf}, \textbf{hdf5}. \textbf{tiff} and  \textbf{root} format. The detector writes 2 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
 
-Note that the number of images per file in the 3.1.X release is hardcoded and needs to match whatever you are using in \\
+\subsection{Releases}
+Note for different releases:
+\begin{itemize}
+\item Note that the number of images per file in the 3.1.X release is hardcoded and needs to match whatever you are using in \\
 {\tt{slsDetectorsPackage/slsReceiverSoftware/include/sls\_receiver\_defs.h}}:
 \begin{verbatim}
 #define EIGER_MAX_FRAMES_PER_FILE	2000
 \end{verbatim}
 The default is 2000 in the 3.1.X release. The default has been changed to 10000 frm realease 4.0.X and now this is picked up automatically without doing anything. 
+
+\item From release 4.1.x, it is not needed to change the options in the \tt{slsImageReconstruction/src/main\_csaxs.cpp} file, but it is enough to change the options in the compiler:
+ 
+\end{itemize}
+
+
 
 \subsubsection{cbf}
 The cbf executable executable uses the CBFlib-0.9.5 library (downloaded from the web as it downloads architecture dependent packages at installation).Edit the Makefile to correclty point at it.\\
@@ -1128,7 +1138,7 @@ make cbfMaker; make cbfMakerOMNY;
 \end{verbatim}
 
 \subsubsection{hdf5}
-In case of HDF5 output file, we rely on having the HDF5 1.10.1 library installed and {\tt{HDF5-External-Filter-Plugins}} installed. With HDF5 1.10.3, no need of the external plugings package is needed, but a small modification to the file is needed. Edit the Makefile to correclty point at it. Different compression methods are being tried so different external filters might be to be installed. This work is not finished yet.
+In case of HDF5 output file, we rely on having the hdf5/1.10.3 (previously was 1.10.1 library installed and {\tt{HDF5-External-Filter-Plugins}} installed). Edit the Makefile to correclty point at  Different compression methods (so far only the not efficien gzip is implemented) are being tried so different external filters might be to be installed. This work is not finished yet.
 
 To choose HDF5, with ZLIB implementation, open {\tt{slsImageReconstruction/src/main\_csaxs.cpp}} and make sure that 
 \begin{verbatim}
@@ -1201,6 +1211,28 @@ The HV can also be set and read through the software:
 \end{verbatim}
 Note that the get {\tt{vhighvoltage}}(\tt{\textcolor{red}{highvoltage}}) would return the measured HV from the master module only. If getting the highvoltage for individual halfmodules, only the master will have a value different from -999.
 
+\section{Run the sum of counts in the receiver}
+In the package {\tt{slsImageReconstruction}} there is also a very basic executable that allows to run receivers that sum all the counts in the UDP port and writes them as a text files in the {\tt{outdir}} directory in the same directory as the data files, with the same {\tt{fname}}. This is to use EIGER as a simple normalization detector.
+The code is in {\tt{slsImageReconstruction/src/ReceiverSum.cpp}}.
+For the compilation you need to be in {\tt{slsImageReconstruction}}
+\begin{verbatim}
+ make -f Makefile.zmq receiverSum
+\end{verbatim}
+you might need to edit the path to the {\tt{slsDetectorPackage}} that you are using in the {\tt{Makefile.zmq}}.
+Usage is: 
+\begin{verbatim}
+export LD_LIBRARY_PATH=pathtoslsDetectorPackage/build/bin
+./bin/receiverSum
+./bin/receiverSum rx_tcppport 1955
+\end{verbatim}
+For now, to work peoperly there are some requirements that need to make more general if the code wants to be used more:
+\begin{enumerate}
+\item You can use the code only for a module (2 Receivers)
+\item The first receiver has to run using tcp\_port 1954 (the second port is not fixed but we use 1955 normally)
+\item Set the option {\tt{enablefwrite 0}} (\textcolor{red}{\tt{fwrite 0}}) as we do not write raw data but only the text files.
+\item As a bit of time is required to make the sum compared to a normal receiver, use the option {\tt sls\_detector\_put rx\_fifodepth 50000}.
+\end{enumerate}
+File like fnamed0\_findex.txt, fnamed1\_findex.txt, fnamed2\_findex.txt and fnamed3\_findex.txt will be written, containing 2 columns: the frame number and the sum of counts for the port.
 \appendix
 
 \section{Kill the server, copy a new server, start the server}\label{server}

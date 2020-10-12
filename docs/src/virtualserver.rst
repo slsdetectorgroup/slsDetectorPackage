@@ -13,7 +13,7 @@ Compilation
 * Using cmk.sh script,
      .. code-block:: bash  
         
-        ./cmk.sh -b**s**j9 #option s is for simulator
+        ./cmk.sh -bsj9 #option s is for simulator
 
 
 Binaries

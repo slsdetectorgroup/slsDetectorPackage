@@ -422,6 +422,9 @@ void setupDetector() {
     setASICDefaults();
     setADIFDefaults();
 
+    // set trigger flow for m3 (for all timing modes)
+    bus_w(FLOW_TRIGGER_REG, bus_r(FLOW_TRIGGER_REG) | FLOW_TRIGGER_MSK);
+
     // dynamic range
     setDynamicRange(DEFAULT_DYNAMIC_RANGE);
     // enable all counters
@@ -1347,29 +1350,30 @@ int setHighVoltage(int val) {
 
 /* parameters - timing */
 void setTiming(enum timingMode arg) {
+    uint32_t addr = CONFIG_REG;
     switch (arg) {
     case AUTO_TIMING:
         LOG(logINFO, ("Set Timing: Auto (Int. Trigger, Int. Gating)\n"));
-        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+        bus_w(addr, bus_r(addr) & ~CONFIG_TRIGGER_ENA_MSK);
         bus_w(ASIC_EXP_STATUS_REG,
               bus_r(ASIC_EXP_STATUS_REG) & ~ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
         break;
     case TRIGGER_EXPOSURE:
         LOG(logINFO, ("Set Timing: Trigger (Ext. Trigger, Int. Gating)\n"));
-        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+        bus_w(addr, bus_r(addr) | CONFIG_TRIGGER_ENA_MSK);
         bus_w(ASIC_EXP_STATUS_REG,
               bus_r(ASIC_EXP_STATUS_REG) & ~ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
         break;
     case GATED:
         LOG(logINFO, ("Set Timing: Gating (Int. Trigger, Ext. Gating)\n"));
-        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+        bus_w(addr, bus_r(addr) & ~CONFIG_TRIGGER_ENA_MSK);
         bus_w(ASIC_EXP_STATUS_REG,
               bus_r(ASIC_EXP_STATUS_REG) | ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
         break;
     case TRIGGER_GATED:
         LOG(logINFO,
             ("Set Timing: Trigger_Gating (Ext. Trigger, Ext. Gating)\n"));
-        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+        bus_w(addr, bus_r(addr) | CONFIG_TRIGGER_ENA_MSK);
         bus_w(ASIC_EXP_STATUS_REG,
               bus_r(ASIC_EXP_STATUS_REG) | ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
         break;
@@ -1380,7 +1384,7 @@ void setTiming(enum timingMode arg) {
 }
 
 enum timingMode getTiming() {
-    uint32_t extTrigger = (bus_r(EXT_SIGNAL_REG) & EXT_SIGNAL_MSK);
+    uint32_t extTrigger = (bus_r(CONFIG_REG) & CONFIG_TRIGGER_ENA_MSK);
     uint32_t extGate =
         (bus_r(ASIC_EXP_STATUS_REG) & ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
     if (extTrigger) {

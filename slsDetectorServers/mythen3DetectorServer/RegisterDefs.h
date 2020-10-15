@@ -119,6 +119,9 @@
 #define CONFIG_DYNAMIC_RANGE_8_VAL      ((0x1 << CONFIG_DYNAMIC_RANGE_OFST) & CONFIG_DYNAMIC_RANGE_MSK)
 #define CONFIG_DYNAMIC_RANGE_16_VAL     ((0x2 << CONFIG_DYNAMIC_RANGE_OFST) & CONFIG_DYNAMIC_RANGE_MSK)
 #define CONFIG_DYNAMIC_RANGE_24_VAL     ((0x3 << CONFIG_DYNAMIC_RANGE_OFST) & CONFIG_DYNAMIC_RANGE_MSK)
+#define CONFIG_TRIGGER_ENA_OFST         (8)
+#define CONFIG_TRIGGER_ENA_MSK          (0x00000001 << CONGIG_TRIGGER_ENA_OFST)
+
 
 /* Control RW register */
 #define CONTROL_REG                     (0x21 * REG_OFFSET + BASE_CONTROL)
@@ -466,11 +469,11 @@
 #define SET_PERIOD_LSB_REG              (0x28 * REG_OFFSET + BASE_FLOW_CONTROL)
 #define SET_PERIOD_MSB_REG              (0x29 * REG_OFFSET + BASE_FLOW_CONTROL)
 
-/* External Signal register */
-#define EXT_SIGNAL_REG                  (0x30 * REG_OFFSET + BASE_FLOW_CONTROL)
+/* Flow Trigger register (for all timing modes) */
+#define FLOW_TRIGGER_REG                (0x30 * REG_OFFSET + BASE_FLOW_CONTROL)
 
-#define EXT_SIGNAL_OFST                 (0)
-#define EXT_SIGNAL_MSK                  (0x00000001 << EXT_SIGNAL_OFST)
+#define FLOW_TRIGGER_OFST               (0)
+#define FLOW_TRIGGER_MSK                (0x00000001 << FLOW_TRIGGER_OFST)
 
 /* Trigger Delay 64 bit register */
 #define SET_TRIGGER_DELAY_LSB_REG       (0x32 * REG_OFFSET + BASE_FLOW_CONTROL)

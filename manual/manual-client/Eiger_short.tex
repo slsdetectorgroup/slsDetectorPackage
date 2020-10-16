@@ -1018,28 +1018,31 @@ white the option {\tt{n:flippeddatax 1}}, which flips in vertical the content of
 \subsection{``raw'' files}
 If you use the option of writing raw files, you will have a raw file for each UDP port (meaning most likely 2 chips), 4 files per module. In addition to the raw files, you will get also a ``master'' file, containing in ascii some detector general parameters and the explanation of how to interpret the data from the raw files.
    
-The master file is named: {\tt{filename\_master\_0.raw}} and for version ``4.0.0'' of the slsDetectorSoftware looks like:
- 
-\begin{verbatim}
-Version                    : 4.0
-Detector Type              : 3
+The master file is named: {\tt{filename\_master\_0.raw}} and for version ``5.0'' of the slsDetectorSoftware looks like:
+\begin{verbatim} 
+Version                    : 6.2
+TimeStamp                  : Thu Oct  8 11:10:07 2020
+
+Detector Type              : Eiger
+Timing Mode                : auto
+Image Size                 : 524288 bytes
+Pixels                     : [512, 256]
+Max Frames Per File        : 10000
+Frame Discard Policy       : nodiscard
+Frame Padding              : 1
+Scan Parameters            : [disabled]
+Total Frames               : 10
 Dynamic Range              : 32
 Ten Giga                   : 1
-Image Size                 : 524288 bytes
-nPixelsX                   : 512 pixels
-nPixelsY                   : 256 pixels
-Max Frames Per File        : 10000
-Total Frames               : 3
-Exptime (ns)               : 10000000
-SubExptime (ns)            : 2621440
-SubPeriod(ns)              : 2621440
-Period (ns)                : 0
-Gap Pixels Enable          : 0
-Quad Enable                : 0
-Timestamp                  : Wed Aug 21 16:30:20 2019
+Exptime                    : 1s
+Period                     : 50us
+SubExptime                 : 2.62144ms
+SubPeriod                  : 2.62144ms
+Quad                       : 0
+Number of Lines read out   : 256
+Rate Corrections           : [0, 0]
 
-
-#Frame Header
+\#Frame Header
 Frame Number               : 8 bytes
 SubFrame Number/ExpLength  : 4 bytes
 Packet Number              : 4 bytes
@@ -1061,7 +1064,7 @@ Note that if one wants to  reconstruct the real time the detector was acquiring 
 \subsection{Offline image reconstruction}
 The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore. However, it can be retrieved from \\
 {\tt{git clone https://github.com/slsdetectorgroup/slsImageReconstruction.git slsImageReconstruction}}.\\
-Checkout the {\tt{v3.1}} branch if in a 3.1.X release, the {\tt{v4.0.0}} branch if in 4.0.X release, or the {\tt{v4.1}} branch if in 4.1.X release of the {\tt{slsDetector}} code. There is a {\tt{developer}} branch that is following the 5.X chnages but it is not officila yet.
+Checkout the {\tt{v3.1}} branch if in a 3.1.X release, the {\tt{v4.0.0}} branch if in 4.0.X release, or the {\tt{v4.1}} branch if in 4.1.X release of the {\tt{slsDetector}} code. There is a {\tt{developer}} branch that is following the 5.X chnages but it is not official yet.
 
 Four possible conversions are possible: into \textbf{cbf}, \textbf{hdf5}. \textbf{tiff} and  \textbf{root} format. The detector writes 2 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
 
@@ -1075,15 +1078,21 @@ Note for different releases:
 \end{verbatim}
 The default is 2000 in the 3.1.X release. The default has been changed to 10000 frm realease 4.0.X and now this is picked up automatically without doing anything. 
 
-\item From release 4.1.x, it is not needed to change the options in the \tt{slsImageReconstruction/src/main\_csaxs.cpp} file, but it is enough to change the options in the compiler:
- 
-\end{itemize}
+\item From release 4.1.x, it is not needed to change the options in the \tt{slsImageReconstruction/src/main\_csaxs.cpp} file, but it is enough to change the options in the compiler. Options are:
+\begin{enumerate}
+\item [cbf] if you want header style supperted at MS beamline (in reality the lines are just hardcoded with no real information in them, just to have all required filesds) analyser (Krysalis?) choose  -DMSHeader
+\item [hdf5] If you want a master file, which contains a virtual dataset pointing at dataset written in subfiles, use the option  -DMASTERVIRTUAL . This option however is not supported neither by Matlab2018, nor by Albula and Nedved installed at the MS beamlines.
+\item [hdf5] The master file contains links to the datasets of other files, use -DMASTERLINK option. Although this version is very unconfortable if you need to open writing your code different events, but it is what Albula, Nedved and so on uses (it is compatible to Dectris). So it has more portability.
+\item [hdf5]to compress using zlib, use the  -DZLIB. Very slow compression, not used
+\item [hdf5] -DBITSHUFFLE should have lz4 and bitshuffle implemented. I am not sure it works. NEEDS to be tested. Not to be used if not for debugging. 
+\end{enumerate}
+ \end{itemize}
+
 
 
 
 \subsubsection{cbf}
 The cbf executable executable uses the CBFlib-0.9.5 library (downloaded from the web as it downloads architecture dependent packages at installation).Edit the Makefile to correclty point at it.\\
-\underline{At cSAXS, the CBFlib-0.9.5 has been compiled -such that the required packages are}\\\underline{ downloaded in /sls/X12SA/data/x12saop/EigerPackage/CBFlib-0.9.5.}\\ 
 
 To use it for a single module:
 \begin{verbatim}

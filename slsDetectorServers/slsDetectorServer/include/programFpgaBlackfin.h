@@ -40,8 +40,10 @@ int startWritingFPGAprogram(FILE **filefp);
  * When done writing the program, close file pointer and
  * notify FPGA to pick up the program from flash
  * @param filefp pointer to flash
+ * @return 0 for success, 1 for fail (time taken for fpga to touch flash
+ * exceeded)
  */
-void stopWritingFPGAprogram(FILE *filefp);
+int stopWritingFPGAprogram(FILE *filefp);
 
 /**
  * Write FPGA Program to flash

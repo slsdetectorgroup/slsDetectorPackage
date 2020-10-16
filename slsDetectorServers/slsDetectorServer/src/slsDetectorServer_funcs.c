@@ -3719,6 +3719,7 @@ int program_fpga(int file_des) {
         }
 
         // writing to flash part by part
+        int clientSocketCrash = 0;
         while (ret != FAIL && filesize) {
 
             unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
@@ -3729,41 +3730,60 @@ int program_fpga(int file_des) {
                             (long long unsigned int)filesize));
 
             // receive part of program
-            if (receiveData(file_des, fpgasrc, unitprogramsize, OTHER) < 0)
-                return printSocketReadError();
+            if (receiveData(file_des, fpgasrc, unitprogramsize, OTHER) < 0) {
+                printSocketReadError();
+                clientSocketCrash = 1;
+                ret = FAIL;
+            }
+            // client has not crashed yet, so write to flash and send ret
+            else {
+                if (!(unitprogramsize - filesize)) {
+                    fpgasrc[unitprogramsize] = '\0';
+                    filesize -= unitprogramsize;
+                    unitprogramsize++;
+                } else
+                    filesize -= unitprogramsize;
 
-            if (!(unitprogramsize - filesize)) {
-                fpgasrc[unitprogramsize] = '\0';
-                filesize -= unitprogramsize;
-                unitprogramsize++;
-            } else
-                filesize -= unitprogramsize;
-
-            // write part to flash
-            ret = writeFPGAProgram(fpgasrc, unitprogramsize, fp);
-            Server_SendResult(file_des, INT32, NULL, 0);
-            if (ret == FAIL) {
-                LOG(logERROR, ("Failure: Breaking out of program receiving\n"));
-            } else {
-                // print progress
-                LOG(logINFO,
-                    ("Writing to Flash:%d%%\r",
-                     (int)(((double)(totalsize - filesize) / totalsize) *
-                           100)));
-                fflush(stdout);
+                // write part to flash
+                ret = writeFPGAProgram(fpgasrc, unitprogramsize, fp);
+                Server_SendResult(file_des, INT32, NULL, 0);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not write to flash. Breaking out of "
+                                 "program receiving. Try to flash again "
+                                 "without rebooting.\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    // print progress
+                    LOG(logINFO,
+                        ("Writing to Flash:%d%%\r",
+                         (int)(((double)(totalsize - filesize) / totalsize) *
+                               100)));
+                    fflush(stdout);
+                }
             }
         }
+
         if (ret == OK) {
             LOG(logINFO, ("Done copying program\n"));
+            // closing file pointer to flash and informing FPGA
+            ret = stopWritingFPGAprogram(fp);
+            if (ret == FAIL) {
+                strcpy(mess, "Failed to program fpga. FPGA is taking too long "
+                             "to pick up program from flash! Try to flash "
+                             "again without rebooting!\n");
+                LOG(logERROR, (mess));
+            }
         }
-
-        // closing file pointer to flash and informing FPGA
-        stopWritingFPGAprogram(fp);
 
         // free resources
         free(fpgasrc);
         if (fp != NULL)
             fclose(fp);
+
+        // send final ret (if no client crash)
+        if (clientSocketCrash == 0) {
+            Server_SendResult(file_des, INT32, NULL, 0);
+        }
 
 #endif // end of Blackfin programming
         if (ret == FAIL) {

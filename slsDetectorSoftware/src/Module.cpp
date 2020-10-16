@@ -3166,6 +3166,15 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         std::cout << std::flush;
     }
     std::cout << '\n';
+
+    // fpga has picked up from flash successfully
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Detector " << moduleId << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw RuntimeError(os.str());
+    }
+
     LOG(logINFO) << "FPGA programmed successfully";
     rebootController();
 }

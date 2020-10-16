@@ -7,7 +7,8 @@
 #include <unistd.h> // usleep
 
 /* global variables */
-#define MTDSIZE 10
+#define MTDSIZE                      10
+#define MAX_TIME_FPGA_TOUCH_FLASH_US (10 * 1000 * 1000) // 10s
 
 int gpioDefined = 0;
 char mtdvalue[MTDSIZE] = {0};
@@ -99,32 +100,36 @@ int startWritingFPGAprogram(FILE **filefp) {
     return 0;
 }
 
-void stopWritingFPGAprogram(FILE *filefp) {
+int stopWritingFPGAprogram(FILE *filefp) {
     LOG(logDEBUG1, ("Stopping of writing FPGA program\n"));
 
-    int wait = 0;
     if (filefp != NULL) {
         fclose(filefp);
-        wait = 1;
     }
 
     // touch and program
     FPGATouchFlash();
 
-    if (wait) {
-        LOG(logDEBUG1, ("Waiting for FPGA to program from flash\n"));
-        // waiting for success or done
-        char output[255];
-        int res = 0;
-        while (res == 0) {
-            FILE *sysFile = popen("cat /sys/class/gpio/gpio7/value", "r");
-            fgets(output, sizeof(output), sysFile);
-            pclose(sysFile);
-            sscanf(output, "%d", &res);
-            LOG(logDEBUG1, ("gpi07 returned %d\n", res));
+    LOG(logINFO, ("Waiting for FPGA to program from flash\n"));
+    // waiting for success or done
+    char output[255];
+    int res = 0;
+    int timeSpent = 0;
+    while (res == 0) {
+        // time taken for fpga to pick up from flash
+        usleep(1000);
+        timeSpent += 1000;
+        if (timeSpent >= MAX_TIME_FPGA_TOUCH_FLASH_US) {
+            return 1;
         }
+        FILE *sysFile = popen("cat /sys/class/gpio/gpio7/value", "r");
+        fgets(output, sizeof(output), sysFile);
+        pclose(sysFile);
+        sscanf(output, "%d", &res);
+        LOG(logDEBUG1, ("gpi07 returned %d\n", res));
     }
     LOG(logINFO, ("FPGA has picked up the program from flash\n"));
+    return 0;
 }
 
 int writeFPGAProgram(char *fpgasrc, uint64_t fsize, FILE *filefp) {

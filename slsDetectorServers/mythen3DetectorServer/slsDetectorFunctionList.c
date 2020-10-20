@@ -886,8 +886,10 @@ void setCounterMask(uint32_t arg) {
     updatePacketizing();
     LOG(logINFO, ("\tUpdating Exptime and Gate Delay\n"));
     for (int i = 0; i < 3; ++i) {
-        setExpTime(i, exptimeReg[i]);
-        setGateDelay(i, gateDelayReg[i]);
+        uint64_t ns = exptimeReg[i] / (1E-9 * getFrequency(SYSTEM_C0));
+        setExpTime(i, ns);
+        ns = gateDelayReg[i] / (1E-9 * getFrequency(SYSTEM_C0));
+        setGateDelay(i, ns);
     }
 }
 

@@ -151,6 +151,9 @@ Download
 
 Upgrade (from v4.x.x)
 ^^^^^^^^^^^^^^^^^^^^^^
+
+Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
+
 #. Tftp must be installed on pc.
 
 #. Update client package to the latest (5.0.0-rc1).
@@ -204,6 +207,9 @@ Upgrade (from v4.x.x)
 Upgrade (from v5.0.0-rcx)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
+
+
 #. Program from console
     .. code-block:: bash
 
@@ -214,6 +220,7 @@ Upgrade (from v5.0.0-rcx)
 
         # Or only program firmware
         sls_detector_put programfpga xxx.pof
+
 
 
 Gotthard
@@ -249,7 +256,7 @@ Download
          - `25um (slave) <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/gotthard_I/25um/slave/gotthard_I_25um_slave.pof>`__
          - 
 
-
+.. _firmware upgrade using blaster for blackfin:
 
 Upgrade
 ^^^^^^^^
@@ -392,6 +399,8 @@ Download
 Upgrade (from v5.0.0-rcx)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
+
 #. Program from console
     .. code-block:: bash
 
@@ -434,6 +443,8 @@ Download
 Upgrade (from v5.0.0-rcx)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
+
 #. Program from console
     .. code-block:: bash
 
@@ -444,3 +455,57 @@ Upgrade (from v5.0.0-rcx)
 
         # Or only program firmware
         sls_detector_put programfpga xxx.pof
+
+
+.. _blackfin firmware troubleshooting:
+
+Firmware Troubleshooting with blackfin
+----------------------------------------
+
+#. v4.x.x client after programming will most likely reboot the blackfin processor, regardless of error.
+
+#. v5.x.x-rcx client after programming will not reboot the blackfin processor, if error occurred.
+
+#. If a reboot occured with an incomplete firmware in flash, the blackfin will most likely not find the mtd3 drive. To see if this drive exists:
+  .. code-block:: bash
+    
+    # connect to the board
+    telnet bchipxxx
+
+    # view of mtd3 existing
+    root:/> more /proc/mtd
+    dev:    size   erasesize  name
+    mtd0: 00040000 00020000 "bootloader(nor)"
+    mtd1: 00100000 00020000 "linux kernel(nor)"
+    mtd2: 002c0000 00020000 "file system(nor)"
+    mtd3: 01000000 00010000 "bitfile(spi)"
+
+4. If one can see the mtd3 drive, one can already try to flash again using the **programfpga** command (without rebooting blackfin or detector). 
+
+#. If one can't list it, read the next section to try to get the blackfin to list it.
+
+How to get back mtd3 drive remotely
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This might take a few reruns until the mtd drive is accessed by the blackfin upon linux startup.
+
+  .. code-block:: bash
+    
+    # step 1: connect to the board
+    telnet bchipxxx
+
+    # step 2: check if mtd3 drive listed
+    more /proc/mtd
+
+    # step 3: tell fpga not to touch flash and reboot
+    echo 9 > /sys/class/gpio/export; 
+    echo out > /sys/class/gpio/gpio9/direction; 
+    echo 0 > /sys/class/gpio/gpio9/value;
+    reboot
+
+    # step 4: repeat steps 1 - 3 until you see the mtd3 drive
+
+
+Last Resort using USB Blaster
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If none of these steps work, the last resort might be physically upgrading the firmware using a USB blaster, which also requires opening up the detector. Instructions for all the blackfin detectors are the same as the one for :ref:`gotthard firmware upgrade <firmware upgrade using blaster for blackfin>`.

@@ -488,7 +488,7 @@ std::string ToString(const defs::dacIndex s) {
     case defs::ADC_VPP:
         return std::string("adcvpp");
     case defs::TRIMBIT_SCAN:
-        return std::string("trimbit_scan");
+        return std::string("trimbits");
     case defs::HIGH_VOLTAGE:
         return std::string("highvoltage");
     case defs::IO_DELAY:
@@ -848,7 +848,7 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::IBIAS_SFP;
     if (s == "adcvpp")
         return defs::ADC_VPP;
-    if (s == "trimbit_scan")
+    if (s == "trimbits")
         return defs::TRIMBIT_SCAN;
     if (s == "highvoltage")
         return defs::HIGH_VOLTAGE;

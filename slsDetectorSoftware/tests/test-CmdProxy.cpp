@@ -1423,15 +1423,15 @@ TEST_CASE("scan", "[.cmd][.new]") {
     if (det_type == defs::MYTHEN3 || defs::EIGER) {
         {
             std::ostringstream oss;
-            proxy.Call("scan", {"trimbit_scan", "0", "63", "16", "2s"}, -1, PUT,
+            proxy.Call("scan", {"trimbits", "0", "63", "16", "2s"}, -1, PUT,
                        oss);
-            CHECK(oss.str() == "scan [trimbit_scan, 0, 63, 16, 2s]\n");
+            CHECK(oss.str() == "scan [trimbits, 0, 63, 16, 2s]\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("scan", {}, -1, GET, oss);
             CHECK(oss.str() ==
-                  "scan [enabled\ndac trimbit_scan\nstart 0\nstop 48\nstep "
+                  "scan [enabled\ndac trimbits\nstart 0\nstop 48\nstep "
                   "16\nsettleTime 2s\n]\n");
         }
     }

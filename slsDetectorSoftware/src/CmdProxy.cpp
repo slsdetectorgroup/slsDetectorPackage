@@ -1027,12 +1027,12 @@ std::string CmdProxy::Scan(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[dac_name|0|trimbit_scan] [start_val] [stop_val] "
+        os << "[dac_name|0|trimbits] [start_val] [stop_val] "
               "[step_size] [dac settling time ns|us|ms|s]\n\tEnables/ disables "
               "scans for dac and trimbits \n\tEnabling scan sets number of "
               "frames to number of steps in receiver. \n\tTo cancel scan "
               "configuration, set dac to '0', which also sets number of frames "
-              "to 1. \n\t[Eiger][Mythen3] Use trimbit_scan as dac name for a "
+              "to 1. \n\t[Eiger][Mythen3] Use trimbits as dac name for a "
               "trimbit scan."
            << '\n';
     } else if (action == defs::GET_ACTION) {

@@ -585,7 +585,7 @@ void Implementation::stopReceiver() {
                 // udp port number could be the second if selected interface is
                 // 2 for jungfrau
                 "Summary of Port " << udpPortNum[i]
-                     << "\n\tMissing Packets\t\t: " << mp[i]
+                     << "\n\tMissing Packets\t\t: " << (int64_t)mp[i]
                      << "\n\tComplete Frames\t\t: " << nf
                      << "\n\tLast Frame Caught\t: "
                      << listener[i]->GetLastFrameIndexCaught();

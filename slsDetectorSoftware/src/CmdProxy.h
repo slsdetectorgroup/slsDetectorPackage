@@ -1486,7 +1486,8 @@ class CmdProxy {
         udp_srcip2, getSourceUDPIP2, setSourceUDPIP2, IpAddr,
         "[x.x.x.x]\n\t[Jungfrau][Gotthard2] Ip address of the detector "
         "(source) udp interface 2. Must be same subnet as destination udp "
-        "ip2.\n\t [Jungfrau] bottom half \n\t [Gotthard2] veto debugging.");
+        "ip2.\n\t [Jungfrau] top half or inner interface\n\t [Gotthard2] veto "
+        "debugging.");
 
     INTEGER_COMMAND_VEC_ID(
         udp_srcmac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,
@@ -1494,10 +1495,10 @@ class CmdProxy {
         "interface. \n\t[Eiger] Do not set as detector will replace with its "
         "own DHCP Mac (1G) or DHCP Mac + 1 (10G).");
 
-    INTEGER_COMMAND_VEC_ID(
-        udp_srcmac2, getSourceUDPMAC2, setSourceUDPMAC2, MacAddr,
-        "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom "
-        "half of detector (source) udp interface. ");
+    INTEGER_COMMAND_VEC_ID(udp_srcmac2, getSourceUDPMAC2, setSourceUDPMAC2,
+                           MacAddr,
+                           "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the top "
+                           "half or inner (source) udp interface. ");
 
     INTEGER_COMMAND_VEC_ID(
         udp_dstmac, getDestinationUDPMAC, setDestinationUDPMAC, MacAddr,
@@ -1511,7 +1512,8 @@ class CmdProxy {
         "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) "
         "udp interface 2. Not mandatory to set as udp_dstip2 retrieves it from "
         "slsReceiver process but must be set if you use a custom receiver (not "
-        "slsReceiver). \n\t [Jungfrau] bottom half \n\t [Gotthard2] veto "
+        "slsReceiver). \n\t [Jungfrau] top half or inner interface \n\t "
+        "[Gotthard2] veto "
         "debugging.");
 
     INTEGER_COMMAND_VEC_ID_GET(
@@ -1527,7 +1529,8 @@ class CmdProxy {
         "[n]\n\t[Jungfrau][Eiger][Gotthard2] Port number of the "
         "receiver (destination) udp interface 2. Default is 50002. "
         "\n\tIf multi command, ports for each module is calculated "
-        "(incremented by 2) \n\t[Jungfrau] bottom half \n\t[Eiger] "
+        "(incremented by 2) \n\t[Jungfrau] top half or inner interface "
+        "\n\t[Eiger] "
         "right half \n\t[Gotthard2] veto debugging");
 
     EXECUTE_SET_COMMAND(

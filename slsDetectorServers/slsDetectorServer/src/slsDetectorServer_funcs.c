@@ -358,6 +358,7 @@ void function_table() {
     flist[F_RECONFIGURE_UDP] = &reconfigure_udp;
     flist[F_VALIDATE_UDP_CONFIG] = &validate_udp_configuration;
     flist[F_GET_BURSTS_LEFT] = &get_bursts_left;
+    flist[F_START_READOUT] = &start_readout;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8103,4 +8104,44 @@ int get_bursts_left(int file_des) {
     LOG(logDEBUG1, ("retval num bursts left %lld\n", (long long int)retval));
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+}
+
+int start_readout(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    if (Server_VerifyLock() == OK) {
+        enum runStatus s = getRunStatus();
+        if (s == RUNNING || s == WAITING) {
+            ret = FAIL;
+            strcpy(mess, "Could not start readout because the detector is "
+                         "already running!\n");
+            LOG(logERROR, (mess));
+        } else if (configured == FAIL) {
+            ret = FAIL;
+            strcpy(mess, "Could not start readout because ");
+            strcat(mess, configureMessage);
+            LOG(logERROR, (mess));
+        } else {
+            memset(scanErrMessage, 0, MAX_STR_LENGTH);
+            sharedMemory_setScanStop(0);
+            sharedMemory_setScanStatus(IDLE); // if it was error
+            // start readout
+            ret = startReadOut();
+            if (ret == FAIL) {
+#ifdef VIRTUAL
+                sprintf(mess,
+                        "Could not start readout. Could not create udp "
+                        "socket in server. Check udp_dstip & udp_dstport.\n");
+#else
+                sprintf(mess, "Could not start readout\n");
+#endif
+                LOG(logERROR, (mess));
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

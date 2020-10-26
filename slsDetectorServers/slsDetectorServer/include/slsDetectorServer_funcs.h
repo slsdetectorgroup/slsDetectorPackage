@@ -240,3 +240,4 @@ int set_bad_channels(int);
 int reconfigure_udp(int);
 int validate_udp_configuration(int);
 int get_bursts_left(int);
+int start_readout(int);

@@ -567,8 +567,7 @@ int stopStateMachine();
 #if defined(EIGERD) || defined(MYTHEN3D)
 int softwareTrigger();
 #endif
-
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
 int startReadOut();
 #endif
 enum runStatus getRunStatus();

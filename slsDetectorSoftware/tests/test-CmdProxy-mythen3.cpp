@@ -115,6 +115,23 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs][.new]") {
     }
 }
 
+/* acquisition */
+
+TEST_CASE("readout", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    // PUT only command
+    REQUIRE_THROWS(proxy.Call("readout", {}, -1, GET));
+    auto det_type = det.getDetectorType().squash();
+    if (det_type != defs::MYTHEN3) {
+        REQUIRE_THROWS(proxy.Call("readout", {}, -1, GET));
+    } else {
+        std::ostringstream oss;
+        proxy.Call("readout", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "readout successful\n");
+    }
+}
+
 /* Mythen3 Specific */
 
 TEST_CASE("counters", "[.cmd][.new]") {

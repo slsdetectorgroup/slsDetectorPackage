@@ -593,6 +593,10 @@ void Detector::startDetector() {
     pimpl->Parallel(&Module::startAcquisition, {});
 }
 
+void Detector::startDetectorReadout() {
+    pimpl->Parallel(&Module::startReadout, {});
+}
+
 void Detector::stopDetector() { pimpl->Parallel(&Module::stopAcquisition, {}); }
 
 Result<defs::runStatus> Detector::getDetectorStatus(Positions pos) const {

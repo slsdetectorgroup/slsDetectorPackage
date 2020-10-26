@@ -407,6 +407,11 @@ void Module::startAcquisition() {
     sendToDetector(F_START_ACQUISITION);
 }
 
+void Module::startReadout() {
+    shm()->stoppedFlag = false;
+    sendToDetector(F_START_READOUT);
+}
+
 void Module::stopAcquisition() {
     // get status before stopping acquisition
     runStatus s = ERROR, r = ERROR;

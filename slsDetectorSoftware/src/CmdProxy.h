@@ -835,6 +835,7 @@ class CmdProxy {
         {"rx_start", &CmdProxy::rx_start},
         {"rx_stop", &CmdProxy::rx_stop},
         {"start", &CmdProxy::start},
+        {"readout", &CmdProxy::readout},
         {"stop", &CmdProxy::stop},
         {"rx_status", &CmdProxy::ReceiverStatus},
         {"status", &CmdProxy::DetectorStatus},
@@ -1429,7 +1430,14 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID(
         start, startDetector,
         "\n\tStarts detector acquisition. Status changes to RUNNING or WAITING "
-        "and automatically returns to idle at the end of acquisition.");
+        "and automatically returns to idle at the end of acquisition. If the "
+        "acquisition was abruptly stopped, some detectors come back to "
+        "STOPPED.");
+
+    EXECUTE_SET_COMMAND_NOID(
+        readout, startDetectorReadout,
+        "\n\t[Mythen3] Starts detector readout. Status changes to TRANSMITTING "
+        "and automatically returns to idle at the end of readout.");
 
     EXECUTE_SET_COMMAND_NOID(stop, stopDetector,
                              "\n\tAbort detector acquisition. Status changes "

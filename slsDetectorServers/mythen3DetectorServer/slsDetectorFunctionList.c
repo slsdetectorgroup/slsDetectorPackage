@@ -2407,6 +2407,22 @@ int softwareTrigger() {
     return OK;
 }
 
+int startReadOut() {
+    LOG(logINFOBLUE, ("Starting Readout\n"));
+#ifdef VIRTUAL
+    // cannot set #frames and exptiem temporarily to 1 and 0,
+    // because have to set it back after readout (but this is non blocking)
+    return startStateMachine();
+#endif
+    cleanFifos();
+
+    // start readout
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_READOUT_MSK);
+
+    LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
+    return OK;
+}
+
 enum runStatus getRunStatus() {
     LOG(logDEBUG1, ("Getting status\n"));
     // scan error or running

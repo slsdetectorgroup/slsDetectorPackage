@@ -51,7 +51,7 @@ set(SPHINX_SOURCE_FILES
   src/serverdefaults.rst
   src/quick_start_guide.rst
   src/troubleshooting.rst
-  
+  src/receivers.rst
 )
 
 foreach(filename ${SPHINX_SOURCE_FILES})

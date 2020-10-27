@@ -640,24 +640,26 @@ void DetectorImpl::readFrameFromReceiver() {
         if (data) {
             char *callbackImage = multiframe.get();
             int imagesize = multisize;
+            int nDetActualPixelsX = nDetPixelsX;
+            int nDetActualPixelsY = nDetPixelsY;
 
             if (gapPixels) {
                 int n = InsertGapPixels(multiframe.get(), multigappixels,
-                                        quadEnable, dynamicRange, nDetPixelsX,
-                                        nDetPixelsY);
+                                        quadEnable, dynamicRange,
+                                        nDetActualPixelsX, nDetActualPixelsY);
                 callbackImage = multigappixels;
                 imagesize = n;
             }
             LOG(logDEBUG) << "Image Info:"
-                          << "\n\tnDetPixelsX: " << nDetPixelsX
-                          << "\n\tnDetPixelsY: " << nDetPixelsY
+                          << "\n\tnDetActualPixelsX: " << nDetActualPixelsX
+                          << "\n\tnDetActualPixelsY: " << nDetActualPixelsY
                           << "\n\timagesize: " << imagesize
                           << "\n\tdynamicRange: " << dynamicRange;
 
-            thisData =
-                new detectorData(currentProgress, currentFileName, nDetPixelsX,
-                                 nDetPixelsY, callbackImage, imagesize,
-                                 dynamicRange, currentFileIndex, completeImage);
+            thisData = new detectorData(currentProgress, currentFileName,
+                                        nDetActualPixelsX, nDetActualPixelsY,
+                                        callbackImage, imagesize, dynamicRange,
+                                        currentFileIndex, completeImage);
 
             dataReady(
                 thisData, currentFrameIndex,

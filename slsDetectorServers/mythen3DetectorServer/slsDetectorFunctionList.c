@@ -1976,6 +1976,7 @@ int checkDetectorType() {
     char buffer[MAX_STR_LENGTH];
     memset(buffer, 0, sizeof(buffer));
     fread(buffer, MAX_STR_LENGTH, sizeof(char), fd);
+    fclose(fd);
     if (strlen(buffer) == 0) {
         LOG(logERROR,
             ("Could not read file %s to get type of the module attached\n",

@@ -486,7 +486,7 @@ Firmware Troubleshooting with blackfin
 
 How to get back mtd3 drive remotely
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This might take a few reruns until the mtd drive is accessed by the blackfin upon linux startup.
+This might take a few reruns (maybe even 10) until the mtd drive is accessed by the blackfin upon linux startup.
 
   .. code-block:: bash
     

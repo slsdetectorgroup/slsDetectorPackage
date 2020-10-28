@@ -71,6 +71,7 @@ Welcome to slsDetectorPackage's documentation!
     :maxdepth: 2
 
     receivers
+    slsreceiver
 
 .. toctree::
     :caption: Troubleshooting

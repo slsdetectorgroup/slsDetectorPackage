@@ -30,9 +30,12 @@ void sigInterruptHandler(int p) { sem_post(&semaphore); }
  * prints usage of this example program
  */
 void printHelp() {
-    cprintf(RESET, "Usage:\n"
-                   "./slsMultiReceiver(detReceiver) [start_tcp_port] "
-                   "[num_receivers] [1 for call back, 0 for none]\n\n");
+    cprintf(
+        RESET,
+        "Usage:\n"
+        "./slsMultiReceiver(detReceiver) [start_tcp_port] "
+        "[num_receivers] [optional: 1 for call back (print frame header for "
+        "debugging), 0 for none (default)]\n\n");
     exit(EXIT_FAILURE);
 }
 
@@ -157,10 +160,16 @@ int main(int argc, char *argv[]) {
 
     /**	- get number of receivers and start tcp port from command line
      * arguments */
-    if ((argc != 4) || (!sscanf(argv[1], "%d", &startTCPPort)) ||
-        (!sscanf(argv[2], "%d", &numReceivers)) ||
-        (!sscanf(argv[3], "%d", &withCallback)))
+    if (argc != 3 && argc != 4)
         printHelp();
+    if ((argc == 3) && ((!sscanf(argv[1], "%d", &startTCPPort)) ||
+                        (!sscanf(argv[2], "%d", &numReceivers))))
+        printHelp();
+    if ((argc == 4) && ((!sscanf(argv[1], "%d", &startTCPPort)) ||
+                        (!sscanf(argv[2], "%d", &numReceivers)) ||
+                        (!sscanf(argv[3], "%d", &withCallback))))
+        printHelp();
+
     cprintf(BLUE, "Parent Process Created [ Tid: %ld ]\n",
             (long)syscall(SYS_gettid));
     cprintf(RESET, "Number of Receivers: %d\n", numReceivers);

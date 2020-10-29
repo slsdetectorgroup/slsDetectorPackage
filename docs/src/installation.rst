@@ -21,6 +21,8 @@
 Installation
 ==============================================
 
+.. _build from source using cmake:
+
 Build from source using CMake
 ---------------------------------
 

@@ -151,9 +151,20 @@ Please refer to Receiver PC Tuning options and slsReceiver Tuning under `Trouble
 Using Callbacks
 ----------------
 
-| One can get a callback in the receiver for each frame to:
+One can get a callback in the receiver for each frame to:
     * manipulate the data that will be written to file, or
     * disable file writing in slsReceiver and take care of the data for each call back
 
-| When handling callbacks, the control should be returned as soon as possible, to prevent packet loss from fifo being full.
+When handling callbacks, the control should be returned as soon as possible, to prevent packet loss from fifo being full.
 
+**Example**
+    * `main cpp file <https://github.com/slsdetectorgroup/api-examples/blob/master/e4-receiver_callbacks.cpp>`_ 
+    * `cmake file <https://github.com/slsdetectorgroup/api-examples/blob/master/CMakeLists.txt>`_. 
+    * how to install the slsDetectorPackage is provided :ref:`here <build from source using cmake>`.
+    * compile the example **e4-rxr** by:
+
+        .. code-block:: bash
+
+            cmake ../path/to/your/source -DCMAKE_PREFIX_PATH=/path/to/sls/install
+            make
+            

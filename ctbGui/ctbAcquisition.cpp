@@ -25,7 +25,7 @@
 
 #include "ctbAcquisition.h"
 #include "ctbDefs.h"
-#include "Detector.h"
+#include "sls/Detector.h"
 #include "sls_detector_defs.h"
 #include "ctbMain.h"
 #include "moench03CtbData.h" 
@@ -43,7 +43,7 @@
 #include "moench04CtbZmqData.h"
 #include "moench04CtbZmq10GbData.h"
 #include "deserializer.h"
-#include "detectorData.h"
+#include "sls/detectorData.h"
 #include "imageZmq16bit.h"
 #include "imageZmq32bit.h"
 

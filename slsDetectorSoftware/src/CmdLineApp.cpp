@@ -5,9 +5,10 @@ This file is used to generate the command line binaries
 we get the different files.
 
 */
+#include "sls/Detector.h"
+
 #include "CmdParser.h"
 #include "CmdProxy.h"
-#include "Detector.h"
 #include "sls_detector_defs.h"
 #include "versionAPI.h"
 #include <cstring> //strcmp

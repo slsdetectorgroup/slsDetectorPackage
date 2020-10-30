@@ -1,5 +1,5 @@
 #include "CmdProxy.h"
-#include "Detector.h"
+#include "sls/Detector.h"
 #include "catch.hpp"
 #include "sls_detector_defs.h"
 

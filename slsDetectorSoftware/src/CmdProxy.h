@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Detector.h"
-#include "Result.h"
+#include "sls/Detector.h"
+#include "sls/Result.h"
 #include "network_utils.h"
 #include "sls_detector_exceptions.h"
 #include <iostream>

@@ -1,6 +1,6 @@
 /** Examples on how to use Result<T> */
 
-#include "Result.h"
+#include "sls/Result.h"
 #include "ToString.h"
 #include <algorithm>
 #include <iostream>

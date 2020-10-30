@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Result.h"
+#include "sls/Result.h"
 #include "SharedMemory.h"
 #include "logger.h"
 #include "sls_detector_defs.h"

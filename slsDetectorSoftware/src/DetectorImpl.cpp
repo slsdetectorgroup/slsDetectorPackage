@@ -2,7 +2,7 @@
 #include "Module.h"
 #include "SharedMemory.h"
 #include "ZmqSocket.h"
-#include "detectorData.h"
+#include "sls/detectorData.h"
 #include "file_utils.h"
 #include "logger.h"
 #include "sls_detector_exceptions.h"

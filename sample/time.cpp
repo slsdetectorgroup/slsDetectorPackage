@@ -3,8 +3,8 @@
 #include <string>
 #include <memory>
 
-#include "Result.h"
-#include "Detector.h"
+#include "sls/Result.h"
+#include "sls/Detector.h"
 #include "container_utils.h"
 #include "ToString.h"
 #include <algorithm>

@@ -1,10 +1,10 @@
 #include "CmdProxy.h"
-#include "Detector.h"
+#include "sls/Detector.h"
 #include "catch.hpp"
 #include "sls_detector_defs.h"
 #include <sstream>
 
-#include "Result.h"
+#include "sls/Result.h"
 #include "ToString.h"
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"

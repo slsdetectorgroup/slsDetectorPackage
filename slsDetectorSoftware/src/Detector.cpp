@@ -1,10 +1,11 @@
-#include "Detector.h"
+#include "sls/Detector.h"
+#include "sls/detectorData.h"
+
 #include "CmdParser.h"
 #include "CmdProxy.h"
 #include "DetectorImpl.h"
 #include "Module.h"
 #include "container_utils.h"
-#include "detectorData.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
 #include "versionAPI.h"

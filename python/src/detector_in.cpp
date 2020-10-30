@@ -3,7 +3,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "Detector.h"
+#include "sls/Detector.h"
 #include "ToString.h"
 #include "network_utils.h"
 #include "sls_detector_defs.h"

@@ -1,6 +1,6 @@
 #include "test-CmdProxy-global.h"
 #include "CmdProxy.h"
-#include "Detector.h"
+#include "sls/Detector.h"
 #include "catch.hpp"
 #include "tests/globals.h"
 

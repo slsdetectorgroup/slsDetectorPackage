@@ -51,4 +51,10 @@ int main() {
         auto help = replace_all(tmp, "\n\t", "\n\t\t| ");
         fs << '\t' << cmd << usage << help << "\n";
     }
+
+    std::ofstream fs2("depreciated.txt");
+    auto cmds = proxy.GetDepreciatedCommands();
+    for (auto it : cmds){
+        fs2 << it.first << ", " << it.second << '\n';
+    }
 }

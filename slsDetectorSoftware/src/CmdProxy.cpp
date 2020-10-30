@@ -74,6 +74,10 @@ std::vector<std::string> CmdProxy::GetProxyCommands() {
     return commands;
 }
 
+std::map<std::string, std::string> CmdProxy::GetDepreciatedCommands(){
+    return depreciated_functions;
+}
+
 void CmdProxy::WrongNumberOfParameters(size_t expected) {
     throw RuntimeError(
         "Command " + cmd + " expected <=" + std::to_string(expected) +

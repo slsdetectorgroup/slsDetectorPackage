@@ -534,6 +534,7 @@ class CmdProxy {
     bool ReplaceIfDepreciated(std::string &command);
     size_t GetFunctionMapSize() const noexcept { return functions.size(); };
     std::vector<std::string> GetProxyCommands();
+    std::map<std::string, std::string> GetDepreciatedCommands();
 
   private:
     Detector *det;

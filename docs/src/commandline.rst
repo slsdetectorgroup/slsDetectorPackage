@@ -35,7 +35,13 @@ Commands
 Depreciated commands
 ------------------------
 
+.. note ::
+	All dac commands are preceded with the **dac** command. Use command **daclist** to get correct list of dac command arguments for current detector.
+
 .. csv-table:: Depreciated commands
    :file: ../depreciated.csv
    :widths: 35, 35
    :header-rows: 1
+
+
+

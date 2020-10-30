@@ -30,3 +30,12 @@ Commands
 -----------
 
 .. include:: ../commands.rst
+
+
+Depreciated commands
+------------------------
+
+.. csv-table:: Depreciated commands
+   :file: ../depreciated.csv
+   :widths: 35, 35
+   :header-rows: 1

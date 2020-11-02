@@ -1259,7 +1259,11 @@ TEST_CASE("stop", "[.cmd][.new]") {
         proxy.Call("stop", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "stop successful\n");
     }
-    {
+    if (det_type == defs::JUNGFRAU) {
+        std::ostringstream oss;
+        proxy.Call("status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "status stopped\n");
+    } else {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status idle\n");

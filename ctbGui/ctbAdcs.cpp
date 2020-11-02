@@ -25,7 +25,7 @@
 
 #include "ctbAdcs.h"
 #include "ctbDefs.h"
-#include "Detector.h"
+#include "sls/Detector.h"
 
 using namespace std;
 

@@ -1,7 +1,7 @@
 #include "ALTERA_PLL_CYCLONE10.h"
 #include "clogger.h"
 #include "nios.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 #include <unistd.h> // usleep
 

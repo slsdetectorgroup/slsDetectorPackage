@@ -8,7 +8,7 @@
  */
 
 #include "ThreadObject.h"
-#include "network_utils.h"
+#include "sls/network_utils.h"
 
 class GeneralData;
 class Fifo;

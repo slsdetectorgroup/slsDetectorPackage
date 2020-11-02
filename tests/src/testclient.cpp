@@ -1,9 +1,9 @@
-#include "ClientSocket.h"
+#include "sls/ClientSocket.h"
 #include "clara.hpp"
-#include "sls_detector_exceptions.h"
+#include "sls/sls_detector_exceptions.h"
 #include "tests/testenum.h"
 
-#include "container_utils.h"
+#include "sls/container_utils.h"
 #include <iostream>
 
 bool help = false;

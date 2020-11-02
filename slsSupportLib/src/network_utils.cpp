@@ -1,6 +1,6 @@
-#include "sls_detector_exceptions.h"
+#include "sls/sls_detector_exceptions.h"
 
-#include "network_utils.h"
+#include "sls/network_utils.h"
 #include <algorithm>
 #include <arpa/inet.h>
 #include <cassert>

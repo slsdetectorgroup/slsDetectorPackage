@@ -1,10 +1,10 @@
-#include "UdpRxSocket.h"
-#include "sls_detector_defs.h"
+#include "sls/UdpRxSocket.h"
+#include "sls/sls_detector_defs.h"
 #include <chrono>
 #include <fmt/format.h>
 #include <iostream>
 #include <thread>
-#include "network_utils.h"
+#include "sls/network_utils.h"
 
 // Assume packages arrive in order
 

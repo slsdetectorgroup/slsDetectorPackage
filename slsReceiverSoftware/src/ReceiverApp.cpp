@@ -1,8 +1,8 @@
 /* slsReceiver */
-#include "Receiver.h"
-#include "container_utils.h"
-#include "logger.h"
-#include "sls_detector_defs.h"
+#include "sls/Receiver.h"
+#include "sls/container_utils.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_defs.h"
 
 #include <csignal> //SIGINT
 #include <semaphore.h>

@@ -1,11 +1,11 @@
 #include "qDrawPlot.h"
 #include "SlsQt1DPlot.h"
 #include "SlsQt2DPlot.h"
-#include "detectorData.h"
+#include "sls/detectorData.h"
 #include "qCloneWidget.h"
 
-#include "ToString.h"
-#include "detectorData.h"
+#include "sls/ToString.h"
+#include "sls/detectorData.h"
 
 #include <QFileDialog>
 #include <QPainter>

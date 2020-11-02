@@ -1,9 +1,9 @@
 #include "catch.hpp"
-#include "logger.h"
+#include "sls/logger.h"
 #include <iostream>
 #include <vector>
 
-#include "string_utils.h"
+#include "sls/string_utils.h"
 
 TEST_CASE("copy a string") {
 

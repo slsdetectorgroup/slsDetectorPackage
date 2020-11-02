@@ -6,13 +6,13 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "Detector.h"
-#include "ToString.h"
-#include "network_utils.h"
-#include "sls_detector_defs.h"
+#include "sls/Detector.h"
+#include "sls/ToString.h"
+#include "sls/network_utils.h"
+#include "sls/sls_detector_defs.h"
 #include "typecaster.h"
 
-#include "TimeHelper.h"
+#include "sls/TimeHelper.h"
 #include <array>
 #include <chrono>
 namespace py = pybind11;

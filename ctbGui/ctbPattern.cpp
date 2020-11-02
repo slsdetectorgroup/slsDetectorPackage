@@ -25,7 +25,7 @@
 
 #include "ctbPattern.h"
 #include "ctbDefs.h"
-#include "Detector.h"
+#include "sls/Detector.h"
 #include <chrono>
 using namespace std;
 

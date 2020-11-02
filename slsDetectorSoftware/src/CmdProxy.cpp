@@ -1,11 +1,11 @@
 #include "CmdProxy.h"
 #include "HelpDacs.h"
-#include "TimeHelper.h"
-#include "ToString.h"
-#include "bit_utils.h"
-#include "container_utils.h"
-#include "logger.h"
-#include "sls_detector_defs.h"
+#include "sls/TimeHelper.h"
+#include "sls/ToString.h"
+#include "sls/bit_utils.h"
+#include "sls/container_utils.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_defs.h"
 
 #include <iomanip>
 #include <iostream>

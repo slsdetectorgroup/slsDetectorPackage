@@ -10,7 +10,7 @@
  */
 
 #include "ThreadObject.h"
-#include "UdpRxSocket.h"
+#include "sls/UdpRxSocket.h"
 #include <atomic>
 #include <memory>
 

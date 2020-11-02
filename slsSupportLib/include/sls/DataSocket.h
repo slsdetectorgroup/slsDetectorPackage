@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TypeTraits.h"
+#include "sls/TypeTraits.h"
 #include <cstddef>
 #include <cstdint>
 #include <iostream>

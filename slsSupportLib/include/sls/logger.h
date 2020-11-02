@@ -1,7 +1,7 @@
 #pragma once
 /*Utility to log to console*/
 
-#include "ansi.h" //Colors
+#include "sls/ansi.h" //Colors
 #include <iostream>
 #include <sstream>
 #include <sys/time.h>

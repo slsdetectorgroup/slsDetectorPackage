@@ -38,9 +38,9 @@ target_link_libraries(slsDetectorShared
 
 
 set(PUBLICHEADERS
-    include/detectorData.h
-    include/Detector.h
-    include/Result.h
+    include/sls/detectorData.h
+    include/sls/Detector.h
+    include/sls/Result.h
 )
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector
@@ -94,5 +94,5 @@ install(TARGETS slsDetectorShared
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sls
 )

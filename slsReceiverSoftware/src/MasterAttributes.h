@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ToString.h"
-#include "logger.h"
-#include "sls_detector_defs.h"
+#include "sls/ToString.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_defs.h"
 
 #ifdef HDF5C
 #include "H5Cpp.h"

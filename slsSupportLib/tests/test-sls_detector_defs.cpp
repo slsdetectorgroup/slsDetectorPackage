@@ -1,5 +1,5 @@
 #include "catch.hpp"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 using dt = slsDetectorDefs::detectorType;
 

@@ -1,7 +1,7 @@
-#include "UdpRxSocket.h"
-#include "logger.h"
-#include "network_utils.h"
-#include "sls_detector_exceptions.h"
+#include "sls/UdpRxSocket.h"
+#include "sls/logger.h"
+#include "sls/network_utils.h"
+#include "sls/sls_detector_exceptions.h"
 #include <cstdint>
 #include <errno.h>
 #include <iostream>

@@ -91,7 +91,7 @@ manually when invoking g++. This can sometimes be handy for a quick try.
 
 .. code-block:: cpp
 
-    #include "Detector.h"
+    #include "sls/Detector.h"
     #include <iostream>
     int main(){
 

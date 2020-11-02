@@ -1,5 +1,5 @@
-#include "sls_detector_exceptions.h"
-#include "logger.h"
+#include "sls/sls_detector_exceptions.h"
+#include "sls/logger.h"
 namespace sls {
 RuntimeError::RuntimeError() : runtime_error("SLS Detector Package Failed") {
     LOG(logERROR) << "SLS Detector Package Failed";

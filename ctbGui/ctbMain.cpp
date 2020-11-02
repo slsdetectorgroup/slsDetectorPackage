@@ -34,7 +34,7 @@
 #include <fstream>
 #include <string>
 
-#include "Detector.h"
+#include "sls/Detector.h"
 #include "ctbDefs.h"
 #include "ctbMain.h"
 #include "ctbDacs.h"

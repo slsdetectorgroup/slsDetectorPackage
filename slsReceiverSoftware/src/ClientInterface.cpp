@@ -1,11 +1,11 @@
 #include "ClientInterface.h"
-#include "ServerSocket.h"
-#include "StaticVector.h"
-#include "ToString.h"
+#include "sls/ServerSocket.h"
+#include "sls/StaticVector.h"
+#include "sls/ToString.h"
 
-#include "sls_detector_exceptions.h"
-#include "string_utils.h"
-#include "versionAPI.h"
+#include "sls/sls_detector_exceptions.h"
+#include "sls/string_utils.h"
+#include "sls/versionAPI.h"
 
 #include <array>
 #include <chrono>

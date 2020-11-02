@@ -1,6 +1,6 @@
 #pragma once
 #include "RegisterDefs.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API 0x181130
 #define REQRD_FRMWR_VRSN        0x201005

@@ -3,7 +3,7 @@
 #include "clogger.h"
 #include "common.h"
 #include "commonServerFunctions.h" // blackfin.h, ansi.h
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 #include <string.h>
 

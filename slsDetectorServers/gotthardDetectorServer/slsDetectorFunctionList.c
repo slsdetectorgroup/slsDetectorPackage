@@ -3,7 +3,7 @@
 #include "clogger.h"
 #include "common.h"
 #include "sharedMemory.h"
-#include "versionAPI.h"
+#include "sls/versionAPI.h"
 
 #include "LTC2620.h" // dacs
 #ifdef VIRTUAL

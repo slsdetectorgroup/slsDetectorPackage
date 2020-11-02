@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 #include <cstdio>
 #include <fstream>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "logger.h"
-#include "sls_detector_defs.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_defs.h"
 
 #include <QAbstractButton>
 #include <QMessageBox>

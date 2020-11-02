@@ -1,9 +1,9 @@
 #include "nios.h"
 #include "RegisterDefs.h"
-#include "ansi.h"
+#include "sls/ansi.h"
 #include "clogger.h"
 #include "common.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 #include <fcntl.h> // open
 #include <string.h>

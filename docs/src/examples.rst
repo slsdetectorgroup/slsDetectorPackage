@@ -36,7 +36,7 @@ Running a config file [e1]
 
 .. code-block:: cpp
 
-    #include "Detector.h"
+    #include "sls/Detector.h"
     ...
     sls::Detector det;
     det.loadConfig("path/to/config/file.config");
@@ -105,7 +105,7 @@ as converting to floating point.
 
 .. code-block:: cpp
 
-    #include "Detector.h"
+    #include "sls/Detector.h"
     #include <chrono>
     ...
     std::chrono::microseconds t0{500};

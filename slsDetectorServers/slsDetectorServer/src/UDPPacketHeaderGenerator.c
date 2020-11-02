@@ -1,6 +1,6 @@
 #include "UDPPacketHeaderGenerator.h"
 #include "clogger.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 #include <arpa/inet.h>
 #include <errno.h>

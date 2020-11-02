@@ -1,5 +1,5 @@
-#include "ClientSocket.h"
-#include "ServerSocket.h"
+#include "sls/ClientSocket.h"
+#include "sls/ServerSocket.h"
 #include "catch.hpp"
 #include <chrono>
 #include <future>

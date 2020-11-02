@@ -6,8 +6,8 @@
 #include "sharedMemory.h"
 #include "slsDetectorServer_defs.h"
 #include "slsDetectorServer_funcs.h"
-#include "sls_detector_defs.h"
-#include "versionAPI.h"
+#include "sls/sls_detector_defs.h"
+#include "sls/versionAPI.h"
 
 #include <getopt.h>
 #include <signal.h>

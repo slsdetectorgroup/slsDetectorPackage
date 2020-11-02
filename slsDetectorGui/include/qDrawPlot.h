@@ -1,5 +1,5 @@
 #pragma once
-#include "Detector.h"
+#include "sls/Detector.h"
 #include "qDefs.h"
 #include "ui_form_plot.h"
 #include <mutex>

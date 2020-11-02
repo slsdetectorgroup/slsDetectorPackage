@@ -1,12 +1,12 @@
 
 #include "catch.hpp"
-#include "network_utils.h"
+#include "sls/network_utils.h"
 #include <iostream>
 #include <sstream>
 #include <vector>
 
-#include "sls_detector_exceptions.h"
-#include "string_utils.h"
+#include "sls/sls_detector_exceptions.h"
+#include "sls/string_utils.h"
 
 using namespace sls;
 

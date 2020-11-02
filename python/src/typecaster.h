@@ -1,6 +1,6 @@
 #pragma once
 #include <pybind11/pybind11.h>
-#include "Result.h"
+#include "sls/Result.h"
 // Add type_typecaster to pybind for our wrapper type
 namespace pybind11 {
 namespace detail {

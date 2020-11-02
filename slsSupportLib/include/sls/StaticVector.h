@@ -1,6 +1,6 @@
 #pragma once
-#include "ToString.h"
-#include "TypeTraits.h"
+#include "sls/ToString.h"
+#include "sls/TypeTraits.h"
 #include <array>
 #include <cassert>
 #include <iostream>

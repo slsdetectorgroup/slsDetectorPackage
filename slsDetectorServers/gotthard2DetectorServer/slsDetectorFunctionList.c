@@ -7,7 +7,7 @@
 #include "clogger.h"
 #include "common.h"
 #include "sharedMemory.h"
-#include "versionAPI.h"
+#include "sls/versionAPI.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #endif

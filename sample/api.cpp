@@ -1,9 +1,9 @@
-#include "Detector.h"
+#include <sls/Detector.h>
 
 #include <chrono>
 #include <iostream>
-#include "TimeHelper.h"
-#include "ToString.h"
+#include "sls/TimeHelper.h"
+#include "sls/ToString.h"
 // std::ostream &operator<<(std::ostream &os, const std::chrono::nanoseconds &t) {
 //     os << t.count() << "ns";
 //     return os;

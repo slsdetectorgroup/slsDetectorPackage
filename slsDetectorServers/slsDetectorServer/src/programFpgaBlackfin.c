@@ -1,5 +1,5 @@
 #include "programFpgaBlackfin.h"
-#include "ansi.h"
+#include "sls/ansi.h"
 #include "clogger.h"
 #include "slsDetectorServer_defs.h"
 

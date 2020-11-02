@@ -1,6 +1,6 @@
 #include "blackfin.h"
 #include "RegisterDefs.h"
-#include "ansi.h"
+#include "sls/ansi.h"
 #include "clogger.h"
 #include "sls/sls_detector_defs.h"
 

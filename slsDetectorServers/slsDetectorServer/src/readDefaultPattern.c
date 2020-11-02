@@ -1,5 +1,5 @@
 #include "readDefaultPattern.h"
-#include "ansi.h"
+#include "sls/ansi.h"
 #include "clogger.h"
 #include "common.h"
 #include "slsDetectorServer_defs.h"

@@ -39,7 +39,7 @@
 //#include "multiThreadedCountingDetector.h"
 #include "multiThreadedInterpolatingDetector.h"
 #include "etaInterpolationPosXY.h"
-#include "ansi.h"
+#include "sls/ansi.h"
 #include <iostream>
 
 #include <chrono>

@@ -7,7 +7,7 @@ fi
 API_NAME=$1
 PACKAGE_DIR=$PWD
 API_DIR=$PACKAGE_DIR/$2
-API_FILE=$PACKAGE_DIR/slsSupportLib/include/versionAPI.h
+API_FILE=$PACKAGE_DIR/slsSupportLib/include/sls/versionAPI.h
 CURR_DIR=$PWD
 
 #go to directory

@@ -1,4 +1,4 @@
-API_FILE=$PWD/slsSupportLib/include/versionAPI.h
+API_FILE=$PWD/slsSupportLib/include/sls/versionAPI.h
 arraylength=3
 
 LIB_DIR=slsDetectorSoftware

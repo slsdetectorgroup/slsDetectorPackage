@@ -1,7 +1,7 @@
 current_dir = $(shell pwd)
 main_inc = ../slsDetectorServer/include/
 main_src = ../slsDetectorServer/src/
-support_lib = ../../slsSupportLib/include/
+support_lib = ../../slsSupportLib/include/sls/
 
 CROSS  		= nios2-buildroot-linux-gnu-
 CC    		= $(CROSS)gcc

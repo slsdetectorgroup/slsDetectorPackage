@@ -5,9 +5,9 @@
 #include "GeneralData.h"
 #include "Listener.h"
 #include "MasterAttributes.h"
-#include "ToString.h"
-#include "ZmqSocket.h" //just for the zmq port define
-#include "file_utils.h"
+#include "sls/ToString.h"
+#include "sls/ZmqSocket.h" //just for the zmq port define
+#include "sls/file_utils.h"
 
 #include <cerrno> //eperm
 #include <chrono>

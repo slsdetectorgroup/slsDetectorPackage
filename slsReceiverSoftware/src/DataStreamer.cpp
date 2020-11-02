@@ -6,8 +6,8 @@
 #include "DataStreamer.h"
 #include "Fifo.h"
 #include "GeneralData.h"
-#include "ZmqSocket.h"
-#include "sls_detector_exceptions.h"
+#include "sls/ZmqSocket.h"
+#include "sls/sls_detector_exceptions.h"
 
 #include <cerrno>
 #include <iostream>

@@ -1,10 +1,10 @@
 #pragma once
-#include "ClientSocket.h"
+#include "sls/ClientSocket.h"
 #include "SharedMemory.h"
-#include "StaticVector.h"
-#include "logger.h"
-#include "network_utils.h"
-#include "sls_detector_defs.h"
+#include "sls/StaticVector.h"
+#include "sls/logger.h"
+#include "sls/network_utils.h"
+#include "sls/sls_detector_defs.h"
 
 #include <array>
 #include <cmath>

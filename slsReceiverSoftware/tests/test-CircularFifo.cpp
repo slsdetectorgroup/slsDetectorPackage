@@ -1,4 +1,4 @@
-#include "CircularFifo.h"
+#include "sls/CircularFifo.h"
 #include "catch.hpp"
 #include <vector>
 

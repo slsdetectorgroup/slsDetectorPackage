@@ -1,5 +1,5 @@
 #include "catch.hpp"
-#include "logger.h"
+#include "sls/logger.h"
 #include <chrono>
 #include <fstream>
 #include <iostream>

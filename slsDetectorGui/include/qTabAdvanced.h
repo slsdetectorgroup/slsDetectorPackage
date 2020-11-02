@@ -1,5 +1,5 @@
 #pragma once
-#include "Detector.h"
+#include "sls/Detector.h"
 #include "ui_form_tab_advanced.h"
 
 class qDrawPlot;

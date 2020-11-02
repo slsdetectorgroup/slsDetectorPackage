@@ -7,11 +7,11 @@
  *
  */
 
-#include "TimeHelper.h"
-#include "TypeTraits.h"
-#include "sls_detector_defs.h"
-#include "sls_detector_exceptions.h"
-#include "string_utils.h"
+#include "sls/TimeHelper.h"
+#include "sls/TypeTraits.h"
+#include "sls/sls_detector_defs.h"
+#include "sls/sls_detector_exceptions.h"
+#include "sls/string_utils.h"
 #include <array>
 #include <chrono>
 #include <iomanip>

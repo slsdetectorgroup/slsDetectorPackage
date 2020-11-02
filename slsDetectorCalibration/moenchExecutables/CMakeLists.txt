@@ -1,4 +1,5 @@
 
+find_package(TIFF REQUIRED)
 
 #Moench ZMQ
 add_executable(moenchZmqProcess moenchZmqProcess.cpp ../tiffIO.cpp)

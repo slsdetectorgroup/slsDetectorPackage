@@ -1,11 +1,11 @@
-#include "ServerSocket.h"
-#include "ServerInterface.h"
+#include "sls/ServerSocket.h"
+#include "sls/ServerInterface.h"
 
-#include "DataSocket.h"
-#include "logger.h"
-#include "sls_detector_defs.h"
-#include "sls_detector_exceptions.h"
-#include "string_utils.h"
+#include "sls/DataSocket.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_defs.h"
+#include "sls/sls_detector_exceptions.h"
+#include "sls/string_utils.h"
 
 #include <arpa/inet.h>
 #include <cstring>

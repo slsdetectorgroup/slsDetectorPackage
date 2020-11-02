@@ -7,8 +7,8 @@
  *@short creates/destroys a thread
  */
 
-#include "logger.h"
-#include "sls_detector_defs.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_defs.h"
 
 #include <atomic>
 #include <semaphore.h>

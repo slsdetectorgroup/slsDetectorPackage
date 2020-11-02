@@ -1,8 +1,8 @@
 
 mkdir $PREFIX/lib
 mkdir $PREFIX/bin
-mkdir $PREFIX/include
-mkdir $PREFIX/include/slsDetectorPackage
+mkdir -p $PREFIX/include/sls
+# mkdir $PREFIX/include/slsDetectorPackage
 
 #Shared and static libraries
 # cp build/bin/libSlsDetector.so $PREFIX/lib/.
@@ -20,5 +20,5 @@ cp build/install/bin/slsReceiver $PREFIX/bin/.
 cp build/install/bin/slsMultiReceiver $PREFIX/bin/.
 
 
-cp build/install/include/* $PREFIX/include/
+cp build/install/include/sls/* $PREFIX/include/sls
 cp -r build/install/share/ $PREFIX/share

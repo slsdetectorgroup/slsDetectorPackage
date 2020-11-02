@@ -1,7 +1,7 @@
 #define _GNU_SOURCE // needed for strptime to be at the top
 #include "common.h"
 #include "clogger.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 #include <libgen.h> // dirname
 #include <string.h>

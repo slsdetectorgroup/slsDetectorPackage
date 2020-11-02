@@ -16,7 +16,7 @@
 
 #ifdef __cplusplus
 // C++ includes
-#include "sls_detector_exceptions.h"
+#include "sls/sls_detector_exceptions.h"
 #include <algorithm>
 #include <bitset>
 #include <chrono>
@@ -491,7 +491,7 @@ typedef struct {
 #endif
 
     // #ifndef MYROOT
-    // #include "sls_detector_funcs.h"
+    // #include "sls/sls_detector_funcs.h"
     // #endif
 
 #ifdef __cplusplus

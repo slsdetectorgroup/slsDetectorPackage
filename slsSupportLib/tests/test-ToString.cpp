@@ -1,8 +1,8 @@
-#include "TimeHelper.h"
-#include "ToString.h"
+#include "sls/TimeHelper.h"
+#include "sls/ToString.h"
 #include "catch.hpp"
-#include "network_utils.h"
-#include "sls_detector_defs.h"
+#include "sls/network_utils.h"
+#include "sls/sls_detector_defs.h"
 #include <array>
 #include <map>
 #include <sstream>

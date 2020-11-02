@@ -1,5 +1,5 @@
-#include "StaticVector.h"
-#include "TypeTraits.h"
+#include "sls/StaticVector.h"
+#include "sls/TypeTraits.h"
 #include "catch.hpp"
 
 #include <array>

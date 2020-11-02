@@ -14,7 +14,7 @@
 #include "HDF5File.h"
 #endif
 #include "DataStreamer.h"
-#include "sls_detector_exceptions.h"
+#include "sls/sls_detector_exceptions.h"
 
 #include <cerrno>
 #include <cstring>

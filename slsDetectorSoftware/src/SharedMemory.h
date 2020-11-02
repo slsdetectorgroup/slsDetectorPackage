@@ -8,8 +8,8 @@
  *@short functions basic implemenation of shared memory
  */
 
-#include "logger.h"
-#include "sls_detector_exceptions.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_exceptions.h"
 
 #include "stdlib.h"
 #include <cerrno>  // errno

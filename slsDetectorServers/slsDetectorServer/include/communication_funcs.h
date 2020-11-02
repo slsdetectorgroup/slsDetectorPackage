@@ -1,7 +1,7 @@
 #ifndef COMMUNICATION_FUNCS_H
 #define COMMUNICATION_FUNCS_H
 
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 typedef enum { INT16, INT32, INT64, OTHER } intType;
 

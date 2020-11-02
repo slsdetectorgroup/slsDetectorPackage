@@ -3,8 +3,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "Detector.h"
-#include "Result.h"
+#include "sls/Detector.h"
+#include "sls/Result.h"
 #include "mythenFileIO.h"
 #include <chrono>
 #include <vector>

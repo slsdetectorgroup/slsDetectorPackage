@@ -1,5 +1,5 @@
 #include "qTabAdvanced.h"
-#include "network_utils.h"
+#include "sls/network_utils.h"
 #include "qDefs.h"
 #include "qDrawPlot.h"
 

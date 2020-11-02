@@ -8,10 +8,10 @@
 #include "Listener.h"
 #include "Fifo.h"
 #include "GeneralData.h"
-#include "UdpRxSocket.h"
-#include "container_utils.h" // For sls::make_unique<>
-#include "network_utils.h"
-#include "sls_detector_exceptions.h"
+#include "sls/UdpRxSocket.h"
+#include "sls/container_utils.h" // For sls::make_unique<>
+#include "sls/network_utils.h"
+#include "sls/sls_detector_exceptions.h"
 
 #include <cerrno>
 #include <cstring>

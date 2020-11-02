@@ -1,14 +1,14 @@
 
 #include "catch.hpp"
 
-#include "ClientSocket.h"
+#include "sls/ClientSocket.h"
 #include "DetectorImpl.h"
 #include "Module.h"
-#include "logger.h"
-#include "sls_detector_defs.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_defs.h"
 
-#include "Timer.h"
-#include "sls_detector_funcs.h"
+#include "sls/Timer.h"
+#include "sls/sls_detector_funcs.h"
 #include <iostream>
 #include <vector>
 #define VERBOSE

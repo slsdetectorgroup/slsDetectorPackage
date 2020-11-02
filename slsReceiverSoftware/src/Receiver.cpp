@@ -1,9 +1,9 @@
-#include "Receiver.h"
+#include "sls/Receiver.h"
 #include "ClientInterface.h"
-#include "container_utils.h"
-#include "logger.h"
-#include "sls_detector_exceptions.h"
-#include "versionAPI.h"
+#include "sls/container_utils.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_exceptions.h"
+#include "sls/versionAPI.h"
 
 #include <cstdlib>
 #include <fstream>

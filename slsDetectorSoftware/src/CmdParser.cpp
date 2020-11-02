@@ -1,6 +1,6 @@
 
 #include "CmdParser.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 #include <cstdio>
 #include <cstring>
 #include <iostream>

@@ -9,8 +9,8 @@
 #include <fstream>
 #include <string>
 
-#include "Detector.h"
-#include "sls_detector_defs.h"
+#include "sls/Detector.h"
+#include "sls/sls_detector_defs.h"
 //#include "sls_receiver_defs.h"
 #include "ctbMain.h"
 #include "ctbDefs.h"

@@ -61,7 +61,7 @@ endif (SLS_USE_HDF5)
 
 #What is included in slsReceiverLib?
 set(PUBLICHEADERS
-    include/Receiver.h
+    include/sls/Receiver.h
 )
 
 
@@ -116,7 +116,8 @@ install(TARGETS slsReceiverShared slsReceiver slsMultiReceiver
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sls
+)
 
 install(FILES ${ZMQ_STATIC_ARCHIVE}
 DESTINATION lib)

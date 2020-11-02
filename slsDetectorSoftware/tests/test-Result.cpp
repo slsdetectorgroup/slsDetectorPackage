@@ -1,6 +1,6 @@
-#include "Result.h"
-#include "ToString.h"
-#include "TypeTraits.h"
+#include "sls/Result.h"
+#include "sls/ToString.h"
+#include "sls/TypeTraits.h"
 #include "catch.hpp"
 #include <string>
 

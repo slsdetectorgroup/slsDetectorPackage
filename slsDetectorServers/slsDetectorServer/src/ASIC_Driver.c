@@ -1,7 +1,7 @@
 #include "ASIC_Driver.h"
 #include "clogger.h"
 #include "common.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 #include <getopt.h>
 #include <stdint.h>

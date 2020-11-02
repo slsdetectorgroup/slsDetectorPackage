@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Detector.h"
-#include "Result.h"
-#include "network_utils.h"
-#include "sls_detector_exceptions.h"
+#include "sls/Detector.h"
+#include "sls/Result.h"
+#include "sls/network_utils.h"
+#include "sls/sls_detector_exceptions.h"
 #include <iostream>
 #include <map>
 #include <string>

@@ -1,7 +1,7 @@
 #pragma once
 #include <chrono>
 
-#include "TypeTraits.h"
+#include "sls/TypeTraits.h"
 namespace sls {
 namespace time {
 using ns = std::chrono::nanoseconds;

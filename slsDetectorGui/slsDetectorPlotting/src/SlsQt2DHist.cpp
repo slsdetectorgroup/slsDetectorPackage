@@ -1,6 +1,6 @@
 /* TODO! short description */
 #include "SlsQt2DHist.h"
-#include "ansi.h"
+#include "sls/ansi.h"
 #include <cmath>
 #include <iostream>
 

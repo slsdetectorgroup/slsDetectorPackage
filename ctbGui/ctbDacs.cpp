@@ -10,8 +10,8 @@
 
 #include "ctbDacs.h"
 #include "ctbDefs.h"
-#include "Detector.h"
-#include "sls_detector_defs.h"
+#include "sls/Detector.h"
+#include "sls/sls_detector_defs.h"
 
 using namespace std;
 

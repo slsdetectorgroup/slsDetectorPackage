@@ -6,7 +6,7 @@
  ***********************************************/
 
 #include "Fifo.h"
-#include "sls_detector_exceptions.h"
+#include "sls/sls_detector_exceptions.h"
 
 #include <cstdlib>
 #include <cstring>

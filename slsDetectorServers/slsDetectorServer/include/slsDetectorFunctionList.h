@@ -1,5 +1,5 @@
 #include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 #ifdef GOTTHARDD
 #include "AD9252.h"  // old board compatibility
 #include "clogger.h" // runState(enum TLogLevel)

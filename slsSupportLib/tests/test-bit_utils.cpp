@@ -1,4 +1,4 @@
-#include "bit_utils.h"
+#include "sls/bit_utils.h"
 #include "catch.hpp"
 #include <vector>
 

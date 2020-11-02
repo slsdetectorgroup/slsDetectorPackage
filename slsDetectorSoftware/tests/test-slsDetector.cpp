@@ -1,9 +1,9 @@
 
 // #include "catch.hpp"
-// #include "container_utils.h"
+// #include "sls/container_utils.h"
 // #include "slsDetector.h"
-// #include "sls_detector_defs.h"
-// #include "string_utils.h"
+// #include "sls/sls_detector_defs.h"
+// #include "sls/string_utils.h"
 // #include <algorithm>
 // #include <iostream>
 

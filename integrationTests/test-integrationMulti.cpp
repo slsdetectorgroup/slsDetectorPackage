@@ -1,6 +1,6 @@
 #include "DetectorImpl.h"
 #include "catch.hpp"
-#include "string_utils.h"
+#include "sls/string_utils.h"
 #include "tests/globals.h"
 #include <iostream>
 

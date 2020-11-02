@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "TypeTraits.h"
+#include "sls/TypeTraits.h"
 
 namespace sls {
 

@@ -3,7 +3,7 @@
 #include "communication_funcs.h"
 #include "sharedMemory.h"
 #include "slsDetectorFunctionList.h"
-#include "sls_detector_funcs.h"
+#include "sls/sls_detector_funcs.h"
 
 #include <arpa/inet.h>
 #include <pthread.h>

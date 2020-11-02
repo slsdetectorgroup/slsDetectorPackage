@@ -1,6 +1,6 @@
-#include "file_utils.h"
-#include "logger.h"
-#include "sls_detector_exceptions.h"
+#include "sls/file_utils.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_exceptions.h"
 
 #include <errno.h>
 #include <iostream>

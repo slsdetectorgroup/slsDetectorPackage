@@ -1,6 +1,6 @@
-#include "DataSocket.h"
-#include "logger.h"
-#include "sls_detector_exceptions.h"
+#include "sls/DataSocket.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_exceptions.h"
 #include <algorithm>
 #include <arpa/inet.h>
 #include <cassert>

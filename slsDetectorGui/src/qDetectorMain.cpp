@@ -10,8 +10,8 @@
 #include "qTabPlot.h"
 #include "qTabSettings.h"
 
-#include "ToString.h"
-#include "versionAPI.h"
+#include "sls/ToString.h"
+#include "sls/versionAPI.h"
 
 #include <QFileDialog>
 #include <QPlastiqueStyle>

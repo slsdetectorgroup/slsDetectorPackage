@@ -2,8 +2,8 @@
 
 #include "sls/Result.h"
 #include "SharedMemory.h"
-#include "logger.h"
-#include "sls_detector_defs.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_defs.h"
 
 class ZmqSocket;
 class detectorData;

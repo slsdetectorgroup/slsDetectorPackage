@@ -9,8 +9,8 @@ we get the different files.
 
 #include "CmdParser.h"
 #include "CmdProxy.h"
-#include "sls_detector_defs.h"
-#include "versionAPI.h"
+#include "sls/sls_detector_defs.h"
+#include "sls/versionAPI.h"
 #include <cstring> //strcmp
 #include <iostream>
 int main(int argc, char *argv[]) {

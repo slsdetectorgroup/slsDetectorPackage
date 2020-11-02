@@ -1,6 +1,6 @@
 #pragma once
 #include "RegisterDefs.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API  0x171220
 #define REQRD_FRMWRE_VRSN_BOARD2 0x200724 // 1.0 pcb

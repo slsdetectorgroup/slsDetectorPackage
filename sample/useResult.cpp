@@ -1,7 +1,7 @@
 /** Examples on how to use Result<T> */
 
 #include "sls/Result.h"
-#include "ToString.h"
+#include "sls/ToString.h"
 #include <algorithm>
 #include <iostream>
 

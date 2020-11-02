@@ -1,14 +1,14 @@
 #include "Module.h"
-#include "ClientSocket.h"
+#include "sls/ClientSocket.h"
 #include "SharedMemory.h"
-#include "ToString.h"
-#include "container_utils.h"
-#include "file_utils.h"
-#include "network_utils.h"
-#include "sls_detector_exceptions.h"
-#include "sls_detector_funcs.h"
-#include "string_utils.h"
-#include "versionAPI.h"
+#include "sls/ToString.h"
+#include "sls/container_utils.h"
+#include "sls/file_utils.h"
+#include "sls/network_utils.h"
+#include "sls/sls_detector_exceptions.h"
+#include "sls/sls_detector_funcs.h"
+#include "sls/string_utils.h"
+#include "sls/versionAPI.h"
 
 #include <algorithm>
 #include <array>

@@ -1,12 +1,12 @@
 #include "CmdProxy.h"
 #include "sls/Detector.h"
 #include "catch.hpp"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 #include <sstream>
 
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
-#include "versionAPI.h"
+#include "sls/versionAPI.h"
 
 using sls::CmdProxy;
 using sls::Detector;

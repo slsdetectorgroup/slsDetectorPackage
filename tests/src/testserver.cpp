@@ -1,10 +1,10 @@
-#include "ServerSocket.h"
+#include "sls/ServerSocket.h"
 #include "clara.hpp"
 
 #include "tests/testenum.h"
 
-#include "ServerInterface.h"
-#include "container_utils.h"
+#include "sls/ServerInterface.h"
+#include "sls/container_utils.h"
 #include <iostream>
 #include <unordered_map>
 

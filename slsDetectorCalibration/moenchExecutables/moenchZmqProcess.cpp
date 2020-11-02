@@ -5,8 +5,8 @@
 
 #define CM_ROWS 20
 
-#include "sls_detector_defs.h"
-#include "ZmqSocket.h"
+#include "sls/sls_detector_defs.h"
+#include "sls/ZmqSocket.h"
 #ifndef RECT
 #ifndef MOENCH04
 #include "moench03T1ZmqDataNew.h"

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "DataSocket.h"
-#include "ServerInterface.h"
-#include "network_utils.h"
+#include "sls/DataSocket.h"
+#include "sls/ServerInterface.h"
+#include "sls/network_utils.h"
 #include <cstdint>
 #include <netdb.h>
 #include <string>

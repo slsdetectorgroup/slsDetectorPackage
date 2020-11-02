@@ -1,7 +1,7 @@
 #include "slsDetectorFunctionList.h"
 #include "clogger.h"
 #include "sharedMemory.h"
-#include "versionAPI.h"
+#include "sls/versionAPI.h"
 
 #include "ALTERA_PLL.h" // pll
 #include "LTC2620.h"    // dacs

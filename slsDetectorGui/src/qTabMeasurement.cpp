@@ -1,7 +1,7 @@
 #include "qTabMeasurement.h"
 #include "qDefs.h"
 #include "qDrawPlot.h"
-#include "string_utils.h"
+#include "sls/string_utils.h"
 #include <QStandardItemModel>
 #include <QTimer>
 

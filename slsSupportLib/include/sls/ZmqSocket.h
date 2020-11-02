@@ -7,7 +7,7 @@
  *@short functions to open/close zmq sockets
  */
 
-#include "sls_detector_exceptions.h"
+#include "sls/sls_detector_exceptions.h"
 #include <rapidjson/document.h> //json header in zmq stream
 
 #define MAX_STR_LENGTH 1000
@@ -16,7 +16,7 @@
 #define ROIVERBOSITY
 
 class zmq_msg_t;
-#include "container_utils.h"
+#include "sls/container_utils.h"
 #include <map>
 #include <memory>
 /** zmq header structure */

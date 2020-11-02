@@ -1,7 +1,7 @@
 #include "slsDetectorFunctionList.h"
 #include "clogger.h"
 #include "sharedMemory.h"
-#include "versionAPI.h"
+#include "sls/versionAPI.h"
 
 #include "AD7689.h"     // slow adcs
 #include "ALTERA_PLL.h" // pll

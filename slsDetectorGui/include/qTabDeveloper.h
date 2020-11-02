@@ -1,6 +1,6 @@
 #pragma once
 #include "sls/Detector.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 #include "ui_form_tab_developer.h"
 #include <vector>
 

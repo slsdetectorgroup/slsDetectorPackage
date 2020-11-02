@@ -11,7 +11,7 @@
 #include "ctbSlowAdcs.h"
 #include "ctbDefs.h"
 #include "sls/Detector.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 using namespace std;
 

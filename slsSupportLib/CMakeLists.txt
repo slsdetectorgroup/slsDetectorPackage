@@ -14,14 +14,14 @@ set(SOURCES
 
 # Header files to install as a part of the library
 set(PUBLICHEADERS
-    include/sls_detector_defs.h
-    include/sls_detector_exceptions.h
-    include/container_utils.h
-    include/string_utils.h
-    include/network_utils.h
-    include/ToString.h
-    include/TypeTraits.h
-    include/TimeHelper.h
+    include/sls/sls_detector_defs.h
+    include/sls/sls_detector_exceptions.h
+    include/sls/container_utils.h
+    include/sls/string_utils.h
+    include/sls/network_utils.h
+    include/sls/ToString.h
+    include/sls/TypeTraits.h
+    include/sls/TimeHelper.h
 )
 
 # Additional headers to be installed if SLS_DEVEL_HEADERS
@@ -31,18 +31,18 @@ set(PUBLICHEADERS
 if(SLS_DEVEL_HEADERS)
     set(PUBLICHEADERS
         ${PUBLICHEADERS}
-        include/file_utils.h
-        include/sls_detector_funcs.h
-        include/ClientSocket.h
-        include/DataSocket.h
-        include/ServerSocket.h
-        include/ServerInterface.h
-        include/Timer.h
-        include/StaticVector.h
-        include/UdpRxSocket.h
-        include/versionAPI.h
-        include/ZmqSocket.h
-        include/bit_utils.h
+        include/sls/file_utils.h
+        include/sls/sls_detector_funcs.h
+        include/sls/ClientSocket.h
+        include/sls/DataSocket.h
+        include/sls/ServerSocket.h
+        include/sls/ServerInterface.h
+        include/sls/Timer.h
+        include/sls/StaticVector.h
+        include/sls/UdpRxSocket.h
+        include/sls/versionAPI.h
+        include/sls/ZmqSocket.h
+        include/sls/bit_utils.h
     )
 endif()
 
@@ -106,6 +106,6 @@ install(TARGETS slsSupportShared slsSupportStatic slsSupportObject
     EXPORT "${TARGETS_EXPORT_NAME}"
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sls
 )
 

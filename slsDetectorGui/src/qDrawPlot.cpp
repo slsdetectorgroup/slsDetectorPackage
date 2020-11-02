@@ -4,7 +4,7 @@
 #include "sls/detectorData.h"
 #include "qCloneWidget.h"
 
-#include "ToString.h"
+#include "sls/ToString.h"
 #include "sls/detectorData.h"
 
 #include <QFileDialog>

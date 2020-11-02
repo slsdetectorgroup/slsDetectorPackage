@@ -1,17 +1,17 @@
 #include "DetectorImpl.h"
 #include "Module.h"
 #include "SharedMemory.h"
-#include "ZmqSocket.h"
+#include "sls/ZmqSocket.h"
 #include "sls/detectorData.h"
-#include "file_utils.h"
-#include "logger.h"
-#include "sls_detector_exceptions.h"
-#include "versionAPI.h"
+#include "sls/file_utils.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_exceptions.h"
+#include "sls/versionAPI.h"
 
-#include "ToString.h"
-#include "container_utils.h"
-#include "network_utils.h"
-#include "string_utils.h"
+#include "sls/ToString.h"
+#include "sls/container_utils.h"
+#include "sls/network_utils.h"
+#include "sls/string_utils.h"
 
 #include <cstring>
 #include <iomanip>

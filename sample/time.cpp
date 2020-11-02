@@ -5,8 +5,8 @@
 
 #include "sls/Result.h"
 #include "sls/Detector.h"
-#include "container_utils.h"
-#include "ToString.h"
+#include "sls/container_utils.h"
+#include "sls/ToString.h"
 #include <algorithm>
 
 std::chrono::nanoseconds to_nano(double val, const std::string &unit) {

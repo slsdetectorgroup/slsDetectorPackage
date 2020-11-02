@@ -2,7 +2,7 @@
 #include "blackfin.h"
 #include "clogger.h"
 #include "commonServerFunctions.h" // blackfin.h, ansi.h
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 /* AD9257 ADC DEFINES */
 #define AD9257_ADC_NUMBITS (24)

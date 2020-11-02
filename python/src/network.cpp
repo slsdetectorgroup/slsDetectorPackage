@@ -9,7 +9,7 @@ classes.
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "network_utils.h"
+#include "sls/network_utils.h"
 namespace py = pybind11;
 using sls::IpAddr;
 using sls::MacAddr;

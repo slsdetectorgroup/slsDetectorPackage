@@ -1,7 +1,7 @@
 #include "LTC2620_Driver.h"
 #include "clogger.h"
 #include "common.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 #include <string.h>
 

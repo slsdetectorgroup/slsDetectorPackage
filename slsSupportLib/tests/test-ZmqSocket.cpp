@@ -1,4 +1,4 @@
-#include "ZmqSocket.h"
+#include "sls/ZmqSocket.h"
 #include "catch.hpp"
 
 TEST_CASE("Throws when cannot create socket") {

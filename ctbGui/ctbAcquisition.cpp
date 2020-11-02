@@ -26,7 +26,7 @@
 #include "ctbAcquisition.h"
 #include "ctbDefs.h"
 #include "sls/Detector.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 #include "ctbMain.h"
 #include "moench03CtbData.h" 
 //#include "moench03TCtbData.h" 

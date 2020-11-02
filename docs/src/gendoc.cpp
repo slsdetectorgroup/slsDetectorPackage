@@ -11,7 +11,7 @@
 
 #include "CmdProxy.h"
 #include "sls/Detector.h"
-#include "sls_detector_defs.h"
+#include "sls/sls_detector_defs.h"
 
 std::string replace_all(const std::string &src, const std::string &from,
                         const std::string &to) {

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "DataSocket.h"
+#include "sls/DataSocket.h"
 namespace sls {
 class ServerInterface;
 }
 
-#include "ServerSocket.h"
-#include "sls_detector_defs.h"
+#include "sls/ServerSocket.h"
+#include "sls/sls_detector_defs.h"
 namespace sls {
 
 class ServerInterface : public DataSocket {

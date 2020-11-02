@@ -1219,6 +1219,7 @@ TEST_CASE("start", "[.cmd][.new]") {
         proxy.Call("start", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "start successful\n");
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);

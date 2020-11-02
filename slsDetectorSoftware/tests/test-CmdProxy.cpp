@@ -1,6 +1,6 @@
 #include "CmdProxy.h"
-#include "sls/Detector.h"
 #include "catch.hpp"
+#include "sls/Detector.h"
 #include "sls/sls_detector_defs.h"
 
 #include <chrono>
@@ -328,16 +328,18 @@ TEST_CASE("exptime", "[.cmd][.time]") {
         proxy.Call("exptime", {"1s"}, -1, PUT, oss);
         REQUIRE(oss.str() == "exptime 1s\n");
     }
-    {
-        std::ostringstream oss;
-        proxy.Call("exptime", {"0"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "exptime 0\n");
-    }
-    {
-        // Get exptime of single module
-        std::ostringstream oss;
-        proxy.Call("exptime", {}, 0, GET, oss);
-        REQUIRE(oss.str() == "exptime 0ns\n");
+    if (det_type != defs::JUNGFRAU) {
+        {
+            std::ostringstream oss;
+            proxy.Call("exptime", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "exptime 0\n");
+        }
+        {
+            // Get exptime of single module
+            std::ostringstream oss;
+            proxy.Call("exptime", {}, 0, GET, oss);
+            REQUIRE(oss.str() == "exptime 0ns\n");
+        }
     }
     det.setExptime(-1, prev_val);
 }

@@ -11,6 +11,11 @@ set(SOURCES
     src/Fifo.cpp
 )
 
+set(PUBLICHEADERS
+    include/sls/Receiver.h
+)
+
+
 # HDF5
 if (SLS_USE_HDF5)
 	if (HDF5_FOUND)
@@ -54,23 +59,16 @@ if (SLS_USE_HDF5)
 endif (SLS_USE_HDF5)
 
 
-
+#Shared library
 add_library(slsReceiverShared SHARED $<TARGET_OBJECTS:slsReceiverObject>)
 target_link_libraries(slsReceiverShared PUBLIC slsReceiverObject)
-
-
-
-
-
-set(PUBLICHEADERS
-    include/sls/Receiver.h
-)
 set_target_properties(slsReceiverShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsReceiver
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
+#Static library 
 add_library(slsReceiverStatic STATIC $<TARGET_OBJECTS:slsReceiverObject>)
 target_link_libraries(slsReceiverStatic PUBLIC slsReceiverObject)
 set_target_properties(slsReceiverStatic PROPERTIES
@@ -84,6 +82,12 @@ if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsReceiverStatic PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     set_property(TARGET slsReceiverShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
+
+
+
+
+
+
 
 
 add_executable(slsReceiver
@@ -137,5 +141,5 @@ install(TARGETS slsReceiverShared slsReceiver slsMultiReceiver slsReceiverObject
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sls
 )
 
-install(FILES ${ZMQ_STATIC_ARCHIVE}
-DESTINATION lib)
+# install(FILES ${ZMQ_STATIC_ARCHIVE}
+# DESTINATION lib)

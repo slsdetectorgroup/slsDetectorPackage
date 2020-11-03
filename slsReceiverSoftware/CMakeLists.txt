@@ -77,6 +77,7 @@ set_target_properties(slsReceiverStatic PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
+message("Receiver LTO_AVAILABLE:" ${SLS_LTO_AVAILABLE})
 if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsReceiverObject PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     set_property(TARGET slsReceiverStatic PROPERTY INTERPROCEDURAL_OPTIMIZATION True)

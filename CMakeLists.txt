@@ -61,6 +61,7 @@ find_package(ClangFormat)
 
 #Enable LTO if available
 check_ipo_supported(RESULT SLS_LTO_AVAILABLE)
+message("SLS_LTO_AVAILABLE:" ${SLS_LTO_AVAILABLE})
 
 
 # # Use ld.gold if it is available and isn't disabled explicitly

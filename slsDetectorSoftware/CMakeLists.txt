@@ -74,7 +74,7 @@ foreach(val RANGE ${len2})
 
     add_executable(${val1} src/CmdLineApp.cpp)
     target_link_libraries(${val1} 
-        slsDetectorShared
+        slsDetectorStatic
         pthread
         ${ZeroMQ_LIBRARIES}
         rt

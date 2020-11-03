@@ -16,7 +16,7 @@
 //CBFlib must be installed to use this program
 //
 /*****************************************************************************/
-#include "tiffio.h"
+#include <tiffio.h>
 
 #undef cbf_failnez 
 #define cbf_failnez(x)				\

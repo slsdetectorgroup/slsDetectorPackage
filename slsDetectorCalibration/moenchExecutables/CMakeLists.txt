@@ -27,7 +27,7 @@ foreach(exe ${MOENCH_EXECUTABLES})
         slsSupportShared 
         ${ZeroMQ_LIBRARIES} 
         pthread 
-        tiff
+        TIFF::TIFF
 
         PRIVATE
         slsProjectWarnings

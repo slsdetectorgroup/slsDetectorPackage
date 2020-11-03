@@ -114,7 +114,7 @@ set_target_properties(slsMultiReceiver PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 if(SLS_LTO_AVAILABLE)
-    set_property(TARGET slsReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    set_property(TARGET slsMultiReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 
 target_link_libraries(slsMultiReceiver 

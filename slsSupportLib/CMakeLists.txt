@@ -87,7 +87,6 @@ set_target_properties(slsSupportShared PROPERTIES
 
 # Add static version of the support lib
 add_library(slsSupportStatic STATIC $<TARGET_OBJECTS:slsSupportObject>)
-
 target_link_libraries(slsSupportStatic PUBLIC slsSupportObject)
 
 set_target_properties(slsSupportStatic PROPERTIES

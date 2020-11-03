@@ -6,26 +6,16 @@ set(SOURCES
     src/CmdParser.cpp
 )
 
-set(HEADERS
-)
-
-add_library(slsDetectorShared SHARED
+add_library(slsDetectorObject OBJECT
     ${SOURCES}
-    ${HEADERS}
 )
 
-
-if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
-    set_property(TARGET slsDetectorShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-endif()
-
-
-target_include_directories(slsDetectorShared PUBLIC
+target_include_directories(slsDetectorObject PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(slsDetectorShared 
+target_link_libraries(slsDetectorObject 
     PUBLIC
     slsSupportStatic
     pthread
@@ -42,13 +32,31 @@ set(PUBLICHEADERS
     include/sls/Detector.h
     include/sls/Result.h
 )
+
+#Shared library
+add_library(slsDetectorShared SHARED $<TARGET_OBJECTS:slsDetectorObject>)
+target_link_libraries(slsDetectorShared PUBLIC slsDetectorObject)
 set_target_properties(slsDetectorShared PROPERTIES
     LIBRARY_OUTPUT_NAME SlsDetector
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
+#Static library
+add_library(slsDetectorStatic STATIC $<TARGET_OBJECTS:slsDetectorObject>)
+target_link_libraries(slsDetectorStatic PUBLIC slsDetectorObject)
 
+set_target_properties(slsDetectorStatic PROPERTIES
+    ARCHIVE_OUTPUT_NAME SlsDetectorStatic
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    PUBLIC_HEADER "${PUBLICHEADERS}"
+)
+
+if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
+    set_property(TARGET slsDetectorObject PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    set_property(TARGET slsDetectorStatic PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    set_property(TARGET slsDetectorShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+endif()
 
 # Loop over list to generate command line binaries
 set(bin_names "sls_detector_put" 
@@ -75,7 +83,7 @@ foreach(val RANGE ${len2})
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
         COMPILE_DEFINITIONS ${val2}=1
     )
-    if(LTO_AVAILABLE)
+    if(SLS_LTO_AVAILABLE)
         set_property(TARGET ${val1} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
 endforeach()
@@ -89,7 +97,7 @@ if (SLS_USE_TESTS)
 endif(SLS_USE_TESTS)
 
 
-install(TARGETS slsDetectorShared
+install(TARGETS slsDetectorShared slsDetectorObject slsDetectorStatic
     EXPORT "${TARGETS_EXPORT_NAME}"
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

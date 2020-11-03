@@ -90,7 +90,7 @@ target_include_directories(slsDetectorGui PUBLIC
 target_link_libraries(slsDetectorGui PUBLIC
     slsProjectOptions 
     slsProjectWarnings
-    slsDetectorShared
+    slsDetectorStatic
     ${QT_QTCORE_LIBRARIES}
     ${QT_QTGUI_LIBRARIES}
     ${QWT_LIBRARIES}

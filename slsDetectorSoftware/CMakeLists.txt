@@ -53,7 +53,7 @@ set_target_properties(slsDetectorStatic PROPERTIES
 )
 
 
-message("Detector LTO_AVAILABLE:" ${SLS_LTO_AVAILABLE})
+# message("Detector LTO_AVAILABLE:" ${SLS_LTO_AVAILABLE})
 if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsDetectorObject PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     set_property(TARGET slsDetectorStatic PROPERTY INTERPROCEDURAL_OPTIMIZATION True)

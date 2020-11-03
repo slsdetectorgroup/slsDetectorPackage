@@ -77,18 +77,12 @@ set_target_properties(slsReceiverStatic PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
-message("Receiver LTO_AVAILABLE:" ${SLS_LTO_AVAILABLE})
+# message("Receiver LTO_AVAILABLE:" ${SLS_LTO_AVAILABLE})
 if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsReceiverObject PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     set_property(TARGET slsReceiverStatic PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     set_property(TARGET slsReceiverShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
-
-
-
-
-
-
 
 
 add_executable(slsReceiver
@@ -98,6 +92,9 @@ add_executable(slsReceiver
 set_target_properties(slsReceiver PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+if(SLS_LTO_AVAILABLE)
+    set_property(TARGET slsReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+endif()
 
 target_link_libraries(slsReceiver PUBLIC
   PUBLIC
@@ -116,6 +113,9 @@ add_executable(slsMultiReceiver
 set_target_properties(slsMultiReceiver PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+if(SLS_LTO_AVAILABLE)
+    set_property(TARGET slsReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+endif()
 
 target_link_libraries(slsMultiReceiver 
   PUBLIC

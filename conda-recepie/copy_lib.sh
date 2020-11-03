@@ -5,10 +5,6 @@ mkdir -p $PREFIX/include/sls
 # mkdir $PREFIX/include/slsDetectorPackage
 
 #Shared and static libraries
-# cp build/bin/libSlsDetector.so $PREFIX/lib/.
-# cp build/bin/libSlsReceiver.so $PREFIX/lib/.
-# cp build/bin/libSlsSupport.so $PREFIX/lib/.
-
 cp build/install/lib/* $PREFIX/lib/
 
 #Binaries

@@ -1634,8 +1634,7 @@ int set_settings(int file_des) {
 
         if ((int)isett != GET_FLAG) {
             validate((int)isett, (int)retval, "set settings", DEC);
-#if defined(JUNGFRAUD) || defined(GOTTHARDD)
-            // gotthard2 does not set default dacs
+#ifdef GOTTHARDD
             if (ret == OK) {
                 ret = setDefaultDacs();
                 if (ret == FAIL) {

@@ -2,6 +2,8 @@
 #include "catch.hpp"
 #include <vector>
 
+using sls::CircularFifo;
+
 TEST_CASE("Empty buffer") {
     CircularFifo<char> fifo(0);
 

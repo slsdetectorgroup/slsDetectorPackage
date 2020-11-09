@@ -11,6 +11,8 @@
 #include <semaphore.h>
 #include <vector>
 
+namespace sls{
+
 /** Circular Fifo (a.k.a. Circular Buffer)
  * Thread safe for one reader, and one writer */
 template <typename Element> class CircularFifo {
@@ -126,4 +128,6 @@ template <typename Element>
 size_t CircularFifo<Element>::increment(size_t i) const {
     i = (i + 1) % capacity;
     return i;
+}
+
 }

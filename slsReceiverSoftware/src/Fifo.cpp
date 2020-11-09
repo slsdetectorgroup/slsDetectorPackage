@@ -33,9 +33,9 @@ void Fifo::CreateFifos(uint32_t fifoItemSize) {
     DestroyFifos();
 
     // create fifos
-    fifoBound = new CircularFifo<char>(fifoDepth);
-    fifoFree = new CircularFifo<char>(fifoDepth);
-    fifoStream = new CircularFifo<char>(fifoDepth);
+    fifoBound = new sls::CircularFifo<char>(fifoDepth);
+    fifoFree = new sls::CircularFifo<char>(fifoDepth);
+    fifoStream = new sls::CircularFifo<char>(fifoDepth);
     // allocate memory
     size_t mem_len = (size_t)fifoItemSize * (size_t)fifoDepth * sizeof(char);
     memory = (char *)malloc(mem_len);

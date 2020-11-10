@@ -1,6 +1,6 @@
 #include "Module.h"
-#include "sls/ClientSocket.h"
 #include "SharedMemory.h"
+#include "sls/ClientSocket.h"
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
 #include "sls/file_utils.h"
@@ -334,6 +334,8 @@ int Module::getDAC(dacIndex index, bool mV) const {
     int args[]{static_cast<int>(index), static_cast<int>(mV), GET_FLAG};
     return sendToDetector<int>(F_SET_DAC, args);
 }
+
+void Module::setDefaultDacs() { sendToDetector(F_SET_DEFAULT_DACS); }
 
 void Module::setDAC(int val, dacIndex index, bool mV) {
     int args[]{static_cast<int>(index), static_cast<int>(mV), val};

@@ -48,6 +48,8 @@ double systemFrequency = 0;
 int highvoltage = 0;
 int dacValues[NDAC] = {};
 int onChipdacValues[ONCHIP_NDAC][NCHIP] = {};
+int defaultDacValues[NDAC] = {};
+int defaultOnChipdacValues[ONCHIP_NDAC][NCHIP] = {};
 int injectedChannelsOffset = 0;
 int injectedChannelsIncrement = 0;
 int vetoReference[NCHIP][NCHAN];
@@ -389,9 +391,13 @@ void setupDetector() {
     cdsGain = 0;
     memset(clkPhase, 0, sizeof(clkPhase));
     memset(dacValues, 0, sizeof(dacValues));
+    for (int i = 0; i < NDAC; ++i) {
+        defaultDacValues[i] = -1;
+    }
     for (int i = 0; i < ONCHIP_NDAC; ++i) {
         for (int j = 0; j < NCHIP; ++j) {
             onChipdacValues[i][j] = -1;
+            defaultOnChipdacValues[i][j] = -1;
         }
     }
     memset(vetoReference, 0, sizeof(vetoReference));
@@ -473,6 +479,40 @@ void setupDetector() {
     setBurstPeriod(DEFAULT_BURST_PERIOD);
     setTiming(DEFAULT_TIMING_MODE);
     setCurrentSource(DEFAULT_CURRENT_SOURCE);
+}
+
+int setDefaultDacs() {
+    int ret = OK;
+    LOG(logINFOBLUE, ("Setting Default Dac values\n"));
+    for (int i = 0; i < NDAC; ++i) {
+        if (defaultDacValues[i] != -1) {
+            setDAC((enum DACINDEX)i, defaultDacValues[i], 0);
+            if (dacValues[i] != defaultDacValues[i]) {
+                ret = FAIL;
+                LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
+                               defaultDacValues[i], dacValues[i]));
+            }
+        }
+    }
+    LOG(logINFOBLUE, ("Setting Default On-chip Dac values\n"));
+    for (int ichip = 0; ichip < NCHIP; ++ichip) {
+        for (int idac = 0; idac < ONCHIP_NDAC; ++idac) {
+            if (defaultOnChipdacValues[idac][ichip] != -1) {
+                setOnChipDAC((enum ONCHIP_DACINDEX)idac, ichip,
+                             defaultOnChipdacValues[idac][ichip]);
+                if (onChipdacValues[idac][ichip] !=
+                    defaultOnChipdacValues[idac][ichip]) {
+                    ret = FAIL;
+                    LOG(logERROR,
+                        ("Setting on-chip dac %d (ichip:%d) failed, "
+                         "wrote %d, read %d\n",
+                         idac, ichip, defaultOnChipdacValues[idac][ichip],
+                         onChipdacValues[idac][ichip]));
+                }
+            }
+        }
+    }
+    return ret;
 }
 
 int readConfigFile() {
@@ -691,6 +731,18 @@ int readConfigFile() {
                 break;
             }
 
+            // set default on chip dac variable
+            // specific chip
+            if (ichip != -1) {
+                defaultOnChipdacValues[idac][ichip] = value;
+            }
+            // all chips
+            else {
+                for (int i = 0; i < NCHIP; ++i) {
+                    defaultOnChipdacValues[idac][i] = value;
+                }
+            }
+
             // set on chip dac
             if (setOnChipDAC(idac, ichip, value) == FAIL) {
                 sprintf(initErrorMessage,
@@ -703,7 +755,6 @@ int readConfigFile() {
 
         // dac command
         else {
-
             enum DACINDEX idac = 0;
             int value = 0;
 
@@ -751,6 +802,9 @@ int readConfigFile() {
                         command);
                 break;
             }
+
+            // set default dac variables
+            defaultDacValues[idac] = value;
 
             // set dac
             setDAC(idac, value, 0);

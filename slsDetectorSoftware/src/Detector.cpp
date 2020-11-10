@@ -542,6 +542,10 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
     return retval;
 }
 
+void Detector::setDefaultDacs(Positions pos) {
+    pimpl->Parallel(&Module::setDefaultDacs, pos);
+}
+
 Result<int> Detector::getDAC(defs::dacIndex index, bool mV,
                              Positions pos) const {
     return pimpl->Parallel(&Module::getDAC, pos, index, mV);

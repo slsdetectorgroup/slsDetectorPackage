@@ -822,6 +822,7 @@ class CmdProxy {
         {"dac", &CmdProxy::Dac},
         {"daclist", &CmdProxy::daclist},
         {"dacvalues", &CmdProxy::DacValues},
+        {"defaultdacs", &CmdProxy::defaultdacs},
 
         /* on chip dacs */
         {"vchip_comp_fe", &CmdProxy::vchip_comp_fe},
@@ -1207,7 +1208,8 @@ class CmdProxy {
         "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
         "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
         "\n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] "
-        "settings loaded from file found in settingspath.");
+        "settings loaded from file found in settingspath. \n\t[Gotthard] Also "
+        "loads default dacs on to the detector.");
 
     EXECUTE_SET_COMMAND_1ARG(
         trimbits, loadTrimbits,
@@ -1373,6 +1375,10 @@ class CmdProxy {
     GET_COMMAND_NOID(
         daclist, getDacList,
         "\n\tGets the list of commands for every dac for this detector.");
+
+    EXECUTE_SET_COMMAND(defaultdacs, setDefaultDacs,
+                        "\n\t[Eiger][Jungfrau][Gotthard][Moench][Gotthard2]["
+                        "Mythen3]Sets default dacs on to the detector.");
 
     /* on chip dacs */
     INTEGER_USER_IND_COMMAND(

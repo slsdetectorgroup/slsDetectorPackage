@@ -436,9 +436,11 @@ int setDefaultDacs() {
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
     for (int i = 0; i < NDAC; ++i) {
-        // if not already default, set it to default
+        setDAC((enum DACINDEX)i, defaultvals[i], 0);
         if (dacValues[i] != defaultvals[i]) {
-            setDAC((enum DACINDEX)i, defaultvals[i], 0);
+            ret = FAIL;
+            LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
+                           defaultvals[i], dacValues[i]));
         }
     }
     return ret;

@@ -381,6 +381,9 @@ class Detector {
     /** gets list of dac enums for this detector */
     std::vector<defs::dacIndex> getDacList() const;
 
+    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
+    void setDefaultDacs(Positions pos = {});
+
     Result<int> getDAC(defs::dacIndex index, bool mV = false,
                        Positions pos = {}) const;
 

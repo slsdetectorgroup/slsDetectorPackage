@@ -49,6 +49,7 @@ The easiest way to configure options is to use the ccmake utility.
 
 Build using cmk.sh script
 -------------------------
+These are mainly aimed at those not familiar with using ccmake and cmake.
 .. code-block:: bash
 
     The binaries are generated in slsDetectorPackage/build/bin directory.

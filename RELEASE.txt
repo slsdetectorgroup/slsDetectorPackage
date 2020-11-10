@@ -1,13 +1,91 @@
-SLS Detector Package 5.0.0-rc2 released on 09.10.2020 (Release Candidate 2)
-===========================================================================
+SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
+=================================================================
 
     CONTENTS
     --------
-    1.  Firmware Requirements
-    2.  Download, Documentation & Support
+    1.	Topics Concerning
+    2.  New Features
+    3.  Resolved Issues
+    4.  Firmware Requirements
+    5.  Download, Documentation & Support
 
 
-1. Firmware Requirements
+1. Topics Concerning
+====================
+
+    - Compilation requirements
+    - Manuals
+    - Client API complete change
+    - Exceptions
+    - Scans (dacs and trimbit)
+    - Command line timing commands (s, ms, us etc.)
+    - daclist, dacvalues, settingslist, drlist etc.
+    - Detector Simulators
+    - Zmq interface (ZmqSocket.h)
+    - Gui (zmq high water mark)
+    - Receiver (additional metadata)
+    - (Jungfrau server) settings and default dacs
+    - (Eiger server) blocked when stopping or status
+    - UDP configuration change
+
+
+
+
+
+2. New Features
+===============
+
+    Client
+    ------
+    1.  Compilation requirements are different now.
+            https://slsdetectorgroup.github.io/devdoc/dependencies.html
+        Gui not included in default cmk.sh script. Must be explicitly asked for.
+
+    2.  Manuals can be compiled in the package. 
+            https://slsdetectorgroup.github.io/devdoc/installation.html#build-this-documentation
+        Or refer to the documentation provided in 
+            https://slsdetectorgroup.github.io/devdoc/index.html
+
+    3.  API changed to Detector class. 
+        C++: Detector.h
+            Documentation:
+                https://slsdetectorgroup.github.io/devdoc/detector.html
+            Examples to use the Detector class:
+                https://github.com/slsdetectorgroup/api-examples
+
+        Python API Documentation: 
+            https://slsdetectorgroup.github.io/devdoc/pydetector.html
+
+        Command line:
+            Many commands have become deprecated. They will still execute, 
+            but give a warning.
+            Documentation:
+                https://slsdetectorgroup.github.io/devdoc/commandline.html
+    
+    4.  Exceptions are thrown instead of providing error codes.
+            sls_detector_exceptions.h
+        Make sure you catch all exceptions in custom gui and handle them or 
+        inform the user.
+
+
+    Detector Servers
+    ----------------
+
+    1.  Detector Simulators or virtual detector servers for every detector 
+        have been provided. They are compiled along with the client by enabling
+        its option. They should also send fake data (increasing pixel/channel value).  
+
+
+    
+        
+    
+
+
+3. Resolved Issues
+==================
+
+
+4. Firmware Requirements
 ========================
         
         Eiger
@@ -61,7 +139,7 @@ SLS Detector Package 5.0.0-rc2 released on 09.10.2020 (Release Candidate 2)
             https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
 
     
-2. Download, Documentation & Support
+5. Download, Documentation & Support
 ====================================
 
     Download
@@ -88,6 +166,9 @@ SLS Detector Package 5.0.0-rc2 released on 09.10.2020 (Release Candidate 2)
     Consuming slsDetectorPackage:
         https://slsdetectorgroup.github.io/devdoc/consuming.html
         
+    API Examples:
+        https://github.com/slsdetectorgroup/api-examples
+
     Command Line Documentation:
         https://slsdetectorgroup.github.io/devdoc/commandline.html
 
@@ -121,4 +202,4 @@ SLS Detector Package 5.0.0-rc2 released on 09.10.2020 (Release Candidate 2)
 
         dhanya.thattil@psi.ch
         erik.frojdh@psi.ch
-        anna.bergamaschi@psi.ch
+

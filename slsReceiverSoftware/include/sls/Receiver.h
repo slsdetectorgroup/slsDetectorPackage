@@ -4,6 +4,9 @@
 
 class ClientInterface;
 
+namespace sls
+{
+  
 class Receiver : private virtual slsDetectorDefs {
 
   public:
@@ -86,3 +89,5 @@ class Receiver : private virtual slsDetectorDefs {
   private:
     std::unique_ptr<ClientInterface> tcpipInterface;
 };
+
+} // namespace sls

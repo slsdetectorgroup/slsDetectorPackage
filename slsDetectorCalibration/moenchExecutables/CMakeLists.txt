@@ -24,7 +24,7 @@ foreach(exe ${MOENCH_EXECUTABLES})
 
     target_link_libraries(${exe} 
         PUBLIC
-        slsSupportShared 
+        slsSupportStatic
         ${ZeroMQ_LIBRARIES} 
         pthread 
         TIFF::TIFF
@@ -37,4 +37,9 @@ foreach(exe ${MOENCH_EXECUTABLES})
     set_target_properties(${exe}  PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
+    if(SLS_LTO_AVAILABLE)
+        set_property(TARGET ${exe} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    endif()
+
+
 endforeach(exe ${MOENCH_EXECUTABLES})

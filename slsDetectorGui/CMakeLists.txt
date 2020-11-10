@@ -90,7 +90,7 @@ target_include_directories(slsDetectorGui PUBLIC
 target_link_libraries(slsDetectorGui PUBLIC
     slsProjectOptions 
     slsProjectWarnings
-    slsDetectorShared
+    slsDetectorStatic
     ${QT_QTCORE_LIBRARIES}
     ${QT_QTGUI_LIBRARIES}
     ${QWT_LIBRARIES}
@@ -104,6 +104,9 @@ target_link_libraries(slsDetectorGui PUBLIC
 set_target_properties(slsDetectorGui PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+if(SLS_LTO_AVAILABLE)
+    set_property(TARGET slsDetectorGui PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+endif()
 
 install(TARGETS slsDetectorGui
     EXPORT "${TARGETS_EXPORT_NAME}"

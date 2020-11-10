@@ -216,9 +216,9 @@ int main(int argc, char *argv[]) {
             cprintf(BLUE, "Child process %d [ Tid: %ld ]\n", i,
                     (long)syscall(SYS_gettid));
 
-            std::unique_ptr<Receiver> receiver = nullptr;
+            std::unique_ptr<sls::Receiver> receiver = nullptr;
             try {
-                receiver = sls::make_unique<Receiver>(startTCPPort + i);
+                receiver = sls::make_unique<sls::Receiver>(startTCPPort + i);
             } catch (...) {
                 LOG(logINFOBLUE)
                     << "Exiting Child Process [ Tid: " << syscall(SYS_gettid)

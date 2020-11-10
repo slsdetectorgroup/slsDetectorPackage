@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        Receiver r(argc, argv);
+        sls::Receiver r(argc, argv);
         LOG(logINFO) << "[ Press \'Ctrl+c\' to exit ]";
         sem_wait(&semaphore);
         sem_destroy(&semaphore);

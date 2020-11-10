@@ -15,6 +15,8 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+namespace sls{
+
 Receiver::~Receiver() = default;
 
 Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
@@ -141,4 +143,6 @@ void Receiver::registerCallBackRawDataReady(void (*func)(char *, char *,
 void Receiver::registerCallBackRawDataModifyReady(
     void (*func)(char *, char *, uint32_t &, void *), void *arg) {
     tcpipInterface->registerCallBackRawDataModifyReady(func, arg);
+}
+
 }

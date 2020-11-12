@@ -1170,7 +1170,7 @@ TEST_CASE("trigger", "[.cmd][.new]") {
         det.setNumberOfFrames(1);
         det.setExptime(std::chrono::milliseconds(1));
         det.setPeriod(std::chrono::milliseconds(1));
-        auto startingfnum = det.getStartingFrameNumber().tsquash(
+        auto startframenumber = det.getStartingFrameNumber().tsquash(
             "inconsistent frame nr in test");
         det.startDetector();
         {
@@ -1181,7 +1181,7 @@ TEST_CASE("trigger", "[.cmd][.new]") {
         std::this_thread::sleep_for(std::chrono::seconds(2));
         auto currentfnum = det.getStartingFrameNumber().tsquash(
             "inconsistent frame nr in test");
-        REQUIRE(startingfnum + 1 == currentfnum);
+        REQUIRE(startframenumber + 1 == currentfnum);
         det.stopDetector();
         det.setTimingMode(prev_timing);
         det.setNumberOfFrames(prev_frames);
@@ -1303,33 +1303,33 @@ TEST_CASE("status", "[.cmd][.new]") {
     det.setExptime(-1, prev_val);
 }
 
-TEST_CASE("startingfnum", "[.cmd][.new]") {
+TEST_CASE("startframenumber", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
         auto prev_sfnum = det.getStartingFrameNumber();
-        REQUIRE_THROWS(proxy.Call("startingfnum", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("startframenumber", {"0"}, -1, PUT));
         {
             std::ostringstream oss;
-            proxy.Call("startingfnum", {"3"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "startingfnum 3\n");
+            proxy.Call("startframenumber", {"3"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "startframenumber 3\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("startingfnum", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "startingfnum 3\n");
+            proxy.Call("startframenumber", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "startframenumber 3\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("startingfnum", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "startingfnum 1\n");
+            proxy.Call("startframenumber", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "startframenumber 1\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setStartingFrameNumber(prev_sfnum[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("startingfnum", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("startframenumber", {}, -1, GET));
     }
 }
 
@@ -2209,24 +2209,25 @@ TEST_CASE("execcommand", "[.cmd][.new]") {
     REQUIRE_NOTHROW(proxy.Call("execcommand", {"ls"}, -1, PUT));
 }
 
-TEST_CASE("nframes", "[.cmd][.new]") {
+TEST_CASE("framecounter", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
         det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
         det_type == defs::GOTTHARD2) {
-        auto nframes = det.getNumberOfFramesFromStart().squash();
+        auto framecounter = det.getNumberOfFramesFromStart().squash();
         std::ostringstream oss;
-        proxy.Call("nframes", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "nframes " + std::to_string(nframes) + "\n");
-        REQUIRE_NOTHROW(proxy.Call("nframes", {}, -1, GET));
+        proxy.Call("framecounter", {}, -1, GET, oss);
+        REQUIRE(oss.str() ==
+                "framecounter " + std::to_string(framecounter) + "\n");
+        REQUIRE_NOTHROW(proxy.Call("framecounter", {}, -1, GET));
     } else {
-        REQUIRE_THROWS(proxy.Call("nframes", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("framecounter", {}, -1, GET));
     }
 }
 
-TEST_CASE("now", "[.cmd][.new]") {
+TEST_CASE("runtime", "[.cmd][.new]") {
     // TODO! can we test this?
     Detector det;
     CmdProxy proxy(&det);
@@ -2235,16 +2236,16 @@ TEST_CASE("now", "[.cmd][.new]") {
         det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
         det_type == defs::GOTTHARD2) {
         std::ostringstream oss;
-        proxy.Call("now", {}, -1, GET, oss);
+        proxy.Call("runtime", {}, -1, GET, oss);
         // Get only
-        REQUIRE_THROWS(proxy.Call("now", {"2019"}, -1, PUT));
-        REQUIRE_NOTHROW(proxy.Call("now", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("runtime", {"2019"}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("runtime", {}, -1, GET));
     } else {
-        REQUIRE_THROWS(proxy.Call("now", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("runtime", {}, -1, GET));
     }
 }
 
-TEST_CASE("timestamp", "[.cmd][.new]") {
+TEST_CASE("frametime", "[.cmd][.new]") {
     // TODO! can we test this?
     Detector det;
     CmdProxy proxy(&det);
@@ -2253,12 +2254,12 @@ TEST_CASE("timestamp", "[.cmd][.new]") {
         det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
         det_type == defs::GOTTHARD2) {
         std::ostringstream oss;
-        proxy.Call("timestamp", {}, -1, GET, oss);
+        proxy.Call("frametime", {}, -1, GET, oss);
         // Get only
-        REQUIRE_THROWS(proxy.Call("timestamp", {"2019"}, -1, PUT));
-        REQUIRE_NOTHROW(proxy.Call("timestamp", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("frametime", {"2019"}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("frametime", {}, -1, GET));
     } else {
-        REQUIRE_THROWS(proxy.Call("timestamp", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("frametime", {}, -1, GET));
     }
 }
 

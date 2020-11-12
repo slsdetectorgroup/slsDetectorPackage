@@ -18,16 +18,26 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
     - Client API complete change
     - Exceptions
     - Scans (dacs and trimbit)
-    - Command line timing commands (s, ms, us etc.)
-    - daclist, dacvalues, settingslist, drlist etc.
+    - Timing commands
+    - Enum list (daclist, dacvalues, settingslist, drlist etc.)
+    - Command line (dac)
     - Detector Simulators
     - Zmq interface (ZmqSocket.h)
     - Gui (zmq high water mark)
     - Receiver (additional metadata)
     - (Jungfrau server) settings and default dacs
+    - (Servers) sharedmemory
     - (Eiger server) blocked when stopping or status
+    - Receiver shared memory
     - UDP configuration change
-
+    - UDP IP (Receiver)
+    - (Eiger) config file
+    - Gappixels
+    - (Eiger) partial readout
+    - (Eiger, Jungfrau) starting frame number
+    - (Jungfrau) two interfaces
+    - (Eiger) removed features
+ 
 
 
 
@@ -37,16 +47,19 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
 
     Client
     ------
-    1.  Compilation requirements are different now.
+    1.  Compilation requirements
+        They are very different now and can be accessed at
             https://slsdetectorgroup.github.io/devdoc/dependencies.html
         Gui not included in default cmk.sh script. Must be explicitly asked for.
 
-    2.  Manuals can be compiled in the package. 
+    2.  Manuals 
+        They can be compiled in the package. 
             https://slsdetectorgroup.github.io/devdoc/installation.html#build-this-documentation
         Or refer to the documentation provided in 
             https://slsdetectorgroup.github.io/devdoc/index.html
 
-    3.  API changed to Detector class. 
+    3.  API
+        Changed to Detector class. 
         C++: Detector.h
             Documentation:
                 https://slsdetectorgroup.github.io/devdoc/detector.html
@@ -61,29 +74,159 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
             but give a warning.
             Documentation:
                 https://slsdetectorgroup.github.io/devdoc/commandline.html
+            Help on a command:
+                sls_detector_help [command], or
+                sls_detector_get -h [command]
     
-    4.  Exceptions are thrown instead of providing error codes.
+    4.  Exceptions
+        They are thrown instead of providing error codes.
             sls_detector_exceptions.h
         Make sure you catch all exceptions in custom gui and handle them or 
         inform the user.
 
+    5.  Scans
+        One can do scans for dacs or trimbits. Trimbits are only for Eiger or 
+        Mythen3. Set it scan mode and then acquire using blocking or non blocking
+        method.
+
+    6.  Timing Commands (eg. period)
+        In command line, all timing commands can now specify unit. 
+            eg 100ms 10us, 1s, 100ns
+        In C++ API, one must use chrono library.
+        In Python API, xxx
+
+    7.  Enum list (daclist)
+        Command line and API now has features to get the list of enums/commands
+        for dacs, settings, dynamic range, timing modes and temperatures for 
+        the detector in shared memory. 
+            eg. daclist, settingslist, drlist, timinglist, templist
+        Command line also has commands to get their values.
+            eg. dacvalues, tempvalues,
+        
+    8.  Command Line (Dac)
+        All dac commands have been converted to a single "dac" command with 
+        the previous dac commands as arguments.
+            eg. sls_detector_get vcmp_ll
+            is now
+            sls_detector_get dac vcmp_ll
+    
+    9.  UDP Configuration
+        Once all the udp details are set in the detector, the detector's
+        destination is then configured automatically. If the detector is not 
+        configured, it will  fail when acquiring. If any of these parameters
+        are also changed, then this is configured again. Hence, configuremac 
+        command has been removed. Instead, there are commands such as
+        udp_validate (to validate if it has been configured) and
+        udp_reconfigure (to reconfigure).
+
+    10. Gap Pixels
+        Gap pixels are now only available in client call back or gui (not in 
+        receiver anymore). It can be enabled for Eiger and Jungfrau and 
+        includes inter chip and inter module gap pixels.
 
     Detector Servers
     ----------------
 
-    1.  Detector Simulators or virtual detector servers for every detector 
-        have been provided. They are compiled along with the client by enabling
-        its option. They should also send fake data (increasing pixel/channel value).  
+    1.  Detector Simulators 
+        Or virtual detector servers for every detector have been provided. 
+        They are compiled along with the client by enabling its option. 
+        They should also send fake data (increasing pixel/channel value).  
+
+    2.  (Jungfrau) settings
+        Settings command do not implicitly set default dacs from now on.
+        One can use the command 'defaultdacs' to set them explicitly.
+
+    3.  Shared Memory
+        Almost all the detector parameters removed from shared memory.
+        Therefore, they are all fetched directly from detector.
+
+    4.  (Eiger) config_eiger.txt
+        A config file on the detector can take in 2 parameters "master" 
+        and "top" being set to 1 or 0 to enable or disable the same.
+        When server is started without this file, it is set to hardware
+        settings.
+        The detector is also deactivated by default and activated only 
+        upon setting hostname in the client. This is to ensure ????????
+
+    5.  (Eiger) Partial readout - readnlines
+        It is possible for partial readouts, where you specify the number
+        of pixel rows to read out. Not all values are allowed. The current
+        slsReceiver does not complain about missing packets, but only puts 
+        this partial image into the complete image (padding the rest). One
+        can cut out required subimage using callbacks, but this feature
+        is probably more useful for custom receivers.
+
+    6.  (Eiger, Jungfrau) Starting Frame number - startframenumber
+        Both now have running frame numbers that is only reset at boot up
+        and increments continuously through acquisitions. One is able to 
+        set the starting frame number before an acquisition.
+
+    7.  (Jungfrau) Two 10G data interfaces
+        Only Jungfrau PCBs with version 2.0 can run at full speed using both
+        the 10G UDP interfaces to stream out data. This is available from 
+        the current firmware and software. To enable two interfaces, one has 
+        to enable two interfaces using "numinterfaces" to 2 and set corresponding
+        udp_dstip2, udp_dstport2 etc. One can also decide to select which of 
+        the two interfaces to use, when using only 1 interface.
+
+    8.  (Eiger) Removed Features
+        storeinram, safe speed and ability to set settings via the settings 
+        command has been removed.
+
+    Receiver
+    --------
+
+    1.  Zmq
+        The static library and the zmq.h is no longer provided with package.
+        One must install ZeroMQ version 4.
+        ZmqSocket.h API has changed, especially in parsing receiving JSON header.
+        One must pick up needed parameters  from exposed struct zmqHeader in 
+        ZmqSocket.h.
+
+    2.  Metadata
+        Additional detector dependant metadata has been added to the master files.
+
+    3.  Shared Memory
+        Almost all receiver parameters have been removed from client shared memory.
+        Therefore the receiver process needs to be alive to access any receiver
+        parameter as they are now fetched directly from the receiver.
+
+    4.  UDP IP
+        Since all the parameters are fetched from receiver or detector directly 
+        (not shared memory), the udp desintation ip (previously rx_udpip) is safer 
+        to be specified before setting rx_hostname. Setting it before has the
+        advantage that the detector is updated first before the receiver is
+        requested for the udp mac. This helps when changing pc and the receiver
+        cannot find the udp ip to get the udp mac.
 
 
+    Gui
+    ---
     
-        
+    1.  Zmq high water mark
+        When opening the Gui, the zmq send and receiver high water mark is set to 2
+        instead of default (1000 for zmq library version 4). This is to ensure
+        fast and large detectors can still see latest data on the gui at the cost of
+        losing images in between.
+        When using a different processor or client data call back to handle zmq data, 
+        please ensure this is set back to default to get every zmq packet. Setting it to 
+        -1 sets it to library defaults.
+
+    2. 
+
     
 
 
 3. Resolved Issues
 ==================
 
+    Detector Server
+    ---------------
+
+    1.  (Eiger) blocked server
+        Very rarely, Eiger control or stop server would block and would require a restart
+        of server. This is due to both servers accessing the same link to get to FEB
+        registers. Locking has been implemented in server shared memory to resolve.
 
 4. Firmware Requirements
 ========================

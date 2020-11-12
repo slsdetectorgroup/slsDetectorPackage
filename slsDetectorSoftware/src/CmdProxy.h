@@ -687,6 +687,7 @@ class CmdProxy {
         {"busy", "clearbusy"},
         {"receiver", "rx_status"},
         {"framescaught", "rx_framescaught"},
+        {"startingfnum", "startframenumber"},
 
         /* Network Configuration (Detector<->Receiver) */
         {"detectorip", "udp_srcip"},
@@ -744,6 +745,9 @@ class CmdProxy {
         /* Moench */
         /* Advanced */
         /* Insignificant */
+        {"nframes", "framecounter"},
+        {"now", "runtime"},
+        {"timestamp", "frametime"},
         {"frameindex", "rx_frameindex"}
 
     };
@@ -842,7 +846,7 @@ class CmdProxy {
         {"status", &CmdProxy::DetectorStatus},
         {"rx_framescaught", &CmdProxy::rx_framescaught},
         {"rx_missingpackets", &CmdProxy::rx_missingpackets},
-        {"startingfnum", &CmdProxy::startingfnum},
+        {"startframenumber", &CmdProxy::startframenumber},
         {"trigger", &CmdProxy::trigger},
         {"scan", &CmdProxy::Scan},
         {"scanerrmsg", &CmdProxy::scanerrmsg},
@@ -1054,9 +1058,9 @@ class CmdProxy {
         {"lock", &CmdProxy::lock},
         {"lastclient", &CmdProxy::lastclient},
         {"execcommand", &CmdProxy::ExecuteCommand},
-        {"nframes", &CmdProxy::nframes},
-        {"now", &CmdProxy::now},
-        {"timestamp", &CmdProxy::timestamp},
+        {"framecounter", &CmdProxy::framecounter},
+        {"runtime", &CmdProxy::runtime},
+        {"frametime", &CmdProxy::frametime},
         {"user", &CmdProxy::UserDetails},
         {"rx_frameindex", &CmdProxy::rx_frameindex}
 
@@ -1451,7 +1455,7 @@ class CmdProxy {
                 "\n\tNumber of missing packets for each port in receiver.");
 
     INTEGER_COMMAND_VEC_ID(
-        startingfnum, getStartingFrameNumber, setStartingFrameNumber,
+        startframenumber, getStartingFrameNumber, setStartingFrameNumber,
         StringTo<uint64_t>,
         "[n_value]\n\t[Eiger][Jungfrau] Starting frame number for "
         "next acquisition. Stopping acquisition might result in "
@@ -2120,18 +2124,18 @@ class CmdProxy {
         lastclient, getLastClientIP,
         "\n\tClient IP Address that last communicated with the detector.");
 
-    GET_COMMAND(nframes, getNumberOfFramesFromStart,
+    GET_COMMAND(framecounter, getNumberOfFramesFromStart,
                 "\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] "
                 "Number of frames from start run control."
                 "\n\t[Gotthard2] only in continuous mode.");
 
-    TIME_GET_COMMAND(now, getActualTime,
+    TIME_GET_COMMAND(runtime, getActualTime,
                      "[(optional unit) "
                      "ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench]["
                      "CTB] Time from detector start up."
                      "\n\t[Gotthard2] not in burst and auto mode.");
 
-    TIME_GET_COMMAND(timestamp, getMeasurementTime,
+    TIME_GET_COMMAND(frametime, getMeasurementTime,
                      "[(optional unit) "
                      "ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench]["
                      "CTB] Timestamp at a frame start."

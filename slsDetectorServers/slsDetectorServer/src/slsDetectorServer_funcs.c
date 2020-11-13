@@ -6364,13 +6364,18 @@ int set_veto_photon(int file_des) {
     const int chipIndex = args[0];
     const int numChannels = args[1];
 
-    int gainIndices[numChannels];
-    if (receiveData(file_des, gainIndices, sizeof(gainIndices), INT32) < 0)
+    int* gainIndices = malloc(sizeof(int) * numChannels);
+    if (receiveData(file_des, gainIndices, sizeof(int) * numChannels, INT32) < 0) {
+        free(gainIndices);
         return printSocketReadError();
+    }
 
-    int values[numChannels];
-    if (receiveData(file_des, values, sizeof(values), INT32) < 0)
+    int* values = malloc(sizeof(int) * numChannels);
+    if (receiveData(file_des, values, sizeof(int) * numChannels, INT32) < 0) {
+        free(gainIndices);
+        free(values);
         return printSocketReadError();
+    }
 
     LOG(logINFO, ("Setting Veto Photon: [chipIndex:%d, nch:%d]\n", chipIndex,
                   numChannels));
@@ -6425,6 +6430,12 @@ int set_veto_photon(int file_des) {
         }
     }
 #endif
+    if(gainIndices != NULL) {
+        free(gainIndices);
+    }
+    if (values != NULL) {
+        free(values);
+    }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -6432,10 +6443,8 @@ int get_veto_photon(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int arg = -1;
-    int retvals[NCHAN];
-    memset(retvals, 0, sizeof(retvals));
-    int gainRetvals[NCHAN];
-    memset(gainRetvals, 0, sizeof(gainRetvals));
+    int *retvals = NULL;
+    int *gainRetvals = NULL;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
@@ -6444,24 +6453,38 @@ int get_veto_photon(int file_des) {
 #ifndef GOTTHARD2D
     functionNotImplemented();
 #else
-    // get only
-    int chipIndex = arg;
-    if (chipIndex < -1 || chipIndex >= NCHIP) {
+    retvals = malloc(sizeof(int) * NCHAN);
+    gainRetvals = malloc(sizeof(int) * NCHAN);
+    memset(retvals, 0, sizeof(int) * NCHAN);
+    memset(gainRetvals, 0, sizeof(int) * NCHAN);
+
+    if (retvals == NULL || gainRetvals == NULL) {
         ret = FAIL;
-        sprintf(mess, "Could not get veto photon. Invalid chip index %d\n",
-                chipIndex);
+        strcpy(
+            mess,
+            "Could not get veto photon. Could not allocate memory in server\n");
         LOG(logERROR, (mess));
     } else {
-        ret = getVetoPhoton(chipIndex, retvals, gainRetvals);
-        if (ret == FAIL) {
-            strcpy(mess,
-                   "Could not get veto photon for chipIndex -1. Not the "
-                   "same for all chips. Select specific chip index instead.\n");
+        // get only
+        int chipIndex = arg;
+        if (chipIndex < -1 || chipIndex >= NCHIP) {
+            ret = FAIL;
+            sprintf(mess, "Could not get veto photon. Invalid chip index %d\n",
+                    chipIndex);
             LOG(logERROR, (mess));
         } else {
-            for (int i = 0; i < NCHAN; ++i) {
-                LOG(logDEBUG1,
-                    ("%d:[%d, %d]\n", i, retvals[i], gainRetvals[i]));
+            ret = getVetoPhoton(chipIndex, retvals, gainRetvals);
+            if (ret == FAIL) {
+                strcpy(mess,
+                       "Could not get veto photon for chipIndex -1. Not the "
+                       "same for all chips. Select specific chip index "
+                       "instead.\n");
+                LOG(logERROR, (mess));
+            } else {
+                for (int i = 0; i < NCHAN; ++i) {
+                    LOG(logDEBUG1,
+                        ("%d:[%d, %d]\n", i, retvals[i], gainRetvals[i]));
+                }
             }
         }
     }
@@ -6472,6 +6495,12 @@ int get_veto_photon(int file_des) {
         sendData(file_des, &nch, sizeof(nch), INT32);
         sendData(file_des, gainRetvals, sizeof(gainRetvals), INT32);
         sendData(file_des, retvals, sizeof(retvals), INT32);
+    }
+    if (retvals != NULL) {
+        free(retvals);
+    }
+    if (gainRetvals != NULL) {
+        free(gainRetvals);
     }
     return ret;
 }
@@ -8171,9 +8200,6 @@ int is_virtual(int file_des) {
 #ifdef VIRTUAL
     retval = 1;
 #endif
-    LOG(logDEBUG1,
-        ("is virtual retval: %d\n", retval));
+    LOG(logDEBUG1, ("is virtual retval: %d\n", retval));
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
-
-

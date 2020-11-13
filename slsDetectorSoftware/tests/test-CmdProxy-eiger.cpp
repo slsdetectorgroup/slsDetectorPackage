@@ -1,14 +1,14 @@
 #include "CmdProxy.h"
-#include "sls/Detector.h"
 #include "catch.hpp"
+#include "sls/Detector.h"
 #include "sls/sls_detector_defs.h"
 #include <array>
 #include <sstream>
 #include <thread>
 
+#include "sls/versionAPI.h"
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
-#include "sls/versionAPI.h"
 
 using sls::CmdProxy;
 using sls::Detector;
@@ -17,7 +17,7 @@ using test::PUT;
 
 /** temperature */
 
-TEST_CASE("temp_fpgaext", "[.cmd][.new]") {
+TEST_CASE("temp_fpgaext", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -32,7 +32,7 @@ TEST_CASE("temp_fpgaext", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("temp_10ge", "[.cmd][.new]") {
+TEST_CASE("temp_10ge", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -47,7 +47,7 @@ TEST_CASE("temp_10ge", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("temp_dcdc", "[.cmd][.new]") {
+TEST_CASE("temp_dcdc", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -62,7 +62,7 @@ TEST_CASE("temp_dcdc", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("temp_sodl", "[.cmd][.new]") {
+TEST_CASE("temp_sodl", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -77,7 +77,7 @@ TEST_CASE("temp_sodl", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("temp_sodr", "[.cmd][.new]") {
+TEST_CASE("temp_sodr", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -92,7 +92,7 @@ TEST_CASE("temp_sodr", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("temp_fpgafl", "[.cmd][.new]") {
+TEST_CASE("temp_fpgafl", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -107,7 +107,7 @@ TEST_CASE("temp_fpgafl", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("temp_fpgafr", "[.cmd][.new]") {
+TEST_CASE("temp_fpgafr", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -124,7 +124,7 @@ TEST_CASE("temp_fpgafr", "[.cmd][.new]") {
 
 /* dacs */
 
-TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs][.new]") {
+TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs]") {
     // vsvp, vtr, vrf, vrs, vsvn, vtgstv, vcmp_ll, vcmp_lr, vcal, vcmp_rl,
     // rxb_rb, rxb_lb, vcmp_rr, vcp, vcn, vis, vthreshold
     Detector det;
@@ -233,7 +233,7 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs][.new]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("txndelay_left", "[.cmd][.new]") {
+TEST_CASE("txndelay_left", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -254,7 +254,7 @@ TEST_CASE("txndelay_left", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("txndelay_right", "[.cmd][.new]") {
+TEST_CASE("txndelay_right", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -277,7 +277,7 @@ TEST_CASE("txndelay_right", "[.cmd][.new]") {
 
 /* Eiger Specific */
 
-TEST_CASE("subexptime", "[.cmd][.new]") {
+TEST_CASE("subexptime", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -298,7 +298,7 @@ TEST_CASE("subexptime", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("subdeadtime", "[.cmd][.new]") {
+TEST_CASE("subdeadtime", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -319,7 +319,7 @@ TEST_CASE("subdeadtime", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("threshold", "[.cmd][.new]") {
+TEST_CASE("threshold", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -348,7 +348,7 @@ TEST_CASE("threshold", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("thresholdnotb", "[.cmd][.new]") {
+TEST_CASE("thresholdnotb", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -377,7 +377,7 @@ TEST_CASE("thresholdnotb", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("settingspath", "[.cmd][.new]") {
+TEST_CASE("settingspath", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getSettingsPath();
@@ -393,7 +393,7 @@ TEST_CASE("settingspath", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("overflow", "[.cmd][.new]") {
+TEST_CASE("overflow", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -414,7 +414,7 @@ TEST_CASE("overflow", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("flippeddatax", "[.cmd][.new]") {
+TEST_CASE("flippeddatax", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -435,7 +435,7 @@ TEST_CASE("flippeddatax", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("trimen", "[.cmd][.this][.new]") {
+TEST_CASE("trimen", "[.cmd][.this]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -456,7 +456,7 @@ TEST_CASE("trimen", "[.cmd][.this][.new]") {
     }
 }
 
-TEST_CASE("ratecorr", "[.cmd][.new]") {
+TEST_CASE("ratecorr", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -490,7 +490,7 @@ TEST_CASE("ratecorr", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("readnlines", "[.cmd][.new]") {
+TEST_CASE("readnlines", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -520,7 +520,7 @@ TEST_CASE("readnlines", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("interruptsubframe", "[.cmd][.new]") {
+TEST_CASE("interruptsubframe", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -544,7 +544,7 @@ TEST_CASE("interruptsubframe", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("measuredperiod", "[.cmd][.new]") {
+TEST_CASE("measuredperiod", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -576,7 +576,7 @@ TEST_CASE("measuredperiod", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("measuredsubperiod", "[.cmd][.new]") {
+TEST_CASE("measuredsubperiod", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -611,7 +611,7 @@ TEST_CASE("measuredsubperiod", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("activate", "[.cmd][.new]") {
+TEST_CASE("activate", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -652,7 +652,7 @@ TEST_CASE("activate", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("partialreset", "[.cmd][.new]") {
+TEST_CASE("partialreset", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -674,7 +674,7 @@ TEST_CASE("partialreset", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("pulse", "[.cmd][.new]") {
+TEST_CASE("pulse", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -689,7 +689,7 @@ TEST_CASE("pulse", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("pulsenmove", "[.cmd][.new]") {
+TEST_CASE("pulsenmove", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -704,7 +704,7 @@ TEST_CASE("pulsenmove", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("pulsechip", "[.cmd][.new]") {
+TEST_CASE("pulsechip", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();

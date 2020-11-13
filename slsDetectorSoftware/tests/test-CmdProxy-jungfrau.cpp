@@ -1,12 +1,12 @@
 #include "CmdProxy.h"
-#include "sls/Detector.h"
 #include "catch.hpp"
+#include "sls/Detector.h"
 #include "sls/sls_detector_defs.h"
 #include <sstream>
 
+#include "sls/versionAPI.h"
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
-#include "sls/versionAPI.h"
 
 using sls::CmdProxy;
 using sls::Detector;
@@ -15,7 +15,7 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs][.new]") {
+TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs]") {
     // vb_comp, vdd_prot, vin_com, vref_prech, vb_pixbuf, vb_ds, vref_ds,
     // vref_comp
     Detector det;
@@ -96,7 +96,7 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs][.new]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("selinterface", "[.cmd][.new]") {
+TEST_CASE("selinterface", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -127,7 +127,7 @@ TEST_CASE("selinterface", "[.cmd][.new]") {
 
 /* Jungfrau Specific */
 
-TEST_CASE("temp_threshold", "[.cmd][.new]") {
+TEST_CASE("temp_threshold", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -157,7 +157,7 @@ TEST_CASE("temp_threshold", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("temp_control", "[.cmd][.new]") {
+TEST_CASE("temp_control", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -187,7 +187,7 @@ TEST_CASE("temp_control", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("temp_event", "[.cmd][.new]") {
+TEST_CASE("temp_event", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -208,7 +208,7 @@ TEST_CASE("temp_event", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("auto_comp_disable", "[.cmd][.new]") {
+TEST_CASE("auto_comp_disable", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -238,7 +238,7 @@ TEST_CASE("auto_comp_disable", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("storagecells", "[.cmd][.new]") {
+TEST_CASE("storagecells", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -273,7 +273,7 @@ TEST_CASE("storagecells", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("storagecell_start", "[.cmd][.new]") {
+TEST_CASE("storagecell_start", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -309,7 +309,7 @@ TEST_CASE("storagecell_start", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("storagecell_delay", "[.cmd][.new]") {
+TEST_CASE("storagecell_delay", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();

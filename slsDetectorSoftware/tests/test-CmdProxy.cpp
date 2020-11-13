@@ -1186,6 +1186,7 @@ TEST_CASE("trigger", "[.cmd]") {
         auto nextframenumber =
             det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
         det.startDetector();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         {
             std::ostringstream oss;
             proxy.Call("trigger", {}, -1, PUT, oss);
@@ -1236,6 +1237,7 @@ TEST_CASE("start", "[.cmd]") {
         proxy.Call("start", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "start successful\n");
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     if (virtualDet || det_type != defs::JUNGFRAU) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
@@ -1266,6 +1268,7 @@ TEST_CASE("stop", "[.cmd]") {
     }
     det.setExptime(-1, std::chrono::seconds(2));
     det.startDetector();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     if (virtualDet || det_type != defs::JUNGFRAU) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
@@ -1311,6 +1314,7 @@ TEST_CASE("status", "[.cmd]") {
     }
     det.setExptime(-1, std::chrono::seconds(2));
     det.startDetector();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     if (virtualDet || det_type != defs::JUNGFRAU) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);

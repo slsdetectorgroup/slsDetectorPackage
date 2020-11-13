@@ -681,18 +681,7 @@ void allocateDetectorStructureMemory() {
 void setupDetector() {
 
     allocateDetectorStructureMemory();
-    // set dacs
-    LOG(logINFOBLUE, ("Setting Default Dac values\n"));
-    {
-        const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
-        for (int i = 0; i < NDAC; ++i) {
-            setDAC((enum DACINDEX)i, defaultvals[i], 0);
-            if ((detectorModules)->dacs[i] != defaultvals[i]) {
-                LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                               defaultvals[i], (detectorModules)->dacs[i]));
-            }
-        }
-    }
+    setDefaultDacs();
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
 #endif
@@ -752,6 +741,21 @@ void setupDetector() {
         LOG(logERROR, (initErrorMessage));
     }
     LOG(logDEBUG1, ("Setup detector done\n\n"));
+}
+
+int setDefaultDacs() {
+    int ret = OK;
+    LOG(logINFOBLUE, ("Setting Default Dac values\n"));
+    const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
+    for (int i = 0; i < NDAC; ++i) {
+        setDAC((enum DACINDEX)i, defaultvals[i], 0);
+        if ((detectorModules)->dacs[i] != defaultvals[i]) {
+            ret = FAIL;
+            LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
+                           defaultvals[i], (detectorModules)->dacs[i]));
+        }
+    }
+    return ret;
 }
 
 /* advanced read/write reg */

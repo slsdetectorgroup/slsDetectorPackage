@@ -2,8 +2,8 @@
 #include "clogger.h"
 #include "communication_funcs.h"
 #include "sharedMemory.h"
-#include "slsDetectorFunctionList.h"
 #include "sls/sls_detector_funcs.h"
+#include "slsDetectorFunctionList.h"
 
 #include <arpa/inet.h>
 #include <pthread.h>
@@ -359,6 +359,7 @@ void function_table() {
     flist[F_VALIDATE_UDP_CONFIG] = &validate_udp_configuration;
     flist[F_GET_BURSTS_LEFT] = &get_bursts_left;
     flist[F_START_READOUT] = &start_readout;
+    flist[F_SET_DEFAULT_DACS] = &set_default_dacs;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -1634,8 +1635,7 @@ int set_settings(int file_des) {
 
         if ((int)isett != GET_FLAG) {
             validate((int)isett, (int)retval, "set settings", DEC);
-#if defined(JUNGFRAUD) || defined(GOTTHARDD)
-            // gotthard2 does not set default dacs
+#ifdef GOTTHARDD
             if (ret == OK) {
                 ret = setDefaultDacs();
                 if (ret == FAIL) {
@@ -8140,6 +8140,24 @@ int start_readout(int file_des) {
 #endif
                 LOG(logERROR, (mess));
             }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int set_default_dacs(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+#ifdef CHIPTESTBOARDD
+    functionNotImplemented();
+#else
+    if (Server_VerifyLock() == OK) {
+        if (setDefaultDacs() == FAIL) {
+            ret = FAIL;
+            strcpy(mess, "Could not set default dacs");
+            LOG(logERROR, (mess));
         }
     }
 #endif

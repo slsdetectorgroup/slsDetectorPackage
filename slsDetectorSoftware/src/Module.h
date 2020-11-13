@@ -1,6 +1,6 @@
 #pragma once
-#include "sls/ClientSocket.h"
 #include "SharedMemory.h"
+#include "sls/ClientSocket.h"
 #include "sls/StaticVector.h"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
@@ -136,6 +136,8 @@ class Module : public virtual slsDetectorDefs {
     int getMaxClockPhaseShift(int clkIndex) const;
     int getClockFrequency(int clkIndex) const;
     void setClockFrequency(int clkIndex, int value);
+    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
+    void setDefaultDacs();
     int getDAC(dacIndex index, bool mV) const;
     void setDAC(int val, dacIndex index, bool mV);
     bool getPowerChip() const;

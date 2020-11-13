@@ -241,3 +241,4 @@ int reconfigure_udp(int);
 int validate_udp_configuration(int);
 int get_bursts_left(int);
 int start_readout(int);
+int set_default_dacs(int);

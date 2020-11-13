@@ -493,6 +493,7 @@ int setDefaultDacs() {
         for (int i = 0; i < NDAC; ++i) {
             setDAC((enum DACINDEX)i, defaultvals[i], 0);
             if (detectorDacs[i] != defaultvals[i]) {
+                ret = FAIL;
                 LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
                                defaultvals[i], detectorDacs[i]));
             }

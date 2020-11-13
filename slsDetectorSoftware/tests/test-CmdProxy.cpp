@@ -1146,6 +1146,19 @@ TEST_CASE("dacvalues", "[.cmd][.new]") {
     REQUIRE_THROWS(proxy.Call("dacvalues", {}, -1, PUT));
 }
 
+TEST_CASE("defaultdacs", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type != defs::CHIPTESTBOARD) {
+        REQUIRE_THROWS(proxy.Call("defaultdacs", {}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("defaultdacs", {}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("defaultdacs", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("defaultdacs", {}, -1, PUT));
+    }
+}
+
 /* acquisition */
 
 TEST_CASE("trigger", "[.cmd][.new]") {

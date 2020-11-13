@@ -1236,8 +1236,7 @@ TEST_CASE("start", "[.cmd]") {
         proxy.Call("start", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "start successful\n");
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    if (virtualDet) {
+    if (virtualDet || det_type != defs::JUNGFRAU) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
@@ -1267,8 +1266,7 @@ TEST_CASE("stop", "[.cmd]") {
     }
     det.setExptime(-1, std::chrono::seconds(2));
     det.startDetector();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    if (virtualDet) {
+    if (virtualDet || det_type != defs::JUNGFRAU) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
@@ -1313,14 +1311,13 @@ TEST_CASE("status", "[.cmd]") {
     }
     det.setExptime(-1, std::chrono::seconds(2));
     det.startDetector();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    if (virtualDet) {
+    if (virtualDet || det_type != defs::JUNGFRAU) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
     }
     det.stopDetector();
-    if (virtualDet) {
+    if (virtualDet || det_type != defs::JUNGFRAU) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status idle\n");

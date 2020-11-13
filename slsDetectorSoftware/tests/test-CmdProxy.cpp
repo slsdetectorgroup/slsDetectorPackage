@@ -1218,6 +1218,8 @@ TEST_CASE("start", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("start", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
     std::chrono::nanoseconds prev_val;
+    bool virtualDet =
+        det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -1235,7 +1237,7 @@ TEST_CASE("start", "[.cmd]") {
         REQUIRE(oss.str() == "start successful\n");
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    {
+    if (virtualDet) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
@@ -1265,8 +1267,9 @@ TEST_CASE("stop", "[.cmd]") {
     }
     det.setExptime(-1, std::chrono::seconds(2));
     det.startDetector();
+    det.startDetector();
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    {
+    if (virtualDet) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");

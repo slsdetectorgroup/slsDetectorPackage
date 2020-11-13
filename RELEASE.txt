@@ -156,10 +156,10 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
         can cut out required subimage using callbacks, but this feature
         is probably more useful for custom receivers.
 
-    6.  (Eiger, Jungfrau) Starting Frame number - startframenumber
+    6.  (Eiger, Jungfrau) Next Frame number - nextframenumber
         Both now have running frame numbers that is only reset at boot up
         and increments continuously through acquisitions. One is able to 
-        set the starting frame number before an acquisition.
+        set the next frame number now.
 
     7.  (Jungfrau) Two 10G data interfaces
         Only Jungfrau PCBs with version 2.0 can run at full speed using both

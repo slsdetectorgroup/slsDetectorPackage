@@ -1,9 +1,9 @@
 
 #include "catch.hpp"
 
-#include "sls/ClientSocket.h"
 #include "DetectorImpl.h"
 #include "Module.h"
+#include "sls/ClientSocket.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
@@ -446,8 +446,8 @@ TEST_CASE("Chiptestboard Dbit offset, list, sampling, advinvert",
     CHECK(m.readRegister(0x7b) == 0x1003E);
 }
 
-TEST_CASE("Eiger or Jungfrau startingfnum",
-          "[.eigerintegration][.jungfrauintegration][startingfnum]") {
+TEST_CASE("Eiger or Jungfrau nextframenumber",
+          "[.eigerintegration][.jungfrauintegration][nextframenumber]") {
     SingleDetectorConfig c;
 
     // pick up multi detector from shm id 0
@@ -465,8 +465,8 @@ TEST_CASE("Eiger or Jungfrau startingfnum",
     // starting fnum
     uint64_t val = 8;
 
-    m.setStartingFrameNumber(val);
-    CHECK(m.getStartingFrameNumber() == val);
+    m.setNextFrameNumber(val);
+    CHECK(m.getNextFrameNumber() == val);
     CHECK(m.acquire() == slsDetectorDefs::OK);
     CHECK(m.getReceiverCurrentFrameIndex() == val);
 
@@ -474,18 +474,18 @@ TEST_CASE("Eiger or Jungfrau startingfnum",
     CHECK(m.acquire() == slsDetectorDefs::OK);
     CHECK(m.getReceiverCurrentFrameIndex() == val);
 
-    CHECK_THROWS_AS(m.setStartingFrameNumber(0), sls::RuntimeError);
+    CHECK_THROWS_AS(m.setNextFrameNumber(0), sls::RuntimeError);
 
     if (m.getDetectorTypeAsString() == "Eiger") {
         val = 281474976710655;
     } else if (m.getDetectorTypeAsString() == "Jungfrau") {
         val = 18446744073709551615;
     }
-    m.setStartingFrameNumber(val);
-    CHECK(m.getStartingFrameNumber() == val);
+    m.setNextFrameNumber(val);
+    CHECK(m.getNextFrameNumber() == val);
     CHECK(m.acquire() == slsDetectorDefs::OK);
     CHECK(m.getReceiverCurrentFrameIndex() == val);
-    CHECK(m.getStartingFrameNumber() == (val + 1));
+    CHECK(m.getNextFrameNumber() == (val + 1));
 }
 
 TEST_CASE("Eiger readnlines", "[.eigerintegration][readnlines]") {

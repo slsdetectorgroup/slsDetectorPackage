@@ -35,7 +35,7 @@ int Beb_activated = 1;
 uint32_t Beb_detid = 0;
 int Beb_top = 0;
 
-uint64_t Beb_deactivatedStartFrameNumber = 0;
+uint64_t Beb_deactivatedNextFrameNumber = 0;
 int Beb_quadEnable = 0;
 int Beb_positions[2] = {0, 0};
 int Beb_readNLines = MAX_ROWS_PER_READOUT;
@@ -1441,22 +1441,22 @@ int Beb_SetDetectorPosition(int pos[]) {
     return ret;
 }
 
-int Beb_SetStartingFrameNumber(uint64_t value) {
+int Beb_SetNextFrameNumber(uint64_t value) {
     if (!Beb_activated) {
-        Beb_deactivatedStartFrameNumber = value;
+        Beb_deactivatedNextFrameNumber = value;
         return OK;
     }
     LOG(logINFO,
-        ("Setting start frame number: %llu\n", (long long unsigned int)value));
+        ("Setting next frame number: %llu\n", (long long unsigned int)value));
 
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_TEST_BASEADDR);
     if (fd < 0) {
-        LOG(logERROR, ("Set Start Frame Number FAIL\n"));
+        LOG(logERROR, ("Set next Frame Number FAIL\n"));
         return FAIL;
     }
     // since the read is not implemented in firmware yet
-    Beb_deactivatedStartFrameNumber = value;
+    Beb_deactivatedNextFrameNumber = value;
 
     // decrement for firmware
     uint64_t valueInFirmware = value - 1;
@@ -1471,17 +1471,17 @@ int Beb_SetStartingFrameNumber(uint64_t value) {
     return OK;
 }
 
-int Beb_GetStartingFrameNumber(uint64_t *retval, int tengigaEnable) {
+int Beb_GetNextFrameNumber(uint64_t *retval, int tengigaEnable) {
     if (!Beb_activated) {
-        *retval = Beb_deactivatedStartFrameNumber;
+        *retval = Beb_deactivatedNextFrameNumber;
         return OK;
     }
 
-    LOG(logDEBUG1, ("Getting start frame number\n"));
+    LOG(logDEBUG1, ("Getting next frame number\n"));
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_COUNTER_BASEADDR);
     if (fd < 0) {
-        LOG(logERROR, ("Get Start Frame Number FAIL\n"));
+        LOG(logERROR, ("Get next Frame Number FAIL\n"));
         return FAIL;
     }
 

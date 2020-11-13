@@ -1183,8 +1183,8 @@ TEST_CASE("trigger", "[.cmd][.new]") {
         det.setNumberOfFrames(1);
         det.setExptime(std::chrono::milliseconds(1));
         det.setPeriod(std::chrono::milliseconds(1));
-        auto startframenumber = det.getStartingFrameNumber().tsquash(
-            "inconsistent frame nr in test");
+        auto nextframenumber =
+            det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
         det.startDetector();
         {
             std::ostringstream oss;
@@ -1192,9 +1192,9 @@ TEST_CASE("trigger", "[.cmd][.new]") {
             REQUIRE(oss.str() == "trigger successful\n");
         }
         std::this_thread::sleep_for(std::chrono::seconds(2));
-        auto currentfnum = det.getStartingFrameNumber().tsquash(
-            "inconsistent frame nr in test");
-        REQUIRE(startframenumber + 1 == currentfnum);
+        auto currentfnum =
+            det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
+        REQUIRE(nextframenumber + 1 == currentfnum);
         det.stopDetector();
         det.setTimingMode(prev_timing);
         det.setNumberOfFrames(prev_frames);
@@ -1316,33 +1316,33 @@ TEST_CASE("status", "[.cmd][.new]") {
     det.setExptime(-1, prev_val);
 }
 
-TEST_CASE("startframenumber", "[.cmd][.new]") {
+TEST_CASE("nextframenumber", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
-        auto prev_sfnum = det.getStartingFrameNumber();
-        REQUIRE_THROWS(proxy.Call("startframenumber", {"0"}, -1, PUT));
+        auto prev_sfnum = det.getNextFrameNumber();
+        REQUIRE_THROWS(proxy.Call("nextframenumber", {"0"}, -1, PUT));
         {
             std::ostringstream oss;
-            proxy.Call("startframenumber", {"3"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "startframenumber 3\n");
+            proxy.Call("nextframenumber", {"3"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "nextframenumber 3\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("startframenumber", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "startframenumber 3\n");
+            proxy.Call("nextframenumber", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "nextframenumber 3\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("startframenumber", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "startframenumber 1\n");
+            proxy.Call("nextframenumber", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "nextframenumber 1\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setStartingFrameNumber(prev_sfnum[i], {i});
+            det.setNextFrameNumber(prev_sfnum[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("startframenumber", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("nextframenumber", {}, -1, GET));
     }
 }
 

@@ -171,8 +171,8 @@ class Module : public virtual slsDetectorDefs {
     double getReceiverProgress() const;
     int64_t getFramesCaughtByReceiver() const;
     std::vector<uint64_t> getNumMissingPackets() const;
-    uint64_t getStartingFrameNumber() const;
-    void setStartingFrameNumber(uint64_t value);
+    uint64_t getNextFrameNumber() const;
+    void setNextFrameNumber(uint64_t value);
     void sendSoftwareTrigger();
     defs::scanParameters getScan() const;
     void setScan(const defs::scanParameters t);

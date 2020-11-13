@@ -446,7 +446,7 @@ void setupDetector() {
     /*setClockDivider(RUN_CLK, HALF_SPEED); depends if all the previous stuff
      * works*/
     setTiming(DEFAULT_TIMING_MODE);
-    setStartingFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
+    setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 
     // temp threshold and reset event
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
@@ -533,9 +533,9 @@ int selectStoragecellStart(int pos) {
             DAQ_STRG_CELL_SLCT_OFST);
 }
 
-int setStartingFrameNumber(uint64_t value) {
-    LOG(logINFO, ("Setting starting frame number: %llu\n",
-                  (long long unsigned int)value));
+int setNextFrameNumber(uint64_t value) {
+    LOG(logINFO,
+        ("Setting next frame number: %llu\n", (long long unsigned int)value));
 #ifdef VIRTUAL
     setU64BitReg(value, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
 #else
@@ -547,7 +547,7 @@ int setStartingFrameNumber(uint64_t value) {
     return OK;
 }
 
-int getStartingFrameNumber(uint64_t *retval) {
+int getNextFrameNumber(uint64_t *retval) {
 #ifdef VIRTUAL
     *retval = getU64BitReg(FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
 #else
@@ -1727,14 +1727,14 @@ void *start_timer(void *arg) {
     // Send data
     {
         uint64_t frameNr = 0;
-        getStartingFrameNumber(&frameNr);
+        getNextFrameNumber(&frameNr);
         for (int iframes = 0; iframes != numFrames; ++iframes) {
 
             usleep(transmissionDelayUs);
 
             // check if manual stop
             if (sharedMemory_getStop() == 1) {
-                setStartingFrameNumber(frameNr + iframes + 1);
+                setNextFrameNumber(frameNr + iframes + 1);
                 break;
             }
 
@@ -1800,7 +1800,7 @@ void *start_timer(void *arg) {
                 }
             }
         }
-        setStartingFrameNumber(frameNr + numFrames);
+        setNextFrameNumber(frameNr + numFrames);
     }
 
     closeUDPSocket(0);

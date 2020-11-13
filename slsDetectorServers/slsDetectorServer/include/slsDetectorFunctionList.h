@@ -200,8 +200,8 @@ int getReadoutMode();
 int selectStoragecellStart(int pos);
 #endif
 #if defined(JUNGFRAUD) || defined(EIGERD)
-int setStartingFrameNumber(uint64_t value);
-int getStartingFrameNumber(uint64_t *value);
+int setNextFrameNumber(uint64_t value);
+int getNextFrameNumber(uint64_t *value);
 #endif
 void setNumFrames(int64_t val);
 int64_t getNumFrames();

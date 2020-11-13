@@ -1238,7 +1238,7 @@ TEST_CASE("start", "[.cmd]") {
         REQUIRE(oss.str() == "start successful\n");
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    if (virtualDet || det_type != defs::JUNGFRAU) {
+    if (virtualDet) { //} || det_type != defs::JUNGFRAU) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
@@ -1269,7 +1269,7 @@ TEST_CASE("stop", "[.cmd]") {
     det.setExptime(-1, std::chrono::seconds(2));
     det.startDetector();
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    if (virtualDet || det_type != defs::JUNGFRAU) {
+    if (virtualDet) { //} || det_type != defs::JUNGFRAU) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
@@ -1315,13 +1315,13 @@ TEST_CASE("status", "[.cmd]") {
     det.setExptime(-1, std::chrono::seconds(2));
     det.startDetector();
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    if (virtualDet || det_type != defs::JUNGFRAU) {
+    if (virtualDet) { //} || det_type != defs::JUNGFRAU) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
     }
     det.stopDetector();
-    if (virtualDet || det_type != defs::JUNGFRAU) {
+    if (virtualDet) { //} || det_type != defs::JUNGFRAU) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status idle\n");
@@ -1634,6 +1634,8 @@ TEST_CASE("udp_srcip2", "[.cmd]") {
         for (int i = 0; i != det.size(); ++i) {
             det.setSourceUDPIP2(prev_val[i], {i});
         }
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_srcip2", {}, -1, GET));
     }
 }
 

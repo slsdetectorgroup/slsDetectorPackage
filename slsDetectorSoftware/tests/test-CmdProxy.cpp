@@ -1232,7 +1232,7 @@ TEST_CASE("start", "[.cmd]") {
         proxy.Call("start", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "start successful\n");
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
@@ -1263,7 +1263,7 @@ TEST_CASE("stop", "[.cmd]") {
     }
     det.setExptime(-1, std::chrono::seconds(2));
     det.startDetector();
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);

@@ -1320,7 +1320,7 @@ TEST_CASE("status", "[.cmd]") {
         REQUIRE(oss.str() == "status running\n");
     }
     det.stopDetector();
-    {
+    if (virtualDet) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status idle\n");

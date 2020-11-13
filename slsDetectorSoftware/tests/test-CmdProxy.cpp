@@ -1198,6 +1198,8 @@ TEST_CASE("trigger", "[.cmd]") {
         det.stopDetector();
         det.setTimingMode(prev_timing);
         det.setNumberOfFrames(prev_frames);
+        det.setExptime(prev_exptime);
+        det.setPeriod(prev_period);
     }
 }
 

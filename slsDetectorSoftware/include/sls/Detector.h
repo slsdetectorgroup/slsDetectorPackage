@@ -142,6 +142,8 @@ class Detector {
      * streaming, receiver file or streaming. Default is disabled.
      */
     void setGapPixelsinCallback(const bool enable);
+
+    Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@{
 
     /** @name Callbacks */

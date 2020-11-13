@@ -178,6 +178,10 @@ void Module::setAllTrimbits(int val) {
     sendToDetector<int>(F_SET_ALL_TRIMBITS, val);
 }
 
+bool Module::isVirtualDetectorServer() const {
+    return sendToDetector<int>(F_IS_VIRTUAL);
+}
+
 int64_t Module::getNumberOfFrames() const {
     return sendToDetector<int64_t>(F_GET_NUM_FRAMES);
 }

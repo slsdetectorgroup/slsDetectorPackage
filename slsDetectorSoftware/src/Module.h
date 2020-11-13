@@ -103,6 +103,7 @@ class Module : public virtual slsDetectorDefs {
     void loadSettingsFile(const std::string &fname);
     int getAllTrimbits() const;
     void setAllTrimbits(int val);
+    bool isVirtualDetectorServer() const;
 
     /**************************************************
      *                                                *

@@ -206,6 +206,10 @@ void Detector::setGapPixelsinCallback(bool enable) {
     pimpl->setGapPixelsinCallback(enable);
 }
 
+Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
+    return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
+}
+
 // Callback
 
 void Detector::registerAcquisitionFinishedCallback(void (*func)(double, int,

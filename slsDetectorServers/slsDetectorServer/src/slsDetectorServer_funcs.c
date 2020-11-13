@@ -360,6 +360,7 @@ void function_table() {
     flist[F_GET_BURSTS_LEFT] = &get_bursts_left;
     flist[F_START_READOUT] = &start_readout;
     flist[F_SET_DEFAULT_DACS] = &set_default_dacs;
+    flist[F_IS_VIRTUAL] = &is_virtual;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8162,3 +8163,17 @@ int set_default_dacs(int file_des) {
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
+
+int is_virtual(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = 0;
+#ifdef VIRTUAL
+    retval = 1;
+#endif
+    LOG(logDEBUG1,
+        ("is virtual retval: %d\n", retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+

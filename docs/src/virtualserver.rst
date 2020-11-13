@@ -60,6 +60,7 @@ Client
     sls_detector_put virtual 2 1912 
 
 Use the same in the config file.
+Detector API has a method 'isVirtualDetectorServer' to check if on-board detector server is virtual.
 
 
 Sample Config file

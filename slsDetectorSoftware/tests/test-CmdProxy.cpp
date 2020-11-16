@@ -1293,18 +1293,14 @@ TEST_CASE("stop", "[.cmd]") {
         proxy.Call("stop", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "stop successful\n");
     }
-    if (det_type == defs::JUNGFRAU) {
+    {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
-        if (virtualDet) {
-            REQUIRE(oss.str() == "status idle\n");
-        } else {
+        if (!virtualDet && det_type == defs::JUNGFRAU) {
             REQUIRE(oss.str() == "status stopped\n");
+        } else {
+            REQUIRE(oss.str() == "status idle\n");
         }
-    } else {
-        std::ostringstream oss;
-        proxy.Call("status", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "status idle\n");
     }
     det.setExptime(-1, prev_val);
     det.setPeriod(prev_period);
@@ -1316,8 +1312,8 @@ TEST_CASE("status", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     std::chrono::nanoseconds prev_val;
-    // bool virtualDet =
-    //    det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
+    bool virtualDet =
+        det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -1343,11 +1339,14 @@ TEST_CASE("status", "[.cmd]") {
         REQUIRE(oss.str() == "status running\n");
     }
     det.stopDetector();
-    // if (virtualDet || det_type != defs::JUNGFRAU) {
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "status idle\n");
+        if (!virtualDet && det_type == defs::JUNGFRAU) {
+            REQUIRE(oss.str() == "status stopped\n");
+        } else {
+            REQUIRE(oss.str() == "status idle\n");
+        }
     }
     det.setExptime(-1, prev_val);
     det.setPeriod(prev_period);
@@ -1504,7 +1503,8 @@ TEST_CASE("scan", "[.cmd]") {
     // Reset all dacs to previous value
     // for (int i = 0; i != det.size(); ++i) {
     //     det.setDAC(ind, previous[i], false, {i});
-    //     det.setDAC(notImplementedInd, notImplementedPrevious[i], false, {i});
+    //     det.setDAC(notImplementedInd, notImplementedPrevious[i], false,
+    //     {i});
     // }
 }
 

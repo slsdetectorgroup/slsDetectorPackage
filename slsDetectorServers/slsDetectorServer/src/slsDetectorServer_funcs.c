@@ -1756,7 +1756,8 @@ int acquire(int blocking, int file_des) {
                 strcpy(mess, "Could not start acquisition thread!\n");
                 LOG(logERROR, (mess));
             } else {
-                if (blocking) {
+                // only does not wait for non blocking and scan
+                if (blocking || !scan) {
                     pthread_join(pthread_tid, NULL);
                 }
             }
@@ -6364,13 +6365,14 @@ int set_veto_photon(int file_des) {
     const int chipIndex = args[0];
     const int numChannels = args[1];
 
-    int* gainIndices = malloc(sizeof(int) * numChannels);
-    if (receiveData(file_des, gainIndices, sizeof(int) * numChannels, INT32) < 0) {
+    int *gainIndices = malloc(sizeof(int) * numChannels);
+    if (receiveData(file_des, gainIndices, sizeof(int) * numChannels, INT32) <
+        0) {
         free(gainIndices);
         return printSocketReadError();
     }
 
-    int* values = malloc(sizeof(int) * numChannels);
+    int *values = malloc(sizeof(int) * numChannels);
     if (receiveData(file_des, values, sizeof(int) * numChannels, INT32) < 0) {
         free(gainIndices);
         free(values);
@@ -6430,7 +6432,7 @@ int set_veto_photon(int file_des) {
         }
     }
 #endif
-    if(gainIndices != NULL) {
+    if (gainIndices != NULL) {
         free(gainIndices);
     }
     if (values != NULL) {

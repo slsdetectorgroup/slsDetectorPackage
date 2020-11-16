@@ -1648,7 +1648,8 @@ TEST_CASE("udp_srcip2", "[.cmd]") {
             REQUIRE(oss.str() == "udp_srcip2 129.129.205.12\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setSourceUDPIP2(prev_val[i], {i});
+            if (prev_val[i] != sls::IpAddr{"0.0.0.0"})
+                det.setSourceUDPIP2(prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("udp_srcip2", {}, -1, GET));

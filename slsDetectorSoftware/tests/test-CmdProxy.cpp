@@ -1181,12 +1181,12 @@ TEST_CASE("trigger", "[.cmd]") {
             det.getPeriod().tsquash("inconsistent period in test");
         det.setTimingMode(defs::TRIGGER_EXPOSURE);
         det.setNumberOfFrames(1);
-        det.setExptime(std::chrono::milliseconds(1));
+        det.setExptime(std::chrono::microseconds(200));
         det.setPeriod(std::chrono::milliseconds(1));
         auto nextframenumber =
             det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
         det.startDetector();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         {
             std::ostringstream oss;
             proxy.Call("trigger", {}, -1, PUT, oss);
@@ -1219,8 +1219,8 @@ TEST_CASE("start", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("start", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
     std::chrono::nanoseconds prev_val;
-    bool virtualDet =
-        det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
+    // bool virtualDet =
+    //    det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -1231,20 +1231,28 @@ TEST_CASE("start", "[.cmd]") {
         }
         prev_val = t[0];
     }
-    det.setExptime(-1, std::chrono::seconds(2));
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+    det.setExptime(-1, std::chrono::microseconds(200));
+    det.setPeriod(std::chrono::milliseconds(1));
+    det.setNumberOfFrames(10000);
     {
         std::ostringstream oss;
         proxy.Call("start", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "start successful\n");
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    if (virtualDet || det_type != defs::JUNGFRAU) {
+    // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // if (virtualDet || det_type != defs::JUNGFRAU) {
+    {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
     }
     det.stopDetector();
     det.setExptime(-1, prev_val);
+    det.setPeriod(prev_period);
+    det.setNumberOfFrames(prev_frames);
 }
 
 TEST_CASE("stop", "[.cmd]") {
@@ -1266,10 +1274,16 @@ TEST_CASE("stop", "[.cmd]") {
         }
         prev_val = t[0];
     }
-    det.setExptime(-1, std::chrono::seconds(2));
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+    det.setExptime(-1, std::chrono::microseconds(200));
+    det.setPeriod(std::chrono::milliseconds(1));
+    det.setNumberOfFrames(10000);
     det.startDetector();
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    if (virtualDet || det_type != defs::JUNGFRAU) {
+    // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // if (virtualDet || det_type != defs::JUNGFRAU) {
+    {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
@@ -1293,6 +1307,8 @@ TEST_CASE("stop", "[.cmd]") {
         REQUIRE(oss.str() == "status idle\n");
     }
     det.setExptime(-1, prev_val);
+    det.setPeriod(prev_period);
+    det.setNumberOfFrames(prev_frames);
 }
 
 TEST_CASE("status", "[.cmd]") {
@@ -1300,8 +1316,8 @@ TEST_CASE("status", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     std::chrono::nanoseconds prev_val;
-    bool virtualDet =
-        det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
+    // bool virtualDet =
+    //    det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -1312,21 +1328,30 @@ TEST_CASE("status", "[.cmd]") {
         }
         prev_val = t[0];
     }
-    det.setExptime(-1, std::chrono::seconds(2));
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+    det.setExptime(-1, std::chrono::microseconds(200));
+    det.setPeriod(std::chrono::milliseconds(1));
+    det.setNumberOfFrames(10000);
     det.startDetector();
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    if (virtualDet || det_type != defs::JUNGFRAU) {
+    // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // if (virtualDet || det_type != defs::JUNGFRAU) {
+    {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
     }
     det.stopDetector();
-    if (virtualDet || det_type != defs::JUNGFRAU) {
+    // if (virtualDet || det_type != defs::JUNGFRAU) {
+    {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status idle\n");
     }
     det.setExptime(-1, prev_val);
+    det.setPeriod(prev_period);
+    det.setNumberOfFrames(prev_frames);
 }
 
 TEST_CASE("nextframenumber", "[.cmd]") {

@@ -562,7 +562,12 @@ TEST_CASE("measuredperiod", "[.cmd]") {
         std::ostringstream oss;
         proxy.Call("measuredperiod", {}, -1, GET, oss);
         std::string st = oss.str();
-        std::string s = st.erase(0, strlen("measuredperiod "));
+        std::string s;
+        if (st.find('[') != std::string::npos) {
+            s = st.erase(0, strlen("measuredperiod ["));
+        } else {
+            s = st.erase(0, strlen("measuredperiod "));
+        }
         double val = std::stod(s);
         // REQUIRE(val >= 1.0);
         REQUIRE(val < 2.0);
@@ -596,7 +601,12 @@ TEST_CASE("measuredsubperiod", "[.cmd]") {
         std::ostringstream oss;
         proxy.Call("measuredsubperiod", {}, -1, GET, oss);
         std::string st = oss.str();
-        std::string s = st.erase(0, strlen("measuredsubperiod "));
+        std::string s;
+        if (st.find('[') != std::string::npos) {
+            s = st.erase(0, strlen("measuredsubperiod ["));
+        } else {
+            s = st.erase(0, strlen("measuredsubperiod "));
+        }
         double val = std::stod(s);
         REQUIRE(val >= 0);
         REQUIRE(val < 1000);

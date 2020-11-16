@@ -1,14 +1,14 @@
 #include "CmdProxy.h"
-#include "sls/Detector.h"
 #include "catch.hpp"
+#include "sls/Detector.h"
 #include "sls/sls_detector_defs.h"
 #include <sstream>
 
 #include "sls/Result.h"
 #include "sls/ToString.h"
+#include "sls/versionAPI.h"
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
-#include "sls/versionAPI.h"
 
 using sls::CmdProxy;
 using sls::Detector;
@@ -17,7 +17,7 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("dac", "[.cmd][.dacs][.new]") {
+TEST_CASE("dac", "[.cmd][.dacs]") {
     // dac 0 to dac 17
 
     Detector det;
@@ -100,7 +100,7 @@ TEST_CASE("dac", "[.cmd][.dacs][.new]") {
     }
 }
 
-TEST_CASE("adcvpp", "[.cmd][.new]") {
+TEST_CASE("adcvpp", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -132,7 +132,7 @@ TEST_CASE("adcvpp", "[.cmd][.new]") {
 
 /* CTB/ Moench Specific */
 
-TEST_CASE("samples", "[.cmd][.new]") {
+TEST_CASE("samples", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -179,7 +179,7 @@ TEST_CASE("samples", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("asamples", "[.cmd][.new]") {
+TEST_CASE("asamples", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -209,7 +209,7 @@ TEST_CASE("asamples", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("adcclk", "[.cmd][.new]") {
+TEST_CASE("adcclk", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -240,7 +240,7 @@ TEST_CASE("adcclk", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("runclk", "[.cmd][.new]") {
+TEST_CASE("runclk", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -271,7 +271,7 @@ TEST_CASE("runclk", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("syncclk", "[.cmd][.new]") {
+TEST_CASE("syncclk", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -283,7 +283,7 @@ TEST_CASE("syncclk", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("adcpipeline", "[.cmd][.new]") {
+TEST_CASE("adcpipeline", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -318,7 +318,7 @@ TEST_CASE("adcpipeline", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("v_limit", "[.cmd][.new]") {
+TEST_CASE("v_limit", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -356,7 +356,7 @@ TEST_CASE("v_limit", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("adcenable", "[.cmd][.new]") {
+TEST_CASE("adcenable", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -386,7 +386,7 @@ TEST_CASE("adcenable", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("adcenable10g", "[.cmd][.new]") {
+TEST_CASE("adcenable10g", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -418,7 +418,7 @@ TEST_CASE("adcenable10g", "[.cmd][.new]") {
 
 /* CTB Specific */
 
-TEST_CASE("dsamples", "[.cmd][.new]") {
+TEST_CASE("dsamples", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -448,7 +448,7 @@ TEST_CASE("dsamples", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("romode", "[.cmd][.new]") {
+TEST_CASE("romode", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -488,7 +488,7 @@ TEST_CASE("romode", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("dbitclk", "[.cmd][.new]") {
+TEST_CASE("dbitclk", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -519,7 +519,7 @@ TEST_CASE("dbitclk", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("dbitpipeline", "[.cmd][.new]") {
+TEST_CASE("dbitpipeline", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -554,7 +554,7 @@ TEST_CASE("dbitpipeline", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("v_a", "[.cmd][.new]") {
+TEST_CASE("v_a", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -575,7 +575,7 @@ TEST_CASE("v_a", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("v_b", "[.cmd][.new]") {
+TEST_CASE("v_b", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -596,7 +596,7 @@ TEST_CASE("v_b", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("v_c", "[.cmd][.new]") {
+TEST_CASE("v_c", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -617,7 +617,7 @@ TEST_CASE("v_c", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("v_d", "[.cmd][.new]") {
+TEST_CASE("v_d", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -638,7 +638,7 @@ TEST_CASE("v_d", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("v_io", "[.cmd][.new]") {
+TEST_CASE("v_io", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -650,7 +650,7 @@ TEST_CASE("v_io", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("v_chip", "[.cmd][.new]") {
+TEST_CASE("v_chip", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -662,7 +662,7 @@ TEST_CASE("v_chip", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("vm_a", "[.cmd][.new]") {
+TEST_CASE("vm_a", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -673,7 +673,7 @@ TEST_CASE("vm_a", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("vm_b", "[.cmd][.new]") {
+TEST_CASE("vm_b", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -684,7 +684,7 @@ TEST_CASE("vm_b", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("vm_c", "[.cmd][.new]") {
+TEST_CASE("vm_c", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -695,7 +695,7 @@ TEST_CASE("vm_c", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("vm_d", "[.cmd][.new]") {
+TEST_CASE("vm_d", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -706,7 +706,7 @@ TEST_CASE("vm_d", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("vm_io", "[.cmd][.new]") {
+TEST_CASE("vm_io", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -717,7 +717,7 @@ TEST_CASE("vm_io", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("im_a", "[.cmd][.new]") {
+TEST_CASE("im_a", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -728,7 +728,7 @@ TEST_CASE("im_a", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("im_b", "[.cmd][.new]") {
+TEST_CASE("im_b", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -739,7 +739,7 @@ TEST_CASE("im_b", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("im_c", "[.cmd][.new]") {
+TEST_CASE("im_c", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -750,7 +750,7 @@ TEST_CASE("im_c", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("im_d", "[.cmd][.new]") {
+TEST_CASE("im_d", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -761,7 +761,7 @@ TEST_CASE("im_d", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("im_io", "[.cmd][.new]") {
+TEST_CASE("im_io", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -772,7 +772,7 @@ TEST_CASE("im_io", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("adc", "[.cmd][.new]") {
+TEST_CASE("adc", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -786,7 +786,7 @@ TEST_CASE("adc", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("extsampling", "[.cmd][.new]") {
+TEST_CASE("extsampling", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -816,7 +816,7 @@ TEST_CASE("extsampling", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("extsamplingsrc", "[.cmd][.new]") {
+TEST_CASE("extsamplingsrc", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -847,7 +847,7 @@ TEST_CASE("extsamplingsrc", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("diodelay", "[.cmd][.new]") {
+TEST_CASE("diodelay", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -870,7 +870,7 @@ TEST_CASE("diodelay", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("led", "[.cmd][.new]") {
+TEST_CASE("led", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();

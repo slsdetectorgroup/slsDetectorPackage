@@ -35,7 +35,7 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     void SetFileName(bool force = false);
     void ForceSetFileName();
     void SetRunIndex(int val);
-    void SetStartingFrameNumber(int val);
+    void SetNextFrameNumber(int val);
     void UpdateProgress();
     void StartAcquisition();
     void StopAcquisition();
@@ -67,7 +67,7 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     void GetFileWrite();
     void GetFileName();
     void GetRunIndex();
-    void GetStartingFrameNumber();
+    void GetNextFrameNumber();
 
     void ResetProgress();
 

@@ -540,13 +540,13 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def startingfnum(self):
-        """[Eiger][Jungfrau] Starting frame number for next acquisition. Stopping acquisition might result in different frame numbers for different modules. """
-        return self.getStartingFrameNumber()
+    def nextframenumber(self):
+        """[Eiger][Jungfrau] Next frame number. Stopping acquisition might result in different frame numbers for different modules. """
+        return self.getNextFrameNumber()
 
-    @startingfnum.setter
-    def startingfnum(self, value):
-        ut.set_using_dict(self.setStartingFrameNumber, value)
+    @nextframenumber.setter
+    def nextframenumber(self, value):
+        ut.set_using_dict(self.setNextFrameNumber, value)
 
     @property
     @element

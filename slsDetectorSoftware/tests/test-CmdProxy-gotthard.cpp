@@ -1,14 +1,14 @@
 #include "CmdProxy.h"
-#include "sls/Detector.h"
 #include "catch.hpp"
+#include "sls/Detector.h"
 #include "sls/sls_detector_defs.h"
 #include <sstream>
 
 #include "sls/Result.h"
 #include "sls/ToString.h"
+#include "sls/versionAPI.h"
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
-#include "sls/versionAPI.h"
 
 using sls::CmdProxy;
 using sls::Detector;
@@ -17,7 +17,7 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("Setting and reading back GOTTHARD dacs", "[.cmd][.dacs][.new]") {
+TEST_CASE("Setting and reading back GOTTHARD dacs", "[.cmd][.dacs]") {
     // vref_ds, vcascn_pb, vcascp_pb, vout_cm, vcasc_out, vin_cm, vref_comp,
     // ib_test_c
 
@@ -97,7 +97,7 @@ TEST_CASE("Setting and reading back GOTTHARD dacs", "[.cmd][.dacs][.new]") {
 
 /* Gotthard Specific */
 
-TEST_CASE("roi", "[.cmd][.new]") {
+TEST_CASE("roi", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -123,7 +123,7 @@ TEST_CASE("roi", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("clearroi", "[.cmd][.new]") {
+TEST_CASE("clearroi", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -143,7 +143,7 @@ TEST_CASE("clearroi", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("exptimel", "[.cmd][.new]") {
+TEST_CASE("exptimel", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();

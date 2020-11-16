@@ -118,8 +118,8 @@ enum detFuncs {
     F_GET_ADC_INVERT,
     F_EXTERNAL_SAMPLING_SOURCE,
     F_EXTERNAL_SAMPLING,
-    F_SET_STARTING_FRAME_NUMBER,
-    F_GET_STARTING_FRAME_NUMBER,
+    F_SET_NEXT_FRAME_NUMBER,
+    F_GET_NEXT_FRAME_NUMBER,
     F_SET_QUAD,
     F_GET_QUAD,
     F_SET_INTERRUPT_SUBFRAME,
@@ -216,6 +216,7 @@ enum detFuncs {
     F_GET_BURSTS_LEFT,
     F_START_READOUT,
     F_SET_DEFAULT_DACS,
+    F_IS_VIRTUAL,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -439,8 +440,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_ADC_INVERT:					return "F_GET_ADC_INVERT";
 	case F_EXTERNAL_SAMPLING_SOURCE:		return "F_EXTERNAL_SAMPLING_SOURCE";				
 	case F_EXTERNAL_SAMPLING:				return "F_EXTERNAL_SAMPLING";	
-	case F_SET_STARTING_FRAME_NUMBER:		return "F_SET_STARTING_FRAME_NUMBER";
-	case F_GET_STARTING_FRAME_NUMBER:		return "F_GET_STARTING_FRAME_NUMBER";
+	case F_SET_NEXT_FRAME_NUMBER:		    return "F_SET_NEXT_FRAME_NUMBER";
+	case F_GET_NEXT_FRAME_NUMBER:		    return "F_GET_NEXT_FRAME_NUMBER";
 	case F_SET_QUAD:						return "F_SET_QUAD";
 	case F_GET_QUAD:						return "F_GET_QUAD";
 	case F_SET_INTERRUPT_SUBFRAME:			return "F_SET_INTERRUPT_SUBFRAME";
@@ -537,6 +538,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_BURSTS_LEFT:                 return "F_GET_BURSTS_LEFT";
     case F_START_READOUT:                   return "F_START_READOUT";
     case F_SET_DEFAULT_DACS:                return "F_SET_DEFAULT_DACS";
+    case F_IS_VIRTUAL:                      return "F_IS_VIRTUAL";
     
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

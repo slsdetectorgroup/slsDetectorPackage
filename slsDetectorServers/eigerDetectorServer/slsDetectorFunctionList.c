@@ -85,7 +85,7 @@ int eiger_virtual_transmission_delay_right = 0;
 int eiger_virtual_transmission_delay_frame = 0;
 int eiger_virtual_transmission_flowcontrol_10g = 0;
 int eiger_virtual_activate = 1;
-uint64_t eiger_virtual_startingframenumber = 1;
+uint64_t eiger_virtual_nextframenumber = 1;
 int eiger_virtual_detPos[2] = {0, 0};
 int eiger_virtual_test_mode = 0;
 int eiger_virtual_quad_mode = 0;
@@ -702,7 +702,7 @@ void setupDetector() {
     setClockDivider(RUN_CLK, DEFAULT_CLK_SPEED); // clk_devider,half speed
     setIODelay(DEFAULT_IO_DELAY);
     setTiming(DEFAULT_TIMING_MODE);
-    setStartingFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
+    setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
     setReadNLines(MAX_ROWS_PER_READOUT);
     // SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
     eiger_tau_ns = DEFAULT_RATE_CORRECTION;
@@ -851,21 +851,21 @@ int getOverFlowMode() { return eiger_overflow32; }
 
 /* parameters - timer */
 
-int setStartingFrameNumber(uint64_t value) {
+int setNextFrameNumber(uint64_t value) {
 #ifdef VIRTUAL
-    eiger_virtual_startingframenumber = value;
+    eiger_virtual_nextframenumber = value;
     return OK;
 #else
-    return Beb_SetStartingFrameNumber(value);
+    return Beb_SetNextFrameNumber(value);
 #endif
 }
 
-int getStartingFrameNumber(uint64_t *retval) {
+int getNextFrameNumber(uint64_t *retval) {
 #ifdef VIRTUAL
-    *retval = eiger_virtual_startingframenumber;
+    *retval = eiger_virtual_nextframenumber;
     return OK;
 #else
-    return Beb_GetStartingFrameNumber(retval, send_to_ten_gig);
+    return Beb_GetNextFrameNumber(retval, send_to_ten_gig);
 #endif
 }
 
@@ -2256,7 +2256,7 @@ void *start_timer(void *arg) {
     // Send data
     {
         uint64_t frameNr = 0;
-        getStartingFrameNumber(&frameNr);
+        getNextFrameNumber(&frameNr);
         // loop over number of frames
         for (int iframes = 0; iframes != numFrames; ++iframes) {
 
@@ -2264,7 +2264,7 @@ void *start_timer(void *arg) {
 
             // check if manual stop
             if (sharedMemory_getStop() == 1) {
-                setStartingFrameNumber(frameNr + iframes + 1);
+                setNextFrameNumber(frameNr + iframes + 1);
                 break;
             }
 
@@ -2357,7 +2357,7 @@ void *start_timer(void *arg) {
                 }
             }
         }
-        setStartingFrameNumber(frameNr + numFrames);
+        setNextFrameNumber(frameNr + numFrames);
     }
 
     closeUDPSocket(0);
@@ -2395,8 +2395,8 @@ int stopStateMachine() {
 
     // ensure all have same starting frame numbers
     uint64_t retval = 0;
-    if (Beb_GetStartingFrameNumber(&retval, send_to_ten_gig) == -2) {
-        Beb_SetStartingFrameNumber(retval + 1);
+    if (Beb_GetNextFrameNumber(&retval, send_to_ten_gig) == -2) {
+        Beb_SetNextFrameNumber(retval + 1);
     }
     return OK;
 #endif

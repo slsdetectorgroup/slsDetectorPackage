@@ -206,6 +206,10 @@ void Detector::setGapPixelsinCallback(bool enable) {
     pimpl->setGapPixelsinCallback(enable);
 }
 
+Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
+    return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
+}
+
 // Callback
 
 void Detector::registerAcquisitionFinishedCallback(void (*func)(double, int,
@@ -621,12 +625,12 @@ Detector::getNumMissingPackets(Positions pos) const {
     return pimpl->Parallel(&Module::getNumMissingPackets, pos);
 }
 
-Result<uint64_t> Detector::getStartingFrameNumber(Positions pos) const {
-    return pimpl->Parallel(&Module::getStartingFrameNumber, pos);
+Result<uint64_t> Detector::getNextFrameNumber(Positions pos) const {
+    return pimpl->Parallel(&Module::getNextFrameNumber, pos);
 }
 
-void Detector::setStartingFrameNumber(uint64_t value, Positions pos) {
-    pimpl->Parallel(&Module::setStartingFrameNumber, pos, value);
+void Detector::setNextFrameNumber(uint64_t value, Positions pos) {
+    pimpl->Parallel(&Module::setNextFrameNumber, pos, value);
 }
 
 void Detector::sendSoftwareTrigger(Positions pos) {

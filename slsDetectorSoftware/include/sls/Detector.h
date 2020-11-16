@@ -142,6 +142,8 @@ class Detector {
      * streaming, receiver file or streaming. Default is disabled.
      */
     void setGapPixelsinCallback(const bool enable);
+
+    Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@{
 
     /** @name Callbacks */
@@ -482,11 +484,11 @@ class Detector {
     getNumMissingPackets(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau] */
-    Result<uint64_t> getStartingFrameNumber(Positions pos = {}) const;
+    Result<uint64_t> getNextFrameNumber(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau] Stopping acquisition might result in different frame
      * numbers for different modules.*/
-    void setStartingFrameNumber(uint64_t value, Positions pos = {});
+    void setNextFrameNumber(uint64_t value, Positions pos = {});
 
     /** [Eiger][Mythen3] Sends an internal software trigger to the detector */
     void sendSoftwareTrigger(Positions pos = {});

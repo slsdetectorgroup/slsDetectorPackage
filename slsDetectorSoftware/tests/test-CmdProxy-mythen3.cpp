@@ -1,14 +1,14 @@
 #include "CmdProxy.h"
-#include "sls/Detector.h"
 #include "catch.hpp"
+#include "sls/Detector.h"
 #include "sls/sls_detector_defs.h"
 #include <sstream>
 
 #include "sls/Result.h"
 #include "sls/ToString.h"
+#include "sls/versionAPI.h"
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
-#include "sls/versionAPI.h"
 
 using sls::CmdProxy;
 using sls::Detector;
@@ -17,7 +17,7 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs][.new]") {
+TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs]") {
     // vcassh, vth2, vshaper, vshaperneg, vipre_out, vth3, vth1,
     // vicin, vcas, vpreamp, vpl, vipre, viinsh, vph, vtrim, vdcsh,
 
@@ -117,7 +117,7 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs][.new]") {
 
 /* acquisition */
 
-TEST_CASE("readout", "[.cmd][.new]") {
+TEST_CASE("readout", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     // PUT only command
@@ -134,7 +134,7 @@ TEST_CASE("readout", "[.cmd][.new]") {
 
 /* Mythen3 Specific */
 
-TEST_CASE("counters", "[.cmd][.new]") {
+TEST_CASE("counters", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -166,7 +166,7 @@ TEST_CASE("counters", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("gates", "[.cmd][.new]") {
+TEST_CASE("gates", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -196,7 +196,7 @@ TEST_CASE("gates", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("exptime1", "[.cmd][.new]") {
+TEST_CASE("exptime1", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -225,7 +225,7 @@ TEST_CASE("exptime1", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("exptime2", "[.cmd][.new]") {
+TEST_CASE("exptime2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -254,7 +254,7 @@ TEST_CASE("exptime2", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("exptime3", "[.cmd][.new]") {
+TEST_CASE("exptime3", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -283,7 +283,7 @@ TEST_CASE("exptime3", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("gatedelay", "[.cmd][.new]") {
+TEST_CASE("gatedelay", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -319,7 +319,7 @@ TEST_CASE("gatedelay", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("gatedelay1", "[.cmd][.new]") {
+TEST_CASE("gatedelay1", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -348,7 +348,7 @@ TEST_CASE("gatedelay1", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("gatedelay2", "[.cmd][.new]") {
+TEST_CASE("gatedelay2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -377,7 +377,7 @@ TEST_CASE("gatedelay2", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("gatedelay3", "[.cmd][.new]") {
+TEST_CASE("gatedelay3", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();

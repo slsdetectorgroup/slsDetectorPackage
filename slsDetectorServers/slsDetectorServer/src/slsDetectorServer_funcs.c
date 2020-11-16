@@ -262,8 +262,8 @@ void function_table() {
     flist[F_GET_ADC_INVERT] = &get_adc_invert;
     flist[F_EXTERNAL_SAMPLING_SOURCE] = &set_external_sampling_source;
     flist[F_EXTERNAL_SAMPLING] = &set_external_sampling;
-    flist[F_SET_STARTING_FRAME_NUMBER] = &set_starting_frame_number;
-    flist[F_GET_STARTING_FRAME_NUMBER] = &get_starting_frame_number;
+    flist[F_SET_NEXT_FRAME_NUMBER] = &set_next_frame_number;
+    flist[F_GET_NEXT_FRAME_NUMBER] = &get_next_frame_number;
     flist[F_SET_QUAD] = &set_quad;
     flist[F_GET_QUAD] = &get_quad;
     flist[F_SET_INTERRUPT_SUBFRAME] = &set_interrupt_subframe;
@@ -360,6 +360,7 @@ void function_table() {
     flist[F_GET_BURSTS_LEFT] = &get_bursts_left;
     flist[F_START_READOUT] = &start_readout;
     flist[F_SET_DEFAULT_DACS] = &set_default_dacs;
+    flist[F_IS_VIRTUAL] = &is_virtual;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -1755,7 +1756,8 @@ int acquire(int blocking, int file_des) {
                 strcpy(mess, "Could not start acquisition thread!\n");
                 LOG(logERROR, (mess));
             } else {
-                if (blocking) {
+                // only does not wait for non blocking and scan
+                if (blocking || !scan) {
                     pthread_join(pthread_tid, NULL);
                 }
             }
@@ -4497,14 +4499,14 @@ int set_external_sampling(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_starting_frame_number(int file_des) {
+int set_next_frame_number(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     uint64_t arg = 0;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting starting frame number to %llu\n", arg));
+    LOG(logINFO, ("Setting next frame number to %llu\n", arg));
 
 #if (!defined(EIGERD)) && (!defined(JUNGFRAUD))
     functionNotImplemented();
@@ -4513,8 +4515,7 @@ int set_starting_frame_number(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (arg == 0) {
             ret = FAIL;
-            sprintf(mess,
-                    "Could not set starting frame number. Cannot be 0.\n");
+            sprintf(mess, "Could not set next frame number. Cannot be 0.\n");
             LOG(logERROR, (mess));
         }
 #ifdef EIGERD
@@ -4522,12 +4523,12 @@ int set_starting_frame_number(int file_des) {
             ret = FAIL;
 #ifdef VIRTUAL
             sprintf(mess,
-                    "Could not set starting frame number. Must be less then "
+                    "Could not set next frame number. Must be less then "
                     "%ld (0x%lx)\n",
                     UDP_HEADER_MAX_FRAME_VALUE, UDP_HEADER_MAX_FRAME_VALUE);
 #else
             sprintf(mess,
-                    "Could not set starting frame number. Must be less then "
+                    "Could not set next frame number. Must be less then "
                     "%lld (0x%llx)\n",
                     UDP_HEADER_MAX_FRAME_VALUE, UDP_HEADER_MAX_FRAME_VALUE);
 #endif
@@ -4535,21 +4536,21 @@ int set_starting_frame_number(int file_des) {
         }
 #endif
         else {
-            ret = setStartingFrameNumber(arg);
+            ret = setNextFrameNumber(arg);
             if (ret == FAIL) {
-                sprintf(mess, "Could not set starting frame number. Failed to "
+                sprintf(mess, "Could not set next frame number. Failed to "
                               "map address.\n");
                 LOG(logERROR, (mess));
             }
             if (ret == OK) {
                 uint64_t retval = 0;
-                ret = getStartingFrameNumber(&retval);
+                ret = getNextFrameNumber(&retval);
                 if (ret == FAIL) {
-                    sprintf(mess, "Could not get starting frame number. Failed "
+                    sprintf(mess, "Could not get next frame number. Failed "
                                   "to map address.\n");
                     LOG(logERROR, (mess));
                 } else if (ret == -2) {
-                    sprintf(mess, "Inconsistent starting frame number from "
+                    sprintf(mess, "Inconsistent next frame number from "
                                   "left and right FPGA. Please set it.\n");
                     LOG(logERROR, (mess));
                 } else {
@@ -4557,12 +4558,12 @@ int set_starting_frame_number(int file_des) {
                         ret = FAIL;
 #ifdef VIRTUAL
                         sprintf(mess,
-                                "Could not set starting frame number. Set "
+                                "Could not set next frame number. Set "
                                 "0x%lx, but read 0x%lx\n",
                                 arg, retval);
 #else
                         sprintf(mess,
-                                "Could not set starting frame number. Set "
+                                "Could not set next frame number. Set "
                                 "0x%llx, but read 0x%llx\n",
                                 arg, retval);
 #endif
@@ -4576,28 +4577,28 @@ int set_starting_frame_number(int file_des) {
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
-int get_starting_frame_number(int file_des) {
+int get_next_frame_number(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     uint64_t retval = -1;
 
-    LOG(logDEBUG1, ("Getting Starting frame number \n"));
+    LOG(logDEBUG1, ("Getting next frame number \n"));
 
 #if (!defined(EIGERD)) && (!defined(JUNGFRAUD))
     functionNotImplemented();
 #else
     // get
-    ret = getStartingFrameNumber(&retval);
+    ret = getNextFrameNumber(&retval);
     if (ret == FAIL) {
-        sprintf(mess, "Could not get starting frame number. Failed to map "
+        sprintf(mess, "Could not get next frame number. Failed to map "
                       "address.\n");
         LOG(logERROR, (mess));
     } else if (ret == -2) {
-        sprintf(mess, "Inconsistent starting frame number from left and right "
+        sprintf(mess, "Inconsistent next frame number from left and right "
                       "FPGA. Please set it.\n");
         LOG(logERROR, (mess));
     } else {
-        LOG(logDEBUG1, ("Start frame number retval: %u\n", retval));
+        LOG(logDEBUG1, ("next frame number retval: %u\n", retval));
     }
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
@@ -6364,13 +6365,19 @@ int set_veto_photon(int file_des) {
     const int chipIndex = args[0];
     const int numChannels = args[1];
 
-    int gainIndices[numChannels];
-    if (receiveData(file_des, gainIndices, sizeof(gainIndices), INT32) < 0)
+    int *gainIndices = malloc(sizeof(int) * numChannels);
+    if (receiveData(file_des, gainIndices, sizeof(int) * numChannels, INT32) <
+        0) {
+        free(gainIndices);
         return printSocketReadError();
+    }
 
-    int values[numChannels];
-    if (receiveData(file_des, values, sizeof(values), INT32) < 0)
+    int *values = malloc(sizeof(int) * numChannels);
+    if (receiveData(file_des, values, sizeof(int) * numChannels, INT32) < 0) {
+        free(gainIndices);
+        free(values);
         return printSocketReadError();
+    }
 
     LOG(logINFO, ("Setting Veto Photon: [chipIndex:%d, nch:%d]\n", chipIndex,
                   numChannels));
@@ -6425,6 +6432,12 @@ int set_veto_photon(int file_des) {
         }
     }
 #endif
+    if (gainIndices != NULL) {
+        free(gainIndices);
+    }
+    if (values != NULL) {
+        free(values);
+    }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -6432,10 +6445,8 @@ int get_veto_photon(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int arg = -1;
-    int retvals[NCHAN];
-    memset(retvals, 0, sizeof(retvals));
-    int gainRetvals[NCHAN];
-    memset(gainRetvals, 0, sizeof(gainRetvals));
+    int *retvals = NULL;
+    int *gainRetvals = NULL;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
@@ -6444,24 +6455,38 @@ int get_veto_photon(int file_des) {
 #ifndef GOTTHARD2D
     functionNotImplemented();
 #else
-    // get only
-    int chipIndex = arg;
-    if (chipIndex < -1 || chipIndex >= NCHIP) {
+    retvals = malloc(sizeof(int) * NCHAN);
+    gainRetvals = malloc(sizeof(int) * NCHAN);
+    memset(retvals, 0, sizeof(int) * NCHAN);
+    memset(gainRetvals, 0, sizeof(int) * NCHAN);
+
+    if (retvals == NULL || gainRetvals == NULL) {
         ret = FAIL;
-        sprintf(mess, "Could not get veto photon. Invalid chip index %d\n",
-                chipIndex);
+        strcpy(
+            mess,
+            "Could not get veto photon. Could not allocate memory in server\n");
         LOG(logERROR, (mess));
     } else {
-        ret = getVetoPhoton(chipIndex, retvals, gainRetvals);
-        if (ret == FAIL) {
-            strcpy(mess,
-                   "Could not get veto photon for chipIndex -1. Not the "
-                   "same for all chips. Select specific chip index instead.\n");
+        // get only
+        int chipIndex = arg;
+        if (chipIndex < -1 || chipIndex >= NCHIP) {
+            ret = FAIL;
+            sprintf(mess, "Could not get veto photon. Invalid chip index %d\n",
+                    chipIndex);
             LOG(logERROR, (mess));
         } else {
-            for (int i = 0; i < NCHAN; ++i) {
-                LOG(logDEBUG1,
-                    ("%d:[%d, %d]\n", i, retvals[i], gainRetvals[i]));
+            ret = getVetoPhoton(chipIndex, retvals, gainRetvals);
+            if (ret == FAIL) {
+                strcpy(mess,
+                       "Could not get veto photon for chipIndex -1. Not the "
+                       "same for all chips. Select specific chip index "
+                       "instead.\n");
+                LOG(logERROR, (mess));
+            } else {
+                for (int i = 0; i < NCHAN; ++i) {
+                    LOG(logDEBUG1,
+                        ("%d:[%d, %d]\n", i, retvals[i], gainRetvals[i]));
+                }
             }
         }
     }
@@ -6472,6 +6497,12 @@ int get_veto_photon(int file_des) {
         sendData(file_des, &nch, sizeof(nch), INT32);
         sendData(file_des, gainRetvals, sizeof(gainRetvals), INT32);
         sendData(file_des, retvals, sizeof(retvals), INT32);
+    }
+    if (retvals != NULL) {
+        free(retvals);
+    }
+    if (gainRetvals != NULL) {
+        free(gainRetvals);
     }
     return ret;
 }
@@ -8162,4 +8193,15 @@ int set_default_dacs(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int is_virtual(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = 0;
+#ifdef VIRTUAL
+    retval = 1;
+#endif
+    LOG(logDEBUG1, ("is virtual retval: %d\n", retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

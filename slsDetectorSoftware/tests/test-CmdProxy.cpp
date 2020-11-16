@@ -23,7 +23,7 @@ TEST_CASE("Unknown command", "[.cmd]") {
 
 /* configuration */
 
-TEST_CASE("config", "[.cmd][.new]") {
+TEST_CASE("config", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     // put only
@@ -32,7 +32,7 @@ TEST_CASE("config", "[.cmd][.new]") {
 
 // free: not testing
 
-TEST_CASE("parameters", "[.cmd][.new]") {
+TEST_CASE("parameters", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     // put only
@@ -58,7 +58,7 @@ TEST_CASE("parameters", "[.cmd][.new]") {
         */
 }
 
-TEST_CASE("hostname", "[.cmd][.new]") {
+TEST_CASE("hostname", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("hostname", {}, -1, GET));
@@ -66,49 +66,49 @@ TEST_CASE("hostname", "[.cmd][.new]") {
 
 // virtual: not testing
 
-TEST_CASE("versions", "[.cmd][.new]") {
+TEST_CASE("versions", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("versions", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("versions", {"0"}, -1, PUT));
 }
 
-TEST_CASE("packageversion", "[.cmd][.new]") {
+TEST_CASE("packageversion", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("packageversion", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("packageversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("clientversion", "[.cmd][.new]") {
+TEST_CASE("clientversion", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("clientversion", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("clientversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("firmwareversion", "[.cmd][.new]") {
+TEST_CASE("firmwareversion", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("firmwareversion", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("firmwareversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("detectorserverversion", "[.cmd][.new]") {
+TEST_CASE("detectorserverversion", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("detectorserverversion", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("detectorserverversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("serialnumber", "[.cmd][.new]") {
+TEST_CASE("serialnumber", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("serialnumber", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("serialnumber", {"0"}, -1, PUT));
 }
 
-TEST_CASE("type", "[.cmd][.new]") {
+TEST_CASE("type", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto dt = det.getDetectorType().squash();
@@ -120,13 +120,13 @@ TEST_CASE("type", "[.cmd][.new]") {
     // REQUIRE(dt == test::type);
 }
 
-TEST_CASE("detsize", "[.cmd][.new]") {
+TEST_CASE("detsize", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("detsize", {}, -1, GET));
 }
 
-TEST_CASE("settingslist", "[.cmd][.new]") {
+TEST_CASE("settingslist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -138,7 +138,7 @@ TEST_CASE("settingslist", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("settings", "[.cmd][.new]") {
+TEST_CASE("settings", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -206,13 +206,13 @@ TEST_CASE("settings", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("trimbits", "[.cmd][.new]") {
+TEST_CASE("trimbits", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("trimbits", {}, -1, GET));
 }
 
-TEST_CASE("trimval", "[.cmd][.new]") {
+TEST_CASE("trimval", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -250,7 +250,7 @@ TEST_CASE("trimval", "[.cmd][.new]") {
 
 // acquire: not testing
 
-TEST_CASE("frames", "[.cmd][.new]") {
+TEST_CASE("frames", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val =
@@ -274,7 +274,7 @@ TEST_CASE("frames", "[.cmd][.new]") {
     det.setNumberOfFrames(prev_val);
 }
 
-TEST_CASE("triggers", "[.cmd][.new]") {
+TEST_CASE("triggers", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val =
@@ -344,7 +344,7 @@ TEST_CASE("exptime", "[.cmd][.time]") {
     det.setExptime(-1, prev_val);
 }
 
-TEST_CASE("period", "[.cmd][.new]") {
+TEST_CASE("period", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getPeriod();
@@ -368,7 +368,7 @@ TEST_CASE("period", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("delay", "[.cmd][.new]") {
+TEST_CASE("delay", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -401,7 +401,7 @@ TEST_CASE("delay", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("framesl", "[.cmd][.new]") {
+TEST_CASE("framesl", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -412,7 +412,7 @@ TEST_CASE("framesl", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("triggersl", "[.cmd][.new]") {
+TEST_CASE("triggersl", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -423,7 +423,7 @@ TEST_CASE("triggersl", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("delayl", "[.cmd][.new]") {
+TEST_CASE("delayl", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -441,7 +441,7 @@ TEST_CASE("delayl", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("periodl", "[.cmd][.new]") {
+TEST_CASE("periodl", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -459,7 +459,7 @@ TEST_CASE("periodl", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("dr", "[.cmd][.new]") {
+TEST_CASE("dr", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -501,14 +501,14 @@ TEST_CASE("dr", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("drlist", "[.cmd][.new]") {
+TEST_CASE("drlist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("drlist", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("drlist", {}, -1, PUT));
 }
 
-TEST_CASE("timing", "[.cmd][.new]") {
+TEST_CASE("timing", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getTimingMode();
@@ -570,14 +570,14 @@ TEST_CASE("timing", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("timinglist", "[.cmd][.new]") {
+TEST_CASE("timinglist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("timinglist", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("timinglist", {}, -1, PUT));
 }
 
-TEST_CASE("speed", "[.cmd][.new]") {
+TEST_CASE("speed", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -628,7 +628,7 @@ TEST_CASE("speed", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("adcphase", "[.cmd][.new]") {
+TEST_CASE("adcphase", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -667,7 +667,7 @@ TEST_CASE("adcphase", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("maxadcphaseshift", "[.cmd][.new]") {
+TEST_CASE("maxadcphaseshift", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -681,7 +681,7 @@ TEST_CASE("maxadcphaseshift", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("dbitphase", "[.cmd][.new]") {
+TEST_CASE("dbitphase", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -710,7 +710,7 @@ TEST_CASE("dbitphase", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("maxdbitphaseshift", "[.cmd][.new]") {
+TEST_CASE("maxdbitphaseshift", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -723,7 +723,7 @@ TEST_CASE("maxdbitphaseshift", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("clkfreq", "[.cmd][.new]") {
+TEST_CASE("clkfreq", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -737,7 +737,7 @@ TEST_CASE("clkfreq", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("clkphase", "[.cmd][.new]") {
+TEST_CASE("clkphase", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -775,7 +775,7 @@ TEST_CASE("clkphase", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("clkdiv", "[.cmd][.new]") {
+TEST_CASE("clkdiv", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -801,7 +801,7 @@ TEST_CASE("clkdiv", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("maxclkphaseshift", "[.cmd][.new]") {
+TEST_CASE("maxclkphaseshift", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -815,7 +815,7 @@ TEST_CASE("maxclkphaseshift", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("highvoltage", "[.cmd][.new]") {
+TEST_CASE("highvoltage", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -913,7 +913,7 @@ TEST_CASE("highvoltage", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("powerchip", "[.cmd][.new]") {
+TEST_CASE("powerchip", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -944,7 +944,7 @@ TEST_CASE("powerchip", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("imagetest", "[.cmd][.new]") {
+TEST_CASE("imagetest", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -974,7 +974,7 @@ TEST_CASE("imagetest", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("extsig", "[.cmd][.new]") {
+TEST_CASE("extsig", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1053,7 +1053,7 @@ TEST_CASE("extsig", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("parallel", "[.cmd][.new]") {
+TEST_CASE("parallel", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1085,21 +1085,21 @@ TEST_CASE("parallel", "[.cmd][.new]") {
 
 /** temperature */
 
-TEST_CASE("templist", "[.cmd][.new]") {
+TEST_CASE("templist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("templist", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("templist", {}, -1, PUT));
 }
 
-TEST_CASE("tempvalues", "[.cmd][.new]") {
+TEST_CASE("tempvalues", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("tempvalues", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("tempvalues", {}, -1, PUT));
 }
 
-TEST_CASE("temp_adc", "[.cmd][.new]") {
+TEST_CASE("temp_adc", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1114,7 +1114,7 @@ TEST_CASE("temp_adc", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("temp_fpga", "[.cmd][.new]") {
+TEST_CASE("temp_fpga", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1132,21 +1132,21 @@ TEST_CASE("temp_fpga", "[.cmd][.new]") {
 
 /* dacs */
 
-TEST_CASE("daclist", "[.cmd][.new]") {
+TEST_CASE("daclist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("daclist", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("daclist", {}, -1, PUT));
 }
 
-TEST_CASE("dacvalues", "[.cmd][.new]") {
+TEST_CASE("dacvalues", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("dacvalues", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("dacvalues", {}, -1, PUT));
 }
 
-TEST_CASE("defaultdacs", "[.cmd][.new]") {
+TEST_CASE("defaultdacs", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1161,7 +1161,7 @@ TEST_CASE("defaultdacs", "[.cmd][.new]") {
 
 /* acquisition */
 
-TEST_CASE("trigger", "[.cmd][.new]") {
+TEST_CASE("trigger", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("trigger", {}, -1, GET));
@@ -1181,10 +1181,10 @@ TEST_CASE("trigger", "[.cmd][.new]") {
             det.getPeriod().tsquash("inconsistent period in test");
         det.setTimingMode(defs::TRIGGER_EXPOSURE);
         det.setNumberOfFrames(1);
-        det.setExptime(std::chrono::milliseconds(1));
+        det.setExptime(std::chrono::microseconds(200));
         det.setPeriod(std::chrono::milliseconds(1));
-        auto startframenumber = det.getStartingFrameNumber().tsquash(
-            "inconsistent frame nr in test");
+        auto nextframenumber =
+            det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
         det.startDetector();
         {
             std::ostringstream oss;
@@ -1192,16 +1192,18 @@ TEST_CASE("trigger", "[.cmd][.new]") {
             REQUIRE(oss.str() == "trigger successful\n");
         }
         std::this_thread::sleep_for(std::chrono::seconds(2));
-        auto currentfnum = det.getStartingFrameNumber().tsquash(
-            "inconsistent frame nr in test");
-        REQUIRE(startframenumber + 1 == currentfnum);
+        auto currentfnum =
+            det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
+        REQUIRE(nextframenumber + 1 == currentfnum);
         det.stopDetector();
         det.setTimingMode(prev_timing);
         det.setNumberOfFrames(prev_frames);
+        det.setExptime(prev_exptime);
+        det.setPeriod(prev_period);
     }
 }
 
-TEST_CASE("clearbusy", "[.cmd][.new]") {
+TEST_CASE("clearbusy", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("clearbusy", {}, -1, PUT));
@@ -1209,7 +1211,7 @@ TEST_CASE("clearbusy", "[.cmd][.new]") {
     REQUIRE_THROWS(proxy.Call("clearbusy", {}, -1, GET));
 }
 
-TEST_CASE("start", "[.cmd][.new]") {
+TEST_CASE("start", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     // PUT only command
@@ -1226,13 +1228,17 @@ TEST_CASE("start", "[.cmd][.new]") {
         }
         prev_val = t[0];
     }
-    det.setExptime(-1, std::chrono::seconds(2));
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+    det.setExptime(-1, std::chrono::microseconds(200));
+    det.setPeriod(std::chrono::milliseconds(1));
+    det.setNumberOfFrames(10000);
     {
         std::ostringstream oss;
         proxy.Call("start", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "start successful\n");
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
@@ -1240,15 +1246,19 @@ TEST_CASE("start", "[.cmd][.new]") {
     }
     det.stopDetector();
     det.setExptime(-1, prev_val);
+    det.setPeriod(prev_period);
+    det.setNumberOfFrames(prev_frames);
 }
 
-TEST_CASE("stop", "[.cmd][.new]") {
+TEST_CASE("stop", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     // PUT only command
     REQUIRE_THROWS(proxy.Call("stop", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
     std::chrono::nanoseconds prev_val;
+    bool virtualDet =
+        det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -1259,9 +1269,13 @@ TEST_CASE("stop", "[.cmd][.new]") {
         }
         prev_val = t[0];
     }
-    det.setExptime(-1, std::chrono::seconds(2));
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+    det.setExptime(-1, std::chrono::microseconds(200));
+    det.setPeriod(std::chrono::milliseconds(1));
+    det.setNumberOfFrames(10000);
     det.startDetector();
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
@@ -1272,23 +1286,27 @@ TEST_CASE("stop", "[.cmd][.new]") {
         proxy.Call("stop", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "stop successful\n");
     }
-    if (det_type == defs::JUNGFRAU) {
+    {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "status stopped\n");
-    } else {
-        std::ostringstream oss;
-        proxy.Call("status", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "status idle\n");
+        if (!virtualDet && det_type == defs::JUNGFRAU) {
+            REQUIRE(oss.str() == "status stopped\n");
+        } else {
+            REQUIRE(oss.str() == "status idle\n");
+        }
     }
     det.setExptime(-1, prev_val);
+    det.setPeriod(prev_period);
+    det.setNumberOfFrames(prev_frames);
 }
 
-TEST_CASE("status", "[.cmd][.new]") {
+TEST_CASE("status", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     std::chrono::nanoseconds prev_val;
+    bool virtualDet =
+        det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -1299,9 +1317,13 @@ TEST_CASE("status", "[.cmd][.new]") {
         }
         prev_val = t[0];
     }
-    det.setExptime(-1, std::chrono::seconds(2));
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
+    det.setExptime(-1, std::chrono::microseconds(200));
+    det.setPeriod(std::chrono::milliseconds(1));
+    det.setNumberOfFrames(10000);
     det.startDetector();
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
@@ -1311,42 +1333,48 @@ TEST_CASE("status", "[.cmd][.new]") {
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "status idle\n");
+        if (!virtualDet && det_type == defs::JUNGFRAU) {
+            REQUIRE(oss.str() == "status stopped\n");
+        } else {
+            REQUIRE(oss.str() == "status idle\n");
+        }
     }
     det.setExptime(-1, prev_val);
+    det.setPeriod(prev_period);
+    det.setNumberOfFrames(prev_frames);
 }
 
-TEST_CASE("startframenumber", "[.cmd][.new]") {
+TEST_CASE("nextframenumber", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
-        auto prev_sfnum = det.getStartingFrameNumber();
-        REQUIRE_THROWS(proxy.Call("startframenumber", {"0"}, -1, PUT));
+        auto prev_sfnum = det.getNextFrameNumber();
+        REQUIRE_THROWS(proxy.Call("nextframenumber", {"0"}, -1, PUT));
         {
             std::ostringstream oss;
-            proxy.Call("startframenumber", {"3"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "startframenumber 3\n");
+            proxy.Call("nextframenumber", {"3"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "nextframenumber 3\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("startframenumber", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "startframenumber 3\n");
+            proxy.Call("nextframenumber", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "nextframenumber 3\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("startframenumber", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "startframenumber 1\n");
+            proxy.Call("nextframenumber", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "nextframenumber 1\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setStartingFrameNumber(prev_sfnum[i], {i});
+            det.setNextFrameNumber(prev_sfnum[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("startframenumber", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("nextframenumber", {}, -1, GET));
     }
 }
 
-TEST_CASE("scan", "[.cmd][.new]") {
+TEST_CASE("scan", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     defs::dacIndex ind = defs::DAC_0;
@@ -1466,18 +1494,19 @@ TEST_CASE("scan", "[.cmd][.new]") {
     // Reset all dacs to previous value
     // for (int i = 0; i != det.size(); ++i) {
     //     det.setDAC(ind, previous[i], false, {i});
-    //     det.setDAC(notImplementedInd, notImplementedPrevious[i], false, {i});
+    //     det.setDAC(notImplementedInd, notImplementedPrevious[i], false,
+    //     {i});
     // }
 }
 
-TEST_CASE("scanerrmsg", "[.cmd][.new]") {
+TEST_CASE("scanerrmsg", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("scanerrmsg", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("scanerrmsg", {""}, -1, PUT));
 }
 
-TEST_CASE("gappixels", "[.cmd][.new]") {
+TEST_CASE("gappixels", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1517,7 +1546,7 @@ TEST_CASE("gappixels", "[.cmd][.new]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("numinterfaces", "[.cmd][.new]") {
+TEST_CASE("numinterfaces", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1550,7 +1579,7 @@ TEST_CASE("numinterfaces", "[.cmd][.new]") {
     REQUIRE_THROWS(proxy.Call("numinterfaces", {"0"}, -1, PUT));
 }
 
-TEST_CASE("udp_srcip", "[.cmd][.new]") {
+TEST_CASE("udp_srcip", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getSourceUDPIP();
@@ -1565,13 +1594,13 @@ TEST_CASE("udp_srcip", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("udp_dstip", "[.cmd][.new]") {
+TEST_CASE("udp_dstip", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("udp_dstip", {"0.0.0.0"}, -1, PUT));
 }
 
-TEST_CASE("udp_srcmac", "[.cmd][.new]") {
+TEST_CASE("udp_srcmac", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getSourceUDPMAC();
@@ -1586,13 +1615,13 @@ TEST_CASE("udp_srcmac", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("udp_dstmac", "[.cmd][.new]") {
+TEST_CASE("udp_dstmac", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("udp_dstmac", {"00:00:00:00:00:00"}, -1, PUT));
 }
 
-TEST_CASE("udp_dstport", "[.cmd][.new]") {
+TEST_CASE("udp_dstport", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getDestinationUDPPort();
@@ -1606,7 +1635,7 @@ TEST_CASE("udp_dstport", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("udp_srcip2", "[.cmd][.new]") {
+TEST_CASE("udp_srcip2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1619,12 +1648,15 @@ TEST_CASE("udp_srcip2", "[.cmd][.new]") {
             REQUIRE(oss.str() == "udp_srcip2 129.129.205.12\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setSourceUDPIP2(prev_val[i], {i});
+            if (prev_val[i] != sls::IpAddr{"0.0.0.0"})
+                det.setSourceUDPIP2(prev_val[i], {i});
         }
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_srcip2", {}, -1, GET));
     }
 }
 
-TEST_CASE("udp_dstip2", "[.cmd][.new]") {
+TEST_CASE("udp_dstip2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1635,7 +1667,7 @@ TEST_CASE("udp_dstip2", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("udp_srcmac2", "[.cmd][.new]") {
+TEST_CASE("udp_srcmac2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1656,7 +1688,7 @@ TEST_CASE("udp_srcmac2", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("udp_dstmac2", "[.cmd][.new]") {
+TEST_CASE("udp_dstmac2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1668,7 +1700,7 @@ TEST_CASE("udp_dstmac2", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("udp_dstport2", "[.cmd][.new]") {
+TEST_CASE("udp_dstport2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1688,21 +1720,21 @@ TEST_CASE("udp_dstport2", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("udp_reconfigure", "[.cmd][.new]") {
+TEST_CASE("udp_reconfigure", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("udp_reconfigure", {}, -1, GET));
     REQUIRE_NOTHROW(proxy.Call("udp_reconfigure", {}, -1, PUT));
 }
 
-TEST_CASE("udp_validate", "[.cmd][.new]") {
+TEST_CASE("udp_validate", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("udp_validate", {}, -1, GET));
     REQUIRE_NOTHROW(proxy.Call("udp_validate", {}, -1, PUT));
 }
 
-TEST_CASE("tengiga", "[.cmd][.new]") {
+TEST_CASE("tengiga", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -1726,7 +1758,7 @@ TEST_CASE("tengiga", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("flowcontrol10g", "[.cmd][.new]") {
+TEST_CASE("flowcontrol10g", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1756,7 +1788,7 @@ TEST_CASE("flowcontrol10g", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("txndelay_frame", "[.cmd][.new]") {
+TEST_CASE("txndelay_frame", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1785,7 +1817,7 @@ TEST_CASE("txndelay_frame", "[.cmd][.new]") {
 
 /* ZMQ Streaming Parameters (Receiver<->Client) */
 
-TEST_CASE("zmqport", "[.cmd][.new]") {
+TEST_CASE("zmqport", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -1833,7 +1865,7 @@ TEST_CASE("zmqport", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("zmqip", "[.cmd][.new]") {
+TEST_CASE("zmqip", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     std::ostringstream oss1, oss2;
@@ -1849,7 +1881,7 @@ TEST_CASE("zmqip", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("zmqhwm", "[.cmd][.new]") {
+TEST_CASE("zmqhwm", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getClientZmqHwm();
@@ -1878,7 +1910,7 @@ TEST_CASE("zmqhwm", "[.cmd][.new]") {
 
 /* Advanced */
 
-TEST_CASE("programfpga", "[.cmd][.new]") {
+TEST_CASE("programfpga", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1894,7 +1926,7 @@ TEST_CASE("programfpga", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("resetfpga", "[.cmd][.new]") {
+TEST_CASE("resetfpga", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1910,7 +1942,7 @@ TEST_CASE("resetfpga", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("copydetectorserver", "[.cmd][.new]") {
+TEST_CASE("copydetectorserver", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1929,7 +1961,7 @@ TEST_CASE("copydetectorserver", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("rebootcontroller", "[.cmd][.new]") {
+TEST_CASE("rebootcontroller", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1945,7 +1977,7 @@ TEST_CASE("rebootcontroller", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("update", "[.cmd][.new]") {
+TEST_CASE("update", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -1963,7 +1995,7 @@ TEST_CASE("update", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("reg", "[.cmd][.new]") {
+TEST_CASE("reg", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2006,7 +2038,7 @@ TEST_CASE("adcreg", "[.cmd]") {
     }
 }
 
-TEST_CASE("setbit", "[.cmd][.new]") {
+TEST_CASE("setbit", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2028,7 +2060,7 @@ TEST_CASE("setbit", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("clearbit", "[.cmd][.new]") {
+TEST_CASE("clearbit", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2050,7 +2082,7 @@ TEST_CASE("clearbit", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("getbit", "[.cmd][.new]") {
+TEST_CASE("getbit", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2074,7 +2106,7 @@ TEST_CASE("getbit", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("firmwaretest", "[.cmd][.new]") {
+TEST_CASE("firmwaretest", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2091,7 +2123,7 @@ TEST_CASE("firmwaretest", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("bustest", "[.cmd][.new]") {
+TEST_CASE("bustest", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2108,7 +2140,7 @@ TEST_CASE("bustest", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("initialchecks", "[.cmd][.new]") {
+TEST_CASE("initialchecks", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto check = det.getInitialChecks();
@@ -2130,7 +2162,7 @@ TEST_CASE("initialchecks", "[.cmd][.new]") {
     det.setInitialChecks(check);
 }
 
-TEST_CASE("adcinvert", "[.cmd][.new]") {
+TEST_CASE("adcinvert", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2158,7 +2190,7 @@ TEST_CASE("adcinvert", "[.cmd][.new]") {
 
 /* Insignificant */
 
-TEST_CASE("port", "[.cmd][.new]") {
+TEST_CASE("port", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getControlPort({0}).squash();
@@ -2175,7 +2207,7 @@ TEST_CASE("port", "[.cmd][.new]") {
     det.setControlPort(prev_val, {0});
 }
 
-TEST_CASE("stopport", "[.cmd][.new]") {
+TEST_CASE("stopport", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getStopPort({0}).squash();
@@ -2192,7 +2224,7 @@ TEST_CASE("stopport", "[.cmd][.new]") {
     det.setStopPort(prev_val, {0});
 }
 
-TEST_CASE("lock", "[.cmd][.new]") {
+TEST_CASE("lock", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getDetectorLock();
@@ -2216,13 +2248,13 @@ TEST_CASE("lock", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("execcommand", "[.cmd][.new]") {
+TEST_CASE("execcommand", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("execcommand", {"ls"}, -1, PUT));
 }
 
-TEST_CASE("framecounter", "[.cmd][.new]") {
+TEST_CASE("framecounter", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2240,7 +2272,7 @@ TEST_CASE("framecounter", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("runtime", "[.cmd][.new]") {
+TEST_CASE("runtime", "[.cmd]") {
     // TODO! can we test this?
     Detector det;
     CmdProxy proxy(&det);
@@ -2258,7 +2290,7 @@ TEST_CASE("runtime", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("frametime", "[.cmd][.new]") {
+TEST_CASE("frametime", "[.cmd]") {
     // TODO! can we test this?
     Detector det;
     CmdProxy proxy(&det);
@@ -2276,7 +2308,7 @@ TEST_CASE("frametime", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("user", "[.cmd][.new]") {
+TEST_CASE("user", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     proxy.Call("user", {}, -1, GET);

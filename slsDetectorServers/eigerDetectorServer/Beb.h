@@ -103,8 +103,8 @@ int Beb_SetQuad(int value);
 int Beb_GetQuad();
 int *Beb_GetDetectorPosition();
 int Beb_SetDetectorPosition(int pos[]);
-int Beb_SetStartingFrameNumber(uint64_t value);
-int Beb_GetStartingFrameNumber(uint64_t *retval, int tengigaEnable);
+int Beb_SetNextFrameNumber(uint64_t value);
+int Beb_GetNextFrameNumber(uint64_t *retval, int tengigaEnable);
 
 void Beb_SetReadNLines(int value);
 

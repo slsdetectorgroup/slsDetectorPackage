@@ -374,13 +374,13 @@ void init_det(py::module &m) {
             (Result<std::vector<uint64_t>>(Detector::*)(sls::Positions) const) &
                 Detector::getNumMissingPackets,
             py::arg() = Positions{})
-        .def("getStartingFrameNumber",
+        .def("getNextFrameNumber",
              (Result<uint64_t>(Detector::*)(sls::Positions) const) &
-                 Detector::getStartingFrameNumber,
+                 Detector::getNextFrameNumber,
              py::arg() = Positions{})
-        .def("setStartingFrameNumber",
+        .def("setNextFrameNumber",
              (void (Detector::*)(uint64_t, sls::Positions)) &
-                 Detector::setStartingFrameNumber,
+                 Detector::setNextFrameNumber,
              py::arg(), py::arg() = Positions{})
         .def("sendSoftwareTrigger",
              (void (Detector::*)(sls::Positions)) &

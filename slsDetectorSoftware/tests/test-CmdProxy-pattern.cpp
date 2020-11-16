@@ -1,14 +1,14 @@
 #include "CmdProxy.h"
-#include "sls/Detector.h"
 #include "catch.hpp"
+#include "sls/Detector.h"
 #include "sls/sls_detector_defs.h"
 #include <sstream>
 
 #include "sls/Result.h"
 #include "sls/ToString.h"
+#include "sls/versionAPI.h"
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
-#include "sls/versionAPI.h"
 
 using sls::CmdProxy;
 using sls::Detector;
@@ -17,7 +17,7 @@ using test::PUT;
 
 /* Pattern */
 
-TEST_CASE("pattern", "[.cmd][.new]") {
+TEST_CASE("pattern", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -30,7 +30,7 @@ TEST_CASE("pattern", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("savepattern", "[.cmd][.new]") {
+TEST_CASE("savepattern", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -46,7 +46,7 @@ TEST_CASE("savepattern", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patioctrl", "[.cmd][.new]") {
+TEST_CASE("patioctrl", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -76,7 +76,7 @@ TEST_CASE("patioctrl", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patword", "[.cmd][.new]") {
+TEST_CASE("patword", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -112,7 +112,7 @@ TEST_CASE("patword", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patlimits", "[.cmd][.new]") {
+TEST_CASE("patlimits", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -139,7 +139,7 @@ TEST_CASE("patlimits", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patloop0", "[.cmd][.new]") {
+TEST_CASE("patloop0", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -165,7 +165,7 @@ TEST_CASE("patloop0", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patloop1", "[.cmd][.new]") {
+TEST_CASE("patloop1", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -191,7 +191,7 @@ TEST_CASE("patloop1", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patloop2", "[.cmd][.new]") {
+TEST_CASE("patloop2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -217,7 +217,7 @@ TEST_CASE("patloop2", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patnloop0", "[.cmd][.new]") {
+TEST_CASE("patnloop0", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -243,7 +243,7 @@ TEST_CASE("patnloop0", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patnloop1", "[.cmd][.new]") {
+TEST_CASE("patnloop1", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -269,7 +269,7 @@ TEST_CASE("patnloop1", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patnloop2", "[.cmd][.new]") {
+TEST_CASE("patnloop2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -295,7 +295,7 @@ TEST_CASE("patnloop2", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patwait0", "[.cmd][.new]") {
+TEST_CASE("patwait0", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -321,7 +321,7 @@ TEST_CASE("patwait0", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patwait1", "[.cmd][.new]") {
+TEST_CASE("patwait1", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -347,7 +347,7 @@ TEST_CASE("patwait1", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patwait2", "[.cmd][.new]") {
+TEST_CASE("patwait2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -373,7 +373,7 @@ TEST_CASE("patwait2", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patwaittime0", "[.cmd][.new]") {
+TEST_CASE("patwaittime0", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -399,7 +399,7 @@ TEST_CASE("patwaittime0", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patwaittime1", "[.cmd][.new]") {
+TEST_CASE("patwaittime1", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -425,7 +425,7 @@ TEST_CASE("patwaittime1", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patwaittime2", "[.cmd][.new]") {
+TEST_CASE("patwaittime2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -451,7 +451,7 @@ TEST_CASE("patwaittime2", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patmask", "[.cmd][.new]") {
+TEST_CASE("patmask", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -477,7 +477,7 @@ TEST_CASE("patmask", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patsetbit", "[.cmd][.new]") {
+TEST_CASE("patsetbit", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -503,7 +503,7 @@ TEST_CASE("patsetbit", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("patternstart", "[.cmd][.new]") {
+TEST_CASE("patternstart", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("patternstart", {}, -1, GET));

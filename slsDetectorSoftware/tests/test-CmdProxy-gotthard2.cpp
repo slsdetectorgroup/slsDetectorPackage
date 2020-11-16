@@ -1,14 +1,14 @@
 #include "CmdProxy.h"
-#include "sls/Detector.h"
 #include "catch.hpp"
+#include "sls/Detector.h"
 #include "sls/sls_detector_defs.h"
 #include <sstream>
 
 #include "sls/Result.h"
 #include "sls/ToString.h"
+#include "sls/versionAPI.h"
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
-#include "sls/versionAPI.h"
 
 using sls::CmdProxy;
 using sls::Detector;
@@ -17,7 +17,7 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs][.new]") {
+TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs]") {
     // vref_h_adc,   vb_comp_fe, vb_comp_adc,  vcom_cds,
     // vref_restore, vb_opa_1st, vref_comp_fe, vcom_adc1,
     // vref_prech,   vref_l_adc, vref_cds,     vb_cs,
@@ -110,7 +110,7 @@ TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs][.new]") {
 
 /* on chip dacs */
 
-TEST_CASE("vchip_comp_fe", "[.cmd][.onchipdacs][.new]") {
+TEST_CASE("vchip_comp_fe", "[.cmd][.onchipdacs]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -123,7 +123,7 @@ TEST_CASE("vchip_comp_fe", "[.cmd][.onchipdacs][.new]") {
     }
 }
 
-TEST_CASE("vchip_opa_1st", "[.cmd][.onchipdacs][.new]") {
+TEST_CASE("vchip_opa_1st", "[.cmd][.onchipdacs]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -136,7 +136,7 @@ TEST_CASE("vchip_opa_1st", "[.cmd][.onchipdacs][.new]") {
     }
 }
 
-TEST_CASE("vchip_opa_fd", "[.cmd][.onchipdacs][.new]") {
+TEST_CASE("vchip_opa_fd", "[.cmd][.onchipdacs]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -149,7 +149,7 @@ TEST_CASE("vchip_opa_fd", "[.cmd][.onchipdacs][.new]") {
     }
 }
 
-TEST_CASE("vchip_comp_adc", "[.cmd][.onchipdacs][.new]") {
+TEST_CASE("vchip_comp_adc", "[.cmd][.onchipdacs]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -162,7 +162,7 @@ TEST_CASE("vchip_comp_adc", "[.cmd][.onchipdacs][.new]") {
     }
 }
 
-TEST_CASE("vchip_ref_comp_fe", "[.cmd][.onchipdacs][.new]") {
+TEST_CASE("vchip_ref_comp_fe", "[.cmd][.onchipdacs]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -175,7 +175,7 @@ TEST_CASE("vchip_ref_comp_fe", "[.cmd][.onchipdacs][.new]") {
     }
 }
 
-TEST_CASE("vchip_cs", "[.cmd][.onchipdacs][.new]") {
+TEST_CASE("vchip_cs", "[.cmd][.onchipdacs]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -188,7 +188,7 @@ TEST_CASE("vchip_cs", "[.cmd][.onchipdacs][.new]") {
 
 /* Gotthard2 Specific */
 
-TEST_CASE("bursts", "[.cmd][.new]") {
+TEST_CASE("bursts", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -262,7 +262,7 @@ TEST_CASE("bursts", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("burstperiod", "[.cmd][.new]") {
+TEST_CASE("burstperiod", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -284,7 +284,7 @@ TEST_CASE("burstperiod", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("burstsl", "[.cmd][.new]") {
+TEST_CASE("burstsl", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -295,7 +295,7 @@ TEST_CASE("burstsl", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("inj_ch", "[.cmd][.new]") {
+TEST_CASE("inj_ch", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -320,7 +320,7 @@ TEST_CASE("inj_ch", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("vetophoton", "[.cmd][.new]") {
+TEST_CASE("vetophoton", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -342,7 +342,7 @@ TEST_CASE("vetophoton", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("vetoref", "[.cmd][.new]") {
+TEST_CASE("vetoref", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -357,7 +357,7 @@ TEST_CASE("vetoref", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("vetofile", "[.cmd][.new]") {
+TEST_CASE("vetofile", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -371,7 +371,7 @@ TEST_CASE("vetofile", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("burstmode", "[.cmd][.new]") {
+TEST_CASE("burstmode", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -402,7 +402,7 @@ TEST_CASE("burstmode", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("cdsgain", "[.cmd][.new]") {
+TEST_CASE("cdsgain", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -432,7 +432,7 @@ TEST_CASE("cdsgain", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("filter", "[.cmd][.new]") {
+TEST_CASE("filter", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -462,7 +462,7 @@ TEST_CASE("filter", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("currentsource", "[.cmd][.new]") {
+TEST_CASE("currentsource", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -492,7 +492,7 @@ TEST_CASE("currentsource", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("timingsource", "[.cmd][.new]") {
+TEST_CASE("timingsource", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -522,7 +522,7 @@ TEST_CASE("timingsource", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("veto", "[.cmd][.new]") {
+TEST_CASE("veto", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -552,7 +552,7 @@ TEST_CASE("veto", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("confadc", "[.cmd][.new]") {
+TEST_CASE("confadc", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -599,7 +599,7 @@ TEST_CASE("confadc", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("badchannels", "[.cmd][.new]") {
+TEST_CASE("badchannels", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();

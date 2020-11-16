@@ -344,7 +344,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QSpinBox" name="spinStartingFrameNumber">
+       <widget class="QSpinBox" name="spinNextFrameNumber">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -361,7 +361,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The starting frame number of next acquisition.&lt;/p&gt;&lt;p&gt;#startingfnum&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The next frame number&lt;/p&gt;&lt;p&gt;#nextframenumber&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="statusTip">
          <string/>
@@ -390,12 +390,12 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="lblStartingFrameNumber">
+       <widget class="QLabel" name="lblNextFrameNumber">
         <property name="enabled">
          <bool>false</bool>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The starting frame number of next acquisition.&lt;/p&gt;&lt;p&gt;#startingfnum&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The next frame number&lt;/p&gt;&lt;p&gt;#nextframenumber&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Next Frame Number: </string>

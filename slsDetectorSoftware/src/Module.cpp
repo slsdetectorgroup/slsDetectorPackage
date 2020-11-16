@@ -178,6 +178,10 @@ void Module::setAllTrimbits(int val) {
     sendToDetector<int>(F_SET_ALL_TRIMBITS, val);
 }
 
+bool Module::isVirtualDetectorServer() const {
+    return sendToDetector<int>(F_IS_VIRTUAL);
+}
+
 int64_t Module::getNumberOfFrames() const {
     return sendToDetector<int64_t>(F_GET_NUM_FRAMES);
 }
@@ -484,12 +488,12 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
     throw RuntimeError("No receiver to get missing packets.");
 }
 
-uint64_t Module::getStartingFrameNumber() const {
-    return sendToDetector<uint64_t>(F_GET_STARTING_FRAME_NUMBER);
+uint64_t Module::getNextFrameNumber() const {
+    return sendToDetector<uint64_t>(F_GET_NEXT_FRAME_NUMBER);
 }
 
-void Module::setStartingFrameNumber(uint64_t value) {
-    sendToDetector(F_SET_STARTING_FRAME_NUMBER, value, nullptr);
+void Module::setNextFrameNumber(uint64_t value) {
+    sendToDetector(F_SET_NEXT_FRAME_NUMBER, value, nullptr);
 }
 
 void Module::sendSoftwareTrigger() { sendToDetectorStop(F_SOFTWARE_TRIGGER); }

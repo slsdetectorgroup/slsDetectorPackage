@@ -660,11 +660,14 @@ void DetectorImpl::readFrameFromReceiver() {
                                         nDetActualPixelsX, nDetActualPixelsY,
                                         callbackImage, imagesize, dynamicRange,
                                         currentFileIndex, completeImage);
-
-            dataReady(
-                thisData, currentFrameIndex,
-                ((dynamicRange == 32 && eiger) ? currentSubFrameIndex : -1),
-                pCallbackArg);
+            try {
+                dataReady(
+                    thisData, currentFrameIndex,
+                    ((dynamicRange == 32 && eiger) ? currentSubFrameIndex : -1),
+                    pCallbackArg);
+            } catch (const std::exception &e) {
+                LOG(logERROR) << "Exception caught from callback: " << e.what();
+            }
             delete thisData;
         }
     }

@@ -1233,7 +1233,7 @@ TEST_CASE("start", "[.cmd]") {
     auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
     det.setExptime(-1, std::chrono::microseconds(200));
     det.setPeriod(std::chrono::milliseconds(1));
-    det.setNumberOfFrames(10000);
+    det.setNumberOfFrames(2000);
     {
         std::ostringstream oss;
         proxy.Call("start", {}, -1, PUT, oss);
@@ -1274,7 +1274,7 @@ TEST_CASE("stop", "[.cmd]") {
     auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
     det.setExptime(-1, std::chrono::microseconds(200));
     det.setPeriod(std::chrono::milliseconds(1));
-    det.setNumberOfFrames(10000);
+    det.setNumberOfFrames(2000);
     det.startDetector();
     {
         std::ostringstream oss;
@@ -1322,7 +1322,7 @@ TEST_CASE("status", "[.cmd]") {
     auto prev_period = det.getPeriod().tsquash("inconsistent period in test");
     det.setExptime(-1, std::chrono::microseconds(200));
     det.setPeriod(std::chrono::milliseconds(1));
-    det.setNumberOfFrames(10000);
+    det.setNumberOfFrames(2000);
     det.startDetector();
     {
         std::ostringstream oss;

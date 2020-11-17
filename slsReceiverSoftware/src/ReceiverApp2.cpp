@@ -28,8 +28,8 @@ int StartAcq(std::string filepath, std::string filename, uint64_t fileindex,
               << "  filename:" << filename << " fileindex:" << fileindex
               << "  datasize:" << datasize << " ####";
 
-    throw std::runtime_error(
-        "Throwing exception from start acquisition call back");
+    /*throw std::runtime_error(
+        "Throwing exception from start acquisition call back");*/
     return 0;
 }
 
@@ -40,6 +40,9 @@ int StartAcq(std::string filepath, std::string filename, uint64_t fileindex,
  */
 void AcquisitionFinished(uint64_t frames, void *p) {
     std::cout << "#### AcquisitionFinished: frames:" << frames << " ####";
+
+    throw std::runtime_error(
+        "Throwing exception from acquisition finished call back");
 }
 
 /**

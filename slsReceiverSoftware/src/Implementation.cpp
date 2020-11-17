@@ -599,9 +599,16 @@ void Implementation::stopReceiver() {
             LOG(logINFORED) << "Deactivated Receiver";
         }
         // callback
-        if (acquisitionFinishedCallBack)
-            acquisitionFinishedCallBack((tot / numThreads),
-                                        pAcquisitionFinished);
+        if (acquisitionFinishedCallBack) {
+            try {
+                acquisitionFinishedCallBack((tot / numThreads),
+                                            pAcquisitionFinished);
+            } catch (const std::exception &e) {
+                throw sls::RuntimeError(
+                    "Acquisition Finished Callback Error: " +
+                    std::string(e.what()));
+            }
+        }
     }
 
     // change status

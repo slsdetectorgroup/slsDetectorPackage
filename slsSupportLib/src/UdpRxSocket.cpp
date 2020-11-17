@@ -70,6 +70,12 @@ ssize_t UdpRxSocket::ReceiveDataOnly(char *dst) noexcept {
         LOG(logWARNING) << "Got header pkg";
         r = recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
     }
+    // temporary workaround for Eiger firmware (stop sends bad packets of size 8
+    // bytes)
+    if (r == 8) {
+        LOG(logWARNING) << "Ignoring bad packet of size 8 bytes";
+        r = recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
+    }
     return r;
 }
 

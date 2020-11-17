@@ -270,7 +270,8 @@ void qDetectorMain::Initialization() {
     // Plotting
     connect(plot, SIGNAL(AcquireFinishedSignal()), tabMeasurement,
             SLOT(AcquireFinished()));
-    connect(plot, SIGNAL(AbortSignal()), tabMeasurement, SLOT(AbortAcquire()));
+    connect(plot, SIGNAL(AbortSignal(QString)), tabMeasurement,
+            SLOT(AbortAcquire(QString)));
 
     // menubar
     // Modes Menu

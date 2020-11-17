@@ -948,8 +948,11 @@ void qTabMeasurement::AcquireFinished() {
     }
 }
 
-void qTabMeasurement::AbortAcquire() {
+void qTabMeasurement::AbortAcquire(QString exmsg) {
     LOG(logINFORED) << "Abort Acquire";
+    qDefs::ExceptionMessage("Acquire unsuccessful.",
+                            exmsg.toAscii().constData(),
+                            "qDrawPlot::AcquireFinished");
     isAcquisitionStopped = true;
     AcquireFinished();
 }

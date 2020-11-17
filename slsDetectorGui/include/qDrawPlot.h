@@ -1,6 +1,6 @@
 #pragma once
-#include "sls/Detector.h"
 #include "qDefs.h"
+#include "sls/Detector.h"
 #include "ui_form_plot.h"
 #include <mutex>
 
@@ -63,7 +63,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
 
   signals:
     void AcquireFinishedSignal();
-    void AbortSignal();
+    void AbortSignal(QString);
     void UpdateSignal();
 
   private:

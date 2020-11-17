@@ -132,7 +132,7 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
         std::ostringstream oss;
         proxy.Call("rx_missingpackets", {}, -1, GET, oss);
         std::string s = (oss.str()).erase(0, strlen("rx_missingpackets ["));
-        // REQUIRE(std::stoi(s) == 0);
+        REQUIRE(std::stoi(s) == 0);
     }
 }
 

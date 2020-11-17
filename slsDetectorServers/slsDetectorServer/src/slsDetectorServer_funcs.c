@@ -6495,8 +6495,8 @@ int get_veto_photon(int file_des) {
     if (ret != FAIL) {
         int nch = NCHAN;
         sendData(file_des, &nch, sizeof(nch), INT32);
-        sendData(file_des, gainRetvals, sizeof(gainRetvals), INT32);
-        sendData(file_des, retvals, sizeof(retvals), INT32);
+        sendData(file_des, gainRetvals, sizeof(int) * NCHAN, INT32);
+        sendData(file_des, retvals, sizeof(int) * NCHAN, INT32);
     }
     if (retvals != NULL) {
         free(retvals);

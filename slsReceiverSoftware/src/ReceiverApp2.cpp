@@ -41,8 +41,8 @@ int StartAcq(std::string filepath, std::string filename, uint64_t fileindex,
 void AcquisitionFinished(uint64_t frames, void *p) {
     std::cout << "#### AcquisitionFinished: frames:" << frames << " ####";
 
-    throw std::runtime_error(
-        "Throwing exception from acquisition finished call back");
+    /*throw std::runtime_error(
+        "Throwing exception from acquisition finished call back");*/
 }
 
 /**
@@ -75,6 +75,10 @@ void GetData(char *metadata, char *datapointer, uint32_t datasize, void *p) {
               << "\t\tfirstbytedata: " << std::hex << "0x"
               << ((uint8_t)(*((uint8_t *)(datapointer))))
               << "\t\tdatsize: " << datasize << "\n\n";
+
+    if (detectorHeader.frameNumber % 2 == 0) {
+        throw std::runtime_error("Throwing exception from Get Data call back");
+    }
 }
 
 /**

@@ -64,13 +64,13 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        // How big should this try block be?
         sls::Detector det(parser.multi_id());
         sls::CmdProxy proxy(&det);
         proxy.Call(parser.command(), parser.arguments(), parser.detector_id(),
                    action);
     } catch (const sls::RuntimeError &e) {
-        // OK to catch and do nothing since this will print the error message
-        // and command line app will anyway exit
+        exit(EXIT_FAILURE);
     }
+    
+    exit(EXIT_SUCCESS);
 }

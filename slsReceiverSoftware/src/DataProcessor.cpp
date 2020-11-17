@@ -24,18 +24,18 @@ const std::string DataProcessor::TypeName = "DataProcessor";
 
 DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo *f,
                              fileFormat *ftype, bool fwenable, bool *mfwenable,
-                             bool *dsEnable, uint32_t *freq,
-                             uint32_t *timer, uint32_t *sfnum, bool *fp,
-                             bool *act, bool *depaden, bool *sm,
-                             std::vector<int> *cdl, int *cdo, int *cad)
+                             bool *dsEnable, uint32_t *freq, uint32_t *timer,
+                             uint32_t *sfnum, bool *fp, bool *act,
+                             bool *depaden, bool *sm, std::vector<int> *cdl,
+                             int *cdo, int *cad)
     : ThreadObject(ind, TypeName), fifo(f), myDetectorType(dtype),
       dataStreamEnable(dsEnable), fileFormatType(ftype),
       fileWriteEnable(fwenable), masterFileWriteEnable(mfwenable),
       streamingFrequency(freq), streamingTimerInMs(timer),
       streamingStartFnum(sfnum), activated(act),
-      deactivatedPaddingEnable(depaden), silentMode(sm),
-      framePadding(fp), ctbDbitList(cdl), ctbDbitOffset(cdo),
-      ctbAnalogDataBytes(cad), firstStreamerFrame(false) {
+      deactivatedPaddingEnable(depaden), silentMode(sm), framePadding(fp),
+      ctbDbitList(cdl), ctbDbitOffset(cdo), ctbAnalogDataBytes(cad),
+      firstStreamerFrame(false) {
     LOG(logDEBUG) << "DataProcessor " << ind << " created";
     memset((void *)&timerBegin, 0, sizeof(timespec));
 }
@@ -185,12 +185,17 @@ void DataProcessor::ThreadExecution() {
         return;
     }
 
-    uint64_t fnum = ProcessAnImage(buffer);
-
+    uint64_t fnum = 0;
+    try {
+        fnum = ProcessAnImage(buffer);
+    } catch (const std::exception &e) {
+        fifo->FreeAddress(buffer);
+        return;
+    }
     // stream (if time/freq to stream) or free
     if (*dataStreamEnable && SendToStreamer()) {
-        // if first frame to stream, add frame index to fifo header (might not
-        // be the first)
+        // if first frame to stream, add frame index to fifo header (might
+        // not be the first)
         if (firstStreamerFrame) {
             firstStreamerFrame = false;
             (*((uint32_t *)(buffer + FIFO_DATASIZE_NUMBYTES))) =
@@ -256,22 +261,27 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
         RearrangeDbitData(buf);
     }
 
-    // normal call back
-    if (rawDataReadyCallBack != nullptr) {
-        rawDataReadyCallBack((char *)rheader,
-                             buf + FIFO_HEADER_NUMBYTES +
-                                 sizeof(sls_receiver_header),
-                             (uint32_t)(*((uint32_t *)buf)), pRawDataReady);
-    }
+    try {
+        // normal call back
+        if (rawDataReadyCallBack != nullptr) {
+            rawDataReadyCallBack((char *)rheader,
+                                 buf + FIFO_HEADER_NUMBYTES +
+                                     sizeof(sls_receiver_header),
+                                 (uint32_t)(*((uint32_t *)buf)), pRawDataReady);
+        }
 
-    // call back with modified size
-    else if (rawDataModifyReadyCallBack != nullptr) {
-        auto revsize = (uint32_t)(*((uint32_t *)buf));
-        rawDataModifyReadyCallBack((char *)rheader,
-                                   buf + FIFO_HEADER_NUMBYTES +
-                                       sizeof(sls_receiver_header),
-                                   revsize, pRawDataReady);
-        (*((uint32_t *)buf)) = revsize;
+        // call back with modified size
+        else if (rawDataModifyReadyCallBack != nullptr) {
+            auto revsize = (uint32_t)(*((uint32_t *)buf));
+            rawDataModifyReadyCallBack((char *)rheader,
+                                       buf + FIFO_HEADER_NUMBYTES +
+                                           sizeof(sls_receiver_header),
+                                       revsize, pRawDataReady);
+            (*((uint32_t *)buf)) = revsize;
+        }
+    } catch (const std::exception &e) {
+        throw sls::RuntimeError("Get Data Callback Error: " +
+                                std::string(e.what()));
     }
 
     // write to file
@@ -284,8 +294,8 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
                                                     // from previous call back
                 fnum - firstIndex, nump);
         } catch (const sls::RuntimeError &e) {
-            ; // ignore write exception for now (TODO: send error message via
-              // stopReceiver tcp)
+            ; // ignore write exception for now (TODO: send error message
+              // via stopReceiver tcp)
         }
     }
     return fnum;
@@ -385,8 +395,8 @@ void DataProcessor::PadMissingPackets(char *buf) {
 
         // missing packet
         switch (myDetectorType) {
-        // for gotthard, 1st packet: 4 bytes fnum, CACA                     +
-        // CACA, 639*2 bytes data
+        // for gotthard, 1st packet: 4 bytes fnum, CACA + CACA, 639*2 bytes
+        // data
         //              2nd packet: 4 bytes fnum, previous 1*2 bytes data  +
         //              640*2 bytes data !!
         case GOTTHARD:

@@ -497,10 +497,15 @@ void Implementation::startReceiver() {
 
     // callbacks
     if (startAcquisitionCallBack) {
-        startAcquisitionCallBack(filePath, fileName, fileIndex,
-                                 (generalData->imageSize) +
-                                     (generalData->fifoBufferHeaderSize),
-                                 pStartAcquisition);
+        try {
+            startAcquisitionCallBack(filePath, fileName, fileIndex,
+                                     (generalData->imageSize) +
+                                         (generalData->fifoBufferHeaderSize),
+                                     pStartAcquisition);
+        } catch (const std::exception &e) {
+            throw sls::RuntimeError("Start Acquisition Callback Error: " +
+                                    std::string(e.what()));
+        }
         if (rawDataReadyCallBack != nullptr) {
             LOG(logINFO) << "Data Write has been defined externally";
         }
@@ -594,9 +599,20 @@ void Implementation::stopReceiver() {
             LOG(logINFORED) << "Deactivated Receiver";
         }
         // callback
-        if (acquisitionFinishedCallBack)
-            acquisitionFinishedCallBack((tot / numThreads),
-                                        pAcquisitionFinished);
+        if (acquisitionFinishedCallBack) {
+            try {
+                acquisitionFinishedCallBack((tot / numThreads),
+                                            pAcquisitionFinished);
+            } catch (const std::exception &e) {
+                // change status
+                status = IDLE;
+                LOG(logINFO) << "Receiver Stopped";
+                LOG(logINFO) << "Status: " << sls::ToString(status);
+                throw sls::RuntimeError(
+                    "Acquisition Finished Callback Error: " +
+                    std::string(e.what()));
+            }
+        }
     }
 
     // change status

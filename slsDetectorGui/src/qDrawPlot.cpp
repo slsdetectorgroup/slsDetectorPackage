@@ -1,8 +1,8 @@
 #include "qDrawPlot.h"
 #include "SlsQt1DPlot.h"
 #include "SlsQt2DPlot.h"
-#include "sls/detectorData.h"
 #include "qCloneWidget.h"
+#include "sls/detectorData.h"
 
 #include "sls/ToString.h"
 #include "sls/detectorData.h"

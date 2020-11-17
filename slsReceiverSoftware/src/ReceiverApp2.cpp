@@ -28,7 +28,8 @@ int StartAcq(std::string filepath, std::string filename, uint64_t fileindex,
               << "  filename:" << filename << " fileindex:" << fileindex
               << "  datasize:" << datasize << " ####";
 
-    throw std::runtime_error("start acquisition call back error");
+    throw std::runtime_error(
+        "Throwing exception from start acquisition call back");
     return 0;
 }
 

@@ -497,10 +497,15 @@ void Implementation::startReceiver() {
 
     // callbacks
     if (startAcquisitionCallBack) {
-        startAcquisitionCallBack(filePath, fileName, fileIndex,
-                                 (generalData->imageSize) +
-                                     (generalData->fifoBufferHeaderSize),
-                                 pStartAcquisition);
+        try {
+            startAcquisitionCallBack(filePath, fileName, fileIndex,
+                                     (generalData->imageSize) +
+                                         (generalData->fifoBufferHeaderSize),
+                                     pStartAcquisition);
+        } catch (const std::exception &e) {
+            throw sls::RuntimeError("Start Acquisition Callback Error: " +
+                                    std::string(e.what()));
+        }
         if (rawDataReadyCallBack != nullptr) {
             LOG(logINFO) << "Data Write has been defined externally";
         }

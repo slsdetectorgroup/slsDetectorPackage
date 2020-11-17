@@ -1126,6 +1126,10 @@ int DetectorImpl::acquire() {
                            (end.tv_nsec - begin.tv_nsec) / 1000000000.0)
                        << " seconds";
     } catch (...) {
+        if (dataProcessingThread.joinable()){
+            setJoinThreadFlag(true);
+            dataProcessingThread.join();
+        } 
         setAcquiringFlag(false);
         throw;
     }

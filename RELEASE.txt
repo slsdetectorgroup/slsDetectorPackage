@@ -10,6 +10,7 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
     5.  Download, Documentation & Support
 
 
+
 1. Topics Concerning
 ====================
 
@@ -39,8 +40,6 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
     - (Jungfrau) two interfaces
     - (Eiger) removed features
  
-
-
 
 
 2. New Features
@@ -93,7 +92,6 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
             will only print and skip image to free it in memory. If address is
             incorrect after callback, expect undefined behavior.
 
-
     5.  Scans
         One can do scans for dacs or trimbits. Trimbits are only for Eiger or 
         Mythen3. Set it scan mode and then acquire using blocking or non blocking
@@ -124,7 +122,7 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
             is now
             sls_detector_get dac vcmp_ll
     
-    10.  UDP Configuration
+    10. UDP Configuration
         Once all the udp details are set in the detector, the detector's
         destination is then configured automatically. If the detector is not 
         configured, it will  fail when acquiring. If any of these parameters
@@ -213,7 +211,6 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
         requested for the udp mac. This helps when changing pc and the receiver
         cannot find the udp ip to get the udp mac.
 
-
     Gui
     ---
     
@@ -226,10 +223,7 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
         please ensure this is set back to default to get every zmq packet. Setting it to 
         -1 sets it to library defaults.
 
-    2. 
-
     
-
 
 3. Resolved Issues
 ==================
@@ -241,6 +235,8 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
         Very rarely, Eiger control or stop server would block and would require a restart
         of server. This is due to both servers accessing the same link to get to FEB
         registers. Locking has been implemented in server shared memory to resolve.
+
+
 
 4. Firmware Requirements
 ========================
@@ -269,11 +265,11 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
 
         Moench
         ======
-        Compatible version : 10.05.2020 (v1.0)
+        Compatible version : 05.10.2020 (v1.0)
 
         Ctb
         ===
-        Compatible version : 10.05.2019 (v1.0)
+        Compatible version : 05.10.2020 (v1.0)
 
 
         Detector Upgrade

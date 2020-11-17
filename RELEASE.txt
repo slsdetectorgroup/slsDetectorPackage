@@ -20,6 +20,7 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
     - Scans (dacs and trimbit)
     - Timing commands
     - Enum list (daclist, dacvalues, settingslist, drlist etc.)
+    - Command line (return code)
     - Command line (dac)
     - Detector Simulators
     - Zmq interface (ZmqSocket.h)
@@ -83,6 +84,15 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
             sls_detector_exceptions.h
         Make sure you catch all exceptions in custom gui and handle them or 
         inform the user.
+        Exceptions thrown in callbacks are also handled.
+            - An exception in startAcquisitionCallBack will need to be handled in 
+            startReceiver or acquire()
+            - An exception in acquisitionFinishedCallBack will need to be handled in
+            stopReceiver or acquire()
+            - An exception in rawDataReadyCallBack or rawDataModifyReadyCallBack
+            will only print and skip image to free it in memory. If address is
+            incorrect after callback, expect undefined behavior.
+
 
     5.  Scans
         One can do scans for dacs or trimbits. Trimbits are only for Eiger or 
@@ -101,16 +111,20 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
         the detector in shared memory. 
             eg. daclist, settingslist, drlist, timinglist, templist
         Command line also has commands to get their values.
-            eg. dacvalues, tempvalues,
+            eg. dacvalues, tempvalues
+
+    8.  Command Line (return code)
+        Return code of the client command line applications now return 0 for 
+        success and 1 for failure.
         
-    8.  Command Line (Dac)
+    9.  Command Line (Dac)
         All dac commands have been converted to a single "dac" command with 
         the previous dac commands as arguments.
             eg. sls_detector_get vcmp_ll
             is now
             sls_detector_get dac vcmp_ll
     
-    9.  UDP Configuration
+    10.  UDP Configuration
         Once all the udp details are set in the detector, the detector's
         destination is then configured automatically. If the detector is not 
         configured, it will  fail when acquiring. If any of these parameters
@@ -119,7 +133,7 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
         udp_validate (to validate if it has been configured) and
         udp_reconfigure (to reconfigure).
 
-    10. Gap Pixels
+    11. Gap Pixels
         Gap pixels are now only available in client call back or gui (not in 
         receiver anymore). It can be enabled for Eiger and Jungfrau and 
         includes inter chip and inter module gap pixels.

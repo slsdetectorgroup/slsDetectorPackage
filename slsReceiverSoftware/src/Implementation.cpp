@@ -604,6 +604,10 @@ void Implementation::stopReceiver() {
                 acquisitionFinishedCallBack((tot / numThreads),
                                             pAcquisitionFinished);
             } catch (const std::exception &e) {
+                // change status
+                status = IDLE;
+                LOG(logINFO) << "Receiver Stopped";
+                LOG(logINFO) << "Status: " << sls::ToString(status);
                 throw sls::RuntimeError(
                     "Acquisition Finished Callback Error: " +
                     std::string(e.what()));

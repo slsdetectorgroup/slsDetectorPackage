@@ -16,7 +16,7 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
 
   public slots:
     void AcquireFinished();
-    void AbortAcquire();
+    void AbortAcquire(QString exmsg);
 
   private slots:
     void SetTimingMode(int val);

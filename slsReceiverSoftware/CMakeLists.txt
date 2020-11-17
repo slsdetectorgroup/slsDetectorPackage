@@ -86,7 +86,7 @@ endif()
 
 
 add_executable(slsReceiver
-    src/ReceiverApp2.cpp)
+    src/ReceiverApp.cpp)
 
 
 set_target_properties(slsReceiver PROPERTIES

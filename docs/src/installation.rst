@@ -67,6 +67,9 @@ These are mainly aimed at those not familiar with using ccmake and cmake.
     # build with hdf5
     ./cmk.sh -hj9 -d [path of hdf5 dir]
 
+    # build and install binaries
+    ./cmk.sh -bl [path to install]
+
     # get all options
     ./cmk.sh -?
 

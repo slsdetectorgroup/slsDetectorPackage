@@ -4,7 +4,7 @@ Please do not update to any xxxx.xx.xx.dev0 tags. They are not releases, but tag
 Use only releases with tags such as x.x.x or x.x.x-rcx.
 
 ### Documentation
-Detailed documentation on the latest release of 5.0.0 can be found in the [software wiki](https://slsdetectorgroup.github.io/devdoc/index.html) and on the [official site.](https://www.psi.ch/en/detectors/software)
+Detailed documentation on the latest release of 5.0.0 can be found in the [software wiki](https://slsdetectorgroup.github.io/devdoc/index.html) and on the [official site](https://www.psi.ch/en/detectors/software).
 
 ### Binaries
 Binaries for the slsDetectorPackage are available through conda. 
@@ -12,6 +12,7 @@ Binaries for the slsDetectorPackage are available through conda.
 #Add conda channels
 conda config --add channels conda-forge
 conda config --add channels slsdetectorgroup
+conda config --set channel_priority strict
 
 conda install slsdetlib   #only shared lib and command line
 conda install slsdet      #python bindings (includes slsdetlib)
@@ -29,10 +30,8 @@ git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git
 
 ```
 #### Dependencies 
-* Lib: c++11 compiler (gcc=>4.8), ZeroMQ 4
-* Gui: Qt 4.8 and Qwt 6.0
-* Calibration wizards and ctbGUI: ROOT
-* Optional: HDF5
+
+Refer [this page](https://slsdetectorgroup.github.io/devdoc/dependencies.html)  for dependencies.
 
 
 #### Compilation 
@@ -42,29 +41,38 @@ cmk.sh or directly with cmake for more control.
 
 **1. Compile using script cmk.sh**<br>
 
-These are mainly aimed at those not familiar with using ccmake and cmake. After compiling, the libraries and executables will be found in `slsDetectorPackage/build/bin` directory<br>
+These are mainly aimed at those not familiar with using ccmake and cmake. 
 ```
     The binaries are generated in slsDetectorPackage/build/bin directory.
 
-    # new build and make with 9 parallel threads
-    ./cmk.sh -cbj9
-
-    # build with python
-    ./cmk.sh -bpj9
-
-    # build with GUI
-    ./cmk.sh -bgj9
-
-    # build with hdf5
-    ./cmk.sh -hj9 -d [path of hdf5 dir]
-
+    Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [n] [-h] [z] [-d <HDF5 directory>] [-l Install directory] [-k <CMake command>] [-j <Number of threads>]
+    -[no option]: only make
+    -c: Clean
+    -b: Builds/Rebuilds CMake files normal mode
+    -p: Builds/Rebuilds Python API
+    -h: Builds/Rebuilds Cmake files with HDF5 package
+    -d: HDF5 Custom Directory
+    -k: CMake command
+    -l: Install directory
+    -t: Build/Rebuilds only text client
+    -r: Build/Rebuilds only receiver
+    -g: Build/Rebuilds only gui
+    -s: Simulator
+    -u: Chip Test Gui
+    -j: Number of threads to compile through
+    -e: Debug mode
+    -i: Builds tests
+    -m: Manuals
+    -n: Manuals without compiling doxygen (only rst)
+    -z: Moench zmq processor
+    
     # get all options
     ./cmk.sh -?
-```
-  
-eg. Rebuild when you switch to a new build and compile in parallel:
-./cmk.sh -bj5
 
+    # new build  and compile in parallel:
+    ./cmk.sh -bj5
+```
+ 
 **2. Compile without script**<br>
 Use cmake to create out-of-source builds, by creating a build folder parallel to source directory. This would create a debug build with address sanitizers.
 ```
@@ -72,4 +80,13 @@ Use cmake to create out-of-source builds, by creating a build folder parallel to
     $ cd build
     $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_SANITIZER=ON
     $ make -j12 #or whatever number of threads wanted
+```
+
+To install binaries using CMake
+```
+    git clone --recursive https://github.com/slsdetectorgroup/slsDetectorPackage.git
+    mkdir build && cd build
+    cmake ../slsDetectorPackage -DCMAKE_INSTALL_PREFIX=/your/install/path
+    make -j12 #or whatever number of cores you are using to build
+    make install
 ```

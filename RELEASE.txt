@@ -6,8 +6,9 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
     1.	Topics Concerning
     2.  New Features
     3.  Resolved Issues
-    4.  Firmware Requirements
-    5.  Download, Documentation & Support
+    4.  Known Issues
+    5.  Firmware Requirements
+    6.  Download, Documentation & Support
 
 
 
@@ -244,7 +245,17 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
 
 
 
-4. Firmware Requirements
+4. Known Issues
+===============
+
+    1.  (Eiger) Firmware
+        When stopping detector acquisition while acquiring for more than 128 frames,
+        the next acquisition sends out first an 8 byte packet. This is discarded
+        by the slsReceiver/slsMultiReceiver. 
+
+        
+
+5. Firmware Requirements
 ========================
         
         Eiger
@@ -297,7 +308,7 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
             https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
 
     
-5. Download, Documentation & Support
+6. Download, Documentation & Support
 ====================================
 
     Download

@@ -15,7 +15,6 @@ set(PUBLICHEADERS
     include/sls/Receiver.h
 )
 
-
 # HDF5
 if (SLS_USE_HDF5)
 	if (HDF5_FOUND)
@@ -86,7 +85,8 @@ endif()
 
 
 add_executable(slsReceiver
-    src/ReceiverApp.cpp)
+    src/ReceiverApp.cpp
+)
 
 
 set_target_properties(slsReceiver PROPERTIES
@@ -100,14 +100,14 @@ target_link_libraries(slsReceiver PUBLIC
   PUBLIC
     slsReceiverStatic
     pthread
-    ${ZeroMQ_LIBRARIES}
     rt
   PRIVATE
     slsProjectWarnings
 )
 
 add_executable(slsMultiReceiver
-    src/MultiReceiverApp.cpp)
+    src/MultiReceiverApp.cpp
+)
 
 
 set_target_properties(slsMultiReceiver PROPERTIES
@@ -131,8 +131,6 @@ if (SLS_USE_TESTS)
 endif(SLS_USE_TESTS)
 
 
-
-
 install(TARGETS slsReceiverShared slsReceiver slsMultiReceiver slsReceiverObject slsReceiverStatic
         EXPORT "${TARGETS_EXPORT_NAME}"
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -141,5 +139,3 @@ install(TARGETS slsReceiverShared slsReceiver slsMultiReceiver slsReceiverObject
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sls
 )
 
-# install(FILES ${ZMQ_STATIC_ARCHIVE}
-# DESTINATION lib)

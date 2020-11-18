@@ -15,16 +15,15 @@ set(PUBLICHEADERS
     include/sls/Receiver.h
 )
 
-# HDF5
+# HDF5 file writing 
 if (SLS_USE_HDF5)
-	if (HDF5_FOUND)
+    find_package(HDF5 1.10 COMPONENTS CXX REQUIRED)
 	    add_definitions( 
 	        -DHDF5C ${HDF5_DEFINITIONS}
 	    )
 	    list (APPEND SOURCES 
 	        src/HDF5File.cpp 
 	    )
-	endif ()
 endif (SLS_USE_HDF5)
 
 # Create an object library to avoid building the library twice

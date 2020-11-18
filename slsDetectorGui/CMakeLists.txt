@@ -1,5 +1,7 @@
 set(CMAKE_AUTOMOC ON)
 
+find_package(Qt4 REQUIRED)
+find_package(Qwt 6.1 REQUIRED)
 find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 

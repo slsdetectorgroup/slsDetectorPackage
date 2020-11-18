@@ -49,7 +49,7 @@ option(SLS_DEVEL_HEADERS "install headers for devel" OFF)
 option(SLS_USE_MOENCH "compile zmq and post processing for Moench" OFF)
 
 # set(ClangFormat_BIN_NAME clang-format)
-set(ClangFormat_EXCLUDE_PATTERNS  "build/" 
+set(ClangFormat_EXCLUDE_PATTERNS    "build/" 
                                     "libs/" 
                                     "slsDetectorCalibration/" 
                                     "ctbGui/" 
@@ -64,18 +64,6 @@ check_ipo_supported(RESULT SLS_LTO_AVAILABLE)
 message(STATUS "SLS_LTO_AVAILABLE:" ${SLS_LTO_AVAILABLE})
 
 
-# # Use ld.gold if it is available and isn't disabled explicitly
-# option(SLS_USE_LD_GOLD "Use GNU gold linker" ON)
-# if (SLS_USE_LD_GOLD)
-#     execute_process(COMMAND ${CMAKE_C_COMPILER} -fuse-ld=gold -Wl,--version ERROR_QUIET OUTPUT_VARIABLE LD_VERSION)
-#     if ("${LD_VERSION}" MATCHES "GNU gold")
-#         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=gold")
-#         set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=gold")
-#         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=gold")
-#     else ()
-#         message(WARNING "GNU gold linker isn't available, using the default system linker.")
-#     endif ()
-# endif ()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -187,20 +175,12 @@ if (SLS_USE_TEXTCLIENT)
     add_subdirectory(slsDetectorSoftware)
 endif (SLS_USE_TEXTCLIENT)
 
-
 if (SLS_USE_RECEIVER)
-    if (SLS_USE_HDF5)
-        find_package(HDF5 1.10 COMPONENTS CXX REQUIRED)
-    endif (SLS_USE_HDF5)
     add_subdirectory(slsReceiverSoftware) 
 endif (SLS_USE_RECEIVER)
 
 if (SLS_USE_GUI)   
-    find_package(Qt4 REQUIRED)
-    find_package(Qwt 6.1 REQUIRED)
-    if (QT4_FOUND AND QWT_FOUND)
-        add_subdirectory(slsDetectorGui)
-    endif()
+    add_subdirectory(slsDetectorGui)
 endif (SLS_USE_GUI)
 
 if (SLS_USE_SIMULATOR)

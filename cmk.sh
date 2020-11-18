@@ -1,5 +1,7 @@
 #!/bin/bash
+CMAKE="cmake3"
 BUILDDIR="build"
+INSTALLDIR=""
 HDF5DIR="/opt/hdf5v1.10.0"
 HDF5=0
 COMPILERTHREADS=0
@@ -22,13 +24,15 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [n] [-h] [z] [-d <HDF5 directory>] [-j] <Number of threads>
+Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [n] [-h] [z] [-d <HDF5 directory>] [-l Install directory] [-k <CMake command>] [-j <Number of threads>]
  -[no option]: only make
  -c: Clean
  -b: Builds/Rebuilds CMake files normal mode
  -p: Builds/Rebuilds Python API
  -h: Builds/Rebuilds Cmake files with HDF5 package
  -d: HDF5 Custom Directory
+ -k: CMake command
+ -l: Install directory
  -t: Build/Rebuilds only text client
  -r: Build/Rebuilds only receiver
  -g: Build/Rebuilds only gui
@@ -75,7 +79,7 @@ For rebuilding only certain sections
  
  " ; exit 1; }
 
-while getopts ":bpchd:j:trgeisumnz" opt ; do
+while getopts ":bpchd:k:l:j:trgeisumnz" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
@@ -98,6 +102,14 @@ while getopts ":bpchd:j:trgeisumnz" opt ; do
 	d) 
 		echo "New HDF5 directory: $OPTARG" 
 		HDF5DIR=$OPTARG
+		;;
+	l)
+		echo "CMake install directory: $OPTARG"
+		INSTALLDIR="$OPTARG"
+		;;
+	k)
+		echo "CMake command: $OPTARG"
+		CMAKE="$OPTARG"
 		;;
 	j) 
 		echo "Number of compiler threads: $OPTARG" 
@@ -252,7 +264,15 @@ else
 fi
 
 
+#install
+if [ -n "$INSTALLDIR" ]; then
+	CMAKE_POST+=" -DCMAKE_INSTALL_PREFIX=$INSTALLDIR"
+	CMAKE_POST+=" -DCMAKE_FIND_ROOT_PATH=$INSTALLDIR"
+fi
+
+
 #enter build dir
+#pushd $BUILDDIR;
 cd $BUILDDIR;
 echo "in "$PWD
 
@@ -261,7 +281,7 @@ echo "in "$PWD
 #cmake
 if [ $REBUILD -eq 1 ]; then
 	rm -f CMakeCache.txt
-	BUILDCOMMAND="$CMAKE_PRE cmake3 $CMAKE_POST .."
+	BUILDCOMMAND="$CMAKE_PRE $CMAKE $CMAKE_POST .."
 	echo $BUILDCOMMAND
 	eval $BUILDCOMMAND
 fi
@@ -304,6 +324,13 @@ else
 	fi 
 fi
 
+
+#install
+if [ -n "$INSTALLDIR" ]; then
+	make install
+#	popd
+#	cmake --build $BUILDDIR --target install
+fi
 
 
 

@@ -1,6 +1,10 @@
 Troubleshooting
 =================
 
+If something is missing, don't hesitate to
+open an issue in our our  `github repo
+<https://github.com/slsdetectorgroup/slsDetectorPackage>`_. 
+
 Common
 ------
 

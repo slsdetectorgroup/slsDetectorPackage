@@ -117,8 +117,8 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
             eg. daclist, settingslist, drlist, timinglist, templist
         Command line also has commands to get their values.
             eg. dacvalues, tempvalues
-        Python has commands to get their values.
-            eg. ???????????
+        Python has commands to get their values (detector specific class).
+            eg. d.temp, d.dacs
 
     8.  Command Line (return code)
         Return code of the client command line applications now return 0 for 

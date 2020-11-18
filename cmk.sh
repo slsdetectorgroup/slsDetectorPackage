@@ -329,7 +329,7 @@ fi
 if [ -n "$INSTALLDIR" ]; then
 	make install
 #	popd
-#	cmake --build $BUILDDIR --target install
+#	$CMAKE --build $BUILDDIR --target install
 fi
 
 

@@ -63,7 +63,6 @@ target_include_directories(slsSupportObject
 target_link_libraries(slsSupportObject 
   PUBLIC
     slsProjectOptions 
-    # zmq
     ${ZeroMQ_LIBRARIES}
     rapidjson
   PRIVATE

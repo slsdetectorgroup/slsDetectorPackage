@@ -78,7 +78,6 @@ foreach(val RANGE ${len2})
     target_link_libraries(${val1} 
         slsDetectorStatic
         pthread
-        ${ZeroMQ_LIBRARIES}
         rt
     )
     set_target_properties(${val1} PROPERTIES 

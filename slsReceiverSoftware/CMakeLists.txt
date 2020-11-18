@@ -121,7 +121,6 @@ target_link_libraries(slsMultiReceiver
   PUBLIC
     slsReceiverStatic
     pthread
-    ${ZeroMQ_LIBRARIES}
     rt
   PRIVATE
     slsProjectWarnings

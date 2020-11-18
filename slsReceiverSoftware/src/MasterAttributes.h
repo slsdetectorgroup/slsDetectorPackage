@@ -377,7 +377,7 @@ class EigerMasterAttributes : public MasterAttributes {
             DataSpace dataspace = DataSpace(H5S_SCALAR);
             DataSet dataset = group->createDataSet(
                 "Threshold Energy", PredType::NATIVE_INT, dataspace);
-            dataset.write(&threshold, PredType::NATIVE_INT);
+            dataset.write(&thresholdEnergyeV, PredType::NATIVE_INT);
             DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
             StrType strdatatype(PredType::C_S1, 256);
             Attribute attribute =

@@ -1,6 +1,6 @@
 Receiver
 ==============================================
 
-.. doxygenclass:: Receiver
+.. doxygenclass:: sls::Receiver
    :members:
 ..    :undoc-members:

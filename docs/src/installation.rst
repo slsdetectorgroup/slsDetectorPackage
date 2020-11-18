@@ -55,23 +55,32 @@ These are mainly aimed at those not familiar with using ccmake and cmake.
 
     The binaries are generated in slsDetectorPackage/build/bin directory.
 
-    # new build and make with 9 parallel threads
-    ./cmk.sh -cbj9
-
-    # build with python
-    ./cmk.sh -bpj9
-
-    # build with GUI
-    ./cmk.sh -bgj9
-
-    # build with hdf5
-    ./cmk.sh -hj9 -d [path of hdf5 dir]
-
-    # build and install binaries
-    ./cmk.sh -bl [path to install]
-
+    Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [n] [-h] [z] [-d <HDF5 directory>] [-l Install directory] [-k <CMake command>] [-j <Number of threads>]
+    -[no option]: only make
+    -c: Clean
+    -b: Builds/Rebuilds CMake files normal mode
+    -p: Builds/Rebuilds Python API
+    -h: Builds/Rebuilds Cmake files with HDF5 package
+    -d: HDF5 Custom Directory
+    -k: CMake command
+    -l: Install directory
+    -t: Build/Rebuilds only text client
+    -r: Build/Rebuilds only receiver
+    -g: Build/Rebuilds only gui
+    -s: Simulator
+    -u: Chip Test Gui
+    -j: Number of threads to compile through
+    -e: Debug mode
+    -i: Builds tests
+    -m: Manuals
+    -n: Manuals without compiling doxygen (only rst)
+    -z: Moench zmq processor
+    
     # get all options
     ./cmk.sh -?
+
+    # new build  and compile in parallel:
+    ./cmk.sh -bj5
 
 
 Install binaries using conda

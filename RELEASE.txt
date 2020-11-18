@@ -1,4 +1,4 @@
-SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
+SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
 =================================================================
 
     CONTENTS
@@ -30,6 +30,7 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
     - (Jungfrau server) settings and default dacs
     - (Servers) sharedmemory
     - (Eiger server) blocked when stopping or status
+    - (Eiger Firmware)
     - Receiver shared memory
     - UDP configuration change
     - UDP IP (Receiver)
@@ -158,7 +159,11 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
         When server is started without this file, it is set to hardware
         settings.
         The detector is also deactivated by default and activated only 
-        upon setting hostname in the client. This is to ensure ????????
+        upon setting hostname in the client. This is to ensure if the 
+        network of a board or a board is broken and one cannot connect
+        to this board, then it is deactivated by default upon reboot, 
+        so one can use other half modules of the detector.
+        The header packets of Eiger are not sent in this firmware version.
 
     5.  (Eiger) Partial readout - readnlines
         It is possible for partial readouts, where you specify the number
@@ -224,6 +229,7 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
         -1 sets it to library defaults.
 
     
+    
 
 3. Resolved Issues
 ==================
@@ -270,7 +276,6 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
         Ctb
         ===
         Compatible version : 05.10.2020 (v1.0)
-
 
         Detector Upgrade
         ================
@@ -339,6 +344,10 @@ SLS Detector Package 5.0.0 released on xx.xx.2020 (Major Release)
 
     Python API Example:
         https://slsdetectorgroup.github.io/devdoc/pyexamples.html
+
+    Receivers (including custom receiver):
+        https://slsdetectorgroup.github.io/devdoc/receivers.html
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html
 
     TroubleShooting:
         https://slsdetectorgroup.github.io/devdoc/troubleshooting.html

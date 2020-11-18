@@ -1,7 +1,7 @@
 #include "qTabAdvanced.h"
-#include "sls/network_utils.h"
 #include "qDefs.h"
 #include "qDrawPlot.h"
+#include "sls/network_utils.h"
 
 qTabAdvanced::qTabAdvanced(QWidget *parent, sls::Detector *detector,
                            qDrawPlot *p)

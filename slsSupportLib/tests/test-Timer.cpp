@@ -1,5 +1,5 @@
-#include "sls/Timer.h"
 #include "catch.hpp"
+#include "sls/Timer.h"
 
 #include <chrono>
 #include <thread>

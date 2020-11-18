@@ -1,5 +1,5 @@
-#include "sls/ServerSocket.h"
 #include "clara.hpp"
+#include "sls/ServerSocket.h"
 
 #include "tests/testenum.h"
 

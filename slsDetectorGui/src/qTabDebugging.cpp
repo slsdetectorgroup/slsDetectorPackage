@@ -1,6 +1,6 @@
 #include "qTabDebugging.h"
-#include "sls/ToString.h"
 #include "qDefs.h"
+#include "sls/ToString.h"
 #include <QDesktopWidget>
 #include <QGridLayout>
 #include <QTreeWidget>

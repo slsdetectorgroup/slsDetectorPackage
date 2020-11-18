@@ -1,7 +1,7 @@
 #pragma once
 
-#include "sls/Result.h"
 #include "SharedMemory.h"
+#include "sls/Result.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 

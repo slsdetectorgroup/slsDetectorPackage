@@ -1,5 +1,5 @@
-#include "sls/TypeTraits.h"
 #include "catch.hpp"
+#include "sls/TypeTraits.h"
 #include <array>
 #include <chrono>
 #include <initializer_list>

@@ -1,6 +1,6 @@
 #pragma once
-#include "sls/Detector.h"
 #include "qDefs.h"
+#include "sls/Detector.h"
 #include "ui_form_detectormain.h"
 #include <QTabWidget>
 

@@ -9,8 +9,8 @@
  *data to it
  */
 
-#include "sls/logger.h"
 #include "receiver_defs.h"
+#include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
 #include <string>

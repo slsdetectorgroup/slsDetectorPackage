@@ -7,9 +7,9 @@
  *@short abstract for setting/getting properties of detector data
  */
 
+#include "receiver_defs.h"
 #include "sls/ToString.h"
 #include "sls/logger.h"
-#include "receiver_defs.h"
 #include "sls/sls_detector_defs.h"
 #include <cmath> //ceil
 #include <vector>

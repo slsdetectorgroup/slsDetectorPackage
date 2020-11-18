@@ -66,7 +66,7 @@ TEST_CASE("Many characters in a row") {
     REQUIRE(std::string(str) == "someeequite::ongstring");
 }
 
-TEST_CASE("Check is string is integer"){
+TEST_CASE("Check is string is integer") {
 
     REQUIRE(sls::is_int("75"));
     REQUIRE(sls::is_int("11675"));

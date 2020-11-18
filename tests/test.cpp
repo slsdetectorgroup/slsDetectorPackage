@@ -3,8 +3,8 @@
 // #include "catch.hpp"
 
 #define CATCH_CONFIG_RUNNER
-#include "sls/ToString.h"
 #include "catch.hpp"
+#include "sls/ToString.h"
 #include "sls/sls_detector_defs.h"
 #include "tests/config.h"
 #include <string>

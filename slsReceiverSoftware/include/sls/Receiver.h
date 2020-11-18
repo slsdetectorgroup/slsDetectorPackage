@@ -4,9 +4,8 @@
 
 class ClientInterface;
 
-namespace sls
-{
-  
+namespace sls {
+
 class Receiver : private virtual slsDetectorDefs {
 
   public:

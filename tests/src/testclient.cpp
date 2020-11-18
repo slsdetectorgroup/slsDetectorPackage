@@ -1,5 +1,5 @@
-#include "sls/ClientSocket.h"
 #include "clara.hpp"
+#include "sls/ClientSocket.h"
 #include "sls/sls_detector_exceptions.h"
 #include "tests/testenum.h"
 

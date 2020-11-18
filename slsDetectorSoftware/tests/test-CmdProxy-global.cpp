@@ -1,7 +1,7 @@
 #include "test-CmdProxy-global.h"
 #include "CmdProxy.h"
-#include "sls/Detector.h"
 #include "catch.hpp"
+#include "sls/Detector.h"
 #include "tests/globals.h"
 
 using sls::CmdProxy;

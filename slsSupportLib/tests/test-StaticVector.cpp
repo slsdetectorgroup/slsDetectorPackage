@@ -1,6 +1,6 @@
+#include "catch.hpp"
 #include "sls/StaticVector.h"
 #include "sls/TypeTraits.h"
-#include "catch.hpp"
 
 #include <array>
 #include <sstream>

@@ -1,5 +1,5 @@
-#include "sls/ZmqSocket.h"
 #include "catch.hpp"
+#include "sls/ZmqSocket.h"
 
 TEST_CASE("Throws when cannot create socket") {
     REQUIRE_THROWS(ZmqSocket("sdiasodjajpvv", 5076001));

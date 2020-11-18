@@ -4,10 +4,10 @@
 #include "clogger.h"
 #include "communication_funcs.h"
 #include "sharedMemory.h"
-#include "slsDetectorServer_defs.h"
-#include "slsDetectorServer_funcs.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/versionAPI.h"
+#include "slsDetectorServer_defs.h"
+#include "slsDetectorServer_funcs.h"
 
 #include <getopt.h>
 #include <signal.h>
@@ -110,8 +110,8 @@ int main(int argc, char *argv[]) {
 #elif GOTTHARD2D
             version = APIGOTTHARD2;
 #endif
-            LOG(logINFO, ("SLS Detector Server Version: %s (0x%x)\n",
-                              GITBRANCH, version));
+            LOG(logINFO, ("SLS Detector Server Version: %s (0x%x)\n", GITBRANCH,
+                          version));
             exit(EXIT_SUCCESS);
 
         case 'p':

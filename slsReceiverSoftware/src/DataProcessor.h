@@ -51,8 +51,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     DataProcessor(int ind, detectorType dtype, Fifo *f, fileFormat *ftype,
                   bool fwenable, bool *mfwenable, bool *dsEnable,
                   uint32_t *freq, uint32_t *timer, uint32_t *sfnum, bool *fp,
-                  bool *act, bool *depaden, bool *sm,
-                  std::vector<int> *cdl, int *cdo, int *cad);
+                  bool *act, bool *depaden, bool *sm, std::vector<int> *cdl,
+                  int *cdo, int *cad);
 
     /**
      * Destructor

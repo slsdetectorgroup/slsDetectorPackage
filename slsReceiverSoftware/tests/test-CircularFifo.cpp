@@ -1,5 +1,5 @@
-#include "sls/CircularFifo.h"
 #include "catch.hpp"
+#include "sls/CircularFifo.h"
 #include <vector>
 
 using sls::CircularFifo;

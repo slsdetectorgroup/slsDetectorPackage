@@ -1,7 +1,7 @@
+#include "catch.hpp"
 #include "sls/Result.h"
 #include "sls/ToString.h"
 #include "sls/TypeTraits.h"
-#include "catch.hpp"
 #include <string>
 
 using sls::Result;

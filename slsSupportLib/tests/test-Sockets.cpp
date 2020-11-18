@@ -1,6 +1,6 @@
+#include "catch.hpp"
 #include "sls/ClientSocket.h"
 #include "sls/ServerSocket.h"
-#include "catch.hpp"
 #include <chrono>
 #include <future>
 #include <iostream>

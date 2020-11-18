@@ -1,7 +1,7 @@
 #pragma once
 #include "Implementation.h"
-#include "sls/ServerSocket.h"
 #include "receiver_defs.h"
+#include "sls/ServerSocket.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/sls_detector_funcs.h"
 class ServerInterface;

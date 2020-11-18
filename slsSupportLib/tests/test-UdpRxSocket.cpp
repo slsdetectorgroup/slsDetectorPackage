@@ -1,5 +1,5 @@
-#include "sls/UdpRxSocket.h"
 #include "catch.hpp"
+#include "sls/UdpRxSocket.h"
 #include "sls/sls_detector_exceptions.h"
 #include <cstdint>
 #include <errno.h>

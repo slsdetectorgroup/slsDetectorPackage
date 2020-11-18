@@ -11,7 +11,7 @@
 #include <semaphore.h>
 #include <vector>
 
-namespace sls{
+namespace sls {
 
 /** Circular Fifo (a.k.a. Circular Buffer)
  * Thread safe for one reader, and one writer */
@@ -130,4 +130,4 @@ size_t CircularFifo<Element>::increment(size_t i) const {
     return i;
 }
 
-}
+} // namespace sls

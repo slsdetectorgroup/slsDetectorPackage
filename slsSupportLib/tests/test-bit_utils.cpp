@@ -1,5 +1,5 @@
-#include "sls/bit_utils.h"
 #include "catch.hpp"
+#include "sls/bit_utils.h"
 #include <vector>
 
 TEST_CASE("Get set bits from 0") {

@@ -71,6 +71,6 @@ int main(int argc, char *argv[]) {
     } catch (const sls::RuntimeError &e) {
         exit(EXIT_FAILURE);
     }
-    
+
     exit(EXIT_SUCCESS);
 }

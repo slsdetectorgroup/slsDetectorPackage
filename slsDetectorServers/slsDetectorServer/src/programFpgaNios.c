@@ -1,6 +1,6 @@
 #include "programFpgaNios.h"
-#include "sls/ansi.h"
 #include "clogger.h"
+#include "sls/ansi.h"
 #include "slsDetectorServer_defs.h"
 
 #include <string.h>

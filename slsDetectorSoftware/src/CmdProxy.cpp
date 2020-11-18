@@ -74,7 +74,7 @@ std::vector<std::string> CmdProxy::GetProxyCommands() {
     return commands;
 }
 
-std::map<std::string, std::string> CmdProxy::GetDepreciatedCommands(){
+std::map<std::string, std::string> CmdProxy::GetDepreciatedCommands() {
     return depreciated_functions;
 }
 

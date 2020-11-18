@@ -15,7 +15,7 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
-namespace sls{
+namespace sls {
 
 Receiver::~Receiver() = default;
 
@@ -145,4 +145,4 @@ void Receiver::registerCallBackRawDataModifyReady(
     tcpipInterface->registerCallBackRawDataModifyReady(func, arg);
 }
 
-}
+} // namespace sls

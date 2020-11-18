@@ -1,6 +1,6 @@
+#include "catch.hpp"
 #include "sls/TimeHelper.h"
 #include "sls/ToString.h"
-#include "catch.hpp"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
 #include <array>

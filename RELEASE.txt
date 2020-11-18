@@ -263,7 +263,7 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
     1.  (Eiger) Extra 8 byte Packets
         When stopping detector acquisition while acquiring for more than 128 frames,
         the next acquisition sends out first an 8 byte packet. This is discarded
-        by the slsReceiver/slsMultiReceiver. 
+        by the slsReceiver/slsMultiReceiver. Please handle this in custom receivers.
 
 
 

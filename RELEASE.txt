@@ -19,28 +19,30 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
     - Manuals
     - Client API complete change
     - Exceptions
-    - Scans (dacs and trimbit)
+    - Scan mode (dacs and trimbit)
     - Timing commands
     - Enum list (daclist, dacvalues, settingslist, drlist etc.)
     - Command line (return code)
     - Command line (dac)
-    - Detector Simulators
-    - Zmq interface (ZmqSocket.h)
-    - Gui (zmq high water mark)
-    - Receiver (additional metadata)
-    - (Jungfrau server) settings and default dacs
-    - (Servers) sharedmemory
-    - (Eiger server) blocked when stopping or status
-    - (Eiger Firmware)
-    - Receiver shared memory
     - UDP configuration change
-    - UDP IP (Receiver)
-    - (Eiger) config file
     - Gappixels
-    - (Eiger) partial readout
-    - (Eiger, Jungfrau) starting frame number
+    - Detector Simulators
+    - (Jungfrau server) settings and default dacs
+    - (Servers) Shared Memory
     - (Jungfrau) two interfaces
-    - (Eiger) removed features
+    - (Eiger, Jungfrau server) starting frame number
+    - (Eiger server) Server Config File
+    - (Eiger server) Partial Readout
+    - (Eiger server) Removed Features
+    - (Eiger server) Deactivation
+    - Zmq interface (ZmqSocket.h)
+    - slsReceiver (Metadata)
+    - slsReceiver (Shared Memory)
+    - slsReceiver (UDP IP)
+    - (Eiger Custom Receiver) Header packet
+    - Gui (zmq high water mark)
+    - (Eiger Server) Blocked server
+    - (Eiger Firmware) Extra 8 byte Packets
  
 
 
@@ -94,16 +96,19 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
             will only print and skip image to free it in memory. If address is
             incorrect after callback, expect undefined behavior.
 
-    5.  Scans
+    5.  Scan mode
         One can do scans for dacs or trimbits. Trimbits are only for Eiger or 
-        Mythen3. Set it scan mode and then acquire using blocking or non blocking
-        method.
+        Mythen3. Enable scan mode and then acquire using blocking or non blocking
+        method. Command: scan.
 
-    6.  Timing Commands (eg. period)
-        In command line, all timing commands can now specify unit. 
+    6.  Timing Commands
+        In command line, all timing commands (eg. peiod) can now specify unit. 
             eg 100ms 10us, 1s, 100ns
         In C++ API, one must use chrono library.
-        In Python API, xxx
+            eg. std::chrono::duration<double, std::milli> t1{232.57};
+                det.setExptime(std::chrono::duration_cast<std::chrono::nanoseconds>(t1));
+        In Python API, one must use timedelta library. 
+            eg. d.exptime = dt.timedelta(seconds = 1.2)
 
     7.  Enum list (daclist)
         Command line and API now has features to get the list of enums/commands
@@ -112,6 +117,8 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
             eg. daclist, settingslist, drlist, timinglist, templist
         Command line also has commands to get their values.
             eg. dacvalues, tempvalues
+        Python has commands to get their values.
+            eg. ???????????
 
     8.  Command Line (return code)
         Return code of the client command line applications now return 0 for 
@@ -154,32 +161,7 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
         Almost all the detector parameters removed from shared memory.
         Therefore, they are all fetched directly from detector.
 
-    4.  (Eiger) config_eiger.txt
-        A config file on the detector can take in 2 parameters "master" 
-        and "top" being set to 1 or 0 to enable or disable the same.
-        When server is started without this file, it is set to hardware
-        settings.
-        The detector is also deactivated by default and activated only 
-        upon setting hostname in the client. This is to ensure if the 
-        network of a board or a board is broken and one cannot connect
-        to this board, then it is deactivated by default upon reboot, 
-        so one can use other half modules of the detector.
-        The header packets of Eiger are not sent in this firmware version.
-
-    5.  (Eiger) Partial readout - readnlines
-        It is possible for partial readouts, where you specify the number
-        of pixel rows to read out. Not all values are allowed. The current
-        slsReceiver does not complain about missing packets, but only puts 
-        this partial image into the complete image (padding the rest). One
-        can cut out required subimage using callbacks, but this feature
-        is probably more useful for custom receivers.
-
-    6.  (Eiger, Jungfrau) Next Frame number - nextframenumber
-        Both now have running frame numbers that is only reset at boot up
-        and increments continuously through acquisitions. One is able to 
-        set the next frame number now.
-
-    7.  (Jungfrau) Two 10G data interfaces
+    4.  (Jungfrau) Two 10G data interfaces
         Only Jungfrau PCBs with version 2.0 can run at full speed using both
         the 10G UDP interfaces to stream out data. This is available from 
         the current firmware and software. To enable two interfaces, one has 
@@ -187,9 +169,35 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
         udp_dstip2, udp_dstport2 etc. One can also decide to select which of 
         the two interfaces to use, when using only 1 interface.
 
+    5.  (Eiger, Jungfrau) Next Frame number
+        Both now have running frame numbers that is only reset at boot up
+        and increments continuously through acquisitions. One is able to 
+        set the next frame number now. Command: nextframenumber.
+
+    6.  (Eiger) Server Config file (config_eiger.txt)
+        A config file on the detector can take in 2 parameters "master" 
+        and "top" being set to 1 or 0 to enable or disable the same.
+        When server is started without this file, it is set to hardware
+        settings.
+
+    7.  (Eiger) Partial readout
+        It is possible for partial readouts, where you specify the number
+        of pixel rows to read out. Not all values are allowed. The current
+        slsReceiver does not complain about missing packets, but only puts 
+        this partial image into the complete image (padding the rest). One
+        can cut out required subimage using callbacks, but this feature
+        is probably more useful for custom receivers. Command: readnlines.
+
     8.  (Eiger) Removed Features
         storeinram, safe speed and ability to set settings via the settings 
         command has been removed.
+
+    9.  (Eiger) Deactivation
+        The detector is deactivated by default upon boot up and activated only 
+        upon setting hostname in the client. This is to ensure if the 
+        network of a board or a board is broken and one cannot connect
+        to this board, then it is deactivated by default upon reboot. 
+        Therefore, one can use other half modules of the detector.
 
     Receiver
     --------
@@ -202,7 +210,7 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
         ZmqSocket.h.
 
     2.  Metadata
-        Additional detector dependant metadata has been added to the master files.
+        Detector dependant metadata has been added to the master files.
 
     3.  Shared Memory
         Almost all receiver parameters have been removed from client shared memory.
@@ -216,6 +224,10 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
         advantage that the detector is updated first before the receiver is
         requested for the udp mac. This helps when changing pc and the receiver
         cannot find the udp ip to get the udp mac.
+
+    5.  (Eiger) Header packet
+        The header packets of Eiger are not sent in this firmware version. So, 
+        custom receivers should handle accordingly.
 
     Gui
     ---
@@ -238,7 +250,7 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
     Detector Server
     ---------------
 
-    1.  (Eiger) blocked server
+    1.  (Eiger) Blocked Server
         Very rarely, Eiger control or stop server would block and would require a restart
         of server. This is due to both servers accessing the same link to get to FEB
         registers. Locking has been implemented in server shared memory to resolve.
@@ -248,12 +260,12 @@ SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
 4. Known Issues
 ===============
 
-    1.  (Eiger) Firmware
+    1.  (Eiger) Extra 8 byte Packets
         When stopping detector acquisition while acquiring for more than 128 frames,
         the next acquisition sends out first an 8 byte packet. This is discarded
         by the slsReceiver/slsMultiReceiver. 
 
-        
+
 
 5. Firmware Requirements
 ========================

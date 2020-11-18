@@ -50,12 +50,14 @@ Custom Receiver
 | Also ensure that there are no **rx_** commands in the config file. These commands are for configuring the slsReceiver.
 
 Example of a custom receiver config file
+
 .. code-block:: bash
 
     # detector hostname
     hostname bchip052
 
-    # do not use any rx_ or "file" (eg. fwrite, fpath) commands, which go to slsReceiver/slsMultiReceiver
+    # do not use any rx_ or "file" (eg. fwrite, fpath) commands, 
+    # which go to slsReceiver/slsMultiReceiver
 
     # udp destination port (receiver)
     udp_dstport 50004

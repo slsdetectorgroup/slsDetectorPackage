@@ -17,13 +17,12 @@ target_include_directories(slsDetectorObject PUBLIC
 
 target_link_libraries(slsDetectorObject 
     PUBLIC
-    slsSupportStatic
-    pthread
-    rt
-    slsProjectOptions
+        slsProjectOptions
+        slsSupportStatic
+        pthread
+        rt
     PRIVATE
-    slsProjectWarnings
-    ${ZeroMQ_LIBRARIES}
+        slsProjectWarnings
 )
 
 

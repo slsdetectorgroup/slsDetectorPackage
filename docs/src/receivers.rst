@@ -51,13 +51,12 @@ Custom Receiver
 
 Example of a custom receiver config file
 
+* The main difference is the lack of **rx_** commands or file commands (eg. fwrite, fpath) and the udp_dstmac is required in config file.
+
 .. code-block:: bash
 
     # detector hostname
     hostname bchip052
-
-    # do not use any rx_ or "file" (eg. fwrite, fpath) commands, 
-    # which go to slsReceiver/slsMultiReceiver
 
     # udp destination port (receiver)
     udp_dstport 50004
@@ -70,25 +69,3 @@ Example of a custom receiver config file
 
     # udp destination mac
     udp_dstmac 22:47:d5:48:ad:ef
-
-
-    # PCBv2.0 (using 2 interfaces, top)
-    udp_dstport2 50005
-    udp_dstip2 10.0.2.100 
-    udp_srcip2 10.0.2.184
-    udp_dstmac2 22:47:d5:48:ad:ff
-
-
-    # enable two interfaces
-    numinterfaces 2
-    # select inner interface(effective only when numinterfaces is 1)
-    #selinterface 1
-
-    # power on chip
-    powerchip 1
-
-    # high voltage
-    highvoltage 200
-
-    # timing to trigger
-    timing trigger

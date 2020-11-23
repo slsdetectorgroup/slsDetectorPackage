@@ -349,7 +349,7 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def nframes(self):
+    def framecounter(self):
         """
         [Jungfrau][Mythen3][Gotthard2][Moench][CTB] Number of frames from start run control.
         Note
@@ -1008,6 +1008,32 @@ class Detector(CppDetectorApi):
     def zmqip(self, ip):
         ip = ut.make_ip(ip) #Convert from int or string to IpAddr
         ut.set_using_dict(self.setClientZmqIp, ip)
+
+
+    @property
+    def zmqhwm(self):
+        """
+        Client's zmq receive high water mark. Default is the zmq library's default (1000), can also be set here using -1. 
+        This is a high number and can be set to 2 for gui purposes. 
+        One must also set the receiver's send high water mark to similar value. Final effect is sum of them.
+	    Setting it via command line is useful only before zmq enabled (before opening gui).
+        """
+        return self.getClientZmqHwm()
+
+    @zmqhwm.setter
+    def zmqhwm(self, n_frames):
+        self.setClientZmqHwm(n_frames)
+
+    @property
+    def rx_zmqhwm(self):
+        """
+        Receiver's zmq send high water mark. Default is the zmq library's default (1000). This is a high number and can be set to 2 for gui purposes. One must also set the client's receive high water mark to similar value. Final effect is sum of them. Also restarts receiver zmq streaming if enabled. Can set to -1 to set default value.
+        """
+        return self.getRxZmqHwm()
+
+    @rx_zmqhwm.setter
+    def rx_zmqhwm(self, n_frames):
+        self.setRxZmqHwm(n_frames)
 
     @property
     @element
@@ -1965,7 +1991,7 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def now(self):
+    def runtime(self):
         """[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Time from detector start up.
         Note
         -----
@@ -3078,6 +3104,14 @@ class Detector(CppDetectorApi):
         50000000
         """
         return ClkFreqProxy(self)
+
+
+    def readout(self):
+        """
+        Mythen3] Starts detector readout. Status changes to TRANSMITTING and automatically returns to idle at the end of readout.
+        """
+        self.startDetectorReadout()
+    
 
     """
     ---------------------------<<<Debug>>>---------------------------

@@ -1,6 +1,4 @@
 
-# find_package (Python COMPONENTS Interpreter Development)
-
 pybind11_add_module(_slsdet 
     src/main.cpp 
     src/enums.cpp
@@ -9,11 +7,8 @@ pybind11_add_module(_slsdet
 )
 
 target_link_libraries(_slsdet PUBLIC 
-                        slsDetectorShared
-                        slsReceiverShared
-                        slsSupportShared
-                        ${ZeroMQ_LIBRARIES}
-                        )  
+                      slsDetectorStatic
+)  
 
 
 

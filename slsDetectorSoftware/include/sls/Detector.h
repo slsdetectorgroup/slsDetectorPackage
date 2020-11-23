@@ -1457,6 +1457,10 @@ class Detector {
      * (instead of executing line by line)*/
     void setPattern(const std::string &fname, Positions pos = {});
 
+    /** [CTB][Moench][Mythen3]  Loads pattern parameters structure directly to
+     * server */
+    void setPattern(const defs::patternParameters *pat, Positions pos = {});
+
     /** [CTB][Moench][Mythen3] [Ctb][Moench][Mythen3] Saves pattern to file
      * (ascii). \n [Ctb][Moench] Also executes pattern.*/
     void savePattern(const std::string &fname);

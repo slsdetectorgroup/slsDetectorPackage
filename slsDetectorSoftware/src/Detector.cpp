@@ -1790,6 +1790,10 @@ void Detector::setPattern(const std::string &fname, Positions pos) {
     pimpl->Parallel(&Module::setPattern, pos, fname);
 }
 
+void Detector::setPattern(const defs::patternParameters *pat, Positions pos) {
+    pimpl->Parallel(&Module::setPatternStructure, pos, pat);
+}
+
 Result<uint64_t> Detector::getPatternIOControl(Positions pos) const {
     return pimpl->Parallel(&Module::getPatternIOControl, pos);
 }

@@ -1959,10 +1959,6 @@ void Module::setPattern(const std::string &fname) {
                 }
                 pat->patlimits[0] = StringTo<uint32_t>(args[1]);
                 pat->patlimits[1] = StringTo<uint32_t>(args[2]);
-                if (pat->patlimits[0] >= MAX_PATTERN_LENGTH ||
-                    pat->patlimits[1] >= MAX_PATTERN_LENGTH) {
-                    throw RuntimeError("Invalid address for " + ToString(args));
-                }
             } else if (cmd == "patloop0" || cmd == "patloop1" ||
                        cmd == "patloop2") {
                 if (nargs != 2) {
@@ -1974,10 +1970,6 @@ void Module::setPattern(const std::string &fname) {
                 int patloop2 = StringTo<uint32_t>(args[2]);
                 pat->patloop[level * 2 + 0] = patloop1;
                 pat->patloop[level * 2 + 1] = patloop2;
-                if (patloop1 >= MAX_PATTERN_LENGTH ||
-                    patloop2 >= MAX_PATTERN_LENGTH) {
-                    throw RuntimeError("Invalid address for " + ToString(args));
-                }
             } else if (cmd == "patnloop0" || cmd == "patnloop1" ||
                        cmd == "patnloop2") {
                 if (nargs != 1) {
@@ -1994,9 +1986,6 @@ void Module::setPattern(const std::string &fname) {
                 }
                 int level = cmd[cmd.find_first_of("012")] - '0';
                 pat->patwait[level] = StringTo<uint32_t>(args[1]);
-                if (pat->patwait[level] >= MAX_PATTERN_LENGTH) {
-                    throw RuntimeError("Invalid address for " + ToString(args));
-                }
             } else if (cmd == "patwaittime0" || cmd == "patwaittime1" ||
                        cmd == "patwaittime2") {
                 if (nargs != 1) {
@@ -2010,9 +1999,34 @@ void Module::setPattern(const std::string &fname) {
             }
         }
     }
+    setPatternStructure(pat.get());
+}
+
+void Module::setPatternStructure(const defs::patternParameters *pat) {
+    // verifications
+    if (pat->patlimits[0] >= MAX_PATTERN_LENGTH ||
+        pat->patlimits[1] >= MAX_PATTERN_LENGTH) {
+        throw RuntimeError("Invalid Pattern limits address [" +
+                           ToString(pat->patlimits[0]) + std::string(", ") +
+                           ToString(pat->patlimits[1]) + std::string("]"));
+    }
+    for (int i = 0; i != 3; ++i) {
+        if (pat->patloop[i * 2 + 0] >= MAX_PATTERN_LENGTH ||
+            pat->patloop[i * 2 + 1] >= MAX_PATTERN_LENGTH) {
+            throw RuntimeError(
+                "Invalid Pattern loop address for level " + ToString(i) +
+                std::string(" [") + ToString(pat->patloop[i * 2 + 0]) +
+                std::string(", ") + ToString(pat->patloop[i * 2 + 1]) +
+                std::string("]"));
+        }
+        if (pat->patwait[i] >= MAX_PATTERN_LENGTH) {
+            throw RuntimeError("Invalid Pattern wait address for level " +
+                               ToString(i) + std::string(" ") +
+                               ToString(pat->patwait[i]));
+        }
+    }
     LOG(logDEBUG1) << "Sending pattern from file to detector:" << *pat;
-    sendToDetector(F_SET_PATTERN, pat.get(), sizeof(patternParameters), nullptr,
-                   0);
+    sendToDetector(F_SET_PATTERN, pat, sizeof(patternParameters), nullptr, 0);
 }
 
 uint64_t Module::getPatternIOControl() const {

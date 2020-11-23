@@ -192,7 +192,7 @@ if (SLS_USE_INTEGRATION_TESTS)
 endif (SLS_USE_INTEGRATION_TESTS)
 
 if (SLS_USE_PYTHON)
-    set(PYBIND11_CPP_STANDARD -std=c++11)
+    find_package (Python 3.6 COMPONENTS Interpreter Development)
     add_subdirectory(libs/pybind11)
     add_subdirectory(python)
 endif(SLS_USE_PYTHON)

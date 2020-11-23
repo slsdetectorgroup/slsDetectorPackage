@@ -120,6 +120,10 @@ void init_det(py::module &m) {
              (void (Detector::*)(const bool)) &
                  Detector::setGapPixelsinCallback,
              py::arg())
+        .def("isVirtualDetectorServer",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::isVirtualDetectorServer,
+             py::arg() = Positions{})
         .def("registerAcquisitionFinishedCallback",
              (void (Detector::*)(void (*)(double, int, void *), void *)) &
                  Detector::registerAcquisitionFinishedCallback,
@@ -314,6 +318,9 @@ void init_det(py::module &m) {
              py::arg(), py::arg() = Positions{})
         .def("getDacList", (std::vector<defs::dacIndex>(Detector::*)() const) &
                                Detector::getDacList)
+        .def("setDefaultDacs",
+             (void (Detector::*)(sls::Positions)) & Detector::setDefaultDacs,
+             py::arg() = Positions{})
         .def("getDAC",
              (Result<int>(Detector::*)(defs::dacIndex, bool, sls::Positions)
                   const) &
@@ -356,6 +363,8 @@ void init_det(py::module &m) {
         .def("startReceiver", (void (Detector::*)()) & Detector::startReceiver)
         .def("stopReceiver", (void (Detector::*)()) & Detector::stopReceiver)
         .def("startDetector", (void (Detector::*)()) & Detector::startDetector)
+        .def("startDetectorReadout",
+             (void (Detector::*)()) & Detector::startDetectorReadout)
         .def("stopDetector", (void (Detector::*)()) & Detector::stopDetector)
         .def("getDetectorStatus",
              (Result<defs::runStatus>(Detector::*)(sls::Positions) const) &
@@ -599,15 +608,15 @@ void init_det(py::module &m) {
                  Detector::setPartialFramesPadding,
              py::arg(), py::arg() = Positions{})
         .def("getRxUDPSocketBufferSize",
-             (Result<int64_t>(Detector::*)(sls::Positions) const) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getRxUDPSocketBufferSize,
              py::arg() = Positions{})
         .def("setRxUDPSocketBufferSize",
-             (void (Detector::*)(int64_t, sls::Positions)) &
+             (void (Detector::*)(int, sls::Positions)) &
                  Detector::setRxUDPSocketBufferSize,
              py::arg(), py::arg() = Positions{})
         .def("getRxRealUDPSocketBufferSize",
-             (Result<int64_t>(Detector::*)(sls::Positions) const) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getRxRealUDPSocketBufferSize,
              py::arg() = Positions{})
         .def("getRxLock",
@@ -747,6 +756,17 @@ void init_det(py::module &m) {
              (void (Detector::*)(const sls::IpAddr, sls::Positions)) &
                  Detector::setClientZmqIp,
              py::arg(), py::arg() = Positions{})
+        .def("getClientZmqHwm",
+             (int (Detector::*)() const) & Detector::getClientZmqHwm)
+        .def("setClientZmqHwm",
+             (void (Detector::*)(const int)) & Detector::setClientZmqHwm,
+             py::arg())
+        .def("getRxZmqHwm",
+             (Result<int>(Detector::*)(sls::Positions) const) &
+                 Detector::getRxZmqHwm,
+             py::arg() = Positions{})
+        .def("setRxZmqHwm",
+             (void (Detector::*)(const int)) & Detector::setRxZmqHwm, py::arg())
         .def("getSubExptime",
              (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getSubExptime,

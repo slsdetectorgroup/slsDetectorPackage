@@ -2,6 +2,7 @@
  * warning */
 
 #include <pybind11/chrono.h>
+#include <pybind11/numpy.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -15,6 +16,19 @@ void init_enums(py::module &m) {
     xy.def(py::init<int, int>());
     xy.def_readwrite("x", &slsDetectorDefs::xy::x);
     xy.def_readwrite("y", &slsDetectorDefs::xy::y);
+
+    py::class_<slsDetectorDefs::patternParameters> patternParameters(
+        m, "patternParameters");
+
+    using pat = slsDetectorDefs::patternParameters;
+    PYBIND11_NUMPY_DTYPE(pat, word, patioctrl, patlimits, patloop, patnloop,
+                         patwait, patwaittime);
+
+    patternParameters.def(py::init());
+    patternParameters.def("numpy_view", [](py::object &obj) {
+        pat &o = obj.cast<pat &>();
+        return py::array_t<pat>(1, &o, obj);
+    });
 
     py::enum_<slsDetectorDefs::detectorType>(Defs, "detectorType")
         .value("GENERIC", slsDetectorDefs::detectorType::GENERIC)

@@ -8,6 +8,7 @@ from .mythen3 import Mythen3
 from .gotthard2 import Gotthard2
 from .gotthard import Gotthard
 from .moench import Moench
+from .pattern import patternParameters
 
 import _slsdet
 xy = _slsdet.xy

@@ -1525,7 +1525,7 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def timestamp(self):
+    def frametime(self):
         """[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Timestamp at a frame start.
         Note
         ----

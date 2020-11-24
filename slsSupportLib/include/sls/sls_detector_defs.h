@@ -472,19 +472,34 @@ typedef struct {
         int gates{0};
         scanParameters scanParams{};
     } __attribute__((packed));
+#endif
+
 
     /** pattern structure */
+#ifdef __cplusplus
     struct patternParameters {
-        uint64_t word[MAX_PATTERN_LENGTH]{};
-        uint64_t patioctrl{0};
-        uint32_t patlimits[2]{};
-        uint32_t patloop[6]{};
-        uint32_t patnloop[3]{};
-        uint32_t patwait[3]{};
-        uint64_t patwaittime[3]{};
-    } __attribute__((packed));
-
+#else
+    typedef struct __attribute__((packed)){
 #endif
+        uint64_t word[MAX_PATTERN_LENGTH];
+        uint64_t patioctrl;
+        uint32_t patlimits[2];
+        uint32_t patloop[6];
+        uint32_t patnloop[3];
+        uint32_t patwait[3];
+        uint64_t patwaittime[3];
+#ifdef __cplusplus
+    // public:
+    //     patternParameters(){
+    //         memset(this, 0, sizeof(patternParameters));
+    //     }
+    } __attribute__((packed));
+#else
+    } patternParameters;
+#endif
+
+
+
 
 #ifdef __cplusplus
   protected:

@@ -28,6 +28,7 @@ set( PYTHON_FILES
     enums.py
     errors.py
     gotthard.py
+    pattern.py
     gotthard2.py
     moench.py
     proxy.py

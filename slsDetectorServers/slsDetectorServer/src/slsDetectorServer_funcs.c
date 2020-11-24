@@ -7530,28 +7530,11 @@ int set_veto(int file_des) {
 int set_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint64_t *patwords = malloc(sizeof(uint64_t) * MAX_PATTERN_LENGTH);
-    memset(patwords, 0, sizeof(uint64_t) * MAX_PATTERN_LENGTH);
-    uint64_t patioctrl = 0;
-    int patlimits[2] = {0, 0};
-    int patloop[6] = {0, 0, 0, 0, 0, 0};
-    int patnloop[3] = {0, 0, 0};
-    int patwait[3] = {0, 0, 0};
-    uint64_t patwaittime[3] = {0, 0, 0};
-    if (receiveData(file_des, patwords, sizeof(uint64_t) * MAX_PATTERN_LENGTH,
-                    INT64) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, &patioctrl, sizeof(patioctrl), INT64) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, patlimits, sizeof(patlimits), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, patloop, sizeof(patloop), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, patnloop, sizeof(patnloop), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, patwait, sizeof(patwait), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, patwaittime, sizeof(patwaittime), INT64) < 0)
+
+    patternParameters *pat = malloc(sizeof(patternParameters));
+    memset(pat, 0, sizeof(patternParameters));
+
+    if (receiveDataOnly(file_des, pat, sizeof(patternParameters)) < 0)
         return printSocketReadError();
 
 #if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
@@ -7562,95 +7545,95 @@ int set_pattern(int file_des) {
         LOG(logINFO,
             ("Setting Pattern Word (printing every 10 words that are not 0\n"));
         for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
-            if ((i % 10 == 0) && patwords[i] != 0) {
+            if ((i % 10 == 0) && pat->word[i] != 0) {
                 LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n",
-                              i, (long long int)patwords[i]));
+                              i, (long long int)pat->word[i]));
             }
-            writePatternWord(i, patwords[i]);
+            writePatternWord(i, pat->word[i]);
         }
         int numLoops = -1, retval0 = -1, retval1 = -1;
         uint64_t retval64 = -1;
 #ifndef MYTHEN3D
         if (ret == OK) {
-            retval64 = writePatternIOControl(patioctrl);
-            validate64(patioctrl, retval64, "set pattern IO Control", HEX);
+            retval64 = writePatternIOControl(pat->patioctrl);
+            validate64(pat->patioctrl, retval64, "set pattern IO Control", HEX);
         }
 #endif
         if (ret == OK) {
             numLoops = -1;
-            retval0 = patlimits[0];
-            retval1 = patlimits[1];
+            retval0 = pat->patlimits[0];
+            retval1 = pat->patlimits[1];
             setPatternLoop(-1, &retval0, &retval1, &numLoops);
-            validate(patlimits[0], retval0, "set pattern Limits start address",
-                     HEX);
-            validate(patlimits[1], retval1, "set pattern Limits start address",
+            validate(pat->patlimits[0], retval0,
+                     "set pattern Limits start address", HEX);
+            validate(pat->patlimits[1], retval1,
+                     "set pattern Limits start address", HEX);
+        }
+        if (ret == OK) {
+            retval0 = pat->patloop[0];
+            retval1 = pat->patloop[1];
+            numLoops = pat->patnloop[0];
+            setPatternLoop(0, &retval0, &retval1, &numLoops);
+            validate(pat->patloop[0], retval0,
+                     "set pattern Loop 0 start address", HEX);
+            validate(pat->patloop[1], retval1,
+                     "set pattern Loop 0 stop address", HEX);
+            validate(pat->patnloop[0], numLoops, "set pattern Loop 0 num loops",
                      HEX);
         }
         if (ret == OK) {
-            retval0 = patloop[0];
-            retval1 = patloop[1];
-            numLoops = patnloop[0];
-            setPatternLoop(0, &patloop[0], &patloop[1], &numLoops);
-            validate(patloop[0], retval0, "set pattern Loop 0 start address",
-                     HEX);
-            validate(patloop[1], retval1, "set pattern Loop 0 stop address",
-                     HEX);
-            validate(patnloop[0], numLoops, "set pattern Loop 0 num loops",
-                     HEX);
-        }
-        if (ret == OK) {
-            retval0 = patloop[2];
-            retval1 = patloop[3];
-            numLoops = patnloop[1];
-            setPatternLoop(1, &patloop[2], &patloop[3], &numLoops);
-            validate(patloop[2], retval0, "set pattern Loop 1 start address",
-                     HEX);
-            validate(patloop[3], retval1, "set pattern Loop 1 stop address",
-                     HEX);
-            validate(patnloop[1], numLoops, "set pattern Loop 1 num loops",
+            retval0 = pat->patloop[2];
+            retval1 = pat->patloop[3];
+            numLoops = pat->patnloop[1];
+            setPatternLoop(1, &retval0, &retval1, &numLoops);
+            validate(pat->patloop[2], retval0,
+                     "set pattern Loop 1 start address", HEX);
+            validate(pat->patloop[3], retval1,
+                     "set pattern Loop 1 stop address", HEX);
+            validate(pat->patnloop[1], numLoops, "set pattern Loop 1 num loops",
                      HEX);
         }
         if (ret == OK) {
-            retval0 = patloop[4];
-            retval1 = patloop[5];
-            numLoops = patnloop[2];
-            setPatternLoop(2, &patloop[4], &patloop[5], &numLoops);
-            validate(patloop[4], retval0, "set pattern Loop 2 start address",
-                     HEX);
-            validate(patloop[5], retval1, "set pattern Loop 2 stop address",
-                     HEX);
-            validate(patnloop[2], numLoops, "set pattern Loop 2 num loops",
-                     HEX);
-        }
-        if (ret == OK) {
-            retval0 = setPatternWaitAddress(0, patwait[0]);
-            validate(patwait[0], retval0, "set pattern Loop 0 wait address",
+            retval0 = pat->patloop[4];
+            retval1 = pat->patloop[5];
+            numLoops = pat->patnloop[2];
+            setPatternLoop(2, &retval0, &retval1, &numLoops);
+            validate(pat->patloop[4], retval0,
+                     "set pattern Loop 2 start address", HEX);
+            validate(pat->patloop[5], retval1,
+                     "set pattern Loop 2 stop address", HEX);
+            validate(pat->patnloop[2], numLoops, "set pattern Loop 2 num loops",
                      HEX);
         }
         if (ret == OK) {
-            retval0 = setPatternWaitAddress(1, patwait[1]);
-            validate(patwait[1], retval0, "set pattern Loop 1 wait address",
-                     HEX);
+            retval0 = setPatternWaitAddress(0, pat->patwait[0]);
+            validate(pat->patwait[0], retval0,
+                     "set pattern Loop 0 wait address", HEX);
         }
         if (ret == OK) {
-            retval0 = setPatternWaitAddress(2, patwait[2]);
-            validate(patwait[2], retval0, "set pattern Loop 2 wait address",
-                     HEX);
+            retval0 = setPatternWaitAddress(1, pat->patwait[1]);
+            validate(pat->patwait[1], retval0,
+                     "set pattern Loop 1 wait address", HEX);
         }
         if (ret == OK) {
-            uint64_t retval64 = setPatternWaitTime(0, patwaittime[0]);
-            validate64(patwaittime[0], retval64, "set pattern Loop 0 wait time",
-                       HEX);
+            retval0 = setPatternWaitAddress(2, pat->patwait[2]);
+            validate(pat->patwait[2], retval0,
+                     "set pattern Loop 2 wait address", HEX);
         }
         if (ret == OK) {
-            retval64 = setPatternWaitTime(1, patwaittime[1]);
-            validate64(patwaittime[1], retval64, "set pattern Loop 1 wait time",
-                       HEX);
+            uint64_t retval64 = setPatternWaitTime(0, pat->patwaittime[0]);
+            validate64(pat->patwaittime[0], retval64,
+                       "set pattern Loop 0 wait time", HEX);
         }
         if (ret == OK) {
-            retval64 = setPatternWaitTime(2, patwaittime[2]);
-            validate64(patwaittime[1], retval64, "set pattern Loop 2 wait time",
-                       HEX);
+            retval64 = setPatternWaitTime(1, pat->patwaittime[1]);
+            validate64(pat->patwaittime[1], retval64,
+                       "set pattern Loop 1 wait time", HEX);
+        }
+        if (ret == OK) {
+            retval64 = setPatternWaitTime(2, pat->patwaittime[2]);
+            validate64(pat->patwaittime[2], retval64,
+                       "set pattern Loop 2 wait time", HEX);
         }
     }
 #endif

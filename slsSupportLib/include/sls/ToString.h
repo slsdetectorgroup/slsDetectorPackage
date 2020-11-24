@@ -182,6 +182,23 @@ std::string ToString(const std::map<KeyType, ValueType> &m) {
 }
 
 /**
+ * Print a c style array 
+ */
+template<typename T, size_t size>
+std::string ToString(const T(&arr)[size]){
+    std::ostringstream os;
+    os << '[';
+    if (size){
+        size_t i = 0;
+        os << ToString(arr[i++]);
+        for (; i<size; ++i)
+            os << ", " << ToString(arr[i]);
+    }
+    os << ']';
+    return os.str();
+}
+
+/**
  * For a container loop over all elements and call ToString on the element
  * Container<std::string> is excluded
  */

@@ -3,6 +3,7 @@
 #include "sls/ToString.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
+#include "sls/container_utils.h"
 #include <array>
 #include <map>
 #include <sstream>
@@ -298,4 +299,27 @@ TEST_CASE("Streaming of slsDetectorDefs::scanParameters") {
         REQUIRE(oss.str() == "[enabled\ndac vth2\nstart 500\nstop 1500\nstep "
                              "500\nsettleTime 0.5s\n]");
     }
+}
+
+TEST_CASE("Printing c style arrays of int"){
+    int arr[]{3, 5};
+    REQUIRE(ToString(arr) == "[3, 5]");
+}
+
+TEST_CASE("Printing c style arrays of uint8"){
+    uint8_t arr[]{1,2,3,4,5};
+    REQUIRE(ToString(arr) == "[1, 2, 3, 4, 5]");
+}
+
+TEST_CASE("Printing c style arrays of double"){
+    double arr[]{3.4, 5.3, 6.2};
+    REQUIRE(ToString(arr) == "[3.4, 5.3, 6.2]");
+}
+
+TEST_CASE("Print a member of patternParameters"){
+    auto pat = sls::make_unique<slsDetectorDefs::patternParameters>();
+    pat->patlimits[0] = 4;
+    pat->patlimits[1] = 100;
+    REQUIRE(ToString(pat->patlimits) == "[4, 100]");
+
 }

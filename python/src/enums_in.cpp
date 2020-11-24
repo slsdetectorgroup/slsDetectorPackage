@@ -25,7 +25,7 @@ void init_enums(py::module &m) {
     patternParameters.def("numpy_view", [](py::object &obj) { 
         pat& o = obj.cast<pat&>();
         return py::array_t<pat>(1, &o, obj); });
-
+    patternParameters.def("load", &pat::load);
 
     [[ENUMS]]
 }

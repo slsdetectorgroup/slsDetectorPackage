@@ -29,6 +29,7 @@ void init_enums(py::module &m) {
         pat &o = obj.cast<pat &>();
         return py::array_t<pat>(1, &o, obj);
     });
+    patternParameters.def("load", &pat::load);
 
     py::enum_<slsDetectorDefs::detectorType>(Defs, "detectorType")
         .value("GENERIC", slsDetectorDefs::detectorType::GENERIC)

@@ -21,6 +21,7 @@
 #include <bitset>
 #include <chrono>
 #include <cstdint>
+#include <cstring>
 #include <string>
 #else
 // C includes
@@ -489,10 +490,12 @@ typedef struct {
         uint32_t patwait[3];
         uint64_t patwaittime[3];
 #ifdef __cplusplus
-    // public:
-    //     patternParameters(){
-    //         memset(this, 0, sizeof(patternParameters));
-    //     }
+    public:
+        patternParameters(){
+            // Since the def has to be c compatible we can't use {} for the members
+            memset(this, 0, sizeof(patternParameters));
+        }
+        void load(const std::string& fname);
     } __attribute__((packed));
 #else
     } patternParameters;

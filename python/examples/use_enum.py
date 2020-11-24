@@ -6,7 +6,7 @@ d = Detector()
 d.fformat = fileFormat.BINARY
 
 # Altough not recommended for convenience all enums 
-# and some other things can be impored using *
+# and some other things can be imported using *
 
 from slsdet import *
 d.speed = speedLevel.FULL_SPEED 
@@ -15,6 +15,6 @@ d.speed = speedLevel.FULL_SPEED
 
 import slsdet.enums
 for enum in dir(slsdet.enums):
-    # filter out special memebers
+    # filter out special members
     if not enum.startswith('_'):
         print(enum)

@@ -8,7 +8,7 @@ class patternParameters(_slsdet.patternParameters):
 
     def __getattr__(self, name):
         if name in self.names:
-            return self.view[name]
+            return self.view[name][0]
         else:
             raise KeyError(f"Key: {name} not found")
 

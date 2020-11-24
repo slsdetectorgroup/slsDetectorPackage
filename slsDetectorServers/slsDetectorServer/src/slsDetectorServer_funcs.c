@@ -7649,7 +7649,7 @@ int set_pattern(int file_des) {
         }
         if (ret == OK) {
             retval64 = setPatternWaitTime(2, patwaittime[2]);
-            validate64(patwaittime[1], retval64, "set pattern Loop 2 wait time",
+            validate64(patwaittime[2], retval64, "set pattern Loop 2 wait time",
                        HEX);
         }
     }

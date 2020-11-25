@@ -12,32 +12,7 @@ Download
 
 - detector server corresponding to package in slsDetectorPackage/serverBin
 
-- bit files
-    .. list-table:: 
-       :widths: 25 10 30 25 10
-       :header-rows: 1
-
-       * - Software
-         - Hardware
-         - Firmware Date
-         - Firmware Link
-         - Comments
-       * - v5.0.0-rcx
-         - 
-         - 08.09.2020
-         - `v27 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/eiger/v27/>`__
-         - 
-       * - v4.0.0 - v4.2.0
-         - 
-         - 30.07.2019
-         - `v24 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/eiger/v24/>`__
-         - 
-       * - v3.1.0 - v3.1.5
-         - 
-         - 17.08.2017
-         - `v20 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/eiger/v20/>`__
-         -
-
+- `bit files <https://github.com/slsdetectorgroup/slsDetectorFirmware>`__
 
 Upgrade
 ^^^^^^^^
@@ -116,37 +91,7 @@ Download
 ^^^^^^^^^^^^^
 - detector server corresponding to package in slsDetectorPackage/serverBin
 
-- pof files
-    .. list-table:: 
-       :widths: 25 10 30 25 10
-       :header-rows: 1
-
-       * - Software
-         - Hardware
-         - Firmware Date
-         - Firmware Link
-         - Comments
-       * - v5.0.0-rcx
-         - 2.0
-         - 21.07.2020
-         - `v2.1 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/jungfrau/v2_1/jungfrau_v2_1.pof>`__
-         - 
-       * - v5.0.0-rcx
-         - 1.0
-         - 24.07.2020
-         - `v1.1 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/jungfrau/v1_1/jungfrau_v1_1.pof>`__
-         - 
-       * - v4.0.1 - v4.2.0
-         - 1.0
-         - 06.12.2018
-         - `v0.7 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/jungfrau/v0_7/jungfrau_v0_7.pof>`__
-         - 
-       * - v3.1.0 - v3.1.5
-         - 1.0
-         - 13.11.2017
-         - `v0.6 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/jungfrau/v0_6/jungfrau_v0_6.pof>`__
-         -
-
+- `pof files <https://github.com/slsdetectorgroup/slsDetectorFirmware>`__
 
 
 Upgrade (from v4.x.x)
@@ -156,7 +101,7 @@ Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you
 
 #. Tftp must be installed on pc.
 
-#. Update client package to the latest (5.0.0-rc1).
+#. Update client package to the latest (5.x.x).
 
 #. Disable server respawning or kill old server
     .. code-block:: bash
@@ -204,7 +149,7 @@ Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you
         jungfrauDetectorServervxxx --stop-server 1953
 
 
-Upgrade (from v5.0.0-rcx)
+Upgrade (from v5.0.0)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
@@ -230,31 +175,8 @@ Download
 ^^^^^^^^^^^^^
 - detector server corresponding to package in slsDetectorPackage/serverBin
 
-- pof files
-    .. list-table:: 
-       :widths: 15 15 15 15 5
-       :header-rows: 1
+- `pof files <https://github.com/slsdetectorgroup/slsDetectorFirmware>`__
 
-       * - Software
-         - Hardware
-         - Firmware Date
-         - Firmware Link
-         - Comments
-       * - All versions
-         - 50um
-         - 08.02.2018
-         - `50um <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/gotthard_I/50um/gotthard_I_50um.pof>`__
-         - 
-       * - All versions
-         - 25um (master)
-         - 08.02.2018
-         - `25um (master) <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/gotthard_I/25um/master/gotthard_I_25um_master.pof>`__
-         - 
-       * - All versions
-         - 25um (slave)
-         - 09.02.2018
-         - `25um (slave) <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/gotthard_I/25um/slave/gotthard_I_25um_slave.pof>`__
-         - 
 
 .. _firmware upgrade using blaster for blackfin:
 
@@ -294,24 +216,10 @@ Download
 
 - detector server corresponding to package in slsDetectorPackage/serverBin
 
-- rbf files
-    .. list-table:: 
-       :widths: 25 10 30 25 10
-       :header-rows: 1
-
-       * - Software
-         - Hardware
-         - Firmware Date
-         - Firmware Link
-         - Comments
-       * - v5.0.0-rcx
-         - 
-         - 25.09.2020
-         - 
-         - development
+- rbf files (in developement)
 
 
-Upgrade (from v5.0.0-rcx)
+Upgrade (from v5.0.0)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Program from console
@@ -337,23 +245,10 @@ Download
 ^^^^^^^^^^^^^
 - detector server corresponding to package in slsDetectorPackage/serverBin
 
-- rbf files
-    .. list-table:: 
-       :widths: 25 10 30 25 10
-       :header-rows: 1
+- rbf files (in development)
 
-       * - Software
-         - Hardware
-         - Firmware Date
-         - Firmware Link
-         - Comments
-       * - v5.0.0-rcx
-         - 
-         - 25.09.2020
-         - 
-         - development
 
-Upgrade (from v5.0.0-rcx)
+Upgrade (from v5.0.0)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #. Program from console
@@ -375,28 +270,10 @@ Download
 ^^^^^^^^^^^^^
 - detector server corresponding to package in slsDetectorPackage/serverBin
 
-- pof files
-    .. list-table:: 
-       :widths: 25 10 30 25 10
-       :header-rows: 1
+- `pof files <https://github.com/slsdetectorgroup/slsDetectorFirmware>`__
 
-       * - Software
-         - Hardware
-         - Firmware Date
-         - Firmware Link
-         - Comments
-       * - v5.0.0-rcx
-         - EPCQ128
-         - 05.10.2020
-         - `v1.0 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/moench/EPCQ128/v1_0/moench_v1_0_201005.pof>`__
-         - 
-       * - v5.0.0-rcx
-         - EPCS128
-         - 05.10.2020
-         - `v1.0 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/moench/EPCS128/v1_0/moench_v1_0_201005.pof>`__
-         - 
 
-Upgrade (from v5.0.0-rcx)
+Upgrade (from v5.0.0)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
@@ -419,28 +296,10 @@ Download
 ^^^^^^^^^^^^^
 - detector server corresponding to package in slsDetectorPackage/serverBin
 
-- pof files
-    .. list-table:: 
-       :widths: 25 10 30 25 10
-       :header-rows: 1
+- `pof files <https://github.com/slsdetectorgroup/slsDetectorFirmware>`__
 
-       * - Software
-         - Hardware
-         - Firmware Date
-         - Firmware Link
-         - Comments
-       * - v5.0.0-rcx
-         - EPCQ128
-         - 05.10.2020
-         - `v1.0 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/ctb/EPCQ128/v1_0/ctb_v1_0_201005.pof>`__
-         - 
-       * - v5.0.0-rcx
-         - EPCS128
-         - 05.10.2020
-         - `v1.0 <https://github.com/slsdetectorgroup/slsDetectorFirmware/blob/master/binaries/ctb/EPCS128/v1_0/ctb_v1_0_201005.pof>`__
-         - 
 
-Upgrade (from v5.0.0-rcx)
+Upgrade (from v5.0.0)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
@@ -462,11 +321,12 @@ Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you
 Firmware Troubleshooting with blackfin
 ----------------------------------------
 
-#. v4.x.x client after programming will most likely reboot the blackfin processor, regardless of error.
+1. v4.x.x client after programming will most likely reboot the blackfin processor, regardless of error.
 
-#. v5.x.x-rcx client after programming will not reboot the blackfin processor, if error occurred.
+2. v5.x.x-rcx client after programming will not reboot the blackfin processor, if error occurred.
 
-#. If a reboot occured with an incomplete firmware in flash, the blackfin will most likely not find the mtd3 drive. To see if this drive exists:
+3. If a reboot occured with an incomplete firmware in flash, the blackfin will most likely not find the mtd3 drive. To see if this drive exists:
+
   .. code-block:: bash
     
     # connect to the board
@@ -482,7 +342,7 @@ Firmware Troubleshooting with blackfin
 
 4. If one can see the mtd3 drive, one can already try to flash again using the **programfpga** command (without rebooting blackfin or detector). 
 
-#. If one can't list it, read the next section to try to get the blackfin to list it.
+5. If one can't list it, read the next section to try to get the blackfin to list it.
 
 How to get back mtd3 drive remotely
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

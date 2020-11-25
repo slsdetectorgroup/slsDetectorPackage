@@ -9,7 +9,7 @@ CMake approaches.
 One can test with :ref:`detector simulators<Virtual Detector Servers>` before testing the API with a real detector or when a real detector is not at hand.
 
 CMake: slsDetectorPackage as submodule in your project
----------------------------------------
+---------------------------------------------------------------
 
 If you are using CMake to build your integration and want to build everything
 in one go, we support adding slsDetectorPackage as a subfolder in your cmake project. 

@@ -35,7 +35,7 @@ This document describes the differences between 5.0.1 and 5.0.0 releases.
     2.  Updated pybind11 to v2.6.1 to remove warnings with Python 3.9 and better handling
         of C++ standard. 
 
-    3.  Added mistakenly missing rx_zmqhwm and zmqhwm properties in Python. 
+    3.  Added missing rx_zmqhwm and zmqhwm properties in Python. 
 
 
     CMake improvements

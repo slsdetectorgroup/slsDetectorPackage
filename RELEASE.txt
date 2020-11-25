@@ -1,5 +1,5 @@
-SLS Detector Package 5.0.1 released on 18.11.2020 (Bugfix Release)
-=================================================================
+SLS Detector Package 5.0.1 released on 25.11.2020 (Bug Fix Release)
+===================================================================
 
 This document describes the differences between 5.0.1 and 5.0.0 releases.   
 
@@ -41,7 +41,7 @@ This document describes the differences between 5.0.1 and 5.0.0 releases.
     CMake improvements
     ------------------
 
-    1. Explicitly state Python 3.6 or greater
+    1. Explicitly state Python 3.6 or greater.
 
     2. Finds the Python of the activated environment when using conda 
        without having to supply additional arguments.  

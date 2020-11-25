@@ -1,0 +1,134 @@
+SLS Detector Package 5.0.1 released on 25.11.2020 (Bug Fix Release)
+===================================================================
+
+This document describes the differences between 5.0.1 and 5.0.0 releases.   
+
+
+
+    CONTENTS
+    --------
+    1.  Topics Concerning
+    2.  Resolved Issues
+    3.  Known Issues
+    4.  Firmware Requirements
+    5.  Download, Documentation & Support
+
+
+
+1. Topics Concerning
+====================
+
+    - Python bindings
+    - CMake improvements
+
+
+
+2. Resolved Issues
+==================
+
+    Python bindings
+    ---------------
+
+    1.  Fixed function signatures for getRxUDPSocketBufferSize, 
+        setRxUDPSocketBufferSize and getRxRealUDPSocketBufferSize. 
+
+    2.  Updated pybind11 to v2.6.1 to remove warnings with Python 3.9 and 
+        better handling of C++ standard. 
+
+    3.  Added missing properties in Python. 
+
+
+    CMake improvements
+    ------------------
+
+    1. Explicitly state Python 3.6 or greater.
+
+    2. Finds the Python of the activated environment when using conda 
+       without having to supply additional arguments.  
+
+    3. Removed redundant libraries for linking targets. 
+
+
+
+3. Firmware Requirements
+========================
+        
+    No updates from 5.0.0
+
+
+
+4. Known Issues
+===============
+
+    No updates from 5.0.0
+
+
+
+5. Download, Documentation & Support
+====================================
+
+    Download
+    --------
+    
+    The Source Code:
+         https://github.com/slsdetectorgroup/slsDetectorPackage
+            
+    Documentation
+    -------------
+    
+    Installation:
+        https://slsdetectorgroup.github.io/devdoc/installation.html#
+        
+    Firmware Upgrade:
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+    Detector Server upgrade:
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+    Detector Simulators:
+        https://slsdetectorgroup.github.io/devdoc/virtualserver.html
+
+    Consuming slsDetectorPackage:
+        https://slsdetectorgroup.github.io/devdoc/consuming.html
+        
+    API Examples:
+        https://github.com/slsdetectorgroup/api-examples
+
+    Command Line Documentation:
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+
+    Quick Start Guide:
+        https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
+        
+    C++ API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+       
+    C++ API Example:
+        https://slsdetectorgroup.github.io/devdoc/examples.html#
+        
+    Python API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/pygettingstarted.html
+
+    Python API Example:
+        https://slsdetectorgroup.github.io/devdoc/pyexamples.html
+
+    Receivers (including custom receiver):
+        https://slsdetectorgroup.github.io/devdoc/receivers.html
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html
+
+    TroubleShooting:
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html
+        
+    Further Documentation:
+        https://www.psi.ch/en/detectors/documentation
+        
+    Info on Releases:
+        https://www.psi.ch/en/detectors/software
+
+
+    Support
+    -------
+
+        dhanya.thattil@psi.ch
+        erik.frojdh@psi.ch
+

@@ -18,8 +18,8 @@ This document describes the differences between 5.0.1 and 5.0.0 releases.
 1. Topics Concerning
 ====================
 
-    - Python Bindings
-    - CMake Optimization
+    - Python bindings
+    - CMake improvements
 
 
 
@@ -32,18 +32,21 @@ This document describes the differences between 5.0.1 and 5.0.0 releases.
     1.  Fixed function signatures for getRxUDPSocketBufferSize, setRxUDPSocketBufferSize
         and getRxRealUDPSocketBufferSize. 
 
-    2.  Improved python finding when using conda. 
+    2.  Updated pybind11 to v2.6.1 to remove warnings with Python 3.9 and better handling
+        of C++ standard. 
 
-    3.  Updated pybind11 to v2.6.1 to remove warnings with Python 3.9 and better handling
-        of C++ standard.
-
-    4.  Added missing rx_zmqhwm and zmqhwm in Python. 
+    3.  Added mistakenly missing rx_zmqhwm and zmqhwm properties in Python. 
 
 
-    CMake Optimization
+    CMake improvements
     ------------------
 
-    1.  
+    1. Explicitly state Python 3.6 or greater
+
+    2. Finds the Python of the activated environment when using conda 
+       without having to supply additional arguments.  
+
+    3. Removed redundant libraries for linking targets. 
 
 
 

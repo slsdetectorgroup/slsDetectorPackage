@@ -1754,13 +1754,8 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
 // Pattern
 
 void Detector::savePattern(const std::string &fname) {
-    Result<std::unique_ptr<defs::patternParameters>> patlist;
-    for (int i = 0; i < patlist.size(); ++i) {
-        patlist[i] = sls::make_unique<defs::patternParameters>();
-    }
-    Result<defs::patternParameters> pat;
-    = sls::make_unique<defs::patternParameters>();
-    pimpl->Parallel(&Module::getPattern, {}, pat.get());
+    auto t = pimpl->Parallel(&Module::getPattern, {});
+    auto pat = t.tsquash("Inconsistent pattern parameters between modules");
     pat->save(fname);
 
     /*

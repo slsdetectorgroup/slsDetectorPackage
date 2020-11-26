@@ -1918,9 +1918,12 @@ void Module::setPattern(const defs::patternParameters *pat) {
     sendToDetector(F_SET_PATTERN, pat, sizeof(patternParameters), nullptr, 0);
 }
 
-void Module::getPattern(defs::patternParameters *pat) {
+std::unique_ptr<defs::patternParameters> Module::getPattern() {
+    std::unique_ptr<defs::patternParameters> pat =
+        sls::make_unique<defs::patternParameters>();
     *pat = sendToDetector<defs::patternParameters>(F_GET_PATTERN);
     pat->validate();
+    return pat;
 }
 
 uint64_t Module::getPatternIOControl() const {

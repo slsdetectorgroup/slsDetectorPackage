@@ -1919,8 +1919,7 @@ void Module::setPattern(const defs::patternParameters *pat) {
 }
 
 std::unique_ptr<defs::patternParameters> Module::getPattern() {
-    std::unique_ptr<defs::patternParameters> pat =
-        sls::make_unique<defs::patternParameters>();
+    auto pat = sls::make_unique<defs::patternParameters>();
     *pat = sendToDetector<defs::patternParameters>(F_GET_PATTERN);
     pat->validate();
     return pat;

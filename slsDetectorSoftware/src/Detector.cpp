@@ -1756,7 +1756,7 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
 void Detector::savePattern(const std::string &fname) {
     auto t = pimpl->Parallel(&Module::getPattern, {});
     // auto pat = t.tsquash("Inconsistent pattern parameters between modules");
-    auto pat = t[0];
+    auto pat = std::move(t[0]);
     // pat->save(fname);
 } // namespace sls
 

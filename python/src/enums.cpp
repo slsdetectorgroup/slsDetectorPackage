@@ -21,8 +21,8 @@ void init_enums(py::module &m) {
         m, "patternParameters");
 
     using pat = slsDetectorDefs::patternParameters;
-    PYBIND11_NUMPY_DTYPE(pat, word, patioctrl, patlimits, patloop, patnloop,
-                         patwait, patwaittime);
+    PYBIND11_NUMPY_DTYPE(pat, word, ioctrl, limits, loop, nloop, wait,
+                         waittime);
 
     patternParameters.def(py::init());
     patternParameters.def("numpy_view", [](py::object &obj) {

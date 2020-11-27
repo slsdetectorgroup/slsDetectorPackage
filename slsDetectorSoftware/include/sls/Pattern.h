@@ -34,7 +34,7 @@ class Pattern {
     void validate() const;
     void load(const std::string &fname);
     void save(const std::string &fname);
-    std::string str() const { return {}; }
+    std::string str() const;
 };
 
 } // namespace sls

@@ -204,4 +204,37 @@ void Pattern::save(const std::string &fname) {
     }
 }
 
+std::string Pattern::str() const {
+    std::ostringstream oss;
+    oss << '[' << std::setfill('0') << std::endl;
+    int addr_width = 4;
+    int word_width = 16;
+    for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
+        if (pat->word[i] != 0) {
+            oss << "patword " << ToStringHex(i, addr_width) << " "
+                << ToStringHex(pat->word[i], word_width) << std::endl;
+        }
+    }
+    oss << "patioctrl " << ToStringHex(pat->ioctrl, word_width) << std::endl
+        << "patlimits " << ToStringHex(pat->limits[0], addr_width) << " "
+        << ToStringHex(pat->limits[1], addr_width) << std::endl
+        << "patloop0 " << ToStringHex(pat->loop[0], addr_width) << " "
+        << ToStringHex(pat->loop[1], addr_width) << std::endl
+        << "patnloop0 " << pat->nloop[0] << std::endl
+        << "patloop1 " << ToStringHex(pat->loop[2], addr_width) << " "
+        << ToStringHex(pat->loop[3], addr_width) << std::endl
+        << "patnloop1 " << pat->nloop[1] << std::endl
+        << "patloop2 " << ToStringHex(pat->loop[4], addr_width) << " "
+        << ToStringHex(pat->loop[5], addr_width) << std::endl
+        << "patnloop2 " << pat->nloop[2] << std::endl
+        << "patwait0 " << ToStringHex(pat->wait[0], addr_width) << std::endl
+        << "patwaittime0 " << pat->waittime[0] << std::endl
+        << "patwait1 " << ToStringHex(pat->wait[1], addr_width) << std::endl
+        << "patwaittime1 " << pat->waittime[1] << std::endl
+        << "patwait2 " << ToStringHex(pat->wait[2], addr_width) << std::endl
+        << "patwaittime2 " << pat->waittime[2] << std::endl
+        << ']';
+    return oss.str();
+}
+
 } // namespace sls

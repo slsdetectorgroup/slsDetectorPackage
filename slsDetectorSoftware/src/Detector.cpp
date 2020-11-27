@@ -1758,7 +1758,6 @@ void Detector::savePattern(const std::string &fname) {
     auto t = pimpl->Parallel(&Module::getPattern, {});
     auto pat = t.tsquash("Inconsistent pattern parameters between modules");
     pat.validate();
-    std::cout << ToString(pat) << std::endl;
     pat.save(fname);
 }
 

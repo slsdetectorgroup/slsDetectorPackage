@@ -30,7 +30,7 @@ class Pattern {
     bool operator!=(const Pattern &other) const;
     patternParameters *data();
     patternParameters *data() const;
-    constexpr size_t size() const noexcept { return sizeof(patternParameters); }
+    const size_t size() const noexcept { return sizeof(patternParameters); }
     void validate() const;
     void load(const std::string &fname);
     void save(const std::string &fname);

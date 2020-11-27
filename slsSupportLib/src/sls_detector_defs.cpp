@@ -102,6 +102,7 @@ void slsDetectorDefs::patternParameters::save(const std::string &fname) {
         throw RuntimeError("Could not open pattern file " + fname +
                            " for writing");
     }
+    std::cout << "is it really going here??" << std : endl;
     std::ostringstream os;
     // pattern word
     for (uint32_t i = limits[0]; i <= limits[1]; ++i) {

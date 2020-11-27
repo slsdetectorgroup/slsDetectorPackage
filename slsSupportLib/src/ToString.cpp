@@ -88,44 +88,6 @@ std::ostream &operator<<(std::ostream &os,
     return os << ToString(r);
 }
 
-// std::string ToString(const slsDetectorDefs::patternParameters &r) {
-//     std::ostringstream oss;
-//     oss << '[' << std::setfill('0') << std::endl;
-//     int addr_width = 4;
-//     int word_width = 16;
-//     for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
-//         if (r.word[i] != 0) {
-//             oss << "patword " << ToStringHex(i, addr_width) << " "
-//                 << ToStringHex(r.word[i], word_width) << std::endl;
-//         }
-//     }
-//     oss << "patioctrl " << ToStringHex(r.ioctrl, word_width) << std::endl
-//         << "patlimits " << ToStringHex(r.limits[0], addr_width) << " "
-//         << ToStringHex(r.limits[1], addr_width) << std::endl
-//         << "patloop0 " << ToStringHex(r.loop[0], addr_width) << " "
-//         << ToStringHex(r.loop[1], addr_width) << std::endl
-//         << "patnloop0 " << r.nloop[0] << std::endl
-//         << "patloop1 " << ToStringHex(r.loop[2], addr_width) << " "
-//         << ToStringHex(r.loop[3], addr_width) << std::endl
-//         << "patnloop1 " << r.nloop[1] << std::endl
-//         << "patloop2 " << ToStringHex(r.loop[4], addr_width) << " "
-//         << ToStringHex(r.loop[5], addr_width) << std::endl
-//         << "patnloop2 " << r.nloop[2] << std::endl
-//         << "patwait0 " << ToStringHex(r.wait[0], addr_width) << std::endl
-//         << "patwaittime0 " << r.waittime[0] << std::endl
-//         << "patwait1 " << ToStringHex(r.wait[1], addr_width) << std::endl
-//         << "patwaittime1 " << r.waittime[1] << std::endl
-//         << "patwait2 " << ToStringHex(r.wait[2], addr_width) << std::endl
-//         << "patwaittime2 " << r.waittime[2] << std::endl
-//         << ']';
-//     return oss.str();
-// }
-
-// std::ostream &operator<<(std::ostream &os,
-//                          const slsDetectorDefs::patternParameters &r) {
-//     return os << ToString(r);
-// }
-
 std::string ToString(const slsDetectorDefs::scanParameters &r) {
     std::ostringstream oss;
     oss << '[';

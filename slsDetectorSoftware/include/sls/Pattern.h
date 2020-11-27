@@ -18,25 +18,24 @@ typedef struct __attribute__((packed)) {
     uint64_t waittime[3];
 } patternParameters;
 
-
 #ifdef __cplusplus
-class Pattern{
-    patternParameters* pat = new patternParameters{};
-    
-    public:
-        Pattern();
-        ~Pattern();
-        Pattern(const Pattern& other);
-        bool operator==(const Pattern& other) const;
-        bool operator!=(const Pattern& other) const;
-        patternParameters* data();
-        patternParameters* data() const;
-        constexpr size_t size() const  noexcept{ return sizeof(patternParameters);}
-        void validate() const;
-        void load(const std::string &fname);
-        std::string str() const { return {}; }
+class Pattern {
+    patternParameters *pat = new patternParameters{};
 
+  public:
+    Pattern();
+    ~Pattern();
+    Pattern(const Pattern &other);
+    bool operator==(const Pattern &other) const;
+    bool operator!=(const Pattern &other) const;
+    patternParameters *data();
+    patternParameters *data() const;
+    constexpr size_t size() const noexcept { return sizeof(patternParameters); }
+    void validate() const;
+    void load(const std::string &fname);
+    void save(const std::string &fname);
+    std::string str() const { return {}; }
 };
 
-} //namespace sls
+} // namespace sls
 #endif

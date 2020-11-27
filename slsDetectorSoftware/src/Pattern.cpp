@@ -15,38 +15,40 @@ Pattern::Pattern(const Pattern &other) {
 }
 
 bool Pattern::operator==(const Pattern &other) const {
-    for (size_t i = 0; i<(sizeof(pat->word)/sizeof(pat->word[0])); ++i){
+    for (size_t i = 0; i < (sizeof(pat->word) / sizeof(pat->word[0])); ++i) {
         if (pat->word[i] != other.pat->word[i])
             return false;
     }
     if (pat->ioctrl != other.pat->ioctrl)
         return false;
-    
-    for (size_t i = 0; i<(sizeof(pat->limits)/sizeof(pat->limits[0])); ++i){
+
+    for (size_t i = 0; i < (sizeof(pat->limits) / sizeof(pat->limits[0]));
+         ++i) {
         if (pat->limits[i] != other.pat->limits[i])
             return false;
     }
-    for (size_t i = 0; i<(sizeof(pat->loop)/sizeof(pat->loop[0])); ++i){
+    for (size_t i = 0; i < (sizeof(pat->loop) / sizeof(pat->loop[0])); ++i) {
         if (pat->loop[i] != other.pat->loop[i])
             return false;
     }
-    for (size_t i = 0; i<(sizeof(pat->nloop)/sizeof(pat->nloop[0])); ++i){
+    for (size_t i = 0; i < (sizeof(pat->nloop) / sizeof(pat->nloop[0])); ++i) {
         if (pat->nloop[i] != other.pat->nloop[i])
             return false;
     }
-    for (size_t i = 0; i<(sizeof(pat->wait)/sizeof(pat->wait[0])); ++i){
+    for (size_t i = 0; i < (sizeof(pat->wait) / sizeof(pat->wait[0])); ++i) {
         if (pat->wait[i] != other.pat->wait[i])
             return false;
     }
-    for (size_t i = 0; i<(sizeof(pat->waittime)/sizeof(pat->waittime[0])); ++i){
+    for (size_t i = 0; i < (sizeof(pat->waittime) / sizeof(pat->waittime[0]));
+         ++i) {
         if (pat->waittime[i] != other.pat->waittime[i])
             return false;
     }
     return true;
 }
 
-bool Pattern::operator!=(const Pattern& other) const{
-    return !(*this==other);
+bool Pattern::operator!=(const Pattern &other) const {
+    return !(*this == other);
 }
 
 patternParameters *Pattern::data() { return pat; }
@@ -160,6 +162,45 @@ void Pattern::load(const std::string &fname) {
                 throw RuntimeError("Unknown command in pattern file " + cmd);
             }
         }
+    }
+}
+
+void Pattern::save(const std::string &fname) {
+    std::ofstream output_file(fname);
+    if (!output_file) {
+        throw RuntimeError("Could not open pattern file " + fname +
+                           " for writing");
+    }
+    std::ostringstream os;
+    // pattern word
+    for (uint32_t i = pat->limits[0]; i <= pat->limits[1]; ++i) {
+        output_file << "patword [" << ToStringHex(i, 4) << ", "
+                    << ToStringHex(pat->word[i], 16) << "]" << std::endl;
+    }
+
+    // patioctrl
+    output_file << "patioctrl " << ToStringHex(pat->ioctrl, 16) << std::endl;
+
+    // patlimits
+    output_file << "patlimits " << ToStringHex(pat->limits[0], 4) << " "
+                << ToStringHex(pat->limits[1], 4) << std::endl;
+
+    for (size_t i = 0; i < 3; ++i) {
+        // patloop
+        output_file << "patloop" << i << " "
+                    << ToStringHex(pat->loop[i * 2 + 0], 4) << " "
+                    << ToStringHex(pat->loop[i * 2 + 1], 4) << std::endl;
+        // patnloop
+        output_file << "patnloop" << i << " " << pat->nloop[i] << std::endl;
+    }
+
+    for (size_t i = 0; i < 3; ++i) {
+        // patwait
+        output_file << "patwait" << i << " " << ToStringHex(pat->wait[i], 4)
+                    << std::endl;
+        // patwaittime
+        output_file << "patwaittime" << i << " " << pat->waittime[i]
+                    << std::endl;
     }
 }
 

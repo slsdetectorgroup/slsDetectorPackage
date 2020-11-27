@@ -475,35 +475,6 @@ typedef struct {
     } __attribute__((packed));
 #endif
 
-//     /** pattern structure */
-// #ifdef __cplusplus
-//     struct patternParameters {
-// #else
-// typedef struct __attribute__((packed)) {
-// #endif
-//         uint64_t word[MAX_PATTERN_LENGTH];
-//         uint64_t ioctrl;
-//         uint32_t limits[2];
-//         // loop0 start, loop0 stop .. loop2 start, loop2 stop
-//         uint32_t loop[6];
-//         uint32_t nloop[3];
-//         uint32_t wait[3];
-//         uint64_t waittime[3];
-// #ifdef __cplusplus
-//       public:
-//         patternParameters() {
-//             // Since the def has to be c compatible we can't use {} for the
-//             // members
-//             memset(this, 0, sizeof(patternParameters));
-//         }
-//         void load(const std::string &fname);
-//         void save(const std::string &fname);
-//         void validate() const;
-//     } __attribute__((packed));
-// #else
-// } patternParameters;
-// #endif
-
 #ifdef __cplusplus
   protected:
 #endif

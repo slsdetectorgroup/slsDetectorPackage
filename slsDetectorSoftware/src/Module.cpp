@@ -1913,7 +1913,7 @@ void Module::setLEDEnable(bool enable) {
 
 // Pattern
 
-void Module::setPattern(const Pattern& pat) {
+void Module::setPattern(const Pattern &pat) {
     sendToDetector(F_SET_PATTERN, pat.data(), pat.size(), nullptr, 0);
 }
 

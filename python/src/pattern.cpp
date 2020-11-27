@@ -20,23 +20,28 @@ void init_pattern(py::module &m) {
         pat &o = obj.cast<pat &>();
         return py::array_t<pat>(1, &o, obj);
     });
+    //.def_readwrite("name", &Pet::name)
+    // patternParameters.def_property(
+    //     "some",
+    //     [](py::object &obj) {
+    //         pat &o = obj.cast<pat &>();
+    //         return py::array_t<pat>(1, &o, obj);
+    //     },
+    //     [](py::object &obj) {
+    //         pat &o = obj.cast<pat &>();
+    //         return py::array_t<pat>(1, &o, obj);
+    //     });
 
-    // m.def("get_memoryview1d", []() {
-    //     return py::memoryview::from_memory(
-    //         buffer,               // buffer pointer
-    //         sizeof(uint8_t) * 8   // buffer size
-    //     );
-    // })
-    // patternParameters.def("load", &pat::load);
+    // patternParameters.def_property_readonly(
+    //     "loop",
+    //     [](py::object &obj) {
+    //         pat &o = obj.cast<pat &>();
+    //         return py::array_t<uint32_t>(6, &o.loop[0], obj);
+    //     });
 
     py::class_<sls::Pattern> Pattern(m, "Pattern");
     Pattern.def(py::init());
     Pattern.def("load", &sls::Pattern::load);
-    Pattern.def("data", (pat * (sls::Pattern::*)()) & sls::Pattern::data, py::return_value_policy::reference);
-
-    // m.def("get_memoryview1d", []() {
-    //     return py::memoryview::from_memory(data(),      // buffer pointer
-    //                                        sizeof(pat)  // buffer size
-    //     );
-    // });
+    Pattern.def("data", (pat * (sls::Pattern::*)()) & sls::Pattern::data,
+                py::return_value_policy::reference);
 }

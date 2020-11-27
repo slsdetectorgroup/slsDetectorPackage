@@ -7,7 +7,8 @@ namespace sls {
 #endif
 
 // Common C/C++ structure to handle pattern data
-typedef struct __attribute__((packed)) {
+// typedef struct __attribute__((packed)) {
+typedef struct {
     uint64_t word[MAX_PATTERN_LENGTH];
     uint64_t ioctrl;
     uint32_t limits[2];
@@ -30,7 +31,7 @@ class Pattern {
     bool operator!=(const Pattern &other) const;
     patternParameters *data();
     patternParameters *data() const;
-    const size_t size() const noexcept { return sizeof(patternParameters); }
+    size_t size() const noexcept { return sizeof(patternParameters); }
     void validate() const;
     void load(const std::string &fname);
     void save(const std::string &fname);

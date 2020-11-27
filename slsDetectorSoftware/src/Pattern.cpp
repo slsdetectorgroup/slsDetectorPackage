@@ -174,8 +174,8 @@ void Pattern::save(const std::string &fname) {
     std::ostringstream os;
     // pattern word
     for (uint32_t i = pat->limits[0]; i <= pat->limits[1]; ++i) {
-        output_file << "patword [" << ToStringHex(i, 4) << ", "
-                    << ToStringHex(pat->word[i], 16) << "]" << std::endl;
+        output_file << "patword " << ToStringHex(i, 4) << " "
+                    << ToStringHex(pat->word[i], 16) << std::endl;
     }
 
     // patioctrl

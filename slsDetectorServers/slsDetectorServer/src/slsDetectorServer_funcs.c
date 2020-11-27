@@ -7653,15 +7653,14 @@ int get_pattern(int file_des) {
         LOG(logDEBUG,
             ("retval pattern word (printing every 10 words that are not 0\n"));
         for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
-            int retval = readPatternWord(i);
-            if (retval == -1) {
+            pat->word[i] = readPatternWord(i);
+            if ((int64_t)pat->word[i] == -1) {
                 ret = FAIL;
                 sprintf(mess, "could not read pattern word for address 0x%x\n",
                         i);
                 LOG(logERROR, (mess));
                 break;
             }
-            pat->word[i] = retval;
             // debug print
             if ((i % 10 == 0) && pat->word[i] != 0) {
                 LOG(logDEBUG,

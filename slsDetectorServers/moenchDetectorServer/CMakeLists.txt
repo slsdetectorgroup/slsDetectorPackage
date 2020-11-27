@@ -20,6 +20,7 @@ add_executable(moenchDetectorServer_virtual
 include_directories(
     ../slsDetectorServer/include
     ../../slsSupportLib/include
+    ../../slsDetectorSoftware/include/sls/
 )
 
 target_include_directories(moenchDetectorServer_virtual

@@ -5,6 +5,10 @@
 #include "sls/sls_detector_funcs.h"
 #include "slsDetectorFunctionList.h"
 
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
+#include "Pattern.h"
+#endif
+
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <string.h>
@@ -7532,6 +7536,10 @@ int set_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+
     patternParameters *pat = malloc(sizeof(patternParameters));
     memset(pat, 0, sizeof(patternParameters));
 
@@ -7542,9 +7550,6 @@ int set_pattern(int file_des) {
         return printSocketReadError();
     }
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
-    functionNotImplemented();
-#else
     if (Server_VerifyLock() == OK) {
         LOG(logINFO, ("Setting Pattern from structure\n"));
         LOG(logINFO,
@@ -7622,9 +7627,10 @@ int set_pattern(int file_des) {
             }
         }
     }
-#endif
     if (pat != NULL)
         free(pat);
+#endif
+
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -7632,12 +7638,14 @@ int get_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+    return Server_SendResult(file_des, INT32, NULL, 0);
+#else
+
     patternParameters *pat = malloc(sizeof(patternParameters));
     memset(pat, 0, sizeof(patternParameters));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
-    functionNotImplemented();
-#else
     if (Server_VerifyLock() == OK) {
         LOG(logINFO, ("Getting Pattern from structure\n"));
 
@@ -7732,13 +7740,14 @@ int get_pattern(int file_des) {
             }
         }
     }
-#endif
+
     // ignoring endianness for eiger
     int ret =
         Server_SendResult(file_des, INT32, pat, sizeof(patternParameters));
     if (pat != NULL)
         free(pat);
     return ret;
+#endif
 }
 
 int get_scan(int file_des) {

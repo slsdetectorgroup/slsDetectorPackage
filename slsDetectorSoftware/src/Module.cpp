@@ -1913,15 +1913,13 @@ void Module::setLEDEnable(bool enable) {
 
 // Pattern
 
-void Module::setPattern(const defs::patternParameters *pat) {
-    pat->validate();
-    sendToDetector(F_SET_PATTERN, pat, sizeof(patternParameters), nullptr, 0);
+void Module::setPattern(const Pattern& pat) {
+    sendToDetector(F_SET_PATTERN, pat.data(), pat.size(), nullptr, 0);
 }
 
-std::unique_ptr<defs::patternParameters> Module::getPattern() {
-    auto pat = sls::make_unique<defs::patternParameters>();
-    *pat = sendToDetector<defs::patternParameters>(F_GET_PATTERN);
-    pat->validate();
+Pattern Module::getPattern() {
+    Pattern pat;
+    sendToDetector(F_GET_PATTERN, nullptr, 0, pat.data(), pat.size());
     return pat;
 }
 

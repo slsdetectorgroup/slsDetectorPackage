@@ -9,6 +9,7 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/versionAPI.h"
+#include "sls/Pattern.h"
 
 #include <chrono>
 #include <fstream>
@@ -1754,19 +1755,19 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
 // Pattern
 
 void Detector::savePattern(const std::string &fname) {
-    auto t = pimpl->Parallel(&Module::getPattern, {});
+    // auto t = pimpl->Parallel(&Module::getPattern, {});
     // auto pat = t.tsquash("Inconsistent pattern parameters between modules");
-    auto pat = std::move(t[0]);
     // pat->save(fname);
 } // namespace sls
 
 void Detector::setPattern(const std::string &fname, Positions pos) {
-    auto pat = sls::make_unique<defs::patternParameters>();
-    pat->load(fname);
-    pimpl->Parallel(&Module::setPattern, pos, pat.get());
+    // Pattern pat;
+    // pat.load(fname);
+    // setPattern(pat, pos);
 }
 
-void Detector::setPattern(const defs::patternParameters *pat, Positions pos) {
+void Detector::setPattern(const Pattern& pat, Positions pos) {
+    pat.validate();
     pimpl->Parallel(&Module::setPattern, pos, pat);
 }
 

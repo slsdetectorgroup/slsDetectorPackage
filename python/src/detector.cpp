@@ -1272,8 +1272,7 @@ void init_det(py::module &m) {
                  Detector::setPattern,
              py::arg(), py::arg() = Positions{})
         .def("setPattern",
-             (void (Detector::*)(const defs::patternParameters *,
-                                 sls::Positions)) &
+             (void (Detector::*)(const sls::Pattern &, sls::Positions)) &
                  Detector::setPattern,
              py::arg(), py::arg() = Positions{})
         .def("savePattern",

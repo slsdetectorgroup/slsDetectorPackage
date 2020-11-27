@@ -5,6 +5,7 @@
 #include "sls/logger.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
+#include "sls/Pattern.h"
 
 #include <array>
 #include <cmath>
@@ -462,8 +463,8 @@ class Module : public virtual slsDetectorDefs {
      *    Pattern                                     *
      *                                                *
      * ************************************************/
-    void setPattern(const defs::patternParameters *pat);
-    std::unique_ptr<defs::patternParameters> getPattern();
+    void setPattern(const Pattern& pat);
+    Pattern getPattern();
     uint64_t getPatternIOControl() const;
     void setPatternIOControl(uint64_t word);
     uint64_t getPatternWord(int addr) const;

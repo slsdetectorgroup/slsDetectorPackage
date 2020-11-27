@@ -1,5 +1,7 @@
 import _slsdet
 
+from _slsdet import Pattern
+
 class patternParameters(_slsdet.patternParameters):
     def __init__(self):
         super().__init__()

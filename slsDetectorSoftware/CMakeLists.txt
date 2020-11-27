@@ -4,6 +4,7 @@ set(SOURCES
     src/Detector.cpp
     src/CmdProxy.cpp
     src/CmdParser.cpp
+    src/Pattern.cpp
 )
 
 add_library(slsDetectorObject OBJECT

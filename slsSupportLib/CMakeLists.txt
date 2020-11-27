@@ -10,7 +10,7 @@ set(SOURCES
     src/ZmqSocket.cpp
     src/UdpRxSocket.cpp
     src/sls_detector_exceptions.cpp
-    src/sls_detector_defs.cpp
+    # src/sls_detector_defs.cpp
 )
 
 # Header files to install as a part of the library

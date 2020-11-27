@@ -44,9 +44,9 @@ std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::ROI &roi);
 std::string ToString(const slsDetectorDefs::rxParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::rxParameters &r);
-std::string ToString(const slsDetectorDefs::patternParameters &r);
-std::ostream &operator<<(std::ostream &os,
-                         const slsDetectorDefs::patternParameters &r);
+// std::string ToString(const slsDetectorDefs::patternParameters &r);
+// std::ostream &operator<<(std::ostream &os,
+//                          const slsDetectorDefs::patternParameters &r);
 std::string ToString(const slsDetectorDefs::scanParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::scanParameters &r);

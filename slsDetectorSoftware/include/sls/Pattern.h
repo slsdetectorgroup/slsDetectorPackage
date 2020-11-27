@@ -7,8 +7,7 @@ namespace sls {
 #endif
 
 // Common C/C++ structure to handle pattern data
-// typedef struct __attribute__((packed)) {
-typedef struct {
+typedef struct __attribute__((packed)) {
     uint64_t word[MAX_PATTERN_LENGTH];
     uint64_t ioctrl;
     uint32_t limits[2];

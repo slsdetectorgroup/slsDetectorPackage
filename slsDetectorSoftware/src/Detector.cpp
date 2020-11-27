@@ -5,11 +5,11 @@
 #include "CmdProxy.h"
 #include "DetectorImpl.h"
 #include "Module.h"
+#include "sls/Pattern.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/versionAPI.h"
-#include "sls/Pattern.h"
 
 #include <chrono>
 #include <fstream>
@@ -1755,18 +1755,20 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
 // Pattern
 
 void Detector::savePattern(const std::string &fname) {
-    // auto t = pimpl->Parallel(&Module::getPattern, {});
-    // auto pat = t.tsquash("Inconsistent pattern parameters between modules");
-    // pat->save(fname);
-} // namespace sls
-
-void Detector::setPattern(const std::string &fname, Positions pos) {
-    // Pattern pat;
-    // pat.load(fname);
-    // setPattern(pat, pos);
+    auto t = pimpl->Parallel(&Module::getPattern, {});
+    auto pat = t.tsquash("Inconsistent pattern parameters between modules");
+    pat.validate();
+    pat->save(fname);
 }
 
-void Detector::setPattern(const Pattern& pat, Positions pos) {
+void Detector::setPattern(const std::string &fname, Positions pos) {
+    Pattern pat;
+    pat.load(fname);
+    pat.validate();
+    setPattern(pat, pos);
+}
+
+void Detector::setPattern(const Pattern &pat, Positions pos) {
     pat.validate();
     pimpl->Parallel(&Module::setPattern, pos, pat);
 }

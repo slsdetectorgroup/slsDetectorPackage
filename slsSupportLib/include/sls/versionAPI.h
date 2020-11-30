@@ -1,8 +1,5 @@
 /** API versions */
-#define GITBRANCH    "developer"
-#define APILIB 0x201119
-#define APIRECEIVER 0x201119
-#define APIGUI 0x201119
+#define GITBRANCH    "savepattern"
 #define APICTB 0x201130
 #define APIGOTTHARD 0x201130
 #define APIGOTTHARD2 0x201130
@@ -10,3 +7,6 @@
 #define APIMYTHEN3 0x201130
 #define APIMOENCH 0x201127
 #define APIEIGER 0x201130
+#define APILIB 0x201130
+#define APIRECEIVER 0x201124
+#define APIGUI 0x201124

@@ -5,6 +5,7 @@
 #include "CmdProxy.h"
 #include "DetectorImpl.h"
 #include "Module.h"
+#include "sls/Pattern.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
@@ -1754,44 +1755,22 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
 // Pattern
 
 void Detector::savePattern(const std::string &fname) {
-    std::ofstream outfile;
-    outfile.open(fname.c_str(), std::ios_base::out);
-    if (!outfile.is_open()) {
-        throw RuntimeError("Could not create file to save pattern");
-    }
-    // get pattern limits
-    auto r = pimpl->Parallel(&Module::getPatternLoopAddresses, {}, -1)
-                 .tsquash("Inconsistent pattern limits");
-
-    CmdProxy proxy(this);
-    // pattern words
-    for (int i = r[0]; i <= r[1]; ++i) {
-        std::ostringstream os;
-        os << "0x" << std::hex << i;
-        auto addr = os.str();
-        proxy.Call("patword", {addr}, -1, defs::GET_ACTION, outfile);
-    }
-    // rest of pattern file
-    std::vector<std::string> commands{
-        "patioctrl", "patlimits",    "patloop0", "patnloop0",
-        "patloop1",  "patnloop1",    "patloop2", "patnloop2",
-        "patwait0",  "patwaittime0", "patwait1", "patwaittime1",
-        "patwait2",  "patwaittime2", "patmask",  "patsetbit",
-    };
-    auto det_type = getDetectorType().squash();
-    if (det_type == defs::MYTHEN3) {
-        commands.erase(commands.begin(), commands.begin() + 2);
-    }
-    for (const auto &cmd : commands)
-        proxy.Call(cmd, {}, -1, defs::GET_ACTION, outfile);
+    auto t = pimpl->Parallel(&Module::getPattern, {});
+    auto pat = t.tsquash("Inconsistent pattern parameters between modules");
+    pat.validate();
+    pat.save(fname);
 }
 
 void Detector::setPattern(const std::string &fname, Positions pos) {
-    pimpl->Parallel(&Module::setPattern, pos, fname);
+    Pattern pat;
+    pat.load(fname);
+    pat.validate();
+    setPattern(pat, pos);
 }
 
-void Detector::setPattern(const defs::patternParameters *pat, Positions pos) {
-    pimpl->Parallel(&Module::setPatternStructure, pos, pat);
+void Detector::setPattern(const Pattern &pat, Positions pos) {
+    pat.validate();
+    pimpl->Parallel(&Module::setPattern, pos, pat);
 }
 
 Result<uint64_t> Detector::getPatternIOControl(Positions pos) const {

@@ -2,6 +2,7 @@
 #include "sls/TimeHelper.h"
 #include "sls/ToString.h"
 #include "sls/network_utils.h"
+#include "sls/Pattern.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/container_utils.h"
 #include <array>
@@ -317,9 +318,9 @@ TEST_CASE("Printing c style arrays of double"){
 }
 
 TEST_CASE("Print a member of patternParameters"){
-    auto pat = sls::make_unique<slsDetectorDefs::patternParameters>();
-    pat->patlimits[0] = 4;
-    pat->patlimits[1] = 100;
-    REQUIRE(ToString(pat->patlimits) == "[4, 100]");
+    auto pat = sls::make_unique<sls::patternParameters>();
+    pat->limits[0] = 4;
+    pat->limits[1] = 100;
+    REQUIRE(ToString(pat->limits) == "[4, 100]");
 
 }

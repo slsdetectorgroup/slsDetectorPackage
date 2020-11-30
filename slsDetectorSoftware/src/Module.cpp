@@ -1913,37 +1913,14 @@ void Module::setLEDEnable(bool enable) {
 
 // Pattern
 
-void Module::setPattern(const std::string &fname) {
-    auto pat = sls::make_unique<patternParameters>();
-    pat->load(fname);
-    setPatternStructure(pat.get());
+void Module::setPattern(const Pattern &pat) {
+    sendToDetector(F_SET_PATTERN, pat.data(), pat.size(), nullptr, 0);
 }
 
-void Module::setPatternStructure(const defs::patternParameters *pat) {
-    // verifications
-    if (pat->patlimits[0] >= MAX_PATTERN_LENGTH ||
-        pat->patlimits[1] >= MAX_PATTERN_LENGTH) {
-        throw RuntimeError("Invalid Pattern limits address [" +
-                           ToString(pat->patlimits[0]) + std::string(", ") +
-                           ToString(pat->patlimits[1]) + std::string("]"));
-    }
-    for (int i = 0; i != 3; ++i) {
-        if (pat->patloop[i * 2 + 0] >= MAX_PATTERN_LENGTH ||
-            pat->patloop[i * 2 + 1] >= MAX_PATTERN_LENGTH) {
-            throw RuntimeError(
-                "Invalid Pattern loop address for level " + ToString(i) +
-                std::string(" [") + ToString(pat->patloop[i * 2 + 0]) +
-                std::string(", ") + ToString(pat->patloop[i * 2 + 1]) +
-                std::string("]"));
-        }
-        if (pat->patwait[i] >= MAX_PATTERN_LENGTH) {
-            throw RuntimeError("Invalid Pattern wait address for level " +
-                               ToString(i) + std::string(" ") +
-                               ToString(pat->patwait[i]));
-        }
-    }
-    LOG(logDEBUG1) << "Sending pattern from file to detector:" << *pat;
-    sendToDetector(F_SET_PATTERN, pat, sizeof(patternParameters), nullptr, 0);
+Pattern Module::getPattern() {
+    Pattern pat;
+    sendToDetector(F_GET_PATTERN, nullptr, 0, pat.data(), pat.size());
+    return pat;
 }
 
 uint64_t Module::getPatternIOControl() const {

@@ -44,9 +44,6 @@ std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::ROI &roi);
 std::string ToString(const slsDetectorDefs::rxParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::rxParameters &r);
-std::string ToString(const slsDetectorDefs::patternParameters &r);
-std::ostream &operator<<(std::ostream &os,
-                         const slsDetectorDefs::patternParameters &r);
 std::string ToString(const slsDetectorDefs::scanParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::scanParameters &r);
@@ -182,16 +179,15 @@ std::string ToString(const std::map<KeyType, ValueType> &m) {
 }
 
 /**
- * Print a c style array 
+ * Print a c style array
  */
-template<typename T, size_t size>
-std::string ToString(const T(&arr)[size]){
+template <typename T, size_t size> std::string ToString(const T (&arr)[size]) {
     std::ostringstream os;
     os << '[';
-    if (size){
+    if (size) {
         size_t i = 0;
         os << ToString(arr[i++]);
-        for (; i<size; ++i)
+        for (; i < size; ++i)
             os << ", " << ToString(arr[i]);
     }
     os << ']';

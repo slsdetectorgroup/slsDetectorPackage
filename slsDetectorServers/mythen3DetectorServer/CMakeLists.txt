@@ -17,6 +17,7 @@ add_executable(mythen3DetectorServer_virtual
 include_directories(
     ../slsDetectorServer/include
     ../../slsSupportLib/include
+    ../../slsDetectorSoftware/include/sls/
 )
 
 target_include_directories(mythen3DetectorServer_virtual

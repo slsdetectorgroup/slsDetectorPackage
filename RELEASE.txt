@@ -1,326 +1,70 @@
-SLS Detector Package 5.0.0 released on 18.11.2020 (Major Release)
-=================================================================
+SLS Detector Package 5.0.1 released on 25.11.2020 (Bug Fix Release)
+===================================================================
+
+This document describes the differences between 5.0.1 and 5.0.0 releases.   
+
+
 
     CONTENTS
     --------
-    1.	Topics Concerning
-    2.  New Features
-    3.  Resolved Issues
-    4.  Known Issues
-    5.  Firmware Requirements
-    6.  Download, Documentation & Support
+    1.  Topics Concerning
+    2.  Resolved Issues
+    3.  Known Issues
+    4.  Firmware Requirements
+    5.  Download, Documentation & Support
 
 
 
 1. Topics Concerning
 ====================
 
-    - Compilation requirements
-    - Manuals
-    - Client API complete change
-    - Exceptions
-    - Scan mode (dacs and trimbit)
-    - Timing commands
-    - Enum list (daclist, dacvalues, settingslist, drlist etc.)
-    - Command line (return code)
-    - Command line (dac)
-    - UDP configuration change
-    - Gappixels
-    - Detector Simulators
-    - (Jungfrau server) settings and default dacs
-    - (Servers) Shared Memory
-    - (Jungfrau) two interfaces
-    - (Eiger, Jungfrau server) starting frame number
-    - (Eiger server) Server Config File
-    - (Eiger server) Partial Readout
-    - (Eiger server) Removed Features
-    - (Eiger server) Deactivation
-    - Zmq interface (ZmqSocket.h)
-    - slsReceiver (Metadata)
-    - slsReceiver (Shared Memory)
-    - slsReceiver (UDP IP)
-    - (Eiger Custom Receiver) Header packet
-    - Gui (zmq high water mark)
-    - (Eiger Server) Blocked server
-    - (Eiger Firmware) Extra 8 byte Packets
- 
+    - Python bindings
+    - CMake improvements
 
 
-2. New Features
-===============
 
-    Client
-    ------
-    1.  Compilation requirements
-        They are very different now and can be accessed at
-            https://slsdetectorgroup.github.io/devdoc/dependencies.html
-        Gui not included in default cmk.sh script. Must be explicitly asked for.
-
-    2.  Manuals 
-        They can be compiled in the package. 
-            https://slsdetectorgroup.github.io/devdoc/installation.html#build-this-documentation
-        Or refer to the documentation provided in 
-            https://slsdetectorgroup.github.io/devdoc/index.html
-
-    3.  API
-        Changed to Detector class. 
-        C++: Detector.h
-            Documentation:
-                https://slsdetectorgroup.github.io/devdoc/detector.html
-            Examples to use the Detector class:
-                https://github.com/slsdetectorgroup/api-examples
-
-        Python API Documentation: 
-            https://slsdetectorgroup.github.io/devdoc/pydetector.html
-
-        Command line:
-            Many commands have become deprecated. They will still execute, 
-            but give a warning.
-            Documentation:
-                https://slsdetectorgroup.github.io/devdoc/commandline.html
-            Help on a command:
-                sls_detector_help [command], or
-                sls_detector_get -h [command]
-    
-    4.  Exceptions
-        They are thrown instead of providing error codes.
-            sls_detector_exceptions.h
-        Make sure you catch all exceptions in custom gui and handle them or 
-        inform the user.
-        Exceptions thrown in callbacks are also handled.
-            - An exception in startAcquisitionCallBack will need to be handled in 
-            startReceiver or acquire()
-            - An exception in acquisitionFinishedCallBack will need to be handled in
-            stopReceiver or acquire()
-            - An exception in rawDataReadyCallBack or rawDataModifyReadyCallBack
-            will only print and skip image to free it in memory. If address is
-            incorrect after callback, expect undefined behavior.
-
-    5.  Scan mode
-        One can do scans for dacs or trimbits. Trimbits are only for Eiger or 
-        Mythen3. Enable scan mode and then acquire using blocking or non blocking
-        method. Command: scan.
-
-    6.  Timing Commands
-        In command line, all timing commands (eg. peiod) can now specify unit. 
-            eg 100ms 10us, 1s, 100ns
-        In C++ API, one must use chrono library.
-            eg. std::chrono::duration<double, std::milli> t1{232.57};
-                det.setExptime(std::chrono::duration_cast<std::chrono::nanoseconds>(t1));
-        In Python API, one must use timedelta library. 
-            eg. d.exptime = dt.timedelta(seconds = 1.2)
-
-    7.  Enum list (daclist)
-        Command line and API now has features to get the list of enums/commands
-        for dacs, settings, dynamic range, timing modes and temperatures for 
-        the detector in shared memory. 
-            eg. daclist, settingslist, drlist, timinglist, templist
-        Command line also has commands to get their values.
-            eg. dacvalues, tempvalues
-        Python has commands to get their values (detector specific class).
-            eg. d.temp, d.dacs
-
-    8.  Command Line (return code)
-        Return code of the client command line applications now return 0 for 
-        success and 1 for failure.
-        
-    9.  Command Line (Dac)
-        All dac commands have been converted to a single "dac" command with 
-        the previous dac commands as arguments.
-            eg. sls_detector_get vcmp_ll
-            is now
-            sls_detector_get dac vcmp_ll
-    
-    10. UDP Configuration
-        Once all the udp details are set in the detector, the detector's
-        destination is then configured automatically. If the detector is not 
-        configured, it will  fail when acquiring. If any of these parameters
-        are also changed, then this is configured again. Hence, configuremac 
-        command has been removed. Instead, there are commands such as
-        udp_validate (to validate if it has been configured) and
-        udp_reconfigure (to reconfigure).
-
-    11. Gap Pixels
-        Gap pixels are now only available in client call back or gui (not in 
-        receiver anymore). It can be enabled for Eiger and Jungfrau and 
-        includes inter chip and inter module gap pixels.
-
-    Detector Servers
-    ----------------
-
-    1.  Detector Simulators 
-        Or virtual detector servers for every detector have been provided. 
-        They are compiled along with the client by enabling its option. 
-        They should also send fake data (increasing pixel/channel value).  
-
-    2.  (Jungfrau) settings
-        Settings command do not implicitly set default dacs from now on.
-        One can use the command 'defaultdacs' to set them explicitly.
-
-    3.  Shared Memory
-        Almost all the detector parameters removed from shared memory.
-        Therefore, they are all fetched directly from detector.
-
-    4.  (Jungfrau) Two 10G data interfaces
-        Only Jungfrau PCBs with version 2.0 can run at full speed using both
-        the 10G UDP interfaces to stream out data. This is available from 
-        the current firmware and software. To enable two interfaces, one has 
-        to enable two interfaces using "numinterfaces" to 2 and set corresponding
-        udp_dstip2, udp_dstport2 etc. One can also decide to select which of 
-        the two interfaces to use, when using only 1 interface.
-
-    5.  (Eiger, Jungfrau) Next Frame number
-        Both now have running frame numbers that is only reset at boot up
-        and increments continuously through acquisitions. One is able to 
-        set the next frame number now. Command: nextframenumber.
-
-    6.  (Eiger) Server Config file (config_eiger.txt)
-        A config file on the detector can take in 2 parameters "master" 
-        and "top" being set to 1 or 0 to enable or disable the same.
-        When server is started without this file, it is set to hardware
-        settings.
-
-    7.  (Eiger) Partial readout
-        It is possible for partial readouts, where you specify the number
-        of pixel rows to read out. Not all values are allowed. The current
-        slsReceiver does not complain about missing packets, but only puts 
-        this partial image into the complete image (padding the rest). One
-        can cut out required subimage using callbacks, but this feature
-        is probably more useful for custom receivers. Command: readnlines.
-
-    8.  (Eiger) Removed Features
-        storeinram, safe speed and ability to set settings via the settings 
-        command has been removed.
-
-    9.  (Eiger) Deactivation
-        The detector is deactivated by default upon boot up and activated only 
-        upon setting hostname in the client. This is to ensure if the 
-        network of a board or a board is broken and one cannot connect
-        to this board, then it is deactivated by default upon reboot. 
-        Therefore, one can use other half modules of the detector.
-
-    Receiver
-    --------
-
-    1.  Zmq
-        The static library and the zmq.h is no longer provided with package.
-        One must install ZeroMQ version 4.
-        ZmqSocket.h API has changed, especially in parsing receiving JSON header.
-        One must pick up needed parameters  from exposed struct zmqHeader in 
-        ZmqSocket.h.
-
-    2.  Metadata
-        Detector dependant metadata has been added to the master files.
-
-    3.  Shared Memory
-        Almost all receiver parameters have been removed from client shared memory.
-        Therefore the receiver process needs to be alive to access any receiver
-        parameter as they are now fetched directly from the receiver.
-
-    4.  UDP IP
-        Since all the parameters are fetched from receiver or detector directly 
-        (not shared memory), the udp desintation ip (previously rx_udpip) is safer 
-        to be specified before setting rx_hostname. Setting it before has the
-        advantage that the detector is updated first before the receiver is
-        requested for the udp mac. This helps when changing pc and the receiver
-        cannot find the udp ip to get the udp mac.
-
-    5.  (Eiger) Header packet
-        The header packets of Eiger are not sent in this firmware version. So, 
-        custom receivers should handle accordingly.
-
-    Gui
-    ---
-    
-    1.  Zmq high water mark
-        When opening the Gui, the zmq send and receiver high water mark is set to 2
-        instead of default (1000 for zmq library version 4). This is to ensure
-        fast and large detectors can still see latest data on the gui at the cost of
-        losing images in between.
-        When using a different processor or client data call back to handle zmq data, 
-        please ensure this is set back to default to get every zmq packet. Setting it to 
-        -1 sets it to library defaults.
-
-    
-    
-
-3. Resolved Issues
+2. Resolved Issues
 ==================
 
-    Detector Server
+    Python bindings
     ---------------
 
-    1.  (Eiger) Blocked Server
-        Very rarely, Eiger control or stop server would block and would require a restart
-        of server. This is due to both servers accessing the same link to get to FEB
-        registers. Locking has been implemented in server shared memory to resolve.
+    1.  Fixed function signatures for getRxUDPSocketBufferSize, 
+        setRxUDPSocketBufferSize and getRxRealUDPSocketBufferSize. 
+
+    2.  Updated pybind11 to v2.6.1 to remove warnings with Python 3.9 and 
+        better handling of C++ standard. 
+
+    3.  Added missing properties in Python. 
+
+
+    CMake improvements
+    ------------------
+
+    1. Explicitly state Python 3.6 or greater.
+
+    2. Finds the Python of the activated environment when using conda 
+       without having to supply additional arguments.  
+
+    3. Removed redundant libraries for linking targets. 
+
+
+
+3. Firmware Requirements
+========================
+        
+    No updates from 5.0.0
 
 
 
 4. Known Issues
 ===============
 
-    1.  (Eiger) Extra 8 byte Packets
-        When stopping detector acquisition while acquiring for more than 128 frames,
-        the next acquisition sends out first an 8 byte packet. This is discarded
-        by the slsReceiver/slsMultiReceiver. Please handle this in custom receivers.
+    No updates from 5.0.0
 
 
 
-5. Firmware Requirements
-========================
-        
-        Eiger
-        =====  
-        Compatible version : 08.09.2020 (v27)
-        
-        Jungfrau
-        ========       
-        Compatible version : 24.07.2020 (v1.1, PCB v1.0) 
-                           : 21.07.2020 (v2.1, PCB v2.0)
-
-        Gotthard
-        ========   
-        Compatible version : 08.02.2018 (50um and 25um Master)
-                           : 09.02.2018 (25 um Slave) 
-
-        Mythen3
-        =======
-        Compatible version : 25.09.2020 (development)
-
-        Gotthard2
-        =========
-        Compatible version : 25.09.2020 (development)
-
-        Moench
-        ======
-        Compatible version : 05.10.2020 (v1.0)
-
-        Ctb
-        ===
-        Compatible version : 05.10.2020 (v1.0)
-
-        Detector Upgrade
-        ================
-
-        The following can be upgraded remotely:
-        Eiger      via bit files
-        Jungfrau   via command <.pof>
-        Mythen3    via command <.rbf>
-        Gotthard2  via command <.rbf> 
-        Moench     via command <.pof>
-        Ctb        via command <.pof>
-
-        The following cannot be upgraded remotely:
-        Gotthard   
-
-        Instructions available at
-            https://slsdetectorgroup.github.io/devdoc/firmware.html
-        and
-            https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
-
-    
-6. Download, Documentation & Support
+5. Download, Documentation & Support
 ====================================
 
     Download

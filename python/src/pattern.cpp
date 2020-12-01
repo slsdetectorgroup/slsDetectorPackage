@@ -20,24 +20,6 @@ void init_pattern(py::module &m) {
         pat &o = obj.cast<pat &>();
         return py::array_t<pat>(1, &o, obj);
     });
-    //.def_readwrite("name", &Pet::name)
-    // patternParameters.def_property(
-    //     "some",
-    //     [](py::object &obj) {
-    //         pat &o = obj.cast<pat &>();
-    //         return py::array_t<pat>(1, &o, obj);
-    //     },
-    //     [](py::object &obj) {
-    //         pat &o = obj.cast<pat &>();
-    //         return py::array_t<pat>(1, &o, obj);
-    //     });
-
-    // patternParameters.def_property_readonly(
-    //     "loop",
-    //     [](py::object &obj) {
-    //         pat &o = obj.cast<pat &>();
-    //         return py::array_t<uint32_t>(6, &o.loop[0], obj);
-    //     });
 
     py::class_<sls::Pattern> Pattern(m, "Pattern");
     Pattern.def(py::init());

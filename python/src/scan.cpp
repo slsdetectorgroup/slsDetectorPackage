@@ -1,0 +1,48 @@
+#include <pybind11/chrono.h>
+#include <pybind11/numpy.h>
+#include <pybind11/operators.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <sstream>
+#include "sls/sls_detector_defs.h"
+namespace py = pybind11;
+void init_scan(py::module &m) {
+
+    using sp = slsDetectorDefs::scanParameters;
+    py::class_<sp> scanParameters(m, "scanParameters");
+
+    scanParameters.def(py::init());
+    scanParameters.def_readwrite("enable", &sp::enable);
+    scanParameters.def_readwrite("dacInd", &sp::dacInd);
+    scanParameters.def_readwrite("startOffset", &sp::startOffset);
+    scanParameters.def_readwrite("stopOffset", &sp::stopOffset);
+    scanParameters.def_readwrite("stepSize", &sp::stepSize);
+    scanParameters.def_readwrite("dacSettleTime_ns", &sp::dacSettleTime_ns);
+    scanParameters.def("__repr__", [](const sp &a){
+        std::ostringstream oss;
+        auto indent = "  ";
+        oss << "<scanParameters>\n";
+        oss << indent << "enable: " <<  a.enable << '\n';
+        oss << indent << "dacInd: " <<  a.dacInd << '\n';
+        oss << indent << "startOffset: " <<  a.startOffset << '\n';
+        oss << indent << "stopOffset: " <<  a.stopOffset << '\n';
+        oss << indent << "stepSize: " <<  a.stepSize << '\n';
+        oss << indent << "dacSettleTime_ns: " <<  a.dacSettleTime_ns;
+        return oss.str();
+    });
+    // dacIndex dacInd;
+    //     int startOffset;
+    //     int stopOffset;
+    //     int stepSize;
+    //     int64_t dacSettleTime_ns;
+    // patternParameters.def("numpy_view", [](py::object &obj) {
+    //     pat &o = obj.cast<pat &>();
+    //     return py::array_t<pat>(1, &o, obj);
+    // });
+
+    // py::class_<sls::Pattern> Pattern(m, "Pattern");
+    // Pattern.def(py::init());
+    // Pattern.def("load", &sls::Pattern::load);
+    // Pattern.def("data", (pat * (sls::Pattern::*)()) & sls::Pattern::data,
+    //             py::return_value_policy::reference);
+}

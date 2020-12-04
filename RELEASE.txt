@@ -29,6 +29,7 @@ This document describes the differences between 5.0.2 and 5.0.1 releases.
     --------
 
     1.  Potentital Memory Leak if one called Implementation::setDetectorType
+    2.  scanParameters missing in Python
 
 
 

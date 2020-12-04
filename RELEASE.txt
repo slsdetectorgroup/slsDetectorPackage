@@ -19,18 +19,26 @@ This document describes the differences between 5.1.0 and 5.x.x releases.
 ====================
 
     - potentital memory leak in receiver
-
+    - scanParameters in Python
+    - cmk.sh refactored
 
 
 2. Resolved Issues
 ==================
+
 
     Receiver
     --------
 
     1.  Current code only calls Implementation::setDetectorType from constructor, 
 	but potential memory leak if called out of constructor context. Fixed.
-    2.  Fixed missing scanParameters class in Python 
+
+    Cleint
+    ------
+
+    1.  Fixed missing scanParameters class in Python 
+
+    2.  cmk.sh refactored to have better option handling.
 
 
 

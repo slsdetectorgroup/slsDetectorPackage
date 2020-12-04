@@ -12,6 +12,9 @@ void init_scan(py::module &m) {
     py::class_<sp> scanParameters(m, "scanParameters");
 
     scanParameters.def(py::init());
+
+    scanParameters.def(py::init<slsDetectorDefs::dacIndex, int, int, int>());
+    scanParameters.def(py::init<slsDetectorDefs::dacIndex, int, int, int, std::chrono::nanoseconds>());
     scanParameters.def_readwrite("enable", &sp::enable);
     scanParameters.def_readwrite("dacInd", &sp::dacInd);
     scanParameters.def_readwrite("startOffset", &sp::startOffset);
@@ -30,19 +33,7 @@ void init_scan(py::module &m) {
         oss << indent << "dacSettleTime_ns: " <<  a.dacSettleTime_ns;
         return oss.str();
     });
-    // dacIndex dacInd;
-    //     int startOffset;
-    //     int stopOffset;
-    //     int stepSize;
-    //     int64_t dacSettleTime_ns;
-    // patternParameters.def("numpy_view", [](py::object &obj) {
-    //     pat &o = obj.cast<pat &>();
-    //     return py::array_t<pat>(1, &o, obj);
-    // });
 
-    // py::class_<sls::Pattern> Pattern(m, "Pattern");
-    // Pattern.def(py::init());
-    // Pattern.def("load", &sls::Pattern::load);
-    // Pattern.def("data", (pat * (sls::Pattern::*)()) & sls::Pattern::data,
-    //             py::return_value_policy::reference);
+
+
 }

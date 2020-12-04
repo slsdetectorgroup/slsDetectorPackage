@@ -368,7 +368,7 @@ class Implementation : private virtual slsDetectorDefs {
     void *pRawDataReady{nullptr};
 
     // class objects
-    GeneralData *generalData;
+    GeneralData *generalData{nullptr};
     std::vector<std::unique_ptr<Listener>> listener;
     std::vector<std::unique_ptr<DataProcessor>> dataProcessor;
     std::vector<std::unique_ptr<DataStreamer>> dataStreamer;

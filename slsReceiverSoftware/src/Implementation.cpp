@@ -121,6 +121,9 @@ void Implementation::setDetectorType(const detectorType d) {
                                 std::to_string(static_cast<int>(d)));
     }
 
+    delete generalData;
+    generalData = nullptr;
+
     // set detector specific variables
     switch (myDetectorType) {
     case GOTTHARD:

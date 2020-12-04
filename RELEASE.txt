@@ -28,7 +28,9 @@ This document describes the differences between 5.0.2 and 5.0.1 releases.
     Receiver
     --------
 
-    1.  Potentital Memory Leak if one called Implementation::setDetectorType
+    1.  Current code only calls Implementation::setDetectorType from constructor, 
+	but potential memory leak if called out of constructor context. Fixed.
+
 
 
 

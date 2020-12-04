@@ -1,7 +1,7 @@
-SLS Detector Package 5.0.1 released on 25.11.2020 (Bug Fix Release)
+SLS Detector Package 5.0.12 released on xx.xx.2020 (Bug Fix Release)
 ===================================================================
 
-This document describes the differences between 5.0.1 and 5.0.0 releases.   
+This document describes the differences between 5.0.2 and 5.0.1 releases.   
 
 
 
@@ -18,49 +18,32 @@ This document describes the differences between 5.0.1 and 5.0.0 releases.
 1. Topics Concerning
 ====================
 
-    - Python bindings
-    - CMake improvements
+    - potential memory leak in Receiver
 
 
 
 2. Resolved Issues
 ==================
 
-    Python bindings
-    ---------------
+    Receiver
+    --------
 
-    1.  Fixed function signatures for getRxUDPSocketBufferSize, 
-        setRxUDPSocketBufferSize and getRxRealUDPSocketBufferSize. 
+    1.  Potentital Memory Leak if one called Implementation::setDetectorType
 
-    2.  Updated pybind11 to v2.6.1 to remove warnings with Python 3.9 and 
-        better handling of C++ standard. 
-
-    3.  Added missing properties in Python. 
-
-
-    CMake improvements
-    ------------------
-
-    1. Explicitly state Python 3.6 or greater.
-
-    2. Finds the Python of the activated environment when using conda 
-       without having to supply additional arguments.  
-
-    3. Removed redundant libraries for linking targets. 
 
 
 
 3. Firmware Requirements
 ========================
         
-    No updates from 5.0.0
+    No updates from 5.0.1
 
 
 
 4. Known Issues
 ===============
 
-    No updates from 5.0.0
+    No updates from 5.0.1
 
 
 

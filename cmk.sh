@@ -50,7 +50,7 @@ Rebuild when you switch to a new build and compile in parallel:
 
 Rebuild python
 ./cmk.sh -p
- 
+
 For only make:
 ./cmk.sh
 
@@ -76,31 +76,31 @@ For using multiple cores to compile faster:
 For rebuilding only certain sections
 ./cmk.sh -tg #only text client and gui
 ./cmk.sh -r #only receiver
- 
+
  " ; exit 1; }
 
 while getopts ":bpchd:k:l:j:trgeisumnz" opt ; do
 	case $opt in
-	b) 
+	b)
 		echo "Building of CMake files Required"
 		REBUILD=1
 		;;
 	p)
-    	echo "Compiling Options: Python" 
+    	echo "Compiling Options: Python"
 		PYTHON=1
 		REBUILD=1
-		;;   
-	c) 
+		;;
+	c)
 		echo "Clean Required"
 		CLEAN=1
 		;;
-	h) 
+	h)
 		echo "Building of CMake files with HDF5 option Required"
 		HDF5=1
 		REBUILD=1
 		;;
-	d) 
-		echo "New HDF5 directory: $OPTARG" 
+	d)
+		echo "New HDF5 directory: $OPTARG"
 		HDF5DIR=$OPTARG
 		;;
 	l)
@@ -111,46 +111,46 @@ while getopts ":bpchd:k:l:j:trgeisumnz" opt ; do
 		echo "CMake command: $OPTARG"
 		CMAKE="$OPTARG"
 		;;
-	j) 
-		echo "Number of compiler threads: $OPTARG" 
+	j)
+		echo "Number of compiler threads: $OPTARG"
 		COMPILERTHREADS=$OPTARG
 		;;
-	t) 
-    	echo "Compiling Options: Text Client" 
+	t)
+    	echo "Compiling Options: Text Client"
 		TEXTCLIENT=1
 		REBUILD=1
-		;;      
-	r) 
-		echo "Compiling Options: Receiver" 
+		;;
+	r)
+		echo "Compiling Options: Receiver"
 		RECEIVER=1
 		REBUILD=1
-		;;      
-	g) 
-		echo "Compiling Options: GUI" 
+		;;
+	g)
+		echo "Compiling Options: GUI"
 		GUI=1
 		REBUILD=1
-		;;  
+		;;
 	e)
-		echo "Compiling Options: Debug" 
+		echo "Compiling Options: Debug"
 		DEBUG=1
-		;;   
+		;;
 	i)
-		echo "Compiling Options: Tests" 
+		echo "Compiling Options: Tests"
 		TESTS=1
-		;;   
+		;;
 	s)
-		echo "Compiling Options: Simulator" 
+		echo "Compiling Options: Simulator"
 		SIMULATOR=1
-		;; 
-	m)	
+		;;
+	m)
 		echo "Compiling Manuals"
 		MANUALS=1
 		;;
-	n)	
+	n)
 		echo "Compiling Manuals (Only RST)"
 		MANUALS_ONLY_RST=1
 		;;
-	z)	
+	z)
 		echo "Compiling Moench Zmq Processor"
 		MOENCHZMQ=1
 		;;
@@ -159,7 +159,7 @@ while getopts ":bpchd:k:l:j:trgeisumnz" opt ; do
 		CTBGUI=1
 		;;
   \?)
-    echo "Invalid option: -$OPTARG" 
+    echo "Invalid option: -$OPTARG"
 		usage
     exit 1
    	;;
@@ -167,7 +167,7 @@ while getopts ":bpchd:k:l:j:trgeisumnz" opt ; do
     echo "Option -$OPTARG requires an argument."
 		usage
     exit 1
-    ;;	
+    ;;
 	esac
 done
 
@@ -178,28 +178,26 @@ if [ $PYTHON -eq 1 ]; then
 	echo "Enabling Compile Option: Python"
 fi
 
-
+#targets
 if [ $TEXTCLIENT -eq 0 ] && [ $RECEIVER -eq 0 ]  && [ $GUI -eq 0 ]; then
-	#CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=ON "
-	CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=ON -DSLS_USE_GUI=OFF "
-    echo "Enabling Compile Option: TextClient, Receiver and GUI"
-else 
-    if [ $TEXTCLIENT -eq 1 ]; then
-        CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON -DSLS_USE_RECEIVER=OFF "
-        echo "Enabling Compile Option: TextClient"
-    fi
-    if [ $RECEIVER -eq 1 ]; then
-        CMAKE_POST+=" -DSLS_USE_RECEIVER=ON "
-        echo "Enabling Compile Option: Receiver"
-    fi              
-    if [ $GUI -eq 1 ]; then
-        CMAKE_POST+=" -DSLS_USE_GUI=ON "
-        echo "Enabling Compile Option: GUI"
-    fi
+	TEXTCLIENT=1
+	RECEIVER=1
 fi
 
+if [ $TEXTCLIENT -eq 1 ]; then
+        CMAKE_POST+=" -DSLS_USE_TEXTCLIENT=ON "
+        echo "Enabling Compile Option: TextClient"
+fi
 
+if [ $RECEIVER -eq 1 ]; then
+        CMAKE_POST+=" -DSLS_USE_RECEIVER=ON "
+        echo "Enabling Compile Option: Receiver"
+fi
 
+if [ $GUI -eq 1 ]; then
+        CMAKE_POST+=" -DSLS_USE_GUI=ON "
+        echo "Enabling Compile Option: GUI"
+fi
 
 
 #build dir doesnt exist
@@ -217,47 +215,46 @@ fi
 
 #Debug
 if [ $DEBUG -eq 1 ]; then
-#	CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug "
 	CMAKE_POST+=" -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_SANITIZER=ON "
 	echo "Debug Option enabled"
-fi 
+fi
 
 #Simulator
 if [ $SIMULATOR -eq 1 ]; then
 	CMAKE_POST+=" -DSLS_USE_SIMULATOR=ON "
 	echo "Simulator Option enabled"
-fi 
+fi
 
 #Manuals
 if [ $MANUALS -eq 1 ]; then
 	CMAKE_POST+=" -DSLS_BUILD_DOCS=ON "
 	echo "Manuals Option enabled"
-fi 
+fi
 
 #Moench zmq processor
 if [ $MOENCHZMQ -eq 1 ]; then
 	CMAKE_POST+=" -DSLS_USE_MOENCH=ON "
 	echo "Moench Zmq Processor Option enabled"
-fi 
+fi
 
 #Chip Test Gui
 if [ $CTBGUI -eq 1 ]; then
 	CMAKE_POST+=" -DSLS_USE_CTBGUI=ON "
 	echo "CTB Gui Option enabled"
-fi 
+fi
 
 #Tests
 if [ $TESTS -eq 1 ]; then
 	CMAKE_POST+=" -DSLS_USE_TESTS=ON -DSLS_USE_INTEGRATION_TESTS=ON"
 	echo "Tests Option enabled"
-fi 
+fi
 
 
 #hdf5 rebuild
 if [ $HDF5 -eq 1 ]; then
-#	CMAKE_PRE+="HDF5_ROOT="$HDF5DIR
 	CMAKE_POST+=" -DCMAKE_INSTALL_PREFIX="$HDF5DIR
 	CMAKE_POST+=" -DSLS_USE_HDF5=ON "
+	echo "HDF5 Option enabled"
 #normal mode rebuild
 else
 	CMAKE_POST+=" -DSLS_USE_HDF5=OFF "
@@ -268,14 +265,13 @@ fi
 if [ -n "$INSTALLDIR" ]; then
 	CMAKE_POST+=" -DCMAKE_INSTALL_PREFIX=$INSTALLDIR"
 	CMAKE_POST+=" -DCMAKE_FIND_ROOT_PATH=$INSTALLDIR"
+	echo "Installing files to $INSTALLDIR"
 fi
 
 
 #enter build dir
-#pushd $BUILDDIR;
 cd $BUILDDIR;
 echo "in "$PWD
-
 
 
 #cmake
@@ -293,46 +289,24 @@ fi
 
 
 #make
+MAKEOPTIONS=""
 if [ $COMPILERTHREADS -gt 0 ]; then
-	if [ $MANUALS -eq 0 ] && [ $MANUALS_ONLY_RST -eq 0 ]; then
-		BUILDCOMMAND="make -j$COMPILERTHREADS"
-		echo $BUILDCOMMAND
-		eval $BUILDCOMMAND
-	else
-		if [ $MANUALS -eq 1 ]; then
-			BUILDCOMMAND="make docs -j$COMPILERTHREADS"
-			echo $BUILDCOMMAND
-			eval $BUILDCOMMAND
-		else
-			BUILDCOMMAND="make rst -j$COMPILERTHREADS"
-			echo $BUILDCOMMAND
-			eval $BUILDCOMMAND		
-		fi
-	fi 
-else
-	if [ $MANUALS -eq 0 ] && [ $MANUALS_ONLY_RST -eq 0 ]; then
-		echo "make"
-		make
-	else
-		if [ $MANUALS -eq 1 ]; then
-			echo "make docs"
-			make docs
-		else
-			echo "make rst"
-			make rst
-		fi
-	fi 
+	MAKEOPTIONS="-j$COMPILERTHREADS"
 fi
+
+MAKETARGET=""
+if [ $MANUALS -eq 1 ]; then
+	MAKETARGET="docs"
+elif [ $MANUALS_ONLY_RST -eq 1 ]; then
+	MAKETARGET="rst"
+fi
+
+BUILDCOMMAND="make $MAKETARGET $MAKEOPTIONS"
+echo $BUILDCOMMAND
+eval $BUILDCOMMAND
 
 
 #install
 if [ -n "$INSTALLDIR" ]; then
 	make install
-#	popd
-#	$CMAKE --build $BUILDDIR --target install
 fi
-
-
-
-
-

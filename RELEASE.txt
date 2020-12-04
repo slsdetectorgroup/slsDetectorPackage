@@ -30,6 +30,8 @@ This document describes the differences between 5.1.0 and 5.x.x releases.
 
     1.  Current code only calls Implementation::setDetectorType from constructor, 
 	but potential memory leak if called out of constructor context. Fixed.
+    2.  Fixed missing scanParameters class in Python 
+
 
 
 

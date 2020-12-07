@@ -218,6 +218,7 @@ enum detFuncs {
     F_SET_DEFAULT_DACS,
     F_IS_VIRTUAL,
     F_GET_PATTERN,
+    F_LOAD_DEFAULT_PATTERN,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -541,6 +542,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_DEFAULT_DACS:                return "F_SET_DEFAULT_DACS";
     case F_IS_VIRTUAL:                      return "F_IS_VIRTUAL";
     case F_GET_PATTERN:                     return "F_GET_PATTERN";
+    case F_LOAD_DEFAULT_PATTERN:            return "F_LOAD_DEFAULT_PATTERN";
     
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

@@ -1923,6 +1923,8 @@ Pattern Module::getPattern() {
     return pat;
 }
 
+void Module::loadDefaultPattern() { sendToDetector(F_LOAD_DEFAULT_PATTERN); }
+
 uint64_t Module::getPatternIOControl() const {
     return sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL,
                                     int64_t(GET_FLAG));

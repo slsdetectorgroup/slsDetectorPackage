@@ -1754,13 +1754,6 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
 
 // Pattern
 
-void Detector::savePattern(const std::string &fname) {
-    auto t = pimpl->Parallel(&Module::getPattern, {});
-    auto pat = t.tsquash("Inconsistent pattern parameters between modules");
-    pat.validate();
-    pat.save(fname);
-}
-
 void Detector::setPattern(const std::string &fname, Positions pos) {
     Pattern pat;
     pat.load(fname);
@@ -1771,6 +1764,17 @@ void Detector::setPattern(const std::string &fname, Positions pos) {
 void Detector::setPattern(const Pattern &pat, Positions pos) {
     pat.validate();
     pimpl->Parallel(&Module::setPattern, pos, pat);
+}
+
+void Detector::savePattern(const std::string &fname) {
+    auto t = pimpl->Parallel(&Module::getPattern, {});
+    auto pat = t.tsquash("Inconsistent pattern parameters between modules");
+    pat.validate();
+    pat.save(fname);
+}
+
+void Detector::loadDefaultPattern(Positions pos) {
+    pimpl->Parallel(&Module::loadDefaultPattern, pos);
 }
 
 Result<uint64_t> Detector::getPatternIOControl(Positions pos) const {

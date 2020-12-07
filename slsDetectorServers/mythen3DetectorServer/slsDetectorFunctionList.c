@@ -482,7 +482,9 @@ void setupDetector() {
     }
 
     powerChip(1);
-    loadDefaultPattern(DEFAULT_PATTERN_FILE);
+    if (initError != FAIL) {
+        initError = loadDefaultPattern(DEFAULT_PATTERN_FILE, initErrorMessage);
+    }
 }
 
 int setDefaultDacs() {

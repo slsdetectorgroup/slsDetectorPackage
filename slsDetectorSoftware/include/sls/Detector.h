@@ -1,8 +1,8 @@
 #pragma once
+#include "sls/Pattern.h"
 #include "sls/Result.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
-#include "sls/Pattern.h"
 #include <chrono>
 #include <map>
 #include <memory>
@@ -15,7 +15,6 @@ using ns = std::chrono::nanoseconds;
 class DetectorImpl;
 class MacAddr;
 class IpAddr;
-
 
 // Free function to avoid dependence on class
 // and avoid the option to free another objects
@@ -1461,11 +1460,14 @@ class Detector {
 
     /** [CTB][Moench][Mythen3]  Loads pattern parameters structure directly to
      * server */
-    void setPattern(const Pattern& pat, Positions pos = {});
+    void setPattern(const Pattern &pat, Positions pos = {});
 
     /** [CTB][Moench][Mythen3] [Ctb][Moench][Mythen3] Saves pattern to file
      * (ascii). \n [Ctb][Moench] Also executes pattern.*/
     void savePattern(const std::string &fname);
+
+    /** [Mythen3][Moench] Loads and runs default pattern */
+    void loadDefaultPattern(Positions pos = {});
 
     /** [CTB][Moench] */
     Result<uint64_t> getPatternIOControl(Positions pos = {}) const;

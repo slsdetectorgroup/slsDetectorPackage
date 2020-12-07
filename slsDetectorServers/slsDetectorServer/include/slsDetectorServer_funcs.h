@@ -244,3 +244,4 @@ int start_readout(int);
 int set_default_dacs(int);
 int is_virtual(int);
 int get_pattern(int);
+int load_default_pattern(int);

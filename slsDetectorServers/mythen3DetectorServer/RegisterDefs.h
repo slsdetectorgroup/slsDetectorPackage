@@ -483,6 +483,14 @@
 /* ASIC Readout Control registers
  * --------------------------------------------------*/
 
+/** ASIC Readout Status register */
+#define ASIC_RDO_STATUS_REG             (0x00 * REG_OFFSET + BASE_ASIC_RDO)
+
+#define ASIC_RDO_STATUS_BUSY_OFST       (1)
+#define ASIC_RDO_STATUS_BUSY_MSK        (0x00000001 << ASIC_RDO_STATUS_BUSY_OFST)
+
+
+/** ASIC Readout Res Storage Counter register */
 #define ASIC_RDO_CONFIG_REG             (0x01 * REG_OFFSET + BASE_ASIC_RDO)
 
 #define ASICRDO_CNFG_RESSTRG_LNGTH_OFST (0)

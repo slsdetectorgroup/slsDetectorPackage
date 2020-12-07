@@ -2422,8 +2422,12 @@ int startReadOut() {
 
     // start readout
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_READOUT_MSK);
-
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
+    usleep(1);
+    while (bus_r(ASIC_RDO_STATUS_REG) & ASIC_RDO_STATUS_BUSY_MSK) {
+        usleep(1);
+    }
+    LOG(logINFOBLUE, ("Readout done\n"));
     return OK;
 }
 

@@ -19,7 +19,6 @@ extern void setPatternLoop(int level, int *startAddr, int *stopAddr,
                            int *nLoop);
 
 int loadDefaultPattern(char *patFname, char *errMessage) {
-    int retval = OK;
     char fname[128];
     if (getAbsPath(fname, 128, patFname) == FAIL) {
         return FAIL;

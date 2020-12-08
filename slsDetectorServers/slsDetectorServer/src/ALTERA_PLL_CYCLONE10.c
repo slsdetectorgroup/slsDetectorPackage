@@ -56,21 +56,35 @@
 int ALTERA_PLL_C10_Reg_offset = 0x0;
 const int ALTERA_PLL_C10_NUM = 2;
 uint32_t ALTERA_PLL_C10_BaseAddress[2] = {0x0, 0x0};
-uint32_t ALTERA_PLL_C10_Reset_Reg[2] = {0x0, 0x0};
+uint32_t ALTERA_PLL_C10_Reset_Reg = 0x0;
 uint32_t ALTERA_PLL_C10_Reset_Msk[2] = {0x0, 0x0};
+#ifdef MYTHEN3D
+uint32_t ALTERA_PLL_C10_Locked_Status_Reg = 0x0;
+uint32_t ALTERA_PLL_C10_Locked_Status_Msk[2] = {0x0, 0x0};
+#endif
 int ALTERA_PLL_C10_VCO_FREQ[2] = {0, 0};
 
 void ALTERA_PLL_C10_SetDefines(int regofst, uint32_t baseaddr0,
-                               uint32_t baseaddr1, uint32_t resetreg0,
-                               uint32_t resetreg1, uint32_t resetmsk0,
-                               uint32_t resetmsk1, int vcofreq0, int vcofreq1) {
+                               uint32_t baseaddr1, uint32_t resetreg,
+                               uint32_t resetmsk0, uint32_t resetmsk1,
+#ifdef MYTHEN3D
+                               uint32_t statusreg, uint32_t statusmsk0,
+                               uint32_t statusmsk1,
+#endif
+                               int vcofreq0, int vcofreq1) {
     ALTERA_PLL_C10_Reg_offset = regofst;
     ALTERA_PLL_C10_BaseAddress[0] = baseaddr0;
     ALTERA_PLL_C10_BaseAddress[1] = baseaddr1;
-    ALTERA_PLL_C10_Reset_Reg[0] = resetreg0;
-    ALTERA_PLL_C10_Reset_Reg[1] = resetreg1;
+    ALTERA_PLL_C10_Reset_Reg = resetreg;
     ALTERA_PLL_C10_Reset_Msk[0] = resetmsk0;
     ALTERA_PLL_C10_Reset_Msk[1] = resetmsk1;
+
+    // pll locked status reg and msk only used for m3 now
+#ifdef MYTHEN3D
+    ALTERA_PLL_C10_Locked_Status_Reg = statusreg;
+    ALTERA_PLL_C10_Locked_Status_Msk[0] = statusmsk0;
+    ALTERA_PLL_C10_Locked_Status_Msk[1] = statusmsk1;
+#endif
     ALTERA_PLL_C10_VCO_FREQ[0] = vcofreq0;
     ALTERA_PLL_C10_VCO_FREQ[1] = vcofreq1;
 }
@@ -98,12 +112,22 @@ void ALTERA_PLL_C10_Reconfigure(int pllIndex) {
 }
 
 void ALTERA_PLL_C10_ResetPLL(int pllIndex) {
-    uint32_t resetreg = ALTERA_PLL_C10_Reset_Reg[pllIndex];
+    uint32_t resetreg = ALTERA_PLL_C10_Reset_Reg;
     uint32_t resetmsk = ALTERA_PLL_C10_Reset_Msk[pllIndex];
     LOG(logINFO, ("Resetting PLL %d\n", pllIndex));
     bus_w_csp1(resetreg, bus_r_csp1(resetreg) | resetmsk);
-
     usleep(ALTERA_PLL_C10_WAIT_TIME_US);
+
+#ifdef MYTHEN3D
+    uint32_t statusreg = ALTERA_PLL_C10_Locked_Status_Reg;
+    uint32_t statusmsk = ALTERA_PLL_C10_Locked_Status_Msk[pllIndex];
+    // wait for pll locked bit to go high
+    while (!(bus_r_csp1(statusreg) & statusmsk)) {
+        usleep(ALTERA_PLL_C10_WAIT_TIME_US);
+        LOG(logWARNING, ("Still waiting for PLL %d recovery\n", pllIndex));
+    }
+    LOG(logINFO, ("Reset success for PLL %d\n", pllIndex));
+#endif
 }
 
 void ALTERA_PLL_C10_SetPhaseShift(int pllIndex, int clkIndex, int phase,

@@ -149,7 +149,51 @@ void Module::setSettings(detectorSettings isettings) {
         throw RuntimeError(
             "Cannot set settings for Eiger. Use threshold energy.");
     }
-    sendToDetector<int>(F_SET_SETTINGS, isettings);
+    if (shm()->myDetectorType == MYTHEN3) {
+        if (getTrimEn().size() == 0) {
+            throw RuntimeError("No energies provided to load settings file.");
+        }
+        std::string settingsfname =
+            getTrimbitFilename(isettings, getTrimEn()[0]);
+        LOG(logDEBUG1) << "Settings File is " << settingsfname;
+        auto myMod = readSettingsFile(settingsfname, false);
+        myMod.reg = isettings;
+        setModule(myMod, false);
+        if (getSettings() != isettings) {
+            throw RuntimeError(
+                "setSettings: Could not set settings in detector");
+        }
+        // Check setsettings
+    } else {
+        sendToDetector<int>(F_SET_SETTINGS, isettings);
+    }
+}
+
+int Module::getThresholdEnergy() const {
+    return sendToDetector<int>(F_GET_THRESHOLD_ENERGY);
+}
+
+void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
+                                bool trimbits) {
+    // check as there is client processing
+    if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
+        setThresholdEnergyAndSettings(e_eV, isettings, trimbits);
+        if (shm()->useReceiverFlag) {
+            sendToReceiver(F_RECEIVER_SET_THRESHOLD, e_eV, nullptr);
+        }
+    } else {
+        throw RuntimeError(
+            "Set threshold energy not implemented for this detector");
+    }
+}
+
+std::string Module::getSettingsDir() const {
+    return std::string(shm()->settingsDir);
+}
+
+std::string Module::setSettingsDir(const std::string &dir) {
+    sls::strcpy_safe(shm()->settingsDir, dir.c_str());
+    return shm()->settingsDir;
 }
 
 void Module::loadSettingsFile(const std::string &fname) {
@@ -157,6 +201,7 @@ void Module::loadSettingsFile(const std::string &fname) {
     if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
         std::ostringstream ostfn;
         ostfn << fname;
+        // TODO: M3 ???
         if (fname.find(".sn") == std::string::npos &&
             fname.find(".trim") == std::string::npos &&
             fname.find(".settings") == std::string::npos) {
@@ -176,6 +221,29 @@ int Module::getAllTrimbits() const {
 
 void Module::setAllTrimbits(int val) {
     sendToDetector<int>(F_SET_ALL_TRIMBITS, val);
+}
+
+std::vector<int> Module::getTrimEn() const {
+    if (shm()->myDetectorType != EIGER && shm()->myDetectorType != MYTHEN3) {
+        throw RuntimeError("getTrimEn not implemented for this detector.");
+    }
+    return std::vector<int>(shm()->trimEnergies.begin(),
+                            shm()->trimEnergies.end());
+}
+
+int Module::setTrimEn(const std::vector<int> &energies) {
+    if (shm()->myDetectorType != EIGER && shm()->myDetectorType != MYTHEN3) {
+        throw RuntimeError("setTrimEn not implemented for this detector.");
+    }
+    if (energies.size() > MAX_TRIMEN) {
+        std::ostringstream os;
+        os << "Size of trim energies: " << energies.size()
+           << " exceeds what can be stored in shared memory: " << MAX_TRIMEN
+           << "\n";
+        throw RuntimeError(os.str());
+    }
+    shm()->trimEnergies = energies;
+    return shm()->trimEnergies.size();
 }
 
 bool Module::isVirtualDetectorServer() const {
@@ -1095,33 +1163,6 @@ void Module::setSubDeadTime(int64_t value) {
     }
 }
 
-int Module::getThresholdEnergy() const {
-    return sendToDetector<int>(F_GET_THRESHOLD_ENERGY);
-}
-
-void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
-                                bool trimbits) {
-    // check as there is client processing
-    if (shm()->myDetectorType == EIGER) {
-        setThresholdEnergyAndSettings(e_eV, isettings, trimbits);
-        if (shm()->useReceiverFlag) {
-            sendToReceiver(F_RECEIVER_SET_THRESHOLD, e_eV, nullptr);
-        }
-    } else {
-        throw RuntimeError(
-            "Set threshold energy not implemented for this detector");
-    }
-}
-
-std::string Module::getSettingsDir() const {
-    return std::string(shm()->settingsDir);
-}
-
-std::string Module::setSettingsDir(const std::string &dir) {
-    sls::strcpy_safe(shm()->settingsDir, dir.c_str());
-    return shm()->settingsDir;
-}
-
 bool Module::getOverFlowMode() const {
     return sendToDetector<int>(F_GET_OVERFLOW_MODE);
 }
@@ -1136,29 +1177,6 @@ bool Module::getFlippedDataX() const {
 
 void Module::setFlippedDataX(bool value) {
     sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER, static_cast<int>(value));
-}
-
-std::vector<int> Module::getTrimEn() const {
-    if (shm()->myDetectorType != EIGER) {
-        throw RuntimeError("getTrimEn not implemented for this detector.");
-    }
-    return std::vector<int>(shm()->trimEnergies.begin(),
-                            shm()->trimEnergies.end());
-}
-
-int Module::setTrimEn(const std::vector<int> &energies) {
-    if (shm()->myDetectorType != EIGER) {
-        throw RuntimeError("setTrimEn not implemented for this detector.");
-    }
-    if (energies.size() > MAX_TRIMEN) {
-        std::ostringstream os;
-        os << "Size of trim energies: " << energies.size()
-           << " exceeds what can be stored in shared memory: " << MAX_TRIMEN
-           << "\n";
-        throw RuntimeError(os.str());
-    }
-    shm()->trimEnergies = energies;
-    return shm()->trimEnergies.size();
 }
 
 int64_t Module::getRateCorrection() const {
@@ -2799,6 +2817,7 @@ void Module::updateRateCorrection() {
 
 void Module::setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
                                            bool trimbits) {
+    // TODO: for M3 ??????
 
     // verify e_eV exists in trimEneregies[]
     if (shm()->trimEnergies.empty() || (e_eV < shm()->trimEnergies.front()) ||
@@ -2946,9 +2965,17 @@ std::string Module::getTrimbitFilename(detectorSettings s, int e_eV) {
         throw RuntimeError(ss.str());
     }
     std::ostringstream ostfn;
-    ostfn << shm()->settingsDir << ssettings << "/" << e_eV << "eV"
-          << "/noise.sn" << std::setfill('0') << std::setw(3) << std::dec
-          << getSerialNumber() << std::setbase(10);
+    ostfn << shm()->settingsDir << ssettings << "/" << e_eV << "eV";
+    if (shm()->myDetectorType == EIGER) {
+        ostfn << "/noise.sn";
+    } else if (shm()->myDetectorType == MYTHEN3) {
+        ostfn << "/trim.sn";
+    } else {
+        throw RuntimeError(
+            "Settings or trimbit files not defined for this detector.");
+    }
+    ostfn << std::setfill('0') << std::setw(3) << std::dec << getSerialNumber()
+          << std::setbase(10);
     return ostfn.str();
 }
 
@@ -2974,6 +3001,11 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
         infile.read(reinterpret_cast<char *>(&myMod.iodelay),
                     sizeof(myMod.iodelay));
         infile.read(reinterpret_cast<char *>(&myMod.tau), sizeof(myMod.tau));
+        for (int i = 0; i < myMod.ndac; ++i) {
+            LOG(logDEBUG1) << "dac " << i << ":" << myMod.dacs[i];
+        }
+        LOG(logDEBUG1) << "iodelay:" << myMod.iodelay;
+        LOG(logDEBUG1) << "tau:" << myMod.tau;
         if (trimbits) {
             infile.read(reinterpret_cast<char *>(myMod.chanregs),
                         sizeof(int) * (myMod.nchan));
@@ -2983,27 +3015,23 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
                                "for settings for " +
                                fname);
         }
-        for (int i = 0; i < myMod.ndac; ++i) {
-            LOG(logDEBUG1) << "dac " << i << ":" << myMod.dacs[i];
-        }
-        LOG(logDEBUG1) << "iodelay:" << myMod.iodelay;
-        LOG(logDEBUG1) << "tau:" << myMod.tau;
     }
 
     // mythen3 (dacs, trimbits)
     else if (shm()->myDetectorType == MYTHEN3) {
         infile.read(reinterpret_cast<char *>(myMod.dacs),
                     sizeof(int) * (myMod.ndac));
-        infile.read(reinterpret_cast<char *>(myMod.chanregs),
-                    sizeof(int) * (myMod.nchan));
-
+        for (int i = 0; i < myMod.ndac; ++i) {
+            LOG(logDEBUG) << "dac " << i << ":" << myMod.dacs[i];
+        }
+        if (trimbits) {
+            infile.read(reinterpret_cast<char *>(myMod.chanregs),
+                        sizeof(int) * (myMod.nchan));
+        }
         if (!infile) {
             throw RuntimeError("readSettingsFile: Could not load all values "
                                "for settings for " +
                                fname);
-        }
-        for (int i = 0; i < myMod.ndac; ++i) {
-            LOG(logDEBUG1) << "dac " << i << ":" << myMod.dacs[i];
         }
     }
 

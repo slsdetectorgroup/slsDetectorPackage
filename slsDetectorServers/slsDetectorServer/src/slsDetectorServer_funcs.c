@@ -1539,6 +1539,10 @@ int set_module(int file_des) {
         case LOWGAIN:
         case VERYHIGHGAIN:
         case VERYLOWGAIN:
+#elif MYTHEN3D
+        case STANDARD:
+        case FAST:
+        case HIGHGAIN:
 #elif JUNGFRAUD
         case DYNAMICGAIN:
         case DYNAMICHG0:
@@ -1560,11 +1564,9 @@ int set_module(int file_des) {
         }
 
         ret = setModule(module, mess);
-#ifndef MYTHEN3D
         enum detectorSettings retval = getSettings();
         validate(module.reg, (int)retval, "set module (settings)", DEC);
         LOG(logDEBUG1, ("Settings: %d\n", retval));
-#endif
     }
     free(myChan);
     free(myDac);
@@ -1582,7 +1584,7 @@ int set_settings(int file_des) {
     if (receiveData(file_des, &isett, sizeof(isett), INT32) < 0)
         return printSocketReadError();
 
-#if defined(CHIPTESTBOARDD) || defined(MYTHEN3D)
+#ifdef CHIPTESTBOARDD
     functionNotImplemented();
 #else
     LOG(logDEBUG1, ("Setting settings %d\n", isett));
@@ -1622,10 +1624,10 @@ int set_settings(int file_des) {
 #endif
                 break;
             default:
-                if (myDetectorType == EIGER) {
+                if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
                     ret = FAIL;
                     sprintf(mess, "Cannot set settings via SET_SETTINGS, use "
-                                  "SET_MODULE (set threshold)\n");
+                                  "SET_MODULE\n");
                     LOG(logERROR, (mess));
                 } else
                     modeNotImplemented("Settings Index", (int)isett);

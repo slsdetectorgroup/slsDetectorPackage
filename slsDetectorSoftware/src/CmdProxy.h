@@ -596,6 +596,8 @@ class CmdProxy {
         {"detectornumber", "serialnumber"},
         {"thisversion", "clientversion"},
         {"detsizechan", "detsize"},
+        {"trimdir", "settingspath"},
+        {"settingsdir", "settingspath"},
 
         /* acquisition parameters */
         {"cycles", "triggers"},
@@ -724,8 +726,6 @@ class CmdProxy {
         {"rx_datastream", "rx_zmqstream"},
 
         /* Eiger Specific */
-        {"trimdir", "settingspath"},
-        {"settingsdir", "settingspath"},
         {"resmat", "partialreset"},
 
         /* Jungfrau Specific */
@@ -774,8 +774,12 @@ class CmdProxy {
         {"detsize", &CmdProxy::DetectorSize},
         {"settingslist", &CmdProxy::settingslist},
         {"settings", &CmdProxy::settings},
+        {"threshold", &CmdProxy::Threshold},
+        {"thresholdnotb", &CmdProxy::ThresholdNoTb},
+        {"settingspath", &CmdProxy::settingspath},
         {"trimbits", &CmdProxy::trimbits},
         {"trimval", &CmdProxy::trimval},
+        {"trimen", &CmdProxy::TrimEnergies},
         {"gappixels", &CmdProxy::GapPixels},
 
         /* acquisition parameters */
@@ -911,12 +915,8 @@ class CmdProxy {
         /* Eiger Specific */
         {"subexptime", &CmdProxy::subexptime},
         {"subdeadtime", &CmdProxy::subdeadtime},
-        {"threshold", &CmdProxy::Threshold},
-        {"thresholdnotb", &CmdProxy::ThresholdNoTb},
-        {"settingspath", &CmdProxy::settingspath},
         {"overflow", &CmdProxy::overflow},
         {"flippeddatax", &CmdProxy::flippeddatax},
-        {"trimen", &CmdProxy::TrimEnergies},
         {"ratecorr", &CmdProxy::RateCorrection},
         {"readnlines", &CmdProxy::readnlines},
         {"interruptsubframe", &CmdProxy::interruptsubframe},
@@ -1081,6 +1081,9 @@ class CmdProxy {
     std::string PackageVersion(int action);
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
+    std::string Threshold(int action);
+    std::string ThresholdNoTb(int action);
+    std::string TrimEnergies(int action);
     std::string GapPixels(int action);
     /* acquisition parameters */
     std::string Acquire(int action);
@@ -1112,9 +1115,6 @@ class CmdProxy {
     /* ZMQ Streaming Parameters (Receiver<->Client) */
     std::string ZMQHWM(int action);
     /* Eiger Specific */
-    std::string Threshold(int action);
-    std::string ThresholdNoTb(int action);
-    std::string TrimEnergies(int action);
     std::string RateCorrection(int action);
     std::string Activate(int action);
     std::string PulsePixel(int action);
@@ -1211,9 +1211,14 @@ class CmdProxy {
         "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
         "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
         "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
-        "\n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] "
+        "\n\t[Mythen3] - [standard | fast | highgain]"
+        "\n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger][Mythen3] "
         "settings loaded from file found in settingspath. \n\t[Gotthard] Also "
         "loads default dacs on to the detector.");
+
+    STRING_COMMAND(settingspath, getSettingsPath, setSettingsPath,
+                   "[path]\n\t[Eiger][Mythen3] Directory where settings files "
+                   "are loaded from/to.");
 
     EXECUTE_SET_COMMAND_1ARG(
         trimbits, loadTrimbits,
@@ -1774,10 +1779,6 @@ class CmdProxy {
                  "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger] Dead time "
                  "of EIGER subframes in 32 bit mode. Subperiod = subexptime + "
                  "subdeadtime.");
-
-    STRING_COMMAND(
-        settingspath, getSettingsPath, setSettingsPath,
-        "[path]\n\t[Eiger] Directory where settings files are loaded from/to.");
 
     INTEGER_COMMAND_VEC_ID(
         overflow, getOverFlowMode, setOverFlowMode, StringTo<int>,

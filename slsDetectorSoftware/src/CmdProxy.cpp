@@ -356,6 +356,103 @@ std::string CmdProxy::DetectorSize(int action) {
     return os.str();
 }
 
+std::string CmdProxy::Threshold(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[eV] [(optinal settings) standard, lowgain, veryhighgain, "
+              "verylowgain]"
+              "\n\t[Eiger] Threshold in eV. It loads trim files from "
+              "settingspath."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getThresholdEnergy(std::vector<int>{det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() == 1) {
+            auto t = det->getSettings(std::vector<int>{det_id})
+                         .tsquash("Inconsistent settings between detectors");
+            det->setThresholdEnergy(StringTo<int>(args[0]), t, true,
+                                    std::vector<int>{det_id});
+        } else if (args.size() == 2) {
+            det->setThresholdEnergy(
+                StringTo<int>(args[0]),
+                sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]), true,
+                {det_id});
+        } else {
+            WrongNumberOfParameters(1);
+        }
+        os << ToString(args) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::ThresholdNoTb(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[eV] [(optional settings) standard, lowgain, veryhighgain, "
+              "verylowgain]"
+              "\n\t[Eiger] Threshold in eV set without setting trimbits"
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("cannot get");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() == 1) {
+            auto t = det->getSettings(std::vector<int>{det_id})
+                         .tsquash("Inconsistent settings between detectors");
+            det->setThresholdEnergy(StringTo<int>(args[0]), t, false,
+                                    std::vector<int>{det_id});
+        } else if (args.size() == 2) {
+            det->setThresholdEnergy(
+                StringTo<int>(args[0]),
+                sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]),
+                false, std::vector<int>{det_id});
+        } else {
+            WrongNumberOfParameters(1);
+        }
+        os << ToString(args) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::TrimEnergies(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[trim_ev1] [trim_Ev2 (optional)] [trim_ev3 (optional)] "
+              "...\n\t[Eiger] Number of trim energies and list of trim "
+              "energies, where corresponding default trim files exist in "
+              "corresponding trim folders."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getTrimEnergies(std::vector<int>{det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        std::vector<int> t(args.size());
+        if (!args.empty()) {
+            for (size_t i = 0; i < t.size(); ++i) {
+                t[i] = StringTo<int>(args[i]);
+            }
+        }
+        det->setTrimEnergies(t, std::vector<int>{det_id});
+        os << sls::ToString(args) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::GapPixels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -1263,103 +1360,6 @@ std::string CmdProxy::ZMQHWM(int action) {
 }
 
 /* Eiger Specific */
-
-std::string CmdProxy::Threshold(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "[eV] [(optinal settings) standard, lowgain, veryhighgain, "
-              "verylowgain]"
-              "\n\t[Eiger] Threshold in eV. It loads trim files from "
-              "settingspath."
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getThresholdEnergy(std::vector<int>{det_id});
-        os << OutString(t) << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() == 1) {
-            auto t = det->getSettings(std::vector<int>{det_id})
-                         .tsquash("Inconsistent settings between detectors");
-            det->setThresholdEnergy(StringTo<int>(args[0]), t, true,
-                                    std::vector<int>{det_id});
-        } else if (args.size() == 2) {
-            det->setThresholdEnergy(
-                StringTo<int>(args[0]),
-                sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]), true,
-                {det_id});
-        } else {
-            WrongNumberOfParameters(1);
-        }
-        os << ToString(args) << '\n';
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
-std::string CmdProxy::ThresholdNoTb(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "[eV] [(optional settings) standard, lowgain, veryhighgain, "
-              "verylowgain]"
-              "\n\t[Eiger] Threshold in eV set without setting trimbits"
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("cannot get");
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() == 1) {
-            auto t = det->getSettings(std::vector<int>{det_id})
-                         .tsquash("Inconsistent settings between detectors");
-            det->setThresholdEnergy(StringTo<int>(args[0]), t, false,
-                                    std::vector<int>{det_id});
-        } else if (args.size() == 2) {
-            det->setThresholdEnergy(
-                StringTo<int>(args[0]),
-                sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]),
-                false, std::vector<int>{det_id});
-        } else {
-            WrongNumberOfParameters(1);
-        }
-        os << ToString(args) << '\n';
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
-std::string CmdProxy::TrimEnergies(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "[trim_ev1] [trim_Ev2 (optional)] [trim_ev3 (optional)] "
-              "...\n\t[Eiger] Number of trim energies and list of trim "
-              "energies, where corresponding default trim files exist in "
-              "corresponding trim folders."
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getTrimEnergies(std::vector<int>{det_id});
-        os << OutString(t) << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        std::vector<int> t(args.size());
-        if (!args.empty()) {
-            for (size_t i = 0; i < t.size(); ++i) {
-                t[i] = StringTo<int>(args[i]);
-            }
-        }
-        det->setTrimEnergies(t, std::vector<int>{det_id});
-        os << sls::ToString(args) << '\n';
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
 
 std::string CmdProxy::RateCorrection(int action) {
     std::ostringstream os;

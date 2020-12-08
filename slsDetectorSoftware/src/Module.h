@@ -1,11 +1,11 @@
 #pragma once
 #include "SharedMemory.h"
 #include "sls/ClientSocket.h"
+#include "sls/Pattern.h"
 #include "sls/StaticVector.h"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
-#include "sls/Pattern.h"
 
 #include <array>
 #include <cmath>
@@ -101,9 +101,16 @@ class Module : public virtual slsDetectorDefs {
     void updateNumberOfDetector(slsDetectorDefs::xy det);
     detectorSettings getSettings() const;
     void setSettings(detectorSettings isettings);
+    int getThresholdEnergy() const;
+    void setThresholdEnergy(int e_eV, detectorSettings isettings,
+                            bool trimbits);
+    std::string getSettingsDir() const;
+    std::string setSettingsDir(const std::string &dir);
     void loadSettingsFile(const std::string &fname);
     int getAllTrimbits() const;
     void setAllTrimbits(int val);
+    std::vector<int> getTrimEn() const;
+    int setTrimEn(const std::vector<int> &energies = {});
     bool isVirtualDetectorServer() const;
 
     /**************************************************
@@ -308,17 +315,10 @@ class Module : public virtual slsDetectorDefs {
     void setSubExptime(int64_t value);
     int64_t getSubDeadTime() const;
     void setSubDeadTime(int64_t value);
-    int getThresholdEnergy() const;
-    void setThresholdEnergy(int e_eV, detectorSettings isettings,
-                            bool trimbits);
-    std::string getSettingsDir() const;
-    std::string setSettingsDir(const std::string &dir);
     bool getOverFlowMode() const;
     void setOverFlowMode(const bool enable);
     bool getFlippedDataX() const;
     void setFlippedDataX(bool value);
-    std::vector<int> getTrimEn() const;
-    int setTrimEn(const std::vector<int> &energies = {});
     int64_t getRateCorrection() const;
     void setDefaultRateCorrection();
     void setRateCorrection(int64_t t = 0);
@@ -463,7 +463,7 @@ class Module : public virtual slsDetectorDefs {
      *    Pattern                                     *
      *                                                *
      * ************************************************/
-    void setPattern(const Pattern& pat);
+    void setPattern(const Pattern &pat);
     Pattern getPattern();
     uint64_t getPatternIOControl() const;
     void setPatternIOControl(uint64_t word);

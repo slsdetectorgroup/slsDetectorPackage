@@ -40,6 +40,7 @@ pthread_t pthread_virtual_tid;
 int64_t virtual_currentFrameNumber = 2;
 #endif
 
+enum detectorSettings thisSettings;
 sls_detector_module *detectorModules = NULL;
 int *detectorChans = NULL;
 int *detectorDacs = NULL;
@@ -366,7 +367,7 @@ void allocateDetectorStructureMemory() {
     (detectorModules)->iodelay = 0;
     (detectorModules)->tau = 0;
     (detectorModules)->eV = 0;
-    // thisSettings = UNINITIALIZED;
+    thisSettings = UNINITIALIZED;
 
     // initialize dacs
     for (int idac = 0; idac < (detectorModules)->ndac; ++idac) {
@@ -1011,24 +1012,22 @@ int setModule(sls_detector_module myMod, char *mess) {
 
     LOG(logINFO, ("Setting module\n"));
 
-    /* future implementation
     // settings (not yet implemented)
     setSettings((enum detectorSettings)myMod.reg);
     if (myMod.reg >= 0) {
         detectorModules->reg = myMod.reg;
-    }
-
-    // threshold
-    if (myMod.eV >= 0)
-        setThresholdEnergy(myMod.eV);
-    else {
+    } else {
+        // TODO: Needed????
         // (loading a random trim file) (dont return fail)
         setSettings(UNDEFINED);
         LOG(logERROR,
-            ("Settings has been changed to undefined (random trim
-            file)\n"));
+            ("Settings has been changed to undefined (random trim file)\n"));
     }
-    */
+
+    // threshold
+    if (myMod.eV >= 0) {
+        ; // setThresholdEnergy(myMod.eV);
+    }
 
     // dacs
     for (int i = 0; i < NDAC; ++i) {
@@ -1266,6 +1265,26 @@ int getAllTrimbits() {
     LOG(logINFO, ("Value of all Trimbits: %d\n", value));
     return value;
 }
+
+enum detectorSettings setSettings(enum detectorSettings sett) {
+    switch (sett) {
+    case UNINITIALIZED:
+        break;
+    case STANDARD:
+    case FAST:
+    case HIGHGAIN:
+        thisSettings = sett;
+        LOG(logINFO, ("Settings: %d\n", thisSettings));
+        break;
+    default:
+        LOG(logERROR,
+            ("Settings %d not defined for this detector\n", (int)sett));
+        break;
+    }
+    return thisSettings;
+}
+
+enum detectorSettings getSettings() { return thisSettings; }
 
 /* parameters - dac, hv */
 void setDAC(enum DACINDEX ind, int val, int mV) {

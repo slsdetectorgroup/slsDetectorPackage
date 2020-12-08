@@ -291,12 +291,10 @@ int setTrimbits(int *trimbits);
 int setAllTrimbits(int val);
 int getAllTrimbits();
 #endif
-#if (!defined(CHIPTESTBOARDD)) && (!defined(MYTHEN3D))
+#ifndef CHIPTESTBOARDD
 enum detectorSettings setSettings(enum detectorSettings sett);
 #endif
-#if !defined(MYTHEN3D)
 enum detectorSettings getSettings();
-#endif
 
 // parameters - threshold
 #ifdef EIGERD

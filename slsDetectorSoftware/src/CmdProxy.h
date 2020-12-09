@@ -1014,6 +1014,7 @@ class CmdProxy {
         /* Pattern */
         {"pattern", &CmdProxy::Pattern},
         {"savepattern", &CmdProxy::savepattern},
+        {"defaultpattern", &CmdProxy::defaultpattern},
         {"patioctrl", &CmdProxy::patioctrl},
         {"patword", &CmdProxy::PatternWord},
         {"patlimits", &CmdProxy::PatternLoopAddresses},
@@ -2062,6 +2063,11 @@ class CmdProxy {
         savepattern, savePattern,
         "[fname]\n\t[Ctb][Moench][Mythen3] Saves pattern to file (ascii). "
         "\n\t[Ctb][Moench] Also executes pattern.");
+
+    EXECUTE_SET_COMMAND(
+        defaultpattern, loadDefaultPattern,
+        "\n\t[Mythen3][Moench] Loads and runs default pattern in pattern "
+        "generator. It is to go back to initial settings.");
 
     INTEGER_COMMAND_HEX_WIDTH16(patioctrl, getPatternIOControl,
                                 setPatternIOControl, StringTo<uint64_t>,

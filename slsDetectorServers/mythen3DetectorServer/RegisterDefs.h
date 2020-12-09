@@ -103,7 +103,12 @@
 /* Look at me register, read only */
 #define LOOK_AT_ME_REG                  (0x05 * REG_OFFSET + BASE_CONTROL) // Not used in firmware or software, good to play with
 
-#define SYSTEM_STATUS_REG               (0x06 * REG_OFFSET + BASE_CONTROL) // Not used in software
+#define SYSTEM_STATUS_REG               (0x06 * REG_OFFSET + BASE_CONTROL) 
+
+#define SYSTEM_STATUS_R_PLL_LCKD_OFST   (1)
+#define SYSTEM_STATUS_R_PLL_LCKD_MSK    (0x00000001 << SYSTEM_STATUS_R_PLL_LCKD_OFST)
+#define SYSTEM_STATUS_RDO_PLL_LCKD_OFST (2)
+#define SYSTEM_STATUS_RDO_PLL_LCKD_MSK  (0x00000001 << SYSTEM_STATUS_RDO_PLL_LCKD_OFST)
 
 /* Config RW regiseter */
 #define CONFIG_REG                      (0x20 * REG_OFFSET + BASE_CONTROL)
@@ -483,6 +488,14 @@
 /* ASIC Readout Control registers
  * --------------------------------------------------*/
 
+/** ASIC Readout Status register */
+#define ASIC_RDO_STATUS_REG             (0x00 * REG_OFFSET + BASE_ASIC_RDO)
+
+#define ASIC_RDO_STATUS_BUSY_OFST       (1)
+#define ASIC_RDO_STATUS_BUSY_MSK        (0x00000001 << ASIC_RDO_STATUS_BUSY_OFST)
+
+
+/** ASIC Readout Res Storage Counter register */
 #define ASIC_RDO_CONFIG_REG             (0x01 * REG_OFFSET + BASE_ASIC_RDO)
 
 #define ASICRDO_CNFG_RESSTRG_LNGTH_OFST (0)

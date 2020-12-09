@@ -1,11 +1,11 @@
 #pragma once
 #include "SharedMemory.h"
 #include "sls/ClientSocket.h"
+#include "sls/Pattern.h"
 #include "sls/StaticVector.h"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
-#include "sls/Pattern.h"
 
 #include <array>
 #include <cmath>
@@ -463,8 +463,9 @@ class Module : public virtual slsDetectorDefs {
      *    Pattern                                     *
      *                                                *
      * ************************************************/
-    void setPattern(const Pattern& pat);
+    void setPattern(const Pattern &pat);
     Pattern getPattern();
+    void loadDefaultPattern();
     uint64_t getPatternIOControl() const;
     void setPatternIOControl(uint64_t word);
     uint64_t getPatternWord(int addr) const;

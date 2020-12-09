@@ -1466,6 +1466,9 @@ class Detector {
      * (ascii). \n [Ctb][Moench] Also executes pattern.*/
     void savePattern(const std::string &fname);
 
+    /** [Mythen3][Moench] Loads and runs default pattern */
+    void loadDefaultPattern(Positions pos = {});
+
     /** [CTB][Moench] */
     Result<uint64_t> getPatternIOControl(Positions pos = {}) const;
 

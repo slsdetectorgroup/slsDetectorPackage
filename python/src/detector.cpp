@@ -1278,6 +1278,10 @@ void init_det(py::module &m) {
         .def("savePattern",
              (void (Detector::*)(const std::string &)) & Detector::savePattern,
              py::arg())
+        .def("loadDefaultPattern",
+             (void (Detector::*)(sls::Positions)) &
+                 Detector::loadDefaultPattern,
+             py::arg() = Positions{})
         .def("getPatternIOControl",
              (Result<uint64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getPatternIOControl,

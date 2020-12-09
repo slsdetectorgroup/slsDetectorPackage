@@ -15,9 +15,13 @@
  * @param vcofreq1 vco frequency of pll 1
  */
 void ALTERA_PLL_C10_SetDefines(int regofst, uint32_t baseaddr0,
-                               uint32_t baseaddr1, uint32_t resetreg0,
-                               uint32_t resetreg1, uint32_t resetmsk0,
-                               uint32_t resetmsk1, int vcofreq0, int vcofreq1);
+                               uint32_t baseaddr1, uint32_t resetreg,
+                               uint32_t resetmsk0, uint32_t resetmsk1,
+#ifdef MYTHEN3D
+                               uint32_t statusreg, uint32_t statusmsk0,
+                               uint32_t statusmsk1,
+#endif
+                               int vcofreq0, int vcofreq1);
 
 /**
  * Get Max Clock Divider

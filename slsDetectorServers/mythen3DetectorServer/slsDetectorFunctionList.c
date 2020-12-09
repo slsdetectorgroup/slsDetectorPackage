@@ -402,10 +402,11 @@ void setupDetector() {
 #endif
 
     // pll defines
-    ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL,
-                              PLL_RESET_REG, PLL_RESET_REG,
-                              PLL_RESET_READOUT_MSK, PLL_RESET_SYSTEM_MSK,
-                              READOUT_PLL_VCO_FREQ_HZ, SYSTEM_PLL_VCO_FREQ_HZ);
+    ALTERA_PLL_C10_SetDefines(
+        REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL, PLL_RESET_REG,
+        PLL_RESET_READOUT_MSK, PLL_RESET_SYSTEM_MSK, SYSTEM_STATUS_REG,
+        SYSTEM_STATUS_RDO_PLL_LCKD_MSK, SYSTEM_STATUS_R_PLL_LCKD_MSK,
+        READOUT_PLL_VCO_FREQ_HZ, SYSTEM_PLL_VCO_FREQ_HZ);
     ALTERA_PLL_C10_ResetPLL(READOUT_PLL);
     ALTERA_PLL_C10_ResetPLL(SYSTEM_PLL);
     // hv
@@ -483,7 +484,9 @@ void setupDetector() {
     }
 
     powerChip(1);
-    loadDefaultPattern(DEFAULT_PATTERN_FILE);
+    if (initError != FAIL) {
+        initError = loadDefaultPattern(DEFAULT_PATTERN_FILE, initErrorMessage);
+    }
 }
 
 int setDefaultDacs() {
@@ -2439,8 +2442,12 @@ int startReadOut() {
 
     // start readout
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_READOUT_MSK);
-
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
+    usleep(1);
+    while (bus_r(ASIC_RDO_STATUS_REG) & ASIC_RDO_STATUS_BUSY_MSK) {
+        usleep(1);
+    }
+    LOG(logINFOBLUE, ("Readout done\n"));
     return OK;
 }
 

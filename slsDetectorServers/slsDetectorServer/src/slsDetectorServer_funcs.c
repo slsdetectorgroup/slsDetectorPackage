@@ -366,6 +366,7 @@ void function_table() {
     flist[F_SET_DEFAULT_DACS] = &set_default_dacs;
     flist[F_IS_VIRTUAL] = &is_virtual;
     flist[F_GET_PATTERN] = &get_pattern;
+    flist[F_LOAD_DEFAULT_PATTERN] = &load_default_pattern;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8298,4 +8299,21 @@ int is_virtual(int file_des) {
 #endif
     LOG(logDEBUG1, ("is virtual retval: %d\n", retval));
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int load_default_pattern(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+#if !defined(MYTHEN3D) && !defined(MOENCHD)
+    functionNotImplemented();
+#else
+    if (Server_VerifyLock() == OK) {
+        ret = loadDefaultPattern(DEFAULT_PATTERN_FILE, mess);
+        if (ret == FAIL) {
+            LOG(logERROR, (mess));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

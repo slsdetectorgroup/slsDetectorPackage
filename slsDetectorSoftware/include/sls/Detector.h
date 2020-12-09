@@ -119,8 +119,8 @@ class Detector {
      * FIXGAIN1, FIXGAIN2 \n [Moench] G1_HIGHGAIN, G1_LOWGAIN,
      * G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN,
      * G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN \n [Mythen3] STANDARD, FAST,
-     * HIGHGAIN \n [Eiger] Use threshold command. Settings loaded from file
-     * found in settingspath
+     * HIGHGAIN. Also changes vrshaper and vrpreamp \n [Eiger] Use threshold
+     * command. Settings loaded from file found in settingspath
      */
     void setSettings(defs::detectorSettings value, Positions pos = {});
 

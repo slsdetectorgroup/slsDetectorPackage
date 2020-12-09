@@ -682,6 +682,9 @@ class Module : public virtual slsDetectorDefs {
     void updateRateCorrection();
     void setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
                                        bool trimbits = true);
+    void setEigerThreshold(int e_eV, detectorSettings isettings, bool trimbits);
+    void setMythen3Threshold(int e_eV, detectorSettings isettings,
+                             bool trimbits);
     /** Template function to do linear interpolation between two points (Eiger
      only) */
     template <typename E, typename V>

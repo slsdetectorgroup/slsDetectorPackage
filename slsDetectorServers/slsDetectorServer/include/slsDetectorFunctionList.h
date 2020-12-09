@@ -294,6 +294,9 @@ int getAllTrimbits();
 #ifndef CHIPTESTBOARDD
 enum detectorSettings setSettings(enum detectorSettings sett);
 #endif
+#ifdef MYTHEN3D
+void validateSettings();
+#endif
 enum detectorSettings getSettings();
 
 // parameters - threshold

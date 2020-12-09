@@ -37,12 +37,22 @@
 #define DEFAULT_DELAY_AFTER_TRIGGER (0)
 #define DEFAULT_HIGH_VOLTAGE        (0)
 #define DEFAULT_TIMING_MODE         (AUTO_TIMING)
-#define DEFAULT_READOUT_C0          (10) //(100000000) // rdo_clk, 100 MHz
-#define DEFAULT_READOUT_C1          (10) //(100000000) // smp sample clk (x2), 100 MHz
-#define DEFAULT_SYSTEM_C0           (10) //(100000000) // run_clk, 100 MHz
-#define DEFAULT_SYSTEM_C1           (10) //(100000000) // sync_clk, 100 MHz
-#define DEFAULT_SYSTEM_C2           (10) //(100000000) // str_clk, 100 MHz
-#define DEFAULT_SYSTEM_C3           (5)  //(200000000) // smp_clk, 200 MHz
+#define DEFAULT_SETTINGS            (STANDARD)
+#define DEFAULT_TRIMBIT_VALUE       (0)
+
+#define DEFAULT_STANDARD_VRPREAMP (1100)
+#define DEFAULT_FAST_VRPREAMP     (300)
+#define DEFAULT_HIGHGAIN_VRPREAMP (1300)
+#define DEFAULT_STANDARD_VRSHAPER (1280)
+#define DEFAULT_FAST_VRSHAPER     (1500)
+#define DEFAULT_HIGHGAIN_VRSHAPER (900)
+
+#define DEFAULT_READOUT_C0 (10) //(100000000) // rdo_clk, 100 MHz
+#define DEFAULT_READOUT_C1 (10) //(100000000) // smp sample clk (x2), 100 MHz
+#define DEFAULT_SYSTEM_C0  (10) //(100000000) // run_clk, 100 MHz
+#define DEFAULT_SYSTEM_C1  (10) //(100000000) // sync_clk, 100 MHz
+#define DEFAULT_SYSTEM_C2  (10) //(100000000) // str_clk, 100 MHz
+#define DEFAULT_SYSTEM_C3  (5)  //(200000000) // smp_clk, 200 MHz
 // (DEFAULT_SYSTEM_C3 only for timing receiver) should not be changed
 #define DEFAULT_TRIMMING_RUN_CLKDIV (40) // (25000000) // 25 MHz
 

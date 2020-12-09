@@ -186,7 +186,16 @@ Result<defs::detectorSettings> Detector::getSettings(Positions pos) const {
 }
 
 void Detector::setSettings(const defs::detectorSettings value, Positions pos) {
-    pimpl->Parallel(&Module::setSettings, pos, value);
+    if (value == defs::UNINITIALIZED || value == defs::UNDEFINED) {
+        throw RuntimeError(
+            "Cannot set settings with undefined or uninitialized settings.");
+    }
+    if (anyEqualTo<defs::detectorSettings>(getSettingsList(), value)) {
+        pimpl->Parallel(&Module::setSettings, pos, value);
+    } else {
+        throw RuntimeError("Unknown Settings " + ToString(value) +
+                           " for this detector\n");
+    }
 }
 
 Result<int> Detector::getThresholdEnergy(Positions pos) const {
@@ -196,8 +205,18 @@ Result<int> Detector::getThresholdEnergy(Positions pos) const {
 void Detector::setThresholdEnergy(int threshold_ev,
                                   defs::detectorSettings settings,
                                   bool trimbits, Positions pos) {
-    pimpl->Parallel(&Module::setThresholdEnergy, pos, threshold_ev, settings,
-                    static_cast<int>(trimbits));
+    if (settings == defs::UNINITIALIZED || settings == defs::UNDEFINED) {
+        throw RuntimeError(
+            "Cannot set threshold with undefined or uninitialized settings. "
+            "Please mention appropriate settings as well.");
+    }
+    if (anyEqualTo<defs::detectorSettings>(getSettingsList(), settings)) {
+        pimpl->Parallel(&Module::setThresholdEnergy, pos, threshold_ev,
+                        settings, static_cast<int>(trimbits));
+    } else {
+        throw RuntimeError("Unknown Settings " + ToString(settings) +
+                           " for this detector\n");
+    }
 }
 
 Result<std::string> Detector::getSettingsPath(Positions pos) const {

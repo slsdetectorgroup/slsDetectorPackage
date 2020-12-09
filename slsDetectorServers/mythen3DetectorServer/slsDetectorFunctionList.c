@@ -374,9 +374,9 @@ void allocateDetectorStructureMemory() {
         detectorDacs[idac] = 0;
     }
 
-    // if trimval requested, should return -1 to acknowledge unknown
+    // trimbits start at 0 //TODO: restart server will not have 0 always
     for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
-        *((detectorModules->chanregs) + ichan) = -1;
+        *((detectorModules->chanregs) + ichan) = 0;
     }
 }
 
@@ -450,6 +450,7 @@ void setupDetector() {
 #ifdef VIRTUAL
     enableTenGigabitEthernet(0);
 #endif
+    setSettings(DEFAULT_SETTINGS);
 
     // check module type attached if not in debug mode
     {
@@ -487,6 +488,7 @@ void setupDetector() {
     if (initError != FAIL) {
         initError = loadDefaultPattern(DEFAULT_PATTERN_FILE, initErrorMessage);
     }
+    setAllTrimbits(DEFAULT_TRIMBIT_VALUE);
 }
 
 int setDefaultDacs() {
@@ -1015,21 +1017,17 @@ int setModule(sls_detector_module myMod, char *mess) {
 
     LOG(logINFO, ("Setting module\n"));
 
-    // settings (not yet implemented)
-    setSettings((enum detectorSettings)myMod.reg);
+    // settings
     if (myMod.reg >= 0) {
+        setSettings((enum detectorSettings)myMod.reg);
+        if (getSettings() != (enum detectorSettings)myMod.reg) {
+            sprintf(
+                mess,
+                "Could not set module. Could not set settings to %d, read %d\n",
+                myMod.reg, (int)getSettings());
+            LOG(logERROR, (mess));
+        }
         detectorModules->reg = myMod.reg;
-    } else {
-        // TODO: Needed????
-        // (loading a random trim file) (dont return fail)
-        setSettings(UNDEFINED);
-        LOG(logERROR,
-            ("Settings has been changed to undefined (random trim file)\n"));
-    }
-
-    // threshold
-    if (myMod.eV >= 0) {
-        ; // setThresholdEnergy(myMod.eV);
     }
 
     // dacs
@@ -1038,14 +1036,41 @@ int setModule(sls_detector_module myMod, char *mess) {
         if (myMod.dacs[i] != -1) {
             setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
             if (myMod.dacs[i] != detectorDacs[i]) {
-                sprintf(mess, "Could not set module. Could not set dac %d\n",
-                        i);
+                sprintf(mess,
+                        "Could not set module. Could not set dac %d, wrote %d, "
+                        "read %d\n",
+                        i, myMod.dacs[i], detectorDacs[i]);
                 LOG(logERROR, (mess));
-                // setSettings(UNDEFINED);
-                // LOG(logERROR, ("Settings has been changed to undefined\n"));
+                // if settings given, validate it is still true (custom trim
+                // file)
+                if (myMod.reg >= 0) {
+                    validateSettings();
+                }
                 return FAIL;
             }
         }
+    }
+    // validate if dacs still have same settings values, do not return FAIL
+    validateSettings();
+    // if settings given and cannot be validated (due to dacs), return error
+    if (myMod.reg >= 0) {
+        if (getSettings() == (enum detectorSettings)myMod.reg) {
+            sprintf(
+                mess,
+                "Could not set module. The dacs in file do not correspond to "
+                "settings %d\n",
+                myMod.reg);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+    }
+
+    // custom trimbits, change a dac, setall trimbits,
+    // should all set threshold to -1
+
+    // threshold
+    if (myMod.eV >= 0) {
+        ; // setThresholdEnergy(myMod.eV);
     }
 
     // trimbits
@@ -1238,6 +1263,7 @@ int setTrimbits(int *trimbits) {
 }
 
 int setAllTrimbits(int val) {
+    LOG(logINFO, ("Setting all trimbits to %d\n", val));
     int *trimbits = malloc(sizeof(int) * ((detectorModules)->nchan));
     for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
         trimbits[ichan] = val;
@@ -1271,20 +1297,58 @@ int getAllTrimbits() {
 
 enum detectorSettings setSettings(enum detectorSettings sett) {
     switch (sett) {
-    case UNINITIALIZED:
-        break;
     case STANDARD:
+        LOG(logINFOBLUE, ("Setting to standard settings\n"));
+        setDAC(M_VRPREAMP, DEFAULT_STANDARD_VRPREAMP, 0);
+        setDAC(M_VRSHAPER, DEFAULT_STANDARD_VRSHAPER, 0);
+        break;
     case FAST:
+        LOG(logINFOBLUE, ("Setting to fast settings\n"));
+        setDAC(M_VRPREAMP, DEFAULT_FAST_VRPREAMP, 0);
+        setDAC(M_VRSHAPER, DEFAULT_FAST_VRSHAPER, 0);
+        break;
     case HIGHGAIN:
-        thisSettings = sett;
-        LOG(logINFO, ("Settings: %d\n", thisSettings));
+        LOG(logINFOBLUE, ("Setting to high gain settings\n"));
+        setDAC(M_VRPREAMP, DEFAULT_HIGHGAIN_VRPREAMP, 0);
+        setDAC(M_VRSHAPER, DEFAULT_HIGHGAIN_VRSHAPER, 0);
         break;
     default:
         LOG(logERROR,
             ("Settings %d not defined for this detector\n", (int)sett));
-        break;
+        return thisSettings;
     }
+
+    thisSettings = sett;
+    LOG(logINFO, ("Settings: %d\n", thisSettings));
+    validateSettings();
     return thisSettings;
+}
+
+void validateSettings() {
+    if (detectorDacs[M_VRPREAMP] == DEFAULT_STANDARD_VRPREAMP &&
+        detectorDacs[M_VRSHAPER] == DEFAULT_STANDARD_VRSHAPER) {
+        if (thisSettings != STANDARD) {
+            thisSettings = STANDARD;
+            LOG(logINFOBLUE, ("Validated Settings changed to standard!\n"));
+        }
+    } else if (detectorDacs[M_VRPREAMP] == DEFAULT_FAST_VRPREAMP &&
+               detectorDacs[M_VRSHAPER] == DEFAULT_FAST_VRSHAPER) {
+        if (thisSettings != FAST) {
+            thisSettings = FAST;
+            LOG(logINFOBLUE, ("Validated Settings changed to fast!\n"));
+        }
+    } else if (detectorDacs[M_VRPREAMP] == DEFAULT_HIGHGAIN_VRPREAMP &&
+               detectorDacs[M_VRSHAPER] == DEFAULT_HIGHGAIN_VRSHAPER) {
+        if (thisSettings != HIGHGAIN) {
+            thisSettings = HIGHGAIN;
+            LOG(logINFOBLUE, ("Validated Settings changed to highgain!\n"));
+        }
+    } else {
+        thisSettings = UNDEFINED;
+        LOG(logERROR,
+            ("Settings set to undefined [vrpreamp: %d, vrshaper: %d]\n",
+             detectorDacs[M_VRPREAMP], detectorDacs[M_VRSHAPER]));
+    }
 }
 
 enum detectorSettings getSettings() { return thisSettings; }

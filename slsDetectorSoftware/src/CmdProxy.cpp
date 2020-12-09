@@ -428,7 +428,8 @@ std::string CmdProxy::TrimEnergies(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[trim_ev1] [trim_Ev2 (optional)] [trim_ev3 (optional)] "
-              "...\n\t[Eiger] Number of trim energies and list of trim "
+              "...\n\t[Eiger][Mythen3] Number of trim energies and list of "
+              "trim "
               "energies, where corresponding default trim files exist in "
               "corresponding trim folders."
            << '\n';

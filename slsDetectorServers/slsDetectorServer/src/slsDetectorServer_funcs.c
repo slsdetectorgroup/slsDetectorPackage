@@ -1622,10 +1622,14 @@ int set_settings(int file_des) {
             case G2_LOWCAP_LOWGAIN:
             case G4_HIGHGAIN:
             case G4_LOWGAIN:
+#elif MYTHEN3D
+            case STANDARD:
+            case FAST:
+            case HIGHGAIN:
 #endif
                 break;
             default:
-                if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
+                if (myDetectorType == EIGER) {
                     ret = FAIL;
                     sprintf(mess, "Cannot set settings via SET_SETTINGS, use "
                                   "SET_MODULE\n");

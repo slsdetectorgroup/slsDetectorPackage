@@ -103,7 +103,7 @@
 /* Look at me register, read only */
 #define LOOK_AT_ME_REG                  (0x05 * REG_OFFSET + BASE_CONTROL) // Not used in firmware or software, good to play with
 
-#define SYSTEM_STATUS_REG               (0x06 * REG_OFFSET + BASE_CONTROL) // Not used in software
+#define SYSTEM_STATUS_REG               (0x06 * REG_OFFSET + BASE_CONTROL) 
 
 #define SYSTEM_STATUS_R_PLL_LCKD_OFST   (1)
 #define SYSTEM_STATUS_R_PLL_LCKD_MSK    (0x00000001 << SYSTEM_STATUS_R_PLL_LCKD_OFST)

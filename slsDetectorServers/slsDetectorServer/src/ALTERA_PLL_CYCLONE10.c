@@ -112,14 +112,6 @@ void ALTERA_PLL_C10_Reconfigure(int pllIndex) {
 }
 
 void ALTERA_PLL_C10_ResetPLL(int pllIndex) {
-#ifdef MYTHEN3D
-    uint32_t statusreg = ALTERA_PLL_C10_Locked_Status_Reg;
-    uint32_t statusmsk = ALTERA_PLL_C10_Locked_Status_Msk[pllIndex];
-    LOG(logWARNING,
-        ("Before Resetting PLL %d: statusreg:0x%x status mask:0x%x value "
-         "read:0x%x\n",
-         pllIndex, statusreg, statusmsk, bus_r_csp1(statusreg) & statusmsk));
-#endif
     uint32_t resetreg = ALTERA_PLL_C10_Reset_Reg;
     uint32_t resetmsk = ALTERA_PLL_C10_Reset_Msk[pllIndex];
     LOG(logINFO, ("Resetting PLL %d\n", pllIndex));
@@ -128,14 +120,12 @@ void ALTERA_PLL_C10_ResetPLL(int pllIndex) {
 
 #ifndef VIRTUAL
 #ifdef MYTHEN3D
-
+    uint32_t statusreg = ALTERA_PLL_C10_Locked_Status_Reg;
+    uint32_t statusmsk = ALTERA_PLL_C10_Locked_Status_Msk[pllIndex];
     // wait for pll locked bit to go high
-    if (!(bus_r_csp1(statusreg) & statusmsk)) {
+    while (!(bus_r(statusreg) & statusmsk)) {
         usleep(ALTERA_PLL_C10_WAIT_TIME_US);
         LOG(logWARNING, ("Still waiting for PLL %d recovery\n", pllIndex));
-        LOG(logWARNING,
-            ("statusreg:0x%x status mask:0x%x value read:0x%x\n", statusreg,
-             statusmsk, bus_r_csp1(statusreg) & statusmsk));
     }
     LOG(logINFO, ("Reset success for PLL %d\n", pllIndex));
 #endif

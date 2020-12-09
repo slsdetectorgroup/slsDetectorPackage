@@ -118,6 +118,7 @@ void ALTERA_PLL_C10_ResetPLL(int pllIndex) {
     bus_w_csp1(resetreg, bus_r_csp1(resetreg) | resetmsk);
     usleep(ALTERA_PLL_C10_WAIT_TIME_US);
 
+#ifndef VIRTUAL
 #ifdef MYTHEN3D
     uint32_t statusreg = ALTERA_PLL_C10_Locked_Status_Reg;
     uint32_t statusmsk = ALTERA_PLL_C10_Locked_Status_Msk[pllIndex];
@@ -127,6 +128,7 @@ void ALTERA_PLL_C10_ResetPLL(int pllIndex) {
         LOG(logWARNING, ("Still waiting for PLL %d recovery\n", pllIndex));
     }
     LOG(logINFO, ("Reset success for PLL %d\n", pllIndex));
+#endif
 #endif
 }
 

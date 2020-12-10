@@ -102,8 +102,11 @@ class Module : public virtual slsDetectorDefs {
     detectorSettings getSettings() const;
     void setSettings(detectorSettings isettings);
     int getThresholdEnergy() const;
+    std::array<int, 3> getAllThresholdEnergy() const;
     void setThresholdEnergy(int e_eV, detectorSettings isettings,
                             bool trimbits);
+    void setAllThresholdEnergy(std::array<int, 3> e_eV,
+                               detectorSettings isettings, bool trimbits);
     std::string getSettingsDir() const;
     std::string setSettingsDir(const std::string &dir);
     void loadSettingsFile(const std::string &fname);
@@ -680,11 +683,6 @@ class Module : public virtual slsDetectorDefs {
     void updateReceiverStreamingIP();
 
     void updateRateCorrection();
-    void setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
-                                       bool trimbits = true);
-    void setEigerThreshold(int e_eV, detectorSettings isettings, bool trimbits);
-    void setMythen3Threshold(int e_eV, detectorSettings isettings,
-                             bool trimbits);
     /** Template function to do linear interpolation between two points (Eiger
      only) */
     template <typename E, typename V>

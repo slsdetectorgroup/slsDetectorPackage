@@ -156,18 +156,130 @@ int Module::getThresholdEnergy() const {
     return sendToDetector<int>(F_GET_THRESHOLD_ENERGY);
 }
 
+std::array<int, 3> Module::getAllThresholdEnergy() const {
+    return sendToDetector<int>(F_GET_ALL_THRESHOLD_ENERGY);
+}
+
 void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
                                 bool trimbits) {
-    // check as there is client processing
-    if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
-        setThresholdEnergyAndSettings(e_eV, isettings, trimbits);
-        if (shm()->useReceiverFlag) {
-            sendToReceiver(F_RECEIVER_SET_THRESHOLD, e_eV, nullptr);
-        }
-    } else {
-        throw RuntimeError(
-            "Set threshold energy not implemented for this detector");
+
+    // verify e_eV exists in trimEneregies[]
+    if (shm()->trimEnergies.empty() || (e_eV < shm()->trimEnergies.front()) ||
+        (e_eV > shm()->trimEnergies.back())) {
+        throw RuntimeError("This energy " + std::to_string(e_eV) +
+                           " not defined for this module!");
     }
+    bool interpolate =
+        std::all_of(shm()->trimEnergies.begin(), shm()->trimEnergies.end(),
+                    [e_eV](const int &e) { return e != e_eV; });
+
+    sls_detector_module myMod{shm()->myDetectorType};
+
+    if (!interpolate) {
+        std::string settingsfname = getTrimbitFilename(isettings, e_eV);
+        LOG(logDEBUG1) << "Settings File is " << settingsfname;
+        myMod = readSettingsFile(settingsfname, trimbits);
+    } else {
+        // find the trim values
+        int trim1 = -1, trim2 = -1;
+        for (size_t i = 0; i < shm()->trimEnergies.size(); ++i) {
+            if (e_eV < shm()->trimEnergies[i]) {
+                trim2 = shm()->trimEnergies[i];
+                trim1 = shm()->trimEnergies[i - 1];
+                break;
+            }
+        }
+        std::string settingsfname1 = getTrimbitFilename(isettings, trim1);
+        std::string settingsfname2 = getTrimbitFilename(isettings, trim2);
+        LOG(logDEBUG1) << "Settings Files are " << settingsfname1 << " and "
+                       << settingsfname2;
+        auto myMod1 = readSettingsFile(settingsfname1, trimbits);
+        auto myMod2 = readSettingsFile(settingsfname2, trimbits);
+        if (myMod1.iodelay != myMod2.iodelay) {
+            throw RuntimeError("setThresholdEnergyAndSettings: Iodelays do not "
+                               "match between files");
+        }
+        myMod = interpolateTrim(&myMod1, &myMod2, e_eV, trim1, trim2, trimbits);
+        myMod.iodelay = myMod1.iodelay;
+        myMod.tau =
+            linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
+    }
+
+    myMod.reg = isettings;
+    myMod.eV = e_eV;
+    setModule(myMod, trimbits);
+    if (getSettings() != isettings) {
+        throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
+                           "settings in detector");
+    }
+
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_THRESHOLD, e_eV, nullptr);
+    }
+}
+
+void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
+                                   detectorSettings isettings, bool trimbits) {
+    bool interpolate[3] = {false, false, false};
+
+    sls_detector_module myMod{shm()->myDetectorType};
+    auto counters = getSetBits(getCounterMask());
+
+    for (int i = 0; i < (int)e_eV.size(); ++i) {
+        // verify e_eV exists in trimEneregies[]
+        if (shm()->trimEnergies.empty() ||
+            (e_eV[i] < shm()->trimEnergies.front()) ||
+            (e_eV[i] > shm()->trimEnergies.back())) {
+            throw RuntimeError("This eeeenergy " + std::to_string(e_eV[i]) +
+                               " not defined for this module!");
+        }
+
+        interpolate[i] =
+            std::all_of(shm()->trimEnergies.begin(), shm()->trimEnergies.end(),
+                        [e_eV[i]](const int &e) { return e != e_eV[i]; });
+    }
+    if (!interpolate[i]) {
+        std::string settingsfname = getTrimbitFilename(isettings, e_eV);
+        LOG(logDEBUG1) << "Settings File is " << settingsfname;
+        myMod = readSettingsFile(settingsfname, trimbits);
+    } else {
+        // find the trim values
+        int trim1 = -1, trim2 = -1;
+        for (size_t i = 0; i < shm()->trimEnergies.size(); ++i) {
+            if (e_eV < shm()->trimEnergies[i]) {
+                trim2 = shm()->trimEnergies[i];
+                trim1 = shm()->trimEnergies[i - 1];
+                break;
+            }
+        }
+        std::string settingsfname1 = getTrimbitFilename(isettings, trim1);
+        std::string settingsfname2 = getTrimbitFilename(isettings, trim2);
+        LOG(logDEBUG1) << "Settings Files are " << settingsfname1 << " and "
+                       << settingsfname2;
+        auto myMod1 = readSettingsFile(settingsfname1, trimbits);
+        auto myMod2 = readSettingsFile(settingsfname2, trimbits);
+        if (myMod1.iodelay != myMod2.iodelay) {
+            throw RuntimeError("setThresholdEnergyAndSettings: Iodelays do not "
+                               "match between files");
+        }
+        myMod = interpolateTrim(&myMod1, &myMod2, e_eV, trim1, trim2, trimbits);
+        myMod.iodelay = myMod1.iodelay;
+        myMod.tau =
+            linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
+    }
+
+    myMod.reg = isettings;
+    myMod.eV = e_eV;
+    setModule(myMod, trimbits);
+    if (getSettings() != isettings) {
+        throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
+                           "settings in detector");
+    }
+
+    if (shm()->useReceiverFlag) {
+        ; // TODO: sendToReceiver(F_RECEIVER_SET_ALL_THRESHOLD, e_eV, nullptr);
+    }
+    * /
 }
 
 std::string Module::getSettingsDir() const {
@@ -184,9 +296,7 @@ void Module::loadSettingsFile(const std::string &fname) {
     if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
         std::ostringstream ostfn;
         ostfn << fname;
-        if (fname.find(".sn") == std::string::npos &&
-            fname.find(".trim") == std::string::npos &&
-            fname.find(".settings") == std::string::npos) {
+        if (fname.find(".sn") == std::string::npos) {
             ostfn << ".sn" << std::setfill('0') << std::setw(3) << std::dec
                   << getSerialNumber();
         }
@@ -225,6 +335,7 @@ int Module::setTrimEn(const std::vector<int> &energies) {
         throw RuntimeError(os.str());
     }
     shm()->trimEnergies = energies;
+    std::sort(shm()->trimEnergies.begin(), shm()->trimEnergies.end());
     return shm()->trimEnergies.size();
 }
 
@@ -2797,123 +2908,6 @@ void Module::updateReceiverStreamingIP() {
 
 void Module::updateRateCorrection() {
     sendToDetector(F_UPDATE_RATE_CORRECTION);
-}
-
-void Module::setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
-                                           bool trimbits) {
-    // verify e_eV exists in trimEneregies[]
-    if (shm()->trimEnergies.empty() || (e_eV < shm()->trimEnergies.front()) ||
-        (e_eV > shm()->trimEnergies.back())) {
-        throw RuntimeError("This energy " + std::to_string(e_eV) +
-                           " not defined for this module!");
-    }
-
-    switch (shm()->myDetectorType) {
-    case EIGER:
-        setEigerThreshold(e_eV, isettings, trimbits);
-        break;
-    case MYTHEN3:
-        setMythen3Threshold(e_eV, isettings, trimbits);
-        break;
-    default:
-        throw RuntimeError(
-            "Setting Threshold energy is not implemented for this detector.");
-        break;
-    }
-}
-
-void Module::setEigerThreshold(int e_eV, detectorSettings isettings,
-                               bool trimbits) {
-    bool interpolate =
-        std::all_of(shm()->trimEnergies.begin(), shm()->trimEnergies.end(),
-                    [e_eV](const int &e) { return e != e_eV; });
-
-    sls_detector_module myMod{shm()->myDetectorType};
-
-    if (!interpolate) {
-        std::string settingsfname = getTrimbitFilename(isettings, e_eV);
-        LOG(logDEBUG1) << "Settings File is " << settingsfname;
-        myMod = readSettingsFile(settingsfname, trimbits);
-    } else {
-        // find the trim values
-        int trim1 = -1, trim2 = -1;
-        for (size_t i = 0; i < shm()->trimEnergies.size(); ++i) {
-            if (e_eV < shm()->trimEnergies[i]) {
-                trim2 = shm()->trimEnergies[i];
-                trim1 = shm()->trimEnergies[i - 1];
-                break;
-            }
-        }
-        std::string settingsfname1 = getTrimbitFilename(isettings, trim1);
-        std::string settingsfname2 = getTrimbitFilename(isettings, trim2);
-        LOG(logDEBUG1) << "Settings Files are " << settingsfname1 << " and "
-                       << settingsfname2;
-        auto myMod1 = readSettingsFile(settingsfname1, trimbits);
-        auto myMod2 = readSettingsFile(settingsfname2, trimbits);
-        if (myMod1.iodelay != myMod2.iodelay) {
-            throw RuntimeError("setThresholdEnergyAndSettings: Iodelays do not "
-                               "match between files");
-        }
-        myMod = interpolateTrim(&myMod1, &myMod2, e_eV, trim1, trim2, trimbits);
-        myMod.iodelay = myMod1.iodelay;
-        myMod.tau =
-            linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
-    }
-
-    myMod.reg = isettings;
-    myMod.eV = e_eV;
-    setModule(myMod, trimbits);
-    if (getSettings() != isettings) {
-        throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
-                           "settings in detector");
-    }
-}
-
-void Module::setMythen3Threshold(int e_eV, detectorSettings isettings,
-                                 bool trimbits) {
-    bool interpolate =
-        std::all_of(shm()->trimEnergies.begin(), shm()->trimEnergies.end(),
-                    [e_eV](const int &e) { return e != e_eV; });
-
-    sls_detector_module myMod{shm()->myDetectorType};
-
-    if (!interpolate) {
-        std::string settingsfname = getTrimbitFilename(isettings, e_eV);
-        LOG(logDEBUG1) << "Settings File is " << settingsfname;
-        myMod = readSettingsFile(settingsfname, trimbits);
-    } else {
-        // find the trim values
-        int trim1 = -1, trim2 = -1;
-        for (size_t i = 0; i < shm()->trimEnergies.size(); ++i) {
-            if (e_eV < shm()->trimEnergies[i]) {
-                trim2 = shm()->trimEnergies[i];
-                trim1 = shm()->trimEnergies[i - 1];
-                break;
-            }
-        }
-        std::string settingsfname1 = getTrimbitFilename(isettings, trim1);
-        std::string settingsfname2 = getTrimbitFilename(isettings, trim2);
-        LOG(logDEBUG1) << "Settings Files are " << settingsfname1 << " and "
-                       << settingsfname2;
-        auto myMod1 = readSettingsFile(settingsfname1, trimbits);
-        auto myMod2 = readSettingsFile(settingsfname2, trimbits);
-        if (myMod1.iodelay != myMod2.iodelay) {
-            throw RuntimeError("setThresholdEnergyAndSettings: Iodelays do not "
-                               "match between files");
-        }
-        myMod = interpolateTrim(&myMod1, &myMod2, e_eV, trim1, trim2, trimbits);
-        myMod.iodelay = myMod1.iodelay;
-        myMod.tau =
-            linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
-    }
-
-    myMod.reg = isettings;
-    myMod.eV = e_eV;
-    setModule(myMod, trimbits);
-    if (getSettings() != isettings) {
-        throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
-                           "settings in detector");
-    }
 }
 
 sls_detector_module Module::interpolateTrim(sls_detector_module *a,

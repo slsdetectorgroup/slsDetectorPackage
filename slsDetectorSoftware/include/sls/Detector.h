@@ -124,11 +124,19 @@ class Detector {
      */
     void setSettings(defs::detectorSettings value, Positions pos = {});
 
-    /** [Eiger][Mythen3] */
+    /** [Eiger] */
     Result<int> getThresholdEnergy(Positions pos = {}) const;
+
+    /** Mythen3] threshold energy for the three counters */
+    Result<std::array<int, 3>> getAllThresholdEnergy(Positions pos = {}) const;
 
     /** [Eiger][Mythen3] It loads trim files from settingspath */
     void setThresholdEnergy(int threshold_ev,
+                            defs::detectorSettings settings = defs::STANDARD,
+                            bool trimbits = true, Positions pos = {});
+
+    /** [Mythen3] It loads trim files from settingspath */
+    void setThresholdEnergy(std::array<int, 3> threshold_ev,
                             defs::detectorSettings settings = defs::STANDARD,
                             bool trimbits = true, Positions pos = {});
 

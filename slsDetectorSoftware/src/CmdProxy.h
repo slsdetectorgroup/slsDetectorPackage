@@ -775,7 +775,7 @@ class CmdProxy {
         {"settingslist", &CmdProxy::settingslist},
         {"settings", &CmdProxy::settings},
         {"threshold", &CmdProxy::Threshold},
-        {"thresholdnotb", &CmdProxy::ThresholdNoTb},
+        {"thresholdnotb", &CmdProxy::Threshold},
         {"settingspath", &CmdProxy::settingspath},
         {"trimbits", &CmdProxy::trimbits},
         {"trimval", &CmdProxy::trimval},
@@ -1083,7 +1083,6 @@ class CmdProxy {
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
     std::string Threshold(int action);
-    std::string ThresholdNoTb(int action);
     std::string TrimEnergies(int action);
     std::string GapPixels(int action);
     /* acquisition parameters */

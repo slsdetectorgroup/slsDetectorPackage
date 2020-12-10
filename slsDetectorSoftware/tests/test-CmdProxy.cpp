@@ -130,7 +130,7 @@ TEST_CASE("settingslist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD) {
         REQUIRE_THROWS(proxy.Call("settingslist", {}, -1, GET));
     } else {
         REQUIRE_NOTHROW(proxy.Call("settingslist", {}, -1, GET));
@@ -174,6 +174,11 @@ TEST_CASE("settings", "[.cmd]") {
         sett.push_back("g4_hg");
         sett.push_back("g4_lg");
         break;
+    case defs::MYTHEN3:
+        sett.push_back("standard");
+        sett.push_back("fast");
+        sett.push_back("highgain");
+        break;
     default:
         if (det_type == defs::EIGER) {
             // FIXME: need to remove when settings removed
@@ -203,6 +208,181 @@ TEST_CASE("settings", "[.cmd]") {
             prev_val[i] != defs::UNINITIALIZED) {
             det.setSettings(prev_val[i], {i});
         }
+    }
+}
+
+TEST_CASE("threshold", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_threshold = det.getThresholdEnergy();
+        auto prev_energies =
+            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
+        if (!prev_energies.empty()) {
+            std::string senergy = std::to_string(prev_energies[0]);
+            std::ostringstream oss1, oss2;
+            proxy.Call("threshold", {senergy, "standard"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "threshold [" + senergy + ", standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "threshold " + senergy + "\n");
+
+            REQUIRE_THROWS(proxy.Call(
+                "threshold", {senergy, senergy, senergy, "standard"}, -1, PUT));
+            REQUIRE_THROWS(
+                proxy.Call("threshold", {senergy, "undefined"}, -1, PUT));
+
+            det.setTrimEnergies(prev_energies);
+            for (int i = 0; i != det.size(); ++i) {
+                if (prev_threshold[i] >= 0) {
+                    det.setThresholdEnergy(prev_threshold[i], defs::STANDARD,
+                                           true, {i});
+                }
+            }
+        }
+        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
+    } else if (det_type == defs::MYTHEN3) {
+        auto prev_threshold = det.getAllThresholdEnergy();
+        auto prev_settings =
+            det.getSettings().tsquash("inconsistent settings to test");
+        auto prev_energies =
+            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
+        if (!prev_energies.empty()) {
+            std::string senergy = std::to_string(prev_energies[0]);
+            std::ostringstream oss1, oss2;
+            proxy.Call("threshold", {senergy, "standard"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "threshold [" + senergy + ", standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "threshold [" + senergy + ", " + senergy +
+                                      ", " + senergy + "]\n");
+            std::string senergy2 = std::to_string(prev_energies[1]);
+            std::string senergy3 = std::to_string(prev_energies[2]);
+            std::ostringstream oss3, oss4;
+            proxy.Call("threshold", {senergy, senergy2, senergy3, "standard"},
+                       -1, PUT, oss3);
+            REQUIRE(oss3.str() == "threshold [" + senergy + ", " + senergy2 +
+                                      ", " + senergy3 + ", standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss4);
+            REQUIRE(oss4.str() == "threshold [" + senergy + ", " + senergy2 +
+                                      ", " + senergy3 + "]\n");
+
+            REQUIRE_THROWS(proxy.Call("threshold",
+                                      {senergy, senergy, "standard"}, -1, PUT));
+            REQUIRE_THROWS(
+                proxy.Call("threshold", {senergy, "undefined"}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("threshold", {senergy}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("threshold",
+                                       {senergy, senergy2, senergy3}, -1, PUT));
+            det.setTrimEnergies(prev_energies);
+            for (int i = 0; i != det.size(); ++i) {
+                if (prev_threshold[i][0] >= 0) {
+                    std::cout
+                        << "prev cvalues:" << sls::ToString(prev_threshold[i])
+                        << std::endl;
+                    det.setThresholdEnergy(prev_threshold[i], prev_settings,
+                                           true, {i});
+                }
+            }
+        }
+        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("threshold", {}, -1, GET));
+    }
+}
+
+TEST_CASE("thresholdnotb", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_threshold = det.getThresholdEnergy();
+        auto prev_energies =
+            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
+        if (!prev_energies.empty()) {
+            std::string senergy = std::to_string(prev_energies[0]);
+            std::ostringstream oss1, oss2;
+            proxy.Call("thresholdnotb", {senergy, "standard"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "threshold [" + senergy + ", standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "threshold " + senergy + "\n");
+            REQUIRE_THROWS(proxy.Call("thresholdnotb",
+                                      {senergy, senergy, senergy, "standard"},
+                                      -1, PUT));
+            REQUIRE_THROWS(
+                proxy.Call("thresholdnotb", {senergy, "undefined"}, -1, PUT));
+            det.setTrimEnergies(prev_energies);
+            for (int i = 0; i != det.size(); ++i) {
+                if (prev_threshold[i] >= 0) {
+                    det.setThresholdEnergy(prev_threshold[i], defs::STANDARD,
+                                           false, {i});
+                }
+            }
+        }
+        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
+    } else if (det_type == defs::MYTHEN3) {
+        auto prev_threshold = det.getAllThresholdEnergy();
+        auto prev_settings =
+            det.getSettings().tsquash("inconsistent settings to test");
+        auto prev_energies =
+            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
+        if (!prev_energies.empty()) {
+            std::string senergy = std::to_string(prev_energies[0]);
+            std::ostringstream oss1, oss2;
+            proxy.Call("thresholdnotb", {senergy, "standard"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() ==
+                    "thresholdnotb [" + senergy + ", standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "threshold [" + senergy + ", " + senergy +
+                                      ", " + senergy + "]\n");
+            std::string senergy2 = std::to_string(prev_energies[1]);
+            std::string senergy3 = std::to_string(prev_energies[2]);
+            std::ostringstream oss3, oss4;
+            proxy.Call("thresholdnotb",
+                       {senergy, senergy2, senergy3, "standard"}, -1, PUT,
+                       oss3);
+            REQUIRE(oss3.str() == "thresholdnotb [" + senergy + ", " +
+                                      senergy2 + ", " + senergy3 +
+                                      ", standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss4);
+            REQUIRE(oss4.str() == "threshold [" + senergy + ", " + senergy2 +
+                                      ", " + senergy3 + "]\n");
+
+            REQUIRE_THROWS(proxy.Call("thresholdnotb",
+                                      {senergy, senergy, "standard"}, -1, PUT));
+            REQUIRE_THROWS(
+                proxy.Call("thresholdnotb", {senergy, "undefined"}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("thresholdnotb", {senergy}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("thresholdnotb",
+                                       {senergy, senergy2, senergy3}, -1, PUT));
+            det.setTrimEnergies(prev_energies);
+            for (int i = 0; i != det.size(); ++i) {
+                if (prev_threshold[i][0] >= 0) {
+                    det.setThresholdEnergy(prev_threshold[i], prev_settings,
+                                           true, {i});
+                }
+            }
+        }
+        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("thresholdnotb", {}, -1, GET));
+    }
+}
+
+TEST_CASE("settingspath", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getSettingsPath();
+    {
+        std::ostringstream oss1, oss2;
+        proxy.Call("settingspath", {"/tmp"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "settingspath /tmp\n");
+        proxy.Call("settingspath", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "settingspath /tmp\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setSettingsPath(prev_val[i], {i});
     }
 }
 
@@ -243,6 +423,65 @@ TEST_CASE("trimval", "[.cmd]") {
         }
     } else {
         REQUIRE_THROWS(proxy.Call("trimval", {}, -1, GET));
+    }
+}
+
+TEST_CASE("trimen", "[.cmd][.this]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER || det_type == defs::MYTHEN3) {
+        auto previous = det.getTrimEnergies();
+        std::ostringstream oss1, oss2;
+        proxy.Call("trimen", {"4500", "5400", "6400"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "trimen [4500, 5400, 6400]\n");
+        proxy.Call("trimen", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "trimen [4500, 5400, 6400]\n");
+
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTrimEnergies(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("trimen", {"4500", "5400", "6400"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("trimen", {}, -1, GET));
+    }
+}
+
+TEST_CASE("gappixels", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::JUNGFRAU || det_type == defs::EIGER) {
+        auto prev_val = det.getGapPixelsinCallback();
+        {
+            std::ostringstream oss;
+            proxy.Call("gappixels", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gappixels 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gappixels", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gappixels 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gappixels", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "gappixels 0\n");
+        }
+        det.setGapPixelsinCallback(prev_val);
+    } else {
+        {
+            std::ostringstream oss;
+            proxy.Call("gappixels", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "gappixels 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gappixels", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gappixels 0\n");
+        }
+        REQUIRE_THROWS(proxy.Call("gappixels", {"1"}, -1, PUT));
     }
 }
 
@@ -1508,44 +1747,6 @@ TEST_CASE("scanerrmsg", "[.cmd]") {
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("scanerrmsg", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("scanerrmsg", {""}, -1, PUT));
-}
-
-TEST_CASE("gappixels", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::JUNGFRAU || det_type == defs::EIGER) {
-        auto prev_val = det.getGapPixelsinCallback();
-        {
-            std::ostringstream oss;
-            proxy.Call("gappixels", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "gappixels 1\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("gappixels", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "gappixels 0\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("gappixels", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "gappixels 0\n");
-        }
-        det.setGapPixelsinCallback(prev_val);
-    } else {
-        {
-            std::ostringstream oss;
-            proxy.Call("gappixels", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "gappixels 0\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("gappixels", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "gappixels 0\n");
-        }
-        REQUIRE_THROWS(proxy.Call("gappixels", {"1"}, -1, PUT));
-    }
 }
 
 /* Network Configuration (Detector<->Receiver) */

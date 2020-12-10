@@ -202,16 +202,42 @@ Result<int> Detector::getThresholdEnergy(Positions pos) const {
     return pimpl->Parallel(&Module::getThresholdEnergy, pos);
 }
 
+Result<std::array<int, 3>>
+Detector::getAllThresholdEnergy(Positions pos) const {
+    return pimpl->Parallel(&Module::getAllThresholdEnergy, pos);
+}
+
 void Detector::setThresholdEnergy(int threshold_ev,
                                   defs::detectorSettings settings,
                                   bool trimbits, Positions pos) {
-    if (settings == defs::UNINITIALIZED || settings == defs::UNDEFINED) {
+    defs::detectorType type = getDetectorType().squash();
+    if (type == defs::MYTHEN3) {
+        std::array<int, 3> energy = {threshold_ev, threshold_ev, threshold_ev};
+        setThresholdEnergy(energy, settings, trimbits, pos);
+        return;
+    }
+    if (type != defs::EIGER) {
         throw RuntimeError(
-            "Cannot set threshold with undefined or uninitialized settings. "
-            "Please mention appropriate settings as well.");
+            "Set threshold energy not implemented for this detector");
     }
     if (anyEqualTo<defs::detectorSettings>(getSettingsList(), settings)) {
         pimpl->Parallel(&Module::setThresholdEnergy, pos, threshold_ev,
+                        settings, static_cast<int>(trimbits));
+    } else {
+        throw RuntimeError("Unknown Settings " + ToString(settings) +
+                           " for this detector\n");
+    }
+}
+
+void Detector::setThresholdEnergy(std::array<int, 3> threshold_ev,
+                                  defs::detectorSettings settings,
+                                  bool trimbits, Positions pos) {
+    if (getDetectorType().squash() != defs::MYTHEN3) {
+        throw RuntimeError("Set threshold energy for different counters not "
+                           "implemented for this detector");
+    }
+    if (anyEqualTo<defs::detectorSettings>(getSettingsList(), settings)) {
+        pimpl->Parallel(&Module::setAllThresholdEnergy, pos, threshold_ev,
                         settings, static_cast<int>(trimbits));
     } else {
         throw RuntimeError("Unknown Settings " + ToString(settings) +

@@ -458,12 +458,12 @@ int receiveModule(int file_des, sls_detector_module *myMod) {
     }
     ts += n;
     LOG(level, ("tau received. %d bytes. tau: %d\n", n, myMod->tau));
-    n = receiveData(file_des, &(myMod->eV), sizeof(myMod->eV), INT32);
+    n = receiveData(file_des, myMod->eV, sizeof(myMod->eV), INT32);
     if (!n) {
         return -1;
     }
     ts += n;
-    LOG(level, ("eV received. %d bytes. eV: %d\n", n, myMod->eV));
+    LOG(level, ("eV received. %d bytes. eV: %d\n", n, myMod->eV[0]));
     // dacs
     if (nDacs != (myMod->ndac)) {
         LOG(logERROR, ("received wrong number of dacs. "

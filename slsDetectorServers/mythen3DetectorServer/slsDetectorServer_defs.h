@@ -25,20 +25,21 @@
 #define MAX_EXT_SIGNALS             (8)
 
 /** Default Parameters */
-#define DEFAULT_PATTERN_FILE        ("DefaultPattern_mythen3.txt")
-#define DEFAULT_INTERNAL_GATES      (1)
-#define DEFAULT_EXTERNAL_GATES      (1)
-#define DEFAULT_DYNAMIC_RANGE       (32)
-#define DEFAULT_NUM_FRAMES          (1)
-#define DEFAULT_NUM_CYCLES          (1)
-#define DEFAULT_GATE_WIDTH          (100 * 1000 * 1000) // ns
-#define DEFAULT_GATE_DELAY          (0)
-#define DEFAULT_PERIOD              (2 * 1000 * 1000) // ns
-#define DEFAULT_DELAY_AFTER_TRIGGER (0)
-#define DEFAULT_HIGH_VOLTAGE        (0)
-#define DEFAULT_TIMING_MODE         (AUTO_TIMING)
-#define DEFAULT_SETTINGS            (STANDARD)
-#define DEFAULT_TRIMBIT_VALUE       (0)
+#define DEFAULT_PATTERN_FILE             ("DefaultPattern_mythen3.txt")
+#define DEFAULT_INTERNAL_GATES           (1)
+#define DEFAULT_EXTERNAL_GATES           (1)
+#define DEFAULT_DYNAMIC_RANGE            (32)
+#define DEFAULT_NUM_FRAMES               (1)
+#define DEFAULT_NUM_CYCLES               (1)
+#define DEFAULT_GATE_WIDTH               (100 * 1000 * 1000) // ns
+#define DEFAULT_GATE_DELAY               (0)
+#define DEFAULT_PERIOD                   (2 * 1000 * 1000) // ns
+#define DEFAULT_DELAY_AFTER_TRIGGER      (0)
+#define DEFAULT_HIGH_VOLTAGE             (0)
+#define DEFAULT_TIMING_MODE              (AUTO_TIMING)
+#define DEFAULT_SETTINGS                 (STANDARD)
+#define DEFAULT_TRIMBIT_VALUE            (0)
+#define DEFAULT_COUNTER_DISABLED_VTH_VAL (2800)
 
 #define DEFAULT_STANDARD_VRPREAMP (1100)
 #define DEFAULT_FAST_VRPREAMP     (300)

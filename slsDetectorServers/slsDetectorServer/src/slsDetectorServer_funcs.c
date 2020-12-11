@@ -367,6 +367,7 @@ void function_table() {
     flist[F_IS_VIRTUAL] = &is_virtual;
     flist[F_GET_PATTERN] = &get_pattern;
     flist[F_LOAD_DEFAULT_PATTERN] = &load_default_pattern;
+    flist[F_GET_ALL_THRESHOLD_ENERGY] = &get_all_threshold_energy;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -1238,6 +1239,16 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             }
             LOG(logDEBUG1, ("Dac (%d): %d %s\n\n", serverDacIndex, retval,
                             (mV ? "mV" : "dac units")));
+#ifdef MYTHEN3D
+            // changed for setsettings (direct),
+            // custom trimbit file (setmodule with myMod.reg as -1),
+            // change of dac (direct)
+            if (val != GET_FLAG && ret == OK) {
+                for (int i = 0; i < NCOUNTERS; ++i) {
+                    setThresholdEnergy(i, -1);
+                }
+            }
+#endif
             break;
         }
     }
@@ -1513,7 +1524,7 @@ int set_module(int file_des) {
         LOG(logDEBUG1, ("module register is %d, nchan %d, nchip %d, "
                         "ndac %d, iodelay %d, tau %d, eV %d\n",
                         module.reg, module.nchan, module.nchip, module.ndac,
-                        module.iodelay, module.tau, module.eV));
+                        module.iodelay, module.tau, module.eV[0]));
         // should at least have a dac
         if (ts <= (int)sizeof(sls_detector_module)) {
             ret = FAIL;
@@ -1655,6 +1666,16 @@ int set_settings(int file_des) {
                     strcpy(mess, "Could change settings, but could not set to "
                                  "default dacs\n");
                     LOG(logERROR, (mess));
+                }
+            }
+#endif
+#ifdef MYTHEN3D
+            // changed for setsettings (direct),
+            // custom trimbit file (setmodule with myMod.reg as -1),
+            // change of dac (direct)
+            if (ret == OK) {
+                for (int i = 0; i < NCOUNTERS; ++i) {
+                    setThresholdEnergy(i, -1);
                 }
             }
 #endif
@@ -8320,4 +8341,22 @@ int load_default_pattern(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_all_threshold_energy(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retvals[3] = {-1, -1, -1};
+
+    LOG(logDEBUG1, ("Getting all threshold energy\n"));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    for (int i = 0; i < NCOUNTERS; ++i) {
+        retvals[i] = getThresholdEnergy(i);
+        LOG(logDEBUG, ("eV[%d]: %deV\n", i, retvals[i]));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
 }

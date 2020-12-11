@@ -304,7 +304,10 @@ enum detectorSettings getSettings();
 int getThresholdEnergy();
 int setThresholdEnergy(int ev);
 #endif
-
+#ifdef MYTHEN3D
+int getThresholdEnergy(int counterIndex);
+void setThresholdEnergy(int counterIndex, int eV);
+#endif
 // parameters - dac, adc, hv
 
 #ifdef GOTTHARD2D

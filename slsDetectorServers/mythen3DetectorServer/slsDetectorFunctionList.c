@@ -51,8 +51,9 @@ uint32_t clkDivider[NUM_CLOCKS] = {};
 
 int highvoltage = 0;
 int detPos[2] = {};
-int64_t exptimeReg[3] = {0, 0, 0};
-int64_t gateDelayReg[3] = {0, 0, 0};
+int64_t exptimeReg[NCOUNTERS] = {0, 0, 0};
+int64_t gateDelayReg[NCOUNTERS] = {0, 0, 0};
+int vthEnabledVals[NCOUNTERS] = {0, 0, 0};
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -366,7 +367,9 @@ void allocateDetectorStructureMemory() {
     (detectorModules)->reg = UNINITIALIZED;
     (detectorModules)->iodelay = 0;
     (detectorModules)->tau = 0;
-    (detectorModules)->eV = 0;
+    (detectorModules)->eV[0] = 0;
+    (detectorModules)->eV[1] = 0;
+    (detectorModules)->eV[2] = 0;
     thisSettings = UNINITIALIZED;
 
     // initialize dacs
@@ -440,7 +443,7 @@ void setupDetector() {
     setTiming(DEFAULT_TIMING_MODE);
     setNumIntGates(DEFAULT_INTERNAL_GATES);
     setNumGates(DEFAULT_EXTERNAL_GATES);
-    for (int i = 0; i != 3; ++i) {
+    for (int i = 0; i != NCOUNTERS; ++i) {
         setExpTime(i, DEFAULT_GATE_WIDTH);
         setGateDelay(i, DEFAULT_GATE_DELAY);
     }
@@ -696,7 +699,7 @@ int getNumGates() { return bus_r(ASIC_EXP_EXT_GATE_NUMBER_REG); }
 void updateGatePeriod() {
     uint64_t max = 0;
     uint32_t countermask = getCounterMask();
-    for (int i = 0; i != 3; ++i) {
+    for (int i = 0; i != NCOUNTERS; ++i) {
         // only if counter enabled
         if (countermask & (1 << i)) {
             uint64_t sum = getExpTime(i) + getGateDelay(i);
@@ -883,6 +886,7 @@ void setCounterMask(uint32_t arg) {
     if (arg == 0 || arg > MAX_COUNTER_MSK) {
         return;
     }
+    uint32_t oldmask = getCounterMask();
     LOG(logINFO, ("Setting counter mask to  0x%x\n", arg));
     uint32_t addr = CONFIG_REG;
     bus_w(addr, bus_r(addr) & ~CONFIG_COUNTERS_ENA_MSK);
@@ -892,11 +896,20 @@ void setCounterMask(uint32_t arg) {
 
     updatePacketizing();
     LOG(logINFO, ("\tUpdating Exptime and Gate Delay\n"));
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < NCOUNTERS; ++i) {
         uint64_t ns = exptimeReg[i] / (1E-9 * getFrequency(SYSTEM_C0));
         setExpTime(i, ns);
         ns = gateDelayReg[i] / (1E-9 * getFrequency(SYSTEM_C0));
         setGateDelay(i, ns);
+    }
+
+    LOG(logINFO, ("\tUpdating Vth dacs\n"));
+    for (int i = 0; i < NCOUNTERS; ++i) {
+        // if change in enable
+        if ((arg & (1 << i)) ^ (oldmask & (1 << i))) {
+            // will disable if counter disabled
+            setDAC(VTH1, vthEnabledVals[i], 0);
+        }
     }
 }
 
@@ -1026,8 +1039,18 @@ int setModule(sls_detector_module myMod, char *mess) {
                 "Could not set module. Could not set settings to %d, read %d\n",
                 myMod.reg, (int)getSettings());
             LOG(logERROR, (mess));
+            return FAIL;
         }
         detectorModules->reg = myMod.reg;
+    }
+    // custom trimbit file
+    else {
+        // changed for setsettings (direct),
+        // custom trimbit file (setmodule with myMod.reg as -1),
+        // change of dac (direct)
+        for (int i = 0; i < NCOUNTERS; ++i) {
+            setThresholdEnergy(i, -1);
+        }
     }
 
     // dacs
@@ -1036,25 +1059,25 @@ int setModule(sls_detector_module myMod, char *mess) {
         if (myMod.dacs[i] != -1) {
             setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
             if (myMod.dacs[i] != detectorDacs[i]) {
+                // dont complain if that counter was disabled
+                if ((i == M_VTH1 || i == M_VTH2 || i == M_VTH3) &&
+                    (detectorDacs[i] == DEFAULT_COUNTER_DISABLED_VTH_VAL)) {
+                    continue;
+                }
                 sprintf(mess,
                         "Could not set module. Could not set dac %d, wrote %d, "
                         "read %d\n",
                         i, myMod.dacs[i], detectorDacs[i]);
                 LOG(logERROR, (mess));
-                // if settings given, validate it is still true (custom trim
-                // file)
-                if (myMod.reg >= 0) {
-                    validateSettings();
-                }
                 return FAIL;
             }
         }
     }
-    // validate if dacs still have same settings values, do not return FAIL
-    validateSettings();
-    // if settings given and cannot be validated (due to dacs), return error
+
+    // if settings given and cannot be validated (after setting dacs), return
+    // error
     if (myMod.reg >= 0) {
-        if (getSettings() == (enum detectorSettings)myMod.reg) {
+        if (getSettings() != (enum detectorSettings)myMod.reg) {
             sprintf(
                 mess,
                 "Could not set module. The dacs in file do not correspond to "
@@ -1065,12 +1088,11 @@ int setModule(sls_detector_module myMod, char *mess) {
         }
     }
 
-    // custom trimbits, change a dac, setall trimbits,
-    // should all set threshold to -1
-
     // threshold
-    if (myMod.eV >= 0) {
-        ; // setThresholdEnergy(myMod.eV);
+    for (int i = 0; i < NCOUNTERS; ++i) {
+        if (myMod.eV[i] >= 0) {
+            setThresholdEnergy(i, myMod.eV[i]);
+        }
     }
 
     // trimbits
@@ -1081,9 +1103,6 @@ int setModule(sls_detector_module myMod, char *mess) {
         if (setTrimbits(myMod.chanregs) == FAIL) {
             sprintf(mess, "Could not set module. Could not set trimbits\n");
             LOG(logERROR, (mess));
-            // setSettings(UNDEFINED);
-            // LOG(logERROR, ("Settings has been changed to undefined (random "
-            //               "trim file)\n"));
             return FAIL;
         }
     }
@@ -1273,11 +1292,14 @@ int setAllTrimbits(int val) {
         free(trimbits);
         return FAIL;
     }
-    // setSettings(UNDEFINED);
-    // LOG(logERROR, ("Settings has been changed to undefined (random "
-    //               "trim file)\n"));
     LOG(logINFO, ("All trimbits have been set to %d\n", val));
     free(trimbits);
+    // changed for setsettings (direct),
+    // custom trimbit file (setmodule with myMod.reg as -1),
+    // change of dac (direct)
+    for (int i = 0; i < NCOUNTERS; ++i) {
+        setThresholdEnergy(i, -1);
+    }
     return OK;
 }
 
@@ -1299,16 +1321,19 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     switch (sett) {
     case STANDARD:
         LOG(logINFOBLUE, ("Setting to standard settings\n"));
+        thisSettings = sett;
         setDAC(M_VRPREAMP, DEFAULT_STANDARD_VRPREAMP, 0);
         setDAC(M_VRSHAPER, DEFAULT_STANDARD_VRSHAPER, 0);
         break;
     case FAST:
         LOG(logINFOBLUE, ("Setting to fast settings\n"));
+        thisSettings = sett;
         setDAC(M_VRPREAMP, DEFAULT_FAST_VRPREAMP, 0);
         setDAC(M_VRSHAPER, DEFAULT_FAST_VRSHAPER, 0);
         break;
     case HIGHGAIN:
         LOG(logINFOBLUE, ("Setting to high gain settings\n"));
+        thisSettings = sett;
         setDAC(M_VRPREAMP, DEFAULT_HIGHGAIN_VRPREAMP, 0);
         setDAC(M_VRSHAPER, DEFAULT_HIGHGAIN_VRSHAPER, 0);
         break;
@@ -1318,9 +1343,7 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         return thisSettings;
     }
 
-    thisSettings = sett;
     LOG(logINFO, ("Settings: %d\n", thisSettings));
-    validateSettings();
     return thisSettings;
 }
 
@@ -1345,13 +1368,21 @@ void validateSettings() {
         }
     } else {
         thisSettings = UNDEFINED;
-        LOG(logERROR,
+        LOG(logWARNING,
             ("Settings set to undefined [vrpreamp: %d, vrshaper: %d]\n",
              detectorDacs[M_VRPREAMP], detectorDacs[M_VRSHAPER]));
     }
 }
 
 enum detectorSettings getSettings() { return thisSettings; }
+
+int getThresholdEnergy(int counterIndex) {
+    return (detectorModules)->eV[counterIndex];
+}
+
+void setThresholdEnergy(int counterIndex, int eV) {
+    (detectorModules)->eV[counterIndex] = eV;
+}
 
 /* parameters - dac, hv */
 void setDAC(enum DACINDEX ind, int val, int mV) {
@@ -1367,12 +1398,37 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         setDAC(M_VTH3, val, mV);
         return;
     }
-
     char *dac_names[] = {DAC_NAMES};
+
+    // remember vthx values and set 2800 if counter disabled
+    uint32_t counters = getCounterMask();
+    int vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
+    for (int i = 0; i < NCOUNTERS; ++i) {
+        if (vthdacs[i] == (int)ind) {
+            // remember enabled values for vthx
+            if (val != DEFAULT_COUNTER_DISABLED_VTH_VAL) {
+                int vthval = val;
+                if (mV) {
+                    if (LTC2620_D_VoltageToDac(val, &vthval) == FAIL) {
+                        return;
+                    }
+                }
+                vthEnabledVals[i] = vthval;
+                LOG(logINFO, ("Remembering %s [%d]\n", dac_names[ind], vthval));
+            }
+            // set vthx to disable val, if counter disabled
+            if (!(counters & (1 << i))) {
+                LOG(logINFO, ("Disabling %s\n", dac_names[ind]));
+                val = DEFAULT_COUNTER_DISABLED_VTH_VAL;
+                mV = 0;
+            }
+        }
+    }
+
     LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
                     val, (mV ? "mV" : "dac units")));
-
     int dacval = val;
+
 #ifdef VIRTUAL
     LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
                   val, (mV ? "mV" : "dac units")));
@@ -1389,11 +1445,14 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         detectorDacs[ind] = dacval;
     }
 #endif
+    if (ind == M_VRPREAMP || ind == M_VRSHAPER) {
+        validateSettings();
+    }
 }
 
 int getDAC(enum DACINDEX ind, int mV) {
     if (ind == M_VTHRESHOLD) {
-        int ret[3] = {0};
+        int ret[NCOUNTERS] = {0};
         ret[0] = getDAC(M_VTH1, mV);
         ret[1] = getDAC(M_VTH2, mV);
         ret[2] = getDAC(M_VTH3, mV);
@@ -1805,8 +1864,8 @@ uint64_t readPatternWord(int addr) {
     LOG(logDEBUG1, ("  Reading Pattern Word (addr:0x%x)\n", addr));
     uint32_t reg_lsb =
         PATTERN_STEP0_LSB_REG +
-        addr * REG_OFFSET * 2; // the first word in RAM as base plus the offset
-                               // of the word to write (addr)
+        addr * REG_OFFSET * 2; // the first word in RAM as base plus the
+                               // offset of the word to write (addr)
     uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr * REG_OFFSET * 2;
 
     // read value
@@ -1836,8 +1895,8 @@ uint64_t writePatternWord(int addr, uint64_t word) {
     // write word
     uint32_t reg_lsb =
         PATTERN_STEP0_LSB_REG +
-        addr * REG_OFFSET * 2; // the first word in RAM as base plus the offset
-                               // of the word to write (addr)
+        addr * REG_OFFSET * 2; // the first word in RAM as base plus the
+                               // offset of the word to write (addr)
     uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr * REG_OFFSET * 2;
     set64BitReg(word, reg_lsb, reg_msb);
 
@@ -2562,9 +2621,9 @@ enum runStatus getRunStatus() {
         uint32_t deadtimeReg = bus_r(DEADTIME_CONFIG_REG);
         if ((deadtimeReg & DEADTIME_EARLY_EXP_FIN_ERR_MSK) >>
             DEADTIME_EARLY_EXP_FIN_ERR_OFST) {
-            LOG(logERROR,
-                ("Status: ERROR in Dead Time Reg (too short exptime) %08x\n",
-                 deadtimeReg));
+            LOG(logERROR, ("Status: ERROR in Dead Time Reg (too short "
+                           "exptime) %08x\n",
+                           deadtimeReg));
             s = ERROR;
         }
         // stopped or error
@@ -2650,9 +2709,12 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
         destMod->iodelay = srcMod->iodelay;
     if (srcMod->tau >= 0)
         destMod->tau = srcMod->tau;
-    if (srcMod->eV >= 0)
-        destMod->eV = srcMod->eV;
     */
+    for (int i = 0; i < NCOUNTERS; ++i) {
+        if (srcMod->eV[i] >= 0)
+            destMod->eV[i] = srcMod->eV[i];
+    }
+
     LOG(logDEBUG1, ("Copying register %x (%x)\n", destMod->reg, srcMod->reg));
 
     if (destMod->nchan != 0) {

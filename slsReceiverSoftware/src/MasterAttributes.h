@@ -36,6 +36,7 @@ struct MasterAttributes {
     uint32_t dynamicRange{0};
     uint32_t tenGiga{0};
     int thresholdEnergyeV{0};
+    std::array<int, 3> thresholdAllEnergyeV{0, 0, 0};
     ns subExptime{0};
     ns subPeriod{0};
     uint32_t quad{0};
@@ -353,6 +354,7 @@ class EigerMasterAttributes : public MasterAttributes {
             << "Ten Giga                   : " << tenGiga << '\n'
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
             << "Period                     : " << sls::ToString(period) << '\n'
+            << "Threshold Energy           : " << thresholdEnergyeV << '\n'
             << "SubExptime                 : " << sls::ToString(subExptime)
             << '\n'
             << "SubPeriod                  : " << sls::ToString(subPeriod)
@@ -450,7 +452,9 @@ class Mythen3MasterAttributes : public MasterAttributes {
             << '\n'
             << "GateDelay3                 : " << sls::ToString(gateDelay3)
             << '\n'
-            << "Gates                      : " << gates << '\n';
+            << "Gates                      : " << gates << '\n'
+            << "Threshold Energies         : "
+            << sls::ToString(thresholdAllEnergyeV) << '\n';
         std::string message = oss.str();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
@@ -522,6 +526,14 @@ class Mythen3MasterAttributes : public MasterAttributes {
             DataSet dataset =
                 group->createDataSet("Gates", PredType::STD_U32LE, dataspace);
             dataset.write(&gates, PredType::STD_U32LE);
+        }
+        // Threshold Energies
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 1024);
+            DataSet dataset = group->createDataSet("Threshold Energies",
+                                                   strdatatype, dataspace);
+            dataset.write(sls::ToString(thresholdAllEnergyeV), strdatatype);
         }
     };
 #endif

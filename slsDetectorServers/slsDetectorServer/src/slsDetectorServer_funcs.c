@@ -7127,15 +7127,20 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-        // threshold ev
+    // threshold ev
+    {
+        int i32s[3] = {0, 0, 0};
 #ifdef EIGERD
-    i32 = getThresholdEnergy();
-#else
-    i32 = 0;
+        i32s[0] = getThresholdEnergy();
+#elif MYTHEN3D
+        for (int i = 0; i < NCOUNTERS; ++i) {
+            i32s[i] = getThresholdEnergy(i);
+        }
 #endif
-    n += sendData(file_des, &i32, sizeof(i32), INT32);
-    if (n < 0)
-        return printSocketReadError();
+        n += sendData(file_des, i32s, sizeof(i32s), INT32);
+        if (n < 0)
+            return printSocketReadError();
+    }
 
     // dynamic range
     i32 = setDynamicRange(GET_FLAG);

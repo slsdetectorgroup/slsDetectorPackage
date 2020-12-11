@@ -54,7 +54,7 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << "activate:" << r.activate << std::endl
         << "quad:" << r.quad << std::endl
         << "numLinesReadout:" << r.numLinesReadout << std::endl
-        << "thresholdEnergyeV:" << r.thresholdEnergyeV << std::endl
+        << "thresholdEnergyeV:" << ToString(r.thresholdEnergyeV) << std::endl
         << "dynamicRange:" << r.dynamicRange << std::endl
         << "timMode:" << r.timMode << std::endl
         << "tenGiga:" << r.tenGiga << std::endl

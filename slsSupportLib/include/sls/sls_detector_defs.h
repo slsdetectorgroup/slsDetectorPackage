@@ -454,7 +454,7 @@ typedef struct {
         int activate{0};
         int quad{0};
         int numLinesReadout{0};
-        int thresholdEnergyeV{0};
+        int thresholdEnergyeV[3]{0, 0, 0};
         int dynamicRange{16};
         timingMode timMode{AUTO_TIMING};
         int tenGiga{0};

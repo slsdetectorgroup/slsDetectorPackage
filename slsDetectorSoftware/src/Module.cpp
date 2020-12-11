@@ -360,9 +360,9 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
                            "settings in detector");
     }
 
-    /*if (shm()->useReceiverFlag) {
+    if (shm()->useReceiverFlag) {
         sendToReceiver(F_RECEIVER_SET_ALL_THRESHOLD, e_eV, nullptr);
-    }*/
+    }
 }
 
 std::string Module::getSettingsDir() const {

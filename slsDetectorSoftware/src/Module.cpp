@@ -342,12 +342,10 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
             }
         }
 
-        // replace correct trim values
+        // replace correct trim values (interleaved)
         int nchanPerCounter = myMod.nchan / 3;
-        for (int i = 0; i < 3; ++i) {
-            memcpy(myMod.chanregs + i * nchanPerCounter,
-                   myMods[i].chanregs + i * nchanPerCounter,
-                   sizeof(int) * nchanPerCounter);
+        for (int i = 0; i < myMod.nchan; ++i) {
+            myMod.chanregs[i] = myMod[i % 3].chanregs[i];
         }
     }
 
@@ -379,9 +377,13 @@ void Module::loadSettingsFile(const std::string &fname) {
     if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
         std::ostringstream ostfn;
         ostfn << fname;
+        int serialNumberWidth = 3;
+        if (shm()->myDetectorType == MYTHEN3) {
+            serialNumberWidth = 4;
+        }
         if (fname.find(".sn") == std::string::npos) {
-            ostfn << ".sn" << std::setfill('0') << std::setw(3) << std::dec
-                  << getSerialNumber();
+            ostfn << ".sn" << std::setfill('0') << std::setw(serialNumberWidth)
+                  << std::dec << getSerialNumber();
         }
         auto myMod = readSettingsFile(ostfn.str());
         setModule(myMod);
@@ -3134,8 +3136,12 @@ std::string Module::getTrimbitFilename(detectorSettings s, int e_eV) {
         throw RuntimeError(
             "Settings or trimbit files not defined for this detector.");
     }
-    ostfn << std::setfill('0') << std::setw(3) << std::dec << getSerialNumber()
-          << std::setbase(10);
+    int serialNumberWidth = 3;
+    if (shm()->myDetectorType == MYTHEN3) {
+        serialNumberWidth = 4;
+    }
+    ostfn << std::setfill('0') << std::setw(serialNumberWidth) << std::dec
+          << getSerialNumber() << std::setbase(10);
     return ostfn.str();
 }
 

@@ -14,14 +14,21 @@ qTabSettings::~qTabSettings() {}
 
 void qTabSettings::SetupWidgetWindow() {
 
+    spinThreshold2->hide();
+    spinThreshold3->hide();
+    btnSetThreshold->hide();
     // enabling according to det type
     slsDetectorDefs::detectorType detType = det->getDetectorType().squash();
     if (detType == slsDetectorDefs::MYTHEN3) {
-        lblSettings->setEnabled(false);
-        comboSettings->setEnabled(false);
-
         lblDynamicRange->setEnabled(true);
         comboDynamicRange->setEnabled(true);
+
+        spinThreshold2->show();
+        spinThreshold3->show();
+        spinThreshold->setEnabled(true);
+        spinThreshold2->setEnabled(true);
+        spinThreshold3->setEnabled(true);
+        btnSetThreshold->show();
         // disable dr
         QStandardItemModel *model =
             qobject_cast<QStandardItemModel *>(comboDynamicRange->model());
@@ -48,6 +55,10 @@ void qTabSettings::SetupWidgetWindow() {
         SetupDetectorSettings();
     }
     spinThreshold->setValue(-1);
+    if (detType == slsDetectorDefs::MYTHEN3) {
+        spinThreshold2->setValue(-1);
+        spinThreshold3->setValue(-1);
+    }
     Initialization();
     // default for the disabled
     GetDynamicRange();
@@ -104,6 +115,11 @@ void qTabSettings::SetupDetectorSettings() {
             item[(int)G4_HIGHGAIN]->setEnabled(true);
             item[(int)G4_LOWGAIN]->setEnabled(true);
             break;
+        case slsDetectorDefs::MYTHEN3:
+            item[(int)STANDARD]->setEnabled(true);
+            item[(int)FAST]->setEnabled(true);
+            item[(int)HIGHGAIN]->setEnabled(true);
+            break;
         default:
             LOG(logDEBUG) << "Unknown detector type. Exiting GUI.";
             qDefs::Message(qDefs::CRITICAL,
@@ -126,7 +142,11 @@ void qTabSettings::Initialization() {
                 SLOT(SetDynamicRange(int)));
 
     // Threshold
-    if (spinThreshold->isEnabled())
+    if (btnSetThreshold->isVisible()) {
+        connect(btnRight1D, SIGNAL(clicked()), this,
+                SLOT(Set1DPlotOptionsRight()));
+
+    } else if (spinThreshold->isEnabled())
         connect(spinThreshold, SIGNAL(valueChanged(int)), this,
                 SLOT(SetThresholdEnergy(int)));
 }

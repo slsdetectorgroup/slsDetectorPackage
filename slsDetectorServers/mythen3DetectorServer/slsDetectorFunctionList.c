@@ -54,6 +54,7 @@ int detPos[2] = {};
 int64_t exptimeReg[NCOUNTERS] = {0, 0, 0};
 int64_t gateDelayReg[NCOUNTERS] = {0, 0, 0};
 int vthEnabledVals[NCOUNTERS] = {0, 0, 0};
+int detID = 0;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -266,12 +267,28 @@ u_int16_t getHardwareVersionNumber() {
             MCB_SERIAL_NO_VRSN_OFST);
 }
 
-u_int32_t getDetectorNumber() {
-#ifdef VIRTUAL
-    return 0;
-#endif
-    return bus_r(MCB_SERIAL_NO_REG);
+void readDetectorNumber() {
+    //#ifndef VIRTUAL
+    if (initError == FAIL) {
+        return;
+    }
+    FILE *fd = fopen(ID_FILE, "r");
+    if (fd == NULL) {
+        sprintf(initErrorMessage, "No %s file found.\n", ID_FILE);
+        LOG(logERROR, ("%s\n\n", initErrorMessage));
+        initError = FAIL;
+        return;
+    }
+    char output[255];
+    fgets(output, sizeof(output), fd);
+    sscanf(output, "%u", &detID);
+    if (isControlServer) {
+        LOG(logINFOBLUE, ("Detector ID: %u\n", detID));
+    }
+    //#endif
 }
+
+u_int32_t getDetectorNumber() { return detID; }
 
 u_int64_t getDetectorMAC() {
 #ifdef VIRTUAL
@@ -453,6 +470,10 @@ void setupDetector() {
 #ifdef VIRTUAL
     enableTenGigabitEthernet(0);
 #endif
+    readDetectorNumber();
+    if (initError == FAIL) {
+        return;
+    }
     setSettings(DEFAULT_SETTINGS);
 
     // check module type attached if not in debug mode

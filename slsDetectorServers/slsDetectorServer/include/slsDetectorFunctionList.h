@@ -87,7 +87,7 @@ u_int16_t getHardwareSerialNumber();
 #ifdef JUNGFRAUD
 int isHardwareVersion2();
 #endif
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
 void readDetectorNumber();
 #endif
 u_int32_t getDetectorNumber();

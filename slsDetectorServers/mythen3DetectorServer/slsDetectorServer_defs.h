@@ -3,6 +3,7 @@
 
 #define REQRD_FRMWRE_VRSN (0x200925)
 #define KERNEL_DATE_VRSN  "Wed May 20 13:58:38 CEST 2020"
+#define ID_FILE           "detid_mythen3.txt"
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 

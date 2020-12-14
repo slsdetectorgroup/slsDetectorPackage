@@ -343,9 +343,8 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
         }
 
         // replace correct trim values (interleaved)
-        int nchanPerCounter = myMod.nchan / 3;
         for (int i = 0; i < myMod.nchan; ++i) {
-            myMod.chanregs[i] = myMod[i % 3].chanregs[i];
+            myMod.chanregs[i] = myMods[i % 3].chanregs[i];
         }
     }
 

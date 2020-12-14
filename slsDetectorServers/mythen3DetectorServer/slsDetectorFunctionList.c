@@ -268,7 +268,7 @@ u_int16_t getHardwareVersionNumber() {
 }
 
 void readDetectorNumber() {
-    //#ifndef VIRTUAL
+#ifndef VIRTUAL
     if (initError == FAIL) {
         return;
     }
@@ -285,7 +285,7 @@ void readDetectorNumber() {
     if (isControlServer) {
         LOG(logINFOBLUE, ("Detector ID: %u\n", detID));
     }
-    //#endif
+#endif
 }
 
 u_int32_t getDetectorNumber() { return detID; }

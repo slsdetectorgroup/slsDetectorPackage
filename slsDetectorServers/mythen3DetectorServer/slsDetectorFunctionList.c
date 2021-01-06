@@ -19,6 +19,9 @@
 #include <time.h>
 #endif
 
+/// NOT the right place to put it!
+int setChipStatusRegister(int csr);
+
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
@@ -510,7 +513,9 @@ void setupDetector() {
 
     powerChip(1);
     if (initError != FAIL) {
-        initError = loadDefaultPattern(DEFAULT_PATTERN_FILE, initErrorMessage);
+      initError = setChipStatusRegister(CSR_default);
+      //loadDefaultPattern(DEFAULT_PATTERN_FILE, initErrorMessage);
+      //startStateMachine(); //this was missing in previous code! runs the default pattern
     }
     setAllTrimbits(DEFAULT_TRIMBIT_VALUE);
 }
@@ -2765,3 +2770,78 @@ int getTotalNumberOfChannels() {
 int getNumberOfChips() { return NCHIP; }
 int getNumberOfDACs() { return NDAC; }
 int getNumberOfChannelsPerChip() { return NCHAN; }
+
+int setChipStatusRegister(int csr) {
+  int iaddr=0;
+  int  nbits=18;
+  int error=0;
+  //int start=0, stop=MAX_PATTERN_LENGTH, loop=0;
+  int patword=0;
+  patword=setBit(SIGNAL_STATLOAD,patword);
+  for (int i=0; i<2; i++)
+    writePatternWord(iaddr++, patword);
+  patword=setBit(SIGNAL_resStorage,patword);
+  patword=setBit(SIGNAL_resCounter,patword);
+  for (int i=0; i<8; i++)
+    writePatternWord(iaddr++, patword);
+  patword=clearBit(SIGNAL_resStorage,patword);
+  patword=clearBit(SIGNAL_resCounter,patword);
+  for (int i=0; i<8; i++)
+    writePatternWord(iaddr++, patword);
+  //#This version of the serializer pushes in the MSB first (compatible with the CSR bit numbering)
+  for (int ib=nbits-1; ib>=0; ib--) {
+    if (csr&(1<<ib))
+      patword=setBit(SIGNAL_serialIN,patword);
+    else
+      patword=clearBit(SIGNAL_serialIN,patword);
+    for (int i=0; i<4; i++)
+      writePatternWord(iaddr++, patword);
+    patword=setBit(SIGNAL_CHSclk,patword);
+    writePatternWord(iaddr++, patword);
+    patword=clearBit(SIGNAL_CHSclk,patword);
+    writePatternWord(iaddr++, patword);
+  }
+
+  patword=clearBit(SIGNAL_serialIN,patword);
+  for (int i=0; i<2; i++)
+      writePatternWord(iaddr++, patword);
+  patword=setBit(SIGNAL_STO,patword);
+  for (int i=0; i<5; i++)
+      writePatternWord(iaddr++, patword);
+  patword=clearBit(SIGNAL_STO,patword);
+  for (int i=0; i<5; i++)
+    writePatternWord(iaddr++, patword);
+  patword=clearBit(SIGNAL_STATLOAD,patword);
+  for (int i=0; i<5; i++)
+    writePatternWord(iaddr++, patword);
+
+  if (iaddr >= MAX_PATTERN_LENGTH) {
+    LOG(logERROR, ("Addr 0x%x is past max_address_length 0x%x!\n",
+		   iaddr, MAX_PATTERN_LENGTH));
+    error = 1;
+  }
+  // set pattern wait address
+  for (int i = 0; i <= 2; i++)
+    setPatternWaitAddress(i, MAX_PATTERN_LENGTH - 1);
+  
+  // pattern loop
+  for (int i = 0; i <= 2; i++) {
+    int stop = MAX_PATTERN_LENGTH - 1, nloop = 0;
+    setPatternLoop(i, &stop, &stop, &nloop);
+  }
+  
+  // pattern limits
+  {
+    int start = 0, nloop = 0;
+    setPatternLoop(-1, &start, &iaddr, &nloop);
+  }
+  // send pattern to the chips
+  startPattern();
+  
+  if (error != 0) {
+    return FAIL;
+  }
+  
+  return OK;
+
+}

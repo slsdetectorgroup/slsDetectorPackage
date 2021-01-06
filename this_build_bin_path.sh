@@ -30,6 +30,8 @@ fi
     echo "this_path="$THIS_PATH  
     export PATH=$THIS_PATH:$PATH
     export LD_LIBRARY_PATH=$THIS_PATH:$LD_LIBRARY_PATH
+    export PYTHONPATH=$THIS_PATH:$PYTHONPATH
     
     echo "path="$PATH
     echo "ld_library_path="$LD_LIBRARY_PATH
+    echo "pythonpath="$PYTHON_PATH

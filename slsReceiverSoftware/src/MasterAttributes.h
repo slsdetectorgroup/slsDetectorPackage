@@ -36,7 +36,7 @@ struct MasterAttributes {
     uint32_t dynamicRange{0};
     uint32_t tenGiga{0};
     int thresholdEnergyeV{0};
-    std::array<int, 3> thresholdAllEnergyeV{0, 0, 0};
+  std::array<int, 3> thresholdAllEnergyeV={{0, 0, 0}};
     ns subExptime{0};
     ns subPeriod{0};
     uint32_t quad{0};

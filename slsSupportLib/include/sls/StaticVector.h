@@ -100,6 +100,12 @@ template <typename T, size_t Capacity> class StaticVector {
     constexpr const T &front() const noexcept { return data_.front(); }
     constexpr const T &back() const noexcept { return data_[current_size - 1]; }
 
+    bool anyEqualTo(const T value) {
+        return std::any_of(
+            data_.cbegin(), data_.cend(),
+            [value](const T &element) { return element == value; });
+    }
+
     // iterators
     iterator begin() noexcept { return data_.begin(); }
     // auto begin() noexcept -> decltype(data_.begin()) { return data_.begin();

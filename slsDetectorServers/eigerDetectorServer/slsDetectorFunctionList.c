@@ -669,7 +669,9 @@ void allocateDetectorStructureMemory() {
     (detectorModules)->reg = 0;
     (detectorModules)->iodelay = 0;
     (detectorModules)->tau = 0;
-    (detectorModules)->eV = 0;
+    (detectorModules)->eV[0] = 0;
+    (detectorModules)->eV[1] = 0;
+    (detectorModules)->eV[2] = 0;
     thisSettings = UNINITIALIZED;
 
     // if trimval requested, should return -1 to acknowledge unknown
@@ -1090,8 +1092,8 @@ int setModule(sls_detector_module myMod, char *mess) {
     }
 
     // threshold
-    if (myMod.eV >= 0)
-        setThresholdEnergy(myMod.eV);
+    if (myMod.eV[0] >= 0)
+        setThresholdEnergy(myMod.eV[0]);
     else {
         // (loading a random trim file) (dont return fail)
         setSettings(UNDEFINED);
@@ -2554,8 +2556,8 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
         destMod->iodelay = srcMod->iodelay;
     if (srcMod->tau >= 0)
         destMod->tau = srcMod->tau;
-    if (srcMod->eV >= 0)
-        destMod->eV = srcMod->eV;
+    if (srcMod->eV[0] >= 0)
+        destMod->eV[0] = srcMod->eV[0];
     LOG(logDEBUG1, ("Copying register %x (%x)\n", destMod->reg, srcMod->reg));
 
     if (destMod->nchan != 0) {

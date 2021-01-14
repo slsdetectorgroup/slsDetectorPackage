@@ -367,6 +367,7 @@ void function_table() {
     flist[F_IS_VIRTUAL] = &is_virtual;
     flist[F_GET_PATTERN] = &get_pattern;
     flist[F_LOAD_DEFAULT_PATTERN] = &load_default_pattern;
+    flist[F_GET_ALL_THRESHOLD_ENERGY] = &get_all_threshold_energy;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -1238,6 +1239,16 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             }
             LOG(logDEBUG1, ("Dac (%d): %d %s\n\n", serverDacIndex, retval,
                             (mV ? "mV" : "dac units")));
+#ifdef MYTHEN3D
+            // changed for setsettings (direct),
+            // custom trimbit file (setmodule with myMod.reg as -1),
+            // change of dac (direct)
+            if (val != GET_FLAG && ret == OK) {
+                for (int i = 0; i < NCOUNTERS; ++i) {
+                    setThresholdEnergy(i, -1);
+                }
+            }
+#endif
             break;
         }
     }
@@ -1513,7 +1524,7 @@ int set_module(int file_des) {
         LOG(logDEBUG1, ("module register is %d, nchan %d, nchip %d, "
                         "ndac %d, iodelay %d, tau %d, eV %d\n",
                         module.reg, module.nchan, module.nchip, module.ndac,
-                        module.iodelay, module.tau, module.eV));
+                        module.iodelay, module.tau, module.eV[0]));
         // should at least have a dac
         if (ts <= (int)sizeof(sls_detector_module)) {
             ret = FAIL;
@@ -1540,6 +1551,10 @@ int set_module(int file_des) {
         case LOWGAIN:
         case VERYHIGHGAIN:
         case VERYLOWGAIN:
+#elif MYTHEN3D
+        case STANDARD:
+        case FAST:
+        case HIGHGAIN:
 #elif JUNGFRAUD
         case DYNAMICGAIN:
         case DYNAMICHG0:
@@ -1561,11 +1576,9 @@ int set_module(int file_des) {
         }
 
         ret = setModule(module, mess);
-#ifndef MYTHEN3D
         enum detectorSettings retval = getSettings();
         validate(module.reg, (int)retval, "set module (settings)", DEC);
         LOG(logDEBUG1, ("Settings: %d\n", retval));
-#endif
     }
     free(myChan);
     free(myDac);
@@ -1583,7 +1596,7 @@ int set_settings(int file_des) {
     if (receiveData(file_des, &isett, sizeof(isett), INT32) < 0)
         return printSocketReadError();
 
-#if defined(CHIPTESTBOARDD) || defined(MYTHEN3D)
+#ifdef CHIPTESTBOARDD
     functionNotImplemented();
 #else
     LOG(logDEBUG1, ("Setting settings %d\n", isett));
@@ -1620,13 +1633,17 @@ int set_settings(int file_des) {
             case G2_LOWCAP_LOWGAIN:
             case G4_HIGHGAIN:
             case G4_LOWGAIN:
+#elif MYTHEN3D
+            case STANDARD:
+            case FAST:
+            case HIGHGAIN:
 #endif
                 break;
             default:
                 if (myDetectorType == EIGER) {
                     ret = FAIL;
                     sprintf(mess, "Cannot set settings via SET_SETTINGS, use "
-                                  "SET_MODULE (set threshold)\n");
+                                  "SET_MODULE\n");
                     LOG(logERROR, (mess));
                 } else
                     modeNotImplemented("Settings Index", (int)isett);
@@ -1649,6 +1666,16 @@ int set_settings(int file_des) {
                     strcpy(mess, "Could change settings, but could not set to "
                                  "default dacs\n");
                     LOG(logERROR, (mess));
+                }
+            }
+#endif
+#ifdef MYTHEN3D
+            // changed for setsettings (direct),
+            // custom trimbit file (setmodule with myMod.reg as -1),
+            // change of dac (direct)
+            if (ret == OK) {
+                for (int i = 0; i < NCOUNTERS; ++i) {
+                    setThresholdEnergy(i, -1);
                 }
             }
 #endif
@@ -7100,15 +7127,20 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-        // threshold ev
+    // threshold ev
+    {
+        int i32s[3] = {0, 0, 0};
 #ifdef EIGERD
-    i32 = getThresholdEnergy();
-#else
-    i32 = 0;
+        i32s[0] = getThresholdEnergy();
+#elif MYTHEN3D
+        for (int i = 0; i < NCOUNTERS; ++i) {
+            i32s[i] = getThresholdEnergy(i);
+        }
 #endif
-    n += sendData(file_des, &i32, sizeof(i32), INT32);
-    if (n < 0)
-        return printSocketReadError();
+        n += sendData(file_des, i32s, sizeof(i32s), INT32);
+        if (n < 0)
+            return printSocketReadError();
+    }
 
     // dynamic range
     i32 = setDynamicRange(GET_FLAG);
@@ -8314,4 +8346,22 @@ int load_default_pattern(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_all_threshold_energy(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retvals[3] = {-1, -1, -1};
+
+    LOG(logDEBUG1, ("Getting all threshold energy\n"));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    for (int i = 0; i < NCOUNTERS; ++i) {
+        retvals[i] = getThresholdEnergy(i);
+        LOG(logDEBUG, ("eV[%d]: %deV\n", i, retvals[i]));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
 }

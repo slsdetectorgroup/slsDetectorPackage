@@ -87,7 +87,7 @@ u_int16_t getHardwareSerialNumber();
 #ifdef JUNGFRAUD
 int isHardwareVersion2();
 #endif
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
 void readDetectorNumber();
 #endif
 u_int32_t getDetectorNumber();
@@ -291,19 +291,23 @@ int setTrimbits(int *trimbits);
 int setAllTrimbits(int val);
 int getAllTrimbits();
 #endif
-#if (!defined(CHIPTESTBOARDD)) && (!defined(MYTHEN3D))
+#ifndef CHIPTESTBOARDD
 enum detectorSettings setSettings(enum detectorSettings sett);
 #endif
-#if !defined(MYTHEN3D)
-enum detectorSettings getSettings();
+#ifdef MYTHEN3D
+void validateSettings();
 #endif
+enum detectorSettings getSettings();
 
 // parameters - threshold
 #ifdef EIGERD
 int getThresholdEnergy();
 int setThresholdEnergy(int ev);
 #endif
-
+#ifdef MYTHEN3D
+int getThresholdEnergy(int counterIndex);
+void setThresholdEnergy(int counterIndex, int eV);
+#endif
 // parameters - dac, adc, hv
 
 #ifdef GOTTHARD2D

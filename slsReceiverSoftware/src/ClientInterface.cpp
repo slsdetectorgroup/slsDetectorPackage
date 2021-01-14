@@ -208,6 +208,7 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_SET_THRESHOLD]         =   &ClientInterface::set_threshold;
     flist[F_GET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::get_streaming_hwm;
     flist[F_SET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::set_streaming_hwm;
+    flist[F_RECEIVER_SET_ALL_THRESHOLD]     =   &ClientInterface::set_all_threshold;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -408,7 +409,14 @@ int ClientInterface::setup_receiver(Interface &socket) {
                                " due to fifo strucutre memory allocation");
         }
         impl()->setReadNLines(arg.numLinesReadout);
-        impl()->setThresholdEnergy(arg.thresholdEnergyeV);
+        impl()->setThresholdEnergy(arg.thresholdEnergyeV[0]);
+    }
+    if (myDetectorType == MYTHEN3) {
+        std::array<int, 3> val;
+        for (int i = 0; i < 3; ++i) {
+            val[i] = arg.thresholdEnergyeV[i];
+        }
+        impl()->setThresholdEnergy(val);
     }
     if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
         try {
@@ -1675,5 +1683,15 @@ int ClientInterface::set_streaming_hwm(Interface &socket) {
     }
     verifyIdle(socket);
     impl()->setStreamingHwm(limit);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_all_threshold(Interface &socket) {
+    auto eVs = socket.Receive<std::array<int, 3>>();
+    LOG(logDEBUG) << "Threshold:" << sls::ToString(eVs);
+    if (myDetectorType != MYTHEN3)
+        functionNotImplemented();
+    verifyIdle(socket);
+    impl()->setThresholdEnergy(eVs);
     return socket.Send(OK);
 }

@@ -8,6 +8,7 @@ This document describes the differences between 5.1.0 and 5.x.x releases.
     CONTENTS
     --------
     1.  Topics Concerning
+    2.  New Features
     2.  Resolved Issues
     3.  Known Issues
     4.  Firmware Requirements
@@ -21,9 +22,19 @@ This document describes the differences between 5.1.0 and 5.x.x releases.
     - potentital memory leak in receiver
     - scanParameters in Python
     - cmk.sh refactored
+    - m3 settings and threshold
 
 
-2. Resolved Issues
+2. New Features
+===============
+
+    Client
+    ------
+
+    1. Aded settings and threshold features for Mythen3.
+    
+
+3. Resolved Issues
 ==================
 
 
@@ -31,34 +42,34 @@ This document describes the differences between 5.1.0 and 5.x.x releases.
     --------
 
     1.  Current code only calls Implementation::setDetectorType from constructor, 
-	but potential memory leak if called out of constructor context. Fixed.
+	    but potential memory leak if called out of constructor context. Fixed.
 
-    Cleint
+    Client
     ------
 
     1.  Fixed missing scanParameters class in Python 
 
-    2.  cmk.sh refactored to have better option handling.
+    2.  cmk.sh refactored to have better option handling
 
 
 
 
 
-3. Firmware Requirements
+4. Firmware Requirements
 ========================
         
     No updates from 5.0.0
 
 
 
-4. Known Issues
+5. Known Issues
 ===============
 
     No updates from 5.0.0
 
 
 
-5. Download, Documentation & Support
+6. Download, Documentation & Support
 ====================================
 
     Download

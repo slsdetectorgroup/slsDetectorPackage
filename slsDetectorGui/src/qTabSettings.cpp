@@ -14,14 +14,24 @@ qTabSettings::~qTabSettings() {}
 
 void qTabSettings::SetupWidgetWindow() {
 
+    spinThreshold2->hide();
+    spinThreshold3->hide();
+    btnSetThreshold->hide();
+    btnSetThreshold->setEnabled(false);
     // enabling according to det type
     slsDetectorDefs::detectorType detType = det->getDetectorType().squash();
     if (detType == slsDetectorDefs::MYTHEN3) {
-        lblSettings->setEnabled(false);
-        comboSettings->setEnabled(false);
-
         lblDynamicRange->setEnabled(true);
         comboDynamicRange->setEnabled(true);
+
+        spinThreshold2->show();
+        spinThreshold3->show();
+        lblThreshold->setEnabled(true);
+        spinThreshold->setEnabled(true);
+        spinThreshold2->setEnabled(true);
+        spinThreshold3->setEnabled(true);
+        btnSetThreshold->setEnabled(true);
+        btnSetThreshold->show();
         // disable dr
         QStandardItemModel *model =
             qobject_cast<QStandardItemModel *>(comboDynamicRange->model());
@@ -34,7 +44,6 @@ void qTabSettings::SetupWidgetWindow() {
             item = model->itemFromIndex(index);
             item->setEnabled(false);
         }
-
     } else if (detType == slsDetectorDefs::EIGER) {
         lblDynamicRange->setEnabled(true);
         comboDynamicRange->setEnabled(true);
@@ -48,6 +57,10 @@ void qTabSettings::SetupWidgetWindow() {
         SetupDetectorSettings();
     }
     spinThreshold->setValue(-1);
+    if (detType == slsDetectorDefs::MYTHEN3) {
+        spinThreshold2->setValue(-1);
+        spinThreshold3->setValue(-1);
+    }
     Initialization();
     // default for the disabled
     GetDynamicRange();
@@ -104,6 +117,11 @@ void qTabSettings::SetupDetectorSettings() {
             item[(int)G4_HIGHGAIN]->setEnabled(true);
             item[(int)G4_LOWGAIN]->setEnabled(true);
             break;
+        case slsDetectorDefs::MYTHEN3:
+            item[(int)STANDARD]->setEnabled(true);
+            item[(int)FAST]->setEnabled(true);
+            item[(int)HIGHGAIN]->setEnabled(true);
+            break;
         default:
             LOG(logDEBUG) << "Unknown detector type. Exiting GUI.";
             qDefs::Message(qDefs::CRITICAL,
@@ -126,7 +144,13 @@ void qTabSettings::Initialization() {
                 SLOT(SetDynamicRange(int)));
 
     // Threshold
-    if (spinThreshold->isEnabled())
+    // m3
+    if (btnSetThreshold->isEnabled()) {
+        connect(btnSetThreshold, SIGNAL(clicked()), this,
+                SLOT(SetThresholdEnergies()));
+    }
+    // eiger
+    else if (spinThreshold->isEnabled())
         connect(spinThreshold, SIGNAL(valueChanged(int)), this,
                 SLOT(SetThresholdEnergy(int)));
 }
@@ -169,7 +193,7 @@ void qTabSettings::SetSettings(int index) {
     CATCH_HANDLE("Could not set settings.", "qTabSettings::SetSettings", this,
                  &qTabSettings::GetSettings)
     // threshold
-    if (spinThreshold->isEnabled()) {
+    if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
         SetThresholdEnergy(spinThreshold->value());
     }
 }
@@ -233,6 +257,23 @@ void qTabSettings::SetDynamicRange(int index) {
                  &qTabSettings::GetDynamicRange)
 }
 
+void qTabSettings::GetThresholdEnergies() {
+    LOG(logDEBUG) << "Getting theshold energies";
+    disconnect(btnSetThreshold, SIGNAL(clicked()), this,
+               SLOT(SetThresholdEnergies()));
+    try {
+        auto retval = det->getAllThresholdEnergy().tsquash(
+            "Inconsistent threhsold energies for all detectors.");
+        spinThreshold->setValue(retval[0]);
+        spinThreshold2->setValue(retval[1]);
+        spinThreshold3->setValue(retval[2]);
+    }
+    CATCH_DISPLAY("Could not get threshold energy.",
+                  "qTabDataOutput::GetThresholdEnergies")
+    connect(btnSetThreshold, SIGNAL(clicked()), this,
+            SLOT(SetThresholdEnergies()));
+}
+
 void qTabSettings::GetThresholdEnergy() {
     LOG(logDEBUG) << "Getting theshold energy";
     disconnect(spinThreshold, SIGNAL(valueChanged(int)), this,
@@ -246,6 +287,23 @@ void qTabSettings::GetThresholdEnergy() {
                   "qTabDataOutput::GetThresholdEnergy")
     connect(spinThreshold, SIGNAL(valueChanged(int)), this,
             SLOT(SetThresholdEnergy(int)));
+}
+
+void qTabSettings::SetThresholdEnergies() {
+    std::array<int, 3> eV = {spinThreshold->value(), spinThreshold2->value(),
+                             spinThreshold3->value()};
+    slsDetectorDefs::detectorSettings sett =
+        static_cast<slsDetectorDefs::detectorSettings>(
+            comboSettings->currentIndex());
+    LOG(logINFO) << "Setting Threshold Energies to " << sls::ToString(eV)
+                 << " (eV)";
+    try {
+        det->setThresholdEnergy(eV, sett);
+    }
+    CATCH_DISPLAY("Could not get threshold energies.",
+                  "qTabSettings::SetThresholdEnergies")
+    // set the right value anyway (due to tolerance)
+    GetThresholdEnergies();
 }
 
 void qTabSettings::SetThresholdEnergy(int index) {
@@ -270,8 +328,14 @@ void qTabSettings::Refresh() {
         GetDynamicRange();
     }
 
-    if (spinThreshold->isEnabled())
+    // m3
+    if (btnSetThreshold->isEnabled())
+        GetThresholdEnergies();
+    // eiger
+    else if (spinThreshold->isEnabled()) {
+        LOG(logINFOBLUE) << "calling it!";
         GetThresholdEnergy();
+    }
 
     LOG(logDEBUG) << "**Updated Settings Tab";
 }

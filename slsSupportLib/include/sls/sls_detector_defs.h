@@ -454,7 +454,7 @@ typedef struct {
         int activate{0};
         int quad{0};
         int numLinesReadout{0};
-        int thresholdEnergyeV{0};
+        int thresholdEnergyeV[3]{0, 0, 0};
         int dynamicRange{16};
         timingMode timMode{AUTO_TIMING};
         int tenGiga{0};
@@ -571,14 +571,14 @@ typedef struct {
     int reg;          /**< is the module register settings (gain level) */
     int iodelay;      /**< iodelay */
     int tau;          /**< tau */
-    int eV;           /**< threshold energy */
+    int eV[3];        /**< threshold energy */
     int *dacs;     /**< is the pointer to the array of the dac values (in V) */
     int *chanregs; /**< is the pointer to the array of the channel registers */
 
 #ifdef __cplusplus
     sls_detector_module()
         : serialnumber(0), nchan(0), nchip(0), ndac(0), reg(-1), iodelay(0),
-          tau(0), eV(-1), dacs(nullptr), chanregs(nullptr) {}
+          tau(0), eV{-1, -1, -1}, dacs(nullptr), chanregs(nullptr) {}
 
     explicit sls_detector_module(slsDetectorDefs::detectorType type)
         : sls_detector_module() {
@@ -607,7 +607,7 @@ typedef struct {
         reg = other.reg;
         iodelay = other.iodelay;
         tau = other.tau;
-        eV = other.eV;
+        std::copy(other.eV, other.eV + 3, eV);
         dacs = new int[ndac];
         std::copy(other.dacs, other.dacs + ndac, dacs);
         chanregs = new int[nchan];

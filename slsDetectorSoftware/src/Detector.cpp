@@ -171,8 +171,10 @@ std::vector<defs::detectorSettings> Detector::getSettingsList() const {
             defs::G2_HIGHCAP_HIGHGAIN, defs::G2_HIGHCAP_LOWGAIN,
             defs::G2_LOWCAP_HIGHGAIN,  defs::G2_LOWCAP_LOWGAIN,
             defs::G4_HIGHGAIN,         defs::G4_LOWGAIN};
-    case defs::CHIPTESTBOARD:
     case defs::MYTHEN3:
+        return std::vector<defs::detectorSettings>{defs::STANDARD, defs::FAST,
+                                                   defs::HIGHGAIN};
+    case defs::CHIPTESTBOARD:
         throw RuntimeError("Settings not implemented for this detector");
     default:
         throw RuntimeError("Unknown detector type");
@@ -184,7 +186,71 @@ Result<defs::detectorSettings> Detector::getSettings(Positions pos) const {
 }
 
 void Detector::setSettings(const defs::detectorSettings value, Positions pos) {
-    pimpl->Parallel(&Module::setSettings, pos, value);
+    if (value == defs::UNINITIALIZED || value == defs::UNDEFINED) {
+        throw RuntimeError(
+            "Cannot set settings with undefined or uninitialized settings.");
+    }
+    if (anyEqualTo<defs::detectorSettings>(getSettingsList(), value)) {
+        pimpl->Parallel(&Module::setSettings, pos, value);
+    } else {
+        throw RuntimeError("Unknown Settings " + ToString(value) +
+                           " for this detector\n");
+    }
+}
+
+Result<int> Detector::getThresholdEnergy(Positions pos) const {
+    return pimpl->Parallel(&Module::getThresholdEnergy, pos);
+}
+
+Result<std::array<int, 3>>
+Detector::getAllThresholdEnergy(Positions pos) const {
+    return pimpl->Parallel(&Module::getAllThresholdEnergy, pos);
+}
+
+void Detector::setThresholdEnergy(int threshold_ev,
+                                  defs::detectorSettings settings,
+                                  bool trimbits, Positions pos) {
+    defs::detectorType type = getDetectorType().squash();
+    if (type == defs::MYTHEN3) {
+        std::array<int, 3> energy = {threshold_ev, threshold_ev, threshold_ev};
+        setThresholdEnergy(energy, settings, trimbits, pos);
+        return;
+    }
+    if (type != defs::EIGER) {
+        throw RuntimeError(
+            "Set threshold energy not implemented for this detector");
+    }
+    if (anyEqualTo<defs::detectorSettings>(getSettingsList(), settings)) {
+        pimpl->Parallel(&Module::setThresholdEnergy, pos, threshold_ev,
+                        settings, static_cast<int>(trimbits));
+    } else {
+        throw RuntimeError("Unknown Settings " + ToString(settings) +
+                           " for this detector\n");
+    }
+}
+
+void Detector::setThresholdEnergy(std::array<int, 3> threshold_ev,
+                                  defs::detectorSettings settings,
+                                  bool trimbits, Positions pos) {
+    if (getDetectorType().squash() != defs::MYTHEN3) {
+        throw RuntimeError("Set threshold energy for different counters not "
+                           "implemented for this detector");
+    }
+    if (anyEqualTo<defs::detectorSettings>(getSettingsList(), settings)) {
+        pimpl->Parallel(&Module::setAllThresholdEnergy, pos, threshold_ev,
+                        settings, static_cast<int>(trimbits));
+    } else {
+        throw RuntimeError("Unknown Settings " + ToString(settings) +
+                           " for this detector\n");
+    }
+}
+
+Result<std::string> Detector::getSettingsPath(Positions pos) const {
+    return pimpl->Parallel(&Module::getSettingsDir, pos);
+}
+
+void Detector::setSettingsPath(const std::string &value, Positions pos) {
+    pimpl->Parallel(&Module::setSettingsDir, pos, value);
 }
 
 void Detector::loadTrimbits(const std::string &fname, Positions pos) {
@@ -197,6 +263,14 @@ Result<int> Detector::getAllTrimbits(Positions pos) const {
 
 void Detector::setAllTrimbits(int value, Positions pos) {
     pimpl->Parallel(&Module::setAllTrimbits, pos, value);
+}
+
+Result<std::vector<int>> Detector::getTrimEnergies(Positions pos) const {
+    return pimpl->Parallel(&Module::getTrimEn, pos);
+}
+
+void Detector::setTrimEnergies(std::vector<int> energies, Positions pos) {
+    pimpl->Parallel(&Module::setTrimEn, pos, energies);
 }
 
 bool Detector::getGapPixelsinCallback() const {
@@ -1158,25 +1232,6 @@ void Detector::setSubDeadTime(ns value, Positions pos) {
     pimpl->Parallel(&Module::setSubDeadTime, pos, value.count());
 }
 
-Result<int> Detector::getThresholdEnergy(Positions pos) const {
-    return pimpl->Parallel(&Module::getThresholdEnergy, pos);
-}
-
-void Detector::setThresholdEnergy(int threshold_ev,
-                                  defs::detectorSettings settings,
-                                  bool trimbits, Positions pos) {
-    pimpl->Parallel(&Module::setThresholdEnergy, pos, threshold_ev, settings,
-                    static_cast<int>(trimbits));
-}
-
-Result<std::string> Detector::getSettingsPath(Positions pos) const {
-    return pimpl->Parallel(&Module::getSettingsDir, pos);
-}
-
-void Detector::setSettingsPath(const std::string &value, Positions pos) {
-    pimpl->Parallel(&Module::setSettingsDir, pos, value);
-}
-
 Result<bool> Detector::getOverFlowMode(Positions pos) const {
     return pimpl->Parallel(&Module::getOverFlowMode, pos);
 }
@@ -1191,14 +1246,6 @@ Result<bool> Detector::getBottom(Positions pos) const {
 
 void Detector::setBottom(bool value, Positions pos) {
     pimpl->Parallel(&Module::setFlippedDataX, pos, value);
-}
-
-Result<std::vector<int>> Detector::getTrimEnergies(Positions pos) const {
-    return pimpl->Parallel(&Module::getTrimEn, pos);
-}
-
-void Detector::setTrimEnergies(std::vector<int> energies, Positions pos) {
-    pimpl->Parallel(&Module::setTrimEn, pos, energies);
 }
 
 Result<ns> Detector::getRateCorrection(Positions pos) const {

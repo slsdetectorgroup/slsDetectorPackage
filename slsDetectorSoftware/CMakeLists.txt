@@ -31,6 +31,7 @@ set(PUBLICHEADERS
     include/sls/detectorData.h
     include/sls/Detector.h
     include/sls/Result.h
+    include/sls/Pattern.h
 )
 
 #Shared library

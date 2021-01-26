@@ -367,6 +367,21 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
             LOG(logWARNING) << "Some trimbits were out of range after interpolation, these have been replaced with 0 or 63.";
     }
 
+    //check dacs
+    out_of_range = false;
+    for (auto dac : {M_VTRIM,M_VTH1,M_VTH2, M_VTH3}){
+        if (myMod.dacs[dac] < 600){
+            myMod.dacs[dac] = 600;
+            out_of_range = true;
+        }else if(myMod.dacs[dac] > 2400){
+            myMod.dacs[dac] = 2400;
+            out_of_range = true;
+        }
+    }
+    if (out_of_range){
+            LOG(logWARNING) << "Some dacs were out of range after interpolation, these have been replaced with 600 or 2400.";
+    }
+
 
     setModule(myMod, trimbits);
     if (getSettings() != isettings) {

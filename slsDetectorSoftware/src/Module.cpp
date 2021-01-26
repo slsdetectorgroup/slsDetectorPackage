@@ -351,6 +351,23 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
     myMod.reg = isettings;
     std::copy(e_eV.begin(), e_eV.end(), myMod.eV);
     LOG(logDEBUG) << "ev:" << ToString(myMod.eV);
+
+    //check for trimbits that are out of range 
+    bool out_of_range = false;
+    for(int i = 0; i!=myMod.nchan; ++i){
+        if (myMod.chanregs[i]<0){
+            myMod.chanregs[i] = 0;
+            out_of_range = true;
+        }else if(myMod.chanregs[i]>63){
+            myMod.chanregs[i]=63;
+            out_of_range = true;
+        }
+    }
+    if (out_of_range){
+            LOG(logWARNING) << "Some trimbits were out of range after interpolation, these have been replaced with 0 or 63.";
+    }
+
+
     setModule(myMod, trimbits);
     if (getSettings() != isettings) {
         throw RuntimeError("setThresholdEnergyAndSettings: Could not set "

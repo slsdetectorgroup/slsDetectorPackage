@@ -317,9 +317,9 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
         myMod.dacs[M_VTRIM] = sum / counters.size();
 
         // copy vth1, vth2 and vth3 from the correct threshold mods
-        myMod.dacs[VTH1] = myMods[0].dacs[VTH1];
-        myMod.dacs[VTH2] = myMods[1].dacs[VTH2];
-        myMod.dacs[VTH3] = myMods[2].dacs[VTH3];
+        myMod.dacs[M_VTH1] = myMods[0].dacs[M_VTH1];
+        myMod.dacs[M_VTH2] = myMods[1].dacs[M_VTH2];
+        myMod.dacs[M_VTH3] = myMods[2].dacs[M_VTH3];
 
         // check if dacs are different
         for (size_t j = 0; j < 16; ++j) {

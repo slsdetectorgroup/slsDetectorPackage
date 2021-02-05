@@ -7815,6 +7815,10 @@ int get_scan(int file_des) {
 }
 
 int set_scan(int file_des) {
+    #ifdef MYTHEN3D
+    functionNotImplemented();
+    return Server_SendResult(file_des, INT64, NULL, 0);
+    #endif
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int args[5] = {-1, -1, -1, -1, -1};

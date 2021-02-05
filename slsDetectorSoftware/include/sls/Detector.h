@@ -491,6 +491,8 @@ class Detector {
      * WAITING and automatically returns to idle at the end of acquisition. */
     void startDetector();
 
+    void arm();
+
     /** [Mythen3] Non blocking: start detector readout of counters in chip.
      * Status changes to TRANSMITTING and automatically returns to idle at the
      * end of readout. */

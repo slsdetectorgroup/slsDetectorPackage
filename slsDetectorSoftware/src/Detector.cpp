@@ -673,15 +673,8 @@ void Detector::startReceiver() { pimpl->Parallel(&Module::startReceiver, {}); }
 
 void Detector::stopReceiver() { pimpl->Parallel(&Module::stopReceiver, {}); }
 
-void Detector::startDetector() {
-    pimpl->Parallel(&Module::startAcquisition, {});
-}
-
-void Detector::arm(){
-    std::vector<int> pos(size());
-    std::iota(pos.begin(), pos.end(), 1);
-    std::cout << sls::ToString(pos);
-
+void Detector::startDetector(Positions pos) {
+    pimpl->Parallel(&Module::startAcquisition, pos);
 }
 
 void Detector::startDetectorReadout() {

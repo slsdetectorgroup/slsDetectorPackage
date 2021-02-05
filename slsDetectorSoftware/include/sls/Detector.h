@@ -489,9 +489,7 @@ class Detector {
 
     /** Non blocking: start detector acquisition. Status changes to RUNNING or
      * WAITING and automatically returns to idle at the end of acquisition. */
-    void startDetector();
-
-    void arm();
+    void startDetector(Positions pos = {});
 
     /** [Mythen3] Non blocking: start detector readout of counters in chip.
      * Status changes to TRANSMITTING and automatically returns to idle at the

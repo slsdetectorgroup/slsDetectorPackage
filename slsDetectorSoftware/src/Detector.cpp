@@ -673,8 +673,24 @@ void Detector::startReceiver() { pimpl->Parallel(&Module::startReceiver, {}); }
 
 void Detector::stopReceiver() { pimpl->Parallel(&Module::stopReceiver, {}); }
 
-void Detector::startDetector(Positions pos) {
-    pimpl->Parallel(&Module::startAcquisition, pos);
+void Detector::startDetector() {
+    auto detector_type = getDetectorType().squash();
+    if (detector_type == defs::MYTHEN3){
+        auto is_master = getMaster();
+        std::vector<int> master;
+        std::vector<int> slaves;
+        for(int i=0; i<size(); ++i){
+            if (is_master[i])
+                master.push_back(i);
+            else
+                slaves.push_back(i);
+        }
+        pimpl->Parallel(&Module::startAcquisition, slaves);
+        pimpl->Parallel(&Module::startAcquisition, master);
+    }else{
+        pimpl->Parallel(&Module::startAcquisition, {});
+    }
+    
 }
 
 void Detector::startDetectorReadout() {
@@ -1591,6 +1607,11 @@ Result<std::array<ns, 3>>
 Detector::getGateDelayForAllGates(Positions pos) const {
     return pimpl->Parallel(&Module::getGateDelayForAllGates, pos);
 }
+
+Result<bool> Detector::getMaster(Positions pos) const{
+    return pimpl->Parallel(&Module::isMaster, pos);
+}
+
 
 // CTB/ Moench Specific
 

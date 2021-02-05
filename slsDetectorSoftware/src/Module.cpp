@@ -1994,6 +1994,10 @@ std::array<time::ns, 3> Module::getGateDelayForAllGates() const {
     return sendToDetector<std::array<time::ns, 3>>(F_GET_GATE_DELAY_ALL_GATES);
 }
 
+bool Module::isMaster() const{
+    return sendToDetector<int>(F_GET_MASTER);
+}
+
 // CTB / Moench Specific
 int Module::getNumberOfAnalogSamples() const {
     return sendToDetector<int>(F_GET_NUM_ANALOG_SAMPLES);

@@ -368,6 +368,7 @@ void function_table() {
     flist[F_GET_PATTERN] = &get_pattern;
     flist[F_LOAD_DEFAULT_PATTERN] = &load_default_pattern;
     flist[F_GET_ALL_THRESHOLD_ENERGY] = &get_all_threshold_energy;
+    flist[F_GET_MASTER] = &get_master;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -638,7 +639,9 @@ int set_timing_mode(int file_des) {
     }
     // get
     retval = getTiming();
+    #ifndef MYTHEN3D
     validate((int)arg, (int)retval, "set timing mode", DEC);
+    #endif
     LOG(logDEBUG1, ("Timing Mode: %d\n", retval));
 
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -8364,4 +8367,19 @@ int get_all_threshold_energy(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
+}
+
+int get_master(int file_des){
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting master\n"));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    retval = isMaster();
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

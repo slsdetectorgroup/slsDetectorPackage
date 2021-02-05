@@ -398,9 +398,7 @@ void init_det(py::module &m) {
              (void (Detector::*)()) & Detector::clearAcquiringFlag)
         .def("startReceiver", (void (Detector::*)()) & Detector::startReceiver)
         .def("stopReceiver", (void (Detector::*)()) & Detector::stopReceiver)
-        .def("startDetector",
-             (void (Detector::*)(sls::Positions)) & Detector::startDetector,
-             py::arg() = Positions{})
+        .def("startDetector", (void (Detector::*)()) & Detector::startDetector)
         .def("startDetectorReadout",
              (void (Detector::*)()) & Detector::startDetectorReadout)
         .def("stopDetector", (void (Detector::*)()) & Detector::stopDetector)
@@ -1133,6 +1131,10 @@ void init_det(py::module &m) {
         .def("getGateDelayForAllGates",
              (Result<std::array<ns, 3>>(Detector::*)(sls::Positions) const) &
                  Detector::getGateDelayForAllGates,
+             py::arg() = Positions{})
+        .def("getMaster",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getMaster,
              py::arg() = Positions{})
         .def("getNumberOfAnalogSamples",
              (Result<int>(Detector::*)(sls::Positions) const) &

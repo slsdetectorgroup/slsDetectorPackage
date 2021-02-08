@@ -733,6 +733,9 @@ Result<defs::scanParameters> Detector::getScan(Positions pos) const {
 }
 
 void Detector::setScan(const defs::scanParameters t) {
+    if(getDetectorType().squash() == defs::MYTHEN3 && size()>1){
+        throw DetectorError("Scan is only allowed for single module Mythen 3 because of synchronization");
+    }
     pimpl->Parallel(&Module::setScan, {}, t);
 }
 

@@ -425,6 +425,7 @@ class Module : public virtual slsDetectorDefs {
     int64_t getGateDelay(int gateIndex) const;
     void setGateDelay(int gateIndex, int64_t value);
     std::array<time::ns, 3> getGateDelayForAllGates() const;
+    bool isMaster() const;
 
     /**************************************************
      *                                                *

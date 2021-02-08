@@ -352,6 +352,7 @@ void setTiming(enum timingMode arg);
 enum timingMode getTiming();
 #ifdef MYTHEN3D
 void setInitialExtSignals();
+int isMaster();
 #endif
 #if defined(GOTTHARDD) || defined(MYTHEN3D)
 void setExtSignal(int signalIndex, enum externalSignalFlag mode);

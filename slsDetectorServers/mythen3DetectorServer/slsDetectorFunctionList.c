@@ -1522,8 +1522,16 @@ int setHighVoltage(int val) {
     return highvoltage;
 }
 
+int isMaster(){
+    return !(bus_r(0x18) >> 31);
+}
+
 /* parameters - timing */
 void setTiming(enum timingMode arg) {
+    
+    if (!isMaster() && arg == AUTO_TIMING)
+        arg = TRIGGER_EXPOSURE;
+
     uint32_t addr = CONFIG_REG;
     switch (arg) {
     case AUTO_TIMING:

@@ -1305,6 +1305,9 @@ class Detector {
     /** [Mythen3] gate delay for all gates in auto or trigger timing mode
      * (internal gating). Gate index: 0-2, -1 for all */
     Result<std::array<ns, 3>> getGateDelayForAllGates(Positions pos = {}) const;
+
+    Result<bool> getMaster(Positions pos = {}) const;
+
     ///@{
 
     /** @name CTB / Moench Specific */

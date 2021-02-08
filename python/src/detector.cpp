@@ -1132,6 +1132,10 @@ void init_det(py::module &m) {
              (Result<std::array<ns, 3>>(Detector::*)(sls::Positions) const) &
                  Detector::getGateDelayForAllGates,
              py::arg() = Positions{})
+        .def("getMaster",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getMaster,
+             py::arg() = Positions{})
         .def("getNumberOfAnalogSamples",
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfAnalogSamples,

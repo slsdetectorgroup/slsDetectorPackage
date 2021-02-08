@@ -220,6 +220,7 @@ enum detFuncs {
     F_GET_PATTERN,
     F_LOAD_DEFAULT_PATTERN,
     F_GET_ALL_THRESHOLD_ENERGY,
+    F_GET_MASTER,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -546,6 +547,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_PATTERN:                     return "F_GET_PATTERN";
     case F_LOAD_DEFAULT_PATTERN:            return "F_LOAD_DEFAULT_PATTERN";
     case F_GET_ALL_THRESHOLD_ENERGY:        return "F_GET_ALL_THRESHOLD_ENERGY";
+    case F_GET_MASTER:                      return "F_GET_MASTER";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

@@ -3,7 +3,7 @@
 #include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API  0x171220
-#define REQRD_FRMWRE_VRSN_BOARD2 0x200724 // 1.0 pcb
+#define REQRD_FRMWRE_VRSN_BOARD2 0x210218 // 1.0 pcb
 #define REQRD_FRMWRE_VRSN        0x200721 // 2.0 pcb
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
@@ -113,8 +113,8 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define ADC_OFST_FULL_SPEED_VAL           (0x10) // 2.0 pcb
 #define ADC_OFST_HALF_SPEED_VAL           (0x08) // 2.0 pcb
 #define ADC_OFST_QUARTER_SPEED_VAL        (0x04) // 2.0 pcb
-#define ADC_OFST_HALF_SPEED_BOARD2_VAL    (0x13) // 1.0 pcb (2 resistor network)
-#define ADC_OFST_QUARTER_SPEED_BOARD2_VAL (0x0b) // 1.0 pcb (2 resistor network)
+#define ADC_OFST_HALF_SPEED_BOARD2_VAL    (0x10) // 1.0 pcb (2 resistor network)
+#define ADC_OFST_QUARTER_SPEED_BOARD2_VAL (0x08) // 1.0 pcb (2 resistor network)
 
 #define ADC_PORT_INVERT_VAL        (0x5A5A5A5A)
 #define ADC_PORT_INVERT_BOARD2_VAL (0x453b2a9c)
@@ -140,8 +140,8 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define ADC_PHASE_FULL_SPEED           (150) // 2.0 pcb
 #define ADC_PHASE_HALF_SPEED           (200) // 2.0 pcb
 #define ADC_PHASE_QUARTER_SPEED        (200) // 2.0 pcb
-#define ADC_PHASE_HALF_SPEED_BOARD2    (75)  // 1.0 pcb (2 resistor network)
-#define ADC_PHASE_QUARTER_SPEED_BOARD2 (75)  // 1.0 pcb (2 resistor network)
+#define ADC_PHASE_HALF_SPEED_BOARD2    (110)  // 1.0 pcb (2 resistor network)
+#define ADC_PHASE_QUARTER_SPEED_BOARD2 (220)  // 1.0 pcb (2 resistor network)
 
 #define DBIT_PHASE_FULL_SPEED           (85)  // 2.0 pcb
 #define DBIT_PHASE_HALF_SPEED           (150) // 2.0 pcb

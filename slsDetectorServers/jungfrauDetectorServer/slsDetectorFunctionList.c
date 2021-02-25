@@ -1396,11 +1396,8 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     setPhase(ADC_CLK, adcPhase, 0);
     LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", adcPhase));
 
-    // only implemented in the new boards now
-    if (!isHardwareVersion2()) {
-        setPhase(DBIT_CLK, dbitPhase, 0);
-        LOG(logINFO, ("\tSet DBIT Phase Reg to %d\n", dbitPhase));
-    }
+    setPhase(DBIT_CLK, dbitPhase, 0);
+    LOG(logINFO, ("\tSet DBIT Phase Reg to %d\n", dbitPhase));
 
     return OK;
 }

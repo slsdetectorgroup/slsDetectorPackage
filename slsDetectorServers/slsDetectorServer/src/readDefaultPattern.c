@@ -1,4 +1,5 @@
 #include "readDefaultPattern.h"
+#include "loadPattern.h"
 #include "clogger.h"
 #include "common.h"
 #include "sls/ansi.h"

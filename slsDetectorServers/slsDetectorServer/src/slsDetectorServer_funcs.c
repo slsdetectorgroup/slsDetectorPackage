@@ -7578,18 +7578,22 @@ int set_pattern(int file_des) {
 
     patternParameters *pat = malloc(sizeof(patternParameters));
     memset(pat, 0, sizeof(patternParameters));
-
-    // ignoring endianness for eiger
+      // ignoring endianness for eiger
     if (receiveData(file_des, pat, sizeof(patternParameters), INT32) < 0) {
         if (pat != NULL)
             free(pat);
         return printSocketReadError();
     }
-
+ 
     if (Server_VerifyLock() == OK) {
         LOG(logINFO, ("Setting Pattern from structure\n"));
         LOG(logINFO,
-            ("Setting Pattern Word (printing every 10 words that are not 0\n"));
+            ("Setting Pattern Word (printing every 10 words that are not 0\n"));   
+	/****************************************************************************************************************/
+	/* I SUGGEST TO VALIDATE THE VALUES HERE AND THEN WRITE THE PATTERN IN A SEPARATE FUNCTION WHICH COULD BE REUSED*/
+	/* added loadPattern.c/h - the same func could be reused also in readDefaultPattern                                  */
+	/***************************************************************************************************************/
+
         for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
             if ((i % 10 == 0) && pat->word[i] != 0) {
                 LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n",
@@ -7662,6 +7666,7 @@ int set_pattern(int file_des) {
                 }
             }
         }
+	/******* DOWN TO HERE ***********/
     }
     if (pat != NULL)
         free(pat);

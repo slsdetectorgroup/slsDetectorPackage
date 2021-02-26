@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(slsDetectorPackage)
-set(PROJECT_VERSION 5.0.0)
+set(PROJECT_VERSION 5.1.0)
 include(CheckIPOSupported)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 

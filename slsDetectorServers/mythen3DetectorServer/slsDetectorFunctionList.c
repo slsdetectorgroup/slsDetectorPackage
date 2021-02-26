@@ -1145,8 +1145,6 @@ int setModule(sls_detector_module myMod, char *mess) {
 }
 
 int setTrimbits(int *trimbits) {
-    
-
     // remember previous run clock
     uint32_t prevRunClk = clkDivider[SYSTEM_C0];
     patternParameters *pat=NULL;
@@ -1177,7 +1175,6 @@ int setTrimbits(int *trimbits) {
       }
       LOG(logINFO, ("All trimbits have been loaded\n"));
     }
-
     trimmingPrint = logINFO;
     // set back to previous clock
     if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
@@ -1188,7 +1185,6 @@ int setTrimbits(int *trimbits) {
     if (error != 0) {
         return FAIL;
     }
-
     return OK;
 }
 
@@ -2664,3 +2660,52 @@ int getNumberOfChips() { return NCHIP; }
 int getNumberOfDACs() { return NDAC; }
 int getNumberOfChannelsPerChip() { return NCHAN; }
 
+int setGain(int gain) {
+    // remember previous run clock
+    uint32_t prevRunClk = clkDivider[SYSTEM_C0];
+    patternParameters *pat=NULL;
+    int error=0;
+    // set to trimming clock
+    if (setClockDivider(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV) == FAIL) {
+        LOG(logERROR,
+            ("Could not start trimming. Could not set to trimming clock\n"));
+        return FAIL;
+    }
+    /////////////////////////////////////////////////////////////////
+    int pgain=Cp_10;
+    int shgain=Csh_30;
+    int acgain=Cac_450;
+    /*
+      acgain=gain%2;
+      gain/=2;
+      shgain=gain%8;
+      gain/=8;
+      pgain=gain
+    */
+
+
+    pat=setChipGain(pgain, shgain, acgain);
+    if (pat) {
+	error|=loadPattern(pat);
+	if (error==0) 
+	  startPattern();
+	free(pat);
+      }	else
+	error=1;
+    /////////////////////////////////////////////////////////////////
+    if (error == 0) {
+    
+      LOG(logINFO, ("The gain has been changed\n"));
+    }
+    trimmingPrint = logINFO;
+    // set back to previous clock
+    if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
+        LOG(logERROR, ("Could not set to previous run clock after trimming\n"));
+        return FAIL;
+    }
+
+    if (error != 0) {
+        return FAIL;
+    }
+    return OK;
+}

@@ -675,7 +675,7 @@ void Detector::stopReceiver() { pimpl->Parallel(&Module::stopReceiver, {}); }
 
 void Detector::startDetector() {
     auto detector_type = getDetectorType().squash();
-    if (detector_type == defs::MYTHEN3){
+    if (detector_type == defs::MYTHEN3 && size() > 1){
         auto is_master = getMaster();
         std::vector<int> master;
         std::vector<int> slaves;

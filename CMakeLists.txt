@@ -158,7 +158,27 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 
 
-find_package(ZeroMQ 4 REQUIRED)
+# find_package(ZeroMQ 4 REQUIRED)
+if (NOT TARGET libzmq)
+  find_package(ZeroMQ 4 QUIET)
+
+  # libzmq autotools install: fallback to pkg-config
+  message("HEY: ${CMAKE_CURRENT_LIST_DIR}")
+  if(NOT ZeroMQ_FOUND)
+    message(STATUS "CMake libzmq package not found, trying again with pkg-config (normal install of zeromq)")
+    list (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/libzmq-pkg-config)
+    find_package(ZeroMQ 4 REQUIRED)
+  endif()
+
+  # TODO "REQUIRED" above should already cause a fatal failure if not found, but this doesn't seem to work
+  if(NOT ZeroMQ_FOUND)
+    message(FATAL_ERROR "ZeroMQ was not found, neither as a CMake package nor via pkg-config")
+  endif()
+
+  if (ZeroMQ_FOUND AND NOT TARGET libzmq)
+    message(FATAL_ERROR "ZeroMQ version not supported!")
+  endif()
+endif()
 
 if (SLS_USE_TESTS)
     enable_testing()

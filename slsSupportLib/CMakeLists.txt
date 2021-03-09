@@ -57,14 +57,12 @@ target_include_directories(slsSupportObject
   PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-  PRIVATE
-    ${ZeroMQ_INCLUDE_DIRS}
 )
 
 target_link_libraries(slsSupportObject 
   PUBLIC
     slsProjectOptions 
-    ${ZeroMQ_LIBRARIES}
+    libzmq
     rapidjson
   PRIVATE
     slsProjectWarnings     

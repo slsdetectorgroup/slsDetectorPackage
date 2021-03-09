@@ -33,7 +33,8 @@ This document describes the differences between 5.1.0 and 5.x.x releases.
 
     1. Aded settings and threshold features for Mythen3.
     2. Internal modification of acquire for Mythen3.
-    3. Added getMaster functio for M3
+    3. Added getMaster for Mythen3
+    4. Mythen3, API function to set pattern from memory
 
 
     Mythen3 server
@@ -52,12 +53,18 @@ This document describes the differences between 5.1.0 and 5.x.x releases.
     1.  Current code only calls Implementation::setDetectorType from constructor, 
 	    but potential memory leak if called out of constructor context. Fixed.
 
+
     Client
     ------
 
     1.  Fixed missing scanParameters class in Python 
 
     2.  cmk.sh refactored to have better option handling
+
+    Server
+    --------
+
+    1.  Bottom port not mirrored correctly for Eiger quad
 
 
 
@@ -66,7 +73,11 @@ This document describes the differences between 5.1.0 and 5.x.x releases.
 4. Firmware Requirements
 ========================
         
-    No updates from 5.0.0
+    Mythen3: 0x210201
+    Jungfrau: 0x210218 (1.0 pcb)
+              0x200721 (2.0 pcb, not changed)
+
+    Other detectors no updates from 5.0.0
 
 
 

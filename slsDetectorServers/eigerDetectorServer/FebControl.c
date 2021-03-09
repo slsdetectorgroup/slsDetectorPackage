@@ -1395,7 +1395,7 @@ int Feb_Control_SetMaster(enum MASTERINDEX ind) {
 int Feb_Control_SetQuad(int val) {
     LOG(logINFO, ("Setting Quad to %d in Feb\n", val));
     // only setting on the right feb if quad
-    return Feb_Control_SetTop(val == 0 ? TOP_HARDWARE : OW_TOP, 0, 1);
+    return Feb_Control_SetTop(val == 0 ? TOP_HARDWARE : OW_BOTTOM, 0, 1);
 }
 
 int Feb_Control_SetReadNLines(int value) {

@@ -158,12 +158,11 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 
 
-# find_package(ZeroMQ 4 REQUIRED)
+#From: https://github.com/zeromq/cppzmq/
 if (NOT TARGET libzmq)
   find_package(ZeroMQ 4 QUIET)
 
   # libzmq autotools install: fallback to pkg-config
-  message("HEY: ${CMAKE_CURRENT_LIST_DIR}")
   if(NOT ZeroMQ_FOUND)
     message(STATUS "CMake libzmq package not found, trying again with pkg-config (normal install of zeromq)")
     list (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/libzmq-pkg-config)

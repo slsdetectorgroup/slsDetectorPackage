@@ -20,10 +20,11 @@ set_target_properties(testserver PROPERTIES
 add_executable(tests ${SLS_TEST_SOURCES})
 target_link_libraries(tests 
     slsProjectOptions
-    slsProjectWarnings
     slsSupportShared
     pthread
     rt
+    PRIVATE
+      slsProjectWarnings
 )  
 
 if (SLS_USE_TEXTCLIENT)

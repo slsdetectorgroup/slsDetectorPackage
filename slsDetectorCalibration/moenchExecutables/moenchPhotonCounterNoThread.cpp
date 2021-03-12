@@ -1,6 +1,7 @@
 //#include "ansi.h"
 #include <iostream>
-#define CORR
+//#define CORR
+#define NOTHREAD
 
 #define C_GHOST 0.0004
 
@@ -250,7 +251,13 @@ int main(int argc, char *argv[]) {
   char* buff;
 
   // multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
+#ifndef NOTHREAD
  multiThreadedCountingDetector *mt=new multiThreadedCountingDetector(filter,nthreads,fifosize);
+#endif
+#ifdef NOTHREAD
+ singlePhotonDetector *mt=filter;
+#endif
+
 #ifndef ANALOG
     mt->setDetectorMode(ePhotonCounting);
     cout << "Counting!" << endl;
@@ -266,9 +273,10 @@ int main(int argc, char *argv[]) {
       //thr1=thr;
 #endif  
       //  }
-  
+#ifndef NOTHREAD 
   mt->StartThreads();
   mt->popFree(buff);
+#endif
 
   DIR *dir;
   struct dirent *ent;
@@ -300,9 +308,14 @@ int main(int argc, char *argv[]) {
 	ff=-1;
 	while (decoder->readNextFrame(filebin, ff, np,buff)) {
 	  if (np==40) {
+#ifdef NOTHREAD
+	    mt->processData(buff);
+#endif
+#ifndef NOTHREAD
 	    mt->pushData(buff);
 	    mt->nextThread();
 	    mt->popFree(buff);
+#endif
 	    ifr++;
 	    if (ifr%10000==0) 
 	      cout << ifr << " " << ff << " " << np << endl;
@@ -310,8 +323,10 @@ int main(int argc, char *argv[]) {
 	    cout << ifr << " " << ff << " " << np << endl;
 	  ff=-1;
 	}
-	filebin.close();	 
+	filebin.close();
+#ifndef NOTHREAD	 
 	while (mt->isBusy()) {;}
+#endif
 	
       } else 
 	cout << "Could not open pedestal file "<< fname << " for reading " << endl;
@@ -336,7 +351,12 @@ int main(int argc, char *argv[]) {
 	cout << "Could not open pedestal tiff file "<< pedfile << " for reading " << endl;
       }
     }
+#ifdef NOTHREAD
+    mt->writePedestals(imgfname);
+#endif
+#ifndef NOTHREAD
     mt->writePedestal(imgfname);
+#endif
     std::time(&end_time);
     cout << std::ctime(&end_time) <<   endl;
   }
@@ -401,19 +421,31 @@ int main(int argc, char *argv[]) {
 	    ifr=0;
 	    while (decoder->readNextFrame(filebin, ff, np,buff)) {
 	      if (np==40) {
+#ifdef NOTHREAD
+		mt->processData(buff);
+#endif
+#ifndef NOTHREAD
 		mt->pushData(buff);
 		mt->nextThread();
 		mt->popFree(buff);
+#endif
 		ifr++;
 		if (ifr%10000==0) cout << ifr << " " << ff << endl;
 		if (nframes>0) {
+#ifndef NOTHREAD
 		  while (mt->isBusy()) {;}
+#endif
 		  if (ifr%nframes==0) {
 		    //The name has an additional "_fXXXXX" at the end, where "XXXXX" is the initial frame number of the image (0,1000,2000...)		    
 		    sprintf(ffname,"%s/%s_f%05d.tiff",outdir,fformat,ifile);
 		    sprintf(imgfname,ffname,irun);
 		    //cout << "Writing tiff to " << imgfname << " " << thr1 << endl;
+#ifdef NOTHREAD
+		    mt->writeImage(imgfname);
+#endif
+#ifndef NOTHREAD
 		    mt->writeImage(imgfname, thr1);
+#endif
 		    mt->clearImage();
 		    ifile++;
 		  }
@@ -428,8 +460,10 @@ int main(int argc, char *argv[]) {
       }
 
 
-    }  
+    } 
+#ifndef NOTHREAD 
     while (mt->isBusy()) {;}
+#endif
     if (nframes>=0) {
       if (nframes>0) {
 	sprintf(ffname,"%s/%s_f%05d.tiff",outdir,fformat,ifile);
@@ -439,7 +473,12 @@ int main(int argc, char *argv[]) {
 	//sprintf(imgfname,ffname,irun);
       }
       cout << "Writing tiff to " << imgfname << " " << ifr <<endl;
-      mt->writeImage(imgfname, thr1);
+#ifdef NOTHREAD
+		    mt->writeImage(imgfname);
+#endif
+#ifndef NOTHREAD
+		    mt->writeImage(imgfname, thr1);
+#endif
       mt->clearImage();
       if (of) {
 	fclose(of);
@@ -462,12 +501,22 @@ int main(int argc, char *argv[]) {
     sprintf(ffname,"%s/%s.tiff",outdir,fformat);
     strcpy(imgfname,ffname);
     cout << "Writing tiff to " << imgfname << " " << ifr <<endl;
-    mt->writeImage(imgfname, thr1);
+#ifdef NOTHREAD
+		    mt->writeImage(imgfname);
+#endif
+#ifndef NOTHREAD
+		    mt->writeImage(imgfname, thr1);
+#endif
   }
   
   
   sprintf(imgfname,"%s/%s_ped.tiff",outdir,fformat);
-  mt->writePedestal(imgfname);
+#ifdef NOTHREAD
+    mt->writePedestals(imgfname);
+#endif
+#ifndef NOTHREAD
+    mt->writePedestal(imgfname);
+#endif
   sprintf(imgfname,"%s/%s_noise.tiff",outdir,fformat);
   mt->writePedestalRMS(imgfname);
 

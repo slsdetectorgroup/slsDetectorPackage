@@ -208,11 +208,11 @@ FILE *getFilePointer(){return det->getFilePointer();};
      return NULL;
    }
 
-   virtual int *getFlatField(int &nb, double emi, double ema){
+   virtual int *getFlatField(int &nb, int &nby, double emi, double ema){
      slsInterpolation *interp=(det)->getInterpolation();
      int *ff=NULL;
      if (interp) { 
-       ff=interp->getFlatField(nb,emi,ema);
+       ff=interp->getFlatField(nb,nby,emi,ema);
      }     
      return ff;
    }

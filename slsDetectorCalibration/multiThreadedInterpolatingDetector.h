@@ -28,8 +28,8 @@ public:
      return (dets[0])->getFlatField();
    }
    
-   virtual int *getFlatField(int &nb, double emi, double ema){
-     return (dets[0])->getFlatField(nb,emi,ema);
+   virtual int *getFlatField(int &nb, int &nby, double emi, double ema){
+     return (dets[0])->getFlatField(nb,nby,emi,ema);
    }
    
    virtual int *setFlatField(int *h=NULL, int nb=-1, double emin=1, double emax=0){

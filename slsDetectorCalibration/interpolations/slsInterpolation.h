@@ -172,7 +172,7 @@ class slsInterpolation
   virtual int *setFlatField(int *h, int nb=-1, double emin=-1, double emax=-1){return NULL;}; 
   virtual void *writeFlatField(const char * imgname){return NULL;};
   virtual void *readFlatField(const char * imgname, int nb=-1, double emin=1, double emax=0){return NULL;};
- virtual int *getFlatField(int &nb, double &emin, double &emax){nb=0; emin=0; emax=0; return getFlatField();}; 
+  virtual int *getFlatField(int &nb, int &nby, double &emin, double &emax){nb=0; nby=0; emin=0; emax=0; return getFlatField();}; 
 
  virtual void resetFlatField()=0;
 

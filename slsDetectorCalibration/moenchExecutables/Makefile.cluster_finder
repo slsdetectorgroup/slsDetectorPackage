@@ -8,7 +8,7 @@ LDFLAG= ../tiffIO.cpp -L/usr/lib64/ -lpthread -lm  -lstdc++   -pthread -lrt    -
 MAIN=moench03ClusterFinder.cpp
 
 
-all: moenchClusterFinder moenchMakeEta moenchMakeEta3 moenchInterpolation moenchInterpolation3 moenchNoInterpolation moenchPhotonCounter moenchAnalog
+all: moenchClusterFinder moenchMakeEta moenchMakeEta3 moenchInterpolation moenchInterpolation3 moenchNoInterpolation moenchPhotonCounter moenchAnalog moenchPhotonCounterNoThread  moenchAnalogNoThread 
 
 
 
@@ -49,7 +49,13 @@ moenchPhotonCounterHighZ: moenchPhotonCounter.cpp   $(INCS) clean
 moenchAnalogHighZ: moenchPhotonCounter.cpp  $(INCS) clean
 			 g++ -o moenchAnalogHighZ  moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWRECEIVER -DANALOG -DHIGHZ
 
+moenchAnalogNoThread : moenchPhotonCounterNoThread.cpp  $(INCS) clean
+			 g++ -o moenchAnalogNoThread   moenchPhotonCounterNoThread.cpp  $(LDFLAG) $(INCDIR)   -DNEWRECEIVER -DANALOG 
+
+moenchPhotonCounterNoThread : moenchPhotonCounterNoThread.cpp   $(INCS) clean
+			 g++ -o moenchPhotonCounterNoThread   moenchPhotonCounterNoThread.cpp  $(LDFLAG) $(INCDIR) $  -DNEWRECEIVER 
+
 clean: 	
-	rm -f  moenchClusterFinder moenchMakeEta moenchInterpolation moenchNoInterpolation moenchPhotonCounter moenchAnalog
+	rm -f  moenchClusterFinder moenchMakeEta moenchInterpolation moenchNoInterpolation moenchPhotonCounter moenchAnalog moenchPhotonCounterNoThread  moenchAnalogNoThread 
 
 

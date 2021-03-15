@@ -59,6 +59,16 @@ outputs:
     script: copy_lib.sh
 
     requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{compiler('cxx')}}
+        - libstdcxx-ng
+        - libgcc-ng
+        - zeromq
+
+      host:
+        - zeromq
+
       run: 
         - libstdcxx-ng
         - libgcc-ng
@@ -78,6 +88,8 @@ outputs:
 
       host:
         - python
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
+
 
       run:
         - libstdcxx-ng
@@ -94,6 +106,13 @@ outputs:
   - name: slsdetgui
     script: copy_gui.sh
     requirements:
+
+      build:
+        - {{ compiler('c') }}
+        - {{compiler('cxx')}}
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
+        - qwt 6.*
+
       run:
         - {{ pin_subpackage('slsdetlib', exact=True) }}
         - qwt 6.*

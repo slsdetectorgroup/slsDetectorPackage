@@ -18,23 +18,24 @@ set_target_properties(testserver PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     
 add_executable(tests ${SLS_TEST_SOURCES})
-target_link_libraries(tests 
-    slsProjectOptions
-    slsSupportShared
-    pthread
-    rt
+target_link_libraries(tests
+    PUBLIC 
+      slsProjectOptions
+      slsSupportShared
+      pthread
+      rt
     PRIVATE
       slsProjectWarnings
 )  
 
 if (SLS_USE_TEXTCLIENT)
-    target_link_libraries(tests
+    target_link_libraries(tests PUBLIC
         slsDetectorShared
     )
 endif (SLS_USE_TEXTCLIENT)
 
 if (SLS_USE_RECEIVER)
-    target_link_libraries(tests
+    target_link_libraries(tests PUBLIC
         slsReceiverShared
     )
 endif (SLS_USE_RECEIVER)

@@ -10,7 +10,6 @@ set(SOURCES
     src/ZmqSocket.cpp
     src/UdpRxSocket.cpp
     src/sls_detector_exceptions.cpp
-    # src/sls_detector_defs.cpp
 )
 
 # Header files to install as a part of the library
@@ -74,7 +73,6 @@ endif(SLS_USE_TESTS)
 
 # Add shared library version of the support lib
 add_library(slsSupportShared SHARED $<TARGET_OBJECTS:slsSupportObject>)
-
 target_link_libraries(slsSupportShared PUBLIC slsSupportObject)
 
 set_target_properties(slsSupportShared PROPERTIES
@@ -105,4 +103,5 @@ install(TARGETS slsSupportShared slsSupportStatic slsSupportObject
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sls
 )
+
 

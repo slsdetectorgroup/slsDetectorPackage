@@ -1,3 +1,3 @@
 #Copy the GUI 
-mkdir $PREFIX/bin
-cp build/bin/slsDetectorGui $PREFIX/bin/.
+mkdir -p $PREFIX/bin
+cp build/install/bin/slsDetectorGui $PREFIX/bin/.

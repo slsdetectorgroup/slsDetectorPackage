@@ -157,10 +157,20 @@ set(CMAKE_INSTALL_RPATH $ORIGIN)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 
-
-#From: https://github.com/zeromq/cppzmq/
+set(ZeroMQ_DIR "" CACHE STRING "Hint where ZeroMQ could be found")
+#Adapted from: https://github.com/zeromq/cppzmq/
 if (NOT TARGET libzmq)
-  find_package(ZeroMQ 4 QUIET)
+    if(ZeroMQ_DIR)
+        message("Looking for ZeroMQ in: ${ZeroMQ_DIR}")
+        find_package(ZeroMQ 4 
+            NO_DEFAULT_PATH
+            HINTS ${ZeroMQ_DIR}
+        )
+    else()
+        find_package(ZeroMQ 4)
+    endif()
+    
+
 
   # libzmq autotools install: fallback to pkg-config
   if(NOT ZeroMQ_FOUND)

@@ -157,11 +157,11 @@ set(CMAKE_INSTALL_RPATH $ORIGIN)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 
-set(ZeroMQ_DIR "" CACHE STRING "Hint where ZeroMQ could be found")
+set(ZeroMQ_HINT "" CACHE STRING "Hint where ZeroMQ could be found")
 #Adapted from: https://github.com/zeromq/cppzmq/
 if (NOT TARGET libzmq)
-    if(ZeroMQ_DIR)
-        message("Looking for ZeroMQ in: ${ZeroMQ_DIR}")
+    if(ZeroMQ_HINT)
+        message("Looking for ZeroMQ in: ${ZeroMQ_HINT}")
         find_package(ZeroMQ 4 
             NO_DEFAULT_PATH
             HINTS ${ZeroMQ_DIR}

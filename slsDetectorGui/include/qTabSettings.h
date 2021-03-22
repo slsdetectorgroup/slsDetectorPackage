@@ -14,6 +14,7 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
     void SetSettings(int index);
     void SetDynamicRange(int index);
     void SetThresholdEnergy(int index);
+    void SetThresholdEnergies();
 
   private:
     void SetupWidgetWindow();
@@ -23,6 +24,7 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
     void GetSettings();
     void GetDynamicRange();
     void GetThresholdEnergy();
+    void GetThresholdEnergies();
 
     sls::Detector *det;
     enum {

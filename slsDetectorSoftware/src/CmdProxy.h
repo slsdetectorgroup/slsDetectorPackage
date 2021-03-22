@@ -596,6 +596,8 @@ class CmdProxy {
         {"detectornumber", "serialnumber"},
         {"thisversion", "clientversion"},
         {"detsizechan", "detsize"},
+        {"trimdir", "settingspath"},
+        {"settingsdir", "settingspath"},
 
         /* acquisition parameters */
         {"cycles", "triggers"},
@@ -724,8 +726,6 @@ class CmdProxy {
         {"rx_datastream", "rx_zmqstream"},
 
         /* Eiger Specific */
-        {"trimdir", "settingspath"},
-        {"settingsdir", "settingspath"},
         {"resmat", "partialreset"},
 
         /* Jungfrau Specific */
@@ -774,8 +774,12 @@ class CmdProxy {
         {"detsize", &CmdProxy::DetectorSize},
         {"settingslist", &CmdProxy::settingslist},
         {"settings", &CmdProxy::settings},
+        {"threshold", &CmdProxy::Threshold},
+        {"thresholdnotb", &CmdProxy::Threshold},
+        {"settingspath", &CmdProxy::settingspath},
         {"trimbits", &CmdProxy::trimbits},
         {"trimval", &CmdProxy::trimval},
+        {"trimen", &CmdProxy::TrimEnergies},
         {"gappixels", &CmdProxy::GapPixels},
 
         /* acquisition parameters */
@@ -911,12 +915,8 @@ class CmdProxy {
         /* Eiger Specific */
         {"subexptime", &CmdProxy::subexptime},
         {"subdeadtime", &CmdProxy::subdeadtime},
-        {"threshold", &CmdProxy::Threshold},
-        {"thresholdnotb", &CmdProxy::ThresholdNoTb},
-        {"settingspath", &CmdProxy::settingspath},
         {"overflow", &CmdProxy::overflow},
         {"flippeddatax", &CmdProxy::flippeddatax},
-        {"trimen", &CmdProxy::TrimEnergies},
         {"ratecorr", &CmdProxy::RateCorrection},
         {"readnlines", &CmdProxy::readnlines},
         {"interruptsubframe", &CmdProxy::interruptsubframe},
@@ -1014,6 +1014,7 @@ class CmdProxy {
         /* Pattern */
         {"pattern", &CmdProxy::Pattern},
         {"savepattern", &CmdProxy::savepattern},
+        {"defaultpattern", &CmdProxy::defaultpattern},
         {"patioctrl", &CmdProxy::patioctrl},
         {"patword", &CmdProxy::PatternWord},
         {"patlimits", &CmdProxy::PatternLoopAddresses},
@@ -1081,6 +1082,8 @@ class CmdProxy {
     std::string PackageVersion(int action);
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
+    std::string Threshold(int action);
+    std::string TrimEnergies(int action);
     std::string GapPixels(int action);
     /* acquisition parameters */
     std::string Acquire(int action);
@@ -1112,9 +1115,6 @@ class CmdProxy {
     /* ZMQ Streaming Parameters (Receiver<->Client) */
     std::string ZMQHWM(int action);
     /* Eiger Specific */
-    std::string Threshold(int action);
-    std::string ThresholdNoTb(int action);
-    std::string TrimEnergies(int action);
     std::string RateCorrection(int action);
     std::string Activate(int action);
     std::string PulsePixel(int action);
@@ -1211,9 +1211,14 @@ class CmdProxy {
         "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
         "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
         "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
-        "\n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] "
-        "settings loaded from file found in settingspath. \n\t[Gotthard] Also "
-        "loads default dacs on to the detector.");
+        "\n\t[Mythen3] - [standard | fast | highgain] Also changes vrshaper "
+        "and vrpreamp. \n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] "
+        "threshold and settings loaded from file found in settingspath. "
+        "\n\t[Gotthard] Also loads default dacs on to the detector.");
+
+    STRING_COMMAND(settingspath, getSettingsPath, setSettingsPath,
+                   "[path]\n\t[Eiger][Mythen3] Directory where settings files "
+                   "are loaded from/to.");
 
     EXECUTE_SET_COMMAND_1ARG(
         trimbits, loadTrimbits,
@@ -1775,10 +1780,6 @@ class CmdProxy {
                  "of EIGER subframes in 32 bit mode. Subperiod = subexptime + "
                  "subdeadtime.");
 
-    STRING_COMMAND(
-        settingspath, getSettingsPath, setSettingsPath,
-        "[path]\n\t[Eiger] Directory where settings files are loaded from/to.");
-
     INTEGER_COMMAND_VEC_ID(
         overflow, getOverFlowMode, setOverFlowMode, StringTo<int>,
         "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in "
@@ -2062,6 +2063,11 @@ class CmdProxy {
         savepattern, savePattern,
         "[fname]\n\t[Ctb][Moench][Mythen3] Saves pattern to file (ascii). "
         "\n\t[Ctb][Moench] Also executes pattern.");
+
+    EXECUTE_SET_COMMAND(
+        defaultpattern, loadDefaultPattern,
+        "\n\t[Mythen3][Moench] Loads and runs default pattern in pattern "
+        "generator. It is to go back to initial settings.");
 
     INTEGER_COMMAND_HEX_WIDTH16(patioctrl, getPatternIOControl,
                                 setPatternIOControl, StringTo<uint64_t>,

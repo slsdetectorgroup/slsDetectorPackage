@@ -4,6 +4,8 @@ pybind11_add_module(_slsdet
     src/enums.cpp
     src/detector.cpp
     src/network.cpp
+    src/pattern.cpp
+    src/scan.cpp
 )
 
 target_link_libraries(_slsdet PUBLIC 
@@ -28,6 +30,7 @@ set( PYTHON_FILES
     enums.py
     errors.py
     gotthard.py
+    pattern.py
     gotthard2.py
     moench.py
     proxy.py

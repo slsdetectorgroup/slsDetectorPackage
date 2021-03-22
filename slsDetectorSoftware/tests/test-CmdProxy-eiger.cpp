@@ -319,80 +319,6 @@ TEST_CASE("subdeadtime", "[.cmd]") {
     }
 }
 
-TEST_CASE("threshold", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        auto prev_threshold = det.getThresholdEnergy();
-        auto prev_energies =
-            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
-        if (!prev_energies.empty()) {
-            std::ostringstream oss1, oss2;
-            proxy.Call("threshold", {"4500", "standard"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "threshold [4500, standard]\n");
-            proxy.Call("threshold", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "threshold 4500\n");
-            det.setTrimEnergies(prev_energies);
-            for (int i = 0; i != det.size(); ++i) {
-                if (prev_threshold[i] >= 0) {
-                    det.setThresholdEnergy(prev_threshold[i], defs::STANDARD,
-                                           true, {i});
-                }
-            }
-        }
-        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
-    } else {
-        REQUIRE_THROWS(proxy.Call("threshold", {}, -1, GET));
-    }
-}
-
-TEST_CASE("thresholdnotb", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        auto prev_threshold = det.getThresholdEnergy();
-        auto prev_energies =
-            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
-        if (!prev_energies.empty()) {
-            std::ostringstream oss1, oss2;
-            proxy.Call("thresholdnotb", {"4500 standard"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "thresholdnotb [4500 standard]\n");
-            proxy.Call("threshold", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "threshold 4500\n");
-            det.setTrimEnergies(prev_energies);
-            for (int i = 0; i != det.size(); ++i) {
-                if (prev_threshold[i] >= 0) {
-                    det.setThresholdEnergy(prev_threshold[i], defs::STANDARD,
-                                           false, {i});
-                }
-            }
-        }
-        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
-    } else {
-        REQUIRE_THROWS(proxy.Call("thresholdnotb", {}, -1, GET));
-    }
-}
-
-TEST_CASE("settingspath", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto prev_val = det.getSettingsPath();
-    {
-        std::ostringstream oss1, oss2;
-        proxy.Call("settingspath", {"/tmp"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "settingspath /tmp\n");
-        proxy.Call("settingspath", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "settingspath /tmp\n");
-    }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setSettingsPath(prev_val[i], {i});
-    }
-}
-
 TEST_CASE("overflow", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -432,27 +358,6 @@ TEST_CASE("flippeddatax", "[.cmd]") {
         }
     } else {
         REQUIRE_THROWS(proxy.Call("flippeddatax", {}, -1, GET));
-    }
-}
-
-TEST_CASE("trimen", "[.cmd][.this]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        auto previous = det.getTrimEnergies();
-        std::ostringstream oss1, oss2;
-        proxy.Call("trimen", {"4500", "5400", "6400"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "trimen [4500, 5400, 6400]\n");
-        proxy.Call("trimen", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "trimen [4500, 5400, 6400]\n");
-
-        for (int i = 0; i != det.size(); ++i) {
-            det.setTrimEnergies(previous[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("trimen", {"4500", "5400", "6400"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("trimen", {}, -1, GET));
     }
 }
 

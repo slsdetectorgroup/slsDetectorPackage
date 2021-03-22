@@ -409,9 +409,9 @@ void setupDetector() {
 
     // pll defines
     ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL,
-                              PLL_RESET_REG, PLL_RESET_REG,
-                              PLL_RESET_READOUT_MSK, PLL_RESET_SYSTEM_MSK,
-                              READOUT_PLL_VCO_FREQ_HZ, SYSTEM_PLL_VCO_FREQ_HZ);
+                              PLL_RESET_REG, PLL_RESET_READOUT_MSK,
+                              PLL_RESET_SYSTEM_MSK, READOUT_PLL_VCO_FREQ_HZ,
+                              SYSTEM_PLL_VCO_FREQ_HZ);
     ALTERA_PLL_C10_ResetPLL(READOUT_PLL);
     ALTERA_PLL_C10_ResetPLL(SYSTEM_PLL);
     // hv

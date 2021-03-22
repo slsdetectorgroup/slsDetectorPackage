@@ -1696,6 +1696,8 @@ class Detector(CppDetectorApi):
         To change settings as well or set threshold without trimbits, use setThresholdEnergy.
         :setter: It loads trim files from settingspath.
         """
+        if self.type == detectorType.MYTHEN3:
+            return self.getAllThresholdEnergy()
         return self.getThresholdEnergy()
 
     @threshold.setter

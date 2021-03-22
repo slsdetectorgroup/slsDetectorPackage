@@ -55,7 +55,7 @@ def generate_enum_string(enums):
         data.append('.export_values();\n\n')
     return ''.join(data)
 
-with open('../../slsSupportLib/include/sls_detector_defs.h') as f:
+with open('../../slsSupportLib/include/sls/sls_detector_defs.h') as f:
     data = f.read()
 
 data = remove_comments(data)

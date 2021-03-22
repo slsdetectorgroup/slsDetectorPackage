@@ -1,13 +1,13 @@
-SLS Detector Package 5.0.1 released on 25.11.2020 (Bug Fix Release)
+SLS Detector Package 5.1.0 released on 22.03.2020 (Minor Release)
 ===================================================================
 
-This document describes the differences between 5.0.1 and 5.0.0 releases.   
+This document describes the differences between 5.1.0 and 5.0.1 releases.   
 
 
 
     CONTENTS
     --------
-    1.  Topics Concerning
+    1.  New Features
     2.  Resolved Issues
     3.  Known Issues
     4.  Firmware Requirements
@@ -15,45 +15,62 @@ This document describes the differences between 5.0.1 and 5.0.0 releases.
 
 
 
-1. Topics Concerning
-====================
 
-    - Python bindings
-    - CMake improvements
+1. New Features
+===============
+
+    Client
+    ------
+
+    1. Added settings and threshold features for Mythen3.
+    2. Internal modification of acquire for Mythen3.
+    3. Added getMaster for Mythen3
+    4. Mythen3, API function to set pattern from memory
 
 
+    Mythen3 server
+    -----------------
+
+    1. Setting timing to auto, sets timing to trigger for slaves
+    
 
 2. Resolved Issues
 ==================
 
-    Python bindings
-    ---------------
 
-    1.  Fixed function signatures for getRxUDPSocketBufferSize, 
-        setRxUDPSocketBufferSize and getRxRealUDPSocketBufferSize. 
+    Receiver
+    --------
 
-    2.  Updated pybind11 to v2.6.1 to remove warnings with Python 3.9 and 
-        better handling of C++ standard. 
-
-    3.  Added missing properties in Python. 
+    1.  Current code only calls Implementation::setDetectorType from constructor, 
+	    but potential memory leak if called out of constructor context. Fixed.
 
 
-    CMake improvements
-    ------------------
+    Client
+    ------
 
-    1. Explicitly state Python 3.6 or greater.
+    1.  Fixed missing scanParameters class in Python 
 
-    2. Finds the Python of the activated environment when using conda 
-       without having to supply additional arguments.  
+    2.  cmk.sh refactored to have better option handling
 
-    3. Removed redundant libraries for linking targets. 
+    3.  Fixed hardcoded path accidentally ending up in the exported CMake package
+
+    Server
+    --------
+
+    1.  Bottom port not mirrored correctly for Eiger quad
+
+
 
 
 
 3. Firmware Requirements
 ========================
         
-    No updates from 5.0.0
+    Mythen3: 0x210201
+    Jungfrau: 0x210218 (1.0 pcb)
+              0x200721 (2.0 pcb, not changed)
+
+    Other detectors no updates from 5.0.0
 
 
 

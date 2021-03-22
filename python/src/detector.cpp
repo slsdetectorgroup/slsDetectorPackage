@@ -102,6 +102,34 @@ void init_det(py::module &m) {
              (void (Detector::*)(defs::detectorSettings, sls::Positions)) &
                  Detector::setSettings,
              py::arg(), py::arg() = Positions{})
+        .def("getThresholdEnergy",
+             (Result<int>(Detector::*)(sls::Positions) const) &
+                 Detector::getThresholdEnergy,
+             py::arg() = Positions{})
+        .def("getAllThresholdEnergy",
+             (Result<std::array<int, 3>>(Detector::*)(sls::Positions) const) &
+                 Detector::getAllThresholdEnergy,
+             py::arg() = Positions{})
+        .def("setThresholdEnergy",
+             (void (Detector::*)(int, defs::detectorSettings, bool,
+                                 sls::Positions)) &
+                 Detector::setThresholdEnergy,
+             py::arg(), py::arg() = defs::STANDARD, py::arg() = true,
+             py::arg() = Positions{})
+        .def("setThresholdEnergy",
+             (void (Detector::*)(std::array<int, 3>, defs::detectorSettings,
+                                 bool, sls::Positions)) &
+                 Detector::setThresholdEnergy,
+             py::arg(), py::arg() = defs::STANDARD, py::arg() = true,
+             py::arg() = Positions{})
+        .def("getSettingsPath",
+             (Result<std::string>(Detector::*)(sls::Positions) const) &
+                 Detector::getSettingsPath,
+             py::arg() = Positions{})
+        .def("setSettingsPath",
+             (void (Detector::*)(const std::string &, sls::Positions)) &
+                 Detector::setSettingsPath,
+             py::arg(), py::arg() = Positions{})
         .def("loadTrimbits",
              (void (Detector::*)(const std::string &, sls::Positions)) &
                  Detector::loadTrimbits,
@@ -113,6 +141,14 @@ void init_det(py::module &m) {
         .def("setAllTrimbits",
              (void (Detector::*)(int, sls::Positions)) &
                  Detector::setAllTrimbits,
+             py::arg(), py::arg() = Positions{})
+        .def("getTrimEnergies",
+             (Result<std::vector<int>>(Detector::*)(sls::Positions) const) &
+                 Detector::getTrimEnergies,
+             py::arg() = Positions{})
+        .def("setTrimEnergies",
+             (void (Detector::*)(std::vector<int>, sls::Positions)) &
+                 Detector::setTrimEnergies,
              py::arg(), py::arg() = Positions{})
         .def("getGapPixelsinCallback",
              (bool (Detector::*)() const) & Detector::getGapPixelsinCallback)
@@ -783,24 +819,6 @@ void init_det(py::module &m) {
              (void (Detector::*)(sls::ns, sls::Positions)) &
                  Detector::setSubDeadTime,
              py::arg(), py::arg() = Positions{})
-        .def("getThresholdEnergy",
-             (Result<int>(Detector::*)(sls::Positions) const) &
-                 Detector::getThresholdEnergy,
-             py::arg() = Positions{})
-        .def("setThresholdEnergy",
-             (void (Detector::*)(int, defs::detectorSettings, bool,
-                                 sls::Positions)) &
-                 Detector::setThresholdEnergy,
-             py::arg(), py::arg() = defs::STANDARD, py::arg() = true,
-             py::arg() = Positions{})
-        .def("getSettingsPath",
-             (Result<std::string>(Detector::*)(sls::Positions) const) &
-                 Detector::getSettingsPath,
-             py::arg() = Positions{})
-        .def("setSettingsPath",
-             (void (Detector::*)(const std::string &, sls::Positions)) &
-                 Detector::setSettingsPath,
-             py::arg(), py::arg() = Positions{})
         .def("getOverFlowMode",
              (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getOverFlowMode,
@@ -815,14 +833,6 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("setBottom",
              (void (Detector::*)(bool, sls::Positions)) & Detector::setBottom,
-             py::arg(), py::arg() = Positions{})
-        .def("getTrimEnergies",
-             (Result<std::vector<int>>(Detector::*)(sls::Positions) const) &
-                 Detector::getTrimEnergies,
-             py::arg() = Positions{})
-        .def("setTrimEnergies",
-             (void (Detector::*)(std::vector<int>, sls::Positions)) &
-                 Detector::setTrimEnergies,
              py::arg(), py::arg() = Positions{})
         .def("getRateCorrection",
              (Result<sls::ns>(Detector::*)(sls::Positions) const) &
@@ -1122,6 +1132,10 @@ void init_det(py::module &m) {
              (Result<std::array<ns, 3>>(Detector::*)(sls::Positions) const) &
                  Detector::getGateDelayForAllGates,
              py::arg() = Positions{})
+        .def("getMaster",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getMaster,
+             py::arg() = Positions{})
         .def("getNumberOfAnalogSamples",
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfAnalogSamples,
@@ -1271,9 +1285,17 @@ void init_det(py::module &m) {
              (void (Detector::*)(const std::string &, sls::Positions)) &
                  Detector::setPattern,
              py::arg(), py::arg() = Positions{})
+        .def("setPattern",
+             (void (Detector::*)(const sls::Pattern &, sls::Positions)) &
+                 Detector::setPattern,
+             py::arg(), py::arg() = Positions{})
         .def("savePattern",
              (void (Detector::*)(const std::string &)) & Detector::savePattern,
              py::arg())
+        .def("loadDefaultPattern",
+             (void (Detector::*)(sls::Positions)) &
+                 Detector::loadDefaultPattern,
+             py::arg() = Positions{})
         .def("getPatternIOControl",
              (Result<uint64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getPatternIOControl,

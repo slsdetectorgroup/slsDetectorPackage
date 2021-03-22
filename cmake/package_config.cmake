@@ -25,6 +25,12 @@ install(FILES
   DESTINATION ${CMAKE_INSTALL_DIR}
 )
 
+install(FILES
+  "${CMAKE_SOURCE_DIR}/libzmq-pkg-config/FindZeroMQ.cmake"
+  COMPONENT devel
+  DESTINATION ${CMAKE_INSTALL_DIR}/libzmq-pkg-config
+)
+
 if (PROJECT_LIBRARIES OR PROJECT_STATIC_LIBRARIES)
   install(
     EXPORT "${TARGETS_EXPORT_NAME}"

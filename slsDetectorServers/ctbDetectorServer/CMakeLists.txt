@@ -22,6 +22,7 @@ add_executable(ctbDetectorServer_virtual
 include_directories(
     ../slsDetectorServer/include
     ../../slsSupportLib/include
+    ../../slsDetectorSoftware/include/sls/
 )
 
 target_include_directories(ctbDetectorServer_virtual

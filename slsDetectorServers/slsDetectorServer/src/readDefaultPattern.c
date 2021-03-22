@@ -8,7 +8,6 @@
 #include <string.h>
 
 extern char initErrorMessage[MAX_STR_LENGTH];
-extern int initError;
 
 #ifndef MYTHEN3D
 extern uint64_t writePatternIOControl(uint64_t word);
@@ -19,11 +18,7 @@ extern uint64_t setPatternWaitTime(int level, uint64_t t);
 extern void setPatternLoop(int level, int *startAddr, int *stopAddr,
                            int *nLoop);
 
-int loadDefaultPattern(char *patFname) {
-    if (initError == FAIL) {
-        return initError;
-    }
-
+int loadDefaultPattern(char *patFname, char *errMessage) {
     char fname[128];
     if (getAbsPath(fname, 128, patFname) == FAIL) {
         return FAIL;
@@ -32,10 +27,8 @@ int loadDefaultPattern(char *patFname) {
     // open config file
     FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
-        sprintf(initErrorMessage, "Could not open pattern file [%s].\n",
-                patFname);
-        initError = FAIL;
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
+        sprintf(errMessage, "Could not open pattern file [%s].\n", patFname);
+        LOG(logERROR, ("%s\n\n", errMessage));
         return FAIL;
     }
     LOG(logINFOBLUE, ("Reading default pattern file %s\n", patFname));
@@ -100,7 +93,7 @@ int loadDefaultPattern(char *patFname) {
 #else
             if (sscanf(line, "%s 0x%x 0x%llx", command, &addr, &word) != 3) {
 #endif
-                sprintf(initErrorMessage,
+                sprintf(errMessage,
                         "Could not scan patword arguments from default "
                         "pattern file. Line:[%s].\n",
                         line);
@@ -123,7 +116,7 @@ int loadDefaultPattern(char *patFname) {
 #else
             if (sscanf(line, "%s 0x%llx", command, &arg) != 2) {
 #endif
-                sprintf(initErrorMessage,
+                sprintf(errMessage,
                         "Could not scan patioctrl arguments from default "
                         "pattern file. Line:[%s].\n",
                         line);
@@ -144,7 +137,7 @@ int loadDefaultPattern(char *patFname) {
             // cannot scan values
             if (sscanf(line, "%s 0x%x 0x%x", command, &startAddr, &stopAddr) !=
                 3) {
-                sprintf(initErrorMessage,
+                sprintf(errMessage,
                         "Could not scan patlimits arguments from default "
                         "pattern file. Line:[%s].\n",
                         line);
@@ -177,7 +170,7 @@ int loadDefaultPattern(char *patFname) {
             // cannot scan values
             if (sscanf(line, "%s 0x%x 0x%x", command, &startAddr, &stopAddr) !=
                 3) {
-                sprintf(initErrorMessage,
+                sprintf(errMessage,
                         "Could not scan patloop%d arguments from default "
                         "pattern file. Line:[%s].\n",
                         level, line);
@@ -208,7 +201,7 @@ int loadDefaultPattern(char *patFname) {
             int numLoops = -1;
             // cannot scan values
             if (sscanf(line, "%s %d", command, &numLoops) != 2) {
-                sprintf(initErrorMessage,
+                sprintf(errMessage,
                         "Could not scan patnloop%d arguments from default "
                         "pattern file. Line:[%s].\n",
                         level, line);
@@ -238,7 +231,7 @@ int loadDefaultPattern(char *patFname) {
             uint32_t addr = 0;
             // cannot scan values
             if (sscanf(line, "%s 0x%x", command, &addr) != 2) {
-                sprintf(initErrorMessage,
+                sprintf(errMessage,
                         "Could not scan patwait%d arguments from default "
                         "pattern file. Line:[%s].\n",
                         level, line);
@@ -273,7 +266,7 @@ int loadDefaultPattern(char *patFname) {
 #else
             if (sscanf(line, "%s %lld", command, &waittime) != 2) {
 #endif
-                sprintf(initErrorMessage,
+                sprintf(errMessage,
                         "Could not scan patwaittime%d arguments from default "
                         "pattern file. Line:[%s].\n",
                         level, line);
@@ -289,13 +282,12 @@ int loadDefaultPattern(char *patFname) {
     }
     fclose(fd);
 
-    if (strlen(initErrorMessage)) {
-        initError = FAIL;
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
-    } else {
-        LOG(logINFOBLUE, ("Successfully read default pattern file\n"));
+    if (strlen(errMessage)) {
+        LOG(logERROR, ("%s\n\n", errMessage));
+        return FAIL;
     }
-    return initError;
+    LOG(logINFOBLUE, ("Successfully read default pattern file\n"));
+    return OK;
 }
 
 int default_writePatternWord(char *line, uint32_t addr, uint64_t word) {

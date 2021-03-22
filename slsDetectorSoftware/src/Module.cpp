@@ -2,6 +2,7 @@
 #include "SharedMemory.h"
 #include "sls/ClientSocket.h"
 #include "sls/ToString.h"
+#include "sls/bit_utils.h"
 #include "sls/container_utils.h"
 #include "sls/file_utils.h"
 #include "sls/network_utils.h"
@@ -9,7 +10,6 @@
 #include "sls/sls_detector_funcs.h"
 #include "sls/string_utils.h"
 #include "sls/versionAPI.h"
-
 #include <algorithm>
 #include <array>
 #include <bitset>
@@ -152,16 +152,269 @@ void Module::setSettings(detectorSettings isettings) {
     sendToDetector<int>(F_SET_SETTINGS, isettings);
 }
 
+int Module::getThresholdEnergy() const {
+    return sendToDetector<int>(F_GET_THRESHOLD_ENERGY);
+}
+
+std::array<int, 3> Module::getAllThresholdEnergy() const {
+    return sendToDetector<std::array<int, 3>>(F_GET_ALL_THRESHOLD_ENERGY);
+}
+
+void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
+                                bool trimbits) {
+
+    // verify e_eV exists in trimEneregies[]
+    if (shm()->trimEnergies.empty() || (e_eV < shm()->trimEnergies.front()) ||
+        (e_eV > shm()->trimEnergies.back())) {
+        throw RuntimeError("This energy " + std::to_string(e_eV) +
+                           " not defined for this module!");
+    }
+    bool interpolate =
+        std::all_of(shm()->trimEnergies.begin(), shm()->trimEnergies.end(),
+                    [e_eV](const int &e) { return e != e_eV; });
+
+    sls_detector_module myMod{shm()->myDetectorType};
+
+    if (!interpolate) {
+        std::string settingsfname = getTrimbitFilename(isettings, e_eV);
+        LOG(logDEBUG1) << "Settings File is " << settingsfname;
+        myMod = readSettingsFile(settingsfname, trimbits);
+    } else {
+        // find the trim values
+        int trim1 = -1, trim2 = -1;
+        for (size_t i = 0; i < shm()->trimEnergies.size(); ++i) {
+            if (e_eV < shm()->trimEnergies[i]) {
+                trim2 = shm()->trimEnergies[i];
+                trim1 = shm()->trimEnergies[i - 1];
+                break;
+            }
+        }
+        std::string settingsfname1 = getTrimbitFilename(isettings, trim1);
+        std::string settingsfname2 = getTrimbitFilename(isettings, trim2);
+        LOG(logDEBUG1) << "Settings Files are " << settingsfname1 << " and "
+                       << settingsfname2;
+        auto myMod1 = readSettingsFile(settingsfname1, trimbits);
+        auto myMod2 = readSettingsFile(settingsfname2, trimbits);
+        if (myMod1.iodelay != myMod2.iodelay) {
+            throw RuntimeError("setThresholdEnergyAndSettings: Iodelays do not "
+                               "match between files");
+        }
+        myMod = interpolateTrim(&myMod1, &myMod2, e_eV, trim1, trim2, trimbits);
+        myMod.iodelay = myMod1.iodelay;
+        myMod.tau =
+            linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
+    }
+
+    myMod.reg = isettings;
+    myMod.eV[0] = e_eV;
+    setModule(myMod, trimbits);
+    if (getSettings() != isettings) {
+        throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
+                           "settings in detector");
+    }
+
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_THRESHOLD, e_eV, nullptr);
+    }
+}
+
+void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
+                                   detectorSettings isettings, bool trimbits) {
+    if (shm()->trimEnergies.empty()) {
+        throw RuntimeError(
+            "Trim energies have not been defined for this module yet!");
+    }
+
+    auto counters = getSetBits(getCounterMask());
+    enum mythen3_DacIndex {
+        M_VCASSH,
+        M_VTH2,
+        M_VRSHAPER,
+        M_VRSHAPER_N,
+        M_VIPRE_OUT,
+        M_VTH3,
+        M_VTH1,
+        M_VICIN,
+        M_VCAS,
+        M_VRPREAMP,
+        M_VCAL_N,
+        M_VIPRE,
+        M_VISHAPER,
+        M_VCAL_P,
+        M_VTRIM,
+        M_VDCSH
+    };
+
+    std::vector<sls_detector_module> myMods{shm()->myDetectorType};
+    std::vector<int> energy(e_eV.begin(), e_eV.end());
+    // if all energies are same
+    if (allEqualTo(energy, energy[0])) {
+        energy.resize(1);
+    }
+    myMods.resize(energy.size());
+
+    // for each threshold
+    for (size_t i = 0; i < energy.size(); ++i) {
+        // don't interpolate
+        if (shm()->trimEnergies.anyEqualTo(energy[i])) {
+            std::string settingsfname =
+                getTrimbitFilename(isettings, energy[i]);
+            LOG(logDEBUG1) << "Settings File is " << settingsfname;
+            myMods[i] = readSettingsFile(settingsfname, trimbits);
+        }
+        // interpolate
+        else {
+            if (shm()->trimEnergies.size() < 2) {
+                throw RuntimeError(
+                    "Cannot interpolate with less than 2 trim energies");
+            }
+            // find the trim values
+            int trim1 = -1, trim2 = -1;
+            if (energy[i] < shm()->trimEnergies[0]) {
+                trim1 = shm()->trimEnergies[0];
+                trim2 = shm()->trimEnergies[1];
+            } else if (energy[i] >
+                       shm()->trimEnergies[shm()->trimEnergies.size() - 1]) {
+                trim1 = shm()->trimEnergies[shm()->trimEnergies.size() - 2];
+                trim2 = shm()->trimEnergies[shm()->trimEnergies.size() - 1];
+            } else {
+                for (size_t j = 0; j < shm()->trimEnergies.size(); ++j) {
+                    // std::cout << "checking " << energy[i] << " and  "
+                    //         << shm()->trimEnergies[j] << std::endl;
+                    if (energy[i] < shm()->trimEnergies[j]) {
+                        trim1 = shm()->trimEnergies[j - 1];
+                        trim2 = shm()->trimEnergies[j];
+                        break;
+                    }
+                }
+            }
+            LOG(logINFO) << "e_eV:" << energy[i] << " [" << trim1 << ", "
+                         << trim2 << "]";
+
+            std::string settingsfname1 = getTrimbitFilename(isettings, trim1);
+            std::string settingsfname2 = getTrimbitFilename(isettings, trim2);
+            LOG(logDEBUG1) << "Settings Files are " << settingsfname1 << " and "
+                           << settingsfname2;
+            auto myMod1 = readSettingsFile(settingsfname1, trimbits);
+            auto myMod2 = readSettingsFile(settingsfname2, trimbits);
+
+            myMods[i] = interpolateTrim(&myMod1, &myMod2, energy[i], trim1,
+                                        trim2, trimbits);
+        }
+    }
+
+    sls_detector_module myMod{shm()->myDetectorType};
+    myMod = myMods[0];
+
+    // if multiple thresholds, combine
+    if (myMods.size() > 1) {
+
+        // average vtrim of enabled counters
+        int sum = 0;
+        for (size_t i = 0; i < counters.size(); ++i) {
+            sum += myMods[counters[i]].dacs[M_VTRIM];
+        }
+        myMod.dacs[M_VTRIM] = sum / counters.size();
+
+        // copy vth1, vth2 and vth3 from the correct threshold mods
+        myMod.dacs[M_VTH1] = myMods[0].dacs[M_VTH1];
+        myMod.dacs[M_VTH2] = myMods[1].dacs[M_VTH2];
+        myMod.dacs[M_VTH3] = myMods[2].dacs[M_VTH3];
+
+        // check if dacs are different
+        for (size_t j = 0; j < 16; ++j) {
+            if (j == M_VTRIM || j == M_VTH1 || j == M_VTH2 || j == M_VTH3)
+                continue;
+
+            if (myMods[0].dacs[j] != myMods[1].dacs[j]) {
+                throw RuntimeError("Dac Index " + std::to_string(j) +
+                                   " differs for threshold[0]:[" +
+                                   std::to_string(myMods[0].dacs[j]) +
+                                   "] and threshold[1]:" +
+                                   std::to_string(myMods[1].dacs[j]) + "]");
+            }
+            if (myMods[1].dacs[j] != myMods[2].dacs[j]) {
+                throw RuntimeError("Dac Index " + std::to_string(j) +
+                                   " differs for threshold[1]:[" +
+                                   std::to_string(myMods[1].dacs[j]) +
+                                   "] and threshold[2]:" +
+                                   std::to_string(myMods[2].dacs[j]) + "]");
+            }
+        }
+
+        // replace correct trim values (interleaved)
+        for (int i = 0; i < myMod.nchan; ++i) {
+            myMod.chanregs[i] = myMods[i % 3].chanregs[i];
+        }
+    }
+
+    myMod.reg = isettings;
+    std::copy(e_eV.begin(), e_eV.end(), myMod.eV);
+    LOG(logDEBUG) << "ev:" << ToString(myMod.eV);
+
+    //check for trimbits that are out of range 
+    bool out_of_range = false;
+    for(int i = 0; i!=myMod.nchan; ++i){
+        if (myMod.chanregs[i]<0){
+            myMod.chanregs[i] = 0;
+            out_of_range = true;
+        }else if(myMod.chanregs[i]>63){
+            myMod.chanregs[i]=63;
+            out_of_range = true;
+        }
+    }
+    if (out_of_range){
+            LOG(logWARNING) << "Some trimbits were out of range after interpolation, these have been replaced with 0 or 63.";
+    }
+
+    //check dacs
+    out_of_range = false;
+    for (auto dac : {M_VTRIM,M_VTH1,M_VTH2, M_VTH3}){
+        if (myMod.dacs[dac] < 600){
+            myMod.dacs[dac] = 600;
+            out_of_range = true;
+        }else if(myMod.dacs[dac] > 2400){
+            myMod.dacs[dac] = 2400;
+            out_of_range = true;
+        }
+    }
+    if (out_of_range){
+            LOG(logWARNING) << "Some dacs were out of range after interpolation, these have been replaced with 600 or 2400.";
+    }
+
+
+    setModule(myMod, trimbits);
+    if (getSettings() != isettings) {
+        throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
+                           "settings in detector");
+    }
+
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_ALL_THRESHOLD, e_eV, nullptr);
+    }
+}
+
+std::string Module::getSettingsDir() const {
+    return std::string(shm()->settingsDir);
+}
+
+std::string Module::setSettingsDir(const std::string &dir) {
+    sls::strcpy_safe(shm()->settingsDir, dir.c_str());
+    return shm()->settingsDir;
+}
+
 void Module::loadSettingsFile(const std::string &fname) {
     // find specific file if it has detid in file name (.snxxx)
     if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
         std::ostringstream ostfn;
         ostfn << fname;
-        if (fname.find(".sn") == std::string::npos &&
-            fname.find(".trim") == std::string::npos &&
-            fname.find(".settings") == std::string::npos) {
-            ostfn << ".sn" << std::setfill('0') << std::setw(3) << std::dec
-                  << getSerialNumber();
+        int serialNumberWidth = 3;
+        if (shm()->myDetectorType == MYTHEN3) {
+            serialNumberWidth = 4;
+        }
+        if (fname.find(".sn") == std::string::npos) {
+            ostfn << ".sn" << std::setfill('0') << std::setw(serialNumberWidth)
+                  << std::dec << getSerialNumber();
         }
         auto myMod = readSettingsFile(ostfn.str());
         setModule(myMod);
@@ -176,6 +429,30 @@ int Module::getAllTrimbits() const {
 
 void Module::setAllTrimbits(int val) {
     sendToDetector<int>(F_SET_ALL_TRIMBITS, val);
+}
+
+std::vector<int> Module::getTrimEn() const {
+    if (shm()->myDetectorType != EIGER && shm()->myDetectorType != MYTHEN3) {
+        throw RuntimeError("getTrimEn not implemented for this detector.");
+    }
+    return std::vector<int>(shm()->trimEnergies.begin(),
+                            shm()->trimEnergies.end());
+}
+
+int Module::setTrimEn(const std::vector<int> &energies) {
+    if (shm()->myDetectorType != EIGER && shm()->myDetectorType != MYTHEN3) {
+        throw RuntimeError("setTrimEn not implemented for this detector.");
+    }
+    if (energies.size() > MAX_TRIMEN) {
+        std::ostringstream os;
+        os << "Size of trim energies: " << energies.size()
+           << " exceeds what can be stored in shared memory: " << MAX_TRIMEN
+           << "\n";
+        throw RuntimeError(os.str());
+    }
+    shm()->trimEnergies = energies;
+    std::sort(shm()->trimEnergies.begin(), shm()->trimEnergies.end());
+    return shm()->trimEnergies.size();
 }
 
 bool Module::isVirtualDetectorServer() const {
@@ -1095,33 +1372,6 @@ void Module::setSubDeadTime(int64_t value) {
     }
 }
 
-int Module::getThresholdEnergy() const {
-    return sendToDetector<int>(F_GET_THRESHOLD_ENERGY);
-}
-
-void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
-                                bool trimbits) {
-    // check as there is client processing
-    if (shm()->myDetectorType == EIGER) {
-        setThresholdEnergyAndSettings(e_eV, isettings, trimbits);
-        if (shm()->useReceiverFlag) {
-            sendToReceiver(F_RECEIVER_SET_THRESHOLD, e_eV, nullptr);
-        }
-    } else {
-        throw RuntimeError(
-            "Set threshold energy not implemented for this detector");
-    }
-}
-
-std::string Module::getSettingsDir() const {
-    return std::string(shm()->settingsDir);
-}
-
-std::string Module::setSettingsDir(const std::string &dir) {
-    sls::strcpy_safe(shm()->settingsDir, dir.c_str());
-    return shm()->settingsDir;
-}
-
 bool Module::getOverFlowMode() const {
     return sendToDetector<int>(F_GET_OVERFLOW_MODE);
 }
@@ -1136,29 +1386,6 @@ bool Module::getFlippedDataX() const {
 
 void Module::setFlippedDataX(bool value) {
     sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER, static_cast<int>(value));
-}
-
-std::vector<int> Module::getTrimEn() const {
-    if (shm()->myDetectorType != EIGER) {
-        throw RuntimeError("getTrimEn not implemented for this detector.");
-    }
-    return std::vector<int>(shm()->trimEnergies.begin(),
-                            shm()->trimEnergies.end());
-}
-
-int Module::setTrimEn(const std::vector<int> &energies) {
-    if (shm()->myDetectorType != EIGER) {
-        throw RuntimeError("setTrimEn not implemented for this detector.");
-    }
-    if (energies.size() > MAX_TRIMEN) {
-        std::ostringstream os;
-        os << "Size of trim energies: " << energies.size()
-           << " exceeds what can be stored in shared memory: " << MAX_TRIMEN
-           << "\n";
-        throw RuntimeError(os.str());
-    }
-    shm()->trimEnergies = energies;
-    return shm()->trimEnergies.size();
 }
 
 int64_t Module::getRateCorrection() const {
@@ -1767,6 +1994,10 @@ std::array<time::ns, 3> Module::getGateDelayForAllGates() const {
     return sendToDetector<std::array<time::ns, 3>>(F_GET_GATE_DELAY_ALL_GATES);
 }
 
+bool Module::isMaster() const{
+    return sendToDetector<int>(F_GET_MASTER);
+}
+
 // CTB / Moench Specific
 int Module::getNumberOfAnalogSamples() const {
     return sendToDetector<int>(F_GET_NUM_ANALOG_SAMPLES);
@@ -1913,107 +2144,17 @@ void Module::setLEDEnable(bool enable) {
 
 // Pattern
 
-void Module::setPattern(const std::string &fname) {
-    auto pat = sls::make_unique<patternParameters>();
-    std::ifstream input_file(fname);
-    if (!input_file) {
-        throw RuntimeError("Could not open pattern file " + fname +
-                           " for reading");
-    }
-    for (std::string line; std::getline(input_file, line);) {
-        if (line.find('#') != std::string::npos) {
-            line.erase(line.find('#'));
-        }
-        LOG(logDEBUG1) << "line after removing comments:\n\t" << line;
-        if (line.length() > 1) {
-
-            // convert command and string to a vector
-            std::istringstream iss(line);
-            auto it = std::istream_iterator<std::string>(iss);
-            std::vector<std::string> args = std::vector<std::string>(
-                it, std::istream_iterator<std::string>());
-
-            std::string cmd = args[0];
-            int nargs = args.size() - 1;
-
-            if (cmd == "patword") {
-                if (nargs != 2) {
-                    throw RuntimeError("Invalid arguments for " +
-                                       ToString(args));
-                }
-                uint32_t addr = StringTo<uint32_t>(args[1]);
-                if (addr >= MAX_PATTERN_LENGTH) {
-                    throw RuntimeError("Invalid address for " + ToString(args));
-                }
-                pat->word[addr] = StringTo<uint64_t>(args[2]);
-            } else if (cmd == "patioctrl") {
-                if (nargs != 1) {
-                    throw RuntimeError("Invalid arguments for " +
-                                       ToString(args));
-                }
-                pat->patioctrl = StringTo<uint64_t>(args[1]);
-            } else if (cmd == "patlimits") {
-                if (nargs != 2) {
-                    throw RuntimeError("Invalid arguments for " +
-                                       ToString(args));
-                }
-                pat->patlimits[0] = StringTo<uint32_t>(args[1]);
-                pat->patlimits[1] = StringTo<uint32_t>(args[2]);
-                if (pat->patlimits[0] >= MAX_PATTERN_LENGTH ||
-                    pat->patlimits[1] >= MAX_PATTERN_LENGTH) {
-                    throw RuntimeError("Invalid address for " + ToString(args));
-                }
-            } else if (cmd == "patloop0" || cmd == "patloop1" ||
-                       cmd == "patloop2") {
-                if (nargs != 2) {
-                    throw RuntimeError("Invalid arguments for " +
-                                       ToString(args));
-                }
-                int level = cmd[cmd.find_first_of("012")] - '0';
-                int patloop1 = StringTo<uint32_t>(args[1]);
-                int patloop2 = StringTo<uint32_t>(args[2]);
-                pat->patloop[level * 2 + 0] = patloop1;
-                pat->patloop[level * 2 + 1] = patloop2;
-                if (patloop1 >= MAX_PATTERN_LENGTH ||
-                    patloop2 >= MAX_PATTERN_LENGTH) {
-                    throw RuntimeError("Invalid address for " + ToString(args));
-                }
-            } else if (cmd == "patnloop0" || cmd == "patnloop1" ||
-                       cmd == "patnloop2") {
-                if (nargs != 1) {
-                    throw RuntimeError("Invalid arguments for " +
-                                       ToString(args));
-                }
-                int level = cmd[cmd.find_first_of("012")] - '0';
-                pat->patnloop[level] = StringTo<uint32_t>(args[1]);
-            } else if (cmd == "patwait0" || cmd == "patwait1" ||
-                       cmd == "patwait2") {
-                if (nargs != 1) {
-                    throw RuntimeError("Invalid arguments for " +
-                                       ToString(args));
-                }
-                int level = cmd[cmd.find_first_of("012")] - '0';
-                pat->patwait[level] = StringTo<uint32_t>(args[1]);
-                if (pat->patwait[level] >= MAX_PATTERN_LENGTH) {
-                    throw RuntimeError("Invalid address for " + ToString(args));
-                }
-            } else if (cmd == "patwaittime0" || cmd == "patwaittime1" ||
-                       cmd == "patwaittime2") {
-                if (nargs != 1) {
-                    throw RuntimeError("Invalid arguments for " +
-                                       ToString(args));
-                }
-                int level = cmd[cmd.find_first_of("012")] - '0';
-                pat->patwaittime[level] = StringTo<uint64_t>(args[1]);
-            } else {
-                throw RuntimeError("Unknown command in pattern file " + cmd);
-            }
-        }
-    }
-    LOG(logDEBUG1) << "Sending pattern from file to detector:" << *pat;
-    sendToDetector(F_SET_PATTERN, pat.get(), sizeof(patternParameters), nullptr,
-                   0);
+void Module::setPattern(const Pattern &pat) {
+    sendToDetector(F_SET_PATTERN, pat.data(), pat.size(), nullptr, 0);
 }
+
+Pattern Module::getPattern() {
+    Pattern pat;
+    sendToDetector(F_GET_PATTERN, nullptr, 0, pat.data(), pat.size());
+    return pat;
+}
+
+void Module::loadDefaultPattern() { sendToDetector(F_LOAD_DEFAULT_PATTERN); }
 
 uint64_t Module::getPatternIOControl() const {
     return sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL,
@@ -2839,9 +2980,9 @@ int Module::sendModule(sls_detector_module *myMod, sls::ClientSocket &client) {
     ts += n;
     LOG(level) << "tau sent. " << n << " bytes. tau: " << myMod->tau;
 
-    n = client.Send(&(myMod->eV), sizeof(myMod->eV));
+    n = client.Send(myMod->eV, sizeof(myMod->eV));
     ts += n;
-    LOG(level) << "ev sent. " << n << " bytes. ev: " << myMod->eV;
+    LOG(level) << "ev sent. " << n << " bytes. ev: " << ToString(myMod->eV);
 
     n = client.Send(myMod->dacs, sizeof(int) * (myMod->ndac));
     ts += n;
@@ -2889,68 +3030,12 @@ void Module::updateRateCorrection() {
     sendToDetector(F_UPDATE_RATE_CORRECTION);
 }
 
-void Module::setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
-                                           bool trimbits) {
-
-    // verify e_eV exists in trimEneregies[]
-    if (shm()->trimEnergies.empty() || (e_eV < shm()->trimEnergies.front()) ||
-        (e_eV > shm()->trimEnergies.back())) {
-        throw RuntimeError("This energy " + std::to_string(e_eV) +
-                           " not defined for this module!");
-    }
-
-    bool interpolate =
-        std::all_of(shm()->trimEnergies.begin(), shm()->trimEnergies.end(),
-                    [e_eV](const int &e) { return e != e_eV; });
-
-    sls_detector_module myMod{shm()->myDetectorType};
-
-    if (!interpolate) {
-        std::string settingsfname = getTrimbitFilename(isettings, e_eV);
-        LOG(logDEBUG1) << "Settings File is " << settingsfname;
-        myMod = readSettingsFile(settingsfname, trimbits);
-    } else {
-        // find the trim values
-        int trim1 = -1, trim2 = -1;
-        for (size_t i = 0; i < shm()->trimEnergies.size(); ++i) {
-            if (e_eV < shm()->trimEnergies[i]) {
-                trim2 = shm()->trimEnergies[i];
-                trim1 = shm()->trimEnergies[i - 1];
-                break;
-            }
-        }
-        std::string settingsfname1 = getTrimbitFilename(isettings, trim1);
-        std::string settingsfname2 = getTrimbitFilename(isettings, trim2);
-        LOG(logDEBUG1) << "Settings Files are " << settingsfname1 << " and "
-                       << settingsfname2;
-        auto myMod1 = readSettingsFile(settingsfname1, trimbits);
-        auto myMod2 = readSettingsFile(settingsfname2, trimbits);
-        if (myMod1.iodelay != myMod2.iodelay) {
-            throw RuntimeError("setThresholdEnergyAndSettings: Iodelays do not "
-                               "match between files");
-        }
-        myMod = interpolateTrim(&myMod1, &myMod2, e_eV, trim1, trim2, trimbits);
-        myMod.iodelay = myMod1.iodelay;
-        myMod.tau =
-            linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
-    }
-
-    myMod.reg = isettings;
-    myMod.eV = e_eV;
-    setModule(myMod, trimbits);
-    if (getSettings() != isettings) {
-        throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
-                           "settings in detector");
-    }
-}
-
 sls_detector_module Module::interpolateTrim(sls_detector_module *a,
                                             sls_detector_module *b,
                                             const int energy, const int e1,
                                             const int e2, bool trimbits) {
-
-    // only implemented for eiger currently (in terms of which dacs)
-    if (shm()->myDetectorType != EIGER) {
+    // dacs specified only for eiger and mythen3
+    if (shm()->myDetectorType != EIGER && shm()->myDetectorType != MYTHEN3) {
         throw NotImplementedError(
             "Interpolation of Trim values not implemented for this detector!");
     }
@@ -2974,36 +3059,72 @@ sls_detector_module Module::interpolateTrim(sls_detector_module *a,
         E_VCN,
         E_VIS
     };
+    enum mythen3_DacIndex {
+        M_VCASSH,
+        M_VTH2,
+        M_VRSHAPER,
+        M_VRSHAPER_N,
+        M_VIPRE_OUT,
+        M_VTH3,
+        M_VTH1,
+        M_VICIN,
+        M_VCAS,
+        M_VRPREAMP,
+        M_VCAL_N,
+        M_VIPRE,
+        M_VISHAPER,
+        M_VCAL_P,
+        M_VTRIM,
+        M_VDCSH
+    };
 
-    // Copy other dacs
-    int dacs_to_copy[] = {E_SVP,    E_VTR,    E_SVN, E_VTGSTV,
-                          E_RXB_RB, E_RXB_LB, E_VCN, E_VIS};
-    int num_dacs_to_copy = sizeof(dacs_to_copy) / sizeof(dacs_to_copy[0]);
-    for (int i = 0; i < num_dacs_to_copy; ++i) {
+    // create copy and interpolate dac lists
+    std::vector<int> dacs_to_copy, dacs_to_interpolate;
+    if (shm()->myDetectorType == EIGER) {
+        dacs_to_copy.insert(
+            dacs_to_copy.end(),
+            {E_SVP, E_VTR, E_SVN, E_VTGSTV, E_RXB_RB, E_RXB_LB, E_VCN, E_VIS});
+        // interpolate vrf, vcmp, vcp
+        dacs_to_interpolate.insert(
+            dacs_to_interpolate.end(),
+            {E_VRF, E_VCMP_LL, E_VCMP_LR, E_VCMP_RL, E_VCMP_RR, E_VCP, E_VRS});
+    } else {
+        dacs_to_copy.insert(dacs_to_copy.end(),
+                            {M_VCASSH, M_VRSHAPER, M_VRSHAPER_N, M_VIPRE_OUT,
+                             M_VICIN, M_VCAS, M_VRPREAMP, M_VCAL_N, M_VIPRE,
+                             M_VISHAPER, M_VCAL_P, M_VDCSH});
+        // interpolate vtrim, vth1, vth2, vth3
+        dacs_to_interpolate.insert(dacs_to_interpolate.end(),
+                                   {M_VTH1, M_VTH2, M_VTH3, M_VTRIM});
+    }
+
+    // Copy Dacs
+    for (size_t i = 0; i < dacs_to_copy.size(); ++i) {
         if (a->dacs[dacs_to_copy[i]] != b->dacs[dacs_to_copy[i]]) {
-            throw RuntimeError("Interpolate module: dacs different");
+            throw RuntimeError("Interpolate module: dacs " + std::to_string(i) +
+                               " different");
         }
         myMod.dacs[dacs_to_copy[i]] = a->dacs[dacs_to_copy[i]];
     }
 
-    // Copy irrelevant dacs (without failing): CAL
-    if (a->dacs[E_CAL] != b->dacs[E_CAL]) {
-        LOG(logWARNING) << "DAC CAL differs in both energies ("
-                        << a->dacs[E_CAL] << "," << b->dacs[E_CAL]
-                        << ")!\nTaking first: " << a->dacs[E_CAL];
-    }
-    myMod.dacs[E_CAL] = a->dacs[E_CAL];
-
-    // Interpolate vrf, vcmp, vcp
-    int dacs_to_interpolate[] = {E_VRF,     E_VCMP_LL, E_VCMP_LR, E_VCMP_RL,
-                                 E_VCMP_RR, E_VCP,     E_VRS};
-    int num_dacs_to_interpolate =
-        sizeof(dacs_to_interpolate) / sizeof(dacs_to_interpolate[0]);
-    for (int i = 0; i < num_dacs_to_interpolate; ++i) {
+    // Interpolate Dacs
+    for (size_t i = 0; i < dacs_to_interpolate.size(); ++i) {
         myMod.dacs[dacs_to_interpolate[i]] =
             linearInterpolation(energy, e1, e2, a->dacs[dacs_to_interpolate[i]],
                                 b->dacs[dacs_to_interpolate[i]]);
     }
+
+    // Copy irrelevant dacs (without failing)
+    if (shm()->myDetectorType == EIGER) {
+        // CAL
+        if (a->dacs[E_CAL] != b->dacs[E_CAL]) {
+            LOG(logWARNING)
+                << "DAC CAL differs in both energies (" << a->dacs[E_CAL] << ","
+                << b->dacs[E_CAL] << ")!\nTaking first: " << a->dacs[E_CAL];
+        }
+        myMod.dacs[E_CAL] = a->dacs[E_CAL];
+    }
+
     // Interpolate all trimbits
     if (trimbits) {
         for (int i = 0; i < myMod.nchan; ++i) {
@@ -3019,6 +3140,9 @@ std::string Module::getTrimbitFilename(detectorSettings s, int e_eV) {
     switch (s) {
     case STANDARD:
         ssettings = "/standard";
+        break;
+    case FAST:
+        ssettings = "/fast";
         break;
     case HIGHGAIN:
         ssettings = "/highgain";
@@ -3038,8 +3162,20 @@ std::string Module::getTrimbitFilename(detectorSettings s, int e_eV) {
         throw RuntimeError(ss.str());
     }
     std::ostringstream ostfn;
-    ostfn << shm()->settingsDir << ssettings << "/" << e_eV << "eV"
-          << "/noise.sn" << std::setfill('0') << std::setw(3) << std::dec
+    ostfn << shm()->settingsDir << ssettings << "/" << e_eV << "eV";
+    if (shm()->myDetectorType == EIGER) {
+        ostfn << "/noise.sn";
+    } else if (shm()->myDetectorType == MYTHEN3) {
+        ostfn << "/trim.sn";
+    } else {
+        throw RuntimeError(
+            "Settings or trimbit files not defined for this detector.");
+    }
+    int serialNumberWidth = 3;
+    if (shm()->myDetectorType == MYTHEN3) {
+        serialNumberWidth = 4;
+    }
+    ostfn << std::setfill('0') << std::setw(serialNumberWidth) << std::dec
           << getSerialNumber() << std::setbase(10);
     return ostfn.str();
 }
@@ -3066,6 +3202,11 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
         infile.read(reinterpret_cast<char *>(&myMod.iodelay),
                     sizeof(myMod.iodelay));
         infile.read(reinterpret_cast<char *>(&myMod.tau), sizeof(myMod.tau));
+        for (int i = 0; i < myMod.ndac; ++i) {
+            LOG(logDEBUG1) << "dac " << i << ":" << myMod.dacs[i];
+        }
+        LOG(logDEBUG1) << "iodelay:" << myMod.iodelay;
+        LOG(logDEBUG1) << "tau:" << myMod.tau;
         if (trimbits) {
             infile.read(reinterpret_cast<char *>(myMod.chanregs),
                         sizeof(int) * (myMod.nchan));
@@ -3075,27 +3216,23 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
                                "for settings for " +
                                fname);
         }
-        for (int i = 0; i < myMod.ndac; ++i) {
-            LOG(logDEBUG1) << "dac " << i << ":" << myMod.dacs[i];
-        }
-        LOG(logDEBUG1) << "iodelay:" << myMod.iodelay;
-        LOG(logDEBUG1) << "tau:" << myMod.tau;
     }
 
     // mythen3 (dacs, trimbits)
     else if (shm()->myDetectorType == MYTHEN3) {
         infile.read(reinterpret_cast<char *>(myMod.dacs),
                     sizeof(int) * (myMod.ndac));
-        infile.read(reinterpret_cast<char *>(myMod.chanregs),
-                    sizeof(int) * (myMod.nchan));
-
+        for (int i = 0; i < myMod.ndac; ++i) {
+            LOG(logDEBUG) << "dac " << i << ":" << myMod.dacs[i];
+        }
+        if (trimbits) {
+            infile.read(reinterpret_cast<char *>(myMod.chanregs),
+                        sizeof(int) * (myMod.nchan));
+        }
         if (!infile) {
             throw RuntimeError("readSettingsFile: Could not load all values "
                                "for settings for " +
                                fname);
-        }
-        for (int i = 0; i < myMod.ndac; ++i) {
-            LOG(logDEBUG1) << "dac " << i << ":" << myMod.dacs[i];
         }
     }
 

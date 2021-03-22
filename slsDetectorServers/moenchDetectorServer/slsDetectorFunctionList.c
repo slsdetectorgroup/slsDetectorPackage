@@ -550,7 +550,9 @@ void setupDetector() {
         initError = FAIL;
     }
     setPipeline(ADC_CLK, DEFAULT_PIPELINE);
-    loadDefaultPattern(DEFAULT_PATTERN_FILE);
+    if (initError != FAIL) {
+        initError = loadDefaultPattern(DEFAULT_PATTERN_FILE, initErrorMessage);
+    }
     setSettings(DEFAULT_SETTINGS);
 
     setFrequency(RUN_CLK, DEFAULT_RUN_CLK);

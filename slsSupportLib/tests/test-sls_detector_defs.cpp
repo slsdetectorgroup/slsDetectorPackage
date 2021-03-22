@@ -12,7 +12,9 @@ TEST_CASE("sls_detector_module default construction", "[support][new]") {
     CHECK(m.reg == -1);
     CHECK(m.iodelay == 0);
     CHECK(m.tau == 0);
-    CHECK(m.eV == -1);
+    CHECK(m.eV[0] == -1);
+    CHECK(m.eV[1] == -1);
+    CHECK(m.eV[2] == -1);
     CHECK(m.dacs == nullptr);
     CHECK(m.chanregs == nullptr);
 }
@@ -26,7 +28,9 @@ TEST_CASE("sls_detector_module from type", "[support]") {
     CHECK(m.reg == -1);
     CHECK(m.iodelay == 0);
     CHECK(m.tau == 0);
-    CHECK(m.eV == -1);
+    CHECK(m.eV[0] == -1);
+    CHECK(m.eV[1] == -1);
+    CHECK(m.eV[2] == -1);
     CHECK(m.dacs != nullptr);
     CHECK(m.chanregs != nullptr);
 }

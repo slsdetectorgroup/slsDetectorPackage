@@ -3,7 +3,7 @@
 #include <inttypes.h>
 #include <sys/types.h>
 
-int loadDefaultPattern(char *patFname);
+int loadDefaultPattern(char *patFname, char *errMessage);
 
 int default_writePatternWord(char *line, uint32_t addr, uint64_t word);
 

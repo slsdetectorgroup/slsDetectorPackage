@@ -5,6 +5,10 @@
 #include "sls/sls_detector_funcs.h"
 #include "slsDetectorFunctionList.h"
 
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
+#include "Pattern.h"
+#endif
+
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <string.h>
@@ -361,6 +365,10 @@ void function_table() {
     flist[F_START_READOUT] = &start_readout;
     flist[F_SET_DEFAULT_DACS] = &set_default_dacs;
     flist[F_IS_VIRTUAL] = &is_virtual;
+    flist[F_GET_PATTERN] = &get_pattern;
+    flist[F_LOAD_DEFAULT_PATTERN] = &load_default_pattern;
+    flist[F_GET_ALL_THRESHOLD_ENERGY] = &get_all_threshold_energy;
+    flist[F_GET_MASTER] = &get_master;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -631,7 +639,9 @@ int set_timing_mode(int file_des) {
     }
     // get
     retval = getTiming();
+    #ifndef MYTHEN3D
     validate((int)arg, (int)retval, "set timing mode", DEC);
+    #endif
     LOG(logDEBUG1, ("Timing Mode: %d\n", retval));
 
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -1232,6 +1242,16 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             }
             LOG(logDEBUG1, ("Dac (%d): %d %s\n\n", serverDacIndex, retval,
                             (mV ? "mV" : "dac units")));
+#ifdef MYTHEN3D
+            // changed for setsettings (direct),
+            // custom trimbit file (setmodule with myMod.reg as -1),
+            // change of dac (direct)
+            if (val != GET_FLAG && ret == OK) {
+                for (int i = 0; i < NCOUNTERS; ++i) {
+                    setThresholdEnergy(i, -1);
+                }
+            }
+#endif
             break;
         }
     }
@@ -1507,7 +1527,7 @@ int set_module(int file_des) {
         LOG(logDEBUG1, ("module register is %d, nchan %d, nchip %d, "
                         "ndac %d, iodelay %d, tau %d, eV %d\n",
                         module.reg, module.nchan, module.nchip, module.ndac,
-                        module.iodelay, module.tau, module.eV));
+                        module.iodelay, module.tau, module.eV[0]));
         // should at least have a dac
         if (ts <= (int)sizeof(sls_detector_module)) {
             ret = FAIL;
@@ -1534,6 +1554,10 @@ int set_module(int file_des) {
         case LOWGAIN:
         case VERYHIGHGAIN:
         case VERYLOWGAIN:
+#elif MYTHEN3D
+        case STANDARD:
+        case FAST:
+        case HIGHGAIN:
 #elif JUNGFRAUD
         case DYNAMICGAIN:
         case DYNAMICHG0:
@@ -1555,11 +1579,9 @@ int set_module(int file_des) {
         }
 
         ret = setModule(module, mess);
-#ifndef MYTHEN3D
         enum detectorSettings retval = getSettings();
         validate(module.reg, (int)retval, "set module (settings)", DEC);
         LOG(logDEBUG1, ("Settings: %d\n", retval));
-#endif
     }
     free(myChan);
     free(myDac);
@@ -1577,7 +1599,7 @@ int set_settings(int file_des) {
     if (receiveData(file_des, &isett, sizeof(isett), INT32) < 0)
         return printSocketReadError();
 
-#if defined(CHIPTESTBOARDD) || defined(MYTHEN3D)
+#ifdef CHIPTESTBOARDD
     functionNotImplemented();
 #else
     LOG(logDEBUG1, ("Setting settings %d\n", isett));
@@ -1614,13 +1636,17 @@ int set_settings(int file_des) {
             case G2_LOWCAP_LOWGAIN:
             case G4_HIGHGAIN:
             case G4_LOWGAIN:
+#elif MYTHEN3D
+            case STANDARD:
+            case FAST:
+            case HIGHGAIN:
 #endif
                 break;
             default:
                 if (myDetectorType == EIGER) {
                     ret = FAIL;
                     sprintf(mess, "Cannot set settings via SET_SETTINGS, use "
-                                  "SET_MODULE (set threshold)\n");
+                                  "SET_MODULE\n");
                     LOG(logERROR, (mess));
                 } else
                     modeNotImplemented("Settings Index", (int)isett);
@@ -1643,6 +1669,16 @@ int set_settings(int file_des) {
                     strcpy(mess, "Could change settings, but could not set to "
                                  "default dacs\n");
                     LOG(logERROR, (mess));
+                }
+            }
+#endif
+#ifdef MYTHEN3D
+            // changed for setsettings (direct),
+            // custom trimbit file (setmodule with myMod.reg as -1),
+            // change of dac (direct)
+            if (ret == OK) {
+                for (int i = 0; i < NCOUNTERS; ++i) {
+                    setThresholdEnergy(i, -1);
                 }
             }
 #endif
@@ -7094,15 +7130,20 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-        // threshold ev
+    // threshold ev
+    {
+        int i32s[3] = {0, 0, 0};
 #ifdef EIGERD
-    i32 = getThresholdEnergy();
-#else
-    i32 = 0;
+        i32s[0] = getThresholdEnergy();
+#elif MYTHEN3D
+        for (int i = 0; i < NCOUNTERS; ++i) {
+            i32s[i] = getThresholdEnergy(i);
+        }
 #endif
-    n += sendData(file_des, &i32, sizeof(i32), INT32);
-    if (n < 0)
-        return printSocketReadError();
+        n += sendData(file_des, i32s, sizeof(i32s), INT32);
+        if (n < 0)
+            return printSocketReadError();
+    }
 
     // dynamic range
     i32 = setDynamicRange(GET_FLAG);
@@ -7530,131 +7571,218 @@ int set_veto(int file_des) {
 int set_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint64_t *patwords = malloc(sizeof(uint64_t) * MAX_PATTERN_LENGTH);
-    memset(patwords, 0, sizeof(uint64_t) * MAX_PATTERN_LENGTH);
-    uint64_t patioctrl = 0;
-    int patlimits[2] = {0, 0};
-    int patloop[6] = {0, 0, 0, 0, 0, 0};
-    int patnloop[3] = {0, 0, 0};
-    int patwait[3] = {0, 0, 0};
-    uint64_t patwaittime[3] = {0, 0, 0};
-    if (receiveData(file_des, patwords, sizeof(uint64_t) * MAX_PATTERN_LENGTH,
-                    INT64) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, &patioctrl, sizeof(patioctrl), INT64) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, patlimits, sizeof(patlimits), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, patloop, sizeof(patloop), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, patnloop, sizeof(patnloop), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, patwait, sizeof(patwait), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, patwaittime, sizeof(patwaittime), INT64) < 0)
-        return printSocketReadError();
 
 #if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
+
+    patternParameters *pat = malloc(sizeof(patternParameters));
+    memset(pat, 0, sizeof(patternParameters));
+
+    // ignoring endianness for eiger
+    if (receiveData(file_des, pat, sizeof(patternParameters), INT32) < 0) {
+        if (pat != NULL)
+            free(pat);
+        return printSocketReadError();
+    }
+
     if (Server_VerifyLock() == OK) {
-        LOG(logINFO, ("Setting Pattern from file\n"));
+        LOG(logINFO, ("Setting Pattern from structure\n"));
         LOG(logINFO,
             ("Setting Pattern Word (printing every 10 words that are not 0\n"));
         for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
-            if ((i % 10 == 0) && patwords[i] != 0) {
+            if ((i % 10 == 0) && pat->word[i] != 0) {
                 LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n",
-                              i, (long long int)patwords[i]));
+                              i, (long long int)pat->word[i]));
             }
-            writePatternWord(i, patwords[i]);
+            writePatternWord(i, pat->word[i]);
         }
-        int numLoops = -1, retval0 = -1, retval1 = -1;
-        uint64_t retval64 = -1;
 #ifndef MYTHEN3D
         if (ret == OK) {
-            retval64 = writePatternIOControl(patioctrl);
-            validate64(patioctrl, retval64, "set pattern IO Control", HEX);
+            uint64_t retval64 = writePatternIOControl(pat->ioctrl);
+            validate64(pat->ioctrl, retval64, "set pattern IO Control", HEX);
         }
 #endif
         if (ret == OK) {
-            numLoops = -1;
-            retval0 = patlimits[0];
-            retval1 = patlimits[1];
+            int numLoops = -1;
+            int retval0 = pat->limits[0];
+            int retval1 = pat->limits[1];
             setPatternLoop(-1, &retval0, &retval1, &numLoops);
-            validate(patlimits[0], retval0, "set pattern Limits start address",
-                     HEX);
-            validate(patlimits[1], retval1, "set pattern Limits start address",
-                     HEX);
+            validate(pat->limits[0], retval0,
+                     "set pattern Limits start address", HEX);
+            validate(pat->limits[1], retval1,
+                     "set pattern Limits start address", HEX);
         }
         if (ret == OK) {
-            retval0 = patloop[0];
-            retval1 = patloop[1];
-            numLoops = patnloop[0];
-            setPatternLoop(0, &patloop[0], &patloop[1], &numLoops);
-            validate(patloop[0], retval0, "set pattern Loop 0 start address",
-                     HEX);
-            validate(patloop[1], retval1, "set pattern Loop 0 stop address",
-                     HEX);
-            validate(patnloop[0], numLoops, "set pattern Loop 0 num loops",
-                     HEX);
-        }
-        if (ret == OK) {
-            retval0 = patloop[2];
-            retval1 = patloop[3];
-            numLoops = patnloop[1];
-            setPatternLoop(1, &patloop[2], &patloop[3], &numLoops);
-            validate(patloop[2], retval0, "set pattern Loop 1 start address",
-                     HEX);
-            validate(patloop[3], retval1, "set pattern Loop 1 stop address",
-                     HEX);
-            validate(patnloop[1], numLoops, "set pattern Loop 1 num loops",
-                     HEX);
-        }
-        if (ret == OK) {
-            retval0 = patloop[4];
-            retval1 = patloop[5];
-            numLoops = patnloop[2];
-            setPatternLoop(2, &patloop[4], &patloop[5], &numLoops);
-            validate(patloop[4], retval0, "set pattern Loop 2 start address",
-                     HEX);
-            validate(patloop[5], retval1, "set pattern Loop 2 stop address",
-                     HEX);
-            validate(patnloop[2], numLoops, "set pattern Loop 2 num loops",
-                     HEX);
-        }
-        if (ret == OK) {
-            retval0 = setPatternWaitAddress(0, patwait[0]);
-            validate(patwait[0], retval0, "set pattern Loop 0 wait address",
-                     HEX);
-        }
-        if (ret == OK) {
-            retval0 = setPatternWaitAddress(1, patwait[1]);
-            validate(patwait[1], retval0, "set pattern Loop 1 wait address",
-                     HEX);
-        }
-        if (ret == OK) {
-            retval0 = setPatternWaitAddress(2, patwait[2]);
-            validate(patwait[2], retval0, "set pattern Loop 2 wait address",
-                     HEX);
-        }
-        if (ret == OK) {
-            uint64_t retval64 = setPatternWaitTime(0, patwaittime[0]);
-            validate64(patwaittime[0], retval64, "set pattern Loop 0 wait time",
-                       HEX);
-        }
-        if (ret == OK) {
-            retval64 = setPatternWaitTime(1, patwaittime[1]);
-            validate64(patwaittime[1], retval64, "set pattern Loop 1 wait time",
-                       HEX);
-        }
-        if (ret == OK) {
-            retval64 = setPatternWaitTime(2, patwaittime[2]);
-            validate64(patwaittime[1], retval64, "set pattern Loop 2 wait time",
-                       HEX);
+            for (int i = 0; i <= 2; ++i) {
+                char msg[128];
+                int retval0 = -1, retval1 = -1, numLoops = -1;
+                uint64_t retval64 = -1;
+
+                // patloop
+                retval0 = pat->loop[i * 2 + 0];
+                retval1 = pat->loop[i * 2 + 1];
+                numLoops = pat->nloop[i];
+                setPatternLoop(i, &retval0, &retval1, &numLoops);
+                memset(msg, 0, sizeof(msg));
+                sprintf(msg, "set pattern Loop %d start address", i);
+                validate(pat->loop[i * 2 + 0], retval0, msg, HEX);
+                if (ret == FAIL) {
+                    break;
+                }
+                memset(msg, 0, sizeof(msg));
+                sprintf(msg, "set pattern Loop %d stop address", i);
+                validate(pat->loop[i * 2 + 1], retval1, msg, HEX);
+                if (ret == FAIL) {
+                    break;
+                }
+                memset(msg, 0, sizeof(msg));
+                sprintf(msg, "set pattern Loop %d num loops", i);
+                validate(pat->nloop[i], numLoops, msg, HEX);
+                if (ret == FAIL) {
+                    break;
+                }
+
+                // patwait
+                memset(msg, 0, sizeof(msg));
+                sprintf(msg, "set pattern Loop %d wait address", i);
+                retval0 = setPatternWaitAddress(i, pat->wait[i]);
+                validate(pat->wait[i], retval0, msg, HEX);
+                if (ret == FAIL) {
+                    break;
+                }
+
+                // patwaittime
+                memset(msg, 0, sizeof(msg));
+                sprintf(msg, "set pattern Loop %d wait time", i);
+                retval64 = setPatternWaitTime(i, pat->waittime[i]);
+                validate64(pat->waittime[i], retval64, msg, HEX);
+                if (ret == FAIL) {
+                    break;
+                }
+            }
         }
     }
+    if (pat != NULL)
+        free(pat);
 #endif
+
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_pattern(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+    return Server_SendResult(file_des, INT32, NULL, 0);
+#else
+
+    patternParameters *pat = malloc(sizeof(patternParameters));
+    memset(pat, 0, sizeof(patternParameters));
+
+    if (Server_VerifyLock() == OK) {
+        LOG(logINFO, ("Getting Pattern from structure\n"));
+
+        // patword
+        LOG(logDEBUG,
+            ("retval pattern word (printing every 10 words that are not 0\n"));
+        for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
+            pat->word[i] = readPatternWord(i);
+            if ((int64_t)pat->word[i] == -1) {
+                ret = FAIL;
+                sprintf(mess, "could not read pattern word for address 0x%x\n",
+                        i);
+                LOG(logERROR, (mess));
+                break;
+            }
+            // debug print
+            if ((i % 10 == 0) && pat->word[i] != 0) {
+                LOG(logDEBUG,
+                    ("retval Patpattern word (addr:0x%x, word:0x%llx)\n", i,
+                     (long long int)pat->word[i]));
+            }
+        }
+
+        // patioctrl
+#ifndef MYTHEN3D
+        if (ret == OK) {
+            pat->ioctrl = writePatternIOControl(-1);
+            LOG(logDEBUG, ("retval pattern io control:0x%llx\n",
+                           (long long int)pat->ioctrl));
+        }
+#endif
+        if (ret == OK) {
+            // patlimits
+            int numLoops = -1;
+            int retval0 = -1;
+            int retval1 = -1;
+            setPatternLoop(-1, &retval0, &retval1, &numLoops);
+            pat->limits[0] = retval0;
+            pat->limits[1] = retval1;
+            LOG(logDEBUG, ("retval pattern limits start:0x%x stop:0x%x\n",
+                           pat->limits[0], pat->limits[1]));
+
+            for (int i = 0; i <= 2; ++i) {
+                // patloop
+                {
+                    int numLoops = -1;
+                    int retval0 = -1;
+                    int retval1 = -1;
+                    setPatternLoop(i, &retval0, &retval1, &numLoops);
+                    pat->nloop[i] = numLoops;
+                    pat->loop[i * 2 + 0] = retval0;
+                    pat->loop[i * 2 + 1] = retval1;
+                    LOG(logDEBUG, ("retval pattern loop level %d start:0x%x "
+                                   "stop:0x%x numLoops:%d\n",
+                                   i, pat->loop[i * 2 + 0],
+                                   pat->loop[i * 2 + 0], pat->nloop[i]));
+                }
+                // patwait
+                {
+                    pat->wait[i] = setPatternWaitAddress(i, -1);
+                    if ((int)pat->wait[i] == -1) {
+                        ret = FAIL;
+                        sprintf(mess,
+                                "could not read pattern wait address for level "
+                                "%d\n",
+                                i);
+                        LOG(logERROR, (mess));
+                        break;
+                    }
+                    LOG(logDEBUG,
+                        ("retval pattern wait address for level %d: 0x%x\n", i,
+                         pat->wait[i]));
+                }
+
+                // patwaittime
+                {
+                    pat->waittime[i] = setPatternWaitTime(i, -1);
+                    if ((int64_t)pat->waittime[i] == -1) {
+                        ret = FAIL;
+                        sprintf(
+                            mess,
+                            "could not read pattern wait time for level %d\n",
+                            i);
+                        LOG(logERROR, (mess));
+                        break;
+                    }
+                    LOG(logDEBUG,
+                        ("retval pattern wait time for level %d: %lld\n", i,
+                         (long long int)pat->waittime[i]));
+                }
+            }
+        }
+    }
+
+    // ignoring endianness for eiger
+    int ret =
+        Server_SendResult(file_des, INT32, pat, sizeof(patternParameters));
+    if (pat != NULL)
+        free(pat);
+    return ret;
+#endif
 }
 
 int get_scan(int file_des) {
@@ -8203,5 +8331,55 @@ int is_virtual(int file_des) {
     retval = 1;
 #endif
     LOG(logDEBUG1, ("is virtual retval: %d\n", retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int load_default_pattern(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+#if !defined(MYTHEN3D) && !defined(MOENCHD)
+    functionNotImplemented();
+#else
+    if (Server_VerifyLock() == OK) {
+        ret = loadDefaultPattern(DEFAULT_PATTERN_FILE, mess);
+        if (ret == FAIL) {
+            LOG(logERROR, (mess));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_all_threshold_energy(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retvals[3] = {-1, -1, -1};
+
+    LOG(logDEBUG1, ("Getting all threshold energy\n"));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    for (int i = 0; i < NCOUNTERS; ++i) {
+        retvals[i] = getThresholdEnergy(i);
+        LOG(logDEBUG, ("eV[%d]: %deV\n", i, retvals[i]));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
+}
+
+int get_master(int file_des){
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting master\n"));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    retval = isMaster();
+#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

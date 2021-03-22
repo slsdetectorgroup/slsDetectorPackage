@@ -46,6 +46,19 @@ TEST_CASE("savepattern", "[.cmd]") {
     }
 }
 
+TEST_CASE("defaultpattern", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MOENCH || det_type == defs::MYTHEN3) {
+        REQUIRE_THROWS(proxy.Call("defaultpattern", {}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("defaultpattern", {}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("defaultpattern", {}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("defaultpattern", {}, -1, PUT));
+    }
+}
+
 TEST_CASE("patioctrl", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

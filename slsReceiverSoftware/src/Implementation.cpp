@@ -121,6 +121,9 @@ void Implementation::setDetectorType(const detectorType d) {
                                 std::to_string(static_cast<int>(d)));
     }
 
+    delete generalData;
+    generalData = nullptr;
+
     // set detector specific variables
     switch (myDetectorType) {
     case GOTTHARD:
@@ -755,6 +758,7 @@ void Implementation::SetupWriter() {
     masterAttributes->dynamicRange = dynamicRange;
     masterAttributes->tenGiga = tengigaEnable;
     masterAttributes->thresholdEnergyeV = thresholdEnergyeV;
+    masterAttributes->thresholdAllEnergyeV = thresholdAllEnergyeV;
     masterAttributes->subExptime = subExpTime;
     masterAttributes->subPeriod = subPeriod;
     masterAttributes->quad = quadEnable;
@@ -1528,6 +1532,12 @@ void Implementation::setReadNLines(const int value) {
 void Implementation::setThresholdEnergy(const int value) {
     thresholdEnergyeV = value;
     LOG(logINFO) << "Threshold Energy: " << thresholdEnergyeV << " eV";
+}
+
+void Implementation::setThresholdEnergy(const std::array<int, 3> value) {
+    thresholdAllEnergyeV = value;
+    LOG(logINFO) << "Threshold Energy (eV): "
+                 << sls::ToString(thresholdAllEnergyeV);
 }
 
 void Implementation::setRateCorrections(const std::vector<int64_t> &t) {

@@ -1,4 +1,5 @@
 #pragma once
+#include "sls/Pattern.h"
 #include "sls/Result.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
@@ -109,7 +110,7 @@ class Detector {
     /** list of possible settings for this detector */
     std::vector<defs::detectorSettings> getSettingsList() const;
 
-    /** [Jungfrau][Gotthard][Gotthard2] */
+    /** [Jungfrau][Gotthard][Gotthard2][Mythen3] */
     Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
 
     /** [Jungfrau] DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2,
@@ -117,11 +118,33 @@ class Detector {
      * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n [Gotthard2] DYNAMICGAIN,
      * FIXGAIN1, FIXGAIN2 \n [Moench] G1_HIGHGAIN, G1_LOWGAIN,
      * G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN,
-     * G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN \n [Eiger] Use threshold
-     * command. Settings loaded from file found in
-     * settingspath
+     * G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN \n [Mythen3] STANDARD, FAST,
+     * HIGHGAIN. Also changes vrshaper and vrpreamp \n [Eiger] Use threshold
+     * command. Settings loaded from file found in settingspath
      */
     void setSettings(defs::detectorSettings value, Positions pos = {});
+
+    /** [Eiger] */
+    Result<int> getThresholdEnergy(Positions pos = {}) const;
+
+    /** Mythen3] threshold energy for the three counters */
+    Result<std::array<int, 3>> getAllThresholdEnergy(Positions pos = {}) const;
+
+    /** [Eiger][Mythen3] It loads trim files from settingspath */
+    void setThresholdEnergy(int threshold_ev,
+                            defs::detectorSettings settings = defs::STANDARD,
+                            bool trimbits = true, Positions pos = {});
+
+    /** [Mythen3] It loads trim files from settingspath */
+    void setThresholdEnergy(std::array<int, 3> threshold_ev,
+                            defs::detectorSettings settings = defs::STANDARD,
+                            bool trimbits = true, Positions pos = {});
+
+    /** [Eiger][Mythen3] */
+    Result<std::string> getSettingsPath(Positions pos = {}) const;
+
+    /** [Eiger][Mythen3] Directory where settings files are loaded from/to */
+    void setSettingsPath(const std::string &value, Positions pos = {});
 
     /** [Eiger][Mythen3] If no extension specified, serial number of each module
      * is attached. */
@@ -132,6 +155,13 @@ class Detector {
 
     /**[Eiger][Mythen3] */
     void setAllTrimbits(int value, Positions pos = {});
+
+    /**[Eiger][Mythen3] Returns energies in eV where the module is trimmed */
+    Result<std::vector<int>> getTrimEnergies(Positions pos = {}) const;
+
+    /** [Eiger][Mythen3] List of trim energies, where corresponding default trim
+     * files exist in corresponding trim folders */
+    void setTrimEnergies(std::vector<int> energies, Positions pos = {});
 
     /**[Eiger][Jungfrau] */
     bool getGapPixelsinCallback() const;
@@ -940,20 +970,6 @@ class Detector {
     void setSubDeadTime(ns value, Positions pos = {});
 
     /** [Eiger] */
-    Result<int> getThresholdEnergy(Positions pos = {}) const;
-
-    /** [Eiger] It loads trim files from settingspath */
-    void setThresholdEnergy(int threshold_ev,
-                            defs::detectorSettings settings = defs::STANDARD,
-                            bool trimbits = true, Positions pos = {});
-
-    /** [Eiger] */
-    Result<std::string> getSettingsPath(Positions pos = {}) const;
-
-    /** [Eiger] Directory where settings files are loaded from/to */
-    void setSettingsPath(const std::string &value, Positions pos = {});
-
-    /** [Eiger] */
     Result<bool> getOverFlowMode(Positions pos = {}) const;
 
     /** [Eiger] Overflow in 32 bit mode. Default is disabled.*/
@@ -964,13 +980,6 @@ class Detector {
 
     /** [Eiger] for client call back (gui) purposes to flip bottom image */
     void setBottom(bool value, Positions pos = {});
-
-    /**[Eiger] Returns energies in eV where the module is trimmed */
-    Result<std::vector<int>> getTrimEnergies(Positions pos = {}) const;
-
-    /** [Eiger] List of trim energies, where corresponding default trim files
-     * exist in corresponding trim folders */
-    void setTrimEnergies(std::vector<int> energies, Positions pos = {});
 
     /** [Eiger] deadtime in ns, 0 = disabled */
     Result<ns> getRateCorrection(Positions pos = {}) const;
@@ -1296,6 +1305,9 @@ class Detector {
     /** [Mythen3] gate delay for all gates in auto or trigger timing mode
      * (internal gating). Gate index: 0-2, -1 for all */
     Result<std::array<ns, 3>> getGateDelayForAllGates(Positions pos = {}) const;
+
+    Result<bool> getMaster(Positions pos = {}) const;
+
     ///@{
 
     /** @name CTB / Moench Specific */
@@ -1457,9 +1469,16 @@ class Detector {
      * (instead of executing line by line)*/
     void setPattern(const std::string &fname, Positions pos = {});
 
+    /** [CTB][Moench][Mythen3]  Loads pattern parameters structure directly to
+     * server */
+    void setPattern(const Pattern &pat, Positions pos = {});
+
     /** [CTB][Moench][Mythen3] [Ctb][Moench][Mythen3] Saves pattern to file
      * (ascii). \n [Ctb][Moench] Also executes pattern.*/
     void savePattern(const std::string &fname);
+
+    /** [Mythen3][Moench] Loads and runs default pattern */
+    void loadDefaultPattern(Positions pos = {});
 
     /** [CTB][Moench] */
     Result<uint64_t> getPatternIOControl(Positions pos = {}) const;

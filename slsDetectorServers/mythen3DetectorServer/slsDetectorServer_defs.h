@@ -1,8 +1,9 @@
 #pragma once
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN (0x200925)
+#define REQRD_FRMWRE_VRSN (0x210201)
 #define KERNEL_DATE_VRSN  "Wed May 20 13:58:38 CEST 2020"
+#define ID_FILE           "detid_mythen3.txt"
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 
@@ -25,24 +26,35 @@
 #define MAX_EXT_SIGNALS             (8)
 
 /** Default Parameters */
-#define DEFAULT_PATTERN_FILE        ("DefaultPattern_mythen3.txt")
-#define DEFAULT_INTERNAL_GATES      (1)
-#define DEFAULT_EXTERNAL_GATES      (1)
-#define DEFAULT_DYNAMIC_RANGE       (32)
-#define DEFAULT_NUM_FRAMES          (1)
-#define DEFAULT_NUM_CYCLES          (1)
-#define DEFAULT_GATE_WIDTH          (100 * 1000 * 1000) // ns
-#define DEFAULT_GATE_DELAY          (0)
-#define DEFAULT_PERIOD              (2 * 1000 * 1000) // ns
-#define DEFAULT_DELAY_AFTER_TRIGGER (0)
-#define DEFAULT_HIGH_VOLTAGE        (0)
-#define DEFAULT_TIMING_MODE         (AUTO_TIMING)
-#define DEFAULT_READOUT_C0          (10) //(100000000) // rdo_clk, 100 MHz
-#define DEFAULT_READOUT_C1          (10) //(100000000) // smp sample clk (x2), 100 MHz
-#define DEFAULT_SYSTEM_C0           (10) //(100000000) // run_clk, 100 MHz
-#define DEFAULT_SYSTEM_C1           (10) //(100000000) // sync_clk, 100 MHz
-#define DEFAULT_SYSTEM_C2           (10) //(100000000) // str_clk, 100 MHz
-#define DEFAULT_SYSTEM_C3           (5)  //(200000000) // smp_clk, 200 MHz
+#define DEFAULT_PATTERN_FILE             ("DefaultPattern_mythen3.txt")
+#define DEFAULT_INTERNAL_GATES           (1)
+#define DEFAULT_EXTERNAL_GATES           (1)
+#define DEFAULT_DYNAMIC_RANGE            (32)
+#define DEFAULT_NUM_FRAMES               (1)
+#define DEFAULT_NUM_CYCLES               (1)
+#define DEFAULT_GATE_WIDTH               (100 * 1000 * 1000) // ns
+#define DEFAULT_GATE_DELAY               (0)
+#define DEFAULT_PERIOD                   (2 * 1000 * 1000) // ns
+#define DEFAULT_DELAY_AFTER_TRIGGER      (0)
+#define DEFAULT_HIGH_VOLTAGE             (0)
+#define DEFAULT_TIMING_MODE              (AUTO_TIMING)
+#define DEFAULT_SETTINGS                 (STANDARD)
+#define DEFAULT_TRIMBIT_VALUE            (0)
+#define DEFAULT_COUNTER_DISABLED_VTH_VAL (2800)
+
+#define DEFAULT_STANDARD_VRPREAMP (1100)
+#define DEFAULT_FAST_VRPREAMP     (300)
+#define DEFAULT_HIGHGAIN_VRPREAMP (1300)
+#define DEFAULT_STANDARD_VRSHAPER (1280)
+#define DEFAULT_FAST_VRSHAPER     (1500)
+#define DEFAULT_HIGHGAIN_VRSHAPER (1100)
+
+#define DEFAULT_READOUT_C0 (10) //(100000000) // rdo_clk, 100 MHz
+#define DEFAULT_READOUT_C1 (10) //(100000000) // smp sample clk (x2), 100 MHz
+#define DEFAULT_SYSTEM_C0  (10) //(100000000) // run_clk, 100 MHz
+#define DEFAULT_SYSTEM_C1  (10) //(100000000) // sync_clk, 100 MHz
+#define DEFAULT_SYSTEM_C2  (10) //(100000000) // str_clk, 100 MHz
+#define DEFAULT_SYSTEM_C3  (5)  //(200000000) // smp_clk, 200 MHz
 // (DEFAULT_SYSTEM_C3 only for timing receiver) should not be changed
 #define DEFAULT_TRIMMING_RUN_CLKDIV (40) // (25000000) // 25 MHz
 
@@ -174,3 +186,19 @@ typedef struct udp_header_struct {
 #define SIGNAL_resCounter  (23)
 #define SIGNAL_CHSclk      (24)
 #define SIGNAL_exposing    (25)
+
+//CHIP STARTUS REGISTER BITS
+#define CSR_spypads  0
+#define CSR_invpol  4
+#define CSR_dpulse  5
+#define CSR_interp  6
+#define CSR_C10pre  7 //#default
+#define CSR_pumprobe  8
+#define CSR_apulse  9
+#define CSR_C15sh  10 
+#define CSR_C30sh  11 //#default
+#define CSR_C50sh  12
+#define CSR_C225ACsh  13 // Connects 225fF SHAPER AC cap (1: 225 to shaper, 225 to GND. 0: 450 to shaper) 
+#define CSR_C15pre  14 
+
+#define CSR_default  (1<<CSR_C10pre )|(1<< CSR_C30sh)

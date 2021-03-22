@@ -8,6 +8,8 @@ from .mythen3 import Mythen3
 from .gotthard2 import Gotthard2
 from .gotthard import Gotthard
 from .moench import Moench
+from .pattern import Pattern, patternParameters
+
 
 import _slsdet
 xy = _slsdet.xy
@@ -18,3 +20,4 @@ from .enums import *
 
 IpAddr = _slsdet.IpAddr
 MacAddr = _slsdet.MacAddr
+scanParameters = _slsdet.scanParameters

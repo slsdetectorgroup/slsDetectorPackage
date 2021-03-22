@@ -219,6 +219,7 @@ class Implementation : private virtual slsDetectorDefs {
     void setReadNLines(const int value);
     /** [Eiger] */
     void setThresholdEnergy(const int value);
+    void setThresholdEnergy(const std::array<int, 3> value);
     /* [Eiger] */
     void setRateCorrections(const std::vector<int64_t> &t);
     readoutMode getReadoutMode() const;
@@ -348,6 +349,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool deactivatedPaddingEnable{true};
     int numLinesReadout{MAX_EIGER_ROWS_PER_READOUT};
     int thresholdEnergyeV{-1};
+    std::array<int, 3> thresholdAllEnergyeV={{-1, -1, -1}};
     std::vector<int64_t> rateCorrections;
     readoutMode readoutType{ANALOG_ONLY};
     uint32_t adcEnableMaskOneGiga{BIT32_MASK};
@@ -368,7 +370,7 @@ class Implementation : private virtual slsDetectorDefs {
     void *pRawDataReady{nullptr};
 
     // class objects
-    GeneralData *generalData;
+    GeneralData *generalData{nullptr};
     std::vector<std::unique_ptr<Listener>> listener;
     std::vector<std::unique_ptr<DataProcessor>> dataProcessor;
     std::vector<std::unique_ptr<DataStreamer>> dataStreamer;

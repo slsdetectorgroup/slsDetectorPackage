@@ -50,12 +50,12 @@ args = parser.parse_args()
 
 servers = [
      "eigerDetectorServer",
-#     "jungfrauDetectorServer",
-#      "mythen3DetectorServer",
-#     "gotthard2DetectorServer",
-#     "gotthardDetectorServer",
-#     "ctbDetectorServer",
-#     "moenchDetectorServer",
+     "jungfrauDetectorServer",
+      "mythen3DetectorServer",
+     "gotthard2DetectorServer",
+     "gotthardDetectorServer",
+     "ctbDetectorServer",
+     "moenchDetectorServer",
 ]
 
 

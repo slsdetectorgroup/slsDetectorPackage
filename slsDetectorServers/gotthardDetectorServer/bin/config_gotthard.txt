@@ -1,0 +1,23 @@
+#masterflags (no_master, is_master, is_slave)
+masterflags no_master
+
+#master default delay 
+masterdefaultdelay 70
+
+#patternphase 
+patternphase 0
+
+#adcphase 
+adcphase 0
+
+#slave pattern phase
+slavepatternphase 0
+
+#slave adc phase 
+slaveadcphase 0
+
+#rst to sw1 delay
+rsttosw1delay 2
+
+#start acquisition delay
+startacqdelay 1

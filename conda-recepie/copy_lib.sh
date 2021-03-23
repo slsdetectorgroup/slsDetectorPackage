@@ -1,6 +1,6 @@
 
-mkdir $PREFIX/lib
-mkdir $PREFIX/bin
+mkdir -p $PREFIX/lib
+mkdir -p $PREFIX/bin
 mkdir -p $PREFIX/include/sls
 # mkdir $PREFIX/include/slsDetectorPackage
 

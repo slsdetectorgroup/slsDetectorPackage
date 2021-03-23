@@ -13,8 +13,9 @@ cmake .. \
       -DCMAKE_BUILD_TYPE=Release \
       -DSLS_USE_HDF5=OFF\
      
-
-cmake --build . -- -j10
+NCORES=$(getconf _NPROCESSORS_ONLN)
+echo "Building using: ${NCORES} cores"
+cmake --build . -- -j${NCORES}
 cmake --build . --target install
 
 CTEST_OUTPUT_ON_FAILURE=1 ctest -j 2

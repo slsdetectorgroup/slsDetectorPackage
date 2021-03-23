@@ -167,7 +167,7 @@ if (NOT TARGET libzmq)
             HINTS ${ZeroMQ_DIR}
         )
     else()
-        find_package(ZeroMQ 4)
+        find_package(ZeroMQ 4 QUIET)
     endif()
     
 

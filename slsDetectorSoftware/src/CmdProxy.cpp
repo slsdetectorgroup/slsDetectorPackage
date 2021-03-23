@@ -54,7 +54,7 @@ bool CmdProxy::ReplaceIfDepreciated(std::string &command) {
     if (d_it != depreciated_functions.end()) {
         LOG(logWARNING)
             << command
-            << " is depreciated and will be removed. Please migrate to: "
+            << " is deprecated and will be removed. Please migrate to: "
             << d_it->second;
         // insert old command into arguments (for dacs)
         if (d_it->second == "dac") {

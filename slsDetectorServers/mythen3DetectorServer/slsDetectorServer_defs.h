@@ -1,7 +1,7 @@
 #pragma once
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN (0x200925)
+#define REQRD_FRMWRE_VRSN (0x210201)
 #define KERNEL_DATE_VRSN  "Wed May 20 13:58:38 CEST 2020"
 #define ID_FILE           "detid_mythen3.txt"
 
@@ -47,7 +47,7 @@
 #define DEFAULT_HIGHGAIN_VRPREAMP (1300)
 #define DEFAULT_STANDARD_VRSHAPER (1280)
 #define DEFAULT_FAST_VRSHAPER     (1500)
-#define DEFAULT_HIGHGAIN_VRSHAPER (900)
+#define DEFAULT_HIGHGAIN_VRSHAPER (1100)
 
 #define DEFAULT_READOUT_C0 (10) //(100000000) // rdo_clk, 100 MHz
 #define DEFAULT_READOUT_C1 (10) //(100000000) // smp sample clk (x2), 100 MHz

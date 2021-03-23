@@ -1,14 +1,13 @@
-SLS Detector Package 5.1.0 released on xx.xx.2020 (Minor Release)
+SLS Detector Package 5.X.X released on XX.XX.2021 (Minor Release)
 ===================================================================
 
-This document describes the differences between 5.1.0 and 5.x.x releases.   
+This document describes the differences between X and Y releases.   
 
 
 
     CONTENTS
     --------
-    1.  Topics Concerning
-    2.  New Features
+    1.  New Features
     2.  Resolved Issues
     3.  Known Issues
     4.  Firmware Requirements
@@ -16,58 +15,14 @@ This document describes the differences between 5.1.0 and 5.x.x releases.
 
 
 
-1. Topics Concerning
-====================
 
-    - potentital memory leak in receiver
-    - scanParameters in Python
-    - cmk.sh refactored
-    - m3 settings and threshold
-
-
-2. New Features
+1. New Features
 ===============
-
-    Client
-    ------
-
-    1. Aded settings and threshold features for Mythen3.
-    2. Internal modification of acquire for Mythen3.
-    3. Added getMaster functio for M3
-
-
-    Mythen3 server
-    -----------------
-
-    1. Setting timing to auto, sets timing to trigger for slaves
-    
-
-3. Resolved Issues
-==================
-
-
-    Receiver
-    --------
-
-    1.  Current code only calls Implementation::setDetectorType from constructor, 
-	    but potential memory leak if called out of constructor context. Fixed.
-
-    Client
-    ------
-
-    1.  Fixed missing scanParameters class in Python 
-
-    2.  cmk.sh refactored to have better option handling
-
-
-
 
 
 4. Firmware Requirements
 ========================
-        
-    No updates from 5.0.0
-
+    
 
 
 5. Known Issues

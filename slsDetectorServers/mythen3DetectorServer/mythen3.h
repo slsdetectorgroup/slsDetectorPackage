@@ -57,6 +57,7 @@ enum {Cac225, Cac_450};
 #define default_gain 
 int setBit(int ibit, int patword);
 int clearBit(int ibit, int patword);
+int getChipStatusRegister();
 patternParameters *setChipStatusRegister(int csr);
 patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits);
 patternParameters *setInterpolation(int mask);

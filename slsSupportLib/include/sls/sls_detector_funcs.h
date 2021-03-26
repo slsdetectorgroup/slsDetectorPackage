@@ -221,6 +221,7 @@ enum detFuncs {
     F_LOAD_DEFAULT_PATTERN,
     F_GET_ALL_THRESHOLD_ENERGY,
     F_GET_MASTER,
+    F_GET_CSR,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this

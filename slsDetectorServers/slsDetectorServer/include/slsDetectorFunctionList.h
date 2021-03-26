@@ -25,6 +25,10 @@
 #include "blackfin.h"
 #endif
 
+#if defined(MYTHEN3D) 
+#include "mythen3.h"
+#endif
+
 #include <stdio.h> // FILE
 #include <stdlib.h>
 #include <sys/types.h>

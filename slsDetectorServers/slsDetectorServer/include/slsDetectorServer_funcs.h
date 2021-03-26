@@ -247,3 +247,4 @@ int get_pattern(int);
 int load_default_pattern(int);
 int get_all_threshold_energy(int);
 int get_master(int);
+int get_csr();

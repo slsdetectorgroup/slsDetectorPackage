@@ -31,6 +31,10 @@ int clearBit(int ibit, int patword) { return patword &= ~(1 << ibit); }
 extern enum TLogLevel trimmingPrint ;
 
 
+int getChipStatusRegister(){
+  return chipStatusRegister;
+}
+
 patternParameters *setChipStatusRegister(int csr) {
   int iaddr=0;
   int  nbits=18;

@@ -1998,6 +1998,10 @@ bool Module::isMaster() const{
     return sendToDetector<int>(F_GET_MASTER);
 }
 
+int Module::getChipStatusRegister() const{
+    return sendToDetector<int>(F_GET_CSR);
+}
+
 // CTB / Moench Specific
 int Module::getNumberOfAnalogSamples() const {
     return sendToDetector<int>(F_GET_NUM_ANALOG_SAMPLES);

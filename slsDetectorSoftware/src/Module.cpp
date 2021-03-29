@@ -2002,6 +2002,10 @@ int Module::getChipStatusRegister() const{
     return sendToDetector<int>(F_GET_CSR);
 }
 
+void Module::setGainCaps(int caps){
+    sendToDetector<int>(F_SET_GAIN_CAPS, caps);
+}
+
 // CTB / Moench Specific
 int Module::getNumberOfAnalogSamples() const {
     return sendToDetector<int>(F_GET_NUM_ANALOG_SAMPLES);

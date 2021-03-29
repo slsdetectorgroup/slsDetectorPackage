@@ -370,6 +370,7 @@ void function_table() {
     flist[F_GET_ALL_THRESHOLD_ENERGY] = &get_all_threshold_energy;
     flist[F_GET_MASTER] = &get_master;
     flist[F_GET_CSR] = &get_csr;
+    flist[F_SET_GAIN_CAPS] = &set_gain_caps;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8405,3 +8406,38 @@ int get_csr(int file_des){
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
+int set_gain_caps(int file_des){
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting gain caps to: %u\n", arg));
+
+    int retval = -1;
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // only set
+    
+    if (Server_VerifyLock() == OK) {
+        // if (arg != 0 && arg != 1) {
+        //     ret = FAIL;
+        //     sprintf(mess,
+        //             "Could not set gain caps. Invalid value %d. "
+        //             "Options [0-1]\n",
+        //             arg);
+        //     LOG(logERROR, (mess));
+        // } else {
+            setGainCaps(arg);
+            retval = getChipStatusRegister(); //TODO! fix 
+            LOG(logDEBUG1, ("gain caps retval: %u\n", retval));
+            // validate(arg, retval, " cds gain enable", DEC);
+        // }
+    }
+#endif
+    // return Server_SendResult(file_des, INT32, NULL, 0);
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}

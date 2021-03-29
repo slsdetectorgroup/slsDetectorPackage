@@ -1312,6 +1312,8 @@ class Detector {
     //TODO! check if we really want to expose this !!!!!
     Result<int> getChipStatusRegister(Positions pos = {}) const;
 
+    void setGainCaps(int caps, Positions pos = {});
+
     ///@{
 
     /** @name CTB / Moench Specific */

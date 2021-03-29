@@ -48,6 +48,9 @@
 
 #define CSR_default  (1<<CSR_C10pre )|(1<< CSR_C30sh)
 
+#define GAIN_MASK ((1 << CSR_C10pre) | ( 1 << CSR_C15sh) | (1 << CSR_C30sh) | (1 << CSR_C50sh) | (1 << CSR_C225ACsh) | ( 1 << CSR_C15pre))
+
+
 enum {Cp_0, Cp_10, Cp_15, Cp_45};
 enum {Csh_0,Csh_15,Csh_30,Csh_45,Csh_50,Csh_65,Csh_80,Csh_95};
 enum {Cac225, Cac_450};
@@ -58,6 +61,7 @@ enum {Cac225, Cac_450};
 int setBit(int ibit, int patword);
 int clearBit(int ibit, int patword);
 int getChipStatusRegister();
+
 patternParameters *setChipStatusRegister(int csr);
 patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits);
 patternParameters *setInterpolation(int mask);

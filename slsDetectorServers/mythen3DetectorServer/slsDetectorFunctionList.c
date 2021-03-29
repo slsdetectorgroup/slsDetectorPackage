@@ -2660,6 +2660,60 @@ int getNumberOfChips() { return NCHIP; }
 int getNumberOfDACs() { return NDAC; }
 int getNumberOfChannelsPerChip() { return NCHAN; }
 
+
+
+int setGainCaps(int caps){
+    //TODO Refactor!!!!!
+    int csr = getChipStatusRegister();
+    
+    LOG(logINFO, ("gain_mask: 0x%x\n", GAIN_MASK));
+    LOG(logINFO, ("csr: 0x%x\n", csr));
+    csr &= ~GAIN_MASK; //zero out the bits in the gain mask
+    LOG(logINFO, ("csr: 0x%x\n", csr));
+    caps &= GAIN_MASK;
+    csr |= caps;
+
+    LOG(logINFO, ("csr: 0x%x\n", csr));
+
+    //now comes the actual setting
+    // remember previous run clock
+    uint32_t prevRunClk = clkDivider[SYSTEM_C0];
+    patternParameters *pat=NULL;
+    int error=0;
+    // set to trimming clock
+    if (setClockDivider(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV) == FAIL) {
+        LOG(logERROR,
+            ("Could not start trimming. Could not set to trimming clock\n"));
+        return FAIL;
+    }
+    pat = setChipStatusRegister(csr);
+
+    if (pat) {  
+	    error|=loadPattern(pat);
+	if (error==0) 
+	  startPattern();
+	free(pat);
+      }	else
+	error=1;
+    /////////////////////////////////////////////////////////////////
+    if (error == 0) {
+    
+      LOG(logINFO, ("The gain has been changed\n"));
+    }
+    trimmingPrint = logINFO;
+    // set back to previous clock
+    if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
+        LOG(logERROR, ("Could not set to previous run clock after trimming\n"));
+        return FAIL;
+    }
+
+    if (error != 0) {
+        return FAIL;
+    }
+    return OK;  
+}
+
+
 int setGain(int gain) {
     // remember previous run clock
     uint32_t prevRunClk = clkDivider[SYSTEM_C0];

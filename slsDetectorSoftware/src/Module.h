@@ -427,6 +427,7 @@ class Module : public virtual slsDetectorDefs {
     std::array<time::ns, 3> getGateDelayForAllGates() const;
     bool isMaster() const;
     int getChipStatusRegister() const;
+    void setGainCaps(int caps);
 
     /**************************************************
      *                                                *

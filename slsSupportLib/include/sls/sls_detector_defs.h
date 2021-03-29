@@ -396,12 +396,12 @@ typedef struct {
 
     //gain caps Mythen3
     enum M3_GainCaps {
-        CSR_C10pre= 1<<7, 
-        CSR_C15sh = 1<<10, 
-        CSR_C30sh = 1<<11,
-        CSR_C50sh = 1<<12,
-        CSR_C225ACsh = 1<<13,
-        CSR_C15pre = 1<<14, 
+        M3_C10pre= 1<<7, 
+        M3_C15sh = 1<<10, 
+        M3_C30sh = 1<<11,
+        M3_C50sh = 1<<12,
+        M3_C225ACsh = 1<<13,
+        M3_C15pre = 1<<14, 
     };
 
 #ifdef __cplusplus

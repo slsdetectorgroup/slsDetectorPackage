@@ -279,11 +279,11 @@ void init_enums(py::module &m) {
         .export_values();
 
     py::enum_<slsDetectorDefs::M3_GainCaps>(Defs, "M3_GainCaps")
-        .value("CSR_C10pre", slsDetectorDefs::M3_GainCaps::CSR_C10pre)
-        .value("CSR_C15sh", slsDetectorDefs::M3_GainCaps::CSR_C15sh)
-        .value("CSR_C30sh", slsDetectorDefs::M3_GainCaps::CSR_C30sh)
-        .value("CSR_C50sh", slsDetectorDefs::M3_GainCaps::CSR_C50sh)
-        .value("CSR_C225ACsh", slsDetectorDefs::M3_GainCaps::CSR_C225ACsh)
-        .value("CSR_C15pre", slsDetectorDefs::M3_GainCaps::CSR_C15pre)
+        .value("M3_C10pre", slsDetectorDefs::M3_GainCaps::M3_C10pre)
+        .value("M3_C15sh", slsDetectorDefs::M3_GainCaps::M3_C15sh)
+        .value("M3_C30sh", slsDetectorDefs::M3_GainCaps::M3_C30sh)
+        .value("M3_C50sh", slsDetectorDefs::M3_GainCaps::M3_C50sh)
+        .value("M3_C225ACsh", slsDetectorDefs::M3_GainCaps::M3_C225ACsh)
+        .value("M3_C15pre", slsDetectorDefs::M3_GainCaps::M3_C15pre)
         .export_values();
 }

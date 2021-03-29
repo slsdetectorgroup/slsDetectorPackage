@@ -98,6 +98,8 @@ class energyCalibrationFunctions {
       par[5] is the fractional height of the charge sharing pedestal (scales with par[3])
   */
   Double_t gaussChargeSharing(Double_t *x, Double_t *par);
+  Double_t gaussChargeSharingKb(Double_t *x, Double_t *par);
+  Double_t gaussChargeSharingKaDoublet(Double_t *x, Double_t *par);
   /** 
       Gaussian Function with charge sharing pedestal
       par[0] is the absolute height of the background pedestal
@@ -153,6 +155,8 @@ Double_t erfFuncFluo(Double_t *x, Double_t *par);
       par[5] is the fractional height of the charge sharing pedestal (scales with par[4]
   */
   Double_t spectrum(Double_t *x, Double_t *par);
+  Double_t spectrumkb(Double_t *x, Double_t *par);
+  Double_t spectrumkadoublet(Double_t *x, Double_t *par);
 
   /** 
       static function Gaussian with charge sharing pedestal with the correct scan sign
@@ -285,7 +289,9 @@ class energyCalibration  {
       par[5] is the angual coefficient of the charge sharing slope (scales with par[3]) -- always positive
   */
   void setStartParameters(Double_t *par);
-  
+  void setStartParametersKb(Double_t *par);
+  void setStartParametersKaDoublet(Double_t *par);
+
 /** get start parameters for the s-curve function
     \param par parameters, -1 means auto-calculated
       par[0] is the  pedestal 
@@ -315,16 +321,8 @@ class energyCalibration  {
      \returns the fitted function - can be used e.g. to get the Chi2 or similar
   */
   TF1 *fitSpectrum(TH1 *h1, Double_t *mypar, Double_t *emypar);
-
-
-  /**
-     fits histogram with the spectrum
-     \param h1 1d-histogram to be fitted
-     \param mypar pointer to fit parameters array 
-     \param emypar pointer to fit parameter errors
-     \returns the fitted function - can be used e.g. to get the Chi2 or similar
-  */
-  TF1 *fitSpectrumPixel(TH1 *h1, Double_t *mypar, Double_t *emypar);
+  TF1 *fitSpectrumKb(TH1 *h1, Double_t *mypar, Double_t *emypar);
+  TF1 *fitSpectrumKaDoublet(TH1 *h1, Double_t *mypar, Double_t *emypar);
 
 
   /**
@@ -399,6 +397,8 @@ class energyCalibration  {
 */
   
   void initFitFunction(TF1 *fun, TH1 *h1);
+  void initFitFunctionKb(TF1 *fun, TH1 *h1);
+  void initFitFunctionKaDoublet(TF1 *fun, TH1 *h1);
 
 
   /**
@@ -410,6 +410,8 @@ class energyCalibration  {
      \returns the fitted function - can be used e.g. to get the Chi2 or similar
   */
   TF1 *fitFunction(TF1 *fun, TH1 *h1, Double_t *mypar, Double_t *emypar);  
+  TF1 *fitFunctionKb(TF1 *fun, TH1 *h1, Double_t *mypar, Double_t *emypar);  
+  TF1 *fitFunctionKaDoublet(TF1 *fun, TH1 *h1, Double_t *mypar, Double_t *emypar);  
 
 #endif
 
@@ -423,11 +425,16 @@ class energyCalibration  {
   Double_t noise; /**< start value for the noise */
   Double_t ampl; /**< start value for the number of photons */
   Double_t cs_slope; /**< start value for the charge sharing slope */
-
+  Double_t kb_mean;
+  Double_t kb_frac;
+  Double_t mean2;
+  Double_t ampl2;
 
   TF1 *fscurve; /**< function with which the s-curve will be fitted */
 
   TF1 *fspectrum; /**< function with which the spectrum will be fitted */
+  TF1 *fspectrumkb; /**< function with which the spectrum will be fitted */
+  TF1 *fspectrumkadoublet; /**< function with which the spectrum will be fitted */
 
   TF1 *fspixel; /**< function with which the spectrum will be fitted */
 

@@ -278,7 +278,8 @@ void init_enums(py::module &m) {
                slsDetectorDefs::timingSourceType::TIMING_EXTERNAL)
         .export_values();
 
-    py::enum_<slsDetectorDefs::M3_GainCaps>(Defs, "M3_GainCaps")
+    py::enum_<slsDetectorDefs::M3_GainCaps>(Defs, "M3_GainCaps",
+                                            py::arithmetic())
         .value("M3_C10pre", slsDetectorDefs::M3_GainCaps::M3_C10pre)
         .value("M3_C15sh", slsDetectorDefs::M3_GainCaps::M3_C15sh)
         .value("M3_C30sh", slsDetectorDefs::M3_GainCaps::M3_C30sh)

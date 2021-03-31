@@ -1549,18 +1549,11 @@ int set_module(int file_des) {
     // only set
     else if (Server_VerifyLock() == OK) {
         // check index
+
+#if !(defined(EIGERD) || defined(MYTHEN3D))
+//TODO! Check if this is used for any detector
         switch (module.reg) {
-#ifdef EIGERD
-        case STANDARD:
-        case HIGHGAIN:
-        case LOWGAIN:
-        case VERYHIGHGAIN:
-        case VERYLOWGAIN:
-#elif MYTHEN3D
-        case STANDARD:
-        case FAST:
-        case HIGHGAIN:
-#elif JUNGFRAUD
+#ifdef JUNGFRAUD
         case DYNAMICGAIN:
         case DYNAMICHG0:
         case FIXGAIN1:
@@ -1579,10 +1572,12 @@ int set_module(int file_des) {
             modeNotImplemented("Settings", (int)module.reg);
             break;
         }
-
+#endif
         ret = setModule(module, mess);
         enum detectorSettings retval = getSettings();
+#if !(defined(EIGERD) || defined(MYTHEN3D))
         validate(module.reg, (int)retval, "set module (settings)", DEC);
+#endif
         LOG(logDEBUG1, ("Settings: %d\n", retval));
     }
     free(myChan);

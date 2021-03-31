@@ -35,32 +35,6 @@ int getChipStatusRegister(){
   return chipStatusRegister;
 }
 
-// int setGainCaps(int caps){
-//   int csr = getChipStatusRegister();
-
-//   int gain_mask = 0;
-//   gain_mask |= 1 << CSR_C10pre;
-//   gain_mask |= 1 << CSR_C15sh;
-//   gain_mask |= 1 << CSR_C30sh;
-//   gain_mask |= 1 << CSR_C50sh;
-//   gain_mask |= 1 << CSR_C225ACsh;
-//   gain_mask |= 1 << CSR_C15pre;
-  
-//   LOG(logINFO, ("gain_mask: 0x%x\n", gain_mask));
-//   LOG(logINFO, ("csr: 0x%x\n", csr));
-//   csr &= ~gain_mask; //zero out the bits in the gain mask
-//   LOG(logINFO, ("csr: 0x%x\n", csr));
-//   caps &= gain_mask;
-//   csr |= caps;
-
-//   LOG(logINFO, ("csr: 0x%x\n", csr));
-
-//   //now comes the actual setting
-
-  
-//   return 0;
-// }
-
 patternParameters *setChipStatusRegister(int csr) {
   int iaddr=0;
   int  nbits=18;

@@ -1061,30 +1061,13 @@ int64_t getMeasurementTime() {
 /* parameters - module, speed, readout */
 
 int setModule(sls_detector_module myMod, char *mess) {
-
     LOG(logINFO, ("Setting module\n"));
 
-    // settings
-    if (myMod.reg >= 0) {
-        setSettings((enum detectorSettings)myMod.reg);
-        if (getSettings() != (enum detectorSettings)myMod.reg) {
-            sprintf(
-                mess,
-                "Could not set module. Could not set settings to %d, read %d\n",
-                myMod.reg, (int)getSettings());
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        detectorModules->reg = myMod.reg;
-    }
-    // custom trimbit file
-    else {
-        // changed for setsettings (direct),
-        // custom trimbit file (setmodule with myMod.reg as -1),
-        // change of dac (direct)
-        for (int i = 0; i < NCOUNTERS; ++i) {
-            setThresholdEnergy(i, -1);
-        }
+
+    if (setGainCaps(myMod.reg)){
+        sprintf(mess, "Could not set module gain caps\n");
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 
     // dacs
@@ -1108,24 +1091,12 @@ int setModule(sls_detector_module myMod, char *mess) {
         }
     }
 
-    // if settings given and cannot be validated (after setting dacs), return
-    // error
-    if (myMod.reg >= 0) {
-        if (getSettings() != (enum detectorSettings)myMod.reg) {
-            sprintf(
-                mess,
-                "Could not set module. The dacs in file do not correspond to "
-                "settings %d\n",
-                myMod.reg);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-    }
-
     // threshold
     for (int i = 0; i < NCOUNTERS; ++i) {
         if (myMod.eV[i] >= 0) {
             setThresholdEnergy(i, myMod.eV[i]);
+        }else{
+            setThresholdEnergy(i, -1);
         }
     }
 

@@ -48,3 +48,7 @@ int writeDataFile(std::string fname, int nch, short int *data);
 
 // mkdir -p path implemented by recursive calls
 void mkdir_p(const std::string &path, std::string dir = "");
+
+namespace sls {
+int getFileSize(std::ifstream &ifs);
+}

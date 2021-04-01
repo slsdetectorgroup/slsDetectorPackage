@@ -859,6 +859,44 @@ template <> defs::timingSourceType StringTo(const std::string &s) {
     throw sls::RuntimeError("Unknown timing source type " + s);
 }
 
+template <> defs::M3_GainCaps StringTo(const std::string &s){
+    if (s == "C10pre")
+        return defs::M3_C10pre;
+    if (s == "C15sh")
+        return defs::M3_C15sh;
+    if (s == "C30sh")
+        return defs::M3_C30sh;
+    if (s == "C50sh")
+        return defs::M3_C50sh;
+    if (s == "C225ACsh")
+        return defs::M3_C225ACsh;
+    if (s == "C15pre")
+        return defs::M3_C15pre;
+    throw sls::RuntimeError("Unknown gain cap " + s);
+    
+}
+
+
+std::string ToString(defs::M3_GainCaps s){
+    std::ostringstream os; 
+    if (s & defs::M3_C10pre)
+        os << "C10pre, ";
+    if (s & defs::M3_C15sh)
+        os << "C15sh, ";
+    if (s & defs::M3_C30sh)
+        os << "C30sh, ";
+    if (s & defs::M3_C50sh)
+        os << "C50sh, ";
+    if (s & defs::M3_C225ACsh)
+        os << "C225ACsh, ";
+    if (s & defs::M3_C15pre)
+        os << "C15pre, ";
+    auto rs = os.str();
+    rs.erase(rs.end()-2);
+    return rs;
+    
+}
+
 template <> uint32_t StringTo(const std::string &s) {
     int base = s.find("0x") != std::string::npos ? 16 : 10;
     return std::stoul(s, nullptr, base);

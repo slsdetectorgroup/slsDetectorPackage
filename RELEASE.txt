@@ -19,6 +19,7 @@ This document describes the differences between X and Y releases.
 1. New Features
 ===============
 
+    Setting Mythen3 gain from command line
 
 4. Firmware Requirements
 ========================

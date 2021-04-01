@@ -1981,6 +1981,37 @@ std::string CmdProxy::GateDelay(int action) {
     return os.str();
 }
 
+
+std::string CmdProxy::GainCaps(int action){
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[cap1, cap2, ...]\n\t[Mythen3] gain, options: C10pre, C15sh, C30sh, C50sh, C225ACsh, C15pre"
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (!args.empty())
+            WrongNumberOfParameters(0);
+
+        auto tmp = det->getChipStatusRegister();
+        sls::Result<defs::M3_GainCaps> csr;
+        for (auto val : tmp)
+            csr.push_back(static_cast<defs::M3_GainCaps>(val));
+        os << OutString(csr) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() < 1) {
+            WrongNumberOfParameters(1);
+        }
+        int caps = 0;
+        for (const auto& arg:args)
+            caps |= sls::StringTo<defs::M3_GainCaps>(arg);
+        det->setGainCaps(caps);
+        os << OutString(args) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* CTB / Moench Specific */
 
 std::string CmdProxy::Samples(int action) {

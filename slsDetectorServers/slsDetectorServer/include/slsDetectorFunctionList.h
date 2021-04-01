@@ -358,6 +358,8 @@ enum timingMode getTiming();
 void setInitialExtSignals();
 int isMaster();
 int setGainCaps(int caps);
+int setChipStatusRegister(int csr);
+int setDACS(int* dacs);
 #endif
 #if defined(GOTTHARDD) || defined(MYTHEN3D)
 void setExtSignal(int signalIndex, enum externalSignalFlag mode);

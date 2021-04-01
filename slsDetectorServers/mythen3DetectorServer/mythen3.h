@@ -51,27 +51,16 @@
 #define GAIN_MASK ((1 << CSR_C10pre) | ( 1 << CSR_C15sh) | (1 << CSR_C30sh) | (1 << CSR_C50sh) | (1 << CSR_C225ACsh) | ( 1 << CSR_C15pre))
 
 
-enum {Cp_0, Cp_10, Cp_15, Cp_45};
-enum {Csh_0,Csh_15,Csh_30,Csh_45,Csh_50,Csh_65,Csh_80,Csh_95};
-enum {Cac225, Cac_450};
-
-
-
-#define default_gain 
 int setBit(int ibit, int patword);
 int clearBit(int ibit, int patword);
 int getChipStatusRegister();
 
-patternParameters *setChipStatusRegister(int csr);
+patternParameters *setChipStatusRegisterPattern(int csr);
 patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits);
 patternParameters *setInterpolation(int mask);
 patternParameters *setPumpProbe(int mask);
 patternParameters *setDigitalPulsing(int mask);
 patternParameters *setAnalogPulsing(int mask);
 patternParameters *setNegativePolarity(int mask);
-patternParameters *setChipGain(int pgain, int shgain, int acgain);
-int setGainAC(int shgain, int *csr);
-int setGainShaper(int shgain, int *csr);
-int setGainPreamp(int pgain, int *csr);
 
 #endif

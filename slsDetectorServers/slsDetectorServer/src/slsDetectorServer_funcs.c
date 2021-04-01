@@ -8415,24 +8415,11 @@ int set_gain_caps(int file_des){
 #ifndef MYTHEN3D
     functionNotImplemented();
 #else
-    // only set
-    
     if (Server_VerifyLock() == OK) {
-        // if (arg != 0 && arg != 1) {
-        //     ret = FAIL;
-        //     sprintf(mess,
-        //             "Could not set gain caps. Invalid value %d. "
-        //             "Options [0-1]\n",
-        //             arg);
-        //     LOG(logERROR, (mess));
-        // } else {
-            setGainCaps(arg);
-            retval = getChipStatusRegister(); //TODO! fix 
-            LOG(logDEBUG1, ("gain caps retval: %u\n", retval));
-            // validate(arg, retval, " cds gain enable", DEC);
-        // }
+        setGainCaps(arg);
+        retval = getChipStatusRegister(); //TODO! fix 
+        LOG(logDEBUG1, ("gain caps retval: %u\n", retval));
     }
 #endif
-    // return Server_SendResult(file_des, INT32, NULL, 0);
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

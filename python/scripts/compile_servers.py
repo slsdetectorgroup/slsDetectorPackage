@@ -52,7 +52,7 @@ servers = [
 #     "eigerDetectorServer",
 #     "jungfrauDetectorServer",
       "mythen3DetectorServer",
-      "gotthard2DetectorServer",
+#     "gotthard2DetectorServer",
 #     "gotthardDetectorServer",
 #     "ctbDetectorServer",
 #     "moenchDetectorServer",

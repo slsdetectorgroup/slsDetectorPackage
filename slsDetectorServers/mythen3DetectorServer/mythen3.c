@@ -35,7 +35,7 @@ int getChipStatusRegister(){
   return chipStatusRegister;
 }
 
-patternParameters *setChipStatusRegister(int csr) {
+patternParameters *setChipStatusRegisterPattern(int csr) {
   int iaddr=0;
   int  nbits=18;
   int error=0;
@@ -121,7 +121,7 @@ patternParameters *setInterpolation(int mask) {
   else
     csr=chipStatusRegister & ~(1<< CSR_interp);
 
-  return setChipStatusRegister(csr);
+  return setChipStatusRegisterPattern(csr);
 }
 
 
@@ -133,7 +133,7 @@ patternParameters *setPumpProbe(int mask) {
   else
     csr=chipStatusRegister & ~(1<< CSR_pumprobe);
 
-  return setChipStatusRegister(csr);
+  return setChipStatusRegisterPattern(csr);
 
 }
 patternParameters *setDigitalPulsing(int mask) {
@@ -144,7 +144,7 @@ patternParameters *setDigitalPulsing(int mask) {
   else
     csr=chipStatusRegister & ~(1<< CSR_dpulse);
 
-  return setChipStatusRegister(csr);
+  return setChipStatusRegisterPattern(csr);
   
 }
 patternParameters *setAnalogPulsing(int mask){
@@ -155,7 +155,7 @@ patternParameters *setAnalogPulsing(int mask){
   else
     csr=chipStatusRegister & ~(1<< CSR_apulse);
 
-  return setChipStatusRegister(csr);
+  return setChipStatusRegisterPattern(csr);
   
 }
 patternParameters *setNegativePolarity(int mask){
@@ -166,137 +166,9 @@ patternParameters *setNegativePolarity(int mask){
   else
     csr=chipStatusRegister & ~(1<< CSR_invpol);
 
-  return setChipStatusRegister(csr);
+  return setChipStatusRegisterPattern(csr);
   
 }
-
-int setGainPreamp(int pgain, int *csr) {
-
-  
-  
-  switch (pgain) {
-  case Cp_0:
-  case Cp_15:
-    *csr=(*csr)&~(1<<CSR_C10pre);
-    break;
-  case Cp_10:
-  case Cp_45:
-    *csr=(*csr)|(1<<CSR_C10pre);
-    break;
-  default:
-    LOG(logERROR, ("Bad preamp gain"));
-    return 1;
-  }
-  
-  switch (pgain) {
-  case Cp_0:
-  case Cp_10:
-    *csr=(*csr)&~(1<<CSR_C15pre);
-    break;
-  case Cp_15:
-  case Cp_45:
-    *csr=(*csr)|(1<<CSR_C15pre);
-    break;
-  default:
-    LOG(logERROR, ("Bad preamp gain"));
-    return 1;
-  }
-  
-  return 0;
-
-}
-int setGainShaper(int shgain, int *csr){
-  
-  
-  switch (shgain) {
-  case Csh_0:
-  case Csh_30:
-  case Csh_50:
-  case Csh_80:
-    *csr=(*csr)&~(1<<CSR_C15sh);
-    break;
-  case Csh_15:
-  case Csh_45:
-  case Csh_65:
-  case Csh_95:
-    *csr=(*csr)|(1<<CSR_C15sh);
-    break;
-  default:
-    LOG(logERROR, ("Bad shaper gain"));
-    return 1;
-  }
-  
-  switch (shgain) {
-  case Csh_0:
-  case Csh_15:
-  case Csh_50:
-  case Csh_65:
-    *csr=(*csr)&~(1<<CSR_C30sh);
-    break;
-  case Csh_30:
-  case Csh_45:
-  case Csh_80:
-  case Csh_95:
-    *csr=(*csr)|(1<<CSR_C30sh);
-    break;
-  default:
-    LOG(logERROR, ("Bad shaper gain"));
-    return 1;
-  }
-  switch (shgain) {
-  case Csh_0:
-  case Csh_15:
-  case Csh_30:
-  case Csh_45:
-    *csr=(*csr)&~(1<<CSR_C50sh);
-    break;
-  case Csh_80:
-  case Csh_50:
-  case Csh_65:
-  case Csh_95:
-    *csr=(*csr)|(1<<CSR_C50sh);
-    break;
-  default:
-    LOG(logERROR, ("Bad shaper gain"));
-    return 1;
-  }
-  
-  return 0;
-}
-
-int setGainAC(int acgain, int *csr){
-
-  switch (acgain) {
-  case Cac_450:
-    *csr=(*csr)&~(1<<CSR_C225ACsh);
-    break;
-  case Cac225:
-    *csr=(*csr)|(1<<CSR_C225ACsh);
-    break;
-  default:
-    LOG(logERROR, ("Bad ac gain"));
-    return 1;
-  }
-  return 0;
-}
-
-
-
-patternParameters *setChipGain(int pgain, int shgain, int acgain){
-  int csr=chipStatusRegister;
-  
-  if (setGainPreamp(pgain,&csr))
-    return NULL;
-  if (setGainShaper(shgain,&csr))
-    return NULL;
-  if (setGainAC(acgain,&csr))
-    return NULL;
-  
-  return setChipStatusRegister(csr);
-}
-
-
-
 
 patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits) {
 

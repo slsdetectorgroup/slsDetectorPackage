@@ -518,7 +518,7 @@ void setupDetector() {
 
     powerChip(1);
     if (initError != FAIL) {
-      patternParameters *pat=setChipStatusRegister(CSR_default);
+      patternParameters *pat=setChipStatusRegisterPattern(CSR_default);
       if (pat) {
 	initError=loadPattern(pat);
 	startStateMachine();
@@ -1060,9 +1060,26 @@ int64_t getMeasurementTime() {
 
 /* parameters - module, speed, readout */
 
+int setDACS(int* dacs){
+    for (int i = 0; i < NDAC; ++i) {
+        if (dacs[i] != -1) {
+            setDAC((enum DACINDEX)i, dacs[i], 0);
+            if (dacs[i] != detectorDacs[i]) {
+                // dont complain if that counter was disabled
+                if ((i == M_VTH1 || i == M_VTH2 || i == M_VTH3) &&
+                    (detectorDacs[i] == DEFAULT_COUNTER_DISABLED_VTH_VAL)) {
+                    continue;
+                }
+                return FAIL;
+            }
+        }
+    }
+    return OK;
+}
+
+
 int setModule(sls_detector_module myMod, char *mess) {
     LOG(logINFO, ("Setting module\n"));
-
 
     if (setGainCaps(myMod.reg)){
         sprintf(mess, "Could not set module gain caps\n");
@@ -1070,28 +1087,12 @@ int setModule(sls_detector_module myMod, char *mess) {
         return FAIL;
     }
 
-    // dacs
-    for (int i = 0; i < NDAC; ++i) {
-        // ignore dacs with -1
-        if (myMod.dacs[i] != -1) {
-            setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
-            if (myMod.dacs[i] != detectorDacs[i]) {
-                // dont complain if that counter was disabled
-                if ((i == M_VTH1 || i == M_VTH2 || i == M_VTH3) &&
-                    (detectorDacs[i] == DEFAULT_COUNTER_DISABLED_VTH_VAL)) {
-                    continue;
-                }
-                sprintf(mess,
-                        "Could not set module. Could not set dac %d, wrote %d, "
-                        "read %d\n",
-                        i, myMod.dacs[i], detectorDacs[i]);
-                LOG(logERROR, (mess));
-                return FAIL;
-            }
-        }
+    if (setDACS(myMod.dacs)){
+        sprintf(mess, "Could not set dacs\n");
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 
-    // threshold
     for (int i = 0; i < NCOUNTERS; ++i) {
         if (myMod.eV[i] >= 0) {
             setThresholdEnergy(i, myMod.eV[i]);
@@ -2632,105 +2633,45 @@ int getNumberOfDACs() { return NDAC; }
 int getNumberOfChannelsPerChip() { return NCHAN; }
 
 
-
-int setGainCaps(int caps){
-    //TODO Refactor!!!!!
-    int csr = getChipStatusRegister();
-    
-    LOG(logINFO, ("gain_mask: 0x%x\n", GAIN_MASK));
-    LOG(logINFO, ("csr: 0x%x\n", csr));
-    csr &= ~GAIN_MASK; //zero out the bits in the gain mask
-    LOG(logINFO, ("csr: 0x%x\n", csr));
-    caps &= GAIN_MASK;
-    csr |= caps;
-
-    LOG(logINFO, ("csr: 0x%x\n", csr));
-
-    //now comes the actual setting
-    // remember previous run clock
+int setChipStatusRegister(int csr){
     uint32_t prevRunClk = clkDivider[SYSTEM_C0];
     patternParameters *pat=NULL;
+    
     int error=0;
-    // set to trimming clock
     if (setClockDivider(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV) == FAIL) {
         LOG(logERROR,
-            ("Could not start trimming. Could not set to trimming clock\n"));
+            ("Could not set to trimming clock in order to change CSR\n"));
         return FAIL;
     }
-    pat = setChipStatusRegister(csr);
+    pat = setChipStatusRegisterPattern(csr);
 
     if (pat) {  
-	    error|=loadPattern(pat);
-	if (error==0) 
-	  startPattern();
-	free(pat);
-      }	else
-	error=1;
-    /////////////////////////////////////////////////////////////////
-    if (error == 0) {
-    
-      LOG(logINFO, ("The gain has been changed\n"));
+        error |= loadPattern(pat);
+        if (error == 0) 
+            startPattern();
+        free(pat);
+    }else{
+        error = 1;
     }
-    trimmingPrint = logINFO;
-    // set back to previous clock
+
+    if (error == 0) {
+      LOG(logINFO, ("CSR is now: 0x%x\n", csr));
+    }
+
     if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
-        LOG(logERROR, ("Could not set to previous run clock after trimming\n"));
+        LOG(logERROR, ("Could not set to previous run clock after changing CSR\n"));
         return FAIL;
     }
 
-    if (error != 0) {
-        return FAIL;
-    }
-    return OK;  
+    return OK;
 }
 
 
-int setGain(int gain) {
-    // remember previous run clock
-    uint32_t prevRunClk = clkDivider[SYSTEM_C0];
-    patternParameters *pat=NULL;
-    int error=0;
-    // set to trimming clock
-    if (setClockDivider(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV) == FAIL) {
-        LOG(logERROR,
-            ("Could not start trimming. Could not set to trimming clock\n"));
-        return FAIL;
-    }
-    /////////////////////////////////////////////////////////////////
-    int pgain=Cp_10;
-    int shgain=Csh_30;
-    int acgain=Cac_450;
-    /*
-      acgain=gain%2;
-      gain/=2;
-      shgain=gain%8;
-      gain/=8;
-      pgain=gain
-    */
-
-
-    pat=setChipGain(pgain, shgain, acgain);
-    if (pat) {
-	error|=loadPattern(pat);
-	if (error==0) 
-	  startPattern();
-	free(pat);
-      }	else
-	error=1;
-    /////////////////////////////////////////////////////////////////
-    if (error == 0) {
-    
-      LOG(logINFO, ("The gain has been changed\n"));
-    }
-    trimmingPrint = logINFO;
-    // set back to previous clock
-    if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
-        LOG(logERROR, ("Could not set to previous run clock after trimming\n"));
-        return FAIL;
-    }
-
-    if (error != 0) {
-        return FAIL;
-    }
-    return OK;
+int setGainCaps(int caps){
+    // Update only gain caps, leave the rest of the CSR unchanged
+    int csr = getChipStatusRegister();
+    csr &= ~GAIN_MASK;
+    caps &= GAIN_MASK;
+    csr |= caps;
+    return setChipStatusRegister(csr);
 }

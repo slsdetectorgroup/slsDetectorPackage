@@ -1314,6 +1314,8 @@ class Detector {
 
     void setGainCaps(int caps, Positions pos = {});
 
+    Result<int> getGainCaps(Positions pos = {});
+
     ///@{
 
     /** @name CTB / Moench Specific */

@@ -1992,7 +1992,7 @@ std::string CmdProxy::GainCaps(int action){
         if (!args.empty())
             WrongNumberOfParameters(0);
 
-        auto tmp = det->getChipStatusRegister();
+        auto tmp = det->getGainCaps();
         sls::Result<defs::M3_GainCaps> csr;
         for (auto val : tmp){
             if (val)

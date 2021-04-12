@@ -358,6 +358,7 @@ enum timingMode getTiming();
 void setInitialExtSignals();
 int isMaster();
 int setGainCaps(int caps);
+int getGainCaps();
 int setChipStatusRegister(int csr);
 int setDACS(int* dacs);
 #endif

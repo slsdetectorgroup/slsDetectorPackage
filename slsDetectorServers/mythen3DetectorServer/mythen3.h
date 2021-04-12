@@ -37,23 +37,25 @@
 #define CSR_invpol  4
 #define CSR_dpulse  5
 #define CSR_interp  6
-#define CSR_C10pre  7 //#default
+#define _CSR_C10pre  7 //#default, negative polarity
 #define CSR_pumprobe  8
 #define CSR_apulse  9
 #define CSR_C15sh  10 
 #define CSR_C30sh  11 //#default
 #define CSR_C50sh  12
 #define CSR_C225ACsh  13 // Connects 225fF SHAPER AC cap (1: 225 to shaper, 225 to GND. 0: 450 to shaper) 
-#define CSR_C15pre  14 
+#define _CSR_C15pre  14 // negative polarity
 
-#define CSR_default  (1<<CSR_C10pre )|(1<< CSR_C30sh)
+#define CSR_default  (1<<_CSR_C10pre )|(1<< CSR_C30sh)
 
-#define GAIN_MASK ((1 << CSR_C10pre) | ( 1 << CSR_C15sh) | (1 << CSR_C30sh) | (1 << CSR_C50sh) | (1 << CSR_C225ACsh) | ( 1 << CSR_C15pre))
+#define GAIN_MASK ((1 << _CSR_C10pre) | ( 1 << CSR_C15sh) | (1 << CSR_C30sh) | (1 << CSR_C50sh) | (1 << CSR_C225ACsh) | ( 1 << _CSR_C15pre))
 
 
 int setBit(int ibit, int patword);
 int clearBit(int ibit, int patword);
 int getChipStatusRegister();
+int gainCapsToCsr(int caps);
+int csrToGainCaps(int csr);
 
 patternParameters *setChipStatusRegisterPattern(int csr);
 patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits);

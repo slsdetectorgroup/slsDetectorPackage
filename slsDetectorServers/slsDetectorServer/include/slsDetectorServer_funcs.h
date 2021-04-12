@@ -249,3 +249,4 @@ int get_all_threshold_energy(int);
 int get_master(int);
 int get_csr();
 int set_gain_caps(int);
+int get_gain_caps(int);

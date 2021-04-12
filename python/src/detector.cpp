@@ -1143,6 +1143,9 @@ void init_det(py::module &m) {
         .def("setGainCaps",
              (void (Detector::*)(int, sls::Positions)) & Detector::setGainCaps,
              py::arg(), py::arg() = Positions{})
+        .def("getGainCaps",
+             (Result<int>(Detector::*)(sls::Positions)) & Detector::getGainCaps,
+             py::arg() = Positions{})
         .def("getNumberOfAnalogSamples",
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfAnalogSamples,

@@ -35,6 +35,44 @@ int getChipStatusRegister(){
   return chipStatusRegister;
 }
 
+int gainCapsToCsr(int caps){
+  //Translates bit representation
+  int csr = 0;
+  if (!(caps & M3_C10pre))
+    csr |= 1 << _CSR_C10pre;
+  if (caps & M3_C15sh)
+    csr |= 1 << CSR_C15sh;
+  if (caps & M3_C30sh)
+    csr |= 1 << CSR_C30sh;
+  if (caps & M3_C50sh)
+    csr |= 1 << CSR_C50sh;
+  if (caps & M3_C225ACsh)
+    csr |= 1 << CSR_C225ACsh;
+  if (!(caps & M3_C15pre))
+    csr |= 1 << _CSR_C15pre;
+
+  return csr;
+}
+
+int csrToGainCaps(int csr){
+  //Translates bit representation
+  int caps = 0;
+  if (!(csr & (1 << _CSR_C10pre)))
+    caps |= M3_C10pre;
+  if (csr & (1 << CSR_C15sh))
+    caps |= M3_C15sh;
+  if (csr & (1 << CSR_C30sh))
+    caps |= M3_C30sh;
+  if (csr & (1 << CSR_C50sh))
+    caps |= M3_C50sh;
+  if (csr & (1 << CSR_C225ACsh))
+    caps |= M3_C225ACsh;
+  if (!(csr & (1 << _CSR_C15pre)))
+    caps |= M3_C15pre;
+
+  return caps;
+}
+
 patternParameters *setChipStatusRegisterPattern(int csr) {
   int iaddr=0;
   int  nbits=18;

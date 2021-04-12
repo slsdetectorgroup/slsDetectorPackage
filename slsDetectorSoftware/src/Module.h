@@ -428,6 +428,7 @@ class Module : public virtual slsDetectorDefs {
     bool isMaster() const;
     int getChipStatusRegister() const;
     void setGainCaps(int caps);
+    int getGainCaps();
 
     /**************************************************
      *                                                *

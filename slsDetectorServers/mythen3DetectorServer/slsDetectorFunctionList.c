@@ -1078,8 +1078,8 @@ int setDACS(int* dacs){
 int setModule(sls_detector_module myMod, char *mess) {
     LOG(logINFO, ("Setting module\n"));
 
-    if (setGainCaps(myMod.reg)){
-        sprintf(mess, "Could not set module gain caps\n");
+    if (setChipStatusRegister(myMod.reg)){
+        sprintf(mess, "Could not CSR from module\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -2667,7 +2667,15 @@ int setGainCaps(int caps){
     // Update only gain caps, leave the rest of the CSR unchanged
     int csr = getChipStatusRegister();
     csr &= ~GAIN_MASK;
-    caps &= GAIN_MASK;
+
+    caps = gainCapsToCsr(caps);
+    // caps &= GAIN_MASK;
     csr |= caps;
     return setChipStatusRegister(csr);
+}
+
+int getGainCaps(){
+    int csr = getChipStatusRegister();
+    int caps = csrToGainCaps(csr);
+    return caps; 
 }

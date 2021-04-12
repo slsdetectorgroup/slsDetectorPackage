@@ -1994,16 +1994,22 @@ std::string CmdProxy::GainCaps(int action){
 
         auto tmp = det->getChipStatusRegister();
         sls::Result<defs::M3_GainCaps> csr;
-        for (auto val : tmp)
-            csr.push_back(static_cast<defs::M3_GainCaps>(val));
+        for (auto val : tmp){
+            if (val)
+                csr.push_back(static_cast<defs::M3_GainCaps>(val));
+        }
+            
         os << OutString(csr) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() < 1) {
             WrongNumberOfParameters(1);
         }
         int caps = 0;
-        for (const auto& arg:args)
-            caps |= sls::StringTo<defs::M3_GainCaps>(arg);
+        for (const auto& arg:args){
+            if (arg != "0")
+                caps |= sls::StringTo<defs::M3_GainCaps>(arg);
+        }
+            
         det->setGainCaps(caps);
         os << OutString(args) << '\n';
     } else {

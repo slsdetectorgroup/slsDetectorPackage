@@ -498,7 +498,7 @@ class Detector {
 
     /** Non blocking: Abort detector acquisition. Status changes to IDLE or
      * STOPPED. Goes to stop server. */
-    void stopDetector();
+    void stopDetector(Positions pos = {});
 
     /** IDLE, ERROR, WAITING, RUN_FINISHED, TRANSMITTING, RUNNING, STOPPED \n
      * Goes to stop server */

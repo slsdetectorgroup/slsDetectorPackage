@@ -1455,7 +1455,7 @@ class CmdProxy {
         "\n\t[Mythen3] Starts detector readout. Status changes to TRANSMITTING "
         "and automatically returns to idle at the end of readout.");
 
-    EXECUTE_SET_COMMAND_NOID(stop, stopDetector,
+    EXECUTE_SET_COMMAND(stop, stopDetector,
                              "\n\tAbort detector acquisition. Status changes "
                              "to IDLE or STOPPED. Goes to stop server.");
 

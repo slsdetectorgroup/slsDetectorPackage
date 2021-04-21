@@ -123,7 +123,7 @@ public:
      return fifoFree->pop(ptr);
    }
 
-   virtual int isBusy() {if (fifoData->isEmpty() && busy==0) return 0; else return 1;}
+   virtual int isBusy() {if (fifoData->isEmpty() && busy==0) return 0; return 1;}
    
    //protected:
    /** Implement this method in your subclass with the code you want your thread to run. */

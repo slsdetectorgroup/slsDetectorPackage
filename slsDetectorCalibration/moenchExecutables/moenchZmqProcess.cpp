@@ -1,6 +1,8 @@
 //#define WRITE_QUAD
 #define DEVELOPER
 #undef CORR
+#undef MOENCH04
+
 #define C_GHOST 0.0004
 
 #define CM_ROWS 20
@@ -27,6 +29,7 @@
 #include <iomanip> 
 #include <fstream> 
 #include "tiffIO.h"
+
 
 #include <rapidjson/document.h> //json header in zmq stream
 
@@ -135,9 +138,11 @@ int main(int argc, char *argv[]) {
 
   //slsDetectorData *det=new moench03T1ZmqDataNew(); 
 #ifndef MOENCH04
+  cout << "This is a Moench03" << endl;
   moench03T1ZmqDataNew *det=new moench03T1ZmqDataNew(); 
 #endif
 #ifdef MOENCH04
+  cout << "This is a Moench04" << endl;
   moench04CtbZmq10GbData *det=new moench04CtbZmq10GbData(); 
 #endif
   cout << endl << " det" <<endl;
@@ -614,61 +619,8 @@ int main(int argc, char *argv[]) {
 	      version=zHeader.version;//doc["version"].GetUint();
 	      /*document["bitmode"].GetUint(); zHeader.dynamicRange
 
-document["fileIndex"].GetUint64(); zHeader.fileIndex
 
-document["detshape"][0].GetUint();
-zHeader.ndetx
-
-document["detshape"][1].GetUint();
-zHeader.ndety
-
-document["shape"][0].GetUint();
-zHeader.npixelsx
-
-document["shape"][1].GetUint();
-zHeader.npixelsy
-
-document["size"].GetUint(); zHeader.imageSize
-
-document["acqIndex"].GetUint64(); zHeader.acqIndex
-
-document["frameIndex"].GetUint64(); zHeader.frameIndex
-
-document["fname"].GetString(); zHeader.fname
-
-document["frameNumber"].GetUint64(); zHeader.frameNumber
-
-document["expLength"].GetUint(); zHeader.expLength
-
-document["packetNumber"].GetUint(); zHeader.packetNumber
-
-document["bunchId"].GetUint64(); zHeader.bunchId
-
-document["timestamp"].GetUint64(); zHeader.timestamp
-
-document["modId"].GetUint(); zHeader.modId
-
-document["row"].GetUint(); zHeader.row
-
-document["column"].GetUint(); zHeader.column
-
-document["reserved"].GetUint(); zHeader.reserved
-
-document["debug"].GetUint(); zHeader.debug
-
-document["roundRNumber"].GetUint(); zHeader.roundRNumber
-
-document["detType"].GetUint(); zHeader.detType
-
-document["version"].GetUint(); zHeader.version
-
-document["flippedDataX"].GetUint(); zHeader.flippedDataX
-
-document["quad"].GetUint(); zHeader.quad
-
-document["completeImage"].GetUint(); zHeader.completeImage
 	      */
-	      //dataSize=size;
 
 	      //strcpy(fname,filename.c_str());
 	      fname=filename;

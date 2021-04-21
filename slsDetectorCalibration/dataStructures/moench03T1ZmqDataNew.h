@@ -14,6 +14,8 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
   const int nSamples;
   const int offset;
 
+
+
   double ghost[200][25];
   double xtalk;
 
@@ -29,17 +31,22 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 
   */
   // moench03T1ZmqDataNew(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*32*2+sizeof(int)), nSamples(ns), offset(sizeof(int)), xtalk(0.00021) {
- moench03T1ZmqDataNew(int ns=5000, int oo=0): slsDetectorData<uint16_t>(400, 400, ns*32*2+oo), nSamples(ns), offset(oo), xtalk(0.00021) {
-
+ moench03T1ZmqDataNew(int ns=5000, int oo=2*2): slsDetectorData<uint16_t>(400, 400, ns*32*2+oo), nSamples(ns), offset(oo), xtalk(0.00021) {
+    cout << "M0.3" << endl;
     int nadc=32;
     int sc_width=25;
     int sc_height=200;
-
-    int adc_nr[32]={300,325,350,375,300,325,350,375,		\
+    
+     int adc_nr[32]={300,325,350,375,300,325,350,375,	\
     		    200,225,250,275,200,225,250,275,\
     		    100,125,150,175,100,125,150,175,\
     		    0,25,50,75,0,25,50,75};
-
+   
+     /*   int adc_nr[32]={350,375,150,175,350,375,150,175,	\
+    		    300,325,100,125,300,325,100,125,\
+    		    250,275,50,75,250,275,50,75,\
+    		    200,225,0,25,200,225,0,25};
+     */
     int row, col;
     
     int isample;
@@ -50,11 +57,11 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
     int i;
     int adc4(0);
   
-    for (int ip=0; ip<npackets; ip++) {
-      for (int is=0; is<128; is++) {
-
+    //for (int ip=0; ip<npackets; ip++) {
+    // for (int is=0; is<128; is++) {
+    for (i=0; i<nSamples; i++) {
 	for (iadc=0; iadc<nadc; iadc++) {
-	  i=128*ip+is;
+	  //i=128*ip+is;
 	  adc4=(int)iadc/4;
 	  if (i<sc_width*sc_height) {
 	    //  for (int i=0; i<sc_width*sc_height; i++) {
@@ -70,7 +77,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 	  }
 	}
       }
-    }
+  // }
 
     
     int ii=0;

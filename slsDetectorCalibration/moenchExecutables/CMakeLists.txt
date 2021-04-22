@@ -3,11 +3,11 @@ find_package(TIFF REQUIRED)
 
 #Moench ZMQ
 add_executable(moenchZmqProcess moenchZmqProcess.cpp ../tiffIO.cpp)
-add_compile_definitions(moenchZmqProcess NEWZMQ INTERP)
+target_compile_definitions(moenchZmqProcess PRIVATE NEWZMQ INTERP)
 
 #Moench04 ZMQ
 add_executable(moench04ZmqProcess moenchZmqProcess.cpp ../tiffIO.cpp)
-add_compile_definitions(moenchZmqProcess NEWZMQ INTERP MOENCH04)
+target_compile_definitions(moench04ZmqProcess PRIVATE NEWZMQ INTERP MOENCH04)
 
 
 #Both executables should have the same includes and output dirs

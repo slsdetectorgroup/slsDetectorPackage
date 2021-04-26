@@ -571,19 +571,6 @@ class CmdProxy {
         return ToString(value, unit);
     }
 
-    // inline unsigned int stoiHex(const std::string& s) {
-    //     unsigned long lresult = stoul(s, nullptr, 16);
-    //     unsigned int result = lresult;
-    //     if (result != lresult) {
-    //         throw std::out_of_range("cannot convert to unsigned int");
-    //     }
-    //     return result;
-    // }
-
-    // inline unsigned long int stoulHex(const std::string& s) {
-    //     unsigned long result = stoul(s, nullptr, 16);
-    //     return result;
-    // }
 
     using FunctionMap = std::map<std::string, std::string (CmdProxy::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
@@ -970,6 +957,7 @@ class CmdProxy {
         {"gatedelay1", &CmdProxy::GateDelay},
         {"gatedelay2", &CmdProxy::GateDelay},
         {"gatedelay3", &CmdProxy::GateDelay},
+        {"gaincaps", &CmdProxy::GainCaps},
 
         /* CTB/ Moench Specific */
         {"samples", &CmdProxy::Samples},
@@ -1137,6 +1125,7 @@ class CmdProxy {
     /* Mythen3 Specific */
     std::string Counters(int action);
     std::string GateDelay(int action);
+    std::string GainCaps(int action);
     /* CTB/ Moench Specific */
     std::string Samples(int action);
     /* CTB Specific */

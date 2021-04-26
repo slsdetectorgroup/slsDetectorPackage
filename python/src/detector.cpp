@@ -1136,6 +1136,16 @@ void init_det(py::module &m) {
              (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getMaster,
              py::arg() = Positions{})
+        .def("getChipStatusRegister",
+             (Result<int>(Detector::*)(sls::Positions) const) &
+                 Detector::getChipStatusRegister,
+             py::arg() = Positions{})
+        .def("setGainCaps",
+             (void (Detector::*)(int, sls::Positions)) & Detector::setGainCaps,
+             py::arg(), py::arg() = Positions{})
+        .def("getGainCaps",
+             (Result<int>(Detector::*)(sls::Positions)) & Detector::getGainCaps,
+             py::arg() = Positions{})
         .def("getNumberOfAnalogSamples",
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfAnalogSamples,

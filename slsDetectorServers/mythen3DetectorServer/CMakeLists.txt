@@ -1,5 +1,6 @@
 add_executable(mythen3DetectorServer_virtual
     slsDetectorFunctionList.c
+    mythen3.c
     ../slsDetectorServer/src/slsDetectorServer.c
     ../slsDetectorServer/src/slsDetectorServer_funcs.c
     ../slsDetectorServer/src/communication_funcs.c
@@ -10,7 +11,8 @@ add_executable(mythen3DetectorServer_virtual
     ../slsDetectorServer/src/LTC2620_Driver.c
     ../slsDetectorServer/src/ALTERA_PLL_CYCLONE10.c   
     ../slsDetectorServer/src/programFpgaNios.c
-    ../slsDetectorServer/src/readDefaultPattern.c         
+    ../slsDetectorServer/src/readDefaultPattern.c 
+    ../slsDetectorServer/src/loadPattern.c         
     ../slsDetectorServer/src/sharedMemory.c
 )
 

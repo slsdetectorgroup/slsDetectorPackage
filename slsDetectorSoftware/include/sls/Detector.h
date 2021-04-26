@@ -1308,6 +1308,14 @@ class Detector {
 
     Result<bool> getMaster(Positions pos = {}) const;
 
+
+    //TODO! check if we really want to expose this !!!!!
+    Result<int> getChipStatusRegister(Positions pos = {}) const;
+
+    void setGainCaps(int caps, Positions pos = {});
+
+    Result<int> getGainCaps(Positions pos = {});
+
     ///@{
 
     /** @name CTB / Moench Specific */

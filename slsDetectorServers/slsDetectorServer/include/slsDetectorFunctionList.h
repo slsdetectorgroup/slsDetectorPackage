@@ -25,6 +25,10 @@
 #include "blackfin.h"
 #endif
 
+#if defined(MYTHEN3D) 
+#include "mythen3.h"
+#endif
+
 #include <stdio.h> // FILE
 #include <stdlib.h>
 #include <sys/types.h>
@@ -353,6 +357,10 @@ enum timingMode getTiming();
 #ifdef MYTHEN3D
 void setInitialExtSignals();
 int isMaster();
+int setGainCaps(int caps);
+int getGainCaps();
+int setChipStatusRegister(int csr);
+int setDACS(int* dacs);
 #endif
 #if defined(GOTTHARDD) || defined(MYTHEN3D)
 void setExtSignal(int signalIndex, enum externalSignalFlag mode);

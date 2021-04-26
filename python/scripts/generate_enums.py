@@ -11,6 +11,8 @@ import subprocess
 
 from parse import remove_comments
 
+allow_bitwise_op = ["M3_GainCaps"]
+
 def single_line_enum(line):
     sub = line[line.find('{')+1:line.find('}')]
     return sub.strip().split(',')
@@ -49,7 +51,11 @@ def extract_enums(lines):
 def generate_enum_string(enums):
     data = []
     for key, value in enums.items():
-        data.append(f'py::enum_<slsDetectorDefs::{key}>(Defs, "{key}")\n')
+        if key in allow_bitwise_op:
+            tag=", py::arithmetic()"
+        else:
+            tag=""
+        data.append(f'py::enum_<slsDetectorDefs::{key}>(Defs, "{key}"{tag})\n')
         for v in value:
             data.append(f'\t.value("{v}", slsDetectorDefs::{key}::{v})\n')
         data.append('.export_values();\n\n')

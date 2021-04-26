@@ -55,6 +55,12 @@ void CmdParser::Parse(const std::string &s) {
         command_ = arguments_[0];
         arguments_.erase(begin(arguments_));
     }
+    //allow comma sep
+    for (auto& arg : arguments_){
+        if (arg.back() == ',')
+            arg.pop_back();
+    }
+
     DecodeIdAndPosition(command_.c_str());
 }
 

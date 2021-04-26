@@ -5,6 +5,8 @@
 #include "RegisterDefs.h"
 #include "clogger.h"
 #include "common.h"
+#include "mythen3.h"
+#include "loadPattern.h"
 #include "sharedMemory.h"
 #include "sls/versionAPI.h"
 #ifdef VIRTUAL
@@ -19,8 +21,6 @@
 #include <time.h>
 #endif
 
-/// NOT the right place to put it!
-int setChipStatusRegister(int csr);
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
@@ -47,11 +47,12 @@ enum detectorSettings thisSettings;
 sls_detector_module *detectorModules = NULL;
 int *detectorChans = NULL;
 int *detectorDacs = NULL;
+int *channelMask=NULL;
 
-enum TLogLevel trimmingPrint = logINFO;
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
 
+enum TLogLevel trimmingPrint = logINFO;
 int highvoltage = 0;
 int detPos[2] = {};
 int64_t exptimeReg[NCOUNTERS] = {0, 0, 0};
@@ -374,7 +375,11 @@ void allocateDetectorStructureMemory() {
     // Allocation of memory
     detectorModules = malloc(sizeof(sls_detector_module));
     detectorChans = malloc(NCHIP * NCHAN * sizeof(int));
+    channelMask = malloc(NCHIP * NCHAN * sizeof(char));
+    memset(channelMask, 0, NCHIP * NCHAN * sizeof(char));
     detectorDacs = malloc(NDAC * sizeof(int));
+
+    
     LOG(logDEBUG1,
         ("modules from 0x%x to 0x%x\n", detectorModules, detectorModules));
     LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n", detectorChans, detectorChans));
@@ -512,11 +517,11 @@ void setupDetector() {
     }
 
     powerChip(1);
-    if (initError != FAIL) {
-      initError = setChipStatusRegister(CSR_default);
-      //loadDefaultPattern(DEFAULT_PATTERN_FILE, initErrorMessage);
-      //startStateMachine(); //this was missing in previous code! runs the default pattern
+
+    if (!initError) {
+      setChipStatusRegister(CSR_default);
     }
+
     setAllTrimbits(DEFAULT_TRIMBIT_VALUE);
 }
 
@@ -1052,72 +1057,44 @@ int64_t getMeasurementTime() {
 
 /* parameters - module, speed, readout */
 
-int setModule(sls_detector_module myMod, char *mess) {
-
-    LOG(logINFO, ("Setting module\n"));
-
-    // settings
-    if (myMod.reg >= 0) {
-        setSettings((enum detectorSettings)myMod.reg);
-        if (getSettings() != (enum detectorSettings)myMod.reg) {
-            sprintf(
-                mess,
-                "Could not set module. Could not set settings to %d, read %d\n",
-                myMod.reg, (int)getSettings());
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        detectorModules->reg = myMod.reg;
-    }
-    // custom trimbit file
-    else {
-        // changed for setsettings (direct),
-        // custom trimbit file (setmodule with myMod.reg as -1),
-        // change of dac (direct)
-        for (int i = 0; i < NCOUNTERS; ++i) {
-            setThresholdEnergy(i, -1);
-        }
-    }
-
-    // dacs
+int setDACS(int* dacs){
     for (int i = 0; i < NDAC; ++i) {
-        // ignore dacs with -1
-        if (myMod.dacs[i] != -1) {
-            setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
-            if (myMod.dacs[i] != detectorDacs[i]) {
+        if (dacs[i] != -1) {
+            setDAC((enum DACINDEX)i, dacs[i], 0);
+            if (dacs[i] != detectorDacs[i]) {
                 // dont complain if that counter was disabled
                 if ((i == M_VTH1 || i == M_VTH2 || i == M_VTH3) &&
                     (detectorDacs[i] == DEFAULT_COUNTER_DISABLED_VTH_VAL)) {
                     continue;
                 }
-                sprintf(mess,
-                        "Could not set module. Could not set dac %d, wrote %d, "
-                        "read %d\n",
-                        i, myMod.dacs[i], detectorDacs[i]);
-                LOG(logERROR, (mess));
                 return FAIL;
             }
         }
     }
+    return OK;
+}
 
-    // if settings given and cannot be validated (after setting dacs), return
-    // error
-    if (myMod.reg >= 0) {
-        if (getSettings() != (enum detectorSettings)myMod.reg) {
-            sprintf(
-                mess,
-                "Could not set module. The dacs in file do not correspond to "
-                "settings %d\n",
-                myMod.reg);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
+
+int setModule(sls_detector_module myMod, char *mess) {
+    LOG(logINFO, ("Setting module\n"));
+
+    if (setChipStatusRegister(myMod.reg)){
+        sprintf(mess, "Could not CSR from module\n");
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 
-    // threshold
+    if (setDACS(myMod.dacs)){
+        sprintf(mess, "Could not set dacs\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
     for (int i = 0; i < NCOUNTERS; ++i) {
         if (myMod.eV[i] >= 0) {
             setThresholdEnergy(i, myMod.eV[i]);
+        }else{
+            setThresholdEnergy(i, -1);
         }
     }
 
@@ -1136,155 +1113,31 @@ int setModule(sls_detector_module myMod, char *mess) {
     return OK;
 }
 
-int setBit(int ibit, int patword) { return patword |= (1 << ibit); }
-
-int clearBit(int ibit, int patword) { return patword &= ~(1 << ibit); }
-
 int setTrimbits(int *trimbits) {
-    LOG(logINFOBLUE, ("Setting trimbits\n"));
-
-    // validate
-    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
-        if (trimbits[ichan] < 0 || trimbits[ichan] > 63) {
-            LOG(logERROR, ("Trimbit value (%d) for channel %d is invalid\n",
-                           trimbits[ichan], ichan));
-            return FAIL;
-        }
-    }
-    LOG(logINFO, ("Trimbits validated\n"));
-    trimmingPrint = logDEBUG5;
-
     // remember previous run clock
     uint32_t prevRunClk = clkDivider[SYSTEM_C0];
-
+    patternParameters *pat = NULL;
+    int error = 0;
     // set to trimming clock
     if (setClockDivider(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV) == FAIL) {
         LOG(logERROR,
             ("Could not start trimming. Could not set to trimming clock\n"));
         return FAIL;
     }
-
-    // trimming
-    int error = 0;
-    uint64_t patword = 0;
-    int iaddr = 0;
+    /////////////////////////////////////////////////////////////////
     for (int ichip = 0; ichip < NCHIP; ichip++) {
-        if (error != 0) {
-            break;
-        }
-        LOG(logDEBUG1, (" Chip %d\n", ichip));
-        iaddr = 0;
-        patword = 0;
-        writePatternWord(iaddr++, patword);
 
-        // chip select
-        patword = setBit(SIGNAL_TBLoad_1 + ichip, patword);
-        writePatternWord(iaddr++, patword);
-
-        // reset trimbits
-        patword = setBit(SIGNAL_resStorage, patword);
-        patword = setBit(SIGNAL_resCounter, patword);
-        writePatternWord(iaddr++, patword);
-        writePatternWord(iaddr++, patword);
-        patword = clearBit(SIGNAL_resStorage, patword);
-        patword = clearBit(SIGNAL_resCounter, patword);
-        writePatternWord(iaddr++, patword);
-        writePatternWord(iaddr++, patword);
-
-        // select first channel
-        patword = setBit(SIGNAL_CHSserialIN, patword);
-        writePatternWord(iaddr++, patword);
-        // 1 clk pulse
-        patword = setBit(SIGNAL_CHSclk, patword);
-        writePatternWord(iaddr++, patword);
-        patword = clearBit(SIGNAL_CHSclk, patword);
-        // clear 1st channel
-        writePatternWord(iaddr++, patword);
-        patword = clearBit(SIGNAL_CHSserialIN, patword);
-        // 2 clk pulses
-        for (int i = 0; i < 2; i++) {
-            patword = setBit(SIGNAL_CHSclk, patword);
-            writePatternWord(iaddr++, patword);
-            patword = clearBit(SIGNAL_CHSclk, patword);
-            writePatternWord(iaddr++, patword);
-        }
-
-        // for each channel (all chips)
-        for (int ich = 0; ich < NCHAN_1_COUNTER; ich++) {
-            LOG(logDEBUG1, (" Chip %d, Channel %d\n", ichip, ich));
-            int val = trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
-                               NCOUNTERS * ich] +
-                      trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
-                               NCOUNTERS * ich + 1] *
-                          64 +
-                      trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
-                               NCOUNTERS * ich + 2] *
-                          64 * 64;
-
-            // push 6 0 bits
-            for (int i = 0; i < 6; i++) {
-                patword = clearBit(SIGNAL_serialIN, patword);
-                patword = clearBit(SIGNAL_clk, patword);
-                writePatternWord(iaddr++, patword);
-                patword = setBit(SIGNAL_clk, patword);
-                writePatternWord(iaddr++, patword);
-            }
-
-            // deserialize
-            for (int i = 0; i < 18; i++) {
-                if (val & (1 << i)) {
-                    patword = setBit(SIGNAL_serialIN, patword);
-                } else {
-                    patword = clearBit(SIGNAL_serialIN, patword);
-                }
-                patword = clearBit(SIGNAL_clk, patword);
-                writePatternWord(iaddr++, patword);
-
-                patword = setBit(SIGNAL_clk, patword);
-                writePatternWord(iaddr++, patword);
-            }
-            writePatternWord(iaddr++, patword);
-            writePatternWord(iaddr++, patword);
-
-            // move to next channel
-            for (int i = 0; i < 3; i++) {
-                patword = setBit(SIGNAL_CHSclk, patword);
-                writePatternWord(iaddr++, patword);
-                patword = clearBit(SIGNAL_CHSclk, patword);
-                writePatternWord(iaddr++, patword);
-            }
-        }
-        // chip unselect
-        patword = clearBit(SIGNAL_TBLoad_1 + ichip, patword);
-        writePatternWord(iaddr++, patword);
-
-        // last iaddr check
-        if (iaddr >= MAX_PATTERN_LENGTH) {
-            LOG(logERROR, ("Addr 0x%x is past max_address_length 0x%x!\n",
-                           iaddr, MAX_PATTERN_LENGTH));
+        pat = setChannelRegisterChip(ichip, channelMask,
+                                     trimbits); // change here!!!
+        if (pat) {
+            error |= loadPattern(pat);
+            if (error == 0)
+                startPattern();
+            free(pat);
+        } else
             error = 1;
-            break;
-        }
-
-        // set pattern wait address
-        for (int i = 0; i <= 2; i++)
-            setPatternWaitAddress(i, MAX_PATTERN_LENGTH - 1);
-
-        // pattern loop
-        for (int i = 0; i <= 2; i++) {
-            int stop = MAX_PATTERN_LENGTH - 1, nloop = 0;
-            setPatternLoop(i, &stop, &stop, &nloop);
-        }
-
-        // pattern limits
-        {
-            int start = 0, nloop = 0;
-            setPatternLoop(-1, &start, &iaddr, &nloop);
-        }
-        // send pattern to the chips
-        startPattern();
     }
-
+    /////////////////////////////////////////////////////////////////
     if (error == 0) {
         // copy trimbits locally
         for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
@@ -1292,7 +1145,6 @@ int setTrimbits(int *trimbits) {
         }
         LOG(logINFO, ("All trimbits have been loaded\n"));
     }
-
     trimmingPrint = logINFO;
     // set back to previous clock
     if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
@@ -1303,7 +1155,6 @@ int setTrimbits(int *trimbits) {
     if (error != 0) {
         return FAIL;
     }
-
     return OK;
 }
 
@@ -2780,76 +2631,51 @@ int getNumberOfDACs() { return NDAC; }
 int getNumberOfChannelsPerChip() { return NCHAN; }
 
 int setChipStatusRegister(int csr) {
-  int iaddr=0;
-  int  nbits=18;
-  int error=0;
-  //int start=0, stop=MAX_PATTERN_LENGTH, loop=0;
-  int patword=0;
-  patword=setBit(SIGNAL_STATLOAD,patword);
-  for (int i=0; i<2; i++)
-    writePatternWord(iaddr++, patword);
-  patword=setBit(SIGNAL_resStorage,patword);
-  patword=setBit(SIGNAL_resCounter,patword);
-  for (int i=0; i<8; i++)
-    writePatternWord(iaddr++, patword);
-  patword=clearBit(SIGNAL_resStorage,patword);
-  patword=clearBit(SIGNAL_resCounter,patword);
-  for (int i=0; i<8; i++)
-    writePatternWord(iaddr++, patword);
-  //#This version of the serializer pushes in the MSB first (compatible with the CSR bit numbering)
-  for (int ib=nbits-1; ib>=0; ib--) {
-    if (csr&(1<<ib))
-      patword=setBit(SIGNAL_serialIN,patword);
-    else
-      patword=clearBit(SIGNAL_serialIN,patword);
-    for (int i=0; i<4; i++)
-      writePatternWord(iaddr++, patword);
-    patword=setBit(SIGNAL_CHSclk,patword);
-    writePatternWord(iaddr++, patword);
-    patword=clearBit(SIGNAL_CHSclk,patword);
-    writePatternWord(iaddr++, patword);
-  }
+    uint32_t prevRunClk = clkDivider[SYSTEM_C0];
+    patternParameters *pat = NULL;
 
-  patword=clearBit(SIGNAL_serialIN,patword);
-  for (int i=0; i<2; i++)
-      writePatternWord(iaddr++, patword);
-  patword=setBit(SIGNAL_STO,patword);
-  for (int i=0; i<5; i++)
-      writePatternWord(iaddr++, patword);
-  patword=clearBit(SIGNAL_STO,patword);
-  for (int i=0; i<5; i++)
-    writePatternWord(iaddr++, patword);
-  patword=clearBit(SIGNAL_STATLOAD,patword);
-  for (int i=0; i<5; i++)
-    writePatternWord(iaddr++, patword);
+    int error = 0;
+    if (setClockDivider(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV) == FAIL) {
+        LOG(logERROR,
+            ("Could not set to trimming clock in order to change CSR\n"));
+        return FAIL;
+    }
+    pat = setChipStatusRegisterPattern(csr);
 
-  if (iaddr >= MAX_PATTERN_LENGTH) {
-    LOG(logERROR, ("Addr 0x%x is past max_address_length 0x%x!\n",
-		   iaddr, MAX_PATTERN_LENGTH));
-    error = 1;
-  }
-  // set pattern wait address
-  for (int i = 0; i <= 2; i++)
-    setPatternWaitAddress(i, MAX_PATTERN_LENGTH - 1);
-  
-  // pattern loop
-  for (int i = 0; i <= 2; i++) {
-    int stop = MAX_PATTERN_LENGTH - 1, nloop = 0;
-    setPatternLoop(i, &stop, &stop, &nloop);
-  }
-  
-  // pattern limits
-  {
-    int start = 0, nloop = 0;
-    setPatternLoop(-1, &start, &iaddr, &nloop);
-  }
-  // send pattern to the chips
-  startPattern();
-  
-  if (error != 0) {
-    return FAIL;
-  }
-  
-  return OK;
+    if (pat) {
+        error |= loadPattern(pat);
+        if (!error)
+            startPattern();
+        free(pat);
+    } else {
+        error = 1;
+    }
 
+    if (!error) {
+        LOG(logINFO, ("CSR is now: 0x%x\n", csr));
+    }
+
+    if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
+        LOG(logERROR,
+            ("Could not set to previous run clock after changing CSR\n"));
+        return FAIL;
+    }
+    return OK;
+}
+
+int setGainCaps(int caps){
+    // Update only gain caps, leave the rest of the CSR unchanged
+    int csr = getChipStatusRegister();
+    csr &= ~GAIN_MASK;
+
+    caps = gainCapsToCsr(caps);
+    // caps &= GAIN_MASK;
+    csr |= caps;
+    return setChipStatusRegister(csr);
+}
+
+int getGainCaps(){
+    int csr = getChipStatusRegister();
+    int caps = csrToGainCaps(csr);
+    return caps; 
 }

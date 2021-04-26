@@ -1998,6 +1998,18 @@ bool Module::isMaster() const{
     return sendToDetector<int>(F_GET_MASTER);
 }
 
+int Module::getChipStatusRegister() const{
+    return sendToDetector<int>(F_GET_CSR);
+}
+
+void Module::setGainCaps(int caps){
+    sendToDetector<int>(F_SET_GAIN_CAPS, caps);
+}
+
+int Module::getGainCaps(){
+    return sendToDetector<int>(F_GET_GAIN_CAPS);
+}
+
 // CTB / Moench Specific
 int Module::getNumberOfAnalogSamples() const {
     return sendToDetector<int>(F_GET_NUM_ANALOG_SAMPLES);
@@ -3195,6 +3207,9 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
         throw RuntimeError("Could not open settings file: " + fname);
     }
 
+    auto file_size = getFileSize(infile);
+
+
     // eiger
     if (shm()->myDetectorType == EIGER) {
         infile.read(reinterpret_cast<char *>(myMod.dacs),
@@ -3220,6 +3235,16 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 
     // mythen3 (dacs, trimbits)
     else if (shm()->myDetectorType == MYTHEN3) {
+        int expected_size =
+            sizeof(int) * myMod.ndac + sizeof(int) * myMod.nchan + sizeof(myMod.reg);
+        if (file_size != expected_size) {
+            throw RuntimeError("The size of the settings file: " + fname +
+                               " differs from the expected size, " +
+                               std::to_string(file_size) + " instead of " +
+                               std::to_string(expected_size) + " bytes");
+        }
+        infile.read(reinterpret_cast<char *>(&myMod.reg),
+                    sizeof(myMod.reg));
         infile.read(reinterpret_cast<char *>(myMod.dacs),
                     sizeof(int) * (myMod.ndac));
         for (int i = 0; i < myMod.ndac; ++i) {

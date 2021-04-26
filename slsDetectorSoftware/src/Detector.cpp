@@ -1615,6 +1615,18 @@ Result<bool> Detector::getMaster(Positions pos) const{
     return pimpl->Parallel(&Module::isMaster, pos);
 }
 
+Result<int> Detector::getChipStatusRegister(Positions pos) const{
+    return pimpl->Parallel(&Module::getChipStatusRegister, pos);
+}
+
+void Detector::setGainCaps(int caps, Positions pos){
+    return pimpl->Parallel(&Module::setGainCaps, pos, caps);
+}
+
+Result<int> Detector::getGainCaps(Positions pos){
+    return pimpl->Parallel(&Module::getGainCaps, pos);
+}
+
 
 // CTB/ Moench Specific
 

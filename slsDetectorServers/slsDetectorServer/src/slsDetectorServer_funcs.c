@@ -369,6 +369,9 @@ void function_table() {
     flist[F_LOAD_DEFAULT_PATTERN] = &load_default_pattern;
     flist[F_GET_ALL_THRESHOLD_ENERGY] = &get_all_threshold_energy;
     flist[F_GET_MASTER] = &get_master;
+    flist[F_GET_CSR] = &get_csr;
+    flist[F_SET_GAIN_CAPS] = &set_gain_caps;
+    flist[F_GET_GAIN_CAPS] = &get_gain_caps;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -1547,18 +1550,11 @@ int set_module(int file_des) {
     // only set
     else if (Server_VerifyLock() == OK) {
         // check index
+
+#if !(defined(EIGERD) || defined(MYTHEN3D))
+//TODO! Check if this is used for any detector
         switch (module.reg) {
-#ifdef EIGERD
-        case STANDARD:
-        case HIGHGAIN:
-        case LOWGAIN:
-        case VERYHIGHGAIN:
-        case VERYLOWGAIN:
-#elif MYTHEN3D
-        case STANDARD:
-        case FAST:
-        case HIGHGAIN:
-#elif JUNGFRAUD
+#ifdef JUNGFRAUD
         case DYNAMICGAIN:
         case DYNAMICHG0:
         case FIXGAIN1:
@@ -1577,10 +1573,12 @@ int set_module(int file_des) {
             modeNotImplemented("Settings", (int)module.reg);
             break;
         }
-
+#endif
         ret = setModule(module, mess);
         enum detectorSettings retval = getSettings();
+#if !(defined(EIGERD) || defined(MYTHEN3D))
         validate(module.reg, (int)retval, "set module (settings)", DEC);
+#endif
         LOG(logDEBUG1, ("Settings: %d\n", retval));
     }
     free(myChan);
@@ -7578,18 +7576,22 @@ int set_pattern(int file_des) {
 
     patternParameters *pat = malloc(sizeof(patternParameters));
     memset(pat, 0, sizeof(patternParameters));
-
-    // ignoring endianness for eiger
+      // ignoring endianness for eiger
     if (receiveData(file_des, pat, sizeof(patternParameters), INT32) < 0) {
         if (pat != NULL)
             free(pat);
         return printSocketReadError();
     }
-
+ 
     if (Server_VerifyLock() == OK) {
         LOG(logINFO, ("Setting Pattern from structure\n"));
         LOG(logINFO,
-            ("Setting Pattern Word (printing every 10 words that are not 0\n"));
+            ("Setting Pattern Word (printing every 10 words that are not 0\n"));   
+	/****************************************************************************************************************/
+	/* I SUGGEST TO VALIDATE THE VALUES HERE AND THEN WRITE THE PATTERN IN A SEPARATE FUNCTION WHICH COULD BE REUSED*/
+	/* added loadPattern.c/h - the same func could be reused also in readDefaultPattern                                  */
+	/***************************************************************************************************************/
+
         for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
             if ((i % 10 == 0) && pat->word[i] != 0) {
                 LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n",
@@ -7662,6 +7664,7 @@ int set_pattern(int file_des) {
                 }
             }
         }
+	/******* DOWN TO HERE ***********/
     }
     if (pat != NULL)
         free(pat);
@@ -8380,6 +8383,66 @@ int get_master(int file_des){
     functionNotImplemented();
 #else
     retval = isMaster();
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_csr(int file_des){
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting csr\n"));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    retval = getChipStatusRegister();
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_gain_caps(int file_des){
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting gain caps to: %u\n", arg));
+
+    int retval = -1;
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    if (Server_VerifyLock() == OK) {
+        setGainCaps(arg);
+        retval = getChipStatusRegister(); //TODO! fix 
+        LOG(logDEBUG1, ("gain caps retval: %u\n", retval));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_gain_caps(int file_des){
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    // int arg = 0;
+
+    // if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+    //     return printSocketReadError();
+    LOG(logINFO, ("Getting gain caps\n"));
+
+    int retval = -1;
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    if (Server_VerifyLock() == OK) {
+        retval = getGainCaps();
+        LOG(logDEBUG1, ("Gain caps: %u\n", retval));
+    }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

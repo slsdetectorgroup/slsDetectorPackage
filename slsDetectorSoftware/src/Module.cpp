@@ -412,7 +412,7 @@ void Module::loadSettingsFile(const std::string &fname) {
         if (shm()->myDetectorType == MYTHEN3) {
             serialNumberWidth = 4;
         }
-        if (fname.find(".sn") == std::string::npos) {
+        if ((fname.find(".sn") == std::string::npos) && (fname.find(".trim") == std::string::npos)) {
             ostfn << ".sn" << std::setfill('0') << std::setw(serialNumberWidth)
                   << std::dec << getSerialNumber();
         }

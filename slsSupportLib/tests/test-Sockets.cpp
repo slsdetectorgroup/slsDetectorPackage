@@ -2,6 +2,7 @@
 #include "sls/ClientSocket.h"
 #include "sls/ServerSocket.h"
 #include <chrono>
+#include <thread>
 #include <future>
 #include <iostream>
 

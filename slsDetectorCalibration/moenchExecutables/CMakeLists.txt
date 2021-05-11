@@ -41,5 +41,9 @@ foreach(exe ${MOENCH_EXECUTABLES})
         set_property(TARGET ${exe} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
 
+    
+
 
 endforeach(exe ${MOENCH_EXECUTABLES})
+
+install(TARGETS ${MOENCH_EXECUTABLES} DESTINATION bin)

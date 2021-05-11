@@ -118,3 +118,17 @@ outputs:
         - qwt 6.*
         - qt 4.8.*
         - expat
+
+  - name: moenchzmq
+    script: copy_moench.sh
+    requirements:
+
+      build:
+        - {{ compiler('c') }}
+        - {{compiler('cxx')}}
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
+
+
+      run:
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
+        - expat

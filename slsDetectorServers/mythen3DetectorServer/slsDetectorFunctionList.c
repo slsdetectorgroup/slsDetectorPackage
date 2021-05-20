@@ -5,8 +5,8 @@
 #include "RegisterDefs.h"
 #include "clogger.h"
 #include "common.h"
-#include "mythen3.h"
 #include "loadPattern.h"
+#include "mythen3.h"
 #include "sharedMemory.h"
 #include "sls/versionAPI.h"
 #ifdef VIRTUAL
@@ -20,7 +20,6 @@
 #include <pthread.h>
 #include <time.h>
 #endif
-
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
@@ -47,7 +46,7 @@ enum detectorSettings thisSettings;
 sls_detector_module *detectorModules = NULL;
 int *detectorChans = NULL;
 int *detectorDacs = NULL;
-int *channelMask=NULL;
+int *channelMask = NULL;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
@@ -379,7 +378,6 @@ void allocateDetectorStructureMemory() {
     memset(channelMask, 0, NCHIP * NCHAN * sizeof(char));
     detectorDacs = malloc(NDAC * sizeof(int));
 
-    
     LOG(logDEBUG1,
         ("modules from 0x%x to 0x%x\n", detectorModules, detectorModules));
     LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n", detectorChans, detectorChans));
@@ -519,7 +517,7 @@ void setupDetector() {
     powerChip(1);
 
     if (!initError) {
-      setChipStatusRegister(CSR_default);
+        setChipStatusRegister(CSR_default);
     }
 
     setAllTrimbits(DEFAULT_TRIMBIT_VALUE);
@@ -938,8 +936,9 @@ void setCounterMask(uint32_t arg) {
     for (int i = 0; i < NCOUNTERS; ++i) {
         // if change in enable
         if ((arg & (1 << i)) ^ (oldmask & (1 << i))) {
-            // will disable if counter disabled
-            setDAC(VTH1, vthEnabledVals[i], 0);
+            // will disable if counter disabled, else set corresponding vth dac
+            enum DACINDEX vth = (i == 0 ? M_VTH1 : (i == 1 ? M_VTH2 : M_VTH3));
+            setDAC(vth, vthEnabledVals[i], 0);
         }
     }
 }
@@ -1057,7 +1056,7 @@ int64_t getMeasurementTime() {
 
 /* parameters - module, speed, readout */
 
-int setDACS(int* dacs){
+int setDACS(int *dacs) {
     for (int i = 0; i < NDAC; ++i) {
         if (dacs[i] != -1) {
             setDAC((enum DACINDEX)i, dacs[i], 0);
@@ -1074,17 +1073,16 @@ int setDACS(int* dacs){
     return OK;
 }
 
-
 int setModule(sls_detector_module myMod, char *mess) {
     LOG(logINFO, ("Setting module\n"));
 
-    if (setChipStatusRegister(myMod.reg)){
+    if (setChipStatusRegister(myMod.reg)) {
         sprintf(mess, "Could not CSR from module\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
 
-    if (setDACS(myMod.dacs)){
+    if (setDACS(myMod.dacs)) {
         sprintf(mess, "Could not set dacs\n");
         LOG(logERROR, (mess));
         return FAIL;
@@ -1093,7 +1091,7 @@ int setModule(sls_detector_module myMod, char *mess) {
     for (int i = 0; i < NCOUNTERS; ++i) {
         if (myMod.eV[i] >= 0) {
             setThresholdEnergy(i, myMod.eV[i]);
-        }else{
+        } else {
             setThresholdEnergy(i, -1);
         }
     }
@@ -1267,6 +1265,12 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         return;
     }
 
+    // out of scope, NDAC + 1 for vthreshold
+    if ((int)ind > NDAC + 1) {
+        LOG(logERROR, ("Unknown dac index %d\n", ind));
+        return;
+    }
+
     if (ind == M_VTHRESHOLD) {
         LOG(logINFO,
             ("Setting Threshold voltages to %d %s\n", val, (mV ? "mv" : "")));
@@ -1373,13 +1377,11 @@ int setHighVoltage(int val) {
     return highvoltage;
 }
 
-int isMaster(){
-    return !(bus_r(0x18) >> 31);
-}
+int isMaster() { return !(bus_r(0x18) >> 31); }
 
 /* parameters - timing */
 void setTiming(enum timingMode arg) {
-    
+
     if (!isMaster() && arg == AUTO_TIMING)
         arg = TRIGGER_EXPOSURE;
 
@@ -2663,7 +2665,7 @@ int setChipStatusRegister(int csr) {
     return OK;
 }
 
-int setGainCaps(int caps){
+int setGainCaps(int caps) {
     // Update only gain caps, leave the rest of the CSR unchanged
     int csr = getChipStatusRegister();
     csr &= ~GAIN_MASK;
@@ -2674,8 +2676,8 @@ int setGainCaps(int caps){
     return setChipStatusRegister(csr);
 }
 
-int getGainCaps(){
+int getGainCaps() {
     int csr = getChipStatusRegister();
     int caps = csrToGainCaps(csr);
-    return caps; 
+    return caps;
 }

@@ -25,7 +25,7 @@
 #include "blackfin.h"
 #endif
 
-#if defined(MYTHEN3D) 
+#if defined(MYTHEN3D)
 #include "mythen3.h"
 #endif
 
@@ -289,8 +289,6 @@ int64_t getMeasurementTime();
 int setModule(sls_detector_module myMod, char *mess);
 #endif
 #ifdef MYTHEN3D
-int setBit(int ibit, int patword);
-int clearBit(int ibit, int patword);
 int setTrimbits(int *trimbits);
 int setAllTrimbits(int val);
 int getAllTrimbits();
@@ -360,7 +358,7 @@ int isMaster();
 int setGainCaps(int caps);
 int getGainCaps();
 int setChipStatusRegister(int csr);
-int setDACS(int* dacs);
+int setDACS(int *dacs);
 #endif
 #if defined(GOTTHARDD) || defined(MYTHEN3D)
 void setExtSignal(int signalIndex, enum externalSignalFlag mode);

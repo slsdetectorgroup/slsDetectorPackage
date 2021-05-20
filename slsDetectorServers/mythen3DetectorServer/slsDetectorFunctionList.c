@@ -937,8 +937,8 @@ void setCounterMask(uint32_t arg) {
         // if change in enable
         if ((arg & (1 << i)) ^ (oldmask & (1 << i))) {
             // will disable if counter disabled, else set corresponding vth dac
-            enum DACINDEX vth = (i == 0 ? M_VTH1 : (i == 1 ? M_VTH2 : M_VTH3));
-            setDAC(vth, vthEnabledVals[i], 0);
+            enum DACINDEX ind[] = {M_VTH1, M_VTH2, M_VTH3};
+            setDAC(ind[i], vthEnabledVals[i], 0);
         }
     }
 }

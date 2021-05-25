@@ -1213,19 +1213,6 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     setDAC(serverDacIndex, val, mV);
                 retval = getDAC(serverDacIndex, mV);
             }
-#ifdef MYTHEN3D
-            if (serverDacIndex == M_VTHRESHOLD && retval == -1) {
-                ret = FAIL;
-                uint32_t counter_retval = getCounterMask();
-                if (counter_retval != MAX_COUNTER_MSK) {
-                    strcpy(mess, "Could not set all threshold dacs as not all "
-                                 "counters enabled\n");
-                } else {
-                    sprintf(mess, "Could not set all threshold dacs\n");
-                }
-                LOG(logERROR, (mess));
-            }
-#endif
 #ifdef EIGERD
             if (val != GET_FLAG && getSettings() != UNDEFINED) {
                 // changing dac changes settings to undefined
@@ -1251,8 +1238,18 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     ret = OK;
                 } else {
                     ret = FAIL;
-                    sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
-                            serverDacIndex, val, retval);
+#ifdef MYTHEN3D
+                    // give a different exception message if counter not enabled
+                    uint32_t counter_retval = getCounterMask();
+                    if ((serverDacIndex == M_VTHRESHOLD ||
+                         serverDacIndex == M_VTH1 || serverDacIndex == M_VTH2 ||
+                         serverDacIndex == M_VTH3) &&
+                        counter_retval != MAX_COUNTER_MSK) {
+                        strcpy(mess, "Could not set dac as counter disabled\n");
+                    } else
+#endif
+                        sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
+                                serverDacIndex, val, retval);
                     LOG(logERROR, (mess));
                 }
             }

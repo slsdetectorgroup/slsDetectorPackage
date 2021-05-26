@@ -49,7 +49,7 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs]") {
             auto vth1 = det.getDAC(defs::VTH1, false);
             auto vth2 = det.getDAC(defs::VTH2, false);
             auto vth3 = det.getDAC(defs::VTH3, false);
-            auto mask = det.getCounterMask({0}).squash(-1);
+            auto mask = det.getCounterMask();
 
             {
                 std::ostringstream oss;
@@ -63,11 +63,41 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs]") {
             }
 
             // change vthreshold when counters disabled
-            // proxy.Call("counters", {"0"});
-            // REQUIRE_THROWS(proxy.Call("dac", {}, -1, GET));
+            proxy.Call("counters", {"0"}, -1, PUT);
+            REQUIRE_NOTHROW(proxy.Call("dac", {"vth1", "2100"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("dac", {"vth2", "2100"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("dac", {"vth3", "2100"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("dac", {"vthreshold", "2100"}, -1, PUT));
+            proxy.Call("counters", {"0", "2"}, -1, PUT);
+            REQUIRE_NOTHROW(proxy.Call("dac", {"vth1", "2100"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("dac", {"vth2", "2100"}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("dac", {"vth3", "2100"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("dac", {"vthreshold", "2200"}, -1, PUT));
+            proxy.Call("counters", {"0", "1", "2"}, -1, PUT);
+            // should remember the previous values when counter set
+            {
+                std::ostringstream oss;
+                proxy.Call("dac", {"vth1"}, -1, GET, oss);
+                REQUIRE(oss.str() == "dac vth1 2200\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("dac", {"vth2"}, -1, GET, oss);
+                REQUIRE(oss.str() == "dac vth2 2200\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("dac", {"vth3"}, -1, GET, oss);
+                REQUIRE(oss.str() == "dac vth3 2200\n");
+            }
+            REQUIRE_NOTHROW(proxy.Call("dac", {"vth1", "2100"}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("dac", {"vth2", "2100"}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("dac", {"vth3", "2100"}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("dac", {"vthreshold", "2100"}, -1, PUT));
 
             // Reset dacs after test
             for (int i = 0; i != det.size(); ++i) {
+                det.setCounterMask(mask[i], {i});
                 det.setDAC(defs::VTH1, vth1[i], false, {i});
                 det.setDAC(defs::VTH2, vth2[i], false, {i});
                 det.setDAC(defs::VTH3, vth3[i], false, {i});

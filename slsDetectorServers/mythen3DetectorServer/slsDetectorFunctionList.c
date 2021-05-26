@@ -1112,6 +1112,7 @@ int setModule(sls_detector_module myMod, char *mess) {
 }
 
 int setTrimbits(int *trimbits) {
+    LOG(logINFOBLUE, ("Setting trimbits\n"));
     // remember previous run clock
     uint32_t prevRunClk = clkDivider[SYSTEM_C0];
     patternParameters *pat = NULL;
@@ -1128,7 +1129,7 @@ int setTrimbits(int *trimbits) {
         pat = setChannelRegisterChip(ichip, channelMask,
                                      trimbits); // change here!!!
         if (pat) {
-            error |= loadPattern(pat);
+            error |= loadPattern(logDEBUG5, pat);
             if (error == 0)
                 startPattern();
             free(pat);
@@ -2645,7 +2646,7 @@ int setChipStatusRegister(int csr) {
     pat = setChipStatusRegisterPattern(csr);
 
     if (pat) {
-        error |= loadPattern(pat);
+        error |= loadPattern(logDEBUG5, pat);
         if (!error)
             startPattern();
         free(pat);

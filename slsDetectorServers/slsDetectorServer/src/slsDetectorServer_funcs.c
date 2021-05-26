@@ -1240,11 +1240,29 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     ret = FAIL;
 #ifdef MYTHEN3D
                     // give a different exception message if counter not enabled
-                    uint32_t counter_retval = getCounterMask();
-                    if ((serverDacIndex == M_VTHRESHOLD ||
-                         serverDacIndex == M_VTH1 || serverDacIndex == M_VTH2 ||
-                         serverDacIndex == M_VTH3) &&
-                        counter_retval != MAX_COUNTER_MSK) {
+                    int isCounterError = 0;
+                    if (serverDacIndex == M_VTHRESHOLD ||
+                        serverDacIndex == M_VTH1 || serverDacIndex == M_VTH2 ||
+                        serverDacIndex == M_VTH3) {
+                        uint32_t counter_retval = getCounterMask();
+                        // vthreshold, all counters should have been enabled
+                        if (serverDacIndex == M_VTHRESHOLD) {
+                            if (counter_retval != MAX_COUNTER_MSK) {
+                                isCounterError = 1;
+                            }
+                        }
+                        // corresponding counter should have been enabled
+                        else {
+                            int vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
+                            for (int i = 0; i < NCOUNTERS; ++i) {
+                                if ((vthdacs[i] == (int)serverDacIndex) &&
+                                    (!(counter_retval & (1 << i)))) {
+                                    isCounterError = 1;
+                                }
+                            }
+                        }
+                    }
+                    if (isCounterError) {
                         strcpy(mess, "Could not set dac as counter disabled\n");
                     } else
 #endif

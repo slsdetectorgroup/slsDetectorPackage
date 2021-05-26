@@ -49,17 +49,22 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs]") {
             auto vth1 = det.getDAC(defs::VTH1, false);
             auto vth2 = det.getDAC(defs::VTH2, false);
             auto vth3 = det.getDAC(defs::VTH3, false);
+            auto mask = det.getCounterMask({0}).squash(-1);
 
             {
                 std::ostringstream oss;
-                proxy.Call("vthreshold", {"1234"}, -1, PUT, oss);
+                proxy.Call("dac", {"vthreshold", "1234"}, -1, PUT, oss);
                 REQUIRE(oss.str() == "dac vthreshold 1234\n");
             }
             {
                 std::ostringstream oss;
-                proxy.Call("vthreshold", {}, -1, GET, oss);
+                proxy.Call("dac", {"vthreshold"}, -1, GET, oss);
                 REQUIRE(oss.str() == "dac vthreshold 1234\n");
             }
+
+            // change vthreshold when counters disabled
+            // proxy.Call("counters", {"0"});
+            // REQUIRE_THROWS(proxy.Call("dac", {}, -1, GET));
 
             // Reset dacs after test
             for (int i = 0; i != det.size(); ++i) {
@@ -68,50 +73,50 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs]") {
                 det.setDAC(defs::VTH3, vth3[i], false, {i});
             }
         }
-        REQUIRE_THROWS(proxy.Call("vsvp", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vsvn", {}, -1, GET));
-        // REQUIRE_THROWS(proxy.Call("vtrim", {}, -1, GET));
-        // REQUIRE_THROWS(proxy.Call("vrpreamp", {}, -1, GET));
-        // REQUIRE_THROWS(proxy.Call("vrshaper", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vtgstv", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcmp_ll", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcmp_lr", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcal", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcmp_rl", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcmp_rr", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("rxb_rb", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("rxb_lb", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcp", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcn", {}, -1, GET));
-        // REQUIRE_THROWS(proxy.Call("vishaper", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("iodelay", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vref_ds", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcascn_pb", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcascp_pb", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vout_cm", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcasc_out", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vin_cm", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("ib_test_c", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vref_h_adc", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vb_comp_fe", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vb_comp_adc", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcom_cds", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vref_rstore", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vb_opa_1st", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vref_comp_fe", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcom_adc1", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vref_prech", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vref_l_adc", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vref_cds", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vb_cs", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vb_opa_fd", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcom_adc2", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vb_ds", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vb_comp", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vb_pixbuf", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vin_com", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vdd_prot", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vsvp"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vsvn"}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("dac", {"vtrim"}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("dac", {"vrpreamp"}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("dac", {"vrshaper"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vtgstv"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcmp_ll"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcmp_lr"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcal"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcmp_rl"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcmp_rr"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"rxb_rb"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"rxb_lb"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcp"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcn"}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("dac", {"vishaper"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"iodelay"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vref_ds"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcascn_pb"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcascp_pb"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vout_cm"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcasc_out"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vin_cm"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vref_comp"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"ib_test_c"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vref_h_adc"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vb_comp_fe"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vb_comp_adc"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcom_cds"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vref_rstore"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vb_opa_1st"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vref_comp_fe"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcom_adc1"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vref_prech"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vref_l_adc"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vref_cds"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vb_cs"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vb_opa_fd"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vcom_adc2"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vb_ds"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vb_comp"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vb_pixbuf"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vin_com"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("dac", {"vdd_prot"}, -1, GET));
     }
 }
 

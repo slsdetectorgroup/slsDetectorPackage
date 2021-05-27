@@ -587,13 +587,18 @@ void Implementation::stopReceiver() {
         for (int i = 0; i < numThreads; i++) {
             int nf = dataProcessor[i]->GetNumFramesCaught();
             tot += nf;
+            std::string mpMessage = std::to_string((int64_t)mp[i]);
+            if ((int64_t)mp[i] < 0) {
+                mpMessage =
+                    std::to_string(abs(mp[i])) + std::string(" (Extra)");
+            }
 
             TLogLevel lev = (((int64_t)mp[i]) > 0) ? logINFORED : logINFOGREEN;
             LOG(lev) <<
                 // udp port number could be the second if selected interface is
                 // 2 for jungfrau
                 "Summary of Port " << udpPortNum[i]
-                     << "\n\tMissing Packets\t\t: " << (int64_t)mp[i]
+                     << "\n\tMissing Packets\t\t: " << mpMessage
                      << "\n\tComplete Frames\t\t: " << nf
                      << "\n\tLast Frame Caught\t: "
                      << listener[i]->GetLastFrameIndexCaught();

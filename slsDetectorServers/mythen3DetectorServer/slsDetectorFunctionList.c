@@ -933,12 +933,17 @@ void setCounterMask(uint32_t arg) {
     }
 
     LOG(logINFO, ("\tUpdating Vth dacs\n"));
+    enum DACINDEX vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
     for (int i = 0; i < NCOUNTERS; ++i) {
         // if change in enable
         if ((arg & (1 << i)) ^ (oldmask & (1 << i))) {
-            // will disable if counter disabled, else set corresponding vth dac
-            enum DACINDEX ind[] = {M_VTH1, M_VTH2, M_VTH3};
-            setDAC(ind[i], vthEnabledVals[i], 0);
+            // disable, disable value
+            int value = DEFAULT_COUNTER_DISABLED_VTH_VAL;
+            // enable, set saved values
+            if (arg & (1 << i)) {
+                value = vthEnabledVals[i];
+            }
+            setGeneralDAC(vthdacs[i], value, 0);
         }
     }
 }
@@ -1262,51 +1267,52 @@ void setThresholdEnergy(int counterIndex, int eV) {
 
 /* parameters - dac, hv */
 void setDAC(enum DACINDEX ind, int val, int mV) {
+    // invalid value
     if (val < 0) {
         return;
     }
-
     // out of scope, NDAC + 1 for vthreshold
     if ((int)ind > NDAC + 1) {
         LOG(logERROR, ("Unknown dac index %d\n", ind));
         return;
     }
 
-    if (ind == M_VTHRESHOLD) {
-        LOG(logINFO,
-            ("Setting Threshold voltages to %d %s\n", val, (mV ? "mv" : "")));
-        setDAC(M_VTH1, val, mV);
-        setDAC(M_VTH2, val, mV);
-        setDAC(M_VTH3, val, mV);
-        return;
-    }
-    char *dac_names[] = {DAC_NAMES};
-
-    // remember vthx values and set 2800 if counter disabled
-    uint32_t counters = getCounterMask();
-    int vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
-    for (int i = 0; i < NCOUNTERS; ++i) {
-        if (vthdacs[i] == (int)ind) {
-            // remember enabled values for vthx
-            if (val != DEFAULT_COUNTER_DISABLED_VTH_VAL) {
-                int vthval = val;
-                if (mV) {
-                    if (LTC2620_D_VoltageToDac(val, &vthval) == FAIL) {
-                        return;
+    // threshold dacs (remember value, vthreshold: skip disabled)
+    if (ind == M_VTHRESHOLD || ind == M_VTH1 || ind == M_VTH2 ||
+        ind == M_VTH3) {
+        char *dac_names[] = {DAC_NAMES};
+        int vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
+        uint32_t counters = getCounterMask();
+        for (int i = 0; i < NCOUNTERS; ++i) {
+            if ((int)ind == vthdacs[i] || ind == M_VTHRESHOLD) {
+                int dacval = val;
+                // if not disabled value, remember value
+                if (dacval != DEFAULT_COUNTER_DISABLED_VTH_VAL) {
+                    // convert mv to dac
+                    if (mV) {
+                        if (LTC2620_D_VoltageToDac(val, &dacval) == FAIL) {
+                            return;
+                        }
                     }
+                    vthEnabledVals[i] = dacval;
+                    LOG(logINFO,
+                        ("Remembering %s [%d]\n", dac_names[ind], dacval));
                 }
-                vthEnabledVals[i] = vthval;
-                LOG(logINFO, ("Remembering %s [%d]\n", dac_names[ind], vthval));
-            }
-            // set vthx to disable val, if counter disabled
-            if (!(counters & (1 << i))) {
-                LOG(logINFO, ("Disabling %s\n", dac_names[ind]));
-                val = DEFAULT_COUNTER_DISABLED_VTH_VAL;
-                mV = 0;
+                // if vthreshold,skip for disabled counters
+                if ((ind == M_VTHRESHOLD) && (!(counters & (1 << i)))) {
+                    continue;
+                }
+                setGeneralDAC(vthdacs[i], val, mV);
             }
         }
+        return;
     }
 
+    setGeneralDAC(ind, val, mV);
+}
+
+void setGeneralDAC(enum DACINDEX ind, int val, int mV) {
+    char *dac_names[] = {DAC_NAMES};
     LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
                     val, (mV ? "mV" : "dac units")));
     int dacval = val;
@@ -1334,20 +1340,29 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
 
 int getDAC(enum DACINDEX ind, int mV) {
     if (ind == M_VTHRESHOLD) {
-        int ret[NCOUNTERS] = {0};
-        ret[0] = getDAC(M_VTH1, mV);
-        ret[1] = getDAC(M_VTH2, mV);
-        ret[2] = getDAC(M_VTH3, mV);
-
-        if ((ret[0] == ret[1]) && (ret[1] == ret[2])) {
-            LOG(logINFO, ("\tvthreshold match\n"));
-            return ret[0];
-        } else {
-            LOG(logERROR, ("\tvthreshold mismatch vth1:%d vth2:%d "
-                           "vth3:%d\n",
-                           ret[0], ret[1], ret[2]));
-            return -1;
+        int ret = -1, ret1 = -1;
+        // get only for enabled counters
+        uint32_t counters = getCounterMask();
+        int vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
+        for (int i = 0; i < NCOUNTERS; ++i) {
+            if (counters & (1 << i)) {
+                ret1 = getDAC(vthdacs[i], mV);
+                // first enabled counter
+                if (ret == -1) {
+                    ret = ret1;
+                }
+                // different values for enabled counters
+                else if (ret1 != ret) {
+                    return -1;
+                }
+            }
         }
+        if (ret == -1) {
+            LOG(logERROR, ("\tvthreshold mismatch (of enabled counters)\n"));
+        } else {
+            LOG(logINFO, ("\tvthreshold match %d\n", ret));
+        }
+        return ret;
     }
 
     if (!mV) {

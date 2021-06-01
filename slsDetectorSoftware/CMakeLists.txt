@@ -61,38 +61,39 @@ if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsDetectorShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 
-# Loop over list to generate command line binaries
-set(bin_names "sls_detector_put" 
-          "sls_detector_get" 
-          "sls_detector_acquire" 
-          "sls_detector_help")
-set(cmd_name "PUT" "GET" "READOUT" "HELP")
-list(LENGTH bin_names len1)
-math(EXPR len2 "${len1} - 1")
 
-foreach(val RANGE ${len2})
-    list(GET bin_names ${val} val1)
-    list(GET cmd_name ${val} val2)
-    message(STATUS "${val1}  ${val2}")
+if(SLS_USE_TEXTCLIENT)
+    # Loop over list to generate command line binaries
+    set(bin_names "sls_detector_put" 
+            "sls_detector_get" 
+            "sls_detector_acquire" 
+            "sls_detector_help")
+    set(cmd_name "PUT" "GET" "READOUT" "HELP")
+    list(LENGTH bin_names len1)
+    math(EXPR len2 "${len1} - 1")
 
-    add_executable(${val1} src/CmdLineApp.cpp)
-    target_link_libraries(${val1} 
-        slsDetectorStatic
-        pthread
-        rt
-    )
-    set_target_properties(${val1} PROPERTIES 
-        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-        COMPILE_DEFINITIONS ${val2}=1
-    )
-    if(SLS_LTO_AVAILABLE)
-        set_property(TARGET ${val1} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-    endif()
-endforeach()
+    foreach(val RANGE ${len2})
+        list(GET bin_names ${val} val1)
+        list(GET cmd_name ${val} val2)
+        message(STATUS "${val1}  ${val2}")
 
+        add_executable(${val1} src/CmdLineApp.cpp)
+        target_link_libraries(${val1} 
+            slsDetectorStatic
+            pthread
+            rt
+        )
+        set_target_properties(${val1} PROPERTIES 
+            RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+            COMPILE_DEFINITIONS ${val2}=1
+        )
+        if(SLS_LTO_AVAILABLE)
+            set_property(TARGET ${val1} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+        endif()
+    endforeach()
+    install(TARGETS ${bin_names} DESTINATION bin)
 
-install(TARGETS ${bin_names} DESTINATION bin)
-
+endif(SLS_USE_TEXTCLIENT)
 
 if (SLS_USE_TESTS)
     add_subdirectory(tests)

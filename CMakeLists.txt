@@ -34,6 +34,7 @@ endif()
 
 option (SLS_USE_HDF5 "HDF5 File format" OFF)
 option (SLS_USE_TEXTCLIENT "Text Client" ON)
+option (SLS_USE_DETECTOR "Detector libs" ON)
 option (SLS_USE_RECEIVER "Receiver" ON)
 option (SLS_USE_GUI "GUI" OFF)
 option (SLS_USE_SIMULATOR "Simulator" OFF)
@@ -200,9 +201,9 @@ endif(SLS_USE_TESTS)
 # Common functionallity to detector and receiver
 add_subdirectory(slsSupportLib)
 
-if (SLS_USE_TEXTCLIENT)
+if (SLS_USE_DETECTOR OR SLS_USE_TEXTCLIENT)
     add_subdirectory(slsDetectorSoftware)
-endif (SLS_USE_TEXTCLIENT)
+endif ()
 
 if (SLS_USE_RECEIVER)
     add_subdirectory(slsReceiverSoftware) 

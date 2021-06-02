@@ -1000,6 +1000,18 @@ int Feb_Control_StopAcquisition() { return Feb_Control_Reset(); }
 
 int Feb_Control_SoftwareTrigger() {
     if (Feb_Control_activated) {
+        // read exp toggle value
+        int prev_toggle = 0;
+        unsigned int value = 0;
+        if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll,
+                                        FEB_REG_STATUS, &value)) {
+            LOG(logERROR, ("Could not read FEB_REG_STATUS reg\n"));
+            return 0;
+        }
+        int prev_toggle = ((value & FEB_REG_STATUS_EXP_TGL_MSK) >>
+                           FEB_REG_STATUS_EXP_TGL_OFST);
+
+        // send software trigger
         unsigned int orig_value = 0;
         if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
                                         DAQ_REG_CHIP_CMDS, &orig_value)) {
@@ -1024,6 +1036,32 @@ int Feb_Control_SoftwareTrigger() {
             return 0;
         }
         LOG(logINFO, ("Software Internal Trigger Sent!\n"));
+
+        // wait for trigger for 20ms
+        usleep(20 * 1000);
+        if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll,
+                                        FEB_REG_STATUS, &value)) {
+            LOG(logERROR, ("Could not read FEB_REG_STATUS reg\n"));
+            return 0;
+        }
+        int toggle = ((value & FEB_REG_STATUS_EXP_TGL_MSK) >>
+                      FEB_REG_STATUS_EXP_TGL_OFST);
+
+        // no toggle, so no trigger
+        if (toggle == prev_toggle) {
+            LOG(logERROR, ("Software trigger failed. No exposure toggle "
+                           "detected in 20ms.\n"));
+            return 0;
+        }
+
+        // read that it exposed
+        int exposure =
+            ((value & FEB_REG_STATUS_EXP_MSK) >> FEB_REG_STATUS_EXP_OFST);
+        if (!exposure) {
+            LOG(logERROR,
+                ("Software trigger failed. No exposure detected in 20ms.\n"));
+            return 0;
+        }
     }
     return 1;
 }
@@ -1883,15 +1921,15 @@ int Feb_Control_GetLeftFPGATemp() {
     if (!Feb_Control_activated) {
         return 0;
     }
-    unsigned int temperature = 0;
+    unsigned int value = 0;
     if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress, FEB_REG_STATUS,
-                                    &temperature)) {
+                                    &value)) {
         LOG(logERROR, ("Trouble reading FEB_REG_STATUS reg to get left feb "
                        "temperature\n"));
         return 0;
     }
-
-    temperature = temperature >> 16;
+    unsigned int temperature =
+        ((value & FEB_REG_STATUS_TEMP_MSK) >> FEB_REG_STATUS_TEMP_OFST);
     temperature =
         ((((float)(temperature) / 65536.0f) / 0.00198421639f) - 273.15f) *
         1000; // Static conversation, copied from xps sysmon standalone driver

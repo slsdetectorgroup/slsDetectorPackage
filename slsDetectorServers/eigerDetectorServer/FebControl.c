@@ -1001,9 +1001,8 @@ int Feb_Control_StopAcquisition() { return Feb_Control_Reset(); }
 int Feb_Control_SoftwareTrigger() {
     if (Feb_Control_activated) {
         // read exp toggle value
-        int prev_toggle = 0;
         unsigned int value = 0;
-        if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll,
+        if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
                                         FEB_REG_STATUS, &value)) {
             LOG(logERROR, ("Could not read FEB_REG_STATUS reg\n"));
             return 0;
@@ -1039,7 +1038,7 @@ int Feb_Control_SoftwareTrigger() {
 
         // wait for trigger for 20ms
         usleep(20 * 1000);
-        if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll,
+        if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
                                         FEB_REG_STATUS, &value)) {
             LOG(logERROR, ("Could not read FEB_REG_STATUS reg\n"));
             return 0;

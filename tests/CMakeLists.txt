@@ -28,11 +28,11 @@ target_link_libraries(tests
       slsProjectWarnings
 )  
 
-if (SLS_USE_TEXTCLIENT)
+if (SLS_USE_DETECTOR)
     target_link_libraries(tests PUBLIC
         slsDetectorShared
     )
-endif (SLS_USE_TEXTCLIENT)
+endif (SLS_USE_DETECTOR)
 
 if (SLS_USE_RECEIVER)
     target_link_libraries(tests PUBLIC

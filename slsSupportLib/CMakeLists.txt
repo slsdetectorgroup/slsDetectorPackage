@@ -72,15 +72,21 @@ if (SLS_USE_TESTS)
     add_subdirectory(tests)
 endif(SLS_USE_TESTS)
 
-# Add shared library version of the support lib
-add_library(slsSupportShared SHARED $<TARGET_OBJECTS:slsSupportObject>)
-target_link_libraries(slsSupportShared PUBLIC slsSupportObject)
+#List of targets to support adding removing targets as config
+set(SUPPORT_LIBRARY_TARGETS slsSupportObject)
 
-set_target_properties(slsSupportShared PROPERTIES
-    LIBRARY_OUTPUT_NAME SlsSupport
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    PUBLIC_HEADER "${PUBLICHEADERS}"
-)
+# Add shared library version of the support lib
+if(SLS_BUILD_SHARED_LIBRARIES)
+    add_library(slsSupportShared SHARED $<TARGET_OBJECTS:slsSupportObject>)
+    target_link_libraries(slsSupportShared PUBLIC slsSupportObject)
+
+    set_target_properties(slsSupportShared PROPERTIES
+        LIBRARY_OUTPUT_NAME SlsSupport
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        PUBLIC_HEADER "${PUBLICHEADERS}"
+    )
+    list(APPEND SUPPORT_LIBRARY_TARGETS slsSupportShared)
+endif(SLS_BUILD_SHARED_LIBRARIES)
 
 # Add static version of the support lib
 add_library(slsSupportStatic STATIC $<TARGET_OBJECTS:slsSupportObject>)
@@ -91,14 +97,13 @@ set_target_properties(slsSupportStatic PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
+list(APPEND SUPPORT_LIBRARY_TARGETS slsSupportStatic)
 
 if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
-    set_property(TARGET slsSupportObject PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-    set_property(TARGET slsSupportShared  PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-    set_property(TARGET slsSupportStatic PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    set_property(TARGET ${SUPPORT_LIBRARY_TARGETS} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 
-install(TARGETS slsSupportShared slsSupportStatic slsSupportObject
+install(TARGETS ${SUPPORT_LIBRARY_TARGETS}
     EXPORT "${TARGETS_EXPORT_NAME}"
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

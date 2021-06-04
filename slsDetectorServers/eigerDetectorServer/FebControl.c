@@ -998,76 +998,88 @@ int Feb_Control_StartAcquisition() {
 
 int Feb_Control_StopAcquisition() { return Feb_Control_Reset(); }
 
+int Feb_Control_GetExposureStatus(int *toggle, int *exposure) {
+    unsigned int value = 0;
+    if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(), FEB_REG_STATUS,
+                                    &value)) {
+        LOG(logERROR, ("Could not read FEB_REG_STATUS reg\n"));
+        return 0;
+    }
+    *toggle =
+        ((value & FEB_REG_STATUS_EXP_TGL_MSK) >> FEB_REG_STATUS_EXP_TGL_OFST);
+    *exposure = ((value & FEB_REG_STATUS_EXP_MSK) >> FEB_REG_STATUS_EXP_OFST);
+    return 1;
+}
+
+int Feb_Control_SendSoftwareTrigger() {
+    // read old value in register
+    unsigned int orig_value = 0;
+    if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
+                                    DAQ_REG_CHIP_CMDS, &orig_value)) {
+        LOG(logERROR, ("Could not read DAQ_REG_CHIP_CMDS to send software "
+                       "trigger\n"));
+        return 0;
+    }
+    unsigned int cmd = orig_value | DAQ_REG_CHIP_CMDS_INT_TRIGGER;
+
+    // set trigger bit
+    LOG(logDEBUG1, ("Setting Trigger, Register:0x%x\n", cmd));
+    if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                     DAQ_REG_CHIP_CMDS, cmd, 0, 0)) {
+        LOG(logERROR, ("Could not give software trigger\n"));
+        return 0;
+    }
+    // unset trigger bit
+    LOG(logDEBUG1, ("Unsetting Trigger, Register:0x%x\n", orig_value));
+    if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                     DAQ_REG_CHIP_CMDS, orig_value, 0, 0)) {
+        LOG(logERROR, ("Could not give software trigger\n"));
+        return 0;
+    }
+    LOG(logINFO, ("Software Internal Trigger Sent!\n"));
+}
+
 int Feb_Control_SoftwareTrigger(int block) {
     if (Feb_Control_activated) {
-        // read exp toggle value
-        unsigned int value = 0;
-        if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
-                                        FEB_REG_STATUS, &value)) {
-            LOG(logERROR, ("Could not read FEB_REG_STATUS reg\n"));
-            return 0;
-        }
-        int prev_toggle = ((value & FEB_REG_STATUS_EXP_TGL_MSK) >>
-                           FEB_REG_STATUS_EXP_TGL_OFST);
 
-        // send software trigger
-        unsigned int orig_value = 0;
-        if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
-                                        DAQ_REG_CHIP_CMDS, &orig_value)) {
-            LOG(logERROR, ("Could not read DAQ_REG_CHIP_CMDS to send software "
-                           "trigger\n"));
-            return 0;
-        }
-        unsigned int cmd = orig_value | DAQ_REG_CHIP_CMDS_INT_TRIGGER;
+        int prev_toggle = 0, toggle = 0, prev_exposure = 0, exposure = 0;
 
-        // set trigger bit
-        LOG(logDEBUG1, ("Setting Trigger, Register:0x%x\n", cmd));
-        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_CHIP_CMDS, cmd, 0, 0)) {
-            LOG(logERROR, ("Could not give software trigger\n"));
+        // remember previous toggle
+        if (!Feb_Control_GetExposureStatus(&prev_toggle, &exposure)) {
             return 0;
         }
-        // unset trigger bit
-        LOG(logDEBUG1, ("Unsetting Trigger, Register:0x%x\n", orig_value));
-        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_CHIP_CMDS, orig_value, 0, 0)) {
-            LOG(logERROR, ("Could not give software trigger\n"));
-            return 0;
-        }
-        LOG(logINFO, ("Software Internal Trigger Sent!\n"));
+
+        Feb_Control_SendSoftwareTrigger();
 
         // wait for trigger for 20ms
-        usleep(20 * 1000);
-        if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
-                                        FEB_REG_STATUS, &value)) {
-            LOG(logERROR, ("Could not read FEB_REG_STATUS reg\n"));
+        usleep();
+
+        // get current toggle value
+        if (!Feb_Control_GetExposureToggle(&toggle, &exposure)) {
             return 0;
         }
-        int toggle = ((value & FEB_REG_STATUS_EXP_TGL_MSK) >>
-                      FEB_REG_STATUS_EXP_TGL_OFST);
 
-        // no toggle, so no trigger
+        // no toggle error
         if (toggle == prev_toggle) {
             LOG(logERROR, ("Software trigger failed. No exposure toggle "
-                           "detected in 20ms.\n"));
+                           "detected.\n"));
             return 0;
         }
 
-        // read that it exposed
-        int exposure =
-            ((value & FEB_REG_STATUS_EXP_MSK) >> FEB_REG_STATUS_EXP_OFST);
+        // no exposure
         if (!exposure) {
-            LOG(logERROR,
-                ("Software trigger failed. No exposure detected in 20ms.\n"));
+            LOG(logERROR, ("Software trigger failed. No exposure detected.\n"));
             return 0;
         }
+        prev_exposure = exposure;
 
-        // wait for toggle for exposure to be done
+        // wait for exposure to be done
         if (block) {
-            while (toggle == prev_toggle) {
+            while (prev_exposure == exposure) {
                 usleep(5000);
-                toggle = ((value & FEB_REG_STATUS_EXP_TGL_MSK) >>
-                          FEB_REG_STATUS_EXP_TGL_OFST);
+                if (!Feb_Control_GetExposureStatus(&prev_toggle, &exposure)) {
+                    return 0;
+                }
             }
         }
     }

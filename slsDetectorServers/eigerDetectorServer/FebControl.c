@@ -1061,6 +1061,13 @@ int Feb_Control_SoftwareTrigger() {
                 ("Software trigger failed. No exposure detected in 20ms.\n"));
             return 0;
         }
+
+        // wait for toggle for exposure to be done
+        while (toggle == prev_toggle) {
+            usleep(5000);
+            toggle = ((value & FEB_REG_STATUS_EXP_TGL_MSK) >>
+                      FEB_REG_STATUS_EXP_TGL_OFST);
+        }
     }
     return 1;
 }

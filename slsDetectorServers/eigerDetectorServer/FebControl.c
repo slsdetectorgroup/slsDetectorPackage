@@ -1052,7 +1052,7 @@ int Feb_Control_SoftwareTrigger(int block) {
         Feb_Control_SendSoftwareTrigger();
 
         // wait for trigger for 20ms
-        usleep();
+        usleep(0);
 
         // get current toggle value
         if (!Feb_Control_GetExposureToggle(&toggle, &exposure)) {

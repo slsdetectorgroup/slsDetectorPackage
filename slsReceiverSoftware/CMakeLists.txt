@@ -56,15 +56,19 @@ if (SLS_USE_HDF5)
     endif ()
 endif (SLS_USE_HDF5)
 
+set(RECEIVER_LIBRARY_TARGETS slsReceiverObject)
 
 #Shared library
-add_library(slsReceiverShared SHARED $<TARGET_OBJECTS:slsReceiverObject>)
-target_link_libraries(slsReceiverShared PUBLIC slsReceiverObject)
-set_target_properties(slsReceiverShared PROPERTIES
-    LIBRARY_OUTPUT_NAME SlsReceiver
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    PUBLIC_HEADER "${PUBLICHEADERS}"
-)
+if(SLS_BUILD_SHARED_LIBRARIES)
+    add_library(slsReceiverShared SHARED $<TARGET_OBJECTS:slsReceiverObject>)
+    target_link_libraries(slsReceiverShared PUBLIC slsReceiverObject)
+    set_target_properties(slsReceiverShared PROPERTIES
+        LIBRARY_OUTPUT_NAME SlsReceiver
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        PUBLIC_HEADER "${PUBLICHEADERS}"
+    )
+    list(APPEND RECEIVER_LIBRARY_TARGETS slsReceiverShared)
+endif(SLS_BUILD_SHARED_LIBRARIES)
 
 #Static library 
 add_library(slsReceiverStatic STATIC $<TARGET_OBJECTS:slsReceiverObject>)
@@ -74,63 +78,74 @@ set_target_properties(slsReceiverStatic PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
+list(APPEND RECEIVER_LIBRARY_TARGETS slsReceiverStatic)
 
-# message("Receiver LTO_AVAILABLE:" ${SLS_LTO_AVAILABLE})
+
 if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
-    set_property(TARGET slsReceiverObject PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-    set_property(TARGET slsReceiverStatic PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-    set_property(TARGET slsReceiverShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    set_property(TARGET ${RECEIVER_LIBRARY_TARGETS} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 
 
-add_executable(slsReceiver
-    src/ReceiverApp.cpp
+
+# Receiver binaries 
+
+if (SLS_USE_RECEIVER_BINARIES)
+    add_executable(slsReceiver
+        src/ReceiverApp.cpp
+    )
+
+    set_target_properties(slsReceiver PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+    if(SLS_LTO_AVAILABLE)
+        set_property(TARGET slsReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    endif()
+
+    target_link_libraries(slsReceiver PUBLIC
+    PUBLIC
+        slsReceiverStatic
+        pthread
+        rt
+    PRIVATE
+        slsProjectWarnings
+    )
+
+    add_executable(slsMultiReceiver
+        src/MultiReceiverApp.cpp
+    )
+
+    set_target_properties(slsMultiReceiver PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+    if(SLS_LTO_AVAILABLE)
+        set_property(TARGET slsMultiReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    endif()
+
+    target_link_libraries(slsMultiReceiver 
+    PUBLIC
+        slsReceiverStatic
+        pthread
+        rt
+    PRIVATE
+        slsProjectWarnings
+    )
+
+    install(TARGETS slsReceiver slsMultiReceiver
+        EXPORT "${TARGETS_EXPORT_NAME}"
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/sls
 )
 
-
-set_target_properties(slsReceiver PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
-if(SLS_LTO_AVAILABLE)
-    set_property(TARGET slsReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-endif()
-
-target_link_libraries(slsReceiver PUBLIC
-  PUBLIC
-    slsReceiverStatic
-    pthread
-    rt
-  PRIVATE
-    slsProjectWarnings
-)
-
-add_executable(slsMultiReceiver
-    src/MultiReceiverApp.cpp
-)
-
-
-set_target_properties(slsMultiReceiver PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
-if(SLS_LTO_AVAILABLE)
-    set_property(TARGET slsMultiReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-endif()
-
-target_link_libraries(slsMultiReceiver 
-  PUBLIC
-    slsReceiverStatic
-    pthread
-    rt
-  PRIVATE
-    slsProjectWarnings
-)
+endif(SLS_USE_RECEIVER_BINARIES)
 
 if (SLS_USE_TESTS)
     add_subdirectory(tests)
 endif(SLS_USE_TESTS)
 
 
-install(TARGETS slsReceiverShared slsReceiver slsMultiReceiver slsReceiverObject slsReceiverStatic
+install(TARGETS ${RECEIVER_LIBRARY_TARGETS}
         EXPORT "${TARGETS_EXPORT_NAME}"
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

@@ -352,36 +352,38 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
     std::copy(e_eV.begin(), e_eV.end(), myMod.eV);
     LOG(logDEBUG) << "ev:" << ToString(myMod.eV);
 
-    //check for trimbits that are out of range 
+    // check for trimbits that are out of range
     bool out_of_range = false;
-    for(int i = 0; i!=myMod.nchan; ++i){
-        if (myMod.chanregs[i]<0){
+    for (int i = 0; i != myMod.nchan; ++i) {
+        if (myMod.chanregs[i] < 0) {
             myMod.chanregs[i] = 0;
             out_of_range = true;
-        }else if(myMod.chanregs[i]>63){
-            myMod.chanregs[i]=63;
+        } else if (myMod.chanregs[i] > 63) {
+            myMod.chanregs[i] = 63;
             out_of_range = true;
         }
     }
-    if (out_of_range){
-            LOG(logWARNING) << "Some trimbits were out of range after interpolation, these have been replaced with 0 or 63.";
+    if (out_of_range) {
+        LOG(logWARNING)
+            << "Some trimbits were out of range after interpolation, these "
+               "have been replaced with 0 or 63.";
     }
 
-    //check dacs
+    // check dacs
     out_of_range = false;
-    for (auto dac : {M_VTRIM,M_VTH1,M_VTH2, M_VTH3}){
-        if (myMod.dacs[dac] < 600){
+    for (auto dac : {M_VTRIM, M_VTH1, M_VTH2, M_VTH3}) {
+        if (myMod.dacs[dac] < 600) {
             myMod.dacs[dac] = 600;
             out_of_range = true;
-        }else if(myMod.dacs[dac] > 2400){
+        } else if (myMod.dacs[dac] > 2400) {
             myMod.dacs[dac] = 2400;
             out_of_range = true;
         }
     }
-    if (out_of_range){
-            LOG(logWARNING) << "Some dacs were out of range after interpolation, these have been replaced with 600 or 2400.";
+    if (out_of_range) {
+        LOG(logWARNING) << "Some dacs were out of range after interpolation, "
+                           "these have been replaced with 600 or 2400.";
     }
-
 
     setModule(myMod, trimbits);
     if (getSettings() != isettings) {
@@ -412,7 +414,8 @@ void Module::loadSettingsFile(const std::string &fname) {
         if (shm()->myDetectorType == MYTHEN3) {
             serialNumberWidth = 4;
         }
-        if ((fname.find(".sn") == std::string::npos) && (fname.find(".trim") == std::string::npos)) {
+        if ((fname.find(".sn") == std::string::npos) &&
+            (fname.find(".trim") == std::string::npos)) {
             ostfn << ".sn" << std::setfill('0') << std::setw(serialNumberWidth)
                   << std::dec << getSerialNumber();
         }
@@ -773,7 +776,9 @@ void Module::setNextFrameNumber(uint64_t value) {
     sendToDetector(F_SET_NEXT_FRAME_NUMBER, value, nullptr);
 }
 
-void Module::sendSoftwareTrigger() { sendToDetectorStop(F_SOFTWARE_TRIGGER); }
+void Module::sendSoftwareTrigger(const bool block) {
+    sendToDetectorStop(F_SOFTWARE_TRIGGER, static_cast<int>(block), nullptr);
+}
 
 defs::scanParameters Module::getScan() const {
     return sendToDetector<defs::scanParameters>(F_GET_SCAN);
@@ -1994,21 +1999,17 @@ std::array<time::ns, 3> Module::getGateDelayForAllGates() const {
     return sendToDetector<std::array<time::ns, 3>>(F_GET_GATE_DELAY_ALL_GATES);
 }
 
-bool Module::isMaster() const{
-    return sendToDetector<int>(F_GET_MASTER);
-}
+bool Module::isMaster() const { return sendToDetector<int>(F_GET_MASTER); }
 
-int Module::getChipStatusRegister() const{
+int Module::getChipStatusRegister() const {
     return sendToDetector<int>(F_GET_CSR);
 }
 
-void Module::setGainCaps(int caps){
+void Module::setGainCaps(int caps) {
     sendToDetector<int>(F_SET_GAIN_CAPS, caps);
 }
 
-int Module::getGainCaps(){
-    return sendToDetector<int>(F_GET_GAIN_CAPS);
-}
+int Module::getGainCaps() { return sendToDetector<int>(F_GET_GAIN_CAPS); }
 
 // CTB / Moench Specific
 int Module::getNumberOfAnalogSamples() const {
@@ -3209,7 +3210,6 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 
     auto file_size = getFileSize(infile);
 
-
     // eiger
     if (shm()->myDetectorType == EIGER) {
         infile.read(reinterpret_cast<char *>(myMod.dacs),
@@ -3235,16 +3235,15 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 
     // mythen3 (dacs, trimbits)
     else if (shm()->myDetectorType == MYTHEN3) {
-        int expected_size =
-            sizeof(int) * myMod.ndac + sizeof(int) * myMod.nchan + sizeof(myMod.reg);
+        int expected_size = sizeof(int) * myMod.ndac +
+                            sizeof(int) * myMod.nchan + sizeof(myMod.reg);
         if (file_size != expected_size) {
             throw RuntimeError("The size of the settings file: " + fname +
                                " differs from the expected size, " +
                                std::to_string(file_size) + " instead of " +
                                std::to_string(expected_size) + " bytes");
         }
-        infile.read(reinterpret_cast<char *>(&myMod.reg),
-                    sizeof(myMod.reg));
+        infile.read(reinterpret_cast<char *>(&myMod.reg), sizeof(myMod.reg));
         infile.read(reinterpret_cast<char *>(myMod.dacs),
                     sizeof(int) * (myMod.ndac));
         for (int i = 0; i < myMod.ndac; ++i) {

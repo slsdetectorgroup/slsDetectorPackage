@@ -25,7 +25,7 @@
 #include "blackfin.h"
 #endif
 
-#if defined(MYTHEN3D) 
+#if defined(MYTHEN3D)
 #include "mythen3.h"
 #endif
 
@@ -360,7 +360,7 @@ int isMaster();
 int setGainCaps(int caps);
 int getGainCaps();
 int setChipStatusRegister(int csr);
-int setDACS(int* dacs);
+int setDACS(int *dacs);
 #endif
 #if defined(GOTTHARDD) || defined(MYTHEN3D)
 void setExtSignal(int signalIndex, enum externalSignalFlag mode);
@@ -576,8 +576,11 @@ int startStateMachine();
 void *start_timer(void *arg);
 #endif
 int stopStateMachine();
-#if defined(EIGERD) || defined(MYTHEN3D)
+#ifdef MYTHEN3D
 int softwareTrigger();
+#endif
+#ifdef EIGERD
+int softwareTrigger(int block);
 #endif
 #if defined(EIGERD) || defined(MYTHEN3D)
 int startReadOut();

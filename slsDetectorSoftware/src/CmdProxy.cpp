@@ -1193,6 +1193,41 @@ std::string CmdProxy::Scan(int action) {
     return os.str();
 }
 
+std::string CmdProxy::Trigger(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        if (cmd == "trigger") {
+            os << "[Eiger][Mythen3] Sends software trigger signal to detector";
+        } else if (cmd == "blockingtrigger") {
+            os << "[Eiger] Sends software trigger signal to detector and "
+                  "blocks till "
+                  "the frames are sent out for that trigger.";
+        } else {
+            throw sls::RuntimeError("unknown command " + cmd);
+        }
+        os << '\n';
+    } else if (action == slsDetectorDefs::GET_ACTION) {
+        throw sls::RuntimeError("Cannot get");
+    } else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (det_id != -1) {
+            throw sls::RuntimeError("Cannot execute this at module level");
+        }
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        bool block = false;
+        if (cmd == "blockingtrigger") {
+            block = true;
+        }
+        det->sendSoftwareTrigger(block);
+        os << "successful\n";
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Network Configuration (Detector<->Receiver) */
 
 std::string CmdProxy::UDPDestinationIP(int action) {
@@ -1981,12 +2016,12 @@ std::string CmdProxy::GateDelay(int action) {
     return os.str();
 }
 
-
-std::string CmdProxy::GainCaps(int action){
+std::string CmdProxy::GainCaps(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[cap1, cap2, ...]\n\t[Mythen3] gain, options: C10pre, C15sh, C30sh, C50sh, C225ACsh, C15pre"
+        os << "[cap1, cap2, ...]\n\t[Mythen3] gain, options: C10pre, C15sh, "
+              "C30sh, C50sh, C225ACsh, C15pre"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty())
@@ -1994,22 +2029,22 @@ std::string CmdProxy::GainCaps(int action){
 
         auto tmp = det->getGainCaps();
         sls::Result<defs::M3_GainCaps> csr;
-        for (auto val : tmp){
+        for (auto val : tmp) {
             if (val)
                 csr.push_back(static_cast<defs::M3_GainCaps>(val));
         }
-            
+
         os << OutString(csr) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() < 1) {
             WrongNumberOfParameters(1);
         }
         int caps = 0;
-        for (const auto& arg:args){
+        for (const auto &arg : args) {
             if (arg != "0")
                 caps |= sls::StringTo<defs::M3_GainCaps>(arg);
         }
-            
+
         det->setGainCaps(caps);
         os << OutString(args) << '\n';
     } else {

@@ -998,7 +998,7 @@ int Feb_Control_StartAcquisition() {
 
 int Feb_Control_StopAcquisition() { return Feb_Control_Reset(); }
 
-int Feb_Control_SoftwareTrigger() {
+int Feb_Control_SoftwareTrigger(int block) {
     if (Feb_Control_activated) {
         // read exp toggle value
         unsigned int value = 0;
@@ -1063,10 +1063,12 @@ int Feb_Control_SoftwareTrigger() {
         }
 
         // wait for toggle for exposure to be done
-        while (toggle == prev_toggle) {
-            usleep(5000);
-            toggle = ((value & FEB_REG_STATUS_EXP_TGL_MSK) >>
-                      FEB_REG_STATUS_EXP_TGL_OFST);
+        if (block) {
+            while (toggle == prev_toggle) {
+                usleep(5000);
+                toggle = ((value & FEB_REG_STATUS_EXP_TGL_MSK) >>
+                          FEB_REG_STATUS_EXP_TGL_OFST);
+            }
         }
     }
     return 1;

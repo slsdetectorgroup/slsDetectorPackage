@@ -1055,7 +1055,7 @@ int Feb_Control_SoftwareTrigger(int block) {
         usleep(0);
 
         // get current toggle value
-        if (!Feb_Control_GetExposureToggle(&toggle, &exposure)) {
+        if (!Feb_Control_GetExposureStatus(&toggle, &exposure)) {
             return 0;
         }
 

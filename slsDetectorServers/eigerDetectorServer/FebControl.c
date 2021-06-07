@@ -998,15 +998,17 @@ int Feb_Control_StartAcquisition() {
 
 int Feb_Control_StopAcquisition() { return Feb_Control_Reset(); }
 
-int Feb_Control_GetExposureStatus(int *toggle, int *exposure) {
+int Feb_Control_GetExposureStatus(int *rising, int *falling, int *exposure) {
     unsigned int value = 0;
     if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(), FEB_REG_STATUS,
                                     &value)) {
         LOG(logERROR, ("Could not read FEB_REG_STATUS reg\n"));
         return 0;
     }
-    *toggle =
-        ((value & FEB_REG_STATUS_EXP_TGL_MSK) >> FEB_REG_STATUS_EXP_TGL_OFST);
+    *rising = ((value & FEB_REG_STATUS_EXP_TGL_RISING_MSK) >>
+               FEB_REG_STATUS_EXP_TGL_RISING_OFST);
+    *falling = ((value & FEB_REG_STATUS_EXP_TGL_FALLING_MSK) >>
+                FEB_REG_STATUS_EXP_TGL_FALLING_OFST);
     *exposure = ((value & FEB_REG_STATUS_EXP_MSK) >> FEB_REG_STATUS_EXP_OFST);
     return 1;
 }
@@ -1037,30 +1039,37 @@ int Feb_Control_SendSoftwareTrigger() {
         return 0;
     }
     LOG(logINFO, ("Software Internal Trigger Sent!\n"));
+    return 1;
 }
 
 int Feb_Control_SoftwareTrigger(int block) {
     if (Feb_Control_activated) {
 
-        int prev_toggle = 0, toggle = 0, prev_exposure = 0, exposure = 0;
-
-        // remember previous toggle
-        if (!Feb_Control_GetExposureStatus(&prev_toggle, &exposure)) {
+        int rising = 0, falling = 0, exposure = 0;
+        if (!Feb_Control_GetExposureStatus(&rising, &falling, &exposure)) {
             return 0;
         }
 
+        if (exposure) {
+            LOG(logERROR, ("Software trigger failed. Still exposing.\n"));
+            return 0;
+        }
+
+        // remember previous rising toggle
+        int prev_toggle = rising;
+
         Feb_Control_SendSoftwareTrigger();
 
-        // wait for trigger for 20ms
-        usleep(0);
+        // will need to wait if delay after trigger introduced
+        // usleep(0);
 
         // get current toggle value
-        if (!Feb_Control_GetExposureStatus(&toggle, &exposure)) {
+        if (!Feb_Control_GetExposureStatus(&rising, &falling, &exposure)) {
             return 0;
         }
 
         // no toggle error
-        if (toggle == prev_toggle) {
+        if (rising == prev_toggle) {
             LOG(logERROR, ("Software trigger failed. No exposure toggle "
                            "detected.\n"));
             return 0;
@@ -1071,15 +1080,22 @@ int Feb_Control_SoftwareTrigger(int block) {
             LOG(logERROR, ("Software trigger failed. No exposure detected.\n"));
             return 0;
         }
-        prev_exposure = exposure;
 
         // wait for exposure to be done
         if (block) {
-            while (prev_exposure == exposure) {
+            prev_toggle = falling;
+            while (prev_toggle == falling) {
                 usleep(5000);
-                if (!Feb_Control_GetExposureStatus(&prev_toggle, &exposure)) {
+                if (!Feb_Control_GetExposureStatus(&rising, &falling,
+                                                   &exposure)) {
                     return 0;
                 }
+            }
+            // exposure low
+            if (exposure) {
+                LOG(logERROR, ("Software trigger failed. Still exposing after "
+                               "exposure finished toggled.\n"));
+                return 0;
             }
         }
     }

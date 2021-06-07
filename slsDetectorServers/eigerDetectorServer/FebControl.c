@@ -1005,6 +1005,7 @@ int Feb_Control_GetExposureStatus(int *rising, int *falling, int *exposure) {
         LOG(logERROR, ("Could not read FEB_REG_STATUS reg\n"));
         return 0;
     }
+    LOG(logINFORED, ("febregstatus:0x%x\n", value));
     *rising = ((value & FEB_REG_STATUS_EXP_TGL_RISING_MSK) >>
                FEB_REG_STATUS_EXP_TGL_RISING_OFST);
     *falling = ((value & FEB_REG_STATUS_EXP_TGL_FALLING_MSK) >>

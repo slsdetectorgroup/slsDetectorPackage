@@ -25,7 +25,7 @@
 #include "blackfin.h"
 #endif
 
-#if defined(MYTHEN3D)
+#ifdef MYTHEN3D
 #include "mythen3.h"
 #endif
 

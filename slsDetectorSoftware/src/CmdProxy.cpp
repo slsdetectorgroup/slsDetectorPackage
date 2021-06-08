@@ -1902,7 +1902,8 @@ std::string CmdProxy::Counters(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[i0] [i1] [i2]... \n\t[Mythen3] List of counters indices "
               "enabled. Each element in list can be 0 - 2 and must be non "
-              "repetitive."
+              "repetitive. Enabling counters sets vth dacs to remembered "
+              "values and disabling sets them to disabled values."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {

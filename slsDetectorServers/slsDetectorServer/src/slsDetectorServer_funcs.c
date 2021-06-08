@@ -1238,8 +1238,8 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     ret = OK;
                 } else {
                     ret = FAIL;
-                    sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
-                            serverDacIndex, val, retval);
+                        sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
+                                serverDacIndex, val, retval);
                     LOG(logERROR, (mess));
                 }
             }

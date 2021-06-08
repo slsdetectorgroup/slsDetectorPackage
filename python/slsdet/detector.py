@@ -1749,7 +1749,7 @@ class Detector(CppDetectorApi):
         Note
         ----
         [Eiger] Sets vcmp_ll, vcmp_lr, vcmp_rl, vcmp_rr and vcp to the same value. \n
-        [Mythen3] Sets vth1, vth2 and vth3 to the same value.
+        [Mythen3] Sets vth1, vth2 and vth3 to the same value for enabled counters.
         """
         return self.getDAC(dacIndex.VTHRESHOLD)
 
@@ -2381,6 +2381,7 @@ class Detector(CppDetectorApi):
         Note
         -----
         Each element in list can be 0 - 2 and must be non repetitive.
+        Enabling counters sets vth dacs to remembered values and disabling sets them to disabled values.
 
         Example
         -----------

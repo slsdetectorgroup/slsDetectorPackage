@@ -642,9 +642,9 @@ int set_timing_mode(int file_des) {
     }
     // get
     retval = getTiming();
-    #ifndef MYTHEN3D
+#ifndef MYTHEN3D
     validate((int)arg, (int)retval, "set timing mode", DEC);
-    #endif
+#endif
     LOG(logDEBUG1, ("Timing Mode: %d\n", retval));
 
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -1238,8 +1238,8 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     ret = OK;
                 } else {
                     ret = FAIL;
-                    sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
-                            serverDacIndex, val, retval);
+                        sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
+                                serverDacIndex, val, retval);
                     LOG(logERROR, (mess));
                 }
             }
@@ -1552,7 +1552,7 @@ int set_module(int file_des) {
         // check index
 
 #if !(defined(EIGERD) || defined(MYTHEN3D))
-//TODO! Check if this is used for any detector
+        // TODO! Check if this is used for any detector
         switch (module.reg) {
 #ifdef JUNGFRAUD
         case DYNAMICGAIN:
@@ -7576,21 +7576,23 @@ int set_pattern(int file_des) {
 
     patternParameters *pat = malloc(sizeof(patternParameters));
     memset(pat, 0, sizeof(patternParameters));
-      // ignoring endianness for eiger
+    // ignoring endianness for eiger
     if (receiveData(file_des, pat, sizeof(patternParameters), INT32) < 0) {
         if (pat != NULL)
             free(pat);
         return printSocketReadError();
     }
- 
+
     if (Server_VerifyLock() == OK) {
         LOG(logINFO, ("Setting Pattern from structure\n"));
         LOG(logINFO,
-            ("Setting Pattern Word (printing every 10 words that are not 0\n"));   
-	/****************************************************************************************************************/
-	/* I SUGGEST TO VALIDATE THE VALUES HERE AND THEN WRITE THE PATTERN IN A SEPARATE FUNCTION WHICH COULD BE REUSED*/
-	/* added loadPattern.c/h - the same func could be reused also in readDefaultPattern                                  */
-	/***************************************************************************************************************/
+            ("Setting Pattern Word (printing every 10 words that are not 0\n"));
+        /****************************************************************************************************************/
+        /* I SUGGEST TO VALIDATE THE VALUES HERE AND THEN WRITE THE PATTERN IN A
+         * SEPARATE FUNCTION WHICH COULD BE REUSED*/
+        /* added loadPattern.c/h - the same func could be reused also in
+         * readDefaultPattern                                  */
+        /***************************************************************************************************************/
 
         for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
             if ((i % 10 == 0) && pat->word[i] != 0) {
@@ -7664,7 +7666,7 @@ int set_pattern(int file_des) {
                 }
             }
         }
-	/******* DOWN TO HERE ***********/
+        /******* DOWN TO HERE ***********/
     }
     if (pat != NULL)
         free(pat);
@@ -8372,7 +8374,7 @@ int get_all_threshold_energy(int file_des) {
     return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
 }
 
-int get_master(int file_des){
+int get_master(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
@@ -8387,7 +8389,7 @@ int get_master(int file_des){
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int get_csr(int file_des){
+int get_csr(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
@@ -8402,7 +8404,7 @@ int get_csr(int file_des){
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_gain_caps(int file_des){
+int set_gain_caps(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int arg = 0;
@@ -8418,14 +8420,14 @@ int set_gain_caps(int file_des){
 #else
     if (Server_VerifyLock() == OK) {
         setGainCaps(arg);
-        retval = getChipStatusRegister(); //TODO! fix 
+        retval = getChipStatusRegister(); // TODO! fix
         LOG(logDEBUG1, ("gain caps retval: %u\n", retval));
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int get_gain_caps(int file_des){
+int get_gain_caps(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     // int arg = 0;

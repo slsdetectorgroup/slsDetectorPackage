@@ -1273,7 +1273,9 @@ class Detector {
     /** [Mythen3] */
     Result<uint32_t> getCounterMask(Positions pos = {}) const;
 
-    /** [Mythen3] countermask bit set for each counter index enabled */
+    /** [Mythen3] countermask bit set for each counter index enabled. Enabling
+     * counters sets vth dacs to remembered values and disabling sets them to
+     * disabled values. Setting vth dacs explicitly overwrites them. */
     void setCounterMask(uint32_t countermask, Positions pos = {});
 
     Result<int> getNumberOfGates(Positions pos = {}) const;
@@ -1308,8 +1310,7 @@ class Detector {
 
     Result<bool> getMaster(Positions pos = {}) const;
 
-
-    //TODO! check if we really want to expose this !!!!!
+    // TODO! check if we really want to expose this !!!!!
     Result<int> getChipStatusRegister(Positions pos = {}) const;
 
     void setGainCaps(int caps, Positions pos = {});

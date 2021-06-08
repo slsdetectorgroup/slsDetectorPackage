@@ -25,7 +25,7 @@
 #include "blackfin.h"
 #endif
 
-#if defined(MYTHEN3D) 
+#ifdef MYTHEN3D
 #include "mythen3.h"
 #endif
 
@@ -289,8 +289,6 @@ int64_t getMeasurementTime();
 int setModule(sls_detector_module myMod, char *mess);
 #endif
 #ifdef MYTHEN3D
-int setBit(int ibit, int patword);
-int clearBit(int ibit, int patword);
 int setTrimbits(int *trimbits);
 int setAllTrimbits(int val);
 int getAllTrimbits();
@@ -319,6 +317,9 @@ int setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val);
 int getOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex);
 #endif
 void setDAC(enum DACINDEX ind, int val, int mV);
+#ifdef MYTHEN3D
+void setGeneralDAC(enum DACINDEX ind, int val, int mV);
+#endif
 int getDAC(enum DACINDEX ind, int mV);
 int getMaxDacSteps();
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
@@ -360,7 +361,7 @@ int isMaster();
 int setGainCaps(int caps);
 int getGainCaps();
 int setChipStatusRegister(int csr);
-int setDACS(int* dacs);
+int setDACS(int *dacs);
 #endif
 #if defined(GOTTHARDD) || defined(MYTHEN3D)
 void setExtSignal(int signalIndex, enum externalSignalFlag mode);

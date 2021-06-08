@@ -5,8 +5,8 @@
 #include "RegisterDefs.h"
 #include "clogger.h"
 #include "common.h"
-#include "mythen3.h"
 #include "loadPattern.h"
+#include "mythen3.h"
 #include "sharedMemory.h"
 #include "sls/versionAPI.h"
 #ifdef VIRTUAL
@@ -20,7 +20,6 @@
 #include <pthread.h>
 #include <time.h>
 #endif
-
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
@@ -47,7 +46,7 @@ enum detectorSettings thisSettings;
 sls_detector_module *detectorModules = NULL;
 int *detectorChans = NULL;
 int *detectorDacs = NULL;
-int *channelMask=NULL;
+int *channelMask = NULL;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
@@ -379,7 +378,6 @@ void allocateDetectorStructureMemory() {
     memset(channelMask, 0, NCHIP * NCHAN * sizeof(char));
     detectorDacs = malloc(NDAC * sizeof(int));
 
-    
     LOG(logDEBUG1,
         ("modules from 0x%x to 0x%x\n", detectorModules, detectorModules));
     LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n", detectorChans, detectorChans));
@@ -519,7 +517,7 @@ void setupDetector() {
     powerChip(1);
 
     if (!initError) {
-      setChipStatusRegister(CSR_default);
+        setChipStatusRegister(CSR_default);
     }
 
     setAllTrimbits(DEFAULT_TRIMBIT_VALUE);
@@ -935,11 +933,17 @@ void setCounterMask(uint32_t arg) {
     }
 
     LOG(logINFO, ("\tUpdating Vth dacs\n"));
+    enum DACINDEX vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
     for (int i = 0; i < NCOUNTERS; ++i) {
         // if change in enable
         if ((arg & (1 << i)) ^ (oldmask & (1 << i))) {
-            // will disable if counter disabled
-            setDAC(VTH1, vthEnabledVals[i], 0);
+            // disable, disable value
+            int value = DEFAULT_COUNTER_DISABLED_VTH_VAL;
+            // enable, set saved values
+            if (arg & (1 << i)) {
+                value = vthEnabledVals[i];
+            }
+            setGeneralDAC(vthdacs[i], value, 0);
         }
     }
 }
@@ -1057,7 +1061,7 @@ int64_t getMeasurementTime() {
 
 /* parameters - module, speed, readout */
 
-int setDACS(int* dacs){
+int setDACS(int *dacs) {
     for (int i = 0; i < NDAC; ++i) {
         if (dacs[i] != -1) {
             setDAC((enum DACINDEX)i, dacs[i], 0);
@@ -1074,17 +1078,16 @@ int setDACS(int* dacs){
     return OK;
 }
 
-
 int setModule(sls_detector_module myMod, char *mess) {
     LOG(logINFO, ("Setting module\n"));
 
-    if (setChipStatusRegister(myMod.reg)){
+    if (setChipStatusRegister(myMod.reg)) {
         sprintf(mess, "Could not CSR from module\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
 
-    if (setDACS(myMod.dacs)){
+    if (setDACS(myMod.dacs)) {
         sprintf(mess, "Could not set dacs\n");
         LOG(logERROR, (mess));
         return FAIL;
@@ -1093,7 +1096,7 @@ int setModule(sls_detector_module myMod, char *mess) {
     for (int i = 0; i < NCOUNTERS; ++i) {
         if (myMod.eV[i] >= 0) {
             setThresholdEnergy(i, myMod.eV[i]);
-        }else{
+        } else {
             setThresholdEnergy(i, -1);
         }
     }
@@ -1114,6 +1117,7 @@ int setModule(sls_detector_module myMod, char *mess) {
 }
 
 int setTrimbits(int *trimbits) {
+    LOG(logINFOBLUE, ("Setting trimbits\n"));
     // remember previous run clock
     uint32_t prevRunClk = clkDivider[SYSTEM_C0];
     patternParameters *pat = NULL;
@@ -1130,7 +1134,7 @@ int setTrimbits(int *trimbits) {
         pat = setChannelRegisterChip(ichip, channelMask,
                                      trimbits); // change here!!!
         if (pat) {
-            error |= loadPattern(pat);
+            error |= loadPattern(logDEBUG5, pat);
             if (error == 0)
                 startPattern();
             free(pat);
@@ -1263,45 +1267,52 @@ void setThresholdEnergy(int counterIndex, int eV) {
 
 /* parameters - dac, hv */
 void setDAC(enum DACINDEX ind, int val, int mV) {
+    // invalid value
     if (val < 0) {
         return;
     }
-
-    if (ind == M_VTHRESHOLD) {
-        LOG(logINFO,
-            ("Setting Threshold voltages to %d %s\n", val, (mV ? "mv" : "")));
-        setDAC(M_VTH1, val, mV);
-        setDAC(M_VTH2, val, mV);
-        setDAC(M_VTH3, val, mV);
+    // out of scope, NDAC + 1 for vthreshold
+    if ((int)ind > NDAC + 1) {
+        LOG(logERROR, ("Unknown dac index %d\n", ind));
         return;
     }
-    char *dac_names[] = {DAC_NAMES};
 
-    // remember vthx values and set 2800 if counter disabled
-    uint32_t counters = getCounterMask();
-    int vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
-    for (int i = 0; i < NCOUNTERS; ++i) {
-        if (vthdacs[i] == (int)ind) {
-            // remember enabled values for vthx
-            if (val != DEFAULT_COUNTER_DISABLED_VTH_VAL) {
-                int vthval = val;
-                if (mV) {
-                    if (LTC2620_D_VoltageToDac(val, &vthval) == FAIL) {
-                        return;
+    // threshold dacs (remember value, vthreshold: skip disabled)
+    if (ind == M_VTHRESHOLD || ind == M_VTH1 || ind == M_VTH2 ||
+        ind == M_VTH3) {
+        char *dac_names[] = {DAC_NAMES};
+        int vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
+        uint32_t counters = getCounterMask();
+        for (int i = 0; i < NCOUNTERS; ++i) {
+            if ((int)ind == vthdacs[i] || ind == M_VTHRESHOLD) {
+                int dacval = val;
+                // if not disabled value, remember value
+                if (dacval != DEFAULT_COUNTER_DISABLED_VTH_VAL) {
+                    // convert mv to dac
+                    if (mV) {
+                        if (LTC2620_D_VoltageToDac(val, &dacval) == FAIL) {
+                            return;
+                        }
                     }
+                    vthEnabledVals[i] = dacval;
+                    LOG(logINFO,
+                        ("Remembering %s [%d]\n", dac_names[ind], dacval));
                 }
-                vthEnabledVals[i] = vthval;
-                LOG(logINFO, ("Remembering %s [%d]\n", dac_names[ind], vthval));
-            }
-            // set vthx to disable val, if counter disabled
-            if (!(counters & (1 << i))) {
-                LOG(logINFO, ("Disabling %s\n", dac_names[ind]));
-                val = DEFAULT_COUNTER_DISABLED_VTH_VAL;
-                mV = 0;
+                // if vthreshold,skip for disabled counters
+                if ((ind == M_VTHRESHOLD) && (!(counters & (1 << i)))) {
+                    continue;
+                }
+                setGeneralDAC(vthdacs[i], val, mV);
             }
         }
+        return;
     }
 
+    setGeneralDAC(ind, val, mV);
+}
+
+void setGeneralDAC(enum DACINDEX ind, int val, int mV) {
+    char *dac_names[] = {DAC_NAMES};
     LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
                     val, (mV ? "mV" : "dac units")));
     int dacval = val;
@@ -1329,20 +1340,29 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
 
 int getDAC(enum DACINDEX ind, int mV) {
     if (ind == M_VTHRESHOLD) {
-        int ret[NCOUNTERS] = {0};
-        ret[0] = getDAC(M_VTH1, mV);
-        ret[1] = getDAC(M_VTH2, mV);
-        ret[2] = getDAC(M_VTH3, mV);
-
-        if ((ret[0] == ret[1]) && (ret[1] == ret[2])) {
-            LOG(logINFO, ("\tvthreshold match\n"));
-            return ret[0];
-        } else {
-            LOG(logERROR, ("\tvthreshold mismatch vth1:%d vth2:%d "
-                           "vth3:%d\n",
-                           ret[0], ret[1], ret[2]));
-            return -1;
+        int ret = -1, ret1 = -1;
+        // get only for enabled counters
+        uint32_t counters = getCounterMask();
+        int vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
+        for (int i = 0; i < NCOUNTERS; ++i) {
+            if (counters & (1 << i)) {
+                ret1 = getDAC(vthdacs[i], mV);
+                // first enabled counter
+                if (ret == -1) {
+                    ret = ret1;
+                }
+                // different values for enabled counters
+                else if (ret1 != ret) {
+                    return -1;
+                }
+            }
         }
+        if (ret == -1) {
+            LOG(logERROR, ("\tvthreshold mismatch (of enabled counters)\n"));
+        } else {
+            LOG(logINFO, ("\tvthreshold match %d\n", ret));
+        }
+        return ret;
     }
 
     if (!mV) {
@@ -1373,13 +1393,14 @@ int setHighVoltage(int val) {
     return highvoltage;
 }
 
-int isMaster(){
-    return !(bus_r(0x18) >> 31);
+int isMaster() {
+    return !((bus_r(SYSTEM_STATUS_REG) & SYSTEM_STATUS_SLV_BRD_DTCT_MSK) >>
+             SYSTEM_STATUS_SLV_BRD_DTCT_OFST);
 }
 
 /* parameters - timing */
 void setTiming(enum timingMode arg) {
-    
+
     if (!isMaster() && arg == AUTO_TIMING)
         arg = TRIGGER_EXPOSURE;
 
@@ -2643,7 +2664,7 @@ int setChipStatusRegister(int csr) {
     pat = setChipStatusRegisterPattern(csr);
 
     if (pat) {
-        error |= loadPattern(pat);
+        error |= loadPattern(logDEBUG5, pat);
         if (!error)
             startPattern();
         free(pat);
@@ -2663,7 +2684,7 @@ int setChipStatusRegister(int csr) {
     return OK;
 }
 
-int setGainCaps(int caps){
+int setGainCaps(int caps) {
     // Update only gain caps, leave the rest of the CSR unchanged
     int csr = getChipStatusRegister();
     csr &= ~GAIN_MASK;
@@ -2674,8 +2695,8 @@ int setGainCaps(int caps){
     return setChipStatusRegister(csr);
 }
 
-int getGainCaps(){
+int getGainCaps() {
     int csr = getChipStatusRegister();
     int caps = csrToGainCaps(csr);
-    return caps; 
+    return caps;
 }

@@ -10,7 +10,8 @@ std::string GetHelpDac(std::string dac) {
             "[dac or mV value][(optional unit) mV] \n\t[Eiger][Mythen3] "
             "Detector threshold voltage for single photon counters.\n\t[Eiger] "
             "Sets vcmp_ll, vcmp_lr, vcmp_rl, vcmp_rr and vcp to the same "
-            "value. \n\t[Mythen3] Sets vth1, vth2 and vth3 to the same value.");
+            "value. \n\t[Mythen3] Sets vth1, vth2 and vth3 to the same value "
+            "for enabled counters.");
     }
     if (dac == "vsvp") {
         return std::string(
@@ -134,17 +135,18 @@ std::string GetHelpDac(std::string dac) {
     if (dac == "vth1") {
         return std::string(
             "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for first "
-            "detector threshold voltage.");
+            "detector threshold voltage. Overwrites even if counter disabled.");
     }
     if (dac == "vth2") {
         return std::string(
             "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for "
-            "second detector threshold voltage.");
+            "second detector threshold voltage. Overwrites even if counter "
+            "disabled.");
     }
     if (dac == "vth3") {
         return std::string(
             "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for third "
-            "detector threshold voltage.");
+            "detector threshold voltage. Overwrites even if counter disabled.");
     }
     if (dac == "vcal_n") {
         return std::string(

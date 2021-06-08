@@ -1867,7 +1867,8 @@ std::string CmdProxy::Counters(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[i0] [i1] [i2]... \n\t[Mythen3] List of counters indices "
               "enabled. Each element in list can be 0 - 2 and must be non "
-              "repetitive."
+              "repetitive. Enabling counters sets vth dacs to remembered "
+              "values and disabling sets them to disabled values."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -1981,12 +1982,12 @@ std::string CmdProxy::GateDelay(int action) {
     return os.str();
 }
 
-
-std::string CmdProxy::GainCaps(int action){
+std::string CmdProxy::GainCaps(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[cap1, cap2, ...]\n\t[Mythen3] gain, options: C10pre, C15sh, C30sh, C50sh, C225ACsh, C15pre"
+        os << "[cap1, cap2, ...]\n\t[Mythen3] gain, options: C10pre, C15sh, "
+              "C30sh, C50sh, C225ACsh, C15pre"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty())
@@ -1994,22 +1995,22 @@ std::string CmdProxy::GainCaps(int action){
 
         auto tmp = det->getGainCaps();
         sls::Result<defs::M3_GainCaps> csr;
-        for (auto val : tmp){
+        for (auto val : tmp) {
             if (val)
                 csr.push_back(static_cast<defs::M3_GainCaps>(val));
         }
-            
+
         os << OutString(csr) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() < 1) {
             WrongNumberOfParameters(1);
         }
         int caps = 0;
-        for (const auto& arg:args){
+        for (const auto &arg : args) {
             if (arg != "0")
                 caps |= sls::StringTo<defs::M3_GainCaps>(arg);
         }
-            
+
         det->setGainCaps(caps);
         os << OutString(args) << '\n';
     } else {

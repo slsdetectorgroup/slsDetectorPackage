@@ -1201,6 +1201,8 @@ int setHighVoltage(int val) {
 
 /* parameters - timing, extsig */
 
+int isMaster() { return (masterflags == IS_MASTER ? 1 : 0); }
+
 void setTiming(enum timingMode arg) {
     u_int32_t addr = EXT_SIGNAL_REG;
     switch (arg) {

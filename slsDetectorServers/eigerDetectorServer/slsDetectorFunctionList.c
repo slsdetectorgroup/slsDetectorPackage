@@ -46,7 +46,6 @@ int on_dst = 0;
 int dst_requested[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-enum masterFlags masterMode = IS_SLAVE;
 int top = 0;
 int master = 0;
 int normal = 0;
@@ -1412,6 +1411,8 @@ int setHighVoltage(int val) {
 }
 
 /* parameters - timing, extsig */
+
+int isMaster() { return master; }
 
 void setTiming(enum timingMode arg) {
     int ret = 0;

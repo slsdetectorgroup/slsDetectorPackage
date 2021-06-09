@@ -1393,12 +1393,13 @@ int setHighVoltage(int val) {
     return highvoltage;
 }
 
+/* parameters - timing */
+
 int isMaster() {
     return !((bus_r(SYSTEM_STATUS_REG) & SYSTEM_STATUS_SLV_BRD_DTCT_MSK) >>
              SYSTEM_STATUS_SLV_BRD_DTCT_OFST);
 }
 
-/* parameters - timing */
 void setTiming(enum timingMode arg) {
 
     if (!isMaster() && arg == AUTO_TIMING)

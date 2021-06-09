@@ -675,29 +675,51 @@ void Detector::stopReceiver() { pimpl->Parallel(&Module::stopReceiver, {}); }
 
 void Detector::startDetector() {
     auto detector_type = getDetectorType().squash();
-    if (detector_type == defs::MYTHEN3 && size() > 1){
+    if (detector_type == defs::MYTHEN3 && size() > 1) {
         auto is_master = getMaster();
-        std::vector<int> master;
+        int masterPosition = 0;
         std::vector<int> slaves;
-        for(int i=0; i<size(); ++i){
+        for (int i = 0; i < size(); ++i) {
             if (is_master[i])
-                master.push_back(i);
+                masterPosition = i;
             else
                 slaves.push_back(i);
         }
         pimpl->Parallel(&Module::startAcquisition, slaves);
-        pimpl->Parallel(&Module::startAcquisition, master);
-    }else{
+        pimpl->Parallel(&Module::startAcquisition, {masterPosition});
+    } else {
         pimpl->Parallel(&Module::startAcquisition, {});
     }
-    
 }
 
 void Detector::startDetectorReadout() {
     pimpl->Parallel(&Module::startReadout, {});
 }
 
-void Detector::stopDetector(Positions pos) { pimpl->Parallel(&Module::stopAcquisition, pos); }
+void Detector::stopDetector(Positions pos) {
+    auto detector_type = getDetectorType().squash();
+    if (detector_type == defs::EIGER && size() > 1) {
+        auto is_master = getMaster();
+        int masterPosition = -1;
+        std::vector<int> slaves;
+        for (int i = 0; i < size(); ++i) {
+            if (!pos.empty() && pos[0] != -1 &&
+                std::find(pos.begin(), pos.end(), i) != pos.end()) {
+                continue;
+            }
+            if (is_master[i])
+                masterPosition = i;
+            else
+                slaves.push_back(i);
+        }
+        pimpl->Parallel(&Module::stopAcquisition, slaves);
+        if (masterPosition != -1) {
+            pimpl->Parallel(&Module::stopAcquisition, {masterPosition});
+        }
+    } else {
+        pimpl->Parallel(&Module::stopAcquisition, pos);
+    }
+}
 
 Result<defs::runStatus> Detector::getDetectorStatus(Positions pos) const {
     return pimpl->Parallel(&Module::getRunStatus, pos);
@@ -733,8 +755,10 @@ Result<defs::scanParameters> Detector::getScan(Positions pos) const {
 }
 
 void Detector::setScan(const defs::scanParameters t) {
-    if(getDetectorType().squash() == defs::MYTHEN3 && size()>1 && t.enable != 0){
-        throw DetectorError("Scan is only allowed for single module Mythen 3 because of synchronization");
+    if (getDetectorType().squash() == defs::MYTHEN3 && size() > 1 &&
+        t.enable != 0) {
+        throw DetectorError("Scan is only allowed for single module Mythen 3 "
+                            "because of synchronization");
     }
     pimpl->Parallel(&Module::setScan, {}, t);
 }
@@ -1611,22 +1635,21 @@ Detector::getGateDelayForAllGates(Positions pos) const {
     return pimpl->Parallel(&Module::getGateDelayForAllGates, pos);
 }
 
-Result<bool> Detector::getMaster(Positions pos) const{
+Result<bool> Detector::getMaster(Positions pos) const {
     return pimpl->Parallel(&Module::isMaster, pos);
 }
 
-Result<int> Detector::getChipStatusRegister(Positions pos) const{
+Result<int> Detector::getChipStatusRegister(Positions pos) const {
     return pimpl->Parallel(&Module::getChipStatusRegister, pos);
 }
 
-void Detector::setGainCaps(int caps, Positions pos){
+void Detector::setGainCaps(int caps, Positions pos) {
     return pimpl->Parallel(&Module::setGainCaps, pos, caps);
 }
 
-Result<int> Detector::getGainCaps(Positions pos){
+Result<int> Detector::getGainCaps(Positions pos) {
     return pimpl->Parallel(&Module::getGainCaps, pos);
 }
-
 
 // CTB/ Moench Specific
 

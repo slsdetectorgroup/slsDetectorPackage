@@ -997,19 +997,18 @@ int Feb_Control_StartAcquisition() {
 }
 
 int Feb_Control_StopAcquisition() {
-    if (!Feb_Control_Reset()) {
-        return 0;
-    }
     if (Feb_Control_activated) {
         if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_CTRL, DAQ_CTRL_STOP, 0, 0)) {
-            LOG(logERROR,
-                ("Trouble stopping acquisition to send complete frames\n"));
+                                         DAQ_REG_CTRL, 0, 0, 0) ||
+            !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                         DAQ_REG_CTRL, DAQ_CTRL_STOP, 0, 0) ||
+            !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                         DAQ_REG_CTRL, 0, 0, 0)) {
+            LOG(logERROR, ("Could not reset daq, no response.\n"));
             return 0;
         }
     }
-    LOG(logINFO, ("Acquisition stop command sent!\n"));
-    return 1;
+    return Feb_Control_WaitForFinishedFlag(5000, 0);
 }
 
 int Feb_Control_SoftwareTrigger() {

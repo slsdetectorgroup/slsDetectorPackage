@@ -38,7 +38,7 @@
 #define DAQ_CTRL_RESET 0x80000000
 #define DAQ_CTRL_START 0x40000000
 #define ACQ_CTRL_START 0x50000000 // this is 0x10000000 (acq) | 0x40000000 (daq)
-#define DAQ_CTRL_STOP  0x00000000
+#define DAQ_CTRL_STOP  0x08000000 // sends last complete frame
 
 // direct chip commands to the DAQ_REG_CHIP_CMDS register
 #define DAQ_SET_STATIC_BIT       0x00000001

@@ -996,7 +996,21 @@ int Feb_Control_StartAcquisition() {
     return 1;
 }
 
-int Feb_Control_StopAcquisition() { return Feb_Control_Reset(); }
+int Feb_Control_StopAcquisition() {
+    if (!Feb_Control_Reset()) {
+        return 0;
+    }
+    if (Feb_Control_activated) {
+        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                         DAQ_REG_CTRL, DAQ_CTRL_STOP, 0, 0)) {
+            LOG(logERROR,
+                ("Trouble stopping acquisition to send complete frames\n"));
+            return 0;
+        }
+    }
+    LOG(logINFO, ("Acquisition stop command sent!\n"));
+    return 1;
+}
 
 int Feb_Control_SoftwareTrigger() {
     if (Feb_Control_activated) {

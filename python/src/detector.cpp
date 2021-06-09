@@ -428,9 +428,9 @@ void init_det(py::module &m) {
                  Detector::setNextFrameNumber,
              py::arg(), py::arg() = Positions{})
         .def("sendSoftwareTrigger",
-             (void (Detector::*)(sls::Positions)) &
+             (void (Detector::*)(const bool, sls::Positions)) &
                  Detector::sendSoftwareTrigger,
-             py::arg() = Positions{})
+             py::arg(), py::arg() = Positions{})
         .def("getScan",
              (Result<defs::scanParameters>(Detector::*)(sls::Positions) const) &
                  Detector::getScan,

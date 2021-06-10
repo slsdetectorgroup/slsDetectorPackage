@@ -451,9 +451,11 @@ void qTabDataOutput::GetCounterMask() {
             "Counter mask is inconsistent for all detectors."));
         std::vector<QCheckBox *> counters = {chkCounter1, chkCounter2,
                                              chkCounter3};
+        // default to unchecked
         for (unsigned int i = 0; i < counters.size(); ++i) {
             counters[i]->setChecked(false);
         }
+        // if retva[i] = 2, chkCounter2 is checked
         for (unsigned int i = 0; i < retval.size(); ++i) {
             if (retval[i] > 3) {
                 throw sls::RuntimeError(

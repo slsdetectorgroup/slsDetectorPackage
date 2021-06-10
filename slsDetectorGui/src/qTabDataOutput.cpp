@@ -1,9 +1,7 @@
 #include "qTabDataOutput.h"
 #include "qDefs.h"
-#include "sls/bit_utils.h"
 
 #include <QButtonGroup>
-#include <QCheckBox>
 #include <QFileDialog>
 #include <QStandardItemModel>
 #include <QString>
@@ -25,12 +23,6 @@ void qTabDataOutput::SetupWidgetWindow() {
     btnGroupRate = new QButtonGroup(this);
     btnGroupRate->addButton(radioDefaultDeadtime, 0);
     btnGroupRate->addButton(radioCustomDeadtime, 1);
-    chkCounter1->setEnabled(false);
-    chkCounter2->setEnabled(false);
-    chkCounter3->setEnabled(false);
-    chkCounter1->hide();
-    chkCounter2->hide();
-    chkCounter3->hide();
 
     // enabling according to det type
     switch (det->getDetectorType().squash()) {
@@ -49,12 +41,6 @@ void qTabDataOutput::SetupWidgetWindow() {
         break;
     case slsDetectorDefs::MYTHEN3:
         chkParallel->setEnabled(true);
-        chkCounter1->setEnabled(true);
-        chkCounter2->setEnabled(true);
-        chkCounter3->setEnabled(true);
-        chkCounter1->show();
-        chkCounter2->show();
-        chkCounter3->show();
         break;
     case slsDetectorDefs::JUNGFRAU:
         lblClkDivider->setEnabled(true);
@@ -100,14 +86,6 @@ void qTabDataOutput::Initialization() {
     if (chkParallel->isEnabled()) {
         connect(chkParallel, SIGNAL(toggled(bool)), this,
                 SLOT(SetParallel(bool)));
-    }
-    if (chkCounter1->isEnabled()) {
-        connect(chkCounter1, SIGNAL(toggled(bool)), this,
-                SLOT(SetCounterMask()));
-        connect(chkCounter2, SIGNAL(toggled(bool)), this,
-                SLOT(SetCounterMask()));
-        connect(chkCounter3, SIGNAL(toggled(bool)), this,
-                SLOT(SetCounterMask()));
     }
     // speed
     if (comboClkDivider->isEnabled()) {
@@ -438,57 +416,6 @@ void qTabDataOutput::SetParallel(bool enable) {
                  &qTabDataOutput::GetParallel)
 }
 
-void qTabDataOutput::GetCounterMask() {
-    LOG(logDEBUG) << "Getting counter mask";
-    disconnect(chkCounter1, SIGNAL(toggled(bool)), this,
-               SLOT(SetCounterMask()));
-    disconnect(chkCounter2, SIGNAL(toggled(bool)), this,
-               SLOT(SetCounterMask()));
-    disconnect(chkCounter3, SIGNAL(toggled(bool)), this,
-               SLOT(SetCounterMask()));
-    try {
-        auto retval = sls::getSetBits(det->getCounterMask().tsquash(
-            "Counter mask is inconsistent for all detectors."));
-        std::vector<QCheckBox *> counters = {chkCounter1, chkCounter2,
-                                             chkCounter3};
-        // default to unchecked
-        for (unsigned int i = 0; i < counters.size(); ++i) {
-            counters[i]->setChecked(false);
-        }
-        // if retva[i] = 2, chkCounter2 is checked
-        for (unsigned int i = 0; i < retval.size(); ++i) {
-            if (retval[i] > 3) {
-                throw sls::RuntimeError(
-                    std::string("Unknown counter index : ") +
-                    std::to_string(static_cast<int>(retval[i])));
-            }
-            counters[retval[i]]->setChecked(true);
-        }
-    }
-    CATCH_DISPLAY("Could not get parallel readout.",
-                  "qTabDataOutput::GetParallel")
-    connect(chkCounter1, SIGNAL(toggled(bool)), this, SLOT(SetCounterMask()));
-    connect(chkCounter2, SIGNAL(toggled(bool)), this, SLOT(SetCounterMask()));
-    connect(chkCounter3, SIGNAL(toggled(bool)), this, SLOT(SetCounterMask()));
-}
-
-void qTabDataOutput::SetCounterMask() {
-    std::vector<QCheckBox *> counters = {chkCounter1, chkCounter2, chkCounter3};
-    uint32_t mask = 0;
-    for (unsigned int i = 0; i < counters.size(); ++i) {
-        if (counters[i]->isChecked()) {
-            mask |= (1 << i);
-        }
-    }
-    LOG(logINFO) << "Setting counter mask to " << mask;
-    try {
-        det->setCounterMask(mask);
-    }
-    CATCH_HANDLE("Could not set counter mask.",
-                 "qTabDataOutput::SetCounterMask", this,
-                 &qTabDataOutput::GetCounterMask)
-}
-
 void qTabDataOutput::Refresh() {
     LOG(logDEBUG) << "**Updating DataOutput Tab";
 
@@ -506,9 +433,6 @@ void qTabDataOutput::Refresh() {
     }
     if (chkParallel->isEnabled()) {
         GetParallel();
-    }
-    if (chkCounter1->isEnabled()) {
-        GetCounterMask();
     }
     if (comboClkDivider->isEnabled()) {
         GetSpeed();

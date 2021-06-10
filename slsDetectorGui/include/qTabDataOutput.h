@@ -22,7 +22,6 @@ class qTabDataOutput : public QWidget, private Ui::TabDataOutputObject {
     void SetRateCorrection();
     void SetSpeed(int speed);
     void SetParallel(bool enable);
-    void SetCounterMask();
 
   private:
     void SetupWidgetWindow();
@@ -37,7 +36,6 @@ class qTabDataOutput : public QWidget, private Ui::TabDataOutputObject {
     void GetRateCorrection();
     void GetSpeed();
     void GetParallel();
-    void GetCounterMask();
 
     sls::Detector *det;
     // Button group for radiobuttons for rate

@@ -2,7 +2,6 @@
 #include "qDefs.h"
 #include "sls/ToString.h"
 #include "sls/bit_utils.h"
-#include <QCheckBox>
 #include <QStandardItemModel>
 
 qTabSettings::qTabSettings(QWidget *parent, sls::Detector *detector)
@@ -15,6 +14,8 @@ qTabSettings::qTabSettings(QWidget *parent, sls::Detector *detector)
 qTabSettings::~qTabSettings() {}
 
 void qTabSettings::SetupWidgetWindow() {
+
+    counters = std::vector<QCheckBox *>{chkCounter1, chkCounter2, chkCounter3};
 
     spinThreshold2->hide();
     spinThreshold3->hide();
@@ -359,20 +360,17 @@ void qTabSettings::GetCounterMask() {
     try {
         auto retval = sls::getSetBits(det->getCounterMask().tsquash(
             "Counter mask is inconsistent for all detectors."));
-        std::vector<QCheckBox *> counters = {chkCounter1, chkCounter2,
-                                             chkCounter3};
         // default to unchecked
-        for (unsigned int i = 0; i < counters.size(); ++i) {
-            counters[i]->setChecked(false);
-        }
-        // if retva[i] = 2, chkCounter2 is checked
-        for (unsigned int i = 0; i < retval.size(); ++i) {
-            if (retval[i] > 3) {
+        std::for_each(counters, [](auto &i) { i.setChecked(false); });
+        // std::for_each(counters.begin(), counters.end(), )
+        // if retval[i] = 2, chkCounter2 is checked
+        for (auto i : retval) {
+            if (i > 3) {
                 throw sls::RuntimeError(
                     std::string("Unknown counter index : ") +
-                    std::to_string(static_cast<int>(retval[i])));
+                    std::to_string(static_cast<int>(i)));
             }
-            counters[retval[i]]->setChecked(true);
+            counters[i]->setChecked(true);
         }
     }
     CATCH_DISPLAY("Could not get counter mask.", "qTabSettings::GetCounterMask")
@@ -382,7 +380,6 @@ void qTabSettings::GetCounterMask() {
 }
 
 void qTabSettings::SetCounterMask() {
-    std::vector<QCheckBox *> counters = {chkCounter1, chkCounter2, chkCounter3};
     uint32_t mask = 0;
     for (unsigned int i = 0; i < counters.size(); ++i) {
         if (counters[i]->isChecked()) {

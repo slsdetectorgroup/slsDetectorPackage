@@ -1,6 +1,7 @@
 #pragma once
 #include "sls/Detector.h"
 #include "ui_form_tab_settings.h"
+#include <QCheckBox>
 
 class qTabSettings : public QWidget, private Ui::TabSettingsObject {
     Q_OBJECT
@@ -29,6 +30,8 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
     void GetCounterMask();
 
     sls::Detector *det;
+    std::vector<QCheckBox *> counters;
+
     enum {
         STANDARD,
         FAST,

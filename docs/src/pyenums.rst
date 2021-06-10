@@ -67,9 +67,6 @@ exposed to Python through pybind11.
 .. autoclass:: readoutMode
     :undoc-members:
 
-.. autoclass:: masterFlags
-    :undoc-members:
-
 .. autoclass:: burstMode
     :undoc-members:
 

@@ -55,7 +55,7 @@ int ipPacketSize = 0;
 int udpPacketSize = 0;
 
 // master slave configuration (for 25um)
-int masterflags = NO_MASTER;
+int master = 0;
 int masterdefaultdelay = 62;
 int patternphase = 0;
 int adcphase = 0;
@@ -621,14 +621,12 @@ int readConfigFile() {
         // key is master/ slave flag
         if (!strcasecmp(key, "masterflags")) {
             if (!strcasecmp(value, "is_master")) {
-                masterflags = IS_MASTER;
+                master = 1;
                 LOG(logINFOBLUE, ("\tMaster\n"));
-            } else if (!strcasecmp(value, "is_slave")) {
-                masterflags = IS_SLAVE;
-                LOG(logINFOBLUE, ("\tSlave\n"));
-            } else if (!strcasecmp(value, "no_master")) {
-                masterflags = NO_MASTER;
-                LOG(logINFOBLUE, ("\tNo Master\n"));
+            } else if ((!strcasecmp(value, "is_slave")) ||
+                       (!strcasecmp(value, "no_master"))) {
+                master = 0;
+                LOG(logINFOBLUE, ("\tSlave or No Master\n"));
             } else {
                 LOG(logERROR,
                     ("\tCould not scan masterflags %s value from config file\n",
@@ -705,7 +703,7 @@ void setMasterSlaveConfiguration() {
         return;
 
     // master configuration
-    if (masterflags == IS_MASTER) {
+    if (master) {
         // master default delay set, so reset delay
         setDelayAfterTrigger(0);
 
@@ -876,7 +874,7 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    if (masterflags == IS_MASTER) {
+    if (master) {
         val += masterdefaultdelay;
         LOG(logINFO, ("\tActual Delay (master): %lld\n", (long long int)val));
     }
@@ -900,7 +898,7 @@ int setDelayAfterTrigger(int64_t val) {
 int64_t getDelayAfterTrigger() {
     int64_t retval =
         get64BitReg(SET_DELAY_LSB_REG, SET_DELAY_MSB_REG) / (1E-9 * CLK_FREQ);
-    if (masterflags == IS_MASTER) {
+    if (master) {
         LOG(logDEBUG1,
             ("\tActual Delay read (master): %lld\n", (long long int)retval));
         retval -= masterdefaultdelay;
@@ -924,7 +922,7 @@ int64_t getPeriodLeft() {
 int64_t getDelayAfterTriggerLeft() {
     int64_t retval =
         get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-9 * CLK_FREQ);
-    if (masterflags == IS_MASTER) {
+    if (master) {
         LOG(logDEBUG1,
             ("\tGetting Actual delay (master): %lld\n", (long long int)retval));
         retval -= masterdefaultdelay;
@@ -1201,7 +1199,7 @@ int setHighVoltage(int val) {
 
 /* parameters - timing, extsig */
 
-int isMaster() { return (masterflags == IS_MASTER ? 1 : 0); }
+int isMaster() { return master; }
 
 void setTiming(enum timingMode arg) {
     u_int32_t addr = EXT_SIGNAL_REG;
@@ -1453,7 +1451,7 @@ int configureMAC() {
         setExpTime(900 * 1000);
 
         // take an image
-        if (masterflags == IS_MASTER)
+        if (master)
             usleep(1 * 1000 * 1000); // required to ensure master starts
                                      // acquisition only after slave has changed
                                      // to basic parameters and is waiting

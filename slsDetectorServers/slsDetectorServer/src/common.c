@@ -7,6 +7,9 @@
 #include <string.h>
 #include <unistd.h> // readlink
 
+extern int ret;
+extern char mess[MAX_STR_LENGTH];
+
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue) {
     LOG(logDEBUG1, (" Input Value: %d (Input:(%d - %d), Output:(%d - %d))\n",
@@ -69,4 +72,33 @@ int GetTimeFromString(char *buf, time_t *result) {
     }
     *result = mktime(&t);
     return OK;
+}
+
+void validate(int arg, int retval, char *modename, enum numberMode nummode) {
+    if (ret == OK && arg != GET_FLAG && retval != arg) {
+        ret = FAIL;
+        if (nummode == HEX)
+            sprintf(mess, "Could not %s. Set 0x%x, but read 0x%x\n", modename,
+                    arg, retval);
+        else
+            sprintf(mess, "Could not %s. Set %d, but read %d\n", modename, arg,
+                    retval);
+        LOG(logERROR, (mess));
+    }
+}
+
+void validate64(int64_t arg, int64_t retval, char *modename,
+                enum numberMode nummode) {
+    if (ret == OK && arg != GET_FLAG && retval != arg) {
+        ret = FAIL;
+        if (nummode == HEX)
+            sprintf(mess, "Could not %s. Set 0x%llx, but read 0x%llx\n",
+                    modename, (long long unsigned int)arg,
+                    (long long unsigned int)retval);
+        else
+            sprintf(mess, "Could not %s. Set %lld, but read %lld\n", modename,
+                    (long long unsigned int)arg,
+                    (long long unsigned int)retval);
+        LOG(logERROR, (mess));
+    }
 }

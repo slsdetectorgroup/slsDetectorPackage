@@ -400,35 +400,6 @@ void modeNotImplemented(char *modename, int mode) {
     LOG(logERROR, (mess));
 }
 
-void validate(int arg, int retval, char *modename, enum numberMode nummode) {
-    if (ret == OK && arg != GET_FLAG && retval != arg) {
-        ret = FAIL;
-        if (nummode == HEX)
-            sprintf(mess, "Could not %s. Set 0x%x, but read 0x%x\n", modename,
-                    arg, retval);
-        else
-            sprintf(mess, "Could not %s. Set %d, but read %d\n", modename, arg,
-                    retval);
-        LOG(logERROR, (mess));
-    }
-}
-
-void validate64(int64_t arg, int64_t retval, char *modename,
-                enum numberMode nummode) {
-    if (ret == OK && arg != GET_FLAG && retval != arg) {
-        ret = FAIL;
-        if (nummode == HEX)
-            sprintf(mess, "Could not %s. Set 0x%llx, but read 0x%llx\n",
-                    modename, (long long unsigned int)arg,
-                    (long long unsigned int)retval);
-        else
-            sprintf(mess, "Could not %s. Set %lld, but read %lld\n", modename,
-                    (long long unsigned int)arg,
-                    (long long unsigned int)retval);
-        LOG(logERROR, (mess));
-    }
-}
-
 int executeCommand(char *command, char *result, enum TLogLevel level) {
     const size_t tempsize = 256;
     char temp[tempsize];
@@ -1238,8 +1209,8 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     ret = OK;
                 } else {
                     ret = FAIL;
-                        sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
-                                serverDacIndex, val, retval);
+                    sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
+                            serverDacIndex, val, retval);
                     LOG(logERROR, (mess));
                 }
             }

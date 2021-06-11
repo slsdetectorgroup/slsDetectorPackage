@@ -40,7 +40,7 @@ int loadPattern(enum TLogLevel printLevel, patternParameters *pat) {
 #ifndef MYTHEN3D
     if (ret == OK) {
         uint64_t retval64 = writePatternIOControl(pat->ioctrl);
-        // validate64(pat->ioctrl, retval64, "set pattern IO Control", HEX);
+        validate64(pat->ioctrl, retval64, "set pattern IO Control", HEX);
     }
 #endif
     if (ret == OK) {
@@ -48,10 +48,10 @@ int loadPattern(enum TLogLevel printLevel, patternParameters *pat) {
         int retval0 = pat->limits[0];
         int retval1 = pat->limits[1];
         setPatternLoop(-1, &retval0, &retval1, &numLoops);
-        // validate(pat->limits[0], retval0,
-        // "set pattern Limits start address", HEX);
-        // validate(pat->limits[1], retval1,
-        //       "set pattern Limits start address", HEX);
+        validate(pat->limits[0], retval0, "set pattern Limits start address",
+                 HEX);
+        validate(pat->limits[1], retval1, "set pattern Limits start address",
+                 HEX);
     }
     uint64_t retval64;
     if (ret == OK) {
@@ -66,19 +66,19 @@ int loadPattern(enum TLogLevel printLevel, patternParameters *pat) {
             setPatternLoop(i, &retval0, &retval1, &numLoops);
             memset(msg, 0, sizeof(msg));
             sprintf(msg, "set pattern Loop %d start address", i);
-            // validate(pat->loop[i * 2 + 0], retval0, msg, HEX);
+            validate(pat->loop[i * 2 + 0], retval0, msg, HEX);
             if (ret == FAIL) {
                 break;
             }
             memset(msg, 0, sizeof(msg));
             sprintf(msg, "set pattern Loop %d stop address", i);
-            // validate(pat->loop[i * 2 + 1], retval1, msg, HEX);
+            validate(pat->loop[i * 2 + 1], retval1, msg, HEX);
             if (ret == FAIL) {
                 break;
             }
             memset(msg, 0, sizeof(msg));
             sprintf(msg, "set pattern Loop %d num loops", i);
-            // validate(pat->nloop[i], numLoops, msg, HEX);
+            validate(pat->nloop[i], numLoops, msg, HEX);
             if (ret == FAIL) {
                 break;
             }
@@ -86,7 +86,7 @@ int loadPattern(enum TLogLevel printLevel, patternParameters *pat) {
             memset(msg, 0, sizeof(msg));
             sprintf(msg, "set pattern Loop %d wait address", i);
             retval0 = setPatternWaitAddress(i, pat->wait[i]);
-            // validate(pat->wait[i], retval0, msg, HEX);
+            validate(pat->wait[i], retval0, msg, HEX);
             if (ret == FAIL) {
                 break;
             }
@@ -95,7 +95,7 @@ int loadPattern(enum TLogLevel printLevel, patternParameters *pat) {
             memset(msg, 0, sizeof(msg));
             sprintf(msg, "set pattern Loop %d wait time", i);
             retval64 = setPatternWaitTime(i, pat->waittime[i]);
-            // validate64(pat->waittime[i], retval64, msg, HEX);
+            validate64(pat->waittime[i], retval64, msg, HEX);
             if (retval64 == FAIL) {
                 break;
             }

@@ -361,8 +361,9 @@ void qTabSettings::GetCounterMask() {
         auto retval = sls::getSetBits(det->getCounterMask().tsquash(
             "Counter mask is inconsistent for all detectors."));
         // default to unchecked
-        std::for_each(counters, [](auto &i) { i.setChecked(false); });
-        // std::for_each(counters.begin(), counters.end(), )
+        for (auto p : counters) {
+            p->setChecked(false);
+        }
         // if retval[i] = 2, chkCounter2 is checked
         for (auto i : retval) {
             if (i > 3) {

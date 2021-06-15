@@ -364,6 +364,8 @@ void initStopServer() {
 #ifdef VIRTUAL
     sharedMemory_setStop(0);
 #endif
+    // to get master from file
+    readConfigFile();
 }
 
 /* set up detector */

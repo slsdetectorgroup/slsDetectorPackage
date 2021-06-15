@@ -697,28 +697,7 @@ void Detector::startDetectorReadout() {
 }
 
 void Detector::stopDetector(Positions pos) {
-    /*auto detector_type = getDetectorType().squash();
-    if (detector_type == defs::EIGER && size() > 1) {
-        auto is_master = getMaster();
-        int masterPosition = -1;
-        std::vector<int> slaves;
-        for (int i = 0; i < size(); ++i) {
-            if (!pos.empty() && pos[0] != -1 &&
-                std::find(pos.begin(), pos.end(), i) != pos.end()) {
-                continue;
-            }
-            if (is_master[i])
-                masterPosition = i;
-            else
-                slaves.push_back(i);
-        }
-        pimpl->Parallel(&Module::stopAcquisition, slaves);
-        if (masterPosition != -1) {
-            pimpl->Parallel(&Module::stopAcquisition, {masterPosition});
-        }
-    } else {*/
     pimpl->Parallel(&Module::stopAcquisition, pos);
-    //}
 }
 
 Result<defs::runStatus> Detector::getDetectorStatus(Positions pos) const {

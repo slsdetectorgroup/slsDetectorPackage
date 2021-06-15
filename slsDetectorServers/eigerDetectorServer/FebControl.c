@@ -998,17 +998,14 @@ int Feb_Control_StartAcquisition() {
 
 int Feb_Control_StopAcquisition() {
     if (Feb_Control_activated) {
+        // stop acquisition and also sends last frame
         if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_CTRL, 0, 0, 0) ||
-            !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_CTRL, DAQ_CTRL_STOP, 0, 0) ||
-            !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_CTRL, 0, 0, 0)) {
-            LOG(logERROR, ("Could not reset daq, no response.\n"));
+                                         DAQ_REG_CTRL, DAQ_CTRL_STOP, 0, 0)) {
+            LOG(logERROR, ("Could not send last frames.\n"));
             return 0;
         }
     }
-    return Feb_Control_WaitForFinishedFlag(5000, 0);
+    return Feb_Control_Reset();
 }
 
 int Feb_Control_SoftwareTrigger() {

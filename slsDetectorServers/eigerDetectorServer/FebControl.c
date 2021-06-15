@@ -999,16 +999,16 @@ int Feb_Control_StartAcquisition() {
 int Feb_Control_StopAcquisition() {
     if (Feb_Control_activated) {
         // sends last
-        /*unsigned int orig_value = 0;
+        unsigned int orig_value = 0;
         if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
                                         DAQ_REG_CTRL, &orig_value)) {
             LOG(logERROR, ("Could not read DAQ_REG_CHIP_CMDS to send software "
                            "trigger\n"));
             return 0;
-        }*/
-        if (!Feb_Interface_WriteRegister(
-                Feb_Control_AddressToAll(), DAQ_REG_CTRL, DAQ_CTRL_STOP, 0,
-                0)) { // orig_value | DAQ_CTRL_STOP, 0, 0)) {
+        }
+        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                         DAQ_REG_CTRL,
+                                         orig_value | DAQ_CTRL_STOP, 0, 0)) {
             LOG(logERROR, ("Could not send last frames.\n"));
             return 0;
         }

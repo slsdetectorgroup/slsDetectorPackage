@@ -1310,7 +1310,7 @@ class Detector {
      * (internal gating). Gate index: 0-2, -1 for all */
     Result<std::array<ns, 3>> getGateDelayForAllGates(Positions pos = {}) const;
 
-    /** [Eiger][Mythen3][Gotthard1] **/
+    /** [Eiger][Mythen3][Gotthard1] via stop server **/
     Result<bool> getMaster(Positions pos = {}) const;
 
     // TODO! check if we really want to expose this !!!!!

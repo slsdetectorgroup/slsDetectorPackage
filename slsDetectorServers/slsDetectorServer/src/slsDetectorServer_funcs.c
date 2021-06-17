@@ -574,7 +574,7 @@ int set_external_signal_flag(int file_des) {
         if (ret == OK) {
             setExtSignal(signalIndex, flag);
             retval = getExtSignal(signalIndex);
-            validate(&ret, mess, &ret, mess, (int)flag, (int)retval,
+            validate(&ret, mess, (int)flag, (int)retval,
                      "set external signal flag", DEC);
             LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
         }
@@ -2001,7 +2001,7 @@ int set_num_triggers(int file_des) {
         setNumTriggers(arg);
         int64_t retval = getNumTriggers();
         LOG(logDEBUG1, ("retval num triggers %lld\n", (long long int)retval));
-        validate64(arg, retval, "set number of triggers", DEC);
+        validate64(&ret, mess, arg, retval, "set number of triggers", DEC);
     }
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
@@ -3964,7 +3964,7 @@ int threshold_temp(int file_des) {
         else {
             retval = setThresholdTemperature(arg);
             LOG(logDEBUG1, ("Threshold temperature: %d\n", retval));
-            validate(arg, retval, "set threshold temperature", DEC);
+            validate(&ret, mess, arg, retval, "set threshold temperature", DEC);
         }
     }
 #endif

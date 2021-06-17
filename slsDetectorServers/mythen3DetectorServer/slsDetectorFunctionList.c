@@ -1118,48 +1118,50 @@ int setModule(sls_detector_module myMod, char *mess) {
 
 int setTrimbits(int *trimbits) {
     LOG(logINFOBLUE, ("Setting trimbits\n"));
+
     // remember previous run clock
     uint32_t prevRunClk = clkDivider[SYSTEM_C0];
-    patternParameters *pat = NULL;
-    int error = 0;
+
     // set to trimming clock
     if (setClockDivider(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV) == FAIL) {
         LOG(logERROR,
             ("Could not start trimming. Could not set to trimming clock\n"));
         return FAIL;
     }
-    /////////////////////////////////////////////////////////////////
-    for (int ichip = 0; ichip < NCHIP; ichip++) {
 
-        pat = setChannelRegisterChip(ichip, channelMask,
-                                     trimbits); // change here!!!
-        if (pat) {
-            error |= loadPattern(logDEBUG5, pat);
-            if (error == 0)
+    // for every chip
+    int error = 0;
+    char cmess[MAX_STR_LENGTH];
+    for (int ichip = 0; ichip < NCHIP; ichip++) {
+        patternParameters *pat = setChannelRegisterChip(
+            ichip, channelMask,
+            trimbits); // change here!!! @who: Change what?
+        if (pat == NULL) {
+            error = 1;
+        } else {
+            memset(cmess, 0, MAX_STR_LENGTH);
+            error |= loadPattern(cmess, logDEBUG5, pat);
+            if (!error)
                 startPattern();
             free(pat);
-        } else
-            error = 1;
+        }
     }
-    /////////////////////////////////////////////////////////////////
+
+    // copy trimbits locally
     if (error == 0) {
-        // copy trimbits locally
         for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
             detectorChans[ichan] = trimbits[ichan];
         }
         LOG(logINFO, ("All trimbits have been loaded\n"));
     }
-    trimmingPrint = logINFO;
+
     // set back to previous clock
     if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
         LOG(logERROR, ("Could not set to previous run clock after trimming\n"));
         return FAIL;
     }
 
-    if (error != 0) {
-        return FAIL;
-    }
-    return OK;
+    return (error ? FAIL : OK);
 }
 
 int setAllTrimbits(int val) {
@@ -2652,36 +2654,40 @@ int getNumberOfDACs() { return NDAC; }
 int getNumberOfChannelsPerChip() { return NCHAN; }
 
 int setChipStatusRegister(int csr) {
-    uint32_t prevRunClk = clkDivider[SYSTEM_C0];
-    patternParameters *pat = NULL;
 
-    int error = 0;
+    // remember previous run clock
+    uint32_t prevRunClk = clkDivider[SYSTEM_C0];
+
+    // set to trimming clock
     if (setClockDivider(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV) == FAIL) {
         LOG(logERROR,
             ("Could not set to trimming clock in order to change CSR\n"));
         return FAIL;
     }
-    pat = setChipStatusRegisterPattern(csr);
 
-    if (pat) {
-        error |= loadPattern(logDEBUG5, pat);
-        if (!error)
-            startPattern();
-        free(pat);
+    int iret = OK;
+    char cmess[MAX_STR_LENGTH];
+    patternParameters *pat = setChipStatusRegisterPattern(csr);
+    if (pat == NULL) {
+        iret = FAIL;
     } else {
-        error = 1;
+        memset(cmess, 0, MAX_STR_LENGTH);
+        iret = loadPattern(cmess, logDEBUG5, pat);
+        if (iret == OK) {
+            startPattern();
+            LOG(logINFO, ("CSR is now: 0x%x\n", csr));
+        }
+        free(pat);
     }
 
-    if (!error) {
-        LOG(logINFO, ("CSR is now: 0x%x\n", csr));
-    }
-
+    // set back to previous clock
     if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
         LOG(logERROR,
             ("Could not set to previous run clock after changing CSR\n"));
         return FAIL;
     }
-    return OK;
+
+    return iret;
 }
 
 int setGainCaps(int caps) {

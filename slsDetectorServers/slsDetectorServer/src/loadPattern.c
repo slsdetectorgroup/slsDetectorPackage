@@ -25,7 +25,7 @@ extern uint64_t setPatternWaitTime(int level, uint64_t t);
 extern void setPatternLoop(int level, int *startAddr, int *stopAddr,
                            int *nLoop);
 
-int loadPattern(enum TLogLevel printLevel, patternParameters *pat) {
+int loadPattern(char *mess, enum TLogLevel printLevel, patternParameters *pat) {
     LOG(logINFOBLUE, ("Loading Pattern\n"));
     int ret = OK;
     trimmingPrint = printLevel;
@@ -92,6 +92,10 @@ int loadPattern(enum TLogLevel printLevel, patternParameters *pat) {
             }
 
             // patwaittime
+            if (pattern_setWaitTime(mess, i, pat->waittime[i]) == FAIL) {
+                break;
+            }
+
             memset(msg, 0, sizeof(msg));
             sprintf(msg, "set pattern Loop %d wait time", i);
             retval64 = setPatternWaitTime(i, pat->waittime[i]);
@@ -104,4 +108,36 @@ int loadPattern(enum TLogLevel printLevel, patternParameters *pat) {
     trimmingPrint = logINFO;
 
     return ret;
+}
+
+int pattern_setWaitTime(char *mess, int level, uint64_t waittime) {
+    memset(mess, 0, sizeof(mess));
+    char msg[128];
+    memset(msg, 0, sizeof(msg));
+    // validations
+    if (level < 0 || level > 2) {
+        sprintf(initErrorMessage,
+                "Cannot set patwaittime from default "
+                "pattern file. Level must be between 0 and 2. Line:[%s]\n",
+                line);
+        return FAIL;
+    }
+    uint64_t retval = setPatternWaitTime(level, waittime);
+
+    // validate
+    if (retval != waittime) {
+#ifdef VIRTUAL
+        sprintf(initErrorMessage,
+                "Could not set patwaittime (level: %d) from default "
+                "pattern file. Read %ld wait time. Line:[%s]\n",
+                level, retval, line);
+#else
+        sprintf(initErrorMessage,
+                "Could not set patwaittime (level: %d) from default "
+                "pattern file. Read %lld wait time. Line:[%s]\n",
+                level, retval, line);
+#endif
+        return FAIL;
+    }
+    return OK;
 }

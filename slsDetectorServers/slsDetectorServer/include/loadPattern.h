@@ -3,5 +3,5 @@
 #include "Pattern.h"
 #include "clogger.h"
 
-int loadPattern(enum TLogLevel printLevel, patternParameters *pat);
+int loadPattern(char *mess, enum TLogLevel printLevel, patternParameters *pat);
 #endif

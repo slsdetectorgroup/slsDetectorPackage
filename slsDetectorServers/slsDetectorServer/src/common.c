@@ -74,9 +74,10 @@ int GetTimeFromString(char *buf, time_t *result) {
     return OK;
 }
 
-void validate(int arg, int retval, char *modename, enum numberMode nummode) {
-    if (ret == OK && arg != GET_FLAG && retval != arg) {
-        ret = FAIL;
+void validate(int *ret, char *mess, int arg, int retval, char *modename,
+              enum numberMode nummode) {
+    if (*ret == OK && arg != GET_FLAG && retval != arg) {
+        *ret = FAIL;
         if (nummode == HEX)
             sprintf(mess, "Could not %s. Set 0x%x, but read 0x%x\n", modename,
                     arg, retval);
@@ -87,10 +88,10 @@ void validate(int arg, int retval, char *modename, enum numberMode nummode) {
     }
 }
 
-void validate64(int64_t arg, int64_t retval, char *modename,
-                enum numberMode nummode) {
-    if (ret == OK && arg != GET_FLAG && retval != arg) {
-        ret = FAIL;
+void validate64(int *ret, char *mess, int64_t arg, int64_t retval,
+                char *modename, enum numberMode nummode) {
+    if (*ret == OK && arg != GET_FLAG && retval != arg) {
+        *ret = FAIL;
         if (nummode == HEX)
             sprintf(mess, "Could not %s. Set 0x%llx, but read 0x%llx\n",
                     modename, (long long unsigned int)arg,

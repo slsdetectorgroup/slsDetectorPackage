@@ -1,7 +1,7 @@
 #include "readDefaultPattern.h"
-#include "loadPattern.h"
 #include "clogger.h"
 #include "common.h"
+#include "loadPattern.h"
 #include "sls/ansi.h"
 #include "sls/sls_detector_defs.h"
 #include "slsDetectorServer_defs.h"
@@ -19,7 +19,9 @@ extern uint64_t setPatternWaitTime(int level, uint64_t t);
 extern void setPatternLoop(int level, int *startAddr, int *stopAddr,
                            int *nLoop);
 
-int loadDefaultPattern(char *patFname, char *errMessage) {
+int loadDefaultPattern(char *patFname,
+                       char *errMessage) { // this needs to be copied to
+                                           // initeerrormessage at function call
     char fname[128];
     if (getAbsPath(fname, 128, patFname) == FAIL) {
         return FAIL;
@@ -274,8 +276,11 @@ int loadDefaultPattern(char *patFname, char *errMessage) {
                 break;
             }
 
-            if (default_setPatternWaitTime(line, level, waittime) == FAIL) {
-                break;
+            if (pattern_setWaitTime(errMessage, level, waittime) == FAIL) {
+                sprintf(initErrorMessage,
+                        "%s(Default pattern file. Line: %s)\n", errMessage,
+                        line);
+                return FAIL;
             }
         }
 

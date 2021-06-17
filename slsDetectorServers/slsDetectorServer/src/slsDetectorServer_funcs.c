@@ -574,7 +574,8 @@ int set_external_signal_flag(int file_des) {
         if (ret == OK) {
             setExtSignal(signalIndex, flag);
             retval = getExtSignal(signalIndex);
-            validate((int)flag, (int)retval, "set external signal flag", DEC);
+            validate(&ret, mess, &ret, mess, (int)flag, (int)retval,
+                     "set external signal flag", DEC);
             LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
         }
     }
@@ -614,7 +615,7 @@ int set_timing_mode(int file_des) {
     // get
     retval = getTiming();
 #ifndef MYTHEN3D
-    validate((int)arg, (int)retval, "set timing mode", DEC);
+    validate(&ret, mess, (int)arg, (int)retval, "set timing mode", DEC);
 #endif
     LOG(logDEBUG1, ("Timing Mode: %d\n", retval));
 
@@ -1025,7 +1026,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         case IO_DELAY:
             retval = setIODelay(val);
             LOG(logDEBUG1, ("IODelay: %d\n", retval));
-            validate(val, retval, "set iodelay", DEC);
+            validate(&ret, mess, val, retval, "set iodelay", DEC);
             break;
 #endif
 
@@ -1035,7 +1036,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             LOG(logDEBUG1, ("High Voltage: %d\n", retval));
 #if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
     defined(GOTTHARD2D) || defined(MYTHEN3D)
-            validate(val, retval, "set high voltage", DEC);
+            validate(&ret, mess, val, retval, "set high voltage", DEC);
 #endif
 #ifdef GOTTHARDD
             if (retval == -1) {
@@ -1044,7 +1045,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                              "110, 120, 150, 180, 200\n");
                 LOG(logERROR, (mess));
             } else
-                validate(val, retval, "set high voltage", DEC);
+                validate(&ret, mess, val, retval, "set high voltage", DEC);
 #elif EIGERD
             if ((retval != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval < 0)) {
                 ret = FAIL;
@@ -1102,7 +1103,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             }
             retval = getPower(serverDacIndex);
             LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
-            validate(val, retval, "set power regulator", DEC);
+            validate(&ret, mess, val, retval, "set power regulator", DEC);
             break;
 
         case V_POWER_CHIP:
@@ -1148,7 +1149,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             }
             retval = getVLimit();
             LOG(logDEBUG1, ("VLimit: %d\n", retval));
-            validate(val, retval, "set vlimit", DEC);
+            validate(&ret, mess, val, retval, "set vlimit", DEC);
             break;
 #endif
             // dacs
@@ -1548,7 +1549,8 @@ int set_module(int file_des) {
         ret = setModule(module, mess);
         enum detectorSettings retval = getSettings();
 #if !(defined(EIGERD) || defined(MYTHEN3D))
-        validate(module.reg, (int)retval, "set module (settings)", DEC);
+        validate(&ret, mess, module.reg, (int)retval, "set module (settings)",
+                 DEC);
 #endif
         LOG(logDEBUG1, ("Settings: %d\n", retval));
     }
@@ -1630,7 +1632,7 @@ int set_settings(int file_des) {
         LOG(logDEBUG1, ("Settings: %d\n", retval));
 
         if ((int)isett != GET_FLAG) {
-            validate((int)isett, (int)retval, "set settings", DEC);
+            validate(&ret, mess, (int)isett, (int)retval, "set settings", DEC);
 #ifdef GOTTHARDD
             if (ret == OK) {
                 ret = setDefaultDacs();
@@ -1966,7 +1968,8 @@ int set_num_frames(int file_des) {
                 int64_t retval = getNumFrames();
                 LOG(logDEBUG1,
                     ("retval num frames %lld\n", (long long int)retval));
-                validate64(arg, retval, "set number of frames", DEC);
+                validate64(&ret, mess, arg, retval, "set number of frames",
+                           DEC);
             }
         }
     }
@@ -2041,8 +2044,8 @@ int set_num_additional_storage_cells(int file_des) {
             setNumAdditionalStorageCells(arg);
             int retval = getNumAdditionalStorageCells();
             LOG(logDEBUG1, ("retval num addl. storage cells %d\n", retval));
-            validate(arg, retval, "set number of additional storage cells",
-                     DEC);
+            validate(&ret, mess, arg, retval,
+                     "set number of additional storage cells", DEC);
         }
     }
 #endif
@@ -2099,7 +2102,8 @@ int set_num_analog_samples(int file_des) {
             } else {
                 int retval = getNumAnalogSamples();
                 LOG(logDEBUG1, ("retval num analog samples %d\n", retval));
-                validate(arg, retval, "set number of analog samples", DEC);
+                validate(&ret, mess, arg, retval,
+                         "set number of analog samples", DEC);
             }
         }
     }
@@ -2146,7 +2150,8 @@ int set_num_digital_samples(int file_des) {
         } else {
             int retval = getNumDigitalSamples();
             LOG(logDEBUG1, ("retval num digital samples %d\n", retval));
-            validate(arg, retval, "set number of digital samples", DEC);
+            validate(&ret, mess, arg, retval, "set number of digital samples",
+                     DEC);
         }
     }
 #endif
@@ -2720,7 +2725,7 @@ int set_dynamic_range(int file_des) {
                 sprintf(mess, "Could not get dynamic range.\n");
                 LOG(logERROR, (mess));
             }
-            validate(dr, retval, "set dynamic range", DEC);
+            validate(&ret, mess, dr, retval, "set dynamic range", DEC);
             break;
         default:
             modeNotImplemented("Dynamic range", dr);
@@ -2892,7 +2897,7 @@ int enable_ten_giga(int file_des) {
         }
         retval = enableTenGigabitEthernet(GET_FLAG);
         LOG(logDEBUG1, ("10GbE: %d\n", retval));
-        validate(arg, retval, "enable/disable 10GbE", DEC);
+        validate(&ret, mess, arg, retval, "enable/disable 10GbE", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -2927,7 +2932,7 @@ int validateAndSetAllTrimbits(int arg) {
     // get
     retval = getAllTrimbits();
     LOG(logDEBUG1, ("All trimbits: %d\n", retval));
-    validate(arg, retval, "set all trimbits", DEC);
+    validate(&ret, mess, arg, retval, "set all trimbits", DEC);
 #endif
     return retval;
 }
@@ -2966,7 +2971,7 @@ int set_pattern_io_control(int file_des) {
         retval = writePatternIOControl(arg);
         LOG(logDEBUG1,
             ("Pattern IO Control retval: 0x%llx\n", (long long int)retval));
-        validate64(arg, retval, "set Pattern IO Control", HEX);
+        validate64(&ret, mess, arg, retval, "set Pattern IO Control", HEX);
     }
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
@@ -3056,9 +3061,10 @@ int set_pattern_loop_addresses(int file_des) {
                  startAddr, stopAddr));
             retvals[0] = startAddr;
             retvals[1] = stopAddr;
-            validate(args[1], startAddr, "set Pattern loops' start address",
-                     HEX);
-            validate(args[2], stopAddr, "set Pattern loops' stop address", HEX);
+            validate(&ret, mess, args[1], startAddr,
+                     "set Pattern loops' start address", HEX);
+            validate(&ret, mess, args[2], stopAddr,
+                     "set Pattern loops' stop address", HEX);
         }
     }
 #endif
@@ -3096,8 +3102,8 @@ int set_pattern_loop_cycles(int file_des) {
             retval = numLoops;
             LOG(logDEBUG1,
                 ("Pattern loop cycles retval: (ncycles:%d)\n", retval));
-            validate(args[1], retval, "set Pattern loops' number of cycles",
-                     DEC);
+            validate(&ret, mess, args[1], retval,
+                     "set Pattern loops' number of cycles", DEC);
         }
     }
 #endif
@@ -3140,7 +3146,7 @@ int set_pattern_wait_addr(int file_des) {
         } else {
             retval = setPatternWaitAddress(loopLevel, addr);
             LOG(logDEBUG1, ("Pattern wait address retval: 0x%x\n", retval));
-            validate(addr, retval, "set Pattern wait address", HEX);
+            validate(&ret, mess, addr, retval, "set Pattern wait address", HEX);
         }
     }
 #endif
@@ -3175,7 +3181,8 @@ int set_pattern_wait_time(int file_des) {
             retval = setPatternWaitTime(loopLevel, timeval);
             LOG(logDEBUG1,
                 ("Pattern wait time retval: 0x%llx\n", (long long int)retval));
-            validate64(timeval, retval, "set Pattern wait time", HEX);
+            validate64(&ret, mess, timeval, retval, "set Pattern wait time",
+                       HEX);
         }
     }
 #endif
@@ -3200,7 +3207,7 @@ int set_pattern_mask(int file_des) {
         uint64_t retval64 = getPatternMask();
         LOG(logDEBUG1,
             ("Pattern mask: 0x%llx\n", (long long unsigned int)retval64));
-        validate64(arg, retval64, "set Pattern Mask", HEX);
+        validate64(&ret, mess, arg, retval64, "set Pattern Mask", HEX);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -3243,7 +3250,7 @@ int set_pattern_bit_mask(int file_des) {
         uint64_t retval64 = getPatternBitMask();
         LOG(logDEBUG1,
             ("Pattern bit mask: 0x%llx\n", (long long unsigned int)retval64));
-        validate64(arg, retval64, "set Pattern Bit Mask", HEX);
+        validate64(&ret, mess, arg, retval64, "set Pattern Bit Mask", HEX);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -3321,7 +3328,7 @@ int set_counter_bit(int file_des) {
     // get
     retval = setCounterBit(GET_FLAG);
     LOG(logDEBUG1, ("Set counter bit retval: %d\n", retval));
-    validate(arg, retval, "set counter bit", DEC);
+    validate(&ret, mess, arg, retval, "set counter bit", DEC);
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -3421,7 +3428,7 @@ int set_rate_correct(int file_des) {
             strcpy(mess, "Rate correction failed\n");
             LOG(logERROR, (mess));
         } else {
-            validate64(tau_ns, retval, "set rate correction", DEC);
+            validate64(&ret, mess, tau_ns, retval, "set rate correction", DEC);
         }
     }
 #endif
@@ -3464,7 +3471,7 @@ int set_ten_giga_flow_control(int file_des) {
         } else {
             int retval = getTenGigaFlowControl();
             LOG(logDEBUG1, ("ten giga flow control retval: %d\n", retval));
-            validate(arg, retval, "set ten giga flow control", DEC);
+            validate(&ret, mess, arg, retval, "set ten giga flow control", DEC);
         }
     }
 #endif
@@ -3523,7 +3530,8 @@ int set_transmission_delay_frame(int file_des) {
                 int retval = getTransmissionDelayFrame();
                 LOG(logDEBUG1,
                     ("transmission delay frame retval: %d\n", retval));
-                validate(arg, retval, "set transmission delay frame", DEC);
+                validate(&ret, mess, arg, retval,
+                         "set transmission delay frame", DEC);
             }
         }
     }
@@ -3573,7 +3581,8 @@ int set_transmission_delay_left(int file_des) {
         } else {
             int retval = getTransmissionDelayLeft();
             LOG(logDEBUG1, ("transmission delay left retval: %d\n", retval));
-            validate(arg, retval, "set transmission delay left", DEC);
+            validate(&ret, mess, arg, retval, "set transmission delay left",
+                     DEC);
         }
     }
 #endif
@@ -3622,7 +3631,8 @@ int set_transmission_delay_right(int file_des) {
         } else {
             int retval = getTransmissionDelayRight();
             LOG(logDEBUG1, ("transmission delay right retval: %d\n", retval));
-            validate(arg, retval, "set transmission delay right", DEC);
+            validate(&ret, mess, arg, retval, "set transmission delay right",
+                     DEC);
         }
     }
 #endif
@@ -3873,7 +3883,7 @@ int power_chip(int file_des) {
             retval = powerChip(arg);
             LOG(logDEBUG1, ("Power chip: %d\n", retval));
         }
-        validate(arg, retval, "power on/off chip", DEC);
+        validate(&ret, mess, arg, retval, "power on/off chip", DEC);
 #ifdef JUNGFRAUD
         // narrow down error when powering on
         if (ret == FAIL && arg > 0) {
@@ -3920,7 +3930,7 @@ int set_activate(int file_des) {
                 LOG(logERROR, (mess));
             } else {
                 LOG(logDEBUG1, ("Activate: %d\n", retval));
-                validate(arg, retval, "set/get activate", DEC);
+                validate(&ret, mess, arg, retval, "set/get activate", DEC);
             }
         }
     }
@@ -3979,7 +3989,7 @@ int temp_control(int file_des) {
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = setTemperatureControl(arg);
         LOG(logDEBUG1, ("Temperature control: %d\n", retval));
-        validate(arg, retval, "set temperature control", DEC);
+        validate(&ret, mess, arg, retval, "set temperature control", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -4003,7 +4013,7 @@ int temp_event(int file_des) {
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = setTemperatureEvent(arg);
         LOG(logDEBUG1, ("Temperature event: %d\n", retval));
-        validate(arg, retval, "set temperature event", DEC);
+        validate(&ret, mess, arg, retval, "set temperature event", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -4026,7 +4036,7 @@ int auto_comp_disable(int file_des) {
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = autoCompDisable(arg);
         LOG(logDEBUG1, ("Auto comp disable: %d\n", retval));
-        validate(arg, retval, "set auto comp disable", DEC);
+        validate(&ret, mess, arg, retval, "set auto comp disable", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -4054,7 +4064,7 @@ int storage_cell_start(int file_des) {
         } else {
             retval = selectStoragecellStart(arg);
             LOG(logDEBUG1, ("Storage cell start: %d\n", retval));
-            validate(arg, retval, "set storage cell start", DEC);
+            validate(&ret, mess, arg, retval, "set storage cell start", DEC);
         }
     }
 #endif
@@ -4169,7 +4179,7 @@ int led(int file_des) {
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = setLEDEnable(arg);
         LOG(logDEBUG1, ("LED Enable: %d\n", retval));
-        validate(arg, retval, "enable/disable LED", DEC);
+        validate(&ret, mess, arg, retval, "enable/disable LED", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -4473,7 +4483,8 @@ int set_external_sampling_source(int file_des) {
         } else {
             retval = setExternalSamplingSource(arg);
             LOG(logDEBUG1, ("External Sampling source: %d\n", retval));
-            validate(arg, retval, "set external sampling source", DEC);
+            validate(&ret, mess, arg, retval, "set external sampling source",
+                     DEC);
         }
     }
 #endif
@@ -4498,7 +4509,7 @@ int set_external_sampling(int file_des) {
         arg = (arg > 0) ? 1 : arg;
         retval = setExternalSampling(arg);
         LOG(logDEBUG1, ("External Sampling enable: %d\n", retval));
-        validate(arg, retval, "set external sampling enable", DEC);
+        validate(&ret, mess, arg, retval, "set external sampling enable", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -5587,7 +5598,7 @@ int set_readout_mode(int file_des) {
                 } else {
                     LOG(logDEBUG1, ("readout mode retval: %u\n", retval));
                 }
-                validate(arg, retval, "set readout mode", DEC);
+                validate(&ret, mess, arg, retval, "set readout mode", DEC);
             }
         }
     }
@@ -5672,7 +5683,7 @@ int set_clock_frequency(int file_des) {
                 int retval = getFrequency(c);
                 LOG(logDEBUG1, ("retval %s: %d %s\n", modeName, retval,
                                 myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
-                validate(val, retval, modeName, DEC);
+                validate(&ret, mess, val, retval, modeName, DEC);
             }
         }
     }
@@ -5824,7 +5835,7 @@ int set_clock_phase(int file_des) {
                     int retval = getPhase(c, inDegrees);
                     LOG(logDEBUG1, ("retval %s : %d\n", modeName, retval));
                     if (!inDegrees) {
-                        validate(val, retval, modeName, DEC);
+                        validate(&ret, mess, val, retval, modeName, DEC);
                     } else {
                         ret = validatePhaseinDegrees(c, val, retval);
                         if (ret == FAIL) {
@@ -6027,7 +6038,7 @@ int set_clock_divider(int file_des) {
                 } else {
                     int retval = getClockDivider(c);
                     LOG(logDEBUG1, ("retval %s : %d\n", modeName, retval));
-                    validate(val, retval, modeName, DEC);
+                    validate(&ret, mess, val, retval, modeName, DEC);
                 }
             }
         }
@@ -6118,7 +6129,7 @@ int set_pipeline(int file_des) {
             setPipeline(c, val);
             int retval = getPipeline(c);
             LOG(logDEBUG1, ("retval %s: %d\n", modeName, retval));
-            validate(val, retval, modeName, DEC);
+            validate(&ret, mess, val, retval, modeName, DEC);
         }
     }
 #endif
@@ -6234,7 +6245,7 @@ int set_on_chip_dac(int file_des) {
                 } else {
                     int retval = getOnChipDAC(dacIndex, chipIndex);
                     LOG(logDEBUG1, ("retval %s: 0x%x\n", modeName, retval));
-                    validate(val, retval, modeName, DEC);
+                    validate(&ret, mess, val, retval, modeName, DEC);
                 }
             }
         }
@@ -6703,7 +6714,7 @@ int set_num_bursts(int file_des) {
         setNumBursts(arg);
         int64_t retval = getNumBursts();
         LOG(logDEBUG1, ("retval num bursts %lld\n", (long long int)retval));
-        validate64(arg, retval, "set number of bursts", DEC);
+        validate64(&ret, mess, arg, retval, "set number of bursts", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT64, NULL, 0);
@@ -6770,7 +6781,7 @@ int set_current_source(int file_des) {
         setCurrentSource(arg);
         int retval = getCurrentSource();
         LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
-        validate(arg, retval, "set current source enable", DEC);
+        validate(&ret, mess, arg, retval, "set current source enable", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -7332,7 +7343,7 @@ int set_num_gates(int file_des) {
         setNumGates(arg);
         int retval = getNumGates();
         LOG(logDEBUG1, ("retval num gates %d\n", retval));
-        validate(arg, retval, "set number of gates", DEC);
+        validate(&ret, mess, arg, retval, "set number of gates", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -7530,7 +7541,7 @@ int set_veto(int file_des) {
         if (ret == OK) {
             int retval = getVeto();
             LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
-            validate(arg, retval, "set veto mode", DEC);
+            validate(&ret, mess, arg, retval, "set veto mode", DEC);
         }
     }
 #endif
@@ -7575,7 +7586,8 @@ int set_pattern(int file_des) {
 #ifndef MYTHEN3D
         if (ret == OK) {
             uint64_t retval64 = writePatternIOControl(pat->ioctrl);
-            validate64(pat->ioctrl, retval64, "set pattern IO Control", HEX);
+            validate64(&ret, mess, pat->ioctrl, retval64,
+                       "set pattern IO Control", HEX);
         }
 #endif
         if (ret == OK) {
@@ -7583,9 +7595,9 @@ int set_pattern(int file_des) {
             int retval0 = pat->limits[0];
             int retval1 = pat->limits[1];
             setPatternLoop(-1, &retval0, &retval1, &numLoops);
-            validate(pat->limits[0], retval0,
+            validate(&ret, mess, pat->limits[0], retval0,
                      "set pattern Limits start address", HEX);
-            validate(pat->limits[1], retval1,
+            validate(&ret, mess, pat->limits[1], retval1,
                      "set pattern Limits start address", HEX);
         }
         if (ret == OK) {
@@ -7601,19 +7613,19 @@ int set_pattern(int file_des) {
                 setPatternLoop(i, &retval0, &retval1, &numLoops);
                 memset(msg, 0, sizeof(msg));
                 sprintf(msg, "set pattern Loop %d start address", i);
-                validate(pat->loop[i * 2 + 0], retval0, msg, HEX);
+                validate(&ret, mess, pat->loop[i * 2 + 0], retval0, msg, HEX);
                 if (ret == FAIL) {
                     break;
                 }
                 memset(msg, 0, sizeof(msg));
                 sprintf(msg, "set pattern Loop %d stop address", i);
-                validate(pat->loop[i * 2 + 1], retval1, msg, HEX);
+                validate(&ret, mess, pat->loop[i * 2 + 1], retval1, msg, HEX);
                 if (ret == FAIL) {
                     break;
                 }
                 memset(msg, 0, sizeof(msg));
                 sprintf(msg, "set pattern Loop %d num loops", i);
-                validate(pat->nloop[i], numLoops, msg, HEX);
+                validate(&ret, mess, pat->nloop[i], numLoops, msg, HEX);
                 if (ret == FAIL) {
                     break;
                 }
@@ -7622,7 +7634,7 @@ int set_pattern(int file_des) {
                 memset(msg, 0, sizeof(msg));
                 sprintf(msg, "set pattern Loop %d wait address", i);
                 retval0 = setPatternWaitAddress(i, pat->wait[i]);
-                validate(pat->wait[i], retval0, msg, HEX);
+                validate(&ret, mess, pat->wait[i], retval0, msg, HEX);
                 if (ret == FAIL) {
                     break;
                 }
@@ -7631,7 +7643,7 @@ int set_pattern(int file_des) {
                 memset(msg, 0, sizeof(msg));
                 sprintf(msg, "set pattern Loop %d wait time", i);
                 retval64 = setPatternWaitTime(i, pat->waittime[i]);
-                validate64(pat->waittime[i], retval64, msg, HEX);
+                validate64(&ret, mess, pat->waittime[i], retval64, msg, HEX);
                 if (ret == FAIL) {
                     break;
                 }
@@ -7820,7 +7832,7 @@ int set_scan(int file_des) {
             setNumFrames(arg);
             retval = getNumFrames();
             LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
-            validate64(arg, retval, "set number of frames", DEC);
+            validate64(&ret, mess, arg, retval, "set number of frames", DEC);
         }
         // enable scan
         else {
@@ -7870,7 +7882,8 @@ int set_scan(int file_des) {
                 retval = getNumFrames();
                 LOG(logDEBUG1,
                     ("retval num frames %lld\n", (long long int)retval));
-                validate64(arg, retval, "set number of frames", DEC);
+                validate64(&ret, mess, arg, retval, "set number of frames",
+                           DEC);
                 retval = numScanSteps;
             }
         }
@@ -7935,7 +7948,7 @@ int set_cds_gain(int file_des) {
             setCDSGain(arg);
             int retval = getCDSGain();
             LOG(logDEBUG1, ("cds gain enable retval: %u\n", retval));
-            validate(arg, retval, "set cds gain enable", DEC);
+            validate(&ret, mess, arg, retval, "set cds gain enable", DEC);
         }
     }
 #endif
@@ -7984,7 +7997,7 @@ int set_filter(int file_des) {
             setFilter(arg);
             int retval = getFilter();
             LOG(logDEBUG1, ("filter retval: %u\n", retval));
-            validate(arg, retval, "set filter", DEC);
+            validate(&ret, mess, arg, retval, "set filter", DEC);
         }
     }
 #endif
@@ -8087,7 +8100,7 @@ int set_adc_config(int file_des) {
             } else {
                 int retval = getADCConfiguration(chipIndex, adcIndex);
                 LOG(logDEBUG1, ("adc config retval: %u\n", retval));
-                validate(value, retval, "configure adc", HEX);
+                validate(&ret, mess, value, retval, "configure adc", HEX);
             }
         }
     }

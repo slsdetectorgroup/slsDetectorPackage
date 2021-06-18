@@ -425,21 +425,11 @@ int getFrequency(enum CLKINDEX ind);
 void configureSyncFrequency(enum CLKINDEX ind);
 void setPipeline(enum CLKINDEX ind, int val);
 int getPipeline(enum CLKINDEX ind);
-// patterns
-uint64_t writePatternIOControl(uint64_t word);
-uint64_t readPatternWord(int addr);
-uint64_t writePatternWord(int addr, uint64_t word);
-int setPatternWaitAddress(int level, int addr);
-uint64_t setPatternWaitTime(int level, uint64_t t);
-void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
+#endif
+
 #ifdef CHIPTESTBOARDD
 int setLEDEnable(int enable);
 void setDigitalIODelay(uint64_t pinMask, int delay);
-#endif
-void setPatternMask(uint64_t mask);
-uint64_t getPatternMask();
-void setPatternBitMask(uint64_t mask);
-uint64_t getPatternBitMask();
 #endif
 
 // jungfrau specific - powerchip, autocompdisable, clockdiv, asictimer, clock,
@@ -488,16 +478,6 @@ int getActivate(int *retval);
 int setPhase(enum CLKINDEX ind, int val, int degrees);
 
 #elif MYTHEN3D
-void startPattern();
-uint64_t readPatternWord(int addr);
-uint64_t writePatternWord(int addr, uint64_t word);
-int setPatternWaitAddress(int level, int addr);
-uint64_t setPatternWaitTime(int level, uint64_t t);
-void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
-void setPatternMask(uint64_t mask);
-uint64_t getPatternMask();
-void setPatternBitMask(uint64_t mask);
-uint64_t getPatternBitMask();
 int checkDetectorType();
 int powerChip(int on);
 int setPhase(enum CLKINDEX ind, int val, int degrees);

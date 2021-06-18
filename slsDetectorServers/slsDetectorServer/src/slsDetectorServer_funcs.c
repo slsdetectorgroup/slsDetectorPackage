@@ -2969,10 +2969,10 @@ int set_pattern_io_control(int file_des) {
     LOG(logDEBUG1,
         ("Setting Pattern IO Control to 0x%llx\n", (long long int)arg));
     if (((int64_t)arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        retval = writePatternIOControl(arg);
-        LOG(logDEBUG1,
-            ("Pattern IO Control retval: 0x%llx\n", (long long int)retval));
-        validate64(&ret, mess, arg, retval, "set Pattern IO Control", HEX);
+        if ((int64_t)arg != GET_FLAG) {
+            ret = pattern_writeIOControl(mess, arg);
+        }
+        retval = pattern_readIOControl();
     }
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
@@ -2996,19 +2996,10 @@ int set_pattern_word(int file_des) {
                       (long long int)word));
     }
     if (Server_VerifyLock() == OK) {
-        // valid address
-        if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern (Word, addr:0x%x). Addr must be "
-                    "between 0 and 0x%x\n",
-                    addr, MAX_PATTERN_LENGTH);
-            LOG(logERROR, (mess));
+        if (word != (uint64_t)-1) {
+            ret = pattern_writeWord(mess, addr, word);
         } else {
-            retval = writePatternWord(addr, word);
-            LOG(logDEBUG1,
-                ("Pattern Word retval: 0x%llx\n", (long long int)retval));
-            // no validation (cannot read as it will execute the pattern)
+            ret = pattern_readWord(mess, addr, &retval);
         }
     }
 #endif
@@ -3034,38 +3025,27 @@ int set_pattern_loop_addresses(int file_des) {
                     loopLevel, startAddr, stopAddr));
     if ((startAddr == GET_FLAG) || (stopAddr == GET_FLAG) ||
         (Server_VerifyLock() == OK)) {
-        // valid loop level
-        if (loopLevel < -1 ||
-            loopLevel > 2) { // loop level of -1 : complete pattern
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern loop addresses. Level %d should be "
-                    "between -1 and 2\n",
-                    loopLevel);
-            LOG(logERROR, (mess));
+        // loop limits
+        if (loopLevel == -1) {
+            // set
+            if (startAddr >= 0 && stopAddr >= 0) {
+                ret = pattern_setLoopLimits(mess, startAddr, stopAddr);
+            }
+            // get
+            pattern_getLoopLimits(&retvals[0], &retvals[1]);
         }
-        // valid addr for loop level 0-2
-        else if (startAddr >= MAX_PATTERN_LENGTH ||
-                 stopAddr >= MAX_PATTERN_LENGTH) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern loop addresses. Address (start "
-                    "addr:0x%x and stop addr:0x%x) "
-                    "should be less than 0x%x\n",
-                    startAddr, stopAddr, MAX_PATTERN_LENGTH);
-            LOG(logERROR, (mess));
-        } else {
-            int numLoops = -1;
-            setPatternLoop(loopLevel, &startAddr, &stopAddr, &numLoops);
-            LOG(logDEBUG1,
-                ("Pattern loop addresses retval: (start:0x%x, stop:0x%x)\n",
-                 startAddr, stopAddr));
-            retvals[0] = startAddr;
-            retvals[1] = stopAddr;
-            validate(&ret, mess, args[1], startAddr,
-                     "set Pattern loops' start address", HEX);
-            validate(&ret, mess, args[2], stopAddr,
-                     "set Pattern loops' stop address", HEX);
+        // loop addresses
+        else {
+            // set
+            if (startAddr >= 0 && stopAddr >= 0) {
+                ret = pattern_setLoopAddresses(mess, loopLevel, startAddr,
+                                               stopAddr);
+            }
+            // get
+            if (ret == OK) {
+                ret = pattern_getLoopAddresses(mess, loopLevel, &retvals[0],
+                                               &retvals[1]);
+            }
         }
     }
 #endif
@@ -3088,23 +3068,13 @@ int set_pattern_loop_cycles(int file_des) {
     LOG(logDEBUG1, ("Setting Pattern loop cycles (loopLevel:%d numLoops:%d)\n",
                     loopLevel, numLoops));
     if ((numLoops == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        // valid loop level
-        if (loopLevel < 0 || loopLevel > 2) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern loop cycles. Level %d should be "
-                    "between 0 and 2\n",
-                    loopLevel);
-            LOG(logERROR, (mess));
-        } else {
-            int startAddr = GET_FLAG;
-            int stopAddr = GET_FLAG;
-            setPatternLoop(loopLevel, &startAddr, &stopAddr, &numLoops);
-            retval = numLoops;
-            LOG(logDEBUG1,
-                ("Pattern loop cycles retval: (ncycles:%d)\n", retval));
-            validate(&ret, mess, args[1], retval,
-                     "set Pattern loops' number of cycles", DEC);
+        // set
+        if (numLoops != GET_FLAG) {
+            ret = pattern_setLoopCycles(mess, loopLevel, numLoops);
+        }
+        // get
+        if (ret == OK) {
+            ret = pattern_getLoopCycles(mess, loopLevel, &retval);
         }
     }
 #endif
@@ -3127,27 +3097,13 @@ int set_pattern_wait_addr(int file_des) {
     LOG(logDEBUG1, ("Setting Pattern wait address (loopLevel:%d addr:0x%x)\n",
                     loopLevel, addr));
     if ((addr == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        // valid loop level 0-2
-        if (loopLevel < 0 || loopLevel > 2) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern wait address. Level %d should be "
-                    "between 0 and 2\n",
-                    loopLevel);
-            LOG(logERROR, (mess));
+        // set
+        if (addr != GET_FLAG) {
+            ret = pattern_setWaitAddresses(mess, loopLevel, addr);
         }
-        // valid addr
-        else if (addr >= MAX_PATTERN_LENGTH) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern wait address. Address (0x%x) should be "
-                    "between 0 and 0x%x\n",
-                    addr, MAX_PATTERN_LENGTH);
-            LOG(logERROR, (mess));
-        } else {
-            retval = setPatternWaitAddress(loopLevel, addr);
-            LOG(logDEBUG1, ("Pattern wait address retval: 0x%x\n", retval));
-            validate(&ret, mess, addr, retval, "set Pattern wait address", HEX);
+        // get
+        if (ret == OK) {
+            ret = pattern_getWaitAddresses(mess, loopLevel, &retval);
         }
     }
 #endif
@@ -3170,20 +3126,13 @@ int set_pattern_wait_time(int file_des) {
     LOG(logDEBUG1, ("Setting Pattern wait time (loopLevel:%d timeval:0x%llx)\n",
                     loopLevel, (long long int)timeval));
     if (((int64_t)timeval == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        // valid loop level 0-2
-        if (loopLevel < 0 || loopLevel > 2) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern wait time. Level %d should be between "
-                    "0 and 2\n",
-                    loopLevel);
-            LOG(logERROR, (mess));
-        } else {
-            retval = setPatternWaitTime(loopLevel, timeval);
-            LOG(logDEBUG1,
-                ("Pattern wait time retval: 0x%llx\n", (long long int)retval));
-            validate64(&ret, mess, timeval, retval, "set Pattern wait time",
-                       HEX);
+        // set
+        if ((int64_t)timeval != GET_FLAG) {
+            ret = pattern_setWaitTime(mess, loopLevel, timeval);
+        }
+        // get
+        if (ret == OK) {
+            ret = pattern_getWaitTime(mess, loopLevel, &retval);
         }
     }
 #endif
@@ -7568,89 +7517,7 @@ int set_pattern(int file_des) {
 
     if (Server_VerifyLock() == OK) {
         LOG(logINFO, ("Setting Pattern from structure\n"));
-        LOG(logINFO,
-            ("Setting Pattern Word (printing every 10 words that are not 0\n"));
-        /****************************************************************************************************************/
-        /* I SUGGEST TO VALIDATE THE VALUES HERE AND THEN WRITE THE PATTERN IN A
-         * SEPARATE FUNCTION WHICH COULD BE REUSED*/
-        /* added loadPattern.c/h - the same func could be reused also in
-         * readDefaultPattern                                  */
-        /***************************************************************************************************************/
-
-        for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
-            if ((i % 10 == 0) && pat->word[i] != 0) {
-                LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n",
-                              i, (long long int)pat->word[i]));
-            }
-            writePatternWord(i, pat->word[i]);
-        }
-#ifndef MYTHEN3D
-        if (ret == OK) {
-            uint64_t retval64 = writePatternIOControl(pat->ioctrl);
-            validate64(&ret, mess, pat->ioctrl, retval64,
-                       "set pattern IO Control", HEX);
-        }
-#endif
-        if (ret == OK) {
-            int numLoops = -1;
-            int retval0 = pat->limits[0];
-            int retval1 = pat->limits[1];
-            setPatternLoop(-1, &retval0, &retval1, &numLoops);
-            validate(&ret, mess, pat->limits[0], retval0,
-                     "set pattern Limits start address", HEX);
-            validate(&ret, mess, pat->limits[1], retval1,
-                     "set pattern Limits start address", HEX);
-        }
-        if (ret == OK) {
-            for (int i = 0; i <= 2; ++i) {
-                char msg[128];
-                int retval0 = -1, retval1 = -1, numLoops = -1;
-                uint64_t retval64 = -1;
-
-                // patloop
-                retval0 = pat->loop[i * 2 + 0];
-                retval1 = pat->loop[i * 2 + 1];
-                numLoops = pat->nloop[i];
-                setPatternLoop(i, &retval0, &retval1, &numLoops);
-                memset(msg, 0, sizeof(msg));
-                sprintf(msg, "set pattern Loop %d start address", i);
-                validate(&ret, mess, pat->loop[i * 2 + 0], retval0, msg, HEX);
-                if (ret == FAIL) {
-                    break;
-                }
-                memset(msg, 0, sizeof(msg));
-                sprintf(msg, "set pattern Loop %d stop address", i);
-                validate(&ret, mess, pat->loop[i * 2 + 1], retval1, msg, HEX);
-                if (ret == FAIL) {
-                    break;
-                }
-                memset(msg, 0, sizeof(msg));
-                sprintf(msg, "set pattern Loop %d num loops", i);
-                validate(&ret, mess, pat->nloop[i], numLoops, msg, HEX);
-                if (ret == FAIL) {
-                    break;
-                }
-
-                // patwait
-                memset(msg, 0, sizeof(msg));
-                sprintf(msg, "set pattern Loop %d wait address", i);
-                retval0 = setPatternWaitAddress(i, pat->wait[i]);
-                validate(&ret, mess, pat->wait[i], retval0, msg, HEX);
-                if (ret == FAIL) {
-                    break;
-                }
-
-                // patwaittime
-                memset(msg, 0, sizeof(msg));
-                sprintf(msg, "set pattern Loop %d wait time", i);
-                retval64 = setPatternWaitTime(i, pat->waittime[i]);
-                validate64(&ret, mess, pat->waittime[i], retval64, msg, HEX);
-                if (ret == FAIL) {
-                    break;
-                }
-            }
-        }
-        /******* DOWN TO HERE ***********/
+        ret = loadPattern(mess, logINFO, pat);
     }
     if (pat != NULL)
         free(pat);
@@ -7672,97 +7539,7 @@ int get_pattern(int file_des) {
     memset(pat, 0, sizeof(patternParameters));
 
     if (Server_VerifyLock() == OK) {
-        LOG(logINFO, ("Getting Pattern from structure\n"));
-
-        // patword
-        LOG(logDEBUG,
-            ("retval pattern word (printing every 10 words that are not 0\n"));
-        for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
-            pat->word[i] = readPatternWord(i);
-            if ((int64_t)pat->word[i] == -1) {
-                ret = FAIL;
-                sprintf(mess, "could not read pattern word for address 0x%x\n",
-                        i);
-                LOG(logERROR, (mess));
-                break;
-            }
-            // debug print
-            if ((i % 10 == 0) && pat->word[i] != 0) {
-                LOG(logDEBUG,
-                    ("retval Patpattern word (addr:0x%x, word:0x%llx)\n", i,
-                     (long long int)pat->word[i]));
-            }
-        }
-
-        // patioctrl
-#ifndef MYTHEN3D
-        if (ret == OK) {
-            pat->ioctrl = writePatternIOControl(-1);
-            LOG(logDEBUG, ("retval pattern io control:0x%llx\n",
-                           (long long int)pat->ioctrl));
-        }
-#endif
-        if (ret == OK) {
-            // patlimits
-            int numLoops = -1;
-            int retval0 = -1;
-            int retval1 = -1;
-            setPatternLoop(-1, &retval0, &retval1, &numLoops);
-            pat->limits[0] = retval0;
-            pat->limits[1] = retval1;
-            LOG(logDEBUG, ("retval pattern limits start:0x%x stop:0x%x\n",
-                           pat->limits[0], pat->limits[1]));
-
-            for (int i = 0; i <= 2; ++i) {
-                // patloop
-                {
-                    int numLoops = -1;
-                    int retval0 = -1;
-                    int retval1 = -1;
-                    setPatternLoop(i, &retval0, &retval1, &numLoops);
-                    pat->nloop[i] = numLoops;
-                    pat->loop[i * 2 + 0] = retval0;
-                    pat->loop[i * 2 + 1] = retval1;
-                    LOG(logDEBUG, ("retval pattern loop level %d start:0x%x "
-                                   "stop:0x%x numLoops:%d\n",
-                                   i, pat->loop[i * 2 + 0],
-                                   pat->loop[i * 2 + 0], pat->nloop[i]));
-                }
-                // patwait
-                {
-                    pat->wait[i] = setPatternWaitAddress(i, -1);
-                    if ((int)pat->wait[i] == -1) {
-                        ret = FAIL;
-                        sprintf(mess,
-                                "could not read pattern wait address for level "
-                                "%d\n",
-                                i);
-                        LOG(logERROR, (mess));
-                        break;
-                    }
-                    LOG(logDEBUG,
-                        ("retval pattern wait address for level %d: 0x%x\n", i,
-                         pat->wait[i]));
-                }
-
-                // patwaittime
-                {
-                    pat->waittime[i] = setPatternWaitTime(i, -1);
-                    if ((int64_t)pat->waittime[i] == -1) {
-                        ret = FAIL;
-                        sprintf(
-                            mess,
-                            "could not read pattern wait time for level %d\n",
-                            i);
-                        LOG(logERROR, (mess));
-                        break;
-                    }
-                    LOG(logDEBUG,
-                        ("retval pattern wait time for level %d: %lld\n", i,
-                         (long long int)pat->waittime[i]));
-                }
-            }
-        }
+        ret = getPattern(mess, pat);
     }
 
     // ignoring endianness for eiger

@@ -9,6 +9,7 @@
 #include "UDPPacketHeaderGenerator.h"
 #include "common.h"
 #include "communication_funcs_UDP.h"
+#include "loadPattern.h"
 
 #include <netinet/in.h>
 #include <string.h>
@@ -551,7 +552,7 @@ void setupDetector() {
     }
     setPipeline(ADC_CLK, DEFAULT_PIPELINE);
     if (initError != FAIL) {
-        initError = loadDefaultPattern(DEFAULT_PATTERN_FILE, initErrorMessage);
+        initError = loadPatternFile(DEFAULT_PATTERN_FILE, initErrorMessage);
     }
     setSettings(DEFAULT_SETTINGS);
 

@@ -7,6 +7,7 @@
 
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
 #include "Pattern.h"
+#include "loadPattern.h"
 #endif
 
 #include <arpa/inet.h>
@@ -8331,7 +8332,7 @@ int load_default_pattern(int file_des) {
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
-        ret = loadDefaultPattern(DEFAULT_PATTERN_FILE, mess);
+        ret = loadPatternFile(DEFAULT_PATTERN_FILE, mess);
         if (ret == FAIL) {
             LOG(logERROR, (mess));
         }

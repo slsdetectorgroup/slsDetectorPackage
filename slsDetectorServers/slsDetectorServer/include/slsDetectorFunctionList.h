@@ -8,9 +8,6 @@
     defined(MOENCHD)
 #include "AD9257.h" // commonServerFunctions.h, blackfin.h, ansi.h
 #endif
-#if defined(MOENCHD) || defined(MYTHEN3D)
-#include "readDefaultPattern.h"
-#endif
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 #include "programFpgaNios.h"

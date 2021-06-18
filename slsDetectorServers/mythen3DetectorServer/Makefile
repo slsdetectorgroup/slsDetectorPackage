@@ -13,7 +13,7 @@ DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS	=	slsDetectorFunctionList.c 
-SRCS	+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)nios.c $(main_src)DAC6571.c $(main_src)common.c $(main_src)LTC2620_Driver.c $(main_src)ALTERA_PLL_CYCLONE10.c $(main_src)/programFpgaNios.c $(main_src)readDefaultPattern.c $(main_src)/sharedMemory.c $(main_src)/loadPattern.c mythen3.c
+SRCS	+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)nios.c $(main_src)DAC6571.c $(main_src)common.c $(main_src)LTC2620_Driver.c $(main_src)ALTERA_PLL_CYCLONE10.c $(main_src)/programFpgaNios.c $(main_src)loadPattern.c $(main_src)/sharedMemory.c $(main_src)/loadPattern.c mythen3.c
 
 OBJS 	= 	$(SRCS:.c=.o) 
  

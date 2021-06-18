@@ -36,6 +36,8 @@ int pattern_writeWord(char *message, uint32_t addr, uint64_t word) {
     // cannot validate for moench, ctb ( same as executing pattern word)
 #ifdef MYTHEN3D
     uint64_t retval = readPatternWord(addr);
+    LOG(logDEBUG1, ("Pattern word (addr:0x%x) retval: 0x%llx\n", addr,
+                    (long long int)retval));
     char mode[128];
     memset(mode, 0, sizeof(mode));
     sprintf(mode, "set pattern word for addr 0x%x", addr);
@@ -47,6 +49,8 @@ int pattern_writeWord(char *message, uint32_t addr, uint64_t word) {
 #ifndef MYTHEN3D
 int pattern_writeIOControl(char *message, uint64_t arg) {
     uint64_t retval = writePatternIOControl(arg);
+    LOG(logDEBUG1,
+        ("Pattern IO Control retval: 0x%llx\n", (long long int)retval));
 
     // validate result
     int ret = OK;
@@ -173,6 +177,8 @@ int pattern_setWaitAddresses(char *message, int level, uint32_t addr) {
     }
 
     uint32_t retval = setPatternWaitAddress(level, addr);
+    LOG(logDEBUG1,
+        ("Pattern wait address (level:%d) retval: 0x%x\n", level, retval));
 
     // validate result
     int ret = OK;
@@ -193,6 +199,8 @@ int pattern_setWaitTime(char *message, int level, uint64_t waittime) {
     }
 
     uint64_t retval = setPatternWaitTime(level, waittime);
+    LOG(logDEBUG1, ("Pattern wait time (level:%d) retval: %d\n", level,
+                    (long long int)retval));
 
     // validate result
     int ret = OK;

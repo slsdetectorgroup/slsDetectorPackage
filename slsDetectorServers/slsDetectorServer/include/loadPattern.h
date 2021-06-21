@@ -3,10 +3,6 @@
 #include "Pattern.h"
 #include "clogger.h"
 
-int loadPattern(char *mess, enum TLogLevel printLevel, patternParameters *pat);
-int getPattern(char *mess, patternParameters *pat);
-int loadPatternFile(char *patFname, char *errMessage);
-
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 #ifdef VIRTUAL
 void initializePatternWord();
@@ -55,4 +51,9 @@ uint64_t getPatternBitMask();
 #ifdef MYTHEN3D
 void startPattern();
 #endif
+
+int loadPattern(char *mess, enum TLogLevel printLevel, patternParameters *pat);
+int getPattern(char *mess, patternParameters *pat);
+int loadPatternFile(char *patFname, char *errMessage);
+
 #endif

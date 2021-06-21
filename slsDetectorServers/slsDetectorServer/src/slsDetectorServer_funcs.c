@@ -2970,9 +2970,9 @@ int set_pattern_io_control(int file_des) {
         ("Setting Pattern IO Control to 0x%llx\n", (long long int)arg));
     if (((int64_t)arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         if ((int64_t)arg != GET_FLAG) {
-            ret = pattern_writeIOControl(mess, arg);
+            ret = validate_writePatternIOControl(mess, arg);
         }
-        retval = pattern_readIOControl();
+        retval = validate_readPatternIOControl();
     }
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
@@ -2997,9 +2997,9 @@ int set_pattern_word(int file_des) {
     }
     if (Server_VerifyLock() == OK) {
         if (word != (uint64_t)-1) {
-            ret = pattern_writeWord(mess, addr, word);
+            ret = validate_writePatternWord(mess, addr, word);
         } else {
-            ret = pattern_readWord(mess, addr, &retval);
+            ret = validate_readPatternWord(mess, addr, &retval);
         }
     }
 #endif
@@ -3029,21 +3029,21 @@ int set_pattern_loop_addresses(int file_des) {
         if (loopLevel == -1) {
             // set
             if (startAddr >= 0 && stopAddr >= 0) {
-                ret = pattern_setLoopLimits(mess, startAddr, stopAddr);
+                ret = validate_setPatternLoopLimits(mess, startAddr, stopAddr);
             }
             // get
-            pattern_getLoopLimits(&retvals[0], &retvals[1]);
+            validate_getPatternLoopLimits(&retvals[0], &retvals[1]);
         }
         // loop addresses
         else {
             // set
             if (startAddr >= 0 && stopAddr >= 0) {
-                ret = pattern_setLoopAddresses(mess, loopLevel, startAddr,
+                ret = validate_setPatternLoopAddresses(mess, loopLevel, startAddr,
                                                stopAddr);
             }
             // get
             if (ret == OK) {
-                ret = pattern_getLoopAddresses(mess, loopLevel, &retvals[0],
+                ret = validate_getPatternLoopAddresses(mess, loopLevel, &retvals[0],
                                                &retvals[1]);
             }
         }
@@ -3070,11 +3070,11 @@ int set_pattern_loop_cycles(int file_des) {
     if ((numLoops == GET_FLAG) || (Server_VerifyLock() == OK)) {
         // set
         if (numLoops != GET_FLAG) {
-            ret = pattern_setLoopCycles(mess, loopLevel, numLoops);
+            ret = validate_setPatternLoopCycles(mess, loopLevel, numLoops);
         }
         // get
         if (ret == OK) {
-            ret = pattern_getLoopCycles(mess, loopLevel, &retval);
+            ret = validate_getPatternLoopCycles(mess, loopLevel, &retval);
         }
     }
 #endif
@@ -3099,11 +3099,11 @@ int set_pattern_wait_addr(int file_des) {
     if ((addr == GET_FLAG) || (Server_VerifyLock() == OK)) {
         // set
         if (addr != GET_FLAG) {
-            ret = pattern_setWaitAddresses(mess, loopLevel, addr);
+            ret = validate_setPatternWaitAddresses(mess, loopLevel, addr);
         }
         // get
         if (ret == OK) {
-            ret = pattern_getWaitAddresses(mess, loopLevel, &retval);
+            ret = validate_getPatternWaitAddresses(mess, loopLevel, &retval);
         }
     }
 #endif
@@ -3128,11 +3128,11 @@ int set_pattern_wait_time(int file_des) {
     if (((int64_t)timeval == GET_FLAG) || (Server_VerifyLock() == OK)) {
         // set
         if ((int64_t)timeval != GET_FLAG) {
-            ret = pattern_setWaitTime(mess, loopLevel, timeval);
+            ret = validate_setPatternWaitTime(mess, loopLevel, timeval);
         }
         // get
         if (ret == OK) {
-            ret = pattern_getWaitTime(mess, loopLevel, &retval);
+            ret = validate_getPatternWaitTime(mess, loopLevel, &retval);
         }
     }
 #endif

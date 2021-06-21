@@ -36,7 +36,7 @@ int loadPattern(char *message, enum TLogLevel printLevel,
             LOG(logDEBUG5, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n",
                             i, (long long int)pat->word[i]));
         }
-        ret = pattern_writeWord(message, i, pat->word[i]);
+        ret = validate_writePatternWord(message, i, pat->word[i]);
         if (ret == FAIL) {
             break;
         }
@@ -44,37 +44,38 @@ int loadPattern(char *message, enum TLogLevel printLevel,
     // iocontrol
 #ifndef MYTHEN3D
     if (ret == OK) {
-        ret = pattern_writeIOControl(message, pat->ioctrl);
+        ret = validate_writePatternIOControl(message, pat->ioctrl);
     }
 #endif
     // limits
     if (ret == OK) {
-        ret = pattern_setLoopLimits(message, pat->limits[0], pat->limits[1]);
+        ret = validate_setPatternLoopLimits(message, pat->limits[0],
+                                            pat->limits[1]);
     }
 
     if (ret == OK) {
         for (int i = 0; i <= 2; ++i) {
             // loop addr
-            ret = pattern_setLoopAddresses(message, i, pat->loop[i * 2 + 0],
-                                           pat->loop[i * 2 + 1]);
+            ret = validate_setPatternLoopAddresses(
+                message, i, pat->loop[i * 2 + 0], pat->loop[i * 2 + 1]);
             if (ret == FAIL) {
                 break;
             }
 
             // num loops
-            ret = pattern_setLoopCycles(message, i, pat->nloop[i]);
+            ret = validate_setPatternLoopCycles(message, i, pat->nloop[i]);
             if (ret == FAIL) {
                 break;
             }
 
             // wait addr
-            ret = pattern_setWaitAddresses(message, i, pat->wait[i]);
+            ret = validate_setPatternWaitAddresses(message, i, pat->wait[i]);
             if (ret == FAIL) {
                 break;
             }
 
             // wait time
-            ret = pattern_setWaitTime(message, i, pat->waittime[i]);
+            ret = validate_setPatternWaitTime(message, i, pat->waittime[i]);
             if (ret == FAIL) {
                 break;
             }
@@ -94,7 +95,7 @@ int getPattern(char *message, patternParameters *pat) {
     int retval1 = -1, retval2 = -1;
     // words
     for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
-        ret = pattern_readWord(message, i, &retval64);
+        ret = validate_readPatternWord(message, i, &retval64);
         if (ret == FAIL) {
             break;
         }
@@ -103,19 +104,20 @@ int getPattern(char *message, patternParameters *pat) {
     // iocontrol
 #ifndef MYTHEN3D
     if (ret == OK) {
-        pattern_readIOControl();
+        validate_readPatternIOControl();
     }
 #endif
     // limits
     if (ret == OK) {
-        pattern_getLoopLimits(&retval1, &retval2);
+        validate_getPatternLoopLimits(&retval1, &retval2);
         pat->limits[0] = retval1;
         pat->limits[1] = retval2;
     }
     if (ret == OK) {
         for (int i = 0; i <= 2; ++i) {
             // loop addr
-            ret = pattern_getLoopAddresses(message, i, &retval1, &retval2);
+            ret = validate_getPatternLoopAddresses(message, i, &retval1,
+                                                   &retval2);
             if (ret == FAIL) {
                 break;
             }
@@ -123,21 +125,21 @@ int getPattern(char *message, patternParameters *pat) {
             pat->loop[i * 2 + 1] = retval2;
 
             // num loops
-            ret = pattern_getLoopCycles(message, i, &retval1);
+            ret = validate_getPatternLoopCycles(message, i, &retval1);
             if (ret == FAIL) {
                 break;
             }
             pat->nloop[i] = retval1;
 
             // wait addr
-            ret = pattern_getWaitAddresses(message, i, &retval1);
+            ret = validate_getPatternWaitAddresses(message, i, &retval1);
             if (ret == FAIL) {
                 break;
             }
             pat->wait[i] = retval1;
 
             // wait time
-            ret = pattern_getWaitTime(message, i, &retval64);
+            ret = validate_getPatternWaitTime(message, i, &retval64);
             if (ret == FAIL) {
                 break;
             }
@@ -228,7 +230,7 @@ int loadPatternFile(char *patFname, char *errMessage) {
                 break;
             }
 
-            if (pattern_writeWord(temp, addr, word) == FAIL) {
+            if (validate_writePatternWord(temp, addr, word) == FAIL) {
                 break;
             }
         }
@@ -248,7 +250,7 @@ int loadPatternFile(char *patFname, char *errMessage) {
                 break;
             }
 
-            if (pattern_writeIOControl(temp, arg) == FAIL) {
+            if (validate_writePatternIOControl(temp, arg) == FAIL) {
                 break;
             }
         }
@@ -266,7 +268,8 @@ int loadPatternFile(char *patFname, char *errMessage) {
                 break;
             }
 
-            if (pattern_setLoopLimits(temp, startAddr, stopAddr) == FAIL) {
+            if (validate_setPatternLoopLimits(temp, startAddr, stopAddr) ==
+                FAIL) {
                 break;
             }
         }
@@ -295,8 +298,8 @@ int loadPatternFile(char *patFname, char *errMessage) {
                 break;
             }
 
-            if (pattern_setLoopAddresses(temp, level, startAddr, stopAddr) ==
-                FAIL) {
+            if (validate_setPatternLoopAddresses(temp, level, startAddr,
+                                                 stopAddr) == FAIL) {
                 break;
             }
         }
@@ -323,7 +326,7 @@ int loadPatternFile(char *patFname, char *errMessage) {
                 break;
             }
 
-            if (pattern_setLoopCycles(temp, level, numLoops) == FAIL) {
+            if (validate_setPatternLoopCycles(temp, level, numLoops) == FAIL) {
                 break;
             }
         }
@@ -350,7 +353,7 @@ int loadPatternFile(char *patFname, char *errMessage) {
                 break;
             }
 
-            if (pattern_setWaitAddresses(temp, level, addr) == FAIL) {
+            if (validate_setPatternWaitAddresses(temp, level, addr) == FAIL) {
                 break;
             }
         }
@@ -383,7 +386,7 @@ int loadPatternFile(char *patFname, char *errMessage) {
                 break;
             }
 
-            if (pattern_setWaitTime(temp, level, waittime) == FAIL) {
+            if (validate_setPatternWaitTime(temp, level, waittime) == FAIL) {
                 break;
             }
         }
@@ -409,15 +412,15 @@ void initializePatternWord() {
 }
 #endif
 
-uint64_t pattern_readIOControl() {
+uint64_t validate_readPatternIOControl() {
     return get64BitReg(PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
 }
 
-int pattern_writeIOControl(char *message, uint64_t arg) {
+int validate_writePatternIOControl(char *message, uint64_t arg) {
     writePatternIOControl(arg);
 
     // validate result
-    uint64_t retval = pattern_readIOControl();
+    uint64_t retval = validate_readPatternIOControl();
     LOG(logDEBUG1,
         ("Pattern IO Control retval: 0x%llx\n", (long long int)retval));
     int ret = OK;
@@ -432,7 +435,7 @@ void writePatternIOControl(uint64_t word) {
 }
 #endif
 
-int pattern_readWord(char *message, int addr, uint64_t *word) {
+int validate_readPatternWord(char *message, int addr, uint64_t *word) {
     // validate input
     if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
         sprintf(message,
@@ -476,7 +479,7 @@ uint64_t readPatternWord(int addr) {
 #endif
 }
 
-int pattern_writeWord(char *message, int addr, uint64_t word) {
+int validate_writePatternWord(char *message, int addr, uint64_t word) {
     // validate input
     if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
         sprintf(message,
@@ -533,7 +536,7 @@ void writePatternWord(int addr, uint64_t word) {
 #endif
 }
 
-int pattern_getWaitAddresses(char *message, int level, int *addr) {
+int validate_getPatternWaitAddresses(char *message, int level, int *addr) {
     // validate input
     if (level < 0 || level > 2) {
         sprintf(message,
@@ -561,7 +564,7 @@ int getPatternWaitAddress(int level) {
     }
 }
 
-int pattern_setWaitAddresses(char *message, int level, int addr) {
+int validate_setPatternWaitAddresses(char *message, int level, int addr) {
     // validate input
     if (level < 0 || level > 2) {
         sprintf(message,
@@ -617,7 +620,7 @@ void setPatternWaitAddress(int level, int addr) {
     }
 }
 
-int pattern_getWaitTime(char *message, int level, uint64_t *waittime) {
+int validate_getPatternWaitTime(char *message, int level, uint64_t *waittime) {
     // validate input
     if (level < 0 || level > 2) {
         sprintf(message,
@@ -645,7 +648,7 @@ uint64_t getPatternWaitTime(int level) {
     }
 }
 
-int pattern_setWaitTime(char *message, int level, uint64_t waittime) {
+int validate_setPatternWaitTime(char *message, int level, uint64_t waittime) {
     // validate input
     if (level < 0 || level > 2) {
         sprintf(message,
@@ -694,7 +697,7 @@ void setPatternWaitTime(int level, uint64_t t) {
     }
 }
 
-int pattern_getLoopCycles(char *message, int level, int *numLoops) {
+int validate_getPatternLoopCycles(char *message, int level, int *numLoops) {
     // validate input
     if (level < 0 || level > 2) {
         sprintf(message,
@@ -719,7 +722,7 @@ int getPatternLoopCycles(int level) {
     }
 }
 
-int pattern_setLoopCycles(char *message, int level, int numLoops) {
+int validate_setPatternLoopCycles(char *message, int level, int numLoops) {
     // validate input
     if (level < 0 || level > 2) {
         sprintf(message,
@@ -768,14 +771,14 @@ void setPatternLoopCycles(int level, int nLoop) {
     }
 }
 
-void pattern_getLoopLimits(int *startAddr, int *stopAddr) {
+void validate_getPatternLoopLimits(int *startAddr, int *stopAddr) {
     *startAddr = ((bus_r(PATTERN_LIMIT_REG) & PATTERN_LIMIT_STRT_MSK) >>
                   PATTERN_LIMIT_STRT_OFST);
     *stopAddr = ((bus_r(PATTERN_LIMIT_REG) & PATTERN_LIMIT_STP_MSK) >>
                  PATTERN_LIMIT_STP_OFST);
 }
 
-int pattern_setLoopLimits(char *message, int startAddr, int stopAddr) {
+int validate_setPatternLoopLimits(char *message, int startAddr, int stopAddr) {
     // validate input
     if (startAddr < 0 || startAddr >= MAX_PATTERN_LENGTH || stopAddr < 0 ||
         stopAddr >= MAX_PATTERN_LENGTH) {
@@ -791,7 +794,7 @@ int pattern_setLoopLimits(char *message, int startAddr, int stopAddr) {
 
     // validate result
     int r_startAddr = -1, r_stopAddr = -1;
-    pattern_getLoopLimits(&r_startAddr, &r_stopAddr);
+    validate_getPatternLoopLimits(&r_startAddr, &r_stopAddr);
     int ret = OK;
     // start addr
     validate(&ret, message, startAddr, r_startAddr,
@@ -818,8 +821,8 @@ void setPatternLoopLimits(int startAddr, int stopAddr) {
               ((stopAddr << PATTERN_LIMIT_STP_OFST) & PATTERN_LIMIT_STP_MSK));
 }
 
-int pattern_getLoopAddresses(char *message, int level, int *startAddr,
-                             int *stopAddr) {
+int validate_getPatternLoopAddresses(char *message, int level, int *startAddr,
+                                     int *stopAddr) {
     // validate input
     if (level < 0 || level > 2) {
         sprintf(
@@ -864,8 +867,8 @@ void getPatternLoopAddresses(int level, int *startAddr, int *stopAddr) {
     }
 }
 
-int pattern_setLoopAddresses(char *message, int level, int startAddr,
-                             int stopAddr) {
+int validate_setPatternLoopAddresses(char *message, int level, int startAddr,
+                                     int stopAddr) {
     // validate input
     if (level < 0 || level > 2) {
         sprintf(

@@ -1,6 +1,7 @@
 #include "qTabSettings.h"
 #include "qDefs.h"
 #include "sls/ToString.h"
+#include "sls/bit_utils.h"
 #include <QStandardItemModel>
 
 qTabSettings::qTabSettings(QWidget *parent, sls::Detector *detector)
@@ -14,10 +15,21 @@ qTabSettings::~qTabSettings() {}
 
 void qTabSettings::SetupWidgetWindow() {
 
+    counters = std::vector<QCheckBox *>{chkCounter1, chkCounter2, chkCounter3};
+
     spinThreshold2->hide();
     spinThreshold3->hide();
     btnSetThreshold->hide();
     btnSetThreshold->setEnabled(false);
+    lblCounter->hide();
+    lblCounter->setEnabled(false);
+    chkCounter1->setEnabled(false);
+    chkCounter2->setEnabled(false);
+    chkCounter3->setEnabled(false);
+    chkCounter1->hide();
+    chkCounter2->hide();
+    chkCounter3->hide();
+
     // enabling according to det type
     slsDetectorDefs::detectorType detType = det->getDetectorType().squash();
     if (detType == slsDetectorDefs::MYTHEN3) {
@@ -32,6 +44,16 @@ void qTabSettings::SetupWidgetWindow() {
         spinThreshold3->setEnabled(true);
         btnSetThreshold->setEnabled(true);
         btnSetThreshold->show();
+
+        lblCounter->show();
+        lblCounter->setEnabled(true);
+        chkCounter1->setEnabled(true);
+        chkCounter2->setEnabled(true);
+        chkCounter3->setEnabled(true);
+        chkCounter1->show();
+        chkCounter2->show();
+        chkCounter3->show();
+
         // disable dr
         QStandardItemModel *model =
             qobject_cast<QStandardItemModel *>(comboDynamicRange->model());
@@ -153,6 +175,16 @@ void qTabSettings::Initialization() {
     else if (spinThreshold->isEnabled())
         connect(spinThreshold, SIGNAL(valueChanged(int)), this,
                 SLOT(SetThresholdEnergy(int)));
+
+    // counters
+    if (lblCounter->isEnabled()) {
+        connect(chkCounter1, SIGNAL(toggled(bool)), this,
+                SLOT(SetCounterMask()));
+        connect(chkCounter2, SIGNAL(toggled(bool)), this,
+                SLOT(SetCounterMask()));
+        connect(chkCounter3, SIGNAL(toggled(bool)), this,
+                SLOT(SetCounterMask()));
+    }
 }
 
 void qTabSettings::GetSettings() {
@@ -269,7 +301,7 @@ void qTabSettings::GetThresholdEnergies() {
         spinThreshold3->setValue(retval[2]);
     }
     CATCH_DISPLAY("Could not get threshold energy.",
-                  "qTabDataOutput::GetThresholdEnergies")
+                  "qTabSettings::GetThresholdEnergies")
     connect(btnSetThreshold, SIGNAL(clicked()), this,
             SLOT(SetThresholdEnergies()));
 }
@@ -284,7 +316,7 @@ void qTabSettings::GetThresholdEnergy() {
         spinThreshold->setValue(retval);
     }
     CATCH_DISPLAY("Could not get threshold energy.",
-                  "qTabDataOutput::GetThresholdEnergy")
+                  "qTabSettings::GetThresholdEnergy")
     connect(spinThreshold, SIGNAL(valueChanged(int)), this,
             SLOT(SetThresholdEnergy(int)));
 }
@@ -317,6 +349,52 @@ void qTabSettings::SetThresholdEnergy(int index) {
     GetThresholdEnergy();
 }
 
+void qTabSettings::GetCounterMask() {
+    LOG(logDEBUG) << "Getting counter mask";
+    disconnect(chkCounter1, SIGNAL(toggled(bool)), this,
+               SLOT(SetCounterMask()));
+    disconnect(chkCounter2, SIGNAL(toggled(bool)), this,
+               SLOT(SetCounterMask()));
+    disconnect(chkCounter3, SIGNAL(toggled(bool)), this,
+               SLOT(SetCounterMask()));
+    try {
+        auto retval = sls::getSetBits(det->getCounterMask().tsquash(
+            "Counter mask is inconsistent for all detectors."));
+        // default to unchecked
+        for (auto p : counters) {
+            p->setChecked(false);
+        }
+        // if retval[i] = 2, chkCounter2 is checked
+        for (auto i : retval) {
+            if (i > 3) {
+                throw sls::RuntimeError(
+                    std::string("Unknown counter index : ") +
+                    std::to_string(static_cast<int>(i)));
+            }
+            counters[i]->setChecked(true);
+        }
+    }
+    CATCH_DISPLAY("Could not get counter mask.", "qTabSettings::GetCounterMask")
+    connect(chkCounter1, SIGNAL(toggled(bool)), this, SLOT(SetCounterMask()));
+    connect(chkCounter2, SIGNAL(toggled(bool)), this, SLOT(SetCounterMask()));
+    connect(chkCounter3, SIGNAL(toggled(bool)), this, SLOT(SetCounterMask()));
+}
+
+void qTabSettings::SetCounterMask() {
+    uint32_t mask = 0;
+    for (unsigned int i = 0; i < counters.size(); ++i) {
+        if (counters[i]->isChecked()) {
+            mask |= (1 << i);
+        }
+    }
+    LOG(logINFO) << "Setting counter mask to " << mask;
+    try {
+        det->setCounterMask(mask);
+    }
+    CATCH_HANDLE("Could not set counter mask.", "qTabSettings::SetCounterMask",
+                 this, &qTabSettings::GetCounterMask)
+}
+
 void qTabSettings::Refresh() {
     LOG(logDEBUG) << "**Updating Settings Tab";
 
@@ -335,6 +413,10 @@ void qTabSettings::Refresh() {
     else if (spinThreshold->isEnabled()) {
         LOG(logINFOBLUE) << "calling it!";
         GetThresholdEnergy();
+    }
+
+    if (lblCounter->isEnabled()) {
+        GetCounterMask();
     }
 
     LOG(logDEBUG) << "**Updated Settings Tab";

@@ -13,7 +13,7 @@ add_executable(moenchDetectorServer_virtual
     ../slsDetectorServer/src/LTC2620.c
     ../slsDetectorServer/src/MAX1932.c
     ../slsDetectorServer/src/programFpgaBlackfin.c   
-    ../slsDetectorServer/src/readDefaultPattern.c         
+    ../slsDetectorServer/src/loadPattern.c         
     ../slsDetectorServer/src/sharedMemory.c
 )
 

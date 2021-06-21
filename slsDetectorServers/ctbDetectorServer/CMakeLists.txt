@@ -17,6 +17,7 @@ add_executable(ctbDetectorServer_virtual
     ../slsDetectorServer/src/MAX1932.c
     ../slsDetectorServer/src/programFpgaBlackfin.c
     ../slsDetectorServer/src/sharedMemory.c
+    ../slsDetectorServer/src/loadPattern.c
 )
 
 include_directories(

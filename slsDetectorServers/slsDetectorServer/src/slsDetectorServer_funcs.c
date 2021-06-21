@@ -7,6 +7,7 @@
 
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
 #include "Pattern.h"
+#include "loadPattern.h"
 #endif
 
 #include <arpa/inet.h>
@@ -400,35 +401,6 @@ void modeNotImplemented(char *modename, int mode) {
     LOG(logERROR, (mess));
 }
 
-void validate(int arg, int retval, char *modename, enum numberMode nummode) {
-    if (ret == OK && arg != GET_FLAG && retval != arg) {
-        ret = FAIL;
-        if (nummode == HEX)
-            sprintf(mess, "Could not %s. Set 0x%x, but read 0x%x\n", modename,
-                    arg, retval);
-        else
-            sprintf(mess, "Could not %s. Set %d, but read %d\n", modename, arg,
-                    retval);
-        LOG(logERROR, (mess));
-    }
-}
-
-void validate64(int64_t arg, int64_t retval, char *modename,
-                enum numberMode nummode) {
-    if (ret == OK && arg != GET_FLAG && retval != arg) {
-        ret = FAIL;
-        if (nummode == HEX)
-            sprintf(mess, "Could not %s. Set 0x%llx, but read 0x%llx\n",
-                    modename, (long long unsigned int)arg,
-                    (long long unsigned int)retval);
-        else
-            sprintf(mess, "Could not %s. Set %lld, but read %lld\n", modename,
-                    (long long unsigned int)arg,
-                    (long long unsigned int)retval);
-        LOG(logERROR, (mess));
-    }
-}
-
 int executeCommand(char *command, char *result, enum TLogLevel level) {
     const size_t tempsize = 256;
     char temp[tempsize];
@@ -603,7 +575,8 @@ int set_external_signal_flag(int file_des) {
         if (ret == OK) {
             setExtSignal(signalIndex, flag);
             retval = getExtSignal(signalIndex);
-            validate((int)flag, (int)retval, "set external signal flag", DEC);
+            validate(&ret, mess, (int)flag, (int)retval,
+                     "set external signal flag", DEC);
             LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
         }
     }
@@ -643,7 +616,7 @@ int set_timing_mode(int file_des) {
     // get
     retval = getTiming();
 #ifndef MYTHEN3D
-    validate((int)arg, (int)retval, "set timing mode", DEC);
+    validate(&ret, mess, (int)arg, (int)retval, "set timing mode", DEC);
 #endif
     LOG(logDEBUG1, ("Timing Mode: %d\n", retval));
 
@@ -1054,7 +1027,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         case IO_DELAY:
             retval = setIODelay(val);
             LOG(logDEBUG1, ("IODelay: %d\n", retval));
-            validate(val, retval, "set iodelay", DEC);
+            validate(&ret, mess, val, retval, "set iodelay", DEC);
             break;
 #endif
 
@@ -1064,7 +1037,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             LOG(logDEBUG1, ("High Voltage: %d\n", retval));
 #if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
     defined(GOTTHARD2D) || defined(MYTHEN3D)
-            validate(val, retval, "set high voltage", DEC);
+            validate(&ret, mess, val, retval, "set high voltage", DEC);
 #endif
 #ifdef GOTTHARDD
             if (retval == -1) {
@@ -1073,7 +1046,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                              "110, 120, 150, 180, 200\n");
                 LOG(logERROR, (mess));
             } else
-                validate(val, retval, "set high voltage", DEC);
+                validate(&ret, mess, val, retval, "set high voltage", DEC);
 #elif EIGERD
             if ((retval != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval < 0)) {
                 ret = FAIL;
@@ -1131,7 +1104,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             }
             retval = getPower(serverDacIndex);
             LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
-            validate(val, retval, "set power regulator", DEC);
+            validate(&ret, mess, val, retval, "set power regulator", DEC);
             break;
 
         case V_POWER_CHIP:
@@ -1177,7 +1150,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
             }
             retval = getVLimit();
             LOG(logDEBUG1, ("VLimit: %d\n", retval));
-            validate(val, retval, "set vlimit", DEC);
+            validate(&ret, mess, val, retval, "set vlimit", DEC);
             break;
 #endif
             // dacs
@@ -1238,8 +1211,8 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     ret = OK;
                 } else {
                     ret = FAIL;
-                        sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
-                                serverDacIndex, val, retval);
+                    sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
+                            serverDacIndex, val, retval);
                     LOG(logERROR, (mess));
                 }
             }
@@ -1577,7 +1550,8 @@ int set_module(int file_des) {
         ret = setModule(module, mess);
         enum detectorSettings retval = getSettings();
 #if !(defined(EIGERD) || defined(MYTHEN3D))
-        validate(module.reg, (int)retval, "set module (settings)", DEC);
+        validate(&ret, mess, module.reg, (int)retval, "set module (settings)",
+                 DEC);
 #endif
         LOG(logDEBUG1, ("Settings: %d\n", retval));
     }
@@ -1659,7 +1633,7 @@ int set_settings(int file_des) {
         LOG(logDEBUG1, ("Settings: %d\n", retval));
 
         if ((int)isett != GET_FLAG) {
-            validate((int)isett, (int)retval, "set settings", DEC);
+            validate(&ret, mess, (int)isett, (int)retval, "set settings", DEC);
 #ifdef GOTTHARDD
             if (ret == OK) {
                 ret = setDefaultDacs();
@@ -1995,7 +1969,8 @@ int set_num_frames(int file_des) {
                 int64_t retval = getNumFrames();
                 LOG(logDEBUG1,
                     ("retval num frames %lld\n", (long long int)retval));
-                validate64(arg, retval, "set number of frames", DEC);
+                validate64(&ret, mess, arg, retval, "set number of frames",
+                           DEC);
             }
         }
     }
@@ -2027,7 +2002,7 @@ int set_num_triggers(int file_des) {
         setNumTriggers(arg);
         int64_t retval = getNumTriggers();
         LOG(logDEBUG1, ("retval num triggers %lld\n", (long long int)retval));
-        validate64(arg, retval, "set number of triggers", DEC);
+        validate64(&ret, mess, arg, retval, "set number of triggers", DEC);
     }
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
@@ -2070,8 +2045,8 @@ int set_num_additional_storage_cells(int file_des) {
             setNumAdditionalStorageCells(arg);
             int retval = getNumAdditionalStorageCells();
             LOG(logDEBUG1, ("retval num addl. storage cells %d\n", retval));
-            validate(arg, retval, "set number of additional storage cells",
-                     DEC);
+            validate(&ret, mess, arg, retval,
+                     "set number of additional storage cells", DEC);
         }
     }
 #endif
@@ -2128,7 +2103,8 @@ int set_num_analog_samples(int file_des) {
             } else {
                 int retval = getNumAnalogSamples();
                 LOG(logDEBUG1, ("retval num analog samples %d\n", retval));
-                validate(arg, retval, "set number of analog samples", DEC);
+                validate(&ret, mess, arg, retval,
+                         "set number of analog samples", DEC);
             }
         }
     }
@@ -2175,7 +2151,8 @@ int set_num_digital_samples(int file_des) {
         } else {
             int retval = getNumDigitalSamples();
             LOG(logDEBUG1, ("retval num digital samples %d\n", retval));
-            validate(arg, retval, "set number of digital samples", DEC);
+            validate(&ret, mess, arg, retval, "set number of digital samples",
+                     DEC);
         }
     }
 #endif
@@ -2749,7 +2726,7 @@ int set_dynamic_range(int file_des) {
                 sprintf(mess, "Could not get dynamic range.\n");
                 LOG(logERROR, (mess));
             }
-            validate(dr, retval, "set dynamic range", DEC);
+            validate(&ret, mess, dr, retval, "set dynamic range", DEC);
             break;
         default:
             modeNotImplemented("Dynamic range", dr);
@@ -2921,7 +2898,7 @@ int enable_ten_giga(int file_des) {
         }
         retval = enableTenGigabitEthernet(GET_FLAG);
         LOG(logDEBUG1, ("10GbE: %d\n", retval));
-        validate(arg, retval, "enable/disable 10GbE", DEC);
+        validate(&ret, mess, arg, retval, "enable/disable 10GbE", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -2956,7 +2933,7 @@ int validateAndSetAllTrimbits(int arg) {
     // get
     retval = getAllTrimbits();
     LOG(logDEBUG1, ("All trimbits: %d\n", retval));
-    validate(arg, retval, "set all trimbits", DEC);
+    validate(&ret, mess, arg, retval, "set all trimbits", DEC);
 #endif
     return retval;
 }
@@ -2992,10 +2969,10 @@ int set_pattern_io_control(int file_des) {
     LOG(logDEBUG1,
         ("Setting Pattern IO Control to 0x%llx\n", (long long int)arg));
     if (((int64_t)arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        retval = writePatternIOControl(arg);
-        LOG(logDEBUG1,
-            ("Pattern IO Control retval: 0x%llx\n", (long long int)retval));
-        validate64(arg, retval, "set Pattern IO Control", HEX);
+        if ((int64_t)arg != GET_FLAG) {
+            ret = validate_writePatternIOControl(mess, arg);
+        }
+        retval = validate_readPatternIOControl();
     }
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
@@ -3019,19 +2996,10 @@ int set_pattern_word(int file_des) {
                       (long long int)word));
     }
     if (Server_VerifyLock() == OK) {
-        // valid address
-        if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern (Word, addr:0x%x). Addr must be "
-                    "between 0 and 0x%x\n",
-                    addr, MAX_PATTERN_LENGTH);
-            LOG(logERROR, (mess));
+        if (word != (uint64_t)-1) {
+            ret = validate_writePatternWord(mess, addr, word);
         } else {
-            retval = writePatternWord(addr, word);
-            LOG(logDEBUG1,
-                ("Pattern Word retval: 0x%llx\n", (long long int)retval));
-            // no validation (cannot read as it will execute the pattern)
+            ret = validate_readPatternWord(mess, addr, &retval);
         }
     }
 #endif
@@ -3057,37 +3025,27 @@ int set_pattern_loop_addresses(int file_des) {
                     loopLevel, startAddr, stopAddr));
     if ((startAddr == GET_FLAG) || (stopAddr == GET_FLAG) ||
         (Server_VerifyLock() == OK)) {
-        // valid loop level
-        if (loopLevel < -1 ||
-            loopLevel > 2) { // loop level of -1 : complete pattern
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern loop addresses. Level %d should be "
-                    "between -1 and 2\n",
-                    loopLevel);
-            LOG(logERROR, (mess));
+        // loop limits
+        if (loopLevel == -1) {
+            // set
+            if (startAddr >= 0 && stopAddr >= 0) {
+                ret = validate_setPatternLoopLimits(mess, startAddr, stopAddr);
+            }
+            // get
+            validate_getPatternLoopLimits(&retvals[0], &retvals[1]);
         }
-        // valid addr for loop level 0-2
-        else if (startAddr >= MAX_PATTERN_LENGTH ||
-                 stopAddr >= MAX_PATTERN_LENGTH) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern loop addresses. Address (start "
-                    "addr:0x%x and stop addr:0x%x) "
-                    "should be less than 0x%x\n",
-                    startAddr, stopAddr, MAX_PATTERN_LENGTH);
-            LOG(logERROR, (mess));
-        } else {
-            int numLoops = -1;
-            setPatternLoop(loopLevel, &startAddr, &stopAddr, &numLoops);
-            LOG(logDEBUG1,
-                ("Pattern loop addresses retval: (start:0x%x, stop:0x%x)\n",
-                 startAddr, stopAddr));
-            retvals[0] = startAddr;
-            retvals[1] = stopAddr;
-            validate(args[1], startAddr, "set Pattern loops' start address",
-                     HEX);
-            validate(args[2], stopAddr, "set Pattern loops' stop address", HEX);
+        // loop addresses
+        else {
+            // set
+            if (startAddr >= 0 && stopAddr >= 0) {
+                ret = validate_setPatternLoopAddresses(mess, loopLevel, startAddr,
+                                               stopAddr);
+            }
+            // get
+            if (ret == OK) {
+                ret = validate_getPatternLoopAddresses(mess, loopLevel, &retvals[0],
+                                               &retvals[1]);
+            }
         }
     }
 #endif
@@ -3110,23 +3068,13 @@ int set_pattern_loop_cycles(int file_des) {
     LOG(logDEBUG1, ("Setting Pattern loop cycles (loopLevel:%d numLoops:%d)\n",
                     loopLevel, numLoops));
     if ((numLoops == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        // valid loop level
-        if (loopLevel < 0 || loopLevel > 2) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern loop cycles. Level %d should be "
-                    "between 0 and 2\n",
-                    loopLevel);
-            LOG(logERROR, (mess));
-        } else {
-            int startAddr = GET_FLAG;
-            int stopAddr = GET_FLAG;
-            setPatternLoop(loopLevel, &startAddr, &stopAddr, &numLoops);
-            retval = numLoops;
-            LOG(logDEBUG1,
-                ("Pattern loop cycles retval: (ncycles:%d)\n", retval));
-            validate(args[1], retval, "set Pattern loops' number of cycles",
-                     DEC);
+        // set
+        if (numLoops != GET_FLAG) {
+            ret = validate_setPatternLoopCycles(mess, loopLevel, numLoops);
+        }
+        // get
+        if (ret == OK) {
+            ret = validate_getPatternLoopCycles(mess, loopLevel, &retval);
         }
     }
 #endif
@@ -3149,27 +3097,13 @@ int set_pattern_wait_addr(int file_des) {
     LOG(logDEBUG1, ("Setting Pattern wait address (loopLevel:%d addr:0x%x)\n",
                     loopLevel, addr));
     if ((addr == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        // valid loop level 0-2
-        if (loopLevel < 0 || loopLevel > 2) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern wait address. Level %d should be "
-                    "between 0 and 2\n",
-                    loopLevel);
-            LOG(logERROR, (mess));
+        // set
+        if (addr != GET_FLAG) {
+            ret = validate_setPatternWaitAddresses(mess, loopLevel, addr);
         }
-        // valid addr
-        else if (addr >= MAX_PATTERN_LENGTH) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern wait address. Address (0x%x) should be "
-                    "between 0 and 0x%x\n",
-                    addr, MAX_PATTERN_LENGTH);
-            LOG(logERROR, (mess));
-        } else {
-            retval = setPatternWaitAddress(loopLevel, addr);
-            LOG(logDEBUG1, ("Pattern wait address retval: 0x%x\n", retval));
-            validate(addr, retval, "set Pattern wait address", HEX);
+        // get
+        if (ret == OK) {
+            ret = validate_getPatternWaitAddresses(mess, loopLevel, &retval);
         }
     }
 #endif
@@ -3192,19 +3126,13 @@ int set_pattern_wait_time(int file_des) {
     LOG(logDEBUG1, ("Setting Pattern wait time (loopLevel:%d timeval:0x%llx)\n",
                     loopLevel, (long long int)timeval));
     if (((int64_t)timeval == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        // valid loop level 0-2
-        if (loopLevel < 0 || loopLevel > 2) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Cannot set Pattern wait time. Level %d should be between "
-                    "0 and 2\n",
-                    loopLevel);
-            LOG(logERROR, (mess));
-        } else {
-            retval = setPatternWaitTime(loopLevel, timeval);
-            LOG(logDEBUG1,
-                ("Pattern wait time retval: 0x%llx\n", (long long int)retval));
-            validate64(timeval, retval, "set Pattern wait time", HEX);
+        // set
+        if ((int64_t)timeval != GET_FLAG) {
+            ret = validate_setPatternWaitTime(mess, loopLevel, timeval);
+        }
+        // get
+        if (ret == OK) {
+            ret = validate_getPatternWaitTime(mess, loopLevel, &retval);
         }
     }
 #endif
@@ -3229,7 +3157,7 @@ int set_pattern_mask(int file_des) {
         uint64_t retval64 = getPatternMask();
         LOG(logDEBUG1,
             ("Pattern mask: 0x%llx\n", (long long unsigned int)retval64));
-        validate64(arg, retval64, "set Pattern Mask", HEX);
+        validate64(&ret, mess, arg, retval64, "set Pattern Mask", HEX);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -3272,7 +3200,7 @@ int set_pattern_bit_mask(int file_des) {
         uint64_t retval64 = getPatternBitMask();
         LOG(logDEBUG1,
             ("Pattern bit mask: 0x%llx\n", (long long unsigned int)retval64));
-        validate64(arg, retval64, "set Pattern Bit Mask", HEX);
+        validate64(&ret, mess, arg, retval64, "set Pattern Bit Mask", HEX);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -3350,7 +3278,7 @@ int set_counter_bit(int file_des) {
     // get
     retval = setCounterBit(GET_FLAG);
     LOG(logDEBUG1, ("Set counter bit retval: %d\n", retval));
-    validate(arg, retval, "set counter bit", DEC);
+    validate(&ret, mess, arg, retval, "set counter bit", DEC);
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -3450,7 +3378,7 @@ int set_rate_correct(int file_des) {
             strcpy(mess, "Rate correction failed\n");
             LOG(logERROR, (mess));
         } else {
-            validate64(tau_ns, retval, "set rate correction", DEC);
+            validate64(&ret, mess, tau_ns, retval, "set rate correction", DEC);
         }
     }
 #endif
@@ -3493,7 +3421,7 @@ int set_ten_giga_flow_control(int file_des) {
         } else {
             int retval = getTenGigaFlowControl();
             LOG(logDEBUG1, ("ten giga flow control retval: %d\n", retval));
-            validate(arg, retval, "set ten giga flow control", DEC);
+            validate(&ret, mess, arg, retval, "set ten giga flow control", DEC);
         }
     }
 #endif
@@ -3552,7 +3480,8 @@ int set_transmission_delay_frame(int file_des) {
                 int retval = getTransmissionDelayFrame();
                 LOG(logDEBUG1,
                     ("transmission delay frame retval: %d\n", retval));
-                validate(arg, retval, "set transmission delay frame", DEC);
+                validate(&ret, mess, arg, retval,
+                         "set transmission delay frame", DEC);
             }
         }
     }
@@ -3602,7 +3531,8 @@ int set_transmission_delay_left(int file_des) {
         } else {
             int retval = getTransmissionDelayLeft();
             LOG(logDEBUG1, ("transmission delay left retval: %d\n", retval));
-            validate(arg, retval, "set transmission delay left", DEC);
+            validate(&ret, mess, arg, retval, "set transmission delay left",
+                     DEC);
         }
     }
 #endif
@@ -3651,7 +3581,8 @@ int set_transmission_delay_right(int file_des) {
         } else {
             int retval = getTransmissionDelayRight();
             LOG(logDEBUG1, ("transmission delay right retval: %d\n", retval));
-            validate(arg, retval, "set transmission delay right", DEC);
+            validate(&ret, mess, arg, retval, "set transmission delay right",
+                     DEC);
         }
     }
 #endif
@@ -3902,7 +3833,7 @@ int power_chip(int file_des) {
             retval = powerChip(arg);
             LOG(logDEBUG1, ("Power chip: %d\n", retval));
         }
-        validate(arg, retval, "power on/off chip", DEC);
+        validate(&ret, mess, arg, retval, "power on/off chip", DEC);
 #ifdef JUNGFRAUD
         // narrow down error when powering on
         if (ret == FAIL && arg > 0) {
@@ -3949,7 +3880,7 @@ int set_activate(int file_des) {
                 LOG(logERROR, (mess));
             } else {
                 LOG(logDEBUG1, ("Activate: %d\n", retval));
-                validate(arg, retval, "set/get activate", DEC);
+                validate(&ret, mess, arg, retval, "set/get activate", DEC);
             }
         }
     }
@@ -3983,7 +3914,7 @@ int threshold_temp(int file_des) {
         else {
             retval = setThresholdTemperature(arg);
             LOG(logDEBUG1, ("Threshold temperature: %d\n", retval));
-            validate(arg, retval, "set threshold temperature", DEC);
+            validate(&ret, mess, arg, retval, "set threshold temperature", DEC);
         }
     }
 #endif
@@ -4008,7 +3939,7 @@ int temp_control(int file_des) {
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = setTemperatureControl(arg);
         LOG(logDEBUG1, ("Temperature control: %d\n", retval));
-        validate(arg, retval, "set temperature control", DEC);
+        validate(&ret, mess, arg, retval, "set temperature control", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -4032,7 +3963,7 @@ int temp_event(int file_des) {
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = setTemperatureEvent(arg);
         LOG(logDEBUG1, ("Temperature event: %d\n", retval));
-        validate(arg, retval, "set temperature event", DEC);
+        validate(&ret, mess, arg, retval, "set temperature event", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -4055,7 +3986,7 @@ int auto_comp_disable(int file_des) {
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = autoCompDisable(arg);
         LOG(logDEBUG1, ("Auto comp disable: %d\n", retval));
-        validate(arg, retval, "set auto comp disable", DEC);
+        validate(&ret, mess, arg, retval, "set auto comp disable", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -4083,7 +4014,7 @@ int storage_cell_start(int file_des) {
         } else {
             retval = selectStoragecellStart(arg);
             LOG(logDEBUG1, ("Storage cell start: %d\n", retval));
-            validate(arg, retval, "set storage cell start", DEC);
+            validate(&ret, mess, arg, retval, "set storage cell start", DEC);
         }
     }
 #endif
@@ -4198,7 +4129,7 @@ int led(int file_des) {
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = setLEDEnable(arg);
         LOG(logDEBUG1, ("LED Enable: %d\n", retval));
-        validate(arg, retval, "enable/disable LED", DEC);
+        validate(&ret, mess, arg, retval, "enable/disable LED", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -4502,7 +4433,8 @@ int set_external_sampling_source(int file_des) {
         } else {
             retval = setExternalSamplingSource(arg);
             LOG(logDEBUG1, ("External Sampling source: %d\n", retval));
-            validate(arg, retval, "set external sampling source", DEC);
+            validate(&ret, mess, arg, retval, "set external sampling source",
+                     DEC);
         }
     }
 #endif
@@ -4527,7 +4459,7 @@ int set_external_sampling(int file_des) {
         arg = (arg > 0) ? 1 : arg;
         retval = setExternalSampling(arg);
         LOG(logDEBUG1, ("External Sampling enable: %d\n", retval));
-        validate(arg, retval, "set external sampling enable", DEC);
+        validate(&ret, mess, arg, retval, "set external sampling enable", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -5616,7 +5548,7 @@ int set_readout_mode(int file_des) {
                 } else {
                     LOG(logDEBUG1, ("readout mode retval: %u\n", retval));
                 }
-                validate(arg, retval, "set readout mode", DEC);
+                validate(&ret, mess, arg, retval, "set readout mode", DEC);
             }
         }
     }
@@ -5701,7 +5633,7 @@ int set_clock_frequency(int file_des) {
                 int retval = getFrequency(c);
                 LOG(logDEBUG1, ("retval %s: %d %s\n", modeName, retval,
                                 myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
-                validate(val, retval, modeName, DEC);
+                validate(&ret, mess, val, retval, modeName, DEC);
             }
         }
     }
@@ -5853,7 +5785,7 @@ int set_clock_phase(int file_des) {
                     int retval = getPhase(c, inDegrees);
                     LOG(logDEBUG1, ("retval %s : %d\n", modeName, retval));
                     if (!inDegrees) {
-                        validate(val, retval, modeName, DEC);
+                        validate(&ret, mess, val, retval, modeName, DEC);
                     } else {
                         ret = validatePhaseinDegrees(c, val, retval);
                         if (ret == FAIL) {
@@ -6056,7 +5988,7 @@ int set_clock_divider(int file_des) {
                 } else {
                     int retval = getClockDivider(c);
                     LOG(logDEBUG1, ("retval %s : %d\n", modeName, retval));
-                    validate(val, retval, modeName, DEC);
+                    validate(&ret, mess, val, retval, modeName, DEC);
                 }
             }
         }
@@ -6147,7 +6079,7 @@ int set_pipeline(int file_des) {
             setPipeline(c, val);
             int retval = getPipeline(c);
             LOG(logDEBUG1, ("retval %s: %d\n", modeName, retval));
-            validate(val, retval, modeName, DEC);
+            validate(&ret, mess, val, retval, modeName, DEC);
         }
     }
 #endif
@@ -6263,7 +6195,7 @@ int set_on_chip_dac(int file_des) {
                 } else {
                     int retval = getOnChipDAC(dacIndex, chipIndex);
                     LOG(logDEBUG1, ("retval %s: 0x%x\n", modeName, retval));
-                    validate(val, retval, modeName, DEC);
+                    validate(&ret, mess, val, retval, modeName, DEC);
                 }
             }
         }
@@ -6732,7 +6664,7 @@ int set_num_bursts(int file_des) {
         setNumBursts(arg);
         int64_t retval = getNumBursts();
         LOG(logDEBUG1, ("retval num bursts %lld\n", (long long int)retval));
-        validate64(arg, retval, "set number of bursts", DEC);
+        validate64(&ret, mess, arg, retval, "set number of bursts", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT64, NULL, 0);
@@ -6799,7 +6731,7 @@ int set_current_source(int file_des) {
         setCurrentSource(arg);
         int retval = getCurrentSource();
         LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
-        validate(arg, retval, "set current source enable", DEC);
+        validate(&ret, mess, arg, retval, "set current source enable", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -7361,7 +7293,7 @@ int set_num_gates(int file_des) {
         setNumGates(arg);
         int retval = getNumGates();
         LOG(logDEBUG1, ("retval num gates %d\n", retval));
-        validate(arg, retval, "set number of gates", DEC);
+        validate(&ret, mess, arg, retval, "set number of gates", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -7559,7 +7491,7 @@ int set_veto(int file_des) {
         if (ret == OK) {
             int retval = getVeto();
             LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
-            validate(arg, retval, "set veto mode", DEC);
+            validate(&ret, mess, arg, retval, "set veto mode", DEC);
         }
     }
 #endif
@@ -7585,88 +7517,7 @@ int set_pattern(int file_des) {
 
     if (Server_VerifyLock() == OK) {
         LOG(logINFO, ("Setting Pattern from structure\n"));
-        LOG(logINFO,
-            ("Setting Pattern Word (printing every 10 words that are not 0\n"));
-        /****************************************************************************************************************/
-        /* I SUGGEST TO VALIDATE THE VALUES HERE AND THEN WRITE THE PATTERN IN A
-         * SEPARATE FUNCTION WHICH COULD BE REUSED*/
-        /* added loadPattern.c/h - the same func could be reused also in
-         * readDefaultPattern                                  */
-        /***************************************************************************************************************/
-
-        for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
-            if ((i % 10 == 0) && pat->word[i] != 0) {
-                LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n",
-                              i, (long long int)pat->word[i]));
-            }
-            writePatternWord(i, pat->word[i]);
-        }
-#ifndef MYTHEN3D
-        if (ret == OK) {
-            uint64_t retval64 = writePatternIOControl(pat->ioctrl);
-            validate64(pat->ioctrl, retval64, "set pattern IO Control", HEX);
-        }
-#endif
-        if (ret == OK) {
-            int numLoops = -1;
-            int retval0 = pat->limits[0];
-            int retval1 = pat->limits[1];
-            setPatternLoop(-1, &retval0, &retval1, &numLoops);
-            validate(pat->limits[0], retval0,
-                     "set pattern Limits start address", HEX);
-            validate(pat->limits[1], retval1,
-                     "set pattern Limits start address", HEX);
-        }
-        if (ret == OK) {
-            for (int i = 0; i <= 2; ++i) {
-                char msg[128];
-                int retval0 = -1, retval1 = -1, numLoops = -1;
-                uint64_t retval64 = -1;
-
-                // patloop
-                retval0 = pat->loop[i * 2 + 0];
-                retval1 = pat->loop[i * 2 + 1];
-                numLoops = pat->nloop[i];
-                setPatternLoop(i, &retval0, &retval1, &numLoops);
-                memset(msg, 0, sizeof(msg));
-                sprintf(msg, "set pattern Loop %d start address", i);
-                validate(pat->loop[i * 2 + 0], retval0, msg, HEX);
-                if (ret == FAIL) {
-                    break;
-                }
-                memset(msg, 0, sizeof(msg));
-                sprintf(msg, "set pattern Loop %d stop address", i);
-                validate(pat->loop[i * 2 + 1], retval1, msg, HEX);
-                if (ret == FAIL) {
-                    break;
-                }
-                memset(msg, 0, sizeof(msg));
-                sprintf(msg, "set pattern Loop %d num loops", i);
-                validate(pat->nloop[i], numLoops, msg, HEX);
-                if (ret == FAIL) {
-                    break;
-                }
-
-                // patwait
-                memset(msg, 0, sizeof(msg));
-                sprintf(msg, "set pattern Loop %d wait address", i);
-                retval0 = setPatternWaitAddress(i, pat->wait[i]);
-                validate(pat->wait[i], retval0, msg, HEX);
-                if (ret == FAIL) {
-                    break;
-                }
-
-                // patwaittime
-                memset(msg, 0, sizeof(msg));
-                sprintf(msg, "set pattern Loop %d wait time", i);
-                retval64 = setPatternWaitTime(i, pat->waittime[i]);
-                validate64(pat->waittime[i], retval64, msg, HEX);
-                if (ret == FAIL) {
-                    break;
-                }
-            }
-        }
-        /******* DOWN TO HERE ***********/
+        ret = loadPattern(mess, logINFO, pat);
     }
     if (pat != NULL)
         free(pat);
@@ -7688,97 +7539,7 @@ int get_pattern(int file_des) {
     memset(pat, 0, sizeof(patternParameters));
 
     if (Server_VerifyLock() == OK) {
-        LOG(logINFO, ("Getting Pattern from structure\n"));
-
-        // patword
-        LOG(logDEBUG,
-            ("retval pattern word (printing every 10 words that are not 0\n"));
-        for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
-            pat->word[i] = readPatternWord(i);
-            if ((int64_t)pat->word[i] == -1) {
-                ret = FAIL;
-                sprintf(mess, "could not read pattern word for address 0x%x\n",
-                        i);
-                LOG(logERROR, (mess));
-                break;
-            }
-            // debug print
-            if ((i % 10 == 0) && pat->word[i] != 0) {
-                LOG(logDEBUG,
-                    ("retval Patpattern word (addr:0x%x, word:0x%llx)\n", i,
-                     (long long int)pat->word[i]));
-            }
-        }
-
-        // patioctrl
-#ifndef MYTHEN3D
-        if (ret == OK) {
-            pat->ioctrl = writePatternIOControl(-1);
-            LOG(logDEBUG, ("retval pattern io control:0x%llx\n",
-                           (long long int)pat->ioctrl));
-        }
-#endif
-        if (ret == OK) {
-            // patlimits
-            int numLoops = -1;
-            int retval0 = -1;
-            int retval1 = -1;
-            setPatternLoop(-1, &retval0, &retval1, &numLoops);
-            pat->limits[0] = retval0;
-            pat->limits[1] = retval1;
-            LOG(logDEBUG, ("retval pattern limits start:0x%x stop:0x%x\n",
-                           pat->limits[0], pat->limits[1]));
-
-            for (int i = 0; i <= 2; ++i) {
-                // patloop
-                {
-                    int numLoops = -1;
-                    int retval0 = -1;
-                    int retval1 = -1;
-                    setPatternLoop(i, &retval0, &retval1, &numLoops);
-                    pat->nloop[i] = numLoops;
-                    pat->loop[i * 2 + 0] = retval0;
-                    pat->loop[i * 2 + 1] = retval1;
-                    LOG(logDEBUG, ("retval pattern loop level %d start:0x%x "
-                                   "stop:0x%x numLoops:%d\n",
-                                   i, pat->loop[i * 2 + 0],
-                                   pat->loop[i * 2 + 0], pat->nloop[i]));
-                }
-                // patwait
-                {
-                    pat->wait[i] = setPatternWaitAddress(i, -1);
-                    if ((int)pat->wait[i] == -1) {
-                        ret = FAIL;
-                        sprintf(mess,
-                                "could not read pattern wait address for level "
-                                "%d\n",
-                                i);
-                        LOG(logERROR, (mess));
-                        break;
-                    }
-                    LOG(logDEBUG,
-                        ("retval pattern wait address for level %d: 0x%x\n", i,
-                         pat->wait[i]));
-                }
-
-                // patwaittime
-                {
-                    pat->waittime[i] = setPatternWaitTime(i, -1);
-                    if ((int64_t)pat->waittime[i] == -1) {
-                        ret = FAIL;
-                        sprintf(
-                            mess,
-                            "could not read pattern wait time for level %d\n",
-                            i);
-                        LOG(logERROR, (mess));
-                        break;
-                    }
-                    LOG(logDEBUG,
-                        ("retval pattern wait time for level %d: %lld\n", i,
-                         (long long int)pat->waittime[i]));
-                }
-            }
-        }
+        ret = getPattern(mess, pat);
     }
 
     // ignoring endianness for eiger
@@ -7849,7 +7610,7 @@ int set_scan(int file_des) {
             setNumFrames(arg);
             retval = getNumFrames();
             LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
-            validate64(arg, retval, "set number of frames", DEC);
+            validate64(&ret, mess, arg, retval, "set number of frames", DEC);
         }
         // enable scan
         else {
@@ -7899,7 +7660,8 @@ int set_scan(int file_des) {
                 retval = getNumFrames();
                 LOG(logDEBUG1,
                     ("retval num frames %lld\n", (long long int)retval));
-                validate64(arg, retval, "set number of frames", DEC);
+                validate64(&ret, mess, arg, retval, "set number of frames",
+                           DEC);
                 retval = numScanSteps;
             }
         }
@@ -7964,7 +7726,7 @@ int set_cds_gain(int file_des) {
             setCDSGain(arg);
             int retval = getCDSGain();
             LOG(logDEBUG1, ("cds gain enable retval: %u\n", retval));
-            validate(arg, retval, "set cds gain enable", DEC);
+            validate(&ret, mess, arg, retval, "set cds gain enable", DEC);
         }
     }
 #endif
@@ -8013,7 +7775,7 @@ int set_filter(int file_des) {
             setFilter(arg);
             int retval = getFilter();
             LOG(logDEBUG1, ("filter retval: %u\n", retval));
-            validate(arg, retval, "set filter", DEC);
+            validate(&ret, mess, arg, retval, "set filter", DEC);
         }
     }
 #endif
@@ -8116,7 +7878,7 @@ int set_adc_config(int file_des) {
             } else {
                 int retval = getADCConfiguration(chipIndex, adcIndex);
                 LOG(logDEBUG1, ("adc config retval: %u\n", retval));
-                validate(value, retval, "configure adc", HEX);
+                validate(&ret, mess, value, retval, "configure adc", HEX);
             }
         }
     }
@@ -8347,7 +8109,7 @@ int load_default_pattern(int file_des) {
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
-        ret = loadDefaultPattern(DEFAULT_PATTERN_FILE, mess);
+        ret = loadPatternFile(DEFAULT_PATTERN_FILE, mess);
         if (ret == FAIL) {
             LOG(logERROR, (mess));
         }

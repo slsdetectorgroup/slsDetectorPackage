@@ -1,4 +1,5 @@
 #include "loadPattern.h"
+#include "RegisterDefs.h"
 #include "common.h"
 #include "sls/ansi.h"
 #include "sls/sls_detector_defs.h"

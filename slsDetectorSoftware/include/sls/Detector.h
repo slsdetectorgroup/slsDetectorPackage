@@ -1056,6 +1056,14 @@ class Detector {
     /** [Eiger] Sets detector size to a quad. 0 (disabled) is default. (Specific
      * hardware required). */
     void setQuad(const bool enable);
+
+    /** [Eiger] */
+    Result<bool> getDataStream(const bool left, Positions pos = {}) const;
+
+    /** [Eiger] enable or disable data streaming from left or right of detector
+     */
+    void setDataStream(const bool enable, const bool left, Positions pos = {});
+
     ///@{
 
     /** @name Jungfrau Specific */

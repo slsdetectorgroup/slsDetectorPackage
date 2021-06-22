@@ -571,7 +571,6 @@ class CmdProxy {
         return ToString(value, unit);
     }
 
-
     using FunctionMap = std::map<std::string, std::string (CmdProxy::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
 
@@ -915,6 +914,7 @@ class CmdProxy {
         {"pulsenmove", &CmdProxy::PulsePixelAndMove},
         {"pulsechip", &CmdProxy::PulseChip},
         {"quad", &CmdProxy::Quad},
+        {"datastream", &CmdProxy::DataStream},
 
         /* Jungfrau Specific */
         {"temp_threshold", &CmdProxy::temp_threshold},
@@ -1109,6 +1109,7 @@ class CmdProxy {
     std::string PulsePixelAndMove(int action);
     std::string PulseChip(int action);
     std::string Quad(int action);
+    std::string DataStream(int action);
     /* Jungfrau Specific */
     std::string TemperatureEvent(int action);
     /* Gotthard Specific */
@@ -1445,8 +1446,8 @@ class CmdProxy {
         "and automatically returns to idle at the end of readout.");
 
     EXECUTE_SET_COMMAND(stop, stopDetector,
-                             "\n\tAbort detector acquisition. Status changes "
-                             "to IDLE or STOPPED. Goes to stop server.");
+                        "\n\tAbort detector acquisition. Status changes "
+                        "to IDLE or STOPPED. Goes to stop server.");
 
     GET_COMMAND(rx_framescaught, getFramesCaught,
                 "\n\tNumber of frames caught by receiver.");

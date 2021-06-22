@@ -1555,6 +1555,49 @@ std::string CmdProxy::Quad(int action) {
     return os.str();
 }
 
+std::string CmdProxy::DataStream(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    bool left = true;
+    if (action == defs::HELP_ACTION) {
+        os << "[0, 1] [left|right]\n\t[Eiger] Enables or disables data "
+              "streaming from left or/and right side of detector. 1 (enabled) "
+              "by default."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        // TODO, enum for "left and right?"
+        if (args[0] == "left") {
+            left = true;
+        } else if (args[0] == "right") {
+            left = false;
+        } else {
+            throw sls::RuntimeError("Unknown data argument " + args[0]);
+        }
+        auto t = det->getDataStream(left, std::vector<int>{det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }
+        if (args[1] == "left") {
+            left = true;
+        } else if (args[1] == "right") {
+            left = false;
+        } else {
+            throw sls::RuntimeError("Unknown data argument " + args[1]);
+        }
+        det->setDataStream(left, StringTo<bool>(args[0]),
+                           std::vector<int>{det_id});
+        os << args.front() << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Jungfrau Specific */
 
 std::string CmdProxy::TemperatureEvent(int action) {

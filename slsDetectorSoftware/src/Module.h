@@ -343,6 +343,8 @@ class Module : public virtual slsDetectorDefs {
     void pulseChip(int n_pulses = 0);
     bool getQuad() const;
     void setQuad(const bool enable);
+    bool getDataStream(const bool left) const;
+    void setDataStream(const bool enable, const bool left);
 
     /**************************************************
      *                                                *

@@ -91,6 +91,8 @@ int eiger_virtual_test_mode = 0;
 int eiger_virtual_quad_mode = 0;
 int eiger_virtual_read_nlines = 256;
 int eiger_virtual_interrupt_subframe = 0;
+int eiger_virtual_left_datastream = 1;
+int eiger_virtual_right_datastream = 1;
 #endif
 
 int isInitCheckDone() { return initCheckDone; }
@@ -2042,6 +2044,44 @@ int getActivate(int *retval) {
     *retval = eiger_virtual_activate;
 #else
     if (!Beb_GetActivate(retval)) {
+        return FAIL;
+    }
+#endif
+    return OK;
+}
+
+int setDataStream(int left, int enable) {
+    if (enable < 0) {
+        LOG(logERROR, ("Invalid setDataStream enable argument: %d\n", enable));
+        return FAIL;
+    }
+    if (left < 0) {
+        LOG(logERROR, ("Invalid setDataStream left argument: %d\n", left));
+        return FAIL;
+    }
+#ifdef VIRTUAL
+    if (left) {
+        eiger_virtual_left_datastream = enable;
+    } else {
+        eiger_virtual_right_datastream = enable;
+    }
+#else
+    if (!Beb_SetDataStream(left, enable)) {
+        return FAIL;
+    }
+#endif
+    return OK;
+}
+
+int getDataStream(int left, int *retval) {
+#ifdef VIRTUAL
+    if (left) {
+        *retval = eiger_virtual_left_datastream;
+    } else {
+        *retval = eiger_virtual_right_datastream;
+    }
+#endif
+    if (!Beb_GetDataStream(left, retval)) {
         return FAIL;
     }
 #endif

@@ -224,6 +224,8 @@ enum detFuncs {
     F_GET_CSR,
     F_SET_GAIN_CAPS,
     F_GET_GAIN_CAPS,
+    F_GET_DATASTREAM,
+    F_SET_DATASTREAM,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -551,6 +553,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_LOAD_DEFAULT_PATTERN:            return "F_LOAD_DEFAULT_PATTERN";
     case F_GET_ALL_THRESHOLD_ENERGY:        return "F_GET_ALL_THRESHOLD_ENERGY";
     case F_GET_MASTER:                      return "F_GET_MASTER";
+    case F_GET_DATASTREAM:                  return "F_GET_DATASTREAM";
+    case F_SET_DATASTREAM:                  return "F_SET_DATASTREAM";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

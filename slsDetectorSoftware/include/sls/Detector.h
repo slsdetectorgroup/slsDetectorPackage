@@ -1062,7 +1062,7 @@ class Detector {
 
     /** [Eiger] enable or disable data streaming from left or right of detector
      */
-    void setDataStream(const bool enable, const bool left, Positions pos = {});
+    void setDataStream(const bool left, const bool enable, Positions pos = {});
 
     ///@{
 

@@ -1560,7 +1560,7 @@ std::string CmdProxy::DataStream(int action) {
     os << cmd << ' ';
     bool left = true;
     if (action == defs::HELP_ACTION) {
-        os << "[0, 1] [left|right]\n\t[Eiger] Enables or disables data "
+        os << "[left|right] [0, 1]\n\t[Eiger] Enables or disables data "
               "streaming from left or/and right side of detector. 1 (enabled) "
               "by default."
            << '\n';
@@ -1582,16 +1582,16 @@ std::string CmdProxy::DataStream(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        if (args[1] == "left") {
+        if (args[0] == "left") {
             left = true;
-        } else if (args[1] == "right") {
+        } else if (args[0] == "right") {
             left = false;
         } else {
-            throw sls::RuntimeError("Unknown data argument " + args[1]);
+            throw sls::RuntimeError("Unknown data argument " + args[0]);
         }
-        det->setDataStream(left, StringTo<bool>(args[0]),
+        det->setDataStream(left, StringTo<bool>(args[1]),
                            std::vector<int>{det_id});
-        os << args.front() << '\n';
+        os << args << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }

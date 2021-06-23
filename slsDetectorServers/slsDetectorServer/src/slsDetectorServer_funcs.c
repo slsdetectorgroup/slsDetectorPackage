@@ -8237,9 +8237,14 @@ int get_datastream(int file_des) {
             leftFpga);
         LOG(logERROR, (mess));
     } else {
-        retval = getDataStream(leftFpga, &retval);
+        ret = getDataStream(leftFpga, &retval);
         LOG(logDEBUG1, ("datastream (%s) retval: %u\n",
                         (leftFpga ? "left" : "right"), retval));
+        if (ret == FAIL) {
+            sprintf(mess, "Could not get %s data stream enable.\n",
+                    (leftFpga ? "left" : "right"));
+            LOG(logERROR, (mess));
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -8283,8 +8288,14 @@ int set_datastream(int file_des) {
                 sprintf(mess, "Could not %s\n", msg);
                 LOG(logERROR, (mess));
             } else {
-                int retval = getDataStream(leftFpga, &retval);
+                int retval = -1;
+                ret = getDataStream(leftFpga, &retval);
                 LOG(logDEBUG1, ("%s retval: %u\n", msg, retval));
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not get %s data stream enable.\n",
+                            (leftFpga ? "left" : "right"));
+                    LOG(logERROR, (mess));
+                }
                 validate(&ret, mess, enable, retval, msg, DEC);
             }
         }

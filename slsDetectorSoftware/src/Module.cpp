@@ -1511,9 +1511,9 @@ bool Module::getDataStream(const bool left) const {
     return sendToDetector<int>(F_GET_DATASTREAM, static_cast<int>(left));
 }
 
-void Module::setDataStream(const bool enable, const bool left) {
-    int args[]{static_cast<int>(enable), static_cast<int>(left)};
-    sendToDetector(F_GET_DATASTREAM, args, nullptr);
+void Module::setDataStream(const bool left, const bool enable) {
+    int args[]{static_cast<int>(left), static_cast<int>(enable)};
+    sendToDetector(F_SET_DATASTREAM, args, nullptr);
 }
 
 // Jungfrau Specific

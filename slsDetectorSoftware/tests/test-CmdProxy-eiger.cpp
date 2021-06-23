@@ -661,23 +661,23 @@ TEST_CASE("datastream", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("datastream", {"1"}, -1, PUT));
         {
             std::ostringstream oss;
-            proxy.Call("datastream", {"0", "left"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "datastream 0 left\n");
+            proxy.Call("datastream", {"left", "0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "datastream left 0\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("datastream", {"0", "right"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "datastream 0 right\n");
+            proxy.Call("datastream", {"right", "0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "datastream right 0\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("datastream", {"1", "left"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "datastream 1 left\n");
+            proxy.Call("datastream", {"left", "1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "datastream left 1\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("datastream", {"1", "right"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "datastream 1 right\n");
+            proxy.Call("datastream", {"right", "1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "datastream right 1\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setDataStream(prev_val_left[i], {i});
@@ -686,6 +686,6 @@ TEST_CASE("datastream", "[.cmd]") {
     } else {
         REQUIRE_THROWS(proxy.Call("datastream", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("datastream", {"1"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("datastream", {"1", "left"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("datastream", {"left", "1"}, -1, PUT));
     }
 }

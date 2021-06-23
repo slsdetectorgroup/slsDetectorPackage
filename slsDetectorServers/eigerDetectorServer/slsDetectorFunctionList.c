@@ -2234,6 +2234,15 @@ void *start_timer(void *arg) {
     if (!isControlServer) {
         return NULL;
     }
+    if (!eiger_virtual_activate) {
+        return NULL;
+    }
+    if (!eiger_virtual_left_datastream) {
+        LOG(logWARNING, ("Not sending Left datastream\n"));
+    }
+    if (!eiger_virtual_right_datastream) {
+        LOG(logWARNING, ("Not sending Right datastream\n"));
+    }
 
     int64_t periodNs = eiger_virtual_period;
     int numFrames = nimages_per_request;
@@ -2381,10 +2390,14 @@ void *start_timer(void *arg) {
                         }
                     }
                 }
-                usleep(eiger_virtual_transmission_delay_left);
-                sendUDPPacket(0, packetData, packetsize);
-                usleep(eiger_virtual_transmission_delay_right);
-                sendUDPPacket(1, packetData2, packetsize);
+                if (eiger_virtual_left_datastream) {
+                    usleep(eiger_virtual_transmission_delay_left);
+                    sendUDPPacket(0, packetData, packetsize);
+                }
+                if (eiger_virtual_right_datastream) {
+                    usleep(eiger_virtual_transmission_delay_right);
+                    sendUDPPacket(1, packetData2, packetsize);
+                }
             }
             LOG(logINFO, ("Sent frame: %d[%lld]\n", iframes,
                           (long long unsigned int)(frameNr + iframes)));

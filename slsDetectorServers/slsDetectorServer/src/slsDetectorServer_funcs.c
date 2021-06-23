@@ -8219,7 +8219,7 @@ int get_datastream(int file_des) {
     int arg = -1;
     int retval = -1;
 
-    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting data stream enable [left:%d]\n", arg));
 
@@ -8237,9 +8237,9 @@ int get_datastream(int file_des) {
             leftFpga);
         LOG(logERROR, (mess));
     } else {
-        retval = getDataStream(leftFpga, adcIndex);
+        retval = getDataStream(leftFpga, &retval);
         LOG(logDEBUG1, ("datastream (%s) retval: %u\n",
-                        (left ? "left" : "right"), retval));
+                        (leftFpga ? "left" : "right"), retval));
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -8283,9 +8283,8 @@ int set_datastream(int file_des) {
                 sprintf(mess, "Could not %s\n", msg);
                 LOG(logERROR, (mess));
             } else {
-                int retval = getDataStream(leftFpga);
-                LOG(logDEBUG1, ("%s retval: %u\n",
-                                msg, retval));
+                int retval = getDataStream(leftFpga, &retval);
+                LOG(logDEBUG1, ("%s retval: %u\n", msg, retval));
                 validate(&ret, mess, enable, retval, msg, DEC);
             }
         }

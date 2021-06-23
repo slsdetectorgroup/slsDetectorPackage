@@ -2080,7 +2080,7 @@ int getDataStream(int left, int *retval) {
     } else {
         *retval = eiger_virtual_right_datastream;
     }
-#endif
+#else
     if (!Beb_GetDataStream(left, retval)) {
         return FAIL;
     }

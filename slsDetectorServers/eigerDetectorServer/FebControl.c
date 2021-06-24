@@ -709,6 +709,30 @@ int Feb_Control_AcquisitionInProgress() {
     return STATUS_IDLE;
 }
 
+int Feb_Control_ProcessingInProgress() {
+    unsigned int regr = 0, regl = 0;
+    // deactivated should return end of processing
+    if (!Feb_Control_activated)
+        return IDLE;
+
+    if (!Feb_Interface_ReadRegister(Feb_Control_rightAddress,
+                                    FEB_REG_STATUS, &regr)) {
+        LOG(logERROR, ("Could not read right FEB_REG_STATUS to get feb processing status\n"));
+        return STATUS_ERROR;
+    }
+    if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress,
+                                    FEB_REG_STATUS, &regl)) {
+        LOG(logERROR, ("Could not read left FEB_REG_STATUS to get feb processing status\n"));
+        return STATUS_ERROR;
+    }
+    // processing done
+    if ((regr | regl) & FEB_REG_STATUS_ACQ_DONE_MSK) {
+        return STATUS_IDLE;
+    }
+    // processing running
+    return STATUS_RUNNING;    
+}
+
 int Feb_Control_AcquisitionStartedBit() {
     unsigned int status_reg_r = 0, status_reg_l = 0;
     // deactivated should return acquisition started/ready
@@ -1002,8 +1026,7 @@ int Feb_Control_StopAcquisition() {
         unsigned int orig_value = 0;
         if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
                                         DAQ_REG_CTRL, &orig_value)) {
-            LOG(logERROR, ("Could not read DAQ_REG_CHIP_CMDS to send software "
-                           "trigger\n"));
+            LOG(logERROR, ("Could not read DAQ_REG_CTRL to stop acquisition (send complete frames)\n"));
             return 0;
         }
         if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
@@ -1012,7 +1035,27 @@ int Feb_Control_StopAcquisition() {
             LOG(logERROR, ("Could not send last frames.\n"));
             return 0;
         }
-	usleep(100 *1000);
+        LOG(logINFOBLUE, ("send last frame value:0x%x\n", orig_value | DAQ_CTRL_STOP));
+
+        // wait for feb processing to be done
+        int is_processing = Feb_Control_ProcessingInProgress();
+        int check_error = 0;
+        while (is_processing != STATUS_IDLE) {
+            usleep(500);
+            is_processing = Feb_Control_ProcessingInProgress();
+
+            // check error only 5 times (ensuring it is not something that happens
+            // sometimes)
+            if (is_processing == STATUS_ERROR) {
+                if (check_error == 5)
+                    break;
+                check_error++;
+            } // reset check_error for next time
+            else
+                check_error = 0;
+
+        }
+    
         // stop acquisition
         return Feb_Control_Reset();
     }
@@ -1904,15 +1947,15 @@ int Feb_Control_GetLeftFPGATemp() {
     if (!Feb_Control_activated) {
         return 0;
     }
-    unsigned int temperature = 0;
+    unsigned int value = 0;
     if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress, FEB_REG_STATUS,
-                                    &temperature)) {
+                                    &value)) {
         LOG(logERROR, ("Trouble reading FEB_REG_STATUS reg to get left feb "
                        "temperature\n"));
         return 0;
     }
 
-    temperature = temperature >> 16;
+    unsigned int temperature = ((value & FEB_REG_STATUS_TEMP_MSK) >> FEB_REG_STATUS_TEMP_OFST);
     temperature =
         ((((float)(temperature) / 65536.0f) / 0.00198421639f) - 273.15f) *
         1000; // Static conversation, copied from xps sysmon standalone driver

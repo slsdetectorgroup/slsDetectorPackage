@@ -2511,6 +2511,19 @@ void readFrame(int *ret, char *mess) {
     // wait for detector to send
     int isTransmitting = 1;
     while (isTransmitting) {
+        // wait for feb processing to be done
+        int i = Feb_Control_ProcessingInProgress();
+        if (i == STATUS_ERROR) {
+            strcpy(mess, "Could not read feb processing done register\n");
+            *ret = (int)FAIL;            
+            return;
+        }       
+        if (i == RUNNING) {
+            LOG(logINFOBLUE, ("Status: TRANSMITTING (feb processing)\n"));
+            isTransmitting = 1;            
+        }
+
+        // wait for beb to send out all packets
         if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 1) == FAIL) {
             strcpy(mess, "Could not read delay counters\n");
             *ret = (int)FAIL;

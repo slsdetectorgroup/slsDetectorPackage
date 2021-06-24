@@ -65,19 +65,23 @@ void BinaryFile::CreateFile() {
     }
 }
 
-void BinaryFile::CloseCurrentFile() {
-    if (filefd)
-        fclose(filefd);
-    filefd = nullptr;
+void BinaryFile::CloseAllFiles() {
+    CloseCurrentDataFile();
+    CloseMasterFile();
 }
 
-void BinaryFile::CloseAllFiles() {
-    CloseCurrentFile();
+void BinaryFile::CloseMasterFile() {
     if (master) {
         if (masterfd)
             fclose(masterfd);
         masterfd = nullptr;
     }
+}
+
+void BinaryFile::CloseCurrentDataFile() {
+    if (filefd)
+        fclose(filefd);
+    filefd = nullptr;
 }
 
 int BinaryFile::WriteData(char *buf, int bsize) {
@@ -133,14 +137,8 @@ void BinaryFile::WriteToFile(char *buffer, int buffersize,
     }
 }
 
-void BinaryFile::CreateMasterFile(bool masterFileWriteEnable,
-                                  MasterAttributes *attr) {
-    // beginning of every acquisition
-    numFramesInFile = 0;
-    numActualPacketsInFile = 0;
-
-    if (masterFileWriteEnable && master) {
-
+void BinaryFile::CreateMasterFile(MasterAttributes *attr) {
+    if (master) {
         std::ostringstream os;
         os << *filePath << "/" << *fileNamePrefix << "_master"
            << "_" << *fileIndex << ".raw";
@@ -172,4 +170,9 @@ void BinaryFile::CreateMasterFile(bool masterFileWriteEnable,
             fclose(masterfd);
         masterfd = nullptr;
     }
+}
+
+void BinaryFile::StartofAcquisition() {
+    numFramesInFile = 0;
+    numActualPacketsInFile = 0;
 }

@@ -86,7 +86,26 @@ void HDF5File::CreateFile() {
     CreateDataFile();
 }
 
-void HDF5File::CloseCurrentFile() {
+void HDF5File::CloseAllFiles() {
+    CloseCurrentDataFile();
+    CloseMasterFile();
+}
+
+void HDF5File::CloseMasterFile() {
+    if (master) {
+        CloseFile(masterfd, true);
+        // close virtual file
+        // c code due to only c implementation of H5Pset_virtual available
+        if (virtualfd != 0) {
+            if (H5Fclose(virtualfd) < 0) {
+                LOG(logERROR) << "Could not close virtual HDF5 handles";
+            }
+            virtualfd = 0;
+        }
+    }
+}
+
+void HDF5File::CloseCurrentDataFile() {
     CloseFile(filefd, false);
     for (unsigned int i = 0; i < dataset_para.size(); ++i)
         delete dataset_para[i];
@@ -103,30 +122,6 @@ void HDF5File::CloseCurrentFile() {
         delete dataspace;
         dataspace = nullptr;
     }
-}
-
-void HDF5File::CloseAllFiles() {
-    numFilesinAcquisition = 0;
-    {
-        CloseFile(filefd, false);
-        if (master) {
-            CloseFile(masterfd, true);
-            // close virtual file
-            // c code due to only c implementation of H5Pset_virtual available
-            if (virtualfd != 0) {
-                if (H5Fclose(virtualfd) < 0) {
-                    LOG(logERROR) << "Could not close virtual HDF5 handles";
-                }
-                virtualfd = 0;
-            }
-        }
-    }
-    for (unsigned int i = 0; i < dataset_para.size(); ++i)
-        delete dataset_para[i];
-    dataset_para.clear();
-    delete dataspace_para;
-    delete dataset;
-    delete dataspace;
 }
 
 void HDF5File::WriteToFile(char *buffer, int bufferSize,
@@ -152,18 +147,18 @@ void HDF5File::WriteToFile(char *buffer, int bufferSize,
     WriteParameterDatasets(currentFrameNumber, (sls_receiver_header *)(buffer));
 }
 
-void HDF5File::CreateMasterFile(bool masterFileWriteEnable,
-                                MasterAttributes *attr) {
-
-    // beginning of every acquisition
-    numFramesInFile = 0;
-    numActualPacketsInFile = 0;
-    extNumImages = *numImages;
-
-    if (masterFileWriteEnable && master) {
+void HDF5File::CreateMasterFile(MasterAttributes *attr) {
+    if (master) {
         virtualfd = 0;
         CreateMasterDataFile(attr);
     }
+}
+
+void HDF5File::StartofAcquisition() {
+    numFilesinAcquisition = 0;
+    numFramesInFile = 0;
+    numActualPacketsInFile = 0;
+    extNumImages = *numImages;
 }
 
 void HDF5File::EndofAcquisition(bool anyPacketsCaught,

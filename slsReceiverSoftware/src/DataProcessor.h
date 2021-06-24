@@ -31,27 +31,23 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * @param ind self index
      * @param dtype detector type
      * @param f address of Fifo pointer
-     * @param ftype pointer to file format type
-     * @param fwenable file writer enable
-     * @param mfwenable pointer to master file write enable
+     * @param act activated
+     * @param depaden deactivated padding enable
      * @param dsEnable pointer to data stream enable
      * @param dr pointer to dynamic range
      * @param freq pointer to streaming frequency
      * @param timer pointer to timer if streaming frequency is random
      * @param sfnum pointer to streaming starting fnum
      * @param fp pointer to frame padding enable
-     * @param act pointer to activated
-     * @param depaden pointer to deactivated padding enable
      * @param sm pointer to silent mode
      * @param qe pointer to quad Enable
      * @param cdl pointer to vector or ctb digital bits enable
      * @param cdo pointer to digital bits offset
      * @param cad pointer to ctb analog databytes
      */
-    DataProcessor(int ind, detectorType dtype, Fifo *f, fileFormat *ftype,
-                  bool fwenable, bool *mfwenable, bool *dsEnable,
-                  uint32_t *freq, uint32_t *timer, uint32_t *sfnum, bool *fp,
-                  bool *act, bool *depaden, bool *sm, std::vector<int> *cdl,
+    DataProcessor(int ind, detectorType dtype, Fifo *f, bool act, bool depaden,
+                  bool *dsEnable, uint32_t *freq, uint32_t *timer,
+                  uint32_t *sfnum, bool *fp, bool *sm, std::vector<int> *cdl,
                   int *cdo, int *cad);
 
     /**
@@ -105,14 +101,11 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetGeneralData(GeneralData *g);
 
     /**
-     * Set File Format
-     * @param fs file format
-     */
-    void SetFileFormat(const fileFormat fs);
-
-    /**
      * Set up file writer object and call backs
+     * @param ftype file format
      * @param fwe file write enable
+     * @param act activated
+     * @param depad deactivated padding enable
      * @param nd pointer to number of detectors in each dimension
      * @param maxf pointer to max frames per file
      * @param fname pointer to file name prefix
@@ -126,16 +119,22 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * @param portno pointer to udp port number
      * @param g address of GeneralData (Detector Data) pointer
      */
-    void SetupFileWriter(bool fwe, int *nd, uint32_t *maxf, std::string *fname,
+    void SetupFileWriter(fileFormat ftype, bool fwe, int act, int depaden,
+                         int *nd, uint32_t *maxf, std::string *fname,
                          std::string *fpath, uint64_t *findex, bool *owenable,
                          int *dindex, int *nunits, uint64_t *nf, uint32_t *dr,
                          uint32_t *portno, GeneralData *g = nullptr);
 
     /**
-     * Create New File
+     * Create Master File (also virtual if hdf5)
      * @param attr master file attributes
      */
-    void CreateNewFile(MasterAttributes *attr);
+    void CreateMasterFile(MasterAttributes *attr);
+
+    /**
+     * Create First Data File
+     */
+    void CreatFirsteDataFile();
 
     /**
      * Closes files
@@ -256,17 +255,20 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     /** File writer implemented as binary or hdf5 File */
     File *file{nullptr};
 
+    /** master file */
+    File *masterFile{nullptr};
+
+    /** virtual file (for hdf5) */
+    File *virtualFile{nullptr};
+
     /** Data Stream Enable */
     bool *dataStreamEnable;
 
-    /** File Format Type */
-    fileFormat *fileFormatType;
+    /** Activated/Deactivated */
+    bool activated;
 
-    /** File Write Enable */
-    bool fileWriteEnable;
-
-    /** Master File Write Enable */
-    bool *masterFileWriteEnable;
+    /** Deactivated padding enable */
+    bool deactivatedPaddingEnable;
 
     /** Pointer to Streaming frequency, if 0, sending random images with a timer
      */
@@ -283,12 +285,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     /** timer beginning stamp for random streaming */
     struct timespec timerBegin;
-
-    /** Activated/Deactivated */
-    bool *activated;
-
-    /** Deactivated padding enable */
-    bool *deactivatedPaddingEnable;
 
     /** Silent Mode */
     bool *silentMode;

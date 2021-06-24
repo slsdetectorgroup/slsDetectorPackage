@@ -41,10 +41,11 @@ class BinaryFile : private virtual slsDetectorDefs, public File {
 
     void PrintMembers(TLogLevel level = logDEBUG1) override;
     void CreateFile() override;
-    void CreateMasterFile(bool masterFileWriteEnable,
-                          MasterAttributes *attr) override;
-    void CloseCurrentFile() override;
+    void CreateMasterFile(MasterAttributes *attr) override;
+    void StartofAcquisition() override;
     void CloseAllFiles() override;
+    void CloseCurrentDataFile() override;
+    void CloseMasterFile() override;
     void WriteToFile(char *buffer, int buffersize, uint64_t currentFrameNumber,
                      uint32_t numPacketsCaught) override;
 

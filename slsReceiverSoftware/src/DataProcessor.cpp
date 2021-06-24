@@ -22,25 +22,26 @@
 
 const std::string DataProcessor::TypeName = "DataProcessor";
 
-DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo *f,
-                             fileFormat *ftype, bool fwenable, bool *mfwenable,
-                             bool *dsEnable, uint32_t *freq, uint32_t *timer,
-                             uint32_t *sfnum, bool *fp, bool *act,
-                             bool *depaden, bool *sm, std::vector<int> *cdl,
-                             int *cdo, int *cad)
+DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo *f, bool act,
+                             bool depaden, bool *dsEnable, uint32_t *freq,
+                             uint32_t *timer, uint32_t *sfnum, bool *fp,
+                             bool *sm, std::vector<int> *cdl, int *cdo,
+                             int *cad)
     : ThreadObject(ind, TypeName), fifo(f), myDetectorType(dtype),
-      dataStreamEnable(dsEnable), fileFormatType(ftype),
-      fileWriteEnable(fwenable), masterFileWriteEnable(mfwenable),
-      streamingFrequency(freq), streamingTimerInMs(timer),
-      streamingStartFnum(sfnum), activated(act),
-      deactivatedPaddingEnable(depaden), silentMode(sm), framePadding(fp),
-      ctbDbitList(cdl), ctbDbitOffset(cdo), ctbAnalogDataBytes(cad),
-      firstStreamerFrame(false) {
+      dataStreamEnable(dsEnable), activated(act),
+      deactivatedPaddingEnable(depaden), streamingFrequency(freq),
+      streamingTimerInMs(timer), streamingStartFnum(sfnum), silentMode(sm),
+      framePadding(fp), ctbDbitList(cdl), ctbDbitOffset(cdo),
+      ctbAnalogDataBytes(cad), firstStreamerFrame(false) {
     LOG(logDEBUG) << "DataProcessor " << ind << " created";
     memset((void *)&timerBegin, 0, sizeof(timespec));
 }
 
-DataProcessor::~DataProcessor() { delete file; }
+DataProcessor::~DataProcessor() {
+    delete file;
+    delete masterFile;
+    delete virtualFile;
+}
 
 /** getters */
 
@@ -83,74 +84,109 @@ void DataProcessor::SetGeneralData(GeneralData *g) {
                                     generalData->nPixelsY);
         }
     }
-}
-
-void DataProcessor::SetFileFormat(const fileFormat f) {
-    if ((file != nullptr) && file->GetFileType() != f) {
-        // remember the pointer values before they are destroyed
-        int nd[MAX_DIMENSIONS];
-        nd[0] = 0;
-        nd[1] = 0;
-        uint32_t *maxf = nullptr;
-        std::string *fname = nullptr;
-        std::string *fpath = nullptr;
-        uint64_t *findex = nullptr;
-        bool *owenable = nullptr;
-        int *dindex = nullptr;
-        int *nunits = nullptr;
-        uint64_t *nf = nullptr;
-        uint32_t *dr = nullptr;
-        uint32_t *port = nullptr;
-        file->GetMemberPointerValues(nd, maxf, fname, fpath, findex, owenable,
-                                     dindex, nunits, nf, dr, port);
-        // create file writer with same pointers
-        SetupFileWriter(fileWriteEnable, nd, maxf, fname, fpath, findex,
-                        owenable, dindex, nunits, nf, dr, port);
+    if (masterFile != nullptr) {
+        if (masterFile->GetFileType() == HDF5) {
+            masterFile->SetNumberofPixels(generalData->nPixelsX,
+                                          generalData->nPixelsY);
+        }
+    }
+    if (virtualFile != nullptr) {
+        if (virtualFile->GetFileType() == HDF5) {
+            virtualFile->SetNumberofPixels(generalData->nPixelsX,
+                                           generalData->nPixelsY);
+        }
     }
 }
 
-void DataProcessor::SetupFileWriter(bool fwe, int *nd, uint32_t *maxf,
+void DataProcessor::SetupFileWriter(fileFormat ftype, bool fwe, int act,
+                                    int depaden, int *nd, uint32_t *maxf,
                                     std::string *fname, std::string *fpath,
                                     uint64_t *findex, bool *owenable,
                                     int *dindex, int *nunits, uint64_t *nf,
                                     uint32_t *dr, uint32_t *portno,
                                     GeneralData *g) {
-    fileWriteEnable = fwe;
+    activated = act;
+    deactivatedPaddingEnable = depaden;
     if (g != nullptr)
         generalData = g;
 
+    // close existing file objects
     if (file != nullptr) {
         delete file;
         file = nullptr;
     }
+    if (masterFile != nullptr) {
+        delete masterFile;
+        masterFile = nullptr;
+    }
+    if (virtualFile != nullptr) {
+        delete virtualFile;
+        virtualFile = nullptr;
+    }
+    // skip data file writing for deactivated non padded parts
+    bool skipDataFileWriting = false;
+    if (myDetectorType == EIGER && !activated && !deactivatedPaddingEnable) {
+        skipDataFileWriting = true;
+    }
 
-    if (fileWriteEnable) {
-        switch (*fileFormatType) {
+    // create file objects
+    if (fwe) {
+        switch (fileFormatType) {
 #ifdef HDF5C
         case HDF5:
-            file = new HDF5File(index, maxf, nd, fname, fpath, findex, owenable,
-                                dindex, nunits, nf, dr, portno,
-                                generalData->nPixelsX, generalData->nPixelsY,
-                                silentMode);
+            // data file
+            if (!skipDataFileWriting) {
+                file = new HDF5File(index, maxf, nd, fname, fpath, findex,
+                                    owenable, dindex, nunits, nf, dr, portno,
+                                    generalData->nPixelsX,
+                                    generalData->nPixelsY, silentMode);
+            }
+            // master file
+            if ((index == 0) && (*dindex == 0)) {
+                masterFile = new HDF5File(index, maxf, nd, fname, fpath, findex,
+                                          owenable, dindex, nunits, nf, dr,
+                                          portno, generalData->nPixelsX,
+                                          generalData->nPixelsY, silentMode);
+                virtualFile = new HDF5File(index, maxf, nd, fname, fpath,
+                                           findex, owenable, dindex, nunits, nf,
+                                           dr, portno, generalData->nPixelsX,
+                                           generalData->nPixelsY, silentMode);
+            }
             break;
 #endif
         default:
-            file =
-                new BinaryFile(index, maxf, nd, fname, fpath, findex, owenable,
-                               dindex, nunits, nf, dr, portno, silentMode);
+            // data file
+            if (!skipDataFileWriting) {
+                file = new BinaryFile(index, maxf, nd, fname, fpath, findex,
+                                      owenable, dindex, nunits, nf, dr, portno,
+                                      silentMode);
+            }
+            // master file
+            if ((index == 0) && (*dindex == 0)) {
+                masterFile = new BinaryFile(index, maxf, nd, fname, fpath,
+                                            findex, owenable, dindex, nunits,
+                                            nf, dr, portno, silentMode);
+            }
             break;
         }
     }
 }
 
-// only the first file
-void DataProcessor::CreateNewFile(MasterAttributes *attr) {
+void DataProcessor::CreateMasterFile(MasterAttributes *attr) {
+    if (masterFile == nullptr) {
+        throw sls::RuntimeError("master file object not contstructed");
+    }
+    masterFile->CloseMasterFile();
+    masterFile->CreateMasterFile(attr);
+}
+
+void DataProcessor::CreateFirstDataFile() {
     if (file == nullptr) {
         throw sls::RuntimeError("file object not contstructed");
     }
-    file->CloseAllFiles();
+    file->CloseCurrentDataFile();
     file->resetSubFileIndex();
-    file->CreateMasterFile(*masterFileWriteEnable, attr);
+    file->StartofAcquisition();
     file->CreateFile();
 }
 
@@ -249,11 +285,11 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
     }
 
     // frame padding
-    if (*activated && *framePadding && nump < generalData->packetsPerFrame)
+    if (activated && *framePadding && nump < generalData->packetsPerFrame)
         PadMissingPackets(buf);
 
     // deactivated and padding enabled
-    else if (!(*activated) && *deactivatedPaddingEnable)
+    else if (!activated && deactivatedPaddingEnable)
         PadMissingPackets(buf);
 
     // rearrange ctb digital bits (if ctbDbitlist is not empty)

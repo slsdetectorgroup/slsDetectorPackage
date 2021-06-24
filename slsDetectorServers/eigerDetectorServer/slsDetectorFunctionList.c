@@ -2234,8 +2234,12 @@ void *start_timer(void *arg) {
     if (!isControlServer) {
         return NULL;
     }
-    if (!eiger_virtual_activate) {
-        return NULL;
+
+    int skipData = 0;
+    if (!eiger_virtual_activate ||
+        (!eiger_virtual_left_datastream && !eiger_virtual_right_datastream)) {
+        skipData = 1;
+        LOG(logWARNING, ("Not sending Left and Right datastream\n"));
     }
     if (!eiger_virtual_left_datastream) {
         LOG(logWARNING, ("Not sending Left datastream\n"));
@@ -2305,7 +2309,7 @@ void *start_timer(void *arg) {
     }
 
     // Send data
-    {
+    if (!skipData) {
         uint64_t frameNr = 0;
         getNextFrameNumber(&frameNr);
         // loop over number of frames

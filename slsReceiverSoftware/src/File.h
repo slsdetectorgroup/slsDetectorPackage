@@ -70,8 +70,9 @@ class File : private virtual slsDetectorDefs {
                                 uint32_t *&portno);
 
     virtual void CreateFile() = 0;
-    virtual void CloseCurrentFile() = 0;
+    virtual void CloseCurrentDataFile() = 0;
     virtual void CloseAllFiles() = 0;
+    virtual void CloseMasterFile() = 0;
 
     /**
      * Write data to file
@@ -85,10 +86,9 @@ class File : private virtual slsDetectorDefs {
 
     /**
      * Create master file
-     * @param mfwenable master file write enable
      * @param attr master file attributes
      */
-    virtual void CreateMasterFile(bool mfwenable, MasterAttributes *attr) = 0;
+    virtual void CreateMasterFile(MasterAttributes *attr) = 0;
 
     // HDf5 specific
     /**
@@ -98,6 +98,14 @@ class File : private virtual slsDetectorDefs {
      */
     virtual void SetNumberofPixels(uint32_t nx, uint32_t ny) {
         LOG(logERROR) << "This is a generic function SetNumberofPixels that "
+                         "should be overloaded by a derived class";
+    }
+
+    /**
+     * Start of Acquisition
+     */
+    virtual void StartofAcquisition() {
+        LOG(logERROR) << "This is a generic function StartofAcquisition that "
                          "should be overloaded by a derived class";
     }
 

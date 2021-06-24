@@ -169,11 +169,11 @@ void Implementation::setDetectorType(const detectorType d) {
                 &actualUDPSocketBufferSize, &framesPerFile, &frameDiscardMode,
                 &activated, &deactivatedPaddingEnable, &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                i, myDetectorType, fifo_ptr, &fileFormatType, fileWriteEnable,
-                &masterFileWriteEnable, &dataStreamEnable, &streamingFrequency,
-                &streamingTimerInMs, &streamingStartFnum, &framePadding,
-                &activated, &deactivatedPaddingEnable, &silentMode,
-                &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
+                i, myDetectorType, fifo_ptr, activated,
+                deactivatedPaddingEnable, &dataStreamEnable,
+                &streamingFrequency, &streamingTimerInMs, &streamingStartFnum,
+                &framePadding, &silentMode, &ctbDbitList, &ctbDbitOffset,
+                &ctbAnalogDataBytes));
         } catch (...) {
             listener.clear();
             dataProcessor.clear();
@@ -236,7 +236,8 @@ void Implementation::setModulePositionId(const int id) {
 
     for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
         dataProcessor[i]->SetupFileWriter(
-            fileWriteEnable, (int *)numDet, &framesPerFile, &fileName,
+            fileFormatType, fileWriteEnable, masterFileWriteEnable, activated,
+            deactivatedPaddingEnable, (int *)numDet, &framesPerFile, &fileName,
             &filePath, &fileIndex, &overwriteEnable, &modulePos, &numThreads,
             &numberOfTotalFrames, &dynamicRange, &udpPortNum[i], generalData);
     }
@@ -332,19 +333,29 @@ slsDetectorDefs::fileFormat Implementation::getFileFormat() const {
 }
 
 void Implementation::setFileFormat(const fileFormat f) {
-    switch (f) {
+    if (f != fileFormatType) {
+        switch (f) {
 #ifdef HDF5C
-    case HDF5:
-        fileFormatType = HDF5;
-        break;
+        case HDF5:
+            fileFormatType = HDF5;
+            break;
 #endif
-    default:
-        fileFormatType = BINARY;
-        break;
+        default:
+            fileFormatType = BINARY;
+            break;
+        }
+        if (fileWriteEnable) {
+            for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
+                dataProcessor[i]->SetupFileWriter(
+                    fileFormatType, fileWriteEnable, masterFileWriteEnable,
+                    activated, deactivatedPaddingEnable, (int *)numDet,
+                    &framesPerFile, &fileName, &filePath, &fileIndex,
+                    &overwriteEnable, &modulePos, &numThreads,
+                    &numberOfTotalFrames, &dynamicRange, &udpPortNum[i],
+                    generalData);
+            }
+        }
     }
-
-    for (const auto &it : dataProcessor)
-        it->SetFileFormat(f);
 
     LOG(logINFO) << "File Format: " << sls::ToString(fileFormatType);
 }
@@ -380,10 +391,11 @@ void Implementation::setFileWriteEnable(const bool b) {
         fileWriteEnable = b;
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             dataProcessor[i]->SetupFileWriter(
-                fileWriteEnable, (int *)numDet, &framesPerFile, &fileName,
-                &filePath, &fileIndex, &overwriteEnable, &modulePos,
-                &numThreads, &numberOfTotalFrames, &dynamicRange,
-                &udpPortNum[i], generalData);
+                fileFormatType, fileWriteEnable, masterFileWriteEnable,
+                activated, deactivatedPaddingEnable, (int *)numDet,
+                &framesPerFile, &fileName, &filePath, &fileIndex,
+                &overwriteEnable, &modulePos, &numThreads, &numberOfTotalFrames,
+                &dynamicRange, &udpPortNum[i], generalData);
         }
     }
     LOG(logINFO) << "File Write Enable: "
@@ -395,7 +407,17 @@ bool Implementation::getMasterFileWriteEnable() const {
 }
 
 void Implementation::setMasterFileWriteEnable(const bool b) {
-    masterFileWriteEnable = b;
+    if (masterFileWriteEnable != b) {
+        masterFileWriteEnable = b;
+        for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
+            dataProcessor[i]->SetupFileWriter(
+                fileFormatType, fileWriteEnable, masterFileWriteEnable,
+                activated, deactivatedPaddingEnable, (int *)numDet,
+                &framesPerFile, &fileName, &filePath, &fileIndex,
+                &overwriteEnable, &modulePos, &numThreads, &numberOfTotalFrames,
+                &dynamicRange, &udpPortNum[i], generalData);
+        }
+    }
     LOG(logINFO) << "Master File Write Enable: "
                  << (masterFileWriteEnable ? "enabled" : "disabled");
 }
@@ -719,90 +741,104 @@ void Implementation::CreateUDPSockets() {
 }
 
 void Implementation::SetupWriter() {
-    std::unique_ptr<MasterAttributes> masterAttributes;
-    switch (myDetectorType) {
-    case GOTTHARD:
-        masterAttributes = sls::make_unique<GotthardMasterAttributes>();
-        break;
-    case JUNGFRAU:
-        masterAttributes = sls::make_unique<JungfrauMasterAttributes>();
-        break;
-    case EIGER:
-        masterAttributes = sls::make_unique<EigerMasterAttributes>();
-        break;
-    case MYTHEN3:
-        masterAttributes = sls::make_unique<Mythen3MasterAttributes>();
-        break;
-    case GOTTHARD2:
-        masterAttributes = sls::make_unique<Gotthard2MasterAttributes>();
-        break;
-    case MOENCH:
-        masterAttributes = sls::make_unique<MoenchMasterAttributes>();
-        break;
-    case CHIPTESTBOARD:
-        masterAttributes = sls::make_unique<CtbMasterAttributes>();
-        break;
-    default:
-        throw sls::RuntimeError(
-            "Unknown detector type to set up master file attributes");
+    // master file
+    if (masterFileWriteEnable) {
+        std::unique_ptr<MasterAttributes> masterAttributes;
+        switch (myDetectorType) {
+        case GOTTHARD:
+            masterAttributes = sls::make_unique<GotthardMasterAttributes>();
+            break;
+        case JUNGFRAU:
+            masterAttributes = sls::make_unique<JungfrauMasterAttributes>();
+            break;
+        case EIGER:
+            masterAttributes = sls::make_unique<EigerMasterAttributes>();
+            break;
+        case MYTHEN3:
+            masterAttributes = sls::make_unique<Mythen3MasterAttributes>();
+            break;
+        case GOTTHARD2:
+            masterAttributes = sls::make_unique<Gotthard2MasterAttributes>();
+            break;
+        case MOENCH:
+            masterAttributes = sls::make_unique<MoenchMasterAttributes>();
+            break;
+        case CHIPTESTBOARD:
+            masterAttributes = sls::make_unique<CtbMasterAttributes>();
+            break;
+        default:
+            throw sls::RuntimeError(
+                "Unknown detector type to set up master file attributes");
+        }
+        masterAttributes->detType = myDetectorType;
+        masterAttributes->timingMode = timingMode;
+        masterAttributes->imageSize = generalData->imageSize;
+        masterAttributes->nPixels =
+            xy(generalData->nPixelsX, generalData->nPixelsY);
+        masterAttributes->maxFramesPerFile = framesPerFile;
+        masterAttributes->frameDiscardMode = frameDiscardMode;
+        masterAttributes->framePadding = framePadding;
+        masterAttributes->scanParams = scanParams;
+        masterAttributes->totalFrames = numberOfTotalFrames;
+        masterAttributes->exptime = acquisitionTime;
+        masterAttributes->period = acquisitionPeriod;
+        masterAttributes->burstMode = burstMode;
+        masterAttributes->numUDPInterfaces = numUDPInterfaces;
+        masterAttributes->dynamicRange = dynamicRange;
+        masterAttributes->tenGiga = tengigaEnable;
+        masterAttributes->thresholdEnergyeV = thresholdEnergyeV;
+        masterAttributes->thresholdAllEnergyeV = thresholdAllEnergyeV;
+        masterAttributes->subExptime = subExpTime;
+        masterAttributes->subPeriod = subPeriod;
+        masterAttributes->quad = quadEnable;
+        masterAttributes->numLinesReadout = numLinesReadout;
+        masterAttributes->ratecorr = rateCorrections;
+        masterAttributes->adcmask =
+            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
+        masterAttributes->analog =
+            (readoutType == ANALOG_ONLY || readoutType == ANALOG_AND_DIGITAL)
+                ? 1
+                : 0;
+        masterAttributes->analogSamples = numberOfAnalogSamples;
+        masterAttributes->digital =
+            (readoutType == DIGITAL_ONLY || readoutType == ANALOG_AND_DIGITAL)
+                ? 1
+                : 0;
+        masterAttributes->digitalSamples = numberOfDigitalSamples;
+        masterAttributes->dbitoffset = ctbDbitOffset;
+        masterAttributes->dbitlist = 0;
+        for (auto &i : ctbDbitList) {
+            masterAttributes->dbitlist |= (1 << i);
+        }
+        masterAttributes->roi = roi;
+        masterAttributes->counterMask = counterMask;
+        masterAttributes->exptime1 = acquisitionTime1;
+        masterAttributes->exptime2 = acquisitionTime2;
+        masterAttributes->exptime3 = acquisitionTime3;
+        masterAttributes->gateDelay1 = gateDelay1;
+        masterAttributes->gateDelay2 = gateDelay2;
+        masterAttributes->gateDelay3 = gateDelay3;
+        masterAttributes->gates = numberOfGates;
+        masterAttributes->additionalJsonHeader = additionalJsonHeader;
+        try {
+            dataProcessor[0]->CreateMasterFile(masterAttributes.get());
+        } catch (const sls::RuntimeError &e) {
+            shutDownUDPSockets();
+            closeFiles();
+            throw sls::RuntimeError("Could not create master file.");
+        }
     }
-    masterAttributes->detType = myDetectorType;
-    masterAttributes->timingMode = timingMode;
-    masterAttributes->imageSize = generalData->imageSize;
-    masterAttributes->nPixels =
-        xy(generalData->nPixelsX, generalData->nPixelsY);
-    masterAttributes->maxFramesPerFile = framesPerFile;
-    masterAttributes->frameDiscardMode = frameDiscardMode;
-    masterAttributes->framePadding = framePadding;
-    masterAttributes->scanParams = scanParams;
-    masterAttributes->totalFrames = numberOfTotalFrames;
-    masterAttributes->exptime = acquisitionTime;
-    masterAttributes->period = acquisitionPeriod;
-    masterAttributes->burstMode = burstMode;
-    masterAttributes->numUDPInterfaces = numUDPInterfaces;
-    masterAttributes->dynamicRange = dynamicRange;
-    masterAttributes->tenGiga = tengigaEnable;
-    masterAttributes->thresholdEnergyeV = thresholdEnergyeV;
-    masterAttributes->thresholdAllEnergyeV = thresholdAllEnergyeV;
-    masterAttributes->subExptime = subExpTime;
-    masterAttributes->subPeriod = subPeriod;
-    masterAttributes->quad = quadEnable;
-    masterAttributes->numLinesReadout = numLinesReadout;
-    masterAttributes->ratecorr = rateCorrections;
-    masterAttributes->adcmask =
-        tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
-    masterAttributes->analog =
-        (readoutType == ANALOG_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1
-                                                                          : 0;
-    masterAttributes->analogSamples = numberOfAnalogSamples;
-    masterAttributes->digital =
-        (readoutType == DIGITAL_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1
-                                                                           : 0;
-    masterAttributes->digitalSamples = numberOfDigitalSamples;
-    masterAttributes->dbitoffset = ctbDbitOffset;
-    masterAttributes->dbitlist = 0;
-    for (auto &i : ctbDbitList) {
-        masterAttributes->dbitlist |= (1 << i);
-    }
-    masterAttributes->roi = roi;
-    masterAttributes->counterMask = counterMask;
-    masterAttributes->exptime1 = acquisitionTime1;
-    masterAttributes->exptime2 = acquisitionTime2;
-    masterAttributes->exptime3 = acquisitionTime3;
-    masterAttributes->gateDelay1 = gateDelay1;
-    masterAttributes->gateDelay2 = gateDelay2;
-    masterAttributes->gateDelay3 = gateDelay3;
-    masterAttributes->gates = numberOfGates;
-    masterAttributes->additionalJsonHeader = additionalJsonHeader;
 
+    // first data file
+    //->startofacquisition(which has all the start, and createfirstdatafile)
     try {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-            dataProcessor[i]->CreateNewFile(masterAttributes.get());
+            dataProcessor[i]->CreateFirstDataFile();
         }
     } catch (const sls::RuntimeError &e) {
         shutDownUDPSockets();
         closeFiles();
-        throw sls::RuntimeError("Could not create file.");
+        throw sls::RuntimeError("Could not create first data file.");
     }
 }
 
@@ -872,12 +908,11 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 listener[i]->SetGeneralData(generalData);
 
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                    i, myDetectorType, fifo_ptr, &fileFormatType,
-                    fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable,
+                    i, myDetectorType, fifo_ptr, activated,
+                    deactivatedPaddingEnable, &dataStreamEnable,
                     &streamingFrequency, &streamingTimerInMs,
-                    &streamingStartFnum, &framePadding, &activated,
-                    &deactivatedPaddingEnable, &silentMode, &ctbDbitList,
-                    &ctbDbitOffset, &ctbAnalogDataBytes));
+                    &streamingStartFnum, &framePadding, &silentMode,
+                    &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
             } catch (...) {
                 listener.clear();
@@ -1512,7 +1547,19 @@ void Implementation::setQuad(const bool b) {
 bool Implementation::getActivate() const { return activated; }
 
 bool Implementation::setActivate(bool enable) {
-    activated = enable;
+    if (activated != enable) {
+        activated = enable;
+        // disable file writing if deactivated and no padding
+        for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
+            dataProcessor[i]->SetupFileWriter(
+                fileFormatType, fileWriteEnable, masterFileWriteEnable,
+                activated, deactivatedPaddingEnable, (int *)numDet,
+                &framesPerFile, &fileName, &filePath, &fileIndex,
+                &overwriteEnable, &modulePos, &numThreads, &numberOfTotalFrames,
+                &dynamicRange, &udpPortNum[i], generalData);
+        }
+    }
+
     LOG(logINFO) << "Activation: " << (activated ? "enabled" : "disabled");
     return activated;
 }
@@ -1522,7 +1569,18 @@ bool Implementation::getDeactivatedPadding() const {
 }
 
 void Implementation::setDeactivatedPadding(bool enable) {
-    deactivatedPaddingEnable = enable;
+    if (deactivatedPaddingEnable != enable) {
+        deactivatedPaddingEnable = enable;
+        // disable file writing if deactivated and no padding
+        for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
+            dataProcessor[i]->SetupFileWriter(
+                fileFormatType, fileWriteEnable, masterFileWriteEnable,
+                activated, deactivatedPaddingEnable, (int *)numDet,
+                &framesPerFile, &fileName, &filePath, &fileIndex,
+                &overwriteEnable, &modulePos, &numThreads, &numberOfTotalFrames,
+                &dynamicRange, &udpPortNum[i], generalData);
+        }
+    }
     LOG(logINFO) << "Deactivated Padding Enable: "
                  << (deactivatedPaddingEnable ? "enabled" : "disabled");
 }

@@ -45,13 +45,14 @@ class HDF5File : private virtual slsDetectorDefs, public File {
              uint32_t nx, uint32_t ny, bool *smode);
     ~HDF5File();
     void SetNumberofPixels(uint32_t nx, uint32_t ny);
-    void CreateFile();
-    void CloseCurrentFile();
-    void CloseAllFiles();
+    void CreateFile() override;
+    void CloseAllFiles() override;
+    void CloseCurrentDataFile() override;
+    void CloseMasterFile() override;
     void WriteToFile(char *buffer, int bufferSize, uint64_t currentFrameNumber,
-                     uint32_t numPacketsCaught);
-    void CreateMasterFile(bool masterFileWriteEnable,
-                          MasterAttributes *attr) override;
+                     uint32_t numPacketsCaught) override;
+    void CreateMasterFile(MasterAttributes *attr) override;
+    void StartofAcquisition() override;
     void EndofAcquisition(bool anyPacketsCaught, uint64_t numImagesCaught);
 
   private:

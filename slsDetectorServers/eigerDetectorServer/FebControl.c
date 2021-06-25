@@ -998,7 +998,7 @@ int Feb_Control_StartAcquisition() {
 
 int Feb_Control_StopAcquisition() { return Feb_Control_Reset(); }
 
-int int Feb_Control_IsReadyForTrigger(int *readyForTrigger) {
+int Feb_Control_IsReadyForTrigger(int *readyForTrigger) {
     unsigned int addr[2] = {Feb_Control_leftAddress, Feb_Control_rightAddress};
     unsigned int value[2] = {0, 0};
 

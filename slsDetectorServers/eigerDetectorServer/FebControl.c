@@ -1062,6 +1062,7 @@ int Feb_Control_SoftwareTrigger(int block) {
 
         // wait for next trigger ready
         if (block) {
+            LOG(logINFO, ("Blocking Software Trigger\n"));
             int readyForTrigger = 0;
             if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {
                 LOG(logERROR, ("Could not read FEB_REG_STATUS reg after giving "
@@ -1070,7 +1071,7 @@ int Feb_Control_SoftwareTrigger(int block) {
             }
 
             while (!readyForTrigger) {
-                usleep(100);
+                usleep(5000);
                 if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {
                     LOG(logERROR, ("Could not read FEB_REG_STATUS reg after "
                                    "giving trigger!\n"));

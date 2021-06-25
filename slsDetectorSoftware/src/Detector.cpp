@@ -726,7 +726,7 @@ void Detector::setNextFrameNumber(uint64_t value, Positions pos) {
 }
 
 void Detector::sendSoftwareTrigger(const bool block, Positions pos) {
-    pimpl->Parallel(&Module::sendSoftwareTrigger, pos, false);
+    pimpl->Parallel(&Module::sendSoftwareTrigger, pos, block);
 }
 
 Result<defs::scanParameters> Detector::getScan(Positions pos) const {

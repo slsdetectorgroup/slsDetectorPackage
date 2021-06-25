@@ -1045,7 +1045,6 @@ int Feb_Control_SendSoftwareTrigger() {
 
 int Feb_Control_SoftwareTrigger(int block) {
     if (Feb_Control_activated) {
-        LOG(logINFORED, ("block:%d\n", block));
         // cant read reg
         int readyForTrigger = 0;
         if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {

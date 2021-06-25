@@ -1078,7 +1078,7 @@ int Feb_Control_SoftwareTrigger(int block) {
                     return 0;
                 }
             }
-            LOG(logINFO, ("Ready for trigger!\n"));
+            LOG(logINFO, ("Done waiting (wait for trigger)!\n"));
         }
     }
 

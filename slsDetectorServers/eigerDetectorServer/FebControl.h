@@ -55,8 +55,7 @@ int Feb_Control_PrepareForAcquisition();
 void Feb_Control_PrintAcquisitionSetup();
 int Feb_Control_StartAcquisition();
 int Feb_Control_StopAcquisition();
-int Feb_Control_GetExposureStatus(int left, int *rising, int *falling,
-                                  int *exposure);
+int Feb_Control_IsReadyForTrigger(int *readyForTrigger);
 int Feb_Control_SendSoftwareTrigger();
 int Feb_Control_SoftwareTrigger(int block);
 

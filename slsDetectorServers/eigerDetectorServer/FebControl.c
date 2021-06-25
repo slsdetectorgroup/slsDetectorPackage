@@ -998,23 +998,19 @@ int Feb_Control_StartAcquisition() {
 
 int Feb_Control_StopAcquisition() { return Feb_Control_Reset(); }
 
-int Feb_Control_GetExposureStatus(int left, int *rising, int *falling,
-                                  int *exposure) {
+int int Feb_Control_IsReadyForTrigger(int *readyForTrigger) {
+    unsigned int addr[2] = {Feb_Control_leftAddress, Feb_Control_rightAddress};
+    unsigned int value[2] = {0, 0};
 
-    unsigned int addr =
-        (left == 1 ? Feb_Control_leftAddress : Feb_Control_rightAddress);
-    unsigned int value = 0;
-    if (!Feb_Interface_ReadRegister(addr, FEB_REG_STATUS, &value)) {
-        LOG(logERROR, ("Could not read %s FEB_REG_STATUS reg\n",
-                       (left == 1 ? "left" : "right")));
-        return 0;
+    for (int i = 0; i < 2; ++i) {
+        if (!Feb_Interface_ReadRegister(addr[i], FEB_REG_STATUS, &value[i])) {
+            LOG(logERROR, ("Could not read %s FEB_REG_STATUS reg\n",
+                           (i == 0 ? "left" : "right")));
+            return 0;
+        }
     }
-    LOG(logINFORED, ("febregstatus:0x%x\n", value));
-    *rising = ((value & FEB_REG_STATUS_EXP_TGL_RISING_MSK) >>
-               FEB_REG_STATUS_EXP_TGL_RISING_OFST);
-    *falling = ((value & FEB_REG_STATUS_EXP_TGL_FALLING_MSK) >>
-                FEB_REG_STATUS_EXP_TGL_FALLING_OFST);
-    *exposure = ((value & FEB_REG_STATUS_EXP_MSK) >> FEB_REG_STATUS_EXP_OFST);
+    *readyForTrigger =
+        ((value[0] | value[1]) & FEB_REG_STATUS_WAIT_FOR_TRGGR_MSK);
     return 1;
 }
 
@@ -1049,77 +1045,41 @@ int Feb_Control_SendSoftwareTrigger() {
 
 int Feb_Control_SoftwareTrigger(int block) {
     if (Feb_Control_activated) {
-
-        int rising[2] = {0, 0}, falling[2] = {0, 0}, exposure[2] = {0, 0},
-            prev_toggle[2] = {0, 0};
-        for (int i = 0; i < 1; ++i) {
-            if (!Feb_Control_GetExposureStatus(i, &rising[i], &falling[i],
-                                               &exposure[i])) {
-                return 0;
-            }
-
-            if (exposure[i]) {
-                LOG(logERROR,
-                    ("Software trigger failed. %s FPGA still exposing.\n",
-                     i == 1 ? "left" : "right"));
-                return 0;
-            }
-
-            // remember previous rising toggle
-            prev_toggle[i] = rising[i];
-        }
-
+        /*
+                // if not ready for trigger, throw
+                int readyForTrigger = 0;
+                if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {
+                    LOG(logWARNING, ("Not yet ready for trigger!\n"));
+                    return 0;
+                }
+        */
         // send trigger to both fpgas
         Feb_Control_SendSoftwareTrigger();
 
-        // will need to wait if delay after trigger introduced
-        // usleep(0);
-
-        for (int i = 0; i < 1; ++i) {
-            // get current toggle value
-            if (!Feb_Control_GetExposureStatus(i, &rising[i], &falling[i],
-                                               &exposure[i])) {
-                return 0;
-            }
-
-            // no toggle error
-            if (rising[i] == prev_toggle[i]) {
-                LOG(logERROR, ("Software trigger failed. No exposure toggle "
-                               "detected on %s fpga.\n",
-                               i == 1 ? "left" : "right"));
-                return 0;
-            }
-
-            // no exposure
-            if (!exposure[i]) {
-                LOG(logERROR, ("Software trigger failed. No exposure detected "
-                               "on %s fpga.\n",
-                               i == 1 ? "left" : "right"));
-                return 0;
-            }
-        }
-
-        // wait for exposure to be done
-        if (block) {
-            for (int i = 0; i < 1; ++i) {
-                prev_toggle[i] = falling[i];
-                while (prev_toggle[i] == falling[i]) {
-                    usleep(5000);
-                    if (!Feb_Control_GetExposureStatus(
-                            i, &rising[i], &falling[i], &exposure[i])) {
-                        return 0;
+        /*
+                // will need to wait if delay after trigger introduced
+                // usleep(0);
+                // wait for exposure to be done
+                if (block) {
+                    for (int i = 0; i < 1; ++i) {
+                        prev_toggle[i] = falling[i];
+                        while (prev_toggle[i] == falling[i]) {
+                            usleep(5000);
+                            if (!Feb_Control_GetExposureStatus(
+                                    i, &rising[i], &falling[i], &exposure[i])) {
+                                return 0;
+                            }
+                        }
+                        // exposure low
+                        if (exposure[i]) {
+                            LOG(logERROR,
+                                ("Software trigger failed. Still exposing after
+           " "exposure finished toggled in %s fpga.\n", i == 1 ? "left" :
+           "right")); return 0;
+                        }
                     }
                 }
-                // exposure low
-                if (exposure[i]) {
-                    LOG(logERROR,
-                        ("Software trigger failed. Still exposing after "
-                         "exposure finished toggled in %s fpga.\n",
-                         i == 1 ? "left" : "right"));
-                    return 0;
-                }
-            }
-        }
+        */
     }
     return 1;
 }

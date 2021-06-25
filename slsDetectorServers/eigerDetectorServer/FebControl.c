@@ -1046,41 +1046,42 @@ int Feb_Control_SendSoftwareTrigger() {
 int Feb_Control_SoftwareTrigger(int block) {
     if (Feb_Control_activated) {
         /*
-                // if not ready for trigger, throw
+                // cant read reg
                 int readyForTrigger = 0;
                 if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {
+                    LOG(logERROR, ("Could not read FEB_REG_STATUS reg!\n"));
+                    return 0;
+                }
+                // if not ready for trigger, throw
+                if (!readyForTrigger) {
                     LOG(logWARNING, ("Not yet ready for trigger!\n"));
                     return 0;
                 }
         */
         // send trigger to both fpgas
         Feb_Control_SendSoftwareTrigger();
-
         /*
-                // will need to wait if delay after trigger introduced
-                // usleep(0);
-                // wait for exposure to be done
+                // wait for next trigger ready
                 if (block) {
-                    for (int i = 0; i < 1; ++i) {
-                        prev_toggle[i] = falling[i];
-                        while (prev_toggle[i] == falling[i]) {
-                            usleep(5000);
-                            if (!Feb_Control_GetExposureStatus(
-                                    i, &rising[i], &falling[i], &exposure[i])) {
-                                return 0;
-                            }
-                        }
-                        // exposure low
-                        if (exposure[i]) {
-                            LOG(logERROR,
-                                ("Software trigger failed. Still exposing after
-           " "exposure finished toggled in %s fpga.\n", i == 1 ? "left" :
-           "right")); return 0;
+                    int readyForTrigger = 0;
+                    if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {
+                        LOG(logERROR, ("Could not read FEB_REG_STATUS reg after
+           givign " "trigger!\n")); return 0;
+                    }
+
+                    while (!readyForTrigger) {
+                        LOG(logWARNING, ("Not yet ready\n"));
+                        usleep(100);
+                        if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {
+                            LOG(logERROR, ("Could not read FEB_REG_STATUS reg
+           after " "givign trigger!\n")); return 0;
                         }
                     }
+                    LOG(logINFO, ("Ready for trigger!\n"));
                 }
-        */
+                */
     }
+
     return 1;
 }
 

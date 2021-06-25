@@ -81,7 +81,6 @@ class HDF5File : private virtual slsDetectorDefs, public File {
     uint32_t nPixelsX;
     uint32_t nPixelsY;
     uint32_t numFramesInFile;
-    uint64_t numActualPacketsInFile;
     int numFilesinAcquisition;
 
     std::vector<std::string> parameterNames;

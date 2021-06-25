@@ -25,8 +25,8 @@ HDF5File::HDF5File(int ind, uint32_t *maxf, int *nd, std::string *fname,
            nf, dr, portno, smode),
       masterfd(nullptr), virtualfd(0), filefd(nullptr), dataspace(nullptr),
       dataset(nullptr), datatype(PredType::STD_U16LE), nPixelsX(nx),
-      nPixelsY(ny), numFramesInFile(0), numActualPacketsInFile(0),
-      numFilesinAcquisition(0), dataspace_para(nullptr), extNumImages(0) {
+      nPixelsY(ny), numFramesInFile(0), numFilesinAcquisition(0),
+      dataspace_para(nullptr), extNumImages(0) {
     PrintMembers();
     dataset_para.clear();
     parameterNames.clear();
@@ -67,7 +67,6 @@ void HDF5File::SetNumberofPixels(uint32_t nx, uint32_t ny) {
 void HDF5File::CreateFile() {
     numFilesinAcquisition++;
     numFramesInFile = 0;
-    numActualPacketsInFile = 0;
 
     // first time
     if (subFileIndex == 0u) {
@@ -135,7 +134,6 @@ void HDF5File::WriteToFile(char *buffer, int bufferSize,
         CreateFile();
     }
     numFramesInFile++;
-    numActualPacketsInFile += numPacketsCaught;
 
     // extend dataset (when receiver start followed by many status starts
     // (jungfrau)))
@@ -157,7 +155,6 @@ void HDF5File::CreateMasterFile(MasterAttributes *attr) {
 void HDF5File::StartofAcquisition() {
     numFilesinAcquisition = 0;
     numFramesInFile = 0;
-    numActualPacketsInFile = 0;
     extNumImages = *numImages;
 }
 

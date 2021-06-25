@@ -36,7 +36,6 @@ void BinaryFile::PrintMembers(TLogLevel level) {
 
 void BinaryFile::CreateFile() {
     numFramesInFile = 0;
-    numActualPacketsInFile = 0;
 
     std::ostringstream os;
     os << *filePath << "/" << *fileNamePrefix << "_d"
@@ -100,7 +99,6 @@ void BinaryFile::WriteToFile(char *buffer, int buffersize,
         CreateFile();
     }
     numFramesInFile++;
-    numActualPacketsInFile += numPacketsCaught;
 
     // write to file
     int ret = 0;
@@ -172,7 +170,4 @@ void BinaryFile::CreateMasterFile(MasterAttributes *attr) {
     }
 }
 
-void BinaryFile::StartofAcquisition() {
-    numFramesInFile = 0;
-    numActualPacketsInFile = 0;
-}
+void BinaryFile::StartofAcquisition() { numFramesInFile = 0; }

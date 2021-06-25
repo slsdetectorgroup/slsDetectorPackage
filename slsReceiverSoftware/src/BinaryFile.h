@@ -55,5 +55,4 @@ class BinaryFile : private virtual slsDetectorDefs, public File {
     FILE *filefd = nullptr;
     static FILE *masterfd;
     uint32_t numFramesInFile = 0;
-    uint64_t numActualPacketsInFile = 0;
 };

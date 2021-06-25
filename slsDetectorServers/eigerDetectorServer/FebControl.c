@@ -1070,7 +1070,6 @@ int Feb_Control_SoftwareTrigger(int block) {
             }
 
             while (!readyForTrigger) {
-                LOG(logWARNING, ("Not yet ready\n"));
                 usleep(100);
                 if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {
                     LOG(logERROR, ("Could not read FEB_REG_STATUS reg after "

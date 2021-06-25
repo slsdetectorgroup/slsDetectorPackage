@@ -187,6 +187,10 @@ void DataProcessor::CreateFirstDataFile() {
     file->CloseCurrentDataFile();
     file->resetSubFileIndex();
     file->StartofAcquisition();
+    // do not create file if deactivated and no padding
+    if (myDetectorType == EIGER && !activated && !deactivatedPaddingEnable) {
+        return;
+    }
     file->CreateFile();
 }
 

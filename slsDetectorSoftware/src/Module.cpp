@@ -777,6 +777,7 @@ void Module::setNextFrameNumber(uint64_t value) {
 }
 
 void Module::sendSoftwareTrigger(const bool block) {
+    LOG(logINFO) << "block:" << block;
     sendToDetectorStop(F_SOFTWARE_TRIGGER, static_cast<int>(block), nullptr);
 }
 

@@ -2408,7 +2408,7 @@ int stopStateMachine() {
             printf("Transmitting...\n");
         }
     }
-    LOG(logINFO, ("Detector has sent all data\n"));
+    LOG(logINFO, ("Beb: Detector has sent all data\n"));
 
     // reset feb and beb
     sharedMemory_lockLocalLink();

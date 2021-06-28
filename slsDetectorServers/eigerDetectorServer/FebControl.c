@@ -843,7 +843,7 @@ int Feb_Control_StartDAQOnlyNWaitForFinish(int sleep_time_us) {
 }
 
 int Feb_Control_Reset() {
-    LOG(logINFO, ("Reset daq\n"));
+    LOG(logINFO, ("Feb: Reset daq\n"));
     if (Feb_Control_activated) {
         if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
                                          DAQ_REG_CTRL, 0, 0, 0) ||
@@ -1039,8 +1039,7 @@ int Feb_Control_StopAcquisition() {
             LOG(logERROR, ("Could not send last frames.\n"));
             return 0;
         }
-        LOG(logINFOBLUE,
-            ("send last frame value:0x%x\n", orig_value | DAQ_CTRL_STOP));
+        LOG(logINFO, ("Feb: Command to Flush out images from fifo\n"));
 
         // wait for feb processing to be done
         int is_processing = Feb_Control_ProcessingInProgress();
@@ -1059,6 +1058,8 @@ int Feb_Control_StopAcquisition() {
             else
                 check_error = 0;
         }
+        LOG(logINFO, ("Feb: Processing done (to stop acq)\n"));
+
         return 0;
     }
     return 1;

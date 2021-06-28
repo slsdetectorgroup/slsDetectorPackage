@@ -2424,6 +2424,7 @@ int stopStateMachine() {
     if (Beb_GetNextFrameNumber(&retval, send_to_ten_gig) == -2) {
         Beb_SetNextFrameNumber(retval + 1);
     }
+    LOG(logINFOBLUE, ("Stopping state machine complete\n\n"));
     return OK;
 #endif
 }

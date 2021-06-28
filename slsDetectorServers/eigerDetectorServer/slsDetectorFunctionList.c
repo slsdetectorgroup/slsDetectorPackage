@@ -2399,7 +2399,7 @@ int stopStateMachine() {
     while (isTransmitting) {
         // wait for beb to send out all packets
         if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 1) == FAIL) {
-            LOG(logERROR, ("failed to stop acquisition\n"));
+            LOG(logERROR, ("failed to stop beb acquisition\n"));
             return FAIL;
         }
         if (isTransmitting) {

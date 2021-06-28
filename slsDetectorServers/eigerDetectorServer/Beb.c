@@ -1104,21 +1104,6 @@ int Beb_StopAcquisition() {
     if (!Beb_activated)
         return 1;
 
-    // wait for detector to send
-    int isTransmitting = 1;
-    while (isTransmitting) {
-        // wait for beb to send out all packets
-        if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 1) == FAIL) {
-            strcpy(mess, "Could not read delay counters\n");
-            *ret = (int)FAIL;
-            return;
-        }
-        if (isTransmitting) {
-            printf("Transmitting...\n");
-        }
-    }
-    LOG(logINFO, ("Detector has sent all data\n"));
-
     u_int32_t *csp0base = 0;
     volatile u_int32_t valuel, valuer;
     // open file pointer

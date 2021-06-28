@@ -1060,6 +1060,7 @@ int Feb_Control_StopAcquisition() {
         }
 
         // stop acquisition
+        return 0;
         // return Feb_Control_Reset();
     }
     return 1;

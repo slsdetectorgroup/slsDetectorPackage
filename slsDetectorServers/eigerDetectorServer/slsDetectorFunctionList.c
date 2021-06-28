@@ -2408,6 +2408,8 @@ int stopStateMachine() {
     }
     LOG(logINFO, ("Detector has sent all data\n"));
 
+    Feb_Control_Reset();
+
     if (!Beb_StopAcquisition()) {
         LOG(logERROR, ("failed to stop acquisition\n"));
         sharedMemory_unlockLocalLink();

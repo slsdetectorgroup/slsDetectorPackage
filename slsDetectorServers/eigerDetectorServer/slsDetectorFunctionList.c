@@ -2408,8 +2408,6 @@ int stopStateMachine() {
     }
     LOG(logINFO, ("Detector has sent all data\n"));
 
-    Feb_Control_Reset();
-
     if (!Beb_StopAcquisition()) {
         LOG(logERROR, ("failed to stop acquisition\n"));
         sharedMemory_unlockLocalLink();
@@ -2418,6 +2416,7 @@ int stopStateMachine() {
 
     sharedMemory_unlockLocalLink();
 
+    Feb_Control_Reset();
     // ensure all have same starting frame numbers
     uint64_t retval = 0;
     if (Beb_GetNextFrameNumber(&retval, send_to_ten_gig) == -2) {

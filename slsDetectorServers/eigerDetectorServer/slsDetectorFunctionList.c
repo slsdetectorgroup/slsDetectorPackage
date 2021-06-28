@@ -2536,7 +2536,9 @@ void readFrame(int *ret, char *mess) {
     int isTransmitting = 1;
     while (isTransmitting) {
         // wait for feb processing to be done
+        sharedMemory_lockLocalLink();
         int i = Feb_Control_ProcessingInProgress();
+        sharedMemory_unlockLocalLink();
         if (i == STATUS_ERROR) {
             strcpy(mess, "Could not read feb processing done register\n");
             *ret = (int)FAIL;

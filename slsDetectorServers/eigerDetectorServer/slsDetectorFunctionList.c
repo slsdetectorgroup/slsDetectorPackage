@@ -2408,7 +2408,7 @@ int stopStateMachine() {
             printf("Transmitting...\n");
         }
     }
-    LOG(logINFO, ("Beb: Detector has sent all data\n"));
+    LOG(logINFO, ("Beb: Detector has sent all data (stop)\n"));
 
     // reset feb and beb
     sharedMemory_lockLocalLink();
@@ -2556,7 +2556,7 @@ void readFrame(int *ret, char *mess) {
             printf("Transmitting...\n");
         }
     }
-    LOG(logINFO, ("Detector has sent all data\n"));
+    LOG(logINFO, ("Beb: Detector has sent all data (acquire)\n"));
     LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 #endif
 }

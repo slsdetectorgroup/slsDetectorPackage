@@ -2405,12 +2405,12 @@ int stopStateMachine() {
 #endif
 }
 
-int softwareTrigger() {
+int softwareTrigger(int block) {
 #ifdef VIRTUAL
     return OK;
 #else
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_SoftwareTrigger()) {
+    if (!Feb_Control_SoftwareTrigger(block)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }

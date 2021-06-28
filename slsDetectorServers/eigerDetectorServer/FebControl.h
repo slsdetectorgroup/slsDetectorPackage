@@ -56,7 +56,9 @@ int Feb_Control_PrepareForAcquisition();
 void Feb_Control_PrintAcquisitionSetup();
 int Feb_Control_StartAcquisition();
 int Feb_Control_StopAcquisition();
-int Feb_Control_SoftwareTrigger();
+int Feb_Control_IsReadyForTrigger(int *readyForTrigger);
+int Feb_Control_SendSoftwareTrigger();
+int Feb_Control_SoftwareTrigger(int block);
 
 // parameters
 int Feb_Control_SetDynamicRange(unsigned int four_eight_sixteen_or_thirtytwo);

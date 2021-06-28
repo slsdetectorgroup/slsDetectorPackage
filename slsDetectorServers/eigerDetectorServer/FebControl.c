@@ -715,14 +715,16 @@ int Feb_Control_ProcessingInProgress() {
     if (!Feb_Control_activated)
         return IDLE;
 
-    if (!Feb_Interface_ReadRegister(Feb_Control_rightAddress,
-                                    FEB_REG_STATUS, &regr)) {
-        LOG(logERROR, ("Could not read right FEB_REG_STATUS to get feb processing status\n"));
+    if (!Feb_Interface_ReadRegister(Feb_Control_rightAddress, FEB_REG_STATUS,
+                                    &regr)) {
+        LOG(logERROR, ("Could not read right FEB_REG_STATUS to get feb "
+                       "processing status\n"));
         return STATUS_ERROR;
     }
-    if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress,
-                                    FEB_REG_STATUS, &regl)) {
-        LOG(logERROR, ("Could not read left FEB_REG_STATUS to get feb processing status\n"));
+    if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress, FEB_REG_STATUS,
+                                    &regl)) {
+        LOG(logERROR, ("Could not read left FEB_REG_STATUS to get feb "
+                       "processing status\n"));
         return STATUS_ERROR;
     }
     // processing done
@@ -730,7 +732,7 @@ int Feb_Control_ProcessingInProgress() {
         return STATUS_IDLE;
     }
     // processing running
-    return STATUS_RUNNING;    
+    return STATUS_RUNNING;
 }
 
 int Feb_Control_AcquisitionStartedBit() {
@@ -1026,7 +1028,8 @@ int Feb_Control_StopAcquisition() {
         unsigned int orig_value = 0;
         if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
                                         DAQ_REG_CTRL, &orig_value)) {
-            LOG(logERROR, ("Could not read DAQ_REG_CTRL to stop acquisition (send complete frames)\n"));
+            LOG(logERROR, ("Could not read DAQ_REG_CTRL to stop acquisition "
+                           "(send complete frames)\n"));
             return 0;
         }
         if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
@@ -1035,7 +1038,8 @@ int Feb_Control_StopAcquisition() {
             LOG(logERROR, ("Could not send last frames.\n"));
             return 0;
         }
-        LOG(logINFOBLUE, ("send last frame value:0x%x\n", orig_value | DAQ_CTRL_STOP));
+        LOG(logINFOBLUE,
+            ("send last frame value:0x%x\n", orig_value | DAQ_CTRL_STOP));
 
         // wait for feb processing to be done
         int is_processing = Feb_Control_ProcessingInProgress();
@@ -1044,8 +1048,8 @@ int Feb_Control_StopAcquisition() {
             usleep(500);
             is_processing = Feb_Control_ProcessingInProgress();
 
-            // check error only 5 times (ensuring it is not something that happens
-            // sometimes)
+            // check error only 5 times (ensuring it is not something that
+            // happens sometimes)
             if (is_processing == STATUS_ERROR) {
                 if (check_error == 5)
                     break;
@@ -1053,42 +1057,98 @@ int Feb_Control_StopAcquisition() {
             } // reset check_error for next time
             else
                 check_error = 0;
-
         }
-    
+
         // stop acquisition
         return Feb_Control_Reset();
     }
     return 1;
 }
 
-int Feb_Control_SoftwareTrigger() {
-    if (Feb_Control_activated) {
-        unsigned int orig_value = 0;
-        if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
-                                        DAQ_REG_CHIP_CMDS, &orig_value)) {
-            LOG(logERROR, ("Could not read DAQ_REG_CHIP_CMDS to send software "
-                           "trigger\n"));
-            return 0;
-        }
-        unsigned int cmd = orig_value | DAQ_REG_CHIP_CMDS_INT_TRIGGER;
+int Feb_Control_IsReadyForTrigger(int *readyForTrigger) {
+    unsigned int addr[2] = {Feb_Control_leftAddress, Feb_Control_rightAddress};
+    unsigned int value[2] = {0, 0};
 
-        // set trigger bit
-        LOG(logDEBUG1, ("Setting Trigger, Register:0x%x\n", cmd));
-        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_CHIP_CMDS, cmd, 0, 0)) {
-            LOG(logERROR, ("Could not give software trigger\n"));
+    for (int i = 0; i < 2; ++i) {
+        if (!Feb_Interface_ReadRegister(addr[i], FEB_REG_STATUS, &value[i])) {
+            LOG(logERROR, ("Could not read %s FEB_REG_STATUS reg\n",
+                           (i == 0 ? "left" : "right")));
             return 0;
         }
-        // unset trigger bit
-        LOG(logDEBUG1, ("Unsetting Trigger, Register:0x%x\n", orig_value));
-        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_CHIP_CMDS, orig_value, 0, 0)) {
-            LOG(logERROR, ("Could not give software trigger\n"));
-            return 0;
-        }
-        LOG(logINFO, ("Software Internal Trigger Sent!\n"));
     }
+    *readyForTrigger =
+        ((value[0] | value[1]) & FEB_REG_STATUS_WAIT_FOR_TRGGR_MSK);
+    return 1;
+}
+
+int Feb_Control_SendSoftwareTrigger() {
+    // read old value in register
+    unsigned int orig_value = 0;
+    if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
+                                    DAQ_REG_CHIP_CMDS, &orig_value)) {
+        LOG(logERROR, ("Could not read DAQ_REG_CHIP_CMDS to send software "
+                       "trigger\n"));
+        return 0;
+    }
+    unsigned int cmd = orig_value | DAQ_REG_CHIP_CMDS_INT_TRIGGER;
+
+    // set trigger bit
+    LOG(logDEBUG1, ("Setting Trigger, Register:0x%x\n", cmd));
+    if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                     DAQ_REG_CHIP_CMDS, cmd, 0, 0)) {
+        LOG(logERROR, ("Could not give software trigger\n"));
+        return 0;
+    }
+    // unset trigger bit
+    LOG(logDEBUG1, ("Unsetting Trigger, Register:0x%x\n", orig_value));
+    if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                     DAQ_REG_CHIP_CMDS, orig_value, 0, 0)) {
+        LOG(logERROR, ("Could not give software trigger\n"));
+        return 0;
+    }
+    LOG(logINFO, ("Software Internal Trigger Sent!\n"));
+    return 1;
+}
+
+int Feb_Control_SoftwareTrigger(int block) {
+    if (Feb_Control_activated) {
+        // cant read reg
+        int readyForTrigger = 0;
+        if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {
+            LOG(logERROR, ("Could not read FEB_REG_STATUS reg!\n"));
+            return 0;
+        }
+        // if not ready for trigger, throw
+        if (!readyForTrigger) {
+            LOG(logWARNING, ("Not yet ready for trigger!\n"));
+            return 0;
+        }
+
+        // send trigger to both fpgas
+        Feb_Control_SendSoftwareTrigger();
+
+        // wait for next trigger ready
+        if (block) {
+            LOG(logINFO, ("Blocking Software Trigger\n"));
+            int readyForTrigger = 0;
+            if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {
+                LOG(logERROR, ("Could not read FEB_REG_STATUS reg after giving "
+                               "trigger!\n"));
+                return 0;
+            }
+
+            while (!readyForTrigger) {
+                usleep(5000);
+                if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {
+                    LOG(logERROR, ("Could not read FEB_REG_STATUS reg after "
+                                   "giving trigger!\n"));
+                    return 0;
+                }
+            }
+            LOG(logINFO, ("Done waiting (wait for trigger)!\n"));
+        }
+    }
+
     return 1;
 }
 
@@ -1954,8 +2014,8 @@ int Feb_Control_GetLeftFPGATemp() {
                        "temperature\n"));
         return 0;
     }
-
-    unsigned int temperature = ((value & FEB_REG_STATUS_TEMP_MSK) >> FEB_REG_STATUS_TEMP_OFST);
+    unsigned int temperature =
+        ((value & FEB_REG_STATUS_TEMP_MSK) >> FEB_REG_STATUS_TEMP_OFST);
     temperature =
         ((((float)(temperature) / 65536.0f) / 0.00198421639f) - 273.15f) *
         1000; // Static conversation, copied from xps sysmon standalone driver

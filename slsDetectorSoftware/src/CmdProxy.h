@@ -571,7 +571,6 @@ class CmdProxy {
         return ToString(value, unit);
     }
 
-
     using FunctionMap = std::map<std::string, std::string (CmdProxy::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
 
@@ -839,7 +838,7 @@ class CmdProxy {
         {"rx_framescaught", &CmdProxy::rx_framescaught},
         {"rx_missingpackets", &CmdProxy::rx_missingpackets},
         {"nextframenumber", &CmdProxy::nextframenumber},
-        {"trigger", &CmdProxy::trigger},
+        {"trigger", &CmdProxy::Trigger},
         {"scan", &CmdProxy::Scan},
         {"scanerrmsg", &CmdProxy::scanerrmsg},
 
@@ -900,6 +899,7 @@ class CmdProxy {
         {"rx_zmqhwm", &CmdProxy::rx_zmqhwm},
 
         /* Eiger Specific */
+        {"blockingtrigger", &CmdProxy::Trigger},
         {"subexptime", &CmdProxy::subexptime},
         {"subdeadtime", &CmdProxy::subdeadtime},
         {"overflow", &CmdProxy::overflow},
@@ -1094,6 +1094,7 @@ class CmdProxy {
     std::string ReceiverStatus(int action);
     std::string DetectorStatus(int action);
     std::string Scan(int action);
+    std::string Trigger(int action);
     /* Network Configuration (Detector<->Receiver) */
     std::string UDPDestinationIP(int action);
     std::string UDPDestinationIP2(int action);
@@ -1445,8 +1446,8 @@ class CmdProxy {
         "and automatically returns to idle at the end of readout.");
 
     EXECUTE_SET_COMMAND(stop, stopDetector,
-                             "\n\tAbort detector acquisition. Status changes "
-                             "to IDLE or STOPPED. Goes to stop server.");
+                        "\n\tAbort detector acquisition. Status changes "
+                        "to IDLE or STOPPED. Goes to stop server.");
 
     GET_COMMAND(rx_framescaught, getFramesCaught,
                 "\n\tNumber of frames caught by receiver.");
@@ -1459,10 +1460,6 @@ class CmdProxy {
                            "[n_value]\n\t[Eiger][Jungfrau] Next frame number. "
                            "Stopping acquisition might result in "
                            "different frame numbers for different modules.");
-
-    EXECUTE_SET_COMMAND(
-        trigger, sendSoftwareTrigger,
-        "\n\t[Eiger][Mythen3] Sends software trigger signal to detector.");
 
     GET_COMMAND(scanerrmsg, getScanErrorMessage,
                 "\n\tGets Scan error message if scan ended in error for non "

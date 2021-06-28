@@ -776,7 +776,9 @@ void Module::setNextFrameNumber(uint64_t value) {
     sendToDetector(F_SET_NEXT_FRAME_NUMBER, value, nullptr);
 }
 
-void Module::sendSoftwareTrigger() { sendToDetectorStop(F_SOFTWARE_TRIGGER); }
+void Module::sendSoftwareTrigger(const bool block) {
+    sendToDetectorStop(F_SOFTWARE_TRIGGER, static_cast<int>(block), nullptr);
+}
 
 defs::scanParameters Module::getScan() const {
     return sendToDetector<defs::scanParameters>(F_GET_SCAN);

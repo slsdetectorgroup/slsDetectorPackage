@@ -2388,8 +2388,7 @@ int stopStateMachine() {
     return OK;
 #else
     sharedMemory_lockLocalLink();
-    if ((Feb_Control_StopAcquisition() != STATUS_IDLE) ||
-        (!Beb_StopAcquisition())) {
+    if ((Feb_Control_StopAcquisition() != STATUS_IDLE)) {
         LOG(logERROR, ("failed to stop acquisition\n"));
         sharedMemory_unlockLocalLink();
         return FAIL;

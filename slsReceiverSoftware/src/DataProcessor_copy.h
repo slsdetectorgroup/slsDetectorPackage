@@ -119,6 +119,34 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * @param portno pointer to udp port number
      * @param g address of GeneralData (Detector Data) pointer
      */
+    void SetupFileWriter(fileFormat ftype, bool fwe, int act, int depaden,
+                         int *nd, uint32_t *maxf, std::string *fname,
+                         std::string *fpath, uint64_t *findex, bool *owenable,
+                         int *dindex, int *nunits, uint64_t *nf, uint32_t *dr,
+                         uint32_t *portno, GeneralData *g = nullptr);
+
+    /**
+     * Create Master File (also virtual if hdf5)
+     * @param attr master file attributes
+     */
+    void CreateMasterFile(MasterAttributes *attr);
+
+    /**
+     * Create First Data File
+     */
+    void CreatFirsteDataFile();
+
+    /**
+     * Closes files
+     */
+    void CloseFiles();
+
+    /**
+     * End of Acquisition
+     * @param anyPacketsCaught true if any packets are caught, else false
+     * @param numf number of images caught
+     */
+    void EndofAcquisition(bool anyPacketsCaught, uint64_t numf);
 
     /**
      * Update pixel dimensions in file writer
@@ -223,6 +251,15 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     // individual members
     /** Detector Type */
     detectorType myDetectorType;
+
+    /** File writer implemented as binary or hdf5 File */
+    File *file{nullptr};
+
+    /** master file */
+    File *masterFile{nullptr};
+
+    /** virtual file (for hdf5) */
+    File *virtualFile{nullptr};
 
     /** Data Stream Enable */
     bool *dataStreamEnable;

@@ -37,7 +37,11 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo *f, bool act,
     memset((void *)&timerBegin, 0, sizeof(timespec));
 }
 
-DataProcessor::~DataProcessor() {}
+DataProcessor::~DataProcessor() {
+    delete file;
+    delete masterFile;
+    delete virtualFile;
+}
 
 /** getters */
 
@@ -72,7 +76,138 @@ void DataProcessor::RecordFirstIndex(uint64_t fnum) {
     LOG(logDEBUG1) << index << " First Index:" << firstIndex;
 }
 
-void DataProcessor::SetGeneralData(GeneralData *g) { generalData = g; }
+void DataProcessor::SetGeneralData(GeneralData *g) {
+    generalData = g;
+    if (file != nullptr) {
+        if (file->GetFileType() == HDF5) {
+            file->SetNumberofPixels(generalData->nPixelsX,
+                                    generalData->nPixelsY);
+        }
+    }
+    if (masterFile != nullptr) {
+        if (masterFile->GetFileType() == HDF5) {
+            masterFile->SetNumberofPixels(generalData->nPixelsX,
+                                          generalData->nPixelsY);
+        }
+    }
+    if (virtualFile != nullptr) {
+        if (virtualFile->GetFileType() == HDF5) {
+            virtualFile->SetNumberofPixels(generalData->nPixelsX,
+                                           generalData->nPixelsY);
+        }
+    }
+}
+
+void DataProcessor::SetupFileWriter(fileFormat ftype, bool fwe, int act,
+                                    int depaden, int *nd, uint32_t *maxf,
+                                    std::string *fname, std::string *fpath,
+                                    uint64_t *findex, bool *owenable,
+                                    int *dindex, int *nunits, uint64_t *nf,
+                                    uint32_t *dr, uint32_t *portno,
+                                    GeneralData *g) {
+    activated = act;
+    deactivatedPaddingEnable = depaden;
+    if (g != nullptr)
+        generalData = g;
+
+    // close existing file objects
+    if (file != nullptr) {
+        delete file;
+        file = nullptr;
+    }
+    if (masterFile != nullptr) {
+        delete masterFile;
+        masterFile = nullptr;
+    }
+    if (virtualFile != nullptr) {
+        delete virtualFile;
+        virtualFile = nullptr;
+    }
+    // skip data file writing for deactivated non padded parts
+    bool skipDataFileWriting = false;
+    if (myDetectorType == EIGER && !activated && !deactivatedPaddingEnable) {
+        skipDataFileWriting = true;
+    }
+
+    // create file objects
+    if (fwe) {
+        switch (fileFormatType) {
+#ifdef HDF5C
+        case HDF5:
+            // data file
+            if (!skipDataFileWriting) {
+                file = new HDF5File(index, maxf, nd, fname, fpath, findex,
+                                    owenable, dindex, nunits, nf, dr, portno,
+                                    generalData->nPixelsX,
+                                    generalData->nPixelsY, silentMode);
+            }
+            // master file
+            if ((index == 0) && (*dindex == 0)) {
+                masterFile = new HDF5File(index, maxf, nd, fname, fpath, findex,
+                                          owenable, dindex, nunits, nf, dr,
+                                          portno, generalData->nPixelsX,
+                                          generalData->nPixelsY, silentMode);
+                virtualFile = new HDF5File(index, maxf, nd, fname, fpath,
+                                           findex, owenable, dindex, nunits, nf,
+                                           dr, portno, generalData->nPixelsX,
+                                           generalData->nPixelsY, silentMode);
+            }
+            break;
+#endif
+        default:
+            // data file
+            if (!skipDataFileWriting) {
+                file = new BinaryFile(index, maxf, nd, fname, fpath, findex,
+                                      owenable, dindex, nunits, nf, dr, portno,
+                                      silentMode);
+            }
+            // master file
+            if ((index == 0) && (*dindex == 0)) {
+                masterFile = new BinaryFile(index, maxf, nd, fname, fpath,
+                                            findex, owenable, dindex, nunits,
+                                            nf, dr, portno, silentMode);
+            }
+            break;
+        }
+    }
+}
+
+void DataProcessor::CreateMasterFile(MasterAttributes *attr) {
+    if (masterFile == nullptr) {
+        throw sls::RuntimeError("master file object not contstructed");
+    }
+    masterFile->CloseMasterFile();
+    masterFile->CreateMasterFile(attr);
+}
+
+void DataProcessor::CreateFirstDataFile() {
+    if (file == nullptr) {
+        throw sls::RuntimeError("file object not contstructed");
+    }
+    file->CloseCurrentDataFile();
+    file->resetSubFileIndex();
+    file->StartofAcquisition();
+    // do not create file if deactivated and no padding
+    if (myDetectorType == EIGER && !activated && !deactivatedPaddingEnable) {
+        return;
+    }
+    file->CreateFile();
+}
+
+void DataProcessor::CloseFiles() {
+    if (file != nullptr)
+        file->CloseAllFiles();
+}
+
+void DataProcessor::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
+    if ((file != nullptr) && file->GetFileType() == HDF5) {
+        try {
+            file->EndofAcquisition(anyPacketsCaught, numf);
+        } catch (const sls::RuntimeError &e) {
+            ; // ignore for now //TODO: send error to client via stop receiver
+        }
+    }
+}
 
 void DataProcessor::ThreadExecution() {
     char *buffer = nullptr;

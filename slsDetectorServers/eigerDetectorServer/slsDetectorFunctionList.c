@@ -2388,13 +2388,15 @@ int stopStateMachine() {
     return OK;
 #else
     sharedMemory_lockLocalLink();
+    // sends last frames from fifo and wait for feb processing done
     if ((Feb_Control_StopAcquisition() != STATUS_IDLE)) {
         LOG(logERROR, ("failed to stop acquisition\n"));
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
+    sharedMemory_unlockLocalLink();
 
-    // wait for detector to send
+    // wait for beb to finish sending packets
     int isTransmitting = 1;
     while (isTransmitting) {
         // wait for beb to send out all packets
@@ -2407,15 +2409,15 @@ int stopStateMachine() {
         }
     }
     LOG(logINFO, ("Detector has sent all data\n"));
-    Feb_Control_Reset();
 
+    // reset feb and beb
+    sharedMemory_lockLocalLink();
+    Feb_Control_Reset();
+    sharedMemory_unlockLocalLink();
     if (!Beb_StopAcquisition()) {
         LOG(logERROR, ("failed to stop acquisition\n"));
-        sharedMemory_unlockLocalLink();
         return FAIL;
     }
-
-    sharedMemory_unlockLocalLink();
 
     // ensure all have same starting frame numbers
     uint64_t retval = 0;

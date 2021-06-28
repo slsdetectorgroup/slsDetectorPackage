@@ -1024,7 +1024,8 @@ int Feb_Control_StartAcquisition() {
 
 int Feb_Control_StopAcquisition() {
     if (Feb_Control_activated) {
-        // sends last
+
+        // sends last frames from fifo
         unsigned int orig_value = 0;
         if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
                                         DAQ_REG_CTRL, &orig_value)) {
@@ -1058,10 +1059,7 @@ int Feb_Control_StopAcquisition() {
             else
                 check_error = 0;
         }
-
-        // stop acquisition
         return 0;
-        // return Feb_Control_Reset();
     }
     return 1;
 }

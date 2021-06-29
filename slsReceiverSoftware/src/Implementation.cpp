@@ -235,11 +235,11 @@ void Implementation::setModulePositionId(const int id) {
         DEFAULT_ZMQ_RX_PORTNO + (modulePos * (myDetectorType == EIGER ? 2 : 1));
 
     for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-        dataProcessor[i]->SetupFileWriter(
+        /*dataProcessor[i]->SetupFileWriter(
             fileFormatType, fileWriteEnable, masterFileWriteEnable, activated,
             deactivatedPaddingEnable, (int *)numDet, &framesPerFile, &fileName,
             &filePath, &fileIndex, &overwriteEnable, &modulePos, &numThreads,
-            &numberOfTotalFrames, &dynamicRange, &udpPortNum[i], generalData);
+            &numberOfTotalFrames, &dynamicRange, &udpPortNum[i], generalData);*/
     }
     assert(numDet[1] != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
@@ -346,13 +346,13 @@ void Implementation::setFileFormat(const fileFormat f) {
         }
         if (fileWriteEnable) {
             for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-                dataProcessor[i]->SetupFileWriter(
+                /*dataProcessor[i]->SetupFileWriter(
                     fileFormatType, fileWriteEnable, masterFileWriteEnable,
                     activated, deactivatedPaddingEnable, (int *)numDet,
                     &framesPerFile, &fileName, &filePath, &fileIndex,
                     &overwriteEnable, &modulePos, &numThreads,
                     &numberOfTotalFrames, &dynamicRange, &udpPortNum[i],
-                    generalData);
+                    generalData);*/
             }
         }
     }
@@ -390,12 +390,12 @@ void Implementation::setFileWriteEnable(const bool b) {
     if (fileWriteEnable != b) {
         fileWriteEnable = b;
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-            dataProcessor[i]->SetupFileWriter(
+            /*dataProcessor[i]->SetupFileWriter(
                 fileFormatType, fileWriteEnable, masterFileWriteEnable,
                 activated, deactivatedPaddingEnable, (int *)numDet,
                 &framesPerFile, &fileName, &filePath, &fileIndex,
                 &overwriteEnable, &modulePos, &numThreads, &numberOfTotalFrames,
-                &dynamicRange, &udpPortNum[i], generalData);
+                &dynamicRange, &udpPortNum[i], generalData);*/
         }
     }
     LOG(logINFO) << "File Write Enable: "
@@ -410,12 +410,12 @@ void Implementation::setMasterFileWriteEnable(const bool b) {
     if (masterFileWriteEnable != b) {
         masterFileWriteEnable = b;
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-            dataProcessor[i]->SetupFileWriter(
+            /*dataProcessor[i]->SetupFileWriter(
                 fileFormatType, fileWriteEnable, masterFileWriteEnable,
                 activated, deactivatedPaddingEnable, (int *)numDet,
                 &framesPerFile, &fileName, &filePath, &fileIndex,
                 &overwriteEnable, &modulePos, &numThreads, &numberOfTotalFrames,
-                &dynamicRange, &udpPortNum[i], generalData);
+                &dynamicRange, &udpPortNum[i], generalData);*/
         }
     }
     LOG(logINFO) << "Master File Write Enable: "
@@ -587,7 +587,7 @@ void Implementation::stopReceiver() {
         }
         // to create virtual file & set files/acquisition to 0 (only hdf5 at the
         // moment)
-        dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);
+        /*dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);*/
     }
 
     // wait for the processes (dataStreamer) to be done
@@ -697,14 +697,14 @@ void Implementation::closeFiles() {
     uint64_t maxIndexCaught = 0;
     bool anycaught = false;
     for (const auto &it : dataProcessor) {
-        it->CloseFiles();
+        /*it->CloseFiles();*/
         maxIndexCaught = std::max(maxIndexCaught, it->GetProcessedIndex());
         if (it->GetStartedFlag())
             anycaught = true;
     }
     // to create virtual file & set files/acquisition to 0 (only hdf5 at the
     // moment)
-    dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);
+    /*dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);*/
 }
 
 void Implementation::restreamStop() {
@@ -821,7 +821,7 @@ void Implementation::SetupWriter() {
         masterAttributes->gates = numberOfGates;
         masterAttributes->additionalJsonHeader = additionalJsonHeader;
         try {
-            dataProcessor[0]->CreateMasterFile(masterAttributes.get());
+            /*dataProcessor[0]->CreateMasterFile(masterAttributes.get());*/
         } catch (const sls::RuntimeError &e) {
             shutDownUDPSockets();
             closeFiles();
@@ -833,7 +833,7 @@ void Implementation::SetupWriter() {
     //->startofacquisition(which has all the start, and createfirstdatafile)
     try {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-            dataProcessor[i]->CreateFirstDataFile();
+            /*dataProcessor[i]->CreateFirstDataFile();*/
         }
     } catch (const sls::RuntimeError &e) {
         shutDownUDPSockets();
@@ -1376,7 +1376,7 @@ void Implementation::setNumberofAnalogSamples(const uint32_t i) {
             readoutType);
 
         for (const auto &it : dataProcessor)
-            it->SetPixelDimension();
+            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
     LOG(logINFO) << "Number of Analog Samples: " << numberOfAnalogSamples;
@@ -1397,7 +1397,7 @@ void Implementation::setNumberofDigitalSamples(const uint32_t i) {
             readoutType);
 
         for (const auto &it : dataProcessor)
-            it->SetPixelDimension();
+            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
     LOG(logINFO) << "Number of Digital Samples: " << numberOfDigitalSamples;
@@ -1419,7 +1419,7 @@ void Implementation::setCounterMask(const uint32_t i) {
                                          tengigaEnable);
         // to update npixelsx, npixelsy in file writer
         for (const auto &it : dataProcessor)
-            it->SetPixelDimension();
+            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
     LOG(logINFO) << "Counter mask: " << sls::ToStringHex(counterMask);
@@ -1444,7 +1444,7 @@ void Implementation::setDynamicRange(const uint32_t i) {
 
             // to update npixelsx, npixelsy in file writer
             for (const auto &it : dataProcessor)
-                it->SetPixelDimension();
+                ; /*it->SetPixelDimension();*/
             fifoDepth = generalData->defaultFifoDepth;
             SetupFifoStructure();
         }
@@ -1463,7 +1463,7 @@ void Implementation::setROI(slsDetectorDefs::ROI arg) {
         generalData->SetROI(arg);
         framesPerFile = generalData->maxFramesPerFile;
         for (const auto &it : dataProcessor)
-            it->SetPixelDimension();
+            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
 
@@ -1551,12 +1551,12 @@ bool Implementation::setActivate(bool enable) {
         activated = enable;
         // disable file writing if deactivated and no padding
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-            dataProcessor[i]->SetupFileWriter(
+            /*dataProcessor[i]->SetupFileWriter(
                 fileFormatType, fileWriteEnable, masterFileWriteEnable,
                 activated, deactivatedPaddingEnable, (int *)numDet,
                 &framesPerFile, &fileName, &filePath, &fileIndex,
                 &overwriteEnable, &modulePos, &numThreads, &numberOfTotalFrames,
-                &dynamicRange, &udpPortNum[i], generalData);
+                &dynamicRange, &udpPortNum[i], generalData);*/
         }
     }
 
@@ -1573,12 +1573,13 @@ void Implementation::setDeactivatedPadding(bool enable) {
         deactivatedPaddingEnable = enable;
         // disable file writing if deactivated and no padding
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-            dataProcessor[i]->SetupFileWriter(
-                fileFormatType, fileWriteEnable, masterFileWriteEnable,
-                activated, deactivatedPaddingEnable, (int *)numDet,
-                &framesPerFile, &fileName, &filePath, &fileIndex,
-                &overwriteEnable, &modulePos, &numThreads, &numberOfTotalFrames,
-                &dynamicRange, &udpPortNum[i], generalData);
+            ; /*dataProcessor[i]->SetupFileWriter(
+                 fileFormatType, fileWriteEnable, masterFileWriteEnable,
+                 activated, deactivatedPaddingEnable, (int *)numDet,
+                 &framesPerFile, &fileName, &filePath, &fileIndex,
+                 &overwriteEnable, &modulePos, &numThreads,
+                 &numberOfTotalFrames, &dynamicRange, &udpPortNum[i],
+                 generalData);*/
         }
     }
     LOG(logINFO) << "Deactivated Padding Enable: "
@@ -1622,7 +1623,7 @@ void Implementation::setReadoutMode(const readoutMode f) {
             numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
             readoutType);
         for (const auto &it : dataProcessor)
-            it->SetPixelDimension();
+            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
     LOG(logINFO) << "Readout Mode: " << sls::ToString(f);
@@ -1642,7 +1643,7 @@ void Implementation::setADCEnableMask(uint32_t mask) {
             readoutType);
 
         for (const auto &it : dataProcessor)
-            it->SetPixelDimension();
+            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
     LOG(logINFO) << "ADC Enable Mask for 1Gb mode: 0x" << std::hex
@@ -1664,7 +1665,7 @@ void Implementation::setTenGigaADCEnableMask(uint32_t mask) {
             readoutType);
 
         for (const auto &it : dataProcessor)
-            it->SetPixelDimension();
+            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
     LOG(logINFO) << "ADC Enable Mask for 10Gb mode: 0x" << std::hex

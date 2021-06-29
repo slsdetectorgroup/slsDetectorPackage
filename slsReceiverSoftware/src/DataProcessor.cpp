@@ -6,12 +6,15 @@
  ***********************************************/
 
 #include "DataProcessor.h"
-#include "BinaryFile.h"
+#include "BinaryDataFile.h"
+#include "BinaryMasterFile.h"
 #include "Fifo.h"
 #include "GeneralData.h"
 #include "MasterAttributes.h"
 #ifdef HDF5C
-#include "HDF5File.h"
+#include "HDF5DataFile.h"
+#include "HDF5MasterFile.h"
+#include "HDF5VirtualFile.h"
 #endif
 #include "DataStreamer.h"
 #include "sls/sls_detector_exceptions.h"
@@ -121,8 +124,6 @@ void DataProcessor::StopProcessing(char *buf) {
     else
         fifo->FreeAddress(buf);
 
-    if (file != nullptr)
-        file->CloseCurrentFile();
     StopRunning();
     LOG(logDEBUG1) << index << ": Processing Completed";
 }
@@ -189,20 +190,6 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
                                 std::string(e.what()));
     }
 
-    // write to file
-    if (file != nullptr) {
-        try {
-            file->WriteToFile(
-                buf + FIFO_HEADER_NUMBYTES,
-                sizeof(sls_receiver_header) +
-                    (uint32_t)(*((uint32_t *)buf)), //+ size of data (resizable
-                                                    // from previous call back
-                fnum - firstIndex, nump);
-        } catch (const sls::RuntimeError &e) {
-            ; // ignore write exception for now (TODO: send error message
-              // via stopReceiver tcp)
-        }
-    }
     return fnum;
 }
 
@@ -244,15 +231,6 @@ bool DataProcessor::CheckCount() {
     }
     currentFreqCount++;
     return false;
-}
-
-void DataProcessor::SetPixelDimension() {
-    if (file != nullptr) {
-        if (file->GetFileType() == HDF5) {
-            file->SetNumberofPixels(generalData->nPixelsX,
-                                    generalData->nPixelsY);
-        }
-    }
 }
 
 void DataProcessor::registerCallBackRawDataReady(void (*func)(char *, char *,

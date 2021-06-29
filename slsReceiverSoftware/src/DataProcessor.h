@@ -101,31 +101,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetGeneralData(GeneralData *g);
 
     /**
-     * Set up file writer object and call backs
-     * @param ftype file format
-     * @param fwe file write enable
-     * @param act activated
-     * @param depad deactivated padding enable
-     * @param nd pointer to number of detectors in each dimension
-     * @param maxf pointer to max frames per file
-     * @param fname pointer to file name prefix
-     * @param fpath pointer to file path
-     * @param findex pointer to file index
-     * @param owenable pointer to over write enable
-     * @param dindex pointer to detector index
-     * @param nunits pointer to number of threads/ units per detector
-     * @param nf pointer to number of images in acquisition
-     * @param dr pointer to dynamic range
-     * @param portno pointer to udp port number
-     * @param g address of GeneralData (Detector Data) pointer
-     */
-
-    /**
-     * Update pixel dimensions in file writer
-     */
-    void SetPixelDimension();
-
-    /**
      * Call back for raw data
      * args to raw data ready callback are
      * sls_receiver_header frame metadata

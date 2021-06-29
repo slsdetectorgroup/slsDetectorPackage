@@ -1,0 +1,46 @@
+#include "BinaryMasterFile.h"
+#include "MasterAttributes.h"
+#include "sls/logger.h"
+
+BinaryMasterFile::BinaryMasterFile(int index) : File(index, BINARY) {}
+
+BinaryMasterFile::~BinaryMasterFile() { CloseFile(); }
+
+void BinaryMasterFile::CloseFile() {
+    if (fd_) {
+        fclose(fd_);
+    }
+    fd_ = nullptr;
+}
+
+void BinaryMasterFile::CreateMasterFile(MasterAttributes *attr,
+                                        std::string filePath,
+                                        std::string fileNamePrefix,
+                                        uint64_t fileIndex,
+                                        bool overWriteEnable, bool silentMode) {
+    // create file name
+    std::ostringstream os;
+    os << filePath << "/" << fileNamePrefix << "_master"
+       << "_" << fileIndex << ".raw";
+    fileName_ = os.str();
+    if (!(silentMode)) {
+        LOG(logINFO) << "Master File: " << fileName_;
+    }
+
+    // create file
+    if (!(overWriteEnable)) {
+        if (nullptr == (fd_ = fopen((const char *)fileName_.c_str(), "wx"))) {
+            fd_ = nullptr;
+            throw sls::RuntimeError(
+                "Could not create binary master file (no overwrite) " +
+                fileName_);
+        }
+    } else if (nullptr == (fd_ = fopen((const char *)fileName_.c_str(), "w"))) {
+        fd_ = nullptr;
+        throw sls::RuntimeError(
+            "Could not create binary master file (overwrite) " + fileName_);
+    }
+
+    attr->WriteMasterBinaryAttributes(fd_);
+    CloseFile();
+}

@@ -2,12 +2,13 @@
 #include "MasterAttributes.h"
 #include "sls/logger.h"
 
-HDF5MasterFile::HDF5MasterFile(int index, std::mutex *hdf5Lib)
-    : File(index, HDF5), hdf5Lib_(hdf5Lib) {}
+HDF5MasterFile::HDF5MasterFile(std::mutex *hdf5Lib)
+    : File(HDF5), hdf5Lib_(hdf5Lib) {}
 
 HDF5MasterFile::~HDF5MasterFile() { CloseFile(); }
 
 void HDF5MasterFile::CloseFile() {
+    std::lock_guard<std::mutex> lock(*hdf5Lib_);
     try {
         Exception::dontPrint(); // to handle errors
         if (fd_) {
@@ -16,17 +17,15 @@ void HDF5MasterFile::CloseFile() {
             fd_ = nullptr;
         }
     } catch (const Exception &error) {
-        LOG(logERROR) << "Could not close data HDF5 handles of index "
-                      << index_;
+        LOG(logERROR) << "Could not close master HDF5 handles";
         error.printErrorStack();
     }
 }
 
-void HDF5MasterFile::CreateMasterFile(MasterAttributes *attr,
-                                      std::string filePath,
+void HDF5MasterFile::CreateMasterFile(std::string filePath,
                                       std::string fileNamePrefix,
                                       uint64_t fileIndex, bool overWriteEnable,
-                                      bool silentMode) {
+                                      bool silentMode, MasterAttributes *attr) {
 
     std::ostringstream os;
     os << filePath << "/" << fileNamePrefix << "_master"
@@ -66,6 +65,7 @@ void HDF5MasterFile::CreateMasterFile(MasterAttributes *attr,
     } catch (const Exception &error) {
         error.printErrorStack();
         CloseFile();
-        throw sls::RuntimeError("Could not create master HDF5 handles");
+        throw sls::RuntimeError(
+            "Could not create/overwrite master HDF5 handles");
     }
 }

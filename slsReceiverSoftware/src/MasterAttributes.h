@@ -1,5 +1,6 @@
 #pragma once
 
+#include "receiver_defs.h"
 #include "sls/ToString.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
@@ -13,10 +14,6 @@ using namespace H5;
 
 #include <chrono>
 using ns = std::chrono::nanoseconds;
-
-// versions
-#define HDF5_WRITER_VERSION   (6.2) // 1 decimal places
-#define BINARY_WRITER_VERSION (6.2) // 1 decimal places
 
 struct MasterAttributes {
     slsDetectorDefs::detectorType detType{slsDetectorDefs::GENERIC};
@@ -36,7 +33,7 @@ struct MasterAttributes {
     uint32_t dynamicRange{0};
     uint32_t tenGiga{0};
     int thresholdEnergyeV{0};
-  std::array<int, 3> thresholdAllEnergyeV={{0, 0, 0}};
+    std::array<int, 3> thresholdAllEnergyeV = {{0, 0, 0}};
     ns subExptime{0};
     ns subPeriod{0};
     uint32_t quad{0};

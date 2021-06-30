@@ -11,6 +11,7 @@ class File : private virtual slsDetectorDefs {
     virtual ~File();
 
     fileFormat GetFileType();
+    virtual uint32_t GetFilesInAcquisition() = 0;
     virtual void CloseFile() = 0;
 
     virtual void CreateMasterFile(std::string filePath,
@@ -18,20 +19,23 @@ class File : private virtual slsDetectorDefs {
                                   uint64_t fileIndex, bool overWriteEnable,
                                   bool silentMode, MasterAttributes *attr) = 0;
 
-    // hdf5 only
     virtual void
-    CreateFirstDataFile(std::string filePath, std::string fileNamePrefix,
-                        uint64_t fileIndex, bool overWriteEnable,
-                        bool silentMode, int detIndex, int numUnitsPerDetector,
-                        uint32_t udpPortNumber, uint32_t maxFramesPerFile,
-                        uint64_t numImages, uint32_t nPIxelsX,
-                        uint32_t nPIxelsY, uint32_t dynamicRange) = 0;
+    CreateFirstBinaryDataFile(std::string filePath, std::string fileNamePrefix,
+                              uint64_t fileIndex, bool overWriteEnable,
+                              bool silentMode, int detIndex,
+                              int numUnitsPerDetector, uint32_t udpPortNumber,
+                              uint32_t maxFramesPerFile) = 0;
 
-    virtual void CreateDataFile(std::string filePath,
-                                std::string fileNamePrefix, uint64_t fileIndex,
-                                bool overWriteEnable, bool silentMode,
-                                int detIndex, int numUnitsPerDetector,
-                                uint32_t udpPortNumber) = 0;
+    virtual void CreateFirstHDF5DataFile(
+        std::string filePath, std::string fileNamePrefix, uint64_t fileIndex,
+        bool overWriteEnable, bool silentMode, int detIndex,
+        int numUnitsPerDetector, uint32_t udpPortNumber,
+        uint32_t maxFramesPerFile, uint64_t numImages, uint32_t nPIxelsX,
+        uint32_t nPIxelsY, uint32_t dynamicRange) = 0;
+
+    virtual void WriteToFile(char *buffer, int buffersize,
+                             uint64_t currentFrameNumber,
+                             uint32_t numPacketsCaught) = 0;
 
   protected:
     slsDetectorDefs::fileFormat type_;

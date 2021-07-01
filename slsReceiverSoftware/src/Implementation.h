@@ -275,7 +275,7 @@ class Implementation : private virtual slsDetectorDefs {
 
     // config parameters
     int numThreads{1};
-    detectorType myDetectorType{GENERIC};
+    detectorType detType{GENERIC};
     int numDet[MAX_DIMENSIONS] = {0, 0};
     int modulePos{0};
     std::string detHostname;

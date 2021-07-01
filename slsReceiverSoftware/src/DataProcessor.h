@@ -46,6 +46,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *generalData);
 
+    void CloseFiles();
     void DeleteFiles();
     void SetupFileWriter(const bool filewriteEnable,
                          const bool masterFilewriteEnable,
@@ -58,8 +59,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                           const int numUnitsPerReadout,
                           const uint32_t udpPortNumber,
                           const uint32_t maxFramesPerFile,
-                          const uint64_t numImages, const uint32_t nPIxelsX,
-                          const uint32_t nPIxelsY, const uint32_t dynamicRange);
+                          const uint64_t numImages,
+                          const uint32_t dynamicRange);
 
     /**
      * Call back for raw data

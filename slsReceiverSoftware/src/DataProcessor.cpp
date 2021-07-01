@@ -87,15 +87,37 @@ void DataProcessor::SetGeneralData(GeneralData *generalData) {
     generalData_ = generalData;
 }
 
+void DataProcessor::CloseFiles() {
+    if (dataFile_)
+        dataFile_->CloseFile();
+    if (masterFile_)
+        masterFile_->CloseFile();
+    /*
+    #ifdef HDF5C
+if(virtualFile_)
+virtualFile_->CloseFile();
+    #endif
+    */
+}
+
 void DataProcessor::DeleteFiles() {
-    if (dataFile_ != nullptr) {
+    CloseFiles();
+    if (dataFile_) {
         delete dataFile_;
         dataFile_ = nullptr;
     }
-    if (masterFile_ != nullptr) {
+    if (masterFile_) {
         delete masterFile_;
         masterFile_ = nullptr;
     }
+    /*
+    #ifdef HDF5C
+if(virtualFile_) {
+    delete virtualFile_;
+    virtualFile_ = nullptr;
+}
+    #endif
+    */
 }
 void DataProcessor::SetupFileWriter(const bool filewriteEnable,
                                     const bool masterFilewriteEnable,
@@ -134,7 +156,6 @@ void DataProcessor::CreateFirstFiles(
     const bool overWriteEnable, const bool silentMode, const int modulePos,
     const int numUnitsPerReadout, const uint32_t udpPortNumber,
     const uint32_t maxFramesPerFile, const uint64_t numImages,
-    const uint32_t nPIxelsX, const uint32_t nPIxelsY,
     const uint32_t dynamicRange) {
     if (dataFile_ == nullptr) {
         throw sls::RuntimeError("file object not contstructed");
@@ -160,7 +181,8 @@ void DataProcessor::CreateFirstFiles(
         dataFile_->CreateFirstHDF5DataFile(
             filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
             modulePos, numUnitsPerReadout, udpPortNumber, maxFramesPerFile,
-            numImages, nPIxelsX, nPIxelsY, dynamicRange);
+            numImages, generalData_->nPixelsX, generalData_->nPixelsY,
+            dynamicRange);
         /*if (virtualFile_) {
             virtualFile_->CreateFile();
         }*/
@@ -223,6 +245,7 @@ void DataProcessor::StopProcessing(char *buf) {
     else
         fifo_->FreeAddress(buf);
 
+    CloseFiles();
     StopRunning();
     LOG(logDEBUG1) << index << ": Processing Completed";
 }
@@ -289,6 +312,20 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
                                 std::string(e.what()));
     }
 
+    // write to file
+    if (dataFile_ != nullptr) {
+        try {
+            dataFile_->WriteToFile(
+                buf + FIFO_HEADER_NUMBYTES,
+                sizeof(sls_receiver_header) +
+                    (uint32_t)(*((uint32_t *)buf)), //+ size of data (resizable
+                                                    // from previous call back
+                fnum - firstIndex_, nump);
+        } catch (const sls::RuntimeError &e) {
+            ; // ignore write exception for now (TODO: send error message
+              // via stopReceiver tcp)
+        }
+    }
     return fnum;
 }
 

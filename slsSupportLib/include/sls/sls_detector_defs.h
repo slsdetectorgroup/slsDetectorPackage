@@ -375,9 +375,6 @@ typedef struct {
     /** chip speed */
     enum speedLevel { FULL_SPEED, HALF_SPEED, QUARTER_SPEED };
 
-    /** hierarchy in multi-detector structure, if any */
-    enum masterFlags { NO_MASTER, IS_MASTER, IS_SLAVE };
-
     /**
      * burst mode for gotthard2
      */
@@ -394,14 +391,14 @@ typedef struct {
      */
     enum timingSourceType { TIMING_INTERNAL, TIMING_EXTERNAL };
 
-    //gain caps Mythen3
+    // gain caps Mythen3
     enum M3_GainCaps {
-        M3_C10pre= 1<<7, 
-        M3_C15sh = 1<<10, 
-        M3_C30sh = 1<<11,
-        M3_C50sh = 1<<12,
-        M3_C225ACsh = 1<<13,
-        M3_C15pre = 1<<14, 
+        M3_C10pre = 1 << 7,
+        M3_C15sh = 1 << 10,
+        M3_C30sh = 1 << 11,
+        M3_C50sh = 1 << 12,
+        M3_C225ACsh = 1 << 13,
+        M3_C15pre = 1 << 14,
     };
 
 #ifdef __cplusplus
@@ -635,9 +632,6 @@ typedef struct {
 #endif
 
 #ifdef __cplusplus
-
-
-
 
 // TODO! discuss this
 #include <vector> //hmm... but currently no way around

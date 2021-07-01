@@ -40,6 +40,7 @@ unsigned int *Feb_Control_GetTrimbits();
 
 // acquisition
 int Feb_Control_AcquisitionInProgress();
+int Feb_Control_ProcessingInProgress();
 int Feb_Control_AcquisitionStartedBit();
 int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag);
 int Feb_Control_WaitForFinishedFlag(int sleep_time_us, int tempLock);

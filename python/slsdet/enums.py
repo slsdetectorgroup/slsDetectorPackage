@@ -12,7 +12,6 @@ dacIndex = _slsdet.slsDetectorDefs.dacIndex
 detectorSettings = _slsdet.slsDetectorDefs.detectorSettings
 clockIndex = _slsdet.slsDetectorDefs.clockIndex
 readoutMode = _slsdet.slsDetectorDefs.readoutMode
-masterFlags = _slsdet.slsDetectorDefs.masterFlags
 burstMode = _slsdet.slsDetectorDefs.burstMode
 timingSourceType = _slsdet.slsDetectorDefs.timingSourceType
 M3_GainCaps = _slsdet.slsDetectorDefs.M3_GainCaps

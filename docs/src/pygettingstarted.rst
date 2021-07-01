@@ -219,7 +219,7 @@ The enums can be found in slsdet.enums
     >>> [e for e in dir(slsdet.enums) if not e.startswith('_')]
     ['burstMode', 'clockIndex', 'dacIndex', 
     'detectorSettings', 'detectorType', 'dimension', 'externalSignalFlag', 
-    'fileFormat', 'frameDiscardPolicy', 'masterFlags', 
+    'fileFormat', 'frameDiscardPolicy', 
     'readoutMode', 'runStatus', 'speedLevel', 'timingMode', 
     'timingSourceType']
 

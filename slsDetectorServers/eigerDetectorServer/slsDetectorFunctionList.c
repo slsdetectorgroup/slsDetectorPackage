@@ -46,7 +46,6 @@ int on_dst = 0;
 int dst_requested[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-enum masterFlags masterMode = IS_SLAVE;
 int top = 0;
 int master = 0;
 int normal = 0;
@@ -1413,6 +1412,8 @@ int setHighVoltage(int val) {
 
 /* parameters - timing, extsig */
 
+int isMaster() { return master; }
+
 void setTiming(enum timingMode arg) {
     int ret = 0;
     switch (arg) {
@@ -2387,19 +2388,43 @@ int stopStateMachine() {
     return OK;
 #else
     sharedMemory_lockLocalLink();
-    if ((Feb_Control_StopAcquisition() != STATUS_IDLE) ||
-        (!Beb_StopAcquisition())) {
+    // sends last frames from fifo and wait for feb processing done
+    if ((Feb_Control_StopAcquisition() != STATUS_IDLE)) {
         LOG(logERROR, ("failed to stop acquisition\n"));
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
     sharedMemory_unlockLocalLink();
 
+    // wait for beb to finish sending packets
+    int isTransmitting = 1;
+    while (isTransmitting) {
+        // wait for beb to send out all packets
+        if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 1) == FAIL) {
+            LOG(logERROR, ("failed to stop beb acquisition\n"));
+            return FAIL;
+        }
+        if (isTransmitting) {
+            printf("Transmitting...\n");
+        }
+    }
+    LOG(logINFO, ("Beb: Detector has sent all data (stop)\n"));
+
+    // reset feb and beb
+    sharedMemory_lockLocalLink();
+    Feb_Control_Reset();
+    sharedMemory_unlockLocalLink();
+    if (!Beb_StopAcquisition()) {
+        LOG(logERROR, ("failed to stop acquisition\n"));
+        return FAIL;
+    }
+
     // ensure all have same starting frame numbers
     uint64_t retval = 0;
     if (Beb_GetNextFrameNumber(&retval, send_to_ten_gig) == -2) {
         Beb_SetNextFrameNumber(retval + 1);
     }
+    LOG(logINFOBLUE, ("Stopping state machine complete\n\n"));
     return OK;
 #endif
 }
@@ -2510,6 +2535,21 @@ void readFrame(int *ret, char *mess) {
     // wait for detector to send
     int isTransmitting = 1;
     while (isTransmitting) {
+        // wait for feb processing to be done
+        sharedMemory_lockLocalLink();
+        int i = Feb_Control_ProcessingInProgress();
+        sharedMemory_unlockLocalLink();
+        if (i == STATUS_ERROR) {
+            strcpy(mess, "Could not read feb processing done register\n");
+            *ret = (int)FAIL;
+            return;
+        }
+        if (i == RUNNING) {
+            LOG(logINFOBLUE, ("Status: TRANSMITTING (feb processing)\n"));
+            isTransmitting = 1;
+        }
+
+        // wait for beb to send out all packets
         if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 1) == FAIL) {
             strcpy(mess, "Could not read delay counters\n");
             *ret = (int)FAIL;
@@ -2519,7 +2559,7 @@ void readFrame(int *ret, char *mess) {
             printf("Transmitting...\n");
         }
     }
-    LOG(logINFO, ("Detector has sent all data\n"));
+    LOG(logINFO, ("Beb: Detector has sent all data (acquire)\n"));
     LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 #endif
 }

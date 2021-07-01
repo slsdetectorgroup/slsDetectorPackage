@@ -677,16 +677,16 @@ void Detector::startDetector() {
     auto detector_type = getDetectorType().squash();
     if (detector_type == defs::MYTHEN3 && size() > 1) {
         auto is_master = getMaster();
-        std::vector<int> master;
+        int masterPosition = 0;
         std::vector<int> slaves;
         for (int i = 0; i < size(); ++i) {
             if (is_master[i])
-                master.push_back(i);
+                masterPosition = i;
             else
                 slaves.push_back(i);
         }
         pimpl->Parallel(&Module::startAcquisition, slaves);
-        pimpl->Parallel(&Module::startAcquisition, master);
+        pimpl->Parallel(&Module::startAcquisition, {masterPosition});
     } else {
         pimpl->Parallel(&Module::startAcquisition, {});
     }

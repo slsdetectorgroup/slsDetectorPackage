@@ -30,10 +30,13 @@
 
 #define DAQ_REG_RO_OFFSET   20
 #define DAQ_REG_STATUS     (DAQ_REG_RO_OFFSET + 0) // also pg and fifo status register
+
 #define FEB_REG_STATUS     (DAQ_REG_RO_OFFSET + 3)
 
 #define FEB_REG_STATUS_WAIT_FOR_TRGGR_OFST  (5)
 #define FEB_REG_STATUS_WAIT_FOR_TRGGR_MSK   (0x00000001 << FEB_REG_STATUS_WAIT_FOR_TRGGR_OFST)
+#define FEB_REG_STATUS_ACQ_DONE_OFST        (6)
+#define FEB_REG_STATUS_ACQ_DONE_MSK         (0x00000001 << FEB_REG_STATUS_ACQ_DONE_OFST)
 #define FEB_REG_STATUS_TEMP_OFST            (16)
 #define FEB_REG_STATUS_TEMP_MSK             (0x0000FFFF << FEB_REG_STATUS_TEMP_OFST)
 
@@ -44,7 +47,8 @@
 #define DAQ_CTRL_RESET 0x80000000
 #define DAQ_CTRL_START 0x40000000
 #define ACQ_CTRL_START 0x50000000 // this is 0x10000000 (acq) | 0x40000000 (daq)
-#define DAQ_CTRL_STOP  0x00000000
+#define DAQ_CTRL_STOP  0x08000000 // sends last complete frame
+#define DAQ_CTRL_DONE  0x00000040 // data processing done in feb
 
 // direct chip commands to the DAQ_REG_CHIP_CMDS register
 #define DAQ_SET_STATIC_BIT       0x00000001

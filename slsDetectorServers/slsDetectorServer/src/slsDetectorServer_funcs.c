@@ -8156,7 +8156,7 @@ int get_master(int file_des) {
 
     LOG(logDEBUG1, ("Getting master\n"));
 
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARDD)
     functionNotImplemented();
 #else
     retval = isMaster();

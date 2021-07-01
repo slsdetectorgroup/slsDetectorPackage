@@ -347,6 +347,9 @@ int getADC(enum ADCINDEX ind);
 int setHighVoltage(int val);
 
 // parameters - timing, extsig
+#if defined(MYTHEN3D) || defined(EIGERD) || defined(GOTTHARDD)
+int isMaster();
+#endif
 #ifdef GOTTHARD2D
 void updatingRegisters();
 #endif
@@ -354,7 +357,6 @@ void setTiming(enum timingMode arg);
 enum timingMode getTiming();
 #ifdef MYTHEN3D
 void setInitialExtSignals();
-int isMaster();
 int setGainCaps(int caps);
 int getGainCaps();
 int setChipStatusRegister(int csr);

@@ -160,17 +160,10 @@ void DataProcessor::CreateFirstFiles(
     if (dataFile_ == nullptr) {
         throw sls::RuntimeError("file object not contstructed");
     }
-    dataFile_->CloseFile();
-    /*
-#ifdef HDF5C
-    if (virtualFile_) {
-        virtualFile_->CloseFile();
-    }
-#endif
-*/
+    CloseFiles();
+
     // master file write enabled
     if (masterFile_) {
-        masterFile_->CloseFile();
         masterFile_->CreateMasterFile(filePath, fileNamePrefix, fileIndex,
                                       overWriteEnable, silentMode, attr);
     }
@@ -313,7 +306,7 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
     }
 
     // write to file
-    if (dataFile_ != nullptr) {
+    if (dataFile_) {
         try {
             dataFile_->WriteToFile(
                 buf + FIFO_HEADER_NUMBYTES,

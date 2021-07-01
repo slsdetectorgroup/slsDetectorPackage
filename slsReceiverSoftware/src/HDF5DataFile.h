@@ -12,29 +12,30 @@ using namespace H5;
 class HDF5DataFile : private virtual slsDetectorDefs, public File {
 
   public:
-    HDF5DataFile(int index, std::mutex *hdf5Lib);
+    HDF5DataFile(const int index, std::mutex *hdf5Lib);
     ~HDF5DataFile();
 
-    uint32_t GetFilesInAcquisition() override;
+    uint32_t GetFilesInAcquisition() const override;
 
     void CloseFile() override;
 
-    void CreateFirstHDF5DataFile(std::string filePath,
-                                 std::string fileNamePrefix, uint64_t fileIndex,
-                                 bool overWriteEnable, bool silentMode,
-                                 int detIndex, int numUnitsPerDetector,
-                                 uint32_t udpPortNumber,
-                                 uint32_t maxFramesPerFile, uint64_t numImages,
-                                 uint32_t nPIxelsX, uint32_t nPIxelsY,
-                                 uint32_t dynamicRange) override;
+    void CreateFirstHDF5DataFile(
+        const std::string filePath, const std::string fileNamePrefix,
+        const uint64_t fileIndex, const bool overWriteEnable,
+        const bool silentMode, const int modulePos,
+        const int numUnitsPerReadout, const uint32_t udpPortNumber,
+        const uint32_t maxFramesPerFile, const uint64_t numImages,
+        const uint32_t nPIxelsX, const uint32_t nPIxelsY,
+        const uint32_t dynamicRange) override;
 
-    void WriteToFile(char *buffer, int buffersize, uint64_t currentFrameNumber,
-                     uint32_t numPacketsCaught) override;
+    void WriteToFile(char *buffer, const int buffersize,
+                     const uint64_t currentFrameNumber,
+                     const uint32_t numPacketsCaught) override;
 
   private:
     void CreateFile();
-    void WriteDataFile(uint64_t currentFrameNumber, char *buffer);
-    void WriteParameterDatasets(uint64_t currentFrameNumber,
+    void WriteDataFile(const uint64_t currentFrameNumber, char *buffer);
+    void WriteParameterDatasets(const uint64_t currentFrameNumber,
                                 sls_receiver_header *rheader);
     void ExtendDataset();
 
@@ -67,6 +68,6 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
     bool overWriteEnable_{false};
     bool silentMode_{false};
     int detIndex_{0};
-    int numUnitsPerDetector_{0};
+    int numUnitsPerReadout_{0};
     uint32_t udpPortNumber_{0};
 };

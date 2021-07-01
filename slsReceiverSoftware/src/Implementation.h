@@ -15,6 +15,7 @@ class slsDetectorDefs;
 #include <exception>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <vector>
 using ns = std::chrono::nanoseconds;
 
@@ -349,7 +350,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool deactivatedPaddingEnable{true};
     int numLinesReadout{MAX_EIGER_ROWS_PER_READOUT};
     int thresholdEnergyeV{-1};
-    std::array<int, 3> thresholdAllEnergyeV={{-1, -1, -1}};
+    std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};
     std::vector<int64_t> rateCorrections;
     readoutMode readoutType{ANALOG_ONLY};
     uint32_t adcEnableMaskOneGiga{BIT32_MASK};
@@ -375,4 +376,6 @@ class Implementation : private virtual slsDetectorDefs {
     std::vector<std::unique_ptr<DataProcessor>> dataProcessor;
     std::vector<std::unique_ptr<DataStreamer>> dataStreamer;
     std::vector<std::unique_ptr<Fifo>> fifo;
+
+    std::mutex hdf5Lib;
 };

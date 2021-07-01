@@ -1,6 +1,5 @@
 #include "HDF5MasterFile.h"
 #include "MasterAttributes.h"
-#include "sls/logger.h"
 
 HDF5MasterFile::HDF5MasterFile(std::mutex *hdf5Lib)
     : File(HDF5), hdf5Lib_(hdf5Lib) {}
@@ -22,10 +21,12 @@ void HDF5MasterFile::CloseFile() {
     }
 }
 
-void HDF5MasterFile::CreateMasterFile(std::string filePath,
-                                      std::string fileNamePrefix,
-                                      uint64_t fileIndex, bool overWriteEnable,
-                                      bool silentMode, MasterAttributes *attr) {
+void HDF5MasterFile::CreateMasterFile(const std::string filePath,
+                                      const std::string fileNamePrefix,
+                                      const uint64_t fileIndex,
+                                      const bool overWriteEnable,
+                                      const bool silentMode,
+                                      MasterAttributes *attr) {
 
     std::ostringstream os;
     os << filePath << "/" << fileNamePrefix << "_master"

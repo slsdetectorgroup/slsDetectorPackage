@@ -19,86 +19,47 @@ class DataStreamer;
 struct MasterAttributes;
 
 #include <atomic>
+#include <mutex>
 #include <vector>
 
 class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    /**
-     * Constructor
-     * Calls Base Class CreateThread(), sets ErrorMask if error and increments
-     * NumberofDataProcessors
-     * @param ind self index
-     * @param dtype detector type
-     * @param f address of Fifo pointer
-     * @param act activated
-     * @param depaden deactivated padding enable
-     * @param dsEnable pointer to data stream enable
-     * @param dr pointer to dynamic range
-     * @param freq pointer to streaming frequency
-     * @param timer pointer to timer if streaming frequency is random
-     * @param sfnum pointer to streaming starting fnum
-     * @param fp pointer to frame padding enable
-     * @param sm pointer to silent mode
-     * @param qe pointer to quad Enable
-     * @param cdl pointer to vector or ctb digital bits enable
-     * @param cdo pointer to digital bits offset
-     * @param cad pointer to ctb analog databytes
-     */
-    DataProcessor(int ind, detectorType dtype, Fifo *f, bool act, bool depaden,
-                  bool *dsEnable, uint32_t *freq, uint32_t *timer,
-                  uint32_t *sfnum, bool *fp, bool *sm, std::vector<int> *cdl,
-                  int *cdo, int *cad);
+    DataProcessor(int index, detectorType detectorType, Fifo *fifo,
+                  bool *activated, bool *deactivatedPaddingEnable,
+                  bool *dataStreamEnable, uint32_t *streamingFrequency,
+                  uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum,
+                  bool *framePadding, std::vector<int> *ctbDbitList,
+                  int *ctbDbitOffset, int *ctbAnalogDataBytes,
+                  std::mutex *hdf5Lib);
 
-    /**
-     * Destructor
-     * Calls Base Class DestroyThread() and decrements NumberofDataProcessors
-     */
     ~DataProcessor() override;
 
-    //*** getters ***
-
-    /**
-     * Get acquisition started flag
-     * @return acquisition started flag
-     */
     bool GetStartedFlag();
-
-    /**
-     * Get Frames Complete Caught
-     * @return number of frames
-     */
     uint64_t GetNumFramesCaught();
-
-    /**
-     * Gets Actual Current Frame Index (that has not been subtracted from
-     * firstIndex) thats been processed
-     * @return -1 if no frames have been caught, else current frame index
-     */
+    /** (-1 if no frames have been caught */
     uint64_t GetCurrentFrameIndex();
-
-    /**
-     * Get Current Frame Index thats been processed
-     * @return -1 if no frames have been caught, else current frame index
-     */
+    /** (-1 if no frames have been caught) */
     uint64_t GetProcessedIndex();
 
-    /**
-     * Set Fifo pointer to the one given
-     * @param f address of Fifo pointer
-     */
     void SetFifo(Fifo *f);
-
-    /**
-     * Reset parameters for new acquisition
-     */
     void ResetParametersforNewAcquisition();
+    void SetGeneralData(GeneralData *generalData);
 
-    /**
-     * Set GeneralData pointer to the one given
-     * @param g address of GeneralData (Detector Data) pointer
-     */
-    void SetGeneralData(GeneralData *g);
+    void DeleteFiles();
+    void SetupFileWriter(const bool filewriteEnable,
+                         const bool masterFilewriteEnable,
+                         const fileFormat fileFormatType, const int modulePos);
+
+    void CreateFirstFiles(MasterAttributes *attr, const std::string filePath,
+                          const std::string fileNamePrefix,
+                          const uint64_t fileIndex, const bool overWriteEnable,
+                          const bool silentMode, const int modulePos,
+                          const int numUnitsPerReadout,
+                          const uint32_t udpPortNumber,
+                          const uint32_t maxFramesPerFile,
+                          const uint64_t numImages, const uint32_t nPIxelsX,
+                          const uint32_t nPIxelsY, const uint32_t dynamicRange);
 
     /**
      * Call back for raw data
@@ -125,10 +86,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                             void *arg);
 
   private:
-    /**
-     * Record First Index
-     * @param fnum frame index to record
-     */
     void RecordFirstIndex(uint64_t fnum);
 
     /**
@@ -141,14 +98,12 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     /**
      * Frees dummy buffer,
      * reset running mask by calling StopRunning()
-     * @param buf address of pointer
      */
     void StopProcessing(char *buf);
 
     /**
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
-     * @param buf address of pointer
      * @returns frame number
      */
     uint64_t ProcessAnImage(char *buf);
@@ -174,10 +129,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      */
     bool CheckCount();
 
-    /**
-     * Pad Missing Packets from the bit mask
-     * @param buf buffer
-     */
     void PadMissingPackets(char *buf);
 
     /**
@@ -186,75 +137,40 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      */
     void RearrangeDbitData(char *buf);
 
-    /** type of thread */
-    static const std::string TypeName;
+    static const std::string typeName_;
 
-    /** GeneralData (Detector Data) object */
-    const GeneralData *generalData{nullptr};
-
-    /** Fifo structure */
-    Fifo *fifo;
-
-    // individual members
-    /** Detector Type */
-    detectorType myDetectorType;
-
-    /** Data Stream Enable */
-    bool *dataStreamEnable;
-
-    /** Activated/Deactivated */
-    bool activated;
-
-    /** Deactivated padding enable */
-    bool deactivatedPaddingEnable;
-
-    /** Pointer to Streaming frequency, if 0, sending random images with a timer
-     */
-    uint32_t *streamingFrequency;
-
-    /** Pointer to the timer if Streaming frequency is random */
-    uint32_t *streamingTimerInMs;
-
-    /** Pointer to streaming starting fnum */
-    uint32_t *streamingStartFnum;
-
-    /** Current frequency count */
-    uint32_t currentFreqCount{0};
-
-    /** timer beginning stamp for random streaming */
-    struct timespec timerBegin;
-
-    /** Silent Mode */
-    bool *silentMode;
-
-    /** frame padding */
-    bool *framePadding;
-
-    /** ctb digital bits enable list */
-    std::vector<int> *ctbDbitList;
-
-    /** ctb digital bits offset */
-    int *ctbDbitOffset;
-
-    /** ctb analog databytes */
-    int *ctbAnalogDataBytes;
-
-    // acquisition start
-    /** Aquisition Started flag */
-    std::atomic<bool> startedFlag{false};
-
-    /** Frame Number of First Frame */
-    std::atomic<uint64_t> firstIndex{0};
+    const GeneralData *generalData_{nullptr};
+    Fifo *fifo_;
+    detectorType detectorType_;
+    bool *dataStreamEnable_;
+    bool *activated_;
+    bool *deactivatedPaddingEnable_;
+    /** if 0, sending random images with a timer */
+    uint32_t *streamingFrequency_;
+    uint32_t *streamingTimerInMs_;
+    uint32_t *streamingStartFnum_;
+    uint32_t currentFreqCount_{0};
+    struct timespec timerbegin_;
+    bool *framePadding_;
+    std::vector<int> *ctbDbitList_;
+    int *ctbDbitOffset_;
+    int *ctbAnalogDataBytes_;
+    std::atomic<bool> startedFlag_{false};
+    std::atomic<uint64_t> firstIndex_{0};
 
     // for statistics
     /** Number of complete frames caught */
-    uint64_t numFramesCaught{0};
+    uint64_t numFramesCaught_{0};
 
     /** Frame Number of latest processed frame number */
-    std::atomic<uint64_t> currentFrameIndex{0};
+    std::atomic<uint64_t> currentFrameIndex_{0};
 
     /** first streamer frame to add frame index in fifo header */
-    bool firstStreamerFrame{false};
+    bool firstStreamerFrame_{false};
+
+    File *dataFile_{nullptr};
+    File *masterFile_{nullptr};
+    std::mutex *hdf5Lib_;
 
     // call back
     /**

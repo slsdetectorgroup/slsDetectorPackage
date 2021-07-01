@@ -169,11 +169,11 @@ void Implementation::setDetectorType(const detectorType d) {
                 &actualUDPSocketBufferSize, &framesPerFile, &frameDiscardMode,
                 &activated, &deactivatedPaddingEnable, &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                i, myDetectorType, fifo_ptr, activated,
-                deactivatedPaddingEnable, &dataStreamEnable,
+                i, myDetectorType, fifo_ptr, &activated,
+                &deactivatedPaddingEnable, &dataStreamEnable,
                 &streamingFrequency, &streamingTimerInMs, &streamingStartFnum,
-                &framePadding, &silentMode, &ctbDbitList, &ctbDbitOffset,
-                &ctbAnalogDataBytes));
+                &framePadding, &ctbDbitList, &ctbDbitOffset,
+                &ctbAnalogDataBytes, &hdf5Lib));
         } catch (...) {
             listener.clear();
             dataProcessor.clear();
@@ -236,8 +236,8 @@ void Implementation::setModulePositionId(const int id) {
 
     for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
         /*dataProcessor[i]->SetupFileWriter(
-            fileFormatType, fileWriteEnable, masterFileWriteEnable, activated,
-            deactivatedPaddingEnable, (int *)numDet, &framesPerFile, &fileName,
+            fileFormatType, fileWriteEnable, masterFileWriteEnable, &activated,
+            &deactivatedPaddingEnable, (int *)numDet, &framesPerFile, &fileName,
             &filePath, &fileIndex, &overwriteEnable, &modulePos, &numThreads,
             &numberOfTotalFrames, &dynamicRange, &udpPortNum[i], generalData);*/
     }
@@ -348,7 +348,7 @@ void Implementation::setFileFormat(const fileFormat f) {
             for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
                 /*dataProcessor[i]->SetupFileWriter(
                     fileFormatType, fileWriteEnable, masterFileWriteEnable,
-                    activated, deactivatedPaddingEnable, (int *)numDet,
+                    &activated, &deactivatedPaddingEnable, (int *)numDet,
                     &framesPerFile, &fileName, &filePath, &fileIndex,
                     &overwriteEnable, &modulePos, &numThreads,
                     &numberOfTotalFrames, &dynamicRange, &udpPortNum[i],
@@ -392,7 +392,7 @@ void Implementation::setFileWriteEnable(const bool b) {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             /*dataProcessor[i]->SetupFileWriter(
                 fileFormatType, fileWriteEnable, masterFileWriteEnable,
-                activated, deactivatedPaddingEnable, (int *)numDet,
+                &activated, &deactivatedPaddingEnable, (int *)numDet,
                 &framesPerFile, &fileName, &filePath, &fileIndex,
                 &overwriteEnable, &modulePos, &numThreads, &numberOfTotalFrames,
                 &dynamicRange, &udpPortNum[i], generalData);*/
@@ -412,7 +412,7 @@ void Implementation::setMasterFileWriteEnable(const bool b) {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             /*dataProcessor[i]->SetupFileWriter(
                 fileFormatType, fileWriteEnable, masterFileWriteEnable,
-                activated, deactivatedPaddingEnable, (int *)numDet,
+                &activated, &deactivatedPaddingEnable, (int *)numDet,
                 &framesPerFile, &fileName, &filePath, &fileIndex,
                 &overwriteEnable, &modulePos, &numThreads, &numberOfTotalFrames,
                 &dynamicRange, &udpPortNum[i], generalData);*/
@@ -908,11 +908,11 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 listener[i]->SetGeneralData(generalData);
 
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                    i, myDetectorType, fifo_ptr, activated,
-                    deactivatedPaddingEnable, &dataStreamEnable,
+                    i, myDetectorType, fifo_ptr, &activated,
+                    &deactivatedPaddingEnable, &dataStreamEnable,
                     &streamingFrequency, &streamingTimerInMs,
-                    &streamingStartFnum, &framePadding, &silentMode,
-                    &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
+                    &streamingStartFnum, &framePadding, &ctbDbitList,
+                    &ctbDbitOffset, &ctbAnalogDataBytes, &hdf5Lib));
                 dataProcessor[i]->SetGeneralData(generalData);
             } catch (...) {
                 listener.clear();
@@ -1553,7 +1553,7 @@ bool Implementation::setActivate(bool enable) {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             /*dataProcessor[i]->SetupFileWriter(
                 fileFormatType, fileWriteEnable, masterFileWriteEnable,
-                activated, deactivatedPaddingEnable, (int *)numDet,
+                &activated, &deactivatedPaddingEnable, (int *)numDet,
                 &framesPerFile, &fileName, &filePath, &fileIndex,
                 &overwriteEnable, &modulePos, &numThreads, &numberOfTotalFrames,
                 &dynamicRange, &udpPortNum[i], generalData);*/
@@ -1575,7 +1575,7 @@ void Implementation::setDeactivatedPadding(bool enable) {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             ; /*dataProcessor[i]->SetupFileWriter(
                  fileFormatType, fileWriteEnable, masterFileWriteEnable,
-                 activated, deactivatedPaddingEnable, (int *)numDet,
+                 &activated, &deactivatedPaddingEnable, (int *)numDet,
                  &framesPerFile, &fileName, &filePath, &fileIndex,
                  &overwriteEnable, &modulePos, &numThreads,
                  &numberOfTotalFrames, &dynamicRange, &udpPortNum[i],

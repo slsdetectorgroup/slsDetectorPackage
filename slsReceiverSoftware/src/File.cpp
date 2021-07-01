@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-File::File(slsDetectorDefs::fileFormat type) : type_(type) {}
+File::File(const slsDetectorDefs::fileFormat format) : format_(format) {}
 
 File::~File() {}
 
-slsDetectorDefs::fileFormat File::GetFileType() { return type_; }
+slsDetectorDefs::fileFormat File::GetFileFormat() const { return format_; }

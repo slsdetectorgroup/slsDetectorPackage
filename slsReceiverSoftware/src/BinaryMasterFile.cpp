@@ -1,6 +1,5 @@
 #include "BinaryMasterFile.h"
 #include "MasterAttributes.h"
-#include "sls/logger.h"
 
 BinaryMasterFile::BinaryMasterFile() : File(BINARY) {}
 
@@ -13,10 +12,11 @@ void BinaryMasterFile::CloseFile() {
     fd_ = nullptr;
 }
 
-void BinaryMasterFile::CreateMasterFile(std::string filePath,
-                                        std::string fileNamePrefix,
-                                        uint64_t fileIndex,
-                                        bool overWriteEnable, bool silentMode,
+void BinaryMasterFile::CreateMasterFile(const std::string filePath,
+                                        const std::string fileNamePrefix,
+                                        const uint64_t fileIndex,
+                                        const bool overWriteEnable,
+                                        const bool silentMode,
                                         MasterAttributes *attr) {
     // create file name
     std::ostringstream os;

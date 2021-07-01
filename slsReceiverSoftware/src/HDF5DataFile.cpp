@@ -1,6 +1,5 @@
 #include "HDF5DataFile.h"
 #include "receiver_defs.h"
-#include "sls/logger.h"
 
 #include <iomanip>
 
@@ -34,7 +33,7 @@ HDF5DataFile::HDF5DataFile(int index, std::mutex *hdf5Lib)
 
 HDF5DataFile::~HDF5DataFile() { CloseFile(); }
 
-uint32_t HDF5DataFile::GetFilesInAcquisition() {
+uint32_t HDF5DataFile::GetFilesInAcquisition() const {
     return numFilesInAcquisition_;
 }
 
@@ -70,11 +69,12 @@ void HDF5DataFile::CloseFile() {
 }
 
 void HDF5DataFile::CreateFirstHDF5DataFile(
-    std::string filePath, std::string fileNamePrefix, uint64_t fileIndex,
-    bool overWriteEnable, bool silentMode, int detIndex,
-    int numUnitsPerDetector, uint32_t udpPortNumber, uint32_t maxFramesPerFile,
-    uint64_t numImages, uint32_t nPIxelsX, uint32_t nPIxelsY,
-    uint32_t dynamicRange) {
+    const std::string filePath, const std::string fileNamePrefix,
+    const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
+    const int modulePos, const int numUnitsPerReadout,
+    const uint32_t udpPortNumber, const uint32_t maxFramesPerFile,
+    const uint64_t numImages, const uint32_t nPIxelsX, const uint32_t nPIxelsY,
+    const uint32_t dynamicRange) {
 
     subFileIndex_ = 0;
     numFramesInFile_ = 0;
@@ -92,8 +92,8 @@ void HDF5DataFile::CreateFirstHDF5DataFile(
     fileIndex_ = fileIndex;
     overWriteEnable_ = overWriteEnable;
     silentMode_ = silentMode;
-    detIndex_ = detIndex;
-    numUnitsPerDetector_ = numUnitsPerDetector;
+    detIndex_ = modulePos;
+    numUnitsPerReadout_ = numUnitsPerReadout;
     udpPortNumber_ = udpPortNumber;
 
     switch (dynamicRange_) {
@@ -117,7 +117,7 @@ void HDF5DataFile::CreateFile() {
 
     std::ostringstream os;
     os << filePath_ << "/" << fileNamePrefix_ << "_d"
-       << (detIndex_ * numUnitsPerDetector_ + index_) << "_f" << subFileIndex_
+       << (detIndex_ * numUnitsPerReadout_ + index_) << "_f" << subFileIndex_
        << '_' << fileIndex_ << ".h5";
     fileName_ = os.str();
 
@@ -211,9 +211,9 @@ void HDF5DataFile::CreateFile() {
     }
 }
 
-void HDF5DataFile::WriteToFile(char *buffer, int bufferSize,
-                               uint64_t currentFrameNumber,
-                               uint32_t numPacketsCaught) {
+void HDF5DataFile::WriteToFile(char *buffer, const int buffersize,
+                               const uint64_t currentFrameNumber,
+                               const uint32_t numPacketsCaught) {
 
     // check if maxframesperfile = 0 for infinite
     if (maxFramesPerFile_ && (numFramesInFile_ >= maxFramesPerFile_)) {
@@ -233,7 +233,8 @@ void HDF5DataFile::WriteToFile(char *buffer, int bufferSize,
     WriteParameterDatasets(currentFrameNumber, (sls_receiver_header *)(buffer));
 }
 
-void HDF5DataFile::WriteDataFile(uint64_t currentFrameNumber, char *buffer) {
+void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
+                                 char *buffer) {
     std::lock_guard<std::mutex> lock(*hdf5Lib_);
 
     uint64_t nDimx =
@@ -260,7 +261,7 @@ void HDF5DataFile::WriteDataFile(uint64_t currentFrameNumber, char *buffer) {
     }
 }
 
-void HDF5DataFile::WriteParameterDatasets(uint64_t currentFrameNumber,
+void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
                                           sls_receiver_header *rheader) {
     std::lock_guard<std::mutex> lock(*hdf5Lib_);
 

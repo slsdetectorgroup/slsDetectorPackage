@@ -10,9 +10,11 @@ class BinaryMasterFile : private virtual slsDetectorDefs, public File {
     ~BinaryMasterFile();
 
     void CloseFile() override;
-    void CreateMasterFile(std::string filePath, std::string fileNamePrefix,
-                          uint64_t fileIndex, bool overWriteEnable,
-                          bool silentMode, MasterAttributes *attr) override;
+    void CreateMasterFile(const std::string filePath,
+                          const std::string fileNamePrefix,
+                          const uint64_t fileIndex, const bool overWriteEnable,
+                          const bool silentMode,
+                          MasterAttributes *attr) override;
 
   private:
     FILE *fd_{nullptr};

@@ -5,20 +5,22 @@
 class BinaryDataFile : private virtual slsDetectorDefs, public File {
 
   public:
-    BinaryDataFile(int index);
+    BinaryDataFile(const int index);
     ~BinaryDataFile();
 
     void CloseFile() override;
-    void CreateFirstBinaryDataFile(std::string filePath,
-                                   std::string fileNamePrefix,
-                                   uint64_t fileIndex, bool overWriteEnable,
-                                   bool silentMode, int detIndex,
-                                   int numUnitsPerDetector,
-                                   uint32_t udpPortNumber,
-                                   uint32_t maxFramesPerFile) override;
+    void CreateFirstBinaryDataFile(const std::string filePath,
+                                   const std::string fileNamePrefix,
+                                   const uint64_t fileIndex,
+                                   const bool overWriteEnable,
+                                   const bool silentMode, const int modulePos,
+                                   const int numUnitsPerReadout,
+                                   const uint32_t udpPortNumber,
+                                   const uint32_t maxFramesPerFile) override;
 
-    void WriteToFile(char *buffer, int buffersize, uint64_t currentFrameNumber,
-                     uint32_t numPacketsCaught) override;
+    void WriteToFile(char *buffer, const int buffersize,
+                     const uint64_t currentFrameNumber,
+                     const uint32_t numPacketsCaught) override;
 
   private:
     void CreateFile();
@@ -35,7 +37,7 @@ class BinaryDataFile : private virtual slsDetectorDefs, public File {
     bool overWriteEnable_{false};
     bool silentMode_{false};
     int detIndex_{0};
-    int numUnitsPerDetector_{0};
+    int numUnitsPerReadout_{0};
     uint32_t udpPortNumber_{0};
     uint32_t maxFramesPerFile_{0};
 };

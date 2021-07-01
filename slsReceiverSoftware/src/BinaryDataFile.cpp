@@ -1,7 +1,6 @@
 #include "BinaryDataFile.h"
-#include "sls/logger.h"
 
-BinaryDataFile::BinaryDataFile(int index) : File(BINARY), index_(index) {}
+BinaryDataFile::BinaryDataFile(const int index) : File(BINARY), index_(index) {}
 
 BinaryDataFile::~BinaryDataFile() { CloseFile(); }
 
@@ -13,10 +12,10 @@ void BinaryDataFile::CloseFile() {
 }
 
 void BinaryDataFile::CreateFirstBinaryDataFile(
-    std::string filePath, std::string fileNamePrefix, uint64_t fileIndex,
-    bool overWriteEnable, bool silentMode, int detIndex,
-    int numUnitsPerDetector, uint32_t udpPortNumber,
-    uint32_t maxFramesPerFile) {
+    const std::string filePath, const std::string fileNamePrefix,
+    const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
+    const int modulePos, const int numUnitsPerReadout,
+    const uint32_t udpPortNumber, const uint32_t maxFramesPerFile) {
 
     subFileIndex_ = 0;
     numFramesInFile_ = 0;
@@ -26,8 +25,8 @@ void BinaryDataFile::CreateFirstBinaryDataFile(
     fileIndex_ = fileIndex;
     overWriteEnable_ = overWriteEnable;
     silentMode_ = silentMode;
-    detIndex_ = detIndex;
-    numUnitsPerDetector_ = numUnitsPerDetector;
+    detIndex_ = modulePos;
+    numUnitsPerReadout_ = numUnitsPerReadout;
     udpPortNumber_ = udpPortNumber;
     maxFramesPerFile_ = maxFramesPerFile;
 
@@ -39,7 +38,7 @@ void BinaryDataFile::CreateFile() {
 
     std::ostringstream os;
     os << filePath_ << "/" << fileNamePrefix_ << "_d"
-       << (detIndex_ * numUnitsPerDetector_ + index_) << "_f" << subFileIndex_
+       << (detIndex_ * numUnitsPerReadout_ + index_) << "_f" << subFileIndex_
        << '_' << fileIndex_ << ".raw";
     fileName_ = os.str();
 
@@ -62,9 +61,9 @@ void BinaryDataFile::CreateFile() {
     }
 }
 
-void BinaryDataFile::WriteToFile(char *buffer, int buffersize,
-                                 uint64_t currentFrameNumber,
-                                 uint32_t numPacketsCaught) {
+void BinaryDataFile::WriteToFile(char *buffer, const int buffersize,
+                                 const uint64_t currentFrameNumber,
+                                 const uint32_t numPacketsCaught) {
     // check if maxframesperfile = 0 for infinite
     if (maxFramesPerFile_ && (numFramesInFile_ >= maxFramesPerFile_)) {
         CloseFile();

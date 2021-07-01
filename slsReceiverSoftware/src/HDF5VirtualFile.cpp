@@ -1,5 +1,4 @@
 #include "HDF5VirtualFile.h"
-#include "sls/logger.h"
 
 HDF5VirtualFile::HDF5VirtualFile(std::mutex *hdf5Lib)
     : File(HDF5), hdf5Lib_(hdf5Lib) {}

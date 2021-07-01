@@ -676,7 +676,7 @@ void Implementation::closeFiles() {
     uint64_t maxIndexCaught = 0;
     bool anycaught = false;
     for (const auto &it : dataProcessor) {
-        /*it->CloseFiles();*/
+        it->CloseFiles();
         maxIndexCaught = std::max(maxIndexCaught, it->GetProcessedIndex());
         if (it->GetStartedFlag())
             anycaught = true;
@@ -721,7 +721,8 @@ void Implementation::CreateUDPSockets() {
 
 void Implementation::SetupWriter() {
     // master file
-    if (masterFileWriteEnable) {
+    std::unique_ptr<MasterAttributes> masterAttributes;
+    if (masterFileWriteEnable && modulePos == 0) {
         std::unique_ptr<MasterAttributes> masterAttributes;
         switch (detType) {
         case GOTTHARD:
@@ -799,20 +800,15 @@ void Implementation::SetupWriter() {
         masterAttributes->gateDelay3 = gateDelay3;
         masterAttributes->gates = numberOfGates;
         masterAttributes->additionalJsonHeader = additionalJsonHeader;
-        try {
-            /*dataProcessor[0]->CreateMasterFile(masterAttributes.get());*/
-        } catch (const sls::RuntimeError &e) {
-            shutDownUDPSockets();
-            closeFiles();
-            throw sls::RuntimeError("Could not create master file.");
-        }
     }
 
-    // first data file
-    //->startofacquisition(which has all the start, and createfirstdatafile)
     try {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-            /*dataProcessor[i]->CreateFirstDataFile();*/
+            dataProcessor[i]->CreateFirstFiles(
+                masterAttributes.get(), filePath, fileName, fileIndex,
+                overwriteEnable, silentMode, modulePos, numThreads,
+                udpPortNum[i], framesPerFile, numberOfTotalFrames,
+                dynamicRange);
         }
     } catch (const sls::RuntimeError &e) {
         shutDownUDPSockets();
@@ -1353,8 +1349,6 @@ void Implementation::setNumberofAnalogSamples(const uint32_t i) {
             numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
             readoutType);
 
-        for (const auto &it : dataProcessor)
-            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
     LOG(logINFO) << "Number of Analog Samples: " << numberOfAnalogSamples;
@@ -1374,8 +1368,6 @@ void Implementation::setNumberofDigitalSamples(const uint32_t i) {
             numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
             readoutType);
 
-        for (const auto &it : dataProcessor)
-            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
     LOG(logINFO) << "Number of Digital Samples: " << numberOfDigitalSamples;
@@ -1395,9 +1387,6 @@ void Implementation::setCounterMask(const uint32_t i) {
         counterMask = i;
         generalData->SetNumberofCounters(ncounters, dynamicRange,
                                          tengigaEnable);
-        // to update npixelsx, npixelsy in file writer
-        for (const auto &it : dataProcessor)
-            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
     LOG(logINFO) << "Counter mask: " << sls::ToStringHex(counterMask);
@@ -1420,9 +1409,6 @@ void Implementation::setDynamicRange(const uint32_t i) {
                 generalData->SetNumberofCounters(ncounters, i, tengigaEnable);
             }
 
-            // to update npixelsx, npixelsy in file writer
-            for (const auto &it : dataProcessor)
-                ; /*it->SetPixelDimension();*/
             fifoDepth = generalData->defaultFifoDepth;
             SetupFifoStructure();
         }
@@ -1440,8 +1426,6 @@ void Implementation::setROI(slsDetectorDefs::ROI arg) {
         // only for gotthard
         generalData->SetROI(arg);
         framesPerFile = generalData->maxFramesPerFile;
-        for (const auto &it : dataProcessor)
-            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
 
@@ -1576,8 +1560,6 @@ void Implementation::setReadoutMode(const readoutMode f) {
             tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
             numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
             readoutType);
-        for (const auto &it : dataProcessor)
-            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
     LOG(logINFO) << "Readout Mode: " << sls::ToString(f);
@@ -1596,8 +1578,6 @@ void Implementation::setADCEnableMask(uint32_t mask) {
             numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
             readoutType);
 
-        for (const auto &it : dataProcessor)
-            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
     LOG(logINFO) << "ADC Enable Mask for 1Gb mode: 0x" << std::hex
@@ -1618,8 +1598,6 @@ void Implementation::setTenGigaADCEnableMask(uint32_t mask) {
             numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
             readoutType);
 
-        for (const auto &it : dataProcessor)
-            ; /*it->SetPixelDimension();*/
         SetupFifoStructure();
     }
     LOG(logINFO) << "ADC Enable Mask for 10Gb mode: 0x" << std::hex

@@ -1446,6 +1446,45 @@ TEST_CASE("trigger", "[.cmd]") {
     }
 }
 
+TEST_CASE("blockingtrigger", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("blockingtrigger", {}, -1, GET));
+    auto det_type = det.getDetectorType().squash();
+    if (det_type != defs::EIGER) {
+        REQUIRE_THROWS(proxy.Call("blockingtrigger", {}, -1, PUT));
+    } else if (det_type == defs::EIGER) {
+        auto prev_timing =
+            det.getTimingMode().tsquash("inconsistent timing mode in test");
+        auto prev_frames =
+            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+        auto prev_exptime =
+            det.getExptime().tsquash("inconsistent exptime in test");
+        auto prev_period =
+            det.getPeriod().tsquash("inconsistent period in test");
+        det.setTimingMode(defs::TRIGGER_EXPOSURE);
+        det.setNumberOfFrames(1);
+        det.setExptime(std::chrono::microseconds(200));
+        det.setPeriod(std::chrono::milliseconds(1));
+        auto nextframenumber =
+            det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
+        det.startDetector();
+        {
+            std::ostringstream oss;
+            proxy.Call("blockingtrigger", {}, -1, PUT, oss);
+            REQUIRE(oss.str() == "blockingtrigger successful\n");
+        }
+        auto currentfnum =
+            det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
+        REQUIRE(nextframenumber + 1 == currentfnum);
+        det.stopDetector();
+        det.setTimingMode(prev_timing);
+        det.setNumberOfFrames(prev_frames);
+        det.setExptime(prev_exptime);
+        det.setPeriod(prev_period);
+    }
+}
+
 TEST_CASE("clearbusy", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

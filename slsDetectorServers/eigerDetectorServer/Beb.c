@@ -253,12 +253,12 @@ int Beb_IsTransmitting(int *retval, int tengiga, int waitForDelay) {
             int maxtimer = (MAX(MAX(l_txndelaycounter, l_framedelaycounter),
                                 MAX(r_txndelaycounter, r_framedelaycounter))) /
                            100; // counter values in 10 ns
-            printf("Will wait for %d us\n", maxtimer);
+            printf("Beb: Will wait for %d us\n", maxtimer);
             usleep(maxtimer);
         }
         // wait for 1 ms
         else {
-            printf("Will wait for 1 ms\n");
+            printf("Beb: Will wait for 1 ms\n");
             usleep(1 * 1000);
         }
 
@@ -1182,7 +1182,7 @@ int Beb_StopAcquisition() {
     // open file pointer
     int fd = Beb_open(&csp0base, XPAR_CMD_GENERATOR);
     if (fd < 0) {
-        LOG(logERROR, ("Beb Stop Acquisition FAIL\n"));
+        LOG(logERROR, ("Beb Reset FAIL\n"));
         return 0;
     } else {
         // find value
@@ -1199,7 +1199,7 @@ int Beb_StopAcquisition() {
         Beb_Write32(csp0base, (RIGHT_OFFSET + STOP_ACQ_OFFSET),
                     (valuer & (~STOP_ACQ_BIT)));
 
-        LOG(logINFO, ("Beb Stop Acquisition OK\n"));
+        LOG(logINFO, ("Beb: Reset done\n"));
         // close file pointer
         Beb_close(fd, csp0base);
     }

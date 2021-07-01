@@ -776,7 +776,9 @@ void Module::setNextFrameNumber(uint64_t value) {
     sendToDetector(F_SET_NEXT_FRAME_NUMBER, value, nullptr);
 }
 
-void Module::sendSoftwareTrigger() { sendToDetectorStop(F_SOFTWARE_TRIGGER); }
+void Module::sendSoftwareTrigger(const bool block) {
+    sendToDetectorStop(F_SOFTWARE_TRIGGER, static_cast<int>(block), nullptr);
+}
 
 defs::scanParameters Module::getScan() const {
     return sendToDetector<defs::scanParameters>(F_GET_SCAN);
@@ -2006,7 +2008,7 @@ std::array<time::ns, 3> Module::getGateDelayForAllGates() const {
     return sendToDetector<std::array<time::ns, 3>>(F_GET_GATE_DELAY_ALL_GATES);
 }
 
-bool Module::isMaster() const { return sendToDetector<int>(F_GET_MASTER); }
+bool Module::isMaster() const { return sendToDetectorStop<int>(F_GET_MASTER); }
 
 int Module::getChipStatusRegister() const {
     return sendToDetector<int>(F_GET_CSR);

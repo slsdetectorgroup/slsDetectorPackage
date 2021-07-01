@@ -1193,6 +1193,41 @@ std::string CmdProxy::Scan(int action) {
     return os.str();
 }
 
+std::string CmdProxy::Trigger(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        if (cmd == "trigger") {
+            os << "[Eiger][Mythen3] Sends software trigger signal to detector";
+        } else if (cmd == "blockingtrigger") {
+            os << "[Eiger] Sends software trigger signal to detector and "
+                  "blocks till "
+                  "the frames are sent out for that trigger.";
+        } else {
+            throw sls::RuntimeError("unknown command " + cmd);
+        }
+        os << '\n';
+    } else if (action == slsDetectorDefs::GET_ACTION) {
+        throw sls::RuntimeError("Cannot get");
+    } else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (det_id != -1) {
+            throw sls::RuntimeError("Cannot execute this at module level");
+        }
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        bool block = false;
+        if (cmd == "blockingtrigger") {
+            block = true;
+        }
+        det->sendSoftwareTrigger(block);
+        os << "successful\n";
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Network Configuration (Detector<->Receiver) */
 
 std::string CmdProxy::UDPDestinationIP(int action) {

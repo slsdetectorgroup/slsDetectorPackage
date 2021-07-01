@@ -4096,16 +4096,29 @@ int check_version(int file_des) {
 int software_trigger(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
+    int arg = -1;
 
-    LOG(logDEBUG1, ("Software Trigger\n"));
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Software Trigger (block: %d\n", arg));
+
 #if !defined(EIGERD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
+    if (arg && myDetectorType == MYTHEN3) {
+        ret = FAIL;
+        strcpy(mess, "Blocking trigger not implemented for Mythen3. Please use non blocking trigger.\n");
+        LOG(logERROR, (mess));
+    }
     // only set
-    if (Server_VerifyLock() == OK) {
+    else if (Server_VerifyLock() == OK) {
+#ifdef MYTHEN3
         ret = softwareTrigger();
+#else
+        ret = softwareTrigger(arg);
+#endif
         if (ret == FAIL) {
-            sprintf(mess, "Could not send software trigger\n");
+            strcpy(mess, "Could not send software trigger\n");
             LOG(logERROR, (mess));
         }
         LOG(logDEBUG1, ("Software trigger successful\n"));
@@ -8145,7 +8158,7 @@ int get_master(int file_des) {
 
     LOG(logDEBUG1, ("Getting master\n"));
 
-#ifndef MYTHEN3D
+#if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARDD)
     functionNotImplemented();
 #else
     retval = isMaster();

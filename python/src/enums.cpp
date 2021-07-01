@@ -255,12 +255,6 @@ void init_enums(py::module &m) {
         .value("QUARTER_SPEED", slsDetectorDefs::speedLevel::QUARTER_SPEED)
         .export_values();
 
-    py::enum_<slsDetectorDefs::masterFlags>(Defs, "masterFlags")
-        .value("NO_MASTER", slsDetectorDefs::masterFlags::NO_MASTER)
-        .value("IS_MASTER", slsDetectorDefs::masterFlags::IS_MASTER)
-        .value("IS_SLAVE", slsDetectorDefs::masterFlags::IS_SLAVE)
-        .export_values();
-
     py::enum_<slsDetectorDefs::burstMode>(Defs, "burstMode")
         .value("BURST_INTERNAL", slsDetectorDefs::burstMode::BURST_INTERNAL)
         .value("BURST_EXTERNAL", slsDetectorDefs::burstMode::BURST_EXTERNAL)

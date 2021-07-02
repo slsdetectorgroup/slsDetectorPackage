@@ -129,7 +129,6 @@ void DataProcessor::SetupFileWriter(const bool filewriteEnable,
                 if (masterFilewriteEnable) {
                     masterFile_ = new HDF5MasterFile(hdf5Lib_);
                 }
-                virtualFile_ = new HDF5VirtualFile(hdf5Lib_);
             }
             break;
 #endif
@@ -185,50 +184,57 @@ void DataProcessor::CreateFirstFiles(
 }
 
 #ifdef HDF5C
+uint32_t DataProcessor::GetFilesInAcquisition() const {
+    if (dataFile_ == nullptr) {
+        throw sls::RuntimeError("No data file object created to get number of "
+                                "files in acquiistion");
+    }
+    return dataFile_->GetFilesInAcquisition();
+}
+
 void DataProcessor::CreateVirtualFile(
     const std::string filePath, const std::string fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
     const uint32_t maxFramesPerFile, const uint64_t numImages,
     const uint32_t dynamicRange, const int numModX, const int numModY) {
-    if (virtualFile_ == nullptr || dataFile_ == nullptr) {
-        throw sls::RuntimeError("No virtual or data file object created");
-    }
 
+    if (virtualFile_) {
+        delete virtualFile_;
+    }
+    virtualFile_ = new HDF5VirtualFile(hdf5Lib_);
+
+    uint64_t numImagesProcessed = GetProcessedIndex() + 1;
+    // maxframesperfile = 0 for infinite files
+    uint32_t framesPerFile =
+        ((maxFramesPerFile == 0) ? numImagesProcessed + 1 : maxFramesPerFile);
+
+    // TODO: assumption 1: create virtual file even if no data in other
+    // files (they exist anyway) assumption2: virtual file max frame index
+    // is from R0 P0 (difference from others when missing frames or for a
+    // stop acquisition)
+    virtualFile_->CreateVirtualFile(
+        filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
+        modulePos, numUnitsPerReadout, framesPerFile, numImages,
+        generalData_->nPixelsX, generalData_->nPixelsY, dynamicRange,
+        numImagesProcessed, numModX, numModY, dataFile_->GetPDataType(),
+        dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes());
+}
+
+void DataProcessor::LinkDataInMasterFile(const bool silentMode) {
     std::string fname, datasetName;
-    // only 1 file (subfile and number of files in acquisition) (to link in
-    // master)
-    if (dataFile_->GetFilesInAcquisition() == 1 && (numModX * numModY) == 1) {
+    if (virtualFile_) {
+        auto res = virtualFile_->GetFileAndDatasetName();
+        fname = res[0];
+        datasetName = res[1];
+    } else {
         auto res = dataFile_->GetFileAndDatasetName();
         fname = res[0];
         datasetName = res[1];
     }
-
-    // create virtual file and link that in master
-    else {
-
-        uint64_t numImagesProcessed = GetProcessedIndex() + 1;
-        // maxframesperfile = 0 for infinite files
-        uint32_t framesPerFile =
-            ((maxFramesPerFile == 0) ? numImagesProcessed + 1
-                                     : maxFramesPerFile);
-
-        // TODO: assumption 1: create virtual file even if no data in other
-        // files (they exist anyway) assumption2: virtual file max frame index
-        // is from R0 P0 (difference from others when missing frames or for a
-        // stop acquisition)
-        virtualFile_->CreateVirtualFile(
-            filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
-            modulePos, numUnitsPerReadout, framesPerFile, numImages,
-            generalData_->nPixelsX, generalData_->nPixelsY, dynamicRange,
-            numImagesProcessed, numModX, numModY, dataFile_->GetPDataType(),
-            dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes());
-
-        auto res = virtualFile_->GetFileAndDatasetName();
-        fname = res[0];
-        datasetName = res[1];
-    }
     // link in master
+    masterFile_->LinkDataFile(fname, datasetName,
+                              dataFile_->GetParameterNames(), silentMode);
 }
 #endif
 

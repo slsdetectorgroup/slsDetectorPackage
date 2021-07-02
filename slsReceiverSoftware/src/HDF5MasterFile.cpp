@@ -21,6 +21,60 @@ void HDF5MasterFile::CloseFile() {
     }
 }
 
+void HDF5MasterFile::LinkDataFile(std::string dataFilename,
+                                  std::string dataSetname,
+                                  const std::vector<std::string> parameterNames,
+                                  const bool silentMode) {
+
+    std::lock_guard<std::mutex> lock(*hdf5Lib_);
+    try {
+        Exception::dontPrint(); // to handle errors
+
+        FileAccPropList flist;
+        flist.setFcloseDegree(H5F_CLOSE_STRONG);
+
+        // open master file
+        H5File masterfd(fileName_.c_str(), H5F_ACC_RDWR,
+                        FileCreatPropList::DEFAULT, flist);
+
+        // open data file
+        H5File fd(dataFilename.c_str(), H5F_ACC_RDONLY,
+                  FileCreatPropList::DEFAULT, flist);
+
+        // create link for data dataset
+        DataSet dset = fd.openDataSet(dataSetname.c_str());
+        std::string linkname = std::string("/entry/data/") + dataSetname;
+        if (H5Lcreate_external(dataFilename.c_str(), dataSetname.c_str(),
+                               masterfd.getLocId(), linkname.c_str(),
+                               H5P_DEFAULT, H5P_DEFAULT) < 0) {
+            throw sls::RuntimeError(
+                "Could not create link to data dataset in master");
+        }
+
+        // create link for parameter datasets
+        for (unsigned int i = 0; i < parameterNames.size(); ++i) {
+            DataSet pDset = fd.openDataSet(parameterNames[i].c_str());
+            linkname = std::string("/entry/data/") + parameterNames[i];
+            if (H5Lcreate_external(dataFilename.c_str(),
+                                   parameterNames[i].c_str(),
+                                   masterfd.getLocId(), linkname.c_str(),
+                                   H5P_DEFAULT, H5P_DEFAULT) < 0) {
+                throw sls::RuntimeError(
+                    "Could not create link to parameter dataset in master");
+            }
+        }
+        fd.close();
+        masterfd.close();
+    } catch (const Exception &error) {
+        error.printErrorStack();
+        CloseFile();
+        throw sls::RuntimeError("Could not link in master hdf5 file");
+    }
+    if (!silentMode) {
+        LOG(logINFO) << "Linked in Master File: " << dataFilename;
+    }
+}
+
 void HDF5MasterFile::CreateMasterFile(const std::string filePath,
                                       const std::string fileNamePrefix,
                                       const uint64_t fileIndex,
@@ -31,7 +85,7 @@ void HDF5MasterFile::CreateMasterFile(const std::string filePath,
     std::ostringstream os;
     os << filePath << "/" << fileNamePrefix << "_master"
        << "_" << fileIndex << ".h5";
-    std::string fileName = os.str();
+    fileName_ = os.str();
 
     std::lock_guard<std::mutex> lock(*hdf5Lib_);
 
@@ -42,10 +96,10 @@ void HDF5MasterFile::CreateMasterFile(const std::string filePath,
         flist.setFcloseDegree(H5F_CLOSE_STRONG);
         fd_ = nullptr;
         if (!(overWriteEnable))
-            fd_ = new H5File(fileName.c_str(), H5F_ACC_EXCL,
+            fd_ = new H5File(fileName_.c_str(), H5F_ACC_EXCL,
                              FileCreatPropList::DEFAULT, flist);
         else
-            fd_ = new H5File(fileName.c_str(), H5F_ACC_TRUNC,
+            fd_ = new H5File(fileName_.c_str(), H5F_ACC_TRUNC,
                              FileCreatPropList::DEFAULT, flist);
 
         // attributes - version
@@ -73,6 +127,6 @@ void HDF5MasterFile::CreateMasterFile(const std::string filePath,
             "Could not create/overwrite master HDF5 handles");
     }
     if (!silentMode) {
-        LOG(logINFO) << "Master File: " << fileName;
+        LOG(logINFO) << "Master File: " << fileName_;
     }
 }

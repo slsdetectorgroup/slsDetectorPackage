@@ -557,10 +557,18 @@ void Implementation::stopReceiver() {
 
 #ifdef HDF5C
     if (fileWriteEnable && fileFormatType == HDF5) {
-        dataProcessor[0]->CreateVirtualFile(
-            filePath, fileName, fileIndex, overwriteEnable, silentMode,
-            modulePos, numThreads, framesPerFile, numberOfTotalFrames,
-            dynamicRange, numMods[X], numMods[Y]);
+        if (modulePos == 0) {
+            // more than 1 file, create virtual file
+            if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
+                (numMods[X] * numMods[Y]) > 1) {
+                dataProcessor[0]->CreateVirtualFile(
+                    filePath, fileName, fileIndex, overwriteEnable, silentMode,
+                    modulePos, numThreads, framesPerFile, numberOfTotalFrames,
+                    dynamicRange, numMods[X], numMods[Y]);
+            }
+            // link file in master
+            dataProcessor[0]->LinkDataInMasterFile(silentMode);
+        }
     }
 #endif
 

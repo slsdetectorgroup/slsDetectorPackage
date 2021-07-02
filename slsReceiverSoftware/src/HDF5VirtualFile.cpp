@@ -97,6 +97,7 @@ void HDF5VirtualFile::CreateVirtualFile(
         if (numImagesCaught % maxFramesPerFile)
             ++numMajorHyperslab;
         uint64_t framesSaved = 0;
+        // loop through files
         for (int hyperSlab = 0; hyperSlab < numMajorHyperslab; ++hyperSlab) {
 
             uint64_t nDimx =
@@ -107,7 +108,7 @@ void HDF5VirtualFile::CreateVirtualFile(
             hsize_t count[3] = {nDimx, nDimy, nDimz};
             hsize_t startPara[2] = {framesSaved, 0};
             hsize_t countPara[2] = {nDimx, 1};
-
+            // loop through readouts
             for (unsigned int i = 0; i < numModY * numModZ; ++i) {
 
                 // setect data hyperslabs
@@ -150,7 +151,7 @@ void HDF5VirtualFile::CreateVirtualFile(
                 // source parameter dataspace
                 hsize_t srcDimsPara[1] = {nDimx};
                 hsize_t srcDimsMaxPara[1] = {H5S_UNLIMITED};
-                DataSpace srcDataSpacePara(3, srcDimsPara, srcDimsMaxPara);
+                DataSpace srcDataSpacePara(1, srcDimsPara, srcDimsMaxPara);
 
                 // mapping of data property list
                 plist.setVirtual(vdsDataSpace, relative_srcFileName.c_str(),

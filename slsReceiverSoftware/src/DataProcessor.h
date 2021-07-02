@@ -62,6 +62,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                           const uint64_t numImages,
                           const uint32_t dynamicRange);
 #ifdef HDF5C
+    uint32_t GetFilesInAcquisition() const;
     void CreateVirtualFile(const std::string filePath,
                            const std::string fileNamePrefix,
                            const uint64_t fileIndex, const bool overWriteEnable,
@@ -71,6 +72,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                            const uint64_t numImages,
                            const uint32_t dynamicRange, const int numModX,
                            const int numModY);
+    void LinkDataInMasterFile(const bool silentMode);
 #endif
     /**
      * Call back for raw data

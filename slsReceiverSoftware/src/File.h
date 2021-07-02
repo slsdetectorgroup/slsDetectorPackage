@@ -83,6 +83,13 @@ class File : private virtual slsDetectorDefs {
         LOG(logERROR) << "This is a generic function CreateFirstDataFile that "
                          "should be overloaded by a derived class";
     };
+
+    virtual void LinkDataFile(std::string dataFilename, std::string dataSetname,
+                              const std::vector<std::string> parameterNames,
+                              const bool silentMode) {
+        LOG(logERROR) << "This is a generic function LinkDataFile that "
+                         "should be overloaded by a derived class";
+    };
 #endif
     virtual void CreateFirstBinaryDataFile(
         const std::string filePath, const std::string fileNamePrefix,

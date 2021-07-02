@@ -23,12 +23,9 @@ void BinaryMasterFile::CreateMasterFile(const std::string filePath,
     os << filePath << "/" << fileNamePrefix << "_master"
        << "_" << fileIndex << ".raw";
     fileName_ = os.str();
-    if (!(silentMode)) {
-        LOG(logINFO) << "Master File: " << fileName_;
-    }
 
     // create file
-    if (!(overWriteEnable)) {
+    if (!overWriteEnable) {
         if (nullptr == (fd_ = fopen((const char *)fileName_.c_str(), "wx"))) {
             fd_ = nullptr;
             throw sls::RuntimeError("Could not create binary master file " +
@@ -39,7 +36,9 @@ void BinaryMasterFile::CreateMasterFile(const std::string filePath,
         throw sls::RuntimeError(
             "Could not create/overwrite binary master file " + fileName_);
     }
-
+    if (!silentMode) {
+        LOG(logINFO) << "Master File: " << fileName_;
+    }
     attr->WriteMasterBinaryAttributes(fd_);
     CloseFile();
 }

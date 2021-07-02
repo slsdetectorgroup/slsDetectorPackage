@@ -723,7 +723,6 @@ void Implementation::SetupWriter() {
     // master file
     std::unique_ptr<MasterAttributes> masterAttributes;
     if (masterFileWriteEnable && modulePos == 0) {
-        std::unique_ptr<MasterAttributes> masterAttributes;
         switch (detType) {
         case GOTTHARD:
             masterAttributes = sls::make_unique<GotthardMasterAttributes>();

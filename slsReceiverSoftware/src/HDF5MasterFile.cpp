@@ -31,11 +31,7 @@ void HDF5MasterFile::CreateMasterFile(const std::string filePath,
     std::ostringstream os;
     os << filePath << "/" << fileNamePrefix << "_master"
        << "_" << fileIndex << ".h5";
-    fileName_ = os.str();
-
-    if (!(silentMode)) {
-        LOG(logINFO) << "Master File: " << fileName_;
-    }
+    std::string fileName = os.str();
 
     std::lock_guard<std::mutex> lock(*hdf5Lib_);
 
@@ -46,11 +42,18 @@ void HDF5MasterFile::CreateMasterFile(const std::string filePath,
         flist.setFcloseDegree(H5F_CLOSE_STRONG);
         fd_ = nullptr;
         if (!(overWriteEnable))
-            fd_ = new H5File(fileName_.c_str(), H5F_ACC_EXCL,
+            fd_ = new H5File(fileName.c_str(), H5F_ACC_EXCL,
                              FileCreatPropList::DEFAULT, flist);
         else
-            fd_ = new H5File(fileName_.c_str(), H5F_ACC_TRUNC,
+            fd_ = new H5File(fileName.c_str(), H5F_ACC_TRUNC,
                              FileCreatPropList::DEFAULT, flist);
+
+        // attributes - version
+        double dValue = HDF5_WRITER_VERSION;
+        DataSpace dataspace_attr = DataSpace(H5S_SCALAR);
+        Attribute attribute = fd_->createAttribute(
+            "version", PredType::NATIVE_DOUBLE, dataspace_attr);
+        attribute.write(PredType::NATIVE_DOUBLE, &dValue);
 
         // Create a group in the file
         Group group1(fd_->createGroup("entry"));
@@ -68,5 +71,8 @@ void HDF5MasterFile::CreateMasterFile(const std::string filePath,
         CloseFile();
         throw sls::RuntimeError(
             "Could not create/overwrite master HDF5 handles");
+    }
+    if (!silentMode) {
+        LOG(logINFO) << "Master File: " << fileName;
     }
 }

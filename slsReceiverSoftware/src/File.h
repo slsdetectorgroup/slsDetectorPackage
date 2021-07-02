@@ -5,6 +5,15 @@
 
 struct MasterAttributes;
 
+#ifdef HDF5C
+#include "H5Cpp.h"
+#ifndef H5_NO_NAMESPACE
+using namespace H5;
+#endif
+#endif
+
+#include <array>
+
 class File : private virtual slsDetectorDefs {
 
   public:
@@ -14,11 +23,75 @@ class File : private virtual slsDetectorDefs {
     fileFormat GetFileFormat() const;
     virtual void CloseFile() = 0;
 
+#ifdef HDF5C
+    virtual std::array<std::string, 2> GetFileAndDatasetName() const {
+        LOG(logERROR)
+            << "This is a generic function GetFilesInAcquisition that "
+               "should be overloaded by a derived class";
+        return std::array<std::string, 2>{};
+    }
+
     virtual uint32_t GetFilesInAcquisition() const {
         LOG(logERROR)
             << "This is a generic function GetFilesInAcquisition that "
                "should be overloaded by a derived class";
         return 0;
+    };
+
+    virtual DataType GetPDataType() const {
+        LOG(logERROR) << "This is a generic function GetPDataType that "
+                         "should be overloaded by a derived class";
+        return PredType::STD_U16LE;
+    }
+
+    virtual std::vector<std::string> GetParameterNames() const {
+        LOG(logERROR)
+            << "This is a generic function GetFilesInAcquisition that "
+               "should be overloaded by a derived class";
+        return std::vector<std::string>{};
+    };
+
+    virtual std::vector<DataType> GetParameterDataTypes() const {
+        LOG(logERROR)
+            << "This is a generic function GetFilesInAcquisition that "
+               "should be overloaded by a derived class";
+        return std::vector<DataType>{};
+    };
+
+    virtual void CreateVirtualFile(
+        const std::string filePath, const std::string fileNamePrefix,
+        const uint64_t fileIndex, const bool overWriteEnable,
+        const bool silentMode, const int modulePos,
+        const int numUnitsPerReadout, const uint32_t maxFramesPerFile,
+        const uint64_t numImages, const uint32_t nPixelsX,
+        const uint32_t nPixelsY, const uint32_t dynamicRange,
+        const uint64_t numImagesCaught, const int numModX, const int numModY,
+        const DataType dataType, const std::vector<std::string> parameterNames,
+        const std::vector<DataType> parameterDataTypes) {
+        LOG(logERROR) << "This is a generic function CreateVirtualFile that "
+                         "should be overloaded by a derived class";
+    }
+
+    virtual void CreateFirstHDF5DataFile(
+        const std::string filePath, const std::string fileNamePrefix,
+        const uint64_t fileIndex, const bool overWriteEnable,
+        const bool silentMode, const int modulePos,
+        const int numUnitsPerReadout, const uint32_t udpPortNumber,
+        const uint32_t maxFramesPerFile, const uint64_t numImages,
+        const uint32_t nPixelsX, const uint32_t nPixelsY,
+        const uint32_t dynamicRange) {
+        LOG(logERROR) << "This is a generic function CreateFirstDataFile that "
+                         "should be overloaded by a derived class";
+    };
+#endif
+    virtual void CreateFirstBinaryDataFile(
+        const std::string filePath, const std::string fileNamePrefix,
+        const uint64_t fileIndex, const bool overWriteEnable,
+        const bool silentMode, const int modulePos,
+        const int numUnitsPerReadout, const uint32_t udpPortNumber,
+        const uint32_t maxFramesPerFile) {
+        LOG(logERROR) << "This is a generic function CreateFirstDataFile that "
+                         "should be overloaded by a derived class";
     };
 
     virtual void CreateMasterFile(const std::string filePath,
@@ -29,30 +102,6 @@ class File : private virtual slsDetectorDefs {
                                   MasterAttributes *attr) {
         LOG(logERROR) << "This is a generic function CreateMasterFile that "
                          "should be overloaded by a derived class";
-    };
-
-    virtual void CreateFirstBinaryDataFile(
-        const std::string filePath, const std::string fileNamePrefix,
-        const uint64_t fileIndex, const bool overWriteEnable,
-        const bool silentMode, const int modulePos,
-        const int numUnitsPerReadout, const uint32_t udpPortNumber,
-        const uint32_t maxFramesPerFile) {
-        LOG(logERROR)
-            << "This is a generic function CreateFirstBinaryDataFile that "
-               "should be overloaded by a derived class";
-    };
-
-    virtual void CreateFirstHDF5DataFile(
-        const std::string filePath, const std::string fileNamePrefix,
-        const uint64_t fileIndex, const bool overWriteEnable,
-        const bool silentMode, const int modulePos,
-        const int numUnitsPerReadout, const uint32_t udpPortNumber,
-        const uint32_t maxFramesPerFile, const uint64_t numImages,
-        const uint32_t nPIxelsX, const uint32_t nPIxelsY,
-        const uint32_t dynamicRange) {
-        LOG(logERROR)
-            << "This is a generic function CreateFirstHDF5DataFile that "
-               "should be overloaded by a derived class";
     };
 
     virtual void WriteToFile(char *buffer, const int buffersize,

@@ -33,8 +33,21 @@ HDF5DataFile::HDF5DataFile(int index, std::mutex *hdf5Lib)
 
 HDF5DataFile::~HDF5DataFile() { CloseFile(); }
 
+std::array<std::string, 2> HDF5DataFile::GetFileAndDatasetName() const {
+    return std::array<std::string, 2>{fileName_, dataSetName_};
+}
+
 uint32_t HDF5DataFile::GetFilesInAcquisition() const {
     return numFilesInAcquisition_;
+}
+
+DataType HDF5DataFile::GetPDataType() const { return dataType_; }
+
+std::vector<std::string> HDF5DataFile::GetParameterNames() const {
+    return parameterNames_;
+}
+std::vector<DataType> HDF5DataFile::GetParameterDataTypes() const {
+    return parameterDataTypes_;
 }
 
 void HDF5DataFile::CloseFile() {
@@ -73,7 +86,7 @@ void HDF5DataFile::CreateFirstHDF5DataFile(
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
     const uint32_t udpPortNumber, const uint32_t maxFramesPerFile,
-    const uint64_t numImages, const uint32_t nPIxelsX, const uint32_t nPIxelsY,
+    const uint64_t numImages, const uint32_t nPixelsX, const uint32_t nPixelsY,
     const uint32_t dynamicRange) {
 
     subFileIndex_ = 0;
@@ -83,8 +96,8 @@ void HDF5DataFile::CreateFirstHDF5DataFile(
 
     maxFramesPerFile_ = maxFramesPerFile;
     numImages_ = numImages;
-    nPixelsX_ = nPIxelsX;
-    nPixelsY_ = nPIxelsY;
+    nPixelsX_ = nPixelsX;
+    nPixelsY_ = nPixelsY;
     dynamicRange_ = dynamicRange;
 
     filePath_ = filePath;
@@ -166,7 +179,7 @@ void HDF5DataFile::CreateFile() {
         osfn << "/data";
         if (numImages_ > 1)
             osfn << "_f" << std::setfill('0') << std::setw(12) << subFileIndex_;
-        std::string dsetname = osfn.str();
+        dataSetName_ = osfn.str();
 
         // dataset
         // fill value
@@ -178,8 +191,8 @@ void HDF5DataFile::CreateFile() {
         hsize_t chunk_dims[3] = {MAX_CHUNKED_IMAGES, nDimy, nDimz};
         plist.setChunk(3, chunk_dims);
         dataSet_ = nullptr;
-        dataSet_ = new DataSet(fd_->createDataSet(dsetname.c_str(), dataType_,
-                                                  *dataSpace_, plist));
+        dataSet_ = new DataSet(fd_->createDataSet(
+            dataSetName_.c_str(), dataType_, *dataSpace_, plist));
 
         // create parameter datasets
         hsize_t dims[1] = {nDimx};

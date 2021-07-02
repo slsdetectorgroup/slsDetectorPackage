@@ -2,11 +2,6 @@
 
 #include "File.h"
 
-#include "H5Cpp.h"
-#ifndef H5_NO_NAMESPACE
-using namespace H5;
-#endif
-
 #include <mutex>
 
 class HDF5MasterFile : private virtual slsDetectorDefs, public File {
@@ -25,5 +20,4 @@ class HDF5MasterFile : private virtual slsDetectorDefs, public File {
   private:
     std::mutex *hdf5Lib_;
     H5File *fd_{nullptr};
-    std::string fileName_;
 };

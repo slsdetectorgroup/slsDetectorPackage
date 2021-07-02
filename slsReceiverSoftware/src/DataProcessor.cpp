@@ -92,12 +92,10 @@ void DataProcessor::CloseFiles() {
         dataFile_->CloseFile();
     if (masterFile_)
         masterFile_->CloseFile();
-    /*
-    #ifdef HDF5C
-if(virtualFile_)
-virtualFile_->CloseFile();
-    #endif
-    */
+#ifdef HDF5C
+    if (virtualFile_)
+        virtualFile_->CloseFile();
+#endif
 }
 
 void DataProcessor::DeleteFiles() {
@@ -110,14 +108,12 @@ void DataProcessor::DeleteFiles() {
         delete masterFile_;
         masterFile_ = nullptr;
     }
-    /*
-    #ifdef HDF5C
-if(virtualFile_) {
-    delete virtualFile_;
-    virtualFile_ = nullptr;
-}
-    #endif
-    */
+#ifdef HDF5C
+    if (virtualFile_) {
+        delete virtualFile_;
+        virtualFile_ = nullptr;
+    }
+#endif
 }
 void DataProcessor::SetupFileWriter(const bool filewriteEnable,
                                     const bool masterFilewriteEnable,
@@ -133,7 +129,7 @@ void DataProcessor::SetupFileWriter(const bool filewriteEnable,
                 if (masterFilewriteEnable) {
                     masterFile_ = new HDF5MasterFile(hdf5Lib_);
                 }
-                // virtual file
+                virtualFile_ = new HDF5VirtualFile(hdf5Lib_);
             }
             break;
 #endif
@@ -176,9 +172,6 @@ void DataProcessor::CreateFirstFiles(
             modulePos, numUnitsPerReadout, udpPortNumber, maxFramesPerFile,
             numImages, generalData_->nPixelsX, generalData_->nPixelsY,
             dynamicRange);
-        /*if (virtualFile_) {
-            virtualFile_->CreateFile();
-        }*/
         break;
 #endif
     case BINARY:
@@ -190,6 +183,54 @@ void DataProcessor::CreateFirstFiles(
         throw sls::RuntimeError("Unknown file format (compile with hdf5 flags");
     }
 }
+
+#ifdef HDF5C
+void DataProcessor::CreateVirtualFile(
+    const std::string filePath, const std::string fileNamePrefix,
+    const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
+    const int modulePos, const int numUnitsPerReadout,
+    const uint32_t maxFramesPerFile, const uint64_t numImages,
+    const uint32_t dynamicRange, const int numModX, const int numModY) {
+    if (virtualFile_ == nullptr || dataFile_ == nullptr) {
+        throw sls::RuntimeError("No virtual or data file object created");
+    }
+
+    std::string fname, datasetName;
+    // only 1 file (subfile and number of files in acquisition) (to link in
+    // master)
+    if (dataFile_->GetFilesInAcquisition() == 1 && (numModX * numModY) == 1) {
+        auto res = dataFile_->GetFileAndDatasetName();
+        fname = res[0];
+        datasetName = res[1];
+    }
+
+    // create virtual file and link that in master
+    else {
+
+        uint64_t numImagesProcessed = GetProcessedIndex() + 1;
+        // maxframesperfile = 0 for infinite files
+        uint32_t framesPerFile =
+            ((maxFramesPerFile == 0) ? numImagesProcessed + 1
+                                     : maxFramesPerFile);
+
+        // TODO: assumption 1: create virtual file even if no data in other
+        // files (they exist anyway) assumption2: virtual file max frame index
+        // is from R0 P0 (difference from others when missing frames or for a
+        // stop acquisition)
+        virtualFile_->CreateVirtualFile(
+            filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
+            modulePos, numUnitsPerReadout, framesPerFile, numImages,
+            generalData_->nPixelsX, generalData_->nPixelsY, dynamicRange,
+            numImagesProcessed, numModX, numModY, dataFile_->GetPDataType(),
+            dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes());
+
+        auto res = virtualFile_->GetFileAndDatasetName();
+        fname = res[0];
+        datasetName = res[1];
+    }
+    // link in master
+}
+#endif
 
 void DataProcessor::ThreadExecution() {
     char *buffer = nullptr;

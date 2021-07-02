@@ -2,11 +2,6 @@
 
 #include "File.h"
 
-#include "H5Cpp.h"
-#ifndef H5_NO_NAMESPACE
-using namespace H5;
-#endif
-
 #include <mutex>
 
 class HDF5DataFile : private virtual slsDetectorDefs, public File {
@@ -15,7 +10,11 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
     HDF5DataFile(const int index, std::mutex *hdf5Lib);
     ~HDF5DataFile();
 
+    std::array<std::string, 2> GetFileAndDatasetName() const override;
     uint32_t GetFilesInAcquisition() const override;
+    DataType GetPDataType() const override;
+    std::vector<std::string> GetParameterNames() const override;
+    std::vector<DataType> GetParameterDataTypes() const override;
 
     void CloseFile() override;
 
@@ -25,7 +24,7 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
         const bool silentMode, const int modulePos,
         const int numUnitsPerReadout, const uint32_t udpPortNumber,
         const uint32_t maxFramesPerFile, const uint64_t numImages,
-        const uint32_t nPIxelsX, const uint32_t nPIxelsY,
+        const uint32_t nPixelsX, const uint32_t nPixelsY,
         const uint32_t dynamicRange) override;
 
     void WriteToFile(char *buffer, const int buffersize,
@@ -43,6 +42,7 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
     std::mutex *hdf5Lib_;
     H5File *fd_{nullptr};
     std::string fileName_;
+    std::string dataSetName_;
     DataSpace *dataSpace_{nullptr};
     DataSet *dataSet_{nullptr};
     DataType dataType_{PredType::STD_U16LE};

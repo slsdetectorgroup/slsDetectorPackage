@@ -88,7 +88,6 @@ class Implementation : private virtual slsDetectorDefs {
     void stopReceiver();
     void startReadout();
     void shutDownUDPSockets();
-    void closeFiles();
     void restreamStop();
 
     /**************************************************
@@ -276,7 +275,7 @@ class Implementation : private virtual slsDetectorDefs {
     // config parameters
     int numThreads{1};
     detectorType detType{GENERIC};
-    int numDet[MAX_DIMENSIONS] = {0, 0};
+    int numMods[MAX_DIMENSIONS] = {0, 0};
     int modulePos{0};
     std::string detHostname;
     bool silentMode{false};

@@ -61,7 +61,17 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                           const uint32_t maxFramesPerFile,
                           const uint64_t numImages,
                           const uint32_t dynamicRange);
-
+#ifdef HDF5C
+    void CreateVirtualFile(const std::string filePath,
+                           const std::string fileNamePrefix,
+                           const uint64_t fileIndex, const bool overWriteEnable,
+                           const bool silentMode, const int modulePos,
+                           const int numUnitsPerReadout,
+                           const uint32_t maxFramesPerFile,
+                           const uint64_t numImages,
+                           const uint32_t dynamicRange, const int numModX,
+                           const int numModY);
+#endif
     /**
      * Call back for raw data
      * args to raw data ready callback are
@@ -172,6 +182,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     File *dataFile_{nullptr};
     File *masterFile_{nullptr};
     std::mutex *hdf5Lib_;
+#ifdef HDF5C
+    File *virtualFile_{nullptr};
+#endif
 
     // call back
     /**

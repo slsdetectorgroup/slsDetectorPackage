@@ -192,32 +192,32 @@ void Implementation::setDetectorType(const detectorType d) {
     LOG(logDEBUG) << " Detector type set to " << sls::ToString(d);
 }
 
-int *Implementation::getDetectorSize() const { return (int *)numDet; }
+int *Implementation::getDetectorSize() const { return (int *)numMods; }
 
 void Implementation::setDetectorSize(const int *size) {
     std::string log_message = "Detector Size (ports): (";
     for (int i = 0; i < MAX_DIMENSIONS; ++i) {
         // x dir (colums) each udp port
         if (detType == EIGER && i == X)
-            numDet[i] = size[i] * 2;
+            numMods[i] = size[i] * 2;
         // y dir (rows) each udp port
         else if (numUDPInterfaces == 2 && i == Y)
-            numDet[i] = size[i] * 2;
+            numMods[i] = size[i] * 2;
         else
-            numDet[i] = size[i];
-        log_message += std::to_string(numDet[i]);
+            numMods[i] = size[i];
+        log_message += std::to_string(numMods[i]);
         if (i < MAX_DIMENSIONS - 1)
             log_message += ", ";
     }
     log_message += ")";
 
-    int nd[2] = {numDet[0], numDet[1]};
+    int nm[2] = {numMods[0], numMods[1]};
     if (quadEnable) {
-        nd[0] = 1;
-        nd[1] = 2;
+        nm[0] = 1;
+        nm[1] = 2;
     }
     for (const auto &it : dataStreamer) {
-        it->SetNumberofDetectors(nd);
+        it->SetNumberofModules(nm);
     }
 
     LOG(logINFO) << log_message;
@@ -236,12 +236,12 @@ void Implementation::setModulePositionId(const int id) {
     for (const auto &it : dataProcessor)
         it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
                             fileFormatType, modulePos);
-    assert(numDet[1] != 0);
+    assert(numMods[1] != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
         row =
-            (modulePos % numDet[1]) * ((numUDPInterfaces == 2) ? 2 : 1); // row
-        col = (modulePos / numDet[1]) * ((detType == EIGER) ? 2 : 1) +
+            (modulePos % numMods[1]) * ((numUDPInterfaces == 2) ? 2 : 1); // row
+        col = (modulePos / numMods[1]) * ((detType == EIGER) ? 2 : 1) +
               i; // col for horiz. udp ports
         listener[i]->SetHardCodedPosition(row, col);
     }
@@ -555,19 +555,14 @@ void Implementation::stopReceiver() {
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 
-    // create virtual file
+#ifdef HDF5C
     if (fileWriteEnable && fileFormatType == HDF5) {
-        uint64_t maxIndexCaught = 0;
-        bool anycaught = false;
-        for (const auto &it : dataProcessor) {
-            maxIndexCaught = std::max(maxIndexCaught, it->GetProcessedIndex());
-            if (it->GetStartedFlag())
-                anycaught = true;
-        }
-        // to create virtual file & set files/acquisition to 0 (only hdf5 at the
-        // moment)
-        /*dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);*/
+        dataProcessor[0]->CreateVirtualFile(
+            filePath, fileName, fileIndex, overwriteEnable, silentMode,
+            modulePos, numThreads, framesPerFile, numberOfTotalFrames,
+            dynamicRange, numMods[X], numMods[Y]);
     }
+#endif
 
     // wait for the processes (dataStreamer) to be done
     running = true;
@@ -670,20 +665,6 @@ void Implementation::startReadout() {
 void Implementation::shutDownUDPSockets() {
     for (const auto &it : listener)
         it->ShutDownUDPSocket();
-}
-
-void Implementation::closeFiles() {
-    uint64_t maxIndexCaught = 0;
-    bool anycaught = false;
-    for (const auto &it : dataProcessor) {
-        it->CloseFiles();
-        maxIndexCaught = std::max(maxIndexCaught, it->GetProcessedIndex());
-        if (it->GetStartedFlag())
-            anycaught = true;
-    }
-    // to create virtual file & set files/acquisition to 0 (only hdf5 at the
-    // moment)
-    /*dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);*/
 }
 
 void Implementation::restreamStop() {
@@ -811,7 +792,8 @@ void Implementation::SetupWriter() {
         }
     } catch (const sls::RuntimeError &e) {
         shutDownUDPSockets();
-        closeFiles();
+        for (const auto &it : dataProcessor)
+            it->CloseFiles();
         throw sls::RuntimeError("Could not create first data file.");
     }
 }
@@ -850,7 +832,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         // reduce number of detectors in y dir (rows) if it had 2 interfaces
         // before
         if (numUDPInterfaces == 2)
-            numDet[Y] /= 2;
+            numMods[Y] /= 2;
 
         numUDPInterfaces = n;
 
@@ -898,15 +880,15 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             if (dataStreamEnable) {
                 try {
                     int fd = flippedDataX;
-                    int nd[2] = {numDet[0], numDet[1]};
+                    int nm[2] = {numMods[0], numMods[1]};
                     if (quadEnable) {
                         fd = i;
-                        nd[0] = 1;
-                        nd[1] = 2;
+                        nm[0] = 1;
+                        nm[1] = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, fd,
-                        (int *)nd, &quadEnable, &numberOfTotalFrames));
+                        (int *)nm, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP,
@@ -929,7 +911,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         SetThreadPriorities();
 
         // update (from 1 to 2 interface) & also for printout
-        setDetectorSize(numDet);
+        setDetectorSize(numMods);
         // update row and column in dataprocessor
         setModulePositionId(modulePos);
 
@@ -1027,15 +1009,15 @@ void Implementation::setDataStreamEnable(const bool enable) {
             for (int i = 0; i < numThreads; ++i) {
                 try {
                     int fd = flippedDataX;
-                    int nd[2] = {numDet[0], numDet[1]};
+                    int nm[2] = {numMods[0], numMods[1]};
                     if (quadEnable) {
                         fd = i;
-                        nd[0] = 1;
-                        nd[1] = 2;
+                        nm[0] = 1;
+                        nm[1] = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, fd,
-                        (int *)nd, &quadEnable, &numberOfTotalFrames));
+                        (int *)nm, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP,
@@ -1488,13 +1470,13 @@ void Implementation::setQuad(const bool b) {
 
         if (!quadEnable) {
             for (const auto &it : dataStreamer) {
-                it->SetNumberofDetectors(numDet);
+                it->SetNumberofModules(numMods);
                 it->SetFlippedDataX(flippedDataX);
             }
         } else {
             int size[2] = {1, 2};
             for (const auto &it : dataStreamer) {
-                it->SetNumberofDetectors(size);
+                it->SetNumberofModules(size);
             }
             if (dataStreamer.size() == 2) {
                 dataStreamer[0]->SetFlippedDataX(0);

@@ -1516,6 +1516,9 @@ bool Module::getDataStream(const bool left) const {
 void Module::setDataStream(const bool left, const bool enable) {
     int args[]{static_cast<int>(left), static_cast<int>(enable)};
     sendToDetector(F_SET_DATASTREAM, args, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_DATASTREAM, args, nullptr);
+    }
 }
 
 // Jungfrau Specific

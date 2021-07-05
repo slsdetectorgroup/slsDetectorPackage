@@ -60,7 +60,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                           const uint32_t udpPortNumber,
                           const uint32_t maxFramesPerFile,
                           const uint64_t numImages,
-                          const uint32_t dynamicRange);
+                          const uint32_t dynamicRange,
+                          const bool detectorDataStream
+                          );
 #ifdef HDF5C
     uint32_t GetFilesInAcquisition() const;
     void CreateVirtualFile(const std::string filePath,

@@ -7055,6 +7055,28 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
+        // data stream left
+#ifdef EIGERD
+    i32 = 0;
+    getDataStream(1, &i32);
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();        
+
+        // data stream right
+#ifdef EIGERD
+    i32 = 0;
+    getDataStream(0, &i32);
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();        
+
         // quad
 #ifdef EIGERD
     i32 = getQuad();
@@ -8300,7 +8322,7 @@ int set_datastream(int file_des) {
             if (ret == FAIL) {
                 sprintf(mess, "Could not %s\n", msg);
                 LOG(logERROR, (mess));
-            } else {
+            } /*else {
                 int retval = -1;
                 ret = getDataStream(leftFpga, &retval);
                 LOG(logDEBUG1, ("%s retval: %u\n", msg, retval));
@@ -8310,7 +8332,7 @@ int set_datastream(int file_des) {
                     LOG(logERROR, (mess));
                 }
                 validate(&ret, mess, enable, retval, msg, DEC);
-            }
+            }*/
         }
     }
 #endif

@@ -151,7 +151,7 @@ void DataProcessor::CreateFirstFiles(
     const bool overWriteEnable, const bool silentMode, const int modulePos,
     const int numUnitsPerReadout, const uint32_t udpPortNumber,
     const uint32_t maxFramesPerFile, const uint64_t numImages,
-    const uint32_t dynamicRange) {
+    const uint32_t dynamicRange, const bool detectorDataStream) {
     if (dataFile_ == nullptr) {
         throw sls::RuntimeError("file object not contstructed");
     }
@@ -161,6 +161,16 @@ void DataProcessor::CreateFirstFiles(
     if (masterFile_) {
         masterFile_->CreateMasterFile(filePath, fileNamePrefix, fileIndex,
                                       overWriteEnable, silentMode, attr);
+    }
+
+    // deactivated with padding enabled, dont write file
+    if (!*activated_ && !*deactivatedPaddingEnable_) {
+        return;
+    }
+
+    // deactivated port, dont write file
+    if (!detectorDataStream) {
+        return;
     }
 
     switch (dataFile_->GetFileFormat()) {

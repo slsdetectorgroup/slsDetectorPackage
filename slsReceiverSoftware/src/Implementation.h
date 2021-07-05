@@ -210,7 +210,11 @@ class Implementation : private virtual slsDetectorDefs {
     bool getActivate() const;
     /** [Eiger] If deactivated, receiver will create dummy data if deactivated
      * padding is enabled (as it will receive nothing from detector) */
-    bool setActivate(const bool enable);
+    void setActivate(const bool enable);
+    bool getDetectorDataStream(const bool leftPort) const;
+    /** [Eiger] If datastream is disabled, receiver will create dummy data if deactivated
+     * padding for that port is enabled (as it will receive nothing from detector) */
+    void setDetectorDataStream(const bool leftPort, const bool enable);    
     bool getDeactivatedPadding() const;
     /* [Eiger] */
     void setDeactivatedPadding(const bool enable);
@@ -346,6 +350,7 @@ class Implementation : private virtual slsDetectorDefs {
     int flippedDataX{0};
     bool quadEnable{false};
     bool activated{true};
+    std::array<bool, 2> detectorDataStream = {{true, true}};
     bool deactivatedPaddingEnable{true};
     int numLinesReadout{MAX_EIGER_ROWS_PER_READOUT};
     int thresholdEnergyeV{-1};

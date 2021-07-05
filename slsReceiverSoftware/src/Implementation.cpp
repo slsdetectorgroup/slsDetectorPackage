@@ -167,7 +167,7 @@ void Implementation::setDetectorType(const detectorType d) {
                 i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                 &numberOfTotalFrames, &udpSocketBufferSize,
                 &actualUDPSocketBufferSize, &framesPerFile, &frameDiscardMode,
-                &activated, &deactivatedPaddingEnable, &silentMode));
+                &activated, &detectorDataStream[i], &deactivatedPaddingEnable, &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, detType, fifo_ptr, &activated, &deactivatedPaddingEnable,
                 &dataStreamEnable, &streamingFrequency, &streamingTimerInMs,
@@ -610,6 +610,12 @@ void Implementation::stopReceiver() {
         if (!activated) {
             LOG(logINFORED) << "Deactivated Receiver";
         }
+        if (!detectorDataStream[0]) {
+            LOG(logINFORED) << "Deactivated Left Port";
+        } 
+            if (!detectorDataStream[1]) {
+            LOG(logINFORED) << "Deactivated Right Port";
+        } 
         // callback
         if (acquisitionFinishedCallBack) {
             try {
@@ -796,7 +802,7 @@ void Implementation::SetupWriter() {
                 masterAttributes.get(), filePath, fileName, fileIndex,
                 overwriteEnable, silentMode, modulePos, numThreads,
                 udpPortNum[i], framesPerFile, numberOfTotalFrames,
-                dynamicRange);
+                dynamicRange, detectorDataStream[i]);
         }
     } catch (const sls::RuntimeError &e) {
         shutDownUDPSockets();
@@ -867,7 +873,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                     &numberOfTotalFrames, &udpSocketBufferSize,
                     &actualUDPSocketBufferSize, &framesPerFile,
-                    &frameDiscardMode, &activated, &deactivatedPaddingEnable,
+                    &frameDiscardMode, &activated, &detectorDataStream[i], &deactivatedPaddingEnable,
                     &silentMode));
                 listener[i]->SetGeneralData(generalData);
 
@@ -1497,10 +1503,20 @@ void Implementation::setQuad(const bool b) {
 
 bool Implementation::getActivate() const { return activated; }
 
-bool Implementation::setActivate(bool enable) {
+void Implementation::setActivate(bool enable) {
     activated = enable;
     LOG(logINFO) << "Activation: " << (activated ? "enabled" : "disabled");
-    return activated;
+}
+
+bool Implementation::getDetectorDataStream(const bool leftPort) const { 
+    int index = (leftPort ? 0 : 1);
+    return detectorDataStream[index]; 
+}
+
+void Implementation::setDetectorDataStream(const bool leftPort, const bool enable) {
+    int index = (leftPort ? 0 : 1);
+    detectorDataStream[index] = enable;
+    LOG(logINFO) << "Detector datastream ("  << (leftPort ? "Left" : "Right") << " Port): "  << sls::ToString(detectorDataStream[index]);
 }
 
 bool Implementation::getDeactivatedPadding() const {

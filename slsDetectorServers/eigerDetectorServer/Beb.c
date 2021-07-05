@@ -479,19 +479,21 @@ int Beb_SetDataStream(int left, int enable) {
             (left ? XPAR_GPIO_LFT_STRM_DSBL_MSK : XPAR_GPIO_RGHT_STRM_DSBL_MSK);
 
         u_int32_t value = Beb_Read32(csp0base, reg);
-        LOG(logDEBUG, ("data streaming register value before:%d\n", value));
-        if (enable)
+        LOG(logINFO, ("data streaming register value before:0x%x\n", value));
+        // disabling in firmware 
+        if (!enable)
             value |= mask;
         else
             value &= ~mask;
+        LOG(logINFO, ("Going to set data streaming register value:0x%x\n", value));
         u_int32_t retval = Beb_Write32(csp0base, reg, value);
-        if (retval != value) {
+        /*if (retval != value) {
             LOG(logERROR,
                 ("Could not %s %s fpga datastream. Wrote 0x%x, read 0x%x\n",
                  (enable ? "enable" : "disable"), (left ? "left" : "right"),
                  value, retval));
             Beb_close(fd, csp0base);
-        }
+        }*/
     }
     Beb_close(fd, csp0base);
     return 1;
@@ -516,7 +518,8 @@ int Beb_GetDataStream(int left, int *retval) {
             (left ? XPAR_GPIO_LFT_STRM_DSBL_MSK : XPAR_GPIO_RGHT_STRM_DSBL_MSK);
 
         u_int32_t value = Beb_Read32(csp0base, reg);
-        *retval = (value & mask) ? 1 : 0;
+        // disabling in firmware
+        *retval = (value & mask) ? 0 : 1;
     }
     Beb_close(fd, csp0base);
     return 1;

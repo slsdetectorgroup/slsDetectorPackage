@@ -485,7 +485,7 @@ int Beb_SetDataStream(int left, int enable) {
         else
             value &= ~mask;
         u_int32_t retval = Beb_Write32(csp0base, reg, value);
-        /f (retval != value) {
+        if (retval != value) {
             LOG(logERROR,
                 ("Could not %s %s fpga datastream. Wrote 0x%x, read 0x%x\n",
                  (enable ? "enable" : "disable"), (left ? "left" : "right"),

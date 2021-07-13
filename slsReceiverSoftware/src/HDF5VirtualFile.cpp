@@ -86,11 +86,8 @@ void HDF5VirtualFile::CreateVirtualFile(
         DSetCreatPropList plist;
         plist.setFillValue(dataType, &fill_value);
 
-        // property list for parameters (fill value and datatype)
+        // property list for parameters (datatype)
         std::vector<DSetCreatPropList> plistPara(paraSize);
-        for (unsigned int p = 0; p < paraSize; ++p) {
-            plistPara[p].setFillValue(parameterDataTypes[p], &fill_value);
-        }
 
         // hyperslab
         int numMajorHyperslab = numImagesCaught / maxFramesPerFile;

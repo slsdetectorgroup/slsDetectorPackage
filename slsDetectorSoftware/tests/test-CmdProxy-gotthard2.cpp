@@ -15,6 +15,28 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
+// time specific measurements for gotthard2
+TEST_CASE("timegotthard2", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2) {
+        auto prev_val = det.getExptime();
+        {
+            std::ostringstream oss;
+            proxy.Call("exptime", {"220ns"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "exptime 220ns\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("exptime", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "exptime 222ns\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setExptime(prev_val[i], {i});
+        }
+    }
+}
 /* dacs */
 
 TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs]") {

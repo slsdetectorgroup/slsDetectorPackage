@@ -3,7 +3,8 @@ set(SOURCES
     src/ClientInterface.cpp
     src/Receiver.cpp
     src/File.cpp
-    src/BinaryFile.cpp
+    src/BinaryDataFile.cpp
+    src/BinaryMasterFile.cpp
     src/ThreadObject.cpp
     src/Listener.cpp
     src/DataProcessor.cpp
@@ -22,7 +23,9 @@ if (SLS_USE_HDF5)
 	        -DHDF5C ${HDF5_DEFINITIONS}
 	    )
 	    list (APPEND SOURCES 
-	        src/HDF5File.cpp 
+	        src/HDF5DataFile.cpp 
+	        src/HDF5MasterFile.cpp 
+	        src/HDF5VirtualFile.cpp 
 	    )
 endif (SLS_USE_HDF5)
 

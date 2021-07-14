@@ -459,6 +459,8 @@ typedef struct {
         int64_t subExpTimeNs{0};
         int64_t subDeadTimeNs{0};
         int activate{0};
+        int dataStreamLeft{0};
+        int dataStreamRight{0};
         int quad{0};
         int numLinesReadout{0};
         int thresholdEnergyeV[3]{0, 0, 0};

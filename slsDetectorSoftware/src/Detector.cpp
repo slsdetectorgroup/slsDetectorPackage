@@ -1369,6 +1369,15 @@ void Detector::setQuad(const bool enable) {
     pimpl->Parallel(&Module::setQuad, {}, enable);
 }
 
+Result<bool> Detector::getDataStream(const bool left, Positions pos) const {
+    return pimpl->Parallel(&Module::getDataStream, pos, left);
+}
+
+void Detector::setDataStream(const bool left, const bool enable,
+                             Positions pos) {
+    pimpl->Parallel(&Module::setDataStream, pos, left, enable);
+}
+
 // Jungfrau Specific
 
 Result<int> Detector::getThresholdTemperature(Positions pos) const {

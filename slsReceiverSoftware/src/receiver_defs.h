@@ -13,6 +13,11 @@
 #define MAX_SOCKET_INPUT_PACKET_QUEUE (250000)
 
 // files
+
+// versions
+#define HDF5_WRITER_VERSION   (6.2) // 1 decimal places
+#define BINARY_WRITER_VERSION (6.2) // 1 decimal places
+
 #define MAX_FRAMES_PER_FILE           20000
 #define SHORT_MAX_FRAMES_PER_FILE     100000
 #define MOENCH_MAX_FRAMES_PER_FILE    100000

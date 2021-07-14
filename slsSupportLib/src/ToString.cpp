@@ -52,6 +52,8 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << "subDeadTime:" << ToString(std::chrono::nanoseconds(r.subDeadTimeNs))
         << std::endl
         << "activate:" << r.activate << std::endl
+        << "leftDataStream:" << r.dataStreamLeft << std::endl
+        << "rightDataStream:" << r.dataStreamRight << std::endl       
         << "quad:" << r.quad << std::endl
         << "numLinesReadout:" << r.numLinesReadout << std::endl
         << "thresholdEnergyeV:" << ToString(r.thresholdEnergyeV) << std::endl

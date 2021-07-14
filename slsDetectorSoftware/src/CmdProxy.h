@@ -915,6 +915,7 @@ class CmdProxy {
         {"pulsenmove", &CmdProxy::PulsePixelAndMove},
         {"pulsechip", &CmdProxy::PulseChip},
         {"quad", &CmdProxy::Quad},
+        {"datastream", &CmdProxy::DataStream},
 
         /* Jungfrau Specific */
         {"temp_threshold", &CmdProxy::temp_threshold},
@@ -1110,6 +1111,7 @@ class CmdProxy {
     std::string PulsePixelAndMove(int action);
     std::string PulseChip(int action);
     std::string Quad(int action);
+    std::string DataStream(int action);
     /* Jungfrau Specific */
     std::string TemperatureEvent(int action);
     /* Gotthard Specific */

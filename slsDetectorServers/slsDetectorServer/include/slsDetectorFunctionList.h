@@ -474,6 +474,8 @@ int getAllTrimbits();
 int getBebFPGATemp();
 int setActivate(int enable);
 int getActivate(int *retval);
+int getDataStream(int left, int *retval);
+int setDataStream(int left, int enable);
 
 // gotthard specific - adc phase
 #elif GOTTHARDD

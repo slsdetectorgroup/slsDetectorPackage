@@ -67,9 +67,7 @@ This document describes the differences between 5.2.0 and 5.1.0 releases.
 3. Firmware Requirements
 ========================
         
-    //Mythen3: 0x210201
-    //Jungfrau: 0x210218 (1.0 pcb)
-              0x200721 (2.0 pcb, not changed)
+    Gotthard2: 0x210201 ???
 
     Other detectors no updates from 5.1.0
 

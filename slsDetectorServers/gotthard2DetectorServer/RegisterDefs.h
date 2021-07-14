@@ -34,6 +34,9 @@
 #define BASE_FLOW_CONTROL   (0x00200) // 0x1806_0200 - 0x1806_02FF
 // https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/f37608230b4721661f29aacc20124555705ee705/flow/flow_ctrl.vhd
 
+/** Veto processing core */
+#define BASE_VETO_PRCSSNG   (0x0300)    // 0x1806_0300 - 0x1806_03FF?
+
 /* UDP datagram generator */
 #define BASE_UDP_RAM        (0x01000) // 0x1806_1000 - 0x1806_1FFF
 
@@ -109,10 +112,6 @@
 
 /** DTA Offset Register */
 #define DTA_OFFSET_REG                      (0x0A * REG_OFFSET + BASE_CONTROL)
-
-/** Mask Strip Registers (40) */
-#define MASK_STRIP_START_REG                (0x18 * REG_OFFSET + BASE_CONTROL)
-#define MASK_STRIP_NUM_REGS                 (40)
 
 /* ASIC registers --------------------------------------------------*/
 
@@ -257,5 +256,11 @@
 /* UDP datagram registers --------------------------------------------------*/
 #define RXR_ENDPOINTS_MAX                   (32)
 #define RXR_ENDPOINT_OFST                   (16 * REG_OFFSET)
+
+
+/** Veto processing core  --------------------------------------------------*/
+/** Mask Strip Registers (40) */
+#define MASK_STRIP_START_REG                (0x00 * REG_OFFSET + BASE_VETO_PRCSSNG)
+#define MASK_STRIP_NUM_REGS                 (40)
 
 // clang-format on

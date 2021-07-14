@@ -28,10 +28,11 @@ This document describes the differences between 5.1.0 and 5.0.1 releases.
     4. Mythen3, API function to set pattern from memory
 
 
-    Mythen3 server
-    -----------------
+    Gotthard2 server
+    ----------------
 
-    1. Setting timing to auto, sets timing to trigger for slaves
+    1. Bad Channels moved to a new register
+    
     
 
 2. Resolved Issues

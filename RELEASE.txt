@@ -54,6 +54,14 @@ This document describes the differences between 5.2.0 and 5.1.0 releases.
 
 
 
+    Jungfrau Server
+    ----------------
+
+    1.  Stopping in trigger mode and then switching to auto timing mode 
+        blocks data streaming from detector. Workaround fix made in 
+        detector server to reset core until firmware release.
+
+
 
 
 3. Firmware Requirements

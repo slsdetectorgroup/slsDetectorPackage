@@ -21,6 +21,7 @@ TEST_CASE("timegotthard2", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
+        // exptime
         auto prev_val = det.getExptime();
         {
             std::ostringstream oss;
@@ -34,6 +35,70 @@ TEST_CASE("timegotthard2", "[.cmd]") {
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setExptime(prev_val[i], {i});
+        }
+        // burst period
+        prev_val = det.getBurstPeriod();
+        {
+            std::ostringstream oss;
+            proxy.Call("burstperiod", {"220ns"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "burstperiod 220ns\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("burstperiod", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "burstperiod 222ns\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setBurstPeriod(prev_val[i], {i});
+        }
+        // delay after trigger
+        prev_val = det.getDelayAfterTrigger();
+        {
+            std::ostringstream oss;
+            proxy.Call("delay", {"220ns"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "delay 220ns\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("delay", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "delay 222ns\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDelayAfterTrigger(prev_val[i], {i});
+        }
+        // period in burst mode
+        auto burst_prev_val = det.getBurstMode();
+        det.setBurstMode(defs::BURST_INTERNAL, {});
+        prev_val = det.getPeriod();
+        {
+            std::ostringstream oss;
+            proxy.Call("period", {"220ns"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "period 220ns\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("period", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "period 222ns\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setPeriod(prev_val[i], {i});
+        }
+        // period in continuous mode
+        det.setBurstMode(defs::CONTINUOUS_INTERNAL, {});
+        prev_val = det.getPeriod();
+        {
+            std::ostringstream oss;
+            proxy.Call("period", {"220ns"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "period 220ns\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("period", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "period 222ns\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setPeriod(prev_val[i], {i});
+            det.setBurstMode(burst_prev_val[i], {i});
         }
     }
 }

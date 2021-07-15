@@ -1739,6 +1739,7 @@ class Detector {
   private:
     std::vector<int> getPortNumbers(int start_port);
     void updateRxRateCorrections();
+    void setNumberofUDPInterfaces_(int n, Positions pos);
+    Result<int> getNumberofUDPInterfaces_(Positions pos) const;
 };
-
 } // namespace sls

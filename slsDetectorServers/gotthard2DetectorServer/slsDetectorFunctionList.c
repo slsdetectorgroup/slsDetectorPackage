@@ -989,7 +989,7 @@ int setExpTime(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting exptime %lld ns\n", val));
-    val *= (1E-9 * systemFrequency);
+    val = (val * 1E-9 * systemFrequency) + 0.5;
     set64BitReg(val, ASIC_INT_EXPTIME_LSB_REG, ASIC_INT_EXPTIME_MSB_REG);
 
     // validate for tolerance
@@ -1014,7 +1014,7 @@ int setPeriod(int64_t val) {
     // continuous
     if (burstMode == CONTINUOUS_INTERNAL || burstMode == CONTINUOUS_EXTERNAL) {
         LOG(logINFO, ("Setting period %lld ns [Continuous mode]\n", val));
-        val *= (1E-9 * systemFrequency);
+        val = (val * 1E-9 * systemFrequency) + 0.5;
         // trigger
         if (getTiming() == TRIGGER_EXPOSURE) {
             LOG(logINFO,
@@ -1029,7 +1029,7 @@ int setPeriod(int64_t val) {
     // burst
     else {
         LOG(logINFO, ("Setting period %lld ns [Burst mode]\n", val));
-        val *= (1E-9 * systemFrequency);
+        val = (val * 1E-9 * systemFrequency) + 0.5;
         set64BitReg(val, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
     }
     periodReg = val;
@@ -1067,7 +1067,7 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", val));
-    val *= (1E-9 * systemFrequency);
+    val = (val * 1E-9 * systemFrequency) + 0.5;
     delayReg = val;
     if (getTiming() == AUTO_TIMING) {
         LOG(logINFO, ("\tAuto mode (not writing to register)\n"));
@@ -1097,7 +1097,7 @@ int setBurstPeriod(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting burst period %lld ns\n", val));
-    val *= (1E-9 * systemFrequency);
+    val = (val * 1E-9 * systemFrequency) + 0.5;
     burstPeriodReg = val;
 
     // burst and auto

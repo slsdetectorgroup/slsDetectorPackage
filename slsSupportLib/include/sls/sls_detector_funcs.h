@@ -221,6 +221,8 @@ enum detFuncs {
     F_LOAD_DEFAULT_PATTERN,
     F_GET_ALL_THRESHOLD_ENERGY,
     F_GET_MASTER,
+    F_GET_VETO_STREAM,
+    F_SET_VETO_STREAM,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -548,6 +550,9 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_LOAD_DEFAULT_PATTERN:            return "F_LOAD_DEFAULT_PATTERN";
     case F_GET_ALL_THRESHOLD_ENERGY:        return "F_GET_ALL_THRESHOLD_ENERGY";
     case F_GET_MASTER:                      return "F_GET_MASTER";
+    case F_GET_VETO_STREAM:                 return "F_GET_VETO_STREAM";
+    case F_SET_VETO_STREAM:                 return "F_SET_VETO_STREAM";
+
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

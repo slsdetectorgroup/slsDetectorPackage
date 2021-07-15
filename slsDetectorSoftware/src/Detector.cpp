@@ -1548,16 +1548,35 @@ void Detector::setVeto(bool enable, Positions pos) {
 }
 
 Result<defs::EthernetInterface> Detector::getVetoStream(Positions pos) const {
-    // return pimpl->Parallel(&Module::getVetoStream, pos);
-    Result<defs::EthernetInterface> res(1);
-    res[0] = in_;
+    // 3gbe
+    auto r3 = pimpl->Parallel(&Module::getVetoStream, pos);
+    // 10gbe (debugging interface) opens 2nd udp interface in receiver
+    auto r10 = getNumberofUDPInterfaces();
+
+    Result<defs::EthernetInterface> res(r3.size());
+    for (unsigned int i = 0; i < res.size(); ++i) {
+        res[i] = (r3[i] ? defs::EthernetInterface::I3GBE
+                        : defs::EthernetInterface::NONE);
+        if (r10[i] == 2) {
+            res[i] = res[i] | defs::EthernetInterface::I10GBE;
+        }
+    }
     return res;
 }
 
 void Detector::setVetoStream(defs::EthernetInterface interface, Positions pos) {
-    // pimpl->Parallel(&Module::setVetoStream, pos, enable);
-    in_ = interface;
-}
+    // 3gbe
+    bool i3gbe = (interface & defs::EthernetInterface::I3GBE);
+    pimpl->Parallel(&Module::setVetoStream, pos, i3gbe);
+
+    // 10gbe (debugging interface) opens 2nd udp interface in receiver
+    int old_numinterfaces = getNumberofUDPInterfaces(pos).tsquash(
+        "retrieved inconsistent number of udp interfaces");
+    int numinterfaces = (interface & defs::EthernetInterface::I10GBE) ? 2 : 1;
+    if (numinterfaces != old_numinterfaces) {
+        setNumberofUDPInterfaces(numinterfaces, pos);
+    }
+  }
 
 Result<int> Detector::getADCConfiguration(const int chipIndex,
                                           const int adcIndex,

@@ -1825,20 +1825,21 @@ std::string CmdProxy::VetoStreaming(int action) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
         }
-        defs::EthernetInterface interface = defs::EthernetInterface::none;
+        defs::EthernetInterface interface = defs::EthernetInterface::NONE;
         for (const auto &arg : args) {
             if (arg == "none") {
                 if (args.size() > 1) {
                     throw sls::RuntimeError(
                         "cannot have other arguments with 'none'. args: " +
-                        arg);
+                        ToString(args));
                 }
                 break;
             }
+            StringTo<defs::EthernetInterface>(arg);
             interface = interface | (StringTo<defs::EthernetInterface>(arg));
         }
         det->setVetoStream(interface, std::vector<int>{det_id});
-        os << ToString(args) << '\n';
+        os << ToString(interface) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }

@@ -557,27 +557,44 @@ TEST_CASE("vetostream", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
-        // auto prev_val = det.getNumberofUDPInterfaces().tsquash(
-        // "inconsistent numinterfaces to test");
-        /* {
-             std::ostringstream oss;
-             proxy.Call("vetostream", {"sdf"}, -1, PUT, oss);
-             REQUIRE(oss.str() == "vetostream 2\n");
-         }
-         {
-             std::ostringstream oss;
-             proxy.Call("vetostream", {"1"}, -1, PUT, oss);
-             REQUIRE(oss.str() == "vetostream 1\n");
-         }
-         {
-             std::ostringstream oss;
-             proxy.Call("vetostream", {}, -1, GET, oss);
-             REQUIRE(oss.str() == "vetostream 1\n");
-         }*/
-        // det.setNumberofUDPInterfaces(prev_val);
+        auto prev_val = det.getVetoStream();
+        {
+            std::ostringstream oss;
+            proxy.Call("vetostream", {"none"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "vetostream none\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("vetostream", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "vetostream none\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("vetostream", {"3gbe"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "vetostream 3gbe\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("vetostream", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "vetostream 3gbe\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("vetostream", {"3gbe", "10gbe"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "vetostream 3gbe, 10gbe\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("vetostream", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "vetostream 3gbe, 10gbe\n");
+        }
+        REQUIRE_THROWS(proxy.Call("vetostream", {"3gbe", "none"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            det.setVetoStream(prev_val[i], {i});
+        }
     } else {
         REQUIRE_THROWS(proxy.Call("vetostream", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vetostream", {"1"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("vetostream", {"none"}, -1, PUT));
     }
     REQUIRE_THROWS(proxy.Call("vetostream", {"dfgd"}, -1, GET));
 }

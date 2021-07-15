@@ -1549,7 +1549,9 @@ void Detector::setVeto(bool enable, Positions pos) {
 
 Result<defs::EthernetInterface> Detector::getVetoStream(Positions pos) const {
     // return pimpl->Parallel(&Module::getVetoStream, pos);
-    return Result<defs::EthernetInterface> res{in_};
+    Result<defs::EthernetInterface> res(1);
+    res[0] = in_;
+    return res;
 }
 
 void Detector::setVetoStream(defs::EthernetInterface interface, Positions pos) {

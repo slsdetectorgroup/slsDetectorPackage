@@ -406,18 +406,6 @@ typedef struct {
     };
 
 #ifdef __cplusplus
-    inline EthernetInterface operator|(EthernetInterface a,
-                                       EthernetInterface b) {
-        return EthernetInterface(static_cast<int32_t>(a) |
-                                 static_cast<int32_t>(b));
-    }
-
-    inline bool operator&(EthernetInterface a, EthernetInterface b) {
-        return (static_cast<int32_t>(a) & static_cast<int32_t>(b));
-    }
-#endif
-
-#ifdef __cplusplus
 
     /** scan structure */
     struct scanParameters {
@@ -508,8 +496,18 @@ typedef struct {
 
 #ifdef __cplusplus
 };
+inline slsDetectorDefs::EthernetInterface
+operator|(const slsDetectorDefs::EthernetInterface &a,
+          const slsDetectorDefs::EthernetInterface &b) {
+    return slsDetectorDefs::EthernetInterface(static_cast<int32_t>(a) |
+                                              static_cast<int32_t>(b));
+};
+
+inline bool operator&(const slsDetectorDefs::EthernetInterface &a,
+                      const slsDetectorDefs::EthernetInterface &b) {
+    return (static_cast<int32_t>(a) & static_cast<int32_t>(b));
+};
 #endif
-;
 
 #ifdef __cplusplus
 struct detParameters {

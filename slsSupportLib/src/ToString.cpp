@@ -523,15 +523,15 @@ std::string ToString(const defs::EthernetInterface s) {
     std::ostringstream os;
     std::string rs;
     switch (s) {
-    case defs::NONE:
+    case defs::EthernetInterface::NONE:
         return std::string("none");
     default:
-        if (s & defs::I3GBE)
+        if (s & defs::EthernetInterface::I3GBE)
             os << "3gbe, ";
-        if (s & defs::I10GBE)
+        if (s & defs::EthernetInterface::I10GBE)
             os << "10gbe, ";
         auto rs = os.str();
-        rs.erase(rs.end() - 2);
+        rs.erase(rs.end() - 2, rs.end());
         return rs;
     }
 }
@@ -878,13 +878,14 @@ template <> defs::timingSourceType StringTo(const std::string &s) {
 
 template <> defs::EthernetInterface StringTo(const std::string &s) {
     std::string rs = s;
-    rs.erase(rs.find(','));
+    if (s.find(',') != std::string::npos)
+        rs.erase(rs.find(','));
     if (rs == "none")
-        return defs::NONE;
+        return defs::EthernetInterface::NONE;
     if (rs == "3gbe")
-        return defs::I3GBE;
+        return defs::EthernetInterface::I3GBE;
     if (rs == "10gbe")
-        return defs::I10GBE;
+        return defs::EthernetInterface::I10GBE;
     throw sls::RuntimeError("Unknown EthernetInterface type " + s);
 }
 

@@ -1739,7 +1739,7 @@ class Detector {
   private:
     std::vector<int> getPortNumbers(int start_port);
     void updateRxRateCorrections();
-    defs::EthernetInterface in_{defs::NONE};
+    defs::EthernetInterface in_{defs::EthernetInterface::NONE};
 };
 
 } // namespace sls

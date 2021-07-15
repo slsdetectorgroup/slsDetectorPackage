@@ -1,7 +1,7 @@
-SLS Detector Package 5.1.0 released on 22.03.2020 (Minor Release)
+SLS Detector Package 5.2.0 released on 15.07.2021 (Minor Release)
 ===================================================================
 
-This document describes the differences between 5.1.0 and 5.0.1 releases.   
+This document describes the differences between 5.2.0 and 5.1.0 releases.   
 
 
 
@@ -22,16 +22,13 @@ This document describes the differences between 5.1.0 and 5.0.1 releases.
     Client
     ------
 
-    1. Added settings and threshold features for Mythen3.
-    2. Internal modification of acquire for Mythen3.
-    3. Added getMaster for Mythen3
-    4. Mythen3, API function to set pattern from memory
+    1. 
 
 
     Mythen3 server
     -----------------
 
-    1. Setting timing to auto, sets timing to trigger for slaves
+    1. 
     
 
 2. Resolved Issues
@@ -41,24 +38,28 @@ This document describes the differences between 5.1.0 and 5.0.1 releases.
     Receiver
     --------
 
-    1.  Current code only calls Implementation::setDetectorType from constructor, 
-	    but potential memory leak if called out of constructor context. Fixed.
+    1.  
 
 
     Client
     ------
 
-    1.  Fixed missing scanParameters class in Python 
+    1.  
 
-    2.  cmk.sh refactored to have better option handling
+    Gotthard2 Server
+    ----------------
 
-    3.  Fixed hardcoded path accidentally ending up in the exported CMake package
+    1.  Tolerance in time parameters. 
+        Eg. 220 ns was being set to 215 ns, instead of 222ns.
 
-    Server
-    --------
 
-    1.  Bottom port not mirrored correctly for Eiger quad
 
+    Jungfrau Server
+    ----------------
+
+    1.  Stopping in trigger mode and then switching to auto timing mode 
+        blocks data streaming from detector. Workaround fix made in 
+        detector server to reset core until firmware release.
 
 
 
@@ -66,18 +67,16 @@ This document describes the differences between 5.1.0 and 5.0.1 releases.
 3. Firmware Requirements
 ========================
         
-    Mythen3: 0x210201
-    Jungfrau: 0x210218 (1.0 pcb)
-              0x200721 (2.0 pcb, not changed)
+    Gotthard2: 0x210201 ???
 
-    Other detectors no updates from 5.0.0
+    Other detectors no updates from 5.1.0
 
 
 
 4. Known Issues
 ===============
 
-    No updates from 5.0.0
+    No updates from 5.1.0
 
 
 

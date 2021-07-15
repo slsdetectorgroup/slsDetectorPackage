@@ -1547,6 +1547,16 @@ void Detector::setVeto(bool enable, Positions pos) {
     pimpl->Parallel(&Module::setVeto, pos, enable);
 }
 
+Result<defs::EthernetInterface> Detector::getVetoStream(Positions pos) const {
+    // return pimpl->Parallel(&Module::getVetoStream, pos);
+    return Result<defs::EthernetInterface> res{in_};
+}
+
+void Detector::setVetoStream(defs::EthernetInterface interface, Positions pos) {
+    // pimpl->Parallel(&Module::setVetoStream, pos, enable);
+    in_ = interface;
+}
+
 Result<int> Detector::getADCConfiguration(const int chipIndex,
                                           const int adcIndex,
                                           Positions pos) const {

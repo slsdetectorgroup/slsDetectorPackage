@@ -2212,7 +2212,7 @@ class Detector(CppDetectorApi):
     @element
     def veto(self):
         """
-        [Gotthard2] Enable or disable veto data streaming from detector. 
+        [Gotthard2] Enable or disable veto data from chip. 
         Note
         ----
         Default is 0.

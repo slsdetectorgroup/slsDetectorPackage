@@ -7525,7 +7525,7 @@ int get_veto(int file_des) {
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
-
+/*
 int set_veto(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
@@ -7563,6 +7563,29 @@ int set_veto(int file_des) {
             LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
             validate(arg, retval, "set veto mode", DEC);
         }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+*/
+int set_veto(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting veto mode: %u\n", arg));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        setVeto(arg);
+        int retval = getVeto();
+        LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
+        validate(arg, retval, "set veto mode", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

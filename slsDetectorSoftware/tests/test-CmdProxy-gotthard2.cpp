@@ -552,6 +552,36 @@ TEST_CASE("veto", "[.cmd]") {
     }
 }
 
+TEST_CASE("vetostream", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2) {
+        // auto prev_val = det.getNumberofUDPInterfaces().tsquash(
+        // "inconsistent numinterfaces to test");
+        /* {
+             std::ostringstream oss;
+             proxy.Call("vetostream", {"sdf"}, -1, PUT, oss);
+             REQUIRE(oss.str() == "vetostream 2\n");
+         }
+         {
+             std::ostringstream oss;
+             proxy.Call("vetostream", {"1"}, -1, PUT, oss);
+             REQUIRE(oss.str() == "vetostream 1\n");
+         }
+         {
+             std::ostringstream oss;
+             proxy.Call("vetostream", {}, -1, GET, oss);
+             REQUIRE(oss.str() == "vetostream 1\n");
+         }*/
+        // det.setNumberofUDPInterfaces(prev_val);
+    } else {
+        REQUIRE_THROWS(proxy.Call("vetostream", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vetostream", {"1"}, -1, PUT));
+    }
+    REQUIRE_THROWS(proxy.Call("vetostream", {"dfgd"}, -1, GET));
+}
+
 TEST_CASE("confadc", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

@@ -395,6 +395,29 @@ typedef struct {
     enum timingSourceType { TIMING_INTERNAL, TIMING_EXTERNAL };
 
 #ifdef __cplusplus
+    enum class EthernetInterface : int32_t {
+#else
+    enum EthernetInterface {
+#endif
+        NONE = 0,
+        I3GBE = 1 << 1,
+        I10GBE = 1 << 2,
+        ALL = I3GBE | I10GBE
+    };
+
+#ifdef __cplusplus
+    inline EthernetInterface operator|(EthernetInterface a,
+                                       EthernetInterface b) {
+        return EthernetInterface(static_cast<int32_t>(a) |
+                                 static_cast<int32_t>(b));
+    }
+
+    inline bool operator&(EthernetInterface a, EthernetInterface b) {
+        return (static_cast<int32_t>(a) & static_cast<int32_t>(b));
+    }
+#endif
+
+#ifdef __cplusplus
 
     /** scan structure */
     struct scanParameters {

@@ -36,6 +36,7 @@
 
 /** Veto processing core */
 #define BASE_VETO_PRCSSNG   (0x0300)    // 0x1806_0300 - 0x1806_03FF?
+// https://git.psi.ch/sls_detectors_firmware/gotthard_II_mcb/blob/master/code/hdl/veto/veto_ctrl.vhd
 
 /* UDP datagram generator */
 #define BASE_UDP_RAM        (0x01000) // 0x1806_1000 - 0x1806_1FFF

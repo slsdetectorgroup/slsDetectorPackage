@@ -2332,6 +2332,18 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setVetoReference, *args)
 
 
+    @property
+    @element
+    def vetostream(self):
+        return self.getVetoStream()
+
+    @vetostream.setter
+    def vetostream(self, args):
+        if not isinstance(args, tuple):
+            args = (args,)
+        ut.set_using_dict(self.setVetoStream, *args)
+
+
     """
     Mythen3 specific
     """

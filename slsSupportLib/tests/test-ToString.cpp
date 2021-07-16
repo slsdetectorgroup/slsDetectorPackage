@@ -1,10 +1,10 @@
 #include "catch.hpp"
+#include "sls/Pattern.h"
 #include "sls/TimeHelper.h"
 #include "sls/ToString.h"
-#include "sls/network_utils.h"
-#include "sls/Pattern.h"
-#include "sls/sls_detector_defs.h"
 #include "sls/container_utils.h"
+#include "sls/network_utils.h"
+#include "sls/sls_detector_defs.h"
 #include <array>
 #include <map>
 #include <sstream>
@@ -302,25 +302,32 @@ TEST_CASE("Streaming of slsDetectorDefs::scanParameters") {
     }
 }
 
-TEST_CASE("Printing c style arrays of int"){
+TEST_CASE("Printing c style arrays of int") {
     int arr[]{3, 5};
     REQUIRE(ToString(arr) == "[3, 5]");
 }
 
-TEST_CASE("Printing c style arrays of uint8"){
-    uint8_t arr[]{1,2,3,4,5};
+TEST_CASE("Printing c style arrays of uint8") {
+    uint8_t arr[]{1, 2, 3, 4, 5};
     REQUIRE(ToString(arr) == "[1, 2, 3, 4, 5]");
 }
 
-TEST_CASE("Printing c style arrays of double"){
+TEST_CASE("Printing c style arrays of double") {
     double arr[]{3.4, 5.3, 6.2};
     REQUIRE(ToString(arr) == "[3.4, 5.3, 6.2]");
 }
 
-TEST_CASE("Print a member of patternParameters"){
+TEST_CASE("Print a member of patternParameters") {
     auto pat = sls::make_unique<sls::patternParameters>();
     pat->limits[0] = 4;
     pat->limits[1] = 100;
     REQUIRE(ToString(pat->limits) == "[4, 100]");
+}
 
+TEST_CASE("EthernetInterface") {
+    REQUIRE(ToString(sls::defs::EthernetInterface::NONE) == "none");
+    REQUIRE(ToString(sls::defs::EthernetInterface::I10GBE) == "10gbe");
+    REQUIRE(ToString(sls::defs::EthernetInterface::I3GBE) == "3gbe");
+    REQUIRE(ToString(sls::defs::EthernetInterface::I3GBE |
+                     sls::defs::EthernetInterface::I10GBE) == "3gbe, 10gbe");
 }

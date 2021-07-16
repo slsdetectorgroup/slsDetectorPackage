@@ -1584,13 +1584,13 @@ Result<defs::EthernetInterface> Detector::getVetoStream(Positions pos) const {
 
 void Detector::setVetoStream(defs::EthernetInterface interface, Positions pos) {
     // 3gbe
-    bool i3gbe = (interface & defs::EthernetInterface::I3GBE);
+    bool i3gbe = (interface & defs::EthernetInterface::I3GBE) == defs::EthernetInterface::I3GBE;
     pimpl->Parallel(&Module::setVetoStream, pos, i3gbe);
 
     // 10gbe (debugging interface) opens 2nd udp interface in receiver
     int old_numinterfaces = getNumberofUDPInterfaces_(pos).tsquash(
         "retrieved inconsistent number of udp interfaces");
-    int numinterfaces = (interface & defs::EthernetInterface::I10GBE) ? 2 : 1;
+    int numinterfaces = ((interface & defs::EthernetInterface::I10GBE) == defs::EthernetInterface::I3GBE) ? 2 : 1;
     if (numinterfaces != old_numinterfaces) {
         setNumberofUDPInterfaces_(numinterfaces, pos);
     }

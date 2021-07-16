@@ -526,9 +526,9 @@ std::string ToString(const defs::EthernetInterface s) {
     case defs::EthernetInterface::NONE:
         return std::string("none");
     default:
-        if (s & defs::EthernetInterface::I3GBE)
+        if ((s & defs::EthernetInterface::I3GBE)!=defs::EthernetInterface::NONE)
             os << "3gbe, ";
-        if (s & defs::EthernetInterface::I10GBE)
+        if ((s & defs::EthernetInterface::I10GBE)!=defs::EthernetInterface::NONE)
             os << "10gbe, ";
         auto rs = os.str();
         rs.erase(rs.end() - 2, rs.end());

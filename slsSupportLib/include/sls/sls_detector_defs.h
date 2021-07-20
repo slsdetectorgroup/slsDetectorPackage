@@ -400,8 +400,8 @@ typedef struct {
     enum ethernetInterface {
 #endif
         NONE = 0,
-        I3GBE = 1 << 1,
-        I10GBE = 1 << 2,
+        I3GBE = 1 << 0,
+        I10GBE = 1 << 1,
         ALL = I3GBE | I10GBE
     };
 

@@ -7058,7 +7058,7 @@ int get_receiver_parameters(int file_des) {
         // data stream left
 #ifdef EIGERD
     i32 = 0;
-    getDataStream(1, &i32);
+    getDataStream(LEFT, &i32);
 #else
     i32 = 0;
 #endif
@@ -7069,7 +7069,7 @@ int get_receiver_parameters(int file_des) {
         // data stream right
 #ifdef EIGERD
     i32 = 0;
-    getDataStream(0, &i32);
+    getDataStream(RIGHT, &i32);
 #else
     i32 = 0;
 #endif
@@ -8251,33 +8251,31 @@ int get_gain_caps(int file_des) {
 int get_datastream(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int arg = -1;
+    enum portPosition arg = LEFT;
     int retval = -1;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logDEBUG1, ("Getting data stream enable [left:%d]\n", arg));
+    LOG(logDEBUG1, ("Getting data stream enable [port:%d]\n", arg));
 
 #ifndef EIGERD
     functionNotImplemented();
 #else
     // get only
-    int leftFpga = arg;
-    if (leftFpga != 0 && leftFpga != 1) {
+    if (arg != LEFT && arg != RIGHT) {
         ret = FAIL;
         sprintf(
             mess,
-            "Could not get data stream enable. Invalid side %d. Left argument"
-            "should be 0 or 1.\n",
-            leftFpga);
+            "Could not get data stream enable. Invalid port position %d. Only left and right allowed\n",
+            arg);
         LOG(logERROR, (mess));
     } else {
-        ret = getDataStream(leftFpga, &retval);
+        ret = getDataStream(arg, &retval);
         LOG(logDEBUG1, ("datastream (%s) retval: %u\n",
-                        (leftFpga ? "left" : "right"), retval));
+                        (arg == LEFT? "left" : "right"), retval));
         if (ret == FAIL) {
             sprintf(mess, "Could not get %s data stream enable.\n",
-                    (leftFpga ? "left" : "right"));
+                    (arg == LEFT ? "left" : "right"));
             LOG(logERROR, (mess));
         }
     }
@@ -8300,39 +8298,38 @@ int set_datastream(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        int leftFpga = args[0];
+        enum portPosition port = static_cast<portPosition>(args[0]);
         int enable = args[1];
         char msg[256];
         memset(msg, 0, sizeof(msg));
         sprintf(msg, "%s %s fpga datastream", (enable ? "enable" : "disable"),
-                (leftFpga ? "left" : "right"));
-        if (leftFpga != 0 && leftFpga != 1) {
+                (port == LEFT ? "left" : "right"));
+        if (port != LEFT && port != RIGHT) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not %s. Invalid side %d. Left argument should be 0 "
-                    "or 1.\n",
-                    msg, leftFpga);
+                    "Could not %s. Invalid port position %d. Only left and right allowed\n",
+                    msg, port);
             LOG(logERROR, (mess));
         } else if (enable != 0 && enable != 1) {
             ret = FAIL;
             sprintf(mess, "Could not %s. Invalid enable %d. \n", msg, enable);
             LOG(logERROR, (mess));
         } else {
-            ret = setDataStream(leftFpga, enable);
+            ret = setDataStream(port, enable);
             if (ret == FAIL) {
                 sprintf(mess, "Could not %s\n", msg);
                 LOG(logERROR, (mess));
-            } /*else {
+            } else {
                 int retval = -1;
-                ret = getDataStream(leftFpga, &retval);
+                ret = getDataStream(port, &retval);
                 LOG(logDEBUG1, ("%s retval: %u\n", msg, retval));
                 if (ret == FAIL) {
                     sprintf(mess, "Could not get %s data stream enable.\n",
-                            (leftFpga ? "left" : "right"));
+                            (port == LEFT ? "left" : "right"));
                     LOG(logERROR, (mess));
                 }
                 validate(&ret, mess, enable, retval, msg, DEC);
-            }*/
+            }
         }
     }
 #endif

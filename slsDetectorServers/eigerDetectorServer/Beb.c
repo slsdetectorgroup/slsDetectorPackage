@@ -451,18 +451,14 @@ int Beb_GetActivate(int *retval) {
     return 1;
 }
 
-int Beb_SetDataStream(int left, int enable) {
+int Beb_SetDataStream(enum portPositiion port, int enable) {
     if (!Beb_activated) {
-        if (left) {
+        if (port == LEFT) {
             Beb_deactivated_left_datastream = enable;
         } else {
             Beb_deactivated_right_datastream = enable;
         }
         return 1;
-    }
-    if (left < 0) {
-        LOG(logERROR, ("Invalid left value\n"));
-        return 0;
     }
     if (enable < 0) {
         LOG(logERROR, ("Invalid enable value\n"));
@@ -475,8 +471,8 @@ int Beb_SetDataStream(int left, int enable) {
         return 0;
     } else {
         u_int32_t reg = XPAR_GPIO_P15_STREAMING_REG;
-        u_int32_t mask =
-            (left ? XPAR_GPIO_LFT_STRM_DSBL_MSK : XPAR_GPIO_RGHT_STRM_DSBL_MSK);
+        u_int32_t mask = (port == LEFT ? XPAR_GPIO_LFT_STRM_DSBL_MSK
+                                       : XPAR_GPIO_RGHT_STRM_DSBL_MSK);
 
         u_int32_t value = Beb_Read32(csp0base, reg);
         // disabling in firmware 
@@ -488,8 +484,8 @@ int Beb_SetDataStream(int left, int enable) {
         if (retval != value) {
             LOG(logERROR,
                 ("Could not %s %s fpga datastream. Wrote 0x%x, read 0x%x\n",
-                 (enable ? "enable" : "disable"), (left ? "left" : "right"),
-                 value, retval));
+                 (enable ? "enable" : "disable"),
+                 (port == LEFT ? "left" : "right"), value, retval));
             Beb_close(fd, csp0base);
         }
     }
@@ -497,9 +493,9 @@ int Beb_SetDataStream(int left, int enable) {
     return 1;
 }
 
-int Beb_GetDataStream(int left, int *retval) {
+int Beb_GetDataStream(enum portPositiion port, int *retval) {
     if (!Beb_activated) {
-        if (left) {
+        if (port == LEFT) {
             return Beb_deactivated_left_datastream;
         } else {
             return Beb_deactivated_right_datastream;
@@ -512,8 +508,8 @@ int Beb_GetDataStream(int left, int *retval) {
         return 0;
     } else {
         u_int32_t reg = XPAR_GPIO_P15_STREAMING_REG;
-        u_int32_t mask =
-            (left ? XPAR_GPIO_LFT_STRM_DSBL_MSK : XPAR_GPIO_RGHT_STRM_DSBL_MSK);
+        u_int32_t mask = (port == LEFT ? XPAR_GPIO_LFT_STRM_DSBL_MSK
+                                       : XPAR_GPIO_RGHT_STRM_DSBL_MSK);
 
         u_int32_t value = Beb_Read32(csp0base, reg);
         // disabling in firmware

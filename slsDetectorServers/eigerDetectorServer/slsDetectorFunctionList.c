@@ -2051,38 +2051,38 @@ int getActivate(int *retval) {
     return OK;
 }
 
-int setDataStream(int left, int enable) {
+int setDataStream(enum portPositiion port, int enable) {
     if (enable < 0) {
         LOG(logERROR, ("Invalid setDataStream enable argument: %d\n", enable));
         return FAIL;
     }
     if (left < 0) {
-        LOG(logERROR, ("Invalid setDataStream left argument: %d\n", left));
+        LOG(logERROR, ("Invalid setDataStream port argument: %d\n", port));
         return FAIL;
     }
 #ifdef VIRTUAL
-    if (left) {
+    if (port == LEFT) {
         eiger_virtual_left_datastream = enable;
     } else {
         eiger_virtual_right_datastream = enable;
     }
 #else
-    if (!Beb_SetDataStream(left, enable)) {
+    if (!Beb_SetDataStream(port, enable)) {
         return FAIL;
     }
 #endif
     return OK;
 }
 
-int getDataStream(int left, int *retval) {
+int getDataStream(enum portPositiion port, int *retval) {
 #ifdef VIRTUAL
-    if (left) {
+    if (port == LEFT) {
         *retval = eiger_virtual_left_datastream;
     } else {
         *retval = eiger_virtual_right_datastream;
     }
 #else
-    if (!Beb_GetDataStream(left, retval)) {
+    if (!Beb_GetDataStream(port, retval)) {
         return FAIL;
     }
 #endif

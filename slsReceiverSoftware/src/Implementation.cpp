@@ -1508,15 +1508,17 @@ void Implementation::setActivate(bool enable) {
     LOG(logINFO) << "Activation: " << (activated ? "enabled" : "disabled");
 }
 
-bool Implementation::getDetectorDataStream(const bool leftPort) const { 
-    int index = (leftPort ? 0 : 1);
-    return detectorDataStream[index]; 
+bool Implementation::getDetectorDataStream(const portPosition port) const {
+    int index = (port == LEFT ? 0 : 1);
+    return detectorDataStream[index];
 }
 
-void Implementation::setDetectorDataStream(const bool leftPort, const bool enable) {
-    int index = (leftPort ? 0 : 1);
+void Implementation::setDetectorDataStream(const portPosition port,
+                                           const bool enable) {
+    int index = (port == LEFT ? 0 : 1);
     detectorDataStream[index] = enable;
-    LOG(logINFO) << "Detector datastream ("  << (leftPort ? "Left" : "Right") << " Port): "  << sls::ToString(detectorDataStream[index]);
+    LOG(logINFO) << "Detector datastream (" << sls::ToString(port)
+                 << " Port): " << sls::ToString(detectorDataStream[index]);
 }
 
 bool Implementation::getDeactivatedPadding() const {

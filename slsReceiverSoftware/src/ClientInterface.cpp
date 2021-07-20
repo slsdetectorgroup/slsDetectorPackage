@@ -1703,14 +1703,21 @@ int ClientInterface::set_all_threshold(Interface &socket) {
 int ClientInterface::set_detector_datastream(Interface &socket) {
     int args[2]{-1, -1};
     socket.Receive(args);
-    bool left = static_cast<int>(args[0]);
+    portPosition port = static_cast<portPosition>(args[0]);
+    switch (port) {
+    case LEFT:
+    case RIGHT:
+        break;
+    default:
+        throw RuntimeError("Invalid port type");
+    }
     bool enable = static_cast<int>(args[1]);
-    LOG(logDEBUG1) << "Setting datstream " << (left ? "left" : "right")
-                   << ") to " << sls::ToString(enable);
+    LOG(logDEBUG1) << "Setting datastream (" << sls::ToString(port) << ") to "
+                   << sls::ToString(enable);
     if (myDetectorType != EIGER)
         functionNotImplemented();
     verifyIdle(socket);
-    impl()->setDetectorDataStream(left, enable);
+    impl()->setDetectorDataStream(port, enable);
     return socket.Send(OK);
 }
 

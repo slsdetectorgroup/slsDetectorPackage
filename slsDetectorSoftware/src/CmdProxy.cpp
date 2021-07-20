@@ -1603,29 +1603,15 @@ std::string CmdProxy::DataStream(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        // TODO, enum for "left and right?"
-        if (args[0] == "left") {
-            left = true;
-        } else if (args[0] == "right") {
-            left = false;
-        } else {
-            throw sls::RuntimeError("Unknown data argument " + args[0]);
-        }
-        auto t = det->getDataStream(left, std::vector<int>{det_id});
+        auto t = det->getDataStream(StringTo<defs::portPosition>(args[0]),
+                                    std::vector<int>{det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        if (args[0] == "left") {
-            left = true;
-        } else if (args[0] == "right") {
-            left = false;
-        } else {
-            throw sls::RuntimeError("Unknown data argument " + args[0]);
-        }
-        det->setDataStream(left, StringTo<bool>(args[1]),
-                           std::vector<int>{det_id});
+        det->setDataStream(StringTo<defs::portPosition>(args[0]),
+                           StringTo<bool>(args[1]), std::vector<int>{det_id});
         os << args << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");

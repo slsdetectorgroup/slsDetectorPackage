@@ -521,6 +521,21 @@ std::string ToString(const defs::timingSourceType s) {
     }
 }
 
+std::string ToString(const defs::portPosition s) {
+    switch (s) {
+    case defs::LEFT:
+        return std::string("left");
+    case defs::RIGHT:
+        return std::string("right");
+    case defs::TOP:
+        return std::string("top");
+    case defs::BOTTOM:
+        return std::string("bottom");
+    default:
+        return std::string("Unknown");
+    }
+}
+
 const std::string &ToString(const std::string &s) { return s; }
 
 template <> defs::detectorType StringTo(const std::string &s) {
@@ -861,23 +876,25 @@ template <> defs::timingSourceType StringTo(const std::string &s) {
     throw sls::RuntimeError("Unknown timing source type " + s);
 }
 
-template <> defs::M3_GainCaps StringTo(const std::string &s){
-    if (s == "C10pre")
-        return defs::M3_C10pre;
-    if (s == "C15sh")
-        return defs::M3_C15sh;
-    if (s == "C30sh")
-        return defs::M3_C30sh;
-    if (s == "C50sh")
-        return defs::M3_C50sh;
-    if (s == "C225ACsh")
-        return defs::M3_C225ACsh;
-    if (s == "C15pre")
-        return defs::M3_C15pre;
-    throw sls::RuntimeError("Unknown gain cap " + s);
-    
+template <> defs::portPosition StringTo(const std::string &s) {
+    if (s == "left")
+        return defs::LEFT;
+    if (s == "right")
+        return defs::RIGHT;
+    if (s == "top")
+        return defs::TOP;
+    if (s == "bottom")
+        return defs::BOTTOM;
+    throw sls::RuntimeError("Unknown port position " + s);
 }
 
+template <> defs::timingSourceType StringTo(const std::string &s) {
+    if (s == "internal")
+        return defs::TIMING_INTERNAL;
+    if (s == "external")
+        return defs::TIMING_EXTERNAL;
+    throw sls::RuntimeError("Unknown timing source type " + s);
+}
 
 std::string ToString(defs::M3_GainCaps s){
     std::ostringstream os; 

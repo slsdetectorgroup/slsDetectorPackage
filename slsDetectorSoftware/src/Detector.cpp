@@ -1369,13 +1369,14 @@ void Detector::setQuad(const bool enable) {
     pimpl->Parallel(&Module::setQuad, {}, enable);
 }
 
-Result<bool> Detector::getDataStream(const bool left, Positions pos) const {
-    return pimpl->Parallel(&Module::getDataStream, pos, left);
+Result<bool> Detector::getDataStream(const portPosition port,
+                                     Positions pos) const {
+    return pimpl->Parallel(&Module::getDataStream, pos, port);
 }
 
-void Detector::setDataStream(const bool left, const bool enable,
+void Detector::setDataStream(const portPosition port, const bool enable,
                              Positions pos) {
-    pimpl->Parallel(&Module::setDataStream, pos, left, enable);
+    pimpl->Parallel(&Module::setDataStream, pos, port, enable);
 }
 
 // Jungfrau Specific

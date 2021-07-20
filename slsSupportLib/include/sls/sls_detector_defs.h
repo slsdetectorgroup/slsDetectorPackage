@@ -401,6 +401,8 @@ typedef struct {
         M3_C15pre = 1 << 14,
     };
 
+    enum portPosition { LEFT, RIGHT, TOP, BOTTOM };
+
 #ifdef __cplusplus
 
     /** scan structure */

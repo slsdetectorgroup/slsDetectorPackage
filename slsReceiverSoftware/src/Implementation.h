@@ -211,10 +211,10 @@ class Implementation : private virtual slsDetectorDefs {
     /** [Eiger] If deactivated, receiver will create dummy data if deactivated
      * padding is enabled (as it will receive nothing from detector) */
     void setActivate(const bool enable);
-    bool getDetectorDataStream(const bool leftPort) const;
+    bool getDetectorDataStream(const portPosition port) const;
     /** [Eiger] If datastream is disabled, receiver will create dummy data if deactivated
      * padding for that port is enabled (as it will receive nothing from detector) */
-    void setDetectorDataStream(const bool leftPort, const bool enable);    
+    void setDetectorDataStream(const portPosition port, const bool enable);
     bool getDeactivatedPadding() const;
     /* [Eiger] */
     void setDeactivatedPadding(const bool enable);

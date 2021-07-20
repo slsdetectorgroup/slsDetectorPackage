@@ -1075,12 +1075,12 @@ void init_det(py::module &m) {
                  Detector::setVeto,
              py::arg(), py::arg() = Positions{})
         .def("getVetoStream",
-             (Result<defs::EthernetInterface>(Detector::*)(sls::Positions)
+             (Result<defs::ethernetInterface>(Detector::*)(sls::Positions)
                   const) &
                  Detector::getVetoStream,
              py::arg() = Positions{})
         .def("setVetoStream",
-             (void (Detector::*)(const defs::EthernetInterface,
+             (void (Detector::*)(const defs::ethernetInterface,
                                  sls::Positions)) &
                  Detector::setVetoStream,
              py::arg(), py::arg() = Positions{})

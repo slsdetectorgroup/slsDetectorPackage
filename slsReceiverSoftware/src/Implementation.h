@@ -98,11 +98,11 @@ class Implementation : private virtual slsDetectorDefs {
     int getNumberofUDPInterfaces() const;
     /* [Jungfrau] */
     void setNumberofUDPInterfaces(const int n);
-    std::string getEthernetInterface() const;
-    void setEthernetInterface(const std::string &c);
-    std::string getEthernetInterface2() const;
+    std::string getethernetInterface() const;
+    void setethernetInterface(const std::string &c);
+    std::string getethernetInterface2() const;
     /* [Jungfrau] */
-    void setEthernetInterface2(const std::string &c);
+    void setethernetInterface2(const std::string &c);
     uint32_t getUDPPortNumber() const;
     void setUDPPortNumber(const uint32_t i);
     uint32_t getUDPPortNumber2() const;

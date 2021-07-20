@@ -408,6 +408,10 @@ class Module : public virtual slsDetectorDefs {
     void setVeto(bool enable);
     bool getVetoStream() const;
     void setVetoStream(const bool value);
+    slsDetectorDefs::vetoAlgorithm
+    getVetoAlgorithm(const slsDetectorDefs::ethernetInterface) const;
+    void setVetoAlgorithm(const slsDetectorDefs::vetoAlgorithm alg,
+                          const slsDetectorDefs::ethernetInterface interface);
     int getADCConfiguration(const int chipIndex, const int adcIndex) const;
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              int value);
@@ -721,6 +725,7 @@ class Module : public virtual slsDetectorDefs {
 
     const int moduleId;
     mutable sls::SharedMemory<sharedSlsDetector> shm{0, 0};
+    slsDetectorDefs::vetoAlgorithm alg_{slsDetectorDefs::DEFAULT_ALGORITHM};
 };
 
 } // namespace sls

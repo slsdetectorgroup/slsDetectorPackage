@@ -1412,9 +1412,9 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
         LOG(logERROR) << "Failed to get udp ethernet interface from IP " << arg
                       << ". Got " << eth;
     }
-    impl()->setEthernetInterface(eth);
+    impl()->setethernetInterface(eth);
     if (myDetectorType == EIGER) {
-        impl()->setEthernetInterface2(eth);
+        impl()->setethernetInterface2(eth);
     }
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
@@ -1446,7 +1446,7 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
         LOG(logERROR) << "Failed to get udp ethernet interface2 from IP " << arg
                       << ". Got " << eth;
     }
-    impl()->setEthernetInterface2(eth);
+    impl()->setethernetInterface2(eth);
 
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);

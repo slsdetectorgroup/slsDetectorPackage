@@ -939,16 +939,16 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
     LOG(logINFO) << "Number of Interfaces: " << numUDPInterfaces;
 }
 
-std::string Implementation::getEthernetInterface() const { return eth[0]; }
+std::string Implementation::getethernetInterface() const { return eth[0]; }
 
-void Implementation::setEthernetInterface(const std::string &c) {
+void Implementation::setethernetInterface(const std::string &c) {
     eth[0] = c;
     LOG(logINFO) << "Ethernet Interface: " << eth[0];
 }
 
-std::string Implementation::getEthernetInterface2() const { return eth[1]; }
+std::string Implementation::getethernetInterface2() const { return eth[1]; }
 
-void Implementation::setEthernetInterface2(const std::string &c) {
+void Implementation::setethernetInterface2(const std::string &c) {
     eth[1] = c;
     LOG(logINFO) << "Ethernet Interface 2: " << eth[1];
 }

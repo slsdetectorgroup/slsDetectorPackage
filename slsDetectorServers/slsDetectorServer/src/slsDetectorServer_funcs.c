@@ -8412,7 +8412,7 @@ int get_master(int file_des){
 int get_veto_stream(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    enum EthernetInterface retval = NONE;
+    enum ethernetInterface retval = NONE;
 
     LOG(logDEBUG1, ("Getting veto stream\n"));
 
@@ -8429,7 +8429,7 @@ int get_veto_stream(int file_des) {
 int set_veto_stream(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    enum EthernetInterface arg = 0;
+    enum ethernetInterface arg = 0;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();

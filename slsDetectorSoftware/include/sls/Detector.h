@@ -1248,7 +1248,7 @@ class Detector {
     void setVeto(const bool enable, Positions pos = {});
 
     /** [Gotthard2] */
-    Result<defs::EthernetInterface> getVetoStream(Positions pos = {}) const;
+    Result<defs::ethernetInterface> getVetoStream(Positions pos = {}) const;
 
     /** [Gotthard2] Options: NONE (Default), I3GBE, I10GBE (debugging), ALL
      * Enable or disable the 2 veto streaming interfaces available. Can
@@ -1257,7 +1257,18 @@ class Detector {
      * interface in receiver for listening to veto packets (writes a separate
      * file if writing enabled). Also restarts client and receiver zmq sockets
      * if zmq streaming enabled.*/
-    void setVetoStream(const defs::EthernetInterface value, Positions pos = {});
+    void setVetoStream(const defs::ethernetInterface value, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<defs::vetoAlgorithm>
+    getVetoAlgorithm(const defs::ethernetInterface value,
+                     Positions pos = {}) const;
+
+    /** [Gotthard2] Options(vetoAlgorithm): DEFAULT_ALGORITHM.
+     * Options(ethernetInterface): I3GBE, I10GBE */
+    void setVetoAlgorithm(const defs::vetoAlgorithm alg,
+                          const defs::ethernetInterface value,
+                          Positions pos = {});
 
     /** [Gotthard2] */
     Result<int> getADCConfiguration(const int chipIndex, const int adcIndex,

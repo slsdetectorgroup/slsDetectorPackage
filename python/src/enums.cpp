@@ -278,19 +278,19 @@ void init_enums(py::module &m) {
                slsDetectorDefs::timingSourceType::TIMING_EXTERNAL)
         .export_values();
 
-    py::enum_<slsDetectorDefs::EthernetInterface>(Defs, "EthernetInterface",
+    py::enum_<slsDetectorDefs::ethernetInterface>(Defs, "ethernetInterface",
                                                   py::arithmetic())
-        .value("NONE", slsDetectorDefs::EthernetInterface::NONE)
-        .value("I3GBE", slsDetectorDefs::EthernetInterface::I3GBE)
-        .value("I10GBE", slsDetectorDefs::EthernetInterface::I10GBE)
-        .value("ALL", slsDetectorDefs::EthernetInterface::ALL)
+        .value("NONE", slsDetectorDefs::ethernetInterface::NONE)
+        .value("I3GBE", slsDetectorDefs::ethernetInterface::I3GBE)
+        .value("I10GBE", slsDetectorDefs::ethernetInterface::I10GBE)
+        .value("ALL", slsDetectorDefs::ethernetInterface::ALL)
         .export_values()
         .def("__or__",
-             py::overload_cast<const slsDetectorDefs::EthernetInterface &,
-                               const slsDetectorDefs::EthernetInterface &>(
+             py::overload_cast<const slsDetectorDefs::ethernetInterface &,
+                               const slsDetectorDefs::ethernetInterface &>(
                  &operator|))
         .def("__and__",
-             py::overload_cast<const slsDetectorDefs::EthernetInterface &,
-                               const slsDetectorDefs::EthernetInterface &>(
+             py::overload_cast<const slsDetectorDefs::ethernetInterface &,
+                               const slsDetectorDefs::ethernetInterface &>(
                  &operator&));
 }

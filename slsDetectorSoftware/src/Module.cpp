@@ -1878,6 +1878,17 @@ void Module::setVetoStream(const bool value) {
     sendToDetector(F_SET_VETO_STREAM, static_cast<int>(value), nullptr);
 }
 
+slsDetectorDefs::vetoAlgorithm
+Module::getVetoAlgorithm(const slsDetectorDefs::ethernetInterface) const {
+    return alg_;
+}
+
+void Module::setVetoAlgorithm(
+    const slsDetectorDefs::vetoAlgorithm alg,
+    const slsDetectorDefs::ethernetInterface interface) {
+    alg_ = alg;
+}
+
 int Module::getADCConfiguration(const int chipIndex, const int adcIndex) const {
     int args[]{chipIndex, adcIndex};
     return sendToDetector<int>(F_GET_ADC_CONFIGURATION, args);

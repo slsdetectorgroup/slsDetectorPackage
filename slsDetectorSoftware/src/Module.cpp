@@ -1870,6 +1870,14 @@ void Module::setVeto(bool enable) {
     sendToDetector(F_SET_VETO, static_cast<int>(enable), nullptr);
 }
 
+bool Module::getVetoStream() const {
+    return (sendToDetector<int>(F_GET_VETO_STREAM));
+}
+
+void Module::setVetoStream(const bool value) {
+    sendToDetector(F_SET_VETO_STREAM, static_cast<int>(value), nullptr);
+}
+
 int Module::getADCConfiguration(const int chipIndex, const int adcIndex) const {
     int args[]{chipIndex, adcIndex};
     return sendToDetector<int>(F_GET_ADC_CONFIGURATION, args);

@@ -1244,8 +1244,20 @@ class Detector {
     /** [Gotthard2] */
     Result<bool> getVeto(Positions pos = {}) const;
 
-    /** [Gotthard2] Default disabled */
+    /** [Gotthard2] Veto data in chip, Default disabled */
     void setVeto(const bool enable, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<defs::EthernetInterface> getVetoStream(Positions pos = {}) const;
+
+    /** [Gotthard2] Options: NONE (Default), I3GBE, I10GBE (debugging), ALL
+     * Enable or disable the 2 veto streaming interfaces available. Can
+     * concatenate more than one interface. \n3GbE (2.5GbE) is the default
+     * interface to work with. \n10GbE is for debugging and also enables second
+     * interface in receiver for listening to veto packets (writes a separate
+     * file if writing enabled). Also restarts client and receiver zmq sockets
+     * if zmq streaming enabled.*/
+    void setVetoStream(const defs::EthernetInterface value, Positions pos = {});
 
     /** [Gotthard2] */
     Result<int> getADCConfiguration(const int chipIndex, const int adcIndex,
@@ -1727,6 +1739,7 @@ class Detector {
   private:
     std::vector<int> getPortNumbers(int start_port);
     void updateRxRateCorrections();
+    void setNumberofUDPInterfaces_(int n, Positions pos);
+    Result<int> getNumberofUDPInterfaces_(Positions pos) const;
 };
-
 } // namespace sls

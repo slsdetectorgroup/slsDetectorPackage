@@ -746,10 +746,28 @@ Result<std::string> Detector::getScanErrorMessage(Positions pos) const {
 // Network Configuration (Detector<->Receiver)
 
 Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
-    return pimpl->Parallel(&Module::getNumberofUDPInterfaces, pos);
+    if (getDetectorType().squash() != defs::JUNGFRAU) {
+        throw sls::RuntimeError(
+            "Cannot set number of udp interfaces for this detector.");
+    }
+    // also called by vetostream (for gotthard2)
+    return getNumberofUDPInterfaces_(pos);
 }
 
 void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
+    if (getDetectorType().squash() != defs::JUNGFRAU) {
+        throw sls::RuntimeError(
+            "Cannot set number of udp interfaces for this detector.");
+    }
+    // also called by vetostream (for gotthard2)
+    setNumberofUDPInterfaces_(n, pos);
+}
+
+Result<int> Detector::getNumberofUDPInterfaces_(Positions pos) const {
+    return pimpl->Parallel(&Module::getNumberofUDPInterfaces, pos);
+}
+
+void Detector::setNumberofUDPInterfaces_(int n, Positions pos) {
     bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
     bool useReceiver = getUseReceiverFlag().squash(false);
     bool previouslyReceiverStreaming = false;
@@ -1546,6 +1564,37 @@ Result<bool> Detector::getVeto(Positions pos) const {
 void Detector::setVeto(bool enable, Positions pos) {
     pimpl->Parallel(&Module::setVeto, pos, enable);
 }
+
+Result<defs::EthernetInterface> Detector::getVetoStream(Positions pos) const {
+    // 3gbe
+    auto r3 = pimpl->Parallel(&Module::getVetoStream, pos);
+    // 10gbe (debugging interface) opens 2nd udp interface in receiver
+    auto r10 = getNumberofUDPInterfaces_(pos);
+
+    Result<defs::EthernetInterface> res(r3.size());
+    for (unsigned int i = 0; i < res.size(); ++i) {
+        res[i] = (r3[i] ? defs::EthernetInterface::I3GBE
+                        : defs::EthernetInterface::NONE);
+        if (r10[i] == 2) {
+            res[i] = res[i] | defs::EthernetInterface::I10GBE;
+        }
+    }
+    return res;
+}
+
+void Detector::setVetoStream(defs::EthernetInterface interface, Positions pos) {
+    // 3gbe
+    bool i3gbe = (interface & defs::EthernetInterface::I3GBE) == defs::EthernetInterface::I3GBE;
+    pimpl->Parallel(&Module::setVetoStream, pos, i3gbe);
+
+    // 10gbe (debugging interface) opens 2nd udp interface in receiver
+    int old_numinterfaces = getNumberofUDPInterfaces_(pos).tsquash(
+        "retrieved inconsistent number of udp interfaces");
+    int numinterfaces = ((interface & defs::EthernetInterface::I10GBE) == defs::EthernetInterface::I3GBE) ? 2 : 1;
+    if (numinterfaces != old_numinterfaces) {
+        setNumberofUDPInterfaces_(numinterfaces, pos);
+    }
+  }
 
 Result<int> Detector::getADCConfiguration(const int chipIndex,
                                           const int adcIndex,

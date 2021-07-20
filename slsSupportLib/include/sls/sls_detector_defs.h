@@ -395,6 +395,17 @@ typedef struct {
     enum timingSourceType { TIMING_INTERNAL, TIMING_EXTERNAL };
 
 #ifdef __cplusplus
+    enum class EthernetInterface {
+#else
+    enum EthernetInterface {
+#endif
+        NONE = 0,
+        I3GBE = 1 << 1,
+        I10GBE = 1 << 2,
+        ALL = I3GBE | I10GBE
+    };
+
+#ifdef __cplusplus
 
     /** scan structure */
     struct scanParameters {
@@ -485,8 +496,18 @@ typedef struct {
 
 #ifdef __cplusplus
 };
+inline slsDetectorDefs::EthernetInterface
+operator|( const slsDetectorDefs::EthernetInterface &a,
+           const slsDetectorDefs::EthernetInterface &b) {
+    return slsDetectorDefs::EthernetInterface(static_cast<int32_t>(a) |
+                                              static_cast<int32_t>(b));
+};
+
+inline slsDetectorDefs::EthernetInterface operator&( const slsDetectorDefs::EthernetInterface &a,
+                       const slsDetectorDefs::EthernetInterface &b) {
+    return slsDetectorDefs::EthernetInterface(static_cast<int32_t>(a) & static_cast<int32_t>(b));
+};
 #endif
-;
 
 #ifdef __cplusplus
 struct detParameters {
@@ -632,3 +653,4 @@ using Positions = const std::vector<int> &;
 using defs = slsDetectorDefs;
 } // namespace sls
 #endif
+

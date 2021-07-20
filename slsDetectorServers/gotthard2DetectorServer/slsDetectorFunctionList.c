@@ -1581,14 +1581,14 @@ enum timingMode getTiming() {
 void setNumberofUDPInterfaces(int val) {
     uint32_t addr = CONFIG_REG;
 
-    // 2 interfaces (enable veto)
+    // 2 rxr interfaces (enable debugging interface)
     if (val > 1) {
-        LOG(logINFOBLUE, ("Setting #Interfaces: 2 (10gbps veto streaming)\n"));
+        LOG(logINFOBLUE, ("Enabling 10GbE (debugging) veto streaming\n"));
         bus_w(addr, bus_r(addr) | CONFIG_VETO_CH_10GB_ENBL_MSK);
     }
-    // 1 interface (disable veto)
+    // 1 rxr interface (disable debugging interface)
     else {
-        LOG(logINFOBLUE, ("Setting #Interfaces: 1 (2.5gbps veto streaming)\n"));
+        LOG(logINFOBLUE, ("Disabling 10GbE (debugging) veto streaming\n"));
         bus_w(addr, bus_r(addr) & ~CONFIG_VETO_CH_10GB_ENBL_MSK);
     }
     LOG(logDEBUG, ("config reg:0x%x\n", bus_r(addr)));
@@ -2576,6 +2576,23 @@ int getVeto() {
     LOG(logDEBUG, ("config reg:0x%x\n", bus_r(CONFIG_REG)));
     return ((bus_r(CONFIG_REG) & CONFIG_VETO_ENBL_MSK) >>
             CONFIG_VETO_ENBL_OFST);
+}
+
+void setVetoStream(int value) {
+    uint32_t addr = CONFIG_REG;
+
+    if (value) {
+        LOG(logINFOBLUE, ("Enabling 3GbE veto streaming\n"));
+        bus_w(addr, bus_r(addr) | CONFIG_VETO_CH_3GB_ENBL_MSK);
+    } else {
+        LOG(logINFOBLUE, ("Disabling 3GbE veto streaming\n"));
+        bus_w(addr, bus_r(addr) & ~CONFIG_VETO_CH_3GB_ENBL_MSK);
+    }
+    LOG(logDEBUG, ("config reg:0x%x\n", bus_r(addr)));
+}
+
+int getVetoStream() {
+    return ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_3GB_ENBL_MSK) ? 1 : 0);
 }
 
 void setBadChannels(int nch, int *channels) {

@@ -22,13 +22,16 @@ This document describes the differences between 5.2.0 and 5.1.0 releases.
     Client
     ------
 
-    1. 
+    1.  (Gotthard2) veto streaming
+        New command to enable/ disable veto streaming via 2.5GbE or/ and 10GbE (debugging). 
+        Command: vetostream, Detector::setVetoStream
+        
 
+    Gotthard2 server
+    ----------------
 
-    Mythen3 server
-    -----------------
-
-    1. 
+    1.  Bad Channels moved to a new register
+    
     
 
 2. Resolved Issues

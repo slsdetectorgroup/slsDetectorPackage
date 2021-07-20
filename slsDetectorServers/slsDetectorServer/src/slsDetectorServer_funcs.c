@@ -369,6 +369,8 @@ void function_table() {
     flist[F_LOAD_DEFAULT_PATTERN] = &load_default_pattern;
     flist[F_GET_ALL_THRESHOLD_ENERGY] = &get_all_threshold_energy;
     flist[F_GET_MASTER] = &get_master;
+    flist[F_GET_VETO_STREAM] = &get_veto_stream;
+    flist[F_SET_VETO_STREAM] = &set_veto_stream;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -7525,7 +7527,7 @@ int get_veto(int file_des) {
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
-
+/*
 int set_veto(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
@@ -7563,6 +7565,29 @@ int set_veto(int file_des) {
             LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
             validate(arg, retval, "set veto mode", DEC);
         }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+*/
+int set_veto(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting veto mode: %u\n", arg));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        setVeto(arg);
+        int retval = getVeto();
+        LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
+        validate(arg, retval, "set veto mode", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -8382,4 +8407,53 @@ int get_master(int file_des){
     retval = isMaster();
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_veto_stream(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum EthernetInterface retval = NONE;
+
+    LOG(logDEBUG1, ("Getting veto stream\n"));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // get only
+    retval = getVetoStream();
+    LOG(logDEBUG1, ("vetostream retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_veto_stream(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum EthernetInterface arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting vetostream: %u\n", (int)arg));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+
+        if (arg != 0 && arg != 1) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set vetostream 3GbE. Invalid argument %d.\n",
+                    arg);
+            LOG(logERROR, (mess));
+        } else {
+            setVetoStream(arg);
+            int retval = getVetoStream();
+            LOG(logDEBUG1, ("vetostream retval: %u\n", retval));
+            validate(arg, retval, "set veto stream", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

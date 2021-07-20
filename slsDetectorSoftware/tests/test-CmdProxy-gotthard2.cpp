@@ -714,17 +714,9 @@ TEST_CASE("vetoalg", "[.cmd]") {
             proxy.Call("vetoalg", {"10gbe"}, -1, GET, oss);
             REQUIRE(oss.str() == "vetoalg default 10gbe\n");
         }
-        {
-            std::ostringstream oss;
-            proxy.Call("vetoalg", {"default", "3gbe", "10gbe"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "vetoalg default 3gbe, 10gbe\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("vetoalg", {"3gbe", "10gbe"}, -1, GET, oss);
-            REQUIRE(oss.str() == "vetoalg default 3gbe, 10gbe\n");
-        }
-        REQUIRE_THROWS(proxy.Call("vetostream", {"3gbe", "none"}, -1, PUT));
+        REQUIRE_THROWS(
+            proxy.Call("vetoalg", {"default", "3gbe", "10gbe"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("vetoalg", {"default", "none"}, -1, PUT));
         for (int i = 0; i != det.size(); ++i) {
             det.setVetoAlgorithm(prev_val_3g[i], defs::ethernetInterface::I3GBE,
                                  {i});

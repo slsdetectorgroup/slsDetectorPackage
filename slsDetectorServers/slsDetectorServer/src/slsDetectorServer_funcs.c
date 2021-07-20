@@ -371,6 +371,8 @@ void function_table() {
     flist[F_GET_MASTER] = &get_master;
     flist[F_GET_VETO_STREAM] = &get_veto_stream;
     flist[F_SET_VETO_STREAM] = &set_veto_stream;
+    flist[F_GET_VETO_ALGORITHM] = &get_veto_algorithm;
+    flist[F_SET_VETO_ALGORITHM] = &set_veto_algorithm;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8452,6 +8454,73 @@ int set_veto_stream(int file_des) {
             int retval = getVetoStream();
             LOG(logDEBUG1, ("vetostream retval: %u\n", retval));
             validate(arg, retval, "set veto stream", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_veto_algorithm(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum ethernetInterface arg = NONE;
+    enum vetoAlgorithm retval = DEFAULT_ALGORITHM;
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+
+    LOG(logDEBUG1, ("Getting veto algorithm for interface %d\n", arg));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // get only
+    if (arg != I3GBE && arg != I10GBE) {
+        ret = FAIL;
+        sprintf(mess, "Could not get vetoalgorithm. Invalid interface %d.\n",
+                arg);
+        LOG(logERROR, (mess));
+    } else {
+        retval = getVetoAlgorithm(arg);
+        LOG(logDEBUG1, ("vetoalgorithm retval: %u\n", retval));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_veto_algorithm(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = {-1, -1};
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+
+    enum vetoAlgorithm alg = args[0];
+    enum ethernetInterface interface = args[1];
+    LOG(logINFO, ("Setting vetoalgorithm (interface: %d): %u\n", (int)interface,
+                  (int)alg));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (interface != I3GBE && interface != I10GBE) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set vetoalgorithm. Invalid interface %d.\n",
+                    interface);
+            LOG(logERROR, (mess));
+        } else if (alg != DEFAULT_ALGORITHM) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set vetoalgorithm. Invalid algorithm %d.\n",
+                    alg);
+            LOG(logERROR, (mess));
+        } else {
+            setVetoAlgorithm(alg, interface);
+            int retval = getVetoAlgorithm(interface);
+            LOG(logDEBUG1, ("vetoalgorithm retval: %u\n", retval));
+            validate(alg, retval, "set veto algorithm", DEC);
         }
     }
 #endif

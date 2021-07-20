@@ -1825,7 +1825,19 @@ std::string CmdProxy::VetoStreaming(int action) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
         }
-        defs::ethernetInterface interface = GetVetoInterface(true);
+        defs::ethernetInterface interface = defs::ethernetInterface::NONE;
+        for (const auto &arg : args) {
+            if (arg == "none") {
+                if (args.size() > 1) {
+                    throw sls::RuntimeError(
+                        std::string(
+                            "cannot have other arguments with 'none'. args: ") +
+                        ToString(args));
+                }
+                break;
+            }
+            interface = interface | (StringTo<defs::ethernetInterface>(arg));
+        }
         det->setVetoStream(interface, std::vector<int>{det_id});
         os << ToString(interface) << '\n';
     } else {
@@ -1834,48 +1846,36 @@ std::string CmdProxy::VetoStreaming(int action) {
     return os.str();
 }
 
-defs::ethernetInterface CmdProxy::GetVetoInterface(bool isNoneAllowed) {
-    defs::ethernetInterface interface = defs::ethernetInterface::NONE;
-    for (const auto &arg : args) {
-        if (arg == "none") {
-            if (!isNoneAllowed) {
-                throw sls::RuntimeError("Must specifiy an interface");
-            } else {
-                if (args.size() > 1) {
-                    throw sls::RuntimeError(
-                        std::string(
-                            "cannot have other arguments with 'none'. args: ") +
-                        ToString(args));
-                }
-            }
-            break;
-        }
-        interface = interface | (StringTo<defs::ethernetInterface>(arg));
-    }
-    return interface;
-}
-
 std::string CmdProxy::VetoAlgorithm(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[default] [3gbe|10gbe|...]\n\t[Gotthard2] Set the veto "
+        os << "[default] [3gbe|10gbe]\n\t[Gotthard2] Set the veto "
               "algorithm."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() < 1) {
+        if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        defs::ethernetInterface interface = GetVetoInterface(false);
+        defs::ethernetInterface interface =
+            StringTo<defs::ethernetInterface>(args[0]);
+        if (interface == defs::ethernetInterface::NONE) {
+            throw sls::RuntimeError(
+                "Must specify an interface to set algorithm");
+        }
         auto t = det->getVetoAlgorithm(interface, std::vector<int>{det_id});
         os << OutString(t) << ' ' << ToString(interface) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() < 2) {
+        if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
         defs::vetoAlgorithm alg = StringTo<defs::vetoAlgorithm>(args[0]);
-        args.erase(args.begin());
-        defs::ethernetInterface interface = GetVetoInterface(false);
+        defs::ethernetInterface interface =
+            StringTo<defs::ethernetInterface>(args[1]);
+        if (interface == defs::ethernetInterface::NONE) {
+            throw sls::RuntimeError(
+                "Must specify an interface to set algorithm");
+        }
         det->setVetoAlgorithm(alg, interface, std::vector<int>{det_id});
         os << ToString(alg) << ' ' << ToString(interface) << '\n';
     } else {

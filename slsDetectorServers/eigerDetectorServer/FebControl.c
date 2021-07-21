@@ -42,7 +42,7 @@ unsigned int *Feb_Control_last_downloaded_trimbits = 0;
 int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
 int64_t Feb_Control_RateTable_Period_in_nsec = -1;
 unsigned int Feb_Control_rate_correction_table[1024] = {};
-double Feb_Control_rate_meas[16384] = 0;
+double Feb_Control_rate_meas[16384] = {};
 double ratemax = -1;
 
 // setup

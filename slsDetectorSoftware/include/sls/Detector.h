@@ -1065,7 +1065,8 @@ class Detector {
     Result<bool> getDataStream(const defs::portPosition port,
                                Positions pos = {}) const;
 
-    /** [Eiger] enable or disable data streaming from left or right of detector
+    /** [Eiger] enable or disable data streaming from left or right of detector.
+     * Default: enabled
      */
     void setDataStream(const defs::portPosition port, const bool enable,
                        Positions pos = {});

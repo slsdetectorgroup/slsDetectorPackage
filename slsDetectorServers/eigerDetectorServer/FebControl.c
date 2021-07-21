@@ -1523,7 +1523,7 @@ int Feb_Control_SetQuad(int val) {
     return Feb_Control_SetTop(val == 0 ? TOP_HARDWARE : OW_BOTTOM, 0, 1);
 }
 
-int Feb_Control_SetChipSignalsToTrimQuad(bool enable) {
+int Feb_Control_SetChipSignalsToTrimQuad(int enable) {
     if (Feb_Control_quadMode) {
         LOG(logINFO, ("%s chip signals to trim quad\n",
                       enable ? "Enabling" : "Disabling"));

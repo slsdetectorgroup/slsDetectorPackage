@@ -1139,7 +1139,7 @@ int setModule(sls_detector_module myMod, char *mess) {
         sharedMemory_lockLocalLink();
 
         // if quad, set M8 and PROGRAM manually
-        if (!Feb_Control_SetChipSignalsToTrimQuad(true)) {
+        if (!Feb_Control_SetChipSignalsToTrimQuad(1)) {
             return FAIL;
         }
 
@@ -1151,7 +1151,7 @@ int setModule(sls_detector_module myMod, char *mess) {
                            "trim file)\n"));
 
             // if quad, reset M8 and PROGRAM manually
-            if (!Feb_Control_SetChipSignalsToTrimQuad(false)) {
+            if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
                 return FAIL;
             }
 
@@ -1160,7 +1160,7 @@ int setModule(sls_detector_module myMod, char *mess) {
         }
 
         // if quad, reset M8 and PROGRAM manually
-        if (!Feb_Control_SetChipSignalsToTrimQuad(false)) {
+        if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
             return FAIL;
         }
 

@@ -293,4 +293,9 @@ void init_enums(py::module &m) {
              py::overload_cast<const slsDetectorDefs::ethernetInterface &,
                                const slsDetectorDefs::ethernetInterface &>(
                  &operator&));
+
+    py::enum_<slsDetectorDefs::vetoAlgorithm>(Defs, "vetoAlgorithm")
+        .value("DEFAULT_ALGORITHM",
+               slsDetectorDefs::vetoAlgorithm::DEFAULT_ALGORITHM)
+        .export_values();
 }

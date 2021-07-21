@@ -7,6 +7,7 @@ timingMode = slsDetectorDefs.timingMode
 speedLevel = slsDetectorDefs.speedLevel
 dacIndex = slsDetectorDefs.dacIndex
 detectorType = slsDetectorDefs.detectorType
+ethernetInterface = slsDetectorDefs.ethernetInterface
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
@@ -2343,6 +2344,25 @@ class Detector(CppDetectorApi):
             args = (args,)
         ut.set_using_dict(self.setVetoStream, *args)
 
+    @property
+    def vetoalg(self):
+        """[Gotthard2] Algorithm used for veto
+        Example
+        ----------
+        >>> d.vetoalg = defs.DEFAULT_ALGORITHM, defs.I10GBE
+        """
+        result = {}
+        interface = [ethernetInterface.I3GBE, ethernetInterface.I10GBE]
+        for eth in interface:
+            result[eth] = element_if_equal(self.getVetoAlgorithm(eth))
+        return result
+
+
+    @vetoalg.setter
+    def vetoalg(self, args):
+        if not isinstance(args, tuple):
+            args = (args,)
+        ut.set_using_dict(self.setVetoAlgorithm, *args)
 
     """
     Mythen3 specific

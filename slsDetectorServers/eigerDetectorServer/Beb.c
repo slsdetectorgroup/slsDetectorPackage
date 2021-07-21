@@ -451,7 +451,7 @@ int Beb_GetActivate(int *retval) {
     return 1;
 }
 
-int Beb_SetDataStream(enum portPositiion port, int enable) {
+int Beb_SetDataStream(enum portPosition port, int enable) {
     if (!Beb_activated) {
         if (port == LEFT) {
             Beb_deactivated_left_datastream = enable;
@@ -493,7 +493,7 @@ int Beb_SetDataStream(enum portPositiion port, int enable) {
     return 1;
 }
 
-int Beb_GetDataStream(enum portPositiion port, int *retval) {
+int Beb_GetDataStream(enum portPosition port, int *retval) {
     if (!Beb_activated) {
         if (port == LEFT) {
             return Beb_deactivated_left_datastream;

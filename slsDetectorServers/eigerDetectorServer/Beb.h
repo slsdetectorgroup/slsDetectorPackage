@@ -41,8 +41,8 @@ int Beb_SetTop(enum TOPINDEX ind);
 int Beb_SetMaster(enum MASTERINDEX ind);
 int Beb_SetActivate(int enable);
 int Beb_GetActivate(int *retval);
-int Beb_SetDataStream(enum portPositiion port, int enable);
-int Beb_GetDataStream(ienum portPositiion port, int *retval);
+int Beb_SetDataStream(enum portPosition port, int enable);
+int Beb_GetDataStream(ienum portPosition port, int *retval);
 int Beb_Set32bitOverflow(int val);
 
 int Beb_GetTenGigaFlowControl();

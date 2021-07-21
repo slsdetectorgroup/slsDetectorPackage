@@ -2336,6 +2336,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def vetostream(self):
+        """[Gotthard2] Enabling/ disabling veto interface
+        Note
+        ----
+        Default: both off
+        Options: NONE, I3GBE, 10GBE (debugging)
+        Debugging interface also enables second interface in receiver (separate file), which also restarts zmq streaming if enabled.
+        """
         return self.getVetoStream()
 
     @vetostream.setter

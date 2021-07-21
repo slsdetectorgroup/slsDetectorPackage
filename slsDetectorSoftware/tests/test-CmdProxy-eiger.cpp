@@ -655,8 +655,8 @@ TEST_CASE("datastream", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER) {
-        auto prev_val_left = det.getDataStream(true);
-        auto prev_val_right = det.getDataStream(false);
+        auto prev_val_left = det.getDataStream(defs::LEFT);
+        auto prev_val_right = det.getDataStream(defs::RIGHT);
         // no "left" or "right"
         REQUIRE_THROWS(proxy.Call("datastream", {"1"}, -1, PUT));
         {
@@ -680,8 +680,8 @@ TEST_CASE("datastream", "[.cmd]") {
             REQUIRE(oss.str() == "datastream right 1\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setDataStream(prev_val_left[i], {i});
-            det.setDataStream(prev_val_right[i], {i});
+            det.setDataStream(defs::LEFT, prev_val_left[i], {i});
+            det.setDataStream(defs::RIGHT, prev_val_right[i], {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("datastream", {}, -1, GET));

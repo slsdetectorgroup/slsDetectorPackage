@@ -1593,7 +1593,6 @@ std::string CmdProxy::Quad(int action) {
 std::string CmdProxy::DataStream(int action) {
     std::ostringstream os;
     os << cmd << ' ';
-    bool left = true;
     if (action == defs::HELP_ACTION) {
         os << "[left|right] [0, 1]\n\t[Eiger] Enables or disables data "
               "streaming from left or/and right side of detector. 1 (enabled) "

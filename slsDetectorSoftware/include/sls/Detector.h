@@ -1062,12 +1062,12 @@ class Detector {
     void setQuad(const bool enable);
 
     /** [Eiger] */
-    Result<bool> getDataStream(const portPosition port,
+    Result<bool> getDataStream(const defs::portPosition port,
                                Positions pos = {}) const;
 
     /** [Eiger] enable or disable data streaming from left or right of detector
      */
-    void setDataStream(const portPosition port, const bool enable,
+    void setDataStream(const defs::portPosition port, const bool enable,
                        Positions pos = {});
 
     ///@{

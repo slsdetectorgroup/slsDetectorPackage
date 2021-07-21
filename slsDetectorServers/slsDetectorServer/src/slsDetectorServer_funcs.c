@@ -8298,7 +8298,7 @@ int set_datastream(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        enum portPosition port = static_cast<portPosition>(args[0]);
+        enum portPosition port = args[0];
         int enable = args[1];
         char msg[256];
         memset(msg, 0, sizeof(msg));

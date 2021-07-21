@@ -403,8 +403,8 @@ int ClientInterface::setup_receiver(Interface &socket) {
         impl()->setSubPeriod(std::chrono::nanoseconds(arg.subExpTimeNs) +
                              std::chrono::nanoseconds(arg.subDeadTimeNs));
         impl()->setActivate(static_cast<bool>(arg.activate));
-        impl()->setDetectorDataStream(1, arg.dataStreamLeft);
-        impl()->setDetectorDataStream(0, arg.dataStreamRight);
+        impl()->setDetectorDataStream(LEFT, arg.dataStreamLeft);
+        impl()->setDetectorDataStream(RIGHT, arg.dataStreamRight);
         try {
             impl()->setQuad(arg.quad == 0 ? false : true);
         } catch (const RuntimeError &e) {

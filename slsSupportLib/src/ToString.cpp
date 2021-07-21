@@ -521,6 +521,25 @@ std::string ToString(const defs::timingSourceType s) {
     }
 }
 
+std::string ToString(defs::M3_GainCaps s) {
+    std::ostringstream os;
+    if (s & defs::M3_C10pre)
+        os << "C10pre, ";
+    if (s & defs::M3_C15sh)
+        os << "C15sh, ";
+    if (s & defs::M3_C30sh)
+        os << "C30sh, ";
+    if (s & defs::M3_C50sh)
+        os << "C50sh, ";
+    if (s & defs::M3_C225ACsh)
+        os << "C225ACsh, ";
+    if (s & defs::M3_C15pre)
+        os << "C15pre, ";
+    auto rs = os.str();
+    rs.erase(rs.end() - 2);
+    return rs;
+}
+
 std::string ToString(const defs::portPosition s) {
     switch (s) {
     case defs::LEFT:
@@ -876,6 +895,22 @@ template <> defs::timingSourceType StringTo(const std::string &s) {
     throw sls::RuntimeError("Unknown timing source type " + s);
 }
 
+template <> defs::M3_GainCaps StringTo(const std::string &s) {
+    if (s == "C10pre")
+        return defs::M3_C10pre;
+    if (s == "C15sh")
+        return defs::M3_C15sh;
+    if (s == "C30sh")
+        return defs::M3_C30sh;
+    if (s == "C50sh")
+        return defs::M3_C50sh;
+    if (s == "C225ACsh")
+        return defs::M3_C225ACsh;
+    if (s == "C15pre")
+        return defs::M3_C15pre;
+    throw sls::RuntimeError("Unknown gain cap " + s);
+}
+
 template <> defs::portPosition StringTo(const std::string &s) {
     if (s == "left")
         return defs::LEFT;
@@ -886,34 +921,6 @@ template <> defs::portPosition StringTo(const std::string &s) {
     if (s == "bottom")
         return defs::BOTTOM;
     throw sls::RuntimeError("Unknown port position " + s);
-}
-
-template <> defs::timingSourceType StringTo(const std::string &s) {
-    if (s == "internal")
-        return defs::TIMING_INTERNAL;
-    if (s == "external")
-        return defs::TIMING_EXTERNAL;
-    throw sls::RuntimeError("Unknown timing source type " + s);
-}
-
-std::string ToString(defs::M3_GainCaps s){
-    std::ostringstream os; 
-    if (s & defs::M3_C10pre)
-        os << "C10pre, ";
-    if (s & defs::M3_C15sh)
-        os << "C15sh, ";
-    if (s & defs::M3_C30sh)
-        os << "C30sh, ";
-    if (s & defs::M3_C50sh)
-        os << "C50sh, ";
-    if (s & defs::M3_C225ACsh)
-        os << "C225ACsh, ";
-    if (s & defs::M3_C15pre)
-        os << "C15pre, ";
-    auto rs = os.str();
-    rs.erase(rs.end()-2);
-    return rs;
-    
 }
 
 template <> uint32_t StringTo(const std::string &s) {

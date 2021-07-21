@@ -52,6 +52,8 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << "subDeadTime:" << ToString(std::chrono::nanoseconds(r.subDeadTimeNs))
         << std::endl
         << "activate:" << r.activate << std::endl
+        << "leftDataStream:" << r.dataStreamLeft << std::endl
+        << "rightDataStream:" << r.dataStreamRight << std::endl       
         << "quad:" << r.quad << std::endl
         << "numLinesReadout:" << r.numLinesReadout << std::endl
         << "thresholdEnergyeV:" << ToString(r.thresholdEnergyeV) << std::endl
@@ -519,6 +521,40 @@ std::string ToString(const defs::timingSourceType s) {
     }
 }
 
+std::string ToString(defs::M3_GainCaps s) {
+    std::ostringstream os;
+    if (s & defs::M3_C10pre)
+        os << "C10pre, ";
+    if (s & defs::M3_C15sh)
+        os << "C15sh, ";
+    if (s & defs::M3_C30sh)
+        os << "C30sh, ";
+    if (s & defs::M3_C50sh)
+        os << "C50sh, ";
+    if (s & defs::M3_C225ACsh)
+        os << "C225ACsh, ";
+    if (s & defs::M3_C15pre)
+        os << "C15pre, ";
+    auto rs = os.str();
+    rs.erase(rs.end() - 2);
+    return rs;
+}
+
+std::string ToString(const defs::portPosition s) {
+    switch (s) {
+    case defs::LEFT:
+        return std::string("left");
+    case defs::RIGHT:
+        return std::string("right");
+    case defs::TOP:
+        return std::string("top");
+    case defs::BOTTOM:
+        return std::string("bottom");
+    default:
+        return std::string("Unknown");
+    }
+}
+
 const std::string &ToString(const std::string &s) { return s; }
 
 template <> defs::detectorType StringTo(const std::string &s) {
@@ -859,7 +895,7 @@ template <> defs::timingSourceType StringTo(const std::string &s) {
     throw sls::RuntimeError("Unknown timing source type " + s);
 }
 
-template <> defs::M3_GainCaps StringTo(const std::string &s){
+template <> defs::M3_GainCaps StringTo(const std::string &s) {
     if (s == "C10pre")
         return defs::M3_C10pre;
     if (s == "C15sh")
@@ -873,28 +909,18 @@ template <> defs::M3_GainCaps StringTo(const std::string &s){
     if (s == "C15pre")
         return defs::M3_C15pre;
     throw sls::RuntimeError("Unknown gain cap " + s);
-    
 }
 
-
-std::string ToString(defs::M3_GainCaps s){
-    std::ostringstream os; 
-    if (s & defs::M3_C10pre)
-        os << "C10pre, ";
-    if (s & defs::M3_C15sh)
-        os << "C15sh, ";
-    if (s & defs::M3_C30sh)
-        os << "C30sh, ";
-    if (s & defs::M3_C50sh)
-        os << "C50sh, ";
-    if (s & defs::M3_C225ACsh)
-        os << "C225ACsh, ";
-    if (s & defs::M3_C15pre)
-        os << "C15pre, ";
-    auto rs = os.str();
-    rs.erase(rs.end()-2);
-    return rs;
-    
+template <> defs::portPosition StringTo(const std::string &s) {
+    if (s == "left")
+        return defs::LEFT;
+    if (s == "right")
+        return defs::RIGHT;
+    if (s == "top")
+        return defs::TOP;
+    if (s == "bottom")
+        return defs::BOTTOM;
+    throw sls::RuntimeError("Unknown port position " + s);
 }
 
 template <> uint32_t StringTo(const std::string &s) {

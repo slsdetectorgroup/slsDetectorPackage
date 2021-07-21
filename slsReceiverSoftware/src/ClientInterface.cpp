@@ -209,6 +209,8 @@ int ClientInterface::functionTable(){
     flist[F_GET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::get_streaming_hwm;
     flist[F_SET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::set_streaming_hwm;
     flist[F_RECEIVER_SET_ALL_THRESHOLD]     =   &ClientInterface::set_all_threshold;
+    flist[F_RECEIVER_SET_DATASTREAM]        =   &ClientInterface::set_detector_datastream;
+    
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -401,6 +403,8 @@ int ClientInterface::setup_receiver(Interface &socket) {
         impl()->setSubPeriod(std::chrono::nanoseconds(arg.subExpTimeNs) +
                              std::chrono::nanoseconds(arg.subDeadTimeNs));
         impl()->setActivate(static_cast<bool>(arg.activate));
+        impl()->setDetectorDataStream(LEFT, arg.dataStreamLeft);
+        impl()->setDetectorDataStream(RIGHT, arg.dataStreamRight);
         try {
             impl()->setQuad(arg.quad == 0 ? false : true);
         } catch (const RuntimeError &e) {
@@ -1695,3 +1699,25 @@ int ClientInterface::set_all_threshold(Interface &socket) {
     impl()->setThresholdEnergy(eVs);
     return socket.Send(OK);
 }
+
+int ClientInterface::set_detector_datastream(Interface &socket) {
+    int args[2]{-1, -1};
+    socket.Receive(args);
+    portPosition port = static_cast<portPosition>(args[0]);
+    switch (port) {
+    case LEFT:
+    case RIGHT:
+        break;
+    default:
+        throw RuntimeError("Invalid port type");
+    }
+    bool enable = static_cast<int>(args[1]);
+    LOG(logDEBUG1) << "Setting datastream (" << sls::ToString(port) << ") to "
+                   << sls::ToString(enable);
+    if (myDetectorType != EIGER)
+        functionNotImplemented();
+    verifyIdle(socket);
+    impl()->setDetectorDataStream(port, enable);
+    return socket.Send(OK);
+}
+

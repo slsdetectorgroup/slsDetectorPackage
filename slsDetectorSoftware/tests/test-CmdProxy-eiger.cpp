@@ -649,3 +649,43 @@ TEST_CASE("quad", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("quad", {}, -1, GET));
     }
 }
+
+TEST_CASE("datastream", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_val_left = det.getDataStream(defs::LEFT);
+        auto prev_val_right = det.getDataStream(defs::RIGHT);
+        // no "left" or "right"
+        REQUIRE_THROWS(proxy.Call("datastream", {"1"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            proxy.Call("datastream", {"left", "0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "datastream left 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("datastream", {"right", "0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "datastream right 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("datastream", {"left", "1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "datastream left 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("datastream", {"right", "1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "datastream right 1\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDataStream(defs::LEFT, prev_val_left[i], {i});
+            det.setDataStream(defs::RIGHT, prev_val_right[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("datastream", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("datastream", {"1"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("datastream", {"left", "1"}, -1, PUT));
+    }
+}

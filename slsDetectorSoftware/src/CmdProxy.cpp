@@ -1590,6 +1590,34 @@ std::string CmdProxy::Quad(int action) {
     return os.str();
 }
 
+std::string CmdProxy::DataStream(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[left|right] [0, 1]\n\t[Eiger] Enables or disables data "
+              "streaming from left or/and right side of detector. 1 (enabled) "
+              "by default."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        auto t = det->getDataStream(StringTo<defs::portPosition>(args[0]),
+                                    std::vector<int>{det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }
+        det->setDataStream(StringTo<defs::portPosition>(args[0]),
+                           StringTo<bool>(args[1]), std::vector<int>{det_id});
+        os << args << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Jungfrau Specific */
 
 std::string CmdProxy::TemperatureEvent(int action) {

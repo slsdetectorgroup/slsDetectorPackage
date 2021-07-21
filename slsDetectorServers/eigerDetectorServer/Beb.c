@@ -43,6 +43,8 @@ int Beb_deactivated_transmission_flowcontrol_10g = 0;
 int Beb_deactivated_transmission_delay_frame = 0;
 int Beb_deactivated_transmission_delay_left = 0;
 int Beb_deactivated_transmission_delay_right = 0;
+int Beb_deactivated_left_datastream = 1;
+int Beb_deactivated_right_datastream = 1;
 
 void BebInfo_BebInfo(struct BebInfo *bebInfo, unsigned int beb_num) {
     bebInfo->beb_number = beb_num;
@@ -446,6 +448,74 @@ int Beb_GetActivate(int *retval) {
     }
     Beb_close(fd, csp0base);
     *retval = Beb_activated;
+    return 1;
+}
+
+int Beb_SetDataStream(enum portPosition port, int enable) {
+    if (!Beb_activated) {
+        if (port == LEFT) {
+            Beb_deactivated_left_datastream = enable;
+        } else {
+            Beb_deactivated_right_datastream = enable;
+        }
+        return 1;
+    }
+    if (enable < 0) {
+        LOG(logERROR, ("Invalid enable value\n"));
+        return 0;
+    }
+    u_int32_t *csp0base = 0;
+    int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
+    if (fd < 0) {
+        LOG(logERROR, ("Activate FAIL, could not open fd\n"));
+        return 0;
+    } else {
+        u_int32_t reg = XPAR_GPIO_P15_STREAMING_REG;
+        u_int32_t mask = (port == LEFT ? XPAR_GPIO_LFT_STRM_DSBL_MSK
+                                       : XPAR_GPIO_RGHT_STRM_DSBL_MSK);
+
+        u_int32_t value = Beb_Read32(csp0base, reg);
+        // disabling in firmware 
+        if (!enable)
+            value |= mask;
+        else
+            value &= ~mask;
+        u_int32_t retval = Beb_Write32(csp0base, reg, value);
+        if (retval != value) {
+            LOG(logERROR,
+                ("Could not %s %s fpga datastream. Wrote 0x%x, read 0x%x\n",
+                 (enable ? "enable" : "disable"),
+                 (port == LEFT ? "left" : "right"), value, retval));
+            Beb_close(fd, csp0base);
+        }
+    }
+    Beb_close(fd, csp0base);
+    return 1;
+}
+
+int Beb_GetDataStream(enum portPosition port, int *retval) {
+    if (!Beb_activated) {
+        if (port == LEFT) {
+            return Beb_deactivated_left_datastream;
+        } else {
+            return Beb_deactivated_right_datastream;
+        }
+    }
+    u_int32_t *csp0base = 0;
+    int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
+    if (fd < 0) {
+        LOG(logERROR, ("Activate FAIL, could not open fd\n"));
+        return 0;
+    } else {
+        u_int32_t reg = XPAR_GPIO_P15_STREAMING_REG;
+        u_int32_t mask = (port == LEFT ? XPAR_GPIO_LFT_STRM_DSBL_MSK
+                                       : XPAR_GPIO_RGHT_STRM_DSBL_MSK);
+
+        u_int32_t value = Beb_Read32(csp0base, reg);
+        // disabling in firmware
+        *retval = (value & mask) ? 0 : 1;
+    }
+    Beb_close(fd, csp0base);
     return 1;
 }
 

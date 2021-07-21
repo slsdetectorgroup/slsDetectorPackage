@@ -162,6 +162,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_streaming_hwm(sls::ServerInterface &socket);
     int set_streaming_hwm(sls::ServerInterface &socket);
     int set_all_threshold(sls::ServerInterface &socket);
+    int set_detector_datastream(sls::ServerInterface &socket);
+
 
     Implementation *impl() {
         if (receiver != nullptr) {

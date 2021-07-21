@@ -87,6 +87,7 @@ int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right);
 void Feb_Control_SetMasterVariable(int val);
 int Feb_Control_SetMaster(enum MASTERINDEX ind);
 int Feb_Control_SetQuad(int val);
+int Feb_Control_SetChipSignalsToTrimQuad(int enable);
 int Feb_Control_SetReadNLines(int value);
 int Feb_Control_GetReadNLines();
 int Feb_Control_WriteRegister(uint32_t offset, uint32_t data);

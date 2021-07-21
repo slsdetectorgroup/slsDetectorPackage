@@ -37,12 +37,13 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * @param fpf pointer to frames per file
      * @param fdp frame discard policy
      * @param act pointer to activated
+     * @param detds pointer to detector data stream
      * @param depaden pointer to deactivated padding enable
      * @param sm pointer to silent mode
      */
     Listener(int ind, detectorType dtype, Fifo *f, std::atomic<runStatus> *s,
              uint32_t *portno, std::string *e, uint64_t *nf, int *us, int *as,
-             uint32_t *fpf, frameDiscardPolicy *fdp, bool *act, bool *depaden,
+             uint32_t *fpf, frameDiscardPolicy *fdp, bool *act, bool* detds, bool *depaden,
              bool *sm);
 
     /**
@@ -186,6 +187,9 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
     /** Activated/Deactivated */
     bool *activated;
+
+    /** detector data stream */
+    bool* detectorDataStream;
 
     /** Deactivated padding enable */
     bool *deactivatedPaddingEnable;

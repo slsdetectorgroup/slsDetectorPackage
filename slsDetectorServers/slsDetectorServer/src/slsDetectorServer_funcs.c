@@ -373,6 +373,8 @@ void function_table() {
     flist[F_GET_CSR] = &get_csr;
     flist[F_SET_GAIN_CAPS] = &set_gain_caps;
     flist[F_GET_GAIN_CAPS] = &get_gain_caps;
+    flist[F_GET_DATASTREAM] = &get_datastream;
+    flist[F_SET_DATASTREAM] = &set_datastream;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -3038,13 +3040,13 @@ int set_pattern_loop_addresses(int file_des) {
         else {
             // set
             if (startAddr >= 0 && stopAddr >= 0) {
-                ret = validate_setPatternLoopAddresses(mess, loopLevel, startAddr,
-                                               stopAddr);
+                ret = validate_setPatternLoopAddresses(mess, loopLevel,
+                                                       startAddr, stopAddr);
             }
             // get
             if (ret == OK) {
-                ret = validate_getPatternLoopAddresses(mess, loopLevel, &retvals[0],
-                                               &retvals[1]);
+                ret = validate_getPatternLoopAddresses(
+                    mess, loopLevel, &retvals[0], &retvals[1]);
             }
         }
     }
@@ -7053,6 +7055,28 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
+        // data stream left
+#ifdef EIGERD
+    i32 = 0;
+    getDataStream(LEFT, &i32);
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();        
+
+        // data stream right
+#ifdef EIGERD
+    i32 = 0;
+    getDataStream(RIGHT, &i32);
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();        
+
         // quad
 #ifdef EIGERD
     i32 = getQuad();
@@ -8222,4 +8246,92 @@ int get_gain_caps(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_datastream(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum portPosition arg = LEFT;
+    int retval = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Getting data stream enable [port:%d]\n", arg));
+
+#ifndef EIGERD
+    functionNotImplemented();
+#else
+    // get only
+    if (arg != LEFT && arg != RIGHT) {
+        ret = FAIL;
+        sprintf(
+            mess,
+            "Could not get data stream enable. Invalid port position %d. Only left and right allowed\n",
+            arg);
+        LOG(logERROR, (mess));
+    } else {
+        ret = getDataStream(arg, &retval);
+        LOG(logDEBUG1, ("datastream (%s) retval: %u\n",
+                        (arg == LEFT? "left" : "right"), retval));
+        if (ret == FAIL) {
+            sprintf(mess, "Could not get %s data stream enable.\n",
+                    (arg == LEFT ? "left" : "right"));
+            LOG(logERROR, (mess));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_datastream(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = {-1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting data stream enable [left:%d, enable:%d]\n",
+                    args[0], args[1]));
+
+#ifndef EIGERD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        enum portPosition port = args[0];
+        int enable = args[1];
+        char msg[256];
+        memset(msg, 0, sizeof(msg));
+        sprintf(msg, "%s %s fpga datastream", (enable ? "enable" : "disable"),
+                (port == LEFT ? "left" : "right"));
+        if (port != LEFT && port != RIGHT) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not %s. Invalid port position %d. Only left and right allowed\n",
+                    msg, port);
+            LOG(logERROR, (mess));
+        } else if (enable != 0 && enable != 1) {
+            ret = FAIL;
+            sprintf(mess, "Could not %s. Invalid enable %d. \n", msg, enable);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setDataStream(port, enable);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not %s\n", msg);
+                LOG(logERROR, (mess));
+            } else {
+                int retval = -1;
+                ret = getDataStream(port, &retval);
+                LOG(logDEBUG1, ("%s retval: %u\n", msg, retval));
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not get %s data stream enable.\n",
+                            (port == LEFT ? "left" : "right"));
+                    LOG(logERROR, (mess));
+                }
+                validate(&ret, mess, enable, retval, msg, DEC);
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

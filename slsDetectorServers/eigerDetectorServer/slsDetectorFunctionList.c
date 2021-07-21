@@ -90,6 +90,8 @@ int eiger_virtual_test_mode = 0;
 int eiger_virtual_quad_mode = 0;
 int eiger_virtual_read_nlines = 256;
 int eiger_virtual_interrupt_subframe = 0;
+int eiger_virtual_left_datastream = 1;
+int eiger_virtual_right_datastream = 1;
 #endif
 
 int isInitCheckDone() { return initCheckDone; }
@@ -1135,15 +1137,33 @@ int setModule(sls_detector_module myMod, char *mess) {
 
         // set trimbits
         sharedMemory_lockLocalLink();
+
+        // if quad, set M8 and PROGRAM manually
+        if (!Feb_Control_SetChipSignalsToTrimQuad(1)) {
+            return FAIL;
+        }
+
         if (!Feb_Control_SetTrimbits(tt, top)) {
             sprintf(mess, "Could not set module. Could not set trimbits\n");
             LOG(logERROR, (mess));
             setSettings(UNDEFINED);
             LOG(logERROR, ("Settings has been changed to undefined (random "
                            "trim file)\n"));
+
+            // if quad, reset M8 and PROGRAM manually
+            if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
+                return FAIL;
+            }
+
             sharedMemory_unlockLocalLink();
             return FAIL;
         }
+
+        // if quad, reset M8 and PROGRAM manually
+        if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
+            return FAIL;
+        }
+
         sharedMemory_unlockLocalLink();
     }
 #endif
@@ -2049,6 +2069,40 @@ int getActivate(int *retval) {
     return OK;
 }
 
+int setDataStream(enum portPosition port, int enable) {
+    if (enable < 0) {
+        LOG(logERROR, ("Invalid setDataStream enable argument: %d\n", enable));
+        return FAIL;
+    }
+#ifdef VIRTUAL
+    if (port == LEFT) {
+        eiger_virtual_left_datastream = enable;
+    } else {
+        eiger_virtual_right_datastream = enable;
+    }
+#else
+    if (!Beb_SetDataStream(port, enable)) {
+        return FAIL;
+    }
+#endif
+    return OK;
+}
+
+int getDataStream(enum portPosition port, int *retval) {
+#ifdef VIRTUAL
+    if (port == LEFT) {
+        *retval = eiger_virtual_left_datastream;
+    } else {
+        *retval = eiger_virtual_right_datastream;
+    }
+#else
+    if (!Beb_GetDataStream(port, retval)) {
+        return FAIL;
+    }
+#endif
+    return OK;
+}
+
 int getTenGigaFlowControl() {
 #ifdef VIRTUAL
     return eiger_virtual_transmission_flowcontrol_10g;
@@ -2196,6 +2250,19 @@ void *start_timer(void *arg) {
         return NULL;
     }
 
+    int skipData = 0;
+    if (!eiger_virtual_activate ||
+        (!eiger_virtual_left_datastream && !eiger_virtual_right_datastream)) {
+        skipData = 1;
+        LOG(logWARNING, ("Not sending Left and Right datastream\n"));
+    }
+    if (!eiger_virtual_left_datastream) {
+        LOG(logWARNING, ("Not sending Left datastream\n"));
+    }
+    if (!eiger_virtual_right_datastream) {
+        LOG(logWARNING, ("Not sending Right datastream\n"));
+    }
+
     int64_t periodNs = eiger_virtual_period;
     int numFrames = nimages_per_request;
     int64_t expUs = eiger_virtual_exptime / 1000;
@@ -2257,7 +2324,7 @@ void *start_timer(void *arg) {
     }
 
     // Send data
-    {
+    if (!skipData) {
         uint64_t frameNr = 0;
         getNextFrameNumber(&frameNr);
         // loop over number of frames
@@ -2342,10 +2409,14 @@ void *start_timer(void *arg) {
                         }
                     }
                 }
-                usleep(eiger_virtual_transmission_delay_left);
-                sendUDPPacket(0, packetData, packetsize);
-                usleep(eiger_virtual_transmission_delay_right);
-                sendUDPPacket(1, packetData2, packetsize);
+                if (eiger_virtual_left_datastream) {
+                    usleep(eiger_virtual_transmission_delay_left);
+                    sendUDPPacket(0, packetData, packetsize);
+                }
+                if (eiger_virtual_right_datastream) {
+                    usleep(eiger_virtual_transmission_delay_right);
+                    sendUDPPacket(1, packetData2, packetsize);
+                }
             }
             LOG(logINFO, ("Sent frame: %d[%lld]\n", iframes,
                           (long long unsigned int)(frameNr + iframes)));

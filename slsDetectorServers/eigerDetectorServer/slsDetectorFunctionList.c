@@ -1137,15 +1137,33 @@ int setModule(sls_detector_module myMod, char *mess) {
 
         // set trimbits
         sharedMemory_lockLocalLink();
+
+        // if quad, set M8 and PROGRAM manually
+        if (!Feb_Control_SetChipSignalsToTrimQuad(true)) {
+            return FAIL;
+        }
+
         if (!Feb_Control_SetTrimbits(tt, top)) {
             sprintf(mess, "Could not set module. Could not set trimbits\n");
             LOG(logERROR, (mess));
             setSettings(UNDEFINED);
             LOG(logERROR, ("Settings has been changed to undefined (random "
                            "trim file)\n"));
+
+            // if quad, reset M8 and PROGRAM manually
+            if (!Feb_Control_SetChipSignalsToTrimQuad(false)) {
+                return FAIL;
+            }
+
             sharedMemory_unlockLocalLink();
             return FAIL;
         }
+
+        // if quad, reset M8 and PROGRAM manually
+        if (!Feb_Control_SetChipSignalsToTrimQuad(false)) {
+            return FAIL;
+        }
+
         sharedMemory_unlockLocalLink();
     }
 #endif

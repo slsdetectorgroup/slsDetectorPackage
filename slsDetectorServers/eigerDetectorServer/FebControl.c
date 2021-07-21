@@ -23,26 +23,26 @@ int Feb_Control_activated = 1;
 int Feb_Control_hv_fd = -1;
 unsigned int Feb_Control_idelay[4]; // ll,lr,rl,ll
 int Feb_Control_counter_bit = 1;
-unsigned int Feb_Control_staticBits;
-unsigned int Feb_Control_acquireNReadoutMode;
-unsigned int Feb_Control_triggerMode;
-unsigned int Feb_Control_externalEnableMode;
-unsigned int Feb_Control_subFrameMode;
-unsigned int Feb_Control_softwareTrigger;
+unsigned int Feb_Control_staticBits = 0;
+unsigned int Feb_Control_acquireNReadoutMode = 0;
+unsigned int Feb_Control_triggerMode = 0;
+unsigned int Feb_Control_externalEnableMode = 0;
+unsigned int Feb_Control_subFrameMode = 0;
+unsigned int Feb_Control_quadMode = 0;
 
-unsigned int Feb_Control_nimages;
-double Feb_Control_exposure_time_in_sec;
-int64_t Feb_Control_subframe_exposure_time_in_10nsec;
-int64_t Feb_Control_subframe_period_in_10nsec;
-double Feb_Control_exposure_period_in_sec;
+unsigned int Feb_Control_nimages = 0;
+double Feb_Control_exposure_time_in_sec = 0;
+int64_t Feb_Control_subframe_exposure_time_in_10nsec = 0;
+int64_t Feb_Control_subframe_period_in_10nsec = 0;
+double Feb_Control_exposure_period_in_sec = 0;
 
-unsigned int Feb_Control_trimbit_size;
-unsigned int *Feb_Control_last_downloaded_trimbits;
+unsigned int Feb_Control_trimbit_size = 0;
+unsigned int *Feb_Control_last_downloaded_trimbits = 0;
 
 int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
 int64_t Feb_Control_RateTable_Period_in_nsec = -1;
-unsigned int Feb_Control_rate_correction_table[1024];
-double Feb_Control_rate_meas[16384];
+unsigned int Feb_Control_rate_correction_table[1024] = {};
+double Feb_Control_rate_meas[16384] = 0;
 double ratemax = -1;
 
 // setup
@@ -1518,8 +1518,29 @@ int Feb_Control_SetMaster(enum MASTERINDEX ind) {
 
 int Feb_Control_SetQuad(int val) {
     LOG(logINFO, ("Setting Quad to %d in Feb\n", val));
+    Feb_Control_quadMode = val;
     // only setting on the right feb if quad
     return Feb_Control_SetTop(val == 0 ? TOP_HARDWARE : OW_BOTTOM, 0, 1);
+}
+
+int Feb_Control_SetChipSignalsToTrimQuad(bool enable) {
+    if (Feb_Control_quadMode) {
+        LOG(logINFO, ("%s chip signals to trim quad\n",
+                      enable ? "Enabling" : "Disabling"));
+        unsigned int regval = 0;
+        if (!Feb_Control_ReadRegister(DAQ_REG_HRDWRE, &regval)) {
+            LOG(logERROR, ("Could not set chip signals to trim quad\n"));
+            return 0;
+        }
+        if (enable) {
+            regval |= (DAQ_REG_HRDWRE_PROGRAM_MSK | DAQ_REG_HRDWRE_M8_MSK);
+        } else {
+            regval &= ~(DAQ_REG_HRDWRE_PROGRAM_MSK | DAQ_REG_HRDWRE_M8_MSK);
+        }
+
+        return Feb_Control_WriteRegister(DAQ_REG_HRDWRE, regval);
+    }
+    return 1;
 }
 
 int Feb_Control_SetReadNLines(int value) {

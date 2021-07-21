@@ -8,6 +8,8 @@ speedLevel = slsDetectorDefs.speedLevel
 dacIndex = slsDetectorDefs.dacIndex
 detectorType = slsDetectorDefs.detectorType
 
+defs = slsDetectorDefs
+
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
 from _slsdet import xy
@@ -1787,9 +1789,24 @@ class Detector(CppDetectorApi):
 
     """
 
-    <<<-----------------------Eiger specific----------------------->>>
+    <<<Eiger>>>
 
     """
+
+    @property
+    def datastream(self):
+        """
+        datastream [left|right] [0, 1]
+	    [Eiger] Enables or disables data streaming from left or/and right side of detector. 1 (enabled) by default.
+        """
+        result = {}
+        for port in [defs.LEFT, defs.RIGHT]:
+            result[port] = element_if_equal(self.getDataStream(port))
+        return result
+
+    @datastream.setter
+    def datastream(self, value):
+        ut.set_using_dict(self.setDataStream, *value)
 
     @property
     @element

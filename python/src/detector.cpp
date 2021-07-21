@@ -401,7 +401,9 @@ void init_det(py::module &m) {
         .def("startDetector", (void (Detector::*)()) & Detector::startDetector)
         .def("startDetectorReadout",
              (void (Detector::*)()) & Detector::startDetectorReadout)
-        .def("stopDetector", (void (Detector::*)()) & Detector::stopDetector)
+        .def("stopDetector",
+             (void (Detector::*)(sls::Positions)) & Detector::stopDetector,
+             py::arg() = Positions{})
         .def("getDetectorStatus",
              (Result<defs::runStatus>(Detector::*)(sls::Positions) const) &
                  Detector::getDetectorStatus,
@@ -430,7 +432,7 @@ void init_det(py::module &m) {
         .def("sendSoftwareTrigger",
              (void (Detector::*)(const bool, sls::Positions)) &
                  Detector::sendSoftwareTrigger,
-             py::arg(), py::arg() = Positions{})
+             py::arg() = false, py::arg() = Positions{})
         .def("getScan",
              (Result<defs::scanParameters>(Detector::*)(sls::Positions) const) &
                  Detector::getScan,
@@ -911,6 +913,16 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("setQuad", (void (Detector::*)(const bool)) & Detector::setQuad,
              py::arg())
+        .def("getDataStream",
+             (Result<bool>(Detector::*)(const defs::portPosition,
+                                        sls::Positions) const) &
+                 Detector::getDataStream,
+             py::arg(), py::arg() = Positions{})
+        .def("setDataStream",
+             (void (Detector::*)(const defs::portPosition, const bool,
+                                 sls::Positions)) &
+                 Detector::setDataStream,
+             py::arg(), py::arg(), py::arg() = Positions{})
         .def("getThresholdTemperature",
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getThresholdTemperature,

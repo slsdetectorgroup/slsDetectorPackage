@@ -1,4 +1,4 @@
-SLS Detector Package 5.2.0 released on 15.07.2021 (Minor Release)
+SLS Detector Package 5.2.0 released on 28.07.2021 (Minor Release)
 ===================================================================
 
 This document describes the differences between 5.2.0 and 5.1.0 releases.   
@@ -27,6 +27,10 @@ This document describes the differences between 5.2.0 and 5.1.0 releases.
         Command: vetostream, Detector::setVetoStream
         
 
+    2.  (Gotthard2) veto algorithm
+        New command to set veto algorithm for 2.5GbE or 10GbE (debugging). 
+        Command: vetoalg, Detector::setVetoAlgorithm
+
     Gotthard2 server
     ----------------
 
@@ -36,18 +40,6 @@ This document describes the differences between 5.2.0 and 5.1.0 releases.
 
 2. Resolved Issues
 ==================
-
-
-    Receiver
-    --------
-
-    1.  
-
-
-    Client
-    ------
-
-    1.  
 
     Gotthard2 Server
     ----------------

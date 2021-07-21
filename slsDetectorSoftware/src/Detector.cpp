@@ -1565,36 +1565,52 @@ void Detector::setVeto(bool enable, Positions pos) {
     pimpl->Parallel(&Module::setVeto, pos, enable);
 }
 
-Result<defs::EthernetInterface> Detector::getVetoStream(Positions pos) const {
+Result<defs::ethernetInterface> Detector::getVetoStream(Positions pos) const {
     // 3gbe
     auto r3 = pimpl->Parallel(&Module::getVetoStream, pos);
     // 10gbe (debugging interface) opens 2nd udp interface in receiver
     auto r10 = getNumberofUDPInterfaces_(pos);
 
-    Result<defs::EthernetInterface> res(r3.size());
+    Result<defs::ethernetInterface> res(r3.size());
     for (unsigned int i = 0; i < res.size(); ++i) {
-        res[i] = (r3[i] ? defs::EthernetInterface::I3GBE
-                        : defs::EthernetInterface::NONE);
+        res[i] = (r3[i] ? defs::ethernetInterface::I3GBE
+                        : defs::ethernetInterface::NONE);
         if (r10[i] == 2) {
-            res[i] = res[i] | defs::EthernetInterface::I10GBE;
+            res[i] = res[i] | defs::ethernetInterface::I10GBE;
         }
     }
     return res;
 }
 
-void Detector::setVetoStream(defs::EthernetInterface interface, Positions pos) {
+void Detector::setVetoStream(defs::ethernetInterface interface, Positions pos) {
     // 3gbe
-    bool i3gbe = (interface & defs::EthernetInterface::I3GBE) == defs::EthernetInterface::I3GBE;
+    bool i3gbe = (interface & defs::ethernetInterface::I3GBE) ==
+                 defs::ethernetInterface::I3GBE;
     pimpl->Parallel(&Module::setVetoStream, pos, i3gbe);
 
     // 10gbe (debugging interface) opens 2nd udp interface in receiver
     int old_numinterfaces = getNumberofUDPInterfaces_(pos).tsquash(
         "retrieved inconsistent number of udp interfaces");
-    int numinterfaces = ((interface & defs::EthernetInterface::I10GBE) == defs::EthernetInterface::I3GBE) ? 2 : 1;
+    int numinterfaces = ((interface & defs::ethernetInterface::I10GBE) ==
+                         defs::ethernetInterface::I3GBE)
+                            ? 2
+                            : 1;
     if (numinterfaces != old_numinterfaces) {
         setNumberofUDPInterfaces_(numinterfaces, pos);
     }
-  }
+}
+
+Result<defs::vetoAlgorithm>
+Detector::getVetoAlgorithm(const defs::ethernetInterface interface,
+                           Positions pos) const {
+    return pimpl->Parallel(&Module::getVetoAlgorithm, pos, interface);
+}
+
+void Detector::setVetoAlgorithm(const defs::vetoAlgorithm alg,
+                                defs::ethernetInterface interface,
+                                Positions pos) {
+    pimpl->Parallel(&Module::setVetoAlgorithm, pos, alg, interface);
+}
 
 Result<int> Detector::getADCConfiguration(const int chipIndex,
                                           const int adcIndex,

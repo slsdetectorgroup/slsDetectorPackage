@@ -1075,15 +1075,26 @@ void init_det(py::module &m) {
                  Detector::setVeto,
              py::arg(), py::arg() = Positions{})
         .def("getVetoStream",
-             (Result<defs::EthernetInterface>(Detector::*)(sls::Positions)
+             (Result<defs::ethernetInterface>(Detector::*)(sls::Positions)
                   const) &
                  Detector::getVetoStream,
              py::arg() = Positions{})
         .def("setVetoStream",
-             (void (Detector::*)(const defs::EthernetInterface,
+             (void (Detector::*)(const defs::ethernetInterface,
                                  sls::Positions)) &
                  Detector::setVetoStream,
              py::arg(), py::arg() = Positions{})
+        .def("getVetoAlgorithm",
+             (Result<defs::vetoAlgorithm>(Detector::*)(
+                 const defs::ethernetInterface, sls::Positions) const) &
+                 Detector::getVetoAlgorithm,
+             py::arg(), py::arg() = Positions{})
+        .def("setVetoAlgorithm",
+             (void (Detector::*)(const defs::vetoAlgorithm,
+                                 const defs::ethernetInterface,
+                                 sls::Positions)) &
+                 Detector::setVetoAlgorithm,
+             py::arg(), py::arg(), py::arg() = Positions{})
         .def("getADCConfiguration",
              (Result<int>(Detector::*)(const int, const int, sls::Positions)
                   const) &

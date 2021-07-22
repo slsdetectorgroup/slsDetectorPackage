@@ -53,7 +53,7 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << std::endl
         << "activate:" << r.activate << std::endl
         << "leftDataStream:" << r.dataStreamLeft << std::endl
-        << "rightDataStream:" << r.dataStreamRight << std::endl       
+        << "rightDataStream:" << r.dataStreamRight << std::endl
         << "quad:" << r.quad << std::endl
         << "numLinesReadout:" << r.numLinesReadout << std::endl
         << "thresholdEnergyeV:" << ToString(r.thresholdEnergyeV) << std::endl
@@ -555,6 +555,25 @@ std::string ToString(const defs::portPosition s) {
     }
 }
 
+std::string ToString(const defs::EthernetInterface s) {
+    std::ostringstream os;
+    std::string rs;
+    switch (s) {
+    case defs::EthernetInterface::NONE:
+        return std::string("none");
+    default:
+        if ((s & defs::EthernetInterface::I3GBE) !=
+            defs::EthernetInterface::NONE)
+            os << "3gbe, ";
+        if ((s & defs::EthernetInterface::I10GBE) !=
+            defs::EthernetInterface::NONE)
+            os << "10gbe, ";
+        auto rs = os.str();
+        rs.erase(rs.end() - 2, rs.end());
+        return rs;
+    }
+}
+
 const std::string &ToString(const std::string &s) { return s; }
 
 template <> defs::detectorType StringTo(const std::string &s) {
@@ -921,6 +940,19 @@ template <> defs::portPosition StringTo(const std::string &s) {
     if (s == "bottom")
         return defs::BOTTOM;
     throw sls::RuntimeError("Unknown port position " + s);
+}
+
+template <> defs::EthernetInterface StringTo(const std::string &s) {
+    std::string rs = s;
+    if (s.find(',') != std::string::npos)
+        rs.erase(rs.find(','));
+    if (rs == "none")
+        return defs::EthernetInterface::NONE;
+    if (rs == "3gbe")
+        return defs::EthernetInterface::I3GBE;
+    if (rs == "10gbe")
+        return defs::EthernetInterface::I10GBE;
+    throw sls::RuntimeError("Unknown EthernetInterface type " + s);
 }
 
 template <> uint32_t StringTo(const std::string &s) {

@@ -408,6 +408,8 @@ class Module : public virtual slsDetectorDefs {
     void setTimingSource(slsDetectorDefs::timingSourceType value);
     bool getVeto() const;
     void setVeto(bool enable);
+    bool getVetoStream() const;
+    void setVetoStream(const bool value);
     int getADCConfiguration(const int chipIndex, const int adcIndex) const;
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              int value);

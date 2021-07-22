@@ -375,6 +375,8 @@ void function_table() {
     flist[F_GET_GAIN_CAPS] = &get_gain_caps;
     flist[F_GET_DATASTREAM] = &get_datastream;
     flist[F_SET_DATASTREAM] = &set_datastream;
+    flist[F_GET_VETO_STREAM] = &get_veto_stream;
+    flist[F_SET_VETO_STREAM] = &set_veto_stream;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -4107,7 +4109,8 @@ int software_trigger(int file_des) {
 #else
     if (arg && myDetectorType == MYTHEN3) {
         ret = FAIL;
-        strcpy(mess, "Blocking trigger not implemented for Mythen3. Please use non blocking trigger.\n");
+        strcpy(mess, "Blocking trigger not implemented for Mythen3. Please use "
+                     "non blocking trigger.\n");
         LOG(logERROR, (mess));
     }
     // only set
@@ -7064,7 +7067,7 @@ int get_receiver_parameters(int file_des) {
 #endif
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
-        return printSocketReadError();        
+        return printSocketReadError();
 
         // data stream right
 #ifdef EIGERD
@@ -7075,7 +7078,7 @@ int get_receiver_parameters(int file_des) {
 #endif
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
-        return printSocketReadError();        
+        return printSocketReadError();
 
         // quad
 #ifdef EIGERD
@@ -7508,28 +7511,9 @@ int set_veto(int file_des) {
     // only set
     if (Server_VerifyLock() == OK) {
         setVeto(arg);
-        // if numinterfaces is 2 and veto is 1 now, then configuremac
-        if (arg > 0 && getNumberofUDPInterfaces() == 2 &&
-            is_udp_configured() == OK) {
-            ret = configureMAC();
-            if (ret != OK) {
-                sprintf(mess, "Configure Mac failed after enabling veto\n");
-                strcpy(configureMessage, mess);
-                LOG(logERROR, (mess));
-                configured = FAIL;
-                LOG(logWARNING, ("Configure FAIL, not all parameters "
-                                 "configured yet\n"));
-
-            } else {
-                LOG(logINFOGREEN, ("\tConfigure MAC successful\n"));
-                configured = OK;
-            }
-        }
-        if (ret == OK) {
-            int retval = getVeto();
-            LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
-            validate(&ret, mess, arg, retval, "set veto mode", DEC);
-        }
+        int retval = getVeto();
+        LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
+        validate(&ret, mess, arg, retval, "set veto mode", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -8229,13 +8213,8 @@ int set_gain_caps(int file_des) {
 int get_gain_caps(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    // int arg = 0;
-
-    // if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-    //     return printSocketReadError();
-    LOG(logINFO, ("Getting gain caps\n"));
-
     int retval = -1;
+    LOG(logINFO, ("Getting gain caps\n"));
 
 #ifndef MYTHEN3D
     functionNotImplemented();
@@ -8264,15 +8243,15 @@ int get_datastream(int file_des) {
     // get only
     if (arg != LEFT && arg != RIGHT) {
         ret = FAIL;
-        sprintf(
-            mess,
-            "Could not get data stream enable. Invalid port position %d. Only left and right allowed\n",
-            arg);
+        sprintf(mess,
+                "Could not get data stream enable. Invalid port position %d. "
+                "Only left and right allowed\n",
+                arg);
         LOG(logERROR, (mess));
     } else {
         ret = getDataStream(arg, &retval);
         LOG(logDEBUG1, ("datastream (%s) retval: %u\n",
-                        (arg == LEFT? "left" : "right"), retval));
+                        (arg == LEFT ? "left" : "right"), retval));
         if (ret == FAIL) {
             sprintf(mess, "Could not get %s data stream enable.\n",
                     (arg == LEFT ? "left" : "right"));
@@ -8307,7 +8286,8 @@ int set_datastream(int file_des) {
         if (port != LEFT && port != RIGHT) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not %s. Invalid port position %d. Only left and right allowed\n",
+                    "Could not %s. Invalid port position %d. Only left and "
+                    "right allowed\n",
                     msg, port);
             LOG(logERROR, (mess));
         } else if (enable != 0 && enable != 1) {
@@ -8330,6 +8310,55 @@ int set_datastream(int file_des) {
                 }
                 validate(&ret, mess, enable, retval, msg, DEC);
             }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_veto_stream(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum EthernetInterface retval = NONE;
+
+    LOG(logDEBUG1, ("Getting veto stream\n"));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // get only
+    retval = getVetoStream();
+    LOG(logDEBUG1, ("vetostream retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_veto_stream(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum EthernetInterface arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting vetostream: %u\n", (int)arg));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+
+        if (arg != 0 && arg != 1) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set vetostream 3GbE. Invalid argument %d.\n",
+                    arg);
+            LOG(logERROR, (mess));
+        } else {
+            setVetoStream(arg);
+            int retval = getVetoStream();
+            LOG(logDEBUG1, ("vetostream retval: %u\n", retval));
+            validate(&ret, mess, arg, retval, "set veto stream", DEC);
         }
     }
 #endif

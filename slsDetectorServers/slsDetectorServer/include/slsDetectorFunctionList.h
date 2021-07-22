@@ -530,6 +530,8 @@ void setTimingSource(enum timingSourceType value);
 enum timingSourceType getTimingSource();
 void setVeto(int enable);
 int getVeto();
+void setVetoStream(int value);
+int getVetoStream();
 void setBadChannels(int nch, int *channels);
 int *getBadChannels(int *nch);
 #endif

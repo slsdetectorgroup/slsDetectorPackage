@@ -2229,7 +2229,7 @@ class Detector(CppDetectorApi):
     @element
     def veto(self):
         """
-        [Gotthard2] Enable or disable veto data streaming from detector. 
+        [Gotthard2] Enable or disable veto data from chip. 
         Note
         ----
         Default is 0.
@@ -2347,6 +2347,18 @@ class Detector(CppDetectorApi):
         if not isinstance(args, tuple):
             args = (args,)
         ut.set_using_dict(self.setVetoReference, *args)
+
+
+    @property
+    @element
+    def vetostream(self):
+        return self.getVetoStream()
+
+    @vetostream.setter
+    def vetostream(self, args):
+        if not isinstance(args, tuple):
+            args = (args,)
+        ut.set_using_dict(self.setVetoStream, *args)
 
 
     """

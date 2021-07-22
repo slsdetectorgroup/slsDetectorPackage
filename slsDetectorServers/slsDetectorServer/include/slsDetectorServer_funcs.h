@@ -249,3 +249,5 @@ int set_gain_caps(int);
 int get_gain_caps(int);
 int get_datastream(int);
 int set_datastream(int);
+int get_veto_stream(int);
+int set_veto_stream(int);

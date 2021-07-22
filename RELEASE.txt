@@ -1,7 +1,7 @@
-SLS Detector Package 5.X.X released on XX.XX.2021 (Minor Release)
+SLS Detector Package 5.2.0 released on 15.07.2021 (Minor Release)
 ===================================================================
 
-This document describes the differences between X and Y releases.   
+This document describes the differences between 5.2.0 and 5.1.0 releases.   
 
 
 
@@ -19,17 +19,69 @@ This document describes the differences between X and Y releases.
 1. New Features
 ===============
 
-    Setting Mythen3 gain from command line
+    Client
+    ------
+    1. Setting Mythen3 gain from command line
 
-4. Firmware Requirements
-========================
+
+    2.  (Gotthard2) veto streaming
+        New command to enable/ disable veto streaming via 2.5GbE or/ and 10GbE (debugging). 
+        Command: vetostream, Detector::setVetoStream
+        
+
+    Gotthard2 server
+    ----------------
+
+    1.  Bad Channels moved to a new register
     
+    
+
+2. Resolved Issues
+==================
+
+
+    Receiver
+    --------
+
+    1.  
+
+
+    Client
+    ------
+
+    1.  
+
+    Gotthard2 Server
+    ----------------
+
+    1.  Tolerance in time parameters. 
+        Eg. 220 ns was being set to 215 ns, instead of 222ns.
+
+
+
+    Jungfrau Server
+    ----------------
+
+    1.  Stopping in trigger mode and then switching to auto timing mode 
+        blocks data streaming from detector. Workaround fix made in 
+        detector server to reset core until firmware release.
+
+
+
+
+3. Firmware Requirements
+========================
+        
+    Gotthard2: 0x210201 ???
+
+    Other detectors no updates from 5.1.0
+
 
 
 5. Known Issues
 ===============
 
-    No updates from 5.0.0
+    No updates from 5.1.0
 
 
 

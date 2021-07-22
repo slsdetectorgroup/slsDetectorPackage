@@ -945,6 +945,7 @@ class CmdProxy {
         {"currentsource", &CmdProxy::currentsource},
         {"timingsource", &CmdProxy::timingsource},
         {"veto", &CmdProxy::veto},
+        {"vetostream", &CmdProxy::VetoStreaming},
         {"confadc", &CmdProxy::ConfigureADC},
         {"badchannels", &CmdProxy::BadChannels},
 
@@ -1123,6 +1124,7 @@ class CmdProxy {
     std::string VetoReference(int action);
     std::string VetoFile(int action);
     std::string BurstMode(int action);
+    std::string VetoStreaming(int action);
     std::string ConfigureADC(int action);
     std::string BadChannels(int action);
     /* Mythen3 Specific */
@@ -1472,13 +1474,11 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         numinterfaces, getNumberofUDPInterfaces, setNumberofUDPInterfaces,
         StringTo<int>,
-        "[1, 2]\n\t[Jungfrau][Gotthard2] Number of udp interfaces to stream "
+        "[1, 2]\n\t[Jungfrau] Number of udp interfaces to stream "
         "data from detector. Default: 1.\n\tAlso enables second interface in "
         "receiver for listening (Writes a file per interface if writing "
         "enabled).\n\tAlso restarts client and receiver zmq sockets if zmq "
-        "streaming enabled.\n\t[Gotthard2] second interface enabled to send "
-        "veto information via 10Gbps for debugging. By default, if veto "
-        "enabled, it is sent via 2.5 gbps interface.");
+        "streaming enabled.");
 
     INTEGER_COMMAND_VEC_ID(
         selinterface, getSelectedUDPInterface, selectUDPInterface,
@@ -1901,7 +1901,7 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(veto, getVeto, setVeto, StringTo<int>,
                            "[0, 1]\n\t[Gotthard2] Enable or disable veto data "
-                           "streaming from detector. Default is 0.");
+                           "data from chip. Default is 0.");
 
     /* Mythen3 Specific */
 

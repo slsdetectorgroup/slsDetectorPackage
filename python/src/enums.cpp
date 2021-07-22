@@ -288,4 +288,20 @@ void init_enums(py::module &m) {
         .value("TOP", slsDetectorDefs::portPosition::TOP)
         .value("BOTTOM", slsDetectorDefs::portPosition::BOTTOM)
         .export_values();
+
+    py::enum_<slsDetectorDefs::EthernetInterface>(Defs, "EthernetInterface",
+                                                  py::arithmetic())
+        .value("NONE", slsDetectorDefs::EthernetInterface::NONE)
+        .value("I3GBE", slsDetectorDefs::EthernetInterface::I3GBE)
+        .value("I10GBE", slsDetectorDefs::EthernetInterface::I10GBE)
+        .value("ALL", slsDetectorDefs::EthernetInterface::ALL)
+        .export_values()
+        .def("__or__",
+             py::overload_cast<const slsDetectorDefs::EthernetInterface &,
+                               const slsDetectorDefs::EthernetInterface &>(
+                 &operator|))
+        .def("__and__",
+             py::overload_cast<const slsDetectorDefs::EthernetInterface &,
+                               const slsDetectorDefs::EthernetInterface &>(
+                 &operator&));
 }

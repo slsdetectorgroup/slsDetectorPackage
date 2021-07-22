@@ -38,6 +38,7 @@ std::string ToString(const defs::burstMode s);
 std::string ToString(const defs::timingSourceType s);
 std::string ToString(const defs::M3_GainCaps s);
 std::string ToString(const defs::portPosition s);
+std::string ToString(const defs::EthernetInterface s);
 
 std::string ToString(const slsDetectorDefs::xy &coord);
 std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::xy &coord);
@@ -301,6 +302,7 @@ template <> defs::burstMode StringTo(const std::string &s);
 template <> defs::timingSourceType StringTo(const std::string &s);
 template <> defs::M3_GainCaps StringTo(const std::string &s);
 template <> defs::portPosition StringTo(const std::string &s);
+template <> defs::EthernetInterface StringTo(const std::string &s);
 
 template <> uint32_t StringTo(const std::string &s);
 template <> uint64_t StringTo(const std::string &s);

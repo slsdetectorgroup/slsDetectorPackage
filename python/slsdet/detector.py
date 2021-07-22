@@ -7,6 +7,7 @@ timingMode = slsDetectorDefs.timingMode
 speedLevel = slsDetectorDefs.speedLevel
 dacIndex = slsDetectorDefs.dacIndex
 detectorType = slsDetectorDefs.detectorType
+ethernetInterface = slsDetectorDefs.ethernetInterface
 
 defs = slsDetectorDefs
 
@@ -2352,6 +2353,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def vetostream(self):
+        """[Gotthard2] Enabling/ disabling veto interface
+        Note
+        ----
+        Default: both off
+        Options: NONE, I3GBE, 10GBE (debugging)
+        Debugging interface also enables second interface in receiver (separate file), which also restarts zmq streaming if enabled.
+        """
         return self.getVetoStream()
 
     @vetostream.setter
@@ -2360,6 +2368,25 @@ class Detector(CppDetectorApi):
             args = (args,)
         ut.set_using_dict(self.setVetoStream, *args)
 
+    @property
+    def vetoalg(self):
+        """[Gotthard2] Algorithm used for veto
+        Example
+        ----------
+        >>> d.vetoalg = defs.DEFAULT_ALGORITHM, defs.I10GBE
+        """
+        result = {}
+        interface = [ethernetInterface.I3GBE, ethernetInterface.I10GBE]
+        for eth in interface:
+            result[eth] = element_if_equal(self.getVetoAlgorithm(eth))
+        return result
+
+
+    @vetoalg.setter
+    def vetoalg(self, args):
+        if not isinstance(args, tuple):
+            args = (args,)
+        ut.set_using_dict(self.setVetoAlgorithm, *args)
 
     """
     Mythen3 specific

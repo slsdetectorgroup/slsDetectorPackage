@@ -251,3 +251,5 @@ int get_datastream(int);
 int set_datastream(int);
 int get_veto_stream(int);
 int set_veto_stream(int);
+int get_veto_algorithm(int);
+int set_veto_algorithm(int);

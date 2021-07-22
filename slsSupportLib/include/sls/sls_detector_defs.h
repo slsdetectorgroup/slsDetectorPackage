@@ -404,15 +404,17 @@ typedef struct {
     enum portPosition { LEFT, RIGHT, TOP, BOTTOM };
 
 #ifdef __cplusplus
-    enum class EthernetInterface {
+    enum class ethernetInterface {
 #else
-    enum EthernetInterface {
+    enum ethernetInterface {
 #endif
         NONE = 0,
-        I3GBE = 1 << 1,
-        I10GBE = 1 << 2,
+        I3GBE = 1 << 0,
+        I10GBE = 1 << 1,
         ALL = I3GBE | I10GBE
     };
+
+    enum vetoAlgorithm { DEFAULT_ALGORITHM };
 
 #ifdef __cplusplus
 
@@ -507,16 +509,18 @@ typedef struct {
 
 #ifdef __cplusplus
 };
-inline slsDetectorDefs::EthernetInterface
-operator|( const slsDetectorDefs::EthernetInterface &a,
-           const slsDetectorDefs::EthernetInterface &b) {
-    return slsDetectorDefs::EthernetInterface(static_cast<int32_t>(a) |
+inline slsDetectorDefs::ethernetInterface
+operator|(const slsDetectorDefs::ethernetInterface &a,
+          const slsDetectorDefs::ethernetInterface &b) {
+    return slsDetectorDefs::ethernetInterface(static_cast<int32_t>(a) |
                                               static_cast<int32_t>(b));
 };
 
-inline slsDetectorDefs::EthernetInterface operator&( const slsDetectorDefs::EthernetInterface &a,
-                       const slsDetectorDefs::EthernetInterface &b) {
-    return slsDetectorDefs::EthernetInterface(static_cast<int32_t>(a) & static_cast<int32_t>(b));
+inline slsDetectorDefs::ethernetInterface
+operator&(const slsDetectorDefs::ethernetInterface &a,
+          const slsDetectorDefs::ethernetInterface &b) {
+    return slsDetectorDefs::ethernetInterface(static_cast<int32_t>(a) &
+                                              static_cast<int32_t>(b));
 };
 #endif
 
@@ -594,7 +598,7 @@ struct detParameters {
 #ifdef __cplusplus
 struct sls_detector_module {
 #else
-typedef struct {
+    typedef struct {
 #endif
     int serialnumber; /**< is the module serial number */
     int nchan;        /**< is the number of channels on the module*/

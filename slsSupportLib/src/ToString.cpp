@@ -555,22 +555,31 @@ std::string ToString(const defs::portPosition s) {
     }
 }
 
-std::string ToString(const defs::EthernetInterface s) {
+std::string ToString(const defs::ethernetInterface s) {
     std::ostringstream os;
     std::string rs;
     switch (s) {
-    case defs::EthernetInterface::NONE:
+    case defs::ethernetInterface::NONE:
         return std::string("none");
     default:
-        if ((s & defs::EthernetInterface::I3GBE) !=
-            defs::EthernetInterface::NONE)
+        if ((s & defs::ethernetInterface::I3GBE) !=
+            defs::ethernetInterface::NONE)
             os << "3gbe, ";
-        if ((s & defs::EthernetInterface::I10GBE) !=
-            defs::EthernetInterface::NONE)
+        if ((s & defs::ethernetInterface::I10GBE) !=
+            defs::ethernetInterface::NONE)
             os << "10gbe, ";
         auto rs = os.str();
         rs.erase(rs.end() - 2, rs.end());
         return rs;
+    }
+}
+
+std::string ToString(const defs::vetoAlgorithm s) {
+    switch (s) {
+    case defs::DEFAULT_ALGORITHM:
+        return std::string("default");
+    default:
+        return std::string("Unknown");
     }
 }
 
@@ -942,17 +951,23 @@ template <> defs::portPosition StringTo(const std::string &s) {
     throw sls::RuntimeError("Unknown port position " + s);
 }
 
-template <> defs::EthernetInterface StringTo(const std::string &s) {
+template <> defs::ethernetInterface StringTo(const std::string &s) {
     std::string rs = s;
     if (s.find(',') != std::string::npos)
         rs.erase(rs.find(','));
     if (rs == "none")
-        return defs::EthernetInterface::NONE;
+        return defs::ethernetInterface::NONE;
     if (rs == "3gbe")
-        return defs::EthernetInterface::I3GBE;
+        return defs::ethernetInterface::I3GBE;
     if (rs == "10gbe")
-        return defs::EthernetInterface::I10GBE;
-    throw sls::RuntimeError("Unknown EthernetInterface type " + s);
+        return defs::ethernetInterface::I10GBE;
+    throw sls::RuntimeError("Unknown ethernetInterface type " + s);
+}
+
+template <> defs::vetoAlgorithm StringTo(const std::string &s) {
+    if (s == "default")
+        return defs::DEFAULT_ALGORITHM;
+    throw sls::RuntimeError("Unknown veto algorithm " + s);
 }
 
 template <> uint32_t StringTo(const std::string &s) {

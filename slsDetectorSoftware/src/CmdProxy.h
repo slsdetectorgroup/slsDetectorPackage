@@ -946,6 +946,7 @@ class CmdProxy {
         {"timingsource", &CmdProxy::timingsource},
         {"veto", &CmdProxy::veto},
         {"vetostream", &CmdProxy::VetoStreaming},
+        {"vetoalg", &CmdProxy::VetoAlgorithm},
         {"confadc", &CmdProxy::ConfigureADC},
         {"badchannels", &CmdProxy::BadChannels},
 
@@ -1125,6 +1126,7 @@ class CmdProxy {
     std::string VetoFile(int action);
     std::string BurstMode(int action);
     std::string VetoStreaming(int action);
+    std::string VetoAlgorithm(int action);
     std::string ConfigureADC(int action);
     std::string BadChannels(int action);
     /* Mythen3 Specific */

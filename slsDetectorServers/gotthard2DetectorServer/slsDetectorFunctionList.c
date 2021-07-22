@@ -2595,6 +2595,36 @@ int getVetoStream() {
     return ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_3GB_ENBL_MSK) ? 1 : 0);
 }
 
+enum vetoAlgorithm getVetoAlgorithm(enum ethernetInterface interface) {
+    // 3gbe
+    if (interface == I3GBE) {
+        int retval = ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_3GB_ALG_MSK) >>
+                      CONFIG_VETO_CH_3GB_ALG_OFST);
+        switch (retval) {
+            // more to follow
+        case CONFIG_VETO_CH_3GB_ALG_DEFAULT_VAL:
+            return DEFAULT_ALGORITHM;
+        default:
+            LOG(logERROR, ("unknown algorithm %d for 3gbe\n", retval));
+            return -1;
+        }
+    }
+    // 10gbe
+    int retval = ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_10GB_ALG_MSK) >>
+                  CONFIG_VETO_CH_10GB_ALG_OFST);
+    switch (retval) {
+        // more to follow
+    case CONFIG_VETO_CH_10GB_ALG_DEFAULT_VAL:
+        return DEFAULT_ALGORITHM;
+    default:
+        LOG(logERROR, ("unknown algorithm %d for 3gbe\n", retval));
+        return -1;
+    }
+}
+
+void setVetoAlgorithm(enum ethernetInterface interface,
+                      enum vetoAlgorithm alg) {}
+
 void setBadChannels(int nch, int *channels) {
     LOG(logINFO, ("Setting %d bad channels\n", nch));
 

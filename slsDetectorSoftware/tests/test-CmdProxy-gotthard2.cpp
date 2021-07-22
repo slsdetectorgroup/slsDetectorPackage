@@ -686,6 +686,50 @@ TEST_CASE("vetostream", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("vetostream", {"dfgd"}, -1, GET));
 }
 
+TEST_CASE("vetoalg", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2) {
+        auto prev_val_3g = det.getVetoAlgorithm(defs::ethernetInterface::I3GBE);
+        auto prev_val_10g =
+            det.getVetoAlgorithm(defs::ethernetInterface::I10GBE);
+        {
+            std::ostringstream oss;
+            proxy.Call("vetoalg", {"default", "3gbe"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "vetoalg default 3gbe\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("vetoalg", {"3gbe"}, -1, GET, oss);
+            REQUIRE(oss.str() == "vetoalg default 3gbe\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("vetoalg", {"default", "10gbe"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "vetoalg default 10gbe\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("vetoalg", {"10gbe"}, -1, GET, oss);
+            REQUIRE(oss.str() == "vetoalg default 10gbe\n");
+        }
+        REQUIRE_THROWS(
+            proxy.Call("vetoalg", {"default", "3gbe", "10gbe"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("vetoalg", {"default", "none"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            det.setVetoAlgorithm(prev_val_3g[i], defs::ethernetInterface::I3GBE,
+                                 {i});
+            det.setVetoAlgorithm(prev_val_10g[i],
+                                 defs::ethernetInterface::I10GBE, {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("vetoalg", {"3gbe"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vetoalg", {"none"}, -1, PUT));
+    }
+    REQUIRE_THROWS(proxy.Call("vetoalg", {"dfgd"}, -1, GET));
+}
+
 TEST_CASE("confadc", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

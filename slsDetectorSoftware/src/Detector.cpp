@@ -2166,7 +2166,8 @@ std::vector<int> Detector::getPortNumbers(int start_port) {
         num_sockets_per_detector *= 2;
         break;
     case defs::JUNGFRAU:
-        if (getNumberofUDPInterfaces().squash() == 2) {
+    case defs::GOTTHARD2:
+        if (getNumberofUDPInterfaces_({}).squash() == 2) {
             num_sockets_per_detector *= 2;
         }
         break;

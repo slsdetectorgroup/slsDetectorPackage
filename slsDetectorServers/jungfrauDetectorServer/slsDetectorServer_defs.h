@@ -77,6 +77,7 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define CLK_SYNC            (20) // MHz
 #define ADC_CLK_INDEX       (1)
 #define DBIT_CLK_INDEX      (0)
+#define CONFIG_FILE         ("config_jungfrau.txt")
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES            (100 * 1000 * 1000)

@@ -1522,6 +1522,9 @@ void Module::setDataStream(const portPosition port, const bool enable) {
 }
 
 // Jungfrau Specific
+double Module::getChipVersion() const {
+    return (sendToDetector<int>(F_GET_CHIP_VERSION)) / 10.00;
+}
 
 int Module::getThresholdTemperature() const {
     auto retval = sendToDetectorStop<int>(F_THRESHOLD_TEMP, GET_FLAG);

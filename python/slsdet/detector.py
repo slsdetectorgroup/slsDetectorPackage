@@ -1994,6 +1994,20 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def chipversion(self):
+        """
+        [Jungfrau] Chip version of module. Can be 1.0 or 1.1.
+
+        Example
+        -------
+        >>> d.chipversion
+        '1.0'
+        """
+        return self.getChipVersion()
+
+
+    @property
+    @element
     def auto_comp_disable(self):
         """[Jungfrau] Enable or disable auto comparator disable mode. 
 

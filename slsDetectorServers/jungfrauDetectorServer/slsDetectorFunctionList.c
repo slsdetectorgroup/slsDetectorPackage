@@ -45,6 +45,7 @@ int highvoltage = 0;
 int dacValues[NDAC] = {};
 int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
+int chipVersion = 10; // (1.0)
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -101,6 +102,7 @@ void basictests() {
 
     if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
         sw_fw_apiversion = getFirmwareAPIVersion();
+
     LOG(logINFOBLUE,
         ("************ Jungfrau Server *********************\n"
          "Hardware Version:\t\t 0x%x\n"
@@ -289,6 +291,8 @@ int isHardwareVersion2() {
                 : 0);
 }
 
+int getChipVersion() { return chipVersion; }
+
 u_int32_t getDetectorNumber() {
 #ifdef VIRTUAL
     return 0;
@@ -383,6 +387,11 @@ void setupDetector() {
     sharedMemory_setStatus(IDLE);
 #endif
 
+    // get chip version
+    if (readConfigFile() == FAIL) {
+        return;
+    }
+
     ALTERA_PLL_ResetPLL();
     resetCore();
     resetPeripheral();
@@ -466,6 +475,119 @@ int setDefaultDacs() {
         }
     }
     return ret;
+}
+
+int readConfigFile() {
+
+    if (initError == FAIL) {
+        return initError;
+    }
+
+    char fname[128];
+    if (getAbsPath(fname, 128, CONFIG_FILE) == FAIL) {
+        return FAIL;
+    }
+
+    // open config file
+    FILE *fd = fopen(fname, "r");
+    if (fd == NULL) {
+        sprintf(initErrorMessage,
+                "Could not open on-board detector server config file [%s].\n",
+                CONFIG_FILE);
+        initError = FAIL;
+        LOG(logERROR, ("%s\n\n", initErrorMessage));
+        return FAIL;
+    }
+
+    LOG(logINFOBLUE, ("Reading config file %s\n", CONFIG_FILE));
+
+    // Initialization
+    const size_t LZ = 256;
+    char line[LZ];
+    memset(line, 0, LZ);
+    char command[LZ];
+
+    // keep reading a line
+    while (fgets(line, LZ, fd)) {
+
+        // ignore comments
+        if (line[0] == '#') {
+            LOG(logDEBUG1, ("Ignoring Comment\n"));
+            continue;
+        }
+
+        // ignore empty lines
+        if (strlen(line) <= 1) {
+            LOG(logDEBUG1, ("Ignoring Empty line\n"));
+            continue;
+        }
+
+        // removing leading spaces
+        if (line[0] == ' ' || line[0] == '\t') {
+            int len = strlen(line);
+            // find first valid character
+            int i = 0;
+            for (i = 0; i < len; ++i) {
+                if (line[i] != ' ' && line[i] != '\t') {
+                    break;
+                }
+            }
+            // ignore the line full of spaces (last char \n)
+            if (i >= len - 1) {
+                LOG(logDEBUG1, ("Ignoring line full of spaces\n"));
+                continue;
+            }
+            // copying only valid char
+            char temp[LZ];
+            memset(temp, 0, LZ);
+            memcpy(temp, line + i, strlen(line) - i);
+            memset(line, 0, LZ);
+            memcpy(line, temp, strlen(temp));
+            LOG(logDEBUG1, ("Removing leading spaces.\n"));
+        }
+
+        LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", strlen(line),
+                        strlen(line) - 1, line));
+        memset(command, 0, LZ);
+
+        // chipversion command
+        if (!strncmp(line, "chipversion", strlen("chipversion"))) {
+            int version = 0;
+
+            // cannot scan values
+            if (sscanf(line, "%s %d", command, &version) != 2) {
+                sprintf(
+                    initErrorMessage,
+                    "Could not scan chipversion commands from on-board server "
+                    "config file. Line:[%s].\n",
+                    line);
+                break;
+            }
+            // validations
+            if (version != 10 && version != 11) {
+                sprintf(initErrorMessage,
+                        "Could not set chip version from on-board server "
+                        "config file. Invalid chip version %d. Line:[%s].\n",
+                        version, line);
+                break;
+            }
+
+            // validations
+            chipVersion = version;
+            LOG(logINFOBLUE, ("Chip Version: v%.01f\n", chipVersion / 10.0));
+        }
+
+        memset(line, 0, LZ);
+    }
+    fclose(fd);
+
+    if (strlen(initErrorMessage)) {
+        initError = FAIL;
+        LOG(logERROR, ("%s\n\n", initErrorMessage));
+    } else {
+        LOG(logINFOBLUE, ("Successfully read config file\n"));
+    }
+    return initError;
 }
 
 /* firmware functions (resets) */

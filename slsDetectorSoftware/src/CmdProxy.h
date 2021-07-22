@@ -918,6 +918,7 @@ class CmdProxy {
         {"datastream", &CmdProxy::DataStream},
 
         /* Jungfrau Specific */
+        {"chipversion", &CmdProxy::chipversion},
         {"temp_threshold", &CmdProxy::temp_threshold},
         {"temp_control", &CmdProxy::temp_control},
         {"temp_event", &CmdProxy::TemperatureEvent},
@@ -1811,6 +1812,9 @@ class CmdProxy {
         "complete reset. Advanced function!");
 
     /* Jungfrau Specific */
+
+    GET_COMMAND(chipversion, getChipVersion,
+                "\n\t[Jungfrau] Returns chip version. Can be 1.0 or 1.1");
 
     INTEGER_COMMAND_VEC_ID(
         temp_threshold, getThresholdTemperature, setThresholdTemperature,

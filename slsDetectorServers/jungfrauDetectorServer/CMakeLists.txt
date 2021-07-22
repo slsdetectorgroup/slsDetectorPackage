@@ -37,3 +37,5 @@ install(TARGETS jungfrauDetectorServer_virtual
     EXPORT "${TARGETS_EXPORT_NAME}"
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+configure_file(config_jungfrau.txt ${CMAKE_BINARY_DIR}/bin/config_jungfrau.txt COPYONLY)

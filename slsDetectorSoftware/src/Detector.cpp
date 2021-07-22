@@ -1398,6 +1398,9 @@ void Detector::setDataStream(const defs::portPosition port, const bool enable,
 }
 
 // Jungfrau Specific
+Result<double> Detector::getChipVersion(Positions pos) const {
+    return pimpl->Parallel(&Module::getChipVersion, pos);
+}
 
 Result<int> Detector::getThresholdTemperature(Positions pos) const {
     return pimpl->Parallel(&Module::getThresholdTemperature, pos);

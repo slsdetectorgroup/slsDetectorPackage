@@ -1592,7 +1592,7 @@ void Detector::setVetoStream(defs::ethernetInterface interface, Positions pos) {
     int old_numinterfaces = getNumberofUDPInterfaces_(pos).tsquash(
         "retrieved inconsistent number of udp interfaces");
     int numinterfaces = ((interface & defs::ethernetInterface::I10GBE) ==
-                         defs::ethernetInterface::I3GBE)
+                         defs::ethernetInterface::I10GBE)
                             ? 2
                             : 1;
     if (numinterfaces != old_numinterfaces) {
@@ -2142,7 +2142,8 @@ std::vector<int> Detector::getPortNumbers(int start_port) {
         num_sockets_per_detector *= 2;
         break;
     case defs::JUNGFRAU:
-        if (getNumberofUDPInterfaces().squash() == 2) {
+    case defs::GOTTHARD2:
+        if (getNumberofUDPInterfaces_({}).squash() == 2) {
             num_sockets_per_detector *= 2;
         }
         break;

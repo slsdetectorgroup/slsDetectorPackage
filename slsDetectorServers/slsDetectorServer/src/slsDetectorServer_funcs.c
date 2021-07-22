@@ -7529,49 +7529,7 @@ int get_veto(int file_des) {
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
-/*
-int set_veto(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int arg = 0;
 
-    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-        return printSocketReadError();
-    LOG(logINFO, ("Setting veto mode: %u\n", arg));
-
-#ifndef GOTTHARD2D
-    functionNotImplemented();
-#else
-    // only set
-    if (Server_VerifyLock() == OK) {
-        setVeto(arg);
-        // if numinterfaces is 2 and veto is 1 now, then configuremac
-        if (arg > 0 && getNumberofUDPInterfaces() == 2 &&
-            is_udp_configured() == OK) {
-            ret = configureMAC();
-            if (ret != OK) {
-                sprintf(mess, "Configure Mac failed after enabling veto\n");
-                strcpy(configureMessage, mess);
-                LOG(logERROR, (mess));
-                configured = FAIL;
-                LOG(logWARNING, ("Configure FAIL, not all parameters "
-                                 "configured yet\n"));
-
-            } else {
-                LOG(logINFOGREEN, ("\tConfigure MAC successful\n"));
-                configured = OK;
-            }
-        }
-        if (ret == OK) {
-            int retval = getVeto();
-            LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
-            validate(arg, retval, "set veto mode", DEC);
-        }
-    }
-#endif
-    return Server_SendResult(file_des, INT32, NULL, 0);
-}
-*/
 int set_veto(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));

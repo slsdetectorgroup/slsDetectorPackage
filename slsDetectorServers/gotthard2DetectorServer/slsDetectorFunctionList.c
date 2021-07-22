@@ -1707,30 +1707,34 @@ int configureMAC() {
     getIpAddressinString(src_ip2, srcip2);
     getIpAddressinString(dst_ip2, dstip2);
 
-    int numInterfaces = getNumberofUDPInterfaces();
-    int vetoEnabled = getVeto();
-
-    LOG(logINFO, ("\t#Veto            : %d\n", vetoEnabled));
-    LOG(logINFO, ("\t#10Gb Interfaces : %d\n", numInterfaces));
-
     LOG(logINFO, ("\tData Interface \n"));
     LOG(logINFO, ("\tSource IP   : %s\n"
                   "\tSource MAC  : %s\n"
                   "\tSource Port : %d\n"
                   "\tDest IP     : %s\n"
                   "\tDest MAC    : %s\n"
-                  "\tDest Port   : %d\n",
+                  "\tDest Port   : %d\n\n",
                   src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
-    LOG(logINFO,
-        ("\tVeto Interface (%s)\n",
-         (vetoEnabled && numInterfaces == 2 ? "enabled" : "disabled")));
+    int i3gbe = getVetoStream();
+    int i10gbe = (getNumberofUDPInterfaces() == 2 ? 1 : 0);
+
+    if (i3gbe) {
+        LOG(logINFOGREEN, ("\tVeto (3GbE) : enabled\n\n"));
+    } else {
+        LOG(logINFORED, ("\tVeto (3GbE) : disabled\n\n"));
+    }
+    if (i10gbe) {
+        LOG(logINFOGREEN, ("\tVeto (10GbE): enabled\n"));
+    } else {
+        LOG(logINFORED, ("\tVeto (10GbE): disabled\n"));
+    }
     LOG(logINFO, ("\tSource IP2  : %s\n"
                   "\tSource MAC2 : %s\n"
                   "\tSource Port2: %d\n"
                   "\tDest IP2    : %s\n"
                   "\tDest MAC2   : %s\n"
-                  "\tDest Port2  : %d\n",
+                  "\tDest Port2  : %d\n\n",
                   src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
 
 #ifdef VIRTUAL
@@ -1738,8 +1742,7 @@ int configureMAC() {
         LOG(logERROR, ("could not set udp destination IP and port\n"));
         return FAIL;
     }
-    if (vetoEnabled && numInterfaces == 2 &&
-        setUDPDestinationDetails(1, dst_ip2, dstport2) == FAIL) {
+    if (i10gbe && setUDPDestinationDetails(1, dst_ip2, dstport2) == FAIL) {
         LOG(logERROR, ("could not set udp destination IP and port for "
                        "interface 2\n"));
         return FAIL;
@@ -1753,7 +1756,7 @@ int configureMAC() {
     setupHeader(iRxEntry, 0, dstip, dstmac, dstport, srcmac, srcip, srcport);
 
     // veto
-    if (vetoEnabled && numInterfaces == 2) {
+    if (i10gbe) {
         setupHeader(iRxEntry, 1, dstip2, dstmac2, dstport2, srcmac2, srcip2,
                     srcport2);
     }
@@ -2699,8 +2702,7 @@ int startStateMachine() {
     if (createUDPSocket(0) != OK) {
         return FAIL;
     }
-    if (getVeto() && getNumberofUDPInterfaces() == 2 &&
-        createUDPSocket(1) != OK) {
+    if (getNumberofUDPInterfaces() == 2 && createUDPSocket(1) != OK) {
         return FAIL;
     }
     LOG(logINFOBLUE, ("Starting State Machine\n"));
@@ -2735,8 +2737,7 @@ void *start_timer(void *arg) {
         return NULL;
     }
 
-    int numInterfaces = getNumberofUDPInterfaces();
-    int vetoEnabled = getVeto();
+    int i10gbe = (getNumberofUDPInterfaces() == 2 ? 1 : 0);
 
     int numRepeats = getNumTriggers();
     if (getTiming() == AUTO_TIMING) {
@@ -2818,7 +2819,7 @@ void *start_timer(void *arg) {
             // second interface (veto)
             char packetData2[vetopacketsize];
             memset(packetData2, 0, vetopacketsize);
-            if (vetoEnabled && numInterfaces == 2) {
+            if (i10gbe) {
                 // set header
                 veto_header *header = (veto_header *)(packetData2);
                 header->frameNumber = virtual_currentFrameNumber;
@@ -2829,9 +2830,9 @@ void *start_timer(void *arg) {
                 // send 1 packet = 1 frame
                 sendUDPPacket(1, packetData2, vetopacketsize);
             }
-            LOG(logINFO,
-                ("Sent frame: %d (bursts/ triggers: %d) [%lld]\n", frameNr,
-                 repeatNr, (long long unsigned int)virtual_currentFrameNumber));
+            LOG(logINFO, ("Sent frame %s: %d (bursts/ triggers: %d) [%lld]\n",
+                          (i10gbe ? "(+veto)" : ""), frameNr, repeatNr,
+                          (long long unsigned int)virtual_currentFrameNumber));
             clock_gettime(CLOCK_REALTIME, &end);
             int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
                               (end.tv_nsec - begin.tv_nsec));
@@ -2857,7 +2858,7 @@ void *start_timer(void *arg) {
     }
 
     closeUDPSocket(0);
-    if (vetoEnabled && numInterfaces == 2) {
+    if (i10gbe) {
         closeUDPSocket(1);
     }
 

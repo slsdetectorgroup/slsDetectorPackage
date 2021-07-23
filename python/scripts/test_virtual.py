@@ -104,10 +104,6 @@ def test_settings(virtual_jf_detectors):
     assert d.settings == detectorSettings.DYNAMICGAIN
 
     gain_list = [
-        detectorSettings.FIXGAIN1,
-        detectorSettings.FIXGAIN2,
-        detectorSettings.FORCESWITCHG1,
-        detectorSettings.FORCESWITCHG2,
         detectorSettings.DYNAMICHG0,
         detectorSettings.DYNAMICGAIN,
     ]
@@ -117,10 +113,9 @@ def test_settings(virtual_jf_detectors):
         d.settings = gain
         assert d.settings == gain
 
-    d.setSettings(detectorSettings.FORCESWITCHG1, [1])
+    d.setSettings(detectorSettings.DYNAMICGAIN, [1])
     assert d.settings == [
-        detectorSettings.DYNAMICGAIN,
-        detectorSettings.FORCESWITCHG1,
+        detectorSettings.DYNAMICHG0,
         detectorSettings.DYNAMICGAIN,
     ]
 

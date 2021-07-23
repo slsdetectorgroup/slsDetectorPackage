@@ -213,10 +213,6 @@ void init_enums(py::module &m) {
         .value("DYNAMICHG0", slsDetectorDefs::detectorSettings::DYNAMICHG0)
         .value("FIXGAIN1", slsDetectorDefs::detectorSettings::FIXGAIN1)
         .value("FIXGAIN2", slsDetectorDefs::detectorSettings::FIXGAIN2)
-        .value("FORCESWITCHG1",
-               slsDetectorDefs::detectorSettings::FORCESWITCHG1)
-        .value("FORCESWITCHG2",
-               slsDetectorDefs::detectorSettings::FORCESWITCHG2)
         .value("VERYLOWGAIN", slsDetectorDefs::detectorSettings::VERYLOWGAIN)
         .value("G1_HIGHGAIN", slsDetectorDefs::detectorSettings::G1_HIGHGAIN)
         .value("G1_LOWGAIN", slsDetectorDefs::detectorSettings::G1_LOWGAIN)

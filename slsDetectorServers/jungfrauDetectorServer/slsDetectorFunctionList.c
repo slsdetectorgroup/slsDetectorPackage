@@ -885,6 +885,7 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         LOG(logINFO, ("Set settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n",
                       bus_r(DAQ_REG)));
         break;
+        /*
     case FIXGAIN1:
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
         bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_1_VAL);
@@ -909,6 +910,7 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         LOG(logINFO, ("Set settings - Force Switch Gain 2, DAQ Reg: 0x%x\n",
                       bus_r(DAQ_REG)));
         break;
+        */
     default:
         LOG(logERROR,
             ("This settings is not defined for this detector %d\n", (int)sett));
@@ -937,6 +939,7 @@ enum detectorSettings getSettings() {
         LOG(logDEBUG1,
             ("Settings read: Dynamig High Gain. DAQ Reg: 0x%x\n", regval));
         break;
+        /*
     case DAQ_FIX_GAIN_STG_1_VAL:
         thisSettings = FIXGAIN1;
         LOG(logDEBUG1, ("Settings read: Fix Gain 1. DAQ Reg: 0x%x\n", regval));
@@ -955,6 +958,7 @@ enum detectorSettings getSettings() {
         LOG(logDEBUG1,
             ("Settings read: Force Switch Gain 2. DAQ Reg: 0x%x\n", regval));
         break;
+        */
     default:
         thisSettings = UNDEFINED;
         LOG(logERROR, ("Settings read: Undefined. DAQ Reg: 0x%x\n", regval));

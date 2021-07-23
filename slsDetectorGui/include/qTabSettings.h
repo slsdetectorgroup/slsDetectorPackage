@@ -43,8 +43,6 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
         DYNAMICHG0,
         FIXGAIN1,
         FIXGAIN2,
-        FORCESWITCHG1,
-        FORCESWITCHG2,
         VERLOWGAIN,
         G1_HIGHGAIN,
         G1_LOWGAIN,

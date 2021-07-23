@@ -1694,7 +1694,15 @@ int acquire(int blocking, int file_des) {
     }
     // only set
     if (Server_VerifyLock() == OK) {
-#if defined(MOENCHD)
+#ifdef JUNGFRAUD
+    if (!isChipConfigured()) {
+            ret = FAIL;
+            strcpy(mess,
+                    "Could not start acquisition. Chip is not configured.\n");
+            LOG(logERROR, (mess));
+    } else
+#endif
+#ifdef MOENCHD
         if (getNumAnalogSamples() <= 0) {
             ret = FAIL;
             sprintf(mess,
@@ -1704,7 +1712,7 @@ int acquire(int blocking, int file_des) {
             LOG(logERROR, (mess));
         } else
 #endif
-#if defined(CHIPTESTBOARDD)
+#ifdef CHIPTESTBOARDD
             if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
                  getReadoutMode() == ANALOG_ONLY) &&
                 (getNumAnalogSamples() <= 0)) {

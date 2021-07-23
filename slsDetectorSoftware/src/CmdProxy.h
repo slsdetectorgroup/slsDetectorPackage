@@ -794,7 +794,6 @@ class CmdProxy {
         {"clkdiv", &CmdProxy::ClockDivider},
         {"highvoltage", &CmdProxy::highvoltage},
         {"powerchip", &CmdProxy::powerchip},
-        {"configchip", &CmdProxy::configchip},
         {"imagetest", &CmdProxy::imagetest},
         {"extsig", &CmdProxy::ExternalSignal},
         {"parallel", &CmdProxy::parallel},
@@ -1316,17 +1315,8 @@ class CmdProxy {
         "the chip. \n\t[Moench] Default is 0. \n\t[Jungfrau] Default is 0. Get "
         "will return power status. Can be off if temperature event occured "
         "(temperature over temp_threshold with temp_control "
-        "enabled.\n\t[Mythen3][Gotthard2] Default is 1. If module not "
+        "enabled. Will configure chip (if chipv1.1 and board v2.0)\n\t[Mythen3][Gotthard2] Default is 1. If module not "
         "connected or wrong module, powerchip will fail.");
-
-    INTEGER_COMMAND_VEC_ID(
-        configchip, isChipConfigured, configureChip, StringTo<int>,
-        "[0, 1]\n\t[Jungfrau] Configure the chip. \n\t[Moench] Default is 0. \n\t[Jungfrau] Default is 0. Get "
-        "will return power status. Can be off if temperature event occured "
-        "(temperature over temp_threshold with temp_control "
-        "enabled.\n\t[Mythen3][Gotthard2] Default is 1. If module not "
-        "connected or wrong module, powerchip will fail.");
-
 
     INTEGER_COMMAND_VEC_ID(
         imagetest, getImageTestMode, setImageTestMode, StringTo<int>,

@@ -370,7 +370,7 @@ class Detector(CppDetectorApi):
         Note
         ----
         [Moench] Default is disabled. \n
-        [Jungfrau] Default is disabled. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. \n
+        [Jungfrau] Default is disabled. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled.  Will configure chip (if chipv1.1 and board v2.0).\n
         [Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.
         """
         return self.getPowerChip()

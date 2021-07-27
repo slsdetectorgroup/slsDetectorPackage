@@ -1833,15 +1833,23 @@ int checkDetectorType() {
     int type = atoi(buffer);
     if (type > TYPE_NO_MODULE_STARTING_VAL) {
         LOG(logERROR,
-            ("No Module attached! Expected %d for Gotthard2, got %d\n",
-             TYPE_GOTTHARD2_MODULE_VAL, type));
+            ("No Module attached! Expected %d, %d or %d for Gotthard2, got %d\n",
+             TYPE_GOTTHARD2_MODULE_VAL, 
+             TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL,
+             TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL,
+             type));
         return -2;
     }
 
-    if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) > TYPE_TOLERANCE) {
+    if ((abs(type - TYPE_GOTTHARD2_MODULE_VAL) > TYPE_TOLERANCE) &&
+    (abs(type - TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL) > TYPE_TOLERANCE) &&
+    (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL) > TYPE_TOLERANCE)) {
         LOG(logERROR,
-            ("Wrong Module attached! Expected %d for Gotthard2, got %d\n",
-             TYPE_GOTTHARD2_MODULE_VAL, type));
+            ("Wrong Module attached! Expected %d, %d or %d for Gotthard2, got %d\n",
+             TYPE_GOTTHARD2_MODULE_VAL, 
+             TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL,
+             TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL,
+             type));
         return FAIL;
     }
     return OK;

@@ -1106,7 +1106,7 @@ int Feb_Control_SendSoftwareTrigger() {
         LOG(logERROR, ("Could not give software trigger\n"));
         return 0;
     }
-    LOG(logINFO, ("Software Internal Trigger Sent!\n"));
+    LOG(logDEBUG1, ("Software Internal Trigger Sent!\n"));
     return 1;
 }
 
@@ -1129,7 +1129,7 @@ int Feb_Control_SoftwareTrigger(int block) {
 
         // wait for next trigger ready
         if (block) {
-            LOG(logINFO, ("Blocking Software Trigger\n"));
+            LOG(logDEBUG1, ("Blocking Software Trigger\n"));
             int readyForTrigger = 0;
             if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {
                 LOG(logERROR, ("Could not read FEB_REG_STATUS reg after giving "
@@ -1138,6 +1138,15 @@ int Feb_Control_SoftwareTrigger(int block) {
             }
 
             while (!readyForTrigger) {
+                // end of acquisition (cannot monitor readyForTrigger)
+                int status = Feb_Control_AcquisitionInProgress();
+                if (status == STATUS_ERROR) {
+                    LOG(logERROR, ("Status: ERROR reading DAQ status register\n"));
+                    return 0;
+                } else if (status == STATUS_IDLE) {
+                    break;
+                }
+
                 usleep(5000);
                 if (!Feb_Control_IsReadyForTrigger(&readyForTrigger)) {
                     LOG(logERROR, ("Could not read FEB_REG_STATUS reg after "
@@ -1145,8 +1154,10 @@ int Feb_Control_SoftwareTrigger(int block) {
                     return 0;
                 }
             }
-            LOG(logINFO, ("Done waiting (wait for trigger)!\n"));
+            LOG(logDEBUG2, ("Done waiting (wait for trigger)!\n"));
         }
+            LOG(logINFO, ("%s Software Trigger %s\n", (block ? "Blocking" : "Non blocking"), (block ? "Acquired" : "Sent")));
+            fflush(stdout);
     }
 
     return 1;

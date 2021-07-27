@@ -387,6 +387,7 @@ void setupDetector() {
     for (int i = 0; i < NUM_CLOCKS; ++i) {
         clkPhase[i] = 0;
     }
+    chipConfigured = 0;
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
 #endif
@@ -1440,9 +1441,12 @@ int isChipConfigured() {
 }
 
 void configureChip() {
-    LOG(logINFOBLUE, ("Configuring chip\n"));
-    bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG) & CONFIG_V11_WR_CHIP_CNFG_MSK);
-    chipConfigured = 1;
+    // only for chipv1.1
+    if (chipVersion == 11) {
+        LOG(logINFOBLUE, ("Configuring chip\n"));
+        bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG) & CONFIG_V11_WR_CHIP_CNFG_MSK);
+        chipConfigured = 1;
+    }
 }
 
 

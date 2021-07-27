@@ -1082,6 +1082,9 @@ class Detector {
      * ************************************************/
 
     /** [Jungfrau] */
+    Result<double> getChipVersion(Positions pos = {}) const;
+
+    /** [Jungfrau] */
     Result<int> getThresholdTemperature(Positions pos = {}) const;
 
     /**

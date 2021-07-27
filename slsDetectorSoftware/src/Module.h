@@ -351,6 +351,7 @@ class Module : public virtual slsDetectorDefs {
      *    Jungfrau Specific                           *
      *                                                *
      * ************************************************/
+    double getChipVersion() const;
     int getThresholdTemperature() const;
     void setThresholdTemperature(int val);
     bool getTemperatureControl() const;

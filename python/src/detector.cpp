@@ -947,6 +947,10 @@ void init_det(py::module &m) {
              (void (Detector::*)(sls::Positions)) &
                  Detector::resetTemperatureEvent,
              py::arg() = Positions{})
+        .def("getChipVersion",
+             (Result<double>(Detector::*)(sls::Positions) const) &
+                 Detector::getChipVersion,
+             py::arg() = Positions{})
         .def("getAutoCompDisable",
              (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getAutoCompDisable,

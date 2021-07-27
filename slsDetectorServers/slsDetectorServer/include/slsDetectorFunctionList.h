@@ -87,6 +87,7 @@ u_int16_t getHardwareSerialNumber();
 #endif
 #ifdef JUNGFRAUD
 int isHardwareVersion2();
+int getChipVersion();
 #endif
 #if defined(EIGERD) || defined(MYTHEN3D)
 void readDetectorNumber();
@@ -122,7 +123,7 @@ int setDefaultDacs();
 void setASICDefaults();
 void setADIFDefaults();
 #endif
-#if defined(GOTTHARD2D) || defined(EIGERD)
+#if defined(GOTTHARD2D) || defined(EIGERD) || defined(JUNGFRAUD)
 int readConfigFile();
 #endif
 #ifdef EIGERD

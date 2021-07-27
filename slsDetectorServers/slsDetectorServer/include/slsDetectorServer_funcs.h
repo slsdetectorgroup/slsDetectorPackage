@@ -253,3 +253,4 @@ int get_veto_stream(int);
 int set_veto_stream(int);
 int get_veto_algorithm(int);
 int set_veto_algorithm(int);
+int get_chip_version(int);

@@ -190,6 +190,18 @@ TEST_CASE("temp_threshold", "[.cmd]") {
     }
 }
 
+TEST_CASE("chipversion", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        REQUIRE_NOTHROW(proxy.Call("chipversion", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("chipversion", {}, -1, GET));
+    }
+    REQUIRE_THROWS(proxy.Call("chipversion", {"0"}, -1, PUT));
+}
+
 TEST_CASE("temp_control", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

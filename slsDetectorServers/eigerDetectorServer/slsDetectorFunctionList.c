@@ -434,8 +434,9 @@ int readConfigFile() {
     master = -1;
     top = -1;
 
-    char fname[128];
-    if (getAbsPath(fname, 128, CONFIG_FILE) == FAIL) {
+    const int fileNameSize = 128;
+    char fname[fileNameSize];
+    if (getAbsPath(fname, fileNameSize, CONFIG_FILE) == FAIL) {
         return FAIL;
     }
 

@@ -1,0 +1,4 @@
+
+
+#chip version       version (multiplied by 10)
+chipversion         11

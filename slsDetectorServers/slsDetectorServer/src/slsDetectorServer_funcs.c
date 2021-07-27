@@ -379,6 +379,7 @@ void function_table() {
     flist[F_SET_VETO_STREAM] = &set_veto_stream;
     flist[F_GET_VETO_ALGORITHM] = &get_veto_algorithm;
     flist[F_SET_VETO_ALGORITHM] = &set_veto_algorithm;
+    flist[F_GET_CHIP_VERSION] = &get_chip_version;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8432,4 +8433,17 @@ int set_veto_algorithm(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_chip_version(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    retval = getChipVersion();
+#endif
+    LOG(logDEBUG1, ("chip version retval: %d\n", retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

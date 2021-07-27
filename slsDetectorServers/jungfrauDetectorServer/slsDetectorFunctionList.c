@@ -286,6 +286,9 @@ u_int16_t getHardwareSerialNumber() {
 
 // is board 1.0?, with value 2 (resistor network)
 int isHardwareVersion2() {
+#ifdef VIRTUAL
+    return 0;
+#endif
     return (((bus_r(MOD_SERIAL_NUM_REG) & HARDWARE_VERSION_NUM_MSK) ==
              HARDWARE_VERSION_2_VAL)
                 ? 1
@@ -484,8 +487,9 @@ int readConfigFile() {
         return initError;
     }
 
-    char fname[128];
-    if (getAbsPath(fname, 128, CONFIG_FILE) == FAIL) {
+    const int fileNameSize = 128;
+    char fname[fileNameSize];
+    if (getAbsPath(fname, fileNameSize, CONFIG_FILE) == FAIL) {
         return FAIL;
     }
 
@@ -576,6 +580,13 @@ int readConfigFile() {
             // validations
             chipVersion = version;
             LOG(logINFOBLUE, ("Chip Version: v%.01f\n", chipVersion / 10.0));
+
+            // version 1.1 and HW 1.0 (version reg value = 2) is incompatible
+            if (chipVersion == 11 && isHardwareVersion2()) {
+                strcpy(initErrorMessage,
+                        "Chip version 1.1 (from on-board config file) is incompatible with old board (v1.0). Please update board or correct on-board config file.\n");
+                break;                
+            }
         }
 
         memset(line, 0, LZ);

@@ -213,23 +213,16 @@ void qTabMeasurement::SetupTimingMode() {
             index[i] = model->index(i, comboTimingMode->modelColumn(),
                                     comboTimingMode->rootModelIndex());
             item[i] = model->itemFromIndex(index[i]);
+            item[i]->setEnabled(false);
         }
-
-        item[(int)GATED]->setEnabled(false);
-        item[(int)BURST_TRIGGER]->setEnabled(false);
-        item[(int)TRIGGER_GATED]->setEnabled(false);
-        switch (det->getDetectorType().squash()) {
-        case slsDetectorDefs::EIGER:
-            item[(int)GATED]->setEnabled(true);
-            item[(int)BURST_TRIGGER]->setEnabled(true);
-            break;
-        case slsDetectorDefs::MYTHEN3:
-            item[(int)GATED]->setEnabled(true);
-            item[(int)TRIGGER_GATED]->setEnabled(true);
-            break;
-        default:
-            break;
+        try {
+            auto res = det->getTimingModeList();
+            for (auto it : res) {
+                item[(int)it]->setEnabled(true);
+            }
         }
+        CATCH_DISPLAY(std::string("Could not setup timing mode"),
+                      "qTabMeasurement::SetupTimingMode")
     }
 }
 

@@ -953,7 +953,7 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         configureChip();
     }
 
-    return getSettings();
+    return thisSettings;
 }
 
 void validateSettings() {
@@ -991,50 +991,7 @@ void validateSettings() {
     }
 }
 
-enum detectorSettings getSettings() {
-
-    uint32_t regval = bus_r(DAQ_REG);
-    uint32_t val = regval & DAQ_SETTINGS_MSK;
-    LOG(logDEBUG1, ("Getting Settings\n Reading DAQ Register :0x%x\n", val));
-
-    switch (val) {
-    case DAQ_FIX_GAIN_DYNMC_VAL:
-        thisSettings = DYNAMICGAIN;
-        LOG(logDEBUG1,
-            ("Settings read: Dynamic Gain. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FIX_GAIN_HIGHGAIN_VAL:
-        thisSettings = DYNAMICHG0;
-        LOG(logDEBUG1,
-            ("Settings read: Dynamig High Gain. DAQ Reg: 0x%x\n", regval));
-        break;
-        /*
-    case DAQ_FIX_GAIN_STG_1_VAL:
-        thisSettings = FIXGAIN1;
-        LOG(logDEBUG1, ("Settings read: Fix Gain 1. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FIX_GAIN_STG_2_VAL:
-        thisSettings = FIXGAIN2;
-        LOG(logDEBUG1, ("Settings read: Fix Gain 2. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FRCE_GAIN_STG_1_VAL:
-        thisSettings = FORCESWITCHG1;
-        LOG(logDEBUG1,
-            ("Settings read: Force Switch Gain 1. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FRCE_GAIN_STG_2_VAL:
-        thisSettings = FORCESWITCHG2;
-        LOG(logDEBUG1,
-            ("Settings read: Force Switch Gain 2. DAQ Reg: 0x%x\n", regval));
-        break;
-        */
-    default:
-        thisSettings = UNDEFINED;
-        LOG(logERROR, ("Settings read: Undefined. DAQ Reg: 0x%x\n", regval));
-    }
-    validateSettings();
-    return thisSettings;
-}
+enum detectorSettings getSettings() { return thisSettings; }
 
 /* parameters - dac, adc, hv */
 void setDAC(enum DACINDEX ind, int val, int mV) {

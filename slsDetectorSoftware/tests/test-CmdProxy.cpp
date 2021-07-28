@@ -142,15 +142,34 @@ TEST_CASE("settings", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
+    std::vector<std::string> allSett;
+    allSett.push_back("standard");
+    allSett.push_back("fast");
+    allSett.push_back("highgain");
+    allSett.push_back("dynamicgain");
+    allSett.push_back("lowgain");
+    allSett.push_back("mediumgain");
+    allSett.push_back("veryhighgain");
+    allSett.push_back("dynamichg0");
+    allSett.push_back("fixgain1");
+    allSett.push_back("fixgain2");
+    allSett.push_back("verylowgain");
+    allSett.push_back("g1_hg");
+    allSett.push_back("g1_lg");
+    allSett.push_back("g2_hc_hg");
+    allSett.push_back("g2_hc_lg");
+    allSett.push_back("g2_lc_hg");
+    allSett.push_back("g2_lc_lg");
+    allSett.push_back("g4_hg");
+    allSett.push_back("g4_lg");
+    allSett.push_back("forceswitchg1");
+    allSett.push_back("forceswitchg2");
+
     std::vector<std::string> sett;
     switch (det_type) {
     case defs::JUNGFRAU:
         sett.push_back("dynamicgain");
         sett.push_back("dynamichg0");
-        sett.push_back("fixgain1");
-        sett.push_back("fixgain2");
-        sett.push_back("forceswitchg1");
-        sett.push_back("forceswitchg2");
         break;
     case defs::GOTTHARD:
         sett.push_back("highgain");
@@ -203,10 +222,9 @@ TEST_CASE("settings", "[.cmd]") {
             REQUIRE(oss.str() == "settings " + it + "\n");
         }
     }
-    for (int i = 0; i != det.size(); ++i) {
-        if (prev_val[i] != defs::UNDEFINED &&
-            prev_val[i] != defs::UNINITIALIZED) {
-            det.setSettings(prev_val[i], {i});
+    for (auto &it : allSett) {
+        if (std::find(sett.begin(), sett.end(), it) == sett.end()) {
+            REQUIRE_THROWS(proxy.Call("settings", {it}, -1, PUT));
         }
     }
 }

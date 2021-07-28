@@ -1095,6 +1095,47 @@ std::string CmdProxy::DacValues(int action) {
     return os.str();
 }
 
+std::string CmdProxy::DefaultDac(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[dac name][value][(optional)setting]\n\tSets the default for "
+              "that dac to this value.\n\t[Jungfrau][Mythen3] When settings is "
+              "provided, it sets the default value only for that setting"
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() < 1) {
+            WrongNumberOfParameters(1);
+        }
+        // optional settings
+        if (args.size() == 2) {
+            auto t = det->getDefaultDac(
+                StringTo<defs::dacIndex>(args[0]),
+                sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]));
+            os << ToString(args) << ' ' << OutString(t) << '\n';
+        } else {
+            auto t = det->getDefaultDac(StringTo<defs::dacIndex>(args[0]));
+            os << args[0] << ' ' << OutString(t) << '\n';
+        }
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() < 2) {
+            WrongNumberOfParameters(2);
+        }
+        // optional settings
+        if (args.size() == 3) {
+            det->setDefaultDac(
+                StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
+                sls::StringTo<slsDetectorDefs::detectorSettings>(args[2]));
+        } else {
+            det->setDefaultDac(StringTo<defs::dacIndex>(args[0]),
+                               StringTo<int>(args[1]));
+        }
+        os << ToString(args) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 /* acquisition */
 
 std::string CmdProxy::ReceiverStatus(int action) {

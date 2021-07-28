@@ -413,6 +413,21 @@ class Detector {
     std::vector<defs::dacIndex> getDacList() const;
 
     /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
+    Result<int> getDefaultDac(defs::dacIndex index, Positions pos = {});
+
+    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
+    void setDefaultDac(defs::dacIndex index, int defaultValue,
+                       Positions pos = {});
+
+    /** [Jungfrau][Mythen3] */
+    Result<int> getDefaultDac(defs::dacIndex index, defs::detectorSettings sett,
+                              Positions pos = {});
+
+    /** [Jungfrau][Mythen3] */
+    void setDefaultDac(defs::dacIndex index, int defaultValue,
+                       defs::detectorSettings sett, Positions pos = {});
+
+    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
     void setDefaultDacs(Positions pos = {});
 
     Result<int> getDAC(defs::dacIndex index, bool mV = false,
@@ -1779,6 +1794,10 @@ class Detector {
     void updateRxRateCorrections();
     void setNumberofUDPInterfaces_(int n, Positions pos);
     Result<int> getNumberofUDPInterfaces_(Positions pos) const;
+    Result<int> getDefaultDac_(defs::dacIndex index,
+                               defs::detectorSettings sett, Positions pos = {});
+    void setDefaultDac_(defs::dacIndex index, int defaultValue,
+                        defs::detectorSettings sett, Positions pos = {});
 };
 
 } // namespace sls

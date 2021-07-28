@@ -620,6 +620,43 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
     return retval;
 }
 
+Result<int> Detector::getDefaultDac(defs::dacIndex index, Positions pos) {
+    return getDefaultDac_(index, defs::UNDEFINED, pos);
+}
+
+void Detector::setDefaultDac(defs::dacIndex index, int defaultValue,
+                             Positions pos) {
+    setDefaultDac_(index, defaultValue, defs::UNDEFINED, pos);
+}
+
+Result<int> Detector::getDefaultDac(defs::dacIndex index,
+                                    defs::detectorSettings sett,
+                                    Positions pos) {
+    if (sett == defs::UNDEFINED) {
+        throw RuntimeError("Invalid settings given for default dac");
+    }
+    return getDefaultDac_(index, sett, pos);
+}
+
+void Detector::setDefaultDac(defs::dacIndex index, int defaultValue,
+                             defs::detectorSettings sett, Positions pos) {
+    if (sett == defs::UNDEFINED) {
+        throw RuntimeError("Invalid settings given for default dac");
+    }
+    setDefaultDac_(index, defaultValue, sett, pos);
+}
+
+Result<int> Detector::getDefaultDac_(defs::dacIndex index,
+                                     defs::detectorSettings sett,
+                                     Positions pos) {
+    return pimpl->Parallel(&Module::getDefaultDac, pos, index, sett);
+}
+
+void Detector::setDefaultDac_(defs::dacIndex index, int defaultValue,
+                              defs::detectorSettings sett, Positions pos) {
+    pimpl->Parallel(&Module::setDefaultDac, pos, index, defaultValue, sett);
+}
+
 void Detector::setDefaultDacs(Positions pos) {
     pimpl->Parallel(&Module::setDefaultDacs, pos);
 }

@@ -817,6 +817,7 @@ class CmdProxy {
         {"daclist", &CmdProxy::daclist},
         {"dacvalues", &CmdProxy::DacValues},
         {"defaultdacs", &CmdProxy::defaultdacs},
+        {"defaultdac", &CmdProxy::DefaultDac},
 
         /* on chip dacs */
         {"vchip_comp_fe", &CmdProxy::vchip_comp_fe},
@@ -1094,6 +1095,7 @@ class CmdProxy {
     /* dacs */
     std::string Dac(int action);
     std::string DacValues(int action);
+    std::string DefaultDac(int action);
     /* acquisition */
     std::string ReceiverStatus(int action);
     std::string DetectorStatus(int action);

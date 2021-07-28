@@ -618,6 +618,16 @@ int Module::getDAC(dacIndex index, bool mV) const {
     int args[]{static_cast<int>(index), static_cast<int>(mV), GET_FLAG};
     return sendToDetector<int>(F_SET_DAC, args);
 }
+int Module::getDefaultDac(slsDetectorDefs::dacIndex index,
+                          slsDetectorDefs::detectorSettings sett) {
+    int args[]{static_cast<int>(index), static_cast<int>(sett)};
+    return sendToDetector<int>(F_GET_DEFAULT_DAC, args);
+}
+void Module::setDefaultDac(slsDetectorDefs::dacIndex index, int defaultValue,
+                           defs::detectorSettings sett) {
+    int args[]{static_cast<int>(index), static_cast<int>(sett), defaultValue};
+    return sendToDetector(F_SET_DEFAULT_DAC, args, nullptr);
+}
 
 void Module::setDefaultDacs() { sendToDetector(F_SET_DEFAULT_DACS); }
 

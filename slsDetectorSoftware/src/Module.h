@@ -148,7 +148,10 @@ class Module : public virtual slsDetectorDefs {
     int getMaxClockPhaseShift(int clkIndex) const;
     int getClockFrequency(int clkIndex) const;
     void setClockFrequency(int clkIndex, int value);
-    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
+    int getDefaultDac(slsDetectorDefs::dacIndex index,
+                      slsDetectorDefs::detectorSettings sett);
+    void setDefaultDac(slsDetectorDefs::dacIndex index, int defaultValue,
+                       defs::detectorSettings sett);
     void setDefaultDacs();
     int getDAC(dacIndex index, bool mV) const;
     void setDAC(int val, dacIndex index, bool mV);

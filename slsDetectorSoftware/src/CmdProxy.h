@@ -1314,7 +1314,7 @@ class CmdProxy {
         "the chip. \n\t[Moench] Default is 0. \n\t[Jungfrau] Default is 0. Get "
         "will return power status. Can be off if temperature event occured "
         "(temperature over temp_threshold with temp_control "
-        "enabled. Will configure chip (if chipv1.1 and board v2.0)\n\t[Mythen3][Gotthard2] Default is 1. If module not "
+        "enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not "
         "connected or wrong module, powerchip will fail.");
 
     INTEGER_COMMAND_VEC_ID(

@@ -387,6 +387,7 @@ void setupDetector() {
     for (int i = 0; i < NUM_CLOCKS; ++i) {
         clkPhase[i] = 0;
     }
+    chipConfigured = 0;
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
 #endif
@@ -883,21 +884,28 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     if (sett == UNINITIALIZED)
         return thisSettings;
 
-    int *specialDacValues[] = 0;
+    const int specialDynamicDacValues[NSPECIALDACS] =
+        SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
+    const int specialDynamicHG0DacValues[NSPECIALDACS] =
+        SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
+    int specialDacValues[NSPECIALDACS] = {};
+
     // set settings
     switch (sett) {
     case DYNAMICGAIN:
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
         LOG(logINFO,
             ("Set settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-        specialDacValues = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
+        memcpy(specialDacValues, specialDynamicDacValues,
+               NSPECIALDACS * sizeof(int));
         break;
     case DYNAMICHG0:
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
         bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
         LOG(logINFO, ("Set settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n",
                       bus_r(DAQ_REG)));
-        specialDacValues = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
+        memcpy(specialDacValues, specialDynamicHG0DacValues,
+               NSPECIALDACS * sizeof(int));
         break;
         /*
     case FIXGAIN1:
@@ -934,9 +942,10 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     thisSettings = sett;
 
     // set special dacs to defined values
-    int *specialDacs[] = {SPECIALDACINDEX};
+    LOG(logINFO, ("Setting spcial dacs\n"));
+    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
     for (int i = 0; i < NSPECIALDACS; ++i) {
-        setDAC(specialDacs[i], specialDacValues[i], 0);
+            setDAC(specialDacs[i], specialDacValues[i], 0);
     }
 
     // if chip 1.1, and power chip on, configure chip
@@ -945,6 +954,41 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     }
 
     return getSettings();
+}
+
+void validateSettings() {
+    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
+    int specialDacValues[NUMSETTINGS][NSPECIALDACS] = {
+        SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS,
+        SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS};
+    int settList[NUMSETTINGS] = {DYNAMICGAIN, DYNAMICHG0};
+
+    enum detectorSettings sett = UNDEFINED;
+    for (int isett = 0; isett != NUMSETTINGS; ++isett) {
+        // dont overwrite if settings is correct
+        if (sett != UNDEFINED) {
+            break;
+        }
+        // assume it matches current setting in list
+        sett = settList[isett];
+        for (int ival = 0; ival < NSPECIALDACS; ++ival) {
+            // if one value does not match, undefined
+            if (getDAC(specialDacs[ival], 0) != specialDacValues[isett][ival]) {
+                sett = UNDEFINED;
+                break;
+            }
+        }
+    }
+    // update settings
+    if (thisSettings != sett) {
+        LOG(logINFOBLUE,
+            ("Validated settings to %s (%d)\n",
+             (sett == DYNAMICGAIN
+                  ? "dynamicgain"
+                  : (sett == DYNAMICHG0 ? "dynamichg0" : "undefined")),
+             sett));
+        thisSettings = sett;
+    }
 }
 
 enum detectorSettings getSettings() {
@@ -988,7 +1032,7 @@ enum detectorSettings getSettings() {
         thisSettings = UNDEFINED;
         LOG(logERROR, ("Settings read: Undefined. DAQ Reg: 0x%x\n", regval));
     }
-
+    validateSettings();
     return thisSettings;
 }
 
@@ -998,11 +1042,10 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         return;
 
     char *dac_names[] = {DAC_NAMES};
-    LOG(logINFO, ("Setting DAC %s\n", dac_names[ind]));
-    LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
-                    val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
+    LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
+                  val, (mV ? "mV" : "dac units")));
     if (!mV) {
         dacValues[ind] = val;
     }
@@ -1011,6 +1054,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         dacValues[ind] = dacval;
     }
 #else
+    LOG(logINFO, ("Setting DAC %s\n", dac_names[ind]));
     if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK) {
         dacValues[ind] = dacval;
         if (ind == J_VREF_COMP &&
@@ -1023,6 +1067,12 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         }
     }
 #endif
+    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
+    for (int i = 0; i < NSPECIALDACS; ++i) {
+        if ((int)ind == specialDacs[i]) {
+            validateSettings();
+        }
+    }
 }
 
 int getDAC(enum DACINDEX ind, int mV) {
@@ -1458,9 +1508,12 @@ int isChipConfigured() {
 }
 
 void configureChip() {
-    LOG(logINFOBLUE, ("Configuring chip\n"));
-    bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG) & CONFIG_V11_WR_CHIP_CNFG_MSK);
-    chipConfigured = 1;
+    // only for chipv1.1
+    if (chipVersion == 11) {
+        LOG(logINFOBLUE, ("Configuring chip\n"));
+        bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG) & CONFIG_V11_WR_CHIP_CNFG_MSK);
+        chipConfigured = 1;
+    }
 }
 
 

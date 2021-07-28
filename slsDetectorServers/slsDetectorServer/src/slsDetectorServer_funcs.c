@@ -1687,7 +1687,8 @@ int acquire(int blocking, int file_des) {
     // only set
     if (Server_VerifyLock() == OK) {
 #ifdef JUNGFRAUD
-    if (!isChipConfigured()) {
+    // chipv1.1 has to be configured before acquisition
+    if (getChipVersion() == 11 && !isChipConfigured()) {
             ret = FAIL;
             strcpy(mess,
                     "Could not start acquisition. Chip is not configured.\n");

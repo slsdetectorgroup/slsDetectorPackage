@@ -294,7 +294,7 @@ int getAllTrimbits();
 #ifndef CHIPTESTBOARDD
 enum detectorSettings setSettings(enum detectorSettings sett);
 #endif
-#ifdef MYTHEN3D
+#if defined(MYTHEN3D) || defined(JUNGFRAUD)
 void validateSettings();
 #endif
 enum detectorSettings getSettings();

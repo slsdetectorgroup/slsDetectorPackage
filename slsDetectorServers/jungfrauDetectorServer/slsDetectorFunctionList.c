@@ -957,6 +957,7 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
 }
 
 void validateSettings() {
+    // if any special dac value is changed individually => undefined
     const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
     int specialDacValues[NUMSETTINGS][NSPECIALDACS] = {
         SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS,

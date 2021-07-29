@@ -1041,24 +1041,24 @@ void validateSettings() {
     // if any special dac value is changed individually => undefined
     const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
     int *specialDacValues[] = {defaultDacValue_G0, defaultDacValue_HG0};
-     int settList[NUMSETTINGS] = {DYNAMICGAIN, DYNAMICHG0};
-     enum detectorSettings sett = UNDEFINED;
-     for (int isett = 0; isett != NUMSETTINGS; ++isett) {
+    int settList[] = {DYNAMICGAIN, DYNAMICHG0};
+    enum detectorSettings sett = UNDEFINED;
+    for (int isett = 0; isett != NUMSETTINGS; ++isett) {
 
-         // assume it matches current setting in list
-         sett = settList[isett];
-         // if one value does not match, = undefined
-         for (int i = 0; i < NSPECIALDACS; ++i) {
-             if (getDAC(specialDacs[i], 0) != specialDacValues[isett][i]) {
-                 sett = UNDEFINED;
-                 break;
-             }
-         }
+        // assume it matches current setting in list
+        sett = settList[isett];
+        // if one value does not match, = undefined
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            if (getDAC(specialDacs[i], 0) != specialDacValues[isett][i]) {
+                sett = UNDEFINED;
+                break;
+            }
+        }
 
-         // all values matchd a setting
-         if (sett != UNDEFINED) {
-             break;
-         }
+        // all values matchd a setting
+        if (sett != UNDEFINED) {
+            break;
+        }
     }
     // update settings
     if (thisSettings != sett) {

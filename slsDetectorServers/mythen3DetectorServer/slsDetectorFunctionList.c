@@ -1368,7 +1368,7 @@ void validateSettings() {
     const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
     int *specialDacValues[] = {defaultDacValue_standard, defaultDacValue_fast,
                                defaultDacValue_highgain};
-    int settList[NUMSETTINGS] = {STANDARD, FAST, HIGHGAIN};
+    int settList[] = {STANDARD, FAST, HIGHGAIN};
 
     enum detectorSettings sett = UNDEFINED;
     for (int isett = 0; isett != NUMSETTINGS; ++isett) {

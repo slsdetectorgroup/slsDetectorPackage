@@ -1421,8 +1421,8 @@ TEST_CASE("defaultdac", "[.cmd]") {
             {
                 std::ostringstream oss;
                 proxy.Call("defaultdac", {dacname, "1000"}, -1, PUT, oss);
-                REQUIRE(oss.str() == std::string("defaultdac [") + dacname +
-                                        std::string(", 1000]\n"));
+                REQUIRE(oss.str() == std::string("defaultdac ") + dacname +
+                                         std::string(" 1000\n"));
             }
             {
                 std::ostringstream oss;
@@ -1444,14 +1444,17 @@ TEST_CASE("defaultdac", "[.cmd]") {
                     std::ostringstream oss;
                     proxy.Call("defaultdac", {dacname, "1000", "dynamicgain"}, -1,
                             PUT, oss);
-                    REQUIRE(oss.str() == std::string("defaultdac [") + dacname +
-                                            std::string(", dynamicgain, 1000]\n"));
+                    REQUIRE(oss.str() ==
+                            std::string("defaultdac ") + dacname +
+                                std::string(" dynamicgain 1000\n"));
                 }
                 {
                     std::ostringstream oss;
-                    proxy.Call("defaultdac", {dacname}, -1, GET, oss);
-                    REQUIRE(oss.str() == std::string("defaultdac [") + dacname +
-                                            std::string(",  dynamicgain] 1000\n"));
+                    proxy.Call("defaultdac", {dacname, "dynamicgain"}, -1, GET,
+                               oss);
+                    REQUIRE(oss.str() ==
+                            std::string("defaultdac ") + dacname +
+                                std::string(" dynamicgain 1000\n"));
                 }
                 for (int i = 0; i != det.size(); ++i) {
                     det.setDefaultDac(it, prev_val[i], defs::DYNAMICGAIN, {i});

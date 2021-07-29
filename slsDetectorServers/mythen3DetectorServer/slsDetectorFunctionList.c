@@ -47,6 +47,10 @@ sls_detector_module *detectorModules = NULL;
 int *detectorChans = NULL;
 int *detectorDacs = NULL;
 int *channelMask = NULL;
+int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
+int defaultDacValue_standard[] = SPECIAL_DEFAULT_STANDARD_DAC_VALS;
+int defaultDacValue_fast[] = SPECIAL_DEFAULT_FAST_DAC_VALS;
+int defaultDacValue_highgain[] = SPECIAL_DEFAULT_HIGHGAIN_DAC_VALS;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
@@ -527,17 +531,96 @@ int setDefaultDacs() {
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     {
-        const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
         for (int i = 0; i < NDAC; ++i) {
-            setDAC((enum DACINDEX)i, defaultvals[i], 0);
-            if (detectorDacs[i] != defaultvals[i]) {
+            setDAC((enum DACINDEX)i, defaultDacValues[i], 0);
+            if (detectorDacs[i] != defaultDacValues[i]) {
                 ret = FAIL;
                 LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                               defaultvals[i], detectorDacs[i]));
+                               defaultDacValues[i], detectorDacs[i]));
             }
         }
     }
     return ret;
+}
+
+int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
+                  int *retval) {
+
+    // settings only for special dacs
+    if (sett != UNDEFINED) {
+        const int specialDacs[] = SPECIALDACINDEX;
+        // find special dac index
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            if ((int)index == specialDacs[i]) {
+                switch (sett) {
+                case STANDARD:
+                    *retval = defaultDacValue_standard[i];
+                    return OK;
+                case FAST:
+                    *retval = defaultDacValue_fast[i];
+                    return OK;
+                case HIGHGAIN:
+                    *retval = defaultDacValue_highgain[i];
+                    return OK;
+                    // unknown settings
+                default:
+                    return FAIL;
+                }
+            }
+        }
+        // not a special dac
+        return FAIL;
+    }
+
+    if (index < 0 || index >= NDAC)
+        return FAIL;
+    *retval = defaultDacValues[index];
+    return OK;
+}
+
+int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
+    char *dac_names[] = {DAC_NAMES};
+
+    // settings only for special dacs
+    if (sett != UNDEFINED) {
+        const int specialDacs[] = SPECIALDACINDEX;
+        // find special dac index
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            if ((int)index == specialDacs[i]) {
+                switch (sett) {
+                case STANDARD:
+                    LOG(logINFO,
+                        ("Setting Default Dac [%d - %s, standard]: %d\n",
+                         (int)index, dac_names[index], value));
+                    defaultDacValue_standard[i] = value;
+                    return OK;
+                case FAST:
+                    LOG(logINFO, ("Setting Default Dac [%d - %s, fast]: %d\n",
+                                  (int)index, dac_names[index], value));
+                    defaultDacValue_fast[i] = value;
+                    return OK;
+                case HIGHGAIN:
+                    LOG(logINFO,
+                        ("Setting Default Dac [%d - %s, highgain]: %d\n",
+                         (int)index, dac_names[index], value));
+                    defaultDacValue_highgain[i] = value;
+                    return OK;
+                    // unknown settings
+                default:
+                    return FAIL;
+                }
+            }
+        }
+        // not a special dac
+        return FAIL;
+    }
+
+    if (index < 0 || index >= NDAC)
+        return FAIL;
+    LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
+                  dac_names[index], value));
+    defaultDacValues[index] = value;
+    return OK;
 }
 
 void setASICDefaults() {
@@ -1201,24 +1284,19 @@ int getAllTrimbits() {
 }
 
 enum detectorSettings setSettings(enum detectorSettings sett) {
+    int *dacVals = NULL;
     switch (sett) {
     case STANDARD:
         LOG(logINFOBLUE, ("Setting to standard settings\n"));
-        thisSettings = sett;
-        setDAC(M_VRPREAMP, DEFAULT_STANDARD_VRPREAMP, 0);
-        setDAC(M_VRSHAPER, DEFAULT_STANDARD_VRSHAPER, 0);
+        dacVals = defaultDacValue_standard;
         break;
     case FAST:
         LOG(logINFOBLUE, ("Setting to fast settings\n"));
-        thisSettings = sett;
-        setDAC(M_VRPREAMP, DEFAULT_FAST_VRPREAMP, 0);
-        setDAC(M_VRSHAPER, DEFAULT_FAST_VRSHAPER, 0);
+        dacVals = defaultDacValue_fast;
         break;
     case HIGHGAIN:
         LOG(logINFOBLUE, ("Setting to high gain settings\n"));
-        thisSettings = sett;
-        setDAC(M_VRPREAMP, DEFAULT_HIGHGAIN_VRPREAMP, 0);
-        setDAC(M_VRSHAPER, DEFAULT_HIGHGAIN_VRSHAPER, 0);
+        dacVals = defaultDacValue_highgain;
         break;
     default:
         LOG(logERROR,
@@ -1226,34 +1304,54 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         return thisSettings;
     }
 
+    thisSettings = sett;
+
+    // set special dacs
+    const int specialDacs[] = SPECIALDACINDEX;
+    for (int i = 0; i < NSPECIALDACS; ++i) {
+        setDAC(specialDacs[i], dacVals[i], 0);
+    }
+
     LOG(logINFO, ("Settings: %d\n", thisSettings));
     return thisSettings;
 }
 
 void validateSettings() {
-    if (detectorDacs[M_VRPREAMP] == DEFAULT_STANDARD_VRPREAMP &&
-        detectorDacs[M_VRSHAPER] == DEFAULT_STANDARD_VRSHAPER) {
-        if (thisSettings != STANDARD) {
-            thisSettings = STANDARD;
-            LOG(logINFOBLUE, ("Validated Settings changed to standard!\n"));
+    // if any special dac value is changed individually => undefined
+    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
+    int *specialDacValues[] = {defaultDacValue_standard, defaultDacValue_fast,
+                               defaultDacValue_highgain};
+    int settList[NUMSETTINGS] = {STANDARD, FAST, HIGHGAIN};
+
+    enum detectorSettings sett = UNDEFINED;
+    for (int isett = 0; isett != NUMSETTINGS; ++isett) {
+
+        // assume it matches current setting in list
+        sett = settList[isett];
+        // if one value does not match, = undefined
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            if (getDAC(specialDacs[i], 0) != specialDacValues[isett][i]) {
+                sett = UNDEFINED;
+                break;
+            }
         }
-    } else if (detectorDacs[M_VRPREAMP] == DEFAULT_FAST_VRPREAMP &&
-               detectorDacs[M_VRSHAPER] == DEFAULT_FAST_VRSHAPER) {
-        if (thisSettings != FAST) {
-            thisSettings = FAST;
-            LOG(logINFOBLUE, ("Validated Settings changed to fast!\n"));
+
+        // all values matchd a setting
+        if (sett != UNDEFINED) {
+            break;
         }
-    } else if (detectorDacs[M_VRPREAMP] == DEFAULT_HIGHGAIN_VRPREAMP &&
-               detectorDacs[M_VRSHAPER] == DEFAULT_HIGHGAIN_VRSHAPER) {
-        if (thisSettings != HIGHGAIN) {
-            thisSettings = HIGHGAIN;
-            LOG(logINFOBLUE, ("Validated Settings changed to highgain!\n"));
-        }
-    } else {
-        thisSettings = UNDEFINED;
-        LOG(logWARNING,
-            ("Settings set to undefined [vrpreamp: %d, vrshaper: %d]\n",
-             detectorDacs[M_VRPREAMP], detectorDacs[M_VRSHAPER]));
+    }
+    // update settings
+    if (thisSettings != sett) {
+        LOG(logINFOBLUE,
+            ("Validated settings to %s (%d)\n",
+             (sett == STANDARD
+                  ? "standard"
+                  : (sett == FAST
+                         ? "fast"
+                         : (sett == HIGHGAIN ? "highgain" : "undefined"))),
+             sett));
+        thisSettings = sett;
     }
 }
 
@@ -1335,8 +1433,11 @@ void setGeneralDAC(enum DACINDEX ind, int val, int mV) {
         detectorDacs[ind] = dacval;
     }
 #endif
-    if (ind == M_VRPREAMP || ind == M_VRSHAPER) {
-        validateSettings();
+    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
+    for (int i = 0; i < NSPECIALDACS; ++i) {
+        if ((int)ind == specialDacs[i]) {
+            validateSettings();
+        }
     }
 }
 

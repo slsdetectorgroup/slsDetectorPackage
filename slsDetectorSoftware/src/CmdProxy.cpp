@@ -1112,7 +1112,7 @@ std::string CmdProxy::DefaultDac(int action) {
             auto t = det->getDefaultDac(
                 StringTo<defs::dacIndex>(args[0]),
                 sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]));
-            os << ToString(args) << ' ' << OutString(t) << '\n';
+            os << args[0] << ' ' << args[1] << ' ' << OutString(t) << '\n';
         } else {
             auto t = det->getDefaultDac(StringTo<defs::dacIndex>(args[0]));
             os << args[0] << ' ' << OutString(t) << '\n';
@@ -1126,11 +1126,12 @@ std::string CmdProxy::DefaultDac(int action) {
             det->setDefaultDac(
                 StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
                 sls::StringTo<slsDetectorDefs::detectorSettings>(args[2]));
+            os << args[0] << ' ' << args[2] << ' ' << args[1] << '\n';
         } else {
             det->setDefaultDac(StringTo<defs::dacIndex>(args[0]),
                                StringTo<int>(args[1]));
+            os << args[0] << ' ' << args[1] << '\n';
         }
-        os << ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }

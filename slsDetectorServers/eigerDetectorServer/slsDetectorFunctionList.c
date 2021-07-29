@@ -93,7 +93,7 @@ int eiger_virtual_interrupt_subframe = 0;
 int eiger_virtual_left_datastream = 1;
 int eiger_virtual_right_datastream = 1;
 #endif
-int defaultDacVals[NDAC] = DEFAULT_DAC_VALS;
+int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -752,11 +752,11 @@ int setDefaultDacs() {
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     for (int i = 0; i < NDAC; ++i) {
-        setDAC((enum DACINDEX)i, defaultDacVals[i], 0);
-        if ((detectorModules)->dacs[i] != defaultDacVals[i]) {
+        setDAC((enum DACINDEX)i, defaultDacValues[i], 0);
+        if ((detectorModules)->dacs[i] != defaultDacValues[i]) {
             ret = FAIL;
             LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                           defaultDacVals[i], (detectorModules)->dacs[i]));
+                           defaultDacValues[i], (detectorModules)->dacs[i]));
         }
     }
     return ret;
@@ -767,9 +767,9 @@ int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
     if (sett != UNDEFINED) {
         return FAIL;
     }
-    if (index < E_VSVP || index > E_VISHAPER)
+    if (index < 0 || index >= NDAC)
         return FAIL;
-    *retval = defaultDacVals[index];
+    *retval = defaultDacValues[index];
     return OK;
 }
 
@@ -777,9 +777,13 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
     if (sett != UNDEFINED) {
         return FAIL;
     }
-    if (index < E_VSVP || index > E_VISHAPER)
+    if (index < 0 || index >= NDAC)
         return FAIL;
-    defaultDacVals[index] = value;
+
+    char *dac_names[] = {DAC_NAMES};
+    LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
+                  dac_names[index], value));
+    defaultDacValues[index] = value;
     return OK;
 }
 
@@ -1017,8 +1021,8 @@ int64_t getSubExpTime() {
 }
 
 int setSubDeadTime(int64_t val) {
-    logINFO, ("Setting subdeadtime %lld ns\n", (long long int)val));
-#ifndef TUAL
+    LOG(logINFO, ("Setting subdeadtime %lld ns\n", (long long int)val));
+#ifndef VIRTUAL
     sharedMemory_lockLocalLink();
     // get subexptime
     int64_t subexptime = Feb_Control_GetSubFrameExposureTime();

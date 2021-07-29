@@ -43,6 +43,9 @@ int virtual_image_test_mode = 0;
 enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
 int dacValues[NDAC] = {};
+int defaultDacValues[] = DEFAULT_DAC_VALS;
+int defaultDacValue_G0[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
+int defaultDacValue_HG0[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
 int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
 int chipVersion = 10; // (1.0)
@@ -470,16 +473,86 @@ void setupDetector() {
 int setDefaultDacs() {
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
-    const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
     for (int i = 0; i < NDAC; ++i) {
-        setDAC((enum DACINDEX)i, defaultvals[i], 0);
-        if (dacValues[i] != defaultvals[i]) {
+        setDAC((enum DACINDEX)i, defaultDacValues[i], 0);
+        if (dacValues[i] != defaultDacValues[i]) {
             ret = FAIL;
             LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                           defaultvals[i], dacValues[i]));
+                           defaultDacValues[i], dacValues[i]));
         }
     }
     return ret;
+}
+
+int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
+                  int *retval) {
+
+    // settings only for special dacs
+    if (sett != UNDEFINED) {
+        const int specialDacs[] = SPECIALDACINDEX;
+        // find special dac index
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            if ((int)index == specialDacs[i]) {
+                switch (sett) {
+                case DYNAMICGAIN:
+                    *retval = defaultDacValue_G0[i];
+                    return OK;
+                case DYNAMICHG0:
+                    *retval = defaultDacValue_HG0[i];
+                    return OK;
+                    // unknown settings
+                default:
+                    return FAIL;
+                }
+            }
+        }
+        // not a special dac
+        return FAIL;
+    }
+
+    if (index < 0 || index >= NDAC)
+        return FAIL;
+    *retval = defaultDacValues[index];
+    return OK;
+}
+
+int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
+    char *dac_names[] = {DAC_NAMES};
+
+    // settings only for special dacs
+    if (sett != UNDEFINED) {
+        const int specialDacs[] = SPECIALDACINDEX;
+        // find special dac index
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            if ((int)index == specialDacs[i]) {
+                switch (sett) {
+                case DYNAMICGAIN:
+                    LOG(logINFO,
+                        ("Setting Default Dac [%d - %s, dynamicgain]: %d\n",
+                         (int)index, dac_names[index], value));
+                    defaultDacValue_G0[i] = value;
+                    return OK;
+                case DYNAMICHG0:
+                    LOG(logINFO,
+                        ("Setting Default Dac [%d - %s, dynamichg0]: %d\n",
+                         (int)index, dac_names[index], value));
+                    defaultDacValue_HG0[i] = value;
+                    return OK;
+                    // unknown settings
+                default:
+                    return FAIL;
+                }
+            }
+        }
+        // not a special dac
+        return FAIL;
+    }
+    if (index < 0 || index >= NDAC)
+        return FAIL;
+    LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
+                  dac_names[index], value));
+    defaultDacValues[index] = value;
+    return OK;
 }
 
 int readConfigFile() {
@@ -884,8 +957,6 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     if (sett == UNINITIALIZED)
         return thisSettings;
 
-    int G0DacVals[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
-    int HG0DacVals[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
     int *dacVals = NULL;
     // set settings
     switch (sett) {
@@ -893,14 +964,14 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
         LOG(logINFO,
             ("Set settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-        dacVals = G0DacVals;
+        dacVals = defaultDacValue_G0;
         break;
     case DYNAMICHG0:
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
         bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
         LOG(logINFO, ("Set settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n",
                       bus_r(DAQ_REG)));
-        dacVals = HG0DacVals;
+        dacVals = defaultDacValue_HG0;
         break;
     default:
         LOG(logERROR,
@@ -927,26 +998,25 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
 void validateSettings() {
     // if any special dac value is changed individually => undefined
     const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
-    int specialDacValues[NUMSETTINGS][NSPECIALDACS] = {
-        SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS,
-        SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS};
-    int settList[NUMSETTINGS] = {DYNAMICGAIN, DYNAMICHG0};
+    int *specialDacValues[] = {defaultDacValue_G0, defaultDacValue_HG0};
+     int settList[NUMSETTINGS] = {DYNAMICGAIN, DYNAMICHG0};
+     enum detectorSettings sett = UNDEFINED;
+     for (int isett = 0; isett != NUMSETTINGS; ++isett) {
 
-    enum detectorSettings sett = UNDEFINED;
-    for (int isett = 0; isett != NUMSETTINGS; ++isett) {
-        // dont overwrite if settings is correct
-        if (sett != UNDEFINED) {
-            break;
-        }
-        // assume it matches current setting in list
-        sett = settList[isett];
-        for (int ival = 0; ival < NSPECIALDACS; ++ival) {
-            // if one value does not match, undefined
-            if (getDAC(specialDacs[ival], 0) != specialDacValues[isett][ival]) {
-                sett = UNDEFINED;
-                break;
-            }
-        }
+         // assume it matches current setting in list
+         sett = settList[isett];
+         // if one value does not match, = undefined
+         for (int i = 0; i < NSPECIALDACS; ++i) {
+             if (getDAC(specialDacs[i], 0) != specialDacValues[isett][i]) {
+                 sett = UNDEFINED;
+                 break;
+             }
+         }
+
+         // all values matchd a setting
+         if (sett != UNDEFINED) {
+             break;
+         }
     }
     // update settings
     if (thisSettings != sett) {

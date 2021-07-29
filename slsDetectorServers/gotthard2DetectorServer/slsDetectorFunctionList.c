@@ -515,6 +515,31 @@ int setDefaultDacs() {
     return ret;
 }
 
+int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
+                  int *retval) {
+    if (sett != UNDEFINED) {
+        return FAIL;
+    }
+    if (index < 0 || index >= NDAC)
+        return FAIL;
+    *retval = defaultDacValues[index];
+    return OK;
+}
+
+int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
+    if (sett != UNDEFINED) {
+        return FAIL;
+    }
+    if (index < 0 || index >= NDAC)
+        return FAIL;
+
+    char *dac_names[] = {DAC_NAMES};
+    LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
+                  dac_names[index], value));
+    defaultDacValues[index] = value;
+    return OK;
+}
+
 int readConfigFile() {
 
     if (initError == FAIL) {

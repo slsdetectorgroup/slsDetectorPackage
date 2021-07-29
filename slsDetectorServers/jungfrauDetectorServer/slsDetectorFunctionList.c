@@ -884,28 +884,28 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     if (sett == UNINITIALIZED)
         return thisSettings;
 
-    const int specialDynamicDacValues[NSPECIALDACS] =
-        SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
-    const int specialDynamicHG0DacValues[NSPECIALDACS] =
-        SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
-    int specialDacValues[NSPECIALDACS] = {};
-
+    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
     // set settings
     switch (sett) {
     case DYNAMICGAIN:
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
         LOG(logINFO,
             ("Set settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-        memcpy(specialDacValues, specialDynamicDacValues,
-               NSPECIALDACS * sizeof(int));
+        int specialDacVals1[NSPECIALDACS] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            setDAC(specialDacs[i], specialDacVals1[i], 0);
+        }
         break;
     case DYNAMICHG0:
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
         bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
         LOG(logINFO, ("Set settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n",
                       bus_r(DAQ_REG)));
-        memcpy(specialDacValues, specialDynamicHG0DacValues,
-               NSPECIALDACS * sizeof(int));
+        int specialDacVals2[NSPECIALDACS] =
+            SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            setDAC(specialDacs[i], specialDacVals2[i], 0);
+        }
         break;
         /*
     case FIXGAIN1:
@@ -940,13 +940,6 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     }
 
     thisSettings = sett;
-
-    // set special dacs to defined values
-    LOG(logINFO, ("Setting spcial dacs\n"));
-    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
-    for (int i = 0; i < NSPECIALDACS; ++i) {
-            setDAC(specialDacs[i], specialDacValues[i], 0);
-    }
 
     // if chip 1.1, and power chip on, configure chip
     if (getChipVersion() == 11 && powerChip(-1)) {

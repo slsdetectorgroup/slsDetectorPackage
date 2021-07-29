@@ -884,14 +884,14 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     if (sett == UNINITIALIZED)
         return thisSettings;
 
-    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
+    const int specialDacs[] = SPECIALDACINDEX;
     // set settings
     switch (sett) {
     case DYNAMICGAIN:
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
         LOG(logINFO,
             ("Set settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-        int specialDacVals1[NSPECIALDACS] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
+        const int specialDacVals1[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
         for (int i = 0; i < NSPECIALDACS; ++i) {
             setDAC(specialDacs[i], specialDacVals1[i], 0);
         }
@@ -901,8 +901,7 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
         LOG(logINFO, ("Set settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n",
                       bus_r(DAQ_REG)));
-        int specialDacVals2[NSPECIALDACS] =
-            SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
+        const int specialDacVals2[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
         for (int i = 0; i < NSPECIALDACS; ++i) {
             setDAC(specialDacs[i], specialDacVals2[i], 0);
         }

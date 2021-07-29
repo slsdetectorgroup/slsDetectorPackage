@@ -1369,4 +1369,19 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     return buffer;
 }
 
+sls::Result<int> DetectorImpl::getNumberofUDPInterfaces(Positions pos) const {
+    return Parallel(&Module::getNumberofUDPInterfaces, pos);
+}
+
+sls::Result<int> DetectorImpl::getDefaultDac(defs::dacIndex index,
+                                             defs::detectorSettings sett,
+                                             Positions pos) {
+    return Parallel(&Module::getDefaultDac, pos, index, sett);
+}
+
+void DetectorImpl::setDefaultDac(defs::dacIndex index, int defaultValue,
+                                 defs::detectorSettings sett, Positions pos) {
+    Parallel(&Module::setDefaultDac, pos, index, defaultValue, sett);
+}
+
 } // namespace sls

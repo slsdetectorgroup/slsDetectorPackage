@@ -1407,6 +1407,65 @@ TEST_CASE("dacvalues", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("dacvalues", {}, -1, PUT));
 }
 
+TEST_CASE("defaultdac", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type != defs::CHIPTESTBOARD) {
+        REQUIRE_THROWS(proxy.Call("defaultdac", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("defaultdac", {"blabla"}, -1, PUT));
+        auto daclist = det.getDacList();
+        for (auto it : daclist) {
+            auto dacname = sls::ToString(it);
+            auto prev_val = det.getDefaultDac(it);
+            {
+                std::ostringstream oss;
+                proxy.Call("defaultdac", {dacname, "1000"}, -1, PUT, oss);
+                REQUIRE(oss.str() == std::string("defaultdac ") + dacname +
+                                         std::string(" 1000\n"));
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("defaultdac", {dacname}, -1, GET, oss);
+                REQUIRE(oss.str() == std::string("defaultdac ") + dacname +
+                                        std::string(" 1000\n"));
+            }
+            for (int i = 0; i != det.size(); ++i) {
+                det.setDefaultDac(it, prev_val[i], {i});
+            }
+        }
+        if (det_type == defs::JUNGFRAU) {
+            std::vector<defs::dacIndex> daclist = {defs::VB_COMP, defs::VREF_DS,
+                                                defs::VREF_COMP};
+            for (auto it : daclist) {
+                auto dacname = sls::ToString(it);
+                auto prev_val = det.getDefaultDac(it, defs::DYNAMICGAIN);
+                {
+                    std::ostringstream oss;
+                    proxy.Call("defaultdac", {dacname, "1000", "dynamicgain"}, -1,
+                            PUT, oss);
+                    REQUIRE(oss.str() ==
+                            std::string("defaultdac ") + dacname +
+                                std::string(" dynamicgain 1000\n"));
+                }
+                {
+                    std::ostringstream oss;
+                    proxy.Call("defaultdac", {dacname, "dynamicgain"}, -1, GET,
+                               oss);
+                    REQUIRE(oss.str() ==
+                            std::string("defaultdac ") + dacname +
+                                std::string(" dynamicgain 1000\n"));
+                }
+                for (int i = 0; i != det.size(); ++i) {
+                    det.setDefaultDac(it, prev_val[i], defs::DYNAMICGAIN, {i});
+                }
+            }
+        }
+    } else {
+            REQUIRE_THROWS(proxy.Call("defaultdac", {}, -1, GET));
+    }
+}
+
 TEST_CASE("defaultdacs", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

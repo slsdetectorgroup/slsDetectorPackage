@@ -42,13 +42,6 @@
 #define DEFAULT_TRIMBIT_VALUE            (0)
 #define DEFAULT_COUNTER_DISABLED_VTH_VAL (2800)
 
-#define DEFAULT_STANDARD_VRPREAMP (1100)
-#define DEFAULT_FAST_VRPREAMP     (300)
-#define DEFAULT_HIGHGAIN_VRPREAMP (1300)
-#define DEFAULT_STANDARD_VRSHAPER (1280)
-#define DEFAULT_FAST_VRSHAPER     (1500)
-#define DEFAULT_HIGHGAIN_VRSHAPER (1100)
-
 #define DEFAULT_READOUT_C0 (10) //(100000000) // rdo_clk, 100 MHz
 #define DEFAULT_READOUT_C1 (10) //(100000000) // smp sample clk (x2), 100 MHz
 #define DEFAULT_SYSTEM_C0  (10) //(100000000) // run_clk, 100 MHz
@@ -118,6 +111,17 @@ enum DACINDEX {
         2800, /* vTrim */                                                      \
         800   /* VdcSh */                                                      \
     };
+
+#define NUMSETTINGS     (3)
+#define NSPECIALDACS    (2)
+#define SPECIALDACINDEX {M_VRPREAMP, M_VRSHAPER};
+#define SPECIAL_DEFAULT_STANDARD_DAC_VALS                                      \
+    { 1100, 1280 }
+#define SPECIAL_DEFAULT_FAST_DAC_VALS                                          \
+    { 300, 1500 }
+#define SPECIAL_DEFAULT_HIGHGAIN_DAC_VALS                                      \
+    { 1300, 1100 }
+
 enum CLKINDEX {
     READOUT_C0,
     READOUT_C1,

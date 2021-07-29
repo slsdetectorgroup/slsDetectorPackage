@@ -621,12 +621,12 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
 }
 
 Result<int> Detector::getDefaultDac(defs::dacIndex index, Positions pos) {
-    return getDefaultDac_(index, defs::UNDEFINED, pos);
+    return pimpl->getDefaultDac(index, defs::UNDEFINED, pos);
 }
 
 void Detector::setDefaultDac(defs::dacIndex index, int defaultValue,
                              Positions pos) {
-    setDefaultDac_(index, defaultValue, defs::UNDEFINED, pos);
+    pimpl->setDefaultDac(index, defaultValue, defs::UNDEFINED, pos);
 }
 
 Result<int> Detector::getDefaultDac(defs::dacIndex index,
@@ -635,7 +635,7 @@ Result<int> Detector::getDefaultDac(defs::dacIndex index,
     if (sett == defs::UNDEFINED) {
         throw RuntimeError("Invalid settings given for default dac");
     }
-    return getDefaultDac_(index, sett, pos);
+    return pimpl->getDefaultDac(index, sett, pos);
 }
 
 void Detector::setDefaultDac(defs::dacIndex index, int defaultValue,
@@ -643,19 +643,12 @@ void Detector::setDefaultDac(defs::dacIndex index, int defaultValue,
     if (sett == defs::UNDEFINED) {
         throw RuntimeError("Invalid settings given for default dac");
     }
-    setDefaultDac_(index, defaultValue, sett, pos);
+    pimpl->setDefaultDac(index, defaultValue, sett, pos);
 }
 
-Result<int> Detector::getDefaultDac_(defs::dacIndex index,
-                                     defs::detectorSettings sett,
-                                     Positions pos) {
-    return pimpl->Parallel(&Module::getDefaultDac, pos, index, sett);
-}
 
-void Detector::setDefaultDac_(defs::dacIndex index, int defaultValue,
-                              defs::detectorSettings sett, Positions pos) {
-    pimpl->Parallel(&Module::setDefaultDac, pos, index, defaultValue, sett);
-}
+
+
 
 void Detector::resetToDefaultDacs(const bool hardReset, Positions pos) {
     pimpl->Parallel(&Module::resetToDefaultDacs, pos, hardReset);
@@ -790,7 +783,7 @@ Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
             "Cannot set number of udp interfaces for this detector.");
     }
     // also called by vetostream (for gotthard2)
-    return getNumberofUDPInterfaces_(pos);
+    return pimpl->getNumberofUDPInterfaces(pos);
 }
 
 void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
@@ -800,10 +793,6 @@ void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
     }
     // also called by vetostream (for gotthard2)
     setNumberofUDPInterfaces_(n, pos);
-}
-
-Result<int> Detector::getNumberofUDPInterfaces_(Positions pos) const {
-    return pimpl->Parallel(&Module::getNumberofUDPInterfaces, pos);
 }
 
 void Detector::setNumberofUDPInterfaces_(int n, Positions pos) {
@@ -1621,7 +1610,7 @@ Result<defs::ethernetInterface> Detector::getVetoStream(Positions pos) const {
     // 3gbe
     auto r3 = pimpl->Parallel(&Module::getVetoStream, pos);
     // 10gbe (debugging interface) opens 2nd udp interface in receiver
-    auto r10 = getNumberofUDPInterfaces_(pos);
+    auto r10 = pimpl->getNumberofUDPInterfaces(pos);
 
     Result<defs::ethernetInterface> res(r3.size());
     for (unsigned int i = 0; i < res.size(); ++i) {
@@ -1641,7 +1630,7 @@ void Detector::setVetoStream(defs::ethernetInterface interface, Positions pos) {
     pimpl->Parallel(&Module::setVetoStream, pos, i3gbe);
 
     // 10gbe (debugging interface) opens 2nd udp interface in receiver
-    int old_numinterfaces = getNumberofUDPInterfaces_(pos).tsquash(
+    int old_numinterfaces = pimpl->getNumberofUDPInterfaces(pos).tsquash(
         "retrieved inconsistent number of udp interfaces");
     int numinterfaces = (((interface & defs::ethernetInterface::I10GBE) ==
                           defs::ethernetInterface::I10GBE)
@@ -2206,7 +2195,7 @@ std::vector<int> Detector::getPortNumbers(int start_port) {
         break;
     case defs::JUNGFRAU:
     case defs::GOTTHARD2:
-        if (getNumberofUDPInterfaces_({}).squash() == 2) {
+        if (pimpl->getNumberofUDPInterfaces({}).squash() == 2) {
             num_sockets_per_detector *= 2;
         }
         break;

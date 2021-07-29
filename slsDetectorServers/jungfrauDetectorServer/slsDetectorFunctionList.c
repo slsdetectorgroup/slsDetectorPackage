@@ -884,27 +884,23 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     if (sett == UNINITIALIZED)
         return thisSettings;
 
-    const int specialDacs[] = SPECIALDACINDEX;
+    int G0DacVals[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
+    int HG0DacVals[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
+    int *dacVals = NULL;
     // set settings
     switch (sett) {
     case DYNAMICGAIN:
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
         LOG(logINFO,
             ("Set settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-        const int specialDacVals1[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
-        for (int i = 0; i < NSPECIALDACS; ++i) {
-            setDAC(specialDacs[i], specialDacVals1[i], 0);
-        }
+        dacVals = G0DacVals;
         break;
     case DYNAMICHG0:
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
         bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
         LOG(logINFO, ("Set settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n",
                       bus_r(DAQ_REG)));
-        const int specialDacVals2[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
-        for (int i = 0; i < NSPECIALDACS; ++i) {
-            setDAC(specialDacs[i], specialDacVals2[i], 0);
-        }
+        dacVals = HG0DacVals;
         break;
     default:
         LOG(logERROR,
@@ -913,6 +909,12 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     }
 
     thisSettings = sett;
+
+    // set special dacs
+    const int specialDacs[] = SPECIALDACINDEX;
+    for (int i = 0; i < NSPECIALDACS; ++i) {
+        setDAC(specialDacs[i], dacVals[i], 0);
+    }
 
     // if chip 1.1, and power chip on, configure chip
     if (getChipVersion() == 11 && powerChip(-1)) {

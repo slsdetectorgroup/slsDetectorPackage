@@ -113,8 +113,7 @@ class Detector {
     /** [Jungfrau][Gotthard][Gotthard2][Mythen3] */
     Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
 
-    /** [Jungfrau] DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2,
-     * FORCESWITCHG1, FORCESWITCHG2 \n [Gotthard] DYNAMICGAIN, HIGHGAIN,
+    /** [Jungfrau] DYNAMICGAIN, DYNAMICHG0 \n [Gotthard] DYNAMICGAIN, HIGHGAIN,
      * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n [Gotthard2] DYNAMICGAIN,
      * FIXGAIN1, FIXGAIN2 \n [Moench] G1_HIGHGAIN, G1_LOWGAIN,
      * G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN,

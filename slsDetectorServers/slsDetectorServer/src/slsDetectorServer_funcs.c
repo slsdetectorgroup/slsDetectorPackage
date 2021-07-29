@@ -1537,10 +1537,6 @@ int set_module(int file_des) {
 #ifdef JUNGFRAUD
         case DYNAMICGAIN:
         case DYNAMICHG0:
-        case FIXGAIN1:
-        case FIXGAIN2:
-        case FORCESWITCHG1:
-        case FORCESWITCHG2:
 #elif GOTTHARDD
         case DYNAMICGAIN:
         case HIGHGAIN:
@@ -1592,10 +1588,6 @@ int set_settings(int file_des) {
 #ifdef JUNGFRAUD
             case DYNAMICGAIN:
             case DYNAMICHG0:
-            case FIXGAIN1:
-            case FIXGAIN2:
-            case FORCESWITCHG1:
-            case FORCESWITCHG2:
 #elif GOTTHARDD
             case DYNAMICGAIN:
             case HIGHGAIN:

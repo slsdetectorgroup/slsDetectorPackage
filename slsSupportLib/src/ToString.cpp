@@ -176,10 +176,6 @@ std::string ToString(const defs::detectorSettings s) {
         return std::string("fixgain1");
     case defs::FIXGAIN2:
         return std::string("fixgain2");
-    case defs::FORCESWITCHG1:
-        return std::string("forceswitchg1");
-    case defs::FORCESWITCHG2:
-        return std::string("forceswitchg2");
     case defs::VERYLOWGAIN:
         return std::string("verylowgain");
     case defs::G1_HIGHGAIN:
@@ -624,10 +620,6 @@ template <> defs::detectorSettings StringTo(const std::string &s) {
         return defs::FIXGAIN1;
     if (s == "fixgain2")
         return defs::FIXGAIN2;
-    if (s == "forceswitchg1")
-        return defs::FORCESWITCHG1;
-    if (s == "forceswitchg2")
-        return defs::FORCESWITCHG2;
     if (s == "verylowgain")
         return defs::VERYLOWGAIN;
     if (s == "g1_hg")

@@ -101,56 +101,14 @@ void qTabSettings::SetupDetectorSettings() {
             item[i] = model->itemFromIndex(index[i]);
             item[i]->setEnabled(false);
         }
-        switch (det->getDetectorType().squash()) {
-        case slsDetectorDefs::EIGER:
-            item[(int)STANDARD]->setEnabled(true);
-            item[(int)HIGHGAIN]->setEnabled(true);
-            item[(int)LOWGAIN]->setEnabled(true);
-            item[(int)VERYHIGHGAIN]->setEnabled(true);
-            item[(int)VERLOWGAIN]->setEnabled(true);
-            break;
-        case slsDetectorDefs::GOTTHARD:
-            item[(int)HIGHGAIN]->setEnabled(true);
-            item[(int)DYNAMICGAIN]->setEnabled(true);
-            item[(int)LOWGAIN]->setEnabled(true);
-            item[(int)MEDIUMGAIN]->setEnabled(true);
-            item[(int)VERYHIGHGAIN]->setEnabled(true);
-            break;
-        case slsDetectorDefs::JUNGFRAU:
-            item[(int)DYNAMICGAIN]->setEnabled(true);
-            item[(int)DYNAMICHG0]->setEnabled(true);
-            item[(int)FIXGAIN1]->setEnabled(true);
-            item[(int)FIXGAIN2]->setEnabled(true);
-            item[(int)FORCESWITCHG1]->setEnabled(true);
-            item[(int)FORCESWITCHG2]->setEnabled(true);
-            break;
-        case slsDetectorDefs::GOTTHARD2:
-            item[(int)DYNAMICGAIN]->setEnabled(true);
-            item[(int)FIXGAIN1]->setEnabled(true);
-            item[(int)FIXGAIN2]->setEnabled(true);
-            break;
-        case slsDetectorDefs::MOENCH:
-            item[(int)G1_HIGHGAIN]->setEnabled(true);
-            item[(int)G1_LOWGAIN]->setEnabled(true);
-            item[(int)G2_HIGHCAP_HIGHGAIN]->setEnabled(true);
-            item[(int)G2_HIGHCAP_LOWGAIN]->setEnabled(true);
-            item[(int)G2_LOWCAP_HIGHGAIN]->setEnabled(true);
-            item[(int)G2_LOWCAP_LOWGAIN]->setEnabled(true);
-            item[(int)G4_HIGHGAIN]->setEnabled(true);
-            item[(int)G4_LOWGAIN]->setEnabled(true);
-            break;
-        case slsDetectorDefs::MYTHEN3:
-            item[(int)STANDARD]->setEnabled(true);
-            item[(int)FAST]->setEnabled(true);
-            item[(int)HIGHGAIN]->setEnabled(true);
-            break;
-        default:
-            LOG(logDEBUG) << "Unknown detector type. Exiting GUI.";
-            qDefs::Message(qDefs::CRITICAL,
-                           "Unknown detector type. Exiting GUI.",
-                           "qTabSettings::SetupDetectorSettings");
-            exit(-1);
+        try {
+            auto res = det->getSettingsList();
+            for (auto it : res) {
+                item[(int)it]->setEnabled(true);
+            }
         }
+                CATCH_DISPLAY(std::string("Could not setup settings"),
+                              "qTabSettings::SetupDetectorSettings")
     }
 }
 

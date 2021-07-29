@@ -529,16 +529,6 @@
      </item>
      <item>
       <property name="text">
-       <string>Force Switch G1</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Force Switch G2</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
        <string>Very Low Gain</string>
       </property>
      </item>

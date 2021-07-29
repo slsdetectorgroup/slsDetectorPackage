@@ -884,42 +884,23 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     if (sett == UNINITIALIZED)
         return thisSettings;
 
+    int G0DacVals[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
+    int HG0DacVals[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
+    int *dacVals = NULL;
     // set settings
     switch (sett) {
     case DYNAMICGAIN:
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
         LOG(logINFO,
             ("Set settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
+        dacVals = G0DacVals;
         break;
     case DYNAMICHG0:
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
         bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
         LOG(logINFO, ("Set settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n",
                       bus_r(DAQ_REG)));
-        break;
-    case FIXGAIN1:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_1_VAL);
-        LOG(logINFO,
-            ("Set settings - Fix Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-        break;
-    case FIXGAIN2:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_2_VAL);
-        LOG(logINFO,
-            ("Set settings - Fix Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-        break;
-    case FORCESWITCHG1:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_1_VAL);
-        LOG(logINFO, ("Set settings - Force Switch Gain 1, DAQ Reg: 0x%x\n",
-                      bus_r(DAQ_REG)));
-        break;
-    case FORCESWITCHG2:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_2_VAL);
-        LOG(logINFO, ("Set settings - Force Switch Gain 2, DAQ Reg: 0x%x\n",
-                      bus_r(DAQ_REG)));
+        dacVals = HG0DacVals;
         break;
     default:
         LOG(logERROR,
@@ -929,51 +910,57 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
 
     thisSettings = sett;
 
-    return getSettings();
-}
+    // set special dacs
+    const int specialDacs[] = SPECIALDACINDEX;
+    for (int i = 0; i < NSPECIALDACS; ++i) {
+        setDAC(specialDacs[i], dacVals[i], 0);
+    }
 
-enum detectorSettings getSettings() {
-
-    uint32_t regval = bus_r(DAQ_REG);
-    uint32_t val = regval & DAQ_SETTINGS_MSK;
-    LOG(logDEBUG1, ("Getting Settings\n Reading DAQ Register :0x%x\n", val));
-
-    switch (val) {
-    case DAQ_FIX_GAIN_DYNMC_VAL:
-        thisSettings = DYNAMICGAIN;
-        LOG(logDEBUG1,
-            ("Settings read: Dynamic Gain. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FIX_GAIN_HIGHGAIN_VAL:
-        thisSettings = DYNAMICHG0;
-        LOG(logDEBUG1,
-            ("Settings read: Dynamig High Gain. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FIX_GAIN_STG_1_VAL:
-        thisSettings = FIXGAIN1;
-        LOG(logDEBUG1, ("Settings read: Fix Gain 1. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FIX_GAIN_STG_2_VAL:
-        thisSettings = FIXGAIN2;
-        LOG(logDEBUG1, ("Settings read: Fix Gain 2. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FRCE_GAIN_STG_1_VAL:
-        thisSettings = FORCESWITCHG1;
-        LOG(logDEBUG1,
-            ("Settings read: Force Switch Gain 1. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FRCE_GAIN_STG_2_VAL:
-        thisSettings = FORCESWITCHG2;
-        LOG(logDEBUG1,
-            ("Settings read: Force Switch Gain 2. DAQ Reg: 0x%x\n", regval));
-        break;
-    default:
-        thisSettings = UNDEFINED;
-        LOG(logERROR, ("Settings read: Undefined. DAQ Reg: 0x%x\n", regval));
+    // if chip 1.1, and power chip on, configure chip
+    if (getChipVersion() == 11 && powerChip(-1)) {
+        configureChip();
     }
 
     return thisSettings;
 }
+
+void validateSettings() {
+    // if any special dac value is changed individually => undefined
+    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
+    int specialDacValues[NUMSETTINGS][NSPECIALDACS] = {
+        SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS,
+        SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS};
+    int settList[NUMSETTINGS] = {DYNAMICGAIN, DYNAMICHG0};
+
+    enum detectorSettings sett = UNDEFINED;
+    for (int isett = 0; isett != NUMSETTINGS; ++isett) {
+        // dont overwrite if settings is correct
+        if (sett != UNDEFINED) {
+            break;
+        }
+        // assume it matches current setting in list
+        sett = settList[isett];
+        for (int ival = 0; ival < NSPECIALDACS; ++ival) {
+            // if one value does not match, undefined
+            if (getDAC(specialDacs[ival], 0) != specialDacValues[isett][ival]) {
+                sett = UNDEFINED;
+                break;
+            }
+        }
+    }
+    // update settings
+    if (thisSettings != sett) {
+        LOG(logINFOBLUE,
+            ("Validated settings to %s (%d)\n",
+             (sett == DYNAMICGAIN
+                  ? "dynamicgain"
+                  : (sett == DYNAMICHG0 ? "dynamichg0" : "undefined")),
+             sett));
+        thisSettings = sett;
+    }
+}
+
+enum detectorSettings getSettings() { return thisSettings; }
 
 /* parameters - dac, adc, hv */
 void setDAC(enum DACINDEX ind, int val, int mV) {
@@ -981,11 +968,10 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         return;
 
     char *dac_names[] = {DAC_NAMES};
-    LOG(logINFO, ("Setting DAC %s\n", dac_names[ind]));
-    LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
-                    val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
+    LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
+                  val, (mV ? "mV" : "dac units")));
     if (!mV) {
         dacValues[ind] = val;
     }
@@ -994,6 +980,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         dacValues[ind] = dacval;
     }
 #else
+    LOG(logINFO, ("Setting DAC %s\n", dac_names[ind]));
     if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK) {
         dacValues[ind] = dacval;
         if (ind == J_VREF_COMP &&
@@ -1006,6 +993,12 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         }
     }
 #endif
+    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
+    for (int i = 0; i < NSPECIALDACS; ++i) {
+        if ((int)ind == specialDacs[i]) {
+            validateSettings();
+        }
+    }
 }
 
 int getDAC(enum DACINDEX ind, int mV) {

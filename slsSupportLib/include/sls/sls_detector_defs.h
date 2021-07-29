@@ -348,8 +348,6 @@ typedef struct {
         DYNAMICHG0,
         FIXGAIN1,
         FIXGAIN2,
-        FORCESWITCHG1,
-        FORCESWITCHG2,
         VERYLOWGAIN,
         G1_HIGHGAIN,
         G1_LOWGAIN,

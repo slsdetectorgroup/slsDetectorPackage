@@ -364,7 +364,7 @@ void function_table() {
     flist[F_VALIDATE_UDP_CONFIG] = &validate_udp_configuration;
     flist[F_GET_BURSTS_LEFT] = &get_bursts_left;
     flist[F_START_READOUT] = &start_readout;
-    flist[F_SET_DEFAULT_DACS] = &set_default_dacs;
+    flist[F_RESET_TO_DEFAULT_DACS] = &reset_to_default_dacs;
     flist[F_IS_VIRTUAL] = &is_virtual;
     flist[F_GET_PATTERN] = &get_pattern;
     flist[F_LOAD_DEFAULT_PATTERN] = &load_default_pattern;
@@ -1627,7 +1627,7 @@ int set_settings(int file_des) {
             validate(&ret, mess, (int)isett, (int)retval, "set settings", DEC);
 #ifdef GOTTHARDD
             if (ret == OK) {
-                ret = setDefaultDacs();
+                ret = resetToDefaultDacs(false);
                 if (ret == FAIL) {
                     strcpy(mess, "Could change settings, but could not set to "
                                  "default dacs\n");
@@ -8090,17 +8090,22 @@ int start_readout(int file_des) {
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
-int set_default_dacs(int file_des) {
+int reset_to_default_dacs(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
+    int arg = -1;
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Resetting dacs to defaults (hard reset: %d)\n", arg));
 
 #ifdef CHIPTESTBOARDD
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
-        if (setDefaultDacs() == FAIL) {
+        if (resetToDefaultDacs(arg) == FAIL) {
             ret = FAIL;
-            strcpy(mess, "Could not set default dacs");
+            sprintf(mess, "Could not %s reset default dacs",
+                    (arg == 1 ? "hard" : ""));
             LOG(logERROR, (mess));
         }
     }

@@ -406,7 +406,7 @@ void setupDetector() {
                        DAC_MAX_MV);
     LTC2620_Disable();
     LTC2620_Configure();
-    setDefaultDacs();
+    resetToDefaultDacs(false);
 
     // temp
     bus_w(TEMP_SPI_IN_REG, TEMP_SPI_IN_IDLE_MSK);
@@ -434,7 +434,15 @@ void setupDetector() {
     setDelayAfterTrigger(DEFAULT_DELAY);
 }
 
-int setDefaultDacs() {
+int resetToDefaultDacs(int hardReset) {
+    // reset defaults to hardcoded defaults
+    if (hardReset) {
+        const int vals[] = DEFAULT_DAC_VALS;
+        for (int i = 0; i < NDAC; ++i) {
+            defaultDacValues[i] = vals[i];
+        }
+    }
+    // reset dacs to defaults
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     for (int i = 0; i < NDAC; ++i) {

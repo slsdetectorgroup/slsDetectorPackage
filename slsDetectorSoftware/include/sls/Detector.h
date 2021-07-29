@@ -427,8 +427,10 @@ class Detector {
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos = {});
 
-    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
-    void setDefaultDacs(Positions pos = {});
+    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3]
+    reset to defaults, hardReset will reset to hardcoded defaults on on-board
+    server */
+    void resetToDefaultDacs(const bool hardReset, Positions pos = {});
 
     Result<int> getDAC(defs::dacIndex index, bool mV = false,
                        Positions pos = {}) const;

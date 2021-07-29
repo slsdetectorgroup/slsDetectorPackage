@@ -450,7 +450,7 @@ void setupDetector() {
 
     // defaults
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
-    setDefaultDacs();
+    resetToDefaultDacs(false);
     setASICDefaults();
     setADIFDefaults();
 
@@ -527,7 +527,15 @@ void setupDetector() {
     setAllTrimbits(DEFAULT_TRIMBIT_VALUE);
 }
 
-int setDefaultDacs() {
+int resetToDefaultDacs(int hardReset) {
+    // reset defaults to hardcoded defaults
+    if (hardReset) {
+        const int vals[] = DEFAULT_DAC_VALS;
+        for (int i = 0; i < NDAC; ++i) {
+            defaultDacValues[i] = vals[i];
+        }
+    }
+    // reset dacs to defaults
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     {

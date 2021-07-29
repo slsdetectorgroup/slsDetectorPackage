@@ -1095,6 +1095,37 @@ std::string CmdProxy::DacValues(int action) {
     return os.str();
 }
 
+std::string CmdProxy::ResetDacs(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[(optional) hard] "
+              "\n\t[Eiger][Jungfrau][Gotthard][Moench][Gotthard2]["
+              "Mythen3]Reset dac values to the defaults. A 'hard' optional "
+              "reset will reset the dacs to the hardcoded defaults in on-board "
+              "detector server."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("Cannot get");
+    } else if (action == defs::PUT_ACTION) {
+        bool hardReset = false;
+        if (args.size() == 1) {
+            if (args[0] != "hard") {
+                throw sls::RuntimeError("Unknown argument " + args[0] +
+                                        ". Did you mean hard?");
+            }
+            hardReset = true;
+        } else if (args.size() > 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->resetToDefaultDacs(hardReset, std::vector<int>{det_id});
+        os << "successful\n";
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::DefaultDac(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -1111,10 +1142,12 @@ std::string CmdProxy::DefaultDac(int action) {
         if (args.size() == 2) {
             auto t = det->getDefaultDac(
                 StringTo<defs::dacIndex>(args[0]),
-                sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]));
+                sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]),
+                std::vector<int>{det_id});
             os << args[0] << ' ' << args[1] << ' ' << OutString(t) << '\n';
         } else {
-            auto t = det->getDefaultDac(StringTo<defs::dacIndex>(args[0]));
+            auto t = det->getDefaultDac(StringTo<defs::dacIndex>(args[0]),
+                                        std::vector<int>{det_id});
             os << args[0] << ' ' << OutString(t) << '\n';
         }
     } else if (action == defs::PUT_ACTION) {
@@ -1125,7 +1158,8 @@ std::string CmdProxy::DefaultDac(int action) {
         if (args.size() == 3) {
             det->setDefaultDac(
                 StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
-                sls::StringTo<slsDetectorDefs::detectorSettings>(args[2]));
+                sls::StringTo<slsDetectorDefs::detectorSettings>(args[2]),
+                std::vector<int>{det_id});
             os << args[0] << ' ' << args[2] << ' ' << args[1] << '\n';
         } else {
             det->setDefaultDac(StringTo<defs::dacIndex>(args[0]),

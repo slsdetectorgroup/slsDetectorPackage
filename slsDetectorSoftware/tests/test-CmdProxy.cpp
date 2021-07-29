@@ -1466,16 +1466,17 @@ TEST_CASE("defaultdac", "[.cmd]") {
     }
 }
 
-TEST_CASE("defaultdacs", "[.cmd]") {
+TEST_CASE("resetdacs", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::CHIPTESTBOARD) {
-        REQUIRE_THROWS(proxy.Call("defaultdacs", {}, -1, GET));
-        REQUIRE_NOTHROW(proxy.Call("defaultdacs", {}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("resetdacs", {}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("resetdacs", {}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("resetdacs", {"hard"}, -1, PUT));
     } else {
-        REQUIRE_THROWS(proxy.Call("defaultdacs", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("defaultdacs", {}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("resetdacs", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("resetdacs", {}, -1, PUT));
     }
 }
 

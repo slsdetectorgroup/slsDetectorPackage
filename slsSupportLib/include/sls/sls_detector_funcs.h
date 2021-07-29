@@ -215,7 +215,7 @@ enum detFuncs {
     F_VALIDATE_UDP_CONFIG,
     F_GET_BURSTS_LEFT,
     F_START_READOUT,
-    F_SET_DEFAULT_DACS,
+    F_RESET_TO_DEFAULT_DACS,
     F_IS_VIRTUAL,
     F_GET_PATTERN,
     F_LOAD_DEFAULT_PATTERN,
@@ -555,7 +555,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_VALIDATE_UDP_CONFIG:             return "F_VALIDATE_UDP_CONFIG";                               
     case F_GET_BURSTS_LEFT:                 return "F_GET_BURSTS_LEFT";
     case F_START_READOUT:                   return "F_START_READOUT";
-    case F_SET_DEFAULT_DACS:                return "F_SET_DEFAULT_DACS";
+    case F_RESET_TO_DEFAULT_DACS:           return "F_RESET_TO_DEFAULT_DACS";
     case F_IS_VIRTUAL:                      return "F_IS_VIRTUAL";
     case F_GET_PATTERN:                     return "F_GET_PATTERN";
     case F_LOAD_DEFAULT_PATTERN:            return "F_LOAD_DEFAULT_PATTERN";

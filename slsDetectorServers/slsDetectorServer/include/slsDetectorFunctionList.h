@@ -117,7 +117,7 @@ void updateDataBytes();
 #endif
 
 #ifndef CHIPTESTBOARDD
-int setDefaultDacs();
+int resetToDefaultDacs(int hardReset);
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett, int *retval);
 int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value);
 #endif

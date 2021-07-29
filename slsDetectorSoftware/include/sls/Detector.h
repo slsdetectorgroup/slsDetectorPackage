@@ -1793,11 +1793,6 @@ class Detector {
     std::vector<int> getPortNumbers(int start_port);
     void updateRxRateCorrections();
     void setNumberofUDPInterfaces_(int n, Positions pos);
-    Result<int> getNumberofUDPInterfaces_(Positions pos) const;
-    Result<int> getDefaultDac_(defs::dacIndex index,
-                               defs::detectorSettings sett, Positions pos = {});
-    void setDefaultDac_(defs::dacIndex index, int defaultValue,
-                        defs::detectorSettings sett, Positions pos = {});
 };
 
 } // namespace sls

@@ -406,7 +406,7 @@ void setupDetector() {
                        DAC_MAX_MV);
     LTC2620_Disable();
     LTC2620_Configure();
-    resetToDefaultDacs(false);
+    resetToDefaultDacs(0);
 
     // temp
     bus_w(TEMP_SPI_IN_REG, TEMP_SPI_IN_IDLE_MSK);

@@ -658,7 +658,7 @@ void Detector::setDefaultDac_(defs::dacIndex index, int defaultValue,
 }
 
 void Detector::resetToDefaultDacs(const bool hardReset, Positions pos) {
-    pimpl->Parallel(&Module::resetToDefaultDacs, hardReset, pos);
+    pimpl->Parallel(&Module::resetToDefaultDacs, pos, hardReset);
 }
 
 Result<int> Detector::getDAC(defs::dacIndex index, bool mV,

@@ -426,7 +426,7 @@ void setupDetector() {
                        DAC_MAX_MV);
     LTC2620_Disable();
     LTC2620_Configure();
-    resetToDefaultDacs(false);
+    resetToDefaultDacs(0);
 
     // altera pll
     ALTERA_PLL_SetDefines(
@@ -471,25 +471,59 @@ void setupDetector() {
 }
 
 int resetToDefaultDacs(int hardReset) {
+    LOG(logINFOBLUE, ("Resetting %s to Default Dac values\n",
+                      (hardReset == 1 ? "hard" : "")));
+
     // reset defaults to hardcoded defaults
     if (hardReset) {
         const int vals[] = DEFAULT_DAC_VALS;
         for (int i = 0; i < NDAC; ++i) {
             defaultDacValues[i] = vals[i];
         }
+        const int vals_G0[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            defaultDacValue_G0[i] = vals_G0[i];
+        }    
+        const int vals_HG0[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            defaultDacValue_HG0[i] = vals_HG0[i];
+        }     
     }
+
+    // remember settings
+    enum detectorSettings oldSettings = thisSettings;
+
     // reset dacs to defaults
-    int ret = OK;
-    LOG(logINFOBLUE, ("Setting Default Dac values\n"));
+    const int specialDacs[] = SPECIALDACINDEX;
     for (int i = 0; i < NDAC; ++i) {
-        setDAC((enum DACINDEX)i, defaultDacValues[i], 0);
-        if (dacValues[i] != defaultDacValues[i]) {
-            ret = FAIL;
+        int value = defaultDacValues[i];
+
+        for (int j = 0; j < NSPECIALDACS; ++j) {
+            // special dac: replace default value
+            if (specialDacs[j] == i) {
+                switch (oldSettings) {
+                case DYNAMICGAIN:
+                    value = defaultDacValue_G0[j];
+                    break;
+                case DYNAMICHG0:
+                    value = defaultDacValue_HG0[j];
+                    break;
+                default:
+                    break;
+                }
+                break;
+            }
+        }
+
+        // set to defualt
+        setDAC((enum DACINDEX)i, value, 0);
+        if (dacValues[i] != value) {
             LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                           defaultDacValues[i], dacValues[i]));
+                           value, dacValues[i]));
+            return FAIL;
         }
     }
-    return ret;
+    return OK;
 }
 
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,

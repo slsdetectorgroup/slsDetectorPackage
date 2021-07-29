@@ -1627,7 +1627,7 @@ int set_settings(int file_des) {
             validate(&ret, mess, (int)isett, (int)retval, "set settings", DEC);
 #ifdef GOTTHARDD
             if (ret == OK) {
-                ret = resetToDefaultDacs(false);
+                ret = resetToDefaultDacs(0);
                 if (ret == FAIL) {
                     strcpy(mess, "Could change settings, but could not set to "
                                  "default dacs\n");
@@ -8096,7 +8096,7 @@ int reset_to_default_dacs(int file_des) {
     int arg = -1;
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Resetting dacs to defaults (hard reset: %d)\n", arg));
+    LOG(logDEBUG1, ("Resetting dacs to defaults (hard reset: %d)\n", arg));
 
 #ifdef CHIPTESTBOARDD
     functionNotImplemented();

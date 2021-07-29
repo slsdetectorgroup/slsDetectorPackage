@@ -517,7 +517,7 @@ void setupDetector() {
                        DAC_MAX_MV); // has to be before setvchip
     LTC2620_Disable();
     LTC2620_Configure();
-    resetToDefaultDacs(false);
+    resetToDefaultDacs(0);
 
     // altera pll
     ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG,

@@ -686,7 +686,7 @@ void allocateDetectorStructureMemory() {
 void setupDetector() {
 
     allocateDetectorStructureMemory();
-    resetToDefaultDacs(false);
+    resetToDefaultDacs(0);
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
 #endif

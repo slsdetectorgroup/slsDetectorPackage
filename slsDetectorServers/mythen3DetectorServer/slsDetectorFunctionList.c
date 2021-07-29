@@ -42,7 +42,7 @@ pthread_t pthread_virtual_tid;
 int64_t virtual_currentFrameNumber = 2;
 #endif
 
-enum detectorSettings thisSettings;
+enum detectorSettings thisSettings = UNINITIALIZED;
 sls_detector_module *detectorModules = NULL;
 int *detectorChans = NULL;
 int *detectorDacs = NULL;
@@ -450,7 +450,7 @@ void setupDetector() {
 
     // defaults
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
-    resetToDefaultDacs(false);
+    resetToDefaultDacs(0);
     setASICDefaults();
     setADIFDefaults();
 
@@ -528,27 +528,66 @@ void setupDetector() {
 }
 
 int resetToDefaultDacs(int hardReset) {
+    LOG(logINFOBLUE, ("Resetting %s to Default Dac values\n",
+                      (hardReset == 1 ? "hard" : "")));
+
     // reset defaults to hardcoded defaults
     if (hardReset) {
         const int vals[] = DEFAULT_DAC_VALS;
         for (int i = 0; i < NDAC; ++i) {
             defaultDacValues[i] = vals[i];
         }
+            const int vals_standard[] = SPECIAL_DEFAULT_STANDARD_DAC_VALS;
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            defaultDacValue_standard[i] = vals_standard[i];
+        }    
+        const int vals_fast[] = SPECIAL_DEFAULT_FAST_DAC_VALS;
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            defaultDacValue_fast[i] = vals_fast[i];
+        }  
+            const int vals_highgain[] = SPECIAL_DEFAULT_HIGHGAIN_DAC_VALS;
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            defaultDacValue_highgain[i] = vals_highgain[i];
+        }  
     }
+
+    // remember settings
+    enum detectorSettings oldSettings = thisSettings;
+
     // reset dacs to defaults
-    int ret = OK;
-    LOG(logINFOBLUE, ("Setting Default Dac values\n"));
-    {
-        for (int i = 0; i < NDAC; ++i) {
-            setDAC((enum DACINDEX)i, defaultDacValues[i], 0);
-            if (detectorDacs[i] != defaultDacValues[i]) {
-                ret = FAIL;
-                LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                               defaultDacValues[i], detectorDacs[i]));
+    const int specialDacs[] = SPECIALDACINDEX;
+    for (int i = 0; i < NDAC; ++i) {
+        int value = defaultDacValues[i];
+
+        for (int j = 0; j < NSPECIALDACS; ++j) {
+            // special dac: replace default value
+            if (specialDacs[j] == i) {
+                switch (oldSettings) {
+                case STANDARD:
+                    value = defaultDacValue_standard[j];
+                    break;
+                case FAST:
+                    value = defaultDacValue_fast[j];
+                    break;
+                case HIGHGAIN:
+                    value = defaultDacValue_highgain[j];
+                    break;
+                default:
+                    break;
+                }
+                break;
             }
         }
+
+        // set to defualt
+        setDAC((enum DACINDEX)i, value, 0);
+        if (detectorDacs[i] != value) {
+            LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
+                           value, detectorDacs[i]));
+            return FAIL;
+        }
     }
-    return ret;
+    return OK;
 }
 
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,

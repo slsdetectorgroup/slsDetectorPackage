@@ -93,6 +93,7 @@ int eiger_virtual_interrupt_subframe = 0;
 int eiger_virtual_left_datastream = 1;
 int eiger_virtual_right_datastream = 1;
 #endif
+int defaultDacVals[NDAC] = DEFAULT_DAC_VALS;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -750,16 +751,36 @@ void setupDetector() {
 int setDefaultDacs() {
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
-    const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
     for (int i = 0; i < NDAC; ++i) {
-        setDAC((enum DACINDEX)i, defaultvals[i], 0);
-        if ((detectorModules)->dacs[i] != defaultvals[i]) {
+        setDAC((enum DACINDEX)i, defaultDacVals[i], 0);
+        if ((detectorModules)->dacs[i] != defaultDacVals[i]) {
             ret = FAIL;
             LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                           defaultvals[i], (detectorModules)->dacs[i]));
+                           defaultDacVals[i], (detectorModules)->dacs[i]));
         }
     }
     return ret;
+}
+
+int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
+                  int *retval) {
+    if (sett != UNDEFINED) {
+        return FAIL;
+    }
+    if (index < E_VSVP || index > E_VISHAPER)
+        return FAIL;
+    *retval = defaultDacVals[index];
+    return OK;
+}
+
+int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
+    if (sett != UNDEFINED) {
+        return FAIL;
+    }
+    if (index < E_VSVP || index > E_VISHAPER)
+        return FAIL;
+    defaultDacVals[index] = value;
+    return OK;
 }
 
 /* advanced read/write reg */
@@ -996,8 +1017,8 @@ int64_t getSubExpTime() {
 }
 
 int setSubDeadTime(int64_t val) {
-    LOG(logINFO, ("Setting subdeadtime %lld ns\n", (long long int)val));
-#ifndef VIRTUAL
+    logINFO, ("Setting subdeadtime %lld ns\n", (long long int)val));
+#ifndef TUAL
     sharedMemory_lockLocalLink();
     // get subexptime
     int64_t subexptime = Feb_Control_GetSubFrameExposureTime();

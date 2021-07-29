@@ -380,6 +380,8 @@ void function_table() {
     flist[F_GET_VETO_ALGORITHM] = &get_veto_algorithm;
     flist[F_SET_VETO_ALGORITHM] = &set_veto_algorithm;
     flist[F_GET_CHIP_VERSION] = &get_chip_version;
+    flist[F_GET_DEFAULT_DAC] = &get_default_dac;
+    flist[F_SET_DEFAULT_DAC] = &set_default_dac;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -749,8 +751,6 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     case IB_TESTC:
         serverDacIndex = G_IB_TESTC;
         break;
-    case HIGH_VOLTAGE:
-        break;
 #elif EIGERD
     case VTHRESHOLD:
         serverDacIndex = E_VTHRESHOLD;
@@ -803,13 +803,7 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     case VISHAPER:
         serverDacIndex = E_VISHAPER;
         break;
-    case HIGH_VOLTAGE:
-    case IO_DELAY:
-        break;
 #elif CHIPTESTBOARDD
-    case ADC_VPP:
-    case HIGH_VOLTAGE:
-        break;
     case V_POWER_A:
         serverDacIndex = D_PWR_A;
         break;
@@ -827,8 +821,6 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
         break;
     case V_POWER_CHIP:
         serverDacIndex = D_PWR_CHIP;
-        break;
-    case V_LIMIT:
         break;
 #elif MOENCHD
     case VBP_COLBUF:
@@ -855,14 +847,7 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     case IBIAS_SFP:
         serverDacIndex = MO_IBIAS_SFP;
         break;
-    case ADC_VPP:
-    case HIGH_VOLTAGE:
-    case V_LIMIT:
-        break;
-
 #elif MYTHEN3D
-    case HIGH_VOLTAGE:
-        break;
     case VCASSH:
         serverDacIndex = M_VCASSH;
         break;
@@ -1004,12 +989,31 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
 
 int validateAndSetDac(enum dacIndex ind, int val, int mV) {
     int retval = -1;
+    switch (ind) {
+    case HIGH_VOLTAGE:
+#ifdef EIGERD
+    case IO_DELAY:
+#elif CHIPTESTBOARDD
+    case ADC_VPP:
+    case V_LIMIT:
+#elif MOENCHD
+    case ADC_VPP:
+    case V_LIMIT:
+#endif
+        break;
+    default:
+        modeNotImplemented("Dac Index", (int)ind);
+        break;
+    }
+    if (ret == FAIL) {
+        return retval;
+    }
     enum DACINDEX serverDacIndex = getDACIndex(ind);
-
-    if (ret == OK) {
+    if (ret == FAIL) {
+        return retval;
+    }
         switch (ind) {
-
-            // adc vpp
+           // adc vpp
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
         case ADC_VPP:
             // set
@@ -1237,7 +1241,6 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
 #endif
             break;
         }
-    }
     return retval;
 }
 
@@ -1531,28 +1534,12 @@ int set_module(int file_des) {
     else if (Server_VerifyLock() == OK) {
         // check index
 
-#if !(defined(EIGERD) || defined(MYTHEN3D))
-        // TODO! Check if this is used for any detector
-        switch (module.reg) {
-#ifdef JUNGFRAUD
-        case DYNAMICGAIN:
-        case DYNAMICHG0:
-#elif GOTTHARDD
-        case DYNAMICGAIN:
-        case HIGHGAIN:
-        case LOWGAIN:
-        case MEDIUMGAIN:
-        case VERYHIGHGAIN:
-#endif
-            break;
-        default:
-            modeNotImplemented("Settings", (int)module.reg);
-            break;
-        }
+#ifndef EIGERD
+        validate_settings((enum detectorSettings)(module.reg));
 #endif
         ret = setModule(module, mess);
         enum detectorSettings retval = getSettings();
-#if !(defined(EIGERD) || defined(MYTHEN3D))
+#ifndef EIGERD
         validate(&ret, mess, module.reg, (int)retval, "set module (settings)",
                  DEC);
 #endif
@@ -1563,6 +1550,45 @@ int set_module(int file_des) {
 #endif
 
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+void validate_settings(enum detectorSettings sett) {
+    // check index
+    switch (isett) {
+#ifdef EIGERD
+    case STANDARD:
+#elif JUNGFRAUD
+    case DYNAMICGAIN:
+    case DYNAMICHG0:
+#elif GOTTHARDD
+        case DYNAMICGAIN:
+        case HIGHGAIN:
+        case LOWGAIN:
+        case MEDIUMGAIN:
+        case VERYHIGHGAIN:
+#elif GOTTHARD2D
+        case DYNAMICGAIN:
+        case FIXGAIN1:
+        case FIXGAIN2:
+#elif MOENCHD
+        case G1_HIGHGAIN:
+        case G1_LOWGAIN:
+        case G2_HIGHCAP_HIGHGAIN:
+        case G2_HIGHCAP_LOWGAIN:
+        case G2_LOWCAP_HIGHGAIN:
+        case G2_LOWCAP_LOWGAIN:
+        case G4_HIGHGAIN:
+        case G4_LOWGAIN:
+#elif MYTHEN3D
+        case STANDARD:
+        case FAST:
+        case HIGHGAIN:
+#endif
+            break;
+        default:
+            NotImplemented("Settings Index", (int)isett);
+            break;
+        }
 }
 
 int set_settings(int file_des) {
@@ -1583,47 +1609,14 @@ int set_settings(int file_des) {
     if (((int)isett == GET_FLAG) || (Server_VerifyLock() == OK)) {
 
         if ((int)isett != GET_FLAG) {
-            // check index
-            switch (isett) {
-#ifdef JUNGFRAUD
-            case DYNAMICGAIN:
-            case DYNAMICHG0:
-#elif GOTTHARDD
-            case DYNAMICGAIN:
-            case HIGHGAIN:
-            case LOWGAIN:
-            case MEDIUMGAIN:
-            case VERYHIGHGAIN:
-#elif GOTTHARD2D
-            case DYNAMICGAIN:
-            case FIXGAIN1:
-            case FIXGAIN2:
-#elif MOENCHD
-            case G1_HIGHGAIN:
-            case G1_LOWGAIN:
-            case G2_HIGHCAP_HIGHGAIN:
-            case G2_HIGHCAP_LOWGAIN:
-            case G2_LOWCAP_HIGHGAIN:
-            case G2_LOWCAP_LOWGAIN:
-            case G4_HIGHGAIN:
-            case G4_LOWGAIN:
-#elif MYTHEN3D
-            case STANDARD:
-            case FAST:
-            case HIGHGAIN:
+#ifdef EIGERD
+            ret = FAIL;
+            sprintf(mess, "Cannot set settings via SET_SETTINGS, use "
+                          "SET_MODULE\n");
+            logERROR, (mess));
+#else
+            validate_settings(isett);
 #endif
-                break;
-            default:
-                if (myDetectorType == EIGER) {
-                    ret = FAIL;
-                    sprintf(mess, "Cannot set settings via SET_SETTINGS, use "
-                                  "SET_MODULE\n");
-                    LOG(logERROR, (mess));
-                } else
-                    modeNotImplemented("Settings Index", (int)isett);
-                break;
-            }
-
             if (ret == OK) {
                 setSettings(isett);
             }
@@ -7653,6 +7646,7 @@ int set_scan(int file_des) {
                 }
                 // dac scan
                 else {
+                    // validate index
                     getDACIndex(index);
                     if (ret == OK) {
                         LOG(logINFOBLUE, ("Dac [%d] scan enabled\n", index));
@@ -8447,4 +8441,90 @@ int get_chip_version(int file_des) {
 #endif
     LOG(logDEBUG1, ("chip version retval: %d\n", retval));
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_default_dac(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = {-1, -1};
+    int retval = -1;
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+
+    enum dacIndex dacindex = args[0];
+    enum detectorSettings sett = args[1];
+    LOG(logDEBUG1,
+        ("Getting default dac [dacindex:%d, settings: %d]\n", dacindex, sett));
+
+#ifdef CHIPTESTBOARDD
+    functionNotImplemented();
+#else
+    // get only
+    enum DACINDEX idac = getDACIndex(index);
+    if (ret == OK) {
+        validate_settings(sett);
+        if (ret == OK) {
+            ret = getDefaultDac(idac, sett, &retval);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not get default dac %d %s\n", (int)idac,
+                        (sett != UNDEFINED ? "for this setting" : ""));
+                LOG(logERROR, (mess));
+            } else {
+                LOG(logDEBUG1,
+                    ("default dac retval [dacindex:%d, setting:%d]: %u\n",
+                     (int)dacIndex, (int)sett, retval));
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_default_dac(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = {-1, -1};
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+
+    enum dacIndex dacindex = args[0];
+    enum detectorSettings sett = args[1];
+    int value = args[2] LOG(
+        logDEBUG1, ("Setting default dac [dacindex: %d, settings: %d] to %d\n",
+                    (int)dacindex, (int)sett, value));
+
+#ifdef CHIPTESTBOARDD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        enum DACINDEX idac = getDACIndex(index);
+        if (ret == OK) {
+            validate_settings(sett);
+            if (ret == OK) {
+                ret = setDefaultDac(idac, sett, value);
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not set default dac %d %s\n",
+                            (int)idac,
+                            (sett != UNDEFINED ? "for this setting" : ""));
+                    LOG(logERROR, (mess));
+                } else {
+                    int retval = -1;
+                    ret = getDefaultDac(idac, sett, &retval);
+                    if (ret == FAIL) {
+                        sprintf(mess, "Could not get default dac %d %s\n",
+                                (int)idac,
+                                (sett != UNDEFINED ? "for this setting" : ""));
+                        LOG(logERROR, (mess));
+                    } else {
+                        LOG(logDEBUG1, ("default dac retval [dacindex:%d, "
+                                        "setting:%d]: %u\n",
+                                        (int)dacIndex, (int)sett, retval));
+                    }
+                }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

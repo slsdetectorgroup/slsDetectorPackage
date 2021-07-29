@@ -118,6 +118,8 @@ void updateDataBytes();
 
 #ifndef CHIPTESTBOARDD
 int setDefaultDacs();
+int getDefaultDac(enum DACINDEX index, enum detectorSettings sett, int *retval);
+int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value);
 #endif
 #ifdef MYTHEN3D
 void setASICDefaults();

@@ -440,6 +440,8 @@ void setDigitalIODelay(uint64_t pinMask, int delay);
 #ifdef JUNGFRAUD
 void initReadoutConfiguration();
 int powerChip(int on);
+int isChipConfigured();
+void configureChip();
 int autoCompDisable(int on);
 void configureASICTimer();
 int setClockDivider(enum CLKINDEX ind, int val);

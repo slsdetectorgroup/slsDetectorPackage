@@ -383,7 +383,7 @@ class Detector {
      * [Moench] Default is disabled. \n
      * [Jungfrau] Default is disabled. Get will return power status. Can be off
      * if temperature event occured (temperature over temp_threshold with
-     * temp_control enabled. \n [Mythen3][Gotthard2] Default is 1. If module not
+     * temp_control enabled. Will configure chip (only chip v1.1)\n [Mythen3][Gotthard2] Default is 1. If module not
      * connected or wrong module, powerchip will fail.
      */
     void setPowerChip(bool on, Positions pos = {});

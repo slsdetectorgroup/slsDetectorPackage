@@ -46,6 +46,7 @@ int dacValues[NDAC] = {};
 int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
 int chipVersion = 10; // (1.0)
+int chipConfigured = 0;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -386,6 +387,7 @@ void setupDetector() {
     for (int i = 0; i < NUM_CLOCKS; ++i) {
         clkPhase[i] = 0;
     }
+    chipConfigured = 0;
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
 #endif
@@ -1413,13 +1415,17 @@ void initReadoutConfiguration() {
 int powerChip(int on) {
     if (on != -1) {
         if (on) {
-            LOG(logINFO, ("Powering chip: on\n"));
+            LOG(logINFOBLUE, ("Powering chip: on\n"));
             bus_w(CHIP_POWER_REG,
                   bus_r(CHIP_POWER_REG) | CHIP_POWER_ENABLE_MSK);
+            
+            configureChip();
         } else {
-            LOG(logINFO, ("Powering chip: off\n"));
+            LOG(logINFOBLUE, ("Powering chip: off\n"));
             bus_w(CHIP_POWER_REG,
                   bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
+            
+            chipConfigured = 0;
         }
     }
 #ifdef VIRTUAL
@@ -1429,6 +1435,20 @@ int powerChip(int on) {
     return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_STATUS_MSK) >>
             CHIP_POWER_STATUS_OFST);
 }
+
+int isChipConfigured() {
+    return chipConfigured;
+}
+
+void configureChip() {
+    // only for chipv1.1
+    if (chipVersion == 11) {
+        LOG(logINFOBLUE, ("Configuring chip\n"));
+        bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG) & CONFIG_V11_WR_CHIP_CNFG_MSK);
+        chipConfigured = 1;
+    }
+}
+
 
 int autoCompDisable(int on) {
     if (on != -1) {

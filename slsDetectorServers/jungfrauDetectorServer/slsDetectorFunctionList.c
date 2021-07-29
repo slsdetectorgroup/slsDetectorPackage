@@ -906,32 +906,6 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
             setDAC(specialDacs[i], specialDacVals2[i], 0);
         }
         break;
-        /*
-    case FIXGAIN1:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_1_VAL);
-        LOG(logINFO,
-            ("Set settings - Fix Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-        break;
-    case FIXGAIN2:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_2_VAL);
-        LOG(logINFO,
-            ("Set settings - Fix Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-        break;
-    case FORCESWITCHG1:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_1_VAL);
-        LOG(logINFO, ("Set settings - Force Switch Gain 1, DAQ Reg: 0x%x\n",
-                      bus_r(DAQ_REG)));
-        break;
-    case FORCESWITCHG2:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_2_VAL);
-        LOG(logINFO, ("Set settings - Force Switch Gain 2, DAQ Reg: 0x%x\n",
-                      bus_r(DAQ_REG)));
-        break;
-        */
     default:
         LOG(logERROR,
             ("This settings is not defined for this detector %d\n", (int)sett));

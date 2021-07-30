@@ -783,6 +783,7 @@ int selectStoragecellStart(int pos) {
     uint32_t mask = DAQ_STRG_CELL_SLCT_MSK;
     int offset = DAQ_STRG_CELL_SLCT_OFST;
     if (getChipVersion() == 11) {
+        // set the bit
         value = 1 << pos;
         addr = CONFIG_V11_REG;
         mask = CONFIG_V11_STRG_CLL_MSK;
@@ -793,7 +794,18 @@ int selectStoragecellStart(int pos) {
         bus_w(addr, bus_r(addr) & ~mask);
         bus_w(addr, bus_r(addr) | ((value << offset) & mask));
     }
-    return ((bus_r(addr) & mask) >> offset);
+    int retval = ((bus_r(addr) & mask) >> offset);
+    if (getChipVersion() == 11) {
+        // get which bit
+        int max = getMaxStoragecellStart();
+        for (int i = 0; i != max + 1; ++i) {
+            if (retval & (1 << i)) {
+                return i;
+            }
+        }
+    }
+    // chip v1.0
+    return retval;
 }
 
 int getMaxStoragecellStart() {

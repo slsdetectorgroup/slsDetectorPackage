@@ -227,6 +227,12 @@ TEST_CASE("settings", "[.cmd]") {
             REQUIRE_THROWS(proxy.Call("settings", {it}, -1, PUT));
         }
     }
+    for (int i = 0; i != det.size(); ++i) {
+        if (prev_val[i] != defs::UNDEFINED &&
+            prev_val[i] != defs::UNINITIALIZED) {
+            det.setSettings(prev_val[i], {i});
+        }
+    }
 }
 
 TEST_CASE("threshold", "[.cmd]") {
@@ -1466,16 +1472,25 @@ TEST_CASE("defaultdac", "[.cmd]") {
     }
 }
 
-TEST_CASE("defaultdacs", "[.cmd]") {
+TEST_CASE("resetdacs", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::CHIPTESTBOARD) {
-        REQUIRE_THROWS(proxy.Call("defaultdacs", {}, -1, GET));
-        REQUIRE_NOTHROW(proxy.Call("defaultdacs", {}, -1, PUT));
+        auto prev_val = det.getSettings();
+
+        REQUIRE_THROWS(proxy.Call("resetdacs", {}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("resetdacs", {}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("resetdacs", {"hard"}, -1, PUT));
+
+        // settings should not change especially for jungfrau and m3
+        auto next_val = det.getSettings();
+        for (int i = 0; i != det.size(); ++i) {
+            REQUIRE(prev_val[i] == next_val[i]);
+        }
     } else {
-        REQUIRE_THROWS(proxy.Call("defaultdacs", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("defaultdacs", {}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("resetdacs", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("resetdacs", {}, -1, PUT));
     }
 }
 

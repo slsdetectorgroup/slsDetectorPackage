@@ -686,7 +686,7 @@ void allocateDetectorStructureMemory() {
 void setupDetector() {
 
     allocateDetectorStructureMemory();
-    setDefaultDacs();
+    resetToDefaultDacs(0);
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
 #endif
@@ -748,7 +748,15 @@ void setupDetector() {
     LOG(logDEBUG1, ("Setup detector done\n\n"));
 }
 
-int setDefaultDacs() {
+int resetToDefaultDacs(int hardReset) {
+    // reset defaults to hardcoded defaults
+    if (hardReset) {
+        const int vals[] = DEFAULT_DAC_VALS;
+        for (int i = 0; i < NDAC; ++i) {
+            defaultDacValues[i] = vals[i];
+        }
+    }
+    // reset dacs to defaults
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     for (int i = 0; i < NDAC; ++i) {

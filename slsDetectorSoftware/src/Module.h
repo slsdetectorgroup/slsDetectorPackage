@@ -152,7 +152,7 @@ class Module : public virtual slsDetectorDefs {
                       slsDetectorDefs::detectorSettings sett);
     void setDefaultDac(slsDetectorDefs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett);
-    void setDefaultDacs();
+    void resetToDefaultDacs(const bool hardReset);
     int getDAC(dacIndex index, bool mV) const;
     void setDAC(int val, dacIndex index, bool mV);
     bool getPowerChip() const;

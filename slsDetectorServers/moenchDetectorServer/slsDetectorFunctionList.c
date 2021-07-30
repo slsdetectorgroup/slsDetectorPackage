@@ -517,7 +517,7 @@ void setupDetector() {
                        DAC_MAX_MV); // has to be before setvchip
     LTC2620_Disable();
     LTC2620_Configure();
-    setDefaultDacs();
+    resetToDefaultDacs(0);
 
     // altera pll
     ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG,
@@ -614,7 +614,15 @@ void updateDataBytes() {
     dataBytes = analogDataBytes;
 }
 
-int setDefaultDacs() {
+int resetToDefaultDacs(int hardReset) {
+    // reset defaults to hardcoded defaults
+    if (hardReset) {
+        const int vals[] = DEFAULT_DAC_VALS;
+        for (int i = 0; i < NDAC; ++i) {
+            defaultDacValues[i] = vals[i];
+        }
+    }
+    // reset dacs to defaults
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     for (int i = 0; i < NDAC; ++i) {

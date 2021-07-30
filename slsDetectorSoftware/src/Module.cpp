@@ -629,7 +629,10 @@ void Module::setDefaultDac(slsDetectorDefs::dacIndex index, int defaultValue,
     return sendToDetector(F_SET_DEFAULT_DAC, args, nullptr);
 }
 
-void Module::setDefaultDacs() { sendToDetector(F_SET_DEFAULT_DACS); }
+void Module::resetToDefaultDacs(const bool hardReset) {
+    sendToDetector(F_RESET_TO_DEFAULT_DACS, static_cast<int>(hardReset),
+                   nullptr);
+}
 
 void Module::setDAC(int val, dacIndex index, bool mV) {
     int args[]{static_cast<int>(index), static_cast<int>(mV), val};

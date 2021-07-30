@@ -354,9 +354,28 @@ void init_det(py::module &m) {
              py::arg(), py::arg() = Positions{})
         .def("getDacList", (std::vector<defs::dacIndex>(Detector::*)() const) &
                                Detector::getDacList)
-        .def("setDefaultDacs",
-             (void (Detector::*)(sls::Positions)) & Detector::setDefaultDacs,
-             py::arg() = Positions{})
+        .def("getDefaultDac",
+             (Result<int>(Detector::*)(defs::dacIndex, sls::Positions)) &
+                 Detector::getDefaultDac,
+             py::arg(), py::arg() = Positions{})
+        .def("setDefaultDac",
+             (void (Detector::*)(defs::dacIndex, int, sls::Positions)) &
+                 Detector::setDefaultDac,
+             py::arg(), py::arg(), py::arg() = Positions{})
+        .def("getDefaultDac",
+             (Result<int>(Detector::*)(defs::dacIndex, defs::detectorSettings,
+                                       sls::Positions)) &
+                 Detector::getDefaultDac,
+             py::arg(), py::arg(), py::arg() = Positions{})
+        .def("setDefaultDac",
+             (void (Detector::*)(defs::dacIndex, int, defs::detectorSettings,
+                                 sls::Positions)) &
+                 Detector::setDefaultDac,
+             py::arg(), py::arg(), py::arg(), py::arg() = Positions{})
+        .def("resetToDefaultDacs",
+             (void (Detector::*)(const bool, sls::Positions)) &
+                 Detector::resetToDefaultDacs,
+             py::arg(), py::arg() = Positions{})
         .def("getDAC",
              (Result<int>(Detector::*)(defs::dacIndex, bool, sls::Positions)
                   const) &
@@ -923,6 +942,10 @@ void init_det(py::module &m) {
                                  sls::Positions)) &
                  Detector::setDataStream,
              py::arg(), py::arg(), py::arg() = Positions{})
+        .def("getChipVersion",
+             (Result<double>(Detector::*)(sls::Positions) const) &
+                 Detector::getChipVersion,
+             py::arg() = Positions{})
         .def("getThresholdTemperature",
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getThresholdTemperature,
@@ -946,10 +969,6 @@ void init_det(py::module &m) {
         .def("resetTemperatureEvent",
              (void (Detector::*)(sls::Positions)) &
                  Detector::resetTemperatureEvent,
-             py::arg() = Positions{})
-        .def("getChipVersion",
-             (Result<double>(Detector::*)(sls::Positions) const) &
-                 Detector::getChipVersion,
              py::arg() = Positions{})
         .def("getAutoCompDisable",
              (Result<bool>(Detector::*)(sls::Positions) const) &

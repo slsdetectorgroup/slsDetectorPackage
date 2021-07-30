@@ -49,6 +49,7 @@ int highvoltage = 0;
 int dacValues[NDAC] = {};
 int onChipdacValues[ONCHIP_NDAC][NCHIP] = {};
 int defaultDacValues[NDAC] = {};
+int hardCodedDefaultDacValues[NDAC] = {};
 int defaultOnChipdacValues[ONCHIP_NDAC][NCHIP] = {};
 int injectedChannelsOffset = 0;
 int injectedChannelsIncrement = 0;
@@ -393,6 +394,7 @@ void setupDetector() {
     memset(dacValues, 0, sizeof(dacValues));
     for (int i = 0; i < NDAC; ++i) {
         defaultDacValues[i] = -1;
+        hardCodedDefaultDacValues[i] = -1;
     }
     for (int i = 0; i < ONCHIP_NDAC; ++i) {
         for (int j = 0; j < NCHIP; ++j) {
@@ -481,7 +483,14 @@ void setupDetector() {
     setCurrentSource(DEFAULT_CURRENT_SOURCE);
 }
 
-int setDefaultDacs() {
+int resetToDefaultDacs(int hardReset) {
+    // reset defaults to hardcoded defaults
+    if (hardReset) {
+        for (int i = 0; i < NDAC; ++i) {
+            defaultDacValues[i] = hardCodedDefaultDacValues[i];
+        }
+    }
+    // reset dacs to defaults
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     for (int i = 0; i < NDAC; ++i) {
@@ -831,6 +840,7 @@ int readConfigFile() {
 
             // set default dac variables
             defaultDacValues[idac] = value;
+            hardCodedDefaultDacValues[idac] = value;
 
             // set dac
             setDAC(idac, value, 0);

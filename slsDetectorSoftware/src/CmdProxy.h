@@ -671,6 +671,8 @@ class CmdProxy {
         {"vipre_cds", "dac"},
         {"ibias_sfp", "dac"},
 
+        {"defaultdacs", "resetdacs"},
+
         /* acquisition */
         {"busy", "clearbusy"},
         {"receiver", "rx_status"},
@@ -816,7 +818,7 @@ class CmdProxy {
         {"dac", &CmdProxy::Dac},
         {"daclist", &CmdProxy::daclist},
         {"dacvalues", &CmdProxy::DacValues},
-        {"defaultdacs", &CmdProxy::defaultdacs},
+        {"resetdacs", &CmdProxy::ResetDacs},
         {"defaultdac", &CmdProxy::DefaultDac},
 
         /* on chip dacs */
@@ -1095,6 +1097,7 @@ class CmdProxy {
     /* dacs */
     std::string Dac(int action);
     std::string DacValues(int action);
+    std::string ResetDacs(int action);
     std::string DefaultDac(int action);
     /* acquisition */
     std::string ReceiverStatus(int action);
@@ -1382,10 +1385,6 @@ class CmdProxy {
     GET_COMMAND_NOID(
         daclist, getDacList,
         "\n\tGets the list of commands for every dac for this detector.");
-
-    EXECUTE_SET_COMMAND(defaultdacs, setDefaultDacs,
-                        "\n\t[Eiger][Jungfrau][Gotthard][Moench][Gotthard2]["
-                        "Mythen3]Sets default dacs on to the detector.");
 
     /* on chip dacs */
     INTEGER_USER_IND_COMMAND(

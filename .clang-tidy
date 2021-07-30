@@ -18,7 +18,8 @@ Checks:          '*,
                     -google-readability-todo, 
                     -google-readability-braces-around-statements,
                     -modernize-use-trailing-return-type,
-                    -readability-isolate-declaration'
+                    -readability-isolate-declaration,
+                    -llvmlibc-*'
 
 HeaderFilterRegex: \.h
 AnalyzeTemporaryDtors: false

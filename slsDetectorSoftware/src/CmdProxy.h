@@ -717,6 +717,8 @@ class CmdProxy {
         {"resmat", "partialreset"},
 
         /* Jungfrau Specific */
+        {"mode", "mode"},
+
         /* Gotthard Specific */
         /* Gotthard2 Specific */
         /* Mythen3 Specific */

@@ -202,6 +202,7 @@ int getReadoutMode();
 // parameters - timer
 #ifdef JUNGFRAUD
 int selectStoragecellStart(int pos);
+int getMaxStoragecellStart();
 #endif
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int setNextFrameNumber(uint64_t value);

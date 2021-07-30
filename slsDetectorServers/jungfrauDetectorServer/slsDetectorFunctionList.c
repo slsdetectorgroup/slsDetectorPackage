@@ -458,8 +458,13 @@ void setupDetector() {
     setPeriod(DEFAULT_PERIOD);
     setDelayAfterTrigger(DEFAULT_DELAY);
     setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
-    setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
-    selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
+    if (getChipVersion() == 11) {
+        selectStoragecellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
+    } else {
+        selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
+        // not applicable for chipv1.1
+        setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
+    }
     /*setClockDivider(RUN_CLK, HALF_SPEED); depends if all the previous stuff
      * works*/
     setTiming(DEFAULT_TIMING_MODE);
@@ -773,14 +778,30 @@ uint32_t getADCInvertRegister() {
 
 /* parameters - timer */
 int selectStoragecellStart(int pos) {
+    int value = pos;
+    uint32_t addr = DAQ_REG;
+    uint32_t mask = DAQ_STRG_CELL_SLCT_MSK;
+    int offset = DAQ_STRG_CELL_SLCT_OFST;
+    if (getChipVersion() == 11) {
+        value = 1 << pos;
+        addr = CONFIG_V11_REG;
+        mask = CONFIG_V11_STRG_CLL_MSK;
+        offset = CONFIG_V11_STRG_CLL_OFST;
+    }
     if (pos >= 0) {
         LOG(logINFO, ("Setting storage cell start: %d\n", pos));
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_STRG_CELL_SLCT_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | ((pos << DAQ_STRG_CELL_SLCT_OFST) &
-                                         DAQ_STRG_CELL_SLCT_MSK));
+        bus_w(addr, bus_r(addr) & ~mask);
+        bus_w(addr, bus_r(addr) | ((value << offset) & mask));
     }
-    return ((bus_r(DAQ_REG) & DAQ_STRG_CELL_SLCT_MSK) >>
-            DAQ_STRG_CELL_SLCT_OFST);
+    return ((bus_r(addr) & mask) >> offset);
+}
+
+int getMaxStoragecellStart() {
+    if (getChipVersion() == 11) {
+        return MAX_STORAGE_CELL_CHIP11_VAL;
+    } else {
+        return MAX_STORAGE_CELL_VAL;
+    }
 }
 
 int setNextFrameNumber(uint64_t value) {

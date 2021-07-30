@@ -4023,7 +4023,7 @@ int storage_cell_start(int file_des) {
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         if (arg > getMaxStoragecellStart()) {
             ret = FAIL;
-            strcpy(mess, "Max Storage cell number should not exceed %d\n", getMaxStoragecellStart());
+            sprintf(mess, "Max Storage cell number should not exceed %d\n", getMaxStoragecellStart());
             LOG(logERROR, (mess));
         } else {
             retval = selectStoragecellStart(arg);

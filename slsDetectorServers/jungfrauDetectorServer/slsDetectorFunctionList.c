@@ -457,10 +457,10 @@ void setupDetector() {
     setExpTime(DEFAULT_EXPTIME);
     setPeriod(DEFAULT_PERIOD);
     setDelayAfterTrigger(DEFAULT_DELAY);
-    setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
     if (getChipVersion() == 11) {
         selectStoragecellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
     } else {
+        setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
         selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
         // not applicable for chipv1.1
         setStorageCellDelay(DEFAULT_STRG_CLL_DLY);

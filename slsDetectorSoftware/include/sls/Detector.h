@@ -1164,6 +1164,17 @@ class Detector {
      * Only applicable for chipv1.0. 
      */
     void setStorageCellDelay(ns value, Positions pos = {});
+
+    /** list of possible gainmode  */
+    std::vector<defs::gainMode> getGainModeList() const;
+
+    /** [Jungfrau]*/
+    Result<defs::gainMode> getGainMode(Positions pos = {}) const;
+
+    /** [Jungfrau] Options: NORMAL_GAIN_MODE, FORCE_SWITCH_G1, FORCE_SWITCH_G2\n
+     */
+    void setGainMode(const defs::gainMode mode, Positions pos = {});
+
     ///@{
 
     /** @name Gotthard Specific */

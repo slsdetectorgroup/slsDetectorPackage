@@ -1002,6 +1002,17 @@ void init_det(py::module &m) {
              (void (Detector::*)(sls::ns, sls::Positions)) &
                  Detector::setStorageCellDelay,
              py::arg(), py::arg() = Positions{})
+        .def("getGainModeList",
+             (std::vector<defs::gainMode>(Detector::*)() const) &
+                 Detector::getGainModeList)
+        .def("getGainMode",
+             (Result<defs::gainMode>(Detector::*)(sls::Positions) const) &
+                 Detector::getGainMode,
+             py::arg() = Positions{})
+        .def("setGainMode",
+             (void (Detector::*)(defs::gainMode, sls::Positions)) &
+                 Detector::setGainMode,
+             py::arg(), py::arg() = Positions{})
         .def("getROI",
              (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
                  Detector::getROI,

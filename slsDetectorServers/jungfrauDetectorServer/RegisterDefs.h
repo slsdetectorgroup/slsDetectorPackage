@@ -308,11 +308,9 @@
 /** DAQ Register */
 #define DAQ_REG                             (0x5D << MEM_MAP_SHIFT)
 
-#define DAQ_SETTINGS_MSK                    (DAQ_HIGH_GAIN_MSK | DAQ_FIX_GAIN_MSK | DAQ_FRCE_SWTCH_GAIN_MSK)
+// dynamic gain (default)
 #define DAQ_HIGH_GAIN_OFST                  (0)
 #define DAQ_HIGH_GAIN_MSK                   (0x00000001 << DAQ_HIGH_GAIN_OFST)
-#define DAQ_FIX_GAIN_DYNMC_VAL              ((0x0 << DAQ_HIGH_GAIN_OFST) & DAQ_HIGH_GAIN_MSK)
-#define DAQ_FIX_GAIN_HIGHGAIN_VAL           ((0x1 << DAQ_HIGH_GAIN_OFST) & DAQ_HIGH_GAIN_MSK)
 #define DAQ_FIX_GAIN_OFST                   (1)
 #define DAQ_FIX_GAIN_MSK                    (0x00000003 << DAQ_FIX_GAIN_OFST)
 #define DAQ_FIX_GAIN_STG_1_VAL              ((0x1 << DAQ_FIX_GAIN_OFST) & DAQ_FIX_GAIN_MSK)
@@ -323,6 +321,7 @@
 #define DAQ_STRG_CELL_SLCT_MSK              (0x0000000F << DAQ_STRG_CELL_SLCT_OFST)
 #define DAQ_FRCE_SWTCH_GAIN_OFST            (12)
 #define DAQ_FRCE_SWTCH_GAIN_MSK             (0x00000003 << DAQ_FRCE_SWTCH_GAIN_OFST)
+#define DAQ_FRCE_GAIN_STG_0_VAL             ((0x0 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
 #define DAQ_FRCE_GAIN_STG_1_VAL             ((0x1 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
 #define DAQ_FRCE_GAIN_STG_2_VAL             ((0x3 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
 #define DAQ_ELCTRN_CLLCTN_MDE_OFST          (14)

@@ -1483,6 +1483,26 @@ void Detector::setStorageCellDelay(ns value, Positions pos) {
     pimpl->Parallel(&Module::setStorageCellDelay, pos, value.count());
 }
 
+std::vector<defs::gainMode> Detector::getGainModeList() const {
+    switch (getDetectorType().squash()) {
+    case defs::JUNGFRAU:
+        return std::vector<defs::gainMode>{defs::NORMAL_GAIN_MODE,
+                                           defs::FORCE_SWITCH_G1,
+                                           defs::FORCE_SWITCH_G2};
+        break;
+    default:
+        throw RuntimeError("Gain mode is not implemented for this detector.");
+    }
+}
+
+Result<defs::gainMode> Detector::getGainMode(Positions pos) const {
+    return pimpl->Parallel(&Module::getGainMode, pos);
+}
+
+void Detector::setGainMode(const defs::gainMode mode, Positions pos) {
+    pimpl->Parallel(&Module::setGainMode, pos, mode);
+}
+
 // Gotthard Specific
 
 Result<defs::ROI> Detector::getROI(Positions pos) const {

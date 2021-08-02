@@ -2036,10 +2036,14 @@ int set_num_additional_storage_cells(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (arg > MAX_STORAGE_CELL_VAL) {
+        if (getChipVersion() == 11) {
+            ret = FAIL;
+            sprintf(mess, "Cannot set addl. number of storage cells for chip v1.1\n");
+            LOG(logERROR, (mess));
+        } else if (arg > getMaxStoragecellStart()) {
             ret = FAIL;
             sprintf(mess, "Max Storage cell number should not exceed %d\n",
-                    MAX_STORAGE_CELL_VAL);
+                    getMaxStoragecellStart());
             LOG(logERROR, (mess));
         } else {
             setNumAdditionalStorageCells(arg);
@@ -2483,9 +2487,15 @@ int get_storage_cell_delay(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    retval = getStorageCellDelay();
-    LOG(logDEBUG1,
+    if (getChipVersion() == 11) {
+        ret = FAIL;
+        strcpy(mess, "Storage cell delay is not applicable for chipv 1.1\n");
+        LOG(logERROR, (mess));
+    } else {
+        retval = getStorageCellDelay();
+        LOG(logDEBUG1,
         ("retval storage cell delay %lld ns\n", (long long int)retval));
+    }
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
@@ -2505,7 +2515,11 @@ int set_storage_cell_delay(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (arg > MAX_STORAGE_CELL_DLY_NS_VAL) {
+        if (getChipVersion() == 11) {
+            ret = FAIL;
+            strcpy(mess, "Storage cell delay is not applicable for chipv 1.1\n");
+            LOG(logERROR, (mess));
+        } else if (arg > MAX_STORAGE_CELL_DLY_NS_VAL) {
             ret = FAIL;
             sprintf(mess,
                     "Max Storage cell delay value should not exceed %lld ns\n",
@@ -4007,9 +4021,9 @@ int storage_cell_start(int file_des) {
 #else
     // set & get
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        if (arg > MAX_STORAGE_CELL_VAL) {
+        if (arg > getMaxStoragecellStart()) {
             ret = FAIL;
-            strcpy(mess, "Max Storage cell number should not exceed 15\n");
+            sprintf(mess, "Max Storage cell number should not exceed %d\n", getMaxStoragecellStart());
             LOG(logERROR, (mess));
         } else {
             retval = selectStoragecellStart(arg);

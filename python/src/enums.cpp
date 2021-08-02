@@ -305,10 +305,4 @@ void init_enums(py::module &m) {
         .value("DEFAULT_ALGORITHM",
                slsDetectorDefs::vetoAlgorithm::DEFAULT_ALGORITHM)
         .export_values();
-
-    py::enum_<slsDetectorDefs::gainMode>(Defs, "gainMode")
-        .value("NORMAL_GAIN_MODE", slsDetectorDefs::gainMode::NORMAL_GAIN_MODE)
-        .value("FORCE_SWITCH_G1", slsDetectorDefs::gainMode::FORCE_SWITCH_G1)
-        .value("FORCE_SWITCH_G2", slsDetectorDefs::gainMode::FORCE_SWITCH_G2)
-        .export_values();
 }

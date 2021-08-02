@@ -257,5 +257,3 @@ int set_veto_algorithm(int);
 int get_chip_version(int);
 int get_default_dac(int);
 int set_default_dac(int);
-int get_gain_mode(int);
-int set_gain_mode(int);

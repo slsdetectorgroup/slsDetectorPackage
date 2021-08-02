@@ -2040,7 +2040,7 @@ class Detector(CppDetectorApi):
         [Jungfrau] Number of additional storage cells. 
         Note
         ----
-        For advanced users only. \n
+        Only for chip v1.0. For advanced users only. \n
         Options: 0 - 15. Default is 0.
         The #images = #frames x #triggers x (#storagecells + 1)
         """
@@ -2059,7 +2059,7 @@ class Detector(CppDetectorApi):
         Note
         ----
         For advanced users only.
-        Options 0-15. Default is 15. \n
+        Options 0-max. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1. \n
         """
         return self.getStorageCellStart()
 
@@ -2073,7 +2073,7 @@ class Detector(CppDetectorApi):
         [Jungfrau] Additional time delay between 2 consecutive exposures in burst mode, accepts either a value in seconds or datetime.timedelta
         Note
         -----
-        For advanced users only \n
+        Only applicable for chipv1.0. For advanced users only \n
         Value: 0-1638375 ns (resolution of 25ns) \n
         :getter: always returns in seconds. To get in datetime.delta, use getStorageCellDelay
 

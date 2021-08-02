@@ -1144,7 +1144,7 @@ class Detector {
     Result<int> getNumberOfAdditionalStorageCells(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced \n
-     * Options: 0 - 15. Default: 0. \n
+     * Only for chipv1.0. Options: 0 - 15. Default: 0. \n
      * The #images = #frames x #triggers x (#storagecells + 1) */
     void setNumberOfAdditionalStorageCells(int value);
 
@@ -1152,7 +1152,7 @@ class Detector {
     Result<int> getStorageCellStart(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced. Sets the storage cell storing the first acquisition
-     * of the series. Options: 0-15. Default: 15.
+     * of the series. Options: 0-max. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1.
      */
     void setStorageCellStart(int cell, Positions pos = {});
 
@@ -1160,7 +1160,8 @@ class Detector {
     Result<ns> getStorageCellDelay(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced \n Additional time delay between 2 consecutive
-     * exposures in burst mode. \n Options: (0-1638375 ns (resolution of 25ns)
+     * exposures in burst mode. \n Options: (0-1638375 ns (resolution of 25ns)\n
+     * Only applicable for chipv1.0. 
      */
     void setStorageCellDelay(ns value, Positions pos = {});
     ///@{

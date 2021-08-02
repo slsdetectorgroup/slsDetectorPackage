@@ -1601,14 +1601,6 @@ void Module::setStorageCellDelay(int64_t value) {
     sendToDetector(F_SET_STORAGE_CELL_DELAY, value, nullptr);
 }
 
-slsDetectorDefs::gainMode Module::getGainMode() const {
-    return sendToDetector<gainMode>(F_GET_GAIN_MODE);
-}
-
-void Module::setGainMode(const slsDetectorDefs::gainMode mode) {
-    sendToDetector(F_SET_GAIN_MODE, mode, nullptr);
-}
-
 // Gotthard Specific
 
 slsDetectorDefs::ROI Module::getROI() const {

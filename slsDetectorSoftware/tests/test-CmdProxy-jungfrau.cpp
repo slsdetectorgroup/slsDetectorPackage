@@ -409,37 +409,3 @@ TEST_CASE("storagecell_delay", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("storagecell_delay", {"0"}, -1, PUT));
     }
 }
-
-TEST_CASE("gainmode", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getGainMode();
-        {
-            std::ostringstream oss;
-            proxy.Call("gainmode", {"forceswitchg1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "gainmode forceswitchg1\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("gainmode", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "gainmode forceswitchg1\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("gainmode", {"forceswitchg2"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "gainmode forceswitchg2\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("gainmode", {"normal"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "gainmode normal\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setGainMode(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("gainmode", {}, -1, GET));
-    }
-}

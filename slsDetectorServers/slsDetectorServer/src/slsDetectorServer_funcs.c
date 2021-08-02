@@ -382,8 +382,6 @@ void function_table() {
     flist[F_GET_CHIP_VERSION] = &get_chip_version;
     flist[F_GET_DEFAULT_DAC] = &get_default_dac;
     flist[F_SET_DEFAULT_DAC] = &set_default_dac;
-    flist[F_GET_GAIN_MODE] = &get_gain_mode;
-    flist[F_SET_GAIN_MODE] = &set_gain_mode;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8550,65 +8548,6 @@ int set_default_dac(int file_des) {
                 }
             }
         }
-    }
-#endif
-    return Server_SendResult(file_des, INT32, NULL, 0);
-}
-
-int get_gain_mode(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    enum gainMode retval = NORMAL_GAIN_MODE;
-    LOG(logDEBUG1, ("Getting gain mode\n"));
-
-#ifndef JUNGFRAUD
-    functionNotImplemented();
-#else
-    // get only
-    retval = getGainMode();
-    LOG(logDEBUG1, ("gainmode retval: %u\n", retval));
-    if ((int)retval == -1) {
-        ret = FAIL;
-        strcpy(mess, "Could not get gain mode.\n");
-        LOG(logERROR, (mess));
-    }
-#endif
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
-}
-
-int set_gain_mode(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int arg = -1;
-    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-        return printSocketReadError();
-    enum gainMode gainmode = arg;
-    LOG(logINFO, ("Setting gain mode %d\n", (int)gainmode));
-
-#ifndef JUNGFRAUD
-    functionNotImplemented();
-#else
-    // only set
-    if (Server_VerifyLock() == OK) {
-        switch (gainmode) {
-        case NORMAL_GAIN_MODE:
-        case FORCE_SWITCH_G1:
-        case FORCE_SWITCH_G2:
-            break;
-        default:
-            modeNotImplemented("Gain Mode Index", (int)gainmode);
-            break;
-        }
-
-        setGainMode(gainmode);
-        int retval = getGainMode();
-        LOG(logDEBUG1, ("gainmode retval: %u\n", retval));
-        if (retval == -1) {
-            ret = FAIL;
-            strcpy(mess, "Could not get gain mode.\n");
-            LOG(logERROR, (mess));
-        }
-        validate(&ret, mess, arg, retval, "set gain mode", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

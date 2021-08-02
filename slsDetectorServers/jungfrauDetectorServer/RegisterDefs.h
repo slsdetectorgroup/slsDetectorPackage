@@ -98,21 +98,6 @@
 #define TEMPERATURE_POLARITY_BIT            (11)
 #define TEMPERATURE_POLARITY_MSK            (0x00000001 << TEMPERATURE_POLARITY_BIT)
 
-/* Config Status Register for chip 1.1 */
-#define CONFIG_V11_STATUS_REG               (0x1D << MEM_MAP_SHIFT)
-
-#define CONFIG_V11_STATUS_FLTR_CLL_OFST         (0) 
-#define CONFIG_V11_STATUS_FLTR_CLL_MSK          (0x00000FFF << CONFIG_V11_STATUS_FLTR_CLL_OFST)
-#define CONFIG_V11_STATUS_STRG_CLL_OFST         (12) 
-#define CONFIG_V11_STATUS_STRG_CLL_MSK          (0x0000000F << CONFIG_V11_STATUS_STRG_CLL_OFST)
-// CSM mode = high current (100%), low current (16%)
-#define CONFIG_V11_STATUS_CRRNT_SRC_MODE_OFST   (19) 
-#define CONFIG_V11_STATUS_CRRNT_SRC_MODE_MSK    (0x00000001 << CONFIG_V11_STATUS_CRRNT_SRC_MODE_OFST)
-#define CONFIG_V11_STATUS_FLTR_RSSTR_OFST       (21) 
-#define CONFIG_V11_STATUS_FLTR_RSSTR_MSK        (0x00000001 << CONFIG_V11_STATUS_FLTR_RSSTR_OFST)
-#define CONFIG_V11_STATUS_AUTO_MODE_OVRRD_OFST  (23) 
-#define CONFIG_V11_STATUS_AUTO_MODE_OVRRD_MSK   (0x00000001 << CONFIG_V11_STATUS_AUTO_MODE_OVRRD_OFST)
-
 /* Get Frames from Start 64 bit register (frames from last reset using
  * CONTROL_CRST) */
 #define FRAMES_FROM_START_LSB_REG           (0x22 << MEM_MAP_SHIFT)
@@ -174,10 +159,8 @@
 // (RDT + 1) * 25ns
 #define CONFIG_RDT_TMR_OFST                 (0)
 #define CONFIG_RDT_TMR_MSK                  (0x0000FFFF << CONFIG_RDT_TMR_OFST)
-// if 0, outer is the primary interface
-// bottom via port 0 (outer)
 #define CONFIG_OPRTN_MDE_2_X_10GbE_OFST     (16)
-#define CONFIG_OPRTN_MDE_2_X_10GbE_MSK      (0x00000001 << CONFIG_OPRTN_MDE_2_X_10GbE_OFST) 
+#define CONFIG_OPRTN_MDE_2_X_10GbE_MSK      (0x00000001 << CONFIG_OPRTN_MDE_2_X_10GbE_OFST) // if 0, outer is the primary interface
 #define CONFIG_INNR_PRIMRY_INTRFCE_OFST     (17)
 #define CONFIG_INNR_PRIMRY_INTRFCE_MSK      (0x00000001 << CONFIG_INNR_PRIMRY_INTRFCE_OFST)
 #define CONFIG_READOUT_SPEED_OFST           (20)
@@ -189,8 +172,6 @@
 #define CONFIG_TDMA_ENABLE_MSK              (0x00000001 << CONFIG_TDMA_ENABLE_OFST)
 #define CONFIG_TDMA_TIMESLOT_OFST           (25) // 1ms
 #define CONFIG_TDMA_TIMESLOT_MSK            (0x0000001F << CONFIG_TDMA_TIMESLOT_OFST)
-#define CONFIG_BOTTOM_INVERT_STREAM_OFST    (30)
-#define CONFIG_BOTTOM_INVERT_STREAM_MSK     (0x0000001F << CONFIG_BOTTOM_INVERT_STREAM_OFST)
 #define CONFIG_ETHRNT_FLW_CNTRL_OFST        (31)
 #define CONFIG_ETHRNT_FLW_CNTRL_MSK         (0x00000001 << CONFIG_ETHRNT_FLW_CNTRL_OFST)
 
@@ -253,6 +234,8 @@
 #define CONFIG_V11_FLTR_RSSTR_MSK           (0x00000001 << CONFIG_V11_FLTR_RSSTR_OFST)
 #define CONFIG_V11_AUTO_MODE_OVRRD_OFST     (23) 
 #define CONFIG_V11_AUTO_MODE_OVRRD_MSK      (0x00000001 << CONFIG_V11_AUTO_MODE_OVRRD_OFST)
+#define CONFIG_V11_WR_CHIP_CNFG_OFST        (31) 
+#define CONFIG_V11_WR_CHIP_CNFG_MSK         (0x00000001 << CONFIG_V11_WR_CHIP_CNFG_OFST)
 
 /* Sample Register */
 #define SAMPLE_REG                          (0x59 << MEM_MAP_SHIFT)
@@ -325,9 +308,11 @@
 /** DAQ Register */
 #define DAQ_REG                             (0x5D << MEM_MAP_SHIFT)
 
-// dynamic gain (default)
+#define DAQ_SETTINGS_MSK                    (DAQ_HIGH_GAIN_MSK | DAQ_FIX_GAIN_MSK | DAQ_FRCE_SWTCH_GAIN_MSK)
 #define DAQ_HIGH_GAIN_OFST                  (0)
 #define DAQ_HIGH_GAIN_MSK                   (0x00000001 << DAQ_HIGH_GAIN_OFST)
+#define DAQ_FIX_GAIN_DYNMC_VAL              ((0x0 << DAQ_HIGH_GAIN_OFST) & DAQ_HIGH_GAIN_MSK)
+#define DAQ_FIX_GAIN_HIGHGAIN_VAL           ((0x1 << DAQ_HIGH_GAIN_OFST) & DAQ_HIGH_GAIN_MSK)
 #define DAQ_FIX_GAIN_OFST                   (1)
 #define DAQ_FIX_GAIN_MSK                    (0x00000003 << DAQ_FIX_GAIN_OFST)
 #define DAQ_FIX_GAIN_STG_1_VAL              ((0x1 << DAQ_FIX_GAIN_OFST) & DAQ_FIX_GAIN_MSK)
@@ -338,7 +323,6 @@
 #define DAQ_STRG_CELL_SLCT_MSK              (0x0000000F << DAQ_STRG_CELL_SLCT_OFST)
 #define DAQ_FRCE_SWTCH_GAIN_OFST            (12)
 #define DAQ_FRCE_SWTCH_GAIN_MSK             (0x00000003 << DAQ_FRCE_SWTCH_GAIN_OFST)
-#define DAQ_FRCE_GAIN_STG_0_VAL             ((0x0 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
 #define DAQ_FRCE_GAIN_STG_1_VAL             ((0x1 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
 #define DAQ_FRCE_GAIN_STG_2_VAL             ((0x3 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
 #define DAQ_ELCTRN_CLLCTN_MDE_OFST          (14)
@@ -394,11 +378,6 @@
 /* Starting Frame number 64 bit register */
 #define FRAME_NUMBER_LSB_REG                (0x6A << MEM_MAP_SHIFT)
 #define FRAME_NUMBER_MSB_REG                (0x6B << MEM_MAP_SHIFT)
-
-/* Comparator disable time (chipv1.1) 32 bit register tT = T x 25 ns
-Time before end of exposure when comparator is disabled */
-#define COMP_DSBLE_TIME_REG                  (0x6C << MEM_MAP_SHIFT)
-
 
 /* Trigger Delay 32 bit register */
 #define SET_TRIGGER_DELAY_LSB_REG           (0x70 << MEM_MAP_SHIFT)

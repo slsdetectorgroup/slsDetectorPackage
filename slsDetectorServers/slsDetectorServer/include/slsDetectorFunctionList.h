@@ -301,10 +301,6 @@ enum detectorSettings setSettings(enum detectorSettings sett);
 void validateSettings();
 #endif
 enum detectorSettings getSettings();
-#ifdef JUNGFRAUD
-enum gainMode getGainMode();
-void setGainMode(enum gainMode mode);
-#endif
 
 // parameters - threshold
 #ifdef EIGERD

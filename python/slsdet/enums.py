@@ -1,20 +1,17 @@
-"""
-Automatically improt all enums from slsDetectorDefs and give an
-alias with their name in the enum module. All names from the enum
-module is later imported into slsdet
-
-Example: detectorType = _slsdet.slsDetectorDefs.detectorType
-Usage can later be:
-
-from slsdet import detectorType
-if dt === detectorType.EIGER:
-    #do something
-
-"""
-
 
 import _slsdet
-for name, cls in _slsdet.slsDetectorDefs.__dict__.items():
-    if isinstance(cls, type):
-        exec(f'{name} = {cls.__module__}.{cls.__qualname__}')
-
+runStatus = _slsdet.slsDetectorDefs.runStatus
+speedLevel = _slsdet.slsDetectorDefs.speedLevel
+detectorType = _slsdet.slsDetectorDefs.detectorType
+frameDiscardPolicy = _slsdet.slsDetectorDefs.frameDiscardPolicy
+fileFormat = _slsdet.slsDetectorDefs.fileFormat
+dimension = _slsdet.slsDetectorDefs.dimension
+externalSignalFlag = _slsdet.slsDetectorDefs.externalSignalFlag
+timingMode = _slsdet.slsDetectorDefs.timingMode
+dacIndex = _slsdet.slsDetectorDefs.dacIndex
+detectorSettings = _slsdet.slsDetectorDefs.detectorSettings
+clockIndex = _slsdet.slsDetectorDefs.clockIndex
+readoutMode = _slsdet.slsDetectorDefs.readoutMode
+burstMode = _slsdet.slsDetectorDefs.burstMode
+timingSourceType = _slsdet.slsDetectorDefs.timingSourceType
+M3_GainCaps = _slsdet.slsDetectorDefs.M3_GainCaps

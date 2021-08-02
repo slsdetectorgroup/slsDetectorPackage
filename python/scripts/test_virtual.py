@@ -156,4 +156,28 @@ def test_period(virtual_jf_detectors):
     d.period  = t
     assert d.period == 10e-6
 
+def test_gainmode(virtual_jf_detectors):
+    d = ExperimentalDetector()
+    assert d.gainMode == gainMode.NORMAL_GAIN_MODE
+
+    gain_list = [
+        gainMode.NORMAL_GAIN_MODE,
+        gainMode.FORCE_SWITCH_G1,
+        gainMode.FORCE_SWITCH_G2,
+    ]
+
+    # Set all viable gain for Jungfrau to make sure nothing is crashing
+    for gain in gain_list:
+        d.gainMode = gain
+        assert d.gainMode == gain
+
+    d.setGainMode(gainMode.FORCE_SWITCH_G1, [1])
+    assert d.gainMode == [
+        gainMode.NORMAL_GAIN_MODE,
+        gainMode.FORCE_SWITCH_G1,
+        gainMode.FORCE_SWITCH_G2,
+    ]
+
+    d.gainMode = gainMode.FORCE_SWITCH_G1
+    assert d.gainMode == gainMode.FORCE_SWITCH_G1
     

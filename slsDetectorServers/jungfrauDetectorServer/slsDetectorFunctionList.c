@@ -794,6 +794,16 @@ int selectStoragecellStart(int pos) {
         bus_w(addr, bus_r(addr) & ~mask);
         bus_w(addr, bus_r(addr) | ((value << offset) & mask));
     }
+
+    // read value back
+    // chipv1.1, writing and reading registers are different
+#ifndef VIRTUAL
+    if (getChipVersion() == 11) {
+        addr = CONFIG_V11_STATUS_REG;
+        mask = CONFIG_V11_STATUS_STRG_CLL_MSK;
+        offset = CONFIG_V11_STATUS_STRG_CLL_OFST;
+    }
+#endif
     int retval = ((bus_r(addr) & mask) >> offset);
     if (getChipVersion() == 11) {
         // get which bit
@@ -1036,21 +1046,19 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     // set settings
     switch (sett) {
     case DYNAMICGAIN:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_HIGH_GAIN_MSK);
         LOG(logINFO,
-            ("Set settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
+            ("Set settings - Dyanmic Gain [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
         dacVals = defaultDacValue_G0;
         break;
     case DYNAMICHG0:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
-        LOG(logINFO, ("Set settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n",
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_HIGH_GAIN_MSK);
+        LOG(logINFO, ("Set settings - Dyanmic High Gain 0 [DAQ Reg:0x%x]\n",
                       bus_r(DAQ_REG)));
         dacVals = defaultDacValue_HG0;
         break;
     default:
-        LOG(logERROR,
-            ("This settings is not defined for this detector %d\n", (int)sett));
+        LOG(logERROR, ("This settings %d is not defined\n", (int)sett));
         return -1;
     }
 
@@ -1106,6 +1114,53 @@ void validateSettings() {
 }
 
 enum detectorSettings getSettings() { return thisSettings; }
+
+enum gainMode getGainMode() {
+    uint32_t retval = bus_r(DAQ_REG) & DAQ_FRCE_SWTCH_GAIN_MSK;
+
+    switch (retval) {
+    case DAQ_FRCE_GAIN_STG_0_VAL:
+        return NORMAL_GAIN_MODE;
+    case DAQ_FRCE_GAIN_STG_1_VAL:
+        return FORCE_SWITCH_G1;
+    case DAQ_FRCE_GAIN_STG_2_VAL:
+        return FORCE_SWITCH_G2;
+    default:
+        LOG(logERROR, ("This gain mode %d is not defined [DAQ reg: %d]\n",
+                       (retval << DAQ_FRCE_SWTCH_GAIN_OFST), retval));
+        return -1;
+    }
+}
+
+void setGainMode(enum gainMode mode) {
+    uint32_t addr = DAQ_REG;
+    uint32_t value = bus_r(addr);
+
+    switch (mode) {
+    case NORMAL_GAIN_MODE:
+        value &= ~(DAQ_FRCE_SWTCH_GAIN_MSK);
+        bus_w(addr, value);
+        LOG(logINFO, ("Set gain mode - Normal Gain  Mode [DAQ Reg:0x%x]\n",
+                      bus_r(DAQ_REG)));
+        break;
+    case FORCE_SWITCH_G1:
+        value &= ~(DAQ_FRCE_SWTCH_GAIN_MSK);
+        value |= DAQ_FRCE_GAIN_STG_1_VAL;
+        bus_w(addr, value);
+        LOG(logINFO, ("Set gain mode - Force Switch G1 [DAQ Reg:0x%x]\n",
+                      bus_r(DAQ_REG)));
+        break;
+    case FORCE_SWITCH_G2:
+        value &= ~(DAQ_FRCE_SWTCH_GAIN_MSK);
+        value |= DAQ_FRCE_GAIN_STG_2_VAL;
+        bus_w(addr, value);
+        LOG(logINFO, ("Set gain mode - Force Switch G2 [DAQ Reg:0x%x]\n",
+                      bus_r(DAQ_REG)));
+        break;
+    default:
+        LOG(logERROR, ("This gain mode %d is not defined\n", (int)mode));
+    }
+}
 
 /* parameters - dac, adc, hv */
 void setDAC(enum DACINDEX ind, int val, int mV) {
@@ -1582,7 +1637,9 @@ void configureChip() {
     // only for chipv1.1
     if (chipVersion == 11) {
         LOG(logINFOBLUE, ("Configuring chip\n"));
-        bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG) & CONFIG_V11_WR_CHIP_CNFG_MSK);
+        // write same register values back to configure chip
+        uint32_t val = bus_r(CONFIG_V11_REG);
+        bus_w(CONFIG_V11_REG, val);
         chipConfigured = 1;
     }
 }

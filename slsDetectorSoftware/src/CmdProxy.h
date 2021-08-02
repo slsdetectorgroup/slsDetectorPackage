@@ -925,7 +925,7 @@ class CmdProxy {
         {"temp_threshold", &CmdProxy::temp_threshold},
         {"temp_control", &CmdProxy::temp_control},
         {"temp_event", &CmdProxy::TemperatureEvent},
-        {"auto_comp_disable", &CmdProxy::auto_comp_disable},
+        {"auto_comp_disable", &CmdProxy::AutoComparatorDisable},
         {"storagecells", &CmdProxy::storagecells},
         {"storagecell_start", &CmdProxy::storagecell_start},
         {"storagecell_delay", &CmdProxy::storagecell_delay},
@@ -1123,6 +1123,7 @@ class CmdProxy {
     std::string DataStream(int action);
     /* Jungfrau Specific */
     std::string TemperatureEvent(int action);
+    std::string AutoComparatorDisable(int action);
     /* Gotthard Specific */
     std::string ROI(int action);
     std::string ClearROI(int action);
@@ -1835,16 +1836,6 @@ class CmdProxy {
         "and temperature event occurs. To power on chip again, temperature has "
         "to be less than threshold temperature and temperature event has to be "
         "cleared.");
-
-    INTEGER_COMMAND_VEC_ID(
-        auto_comp_disable, getAutoCompDisable, setAutoCompDisable,
-        StringTo<int>,
-        "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the "
-        "on-chip gain switching is active during the entire exposure.This mode "
-        "disables the on - chip gain switching comparator automatically after "
-        "93.75% of exposure time (only for longer than 100us). \n\tDefault is "
-        "0 or this mode disabled(comparator enabled throughout). 1 enables "
-        "mode. 0 disables mode. ");
 
     INTEGER_COMMAND_SET_NOID_GET_ID(
         storagecells, getNumberOfAdditionalStorageCells,

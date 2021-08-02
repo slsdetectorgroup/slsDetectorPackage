@@ -1729,6 +1729,37 @@ std::string CmdProxy::TemperatureEvent(int action) {
     return os.str();
 }
 
+std::string AutoComparatorDisable(const int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == slsDetectorDefs::HELP_ACTION)
+        os << "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, "
+              "the on-chip gain switching is active during the entire "
+              "exposure.This mode disables the on - chip gain switching "
+              "comparator automatically after 93.75% of exposure time (only "
+              "for longer than 100us). \n\tDefault is 0 or this mode "
+              "disabled(comparator enabled throughout). 1 enables mode. 0 "
+              "disables mode."
+           << '\n';
+    else if (action == slsDetectorDefs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->GETFCN(std::vector<int>{det_id});
+        os << OutString(t) << '\n';
+    } else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        auto val = CONV(args[0]);
+        det->SETFCN(val, std::vector<int>{det_id});
+        os << args.front() << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Gotthard Specific */
 
 std::string CmdProxy::ROI(int action) {

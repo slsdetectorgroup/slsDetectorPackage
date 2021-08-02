@@ -794,6 +794,16 @@ int selectStoragecellStart(int pos) {
         bus_w(addr, bus_r(addr) & ~mask);
         bus_w(addr, bus_r(addr) | ((value << offset) & mask));
     }
+
+    // read value back
+    // chipv1.1, writing and reading registers are different
+#ifndef VIRTUAL
+    if (getChipVersion() == 11) {
+        addr = CONFIG_V11_STATUS_REG;
+        mask = CONFIG_V11_STATUS_STRG_CLL_MSK;
+        offset = CONFIG_V11_STATUS_STRG_CLL_OFST;
+    }
+#endif
     int retval = ((bus_r(addr) & mask) >> offset);
     if (getChipVersion() == 11) {
         // get which bit
@@ -1627,7 +1637,9 @@ void configureChip() {
     // only for chipv1.1
     if (chipVersion == 11) {
         LOG(logINFOBLUE, ("Configuring chip\n"));
-        bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG) & CONFIG_V11_WR_CHIP_CNFG_MSK);
+        // write same register values back to configure chip
+        uint32_t val = bus_r(CONFIG_V11_REG);
+        bus_w(CONFIG_V11_REG, val);
         chipConfigured = 1;
     }
 }

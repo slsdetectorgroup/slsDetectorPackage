@@ -929,6 +929,7 @@ class CmdProxy {
         {"storagecells", &CmdProxy::storagecells},
         {"storagecell_start", &CmdProxy::storagecell_start},
         {"storagecell_delay", &CmdProxy::storagecell_delay},
+        {"gainmode", &CmdProxy::gainmode},
 
         /* Gotthard Specific */
         {"roi", &CmdProxy::ROI},
@@ -1863,6 +1864,11 @@ class CmdProxy {
         "[duration (0-1638375 ns)] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] "
         "Additional time delay between 2 consecutive exposures in burst mode "
         "(resolution of 25ns). Only applicable for chipv1.0. For advanced users only.");
+
+    INTEGER_COMMAND_VEC_ID(
+        gainmode, getGainMode, setGainMode,
+        sls::StringTo<slsDetectorDefs::gainMode>,
+        "[forceswitchg1, forceswitchg2]\n\t[Jungfrau] Gain mode.");
 
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft,

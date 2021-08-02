@@ -2165,6 +2165,26 @@ class Detector(CppDetectorApi):
     def selinterface(self, i):
         ut.set_using_dict(self.selectUDPInterface, i)
 
+    @property
+    def gainmodelist(self):
+        """List of gainmode implemented for this detector."""
+        return self.getGainModeList()
+
+    @property
+    def gainmode(self):
+        """
+        [Jungfrau] Detector gain mode. Enum: gainMode
+        Note
+        -----
+        
+        [Jungfrau] NORMAL_GAIN_MODE, FORCE_SWITCH_G1, FORCE_SWITCH_G2 
+        """
+        return element_if_equal(self.getGainMode())
+
+    @gainmode.setter
+    def gainmode(self, value):
+        self.setGainMode(value)
+
     """
     ---------------------------<<<Gotthard2 specific>>>---------------------------
     """

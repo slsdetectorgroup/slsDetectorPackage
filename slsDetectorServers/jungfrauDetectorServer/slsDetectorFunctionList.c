@@ -1098,7 +1098,7 @@ enum gainMode getGainMode() {
 
     switch (retval_force) {
     case DAQ_FRCE_GAIN_STG_0_VAL:
-        return NORMAL_GAIN_MODE;
+        return DYNAMICGAIN;
     case DAQ_FRCE_GAIN_STG_1_VAL:
         return FORCE_SWITCH_G1;
     case DAQ_FRCE_GAIN_STG_2_VAL:
@@ -1131,7 +1131,7 @@ void setGainMode(enum gainMode mode) {
     uint32_t value = bus_r(addr);
 
     switch (mode) {
-    case NORMAL_GAIN_MODE:
+    case DYNAMICGAIN:
         value &= ~(DAQ_FRCE_SWTCH_GAIN_MSK);
         bus_w(addr, value);
         LOG(logINFO, ("Set gain mode - Normal Gain  Mode [DAQ Reg:0x%x]\n",
@@ -1150,6 +1150,27 @@ void setGainMode(enum gainMode mode) {
         bus_w(addr, value);
         LOG(logINFO, ("Set gain mode - Force Switch G2 [DAQ Reg:0x%x]\n",
                       bus_r(DAQ_REG)));
+        break;
+    case FIX_G1:
+        value &= ~(DAQ_FIX_GAIN_MSK);
+        value |= DAQ_FIX_GAIN_STG_1_VAL;
+        bus_w(addr, value);
+        LOG(logINFO,
+            ("Set gain mode - Fix G1 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
+        break;
+    case FIX_G2:
+        value &= ~(DAQ_FIX_GAIN_MSK);
+        value |= DAQ_FIX_GAIN_STG_2_VAL;
+        bus_w(addr, value);
+        LOG(logINFO,
+            ("Set gain mode - Fix G2 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
+        break;
+    case FIX_G0: //????
+        value &= ~(DAQ_FIX_GAIN_MSK);
+        value |= DAQ_FIX_GAIN_STG_2_VAL;
+        bus_w(addr, value);
+        LOG(logINFO,
+            ("Set gain mode - Fix G2 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
         break;
     default:
         LOG(logERROR, ("This gain mode %d is not defined\n", (int)mode));

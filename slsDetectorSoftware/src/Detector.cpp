@@ -1459,6 +1459,14 @@ void Detector::setAutoCompDisable(bool value, Positions pos) {
     pimpl->Parallel(&Module::setAutoComparatorDisableMode, pos, value);
 }
 
+Result<ns> Detector::getComparatorDisableTime(Positions pos) const {
+    return pimpl->Parallel(&Module::getComparatorDisableTime, pos);
+}
+
+void Detector::setComparatorDisableTime(ns t, Positions pos) {
+    pimpl->Parallel(&Module::setComparatorDisableTime, pos, t.count());
+}
+
 Result<int> Detector::getNumberOfAdditionalStorageCells(Positions pos) const {
     return pimpl->Parallel(&Module::getNumberOfAdditionalStorageCells, pos);
 }

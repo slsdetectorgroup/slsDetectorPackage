@@ -259,3 +259,5 @@ int get_default_dac(int);
 int set_default_dac(int);
 int get_gain_mode(int);
 int set_gain_mode(int);
+int get_comp_disable_time(int);
+int set_comp_disable_time(int);

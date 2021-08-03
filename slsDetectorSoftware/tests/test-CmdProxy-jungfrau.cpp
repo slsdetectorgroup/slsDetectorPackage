@@ -283,6 +283,36 @@ TEST_CASE("auto_comp_disable", "[.cmd]") {
     }
 }
 
+TEST_CASE("comp_disable_time", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getComparatorDisableTime();
+        {
+            std::ostringstream oss;
+            proxy.Call("comp_disable_time", {"125ns"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "comp_disable_time 125ns\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("comp_disable_time", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "comp_disable_time 125ns\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("comp_disable_time", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "comp_disable_time 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setComparatorDisableTime(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("comp_disable_time", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("comp_disable_time", {"0"}, -1, PUT));
+    }
+}
+
 TEST_CASE("storagecells", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

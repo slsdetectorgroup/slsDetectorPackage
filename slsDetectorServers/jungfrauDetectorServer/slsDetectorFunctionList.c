@@ -1662,6 +1662,32 @@ int autoCompDisable(int on) {
             EXT_DAQ_CTRL_CMP_LGC_ENBL_OFST);
 }
 
+int setComparatorDisableTime(int64_t val) {
+    if (getChipVersion() != 11) {
+        return FAIL;
+    }
+    if (val < 0) {
+        LOG(logERROR,
+            ("Invalid comp disable time: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting comp disable time %lld ns\n", (long long int)val));
+    val *= (1E-3 * CLK_RUN);
+    bus_w(COMP_DSBLE_TIME_REG, val);
+
+    // validate for tolerance
+    int64_t retval = getComparatorDisableTime();
+    val /= (1E-3 * CLK_RUN);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getComparatorDisableTime() {
+    return bus_r(COMP_DSBLE_TIME_REG) / (1E-3 * CLK_RUN);
+}
+
 void configureASICTimer() {
     LOG(logINFO, ("Configuring ASIC Timer\n"));
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) |

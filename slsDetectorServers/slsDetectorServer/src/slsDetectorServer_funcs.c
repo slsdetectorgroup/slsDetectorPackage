@@ -384,6 +384,8 @@ void function_table() {
     flist[F_SET_DEFAULT_DAC] = &set_default_dac;
     flist[F_GET_GAIN_MODE] = &get_gain_mode;
     flist[F_SET_GAIN_MODE] = &set_gain_mode;
+    flist[F_GET_COMP_DISABLE_TIME] = &get_comp_disable_time;
+    flist[F_SET_COMP_DISABLE_TIME] = &set_comp_disable_time;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8612,4 +8614,62 @@ int set_gain_mode(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_comp_disable_time(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int64_t retval = -1;
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // get only
+    if (getChipVersion() != 11) {
+        ret = FAIL;
+        strcpy(mess,
+               "Cannot get comparator disable time. Only valid for chipv1.1\n");
+        LOG(logERROR, (mess));
+    } else {
+        retval = getComparatorDisableTime();
+        LOG(logDEBUG1,
+            ("retval comp disable time %lld ns\n", (long long int)retval));
+    }
+#endif
+    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+}
+
+int set_comp_disable_time(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int64_t arg = -1;
+    if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting comp disable time %lld ns\n", (long long int)arg));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (getChipVersion() != 11) {
+            ret = FAIL;
+            strcpy(mess, "Cannot get comparator disable time. Only valid for "
+                         "chipv1.1\n");
+            LOG(logERROR, (mess));
+        } else {
+            ret = setComparatorDisableTime(arg);
+            int64_t retval = getComparatorDisableTime();
+            LOG(logDEBUG1, ("retval get comp disable time %lld ns\n",
+                            (long long int)retval));
+            if (ret == FAIL) {
+                sprintf(mess,
+                        "Could not set comp disable time. Set %lld ns, read "
+                        "%lld ns.\n",
+                        (long long int)arg, (long long int)retval);
+                LOG(logERROR, (mess));
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT64, NULL, 0);
 }

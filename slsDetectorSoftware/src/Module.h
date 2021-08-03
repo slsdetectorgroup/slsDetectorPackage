@@ -363,6 +363,8 @@ class Module : public virtual slsDetectorDefs {
     void resetTemperatureEvent();
     bool getAutoComparatorDisableMode() const;
     void setAutoComparatorDisableMode(bool val);
+    int64_t getComparatorDisableTime() const;
+    void setComparatorDisableTime(int64_t value);
     int getNumberOfAdditionalStorageCells() const;
     void setNumberOfAdditionalStorageCells(int value);
     int getStorageCellStart() const;

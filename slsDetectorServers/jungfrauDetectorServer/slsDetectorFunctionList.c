@@ -1095,6 +1095,7 @@ enum gainMode getGainMode() {
         (retval_force && retval_cmp_rst)) {
         LOG(logERROR, ("undefined gain mode. DAQ reg: 0x%x\n", regval));
     }
+
     switch (retval_force) {
     case DAQ_FRCE_GAIN_STG_0_VAL:
         return NORMAL_GAIN_MODE;
@@ -1105,6 +1106,7 @@ enum gainMode getGainMode() {
     default:
         break;
     }
+
     switch (retval_fix) {
     case DAQ_FIX_GAIN_STG_1_VAL:
         return FIX_G1;

@@ -1075,15 +1075,27 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         configureChip();
     }
 
-    return thisSettings;
+    return getSettings();
 }
 
-enum detectorSettings getSettings() { return thisSettings; }
+enum detectorSettings getSettings() {
+    if (bus_r(DAQ_REG) & DAQ_HIGH_GAIN_MSK)
+        return DYNAMICHG0;
+    return DYNAMICGAIN;
+}
 
 enum gainMode getGainMode() {
-    uint32_t retval = bus_r(DAQ_REG) & DAQ_FRCE_SWTCH_GAIN_MSK;
+    uint32_t regval = bus_r(DAQ_REG);
+    uint32_t retval_force = regval & DAQ_FRCE_SWTCH_GAIN_MSK;
+    uint32_t retval_fix = regval & DAQ_FIX_GAIN_MSK;
+    uint32_t retval_cmp_rst = regval & DAQ_CMP_RST_MSK;
 
-    switch (retval) {
+    // only one set should be valid
+    if ((retval_force && retval_fix) || (retval_fix && retval_cmp_rst) ||
+        (retval_force && retval_cmp_rst)) {
+        LOG(logERROR, ("undefined gain mode. DAQ reg: 0x%x\n", regval));
+    }
+    switch (retval_force) {
     case DAQ_FRCE_GAIN_STG_0_VAL:
         return NORMAL_GAIN_MODE;
     case DAQ_FRCE_GAIN_STG_1_VAL:
@@ -1091,10 +1103,25 @@ enum gainMode getGainMode() {
     case DAQ_FRCE_GAIN_STG_2_VAL:
         return FORCE_SWITCH_G2;
     default:
-        LOG(logERROR, ("This gain mode %d is not defined [DAQ reg: %d]\n",
-                       (retval << DAQ_FRCE_SWTCH_GAIN_OFST), retval));
-        return -1;
+        break;
     }
+    switch (retval_fix) {
+    case DAQ_FIX_GAIN_STG_1_VAL:
+        return FIX_G1;
+    case DAQ_FIX_GAIN_STG_2_VAL:
+        return FIX_G2;
+    default:
+        break;
+    }
+
+    if (retval_cmp_rst) {
+        if (getSettings() == DYNAMICGAIN) {
+            return FIX_G0;
+        }
+        return FIX_HG0;
+    }
+    LOG(logERROR, ("This gain mode is undefined [DAQ reg: %d]\n", regval));
+    return -1;
 }
 
 void setGainMode(enum gainMode mode) {

@@ -587,6 +587,14 @@ std::string ToString(const defs::gainMode s) {
         return std::string("forceswitchg1");
     case defs::FORCE_SWITCH_G2:
         return std::string("forceswitchg2");
+    case defs::FIX_G1:
+        return std::string("fixg1");
+    case defs::FIX_G2:
+        return std::string("fixg2");
+    case defs::FIX_G0:
+        return std::string("fixg0");
+    case defs::FIX_HG0:
+        return std::string("fixhg0");
     default:
         return std::string("Unknown");
     }
@@ -982,6 +990,14 @@ template <> defs::gainMode StringTo(const std::string &s) {
         return defs::FORCE_SWITCH_G1;
     if (s == "forceswitchg2")
         return defs::FORCE_SWITCH_G2;
+    if (s == "fixg1")
+        return defs::FIX_G1;
+    if (s == "fixg2")
+        return defs::FIX_G2;
+    if (s == "fixg0")
+        return defs::FIX_G0;
+    if (s == "fixhg0")
+        return defs::FIX_HG0;
     throw sls::RuntimeError("Unknown gain mode " + s);
 }
 

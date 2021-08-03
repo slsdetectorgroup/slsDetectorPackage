@@ -1877,7 +1877,9 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         gainmode, getGainMode, setGainMode,
         sls::StringTo<slsDetectorDefs::gainMode>,
-        "[forceswitchg1, forceswitchg2]\n\t[Jungfrau] Gain mode.");
+        "[forceswitchg1|forceswitchg2|fixgain1|fixgain2|fixgain0|"
+        "fixhighgain0]\n\t[Jungfrau] Gain mode.\n\tCAUTION: Do not use "
+        "fixgain0 and fixhighgain0 blindly, you can damage the detector!!!");
 
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft,

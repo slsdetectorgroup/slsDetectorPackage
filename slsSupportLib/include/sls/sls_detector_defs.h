@@ -414,7 +414,15 @@ typedef struct {
 
     enum vetoAlgorithm { DEFAULT_ALGORITHM };
 
-    enum gainMode { NORMAL_GAIN_MODE, FORCE_SWITCH_G1, FORCE_SWITCH_G2 };
+    enum gainMode {
+        NORMAL_GAIN_MODE,
+        FORCE_SWITCH_G1,
+        FORCE_SWITCH_G2,
+        FIX_G1,
+        FIX_G2,
+        FIX_G0,
+        FIX_HG0
+    };
 
 #ifdef __cplusplus
 

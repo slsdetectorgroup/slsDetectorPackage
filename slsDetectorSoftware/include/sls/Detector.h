@@ -1179,7 +1179,9 @@ class Detector {
     /** [Jungfrau]*/
     Result<defs::gainMode> getGainMode(Positions pos = {}) const;
 
-    /** [Jungfrau] Options: NORMAL_GAIN_MODE, FORCE_SWITCH_G1, FORCE_SWITCH_G2\n
+    /** [Jungfrau] Options: NORMAL_GAIN_MODE, FORCE_SWITCH_G1, FORCE_SWITCH_G2,
+     * FIX_G1, FIX_G2, FIX_G0, FIX_HG0 \n\CAUTION: Do not use FIX_G0 and FIX_HG0
+     * blindly, you can damage the detector!!!\n
      */
     void setGainMode(const defs::gainMode mode, Positions pos = {});
 

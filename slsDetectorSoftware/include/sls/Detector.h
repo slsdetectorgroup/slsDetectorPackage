@@ -1127,7 +1127,7 @@ class Detector {
     void resetTemperatureEvent(Positions pos = {});
 
     /** [Jungfrau] */
-    Result<bool> getAutoCompDisable(Positions pos = {}) const;
+    Result<bool> getAutoComparatorDisable(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced
      * //TODO naming
@@ -1139,7 +1139,7 @@ class Detector {
      * disabled(comparator enabled throughout). true enables mode. 0 disables
      * mode.
      */
-    void setAutoCompDisable(bool value, Positions pos = {});
+    void setAutoComparatorDisable(bool value, Positions pos = {});
 
     /** [Jungfrau] */
     Result<ns> getComparatorDisableTime(Positions pos = {}) const;

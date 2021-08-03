@@ -258,7 +258,7 @@ TEST_CASE("auto_comp_disable", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getAutoCompDisable();
+        auto prev_val = det.getAutoComparatorDisable();
         {
             std::ostringstream oss;
             proxy.Call("auto_comp_disable", {"0"}, -1, PUT, oss);
@@ -275,11 +275,41 @@ TEST_CASE("auto_comp_disable", "[.cmd]") {
             REQUIRE(oss.str() == "auto_comp_disable 1\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setAutoCompDisable(prev_val[i], {i});
+            det.setAutoComparatorDisable(prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("auto_comp_disable", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("auto_comp_disable", {"0"}, -1, PUT));
+    }
+}
+
+TEST_CASE("comp_disable_time", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getComparatorDisableTime();
+        {
+            std::ostringstream oss;
+            proxy.Call("comp_disable_time", {"125ns"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "comp_disable_time 125ns\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("comp_disable_time", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "comp_disable_time 125ns\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("comp_disable_time", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "comp_disable_time 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setComparatorDisableTime(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("comp_disable_time", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("comp_disable_time", {"0"}, -1, PUT));
     }
 }
 

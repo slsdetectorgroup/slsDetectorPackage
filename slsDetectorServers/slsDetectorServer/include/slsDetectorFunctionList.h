@@ -450,6 +450,8 @@ int powerChip(int on);
 int isChipConfigured();
 void configureChip();
 int autoCompDisable(int on);
+int setComparatorDisableTime(int64_t val);
+int64_t getComparatorDisableTime();
 void configureASICTimer();
 int setClockDivider(enum CLKINDEX ind, int val);
 int getClockDivider(enum CLKINDEX ind);

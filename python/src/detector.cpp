@@ -970,13 +970,21 @@ void init_det(py::module &m) {
              (void (Detector::*)(sls::Positions)) &
                  Detector::resetTemperatureEvent,
              py::arg() = Positions{})
-        .def("getAutoCompDisable",
+        .def("getAutoComparatorDisable",
              (Result<bool>(Detector::*)(sls::Positions) const) &
-                 Detector::getAutoCompDisable,
+                 Detector::getAutoComparatorDisable,
              py::arg() = Positions{})
-        .def("setAutoCompDisable",
+        .def("setAutoComparatorDisable",
              (void (Detector::*)(bool, sls::Positions)) &
-                 Detector::setAutoCompDisable,
+                 Detector::setAutoComparatorDisable,
+             py::arg(), py::arg() = Positions{})
+        .def("getComparatorDisableTime",
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                 Detector::getComparatorDisableTime,
+             py::arg() = Positions{})
+        .def("setComparatorDisableTime",
+             (void (Detector::*)(sls::ns, sls::Positions)) &
+                 Detector::setComparatorDisableTime,
              py::arg(), py::arg() = Positions{})
         .def("getNumberOfAdditionalStorageCells",
              (Result<int>(Detector::*)(sls::Positions) const) &

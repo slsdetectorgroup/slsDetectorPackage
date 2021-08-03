@@ -926,6 +926,7 @@ class CmdProxy {
         {"temp_control", &CmdProxy::temp_control},
         {"temp_event", &CmdProxy::TemperatureEvent},
         {"auto_comp_disable", &CmdProxy::auto_comp_disable},
+        {"comp_disable_time", &CmdProxy::comp_disable_time},
         {"storagecells", &CmdProxy::storagecells},
         {"storagecell_start", &CmdProxy::storagecell_start},
         {"storagecell_delay", &CmdProxy::storagecell_delay},
@@ -1837,14 +1838,22 @@ class CmdProxy {
         "cleared.");
 
     INTEGER_COMMAND_VEC_ID(
-        auto_comp_disable, getAutoCompDisable, setAutoCompDisable,
+        auto_comp_disable, getAutoComparatorDisable, setAutoComparatorDisable,
         StringTo<int>,
         "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the "
         "on-chip gain switching is active during the entire exposure.This mode "
         "disables the on - chip gain switching comparator automatically after "
-        "93.75% of exposure time (only for longer than 100us). \n\tDefault is "
-        "0 or this mode disabled(comparator enabled throughout). 1 enables "
-        "mode. 0 disables mode. ");
+        "93.75% (only for chipv1.0) of exposure time (only for longer than "
+        "100us). It is possible to set the duration for chipv1.1 using "
+        "comp_disable_time command.\n\tDefault is 0 or this mode "
+        "disabled(comparator enabled throughout). 1 enables mode. 0 disables "
+        "mode. ");
+
+    TIME_COMMAND(comp_disable_time, getComparatorDisableTime,
+                 setComparatorDisableTime,
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time "
+                 "before end of exposure when comparator is disabled. It is "
+                 "only possible for chipv1.1.");
 
     INTEGER_COMMAND_SET_NOID_GET_ID(
         storagecells, getNumberOfAdditionalStorageCells,

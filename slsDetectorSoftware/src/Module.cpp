@@ -1577,6 +1577,14 @@ void Module::setAutoComparatorDisableMode(bool val) {
     sendToDetector<int>(F_AUTO_COMP_DISABLE, static_cast<int>(val));
 }
 
+int64_t Module::getComparatorDisableTime() const {
+    return sendToDetector<int64_t>(F_GET_COMP_DISABLE_TIME);
+}
+
+void Module::setComparatorDisableTime(int64_t value) {
+    sendToDetector(F_SET_COMP_DISABLE_TIME, value, nullptr);
+}
+
 int Module::getNumberOfAdditionalStorageCells() const {
     return sendToDetector<int>(F_GET_NUM_ADDITIONAL_STORAGE_CELLS);
 }

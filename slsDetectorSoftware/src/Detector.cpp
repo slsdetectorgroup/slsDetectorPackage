@@ -1451,12 +1451,20 @@ void Detector::resetTemperatureEvent(Positions pos) {
     pimpl->Parallel(&Module::resetTemperatureEvent, pos);
 }
 
-Result<bool> Detector::getAutoCompDisable(Positions pos) const {
+Result<bool> Detector::getAutoComparatorDisable(Positions pos) const {
     return pimpl->Parallel(&Module::getAutoComparatorDisableMode, pos);
 }
 
-void Detector::setAutoCompDisable(bool value, Positions pos) {
+void Detector::setAutoComparatorDisable(bool value, Positions pos) {
     pimpl->Parallel(&Module::setAutoComparatorDisableMode, pos, value);
+}
+
+Result<ns> Detector::getComparatorDisableTime(Positions pos) const {
+    return pimpl->Parallel(&Module::getComparatorDisableTime, pos);
+}
+
+void Detector::setComparatorDisableTime(ns t, Positions pos) {
+    pimpl->Parallel(&Module::setComparatorDisableTime, pos, t.count());
 }
 
 Result<int> Detector::getNumberOfAdditionalStorageCells(Positions pos) const {

@@ -1127,18 +1127,26 @@ class Detector {
     void resetTemperatureEvent(Positions pos = {});
 
     /** [Jungfrau] */
-    Result<bool> getAutoCompDisable(Positions pos = {}) const;
+    Result<bool> getAutoComparatorDisable(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced
      * //TODO naming
-     * By default, the on-chip gain switching is active during the entire
-     * exposure. This mode disables the on-chip gain switching comparator
-     * automatically after 93.75% of exposure time (only for longer than
-     * 100us).\n
-     * Default is false or this mode disabled(comparator enabled throughout).
-     * true enables mode. 0 disables mode.
+     * By default, the on-chip gain switching is active during the
+     * entire exposure. This mode disables the on-chip gain switching comparator
+     * automatically after 93.75% of exposure time (only for longer than 100us).
+     * The % is for chipv1.0. One can set the duration for chipv1.1 using
+     * setComparatorDisableTime\n Default is false or this mode
+     * disabled(comparator enabled throughout). true enables mode. 0 disables
+     * mode.
      */
-    void setAutoCompDisable(bool value, Positions pos = {});
+    void setAutoComparatorDisable(bool value, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<ns> getComparatorDisableTime(Positions pos = {}) const;
+
+    /** [Jungfrau] Time before end of exposure when comparator is disabled. It
+     * is only possible for chipv1.1.*/
+    void setComparatorDisableTime(ns t, Positions pos = {});
 
     /** [Jungfrau] Advanced TODO naming */
     Result<int> getNumberOfAdditionalStorageCells(Positions pos = {}) const;

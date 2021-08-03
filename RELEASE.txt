@@ -38,6 +38,9 @@ This document describes the differences between 5.2.0 and 5.1.0 releases.
 
     1.  Bad Channels moved to a new register
     
+
+    Jungfrau- many Features
+
     
 
 2. Resolved Issues
@@ -59,7 +62,7 @@ This document describes the differences between 5.2.0 and 5.1.0 releases.
         detector server to reset core until firmware release.
 
 
-
+getAutoCompDisable->getAutoComparatorDisable
 
 3. Firmware Requirements
 ========================

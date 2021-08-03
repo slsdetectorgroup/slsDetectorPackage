@@ -258,7 +258,7 @@ TEST_CASE("auto_comp_disable", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getAutoCompDisable();
+        auto prev_val = det.getAutoComparatorDisable();
         {
             std::ostringstream oss;
             proxy.Call("auto_comp_disable", {"0"}, -1, PUT, oss);
@@ -275,7 +275,7 @@ TEST_CASE("auto_comp_disable", "[.cmd]") {
             REQUIRE(oss.str() == "auto_comp_disable 1\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setAutoCompDisable(prev_val[i], {i});
+            det.setAutoComparatorDisable(prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("auto_comp_disable", {}, -1, GET));

@@ -1838,7 +1838,7 @@ class CmdProxy {
         "cleared.");
 
     INTEGER_COMMAND_VEC_ID(
-        auto_comp_disable, getAutoCompDisable, setAutoCompDisable,
+        auto_comp_disable, getAutoComparatorDisable, setAutoComparatorDisable,
         StringTo<int>,
         "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the "
         "on-chip gain switching is active during the entire exposure.This mode "

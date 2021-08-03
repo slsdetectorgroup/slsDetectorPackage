@@ -2016,11 +2016,11 @@ class Detector(CppDetectorApi):
         By default, the on-chip gain switching is active during the entire exposure. This mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). The % is only for chipv1.0, the duration can be set for chipv1.1.\n
         Default is 0 or this mode disabled (comparator enabled throughout). 1 enables mode. 0 disables mode. 
         """
-        return self.getAutoCompDisable()
+        return self.getAutoComparatorDisable()
 
     @auto_comp_disable.setter
     def auto_comp_disable(self, value):
-        ut.set_using_dict(self.setAutoCompDisable, value)
+        ut.set_using_dict(self.setAutoComparatorDisable, value)
 
     @property
     @element

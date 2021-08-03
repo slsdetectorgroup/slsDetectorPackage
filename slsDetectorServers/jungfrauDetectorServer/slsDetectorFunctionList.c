@@ -1078,41 +1078,6 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     return thisSettings;
 }
 
-void validateSettings() {
-    // if any special dac value is changed individually => undefined
-    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
-    int *specialDacValues[] = {defaultDacValue_G0, defaultDacValue_HG0};
-    int settList[] = {DYNAMICGAIN, DYNAMICHG0};
-    enum detectorSettings sett = UNDEFINED;
-    for (int isett = 0; isett != NUMSETTINGS; ++isett) {
-
-        // assume it matches current setting in list
-        sett = settList[isett];
-        // if one value does not match, = undefined
-        for (int i = 0; i < NSPECIALDACS; ++i) {
-            if (getDAC(specialDacs[i], 0) != specialDacValues[isett][i]) {
-                sett = UNDEFINED;
-                break;
-            }
-        }
-
-        // all values matchd a setting
-        if (sett != UNDEFINED) {
-            break;
-        }
-    }
-    // update settings
-    if (thisSettings != sett) {
-        LOG(logINFOBLUE,
-            ("Validated settings to %s (%d)\n",
-             (sett == DYNAMICGAIN
-                  ? "dynamicgain"
-                  : (sett == DYNAMICHG0 ? "dynamichg0" : "undefined")),
-             sett));
-        thisSettings = sett;
-    }
-}
-
 enum detectorSettings getSettings() { return thisSettings; }
 
 enum gainMode getGainMode() {
@@ -1193,12 +1158,6 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         }
     }
 #endif
-    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
-    for (int i = 0; i < NSPECIALDACS; ++i) {
-        if ((int)ind == specialDacs[i]) {
-            validateSettings();
-        }
-    }
 }
 
 int getDAC(enum DACINDEX ind, int mV) {

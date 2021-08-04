@@ -308,7 +308,7 @@ void init_enums(py::module &m) {
         .export_values();
 
     py::enum_<slsDetectorDefs::gainMode>(Defs, "gainMode")
-        .value("DYNAMIC_GAIN", slsDetectorDefs::gainMode::DYNAMIC_GAIN)
+        .value("DYNAMIC_GAIN_MODE", slsDetectorDefs::gainMode::DYNAMIC_GAIN_MODE)
         .value("FORCE_SWITCH_G1", slsDetectorDefs::gainMode::FORCE_SWITCH_G1)
         .value("FORCE_SWITCH_G2", slsDetectorDefs::gainMode::FORCE_SWITCH_G2)
         .value("FIX_G1", slsDetectorDefs::gainMode::FIX_G1)

@@ -1494,9 +1494,12 @@ void Detector::setStorageCellDelay(ns value, Positions pos) {
 std::vector<defs::gainMode> Detector::getGainModeList() const {
     switch (getDetectorType().squash()) {
     case defs::JUNGFRAU:
-        return std::vector<defs::gainMode>{
-            defs::DYNAMIC_GAIN, defs::FORCE_SWITCH_G1, defs::FORCE_SWITCH_G2,
-            defs::FIX_G1,       defs::FIX_G2,          defs::FIX_G0};
+        return std::vector<defs::gainMode>{defs::DYNAMIC_GAIN_MODE,
+                                           defs::FORCE_SWITCH_G1,
+                                           defs::FORCE_SWITCH_G2,
+                                           defs::FIX_G1,
+                                           defs::FIX_G2,
+                                           defs::FIX_G0};
         break;
     default:
         throw RuntimeError("Gain mode is not implemented for this detector.");

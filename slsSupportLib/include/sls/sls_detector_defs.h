@@ -416,12 +416,11 @@ typedef struct {
     enum vetoAlgorithm { DEFAULT_ALGORITHM };
 
     enum gainMode {
-        DYNAMIC_GAIN,
+        DYNAMIC_GAIN_MODE,
         FORCE_SWITCH_G1,
         FORCE_SWITCH_G2,
         FIX_G1,
         FIX_G2,
-        FIX_G0,
         FIX_G0
     };
 

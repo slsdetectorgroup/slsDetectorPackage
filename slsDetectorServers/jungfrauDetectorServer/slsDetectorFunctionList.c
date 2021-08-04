@@ -793,6 +793,11 @@ int selectStoragecellStart(int pos) {
         LOG(logINFO, ("Setting storage cell start: %d\n", pos));
         bus_w(addr, bus_r(addr) & ~mask);
         bus_w(addr, bus_r(addr) | ((value << offset) & mask));
+        // should not do a get to verify (status register does not update
+        // immediately during acquisition)
+        if (getChipVersion() == 11) {
+            return pos;
+        }
     }
 
     // read value back
@@ -1098,7 +1103,7 @@ enum gainMode getGainMode() {
 
     switch (retval_force) {
     case DAQ_FRCE_GAIN_STG_0_VAL:
-        return DYNAMIC_GAIN;
+        return DYNAMIC_GAIN_MODE;
     case DAQ_FRCE_GAIN_STG_1_VAL:
         return FORCE_SWITCH_G1;
     case DAQ_FRCE_GAIN_STG_2_VAL:
@@ -1128,7 +1133,7 @@ void setGainMode(enum gainMode mode) {
     uint32_t value = bus_r(addr);
 
     switch (mode) {
-    case DYNAMIC_GAIN:
+    case DYNAMIC_GAIN_MODE:
         value &= ~(DAQ_GAIN_MODE_MASK);
         bus_w(addr, value);
         LOG(logINFO,

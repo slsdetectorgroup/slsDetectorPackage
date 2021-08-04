@@ -161,7 +161,7 @@ def test_gainmode(virtual_jf_detectors):
     assert d.gainMode == gainMode.NORMAL_GAIN_MODE
 
     gain_list = [
-        gainMode.DYNAMIC_GAIN,
+        gainMode.DYNAMIC_GAIN_MODE,
         gainMode.FORCE_SWITCH_G1,
         gainMode.FORCE_SWITCH_G2,
         gainMode.FIX_G1,
@@ -176,7 +176,7 @@ def test_gainmode(virtual_jf_detectors):
 
     d.setGainMode(gainMode.FORCE_SWITCH_G1, [1])
     assert d.gainMode == [
-        gainMode.DYNAMIC_GAIN,
+        gainMode.DYNAMIC_GAIN_MODE,
         gainMode.FORCE_SWITCH_G1,
         gainMode.FORCE_SWITCH_G2,
         gainMode.FIX_G1,

@@ -8560,7 +8560,7 @@ int set_default_dac(int file_des) {
 int get_gain_mode(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    enum gainMode retval = NORMAL_GAIN_MODE;
+    enum gainMode retval = DYNAMIC_GAIN_MODE;
     LOG(logDEBUG1, ("Getting gain mode\n"));
 
 #ifndef JUNGFRAUD
@@ -8593,7 +8593,7 @@ int set_gain_mode(int file_des) {
     // only set
     if (Server_VerifyLock() == OK) {
         switch (gainmode) {
-        case DYNAMIC_GAIN:
+        case DYNAMIC_GAIN_MODE:
         case FORCE_SWITCH_G1:
         case FORCE_SWITCH_G2:
         case FIX_G1:

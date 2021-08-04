@@ -583,7 +583,7 @@ std::string ToString(const defs::vetoAlgorithm s) {
 
 std::string ToString(const defs::gainMode s) {
     switch (s) {
-    case defs::DYNAMIC_GAIN:
+    case defs::DYNAMIC_GAIN_MODE:
         return std::string("dynamicgain");
     case defs::FORCE_SWITCH_G1:
         return std::string("forceswitchg1");
@@ -987,7 +987,7 @@ template <> defs::vetoAlgorithm StringTo(const std::string &s) {
 
 template <> defs::gainMode StringTo(const std::string &s) {
     if (s == "dynamicgain")
-        return defs::DYNAMIC_GAIN;
+        return defs::DYNAMIC_GAIN_MODE;
     if (s == "forceswitchg1")
         return defs::FORCE_SWITCH_G1;
     if (s == "forceswitchg2")

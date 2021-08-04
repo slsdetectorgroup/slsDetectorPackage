@@ -351,6 +351,7 @@
 #define DAQ_CRRNT_SRC_CLMN_FIX_MSK          (0x00000001 << DAQ_CRRNT_SRC_CLMN_FIX_OFST)
 #define DAQ_CRRNT_SRC_CLMN_SLCT_OFST        (20)
 #define DAQ_CRRNT_SRC_CLMN_SLCT_MSK         (0x0000003F << DAQ_CRRNT_SRC_CLMN_SLCT_OFST)
+#define DAQ_GAIN_MODE_MASK                  (DAQ_FRCE_SWTCH_GAIN_MSK | DAQ_FIX_GAIN_MSK | DAQ_CMP_RST_MSK)
 
 /** Chip Power Register */
 #define CHIP_POWER_REG                      (0x5E << MEM_MAP_SHIFT)

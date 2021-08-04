@@ -458,6 +458,11 @@ TEST_CASE("gainmode", "[.cmd]") {
         }
         {
             std::ostringstream oss;
+            proxy.Call("gainmode", {"dynamicgain"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gainmode dynamicgain\n");
+        }
+        {
+            std::ostringstream oss;
             proxy.Call("gainmode", {"forceswitchg2"}, -1, PUT, oss);
             REQUIRE(oss.str() == "gainmode forceswitchg2\n");
         }
@@ -473,8 +478,8 @@ TEST_CASE("gainmode", "[.cmd]") {
         }
         {
             std::ostringstream oss;
-            proxy.Call("gainmode", {"dynamic"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "gainmode dynamic\n");
+            proxy.Call("gainmode", {"fixg0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gainmode fixg0\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setGainMode(prev_val[i], {i});

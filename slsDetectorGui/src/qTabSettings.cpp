@@ -92,10 +92,11 @@ void qTabSettings::SetupWidgetWindow() {
 void qTabSettings::SetupDetectorSettings() {
     QStandardItemModel *model =
         qobject_cast<QStandardItemModel *>(comboSettings->model());
+    const int numSettings = comboSettings->count();
     if (model) {
-        QModelIndex index[NUMSETTINGS];
-        QStandardItem *item[NUMSETTINGS];
-        for (int i = 0; i < NUMSETTINGS; ++i) {
+        QModelIndex index[numSettings];
+        QStandardItem *item[numSettings];
+        for (int i = 0; i < numSettings; ++i) {
             index[i] = model->index(i, comboSettings->modelColumn(),
                                     comboSettings->rootModelIndex());
             item[i] = model->itemFromIndex(index[i]);
@@ -160,7 +161,7 @@ void qTabSettings::GetSettings() {
             comboSettings->setCurrentIndex(UNINITIALIZED);
             break;
         default:
-            if ((int)retval < -1 || (int)retval >= NUMSETTINGS) {
+            if ((int)retval < -1 || (int)retval >= comboSettings->count()) {
                 throw sls::RuntimeError(std::string("Unknown settings: ") +
                                         std::to_string(retval));
             }

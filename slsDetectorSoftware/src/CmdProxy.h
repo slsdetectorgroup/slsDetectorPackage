@@ -1203,12 +1203,12 @@ class CmdProxy {
         settings, getSettings, setSettings,
         sls::StringTo<slsDetectorDefs::detectorSettings>,
         "[standard, fast, highgain, dynamicgain, lowgain, "
-        "mediumgain, veryhighgain, dynamichg0, "
+        "mediumgain, veryhighgain, highgain0, "
         "fixgain1, fixgain2, forceswitchg1, forceswitchg2, "
         "verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, "
-        "g2_lc_hg, g2_lc_lg, g4_hg, g4_lg]"
+        "g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]"
         "\n\t Detector Settings"
-        "\n\t[Jungfrau] - [dynamicgain | dynamichg0]"
+        "\n\t[Jungfrau] - [ gain0 | highgain0]"
         "\n\t[Gotthard] - [dynamicgain | highgain | lowgain | "
         "mediumgain | veryhighgain]"
         "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
@@ -1877,9 +1877,9 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         gainmode, getGainMode, setGainMode,
         sls::StringTo<slsDetectorDefs::gainMode>,
-        "[forceswitchg1|forceswitchg2|fixgain1|fixgain2|fixgain0|"
-        "fixhighgain0]\n\t[Jungfrau] Gain mode.\n\tCAUTION: Do not use "
-        "fixgain0 and fixhighgain0 blindly, you can damage the detector!!!");
+        "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t["
+        "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 blindly, you can "
+        "damage the detector!!!");
 
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft,

@@ -32,29 +32,5 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
     sls::Detector *det;
     std::vector<QCheckBox *> counters;
 
-    enum {
-        STANDARD,
-        FAST,
-        HIGHGAIN,
-        DYNAMICGAIN,
-        LOWGAIN,
-        MEDIUMGAIN,
-        VERYHIGHGAIN,
-        DYNAMICHG0,
-        FIXGAIN1,
-        FIXGAIN2,
-        VERLOWGAIN,
-        G1_HIGHGAIN,
-        G1_LOWGAIN,
-        G2_HIGHCAP_HIGHGAIN,
-        G2_HIGHCAP_LOWGAIN,
-        G2_LOWCAP_HIGHGAIN,
-        G2_LOWCAP_LOWGAIN,
-        G4_HIGHGAIN,
-        G4_LOWGAIN,
-        UNDEFINED,
-        UNINITIALIZED,
-        NUMSETTINGS
-    };
     enum { DYNAMICRANGE_32, DYNAMICRANGE_16, DYNAMICRANGE_8, DYNAMICRANGE_4 };
 };

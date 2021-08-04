@@ -158,8 +158,8 @@ std::vector<defs::detectorSettings> Detector::getSettingsList() const {
             defs::HIGHGAIN, defs::DYNAMICGAIN, defs::LOWGAIN, defs::MEDIUMGAIN,
             defs::VERYHIGHGAIN};
     case defs::JUNGFRAU:
-        return std::vector<defs::detectorSettings>{defs::DYNAMICGAIN,
-                                                   defs::DYNAMICHG0};
+        return std::vector<defs::detectorSettings>{defs::GAIN0,
+                                                   defs::HIGHGAIN0};
     case defs::GOTTHARD2:
         return std::vector<defs::detectorSettings>{
             defs::DYNAMICGAIN, defs::DYNAMICHG0, defs::FIXGAIN1,
@@ -1495,9 +1495,8 @@ std::vector<defs::gainMode> Detector::getGainModeList() const {
     switch (getDetectorType().squash()) {
     case defs::JUNGFRAU:
         return std::vector<defs::gainMode>{
-            defs::DYNAMICGAIN, defs::FORCE_SWITCH_G1, defs::FORCE_SWITCH_G2,
-            defs::FIX_G1,      defs::FIX_G2,          defs::FIX_G0,
-            defs::FIX_HG0};
+            defs::DYNAMIC_GAIN, defs::FORCE_SWITCH_G1, defs::FORCE_SWITCH_G2,
+            defs::FIX_G1,       defs::FIX_G2,          defs::FIX_G0};
         break;
     default:
         throw RuntimeError("Gain mode is not implemented for this detector.");

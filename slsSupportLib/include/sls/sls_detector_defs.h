@@ -345,7 +345,7 @@ typedef struct {
         LOWGAIN,
         MEDIUMGAIN,
         VERYHIGHGAIN,
-        DYNAMICHG0,
+        HIGHGAIN0,
         FIXGAIN1,
         FIXGAIN2,
         VERYLOWGAIN,
@@ -357,6 +357,7 @@ typedef struct {
         G2_LOWCAP_LOWGAIN,
         G4_HIGHGAIN,
         G4_LOWGAIN,
+        GAIN0,
         UNDEFINED = 200,
         UNINITIALIZED
     };
@@ -415,13 +416,13 @@ typedef struct {
     enum vetoAlgorithm { DEFAULT_ALGORITHM };
 
     enum gainMode {
-        DYNAMICGAIN,
+        DYNAMIC_GAIN,
         FORCE_SWITCH_G1,
         FORCE_SWITCH_G2,
         FIX_G1,
         FIX_G2,
         FIX_G0,
-        FIX_HG0
+        FIX_G0
     };
 
 #ifdef __cplusplus

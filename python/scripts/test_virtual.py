@@ -101,11 +101,11 @@ def test_module_size(virtual_jf_detectors):
 
 def test_settings(virtual_jf_detectors):
     d = ExperimentalDetector()
-    assert d.settings == detectorSettings.DYNAMICGAIN
+    assert d.settings == detectorSettings.GAIN0
 
     gain_list = [
-        detectorSettings.DYNAMICHG0,
-        detectorSettings.DYNAMICGAIN,
+        detectorSettings.GAIN0,
+        detectorSettings.HIGHGAIN0,
     ]
 
     # Set all viable gain for Jungfrau to make sure nothing is crashing
@@ -113,14 +113,14 @@ def test_settings(virtual_jf_detectors):
         d.settings = gain
         assert d.settings == gain
 
-    d.setSettings(detectorSettings.DYNAMICGAIN, [1])
+    d.setSettings(detectorSettings.GAIN0, [1])
     assert d.settings == [
-        detectorSettings.DYNAMICHG0,
-        detectorSettings.DYNAMICGAIN,
+        detectorSettings.GAIN0,
+        detectorSettings.HIGHGAIN0,
     ]
 
-    d.settings = detectorSettings.DYNAMICGAIN
-    assert d.settings == detectorSettings.DYNAMICGAIN
+    d.settings = detectorSettings.GAIN0
+    assert d.settings == detectorSettings.GAIN0
 
 def test_frames(virtual_jf_detectors):
     d = ExperimentalDetector()
@@ -161,9 +161,12 @@ def test_gainmode(virtual_jf_detectors):
     assert d.gainMode == gainMode.NORMAL_GAIN_MODE
 
     gain_list = [
-        gainMode.NORMAL_GAIN_MODE,
+        gainMode.DYNAMIC_GAIN,
         gainMode.FORCE_SWITCH_G1,
         gainMode.FORCE_SWITCH_G2,
+        gainMode.FIX_G1,
+        gainMode.FIX_G2,
+        gainMode.FIX_G0
     ]
 
     # Set all viable gain for Jungfrau to make sure nothing is crashing
@@ -173,9 +176,12 @@ def test_gainmode(virtual_jf_detectors):
 
     d.setGainMode(gainMode.FORCE_SWITCH_G1, [1])
     assert d.gainMode == [
-        gainMode.NORMAL_GAIN_MODE,
+        gainMode.DYNAMIC_GAIN,
         gainMode.FORCE_SWITCH_G1,
         gainMode.FORCE_SWITCH_G2,
+        gainMode.FIX_G1,
+        gainMode.FIX_G2,
+        gainMode.FIX_G0
     ]
 
     d.gainMode = gainMode.FORCE_SWITCH_G1

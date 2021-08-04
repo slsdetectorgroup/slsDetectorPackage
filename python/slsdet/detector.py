@@ -311,7 +311,7 @@ class Detector(CppDetectorApi):
         -----
         
         [Eiger] Use threshold command to load settings
-        [Jungfrau] DYNAMICGAIN, DYNAMICHG0 \n
+        [Jungfrau] GAIN0, HIGHGAIN0 \n
         [Gotthard] DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n
         [Gotthard2] DYNAMICGAIN, FIXGAIN1, FIXGAIN2 \n
         [Moench] G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN \n
@@ -2201,8 +2201,8 @@ class Detector(CppDetectorApi):
         [Jungfrau] Detector gain mode. Enum: gainMode
         Note
         -----
-        [Jungfrau] NORMAL_GAIN_MODE, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0, FIX_HG0 \n
-        CAUTION: Do not use FIX_G0 and FIX_HG0 blindly, you can damage the detector!!!
+        [Jungfrau] DYNAMIC_GAIN, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 \n
+        CAUTION: Do not use FIX_G0 blindly, you can damage the detector!!!
         """
         return element_if_equal(self.getGainMode())
 

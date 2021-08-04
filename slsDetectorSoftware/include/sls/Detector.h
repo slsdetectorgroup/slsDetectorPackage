@@ -113,7 +113,7 @@ class Detector {
     /** [Jungfrau][Gotthard][Gotthard2][Mythen3] */
     Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
 
-    /** [Jungfrau] DYNAMICGAIN, DYNAMICHG0 \n [Gotthard] DYNAMICGAIN, HIGHGAIN,
+    /** [Jungfrau] GAIN0, HIGHGAIN0 \n [Gotthard] DYNAMICGAIN, HIGHGAIN,
      * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n [Gotthard2] DYNAMICGAIN,
      * FIXGAIN1, FIXGAIN2 \n [Moench] G1_HIGHGAIN, G1_LOWGAIN,
      * G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN,
@@ -1179,9 +1179,9 @@ class Detector {
     /** [Jungfrau]*/
     Result<defs::gainMode> getGainMode(Positions pos = {}) const;
 
-    /** [Jungfrau] Options: DYNAMICGAIN, FORCE_SWITCH_G1, FORCE_SWITCH_G2,
-     * FIX_G1, FIX_G2, FIX_G0, FIX_HG0 \n\CAUTION: Do not use FIX_G0 and FIX_HG0
-     * blindly, you can damage the detector!!!\n
+    /** [Jungfrau] Options: DYNAMIC_GAIN, FORCE_SWITCH_G1, FORCE_SWITCH_G2,
+     * FIX_G1, FIX_G2, FIX_G0 \n\CAUTION: Do not use FIX_G0 blindly, you can
+     * damage the detector!!!\n
      */
     void setGainMode(const defs::gainMode mode, Positions pos = {});
 

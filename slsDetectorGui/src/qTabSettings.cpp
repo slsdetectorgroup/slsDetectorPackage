@@ -71,6 +71,9 @@ void qTabSettings::SetupWidgetWindow() {
         comboDynamicRange->setEnabled(true);
         lblThreshold->setEnabled(true);
         spinThreshold->setEnabled(true);
+    } else if (detType == slsDetectorDefs::JUNGFRAU) {
+        lblGainMode->setEnabled(true);
+        comboGainMode->setEnabled(true);
     }
 
     // default settings for the disabled
@@ -83,6 +86,12 @@ void qTabSettings::SetupWidgetWindow() {
         spinThreshold2->setValue(-1);
         spinThreshold3->setValue(-1);
     }
+
+    // default for gain mode
+    if (comboGainMode->isEnabled()) {
+        SetupGainMode();
+    }
+
     Initialization();
     // default for the disabled
     GetDynamicRange();
@@ -111,6 +120,17 @@ void qTabSettings::SetupDetectorSettings() {
                 CATCH_DISPLAY(std::string("Could not setup settings"),
                               "qTabSettings::SetupDetectorSettings")
     }
+}
+
+void qTabSettings::SetupGainMode() {
+    try {
+        auto list = det->getGainModeList();
+        for (auto it : list) {
+            comboGainMode->addItem(sls::ToString(it).c_str());
+        }
+    }
+    CATCH_DISPLAY(std::string("Could not setup gain mode"),
+                  "qTabSettings::SetupGainMode")
 }
 
 void qTabSettings::Initialization() {

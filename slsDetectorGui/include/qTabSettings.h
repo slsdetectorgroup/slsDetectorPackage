@@ -21,6 +21,7 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
   private:
     void SetupWidgetWindow();
     void SetupDetectorSettings();
+    void SetupGainMode();
     void Initialization();
 
     void GetSettings();

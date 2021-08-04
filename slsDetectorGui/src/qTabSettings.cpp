@@ -94,9 +94,9 @@ void qTabSettings::SetupDetectorSettings() {
         qobject_cast<QStandardItemModel *>(comboSettings->model());
     const int numSettings = comboSettings->count();
     if (model) {
-        QModelIndex index[numSettings];
-        QStandardItem *item[numSettings];
-        for (int i = 0; i < numSettings; ++i) {
+        std::vector<QModelIndex> index(numSettings);
+        std::vector<QStandardItem *> item(numSettings);
+        for (size_t i = 0; i < index.size(); ++i) {
             index[i] = model->index(i, comboSettings->modelColumn(),
                                     comboSettings->rootModelIndex());
             item[i] = model->itemFromIndex(index[i]);

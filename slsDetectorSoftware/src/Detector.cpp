@@ -162,8 +162,7 @@ std::vector<defs::detectorSettings> Detector::getSettingsList() const {
                                                    defs::HIGHGAIN0};
     case defs::GOTTHARD2:
         return std::vector<defs::detectorSettings>{
-            defs::DYNAMICGAIN, defs::DYNAMICHG0, defs::FIXGAIN1,
-            defs::FIXGAIN2};
+            defs::DYNAMICGAIN, defs::FIXGAIN1, defs::FIXGAIN2};
     case defs::MOENCH:
         return std::vector<defs::detectorSettings>{
             defs::G1_HIGHGAIN,         defs::G1_LOWGAIN,

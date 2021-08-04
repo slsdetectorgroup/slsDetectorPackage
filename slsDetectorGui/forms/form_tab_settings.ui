@@ -514,7 +514,7 @@
      </item>
      <item>
       <property name="text">
-       <string>Dynamic HG0</string>
+       <string>High Gain 0</string>
       </property>
      </item>
      <item>
@@ -570,6 +570,11 @@
      <item>
       <property name="text">
        <string>G4_LG</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Gain 0</string>
       </property>
      </item>
      <item>

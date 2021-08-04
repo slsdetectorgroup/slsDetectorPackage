@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>775</width>
-    <height>345</height>
+    <height>380</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -635,9 +635,38 @@
       </size>
      </property>
      <property name="toolTip">
-      <string>Settings of the detector. 
- #settings#</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gain Mode of the detector&lt;/p&gt;&lt;p&gt; #gainmode#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Fix G0 is to be used with utmost caution. Can damage the detector!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
+     <item>
+      <property name="text">
+       <string>Dynamic Gain</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Force Switch G1</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Force Switch G2</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Fix G1</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Fix G2</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Fix G0</string>
+      </property>
+     </item>
     </widget>
    </item>
   </layout>

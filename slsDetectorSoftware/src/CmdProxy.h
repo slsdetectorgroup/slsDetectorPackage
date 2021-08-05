@@ -1350,8 +1350,9 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         filterresistor, getFilterResistor, setFilterResistor, StringTo<int>,
-        "[0|1|2|3] [Gotthard2] Set filter resistor. Default is 0.\n[0|1] "
-        "[Jungfrau] Set filter resistor. Default is 1.");
+        "[value] [Gotthard2][Jungfrau] Set filter resistor. Increasing values "
+        "for increasing resistance.\n\t[Gotthard2] Options: [0|1|2|3]. Default "
+        "is 0.\n\t[Jungfrau] Options: [0|1]. Default is 1.");
 
     /** temperature */
     GET_COMMAND_NOID(

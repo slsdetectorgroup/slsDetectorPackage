@@ -2239,7 +2239,9 @@ class Detector(CppDetectorApi):
     @property
     @element
     def filterresistor(self):
-        """[Gotthard2][Jungfrau] Set filter resistor. 
+        """
+        [Gotthard2][Jungfrau] Set filter resistor. Increasing values for increasing "
+        "resistance.
         Note
         ----
         [Gotthard2] Default is 0. Options: 0-3.

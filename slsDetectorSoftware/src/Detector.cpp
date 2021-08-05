@@ -699,6 +699,14 @@ void Detector::setParallelMode(bool value, Positions pos) {
     pimpl->Parallel(&Module::setParallelMode, pos, value);
 }
 
+Result<int> Detector::getFilterResistor(Positions pos) const {
+    return pimpl->Parallel(&Module::getFilterResistor, pos);
+}
+
+void Detector::setFilterResistor(int value, Positions pos) {
+    pimpl->Parallel(&Module::setFilterResistor, pos, value);
+}
+
 // Acquisition
 
 void Detector::acquire() { pimpl->acquire(); }
@@ -1602,14 +1610,6 @@ Result<bool> Detector::getCDSGain(Positions pos) const {
 
 void Detector::setCDSGain(bool value, Positions pos) {
     pimpl->Parallel(&Module::setCDSGain, pos, value);
-}
-
-Result<int> Detector::getFilter(Positions pos) const {
-    return pimpl->Parallel(&Module::getFilter, pos);
-}
-
-void Detector::setFilter(int value, Positions pos) {
-    pimpl->Parallel(&Module::setFilter, pos, value);
 }
 
 Result<bool> Detector::getCurrentSource(Positions pos) const {

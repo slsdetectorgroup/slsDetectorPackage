@@ -105,12 +105,14 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define DEFAULT_STRG_CLL_STRT         (0xf)
 #define DEFAULT_STRG_CLL_STRT_CHIP11  (0x3)
 #define DEFAULT_STRG_CLL_DLY          (0)
+#define DEFAULT_FLIP_ROWS             (0)
+#define DEFAULT_FILTER_RESISTOR       (1) // higher resistor
 
 #define HIGHVOLTAGE_MIN (60)
 #define HIGHVOLTAGE_MAX (200)
 #define DAC_MIN_MV      (0)
 #define DAC_MAX_MV      (2500)
-
+ 
 /* Defines in the Firmware */
 #define MAX_TIMESLOT_VAL            (0x1F)
 #define MAX_THRESHOLD_TEMP_VAL      (127999) // millidegrees

@@ -2238,17 +2238,18 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def filter(self):
-        """[Gotthard2] Set filter resistor. 
+    def filterresistor(self):
+        """[Gotthard2][Jungfrau] Set filter resistor. 
         Note
         ----
-        Default is 0. Options: 0-3.
+        [Gotthard2] Default is 0. Options: 0-3.
+        [Jungfrau] Default is 1. Options: 0-1.
         """
-        return self.getFilter()
+        return self.getFilterResistor()
 
     @filter.setter
     def filter(self, value):
-        ut.set_using_dict(self.setFilter, value)
+        ut.set_using_dict(self.setFilterResistor, value)
 
     @property
     def maxclkphaseshift(self):

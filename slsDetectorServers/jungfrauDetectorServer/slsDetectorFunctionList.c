@@ -474,7 +474,8 @@ void setupDetector() {
     // temp threshold and reset event
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
     setTemperatureEvent(0);
-    setFlipRows(0);
+    setFlipRows(DEFAULT_FLIP_ROWS);
+    setFilterResistor(DEFAULT_FILTER_RESISTOR);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -2020,6 +2021,38 @@ void setFlipRows(int arg) {
                   bus_r(CONFIG_REG) | CONFIG_BOTTOM_INVERT_STREAM_MSK);
         }
     }
+}
+
+int getFilterResistor() {
+#ifdef VIRTUAL
+    uint32_t addr = CONFIG_V11_REG;
+#else
+    uint32_t addr = CONFIG_V11_STATUS_REG;
+#endif
+    // 0 for lower value, 1 for higher value
+    if (bus_r(addr) & CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_MSK) {
+        return 0;
+    }
+    return 1;
+}
+
+int setFilterResistor(int value) {
+    // lower resistor
+    if (value == 0) {
+        LOG(logINFO, ("Setting Lower Filter Resistor\n"));
+        bus_w(CONFIG_V11_REG,
+              bus_r(CONFIG_V11_REG) | CONFIG_V11_FLTR_RSSTR_SMLR_MSK);
+        return OK;
+    }
+    // higher resistor
+    else if (value == 1) {
+        LOG(logINFO, ("Setting Higher Filter Resistor\n"));
+        bus_w(CONFIG_V11_REG,
+              bus_r(CONFIG_V11_REG) & ~CONFIG_V11_FLTR_RSSTR_SMLR_MSK);
+        return OK;
+    }
+    LOG(logERROR, ("Could not set Filter Resistor. Invalid value %d\n", value));
+    return FAIL;
 }
 
 int getTenGigaFlowControl() {

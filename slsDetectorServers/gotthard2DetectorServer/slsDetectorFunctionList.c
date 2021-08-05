@@ -63,7 +63,7 @@ int64_t numTriggersReg = 1;
 int64_t delayReg = 0;
 int64_t numBurstsReg = 1;
 int64_t burstPeriodReg = 0;
-int filter = 0;
+int filterResistor = 0;
 int cdsGain = 0;
 int detPos[2] = {};
 
@@ -388,7 +388,7 @@ void setupDetector() {
     delayReg = 0;
     numBurstsReg = 1;
     burstPeriodReg = 0;
-    filter = 0;
+    filterResistor = 0;
     cdsGain = 0;
     memset(clkPhase, 0, sizeof(clkPhase));
     memset(dacValues, 0, sizeof(dacValues));
@@ -467,7 +467,7 @@ void setupDetector() {
         return;
     }
     setBurstMode(DEFAULT_BURST_MODE);
-    setFilter(DEFAULT_FILTER);
+    setFilterResistor(DEFAULT_FILTER_RESISTOR);
     setCDSGain(DEFAILT_CDS_GAIN);
     setSettings(DEFAULT_SETTINGS);
 
@@ -2458,7 +2458,7 @@ int setBurstMode(enum burstMode burst) {
 }
 
 int configureASICGlobalSettings() {
-    int value = ((filter << ASIC_FILTER_OFST) & ASIC_FILTER_MSK) |
+    int value = ((filterResistor << ASIC_FILTER_OFST) & ASIC_FILTER_MSK) |
                 ((cdsGain << ASIC_CDS_GAIN_OFST) & ASIC_CDS_GAIN_MSK);
     switch (burstMode) {
     case BURST_INTERNAL:
@@ -2473,9 +2473,9 @@ int configureASICGlobalSettings() {
         value |= (ASIC_CONT_MODE_MSK | ASIC_EXT_TIMING_MSK);
         break;
     }
-    LOG(logINFO, ("\tSending Global Chip settings:0x%x (filter:%d, "
+    LOG(logINFO, ("\tSending Global Chip settings:0x%x (filterResistor:%d, "
                   "cdsgain:%d)\n",
-                  value, filter, cdsGain));
+                  value, filterResistor, cdsGain));
 
     const int padding = 6; // due to address (4) to make it byte aligned
     const int lenTotalBits = padding + ASIC_GLOBAL_SETT_MAX_BITS +
@@ -2551,17 +2551,17 @@ int setCDSGain(int enable) {
 
 int getCDSGain() { return cdsGain; }
 
-int setFilter(int value) {
-    if (value < 0 || value > ASIC_FILTER_MAX_VALUE) {
-        LOG(logERROR, ("Invalid filter value %d\n", value));
+int setFilterResistor(int value) {
+    if (value < 0 || value > ASIC_FILTER_MAX_RES_VALUE) {
+        LOG(logERROR, ("Invalid filter resistor value %d\n", value));
         return FAIL;
     }
-    filter = value;
-    LOG(logINFO, ("Setting Filter to %d\n", filter));
+    filterResistor = value;
+    LOG(logINFO, ("Setting Filter Resistor to %d\n", filterResistor));
     return configureASICGlobalSettings();
 }
 
-int getFilter() { return filter; }
+int getFilterResistor() { return filterResistor; }
 
 void setCurrentSource(int value) {
     uint32_t addr = ASIC_CONFIG_REG;

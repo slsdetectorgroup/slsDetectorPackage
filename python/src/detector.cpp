@@ -1097,12 +1097,12 @@ void init_det(py::module &m) {
         .def("setCDSGain",
              (void (Detector::*)(bool, sls::Positions)) & Detector::setCDSGain,
              py::arg(), py::arg() = Positions{})
-        .def("getFilter",
+        .def("getFilterResistor",
              (Result<int>(Detector::*)(sls::Positions) const) &
-                 Detector::getFilter,
+                 Detector::getFilterResistor,
              py::arg() = Positions{})
-        .def("setFilter",
-             (void (Detector::*)(int, sls::Positions)) & Detector::setFilter,
+        .def("setFilterResistor",
+             (void (Detector::*)(int, sls::Positions)) & Detector::setFilterResistor,
              py::arg(), py::arg() = Positions{})
         .def("getCurrentSource",
              (Result<bool>(Detector::*)(sls::Positions) const) &

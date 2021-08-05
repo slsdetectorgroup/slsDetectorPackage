@@ -704,6 +704,14 @@ void Module::setParallelMode(const bool enable) {
     sendToDetector(F_SET_PARALLEL_MODE, static_cast<int>(enable), nullptr);
 }
 
+int Module::getFilterResistor() const {
+    return sendToDetector<int>(F_GET_FILTER_RESISTOR);
+}
+
+void Module::setFilterResistor(int value) {
+    sendToDetector(F_SET_FILTER_RESISTOR, value, nullptr);
+}
+
 // Acquisition
 
 void Module::startReceiver() {
@@ -1896,12 +1904,6 @@ bool Module::getCDSGain() const { return sendToDetector<int>(F_GET_CDS_GAIN); }
 
 void Module::setCDSGain(bool value) {
     sendToDetector(F_SET_CDS_GAIN, static_cast<int>(value), nullptr);
-}
-
-int Module::getFilter() const { return sendToDetector<int>(F_GET_FILTER); }
-
-void Module::setFilter(int value) {
-    sendToDetector(F_SET_FILTER, value, nullptr);
 }
 
 bool Module::getCurrentSource() const {

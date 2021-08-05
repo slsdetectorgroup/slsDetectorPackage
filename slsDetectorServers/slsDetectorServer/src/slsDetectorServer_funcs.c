@@ -354,8 +354,8 @@ void function_table() {
     flist[F_GET_SCAN_ERROR_MESSAGE] = &get_scan_error_message;
     flist[F_GET_CDS_GAIN] = &get_cds_gain;
     flist[F_SET_CDS_GAIN] = &set_cds_gain;
-    flist[F_GET_FILTER] = &get_filter;
-    flist[F_SET_FILTER] = &set_filter;
+    flist[F_GET_FILTER_RESISTOR] = &get_filter_resistor;
+    flist[F_SET_FILTER_RESISTOR] = &set_filter_resistor;
     flist[F_GET_ADC_CONFIGURATION] = &get_adc_config;
     flist[F_SET_ADC_CONFIGURATION] = &set_adc_config;
     flist[F_GET_BAD_CHANNELS] = &get_bad_channels;
@@ -7771,49 +7771,57 @@ int set_cds_gain(int file_des) {
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
-int get_filter(int file_des) {
+int get_filter_resistor(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-    LOG(logDEBUG1, ("Getting filter\n"));
+    LOG(logDEBUG1, ("Getting filter resistor\n"));
 
-#ifndef GOTTHARD2D
+#if !defined(GOTTHAR2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
-    retval = getFilter();
-    LOG(logDEBUG1, ("filter retval: %u\n", retval));
+    retval = getFilterResistor();
+    LOG(logDEBUG1, ("filter resistor retval: %u\n", retval));
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_filter(int file_des) {
+int set_filter_resistor(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int arg = 0;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting filter: %u\n", arg));
+    LOG(logINFO, ("Setting filter resistor: %u\n", arg));
 
-#ifndef GOTTHARD2D
+#if !defined(GOTTHAR2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (arg < 0 || arg > ASIC_FILTER_MAX_VALUE) {
+        if (arg < 0 || arg > ASIC_FILTER_MAX_RES_VALUE) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not set filter. Invalid filter %d. "
+                    "Could not set filter resistor. Invalid filter argument %d. "
                     "Options [0-%d]\n",
-                    arg, ASIC_FILTER_MAX_VALUE);
+                    arg, ASIC_FILTER_MAX_RES_VALUE);
             LOG(logERROR, (mess));
         } else {
-            setFilter(arg);
-            int retval = getFilter();
-            LOG(logDEBUG1, ("filter retval: %u\n", retval));
-            validate(&ret, mess, arg, retval, "set filter", DEC);
+            ret = setFilterResistor(arg);
+            if (ret == FAIL) {
+                ret = FAIL;
+                strcpy(mess, "Could not set filter resistor.\n");
+                LOG(logERROR, (mess));                
+            }
+#ifndef JUNGFRAUD
+            // jungfrau might take time to update status register if acquiring
+            int retval = getFilterResistor();
+            LOG(logDEBUG1, ("filter resistor retval: %u\n", retval));
+            validate(&ret, mess, arg, retval, "set filter resistor", DEC);
+#endif
         }
     }
 #endif

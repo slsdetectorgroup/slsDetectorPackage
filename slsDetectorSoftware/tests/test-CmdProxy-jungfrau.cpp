@@ -488,3 +488,47 @@ TEST_CASE("gainmode", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("gainmode", {}, -1, GET));
     }
 }
+
+TEST_CASE("filtercell", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        // chip version 1.1
+        if (det.getChipVersion().squash() * 10 == 11) {
+            auto prev_val = det.getFilterCell().tsquash(
+                "inconsistent #additional storage cells to test");
+            {
+                std::ostringstream oss;
+                proxy.Call("filtercell", {"1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "filtercell 1\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("filtercell", {"15"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "filtercell 15\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("filtercell", {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "filtercell 0\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("filtercell", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "filtercell 0\n");
+            }
+            REQUIRE_THROWS(proxy.Call("filtercell", {"16"}, -1, PUT));
+            det.setFilterCell(prev_val);
+        }
+        // chip version 1.0
+        else {
+            // cannot set/get filter cell
+            REQUIRE_THROWS(proxy.Call("filtercell", {"1"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("filtercell", {}, -1, GET));
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("filtercell", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("filtercell", {"0"}, -1, PUT));
+    }
+}

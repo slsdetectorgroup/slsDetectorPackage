@@ -1384,7 +1384,14 @@ TEST_CASE("filterresistor", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU) {
+    // only for chipv1.1
+    bool chip11 = false;
+    if (det_type == defs::JUNGFRAU &&
+        det.getChipVersion().squash() * 10 == 11) {
+        chip11 = true;
+    }
+
+    if (det_type == defs::GOTTHARD2 || chip11) {
         auto prev_val = det.getFilterResistor();
         {
             std::ostringstream oss;

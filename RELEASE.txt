@@ -64,6 +64,7 @@ This document describes the differences between 5.2.0 and 5.1.0 releases.
 
 getAutoCompDisable->getAutoComparatorDisable
 setBottom->setFlippedDataAcrossXAxis
+filter->filterResistor
 
 3. Firmware Requirements
 ========================

@@ -477,6 +477,14 @@ class Detector {
      * [Mythen3] If exposure time is too short, acquisition will return with an
      * ERROR and take fewer frames than expected */
     void setParallelMode(bool value, Positions pos = {});
+
+    /** [Gotthard2][Jungfrau] */
+    Result<int> getFilterResistor(Positions pos = {}) const;
+
+    /** [Gotthard2] Options: 0-3. Default: 0
+     * [Jungfrau] 0-1. Default: 1 */
+    void setFilterResistor(int value, Positions pos = {});
+
     ///@{
 
     /** @name Acquisition */
@@ -1281,12 +1289,6 @@ class Detector {
 
     /** default disabled */
     void setCDSGain(bool value, Positions pos = {});
-
-    /** [Gotthard2] */
-    Result<int> getFilter(Positions pos = {}) const;
-
-    /** [Gotthard2] Set filter resister. Options: 0-3. Default: 0 */
-    void setFilter(int value, Positions pos = {});
 
     /** [Gotthard2] */
     Result<bool> getCurrentSource(Positions pos = {}) const;

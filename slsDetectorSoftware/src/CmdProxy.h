@@ -591,6 +591,7 @@ class CmdProxy {
         {"clkdivider", "speed"},
         {"vhighvoltage", "highvoltage"},
         {"digitest", "imagetest"},
+        {"filter", "filterresistor"},
 
         /** temperature */
 
@@ -800,6 +801,7 @@ class CmdProxy {
         {"imagetest", &CmdProxy::imagetest},
         {"extsig", &CmdProxy::ExternalSignal},
         {"parallel", &CmdProxy::parallel},
+        {"filterresistor", &CmdProxy::filterresistor},
 
         /** temperature */
         {"templist", &CmdProxy::templist},
@@ -947,7 +949,6 @@ class CmdProxy {
         {"vetofile", &CmdProxy::VetoFile},
         {"burstmode", &CmdProxy::BurstMode},
         {"cdsgain", &CmdProxy::cdsgain},
-        {"filter", &CmdProxy::filter},
         {"currentsource", &CmdProxy::currentsource},
         {"timingsource", &CmdProxy::timingsource},
         {"veto", &CmdProxy::veto},
@@ -1347,6 +1348,11 @@ class CmdProxy {
         "mode.\n\t[Mythen3] If exptime is too short, the "
         "acquisition will return ERROR status and take fewer "
         "frames than expected.");
+
+    INTEGER_COMMAND_VEC_ID(
+        filterresistor, getFilterResistor, setFilterResistor, StringTo<int>,
+        "[0|1|2|3] [Gotthard2] Set filter resistor. Default is 0.\n[0|1] "
+        "[Jungfrau] Set filter resistor. Default is 1.");
 
     /** temperature */
     GET_COMMAND_NOID(
@@ -1910,10 +1916,6 @@ class CmdProxy {
         cdsgain, getCDSGain, setCDSGain, StringTo<bool>,
         "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default "
         "is disabled.");
-
-    INTEGER_COMMAND_VEC_ID(
-        filter, getFilter, setFilter, StringTo<int>,
-        "[0|1|2|3]\n\t[Gotthard2] Set filter resistor. Default is 0.");
 
     INTEGER_COMMAND_VEC_ID(
         currentsource, getCurrentSource, setCurrentSource, StringTo<int>,

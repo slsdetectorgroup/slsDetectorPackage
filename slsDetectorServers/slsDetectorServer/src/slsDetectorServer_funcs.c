@@ -7782,8 +7782,18 @@ int get_filter_resistor(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    retval = getFilterResistor();
-    LOG(logDEBUG1, ("filter resistor retval: %u\n", retval));
+#ifdef JUNGFRAUD
+    if (getChipVersion() == 10) {
+        ret = FAIL;
+        strcpy(mess, "Could not get filter cell. Not available for this chip "
+                     "version 1.0.\n");
+        LOG(logERROR, (mess));
+    }
+#endif
+    if (ret == OK) {
+        retval = getFilterResistor();
+        LOG(logDEBUG1, ("filter resistor retval: %u\n", retval));
+    }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -7809,7 +7819,16 @@ int set_filter_resistor(int file_des) {
                     "Options [0-%d]\n",
                     arg, ASIC_FILTER_MAX_RES_VALUE);
             LOG(logERROR, (mess));
-        } else {
+        }
+#ifdef JUNGFRAUD
+        else if (getChipVersion() == 10) {
+            ret = FAIL;
+            strcpy(mess, "Could not set filter cell. Not available for this "
+                         "chip version 1.0.\n");
+            LOG(logERROR, (mess));
+        }
+#endif
+        else {
             ret = setFilterResistor(arg);
             if (ret == FAIL) {
                 ret = FAIL;

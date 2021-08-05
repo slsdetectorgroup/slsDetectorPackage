@@ -107,7 +107,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_streaming(sls::ServerInterface &socket);
     int get_streaming(sls::ServerInterface &socket);
     int set_streaming_timer(sls::ServerInterface &socket);
-    int set_flipped_data(sls::ServerInterface &socket);
+    int get_flip_rows(sls::ServerInterface &socket);
+    int set_flip_rows(sls::ServerInterface &socket);
     int set_file_format(sls::ServerInterface &socket);
     int get_file_format(sls::ServerInterface &socket);
     int set_streaming_port(sls::ServerInterface &socket);

@@ -458,19 +458,18 @@ int Module::setTrimEn(const std::vector<int> &energies) {
     return shm()->trimEnergies.size();
 }
 
-bool Module::getFlippedDataAcrossXAxis() const {
+bool Module::getFlipRows() const {
     if (shm()->myDetectorType == EIGER) {
-        return sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER, GET_FLAG);
+        return sendToReceiver<int>(F_GET_FLIP_ROWS_RECEIVER);
     }
-    return sendToDetector<int>(F_GET_FLIPPED_DATA_X);
+    return sendToDetector<int>(F_GET_FLIP_ROWS);
 }
 
-void Module::setFlippedDataAcrossXAxis(bool value) {
+void Module::setFlipRows(bool value) {
     if (shm()->myDetectorType == EIGER) {
-        sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER,
-                            static_cast<int>(value));
+        sendToReceiver<int>(F_SET_FLIP_ROWS_RECEIVER, static_cast<int>(value));
     } else {
-        sendToDetector(F_SET_FLIPPED_DATA_X, static_cast<int>(value), nullptr);
+        sendToDetector(F_SET_FLIP_ROWS, static_cast<int>(value), nullptr);
     }
 }
 

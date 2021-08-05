@@ -156,7 +156,8 @@ int ClientInterface::functionTable(){
 	flist[F_SET_RECEIVER_STREAMING]		    = 	&ClientInterface::set_streaming;
 	flist[F_GET_RECEIVER_STREAMING]		    = 	&ClientInterface::get_streaming;
 	flist[F_RECEIVER_STREAMING_TIMER]		= 	&ClientInterface::set_streaming_timer;
-	flist[F_SET_FLIPPED_DATA_RECEIVER]		= 	&ClientInterface::set_flipped_data;
+	flist[F_GET_FLIP_ROWS_RECEIVER]		    = 	&ClientInterface::get_flip_rows;
+	flist[F_SET_FLIP_ROWS_RECEIVER]		    = 	&ClientInterface::set_flip_rows;
 	flist[F_SET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::set_file_format;
 	flist[F_GET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::get_file_format;
 	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::set_streaming_port;
@@ -1020,21 +1021,33 @@ int ClientInterface::set_streaming_timer(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int ClientInterface::set_flipped_data(Interface &socket) {
+int ClientInterface::get_flip_rows(Interface &socket) {
+    if (myDetectorType != EIGER)
+        functionNotImplemented();
+
+    int retval = impl()->getFlipRows();
+    LOG(logDEBUG1) << "Flip rows:" << retval;
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::set_flip_rows(Interface &socket) {
     auto arg = socket.Receive<int>();
 
     if (myDetectorType != EIGER)
         functionNotImplemented();
 
-    if (arg >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting flipped data:" << arg;
-        impl()->setFlippedDataX(arg);
+    if (arg != 0 && arg != 1) {
+        throw RuntimeError("Could not set flip rows. Invalid argument: " +
+                           std::to_string(arg));
     }
-    int retval = impl()->getFlippedDataX();
-    validate(arg, retval, std::string("set flipped data"), DEC);
-    LOG(logDEBUG1) << "Flipped Data:" << retval;
-    return socket.sendResult(retval);
+        verifyIdle(socket);
+        LOG(logDEBUG1) << "Setting flip rows:" << arg;
+        impl()->setFlipRows(static_cast<bool>(arg));
+
+        int retval = impl()->getFlipRows();
+        validate(arg, retval, std::string("set flip rows"), DEC);
+        LOG(logDEBUG1) << "Flip rows:" << retval;
+        return socket.sendResult(retval);
 }
 
 int ClientInterface::set_file_format(Interface &socket) {

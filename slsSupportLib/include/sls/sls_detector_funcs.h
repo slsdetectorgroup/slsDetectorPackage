@@ -237,8 +237,8 @@ enum detFuncs {
     F_SET_GAIN_MODE,
     F_GET_COMP_DISABLE_TIME,
     F_SET_COMP_DISABLE_TIME,
-    F_GET_FLIPPED_DATA_X,
-    F_SET_FLIPPED_DATA_X,
+    F_GET_FLIP_ROWS,
+    F_SET_FLIP_ROWS,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -289,7 +289,8 @@ enum detFuncs {
     F_SET_RECEIVER_STREAMING,
     F_GET_RECEIVER_STREAMING,
     F_RECEIVER_STREAMING_TIMER,
-    F_SET_FLIPPED_DATA_RECEIVER,
+    F_GET_FLIP_ROWS_RECEIVER,
+    F_SET_FLIP_ROWS_RECEIVER,
     F_SET_RECEIVER_FILE_FORMAT,
     F_GET_RECEIVER_FILE_FORMAT,
     F_SET_RECEIVER_STREAMING_PORT,
@@ -582,8 +583,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_GAIN_MODE:                   return "F_SET_GAIN_MODE";
     case F_GET_COMP_DISABLE_TIME:           return "F_GET_COMP_DISABLE_TIME";
     case F_SET_COMP_DISABLE_TIME:           return "F_SET_COMP_DISABLE_TIME";
-    case F_GET_FLIPPED_DATA_X:              return "F_GET_FLIPPED_DATA_X";
-    case F_SET_FLIPPED_DATA_X:              return "F_SET_FLIPPED_DATA_X";
+    case F_GET_FLIP_ROWS:                   return "F_GET_FLIP_ROWS";
+    case F_SET_FLIP_ROWS:                   return "F_SET_FLIP_ROWS";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
@@ -633,7 +634,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_RECEIVER_STREAMING:			return "F_SET_RECEIVER_STREAMING";
 	case F_GET_RECEIVER_STREAMING:			return "F_GET_RECEIVER_STREAMING";
 	case F_RECEIVER_STREAMING_TIMER:		return "F_RECEIVER_STREAMING_TIMER";
-	case F_SET_FLIPPED_DATA_RECEIVER:		return "F_SET_FLIPPED_DATA_RECEIVER";
+	case F_GET_FLIP_ROWS_RECEIVER:		    return "F_GET_FLIP_ROWS_RECEIVER";
+	case F_SET_FLIP_ROWS_RECEIVER:		    return "F_SET_FLIP_ROWS_RECEIVER";
 	case F_SET_RECEIVER_FILE_FORMAT:		return "F_SET_RECEIVER_FILE_FORMAT";
 	case F_GET_RECEIVER_FILE_FORMAT:		return "F_GET_RECEIVER_FILE_FORMAT";
 	case F_SET_RECEIVER_STREAMING_PORT: 	return "F_SET_RECEIVER_STREAMING_PORT";

@@ -893,15 +893,15 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             // streamer threads
             if (dataStreamEnable) {
                 try {
-                    int fd = flippedDataX;
+                    bool flip = flipRows;
                     int nm[2] = {numMods[0], numMods[1]};
                     if (quadEnable) {
-                        fd = i;
+                        flip = (i == 1 ? true : false);
                         nm[0] = 1;
                         nm[1] = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, fd,
+                        i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, flip,
                         (int *)nm, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
@@ -1022,15 +1022,15 @@ void Implementation::setDataStreamEnable(const bool enable) {
         if (enable) {
             for (int i = 0; i < numThreads; ++i) {
                 try {
-                    int fd = flippedDataX;
+                    bool flip = flipRows;
                     int nm[2] = {numMods[0], numMods[1]};
                     if (quadEnable) {
-                        fd = i;
+                        flip = (i == 1 ? true : false);
                         nm[0] = 1;
                         nm[1] = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, fd,
+                        i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, flip,
                         (int *)nm, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
@@ -1458,22 +1458,24 @@ void Implementation::setTenGigaEnable(const bool b) {
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
-int Implementation::getFlippedDataX() const { return flippedDataX; }
+bool Implementation::getFlipRows() const { return flipRows; }
 
-void Implementation::setFlippedDataX(int enable) {
-    flippedDataX = (enable == 0) ? 0 : 1;
+void Implementation::setFlipRows(bool enable) {
+    flipRows = enable;
 
     if (!quadEnable) {
         for (const auto &it : dataStreamer) {
-            it->SetFlippedDataX(flippedDataX);
-        }
-    } else {
-        if (dataStreamer.size() == 2) {
-            dataStreamer[0]->SetFlippedDataX(0);
-            dataStreamer[1]->SetFlippedDataX(1);
+            it->SetFlipRows(flipRows);
         }
     }
-    LOG(logINFO) << "Flipped Data X: " << flippedDataX;
+    // quad
+    else {
+        if (dataStreamer.size() == 2) {
+            dataStreamer[0]->SetFlipRows(false);
+            dataStreamer[1]->SetFlipRows(true);
+        }
+    }
+    LOG(logINFO) << "Flip Rows: " << flipRows;
 }
 
 bool Implementation::getQuad() const { return quadEnable; }
@@ -1485,7 +1487,7 @@ void Implementation::setQuad(const bool b) {
         if (!quadEnable) {
             for (const auto &it : dataStreamer) {
                 it->SetNumberofModules(numMods);
-                it->SetFlippedDataX(flippedDataX);
+                it->SetFlipRows(flipRows);
             }
         } else {
             int size[2] = {1, 2};
@@ -1493,8 +1495,8 @@ void Implementation::setQuad(const bool b) {
                 it->SetNumberofModules(size);
             }
             if (dataStreamer.size() == 2) {
-                dataStreamer[0]->SetFlippedDataX(0);
-                dataStreamer[1]->SetFlippedDataX(1);
+                dataStreamer[0]->SetFlipRows(false);
+                dataStreamer[1]->SetFlipRows(true);
             }
         }
     }

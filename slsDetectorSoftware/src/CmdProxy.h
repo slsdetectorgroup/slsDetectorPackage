@@ -1878,7 +1878,8 @@ class CmdProxy {
         gainmode, getGainMode, setGainMode,
         sls::StringTo<slsDetectorDefs::gainMode>,
         "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t["
-        "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 blindly, you can "
+        "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, "
+        "you can "
         "damage the detector!!!");
 
     /* Gotthard Specific */

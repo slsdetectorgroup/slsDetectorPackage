@@ -510,31 +510,31 @@ TEST_CASE("gappixels", "[.cmd]") {
     }
 }
 
-TEST_CASE("flippeddatax", "[.cmd]") {
+TEST_CASE("fliprows", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
-        auto previous = det.getFlippedDataAcrossXAxis();
+        auto previous = det.getFlipRows();
         auto previous_numudp = det.getNumberofUDPInterfaces();
         if (det_type == defs::JUNGFRAU) {
             det.setNumberofUDPInterfaces(2);
         }
         std::ostringstream oss1, oss2, oss3;
-        proxy.Call("flippeddatax", {"1"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "flippeddatax 1\n");
-        proxy.Call("flippeddatax", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "flippeddatax 1\n");
-        proxy.Call("flippeddatax", {"0"}, -1, PUT, oss3);
-        REQUIRE(oss3.str() == "flippeddatax 0\n");
+        proxy.Call("fliprows", {"1"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "fliprows 1\n");
+        proxy.Call("fliprows", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "fliprows 1\n");
+        proxy.Call("fliprows", {"0"}, -1, PUT, oss3);
+        REQUIRE(oss3.str() == "fliprows 0\n");
         for (int i = 0; i != det.size(); ++i) {
-            det.setFlippedDataAcrossXAxis(previous[i], {i});
+            det.setFlipRows(previous[i], {i});
             if (det_type == defs::JUNGFRAU) {
                 det.setNumberofUDPInterfaces(previous_numudp[i], {i});
             }
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("flippeddatax", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("fliprows", {}, -1, GET));
     }
 }
 

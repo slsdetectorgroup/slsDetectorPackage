@@ -114,8 +114,8 @@ class Module : public virtual slsDetectorDefs {
     void setAllTrimbits(int val);
     std::vector<int> getTrimEn() const;
     int setTrimEn(const std::vector<int> &energies = {});
-    bool getFlippedDataAcrossXAxis() const;
-    void setFlippedDataAcrossXAxis(bool value);
+    bool getFlipRows() const;
+    void setFlipRows(bool value);
     bool isVirtualDetectorServer() const;
 
     /**************************************************

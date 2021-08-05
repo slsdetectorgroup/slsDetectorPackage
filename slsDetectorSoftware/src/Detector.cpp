@@ -279,12 +279,12 @@ void Detector::setGapPixelsinCallback(bool enable) {
     pimpl->setGapPixelsinCallback(enable);
 }
 
-Result<bool> Detector::getFlippedDataAcrossXAxis(Positions pos) const {
-    return pimpl->Parallel(&Module::getFlippedDataAcrossXAxis, pos);
+Result<bool> Detector::getFlipRows(Positions pos) const {
+    return pimpl->Parallel(&Module::getFlipRows, pos);
 }
 
-void Detector::setFlippedDataAcrossXAxis(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setFlippedDataAcrossXAxis, pos, value);
+void Detector::setFlipRows(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setFlipRows, pos, value);
 }
 
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {

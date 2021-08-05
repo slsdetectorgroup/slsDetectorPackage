@@ -173,13 +173,15 @@ class Detector {
     void setGapPixelsinCallback(const bool enable);
 
     /** [Eiger][Jungfrau] */
-    Result<bool> getFlippedDataAcrossXAxis(Positions pos = {}) const;
+    Result<bool> getFlipRows(Positions pos = {}) const;
 
-    /** [Eiger] flips across x Axis paramater sent to slsreceiver to send to gui
-     * (via zmq) to flip bottom [Jungfrau] flips data across x Axis in the
-     * detector itself. slsReceiver and slsDetectorGui does not handle.
+    /** [Eiger] flips rows paramater sent to slsreceiver to stream as json
+     * parameter to flip rows in gui \n[Jungfrau] flips rows in the detector
+     * itself.  For bottom module and number of interfaces must be set to 2.
+     * slsReceiver and slsDetectorGui does not handle.slsReceiver and
+     * slsDetectorGui does not handle
      */
-    void setFlippedDataAcrossXAxis(bool value, Positions pos = {});
+    void setFlipRows(bool value, Positions pos = {});
 
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@{

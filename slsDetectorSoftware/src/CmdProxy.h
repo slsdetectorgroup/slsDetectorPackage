@@ -584,6 +584,7 @@ class CmdProxy {
         {"detsizechan", "detsize"},
         {"trimdir", "settingspath"},
         {"settingsdir", "settingspath"},
+        {"flippeddatax", "fliprows"},
 
         /* acquisition parameters */
         {"cycles", "triggers"},
@@ -770,7 +771,7 @@ class CmdProxy {
         {"trimval", &CmdProxy::trimval},
         {"trimen", &CmdProxy::TrimEnergies},
         {"gappixels", &CmdProxy::GapPixels},
-        {"flippeddatax", &CmdProxy::flippeddatax},
+        {"fliprows", &CmdProxy::fliprows},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::Acquire},
@@ -1235,14 +1236,12 @@ class CmdProxy {
         "value. Returns -1 if all trimbits are different values.");
 
     INTEGER_COMMAND_VEC_ID(
-        flippeddatax, getFlippedDataAcrossXAxis, setFlippedDataAcrossXAxis,
-        StringTo<int>,
-        "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 "
-        "is top. Used to let Gui (via zmq from receiver) know to flip the "
-        "bottom image over the x axis. Files are not written without the flip "
-        "however.\n\t[Jungfrau] If enabled, the bottom is flipped across the x "
-        "axis from the detector. The slsReceiver nor the Gui handles this "
-        "parameter.");
+        fliprows, getFlipRows, setFlipRows, StringTo<int>,
+        "[0, 1]\n\t[Eiger] flips rows paramater sent to slsreceiver "
+        "to stream as json parameter to flip rows in gui \n\t[Jungfrau] flips "
+        "rows in the detector itself. For bottom module and number of "
+        "interfaces must be set to 2. slsReceiver and slsDetectorGui "
+        "does not handle.");
 
     /* acquisition parameters */
 

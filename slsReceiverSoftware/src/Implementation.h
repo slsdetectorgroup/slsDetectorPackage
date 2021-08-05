@@ -202,8 +202,8 @@ class Implementation : private virtual slsDetectorDefs {
     bool getTenGigaEnable() const;
     /* [Eiger][Ctb] */
     void setTenGigaEnable(const bool b);
-    int getFlippedDataX() const;
-    void setFlippedDataX(int enable = -1);
+    bool getFlipRows() const;
+    void setFlipRows(bool enable);
     bool getQuad() const;
     /* [Eiger] */
     void setQuad(const bool b);
@@ -347,7 +347,7 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t dynamicRange{16};
     ROI roi{};
     bool tengigaEnable{false};
-    int flippedDataX{0};
+    bool flipRows{false};
     bool quadEnable{false};
     bool activated{true};
     std::array<bool, 2> detectorDataStream = {{true, true}};

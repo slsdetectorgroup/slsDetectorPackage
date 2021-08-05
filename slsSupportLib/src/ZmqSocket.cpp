@@ -160,7 +160,7 @@ int ZmqSocket::SendHeader(int index, zmqHeader header) {
                                     "\"version\":%u, "
 
                                     // additional stuff
-                                    "\"flippedDataX\":%u, "
+                                    "\"flipRows\":%u, "
                                     "\"quad\":%u"
 
         ;                                              //"}\n";
@@ -177,7 +177,7 @@ int ZmqSocket::SendHeader(int index, zmqHeader header) {
             header.detType, header.version,
 
             // additional stuff
-            header.flippedDataX, header.quad);
+            header.flipRows, header.quad);
 
     if (!header.addJsonHeader.empty()) {
         strcat(header_buffer.get(), ", ");
@@ -303,7 +303,7 @@ int ZmqSocket::ParseHeader(const int index, int length, char *buff,
     zHeader.detType = document["detType"].GetUint();
     zHeader.version = document["version"].GetUint();
 
-    zHeader.flippedDataX = document["flippedDataX"].GetUint();
+    zHeader.flipRows = document["flipRows"].GetUint();
     zHeader.quad = document["quad"].GetUint();
     zHeader.completeImage = document["completeImage"].GetUint();
 

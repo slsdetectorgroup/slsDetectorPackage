@@ -848,12 +848,13 @@ void init_det(py::module &m) {
              (void (Detector::*)(bool, sls::Positions)) &
                  Detector::setOverFlowMode,
              py::arg(), py::arg() = Positions{})
-        .def("getBottom",
+        .def("getFlippedDataAcrossXAxis",
              (Result<bool>(Detector::*)(sls::Positions) const) &
-                 Detector::getBottom,
+                 Detector::getFlippedDataAcrossXAxis,
              py::arg() = Positions{})
-        .def("setBottom",
-             (void (Detector::*)(bool, sls::Positions)) & Detector::setBottom,
+        .def("setFlippedDataAcrossXAxis",
+             (void (Detector::*)(bool, sls::Positions)) &
+                 Detector::setFlippedDataAcrossXAxis,
              py::arg(), py::arg() = Positions{})
         .def("getRateCorrection",
              (Result<sls::ns>(Detector::*)(sls::Positions) const) &

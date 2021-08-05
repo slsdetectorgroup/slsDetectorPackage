@@ -279,6 +279,14 @@ void Detector::setGapPixelsinCallback(bool enable) {
     pimpl->setGapPixelsinCallback(enable);
 }
 
+Result<bool> Detector::getFlippedDataAcrossXAxis(Positions pos) const {
+    return pimpl->Parallel(&Module::getFlippedDataAcrossXAxis, pos);
+}
+
+void Detector::setFlippedDataAcrossXAxis(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setFlippedDataAcrossXAxis, pos, value);
+}
+
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
     return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
 }
@@ -1302,14 +1310,6 @@ Result<bool> Detector::getOverFlowMode(Positions pos) const {
 
 void Detector::setOverFlowMode(bool value, Positions pos) {
     pimpl->Parallel(&Module::setOverFlowMode, pos, value);
-}
-
-Result<bool> Detector::getBottom(Positions pos) const {
-    return pimpl->Parallel(&Module::getFlippedDataX, pos);
-}
-
-void Detector::setBottom(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setFlippedDataX, pos, value);
 }
 
 Result<ns> Detector::getRateCorrection(Positions pos) const {

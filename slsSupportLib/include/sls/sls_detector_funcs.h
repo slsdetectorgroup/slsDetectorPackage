@@ -237,6 +237,8 @@ enum detFuncs {
     F_SET_GAIN_MODE,
     F_GET_COMP_DISABLE_TIME,
     F_SET_COMP_DISABLE_TIME,
+    F_GET_FLIPPED_DATA_X,
+    F_SET_FLIPPED_DATA_X,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -580,6 +582,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_GAIN_MODE:                   return "F_SET_GAIN_MODE";
     case F_GET_COMP_DISABLE_TIME:           return "F_GET_COMP_DISABLE_TIME";
     case F_SET_COMP_DISABLE_TIME:           return "F_SET_COMP_DISABLE_TIME";
+    case F_GET_FLIPPED_DATA_X:              return "F_GET_FLIPPED_DATA_X";
+    case F_SET_FLIPPED_DATA_X:              return "F_SET_FLIPPED_DATA_X";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

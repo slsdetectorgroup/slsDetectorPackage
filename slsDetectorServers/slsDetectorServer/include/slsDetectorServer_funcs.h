@@ -261,3 +261,5 @@ int get_gain_mode(int);
 int set_gain_mode(int);
 int get_comp_disable_time(int);
 int set_comp_disable_time(int);
+int get_flipped_data_x(int);
+int set_flipped_data_x(int);

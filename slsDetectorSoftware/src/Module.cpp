@@ -458,6 +458,22 @@ int Module::setTrimEn(const std::vector<int> &energies) {
     return shm()->trimEnergies.size();
 }
 
+bool Module::getFlippedDataAcrossXAxis() const {
+    if (shm()->myDetectorType == EIGER) {
+        return sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER, GET_FLAG);
+    }
+    return sendToDetector<int>(F_GET_FLIPPED_DATA_X);
+}
+
+void Module::setFlippedDataAcrossXAxis(bool value) {
+    if (shm()->myDetectorType == EIGER) {
+        sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER,
+                            static_cast<int>(value));
+    } else {
+        sendToDetector(F_SET_FLIPPED_DATA_X, static_cast<int>(value), nullptr);
+    }
+}
+
 bool Module::isVirtualDetectorServer() const {
     return sendToDetector<int>(F_IS_VIRTUAL);
 }
@@ -1396,14 +1412,6 @@ bool Module::getOverFlowMode() const {
 
 void Module::setOverFlowMode(const bool enable) {
     sendToDetector(F_SET_OVERFLOW_MODE, static_cast<int>(enable), nullptr);
-}
-
-bool Module::getFlippedDataX() const {
-    return sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER, GET_FLAG);
-}
-
-void Module::setFlippedDataX(bool value) {
-    sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER, static_cast<int>(value));
 }
 
 int64_t Module::getRateCorrection() const {

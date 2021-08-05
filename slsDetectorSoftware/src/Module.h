@@ -114,6 +114,8 @@ class Module : public virtual slsDetectorDefs {
     void setAllTrimbits(int val);
     std::vector<int> getTrimEn() const;
     int setTrimEn(const std::vector<int> &energies = {});
+    bool getFlippedDataAcrossXAxis() const;
+    void setFlippedDataAcrossXAxis(bool value);
     bool isVirtualDetectorServer() const;
 
     /**************************************************
@@ -323,8 +325,6 @@ class Module : public virtual slsDetectorDefs {
     void setSubDeadTime(int64_t value);
     bool getOverFlowMode() const;
     void setOverFlowMode(const bool enable);
-    bool getFlippedDataX() const;
-    void setFlippedDataX(bool value);
     int64_t getRateCorrection() const;
     void setDefaultRateCorrection();
     void setRateCorrection(int64_t t = 0);

@@ -386,6 +386,8 @@ void function_table() {
     flist[F_SET_GAIN_MODE] = &set_gain_mode;
     flist[F_GET_COMP_DISABLE_TIME] = &get_comp_disable_time;
     flist[F_SET_COMP_DISABLE_TIME] = &set_comp_disable_time;
+    flist[F_GET_FLIPPED_DATA_X] = &get_flipped_data_x;
+    flist[F_SET_FLIPPED_DATA_X] = &set_flipped_data_x;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8675,4 +8677,65 @@ int set_comp_disable_time(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT64, NULL, 0);
+}
+
+int get_flipped_data_x(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting flipped data x\n"));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // get only
+    retval = getFlippedDataAcrossXAxis();
+    LOG(logDEBUG1, ("flippeddatax retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_flipped_data_x(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting flipped data x: %u\n", (int)arg));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+
+        if (arg != 0 && arg != 1) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set flipped data x. Invalid argument %d.\n",
+                    arg);
+            LOG(logERROR, (mess));
+        }
+        // only for HW 2.0 (version = 3)
+        else if (isHardwareVersion2()) {
+            ret = FAIL;
+            strcpy(mess, "Could not set flipped data x. Only available for "
+                         "Hardware Board version 2.0.\n");
+            LOG(logERROR, (mess));
+        } else if (getNumberofUDPInterfaces() == 1) {
+            ret = FAIL;
+            strcpy(mess, "Could not set flipped data x. Number of udp "
+                         "interfaces is still 1.\n");
+            LOG(logERROR, (mess));
+        } else {
+            setFlippedDataAcrossXAxis(arg);
+            int retval = getFlippedDataAcrossXAxis();
+            LOG(logDEBUG1, ("flippeddatax retval: %u\n", retval));
+            validate(&ret, mess, arg, retval, "set flipped data x", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

@@ -172,6 +172,17 @@ class Detector {
      */
     void setGapPixelsinCallback(const bool enable);
 
+    /** [Eiger][Jungfrau] */
+    Result<bool> getFlipRows(Positions pos = {}) const;
+
+    /** [Eiger] flips rows paramater sent to slsreceiver to stream as json
+     * parameter to flip rows in gui \n[Jungfrau] flips rows in the detector
+     * itself.  For bottom module and number of interfaces must be set to 2.
+     * slsReceiver and slsDetectorGui does not handle.slsReceiver and
+     * slsDetectorGui does not handle
+     */
+    void setFlipRows(bool value, Positions pos = {});
+
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@{
 
@@ -994,12 +1005,6 @@ class Detector {
 
     /** [Eiger] Overflow in 32 bit mode. Default is disabled.*/
     void setOverFlowMode(bool value, Positions pos = {});
-
-    /** [Eiger] */
-    Result<bool> getBottom(Positions pos = {}) const;
-
-    /** [Eiger] for client call back (gui) purposes to flip bottom image */
-    void setBottom(bool value, Positions pos = {});
 
     /** [Eiger] deadtime in ns, 0 = disabled */
     Result<ns> getRateCorrection(Positions pos = {}) const;

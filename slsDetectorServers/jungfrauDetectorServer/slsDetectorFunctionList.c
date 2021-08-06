@@ -474,6 +474,7 @@ void setupDetector() {
     // temp threshold and reset event
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
     setTemperatureEvent(0);
+    setFlipRows(0);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -2000,6 +2001,25 @@ void alignDeserializer() {
           bus_r(ADC_DSRLZR_2_REG) & (~(ADC_DSRLZR_2_RFRSH_ALGNMNT_MSK)));
     bus_w(ADC_DSRLZR_3_REG,
           bus_r(ADC_DSRLZR_3_REG) & (~(ADC_DSRLZR_3_RFRSH_ALGNMNT_MSK)));
+}
+
+int getFlipRows() {
+    return ((bus_r(CONFIG_REG) & CONFIG_BOTTOM_INVERT_STREAM_MSK) >>
+            CONFIG_BOTTOM_INVERT_STREAM_OFST);
+}
+
+void setFlipRows(int arg) {
+    if (arg >= 0) {
+        if (arg == 0) {
+            LOG(logINFO, ("Switching off bottom row flipping\n"));
+            bus_w(CONFIG_REG,
+                  bus_r(CONFIG_REG) & ~CONFIG_BOTTOM_INVERT_STREAM_MSK);
+        } else {
+            LOG(logINFO, ("Switching on bottom row flipping\n"));
+            bus_w(CONFIG_REG,
+                  bus_r(CONFIG_REG) | CONFIG_BOTTOM_INVERT_STREAM_MSK);
+        }
+    }
 }
 
 int getTenGigaFlowControl() {

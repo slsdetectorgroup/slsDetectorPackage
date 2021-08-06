@@ -340,27 +340,6 @@ TEST_CASE("overflow", "[.cmd]") {
     }
 }
 
-TEST_CASE("flippeddatax", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        auto previous = det.getBottom();
-        std::ostringstream oss1, oss2, oss3;
-        proxy.Call("flippeddatax", {"1"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "flippeddatax 1\n");
-        proxy.Call("flippeddatax", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "flippeddatax 1\n");
-        proxy.Call("flippeddatax", {"0"}, -1, PUT, oss3);
-        REQUIRE(oss3.str() == "flippeddatax 0\n");
-        for (int i = 0; i != det.size(); ++i) {
-            det.setBottom(previous[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("flippeddatax", {}, -1, GET));
-    }
-}
-
 TEST_CASE("ratecorr", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

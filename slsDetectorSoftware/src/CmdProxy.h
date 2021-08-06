@@ -584,6 +584,7 @@ class CmdProxy {
         {"detsizechan", "detsize"},
         {"trimdir", "settingspath"},
         {"settingsdir", "settingspath"},
+        {"flippeddatax", "fliprows"},
 
         /* acquisition parameters */
         {"cycles", "triggers"},
@@ -769,6 +770,7 @@ class CmdProxy {
         {"trimval", &CmdProxy::trimval},
         {"trimen", &CmdProxy::TrimEnergies},
         {"gappixels", &CmdProxy::GapPixels},
+        {"fliprows", &CmdProxy::fliprows},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::Acquire},
@@ -906,7 +908,6 @@ class CmdProxy {
         {"subexptime", &CmdProxy::subexptime},
         {"subdeadtime", &CmdProxy::subdeadtime},
         {"overflow", &CmdProxy::overflow},
-        {"flippeddatax", &CmdProxy::flippeddatax},
         {"ratecorr", &CmdProxy::RateCorrection},
         {"readnlines", &CmdProxy::readnlines},
         {"interruptsubframe", &CmdProxy::interruptsubframe},
@@ -1232,6 +1233,14 @@ class CmdProxy {
         trimval, getAllTrimbits, setAllTrimbits, StringTo<int>,
         "[n_trimval]\n\t[Eiger][Mythen3] All trimbits set to this "
         "value. Returns -1 if all trimbits are different values.");
+
+    INTEGER_COMMAND_VEC_ID(
+        fliprows, getFlipRows, setFlipRows, StringTo<int>,
+        "[0, 1]\n\t[Eiger] flips rows paramater sent to slsreceiver "
+        "to stream as json parameter to flip rows in gui \n\t[Jungfrau] flips "
+        "rows in the detector itself. For bottom module and number of "
+        "interfaces must be set to 2. slsReceiver and slsDetectorGui "
+        "does not handle.");
 
     /* acquisition parameters */
 
@@ -1777,13 +1786,6 @@ class CmdProxy {
         overflow, getOverFlowMode, setOverFlowMode, StringTo<int>,
         "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in "
         "32 bit mode. Default is disabled.");
-
-    INTEGER_COMMAND_VEC_ID(
-        flippeddatax, getBottom, setBottom, StringTo<int>,
-        "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 "
-        "is top. Used to let Gui (via zmq from receiver) know to flip the "
-        "bottom image over the x axis. Files are not written without the flip "
-        "however.");
 
     INTEGER_COMMAND_VEC_ID(
         readnlines, getPartialReadout, setPartialReadout, StringTo<int>,

@@ -460,6 +460,8 @@ int setThresholdTemperature(int val);
 int setTemperatureControl(int val);
 int setTemperatureEvent(int val);
 void alignDeserializer();
+int getFlipRows();
+void setFlipRows(int arg);
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD

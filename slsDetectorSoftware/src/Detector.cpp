@@ -279,6 +279,14 @@ void Detector::setGapPixelsinCallback(bool enable) {
     pimpl->setGapPixelsinCallback(enable);
 }
 
+Result<bool> Detector::getFlipRows(Positions pos) const {
+    return pimpl->Parallel(&Module::getFlipRows, pos);
+}
+
+void Detector::setFlipRows(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setFlipRows, pos, value);
+}
+
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
     return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
 }
@@ -1304,14 +1312,6 @@ void Detector::setOverFlowMode(bool value, Positions pos) {
     pimpl->Parallel(&Module::setOverFlowMode, pos, value);
 }
 
-Result<bool> Detector::getBottom(Positions pos) const {
-    return pimpl->Parallel(&Module::getFlippedDataX, pos);
-}
-
-void Detector::setBottom(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setFlippedDataX, pos, value);
-}
-
 Result<ns> Detector::getRateCorrection(Positions pos) const {
     return pimpl->Parallel(&Module::getRateCorrection, pos);
 }
@@ -1511,6 +1511,14 @@ Result<defs::gainMode> Detector::getGainMode(Positions pos) const {
 
 void Detector::setGainMode(const defs::gainMode mode, Positions pos) {
     pimpl->Parallel(&Module::setGainMode, pos, mode);
+}
+
+Result<int> Detector::getFilterCell(Positions pos) const {
+    return pimpl->Parallel(&Module::getFilterCell, pos);
+}
+
+void Detector::setFilterCell(int cell, Positions pos) {
+    pimpl->Parallel(&Module::setFilterCell, pos, cell);
 }
 
 // Gotthard Specific

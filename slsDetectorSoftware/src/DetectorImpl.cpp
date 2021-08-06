@@ -490,8 +490,7 @@ void DetectorImpl::readFrameFromReceiver() {
     uint64_t currentAcquisitionIndex = -1, currentFrameIndex = -1,
              currentFileIndex = -1;
     double currentProgress = 0.00;
-    uint32_t currentSubFrameIndex = -1, coordX = -1, coordY = -1,
-             flippedDataX = -1;
+    uint32_t currentSubFrameIndex = -1, coordX = -1, coordY = -1, flipRows = -1;
 
     while (numZmqRunning != 0) {
         // reset data
@@ -571,7 +570,7 @@ void DetectorImpl::readFrameFromReceiver() {
                     if (eiger) {
                         coordY = (nY - 1) - coordY;
                     }
-                    flippedDataX = zHeader.flippedDataX;
+                    flipRows = zHeader.flipRows;
                     if (zHeader.completeImage == 0) {
                         completeImage = false;
                     }
@@ -585,7 +584,7 @@ void DetectorImpl::readFrameFromReceiver() {
                         << "\n\tcurrentSubFrameIndex: " << currentSubFrameIndex
                         << "\n\tcurrentProgress: " << currentProgress
                         << "\n\tcoordX: " << coordX << "\n\tcoordY: " << coordY
-                        << "\n\tflippedDataX: " << flippedDataX
+                        << "\n\tflipRows: " << flipRows
                         << "\n\tcompleteImage: " << completeImage;
                 }
 
@@ -609,7 +608,7 @@ void DetectorImpl::readFrameFromReceiver() {
                         << "\n\tsingledetrowoffset: " << singledetrowoffset
                         << "\n\trowoffset: " << rowoffset;
 
-                    if (eiger && (flippedDataX != 0U)) {
+                    if (eiger && (flipRows != 0U)) {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
                             memcpy((multiframe.get()) +
                                        ((yoffset + (nPixelsY - 1 - i)) *

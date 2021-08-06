@@ -261,3 +261,5 @@ int get_gain_mode(int);
 int set_gain_mode(int);
 int get_comp_disable_time(int);
 int set_comp_disable_time(int);
+int get_flip_rows(int);
+int set_flip_rows(int);

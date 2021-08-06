@@ -1928,14 +1928,14 @@ void Module::setVetoStream(const bool value) {
 }
 
 slsDetectorDefs::vetoAlgorithm Module::getVetoAlgorithm(
-    const slsDetectorDefs::ethernetInterface interface) const {
+    const slsDetectorDefs::streamingInterface interface) const {
     return sendToDetector<vetoAlgorithm>(F_GET_VETO_ALGORITHM,
                                          static_cast<int>(interface));
 }
 
 void Module::setVetoAlgorithm(
     const slsDetectorDefs::vetoAlgorithm alg,
-    const slsDetectorDefs::ethernetInterface interface) {
+    const slsDetectorDefs::streamingInterface interface) {
     int args[]{static_cast<int>(alg), static_cast<int>(interface)};
     sendToDetector(F_SET_VETO_ALGORITHM, args, nullptr);
 }

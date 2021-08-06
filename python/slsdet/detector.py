@@ -2244,6 +2244,7 @@ class Detector(CppDetectorApi):
         "resistance.
         Note
         ----
+        Advanced user command.
         [Gotthard2] Default is 0. Options: 0-3.
         [Jungfrau] Default is 1. Options: 0-1.
         """
@@ -2252,6 +2253,21 @@ class Detector(CppDetectorApi):
     @filterresistor.setter
     def filterresistor(self, value):
         ut.set_using_dict(self.setFilterResistor, value)
+
+    @property
+    @element
+    def filtercell(self):
+        """
+        [Jungfrau] Set filter capacitor. 
+        Note
+        ----
+        [Jungfrau] Options: 0-12. Default: 0. Advanced user command.
+        """
+        return self.getFilterCell()
+
+    @filtercell.setter
+    def filtercell(self, value):
+        ut.set_using_dict(self.setFilterCell, value)
 
     @property
     def maxclkphaseshift(self):

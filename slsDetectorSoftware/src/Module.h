@@ -375,7 +375,9 @@ class Module : public virtual slsDetectorDefs {
     void setStorageCellDelay(int64_t value);
     gainMode getGainMode() const;
     void setGainMode(const gainMode mode);
-
+  int getStorageCellStart() const;
+    void setStorageCellStart(int pos);
+    
     /**************************************************
      *                                                *
      *    Gotthard Specific                           *

@@ -2670,7 +2670,28 @@ enum vetoAlgorithm getVetoAlgorithm(enum ethernetInterface interface) {
 }
 
 void setVetoAlgorithm(enum ethernetInterface interface,
-                      enum vetoAlgorithm alg) {}
+                      enum vetoAlgorithm alg) {
+    uint32_t addr = CONFIG_REG;
+    uint32_t value = bus_r(addr);
+    switch (alg) {
+        // more to follow
+    case DEFAULT_ALGORITHM:
+        if (interface == I3GBE) {
+            LOG(logINFO, ("Setting default veto algorithm for 3Gbe\n"));
+            value &= (~CONFIG_VETO_CH_3GB_ALG_MSK);
+            value |= CONFIG_VETO_CH_3GB_ALG_DEFAULT_VAL;
+        } else {
+            LOG(logINFO, ("Setting default veto algorithm for 10Gbe\n"));
+            value &= (~CONFIG_VETO_CH_10GB_ALG_MSK);
+            value |= CONFIG_VETO_CH_10GB_ALG_DEFAULT_VAL;                
+        }
+        break;
+    default:
+        LOG(logERROR, ("unknown algorithm %d for 3gbe\n", alg));
+        return;
+    }
+    bus_w(addr, value);
+}
 
 void setBadChannels(int nch, int *channels) {
     LOG(logINFO, ("Setting %d bad channels\n", nch));

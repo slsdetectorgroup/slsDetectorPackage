@@ -3,7 +3,6 @@
 #define APILIB       0x210225
 #define APIRECEIVER  0x210225
 #define APIGUI       0x210225
-
 #define APIEIGER 0x210806
 #define APICTB 0x210806
 #define APIGOTTHARD 0x210806

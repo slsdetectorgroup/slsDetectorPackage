@@ -1108,7 +1108,7 @@ enum gainMode getGainMode() {
 
     // dynamic gain, when nothing is set
     if (retval_force == 0 && retval_fix == 0 && retval_cmp_rst == 0) {
-        return DYNAMIC_GAIN_MODE;
+        return DYNAMIC;
     }
 
     switch (retval_force) {
@@ -1142,7 +1142,7 @@ void setGainMode(enum gainMode mode) {
     uint32_t value = bus_r(addr);
 
     switch (mode) {
-    case DYNAMIC_GAIN_MODE:
+    case DYNAMIC:
         value &= ~(DAQ_GAIN_MODE_MASK);
         bus_w(addr, value);
         LOG(logINFO,

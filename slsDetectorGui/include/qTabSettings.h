@@ -65,7 +65,7 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
     };
 
     enum {
-        DYNAMIC_GAIN_MODE,
+        DYNAMIC,
         FORCE_SWITCH_G1,
         FORCE_SWITCH_G2,
         FIX_G1,

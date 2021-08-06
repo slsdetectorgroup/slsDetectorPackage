@@ -2249,8 +2249,8 @@ class Detector(CppDetectorApi):
         """
         return self.getFilterResistor()
 
-    @filter.setter
-    def filter(self, value):
+    @filterresistor.setter
+    def filterresistor(self, value):
         ut.set_using_dict(self.setFilterResistor, value)
 
     @property

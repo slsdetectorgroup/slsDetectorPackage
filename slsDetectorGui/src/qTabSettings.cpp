@@ -132,7 +132,7 @@ void qTabSettings::SetupDetectorSettings() {
 }
 
 void qTabSettings::SetupGainMode() {
-    comboGainMode->setCurrentIndex(DYNAMIC_GAIN_MODE);
+    comboGainMode->setCurrentIndex(DYNAMIC);
     ShowFixG0(false);
 }
 

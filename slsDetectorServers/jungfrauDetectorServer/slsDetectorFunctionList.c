@@ -451,6 +451,7 @@ void setupDetector() {
 
     // Initialization of acquistion parameters
     setSettings(DEFAULT_SETTINGS);
+    setGainMode(DEFAULT_GAINMODE);
 
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
@@ -507,10 +508,10 @@ int resetToDefaultDacs(int hardReset) {
             // special dac: replace default value
             if (specialDacs[j] == i) {
                 switch (oldSettings) {
-                case DYNAMICGAIN:
+                case GAIN0:
                     value = defaultDacValue_G0[j];
                     break;
-                case DYNAMICHG0:
+                case HIGHGAIN0:
                     value = defaultDacValue_HG0[j];
                     break;
                 default:
@@ -541,10 +542,10 @@ int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
         for (int i = 0; i < NSPECIALDACS; ++i) {
             if ((int)index == specialDacs[i]) {
                 switch (sett) {
-                case DYNAMICGAIN:
+                case GAIN0:
                     *retval = defaultDacValue_G0[i];
                     return OK;
-                case DYNAMICHG0:
+                case HIGHGAIN0:
                     *retval = defaultDacValue_HG0[i];
                     return OK;
                     // unknown settings
@@ -573,15 +574,14 @@ int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
         for (int i = 0; i < NSPECIALDACS; ++i) {
             if ((int)index == specialDacs[i]) {
                 switch (sett) {
-                case DYNAMICGAIN:
-                    LOG(logINFO,
-                        ("Setting Default Dac [%d - %s, dynamicgain]: %d\n",
-                         (int)index, dac_names[index], value));
+                case GAIN0:
+                    LOG(logINFO, ("Setting Default Dac [%d - %s, gain0]: %d\n",
+                                  (int)index, dac_names[index], value));
                     defaultDacValue_G0[i] = value;
                     return OK;
-                case DYNAMICHG0:
+                case HIGHGAIN0:
                     LOG(logINFO,
-                        ("Setting Default Dac [%d - %s, dynamichg0]: %d\n",
+                        ("Setting Default Dac [%d - %s, highgain0]: %d\n",
                          (int)index, dac_names[index], value));
                     defaultDacValue_HG0[i] = value;
                     return OK;
@@ -793,6 +793,11 @@ int selectStoragecellStart(int pos) {
         LOG(logINFO, ("Setting storage cell start: %d\n", pos));
         bus_w(addr, bus_r(addr) & ~mask);
         bus_w(addr, bus_r(addr) | ((value << offset) & mask));
+        // should not do a get to verify (status register does not update
+        // immediately during acquisition)
+        if (getChipVersion() == 11) {
+            return pos;
+        }
     }
 
     // read value back
@@ -1045,16 +1050,16 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     int *dacVals = NULL;
     // set settings
     switch (sett) {
-    case DYNAMICGAIN:
+    case GAIN0:
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_HIGH_GAIN_MSK);
         LOG(logINFO,
-            ("Set settings - Dyanmic Gain [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
+            ("Set settings - Gain 0 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
         dacVals = defaultDacValue_G0;
         break;
-    case DYNAMICHG0:
+    case HIGHGAIN0:
         bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_HIGH_GAIN_MSK);
-        LOG(logINFO, ("Set settings - Dyanmic High Gain 0 [DAQ Reg:0x%x]\n",
-                      bus_r(DAQ_REG)));
+        LOG(logINFO,
+            ("Set settings - High Gain 0 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
         dacVals = defaultDacValue_HG0;
         break;
     default:
@@ -1075,61 +1080,56 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         configureChip();
     }
 
-    return thisSettings;
+    return getSettings();
 }
 
-void validateSettings() {
-    // if any special dac value is changed individually => undefined
-    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
-    int *specialDacValues[] = {defaultDacValue_G0, defaultDacValue_HG0};
-    int settList[] = {DYNAMICGAIN, DYNAMICHG0};
-    enum detectorSettings sett = UNDEFINED;
-    for (int isett = 0; isett != NUMSETTINGS; ++isett) {
-
-        // assume it matches current setting in list
-        sett = settList[isett];
-        // if one value does not match, = undefined
-        for (int i = 0; i < NSPECIALDACS; ++i) {
-            if (getDAC(specialDacs[i], 0) != specialDacValues[isett][i]) {
-                sett = UNDEFINED;
-                break;
-            }
-        }
-
-        // all values matchd a setting
-        if (sett != UNDEFINED) {
-            break;
-        }
-    }
-    // update settings
-    if (thisSettings != sett) {
-        LOG(logINFOBLUE,
-            ("Validated settings to %s (%d)\n",
-             (sett == DYNAMICGAIN
-                  ? "dynamicgain"
-                  : (sett == DYNAMICHG0 ? "dynamichg0" : "undefined")),
-             sett));
-        thisSettings = sett;
-    }
+enum detectorSettings getSettings() {
+    if (bus_r(DAQ_REG) & DAQ_HIGH_GAIN_MSK)
+        return HIGHGAIN0;
+    return GAIN0;
 }
-
-enum detectorSettings getSettings() { return thisSettings; }
 
 enum gainMode getGainMode() {
-    uint32_t retval = bus_r(DAQ_REG) & DAQ_FRCE_SWTCH_GAIN_MSK;
+    uint32_t regval = bus_r(DAQ_REG);
+    uint32_t retval_force = regval & DAQ_FRCE_SWTCH_GAIN_MSK;
+    uint32_t retval_fix = regval & DAQ_FIX_GAIN_MSK;
+    uint32_t retval_cmp_rst = regval & DAQ_CMP_RST_MSK;
 
-    switch (retval) {
-    case DAQ_FRCE_GAIN_STG_0_VAL:
-        return NORMAL_GAIN_MODE;
+    // only one set should be valid
+    if ((retval_force && retval_fix) || (retval_fix && retval_cmp_rst) ||
+        (retval_force && retval_cmp_rst)) {
+        LOG(logERROR, ("undefined gain mode. DAQ reg: 0x%x\n", regval));
+    }
+
+    // dynamic gain, when nothing is set
+    if (retval_force == 0 && retval_fix == 0 && retval_cmp_rst == 0) {
+        return DYNAMIC_GAIN_MODE;
+    }
+
+    switch (retval_force) {
     case DAQ_FRCE_GAIN_STG_1_VAL:
         return FORCE_SWITCH_G1;
     case DAQ_FRCE_GAIN_STG_2_VAL:
         return FORCE_SWITCH_G2;
     default:
-        LOG(logERROR, ("This gain mode %d is not defined [DAQ reg: %d]\n",
-                       (retval << DAQ_FRCE_SWTCH_GAIN_OFST), retval));
-        return -1;
+        break;
     }
+
+    switch (retval_fix) {
+    case DAQ_FIX_GAIN_STG_1_VAL:
+        return FIX_G1;
+    case DAQ_FIX_GAIN_STG_2_VAL:
+        return FIX_G2;
+    default:
+        break;
+    }
+
+    if (retval_cmp_rst) {
+        return FIX_G0;
+    }
+
+    LOG(logERROR, ("This gain mode is undefined [DAQ reg: %d]\n", regval));
+    return -1;
 }
 
 void setGainMode(enum gainMode mode) {
@@ -1137,25 +1137,46 @@ void setGainMode(enum gainMode mode) {
     uint32_t value = bus_r(addr);
 
     switch (mode) {
-    case NORMAL_GAIN_MODE:
-        value &= ~(DAQ_FRCE_SWTCH_GAIN_MSK);
+    case DYNAMIC_GAIN_MODE:
+        value &= ~(DAQ_GAIN_MODE_MASK);
         bus_w(addr, value);
-        LOG(logINFO, ("Set gain mode - Normal Gain  Mode [DAQ Reg:0x%x]\n",
-                      bus_r(DAQ_REG)));
+        LOG(logINFO,
+            ("Set gain mode - Dynamic Gain [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
         break;
     case FORCE_SWITCH_G1:
-        value &= ~(DAQ_FRCE_SWTCH_GAIN_MSK);
+        value &= ~(DAQ_GAIN_MODE_MASK);
         value |= DAQ_FRCE_GAIN_STG_1_VAL;
         bus_w(addr, value);
         LOG(logINFO, ("Set gain mode - Force Switch G1 [DAQ Reg:0x%x]\n",
                       bus_r(DAQ_REG)));
         break;
     case FORCE_SWITCH_G2:
-        value &= ~(DAQ_FRCE_SWTCH_GAIN_MSK);
+        value &= ~(DAQ_GAIN_MODE_MASK);
         value |= DAQ_FRCE_GAIN_STG_2_VAL;
         bus_w(addr, value);
         LOG(logINFO, ("Set gain mode - Force Switch G2 [DAQ Reg:0x%x]\n",
                       bus_r(DAQ_REG)));
+        break;
+    case FIX_G1:
+        value &= ~(DAQ_GAIN_MODE_MASK);
+        value |= DAQ_FIX_GAIN_STG_1_VAL;
+        bus_w(addr, value);
+        LOG(logINFO,
+            ("Set gain mode - Fix G1 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
+        break;
+    case FIX_G2:
+        value &= ~(DAQ_GAIN_MODE_MASK);
+        value |= DAQ_FIX_GAIN_STG_2_VAL;
+        bus_w(addr, value);
+        LOG(logINFO,
+            ("Set gain mode - Fix G2 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
+        break;
+    case FIX_G0:
+        value &= ~(DAQ_GAIN_MODE_MASK);
+        value |= DAQ_CMP_RST_MSK;
+        bus_w(addr, value);
+        LOG(logINFO,
+            ("Set gain mode - Fix G0 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
         break;
     default:
         LOG(logERROR, ("This gain mode %d is not defined\n", (int)mode));
@@ -1193,12 +1214,6 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         }
     }
 #endif
-    const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
-    for (int i = 0; i < NSPECIALDACS; ++i) {
-        if ((int)ind == specialDacs[i]) {
-            validateSettings();
-        }
-    }
 }
 
 int getDAC(enum DACINDEX ind, int mV) {

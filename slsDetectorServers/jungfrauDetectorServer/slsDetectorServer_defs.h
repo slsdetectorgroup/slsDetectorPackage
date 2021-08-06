@@ -97,7 +97,8 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define DEFAULT_DELAY                 (0)
 #define DEFAULT_HIGH_VOLTAGE          (0)
 #define DEFAULT_TIMING_MODE           (AUTO_TIMING)
-#define DEFAULT_SETTINGS              (DYNAMICGAIN)
+#define DEFAULT_SETTINGS              (GAIN0)
+#define DEFAULT_GAINMODE              (DYNAMIC_GAIN_MODE)
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_TMP_THRSHLD           (65 * 1000) // milli degree Celsius
 #define DEFAULT_NUM_STRG_CLLS         (0)

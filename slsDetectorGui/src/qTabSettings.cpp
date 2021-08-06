@@ -71,6 +71,9 @@ void qTabSettings::SetupWidgetWindow() {
         comboDynamicRange->setEnabled(true);
         lblThreshold->setEnabled(true);
         spinThreshold->setEnabled(true);
+    } else if (detType == slsDetectorDefs::JUNGFRAU) {
+        lblGainMode->setEnabled(true);
+        comboGainMode->setEnabled(true);
     }
 
     // default settings for the disabled
@@ -83,19 +86,35 @@ void qTabSettings::SetupWidgetWindow() {
         spinThreshold2->setValue(-1);
         spinThreshold3->setValue(-1);
     }
+
+    // default for gain mode
+    if (comboGainMode->isEnabled()) {
+        SetupGainMode();
+    }
+
     Initialization();
     // default for the disabled
     GetDynamicRange();
     Refresh();
 }
 
+void qTabSettings::SetExportMode(bool exportMode) {
+    if (comboGainMode->isVisible()) {
+        ShowFixG0(exportMode);
+    }
+}
+
 void qTabSettings::SetupDetectorSettings() {
+    comboSettings->setCurrentIndex(UNINITIALIZED);
+
+    // enable only those available to detector
     QStandardItemModel *model =
         qobject_cast<QStandardItemModel *>(comboSettings->model());
+    const int numSettings = comboSettings->count();
     if (model) {
-        QModelIndex index[NUMSETTINGS];
-        QStandardItem *item[NUMSETTINGS];
-        for (int i = 0; i < NUMSETTINGS; ++i) {
+        std::vector<QModelIndex> index(numSettings);
+        std::vector<QStandardItem *> item(numSettings);
+        for (size_t i = 0; i < index.size(); ++i) {
             index[i] = model->index(i, comboSettings->modelColumn(),
                                     comboSettings->rootModelIndex());
             item[i] = model->itemFromIndex(index[i]);
@@ -112,11 +131,38 @@ void qTabSettings::SetupDetectorSettings() {
     }
 }
 
+void qTabSettings::SetupGainMode() {
+    comboGainMode->setCurrentIndex(DYNAMIC_GAIN_MODE);
+    ShowFixG0(false);
+}
+
+void qTabSettings::ShowFixG0(bool expertMode) {
+    LOG(logINFO) << (expertMode ? "Showing" : "Hiding") << " FIX_G0";
+
+    // enable.disable Fix G0
+    QStandardItemModel *model =
+        qobject_cast<QStandardItemModel *>(comboGainMode->model());
+    const int numSettings = comboGainMode->count();
+    if (model) {
+        std::vector<QModelIndex> index(numSettings);
+        std::vector<QStandardItem *> item(numSettings);
+        index[FIX_G0] = model->index(FIX_G0, comboGainMode->modelColumn(),
+                                     comboGainMode->rootModelIndex());
+        item[FIX_G0] = model->itemFromIndex(index[FIX_G0]);
+        item[FIX_G0]->setEnabled(expertMode);
+    }
+    isVisibleFixG0 = expertMode;
+}
+
 void qTabSettings::Initialization() {
     // Settings
     if (comboSettings->isEnabled())
         connect(comboSettings, SIGNAL(currentIndexChanged(int)), this,
                 SLOT(SetSettings(int)));
+    // Gain mode
+    if (comboGainMode->isEnabled())
+        connect(comboGainMode, SIGNAL(currentIndexChanged(int)), this,
+                SLOT(SetGainMode(int)));
 
     // Dynamic Range
     if (comboDynamicRange->isEnabled())
@@ -160,7 +206,7 @@ void qTabSettings::GetSettings() {
             comboSettings->setCurrentIndex(UNINITIALIZED);
             break;
         default:
-            if ((int)retval < -1 || (int)retval >= NUMSETTINGS) {
+            if ((int)retval < -1 || (int)retval >= comboSettings->count()) {
                 throw sls::RuntimeError(std::string("Unknown settings: ") +
                                         std::to_string(retval));
             }
@@ -186,6 +232,60 @@ void qTabSettings::SetSettings(int index) {
     if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
         SetThresholdEnergy(spinThreshold->value());
     }
+}
+
+void qTabSettings::GetGainMode() {
+    LOG(logDEBUG) << "Getting gain mode";
+    disconnect(comboGainMode, SIGNAL(currentIndexChanged(int)), this,
+               SLOT(SetGainMode(int)));
+    try {
+        auto retval = det->getGainMode().tsquash(
+            "Inconsistent gain mode for all detectors.");
+        if ((int)retval < 0 || (int)retval >= comboGainMode->count()) {
+            throw sls::RuntimeError(std::string("Unknown gain mode: ") +
+                                    std::to_string(retval));
+        }
+        // warning when using fix_g0 and not in export mode
+        if ((int)retval == FIX_G0 && !isVisibleFixG0) {
+            std::string message =
+                "<nobr>You are not in Expert Mode and Gain Mode is in FIX_G0. "
+                "</nobr><br><nobr>Could damage the detector when used without "
+                "caution! </nobr>";
+            qDefs::Message(qDefs::WARNING, message,
+                           "qTabSettings::GetGainMode");
+            LOG(logWARNING) << message;
+        }
+        comboGainMode->setCurrentIndex((int)retval);
+    }
+    CATCH_DISPLAY("Could not get gain mode.", "qTabSettings::GetGainMode")
+    connect(comboGainMode, SIGNAL(currentIndexChanged(int)), this,
+            SLOT(SetGainMode(int)));
+}
+
+void qTabSettings::SetGainMode(int index) {
+    // warning for fix_G0 even in export mode
+    if (index == FIX_G0) {
+        if (qDefs::Message(
+                qDefs::QUESTION,
+                "<nobr>You are in Export mode, "
+                "</nobr><br><nobr>but setting Gain Mode to FIX_G0 could "
+                "damage the detector! </nobr><br><nobr>Proceed and set "
+                "gainmode to FIX_G0 anyway?</nobr>",
+                "qTabSettings::SetGainMode") == slsDetectorDefs::FAIL) {
+            GetGainMode();
+            return;
+        }
+    }
+
+    LOG(logINFO) << "Setting Gain Mode to "
+                 << comboGainMode->currentText().toAscii().data();
+    auto val = static_cast<slsDetectorDefs::gainMode>(index);
+    try {
+
+        det->setGainMode(val);
+    }
+    CATCH_HANDLE("Could not set gain mode.", "qTabSettings::SetGainMode", this,
+                 &qTabSettings::GetGainMode)
 }
 
 void qTabSettings::GetDynamicRange() {
@@ -358,6 +458,10 @@ void qTabSettings::Refresh() {
 
     if (comboSettings->isEnabled()) {
         GetSettings();
+    }
+
+    if (comboGainMode->isEnabled()) {
+        GetGainMode();
     }
 
     if (comboDynamicRange->isEnabled()) {

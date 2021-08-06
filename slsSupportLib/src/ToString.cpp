@@ -170,8 +170,8 @@ std::string ToString(const defs::detectorSettings s) {
         return std::string("mediumgain");
     case defs::VERYHIGHGAIN:
         return std::string("veryhighgain");
-    case defs::DYNAMICHG0:
-        return std::string("dynamichg0");
+    case defs::HIGHGAIN0:
+        return std::string("highgain0");
     case defs::FIXGAIN1:
         return std::string("fixgain1");
     case defs::FIXGAIN2:
@@ -194,6 +194,8 @@ std::string ToString(const defs::detectorSettings s) {
         return std::string("g4_hg");
     case defs::G4_LOWGAIN:
         return std::string("g4_lg");
+    case defs::GAIN0:
+        return std::string("gain0");
     case defs::UNDEFINED:
         return std::string("undefined");
     case defs::UNINITIALIZED:
@@ -581,12 +583,18 @@ std::string ToString(const defs::vetoAlgorithm s) {
 
 std::string ToString(const defs::gainMode s) {
     switch (s) {
-    case defs::NORMAL_GAIN_MODE:
-        return std::string("normal");
+    case defs::DYNAMIC_GAIN_MODE:
+        return std::string("dynamicgain");
     case defs::FORCE_SWITCH_G1:
         return std::string("forceswitchg1");
     case defs::FORCE_SWITCH_G2:
         return std::string("forceswitchg2");
+    case defs::FIX_G1:
+        return std::string("fixg1");
+    case defs::FIX_G2:
+        return std::string("fixg2");
+    case defs::FIX_G0:
+        return std::string("fixg0");
     default:
         return std::string("Unknown");
     }
@@ -627,8 +635,8 @@ template <> defs::detectorSettings StringTo(const std::string &s) {
         return defs::MEDIUMGAIN;
     if (s == "veryhighgain")
         return defs::VERYHIGHGAIN;
-    if (s == "dynamichg0")
-        return defs::DYNAMICHG0;
+    if (s == "highgain0")
+        return defs::HIGHGAIN0;
     if (s == "fixgain1")
         return defs::FIXGAIN1;
     if (s == "fixgain2")
@@ -649,6 +657,8 @@ template <> defs::detectorSettings StringTo(const std::string &s) {
         return defs::G2_LOWCAP_LOWGAIN;
     if (s == "g4_hg")
         return defs::G4_HIGHGAIN;
+    if (s == "gain0")
+        return defs::GAIN0;
     if (s == "g4_lg")
         return defs::G4_LOWGAIN;
     throw sls::RuntimeError("Unknown setting " + s);
@@ -976,12 +986,18 @@ template <> defs::vetoAlgorithm StringTo(const std::string &s) {
 }
 
 template <> defs::gainMode StringTo(const std::string &s) {
-    if (s == "normal")
-        return defs::NORMAL_GAIN_MODE;
+    if (s == "dynamicgain")
+        return defs::DYNAMIC_GAIN_MODE;
     if (s == "forceswitchg1")
         return defs::FORCE_SWITCH_G1;
     if (s == "forceswitchg2")
         return defs::FORCE_SWITCH_G2;
+    if (s == "fixg1")
+        return defs::FIX_G1;
+    if (s == "fixg2")
+        return defs::FIX_G2;
+    if (s == "fixg0")
+        return defs::FIX_G0;
     throw sls::RuntimeError("Unknown gain mode " + s);
 }
 

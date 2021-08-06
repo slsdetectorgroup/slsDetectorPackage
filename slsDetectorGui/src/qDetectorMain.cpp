@@ -340,6 +340,7 @@ void qDetectorMain::EnableModes(QAction *action) {
         actionLoadTrimbits->setVisible(enable &&
                                        (detType == slsDetectorDefs::EIGER ||
                                         detType == slsDetectorDefs::MYTHEN3));
+        tabSettings->SetExportMode(enable);
         LOG(logINFO) << "Expert Mode: " << qDefs::stringEnable(enable);
     }
 

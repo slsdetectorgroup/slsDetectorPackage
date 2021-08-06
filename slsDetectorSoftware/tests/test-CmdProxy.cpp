@@ -150,7 +150,7 @@ TEST_CASE("settings", "[.cmd]") {
     allSett.push_back("lowgain");
     allSett.push_back("mediumgain");
     allSett.push_back("veryhighgain");
-    allSett.push_back("dynamichg0");
+    allSett.push_back("highgain0");
     allSett.push_back("fixgain1");
     allSett.push_back("fixgain2");
     allSett.push_back("verylowgain");
@@ -164,12 +164,13 @@ TEST_CASE("settings", "[.cmd]") {
     allSett.push_back("g4_lg");
     allSett.push_back("forceswitchg1");
     allSett.push_back("forceswitchg2");
+    allSett.push_back("gain0");
 
     std::vector<std::string> sett;
     switch (det_type) {
     case defs::JUNGFRAU:
-        sett.push_back("dynamicgain");
-        sett.push_back("dynamichg0");
+        sett.push_back("gain0");
+        sett.push_back("highgain0");
         break;
     case defs::GOTTHARD:
         sett.push_back("highgain");

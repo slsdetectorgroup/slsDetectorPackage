@@ -158,12 +158,11 @@ std::vector<defs::detectorSettings> Detector::getSettingsList() const {
             defs::HIGHGAIN, defs::DYNAMICGAIN, defs::LOWGAIN, defs::MEDIUMGAIN,
             defs::VERYHIGHGAIN};
     case defs::JUNGFRAU:
-        return std::vector<defs::detectorSettings>{defs::DYNAMICGAIN,
-                                                   defs::DYNAMICHG0};
+        return std::vector<defs::detectorSettings>{defs::GAIN0,
+                                                   defs::HIGHGAIN0};
     case defs::GOTTHARD2:
         return std::vector<defs::detectorSettings>{
-            defs::DYNAMICGAIN, defs::DYNAMICHG0, defs::FIXGAIN1,
-            defs::FIXGAIN2};
+            defs::DYNAMICGAIN, defs::FIXGAIN1, defs::FIXGAIN2};
     case defs::MOENCH:
         return std::vector<defs::detectorSettings>{
             defs::G1_HIGHGAIN,         defs::G1_LOWGAIN,
@@ -1494,9 +1493,12 @@ void Detector::setStorageCellDelay(ns value, Positions pos) {
 std::vector<defs::gainMode> Detector::getGainModeList() const {
     switch (getDetectorType().squash()) {
     case defs::JUNGFRAU:
-        return std::vector<defs::gainMode>{defs::NORMAL_GAIN_MODE,
+        return std::vector<defs::gainMode>{defs::DYNAMIC_GAIN_MODE,
                                            defs::FORCE_SWITCH_G1,
-                                           defs::FORCE_SWITCH_G2};
+                                           defs::FORCE_SWITCH_G2,
+                                           defs::FIX_G1,
+                                           defs::FIX_G2,
+                                           defs::FIX_G0};
         break;
     default:
         throw RuntimeError("Gain mode is not implemented for this detector.");

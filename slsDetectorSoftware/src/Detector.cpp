@@ -1521,6 +1521,14 @@ void Detector::setGainMode(const defs::gainMode mode, Positions pos) {
     pimpl->Parallel(&Module::setGainMode, pos, mode);
 }
 
+Result<int> Detector::getFilterCell(Positions pos) const {
+    return pimpl->Parallel(&Module::getFilterCell, pos);
+}
+
+void Detector::setFilterCell(int cell, Positions pos) {
+    pimpl->Parallel(&Module::setFilterCell, pos, cell);
+}
+
 // Gotthard Specific
 
 Result<defs::ROI> Detector::getROI(Positions pos) const {

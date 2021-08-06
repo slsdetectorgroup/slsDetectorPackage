@@ -239,6 +239,8 @@ enum detFuncs {
     F_SET_COMP_DISABLE_TIME,
     F_GET_FLIP_ROWS,
     F_SET_FLIP_ROWS,
+    F_GET_FILTER_CELL,
+    F_SET_FILTER_CELL,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -585,6 +587,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_COMP_DISABLE_TIME:           return "F_SET_COMP_DISABLE_TIME";
     case F_GET_FLIP_ROWS:                   return "F_GET_FLIP_ROWS";
     case F_SET_FLIP_ROWS:                   return "F_SET_FLIP_ROWS";
+    case F_GET_FILTER_CELL:                 return "F_GET_FILTER_CELL";
+    case F_SET_FILTER_CELL:                 return "F_SET_FILTER_CELL";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

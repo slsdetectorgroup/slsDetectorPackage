@@ -2573,6 +2573,7 @@ int setChipStatusRegister(int csr) {
 }
 
 int setGainCaps(int caps) {
+    LOG(logINFO, ("Setting gain caps to: %u\n", caps));
     // Update only gain caps, leave the rest of the CSR unchanged
     int csr = getChipStatusRegister();
     csr &= ~GAIN_MASK;

@@ -496,8 +496,7 @@ TEST_CASE("filtercell", "[.cmd]") {
     if (det_type == defs::JUNGFRAU) {
         // chip version 1.1
         if (det.getChipVersion().squash() * 10 == 11) {
-            auto prev_val = det.getFilterCell().tsquash(
-                "inconsistent #additional storage cells to test");
+            auto prev_val = det.getFilterCell();
             {
                 std::ostringstream oss;
                 proxy.Call("filtercell", {"1"}, -1, PUT, oss);

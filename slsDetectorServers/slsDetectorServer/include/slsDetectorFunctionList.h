@@ -464,6 +464,8 @@ int getFlipRows();
 void setFlipRows(int arg);
 int setFilterResistor(int value);
 int getFilterResistor();
+int getFilterCell();
+void setFilterCell(int iCell);
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD

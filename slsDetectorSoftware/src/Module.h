@@ -411,9 +411,9 @@ class Module : public virtual slsDetectorDefs {
     bool getVetoStream() const;
     void setVetoStream(const bool value);
     slsDetectorDefs::vetoAlgorithm
-    getVetoAlgorithm(const slsDetectorDefs::ethernetInterface interface) const;
+    getVetoAlgorithm(const slsDetectorDefs::streamingInterface interface) const;
     void setVetoAlgorithm(const slsDetectorDefs::vetoAlgorithm alg,
-                          const slsDetectorDefs::ethernetInterface interface);
+                          const slsDetectorDefs::streamingInterface interface);
     int getADCConfiguration(const int chipIndex, const int adcIndex) const;
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              int value);

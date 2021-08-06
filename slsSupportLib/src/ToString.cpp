@@ -555,18 +555,18 @@ std::string ToString(const defs::portPosition s) {
     }
 }
 
-std::string ToString(const defs::ethernetInterface s) {
+std::string ToString(const defs::streamingInterface s) {
     std::ostringstream os;
     std::string rs;
     switch (s) {
-    case defs::ethernetInterface::NONE:
+    case defs::streamingInterface::NONE:
         return std::string("none");
     default:
-        if ((s & defs::ethernetInterface::I3GBE) !=
-            defs::ethernetInterface::NONE)
-            os << "3gbe, ";
-        if ((s & defs::ethernetInterface::I10GBE) !=
-            defs::ethernetInterface::NONE)
+        if ((s & defs::streamingInterface::LOW_LATENCY_LINK) !=
+            defs::streamingInterface::NONE)
+            os << "lll, ";
+        if ((s & defs::streamingInterface::ETHERNET_10GB) !=
+            defs::streamingInterface::NONE)
             os << "10gbe, ";
         auto rs = os.str();
         rs.erase(rs.end() - 2, rs.end());
@@ -951,17 +951,17 @@ template <> defs::portPosition StringTo(const std::string &s) {
     throw sls::RuntimeError("Unknown port position " + s);
 }
 
-template <> defs::ethernetInterface StringTo(const std::string &s) {
+template <> defs::streamingInterface StringTo(const std::string &s) {
     std::string rs = s;
     if (s.find(',') != std::string::npos)
         rs.erase(rs.find(','));
     if (rs == "none")
-        return defs::ethernetInterface::NONE;
-    if (rs == "3gbe")
-        return defs::ethernetInterface::I3GBE;
+        return defs::streamingInterface::NONE;
+    if (rs == "lll")
+        return defs::streamingInterface::LOW_LATENCY_LINK;
     if (rs == "10gbe")
-        return defs::ethernetInterface::I10GBE;
-    throw sls::RuntimeError("Unknown ethernetInterface type " + s);
+        return defs::streamingInterface::ETHERNET_10GB;
+    throw sls::RuntimeError("Unknown streamingInterface type " + s);
 }
 
 template <> defs::vetoAlgorithm StringTo(const std::string &s) {

@@ -7,7 +7,7 @@ timingMode = slsDetectorDefs.timingMode
 speedLevel = slsDetectorDefs.speedLevel
 dacIndex = slsDetectorDefs.dacIndex
 detectorType = slsDetectorDefs.detectorType
-ethernetInterface = slsDetectorDefs.ethernetInterface
+streamingInterface = slsDetectorDefs.streamingInterface
 
 defs = slsDetectorDefs
 
@@ -2357,7 +2357,7 @@ class Detector(CppDetectorApi):
         Note
         ----
         Default: both off
-        Options: NONE, I3GBE, 10GBE (debugging)
+        Options: NONE, LOW_LATENCY_LINK, 10GBE (debugging)
         Debugging interface also enables second interface in receiver (separate file), which also restarts zmq streaming if enabled.
         """
         return self.getVetoStream()
@@ -2373,10 +2373,10 @@ class Detector(CppDetectorApi):
         """[Gotthard2] Algorithm used for veto
         Example
         ----------
-        >>> d.vetoalg = defs.DEFAULT_ALGORITHM, defs.I10GBE
+        >>> d.vetoalg = defs.DEFAULT_ALGORITHM, defs.ETHERNET_10GB
         """
         result = {}
-        interface = [ethernetInterface.I3GBE, ethernetInterface.I10GBE]
+        interface = [streamingInterface.LOW_LATENCY_LINK, streamingInterface.ETHERNET_10GB]
         for eth in interface:
             result[eth] = element_if_equal(self.getVetoAlgorithm(eth))
         return result

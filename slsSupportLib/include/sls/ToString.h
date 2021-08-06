@@ -36,13 +36,9 @@ std::string ToString(const defs::dacIndex s);
 std::string ToString(const std::vector<defs::dacIndex> &vec);
 std::string ToString(const defs::burstMode s);
 std::string ToString(const defs::timingSourceType s);
-<<<<<<< HEAD
 std::string ToString(const defs::M3_GainCaps s);
 std::string ToString(const defs::portPosition s);
-std::string ToString(const defs::ethernetInterface s);
-=======
 std::string ToString(const defs::streamingInterface s);
->>>>>>> 5.2.0-rc
 std::string ToString(const defs::vetoAlgorithm s);
 std::string ToString(const defs::gainMode s);
 

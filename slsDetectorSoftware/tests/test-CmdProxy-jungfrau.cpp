@@ -458,8 +458,8 @@ TEST_CASE("gainmode", "[.cmd]") {
         }
         {
             std::ostringstream oss;
-            proxy.Call("gainmode", {"dynamicgain"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "gainmode dynamicgain\n");
+            proxy.Call("gainmode", {"dynamic"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gainmode dynamic\n");
         }
         {
             std::ostringstream oss;

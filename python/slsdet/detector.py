@@ -2201,7 +2201,7 @@ class Detector(CppDetectorApi):
         [Jungfrau] Detector gain mode. Enum: gainMode
         Note
         -----
-        [Jungfrau] DYNAMIC_GAIN_MODE, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 \n
+        [Jungfrau] DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 \n
         CAUTION: Do not use FIX_G0 without caution, you can damage the detector!!!
         """
         return element_if_equal(self.getGainMode())

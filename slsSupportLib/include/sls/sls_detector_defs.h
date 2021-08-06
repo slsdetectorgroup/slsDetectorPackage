@@ -395,14 +395,14 @@ typedef struct {
     enum timingSourceType { TIMING_INTERNAL, TIMING_EXTERNAL };
 
 #ifdef __cplusplus
-    enum class ethernetInterface {
+    enum class streamingInterface {
 #else
-    enum ethernetInterface {
+    enum streamingInterface {
 #endif
         NONE = 0,
-        I3GBE = 1 << 0,
-        I10GBE = 1 << 1,
-        ALL = I3GBE | I10GBE
+        LOW_LATENCY_LINK = 1 << 0,
+        ETHERNET_10GB = 1 << 1,
+        ALL = LOW_LATENCY_LINK | ETHERNET_10GB
     };
 
     enum vetoAlgorithm { DEFAULT_ALGORITHM };
@@ -498,17 +498,17 @@ typedef struct {
 
 #ifdef __cplusplus
 };
-inline slsDetectorDefs::ethernetInterface
-operator|(const slsDetectorDefs::ethernetInterface &a,
-          const slsDetectorDefs::ethernetInterface &b) {
-    return slsDetectorDefs::ethernetInterface(static_cast<int32_t>(a) |
+inline slsDetectorDefs::streamingInterface
+operator|(const slsDetectorDefs::streamingInterface &a,
+          const slsDetectorDefs::streamingInterface &b) {
+    return slsDetectorDefs::streamingInterface(static_cast<int32_t>(a) |
                                               static_cast<int32_t>(b));
 };
 
-inline slsDetectorDefs::ethernetInterface
-operator&(const slsDetectorDefs::ethernetInterface &a,
-          const slsDetectorDefs::ethernetInterface &b) {
-    return slsDetectorDefs::ethernetInterface(static_cast<int32_t>(a) &
+inline slsDetectorDefs::streamingInterface
+operator&(const slsDetectorDefs::streamingInterface &a,
+          const slsDetectorDefs::streamingInterface &b) {
+    return slsDetectorDefs::streamingInterface(static_cast<int32_t>(a) &
                                               static_cast<int32_t>(b));
 };
 #endif

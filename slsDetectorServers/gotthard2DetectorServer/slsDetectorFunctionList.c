@@ -1716,10 +1716,10 @@ int configureMAC() {
                   "\tDest Port   : %d\n\n",
                   src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
-    int i3gbe = getVetoStream();
+    int lll = getVetoStream();
     int i10gbe = (getNumberofUDPInterfaces() == 2 ? 1 : 0);
 
-    if (i3gbe) {
+    if (lll) {
         LOG(logINFOGREEN, ("\tVeto (3GbE) : enabled\n\n"));
     } else {
         LOG(logINFORED, ("\tVeto (3GbE) : disabled\n\n"));
@@ -2606,9 +2606,9 @@ int getVetoStream() {
     return ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_3GB_ENBL_MSK) ? 1 : 0);
 }
 
-enum vetoAlgorithm getVetoAlgorithm(enum ethernetInterface interface) {
+enum vetoAlgorithm getVetoAlgorithm(enum streamingInterface interface) {
     // 3gbe
-    if (interface == I3GBE) {
+    if (interface == LOW_LATENCY_LINK) {
         int retval = ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_3GB_ALG_MSK) >>
                       CONFIG_VETO_CH_3GB_ALG_OFST);
         switch (retval) {
@@ -2633,14 +2633,14 @@ enum vetoAlgorithm getVetoAlgorithm(enum ethernetInterface interface) {
     }
 }
 
-void setVetoAlgorithm(enum ethernetInterface interface,
+void setVetoAlgorithm(enum streamingInterface interface,
                       enum vetoAlgorithm alg) {
     uint32_t addr = CONFIG_REG;
     uint32_t value = bus_r(addr);
     switch (alg) {
         // more to follow
     case DEFAULT_ALGORITHM:
-        if (interface == I3GBE) {
+        if (interface == LOW_LATENCY_LINK) {
             LOG(logINFO, ("Setting default veto algorithm for 3Gbe\n"));
             value &= (~CONFIG_VETO_CH_3GB_ALG_MSK);
             value |= CONFIG_VETO_CH_3GB_ALG_DEFAULT_VAL;

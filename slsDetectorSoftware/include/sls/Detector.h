@@ -1248,26 +1248,26 @@ class Detector {
     void setVeto(const bool enable, Positions pos = {});
 
     /** [Gotthard2] */
-    Result<defs::ethernetInterface> getVetoStream(Positions pos = {}) const;
+    Result<defs::streamingInterface> getVetoStream(Positions pos = {}) const;
 
-    /** [Gotthard2] Options: NONE (Default), I3GBE, I10GBE (debugging), ALL
+    /** [Gotthard2] Options: NONE (Default), LOW_LATENCY_LINK, ETHERNET_10GB (debugging), ALL
      * Enable or disable the 2 veto streaming interfaces available. Can
-     * concatenate more than one interface. \n3GbE (2.5GbE) is the default
-     * interface to work with. \n10GbE is for debugging and also enables second
+     * concatenate more than one interface. \nLOW_LATENCY_LINK is the default
+     * interface to work with. \nETHERNET_10GB is for debugging and also enables second
      * interface in receiver for listening to veto packets (writes a separate
      * file if writing enabled). Also restarts client and receiver zmq sockets
      * if zmq streaming enabled.*/
-    void setVetoStream(const defs::ethernetInterface value, Positions pos = {});
+    void setVetoStream(const defs::streamingInterface value, Positions pos = {});
 
     /** [Gotthard2] */
     Result<defs::vetoAlgorithm>
-    getVetoAlgorithm(const defs::ethernetInterface value,
+    getVetoAlgorithm(const defs::streamingInterface value,
                      Positions pos = {}) const;
 
     /** [Gotthard2] Options(vetoAlgorithm): DEFAULT_ALGORITHM.
-     * Options(ethernetInterface): I3GBE, I10GBE */
+     * Options(streamingInterface): LOW_LATENCY_LINK, ETHERNET_10GB */
     void setVetoAlgorithm(const defs::vetoAlgorithm alg,
-                          const defs::ethernetInterface value,
+                          const defs::streamingInterface value,
                           Positions pos = {});
 
     /** [Gotthard2] */

@@ -11,7 +11,7 @@ import subprocess
 
 from parse import remove_comments
 
-allow_bitwise_op = ["ethernetInterface"]
+allow_bitwise_op = ["streamingInterface"]
 
 op_key = {"operator|": "__or__", 
           "operator&" : "__and__"}
@@ -22,7 +22,7 @@ def single_line_enum(line):
 
 def extract_enums(lines):
 
-    # deal with enum class ethernetInterface : int32_t
+    # deal with enum class streamingInterface : int32_t
     # and normal enum burstMode {
 
     line_iter = iter(lines)
@@ -89,7 +89,7 @@ def generate_enum_string(enums):
 
         #Here add the operators 
         for op in operators:
-            data.append(f"\n\t.def(\"{op_key[op]}\", py::overload_cast< const slsDetectorDefs::ethernetInterface&,  const slsDetectorDefs::ethernetInterface&>(&{op}))")
+            data.append(f"\n\t.def(\"{op_key[op]}\", py::overload_cast< const slsDetectorDefs::streamingInterface&,  const slsDetectorDefs::streamingInterface&>(&{op}))")
 
 
         data.append(';\n\n')

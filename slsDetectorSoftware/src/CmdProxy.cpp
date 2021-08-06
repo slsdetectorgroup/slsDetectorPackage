@@ -1806,9 +1806,9 @@ std::string CmdProxy::VetoStreaming(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[none|3gbe|10gbe|...]\n\t[Gotthard2] Enable or disable the 2 "
+        os << "[none|lll|10gbe|...]\n\t[Gotthard2] Enable or disable the 2 "
               "veto streaming interfaces available. Can include more than one "
-              "interface. \n\tDefault: none. 3GbE (2.5GbE) is the default "
+              "interface. \n\tDefault: none. lll (low latency link) is the default "
               "interface to work with. \n\t10GbE is for debugging and also "
               "enables second interface in receiver for listening to veto "
               "packets (writes a separate file if writing enabled). Also "
@@ -1825,7 +1825,7 @@ std::string CmdProxy::VetoStreaming(int action) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
         }
-        defs::ethernetInterface interface = defs::ethernetInterface::NONE;
+        defs::streamingInterface interface = defs::streamingInterface::NONE;
         for (const auto &arg : args) {
             if (arg == "none") {
                 if (args.size() > 1) {
@@ -1836,7 +1836,7 @@ std::string CmdProxy::VetoStreaming(int action) {
                 }
                 break;
             }
-            interface = interface | (StringTo<defs::ethernetInterface>(arg));
+            interface = interface | (StringTo<defs::streamingInterface>(arg));
         }
         det->setVetoStream(interface, std::vector<int>{det_id});
         os << ToString(interface) << '\n';
@@ -1850,16 +1850,16 @@ std::string CmdProxy::VetoAlgorithm(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[default] [3gbe|10gbe]\n\t[Gotthard2] Set the veto "
+        os << "[default] [lll|10gbe]\n\t[Gotthard2] Set the veto "
               "algorithm."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        defs::ethernetInterface interface =
-            StringTo<defs::ethernetInterface>(args[0]);
-        if (interface == defs::ethernetInterface::NONE) {
+        defs::streamingInterface interface =
+            StringTo<defs::streamingInterface>(args[0]);
+        if (interface == defs::streamingInterface::NONE) {
             throw sls::RuntimeError(
                 "Must specify an interface to set algorithm");
         }
@@ -1870,9 +1870,9 @@ std::string CmdProxy::VetoAlgorithm(int action) {
             WrongNumberOfParameters(2);
         }
         defs::vetoAlgorithm alg = StringTo<defs::vetoAlgorithm>(args[0]);
-        defs::ethernetInterface interface =
-            StringTo<defs::ethernetInterface>(args[1]);
-        if (interface == defs::ethernetInterface::NONE) {
+        defs::streamingInterface interface =
+            StringTo<defs::streamingInterface>(args[1]);
+        if (interface == defs::streamingInterface::NONE) {
             throw sls::RuntimeError(
                 "Must specify an interface to set algorithm");
         }

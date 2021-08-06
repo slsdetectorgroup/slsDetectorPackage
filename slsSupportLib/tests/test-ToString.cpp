@@ -324,10 +324,10 @@ TEST_CASE("Print a member of patternParameters") {
     REQUIRE(ToString(pat->limits) == "[4, 100]");
 }
 
-TEST_CASE("ethernetInterface") {
-    REQUIRE(ToString(sls::defs::ethernetInterface::NONE) == "none");
-    REQUIRE(ToString(sls::defs::ethernetInterface::I10GBE) == "10gbe");
-    REQUIRE(ToString(sls::defs::ethernetInterface::I3GBE) == "3gbe");
-    REQUIRE(ToString(sls::defs::ethernetInterface::I3GBE |
-                     sls::defs::ethernetInterface::I10GBE) == "3gbe, 10gbe");
+TEST_CASE("streamingInterface") {
+    REQUIRE(ToString(sls::defs::streamingInterface::NONE) == "none");
+    REQUIRE(ToString(sls::defs::streamingInterface::ETHERNET_10GB) == "10gbe");
+    REQUIRE(ToString(sls::defs::streamingInterface::LOW_LATENCY_LINK) == "lll");
+    REQUIRE(ToString(sls::defs::streamingInterface::LOW_LATENCY_LINK |
+                     sls::defs::streamingInterface::ETHERNET_10GB) == "lll, 10gbe");
 }

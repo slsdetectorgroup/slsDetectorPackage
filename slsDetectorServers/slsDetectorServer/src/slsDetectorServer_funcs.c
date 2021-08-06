@@ -8370,7 +8370,7 @@ int set_datastream(int file_des) {
 int get_veto_stream(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    enum ethernetInterface retval = NONE;
+    enum streamingInterface retval = NONE;
 
     LOG(logDEBUG1, ("Getting veto stream\n"));
 
@@ -8387,7 +8387,7 @@ int get_veto_stream(int file_des) {
 int set_veto_stream(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    enum ethernetInterface arg = 0;
+    enum streamingInterface arg = 0;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
@@ -8419,7 +8419,7 @@ int set_veto_stream(int file_des) {
 int get_veto_algorithm(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    enum ethernetInterface arg = NONE;
+    enum streamingInterface arg = NONE;
     enum vetoAlgorithm retval = DEFAULT_ALGORITHM;
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
@@ -8430,7 +8430,7 @@ int get_veto_algorithm(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    if (arg != I3GBE && arg != I10GBE) {
+    if (arg != LOW_LATENCY_LINK && arg != ETHERNET_10GB) {
         ret = FAIL;
         sprintf(mess, "Could not get vetoalgorithm. Invalid interface %d.\n",
                 arg);
@@ -8451,7 +8451,7 @@ int set_veto_algorithm(int file_des) {
         return printSocketReadError();
 
     enum vetoAlgorithm alg = args[0];
-    enum ethernetInterface interface = args[1];
+    enum streamingInterface interface = args[1];
     LOG(logDEBUG1, ("Setting vetoalgorithm (interface: %d): %u\n", (int)interface,
                   (int)alg));
 
@@ -8460,7 +8460,7 @@ int set_veto_algorithm(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (interface != I3GBE && interface != I10GBE) {
+        if (interface != LOW_LATENCY_LINK && interface != ETHERNET_10GB) {
             ret = FAIL;
             sprintf(mess,
                     "Could not set vetoalgorithm. Invalid interface %d.\n",

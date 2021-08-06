@@ -1199,6 +1199,13 @@ class Detector {
      */
     void setGainMode(const defs::gainMode mode, Positions pos = {});
 
+    /** [Jungfrau] Advanced */
+    Result<int> getFilterCell(Positions pos = {}) const;
+
+    /** [Jungfrau] Advanced Options[0-12]
+     */
+    void setFilterCell(int cell, Positions pos = {});
+
     ///@{
 
     /** @name Gotthard Specific */

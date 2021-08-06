@@ -505,8 +505,8 @@ TEST_CASE("filtercell", "[.cmd]") {
             }
             {
                 std::ostringstream oss;
-                proxy.Call("filtercell", {"15"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "filtercell 15\n");
+                proxy.Call("filtercell", {"12"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "filtercell 12\n");
             }
             {
                 std::ostringstream oss;
@@ -518,8 +518,10 @@ TEST_CASE("filtercell", "[.cmd]") {
                 proxy.Call("filtercell", {}, -1, GET, oss);
                 REQUIRE(oss.str() == "filtercell 0\n");
             }
-            REQUIRE_THROWS(proxy.Call("filtercell", {"16"}, -1, PUT));
-            det.setFilterCell(prev_val);
+            REQUIRE_THROWS(proxy.Call("filtercell", {"13"}, -1, PUT));
+            for (int i = 0; i != det.size(); ++i) {
+                det.setFilterCell(prev_val[i], {i});
+            }
         }
         // chip version 1.0
         else {

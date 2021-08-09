@@ -1379,6 +1379,50 @@ TEST_CASE("parallel", "[.cmd]") {
     }
 }
 
+TEST_CASE("filterresistor", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    // only for chipv1.1
+    bool chip11 = false;
+    if (det_type == defs::JUNGFRAU &&
+        det.getChipVersion().squash() * 10 == 11) {
+        chip11 = true;
+    }
+
+    if (det_type == defs::GOTTHARD2 || chip11) {
+        auto prev_val = det.getFilterResistor();
+        {
+            std::ostringstream oss;
+            proxy.Call("filterresistor", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "filterresistor 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("filterresistor", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "filterresistor 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("filterresistor", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "filterresistor 0\n");
+        }
+        if (det_type == defs::GOTTHARD2) {
+            REQUIRE_NOTHROW(proxy.Call("filterresistor", {"2"}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("filterresistor", {"3"}, -1, PUT));
+        } else {
+            REQUIRE_THROWS(proxy.Call("filterresistor", {"2"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("filterresistor", {"3"}, -1, PUT));
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setFilterResistor(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("filterresistor", {}, -1, GET));
+    }
+}
+
 /** temperature */
 
 TEST_CASE("templist", "[.cmd]") {

@@ -205,8 +205,8 @@ enum detFuncs {
     F_GET_SCAN_ERROR_MESSAGE,
     F_GET_CDS_GAIN,
     F_SET_CDS_GAIN,
-    F_GET_FILTER,
-    F_SET_FILTER,
+    F_GET_FILTER_RESISTOR,
+    F_SET_FILTER_RESISTOR,
     F_GET_ADC_CONFIGURATION,
     F_SET_ADC_CONFIGURATION,
     F_GET_BAD_CHANNELS,
@@ -552,8 +552,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_SCAN_ERROR_MESSAGE:          return "F_GET_SCAN_ERROR_MESSAGE"; 
     case F_GET_CDS_GAIN:                    return "F_GET_CDS_GAIN";
     case F_SET_CDS_GAIN:                    return "F_SET_CDS_GAIN";
-    case F_GET_FILTER:                      return "F_GET_FILTER";
-    case F_SET_FILTER:                      return "F_SET_FILTER";
+    case F_GET_FILTER_RESISTOR:             return "F_GET_FILTER_RESISTOR";
+    case F_SET_FILTER_RESISTOR:             return "F_SET_FILTER_RESISTOR";
     case F_SET_ADC_CONFIGURATION:           return "F_SET_ADC_CONFIGURATION";       
     case F_GET_ADC_CONFIGURATION:           return "F_GET_ADC_CONFIGURATION";       
     case F_GET_BAD_CHANNELS:                return "F_GET_BAD_CHANNELS";

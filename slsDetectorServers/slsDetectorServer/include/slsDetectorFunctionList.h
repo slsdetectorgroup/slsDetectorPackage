@@ -462,6 +462,8 @@ int setTemperatureEvent(int val);
 void alignDeserializer();
 int getFlipRows();
 void setFlipRows(int arg);
+int setFilterResistor(int value);
+int getFilterResistor();
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD
@@ -533,8 +535,8 @@ int configureASICGlobalSettings();
 enum burstMode getBurstMode();
 int setCDSGain(int enable);
 int getCDSGain();
-int setFilter(int value);
-int getFilter();
+int setFilterResistor(int value);
+int getFilterResistor();
 void setCurrentSource(int value);
 int getCurrentSource();
 void setTimingSource(enum timingSourceType value);

@@ -35,7 +35,7 @@
 
 /** Default Parameters */
 #define DEFAULT_BURST_MODE          (BURST_INTERNAL)
-#define DEFAULT_FILTER              (0)
+#define DEFAULT_FILTER_RESISTOR     (0)
 #define DEFAILT_CDS_GAIN            (0)
 #define DEFAULT_NUM_FRAMES          (1)
 #define DEFAULT_NUM_CYCLES          (1)
@@ -149,7 +149,7 @@ enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
 #define ASIC_CONT_MODE_MSK    (0x1 << ASIC_CONT_MODE_OFST)
 #define ASIC_FILTER_OFST      (3)
 #define ASIC_FILTER_MSK       (0x3 << ASIC_FILTER_OFST)
-#define ASIC_FILTER_MAX_VALUE (3)
+#define ASIC_FILTER_MAX_RES_VALUE (3)
 #define ASIC_CDS_GAIN_OFST    (5)
 #define ASIC_CDS_GAIN_MSK     (0x1 << ASIC_CDS_GAIN_OFST)
 

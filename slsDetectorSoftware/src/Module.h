@@ -170,6 +170,8 @@ class Module : public virtual slsDetectorDefs {
     void setExternalSignalFlags(int signalIndex, externalSignalFlag type);
     bool getParallelMode() const;
     void setParallelMode(const bool enable);
+    int getFilterResistor() const;
+    void setFilterResistor(int value);
 
     /**************************************************
      *                                                *
@@ -408,8 +410,6 @@ class Module : public virtual slsDetectorDefs {
     void setBurstMode(burstMode value);
     bool getCDSGain() const;
     void setCDSGain(bool value);
-    int getFilter() const;
-    void setFilter(int value);
     bool getCurrentSource() const;
     void setCurrentSource(bool value);
     slsDetectorDefs::timingSourceType getTimingSource() const;

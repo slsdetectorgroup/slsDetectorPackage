@@ -63,6 +63,7 @@ This document describes the differences between 5.2.0 and 5.1.0 releases.
 
 
 getAutoCompDisable->getAutoComparatorDisable
+filter->filterResistor
 setBottom->setFlipRows
 
 3. Firmware Requirements

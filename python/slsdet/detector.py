@@ -2255,21 +2255,6 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setFilterResistor, value)
 
     @property
-    @element
-    def filtercell(self):
-        """
-        [Jungfrau] Set filter capacitor. 
-        Note
-        ----
-        [Jungfrau] Options: 0-12. Default: 0. Advanced user command.
-        """
-        return self.getFilterCell()
-
-    @filtercell.setter
-    def filtercell(self, value):
-        ut.set_using_dict(self.setFilterCell, value)
-
-    @property
     def maxclkphaseshift(self):
         """
         [Gotthard2][Mythen3] Absolute maximum Phase shift of  clocks.

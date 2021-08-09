@@ -853,8 +853,7 @@ void init_det(py::module &m) {
                  Detector::getFlipRows,
              py::arg() = Positions{})
         .def("setFlipRows",
-             (void (Detector::*)(bool, sls::Positions)) &
-                 Detector::setFlipRows,
+             (void (Detector::*)(bool, sls::Positions)) & Detector::setFlipRows,
              py::arg(), py::arg() = Positions{})
         .def("getRateCorrection",
              (Result<sls::ns>(Detector::*)(sls::Positions) const) &
@@ -1102,14 +1101,8 @@ void init_det(py::module &m) {
                  Detector::getFilterResistor,
              py::arg() = Positions{})
         .def("setFilterResistor",
-             (void (Detector::*)(int, sls::Positions)) & Detector::setFilterResistor,
-             py::arg(), py::arg() = Positions{})
-        .def("getFilterCell",
-             (Result<int>(Detector::*)(sls::Positions) const) &
-                 Detector::getFilterCell,
-             py::arg() = Positions{})
-        .def("setFilterCell",
-             (void (Detector::*)(int, sls::Positions)) & Detector::setFilterCell,
+             (void (Detector::*)(int, sls::Positions)) &
+                 Detector::setFilterResistor,
              py::arg(), py::arg() = Positions{})
         .def("getCurrentSource",
              (Result<bool>(Detector::*)(sls::Positions) const) &

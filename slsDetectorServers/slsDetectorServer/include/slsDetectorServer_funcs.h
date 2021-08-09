@@ -263,3 +263,5 @@ int get_comp_disable_time(int);
 int set_comp_disable_time(int);
 int get_flip_rows(int);
 int set_flip_rows(int);
+int get_filter_cell(int);
+int set_filter_cell(int);

@@ -934,6 +934,7 @@ class CmdProxy {
         {"storagecell_start", &CmdProxy::storagecell_start},
         {"storagecell_delay", &CmdProxy::storagecell_delay},
         {"gainmode", &CmdProxy::gainmode},
+        {"filtercell", &CmdProxy::filtercell},
 
         /* Gotthard Specific */
         {"roi", &CmdProxy::ROI},
@@ -1888,8 +1889,11 @@ class CmdProxy {
         sls::StringTo<slsDetectorDefs::gainMode>,
         "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t["
         "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, "
-        "you can "
-        "damage the detector!!!");
+        "you can damage the detector!!!");
+
+    INTEGER_COMMAND_VEC_ID(
+        filtercell, getFilterCell, setFilterCell, sls::StringTo<int>,
+        "[0-12]\n\t[Jungfrau] Set Filter Cell. Advanced user Command");
 
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft,

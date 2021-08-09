@@ -375,6 +375,8 @@ class Module : public virtual slsDetectorDefs {
     void setStorageCellDelay(int64_t value);
     gainMode getGainMode() const;
     void setGainMode(const gainMode mode);
+    int getFilterCell() const;
+    void setFilterCell(int value);
     
     /**************************************************
      *                                                *

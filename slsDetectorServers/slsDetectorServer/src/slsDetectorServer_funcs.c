@@ -388,6 +388,8 @@ void function_table() {
     flist[F_SET_COMP_DISABLE_TIME] = &set_comp_disable_time;
     flist[F_GET_FLIP_ROWS] = &get_flip_rows;
     flist[F_SET_FLIP_ROWS] = &set_flip_rows;
+    flist[F_GET_FILTER_CELL] = &get_filter_cell;
+    flist[F_SET_FILTER_CELL] = &set_filter_cell;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8243,7 +8245,7 @@ int set_gain_caps(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting gain caps to: %u\n", arg));
+    LOG(logDEBUG1, ("Setting gain caps to: %u\n", arg));
 
     int retval = -1;
 
@@ -8389,7 +8391,7 @@ int set_veto_stream(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting vetostream: %u\n", (int)arg));
+    LOG(logDEBUG1, ("Setting vetostream: %u\n", (int)arg));
 
 #ifndef GOTTHARD2D
     functionNotImplemented();
@@ -8450,7 +8452,7 @@ int set_veto_algorithm(int file_des) {
 
     enum vetoAlgorithm alg = args[0];
     enum streamingInterface interface = args[1];
-    LOG(logINFO, ("Setting vetoalgorithm (interface: %d): %u\n", (int)interface,
+    LOG(logDEBUG1, ("Setting vetoalgorithm (interface: %d): %u\n", (int)interface,
                   (int)alg));
 
 #ifndef GOTTHARD2D
@@ -8614,7 +8616,7 @@ int set_gain_mode(int file_des) {
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
     enum gainMode gainmode = arg;
-    LOG(logINFO, ("Setting gain mode %d\n", (int)gainmode));
+    LOG(logDEBUG1, ("Setting gain mode %d\n", (int)gainmode));
 
 #ifndef JUNGFRAUD
     functionNotImplemented();
@@ -8730,7 +8732,7 @@ int set_flip_rows(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting flip rows: %u\n", (int)arg));
+    LOG(logDEBUG1, ("Setting flip rows: %u\n", (int)arg));
 
 #ifndef JUNGFRAUD
     functionNotImplemented();
@@ -8761,6 +8763,61 @@ int set_flip_rows(int file_des) {
             int retval = getFlipRows();
             LOG(logDEBUG1, ("flip rows retval: %u\n", retval));
             validate(&ret, mess, arg, retval, "set flip rows", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+
+int get_filter_cell(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting filter cell\n"));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // get only
+    retval = getFilterCell();
+    LOG(logDEBUG1, ("filter cell retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_filter_cell(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting filter cell: %u\n", (int)arg));
+
+#ifndef JUNGFRAUD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+
+        if (arg < 0 || arg > MAX_FILTER_CELL_VAL) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set filter cell. Invalid argument %d. Options: 0 - %d\n",
+                    arg, MAX_FILTER_CELL_VAL);
+            LOG(logERROR, (mess));
+        }
+        // only for chipv1.1
+        else if (getChipVersion() == 10) {
+            ret = FAIL;
+            strcpy(mess, "Could not set filter cell. Only available for "
+                         "chip version 1.1\n");
+            LOG(logERROR, (mess));
+        } else {
+            setFilterCell(arg);
+            // no validation as it might take time to update status register if acquiring
         }
     }
 #endif

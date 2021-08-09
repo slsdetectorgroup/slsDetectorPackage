@@ -475,7 +475,10 @@ void setupDetector() {
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
     setTemperatureEvent(0);
     setFlipRows(DEFAULT_FLIP_ROWS);
-    setFilterResistor(DEFAULT_FILTER_RESISTOR);
+    if (getChipVersion() == 11) {
+        setFilterResistor(DEFAULT_FILTER_RESISTOR);
+        setFilterCell(DEFAULT_FILTER_CELL);
+    }
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -2053,6 +2056,32 @@ int setFilterResistor(int value) {
     }
     LOG(logERROR, ("Could not set Filter Resistor. Invalid value %d\n", value));
     return FAIL;
+}
+
+int getFilterCell() {
+#ifdef VIRTUAL
+    uint32_t addr = CONFIG_V11_REG;
+#else
+    uint32_t addr = CONFIG_V11_STATUS_REG;
+#endif
+    uint32_t value = (bus_r(addr) & CONFIG_V11_FLTR_CLL_MSK) >> CONFIG_V11_FLTR_CLL_OFST;
+    // count number of bits = which icell
+    return (__builtin_popcount(value));
+}
+
+void setFilterCell(int iCell) {
+    uint32_t value = 0;
+    // sets the corresponding cell and the cells before it
+    if (iCell != 0) {
+        value = iCell;
+        if (value > 1) {
+            value += (value - 1);
+        }
+    }
+    uint32_t addr = CONFIG_V11_REG;
+    bus_w(addr, bus_r(addr) &~ CONFIG_V11_FLTR_CLL_MSK);
+    bus_w(addr, bus_r(addr) | ((value << CONFIG_V11_FLTR_CLL_OFST) & CONFIG_V11_FLTR_CLL_MSK));
+    LOG(logINFO, ("Setting Filter Cell to %d [Reg:0x%x]\n", iCell, bus_r(addr)));
 }
 
 int getTenGigaFlowControl() {

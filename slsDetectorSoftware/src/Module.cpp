@@ -1632,6 +1632,14 @@ void Module::setGainMode(const slsDetectorDefs::gainMode mode) {
     sendToDetector(F_SET_GAIN_MODE, mode, nullptr);
 }
 
+int Module::getFilterCell() const {
+    return sendToDetector<int>(F_GET_FILTER_CELL);
+}
+
+void Module::setFilterCell(int value) {
+    sendToDetector(F_SET_FILTER_CELL, value, nullptr);
+}
+
 // Gotthard Specific
 
 slsDetectorDefs::ROI Module::getROI() const {

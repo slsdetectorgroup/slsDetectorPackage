@@ -465,7 +465,7 @@ typedef struct {
         /** [Gotthard2][Jungfrau] disable */
         currentSrcParameters() : enable(0), fix(-1), normal(-1), select(0) {}
 
-        /** [Gotthard2] enable */
+        /** [Gotthard2] enable or disable */
         currentSrcParameters(bool ena)
             : enable(static_cast<int>(ena)), fix(-1), normal(-1), select(0) {}
 

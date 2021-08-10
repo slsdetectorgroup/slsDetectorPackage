@@ -964,11 +964,11 @@ std::string CmdProxy::CurrentSource(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[0|1]\n\t[Gotthard2] Enable or disable current source. Default "
-              "is disabled.\n[0|1] [fix|nofix] [select source] "
-              "[normal|low]\n\t[Jungfrau] Disable or enable current source "
-              "with some parameters. The select source is 0-63 for chipv1.0 "
-              "and a 64 bit mask for chipv1.1. To disable, one needs only one "
-              "argument '0'."
+              "is disabled.\n[0|1] [fix|nofix] [select source] [(only for "
+              "chipv1.1)normal|low]\n\t[Jungfrau] Disable or enable current "
+              "source with some parameters. The select source is 0-63 for "
+              "chipv1.0 and a 64 bit mask for chipv1.1. To disable, one needs "
+              "only one argument '0'."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
@@ -978,7 +978,7 @@ std::string CmdProxy::CurrentSource(int action) {
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() == 1) {
-            det->setCurrentsource(
+            det->setCurrentSource(
                 defs::currentSrcParameters(StringTo<bool>(args[0])));
         } else if (args.size() >= 3) {
             // scan fix
@@ -992,8 +992,8 @@ std::string CmdProxy::CurrentSource(int action) {
                                         ". Did you mean fix or nofix?");
             }
             if (args.size() == 3) {
-                det->setCurrentsource(defs::currentSrcParameters(
-                    StringTo<bool>(args[0]), fix, StringTo<int64_t>(args[2])));
+                det->setCurrentSource(defs::currentSrcParameters(
+                    fix, StringTo<int64_t>(args[2])));
             } else if (args.size() == 4) {
                 bool normalCurrent = false;
                 if (args[3] == "normal") {
@@ -1004,9 +1004,8 @@ std::string CmdProxy::CurrentSource(int action) {
                     throw sls::RuntimeError("Invalid argument: " + args[3] +
                                             ". Did you mean normal or low?");
                 }
-                det->setCurrentsource(defs::currentSrcParameters(
-                    StringTo<bool>(args[0]), fix, StringTo<int64_t>(args[2]),
-                    normalCurrent));
+                det->setCurrentSource(defs::currentSrcParameters(
+                    fix, StringTo<int64_t>(args[2]), normalCurrent));
             } else {
                 throw sls::RuntimeError(
                     "Invalid number of parareters for this command.");

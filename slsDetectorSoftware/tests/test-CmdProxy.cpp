@@ -1428,7 +1428,7 @@ TEST_CASE("currentsource", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::GOTTHARD2 || detType == defs::Jungfrau) {
+    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU) {
         auto prev_val = det.getCurrentSource();
 
         if (det_type == defs::GOTTHARD2) {
@@ -1461,11 +1461,11 @@ TEST_CASE("currentsource", "[.cmd]") {
                 REQUIRE_THROWS(
                     proxy.Call("currentsource", {"1", "fix"}, -1, PUT));
                 REQUIRE_THROWS(
-                    proxy.Call("currentsource", {"1", "fix", 64}, -1, PUT));
+                    proxy.Call("currentsource", {"1", "fix", "64"}, -1, PUT));
                 REQUIRE_THROWS(
-                    proxy.Call("currentsource", {"1", "dfg", 64}, -1, PUT));
-                REQUIRE_THROWS(proxy.Call("currentsource",
-                                          {"1", "fix", 63, "normal"}, -1, PUT));
+                    proxy.Call("currentsource", {"1", "dfg", "64"}, -1, PUT));
+                REQUIRE_THROWS(proxy.Call(
+                    "currentsource", {"1", "fix", "63", "normal"}, -1, PUT));
                 {
                     std::ostringstream oss;
                     proxy.Call("currentsource", {"1", "fix", "63"}, -1, PUT,
@@ -1501,9 +1501,9 @@ TEST_CASE("currentsource", "[.cmd]") {
                 REQUIRE_THROWS(
                     proxy.Call("currentsource", {"1", "fix"}, -1, PUT));
                 REQUIRE_THROWS(proxy.Call("currentsource",
-                                          {"1", "ffgdfgix", 65}, -1, PUT));
+                                          {"1", "ffgdfgix", "65"}, -1, PUT));
                 REQUIRE_THROWS(proxy.Call(
-                    "currentsource", {"1", "fix", 65, "normaldgf"}, -1, PUT));
+                    "currentsource", {"1", "fix", "65", "normaldgf"}, -1, PUT));
 
                 {
                     std::ostringstream oss;

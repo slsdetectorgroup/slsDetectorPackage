@@ -6762,8 +6762,10 @@ int set_current_source(int file_des) {
     int enable = args[0];
     int fix = args[1];
     int normal = args[2];
-    
-    LOG(logDEBUG1, ("Setting current source [enable:%d, fix:%d, select:%lld, normal :%d]\n", enable, fix, (long long int)select, normal));
+
+    LOG(logINFOBLUE, ("Setting current source [enable:%d, fix:%d, select:%lld, "
+                      "normal:%d]\n",
+                      enable, fix, (long long int)select, normal));
 
 #if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
@@ -6797,7 +6799,7 @@ int set_current_source(int file_des) {
             int chipVersion = getChipVersion();
             if (chipVersion == 11) {
                 // require both
-                if ((fix != 0 && fix != -1) || (normal != 0 && normal != 1)) {
+                if ((fix != 0 && fix != 1) || (normal != 0 && normal != 1)) {
                     ret = FAIL;
                     strcpy(mess,
                         "Could not enable current source. Invalid value for parameters (fix or normal). Options: 0 or 1.\n");
@@ -6807,7 +6809,7 @@ int set_current_source(int file_des) {
             // chipv1.0
             else {
                 // require only fix
-                if (fix != 0 && fix != -1) {
+                if (fix != 0 && fix != 1) {
                     ret = FAIL;
                     strcpy(mess,
                         "Could not enable current source. Invalid value for parameter (fix). Options: 0 or 1.\n");
@@ -6823,7 +6825,7 @@ int set_current_source(int file_des) {
                     ret = FAIL;
                     strcpy(mess,
                         "Could not enable current source. Invalid value for parameter (select). Options: 0-63.\n");
-                    LOG(logERROR, (mess));               
+                    LOG(logERROR, (mess));
                 }
             }
 #endif

@@ -122,19 +122,19 @@ std::string ToString(const slsDetectorDefs::currentSrcParameters &r) {
     }
     oss << '[';
     if (r.enable) {
-        oss << "enabled" << std::endl;
+        oss << "enabled";
         // [jungfrau]
         if (r.fix != -1) {
-            oss << (r.fix == 1 ? "fix" : "nofix") << std::endl;
+            oss << (r.fix == 1 ? ", fix" : ", nofix");
         }
         // [jungfrau chip v1.1]
         if (r.normal != -1) {
-            oss << (r.normal == 1 ? "normal" : "low") << std::endl;
-            oss << "select: " << ToStringHex(r.select, 16) << std::endl;
+            oss << ", " << ToStringHex(r.select, 16);
+            oss << (r.normal == 1 ? ", normal" : ", low");
         }
         // [jungfrau chip v1.0]
         else {
-            oss << "select: " << r.select << std::endl;
+            oss << ", " << r.select;
         }
     } else {
         oss << "disabled";

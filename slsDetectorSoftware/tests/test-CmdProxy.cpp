@@ -1475,7 +1475,7 @@ TEST_CASE("currentsource", "[.cmd]") {
                 {
                     std::ostringstream oss;
                     proxy.Call("currentsource", {"0"}, -1, PUT, oss);
-                    REQUIRE(oss.str() == "currentsource 0\n");
+                    REQUIRE(oss.str() == "currentsource [0]\n");
                 }
                 {
                     std::ostringstream oss;
@@ -1500,22 +1500,26 @@ TEST_CASE("currentsource", "[.cmd]") {
                 REQUIRE_THROWS(proxy.Call("currentsource", {"1"}, -1, PUT));
                 REQUIRE_THROWS(
                     proxy.Call("currentsource", {"1", "fix"}, -1, PUT));
-                REQUIRE_THROWS(proxy.Call("currentsource",
-                                          {"1", "ffgdfgix", "65"}, -1, PUT));
                 REQUIRE_THROWS(proxy.Call(
-                    "currentsource", {"1", "fix", "65", "normaldgf"}, -1, PUT));
+                    "currentsource", {"1", "ffgdfgix", "0x0000000000000041"},
+                    -1, PUT));
+                REQUIRE_THROWS(proxy.Call(
+                    "currentsource",
+                    {"1", "fix", "0x0000000000000041", "normaldgf"}, -1, PUT));
 
                 {
                     std::ostringstream oss;
-                    proxy.Call("currentsource", {"1", "fix", "65", "normal"},
-                               -1, PUT, oss);
-                    REQUIRE(oss.str() ==
-                            "currentsource [1, fix, 65, normal]\n");
+                    proxy.Call("currentsource",
+                               {"1", "fix", "0x0000000000000041", "normal"}, -1,
+                               PUT, oss);
+                    REQUIRE(
+                        oss.str() ==
+                        "currentsource [1, fix, 0x0000000000000041, normal]\n");
                 }
                 {
                     std::ostringstream oss;
                     proxy.Call("currentsource", {"0"}, -1, PUT, oss);
-                    REQUIRE(oss.str() == "currentsource 0\n");
+                    REQUIRE(oss.str() == "currentsource [0]\n");
                 }
                 {
                     std::ostringstream oss;
@@ -1524,22 +1528,26 @@ TEST_CASE("currentsource", "[.cmd]") {
                 }
                 {
                     std::ostringstream oss;
-                    proxy.Call("currentsource", {"1", "nofix", "65", "normal"},
+                    proxy.Call("currentsource",
+                               {"1", "nofix", "0x0000000000000041", "normal"},
                                -1, PUT, oss);
-                    REQUIRE(oss.str() ==
-                            "currentsource [1, nofix, 65, normal]\n");
+                    REQUIRE(oss.str() == "currentsource [1, nofix, "
+                                         "0x0000000000000041, normal]\n");
                 }
                 {
                     std::ostringstream oss;
                     proxy.Call("currentsource", {}, -1, GET, oss);
-                    REQUIRE(oss.str() ==
-                            "currentsource [enabled, nofix, 65, normal]\n");
+                    REQUIRE(oss.str() == "currentsource [enabled, nofix, "
+                                         "0x0000000000000041, normal]\n");
                 }
                 {
                     std::ostringstream oss;
-                    proxy.Call("currentsource", {"1", "nofix", "65", "low"}, -1,
+                    proxy.Call("currentsource",
+                               {"1", "nofix", "0x0000000000000041", "low"}, -1,
                                PUT, oss);
-                    REQUIRE(oss.str() == "currentsource [1, nofix, 65, low]\n");
+                    REQUIRE(
+                        oss.str() ==
+                        "currentsource [1, nofix, 0x0000000000000041, low]\n");
                 }
             }
         }

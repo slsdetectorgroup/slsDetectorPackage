@@ -488,6 +488,14 @@ class Detector {
      * 0.\n[Jungfrau] Options: [0|1]. Default is 1.*/
     void setFilterResistor(int value, Positions pos = {});
 
+    /** [Gotthard2][Jungfrau] */
+    Result<defs::currentSrcParameters>
+    getCurrentSource(Positions pos = {}) const;
+
+    /** [Gotthard2][Jungfrau] Please refer documentation on currentSrcParameters
+     * (sls_detector_defs.h) on the structure and its members */
+    void setCurrentSource(defs::currentSrcParameters par, Positions pos = {});
+
     ///@{
 
     /** @name Acquisition */
@@ -1299,12 +1307,6 @@ class Detector {
 
     /** default disabled */
     void setCDSGain(bool value, Positions pos = {});
-
-    /** [Gotthard2] */
-    Result<bool> getCurrentSource(Positions pos = {}) const;
-
-    /** default disabled */
-    void setCurrentSource(bool value, Positions pos = {});
 
     /** [Gotthard2] */
     Result<defs::timingSourceType> getTimingSource(Positions pos = {}) const;

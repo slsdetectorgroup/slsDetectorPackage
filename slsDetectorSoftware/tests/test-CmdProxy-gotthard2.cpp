@@ -519,36 +519,6 @@ TEST_CASE("cdsgain", "[.cmd]") {
     }
 }
 
-TEST_CASE("currentsource", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::GOTTHARD2) {
-        auto prev_val = det.getCurrentSource();
-        {
-            std::ostringstream oss;
-            proxy.Call("currentsource", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "currentsource 1\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("currentsource", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "currentsource 0\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("currentsource", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "currentsource 0\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setCurrentSource(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("currentsource", {}, -1, GET));
-    }
-}
-
 TEST_CASE("timingsource", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

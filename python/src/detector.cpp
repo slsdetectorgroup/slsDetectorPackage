@@ -72,7 +72,7 @@ void init_det(py::module &m) {
         .def("setSerialNumber",
              (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::setSerialNumber,
-             py::arg() py::arg() = Positions{})
+             py::arg(), py::arg() = Positions{})
         .def("getReceiverVersion",
              (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getReceiverVersion,

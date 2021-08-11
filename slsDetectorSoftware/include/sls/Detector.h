@@ -80,6 +80,9 @@ class Detector {
 
     Result<int64_t> getSerialNumber(Positions pos = {}) const;
 
+    /** [Gotthard2] */
+    void setSerialNumber(const int64_t value, Positions pos = {});
+
     Result<int64_t> getReceiverVersion(Positions pos = {}) const;
 
     /** Options: EIGER, JUNGFRAU, GOTTHARD, MOENCH, MYTHEN3, GOTTHARD2,

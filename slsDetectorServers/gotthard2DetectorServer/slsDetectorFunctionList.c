@@ -66,6 +66,7 @@ int64_t burstPeriodReg = 0;
 int filterResistor = 0;
 int cdsGain = 0;
 int detPos[2] = {};
+int64_t serialNumber = -1;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -281,10 +282,18 @@ u_int16_t getHardwareVersionNumber() {
 }
 
 u_int32_t getDetectorNumber() {
+    if (serialNumber != -1) {
+        return serialNumber;
+    }
 #ifdef VIRTUAL
     return 0;
 #endif
     return bus_r(MCB_SERIAL_NO_REG);
+}
+
+void setSerialNumber(int64_t arg) {
+    LOG(logINFOBLUE, ("Setting Serial Number to 0x%llx\n", (long long int)arg));
+    serialNumber = arg;
 }
 
 u_int64_t getDetectorMAC() {

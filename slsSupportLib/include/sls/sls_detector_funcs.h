@@ -243,6 +243,7 @@ enum detFuncs {
     F_GET_ADC_PIPELINE,
     F_SET_DBIT_PIPELINE,
     F_GET_DBIT_PIPELINE,
+    F_SET_SERIAL_NUMBER,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -593,6 +594,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_ADC_PIPELINE:                return "F_GET_ADC_PIPELINE";
     case F_SET_DBIT_PIPELINE:               return "F_SET_DBIT_PIPELINE";
     case F_GET_DBIT_PIPELINE:               return "F_GET_DBIT_PIPELINE";
+    case F_SET_SERIAL_NUMBER:               return "F_SET_SERIAL_NUMBER";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

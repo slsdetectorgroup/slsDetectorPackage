@@ -392,6 +392,7 @@ void function_table() {
     flist[F_GET_ADC_PIPELINE] = &get_adc_pipeline;
     flist[F_SET_DBIT_PIPELINE] = &set_dbit_pipeline;
     flist[F_GET_DBIT_PIPELINE] = &get_dbit_pipeline;
+    flist[F_SET_SERIAL_NUMBER] = &set_serial_number;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -668,6 +669,23 @@ int get_serial_number(int file_des) {
     retval = getDetectorNumber();
     LOG(logDEBUG1, ("detector number retval: 0x%llx\n", (long long int)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+}
+
+int set_serial_number(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int64_t arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting serial number to 0x%llx\n", (long long int)arg));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    setSerialNumber(arg);
+#endif
+    return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int set_firmware_test(int file_des) {
@@ -4250,7 +4268,7 @@ int copy_detector_server(int file_des) {
             strcat(cmd, sname);
             executeCommand(cmd, retvals, logDEBUG1);
 
-#if !defined(GOTTHAR2D) && !defined(MYTHEN3D)
+#if !defined(GOTTHARD2D) && !defined(MYTHEN3D)
             // edit /etc/inittab
             // find line numbers in /etc/inittab where DetectorServer
             strcpy(cmd, "sed -n '/DetectorServer/=' /etc/inittab");
@@ -7796,7 +7814,7 @@ int get_filter_resistor(int file_des) {
 
     LOG(logDEBUG1, ("Getting filter resistor\n"));
 
-#if !defined(GOTTHAR2D) && !defined(JUNGFRAUD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
@@ -7825,7 +7843,7 @@ int set_filter_resistor(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting filter resistor: %u\n", arg));
 
-#if !defined(GOTTHAR2D) && !defined(JUNGFRAUD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set

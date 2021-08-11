@@ -267,3 +267,4 @@ int set_adc_pipeline(int);
 int get_adc_pipeline(int);
 int set_dbit_pipeline(int);
 int get_dbit_pipeline(int);
+int set_serial_number(int);

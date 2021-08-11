@@ -105,7 +105,19 @@ TEST_CASE("serialnumber", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("serialnumber", {}, -1, GET));
-    REQUIRE_THROWS(proxy.Call("serialnumber", {"0"}, -1, PUT));
+    if (det.getDetectorType().squash() == defs::GOTTHARD2) {
+        auto prev_val = det.getSerialNumber();
+        std::ostringstream oss1, oss2;
+        proxy.Call("serialnumber", {"0x5d"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "serialnumber 0x5d\n");
+        proxy.Call("serialnumber", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "serialnumber 0x5d\n");
+        for (int i = 0; i != det.size(); ++i) {
+            det.setSerialNumber(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("serialnumber", {"0"}, -1, PUT));
+    }
 }
 
 TEST_CASE("type", "[.cmd]") {

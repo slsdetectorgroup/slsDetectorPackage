@@ -93,6 +93,9 @@ int getChipVersion();
 void readDetectorNumber();
 #endif
 u_int32_t getDetectorNumber();
+#ifdef GOTTHARD2D
+void setSerialNumber(int64_t arg);
+#endif
 u_int64_t getDetectorMAC();
 u_int32_t getDetectorIP();
 #ifdef GOTTHARDD

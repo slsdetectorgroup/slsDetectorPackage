@@ -2661,7 +2661,12 @@ class Detector(CppDetectorApi):
     @property
     @element
     def dbitpipeline(self):
-        """[Ctb] Pipeline of the clock for latching digital bits. """
+        """[Ctb][Gotthard2] Pipeline of the clock for latching digital bits. 
+        Note
+        ----
+        [CTB] Options: 0 - 255
+        [Gotthard2] Options: 0 - 7
+        """
         return self.getDBITPipeline()
 
     @dbitpipeline.setter

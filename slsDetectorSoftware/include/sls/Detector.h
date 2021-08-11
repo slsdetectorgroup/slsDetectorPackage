@@ -496,6 +496,12 @@ class Detector {
      * (sls_detector_defs.h) on the structure and its members */
     void setCurrentSource(defs::currentSrcParameters par, Positions pos = {});
 
+    /** [CTB][Gotthard2] */
+    Result<int> getDBITPipeline(Positions pos = {}) const;
+
+    /** [CTB] Options: 0-255 \n [Gotthard2] Options: 0-7 */
+    void setDBITPipeline(int value, Positions pos = {});
+
     ///@{
 
     /** @name Acquisition */
@@ -1502,13 +1508,7 @@ class Detector {
     /** [CTB] */
     void setDBITClock(int value_in_MHz, Positions pos = {});
 
-    /** [CTB] */
-    Result<int> getDBITPipeline(Positions pos = {}) const;
-
-    /** [CTB] */
-    void setDBITPipeline(int value, Positions pos = {});
-
-    /**
+     /**
      * [CTB] mV
      * Options: V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D, V_POWER_IO */
     Result<int> getMeasuredVoltage(defs::dacIndex index,

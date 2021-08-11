@@ -430,11 +430,13 @@ int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
 int setFrequency(enum CLKINDEX ind, int val);
 int getFrequency(enum CLKINDEX ind);
 void configureSyncFrequency(enum CLKINDEX ind);
-void setPipeline(enum CLKINDEX ind, int val);
-int getPipeline(enum CLKINDEX ind);
+void setADCPipeline(int val);
+int getADCPipeline();
 #endif
 
 #ifdef CHIPTESTBOARDD
+void setDBITPipeline(int val);
+int getDBITPipeline();
 int setLEDEnable(int enable);
 void setDigitalIODelay(uint64_t pinMask, int delay);
 #endif
@@ -519,6 +521,8 @@ int getClockDivider(enum CLKINDEX ind);
 #elif GOTTHARD2D
 int checkDetectorType();
 int powerChip(int on);
+void setDBITPipeline(int val);
+int getDBITPipeline();
 int setPhase(enum CLKINDEX ind, int val, int degrees);
 int getPhase(enum CLKINDEX ind, int degrees);
 int getMaxPhase(enum CLKINDEX ind);

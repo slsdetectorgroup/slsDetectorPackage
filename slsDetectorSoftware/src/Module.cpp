@@ -720,6 +720,14 @@ void Module::setCurrentSource(defs::currentSrcParameters par) {
     sendToDetector(F_SET_CURRENT_SOURCE, par, nullptr);
 }
 
+int Module::getDBITPipeline() const {
+    return sendToDetector<int>(F_GET_DBIT_PIPELINE);
+}
+
+void Module::setDBITPipeline(int value) {
+    sendToDetector(F_SET_DBIT_PIPELINE, value, nullptr);
+}
+
 // Acquisition
 
 void Module::startReceiver() {
@@ -2107,13 +2115,12 @@ void Module::setNumberOfAnalogSamples(int value) {
     }
 }
 
-int Module::getPipeline(int clkIndex) const {
-    return sendToDetector<int>(F_GET_PIPELINE, clkIndex);
+int Module::getADCPipeline() const {
+    return sendToDetector<int>(F_GET_ADC_PIPELINE);
 }
 
-void Module::setPipeline(int clkIndex, int value) {
-    int args[]{clkIndex, value};
-    sendToDetector(F_SET_PIPELINE, args, nullptr);
+void Module::setADCPipeline(int value) {
+    sendToDetector(F_SET_ADC_PIPELINE, value, nullptr);
 }
 
 uint32_t Module::getADCEnableMask() const {

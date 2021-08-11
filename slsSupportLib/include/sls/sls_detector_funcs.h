@@ -164,8 +164,6 @@ enum detFuncs {
     F_GET_MAX_CLOCK_PHASE_SHIFT,
     F_SET_CLOCK_DIVIDER,
     F_GET_CLOCK_DIVIDER,
-    F_SET_PIPELINE,
-    F_GET_PIPELINE,
     F_SET_ON_CHIP_DAC,
     F_GET_ON_CHIP_DAC,
     F_SET_INJECT_CHANNEL,
@@ -241,6 +239,10 @@ enum detFuncs {
     F_SET_FLIP_ROWS,
     F_GET_FILTER_CELL,
     F_SET_FILTER_CELL,
+    F_SET_ADC_PIPELINE,
+    F_GET_ADC_PIPELINE,
+    F_SET_DBIT_PIPELINE,
+    F_GET_DBIT_PIPELINE,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -513,8 +515,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_MAX_CLOCK_PHASE_SHIFT:		return "F_GET_MAX_CLOCK_PHASE_SHIFT";
 	case F_SET_CLOCK_DIVIDER:				return "F_SET_CLOCK_DIVIDER";	
 	case F_GET_CLOCK_DIVIDER:				return "F_GET_CLOCK_DIVIDER";
-	case F_SET_PIPELINE:					return "F_SET_PIPELINE";
-	case F_GET_PIPELINE:					return "F_GET_PIPELINE";
 	case F_SET_ON_CHIP_DAC:					return "F_SET_ON_CHIP_DAC";
 	case F_GET_ON_CHIP_DAC:					return "F_GET_ON_CHIP_DAC";
 	case F_SET_INJECT_CHANNEL:				return "F_SET_INJECT_CHANNEL";
@@ -589,6 +589,10 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_FLIP_ROWS:                   return "F_SET_FLIP_ROWS";
     case F_GET_FILTER_CELL:                 return "F_GET_FILTER_CELL";
     case F_SET_FILTER_CELL:                 return "F_SET_FILTER_CELL";
+    case F_SET_ADC_PIPELINE:                return "F_SET_ADC_PIPELINE";
+    case F_GET_ADC_PIPELINE:                return "F_GET_ADC_PIPELINE";
+    case F_SET_DBIT_PIPELINE:               return "F_SET_DBIT_PIPELINE";
+    case F_GET_DBIT_PIPELINE:               return "F_GET_DBIT_PIPELINE";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

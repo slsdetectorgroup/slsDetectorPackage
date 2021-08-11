@@ -1907,6 +1907,22 @@ int powerChip(int on) {
             CONTROL_PWR_CHIP_OFST);
 }
 
+void setDBITPipeline(int val) {
+    if (val < 0) {
+        return;
+    }
+    LOG(logINFO, ("Setting dbit pipeline to %d\n", val));
+    uint32_t addr = ADIF_CONFIG_REG;
+    bus_w(addr, bus_r(addr) & ~ADIF_CONFIG_DBIT_PIPELINE_MSK);
+    bus_w(addr, bus_r(addr) | ((val << ADIF_CONFIG_DBIT_PIPELINE_OFST) &
+                               ADIF_CONFIG_DBIT_PIPELINE_MSK));
+}
+
+int getDBITPipeline() {
+    return ((bus_r(ADIF_CONFIG_REG) & ADIF_CONFIG_DBIT_PIPELINE_MSK) >>
+            ADIF_CONFIG_DBIT_PIPELINE_OFST);
+}
+
 int setPhase(enum CLKINDEX ind, int val, int degrees) {
     if (ind < 0 || ind >= NUM_CLOCKS) {
         LOG(logERROR, ("Unknown clock index %d to set phase\n", ind));

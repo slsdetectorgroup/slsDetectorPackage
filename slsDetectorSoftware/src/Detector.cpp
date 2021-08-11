@@ -715,6 +715,15 @@ Detector::getCurrentSource(Positions pos) const {
 void Detector::setCurrentSource(defs::currentSrcParameters par, Positions pos) {
     pimpl->Parallel(&Module::setCurrentSource, pos, par);
 }
+
+Result<int> Detector::getDBITPipeline(Positions pos) const {
+    return pimpl->Parallel(&Module::getDBITPipeline, pos);
+}
+
+void Detector::setDBITPipeline(int value, Positions pos) {
+    pimpl->Parallel(&Module::setDBITPipeline, pos, value);
+}
+
 // Acquisition
 
 void Detector::acquire() { pimpl->acquire(); }
@@ -1806,15 +1815,11 @@ Result<int> Detector::getSYNCClock(Positions pos) const {
 }
 
 Result<int> Detector::getADCPipeline(Positions pos) const {
-    return pimpl->Parallel(&Module::getPipeline, pos, defs::ADC_CLOCK);
+    return pimpl->Parallel(&Module::getADCPipeline, pos);
 }
 
 void Detector::setADCPipeline(int value, Positions pos) {
-    pimpl->Parallel(&Module::setPipeline, pos, defs::ADC_CLOCK, value);
-}
-
-Result<int> Detector::getDBITPipeline(Positions pos) const {
-    return pimpl->Parallel(&Module::getPipeline, pos, defs::DBIT_CLOCK);
+    pimpl->Parallel(&Module::setADCPipeline, pos, value);
 }
 
 Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
@@ -1892,10 +1897,6 @@ Result<int> Detector::getDBITClock(Positions pos) const {
 void Detector::setDBITClock(int value_in_MHz, Positions pos) {
     pimpl->Parallel(&Module::setClockFrequency, pos, defs::DBIT_CLOCK,
                     value_in_MHz);
-}
-
-void Detector::setDBITPipeline(int value, Positions pos) {
-    pimpl->Parallel(&Module::setPipeline, pos, defs::DBIT_CLOCK, value);
 }
 
 Result<int> Detector::getMeasuredVoltage(defs::dacIndex index,

@@ -313,8 +313,6 @@ void function_table() {
     flist[F_GET_MAX_CLOCK_PHASE_SHIFT] = &get_max_clock_phase_shift;
     flist[F_SET_CLOCK_DIVIDER] = &set_clock_divider;
     flist[F_GET_CLOCK_DIVIDER] = &get_clock_divider;
-    flist[F_SET_PIPELINE] = &set_pipeline;
-    flist[F_GET_PIPELINE] = &get_pipeline;
     flist[F_SET_ON_CHIP_DAC] = &set_on_chip_dac;
     flist[F_GET_ON_CHIP_DAC] = &get_on_chip_dac;
     flist[F_SET_INJECT_CHANNEL] = &set_inject_channel;
@@ -390,6 +388,10 @@ void function_table() {
     flist[F_SET_FLIP_ROWS] = &set_flip_rows;
     flist[F_GET_FILTER_CELL] = &get_filter_cell;
     flist[F_SET_FILTER_CELL] = &set_filter_cell;
+    flist[F_SET_ADC_PIPELINE] = &set_adc_pipeline;
+    flist[F_GET_ADC_PIPELINE] = &get_adc_pipeline;
+    flist[F_SET_DBIT_PIPELINE] = &set_dbit_pipeline;
+    flist[F_GET_DBIT_PIPELINE] = &get_dbit_pipeline;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -6075,91 +6077,6 @@ int get_clock_divider(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_pipeline(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int args[2] = {-1, -1};
-
-    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-        return printSocketReadError();
-    LOG(logDEBUG1, ("Setting clock (%d) pipeline : %u\n", args[0], args[1]));
-
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
-    functionNotImplemented();
-#else
-
-    // only set
-    if (Server_VerifyLock() == OK) {
-        int ind = args[0];
-        int val = args[1];
-        enum CLKINDEX c = 0;
-        switch (ind) {
-        case ADC_CLOCK:
-            c = ADC_CLK;
-            break;
-#ifdef CHIPTESTBOARDD
-        case DBIT_CLOCK:
-            c = DBIT_CLK;
-            break;
-#endif
-        default:
-            modeNotImplemented("clock index (pipeline set)", ind);
-            break;
-        }
-
-        if (ret != FAIL) {
-            char *clock_names[] = {CLK_NAMES};
-            char modeName[50] = "";
-            sprintf(modeName, "%s clock (%d) piepline", clock_names[c], (int)c);
-
-            setPipeline(c, val);
-            int retval = getPipeline(c);
-            LOG(logDEBUG1, ("retval %s: %d\n", modeName, retval));
-            validate(&ret, mess, val, retval, modeName, DEC);
-        }
-    }
-#endif
-    return Server_SendResult(file_des, INT32, NULL, 0);
-}
-
-int get_pipeline(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int arg = -1;
-    int retval = -1;
-
-    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-        return printSocketReadError();
-    LOG(logDEBUG1, ("Getting clock (%d) frequency\n", arg));
-
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
-    functionNotImplemented();
-#else
-    // get only
-    enum CLKINDEX c = 0;
-    switch (arg) {
-    case ADC_CLOCK:
-        c = ADC_CLK;
-        break;
-#ifdef CHIPTESTBOARDD
-    case DBIT_CLOCK:
-        c = DBIT_CLK;
-        break;
-#endif
-    default:
-        modeNotImplemented("clock index (pipeline get)", arg);
-        break;
-    }
-    if (ret == OK) {
-        retval = getPipeline(c);
-        char *clock_names[] = {CLK_NAMES};
-        LOG(logDEBUG1, ("retval %s clock (%d) pipeline: %d\n", clock_names[c],
-                        (int)c, retval));
-    }
-#endif
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
-}
-
 int set_on_chip_dac(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
@@ -8925,4 +8842,85 @@ int set_filter_cell(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int set_adc_pipeline(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting adc pipeline : %u\n", arg));
+
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+    functionNotImplemented();
+#else
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        setADCPipeline(arg);
+        int retval = getADCPipeline();
+        LOG(logDEBUG1, ("retval adc pipeline: %d\n", retval));
+        validate(&ret, mess, arg, retval, "set adc pipeline", DEC);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_adc_pipeline(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting adc pipeline\n"));
+
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+    functionNotImplemented();
+#else
+    // get only
+    retval = getADCPipeline();
+    LOG(logDEBUG1, ("retval adc pipeline: %d\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_dbit_pipeline(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting dbit pipeline : %u\n", arg));
+
+#if !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D)
+    functionNotImplemented();
+#else
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        setDBITPipeline(arg);
+        int retval = getDBITPipeline();
+        LOG(logDEBUG1, ("retval dbit pipeline: %d\n", retval));
+        validate(&ret, mess, arg, retval, "set dbit pipeline", DEC);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_dbit_pipeline(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+    LOG(logDEBUG1, ("Getting dbit pipeline\n"));
+
+#if !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D)
+    functionNotImplemented();
+#else
+    // get only
+    retval = getDBITPipeline();
+    LOG(logDEBUG1, ("retval dbit pipeline: %d\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

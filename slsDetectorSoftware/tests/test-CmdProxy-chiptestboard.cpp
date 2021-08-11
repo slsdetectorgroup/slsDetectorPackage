@@ -519,41 +519,6 @@ TEST_CASE("dbitclk", "[.cmd]") {
     }
 }
 
-TEST_CASE("dbitpipeline", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD) {
-        auto prev_val = det.getDBITPipeline();
-        {
-            std::ostringstream oss;
-            proxy.Call("dbitpipeline", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "dbitpipeline 1\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("dbitpipeline", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "dbitpipeline 0\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("dbitpipeline", {"15"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "dbitpipeline 15\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("dbitpipeline", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "dbitpipeline 15\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setDBITPipeline(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("dbitpipeline", {}, -1, GET));
-    }
-}
-
 TEST_CASE("v_a", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

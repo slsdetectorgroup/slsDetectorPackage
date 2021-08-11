@@ -170,6 +170,16 @@
 #define ASIC_CONT_FRAMES_LSB_REG            (0x06 * REG_OFFSET + BASE_ASIC)
 #define ASIC_CONT_FRAMES_MSB_REG            (0x07 * REG_OFFSET + BASE_ASIC)
 
+
+/* ADIF registers --------------------------------------------------*/
+
+/* ADIF Config register */
+#define ADIF_CONFIG_REG                     (0x00 * REG_OFFSET + BASE_ADIF)
+
+#define ADIF_CONFIG_DBIT_PIPELINE_OFST      (4)
+#define ADIF_CONFIG_DBIT_PIPELINE_MSK       (0x00000007 << ADIF_CONFIG_DBIT_PIPELINE_OFST)
+
+
 /* Packetizer -------------------------------------------------------------*/
 
 /* Packetizer Config Register */

@@ -261,7 +261,9 @@ std::string CmdProxy::SerialNumber(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == slsDetectorDefs::HELP_ACTION)
-        os << "\n\tSerial number of detector.\n\t[Gotthard2] Can overwrite"
+        os << "\n\tSerial number of detector.\n\t[Gotthard2] Can overwrite and "
+              "is sent out as mod_id in sls_detector_header in header of UDP "
+              "data packet streamed out from detector."
            << '\n';
     else if (action == slsDetectorDefs::GET_ACTION) {
         if (!args.empty()) {

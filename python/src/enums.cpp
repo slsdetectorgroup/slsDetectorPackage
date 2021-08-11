@@ -210,13 +210,9 @@ void init_enums(py::module &m) {
         .value("LOWGAIN", slsDetectorDefs::detectorSettings::LOWGAIN)
         .value("MEDIUMGAIN", slsDetectorDefs::detectorSettings::MEDIUMGAIN)
         .value("VERYHIGHGAIN", slsDetectorDefs::detectorSettings::VERYHIGHGAIN)
-        .value("DYNAMICHG0", slsDetectorDefs::detectorSettings::DYNAMICHG0)
+        .value("HIGHGAIN0", slsDetectorDefs::detectorSettings::HIGHGAIN0)
         .value("FIXGAIN1", slsDetectorDefs::detectorSettings::FIXGAIN1)
         .value("FIXGAIN2", slsDetectorDefs::detectorSettings::FIXGAIN2)
-        .value("FORCESWITCHG1",
-               slsDetectorDefs::detectorSettings::FORCESWITCHG1)
-        .value("FORCESWITCHG2",
-               slsDetectorDefs::detectorSettings::FORCESWITCHG2)
         .value("VERYLOWGAIN", slsDetectorDefs::detectorSettings::VERYLOWGAIN)
         .value("G1_HIGHGAIN", slsDetectorDefs::detectorSettings::G1_HIGHGAIN)
         .value("G1_LOWGAIN", slsDetectorDefs::detectorSettings::G1_LOWGAIN)
@@ -230,6 +226,7 @@ void init_enums(py::module &m) {
                slsDetectorDefs::detectorSettings::G2_LOWCAP_LOWGAIN)
         .value("G4_HIGHGAIN", slsDetectorDefs::detectorSettings::G4_HIGHGAIN)
         .value("G4_LOWGAIN", slsDetectorDefs::detectorSettings::G4_LOWGAIN)
+        .value("GAIN0", slsDetectorDefs::detectorSettings::GAIN0)
         .value("UNDEFINED", slsDetectorDefs::detectorSettings::UNDEFINED)
         .value("UNINITIALIZED",
                slsDetectorDefs::detectorSettings::UNINITIALIZED)
@@ -308,5 +305,14 @@ void init_enums(py::module &m) {
     py::enum_<slsDetectorDefs::vetoAlgorithm>(Defs, "vetoAlgorithm")
         .value("DEFAULT_ALGORITHM",
                slsDetectorDefs::vetoAlgorithm::DEFAULT_ALGORITHM)
+        .export_values();
+
+    py::enum_<slsDetectorDefs::gainMode>(Defs, "gainMode")
+        .value("DYNAMIC", slsDetectorDefs::gainMode::DYNAMIC)
+        .value("FORCE_SWITCH_G1", slsDetectorDefs::gainMode::FORCE_SWITCH_G1)
+        .value("FORCE_SWITCH_G2", slsDetectorDefs::gainMode::FORCE_SWITCH_G2)
+        .value("FIX_G1", slsDetectorDefs::gainMode::FIX_G1)
+        .value("FIX_G2", slsDetectorDefs::gainMode::FIX_G2)
+        .value("FIX_G0", slsDetectorDefs::gainMode::FIX_G0)
         .export_values();
 }

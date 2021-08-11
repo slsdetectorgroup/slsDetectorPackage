@@ -190,6 +190,18 @@ TEST_CASE("temp_threshold", "[.cmd]") {
     }
 }
 
+TEST_CASE("chipversion", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        REQUIRE_NOTHROW(proxy.Call("chipversion", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("chipversion", {}, -1, GET));
+    }
+    REQUIRE_THROWS(proxy.Call("chipversion", {"0"}, -1, PUT));
+}
+
 TEST_CASE("temp_control", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -246,7 +258,7 @@ TEST_CASE("auto_comp_disable", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getAutoCompDisable();
+        auto prev_val = det.getAutoComparatorDisable();
         {
             std::ostringstream oss;
             proxy.Call("auto_comp_disable", {"0"}, -1, PUT, oss);
@@ -263,11 +275,41 @@ TEST_CASE("auto_comp_disable", "[.cmd]") {
             REQUIRE(oss.str() == "auto_comp_disable 1\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setAutoCompDisable(prev_val[i], {i});
+            det.setAutoComparatorDisable(prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("auto_comp_disable", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("auto_comp_disable", {"0"}, -1, PUT));
+    }
+}
+
+TEST_CASE("comp_disable_time", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getComparatorDisableTime();
+        {
+            std::ostringstream oss;
+            proxy.Call("comp_disable_time", {"125ns"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "comp_disable_time 125ns\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("comp_disable_time", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "comp_disable_time 125ns\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("comp_disable_time", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "comp_disable_time 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setComparatorDisableTime(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("comp_disable_time", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("comp_disable_time", {"0"}, -1, PUT));
     }
 }
 
@@ -276,30 +318,38 @@ TEST_CASE("storagecells", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getNumberOfAdditionalStorageCells().tsquash(
-            "inconsistent #additional storage cells to test");
-        {
-            std::ostringstream oss;
-            proxy.Call("storagecells", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "storagecells 1\n");
+        // chip version 1.0
+        if (det.getChipVersion().squash()*10 == 10) {
+            auto prev_val = det.getNumberOfAdditionalStorageCells().tsquash(
+                "inconsistent #additional storage cells to test");
+            {
+                std::ostringstream oss;
+                proxy.Call("storagecells", {"1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "storagecells 1\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("storagecells", {"15"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "storagecells 15\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("storagecells", {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "storagecells 0\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("storagecells", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "storagecells 0\n");
+            }
+            REQUIRE_THROWS(proxy.Call("storagecells", {"16"}, -1, PUT));
+            det.setNumberOfAdditionalStorageCells(prev_val);
+        } 
+        // chip version 1.1
+        else {
+            // cannot set number of addl. storage cells
+           REQUIRE_THROWS(proxy.Call("storagecells", {"1"}, -1, PUT));
         }
-        {
-            std::ostringstream oss;
-            proxy.Call("storagecells", {"15"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "storagecells 15\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("storagecells", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "storagecells 0\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("storagecells", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "storagecells 0\n");
-        }
-        REQUIRE_THROWS(proxy.Call("storagecells", {"16"}, -1, PUT));
-        det.setNumberOfAdditionalStorageCells(prev_val);
     } else {
         REQUIRE_THROWS(proxy.Call("storagecells", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("storagecells", {"0"}, -1, PUT));
@@ -317,10 +367,19 @@ TEST_CASE("storagecell_start", "[.cmd]") {
             proxy.Call("storagecell_start", {"1"}, -1, PUT, oss);
             REQUIRE(oss.str() == "storagecell_start 1\n");
         }
-        {
+        // chip version 1.0
+        if (det.getChipVersion().squash()*10 == 10) {
             std::ostringstream oss;
             proxy.Call("storagecell_start", {"15"}, -1, PUT, oss);
             REQUIRE(oss.str() == "storagecell_start 15\n");
+        }        
+        // chip version 1.1
+        else {
+            // max is 3
+            REQUIRE_THROWS(proxy.Call("storagecell_start", {"15"}, -1, PUT));
+            std::ostringstream oss;
+            proxy.Call("storagecell_start", {"3"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "storagecell_start 3\n");
         }
         {
             std::ostringstream oss;
@@ -347,28 +406,130 @@ TEST_CASE("storagecell_delay", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getStorageCellDelay();
-        {
-            std::ostringstream oss;
-            proxy.Call("storagecell_delay", {"1.62ms"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "storagecell_delay 1.62ms\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("storagecell_delay", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "storagecell_delay 1.62ms\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("storagecell_delay", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "storagecell_delay 0\n");
-        }
-        REQUIRE_THROWS(proxy.Call("storagecell_delay", {"1638376ns"}, -1, PUT));
-        for (int i = 0; i != det.size(); ++i) {
-            det.setStorageCellDelay(prev_val[i], {i});
+        // chip version 1.0
+        if (det.getChipVersion().squash()*10 == 10) {
+            auto prev_val = det.getStorageCellDelay();
+            {
+                std::ostringstream oss;
+                proxy.Call("storagecell_delay", {"1.62ms"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "storagecell_delay 1.62ms\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("storagecell_delay", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "storagecell_delay 1.62ms\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("storagecell_delay", {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "storagecell_delay 0\n");
+            }
+            REQUIRE_THROWS(proxy.Call("storagecell_delay", {"1638376ns"}, -1, PUT));
+            for (int i = 0; i != det.size(); ++i) {
+                det.setStorageCellDelay(prev_val[i], {i});
+            }
+        }        
+        // chip version 1.1
+        else {
+            // cannot set storage cell delay
+           REQUIRE_THROWS(proxy.Call("storagecell_delay", {"1.62ms"}, -1, PUT));
         }
     } else {
         REQUIRE_THROWS(proxy.Call("storagecell_delay", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("storagecell_delay", {"0"}, -1, PUT));
+    }
+}
+
+TEST_CASE("gainmode", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getGainMode();
+        {
+            std::ostringstream oss;
+            proxy.Call("gainmode", {"forceswitchg1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gainmode forceswitchg1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gainmode", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "gainmode forceswitchg1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gainmode", {"dynamic"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gainmode dynamic\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gainmode", {"forceswitchg2"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gainmode forceswitchg2\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gainmode", {"fixg1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gainmode fixg1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gainmode", {"fixg2"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gainmode fixg2\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gainmode", {"fixg0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gainmode fixg0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setGainMode(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("gainmode", {}, -1, GET));
+    }
+}
+
+TEST_CASE("filtercell", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        // chip version 1.1
+        if (det.getChipVersion().squash() * 10 == 11) {
+            auto prev_val = det.getFilterCell();
+            {
+                std::ostringstream oss;
+                proxy.Call("filtercell", {"1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "filtercell 1\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("filtercell", {"12"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "filtercell 12\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("filtercell", {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "filtercell 0\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("filtercell", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "filtercell 0\n");
+            }
+            REQUIRE_THROWS(proxy.Call("filtercell", {"13"}, -1, PUT));
+            for (int i = 0; i != det.size(); ++i) {
+                det.setFilterCell(prev_val[i], {i});
+            }
+        }
+        // chip version 1.0
+        else {
+            // cannot set/get filter cell
+            REQUIRE_THROWS(proxy.Call("filtercell", {"1"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("filtercell", {}, -1, GET));
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("filtercell", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("filtercell", {"0"}, -1, PUT));
     }
 }

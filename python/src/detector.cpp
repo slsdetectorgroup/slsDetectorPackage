@@ -354,9 +354,28 @@ void init_det(py::module &m) {
              py::arg(), py::arg() = Positions{})
         .def("getDacList", (std::vector<defs::dacIndex>(Detector::*)() const) &
                                Detector::getDacList)
-        .def("setDefaultDacs",
-             (void (Detector::*)(sls::Positions)) & Detector::setDefaultDacs,
-             py::arg() = Positions{})
+        .def("getDefaultDac",
+             (Result<int>(Detector::*)(defs::dacIndex, sls::Positions)) &
+                 Detector::getDefaultDac,
+             py::arg(), py::arg() = Positions{})
+        .def("setDefaultDac",
+             (void (Detector::*)(defs::dacIndex, int, sls::Positions)) &
+                 Detector::setDefaultDac,
+             py::arg(), py::arg(), py::arg() = Positions{})
+        .def("getDefaultDac",
+             (Result<int>(Detector::*)(defs::dacIndex, defs::detectorSettings,
+                                       sls::Positions)) &
+                 Detector::getDefaultDac,
+             py::arg(), py::arg(), py::arg() = Positions{})
+        .def("setDefaultDac",
+             (void (Detector::*)(defs::dacIndex, int, defs::detectorSettings,
+                                 sls::Positions)) &
+                 Detector::setDefaultDac,
+             py::arg(), py::arg(), py::arg(), py::arg() = Positions{})
+        .def("resetToDefaultDacs",
+             (void (Detector::*)(const bool, sls::Positions)) &
+                 Detector::resetToDefaultDacs,
+             py::arg(), py::arg() = Positions{})
         .def("getDAC",
              (Result<int>(Detector::*)(defs::dacIndex, bool, sls::Positions)
                   const) &
@@ -829,12 +848,12 @@ void init_det(py::module &m) {
              (void (Detector::*)(bool, sls::Positions)) &
                  Detector::setOverFlowMode,
              py::arg(), py::arg() = Positions{})
-        .def("getBottom",
+        .def("getFlipRows",
              (Result<bool>(Detector::*)(sls::Positions) const) &
-                 Detector::getBottom,
+                 Detector::getFlipRows,
              py::arg() = Positions{})
-        .def("setBottom",
-             (void (Detector::*)(bool, sls::Positions)) & Detector::setBottom,
+        .def("setFlipRows",
+             (void (Detector::*)(bool, sls::Positions)) & Detector::setFlipRows,
              py::arg(), py::arg() = Positions{})
         .def("getRateCorrection",
              (Result<sls::ns>(Detector::*)(sls::Positions) const) &
@@ -923,6 +942,10 @@ void init_det(py::module &m) {
                                  sls::Positions)) &
                  Detector::setDataStream,
              py::arg(), py::arg(), py::arg() = Positions{})
+        .def("getChipVersion",
+             (Result<double>(Detector::*)(sls::Positions) const) &
+                 Detector::getChipVersion,
+             py::arg() = Positions{})
         .def("getThresholdTemperature",
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getThresholdTemperature,
@@ -947,13 +970,21 @@ void init_det(py::module &m) {
              (void (Detector::*)(sls::Positions)) &
                  Detector::resetTemperatureEvent,
              py::arg() = Positions{})
-        .def("getAutoCompDisable",
+        .def("getAutoComparatorDisable",
              (Result<bool>(Detector::*)(sls::Positions) const) &
-                 Detector::getAutoCompDisable,
+                 Detector::getAutoComparatorDisable,
              py::arg() = Positions{})
-        .def("setAutoCompDisable",
+        .def("setAutoComparatorDisable",
              (void (Detector::*)(bool, sls::Positions)) &
-                 Detector::setAutoCompDisable,
+                 Detector::setAutoComparatorDisable,
+             py::arg(), py::arg() = Positions{})
+        .def("getComparatorDisableTime",
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                 Detector::getComparatorDisableTime,
+             py::arg() = Positions{})
+        .def("setComparatorDisableTime",
+             (void (Detector::*)(sls::ns, sls::Positions)) &
+                 Detector::setComparatorDisableTime,
              py::arg(), py::arg() = Positions{})
         .def("getNumberOfAdditionalStorageCells",
              (Result<int>(Detector::*)(sls::Positions) const) &
@@ -978,6 +1009,17 @@ void init_det(py::module &m) {
         .def("setStorageCellDelay",
              (void (Detector::*)(sls::ns, sls::Positions)) &
                  Detector::setStorageCellDelay,
+             py::arg(), py::arg() = Positions{})
+        .def("getGainModeList",
+             (std::vector<defs::gainMode>(Detector::*)() const) &
+                 Detector::getGainModeList)
+        .def("getGainMode",
+             (Result<defs::gainMode>(Detector::*)(sls::Positions) const) &
+                 Detector::getGainMode,
+             py::arg() = Positions{})
+        .def("setGainMode",
+             (void (Detector::*)(defs::gainMode, sls::Positions)) &
+                 Detector::setGainMode,
              py::arg(), py::arg() = Positions{})
         .def("getROI",
              (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
@@ -1054,12 +1096,21 @@ void init_det(py::module &m) {
         .def("setCDSGain",
              (void (Detector::*)(bool, sls::Positions)) & Detector::setCDSGain,
              py::arg(), py::arg() = Positions{})
-        .def("getFilter",
+        .def("getFilterResistor",
              (Result<int>(Detector::*)(sls::Positions) const) &
-                 Detector::getFilter,
+                 Detector::getFilterResistor,
              py::arg() = Positions{})
-        .def("setFilter",
-             (void (Detector::*)(int, sls::Positions)) & Detector::setFilter,
+        .def("setFilterResistor",
+             (void (Detector::*)(int, sls::Positions)) &
+                 Detector::setFilterResistor,
+             py::arg(), py::arg() = Positions{})
+        .def("getFilterCell",
+             (Result<int>(Detector::*)(sls::Positions) const) &
+                 Detector::getFilterCell,
+             py::arg() = Positions{})
+        .def("setFilterCell",
+             (void (Detector::*)(int, sls::Positions)) &
+                 Detector::setFilterCell,
              py::arg(), py::arg() = Positions{})
         .def("getCurrentSource",
              (Result<bool>(Detector::*)(sls::Positions) const) &

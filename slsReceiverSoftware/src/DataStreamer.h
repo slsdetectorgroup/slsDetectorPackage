@@ -30,12 +30,12 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param dr pointer to dynamic range
      * @param r roi
      * @param fi pointer to file index
-     * @param fd flipped data enable for x dimension
+     * @param fr flip rows
      * @param nm pointer to number of modules in each dimension
      * @param qe pointer to quad Enable
      * @param tot pointer to total number of frames
      */
-    DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi, int fd,
+    DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi, bool fr,
                  int *nm, bool *qe, uint64_t *tot);
 
     /**
@@ -68,10 +68,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     void SetNumberofModules(int *nm);
 
     /**
-     * Set Flipped data enable across x dimension
-     * @param fd data enable in x dimension
+     * Set Flipped rows
+     * @param fd flip rows enable
      */
-    void SetFlippedDataX(int fd);
+    void SetFlipRows(bool fd);
 
     /**
      * Set additional json header
@@ -165,8 +165,8 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     /** Pointer to file index */
     uint64_t *fileIndex;
 
-    /** flipped data across x axis */
-    int flippedDataX;
+    /** flip rows */
+    bool flipRows;
 
     /** additional json header */
     std::map<std::string, std::string> additionalJsonHeader;

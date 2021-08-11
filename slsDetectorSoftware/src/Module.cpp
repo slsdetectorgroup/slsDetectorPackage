@@ -458,6 +458,21 @@ int Module::setTrimEn(const std::vector<int> &energies) {
     return shm()->trimEnergies.size();
 }
 
+bool Module::getFlipRows() const {
+    if (shm()->myDetectorType == EIGER) {
+        return sendToReceiver<int>(F_GET_FLIP_ROWS_RECEIVER);
+    }
+    return sendToDetector<int>(F_GET_FLIP_ROWS);
+}
+
+void Module::setFlipRows(bool value) {
+    if (shm()->myDetectorType == EIGER) {
+        sendToReceiver<int>(F_SET_FLIP_ROWS_RECEIVER, static_cast<int>(value));
+    } else {
+        sendToDetector(F_SET_FLIP_ROWS, static_cast<int>(value), nullptr);
+    }
+}
+
 bool Module::isVirtualDetectorServer() const {
     return sendToDetector<int>(F_IS_VIRTUAL);
 }
@@ -618,8 +633,21 @@ int Module::getDAC(dacIndex index, bool mV) const {
     int args[]{static_cast<int>(index), static_cast<int>(mV), GET_FLAG};
     return sendToDetector<int>(F_SET_DAC, args);
 }
+int Module::getDefaultDac(slsDetectorDefs::dacIndex index,
+                          slsDetectorDefs::detectorSettings sett) {
+    int args[]{static_cast<int>(index), static_cast<int>(sett)};
+    return sendToDetector<int>(F_GET_DEFAULT_DAC, args);
+}
+void Module::setDefaultDac(slsDetectorDefs::dacIndex index, int defaultValue,
+                           defs::detectorSettings sett) {
+    int args[]{static_cast<int>(index), static_cast<int>(sett), defaultValue};
+    return sendToDetector(F_SET_DEFAULT_DAC, args, nullptr);
+}
 
-void Module::setDefaultDacs() { sendToDetector(F_SET_DEFAULT_DACS); }
+void Module::resetToDefaultDacs(const bool hardReset) {
+    sendToDetector(F_RESET_TO_DEFAULT_DACS, static_cast<int>(hardReset),
+                   nullptr);
+}
 
 void Module::setDAC(int val, dacIndex index, bool mV) {
     int args[]{static_cast<int>(index), static_cast<int>(mV), val};
@@ -674,6 +702,22 @@ bool Module::getParallelMode() const {
 
 void Module::setParallelMode(const bool enable) {
     sendToDetector(F_SET_PARALLEL_MODE, static_cast<int>(enable), nullptr);
+}
+
+int Module::getFilterResistor() const {
+    return sendToDetector<int>(F_GET_FILTER_RESISTOR);
+}
+
+void Module::setFilterResistor(int value) {
+    sendToDetector(F_SET_FILTER_RESISTOR, value, nullptr);
+}
+
+defs::currentSrcParameters Module::getCurrentSource() const {
+    return sendToDetector<defs::currentSrcParameters>(F_GET_CURRENT_SOURCE);
+}
+
+void Module::setCurrentSource(defs::currentSrcParameters par) {
+    sendToDetector(F_SET_CURRENT_SOURCE, par, nullptr);
 }
 
 // Acquisition
@@ -1385,14 +1429,6 @@ void Module::setOverFlowMode(const bool enable) {
     sendToDetector(F_SET_OVERFLOW_MODE, static_cast<int>(enable), nullptr);
 }
 
-bool Module::getFlippedDataX() const {
-    return sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER, GET_FLAG);
-}
-
-void Module::setFlippedDataX(bool value) {
-    sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER, static_cast<int>(value));
-}
-
 int64_t Module::getRateCorrection() const {
     return sendToDetector<int64_t>(F_GET_RATE_CORRECT);
 }
@@ -1522,6 +1558,9 @@ void Module::setDataStream(const portPosition port, const bool enable) {
 }
 
 // Jungfrau Specific
+double Module::getChipVersion() const {
+    return (sendToDetector<int>(F_GET_CHIP_VERSION)) / 10.00;
+}
 
 int Module::getThresholdTemperature() const {
     auto retval = sendToDetectorStop<int>(F_THRESHOLD_TEMP, GET_FLAG);
@@ -1561,6 +1600,14 @@ void Module::setAutoComparatorDisableMode(bool val) {
     sendToDetector<int>(F_AUTO_COMP_DISABLE, static_cast<int>(val));
 }
 
+int64_t Module::getComparatorDisableTime() const {
+    return sendToDetector<int64_t>(F_GET_COMP_DISABLE_TIME);
+}
+
+void Module::setComparatorDisableTime(int64_t value) {
+    sendToDetector(F_SET_COMP_DISABLE_TIME, value, nullptr);
+}
+
 int Module::getNumberOfAdditionalStorageCells() const {
     return sendToDetector<int>(F_GET_NUM_ADDITIONAL_STORAGE_CELLS);
 }
@@ -1583,6 +1630,22 @@ int64_t Module::getStorageCellDelay() const {
 
 void Module::setStorageCellDelay(int64_t value) {
     sendToDetector(F_SET_STORAGE_CELL_DELAY, value, nullptr);
+}
+
+slsDetectorDefs::gainMode Module::getGainMode() const {
+    return sendToDetector<gainMode>(F_GET_GAIN_MODE);
+}
+
+void Module::setGainMode(const slsDetectorDefs::gainMode mode) {
+    sendToDetector(F_SET_GAIN_MODE, mode, nullptr);
+}
+
+int Module::getFilterCell() const {
+    return sendToDetector<int>(F_GET_FILTER_CELL);
+}
+
+void Module::setFilterCell(int value) {
+    sendToDetector(F_SET_FILTER_CELL, value, nullptr);
 }
 
 // Gotthard Specific
@@ -1857,20 +1920,6 @@ bool Module::getCDSGain() const { return sendToDetector<int>(F_GET_CDS_GAIN); }
 
 void Module::setCDSGain(bool value) {
     sendToDetector(F_SET_CDS_GAIN, static_cast<int>(value), nullptr);
-}
-
-int Module::getFilter() const { return sendToDetector<int>(F_GET_FILTER); }
-
-void Module::setFilter(int value) {
-    sendToDetector(F_SET_FILTER, value, nullptr);
-}
-
-bool Module::getCurrentSource() const {
-    return sendToDetector<int>(F_GET_CURRENT_SOURCE);
-}
-
-void Module::setCurrentSource(bool value) {
-    sendToDetector(F_SET_CURRENT_SOURCE, static_cast<int>(value), nullptr);
 }
 
 slsDetectorDefs::timingSourceType Module::getTimingSource() const {

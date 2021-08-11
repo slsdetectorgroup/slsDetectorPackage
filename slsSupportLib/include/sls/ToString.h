@@ -40,6 +40,7 @@ std::string ToString(const defs::M3_GainCaps s);
 std::string ToString(const defs::portPosition s);
 std::string ToString(const defs::streamingInterface s);
 std::string ToString(const defs::vetoAlgorithm s);
+std::string ToString(const defs::gainMode s);
 
 std::string ToString(const slsDetectorDefs::xy &coord);
 std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::xy &coord);
@@ -51,7 +52,12 @@ std::ostream &operator<<(std::ostream &os,
 std::string ToString(const slsDetectorDefs::scanParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::scanParameters &r);
+std::string ToString(const slsDetectorDefs::currentSrcParameters &r);
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::currentSrcParameters &r);
+
 const std::string &ToString(const std::string &s);
+
 /** Convert std::chrono::duration with specified output unit */
 template <typename T, typename Rep = double>
 typename std::enable_if<is_duration<T>::value, std::string>::type
@@ -305,6 +311,7 @@ template <> defs::M3_GainCaps StringTo(const std::string &s);
 template <> defs::portPosition StringTo(const std::string &s);
 template <> defs::streamingInterface StringTo(const std::string &s);
 template <> defs::vetoAlgorithm StringTo(const std::string &s);
+template <> defs::gainMode StringTo(const std::string &s);
 
 template <> uint32_t StringTo(const std::string &s);
 template <> uint64_t StringTo(const std::string &s);

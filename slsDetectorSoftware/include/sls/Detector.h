@@ -113,8 +113,7 @@ class Detector {
     /** [Jungfrau][Gotthard][Gotthard2][Mythen3] */
     Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
 
-    /** [Jungfrau] DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2,
-     * FORCESWITCHG1, FORCESWITCHG2 \n [Gotthard] DYNAMICGAIN, HIGHGAIN,
+    /** [Jungfrau] GAIN0, HIGHGAIN0 \n [Gotthard] DYNAMICGAIN, HIGHGAIN,
      * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n [Gotthard2] DYNAMICGAIN,
      * FIXGAIN1, FIXGAIN2 \n [Moench] G1_HIGHGAIN, G1_LOWGAIN,
      * G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN,
@@ -172,6 +171,17 @@ class Detector {
      * streaming, receiver file or streaming. Default is disabled.
      */
     void setGapPixelsinCallback(const bool enable);
+
+    /** [Eiger][Jungfrau] */
+    Result<bool> getFlipRows(Positions pos = {}) const;
+
+    /** [Eiger] flips rows paramater sent to slsreceiver to stream as json
+     * parameter to flip rows in gui \n[Jungfrau] flips rows in the detector
+     * itself.  For bottom module and number of interfaces must be set to 2.
+     * slsReceiver and slsDetectorGui does not handle.slsReceiver and
+     * slsDetectorGui does not handle
+     */
+    void setFlipRows(bool value, Positions pos = {});
 
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@{
@@ -383,7 +393,7 @@ class Detector {
      * [Moench] Default is disabled. \n
      * [Jungfrau] Default is disabled. Get will return power status. Can be off
      * if temperature event occured (temperature over temp_threshold with
-     * temp_control enabled. \n [Mythen3][Gotthard2] Default is 1. If module not
+     * temp_control enabled. Will configure chip (only chip v1.1)\n [Mythen3][Gotthard2] Default is 1. If module not
      * connected or wrong module, powerchip will fail.
      */
     void setPowerChip(bool on, Positions pos = {});
@@ -414,7 +424,24 @@ class Detector {
     std::vector<defs::dacIndex> getDacList() const;
 
     /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
-    void setDefaultDacs(Positions pos = {});
+    Result<int> getDefaultDac(defs::dacIndex index, Positions pos = {});
+
+    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
+    void setDefaultDac(defs::dacIndex index, int defaultValue,
+                       Positions pos = {});
+
+    /** [Jungfrau][Mythen3] */
+    Result<int> getDefaultDac(defs::dacIndex index, defs::detectorSettings sett,
+                              Positions pos = {});
+
+    /** [Jungfrau][Mythen3] */
+    void setDefaultDac(defs::dacIndex index, int defaultValue,
+                       defs::detectorSettings sett, Positions pos = {});
+
+    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3]
+    reset to defaults, hardReset will reset to hardcoded defaults on on-board
+    server */
+    void resetToDefaultDacs(const bool hardReset, Positions pos = {});
 
     Result<int> getDAC(defs::dacIndex index, bool mV = false,
                        Positions pos = {}) const;
@@ -452,6 +479,23 @@ class Detector {
      * [Mythen3] If exposure time is too short, acquisition will return with an
      * ERROR and take fewer frames than expected */
     void setParallelMode(bool value, Positions pos = {});
+
+    /** [Gotthard2][Jungfrau] */
+    Result<int> getFilterResistor(Positions pos = {}) const;
+
+    /** [Gotthard2][Jungfrau] Set filter resistor. Increasing values for
+     * increasing resistance.\n[Gotthard2] Options: [0|1|2|3]. Default is
+     * 0.\n[Jungfrau] Options: [0|1]. Default is 1.*/
+    void setFilterResistor(int value, Positions pos = {});
+
+    /** [Gotthard2][Jungfrau] */
+    Result<defs::currentSrcParameters>
+    getCurrentSource(Positions pos = {}) const;
+
+    /** [Gotthard2][Jungfrau] Please refer documentation on currentSrcParameters
+     * (sls_detector_defs.h) on the structure and its members */
+    void setCurrentSource(defs::currentSrcParameters par, Positions pos = {});
+
     ///@{
 
     /** @name Acquisition */
@@ -979,12 +1023,6 @@ class Detector {
     /** [Eiger] Overflow in 32 bit mode. Default is disabled.*/
     void setOverFlowMode(bool value, Positions pos = {});
 
-    /** [Eiger] */
-    Result<bool> getBottom(Positions pos = {}) const;
-
-    /** [Eiger] for client call back (gui) purposes to flip bottom image */
-    void setBottom(bool value, Positions pos = {});
-
     /** [Eiger] deadtime in ns, 0 = disabled */
     Result<ns> getRateCorrection(Positions pos = {}) const;
 
@@ -1082,6 +1120,9 @@ class Detector {
      * ************************************************/
 
     /** [Jungfrau] */
+    Result<double> getChipVersion(Positions pos = {}) const;
+
+    /** [Jungfrau] */
     Result<int> getThresholdTemperature(Positions pos = {}) const;
 
     /**
@@ -1108,24 +1149,32 @@ class Detector {
     void resetTemperatureEvent(Positions pos = {});
 
     /** [Jungfrau] */
-    Result<bool> getAutoCompDisable(Positions pos = {}) const;
+    Result<bool> getAutoComparatorDisable(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced
      * //TODO naming
-     * By default, the on-chip gain switching is active during the entire
-     * exposure. This mode disables the on-chip gain switching comparator
-     * automatically after 93.75% of exposure time (only for longer than
-     * 100us).\n
-     * Default is false or this mode disabled(comparator enabled throughout).
-     * true enables mode. 0 disables mode.
+     * By default, the on-chip gain switching is active during the
+     * entire exposure. This mode disables the on-chip gain switching comparator
+     * automatically after 93.75% of exposure time (only for longer than 100us).
+     * The % is for chipv1.0. One can set the duration for chipv1.1 using
+     * setComparatorDisableTime\n Default is false or this mode
+     * disabled(comparator enabled throughout). true enables mode. 0 disables
+     * mode.
      */
-    void setAutoCompDisable(bool value, Positions pos = {});
+    void setAutoComparatorDisable(bool value, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<ns> getComparatorDisableTime(Positions pos = {}) const;
+
+    /** [Jungfrau] Time before end of exposure when comparator is disabled. It
+     * is only possible for chipv1.1.*/
+    void setComparatorDisableTime(ns t, Positions pos = {});
 
     /** [Jungfrau] Advanced TODO naming */
     Result<int> getNumberOfAdditionalStorageCells(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced \n
-     * Options: 0 - 15. Default: 0. \n
+     * Only for chipv1.0. Options: 0 - 15. Default: 0. \n
      * The #images = #frames x #triggers x (#storagecells + 1) */
     void setNumberOfAdditionalStorageCells(int value);
 
@@ -1133,7 +1182,7 @@ class Detector {
     Result<int> getStorageCellStart(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced. Sets the storage cell storing the first acquisition
-     * of the series. Options: 0-15. Default: 15.
+     * of the series. Options: 0-max. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1.
      */
     void setStorageCellStart(int cell, Positions pos = {});
 
@@ -1141,9 +1190,30 @@ class Detector {
     Result<ns> getStorageCellDelay(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced \n Additional time delay between 2 consecutive
-     * exposures in burst mode. \n Options: (0-1638375 ns (resolution of 25ns)
+     * exposures in burst mode. \n Options: (0-1638375 ns (resolution of 25ns)\n
+     * Only applicable for chipv1.0. 
      */
     void setStorageCellDelay(ns value, Positions pos = {});
+
+    /** list of possible gainmode  */
+    std::vector<defs::gainMode> getGainModeList() const;
+
+    /** [Jungfrau]*/
+    Result<defs::gainMode> getGainMode(Positions pos = {}) const;
+
+    /** [Jungfrau] Options: DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2,
+     * FIX_G1, FIX_G2, FIX_G0 \n\CAUTION: Do not use FIX_G0 without caution, you
+     * can damage the detector!!!\n
+     */
+    void setGainMode(const defs::gainMode mode, Positions pos = {});
+
+    /** [Jungfrau] Advanced */
+    Result<int> getFilterCell(Positions pos = {}) const;
+
+    /** [Jungfrau] Advanced Options[0-12]
+     */
+    void setFilterCell(int cell, Positions pos = {});
+
     ///@{
 
     /** @name Gotthard Specific */
@@ -1237,18 +1307,6 @@ class Detector {
 
     /** default disabled */
     void setCDSGain(bool value, Positions pos = {});
-
-    /** [Gotthard2] */
-    Result<int> getFilter(Positions pos = {}) const;
-
-    /** [Gotthard2] Set filter resister. Options: 0-3. Default: 0 */
-    void setFilter(int value, Positions pos = {});
-
-    /** [Gotthard2] */
-    Result<bool> getCurrentSource(Positions pos = {}) const;
-
-    /** default disabled */
-    void setCurrentSource(bool value, Positions pos = {});
 
     /** [Gotthard2] */
     Result<defs::timingSourceType> getTimingSource(Positions pos = {}) const;
@@ -1776,7 +1834,6 @@ class Detector {
     std::vector<int> getPortNumbers(int start_port);
     void updateRxRateCorrections();
     void setNumberofUDPInterfaces_(int n, Positions pos);
-    Result<int> getNumberofUDPInterfaces_(Positions pos) const;
 };
 
 } // namespace sls

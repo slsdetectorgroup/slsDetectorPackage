@@ -311,7 +311,7 @@ class Detector(CppDetectorApi):
         -----
         
         [Eiger] Use threshold command to load settings
-        [Jungfrau] DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2 \n
+        [Jungfrau] GAIN0, HIGHGAIN0 \n
         [Gotthard] DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n
         [Gotthard2] DYNAMICGAIN, FIXGAIN1, FIXGAIN2 \n
         [Moench] G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN \n
@@ -370,7 +370,7 @@ class Detector(CppDetectorApi):
         Note
         ----
         [Moench] Default is disabled. \n
-        [Jungfrau] Default is disabled. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. \n
+        [Jungfrau] Default is disabled. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. Will configure chip (only chip v1.1).\n
         [Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.
         """
         return self.getPowerChip()
@@ -1994,19 +1994,58 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def chipversion(self):
+        """
+        [Jungfrau] Chip version of module. Can be 1.0 or 1.1.
+
+        Example
+        -------
+        >>> d.chipversion
+        '1.0'
+        """
+        return self.getChipVersion()
+
+
+    @property
+    @element
     def auto_comp_disable(self):
         """[Jungfrau] Enable or disable auto comparator disable mode. 
 
         Note
         -----
-        By default, the on-chip gain switching is active during the entire exposure. This mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us).\n
+        By default, the on-chip gain switching is active during the entire exposure. This mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). The % is only for chipv1.0, the duration can be set for chipv1.1.\n
         Default is 0 or this mode disabled (comparator enabled throughout). 1 enables mode. 0 disables mode. 
         """
-        return self.getAutoCompDisable()
+        return self.getAutoComparatorDisable()
 
     @auto_comp_disable.setter
     def auto_comp_disable(self, value):
-        ut.set_using_dict(self.setAutoCompDisable, value)
+        ut.set_using_dict(self.setAutoComparatorDisable, value)
+
+    @property
+    @element
+    def comp_disable_time(self):
+        """[Jungfrau] Time before end of exposure when comparator is disabled. 
+
+        Note
+        -----
+        It is only possible for chipv1.1.
+        :getter: always returns in seconds. To get in datetime.delta, use getComparatorDisableTime
+
+        Example
+        -----------
+        >>> d.comp_disable_time = 1.05
+        >>> d.comp_disable_time = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>> d.comp_disable_time
+        181.23
+        >>> d.getComparatorDisableTime()
+        [datetime.timedelta(seconds=181, microseconds=230000)]
+        """
+        return ut.reduce_time(self.getComparatorDisableTime())
+
+    @comp_disable_time.setter
+    def comp_disable_time(self, value):
+       ut.set_time_using_dict(self.setComparatorDisableTime, value)
 
 
     @property
@@ -2026,7 +2065,7 @@ class Detector(CppDetectorApi):
         [Jungfrau] Number of additional storage cells. 
         Note
         ----
-        For advanced users only. \n
+        Only for chip v1.0. For advanced users only. \n
         Options: 0 - 15. Default is 0.
         The #images = #frames x #triggers x (#storagecells + 1)
         """
@@ -2045,7 +2084,7 @@ class Detector(CppDetectorApi):
         Note
         ----
         For advanced users only.
-        Options 0-15. Default is 15. \n
+        Options 0-max. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1. \n
         """
         return self.getStorageCellStart()
 
@@ -2059,7 +2098,7 @@ class Detector(CppDetectorApi):
         [Jungfrau] Additional time delay between 2 consecutive exposures in burst mode, accepts either a value in seconds or datetime.timedelta
         Note
         -----
-        For advanced users only \n
+        Only applicable for chipv1.0. For advanced users only \n
         Value: 0-1638375 ns (resolution of 25ns) \n
         :getter: always returns in seconds. To get in datetime.delta, use getStorageCellDelay
 
@@ -2151,6 +2190,26 @@ class Detector(CppDetectorApi):
     def selinterface(self, i):
         ut.set_using_dict(self.selectUDPInterface, i)
 
+    @property
+    def gainmodelist(self):
+        """List of gainmode implemented for this detector."""
+        return self.getGainModeList()
+
+    @property
+    def gainmode(self):
+        """
+        [Jungfrau] Detector gain mode. Enum: gainMode
+        Note
+        -----
+        [Jungfrau] DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 \n
+        CAUTION: Do not use FIX_G0 without caution, you can damage the detector!!!
+        """
+        return element_if_equal(self.getGainMode())
+
+    @gainmode.setter
+    def gainmode(self, value):
+        self.setGainMode(value)
+
     """
     ---------------------------<<<Gotthard2 specific>>>---------------------------
     """
@@ -2179,18 +2238,37 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def filter(self):
-        """[Gotthard2] Set filter resistor. 
+    def filterresistor(self):
+        """
+        [Gotthard2][Jungfrau] Set filter resistor. Increasing values for increasing "
+        "resistance.
         Note
         ----
-        Default is 0. Options: 0-3.
+        Advanced user command.
+        [Gotthard2] Default is 0. Options: 0-3.
+        [Jungfrau] Default is 1. Options: 0-1.
         """
-        return self.getFilter()
+        return self.getFilterResistor()
 
-    @filter.setter
-    def filter(self, value):
-        ut.set_using_dict(self.setFilter, value)
+    @filterresistor.setter
+    def filterresistor(self, value):
+        ut.set_using_dict(self.setFilterResistor, value)
 
+    @property
+    @element
+    def filtercell(self):
+        """
+        [Jungfrau] Set filter capacitor. 
+        Note
+        ----
+        [Jungfrau] Options: 0-12. Default: 0. Advanced user command.
+        """
+        return self.getFilterCell()
+
+    @filtercell.setter
+    def filtercell(self, value):
+        ut.set_using_dict(self.setFilterCell, value)
+        
     @property
     def maxclkphaseshift(self):
         """

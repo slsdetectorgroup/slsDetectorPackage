@@ -87,6 +87,7 @@ u_int16_t getHardwareSerialNumber();
 #endif
 #ifdef JUNGFRAUD
 int isHardwareVersion2();
+int getChipVersion();
 #endif
 #if defined(EIGERD) || defined(MYTHEN3D)
 void readDetectorNumber();
@@ -116,13 +117,15 @@ void updateDataBytes();
 #endif
 
 #ifndef CHIPTESTBOARDD
-int setDefaultDacs();
+int resetToDefaultDacs(int hardReset);
+int getDefaultDac(enum DACINDEX index, enum detectorSettings sett, int *retval);
+int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value);
 #endif
 #ifdef MYTHEN3D
 void setASICDefaults();
 void setADIFDefaults();
 #endif
-#if defined(GOTTHARD2D) || defined(EIGERD)
+#if defined(GOTTHARD2D) || defined(EIGERD) || defined(JUNGFRAUD)
 int readConfigFile();
 #endif
 #ifdef EIGERD
@@ -199,6 +202,7 @@ int getReadoutMode();
 // parameters - timer
 #ifdef JUNGFRAUD
 int selectStoragecellStart(int pos);
+int getMaxStoragecellStart();
 #endif
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int setNextFrameNumber(uint64_t value);
@@ -293,10 +297,11 @@ int getAllTrimbits();
 #ifndef CHIPTESTBOARDD
 enum detectorSettings setSettings(enum detectorSettings sett);
 #endif
-#ifdef MYTHEN3D
-void validateSettings();
-#endif
 enum detectorSettings getSettings();
+#ifdef JUNGFRAUD
+enum gainMode getGainMode();
+void setGainMode(enum gainMode mode);
+#endif
 
 // parameters - threshold
 #ifdef EIGERD
@@ -439,7 +444,11 @@ void setDigitalIODelay(uint64_t pinMask, int delay);
 #ifdef JUNGFRAUD
 void initReadoutConfiguration();
 int powerChip(int on);
+int isChipConfigured();
+void configureChip();
 int autoCompDisable(int on);
+int setComparatorDisableTime(int64_t val);
+int64_t getComparatorDisableTime();
 void configureASICTimer();
 int setClockDivider(enum CLKINDEX ind, int val);
 int getClockDivider(enum CLKINDEX ind);
@@ -451,6 +460,18 @@ int setThresholdTemperature(int val);
 int setTemperatureControl(int val);
 int setTemperatureEvent(int val);
 void alignDeserializer();
+int getFlipRows();
+void setFlipRows(int arg);
+int setFilterResistor(int value);
+int getFilterResistor();
+int getFilterCell();
+void setFilterCell(int iCell);
+void disableCurrentSource();
+void enableCurrentSource(int fix, uint64_t select, int normal);
+int getCurrentSource();
+int getFixCurrentSource();
+int getNormalCurrentSource();
+uint64_t getSelectCurrentSource();
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD
@@ -522,8 +543,8 @@ int configureASICGlobalSettings();
 enum burstMode getBurstMode();
 int setCDSGain(int enable);
 int getCDSGain();
-int setFilter(int value);
-int getFilter();
+int setFilterResistor(int value);
+int getFilterResistor();
 void setCurrentSource(int value);
 int getCurrentSource();
 void setTimingSource(enum timingSourceType value);

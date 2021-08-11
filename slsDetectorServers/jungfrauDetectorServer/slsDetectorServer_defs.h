@@ -3,8 +3,8 @@
 #include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API  0x171220
-#define REQRD_FRMWRE_VRSN_BOARD2 0x210218 // 1.0 pcb
-#define REQRD_FRMWRE_VRSN        0x200721 // 2.0 pcb
+#define REQRD_FRMWRE_VRSN_BOARD2 0x210621 // 1.0 pcb (version = 010)
+#define REQRD_FRMWRE_VRSN        0x210622 // 2.0 pcb (version = 011)
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 
@@ -62,6 +62,15 @@ enum DACINDEX {
         480,  /* J_VREF_DS */                                                  \
         420   /* J_VREF_COMP */                                                \
     };
+
+#define NUMSETTINGS                          (2)
+#define NSPECIALDACS                         (3)
+#define SPECIALDACINDEX                      {J_VREF_PRECH, J_VREF_DS, J_VREF_COMP};
+#define SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS                                      \
+    { 1000, 500, 400 }
+#define SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS                                   \
+    { 1500, 550, 450 }
+
 enum NETWORKINDEX { TXN_FRAME, FLOWCTRL_10G };
 enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define CLK_NAMES "run", "adc", "dbit"
@@ -77,6 +86,7 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define CLK_SYNC            (20) // MHz
 #define ADC_CLK_INDEX       (1)
 #define DBIT_CLK_INDEX      (0)
+#define CONFIG_FILE         ("config_jungfrau.txt")
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES            (100 * 1000 * 1000)
@@ -87,24 +97,33 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define DEFAULT_DELAY                 (0)
 #define DEFAULT_HIGH_VOLTAGE          (0)
 #define DEFAULT_TIMING_MODE           (AUTO_TIMING)
-#define DEFAULT_SETTINGS              (DYNAMICGAIN)
+#define DEFAULT_SETTINGS              (GAIN0)
+#define DEFAULT_GAINMODE              (DYNAMIC)
 #define DEFAULT_TX_UDP_PORT           (0x7e9a)
 #define DEFAULT_TMP_THRSHLD           (65 * 1000) // milli degree Celsius
 #define DEFAULT_NUM_STRG_CLLS         (0)
 #define DEFAULT_STRG_CLL_STRT         (0xf)
+#define DEFAULT_STRG_CLL_STRT_CHIP11  (0x3)
 #define DEFAULT_STRG_CLL_DLY          (0)
+#define DEFAULT_FLIP_ROWS             (0)
+#define DEFAULT_FILTER_RESISTOR       (1) // higher resistor
+#define DEFAULT_FILTER_CELL           (0)
 
 #define HIGHVOLTAGE_MIN (60)
 #define HIGHVOLTAGE_MAX (200)
 #define DAC_MIN_MV      (0)
 #define DAC_MAX_MV      (2500)
-
+#define MAX_FILTER_CELL_VAL (12)
+ 
 /* Defines in the Firmware */
 #define MAX_TIMESLOT_VAL            (0x1F)
 #define MAX_THRESHOLD_TEMP_VAL      (127999) // millidegrees
 #define MAX_STORAGE_CELL_VAL        (15)     // 0xF
+#define MAX_STORAGE_CELL_CHIP11_VAL (3)     
 #define MAX_STORAGE_CELL_DLY_NS_VAL (ASIC_CTRL_EXPSRE_TMR_MAX_VAL)
 #define ACQ_TIME_MIN_CLOCK          (2)
+#define ASIC_FILTER_MAX_RES_VALUE   (1)
+#define MAX_SELECT_CHIP10_VAL       (63)
 
 #define MAX_PHASE_SHIFTS (240)
 #define BIT16_MASK       (0xFFFF)

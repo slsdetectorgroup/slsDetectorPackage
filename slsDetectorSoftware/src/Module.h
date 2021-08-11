@@ -114,6 +114,8 @@ class Module : public virtual slsDetectorDefs {
     void setAllTrimbits(int val);
     std::vector<int> getTrimEn() const;
     int setTrimEn(const std::vector<int> &energies = {});
+    bool getFlipRows() const;
+    void setFlipRows(bool value);
     bool isVirtualDetectorServer() const;
 
     /**************************************************
@@ -148,8 +150,11 @@ class Module : public virtual slsDetectorDefs {
     int getMaxClockPhaseShift(int clkIndex) const;
     int getClockFrequency(int clkIndex) const;
     void setClockFrequency(int clkIndex, int value);
-    /** [Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Mythen3] */
-    void setDefaultDacs();
+    int getDefaultDac(slsDetectorDefs::dacIndex index,
+                      slsDetectorDefs::detectorSettings sett);
+    void setDefaultDac(slsDetectorDefs::dacIndex index, int defaultValue,
+                       defs::detectorSettings sett);
+    void resetToDefaultDacs(const bool hardReset);
     int getDAC(dacIndex index, bool mV) const;
     void setDAC(int val, dacIndex index, bool mV);
     bool getPowerChip() const;
@@ -165,7 +170,10 @@ class Module : public virtual slsDetectorDefs {
     void setExternalSignalFlags(int signalIndex, externalSignalFlag type);
     bool getParallelMode() const;
     void setParallelMode(const bool enable);
-
+    int getFilterResistor() const;
+    void setFilterResistor(int value);
+    defs::currentSrcParameters getCurrentSource() const;
+    void setCurrentSource(defs::currentSrcParameters par);
     /**************************************************
      *                                                *
      *    Acquisition                                 *
@@ -320,8 +328,6 @@ class Module : public virtual slsDetectorDefs {
     void setSubDeadTime(int64_t value);
     bool getOverFlowMode() const;
     void setOverFlowMode(const bool enable);
-    bool getFlippedDataX() const;
-    void setFlippedDataX(bool value);
     int64_t getRateCorrection() const;
     void setDefaultRateCorrection();
     void setRateCorrection(int64_t t = 0);
@@ -351,6 +357,7 @@ class Module : public virtual slsDetectorDefs {
      *    Jungfrau Specific                           *
      *                                                *
      * ************************************************/
+    double getChipVersion() const;
     int getThresholdTemperature() const;
     void setThresholdTemperature(int val);
     bool getTemperatureControl() const;
@@ -359,13 +366,19 @@ class Module : public virtual slsDetectorDefs {
     void resetTemperatureEvent();
     bool getAutoComparatorDisableMode() const;
     void setAutoComparatorDisableMode(bool val);
+    int64_t getComparatorDisableTime() const;
+    void setComparatorDisableTime(int64_t value);
     int getNumberOfAdditionalStorageCells() const;
     void setNumberOfAdditionalStorageCells(int value);
     int getStorageCellStart() const;
     void setStorageCellStart(int pos);
     int64_t getStorageCellDelay() const;
     void setStorageCellDelay(int64_t value);
-
+    gainMode getGainMode() const;
+    void setGainMode(const gainMode mode);
+    int getFilterCell() const;
+    void setFilterCell(int value);
+    
     /**************************************************
      *                                                *
      *    Gotthard Specific                           *
@@ -400,10 +413,6 @@ class Module : public virtual slsDetectorDefs {
     void setBurstMode(burstMode value);
     bool getCDSGain() const;
     void setCDSGain(bool value);
-    int getFilter() const;
-    void setFilter(int value);
-    bool getCurrentSource() const;
-    void setCurrentSource(bool value);
     slsDetectorDefs::timingSourceType getTimingSource() const;
     void setTimingSource(slsDetectorDefs::timingSourceType value);
     bool getVeto() const;

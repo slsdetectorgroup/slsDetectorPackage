@@ -58,8 +58,8 @@ struct zmqHeader {
     uint16_t roundRNumber{0};
     uint8_t detType{0};
     uint8_t version{0};
-    /** if image should be flipped across x axis */
-    int flippedDataX{0};
+    /** if rows of image should be flipped */
+    int flipRows{0};
     /** quad type (eiger hardware specific) */
     uint32_t quad{0};
     /** true if complete image, else missing packets */

@@ -15,9 +15,9 @@
 const std::string DataStreamer::TypeName = "DataStreamer";
 
 DataStreamer::DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi,
-                           int fd, int *nm, bool *qe, uint64_t *tot)
+                           bool fr, int *nm, bool *qe, uint64_t *tot)
     : ThreadObject(ind, TypeName), fifo(f), dynamicRange(dr), roi(r),
-      fileIndex(fi), flippedDataX(fd), quadEnable(qe), totalNumFrames(tot) {
+      fileIndex(fi), flipRows(fr), quadEnable(qe), totalNumFrames(tot) {
     numMods[0] = nm[0];
     numMods[1] = nm[1];
 
@@ -65,7 +65,7 @@ void DataStreamer::SetNumberofModules(int *nm) {
     numMods[1] = nm[1];
 }
 
-void DataStreamer::SetFlippedDataX(int fd) { flippedDataX = fd; }
+void DataStreamer::SetFlipRows(bool fd) { flipRows = fd; }
 
 void DataStreamer::SetAdditionalJsonHeader(
     const std::map<std::string, std::string> &json) {
@@ -240,7 +240,7 @@ int DataStreamer::SendHeader(sls_receiver_header *rheader, uint32_t size,
     zHeader.roundRNumber = header.roundRNumber;
     zHeader.detType = header.detType;
     zHeader.version = header.version;
-    zHeader.flippedDataX = flippedDataX;
+    zHeader.flipRows = static_cast<int>(flipRows);
     zHeader.quad = *quadEnable;
     zHeader.completeImage =
         (header.packetNumber < generalData->packetsPerFrame ? false : true);

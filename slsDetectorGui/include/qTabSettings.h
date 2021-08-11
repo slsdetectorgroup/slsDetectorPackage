@@ -10,9 +10,12 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
     qTabSettings(QWidget *parent, sls::Detector *detector);
     ~qTabSettings();
     void Refresh();
+  public slots:
+    void SetExportMode(bool exportMode);
 
   private slots:
     void SetSettings(int index);
+    void SetGainMode(int index);
     void SetDynamicRange(int index);
     void SetThresholdEnergy(int index);
     void SetThresholdEnergies();
@@ -21,9 +24,12 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
   private:
     void SetupWidgetWindow();
     void SetupDetectorSettings();
+    void SetupGainMode();
+    void ShowFixG0(bool expertMode);
     void Initialization();
 
     void GetSettings();
+    void GetGainMode();
     void GetDynamicRange();
     void GetThresholdEnergy();
     void GetThresholdEnergies();
@@ -40,11 +46,9 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
         LOWGAIN,
         MEDIUMGAIN,
         VERYHIGHGAIN,
-        DYNAMICHG0,
+        HIGHGAIN0,
         FIXGAIN1,
         FIXGAIN2,
-        FORCESWITCHG1,
-        FORCESWITCHG2,
         VERLOWGAIN,
         G1_HIGHGAIN,
         G1_LOWGAIN,
@@ -54,9 +58,21 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
         G2_LOWCAP_LOWGAIN,
         G4_HIGHGAIN,
         G4_LOWGAIN,
+        GAIN0,
         UNDEFINED,
         UNINITIALIZED,
         NUMSETTINGS
     };
+
+    enum {
+        DYNAMIC,
+        FORCE_SWITCH_G1,
+        FORCE_SWITCH_G2,
+        FIX_G1,
+        FIX_G2,
+        FIX_G0
+    };
+    bool isVisibleFixG0{false};
+
     enum { DYNAMICRANGE_32, DYNAMICRANGE_16, DYNAMICRANGE_8, DYNAMICRANGE_4 };
 };

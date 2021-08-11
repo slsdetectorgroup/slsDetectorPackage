@@ -584,6 +584,7 @@ class CmdProxy {
         {"detsizechan", "detsize"},
         {"trimdir", "settingspath"},
         {"settingsdir", "settingspath"},
+        {"flippeddatax", "fliprows"},
 
         /* acquisition parameters */
         {"cycles", "triggers"},
@@ -591,6 +592,7 @@ class CmdProxy {
         {"clkdivider", "speed"},
         {"vhighvoltage", "highvoltage"},
         {"digitest", "imagetest"},
+        {"filter", "filterresistor"},
 
         /** temperature */
 
@@ -670,6 +672,8 @@ class CmdProxy {
         {"vcasc_sfp", "dac"},
         {"vipre_cds", "dac"},
         {"ibias_sfp", "dac"},
+
+        {"defaultdacs", "resetdacs"},
 
         /* acquisition */
         {"busy", "clearbusy"},
@@ -767,6 +771,7 @@ class CmdProxy {
         {"trimval", &CmdProxy::trimval},
         {"trimen", &CmdProxy::TrimEnergies},
         {"gappixels", &CmdProxy::GapPixels},
+        {"fliprows", &CmdProxy::fliprows},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::Acquire},
@@ -797,6 +802,8 @@ class CmdProxy {
         {"imagetest", &CmdProxy::imagetest},
         {"extsig", &CmdProxy::ExternalSignal},
         {"parallel", &CmdProxy::parallel},
+        {"filterresistor", &CmdProxy::filterresistor},
+        {"currentsource", &CmdProxy::CurrentSource},
 
         /** temperature */
         {"templist", &CmdProxy::templist},
@@ -816,7 +823,8 @@ class CmdProxy {
         {"dac", &CmdProxy::Dac},
         {"daclist", &CmdProxy::daclist},
         {"dacvalues", &CmdProxy::DacValues},
-        {"defaultdacs", &CmdProxy::defaultdacs},
+        {"resetdacs", &CmdProxy::ResetDacs},
+        {"defaultdac", &CmdProxy::DefaultDac},
 
         /* on chip dacs */
         {"vchip_comp_fe", &CmdProxy::vchip_comp_fe},
@@ -903,7 +911,6 @@ class CmdProxy {
         {"subexptime", &CmdProxy::subexptime},
         {"subdeadtime", &CmdProxy::subdeadtime},
         {"overflow", &CmdProxy::overflow},
-        {"flippeddatax", &CmdProxy::flippeddatax},
         {"ratecorr", &CmdProxy::RateCorrection},
         {"readnlines", &CmdProxy::readnlines},
         {"interruptsubframe", &CmdProxy::interruptsubframe},
@@ -918,13 +925,17 @@ class CmdProxy {
         {"datastream", &CmdProxy::DataStream},
 
         /* Jungfrau Specific */
+        {"chipversion", &CmdProxy::chipversion},
         {"temp_threshold", &CmdProxy::temp_threshold},
         {"temp_control", &CmdProxy::temp_control},
         {"temp_event", &CmdProxy::TemperatureEvent},
         {"auto_comp_disable", &CmdProxy::auto_comp_disable},
+        {"comp_disable_time", &CmdProxy::comp_disable_time},
         {"storagecells", &CmdProxy::storagecells},
         {"storagecell_start", &CmdProxy::storagecell_start},
         {"storagecell_delay", &CmdProxy::storagecell_delay},
+        {"gainmode", &CmdProxy::gainmode},
+        {"filtercell", &CmdProxy::filtercell},
 
         /* Gotthard Specific */
         {"roi", &CmdProxy::ROI},
@@ -941,8 +952,6 @@ class CmdProxy {
         {"vetofile", &CmdProxy::VetoFile},
         {"burstmode", &CmdProxy::BurstMode},
         {"cdsgain", &CmdProxy::cdsgain},
-        {"filter", &CmdProxy::filter},
-        {"currentsource", &CmdProxy::currentsource},
         {"timingsource", &CmdProxy::timingsource},
         {"veto", &CmdProxy::veto},
         {"vetostream", &CmdProxy::VetoStreaming},
@@ -1088,11 +1097,14 @@ class CmdProxy {
     std::string MaxClockPhaseShift(int action);
     std::string ClockDivider(int action);
     std::string ExternalSignal(int action);
+    std::string CurrentSource(int action);
     /** temperature */
     std::string TemperatureValues(int action);
     /* dacs */
     std::string Dac(int action);
     std::string DacValues(int action);
+    std::string ResetDacs(int action);
+    std::string DefaultDac(int action);
     /* acquisition */
     std::string ReceiverStatus(int action);
     std::string DetectorStatus(int action);
@@ -1195,13 +1207,12 @@ class CmdProxy {
         settings, getSettings, setSettings,
         sls::StringTo<slsDetectorDefs::detectorSettings>,
         "[standard, fast, highgain, dynamicgain, lowgain, "
-        "mediumgain, veryhighgain, dynamichg0, "
+        "mediumgain, veryhighgain, highgain0, "
         "fixgain1, fixgain2, forceswitchg1, forceswitchg2, "
         "verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, "
-        "g2_lc_hg, g2_lc_lg, g4_hg, g4_lg]"
+        "g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]"
         "\n\t Detector Settings"
-        "\n\t[Jungfrau] - [dynamicgain | dynamichg0 | fixgain1 | "
-        "fixgain2 | forceswitchg1 | forceswitchg2]"
+        "\n\t[Jungfrau] - [ gain0 | highgain0]"
         "\n\t[Gotthard] - [dynamicgain | highgain | lowgain | "
         "mediumgain | veryhighgain]"
         "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
@@ -1225,6 +1236,14 @@ class CmdProxy {
         trimval, getAllTrimbits, setAllTrimbits, StringTo<int>,
         "[n_trimval]\n\t[Eiger][Mythen3] All trimbits set to this "
         "value. Returns -1 if all trimbits are different values.");
+
+    INTEGER_COMMAND_VEC_ID(
+        fliprows, getFlipRows, setFlipRows, StringTo<int>,
+        "[0, 1]\n\t[Eiger] flips rows paramater sent to slsreceiver "
+        "to stream as json parameter to flip rows in gui \n\t[Jungfrau] flips "
+        "rows in the detector itself. For bottom module and number of "
+        "interfaces must be set to 2. slsReceiver and slsDetectorGui "
+        "does not handle.");
 
     /* acquisition parameters */
 
@@ -1314,7 +1333,7 @@ class CmdProxy {
         "the chip. \n\t[Moench] Default is 0. \n\t[Jungfrau] Default is 0. Get "
         "will return power status. Can be off if temperature event occured "
         "(temperature over temp_threshold with temp_control "
-        "enabled.\n\t[Mythen3][Gotthard2] Default is 1. If module not "
+        "enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not "
         "connected or wrong module, powerchip will fail.");
 
     INTEGER_COMMAND_VEC_ID(
@@ -1330,6 +1349,12 @@ class CmdProxy {
         "mode.\n\t[Mythen3] If exptime is too short, the "
         "acquisition will return ERROR status and take fewer "
         "frames than expected.");
+
+    INTEGER_COMMAND_VEC_ID(
+        filterresistor, getFilterResistor, setFilterResistor, StringTo<int>,
+        "[value] [Gotthard2][Jungfrau] Set filter resistor. Increasing values "
+        "for increasing resistance.\n\t[Gotthard2] Options: [0|1|2|3]. Default "
+        "is 0.\n\t[Jungfrau] Options: [0|1]. Default is 1.");
 
     /** temperature */
     GET_COMMAND_NOID(
@@ -1380,10 +1405,6 @@ class CmdProxy {
     GET_COMMAND_NOID(
         daclist, getDacList,
         "\n\tGets the list of commands for every dac for this detector.");
-
-    EXECUTE_SET_COMMAND(defaultdacs, setDefaultDacs,
-                        "\n\t[Eiger][Jungfrau][Gotthard][Moench][Gotthard2]["
-                        "Mythen3]Sets default dacs on to the detector.");
 
     /* on chip dacs */
     INTEGER_USER_IND_COMMAND(
@@ -1776,13 +1797,6 @@ class CmdProxy {
         "32 bit mode. Default is disabled.");
 
     INTEGER_COMMAND_VEC_ID(
-        flippeddatax, getBottom, setBottom, StringTo<int>,
-        "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 "
-        "is top. Used to let Gui (via zmq from receiver) know to flip the "
-        "bottom image over the x axis. Files are not written without the flip "
-        "however.");
-
-    INTEGER_COMMAND_VEC_ID(
         readnlines, getPartialReadout, setPartialReadout, StringTo<int>,
         "[1 - 256]\n\t[Eiger] Number of rows to readout per half module "
         "starting from the centre. Options: 0 - 256. 256 is default. The "
@@ -1812,6 +1826,9 @@ class CmdProxy {
 
     /* Jungfrau Specific */
 
+    GET_COMMAND(chipversion, getChipVersion,
+                "\n\t[Jungfrau] Returns chip version. Can be 1.0 or 1.1");
+
     INTEGER_COMMAND_VEC_ID(
         temp_threshold, getThresholdTemperature, setThresholdTemperature,
         StringTo<int>,
@@ -1832,33 +1849,52 @@ class CmdProxy {
         "cleared.");
 
     INTEGER_COMMAND_VEC_ID(
-        auto_comp_disable, getAutoCompDisable, setAutoCompDisable,
+        auto_comp_disable, getAutoComparatorDisable, setAutoComparatorDisable,
         StringTo<int>,
         "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the "
         "on-chip gain switching is active during the entire exposure.This mode "
         "disables the on - chip gain switching comparator automatically after "
-        "93.75% of exposure time (only for longer than 100us). \n\tDefault is "
-        "0 or this mode disabled(comparator enabled throughout). 1 enables "
-        "mode. 0 disables mode. ");
+        "93.75% (only for chipv1.0) of exposure time (only for longer than "
+        "100us). It is possible to set the duration for chipv1.1 using "
+        "comp_disable_time command.\n\tDefault is 0 or this mode "
+        "disabled(comparator enabled throughout). 1 enables mode. 0 disables "
+        "mode. ");
+
+    TIME_COMMAND(comp_disable_time, getComparatorDisableTime,
+                 setComparatorDisableTime,
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time "
+                 "before end of exposure when comparator is disabled. It is "
+                 "only possible for chipv1.1.");
 
     INTEGER_COMMAND_SET_NOID_GET_ID(
         storagecells, getNumberOfAdditionalStorageCells,
         setNumberOfAdditionalStorageCells, StringTo<int>,
-        "[0-15]\n\t[Jungfrau] Number of additional storage cells. Default is "
+        "[0-15]\n\t[Jungfrau] Only for chipv1.0. Number of additional storage cells. Default is "
         "0. For advanced users only. \n\tThe #images = #frames x #triggers x "
         "(#storagecells + 1).");
 
     INTEGER_COMMAND_VEC_ID(
         storagecell_start, getStorageCellStart, setStorageCellStart,
         StringTo<int>,
-        "[0-15]\n\t[Jungfrau] Storage cell that stores the first acquisition "
-        "of the series. Default is 15. For advanced users only.");
+        "[0-max]\n\t[Jungfrau] Storage cell that stores the first acquisition "
+        "of the series. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1. For advanced users only.");
 
     TIME_COMMAND(
         storagecell_delay, getStorageCellDelay, setStorageCellDelay,
         "[duration (0-1638375 ns)] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] "
         "Additional time delay between 2 consecutive exposures in burst mode "
-        "(resolution of 25ns). For advanced users only.");
+        "(resolution of 25ns). Only applicable for chipv1.0. For advanced users only.");
+
+    INTEGER_COMMAND_VEC_ID(
+        gainmode, getGainMode, setGainMode,
+        sls::StringTo<slsDetectorDefs::gainMode>,
+        "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t["
+        "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, "
+        "you can damage the detector!!!");
+
+    INTEGER_COMMAND_VEC_ID(
+        filtercell, getFilterCell, setFilterCell, sls::StringTo<int>,
+        "[0-12]\n\t[Jungfrau] Set Filter Cell. Advanced user Command");
 
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft,
@@ -1885,15 +1921,6 @@ class CmdProxy {
         cdsgain, getCDSGain, setCDSGain, StringTo<bool>,
         "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default "
         "is disabled.");
-
-    INTEGER_COMMAND_VEC_ID(
-        filter, getFilter, setFilter, StringTo<int>,
-        "[0|1|2|3]\n\t[Gotthard2] Set filter resistor. Default is 0.");
-
-    INTEGER_COMMAND_VEC_ID(
-        currentsource, getCurrentSource, setCurrentSource, StringTo<int>,
-        "[0, 1]\n\t[Gotthard2] Enable or disable current source. "
-        "Default is disabled.");
 
     INTEGER_COMMAND_VEC_ID(
         timingsource, getTimingSource, setTimingSource,

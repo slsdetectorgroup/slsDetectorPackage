@@ -101,15 +101,11 @@ def test_module_size(virtual_jf_detectors):
 
 def test_settings(virtual_jf_detectors):
     d = ExperimentalDetector()
-    assert d.settings == detectorSettings.DYNAMICGAIN
+    assert d.settings == detectorSettings.GAIN0
 
     gain_list = [
-        detectorSettings.FIXGAIN1,
-        detectorSettings.FIXGAIN2,
-        detectorSettings.FORCESWITCHG1,
-        detectorSettings.FORCESWITCHG2,
-        detectorSettings.DYNAMICHG0,
-        detectorSettings.DYNAMICGAIN,
+        detectorSettings.GAIN0,
+        detectorSettings.HIGHGAIN0,
     ]
 
     # Set all viable gain for Jungfrau to make sure nothing is crashing
@@ -117,15 +113,14 @@ def test_settings(virtual_jf_detectors):
         d.settings = gain
         assert d.settings == gain
 
-    d.setSettings(detectorSettings.FORCESWITCHG1, [1])
+    d.setSettings(detectorSettings.GAIN0, [1])
     assert d.settings == [
-        detectorSettings.DYNAMICGAIN,
-        detectorSettings.FORCESWITCHG1,
-        detectorSettings.DYNAMICGAIN,
+        detectorSettings.GAIN0,
+        detectorSettings.HIGHGAIN0,
     ]
 
-    d.settings = detectorSettings.DYNAMICGAIN
-    assert d.settings == detectorSettings.DYNAMICGAIN
+    d.settings = detectorSettings.GAIN0
+    assert d.settings == detectorSettings.GAIN0
 
 def test_frames(virtual_jf_detectors):
     d = ExperimentalDetector()
@@ -161,4 +156,34 @@ def test_period(virtual_jf_detectors):
     d.period  = t
     assert d.period == 10e-6
 
+def test_gainmode(virtual_jf_detectors):
+    d = ExperimentalDetector()
+    assert d.gainMode == gainMode.NORMAL_GAIN_MODE
+
+    gain_list = [
+        gainMode.DYNAMIC,
+        gainMode.FORCE_SWITCH_G1,
+        gainMode.FORCE_SWITCH_G2,
+        gainMode.FIX_G1,
+        gainMode.FIX_G2,
+        gainMode.FIX_G0
+    ]
+
+    # Set all viable gain for Jungfrau to make sure nothing is crashing
+    for gain in gain_list:
+        d.gainMode = gain
+        assert d.gainMode == gain
+
+    d.setGainMode(gainMode.FORCE_SWITCH_G1, [1])
+    assert d.gainMode == [
+        gainMode.DYNAMIC,
+        gainMode.FORCE_SWITCH_G1,
+        gainMode.FORCE_SWITCH_G2,
+        gainMode.FIX_G1,
+        gainMode.FIX_G2,
+        gainMode.FIX_G0
+    ]
+
+    d.gainMode = gainMode.FORCE_SWITCH_G1
+    assert d.gainMode == gainMode.FORCE_SWITCH_G1
     

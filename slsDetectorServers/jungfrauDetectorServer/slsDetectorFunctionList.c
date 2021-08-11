@@ -43,8 +43,13 @@ int virtual_image_test_mode = 0;
 enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
 int dacValues[NDAC] = {};
+int defaultDacValues[] = DEFAULT_DAC_VALS;
+int defaultDacValue_G0[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
+int defaultDacValue_HG0[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
 int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
+int chipVersion = 10; // (1.0)
+int chipConfigured = 0;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -101,6 +106,7 @@ void basictests() {
 
     if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
         sw_fw_apiversion = getFirmwareAPIVersion();
+
     LOG(logINFOBLUE,
         ("************ Jungfrau Server *********************\n"
          "Hardware Version:\t\t 0x%x\n"
@@ -283,11 +289,16 @@ u_int16_t getHardwareSerialNumber() {
 
 // is board 1.0?, with value 2 (resistor network)
 int isHardwareVersion2() {
+#ifdef VIRTUAL
+    return 0;
+#endif
     return (((bus_r(MOD_SERIAL_NUM_REG) & HARDWARE_VERSION_NUM_MSK) ==
              HARDWARE_VERSION_2_VAL)
                 ? 1
                 : 0);
 }
+
+int getChipVersion() { return chipVersion; }
 
 u_int32_t getDetectorNumber() {
 #ifdef VIRTUAL
@@ -379,9 +390,15 @@ void setupDetector() {
     for (int i = 0; i < NUM_CLOCKS; ++i) {
         clkPhase[i] = 0;
     }
+    chipConfigured = 0;
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
 #endif
+
+    // get chip version
+    if (readConfigFile() == FAIL) {
+        return;
+    }
 
     ALTERA_PLL_ResetPLL();
     resetCore();
@@ -409,7 +426,7 @@ void setupDetector() {
                        DAC_MAX_MV);
     LTC2620_Disable();
     LTC2620_Configure();
-    setDefaultDacs();
+    resetToDefaultDacs(0);
 
     // altera pll
     ALTERA_PLL_SetDefines(
@@ -434,15 +451,21 @@ void setupDetector() {
 
     // Initialization of acquistion parameters
     setSettings(DEFAULT_SETTINGS);
+    setGainMode(DEFAULT_GAINMODE);
 
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
     setExpTime(DEFAULT_EXPTIME);
     setPeriod(DEFAULT_PERIOD);
     setDelayAfterTrigger(DEFAULT_DELAY);
-    setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
-    setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
-    selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
+    if (getChipVersion() == 11) {
+        selectStoragecellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
+    } else {
+        setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
+        selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
+        // not applicable for chipv1.1
+        setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
+    }
     /*setClockDivider(RUN_CLK, HALF_SPEED); depends if all the previous stuff
      * works*/
     setTiming(DEFAULT_TIMING_MODE);
@@ -451,21 +474,259 @@ void setupDetector() {
     // temp threshold and reset event
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
     setTemperatureEvent(0);
+    setFlipRows(DEFAULT_FLIP_ROWS);
+    if (getChipVersion() == 11) {
+        setFilterResistor(DEFAULT_FILTER_RESISTOR);
+        setFilterCell(DEFAULT_FILTER_CELL);
+    }
+    disableCurrentSource();
 }
 
-int setDefaultDacs() {
-    int ret = OK;
-    LOG(logINFOBLUE, ("Setting Default Dac values\n"));
-    const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
+int resetToDefaultDacs(int hardReset) {
+    LOG(logINFOBLUE, ("Resetting %s to Default Dac values\n",
+                      (hardReset == 1 ? "hard" : "")));
+
+    // reset defaults to hardcoded defaults
+    if (hardReset) {
+        const int vals[] = DEFAULT_DAC_VALS;
+        for (int i = 0; i < NDAC; ++i) {
+            defaultDacValues[i] = vals[i];
+        }
+        const int vals_G0[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            defaultDacValue_G0[i] = vals_G0[i];
+        }    
+        const int vals_HG0[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            defaultDacValue_HG0[i] = vals_HG0[i];
+        }     
+    }
+
+    // remember settings
+    enum detectorSettings oldSettings = thisSettings;
+
+    // reset dacs to defaults
+    const int specialDacs[] = SPECIALDACINDEX;
     for (int i = 0; i < NDAC; ++i) {
-        setDAC((enum DACINDEX)i, defaultvals[i], 0);
-        if (dacValues[i] != defaultvals[i]) {
-            ret = FAIL;
+        int value = defaultDacValues[i];
+
+        for (int j = 0; j < NSPECIALDACS; ++j) {
+            // special dac: replace default value
+            if (specialDacs[j] == i) {
+                switch (oldSettings) {
+                case GAIN0:
+                    value = defaultDacValue_G0[j];
+                    break;
+                case HIGHGAIN0:
+                    value = defaultDacValue_HG0[j];
+                    break;
+                default:
+                    break;
+                }
+                break;
+            }
+        }
+
+        // set to defualt
+        setDAC((enum DACINDEX)i, value, 0);
+        if (dacValues[i] != value) {
             LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                           defaultvals[i], dacValues[i]));
+                           value, dacValues[i]));
+            return FAIL;
         }
     }
-    return ret;
+    return OK;
+}
+
+int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
+                  int *retval) {
+
+    // settings only for special dacs
+    if (sett != UNDEFINED) {
+        const int specialDacs[] = SPECIALDACINDEX;
+        // find special dac index
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            if ((int)index == specialDacs[i]) {
+                switch (sett) {
+                case GAIN0:
+                    *retval = defaultDacValue_G0[i];
+                    return OK;
+                case HIGHGAIN0:
+                    *retval = defaultDacValue_HG0[i];
+                    return OK;
+                    // unknown settings
+                default:
+                    return FAIL;
+                }
+            }
+        }
+        // not a special dac
+        return FAIL;
+    }
+
+    if (index < 0 || index >= NDAC)
+        return FAIL;
+    *retval = defaultDacValues[index];
+    return OK;
+}
+
+int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
+    char *dac_names[] = {DAC_NAMES};
+
+    // settings only for special dacs
+    if (sett != UNDEFINED) {
+        const int specialDacs[] = SPECIALDACINDEX;
+        // find special dac index
+        for (int i = 0; i < NSPECIALDACS; ++i) {
+            if ((int)index == specialDacs[i]) {
+                switch (sett) {
+                case GAIN0:
+                    LOG(logINFO, ("Setting Default Dac [%d - %s, gain0]: %d\n",
+                                  (int)index, dac_names[index], value));
+                    defaultDacValue_G0[i] = value;
+                    return OK;
+                case HIGHGAIN0:
+                    LOG(logINFO,
+                        ("Setting Default Dac [%d - %s, highgain0]: %d\n",
+                         (int)index, dac_names[index], value));
+                    defaultDacValue_HG0[i] = value;
+                    return OK;
+                    // unknown settings
+                default:
+                    return FAIL;
+                }
+            }
+        }
+        // not a special dac
+        return FAIL;
+    }
+    if (index < 0 || index >= NDAC)
+        return FAIL;
+    LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
+                  dac_names[index], value));
+    defaultDacValues[index] = value;
+    return OK;
+}
+
+int readConfigFile() {
+
+    if (initError == FAIL) {
+        return initError;
+    }
+
+    const int fileNameSize = 128;
+    char fname[fileNameSize];
+    if (getAbsPath(fname, fileNameSize, CONFIG_FILE) == FAIL) {
+        return FAIL;
+    }
+
+    // open config file
+    FILE *fd = fopen(fname, "r");
+    if (fd == NULL) {
+        sprintf(initErrorMessage,
+                "Could not open on-board detector server config file [%s].\n",
+                CONFIG_FILE);
+        initError = FAIL;
+        LOG(logERROR, ("%s\n\n", initErrorMessage));
+        return FAIL;
+    }
+
+    LOG(logINFOBLUE, ("Reading config file %s\n", CONFIG_FILE));
+
+    // Initialization
+    const size_t LZ = 256;
+    char line[LZ];
+    memset(line, 0, LZ);
+    char command[LZ];
+
+    // keep reading a line
+    while (fgets(line, LZ, fd)) {
+
+        // ignore comments
+        if (line[0] == '#') {
+            LOG(logDEBUG1, ("Ignoring Comment\n"));
+            continue;
+        }
+
+        // ignore empty lines
+        if (strlen(line) <= 1) {
+            LOG(logDEBUG1, ("Ignoring Empty line\n"));
+            continue;
+        }
+
+        // removing leading spaces
+        if (line[0] == ' ' || line[0] == '\t') {
+            int len = strlen(line);
+            // find first valid character
+            int i = 0;
+            for (i = 0; i < len; ++i) {
+                if (line[i] != ' ' && line[i] != '\t') {
+                    break;
+                }
+            }
+            // ignore the line full of spaces (last char \n)
+            if (i >= len - 1) {
+                LOG(logDEBUG1, ("Ignoring line full of spaces\n"));
+                continue;
+            }
+            // copying only valid char
+            char temp[LZ];
+            memset(temp, 0, LZ);
+            memcpy(temp, line + i, strlen(line) - i);
+            memset(line, 0, LZ);
+            memcpy(line, temp, strlen(temp));
+            LOG(logDEBUG1, ("Removing leading spaces.\n"));
+        }
+
+        LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", strlen(line),
+                        strlen(line) - 1, line));
+        memset(command, 0, LZ);
+
+        // chipversion command
+        if (!strncmp(line, "chipversion", strlen("chipversion"))) {
+            int version = 0;
+
+            // cannot scan values
+            if (sscanf(line, "%s %d", command, &version) != 2) {
+                sprintf(
+                    initErrorMessage,
+                    "Could not scan chipversion commands from on-board server "
+                    "config file. Line:[%s].\n",
+                    line);
+                break;
+            }
+            // validations
+            if (version != 10 && version != 11) {
+                sprintf(initErrorMessage,
+                        "Could not set chip version from on-board server "
+                        "config file. Invalid chip version %d. Line:[%s].\n",
+                        version, line);
+                break;
+            }
+
+            // validations
+            chipVersion = version;
+            LOG(logINFOBLUE, ("Chip Version: v%.01f\n", chipVersion / 10.0));
+
+            // version 1.1 and HW 1.0 (version reg value = 2) is incompatible
+            if (chipVersion == 11 && isHardwareVersion2()) {
+                strcpy(initErrorMessage,
+                        "Chip version 1.1 (from on-board config file) is incompatible with old board (v1.0). Please update board or correct on-board config file.\n");
+                break;                
+            }
+        }
+
+        memset(line, 0, LZ);
+    }
+    fclose(fd);
+
+    if (strlen(initErrorMessage)) {
+        initError = FAIL;
+        LOG(logERROR, ("%s\n\n", initErrorMessage));
+    } else {
+        LOG(logINFOBLUE, ("Successfully read config file\n"));
+    }
+    return initError;
 }
 
 /* firmware functions (resets) */
@@ -523,14 +784,57 @@ uint32_t getADCInvertRegister() {
 
 /* parameters - timer */
 int selectStoragecellStart(int pos) {
+    int value = pos;
+    uint32_t addr = DAQ_REG;
+    uint32_t mask = DAQ_STRG_CELL_SLCT_MSK;
+    int offset = DAQ_STRG_CELL_SLCT_OFST;
+    if (getChipVersion() == 11) {
+        // set the bit
+        value = 1 << pos;
+        addr = CONFIG_V11_REG;
+        mask = CONFIG_V11_STRG_CLL_MSK;
+        offset = CONFIG_V11_STRG_CLL_OFST;
+    }
     if (pos >= 0) {
         LOG(logINFO, ("Setting storage cell start: %d\n", pos));
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_STRG_CELL_SLCT_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | ((pos << DAQ_STRG_CELL_SLCT_OFST) &
-                                         DAQ_STRG_CELL_SLCT_MSK));
+        bus_w(addr, bus_r(addr) & ~mask);
+        bus_w(addr, bus_r(addr) | ((value << offset) & mask));
+        // should not do a get to verify (status register does not update
+        // immediately during acquisition)
+        if (getChipVersion() == 11) {
+            return pos;
+        }
     }
-    return ((bus_r(DAQ_REG) & DAQ_STRG_CELL_SLCT_MSK) >>
-            DAQ_STRG_CELL_SLCT_OFST);
+
+    // read value back
+    // chipv1.1, writing and reading registers are different
+#ifndef VIRTUAL
+    if (getChipVersion() == 11) {
+        addr = CONFIG_V11_STATUS_REG;
+        mask = CONFIG_V11_STATUS_STRG_CLL_MSK;
+        offset = CONFIG_V11_STATUS_STRG_CLL_OFST;
+    }
+#endif
+    int retval = ((bus_r(addr) & mask) >> offset);
+    if (getChipVersion() == 11) {
+        // get which bit
+        int max = getMaxStoragecellStart();
+        for (int i = 0; i != max + 1; ++i) {
+            if (retval & (1 << i)) {
+                return i;
+            }
+        }
+    }
+    // chip v1.0
+    return retval;
+}
+
+int getMaxStoragecellStart() {
+    if (getChipVersion() == 11) {
+        return MAX_STORAGE_CELL_CHIP11_VAL;
+    } else {
+        return MAX_STORAGE_CELL_VAL;
+    }
 }
 
 int setNextFrameNumber(uint64_t value) {
@@ -749,95 +1053,140 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     if (sett == UNINITIALIZED)
         return thisSettings;
 
+    int *dacVals = NULL;
     // set settings
     switch (sett) {
-    case DYNAMICGAIN:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+    case GAIN0:
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_HIGH_GAIN_MSK);
         LOG(logINFO,
-            ("Set settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
+            ("Set settings - Gain 0 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
+        dacVals = defaultDacValue_G0;
         break;
-    case DYNAMICHG0:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
-        LOG(logINFO, ("Set settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n",
-                      bus_r(DAQ_REG)));
-        break;
-    case FIXGAIN1:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_1_VAL);
+    case HIGHGAIN0:
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_HIGH_GAIN_MSK);
         LOG(logINFO,
-            ("Set settings - Fix Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-        break;
-    case FIXGAIN2:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_2_VAL);
-        LOG(logINFO,
-            ("Set settings - Fix Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-        break;
-    case FORCESWITCHG1:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_1_VAL);
-        LOG(logINFO, ("Set settings - Force Switch Gain 1, DAQ Reg: 0x%x\n",
-                      bus_r(DAQ_REG)));
-        break;
-    case FORCESWITCHG2:
-        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_2_VAL);
-        LOG(logINFO, ("Set settings - Force Switch Gain 2, DAQ Reg: 0x%x\n",
-                      bus_r(DAQ_REG)));
+            ("Set settings - High Gain 0 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
+        dacVals = defaultDacValue_HG0;
         break;
     default:
-        LOG(logERROR,
-            ("This settings is not defined for this detector %d\n", (int)sett));
+        LOG(logERROR, ("This settings %d is not defined\n", (int)sett));
         return -1;
     }
 
     thisSettings = sett;
 
+    // set special dacs
+    const int specialDacs[] = SPECIALDACINDEX;
+    for (int i = 0; i < NSPECIALDACS; ++i) {
+        setDAC(specialDacs[i], dacVals[i], 0);
+    }
+
+    // if chip 1.1, and power chip on, configure chip
+    if (getChipVersion() == 11 && powerChip(-1)) {
+        configureChip();
+    }
+
     return getSettings();
 }
 
 enum detectorSettings getSettings() {
+    if (bus_r(DAQ_REG) & DAQ_HIGH_GAIN_MSK)
+        return HIGHGAIN0;
+    return GAIN0;
+}
 
+enum gainMode getGainMode() {
     uint32_t regval = bus_r(DAQ_REG);
-    uint32_t val = regval & DAQ_SETTINGS_MSK;
-    LOG(logDEBUG1, ("Getting Settings\n Reading DAQ Register :0x%x\n", val));
+    uint32_t retval_force = regval & DAQ_FRCE_SWTCH_GAIN_MSK;
+    uint32_t retval_fix = regval & DAQ_FIX_GAIN_MSK;
+    uint32_t retval_cmp_rst = regval & DAQ_CMP_RST_MSK;
 
-    switch (val) {
-    case DAQ_FIX_GAIN_DYNMC_VAL:
-        thisSettings = DYNAMICGAIN;
-        LOG(logDEBUG1,
-            ("Settings read: Dynamic Gain. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FIX_GAIN_HIGHGAIN_VAL:
-        thisSettings = DYNAMICHG0;
-        LOG(logDEBUG1,
-            ("Settings read: Dynamig High Gain. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FIX_GAIN_STG_1_VAL:
-        thisSettings = FIXGAIN1;
-        LOG(logDEBUG1, ("Settings read: Fix Gain 1. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FIX_GAIN_STG_2_VAL:
-        thisSettings = FIXGAIN2;
-        LOG(logDEBUG1, ("Settings read: Fix Gain 2. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FRCE_GAIN_STG_1_VAL:
-        thisSettings = FORCESWITCHG1;
-        LOG(logDEBUG1,
-            ("Settings read: Force Switch Gain 1. DAQ Reg: 0x%x\n", regval));
-        break;
-    case DAQ_FRCE_GAIN_STG_2_VAL:
-        thisSettings = FORCESWITCHG2;
-        LOG(logDEBUG1,
-            ("Settings read: Force Switch Gain 2. DAQ Reg: 0x%x\n", regval));
-        break;
-    default:
-        thisSettings = UNDEFINED;
-        LOG(logERROR, ("Settings read: Undefined. DAQ Reg: 0x%x\n", regval));
+    // only one set should be valid
+    if ((retval_force && retval_fix) || (retval_fix && retval_cmp_rst) ||
+        (retval_force && retval_cmp_rst)) {
+        LOG(logERROR, ("undefined gain mode. DAQ reg: 0x%x\n", regval));
     }
 
-    return thisSettings;
+    // dynamic gain, when nothing is set
+    if (retval_force == 0 && retval_fix == 0 && retval_cmp_rst == 0) {
+        return DYNAMIC;
+    }
+
+    switch (retval_force) {
+    case DAQ_FRCE_GAIN_STG_1_VAL:
+        return FORCE_SWITCH_G1;
+    case DAQ_FRCE_GAIN_STG_2_VAL:
+        return FORCE_SWITCH_G2;
+    default:
+        break;
+    }
+
+    switch (retval_fix) {
+    case DAQ_FIX_GAIN_STG_1_VAL:
+        return FIX_G1;
+    case DAQ_FIX_GAIN_STG_2_VAL:
+        return FIX_G2;
+    default:
+        break;
+    }
+
+    if (retval_cmp_rst) {
+        return FIX_G0;
+    }
+
+    LOG(logERROR, ("This gain mode is undefined [DAQ reg: %d]\n", regval));
+    return -1;
+}
+
+void setGainMode(enum gainMode mode) {
+    uint32_t addr = DAQ_REG;
+    uint32_t value = bus_r(addr);
+
+    switch (mode) {
+    case DYNAMIC:
+        value &= ~(DAQ_GAIN_MODE_MASK);
+        bus_w(addr, value);
+        LOG(logINFO,
+            ("Set gain mode - Dynamic Gain [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
+        break;
+    case FORCE_SWITCH_G1:
+        value &= ~(DAQ_GAIN_MODE_MASK);
+        value |= DAQ_FRCE_GAIN_STG_1_VAL;
+        bus_w(addr, value);
+        LOG(logINFO, ("Set gain mode - Force Switch G1 [DAQ Reg:0x%x]\n",
+                      bus_r(DAQ_REG)));
+        break;
+    case FORCE_SWITCH_G2:
+        value &= ~(DAQ_GAIN_MODE_MASK);
+        value |= DAQ_FRCE_GAIN_STG_2_VAL;
+        bus_w(addr, value);
+        LOG(logINFO, ("Set gain mode - Force Switch G2 [DAQ Reg:0x%x]\n",
+                      bus_r(DAQ_REG)));
+        break;
+    case FIX_G1:
+        value &= ~(DAQ_GAIN_MODE_MASK);
+        value |= DAQ_FIX_GAIN_STG_1_VAL;
+        bus_w(addr, value);
+        LOG(logINFO,
+            ("Set gain mode - Fix G1 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
+        break;
+    case FIX_G2:
+        value &= ~(DAQ_GAIN_MODE_MASK);
+        value |= DAQ_FIX_GAIN_STG_2_VAL;
+        bus_w(addr, value);
+        LOG(logINFO,
+            ("Set gain mode - Fix G2 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
+        break;
+    case FIX_G0:
+        value &= ~(DAQ_GAIN_MODE_MASK);
+        value |= DAQ_CMP_RST_MSK;
+        bus_w(addr, value);
+        LOG(logINFO,
+            ("Set gain mode - Fix G0 [DAQ Reg:0x%x]\n", bus_r(DAQ_REG)));
+        break;
+    default:
+        LOG(logERROR, ("This gain mode %d is not defined\n", (int)mode));
+    }
 }
 
 /* parameters - dac, adc, hv */
@@ -846,11 +1195,10 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         return;
 
     char *dac_names[] = {DAC_NAMES};
-    LOG(logINFO, ("Setting DAC %s\n", dac_names[ind]));
-    LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
-                    val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
+    LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
+                  val, (mV ? "mV" : "dac units")));
     if (!mV) {
         dacValues[ind] = val;
     }
@@ -859,6 +1207,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         dacValues[ind] = dacval;
     }
 #else
+    LOG(logINFO, ("Setting DAC %s\n", dac_names[ind]));
     if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK) {
         dacValues[ind] = dacval;
         if (ind == J_VREF_COMP &&
@@ -1280,13 +1629,17 @@ void initReadoutConfiguration() {
 int powerChip(int on) {
     if (on != -1) {
         if (on) {
-            LOG(logINFO, ("Powering chip: on\n"));
+            LOG(logINFOBLUE, ("Powering chip: on\n"));
             bus_w(CHIP_POWER_REG,
                   bus_r(CHIP_POWER_REG) | CHIP_POWER_ENABLE_MSK);
+            
+            configureChip();
         } else {
-            LOG(logINFO, ("Powering chip: off\n"));
+            LOG(logINFOBLUE, ("Powering chip: off\n"));
             bus_w(CHIP_POWER_REG,
                   bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
+            
+            chipConfigured = 0;
         }
     }
 #ifdef VIRTUAL
@@ -1296,6 +1649,22 @@ int powerChip(int on) {
     return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_STATUS_MSK) >>
             CHIP_POWER_STATUS_OFST);
 }
+
+int isChipConfigured() {
+    return chipConfigured;
+}
+
+void configureChip() {
+    // only for chipv1.1
+    if (chipVersion == 11) {
+        LOG(logINFOBLUE, ("Configuring chip\n"));
+        // write same register values back to configure chip
+        uint32_t val = bus_r(CONFIG_V11_REG);
+        bus_w(CONFIG_V11_REG, val);
+        chipConfigured = 1;
+    }
+}
+
 
 int autoCompDisable(int on) {
     if (on != -1) {
@@ -1312,6 +1681,32 @@ int autoCompDisable(int on) {
 
     return ((bus_r(EXT_DAQ_CTRL_REG) & EXT_DAQ_CTRL_CMP_LGC_ENBL_MSK) >>
             EXT_DAQ_CTRL_CMP_LGC_ENBL_OFST);
+}
+
+int setComparatorDisableTime(int64_t val) {
+    if (getChipVersion() != 11) {
+        return FAIL;
+    }
+    if (val < 0) {
+        LOG(logERROR,
+            ("Invalid comp disable time: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting comp disable time %lld ns\n", (long long int)val));
+    val *= (1E-3 * CLK_RUN);
+    bus_w(COMP_DSBLE_TIME_REG, val);
+
+    // validate for tolerance
+    int64_t retval = getComparatorDisableTime();
+    val /= (1E-3 * CLK_RUN);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getComparatorDisableTime() {
+    return bus_r(COMP_DSBLE_TIME_REG) / (1E-3 * CLK_RUN);
 }
 
 void configureASICTimer() {
@@ -1611,6 +2006,167 @@ void alignDeserializer() {
           bus_r(ADC_DSRLZR_2_REG) & (~(ADC_DSRLZR_2_RFRSH_ALGNMNT_MSK)));
     bus_w(ADC_DSRLZR_3_REG,
           bus_r(ADC_DSRLZR_3_REG) & (~(ADC_DSRLZR_3_RFRSH_ALGNMNT_MSK)));
+}
+
+int getFlipRows() {
+    return ((bus_r(CONFIG_REG) & CONFIG_BOTTOM_INVERT_STREAM_MSK) >>
+            CONFIG_BOTTOM_INVERT_STREAM_OFST);
+}
+
+void setFlipRows(int arg) {
+    if (arg >= 0) {
+        if (arg == 0) {
+            LOG(logINFO, ("Switching off bottom row flipping\n"));
+            bus_w(CONFIG_REG,
+                  bus_r(CONFIG_REG) & ~CONFIG_BOTTOM_INVERT_STREAM_MSK);
+        } else {
+            LOG(logINFO, ("Switching on bottom row flipping\n"));
+            bus_w(CONFIG_REG,
+                  bus_r(CONFIG_REG) | CONFIG_BOTTOM_INVERT_STREAM_MSK);
+        }
+    }
+}
+
+int getFilterResistor() {
+#ifdef VIRTUAL
+    uint32_t addr = CONFIG_V11_REG;
+#else
+    uint32_t addr = CONFIG_V11_STATUS_REG;
+#endif
+    // 0 for lower value, 1 for higher value
+    if (bus_r(addr) & CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_MSK) {
+        return 0;
+    }
+    return 1;
+}
+
+int setFilterResistor(int value) {
+    // lower resistor
+    if (value == 0) {
+        LOG(logINFO, ("Setting Lower Filter Resistor\n"));
+        bus_w(CONFIG_V11_REG,
+              bus_r(CONFIG_V11_REG) | CONFIG_V11_FLTR_RSSTR_SMLR_MSK);
+        return OK;
+    }
+    // higher resistor
+    else if (value == 1) {
+        LOG(logINFO, ("Setting Higher Filter Resistor\n"));
+        bus_w(CONFIG_V11_REG,
+              bus_r(CONFIG_V11_REG) & ~CONFIG_V11_FLTR_RSSTR_SMLR_MSK);
+        return OK;
+    }
+    LOG(logERROR, ("Could not set Filter Resistor. Invalid value %d\n", value));
+    return FAIL;
+}
+
+int getFilterCell() {
+#ifdef VIRTUAL
+    uint32_t addr = CONFIG_V11_REG;
+#else
+    uint32_t addr = CONFIG_V11_STATUS_REG;
+#endif
+    uint32_t value = (bus_r(addr) & CONFIG_V11_FLTR_CLL_MSK) >> CONFIG_V11_FLTR_CLL_OFST;
+    // count number of bits = which icell
+    return (__builtin_popcount(value));
+}
+
+void setFilterCell(int iCell) {
+    uint32_t value = 0;
+    // sets the corresponding cell and the cells before it
+    if (iCell != 0) {
+        value = iCell;
+        if (value > 1) {
+            value += (value - 1);
+        }
+    }
+    uint32_t addr = CONFIG_V11_REG;
+    bus_w(addr, bus_r(addr) &~ CONFIG_V11_FLTR_CLL_MSK);
+    bus_w(addr, bus_r(addr) | ((value << CONFIG_V11_FLTR_CLL_OFST) & CONFIG_V11_FLTR_CLL_MSK));
+    LOG(logINFO, ("Setting Filter Cell to %d [Reg:0x%x]\n", iCell, bus_r(addr)));
+}
+
+void disableCurrentSource() {
+    LOG(logINFO, ("Disabling Current Source\n"));
+    bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_ENBL_MSK);
+}
+
+void enableCurrentSource(int fix, uint64_t select, int normal) {
+    if (chipVersion == 11) {
+        LOG(logINFO, ("Enabling current source [fix:%d, select:%lld]\n", fix,
+                      (long long int)select));
+    } else {
+        LOG(logINFO,
+            ("Enabling current source [fix:%d, select:0x%llx, normal:%d]\n",
+             fix, (long long int)select, normal));
+    }
+    disableCurrentSource();
+    LOG(logINFO, ("\tSetting current source parameters\n"));
+    // fix
+    if (fix) {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_CRRNT_SRC_CLMN_FIX_MSK);
+    } else {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_FIX_MSK);
+    }
+    if (chipVersion == 10) {
+        // select
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_SLCT_MSK);
+        bus_w(DAQ_REG,
+              bus_r(DAQ_REG) | ((select << DAQ_CRRNT_SRC_CLMN_SLCT_OFST) &
+                                DAQ_CRRNT_SRC_CLMN_SLCT_MSK));
+
+    } else {
+        // select
+        set64BitReg(select, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+        // normal
+        if (normal) {
+            bus_w(CONFIG_V11_REG,
+                  bus_r(CONFIG_V11_REG) & ~CONFIG_V11_CRRNT_SRC_LOW_MSK);
+        } else {
+            bus_w(CONFIG_V11_REG,
+                  bus_r(CONFIG_V11_REG) | CONFIG_V11_CRRNT_SRC_LOW_MSK);
+        }
+    }
+    // validating before enabling current source
+    if (getFixCurrentSource() != fix || getSelectCurrentSource() != select) {
+        LOG(logERROR,
+            ("Could not set fix or select parameters for current source.\n"))
+        return;
+    }
+    // not validating normal because the status register might not update during
+    // acquisition
+
+    // enabling current source
+    LOG(logINFO, ("Enabling Current Source\n"));
+    bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_CRRNT_SRC_ENBL_MSK);
+}
+
+int getCurrentSource() {
+    return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_ENBL_MSK) >>
+            DAQ_CRRNT_SRC_ENBL_OFST);
+}
+
+int getFixCurrentSource() {
+    return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_FIX_MSK) >>
+            DAQ_CRRNT_SRC_CLMN_FIX_OFST);
+}
+
+int getNormalCurrentSource() {
+    if (getChipVersion() == 11) {
+        int low = ((bus_r(CONFIG_V11_STATUS_REG) &
+                    CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK) >>
+                   CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST);
+        return (low == 0 ? 1 : 0);
+    }
+    return -1;
+}
+
+uint64_t getSelectCurrentSource() {
+    if (chipVersion == 10) {
+        return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_SLCT_MSK) >>
+                DAQ_CRRNT_SRC_CLMN_SLCT_OFST);
+    } else {
+        return get64BitReg(CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+    }
 }
 
 int getTenGigaFlowControl() {

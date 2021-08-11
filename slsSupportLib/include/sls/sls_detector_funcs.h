@@ -205,8 +205,8 @@ enum detFuncs {
     F_GET_SCAN_ERROR_MESSAGE,
     F_GET_CDS_GAIN,
     F_SET_CDS_GAIN,
-    F_GET_FILTER,
-    F_SET_FILTER,
+    F_GET_FILTER_RESISTOR,
+    F_SET_FILTER_RESISTOR,
     F_GET_ADC_CONFIGURATION,
     F_SET_ADC_CONFIGURATION,
     F_GET_BAD_CHANNELS,
@@ -215,7 +215,7 @@ enum detFuncs {
     F_VALIDATE_UDP_CONFIG,
     F_GET_BURSTS_LEFT,
     F_START_READOUT,
-    F_SET_DEFAULT_DACS,
+    F_RESET_TO_DEFAULT_DACS,
     F_IS_VIRTUAL,
     F_GET_PATTERN,
     F_LOAD_DEFAULT_PATTERN,
@@ -230,6 +230,17 @@ enum detFuncs {
     F_SET_VETO_STREAM,
     F_GET_VETO_ALGORITHM,
     F_SET_VETO_ALGORITHM,
+    F_GET_CHIP_VERSION,
+    F_GET_DEFAULT_DAC,
+    F_SET_DEFAULT_DAC,
+    F_GET_GAIN_MODE,
+    F_SET_GAIN_MODE,
+    F_GET_COMP_DISABLE_TIME,
+    F_SET_COMP_DISABLE_TIME,
+    F_GET_FLIP_ROWS,
+    F_SET_FLIP_ROWS,
+    F_GET_FILTER_CELL,
+    F_SET_FILTER_CELL,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -280,7 +291,8 @@ enum detFuncs {
     F_SET_RECEIVER_STREAMING,
     F_GET_RECEIVER_STREAMING,
     F_RECEIVER_STREAMING_TIMER,
-    F_SET_FLIPPED_DATA_RECEIVER,
+    F_GET_FLIP_ROWS_RECEIVER,
+    F_SET_FLIP_ROWS_RECEIVER,
     F_SET_RECEIVER_FILE_FORMAT,
     F_GET_RECEIVER_FILE_FORMAT,
     F_SET_RECEIVER_STREAMING_PORT,
@@ -542,8 +554,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_SCAN_ERROR_MESSAGE:          return "F_GET_SCAN_ERROR_MESSAGE"; 
     case F_GET_CDS_GAIN:                    return "F_GET_CDS_GAIN";
     case F_SET_CDS_GAIN:                    return "F_SET_CDS_GAIN";
-    case F_GET_FILTER:                      return "F_GET_FILTER";
-    case F_SET_FILTER:                      return "F_SET_FILTER";
+    case F_GET_FILTER_RESISTOR:             return "F_GET_FILTER_RESISTOR";
+    case F_SET_FILTER_RESISTOR:             return "F_SET_FILTER_RESISTOR";
     case F_SET_ADC_CONFIGURATION:           return "F_SET_ADC_CONFIGURATION";       
     case F_GET_ADC_CONFIGURATION:           return "F_GET_ADC_CONFIGURATION";       
     case F_GET_BAD_CHANNELS:                return "F_GET_BAD_CHANNELS";
@@ -552,7 +564,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_VALIDATE_UDP_CONFIG:             return "F_VALIDATE_UDP_CONFIG";                               
     case F_GET_BURSTS_LEFT:                 return "F_GET_BURSTS_LEFT";
     case F_START_READOUT:                   return "F_START_READOUT";
-    case F_SET_DEFAULT_DACS:                return "F_SET_DEFAULT_DACS";
+    case F_RESET_TO_DEFAULT_DACS:           return "F_RESET_TO_DEFAULT_DACS";
     case F_IS_VIRTUAL:                      return "F_IS_VIRTUAL";
     case F_GET_PATTERN:                     return "F_GET_PATTERN";
     case F_LOAD_DEFAULT_PATTERN:            return "F_LOAD_DEFAULT_PATTERN";
@@ -566,6 +578,17 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_VETO_STREAM:                 return "F_SET_VETO_STREAM";
     case F_GET_VETO_ALGORITHM:              return "F_GET_VETO_ALGORITHM";    
     case F_SET_VETO_ALGORITHM:              return "F_SET_VETO_ALGORITHM";
+    case F_GET_CHIP_VERSION:                return "F_GET_CHIP_VERSION";
+    case F_GET_DEFAULT_DAC:                 return "F_GET_DEFAULT_DAC";
+    case F_SET_DEFAULT_DAC:                 return "F_SET_DEFAULT_DAC";
+    case F_GET_GAIN_MODE:                   return "F_GET_GAIN_MODE";
+    case F_SET_GAIN_MODE:                   return "F_SET_GAIN_MODE";
+    case F_GET_COMP_DISABLE_TIME:           return "F_GET_COMP_DISABLE_TIME";
+    case F_SET_COMP_DISABLE_TIME:           return "F_SET_COMP_DISABLE_TIME";
+    case F_GET_FLIP_ROWS:                   return "F_GET_FLIP_ROWS";
+    case F_SET_FLIP_ROWS:                   return "F_SET_FLIP_ROWS";
+    case F_GET_FILTER_CELL:                 return "F_GET_FILTER_CELL";
+    case F_SET_FILTER_CELL:                 return "F_SET_FILTER_CELL";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
@@ -615,7 +638,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_RECEIVER_STREAMING:			return "F_SET_RECEIVER_STREAMING";
 	case F_GET_RECEIVER_STREAMING:			return "F_GET_RECEIVER_STREAMING";
 	case F_RECEIVER_STREAMING_TIMER:		return "F_RECEIVER_STREAMING_TIMER";
-	case F_SET_FLIPPED_DATA_RECEIVER:		return "F_SET_FLIPPED_DATA_RECEIVER";
+	case F_GET_FLIP_ROWS_RECEIVER:		    return "F_GET_FLIP_ROWS_RECEIVER";
+	case F_SET_FLIP_ROWS_RECEIVER:		    return "F_SET_FLIP_ROWS_RECEIVER";
 	case F_SET_RECEIVER_FILE_FORMAT:		return "F_SET_RECEIVER_FILE_FORMAT";
 	case F_GET_RECEIVER_FILE_FORMAT:		return "F_GET_RECEIVER_FILE_FORMAT";
 	case F_SET_RECEIVER_STREAMING_PORT: 	return "F_SET_RECEIVER_STREAMING_PORT";

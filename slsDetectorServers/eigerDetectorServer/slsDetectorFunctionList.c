@@ -93,6 +93,7 @@ int eiger_virtual_interrupt_subframe = 0;
 int eiger_virtual_left_datastream = 1;
 int eiger_virtual_right_datastream = 1;
 #endif
+int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -434,8 +435,9 @@ int readConfigFile() {
     master = -1;
     top = -1;
 
-    char fname[128];
-    if (getAbsPath(fname, 128, CONFIG_FILE) == FAIL) {
+    const int fileNameSize = 128;
+    char fname[fileNameSize];
+    if (getAbsPath(fname, fileNameSize, CONFIG_FILE) == FAIL) {
         return FAIL;
     }
 
@@ -684,7 +686,7 @@ void allocateDetectorStructureMemory() {
 void setupDetector() {
 
     allocateDetectorStructureMemory();
-    setDefaultDacs();
+    resetToDefaultDacs(0);
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
 #endif
@@ -746,19 +748,51 @@ void setupDetector() {
     LOG(logDEBUG1, ("Setup detector done\n\n"));
 }
 
-int setDefaultDacs() {
+int resetToDefaultDacs(int hardReset) {
+    // reset defaults to hardcoded defaults
+    if (hardReset) {
+        const int vals[] = DEFAULT_DAC_VALS;
+        for (int i = 0; i < NDAC; ++i) {
+            defaultDacValues[i] = vals[i];
+        }
+    }
+    // reset dacs to defaults
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
-    const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
     for (int i = 0; i < NDAC; ++i) {
-        setDAC((enum DACINDEX)i, defaultvals[i], 0);
-        if ((detectorModules)->dacs[i] != defaultvals[i]) {
+        setDAC((enum DACINDEX)i, defaultDacValues[i], 0);
+        if ((detectorModules)->dacs[i] != defaultDacValues[i]) {
             ret = FAIL;
             LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                           defaultvals[i], (detectorModules)->dacs[i]));
+                           defaultDacValues[i], (detectorModules)->dacs[i]));
         }
     }
     return ret;
+}
+
+int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
+                  int *retval) {
+    if (sett != UNDEFINED) {
+        return FAIL;
+    }
+    if (index < 0 || index >= NDAC)
+        return FAIL;
+    *retval = defaultDacValues[index];
+    return OK;
+}
+
+int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
+    if (sett != UNDEFINED) {
+        return FAIL;
+    }
+    if (index < 0 || index >= NDAC)
+        return FAIL;
+
+    char *dac_names[] = {DAC_NAMES};
+    LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
+                  dac_names[index], value));
+    defaultDacValues[index] = value;
+    return OK;
 }
 
 /* advanced read/write reg */

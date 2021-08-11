@@ -291,6 +291,14 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     std::vector<char> readProgrammingFile(const std::string &fname);
 
+    sls::Result<int> getNumberofUDPInterfaces(Positions pos) const;
+    void setNumberofUDPInterfaces(int n, Positions pos);
+    sls::Result<int> getDefaultDac(defs::dacIndex index,
+                                   defs::detectorSettings sett,
+                                   Positions pos = {});
+    void setDefaultDac(defs::dacIndex index, int defaultValue,
+                       defs::detectorSettings sett, Positions pos);
+
   private:
     /**
      * Creates/open shared memory, initializes detector structure and members

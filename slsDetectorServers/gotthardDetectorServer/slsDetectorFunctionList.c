@@ -45,6 +45,7 @@ int detPos[2] = {};
 
 int detectorFirstServer = 1;
 int dacValues[NDAC] = {};
+int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
 enum detectorSettings thisSettings = UNINITIALIZED;
 enum externalSignalFlag signalMode = 0;
 
@@ -405,7 +406,7 @@ void setupDetector() {
                        DAC_MAX_MV);
     LTC2620_Disable();
     LTC2620_Configure();
-    setDefaultDacs();
+    resetToDefaultDacs(0);
 
     // temp
     bus_w(TEMP_SPI_IN_REG, TEMP_SPI_IN_IDLE_MSK);
@@ -433,19 +434,51 @@ void setupDetector() {
     setDelayAfterTrigger(DEFAULT_DELAY);
 }
 
-int setDefaultDacs() {
+int resetToDefaultDacs(int hardReset) {
+    // reset defaults to hardcoded defaults
+    if (hardReset) {
+        const int vals[] = DEFAULT_DAC_VALS;
+        for (int i = 0; i < NDAC; ++i) {
+            defaultDacValues[i] = vals[i];
+        }
+    }
+    // reset dacs to defaults
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
-    const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
     for (int i = 0; i < NDAC; ++i) {
-        setDAC((enum DACINDEX)i, defaultvals[i], 0);
-        if (dacValues[i] != defaultvals[i]) {
+        setDAC((enum DACINDEX)i, defaultDacValues[i], 0);
+        if (dacValues[i] != defaultDacValues[i]) {
             ret = FAIL;
             LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
-                           defaultvals[i], dacValues[i]));
+                           defaultDacValues[i], dacValues[i]));
         }
     }
     return ret;
+}
+
+int getDefaultDac(enum DACINDEX index, enum detectorSettings sett,
+                  int *retval) {
+    if (sett != UNDEFINED) {
+        return FAIL;
+    }
+    if (index < 0 || index >= NDAC)
+        return FAIL;
+    *retval = defaultDacValues[index];
+    return OK;
+}
+
+int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value) {
+    if (sett != UNDEFINED) {
+        return FAIL;
+    }
+    if (index < 0 || index >= NDAC)
+        return FAIL;
+
+    char *dac_names[] = {DAC_NAMES};
+    LOG(logINFO, ("Setting Default Dac [%d - %s]: %d\n", (int)index,
+                  dac_names[index], value));
+    defaultDacValues[index] = value;
+    return OK;
 }
 
 uint32_t writeRegister16And32(uint32_t offset, uint32_t data) {
@@ -588,8 +621,9 @@ void setGbitReadout() {
 }
 
 int readConfigFile() {
-    char fname[128];
-    if (getAbsPath(fname, 128, CONFIG_FILE) == FAIL) {
+    const int fileNameSize = 128;
+    char fname[fileNameSize];
+    if (getAbsPath(fname, fileNameSize, CONFIG_FILE) == FAIL) {
         return FAIL;
     }
 

@@ -8519,7 +8519,7 @@ int get_veto_algorithm(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     enum streamingInterface arg = NONE;
-    enum vetoAlgorithm retval = DEFAULT_ALGORITHM;
+    enum vetoAlgorithm retval = ALG_HITS;
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
 
@@ -8551,7 +8551,7 @@ int set_veto_algorithm(int file_des) {
 
     enum vetoAlgorithm alg = args[0];
     enum streamingInterface interface = args[1];
-    LOG(logDEBUG1, ("Setting vetoalgorithm (interface: %d): %u\n", (int)interface,
+    LOG(logINFOBLUE, ("Setting vetoalgorithm (interface: %d): %u\n", (int)interface,
                   (int)alg));
 
 #ifndef GOTTHARD2D
@@ -8565,13 +8565,17 @@ int set_veto_algorithm(int file_des) {
                     "Could not set vetoalgorithm. Invalid interface %d.\n",
                     interface);
             LOG(logERROR, (mess));
-        } else if (alg != DEFAULT_ALGORITHM) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not set vetoalgorithm. Invalid algorithm %d.\n",
-                    alg);
-            LOG(logERROR, (mess));
         } else {
+            switch (alg) {
+            case ALG_HITS:
+            case ALG_RAW:
+                break;
+            default:
+                modeNotImplemented("Veto Algorithm index", (int)alg);
+                break;
+            }
+        }
+        if (ret == OK) {
             setVetoAlgorithm(alg, interface);
             int retval = getVetoAlgorithm(interface);
             LOG(logDEBUG1, ("vetoalgorithm retval: %u\n", retval));

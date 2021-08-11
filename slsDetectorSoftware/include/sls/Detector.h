@@ -1337,7 +1337,7 @@ class Detector {
     getVetoAlgorithm(const defs::streamingInterface value,
                      Positions pos = {}) const;
 
-    /** [Gotthard2] Options(vetoAlgorithm): DEFAULT_ALGORITHM.
+    /** [Gotthard2] Options(vetoAlgorithm): ALG_HITS, ALG_RAW.
      * Options(streamingInterface): LOW_LATENCY_LINK, ETHERNET_10GB */
     void setVetoAlgorithm(const defs::vetoAlgorithm alg,
                           const defs::streamingInterface value,

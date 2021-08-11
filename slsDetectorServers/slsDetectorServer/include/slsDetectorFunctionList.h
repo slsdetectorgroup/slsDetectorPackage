@@ -554,7 +554,8 @@ int getVeto();
 void setVetoStream(int value);
 int getVetoStream();
 enum vetoAlgorithm getVetoAlgorithm(enum streamingInterface interface);
-void setVetoAlgorithm(enum streamingInterface interface, enum vetoAlgorithm alg);
+void setVetoAlgorithm(enum vetoAlgorithm alg,
+                      enum streamingInterface interface);
 void setBadChannels(int nch, int *channels);
 int *getBadChannels(int *nch);
 #endif

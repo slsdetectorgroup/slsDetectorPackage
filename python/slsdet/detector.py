@@ -2448,10 +2448,15 @@ class Detector(CppDetectorApi):
 
     @property
     def vetoalg(self):
-        """[Gotthard2] Algorithm used for veto
+        """[Gotthard2] Algorithm used for veto. Enum: vetoAlgorithm, streamingInterface
+        Note
+        ----
+        Options:
+        (vetoAlgorithm): ALG_HITS, ALG_RAW
+        (streamingInterface): ETHERNET_10GB, LOW_LATENCY_LINK
         Example
         ----------
-        >>> d.vetoalg = defs.DEFAULT_ALGORITHM, defs.ETHERNET_10GB
+        >>> d.vetoalg = defs.ALG_HITS, defs.ETHERNET_10GB
         """
         result = {}
         interface = [streamingInterface.LOW_LATENCY_LINK, streamingInterface.ETHERNET_10GB]

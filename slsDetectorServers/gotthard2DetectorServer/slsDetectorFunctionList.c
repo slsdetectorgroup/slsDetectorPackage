@@ -481,6 +481,8 @@ void setupDetector() {
     setBurstPeriod(DEFAULT_BURST_PERIOD);
     setTiming(DEFAULT_TIMING_MODE);
     setCurrentSource(DEFAULT_CURRENT_SOURCE);
+    setVetoAlgorithm(DEFAULT_ALGORITHM, LOW_LATENCY_LINK);
+    setVetoAlgorithm(DEFAULT_ALGORITHM, ETHERNET_10GB);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -1620,12 +1622,12 @@ void setNumberofUDPInterfaces(int val) {
     // 2 rxr interfaces (enable debugging interface)
     if (val > 1) {
         LOG(logINFOBLUE, ("Enabling 10GbE (debugging) veto streaming\n"));
-        bus_w(addr, bus_r(addr) | CONFIG_VETO_CH_10GB_ENBL_MSK);
+        bus_w(addr, bus_r(addr) | CONFIG_VETO_CH_10GBE_ENBL_MSK);
     }
     // 1 rxr interface (disable debugging interface)
     else {
         LOG(logINFOBLUE, ("Disabling 10GbE (debugging) veto streaming\n"));
-        bus_w(addr, bus_r(addr) & ~CONFIG_VETO_CH_10GB_ENBL_MSK);
+        bus_w(addr, bus_r(addr) & ~CONFIG_VETO_CH_10GBE_ENBL_MSK);
     }
     LOG(logDEBUG, ("config reg:0x%x\n", bus_r(addr)));
 }
@@ -1633,7 +1635,7 @@ void setNumberofUDPInterfaces(int val) {
 int getNumberofUDPInterfaces() {
     LOG(logDEBUG, ("config reg:0x%x\n", bus_r(CONFIG_REG)));
     // return 2 if 10gbps veto streaming enabled, else 1
-    return ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_10GB_ENBL_MSK) ? 2 : 1);
+    return ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_10GBE_ENBL_MSK) ? 2 : 1);
 }
 
 void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
@@ -1756,9 +1758,9 @@ int configureMAC() {
     int i10gbe = (getNumberofUDPInterfaces() == 2 ? 1 : 0);
 
     if (lll) {
-        LOG(logINFOGREEN, ("\tVeto (3GbE) : enabled\n\n"));
+        LOG(logINFOGREEN, ("\tVeto (lll) : enabled\n\n"));
     } else {
-        LOG(logINFORED, ("\tVeto (3GbE) : disabled\n\n"));
+        LOG(logINFORED, ("\tVeto (lll) : disabled\n\n"));
     }
     if (i10gbe) {
         LOG(logINFOGREEN, ("\tVeto (10GbE): enabled\n"));
@@ -2629,65 +2631,73 @@ void setVetoStream(int value) {
     uint32_t addr = CONFIG_REG;
 
     if (value) {
-        LOG(logINFOBLUE, ("Enabling 3GbE veto streaming\n"));
-        bus_w(addr, bus_r(addr) | CONFIG_VETO_CH_3GB_ENBL_MSK);
+        LOG(logINFOBLUE, ("Enabling lll veto streaming\n"));
+        bus_w(addr, bus_r(addr) | CONFIG_VETO_CH_LLL_ENBL_MSK);
     } else {
-        LOG(logINFOBLUE, ("Disabling 3GbE veto streaming\n"));
-        bus_w(addr, bus_r(addr) & ~CONFIG_VETO_CH_3GB_ENBL_MSK);
+        LOG(logINFOBLUE, ("Disabling lll veto streaming\n"));
+        bus_w(addr, bus_r(addr) & ~CONFIG_VETO_CH_LLL_ENBL_MSK);
     }
     LOG(logDEBUG, ("config reg:0x%x\n", bus_r(addr)));
 }
 
 int getVetoStream() {
-    return ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_3GB_ENBL_MSK) ? 1 : 0);
+    return ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_LLL_ENBL_MSK) ? 1 : 0);
 }
 
 enum vetoAlgorithm getVetoAlgorithm(enum streamingInterface interface) {
-    // 3gbe
+    int retval = 0;
     if (interface == LOW_LATENCY_LINK) {
-        int retval = ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_3GB_ALG_MSK) >>
-                      CONFIG_VETO_CH_3GB_ALG_OFST);
-        switch (retval) {
-            // more to follow
-        case CONFIG_VETO_CH_3GB_ALG_DEFAULT_VAL:
-            return DEFAULT_ALGORITHM;
-        default:
-            LOG(logERROR, ("unknown algorithm %d for 3gbe\n", retval));
-            return -1;
-        }
+        retval = ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_LLL_ALG_MSK) >>
+                  CONFIG_VETO_CH_LLL_ALG_OFST);
+    } else {
+        retval = ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_10GBE_ALG_MSK) >>
+                  CONFIG_VETO_CH_10GBE_ALG_OFST);
     }
-    // 10gbe
-    int retval = ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_10GB_ALG_MSK) >>
-                  CONFIG_VETO_CH_10GB_ALG_OFST);
     switch (retval) {
-        // more to follow
-    case CONFIG_VETO_CH_10GB_ALG_DEFAULT_VAL:
-        return DEFAULT_ALGORITHM;
+    case ALGORITHM_HITS_VAL:
+        return ALG_HITS;
+    case ALGORITHM_RAW_VAL:
+        return ALG_RAW;
     default:
-        LOG(logERROR, ("unknown algorithm %d for 3gbe\n", retval));
+        LOG(logERROR, ("unknown algorithm %d\n", retval));
         return -1;
     }
 }
 
-void setVetoAlgorithm(enum streamingInterface interface,
-                      enum vetoAlgorithm alg) {
+void setVetoAlgorithm(enum vetoAlgorithm alg,
+                      enum streamingInterface interface) {
     uint32_t addr = CONFIG_REG;
     uint32_t value = bus_r(addr);
     switch (alg) {
         // more to follow
-    case DEFAULT_ALGORITHM:
+    case ALG_HITS:
         if (interface == LOW_LATENCY_LINK) {
-            LOG(logINFO, ("Setting default veto algorithm for 3Gbe\n"));
-            value &= (~CONFIG_VETO_CH_3GB_ALG_MSK);
-            value |= CONFIG_VETO_CH_3GB_ALG_DEFAULT_VAL;
+            LOG(logINFO, ("Setting veto algorithm [lll]: hits\n"));
+            value &= (~CONFIG_VETO_CH_LLL_ALG_MSK);
+            value |= ((ALGORITHM_HITS_VAL << CONFIG_VETO_CH_LLL_ALG_OFST) &
+                      CONFIG_VETO_CH_LLL_ALG_MSK);
         } else {
-            LOG(logINFO, ("Setting default veto algorithm for 10Gbe\n"));
-            value &= (~CONFIG_VETO_CH_10GB_ALG_MSK);
-            value |= CONFIG_VETO_CH_10GB_ALG_DEFAULT_VAL;                
+            LOG(logINFO, ("Setting veto algorithm [10Gbe]: hits\n"));
+            value &= (~CONFIG_VETO_CH_10GBE_ALG_MSK);
+            value |= ((ALGORITHM_HITS_VAL << CONFIG_VETO_CH_10GBE_ALG_OFST) &
+                      CONFIG_VETO_CH_10GBE_ALG_MSK);
+        }
+        break;
+    case ALG_RAW:
+        if (interface == LOW_LATENCY_LINK) {
+            LOG(logINFO, ("Setting veto algorithm [lll]: raw\n"));
+            value &= (~CONFIG_VETO_CH_LLL_ALG_MSK);
+            value |= ((ALGORITHM_RAW_VAL << CONFIG_VETO_CH_LLL_ALG_OFST) &
+                      CONFIG_VETO_CH_LLL_ALG_MSK);
+        } else {
+            LOG(logINFO, ("Setting veto algorithm [10Gbe]: raw\n"));
+            value &= (~CONFIG_VETO_CH_10GBE_ALG_MSK);
+            value |= ((ALGORITHM_RAW_VAL << CONFIG_VETO_CH_10GBE_ALG_OFST) &
+                      CONFIG_VETO_CH_10GBE_ALG_MSK);
         }
         break;
     default:
-        LOG(logERROR, ("unknown algorithm %d for 3gbe\n", alg));
+        LOG(logERROR, ("unknown algorithm %d for lll\n", alg));
         return;
     }
     bus_w(addr, value);

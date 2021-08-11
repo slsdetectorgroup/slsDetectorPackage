@@ -2051,7 +2051,7 @@ std::string CmdProxy::VetoAlgorithm(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[default] [lll|10gbe]\n\t[Gotthard2] Set the veto "
+        os << "[hits|raw] [lll|10gbe]\n\t[Gotthard2] Set the veto "
               "algorithm."
            << '\n';
     } else if (action == defs::GET_ACTION) {

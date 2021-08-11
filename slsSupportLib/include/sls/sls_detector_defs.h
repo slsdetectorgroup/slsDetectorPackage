@@ -413,7 +413,7 @@ typedef struct {
         ALL = LOW_LATENCY_LINK | ETHERNET_10GB
     };
 
-    enum vetoAlgorithm { DEFAULT_ALGORITHM };
+    enum vetoAlgorithm { ALG_HITS, ALG_RAW };
 
     enum gainMode {
         DYNAMIC,

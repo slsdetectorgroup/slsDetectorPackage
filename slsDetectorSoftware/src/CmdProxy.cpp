@@ -261,8 +261,7 @@ std::string CmdProxy::SerialNumber(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == slsDetectorDefs::HELP_ACTION)
-        os << "\n\tSerial number of detector.\n\t[Gotthard2] Can overwrite, "
-              "but must do so for every detector server restart."
+        os << "\n\tSerial number of detector.\n\t[Gotthard2] Can overwrite"
            << '\n';
     else if (action == slsDetectorDefs::GET_ACTION) {
         if (!args.empty()) {

@@ -66,7 +66,6 @@ int64_t burstPeriodReg = 0;
 int filterResistor = 0;
 int cdsGain = 0;
 int detPos[2] = {};
-int64_t serialNumber = -1;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -281,20 +280,17 @@ u_int16_t getHardwareVersionNumber() {
             MCB_SERIAL_NO_VRSN_OFST);
 }
 
-u_int32_t getDetectorNumber() {
-    if (serialNumber != -1) {
-        return serialNumber;
-    }
-#ifdef VIRTUAL
-    return 0;
-#endif
-    return bus_r(MCB_SERIAL_NO_REG);
+uint16_t getSerialNumber() {
+    return ((bus_r(MOD_ID_REG) & MOD_ID_MSK) >> MOD_ID_OFST);
 }
 
-void setSerialNumber(int64_t arg) {
-    LOG(logINFOBLUE, ("Setting Serial Number to 0x%llx\n", (long long int)arg));
-    serialNumber = arg;
+void setSerialNumber(uint16_t arg) {
+    LOG(logINFOBLUE, ("Setting Serial Number to 0x%x\n", arg));
+    bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) & ~MOD_ID_MSK);
+    bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) | ((arg << MOD_ID_OFST) & MOD_ID_MSK));
 }
+
+int getMaxSerialNumber() { return MOD_MAX_VAL; }
 
 u_int64_t getDetectorMAC() {
 #ifdef VIRTUAL

@@ -666,7 +666,11 @@ int get_serial_number(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
+#ifdef GOTTHARD2D
+    retval = getSerialNumber();
+#else
     retval = getDetectorNumber();
+#endif
     LOG(logDEBUG1, ("detector number retval: 0x%llx\n", (long long int)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
@@ -683,7 +687,14 @@ int set_serial_number(int file_des) {
 #ifndef GOTTHARD2D
     functionNotImplemented();
 #else
-    setSerialNumber(arg);
+    if (arg > getMaxSerialNumber()) {
+        ret = FAIL;
+        sprintf(mess, "Could not set serial number. Max value: %d\n",
+                getMaxSerialNumber());
+        LOG(logERROR, (mess));
+    } else {
+        setSerialNumber(arg);
+    }
 #endif
     return Server_SendResult(file_des, INT64, NULL, 0);
 }

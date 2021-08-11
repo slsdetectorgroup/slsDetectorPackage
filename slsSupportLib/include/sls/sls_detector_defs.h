@@ -456,6 +456,39 @@ typedef struct {
         }
     } __attribute__((packed));
 
+    struct currentSrcParameters {
+        int enable;
+        int fix;
+        int normal;
+        uint64_t select;
+
+        /** [Gotthard2][Jungfrau] disable */
+        currentSrcParameters() : enable(0), fix(-1), normal(-1), select(0) {}
+
+        /** [Gotthard2] enable or disable */
+        currentSrcParameters(bool ena)
+            : enable(static_cast<int>(ena)), fix(-1), normal(-1), select(0) {}
+
+        /** [Jungfrau](chipv1.0) enable current src with fix or no fix,
+         * selectColumn is 0 to 63 columns only */
+        currentSrcParameters(bool fixCurrent, uint64_t selectColumn)
+            : enable(1), fix(static_cast<int>(fixCurrent)), normal(-1),
+              select(selectColumn) {}
+
+        /** [Jungfrau](chipv1.1) enable current src, fixCurrent[fix|no fix],
+         * selectColumn is a mask of 63 bits (muliple columns can be selected
+         * simultaneously, normalCurrent [normal|low] */
+        currentSrcParameters(bool fixCurrent, uint64_t selectColumn,
+                             bool normalCurrent)
+            : enable(1), fix(static_cast<int>(fixCurrent)),
+              normal(static_cast<int>(normalCurrent)), select(selectColumn) {}
+
+        bool operator==(const currentSrcParameters &other) const {
+            return ((enable == other.enable) && (fix == other.fix) &&
+                    (normal == other.normal) && (select == other.select));
+        }
+    } __attribute__((packed));
+
     /**
      * structure to udpate receiver
      */

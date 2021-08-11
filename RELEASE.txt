@@ -65,6 +65,7 @@ This document describes the differences between 5.2.0 and 5.1.0 releases.
 getAutoCompDisable->getAutoComparatorDisable
 filter->filterResistor
 setBottom->setFlipRows
+currentsource expects currentsrcparameters structure instread of bool
 
 3. Firmware Requirements
 ========================

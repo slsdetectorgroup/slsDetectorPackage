@@ -466,6 +466,12 @@ int setFilterResistor(int value);
 int getFilterResistor();
 int getFilterCell();
 void setFilterCell(int iCell);
+void disableCurrentSource();
+void enableCurrentSource(int fix, uint64_t select, int normal);
+int getCurrentSource();
+int getFixCurrentSource();
+int getNormalCurrentSource();
+uint64_t getSelectCurrentSource();
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD

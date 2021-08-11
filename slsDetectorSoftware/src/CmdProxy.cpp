@@ -959,6 +959,68 @@ std::string CmdProxy::ExternalSignal(int action) {
     return os.str();
 }
 
+std::string CmdProxy::CurrentSource(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[0|1]\n\t[Gotthard2] Enable or disable current source. Default "
+              "is disabled.\n[0|1] [fix|nofix] [select source] [(only for "
+              "chipv1.1)normal|low]\n\t[Jungfrau] Disable or enable current "
+              "source with some parameters. The select source is 0-63 for "
+              "chipv1.0 and a 64 bit mask for chipv1.1. To disable, one needs "
+              "only one argument '0'."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getCurrentSource(std::vector<int>{det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() == 1) {
+            det->setCurrentSource(
+                defs::currentSrcParameters(StringTo<bool>(args[0])));
+        } else if (args.size() >= 3) {
+            // scan fix
+            bool fix = false;
+            if (args[1] == "fix") {
+                fix = true;
+            } else if (args[1] == "nofix") {
+                fix = false;
+            } else {
+                throw sls::RuntimeError("Invalid argument: " + args[1] +
+                                        ". Did you mean fix or nofix?");
+            }
+            if (args.size() == 3) {
+                det->setCurrentSource(defs::currentSrcParameters(
+                    fix, StringTo<int64_t>(args[2])));
+            } else if (args.size() == 4) {
+                bool normalCurrent = false;
+                if (args[3] == "normal") {
+                    normalCurrent = true;
+                } else if (args[3] == "low") {
+                    normalCurrent = false;
+                } else {
+                    throw sls::RuntimeError("Invalid argument: " + args[3] +
+                                            ". Did you mean normal or low?");
+                }
+                det->setCurrentSource(defs::currentSrcParameters(
+                    fix, StringTo<int64_t>(args[2]), normalCurrent));
+            } else {
+                throw sls::RuntimeError(
+                    "Invalid number of parareters for this command.");
+            }
+        } else {
+            throw sls::RuntimeError(
+                "Invalid number of parareters for this command.");
+        }
+        os << ToString(args) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /** temperature */
 std::string CmdProxy::TemperatureValues(int action) {
     std::ostringstream os;

@@ -1423,6 +1423,143 @@ TEST_CASE("filterresistor", "[.cmd]") {
     }
 }
 
+TEST_CASE("currentsource", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getCurrentSource();
+
+        if (det_type == defs::GOTTHARD2) {
+            {
+                std::ostringstream oss;
+                proxy.Call("currentsource", {"1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "currentsource 1\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("currentsource", {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "currentsource 0\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("currentsource", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "currentsource 0\n");
+            }
+            REQUIRE_THROWS(
+                proxy.Call("currentsource", {"1", "fix", "42"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("currentsource",
+                                      {"1", "fix", "42", "normal"}, -1, PUT));
+        }
+        // jungfrau
+        else {
+            int chipVersion = det.getChipVersion().tsquash(
+                                  "inconsistent chip versions to test") *
+                              10;
+            if (chipVersion == 10) {
+                REQUIRE_THROWS(proxy.Call("currentsource", {"1"}, -1, PUT));
+                REQUIRE_THROWS(
+                    proxy.Call("currentsource", {"1", "fix"}, -1, PUT));
+                REQUIRE_THROWS(
+                    proxy.Call("currentsource", {"1", "fix", "64"}, -1, PUT));
+                REQUIRE_THROWS(
+                    proxy.Call("currentsource", {"1", "dfg", "64"}, -1, PUT));
+                REQUIRE_THROWS(proxy.Call(
+                    "currentsource", {"1", "fix", "63", "normal"}, -1, PUT));
+                {
+                    std::ostringstream oss;
+                    proxy.Call("currentsource", {"1", "fix", "63"}, -1, PUT,
+                               oss);
+                    REQUIRE(oss.str() == "currentsource [1, fix, 63]\n");
+                }
+                {
+                    std::ostringstream oss;
+                    proxy.Call("currentsource", {"0"}, -1, PUT, oss);
+                    REQUIRE(oss.str() == "currentsource [0]\n");
+                }
+                {
+                    std::ostringstream oss;
+                    proxy.Call("currentsource", {}, -1, GET, oss);
+                    REQUIRE(oss.str() == "currentsource [disabled]\n");
+                }
+                {
+                    std::ostringstream oss;
+                    proxy.Call("currentsource", {"1", "nofix", "63"}, -1, PUT,
+                               oss);
+                    REQUIRE(oss.str() == "currentsource [1, nofix, 63]\n");
+                }
+                {
+                    std::ostringstream oss;
+                    proxy.Call("currentsource", {}, -1, GET, oss);
+                    REQUIRE(oss.str() ==
+                            "currentsource [enabled, nofix, 63]\n");
+                }
+            }
+            // chipv1.1
+            else {
+                REQUIRE_THROWS(proxy.Call("currentsource", {"1"}, -1, PUT));
+                REQUIRE_THROWS(
+                    proxy.Call("currentsource", {"1", "fix"}, -1, PUT));
+                REQUIRE_THROWS(proxy.Call(
+                    "currentsource", {"1", "ffgdfgix", "0x0000000000000041"},
+                    -1, PUT));
+                REQUIRE_THROWS(proxy.Call(
+                    "currentsource",
+                    {"1", "fix", "0x0000000000000041", "normaldgf"}, -1, PUT));
+
+                {
+                    std::ostringstream oss;
+                    proxy.Call("currentsource",
+                               {"1", "fix", "0x0000000000000041", "normal"}, -1,
+                               PUT, oss);
+                    REQUIRE(
+                        oss.str() ==
+                        "currentsource [1, fix, 0x0000000000000041, normal]\n");
+                }
+                {
+                    std::ostringstream oss;
+                    proxy.Call("currentsource", {"0"}, -1, PUT, oss);
+                    REQUIRE(oss.str() == "currentsource [0]\n");
+                }
+                {
+                    std::ostringstream oss;
+                    proxy.Call("currentsource", {}, -1, GET, oss);
+                    REQUIRE(oss.str() == "currentsource [disabled]\n");
+                }
+                {
+                    std::ostringstream oss;
+                    proxy.Call("currentsource",
+                               {"1", "nofix", "0x0000000000000041", "normal"},
+                               -1, PUT, oss);
+                    REQUIRE(oss.str() == "currentsource [1, nofix, "
+                                         "0x0000000000000041, normal]\n");
+                }
+                {
+                    std::ostringstream oss;
+                    proxy.Call("currentsource", {}, -1, GET, oss);
+                    REQUIRE(oss.str() == "currentsource [enabled, nofix, "
+                                         "0x0000000000000041, normal]\n");
+                }
+                {
+                    std::ostringstream oss;
+                    proxy.Call("currentsource",
+                               {"1", "nofix", "0x0000000000000041", "low"}, -1,
+                               PUT, oss);
+                    REQUIRE(
+                        oss.str() ==
+                        "currentsource [1, nofix, 0x0000000000000041, low]\n");
+                }
+            }
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setCurrentSource(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("currentsource", {}, -1, GET));
+    }
+}
+
 /** temperature */
 
 TEST_CASE("templist", "[.cmd]") {

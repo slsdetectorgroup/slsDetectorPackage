@@ -707,6 +707,14 @@ void Detector::setFilterResistor(int value, Positions pos) {
     pimpl->Parallel(&Module::setFilterResistor, pos, value);
 }
 
+Result<defs::currentSrcParameters>
+Detector::getCurrentSource(Positions pos) const {
+    return pimpl->Parallel(&Module::getCurrentSource, pos);
+}
+
+void Detector::setCurrentSource(defs::currentSrcParameters par, Positions pos) {
+    pimpl->Parallel(&Module::setCurrentSource, pos, par);
+}
 // Acquisition
 
 void Detector::acquire() { pimpl->acquire(); }
@@ -1618,14 +1626,6 @@ Result<bool> Detector::getCDSGain(Positions pos) const {
 
 void Detector::setCDSGain(bool value, Positions pos) {
     pimpl->Parallel(&Module::setCDSGain, pos, value);
-}
-
-Result<bool> Detector::getCurrentSource(Positions pos) const {
-    return pimpl->Parallel(&Module::getCurrentSource, pos);
-}
-
-void Detector::setCurrentSource(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setCurrentSource, pos, value);
 }
 
 Result<defs::timingSourceType> Detector::getTimingSource(Positions pos) const {

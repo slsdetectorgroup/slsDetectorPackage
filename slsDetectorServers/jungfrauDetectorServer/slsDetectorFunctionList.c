@@ -479,6 +479,7 @@ void setupDetector() {
         setFilterResistor(DEFAULT_FILTER_RESISTOR);
         setFilterCell(DEFAULT_FILTER_CELL);
     }
+    disableCurrentSource();
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -2082,6 +2083,90 @@ void setFilterCell(int iCell) {
     bus_w(addr, bus_r(addr) &~ CONFIG_V11_FLTR_CLL_MSK);
     bus_w(addr, bus_r(addr) | ((value << CONFIG_V11_FLTR_CLL_OFST) & CONFIG_V11_FLTR_CLL_MSK));
     LOG(logINFO, ("Setting Filter Cell to %d [Reg:0x%x]\n", iCell, bus_r(addr)));
+}
+
+void disableCurrentSource() {
+    LOG(logINFO, ("Disabling Current Source\n"));
+    bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_ENBL_MSK);
+}
+
+void enableCurrentSource(int fix, uint64_t select, int normal) {
+    if (chipVersion == 11) {
+        LOG(logINFO, ("Enabling current source [fix:%d, select:%lld]\n", fix,
+                      (long long int)select));
+    } else {
+        LOG(logINFO,
+            ("Enabling current source [fix:%d, select:0x%llx, normal:%d]\n",
+             fix, (long long int)select, normal));
+    }
+    disableCurrentSource();
+    LOG(logINFO, ("\tSetting current source parameters\n"));
+    // fix
+    if (fix) {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_CRRNT_SRC_CLMN_FIX_MSK);
+    } else {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_FIX_MSK);
+    }
+    if (chipVersion == 10) {
+        // select
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_SLCT_MSK);
+        bus_w(DAQ_REG,
+              bus_r(DAQ_REG) | ((select << DAQ_CRRNT_SRC_CLMN_SLCT_OFST) &
+                                DAQ_CRRNT_SRC_CLMN_SLCT_MSK));
+
+    } else {
+        // select
+        set64BitReg(select, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+        // normal
+        if (normal) {
+            bus_w(CONFIG_V11_REG,
+                  bus_r(CONFIG_V11_REG) & ~CONFIG_V11_CRRNT_SRC_LOW_MSK);
+        } else {
+            bus_w(CONFIG_V11_REG,
+                  bus_r(CONFIG_V11_REG) | CONFIG_V11_CRRNT_SRC_LOW_MSK);
+        }
+    }
+    // validating before enabling current source
+    if (getFixCurrentSource() != fix || getSelectCurrentSource() != select) {
+        LOG(logERROR,
+            ("Could not set fix or select parameters for current source.\n"))
+        return;
+    }
+    // not validating normal because the status register might not update during
+    // acquisition
+
+    // enabling current source
+    LOG(logINFO, ("Enabling Current Source\n"));
+    bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_CRRNT_SRC_ENBL_MSK);
+}
+
+int getCurrentSource() {
+    return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_ENBL_MSK) >>
+            DAQ_CRRNT_SRC_ENBL_OFST);
+}
+
+int getFixCurrentSource() {
+    return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_FIX_MSK) >>
+            DAQ_CRRNT_SRC_CLMN_FIX_OFST);
+}
+
+int getNormalCurrentSource() {
+    if (getChipVersion() == 11) {
+        int low = ((bus_r(CONFIG_V11_STATUS_REG) &
+                    CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK) >>
+                   CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST);
+        return (low == 0 ? 1 : 0);
+    }
+    return -1;
+}
+
+uint64_t getSelectCurrentSource() {
+    if (chipVersion == 10) {
+        return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_SLCT_MSK) >>
+                DAQ_CRRNT_SRC_CLMN_SLCT_OFST);
+    } else {
+        return get64BitReg(CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+    }
 }
 
 int getTenGigaFlowControl() {

@@ -803,6 +803,7 @@ class CmdProxy {
         {"extsig", &CmdProxy::ExternalSignal},
         {"parallel", &CmdProxy::parallel},
         {"filterresistor", &CmdProxy::filterresistor},
+        {"currentsource", &CmdProxy::CurrentSource},
 
         /** temperature */
         {"templist", &CmdProxy::templist},
@@ -951,7 +952,6 @@ class CmdProxy {
         {"vetofile", &CmdProxy::VetoFile},
         {"burstmode", &CmdProxy::BurstMode},
         {"cdsgain", &CmdProxy::cdsgain},
-        {"currentsource", &CmdProxy::currentsource},
         {"timingsource", &CmdProxy::timingsource},
         {"veto", &CmdProxy::veto},
         {"vetostream", &CmdProxy::VetoStreaming},
@@ -1097,6 +1097,7 @@ class CmdProxy {
     std::string MaxClockPhaseShift(int action);
     std::string ClockDivider(int action);
     std::string ExternalSignal(int action);
+    std::string CurrentSource(int action);
     /** temperature */
     std::string TemperatureValues(int action);
     /* dacs */
@@ -1920,11 +1921,6 @@ class CmdProxy {
         cdsgain, getCDSGain, setCDSGain, StringTo<bool>,
         "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default "
         "is disabled.");
-
-    INTEGER_COMMAND_VEC_ID(
-        currentsource, getCurrentSource, setCurrentSource, StringTo<int>,
-        "[0, 1]\n\t[Gotthard2] Enable or disable current source. "
-        "Default is disabled.");
 
     INTEGER_COMMAND_VEC_ID(
         timingsource, getTimingSource, setTimingSource,

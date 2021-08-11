@@ -172,7 +172,8 @@ class Module : public virtual slsDetectorDefs {
     void setParallelMode(const bool enable);
     int getFilterResistor() const;
     void setFilterResistor(int value);
-
+    defs::currentSrcParameters getCurrentSource() const;
+    void setCurrentSource(defs::currentSrcParameters par);
     /**************************************************
      *                                                *
      *    Acquisition                                 *
@@ -412,8 +413,6 @@ class Module : public virtual slsDetectorDefs {
     void setBurstMode(burstMode value);
     bool getCDSGain() const;
     void setCDSGain(bool value);
-    bool getCurrentSource() const;
-    void setCurrentSource(bool value);
     slsDetectorDefs::timingSourceType getTimingSource() const;
     void setTimingSource(slsDetectorDefs::timingSourceType value);
     bool getVeto() const;

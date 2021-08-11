@@ -64,9 +64,6 @@
 #define READOUT_PLL_VCO_FREQ_HZ (866666688) // 866 MHz
 #define SYSTEM_PLL_VCO_FREQ_HZ  (722222224) // 722 MHz
 
-#define ALGORITHM_HITS_VAL (0x0)
-#define ALGORITHM_RAW_VAL  (0x7)
-
 #define VETO_DATA_SIZE          (160)
 typedef struct {
     uint64_t frameNumber;

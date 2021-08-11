@@ -620,9 +620,16 @@ int readConfigFile() {
         return FAIL;
     }
 
+    // file doesnt exist (give warning and assume chipv1.0)
+    if (access(fname, F_OK) != 0) {
+        LOG(logWARNING, ("Could not find config file. Assuming chipv1.0\n"));
+        return OK;
+    }
+
     // open config file
     FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
+
         sprintf(initErrorMessage,
                 "Could not open on-board detector server config file [%s].\n",
                 CONFIG_FILE);

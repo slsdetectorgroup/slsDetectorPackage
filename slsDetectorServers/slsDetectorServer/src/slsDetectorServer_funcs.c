@@ -6797,52 +6797,60 @@ int set_current_source(int file_des) {
             }
 #else
             int chipVersion = getChipVersion();
-            if (chipVersion == 11) {
-                // require both
-                if ((fix != 0 && fix != 1) || (normal != 0 && normal != 1)) {
-                    ret = FAIL;
-                    strcpy(mess,
-                        "Could not enable current source. Invalid value for parameters (fix or normal). Options: 0 or 1.\n");
-                    LOG(logERROR, (mess));
+            if (ret == OK) {
+                if (chipVersion == 11) {
+                    // require both
+                    if ((fix != 0 && fix != 1) ||
+                        (normal != 0 && normal != 1)) {
+                        ret = FAIL;
+                        strcpy(mess, "Could not enable current source. Invalid "
+                                     "or insufficient parameters (fix or "
+                                     "normal). or Options: 0 or 1.\n");
+                        LOG(logERROR, (mess));
+                    }
                 }
-            }
-            // chipv1.0
-            else {
-                // require only fix
-                if (fix != 0 && fix != 1) {
-                    ret = FAIL;
-                    strcpy(mess,
-                        "Could not enable current source. Invalid value for parameter (fix). Options: 0 or 1.\n");
-                    LOG(logERROR, (mess));
-                } else if (normal != -1) {
-                    ret = FAIL;
-                    strcpy(mess,
-                        "Could not enable current source. Invalid parmaeter (normal). Require only fix and select for chipv1.0.\n");
-                    LOG(logERROR, (mess));
-                }
-                // select can only be 0-63
-                else if (select > MAX_SELECT_CHIP10_VAL) {
-                    ret = FAIL;
-                    strcpy(mess,
-                        "Could not enable current source. Invalid value for parameter (select). Options: 0-63.\n");
-                    LOG(logERROR, (mess));
+                // chipv1.0
+                else {
+                    // require only fix
+                    if (fix != 0 && fix != 1) {
+                        ret = FAIL;
+                        strcpy(mess,
+                               "Could not enable current source. Invalid value for parameter (fix). Options: 0 or 1.\n");
+                        LOG(logERROR, (mess));
+                    } else if (normal != -1) {
+                        ret = FAIL;
+                        strcpy(mess, "Could not enable current source. Invalid "
+                                     "parmaeter (normal). Require only fix and "
+                                     "select for chipv1.0.\n");
+                        LOG(logERROR, (mess));
+                    }
+                    // select can only be 0-63
+                    else if (select > MAX_SELECT_CHIP10_VAL) {
+                        ret = FAIL;
+                        strcpy(mess,
+                               "Could not enable current source. Invalid value "
+                               "for parameter (select). Options: 0-63.\n");
+                        LOG(logERROR, (mess));
+                    }
                 }
             }
 #endif
         }
 
+        if (ret == OK) {
 #ifdef JUNGFRAUD
-        if (enable == 0) {
-            disableCurrentSource();
-        } else {
-            enableCurrentSource(fix, select, normal);
-        }
+            if (enable == 0) {
+                disableCurrentSource();
+            } else {
+                enableCurrentSource(fix, select, normal);
+            }
 #else
-        setCurrentSource(enable);
+            setCurrentSource(enable);
 #endif
-        int retval = getCurrentSource();
-        LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
-        validate(&ret, mess, enable, retval, "set current source enable", DEC);
+            int retval = getCurrentSource();
+            LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
+            validate(&ret, mess, enable, retval, "set current source enable", DEC);
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -6863,10 +6871,14 @@ int get_current_source(int file_des) {
     retvals[0] = getCurrentSource();
     LOG(logDEBUG1, ("current source enable retval: %u\n", retvals[0]));
 #ifdef JUNGFRAUD
-    retvals[1] = getFixCurrentSource();
-    retvals[2] = getNormalCurrentSource();
-    retval_select = getSelectCurrentSource();
-    LOG(logDEBUG1, ("current source parameters retval: [fix:%d, normal:%d, select:%lld]\n", retvals[1], retvals[2], retval_select));
+    if (retvals[0]) {
+        retvals[1] = getFixCurrentSource();
+        retvals[2] = getNormalCurrentSource();
+        retval_select = getSelectCurrentSource();
+    }
+    LOG(logDEBUG1, ("current source parameters retval: [enable:%d fix:%d, "
+                    "normal:%d, select:%lld]\n",
+                    retvals[0], retvals[1], retvals[2], retval_select));
 #endif
 #endif
     Server_SendResult(file_des, INT32, NULL, 0);

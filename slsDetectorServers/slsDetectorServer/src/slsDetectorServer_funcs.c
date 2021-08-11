@@ -8497,7 +8497,7 @@ int set_veto_algorithm(int file_des) {
 
     enum vetoAlgorithm alg = args[0];
     enum streamingInterface interface = args[1];
-    LOG(logINFOBLUE, ("Setting vetoalgorithm (interface: %d): %u\n", (int)interface,
+    LOG(logDEBUG1, ("Setting vetoalgorithm (interface: %d): %u\n", (int)interface,
                   (int)alg));
 
 #ifndef GOTTHARD2D

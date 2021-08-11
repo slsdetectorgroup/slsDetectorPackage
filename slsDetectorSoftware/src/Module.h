@@ -90,6 +90,7 @@ class Module : public virtual slsDetectorDefs {
     int64_t getFirmwareVersion() const;
     int64_t getDetectorServerVersion() const;
     int64_t getSerialNumber() const;
+    void setSerialNumber(const int64_t value);
     int64_t getReceiverSoftwareVersion() const;
     static detectorType getTypeFromDetector(const std::string &hostname,
                                             int cport = DEFAULT_PORTNO);
@@ -174,6 +175,9 @@ class Module : public virtual slsDetectorDefs {
     void setFilterResistor(int value);
     defs::currentSrcParameters getCurrentSource() const;
     void setCurrentSource(defs::currentSrcParameters par);
+    int getDBITPipeline() const;
+    void setDBITPipeline(int value);
+
     /**************************************************
      *                                                *
      *    Acquisition                                 *
@@ -454,8 +458,8 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
     int getNumberOfAnalogSamples() const;
     void setNumberOfAnalogSamples(int value);
-    int getPipeline(int clkIndex) const;
-    void setPipeline(int clkIndex, int value);
+    int getADCPipeline() const;
+    void setADCPipeline(int value);
     uint32_t getADCEnableMask() const;
     void setADCEnableMask(uint32_t mask);
     uint32_t getTenGigaADCEnableMask() const;

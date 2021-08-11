@@ -608,8 +608,10 @@ std::string ToString(const defs::streamingInterface s) {
 
 std::string ToString(const defs::vetoAlgorithm s) {
     switch (s) {
-    case defs::DEFAULT_ALGORITHM:
-        return std::string("default");
+    case defs::ALG_HITS:
+        return std::string("hits");
+    case defs::ALG_RAW:
+        return std::string("raw");
     default:
         return std::string("Unknown");
     }
@@ -1014,8 +1016,10 @@ template <> defs::streamingInterface StringTo(const std::string &s) {
 }
 
 template <> defs::vetoAlgorithm StringTo(const std::string &s) {
-    if (s == "default")
-        return defs::DEFAULT_ALGORITHM;
+    if (s == "hits")
+        return defs::ALG_HITS;
+    if (s == "raw")
+        return defs::ALG_RAW;
     throw sls::RuntimeError("Unknown veto algorithm " + s);
 }
 

@@ -758,7 +758,7 @@ class CmdProxy {
         {"firmwareversion", &CmdProxy::FirmwareVersion},
         {"detectorserverversion", &CmdProxy::detectorserverversion},
         {"rx_version", &CmdProxy::rx_version},
-        {"serialnumber", &CmdProxy::serialnumber},
+        {"serialnumber", &CmdProxy::SerialNumber},
         {"type", &CmdProxy::type},
         {"nmod", &CmdProxy::nmod},
         {"detsize", &CmdProxy::DetectorSize},
@@ -804,6 +804,7 @@ class CmdProxy {
         {"parallel", &CmdProxy::parallel},
         {"filterresistor", &CmdProxy::filterresistor},
         {"currentsource", &CmdProxy::CurrentSource},
+        {"dbitpipeline", &CmdProxy::dbitpipeline},
 
         /** temperature */
         {"templist", &CmdProxy::templist},
@@ -986,7 +987,6 @@ class CmdProxy {
         {"dsamples", &CmdProxy::dsamples},
         {"romode", &CmdProxy::romode},
         {"dbitclk", &CmdProxy::dbitclk},
-        {"dbitpipeline", &CmdProxy::dbitpipeline},
         {"v_a", &CmdProxy::v_a},
         {"v_b", &CmdProxy::v_b},
         {"v_c", &CmdProxy::v_c},
@@ -1078,6 +1078,7 @@ class CmdProxy {
     std::string Hostname(int action);
     std::string VirtualServer(int action);
     std::string FirmwareVersion(int action);
+    std::string SerialNumber(int action);
     std::string Versions(int action);
     std::string PackageVersion(int action);
     std::string ClientVersion(int action);
@@ -1190,9 +1191,6 @@ class CmdProxy {
 
     GET_COMMAND_HEX(rx_version, getReceiverVersion,
                     "\n\tReceiver version in format [0xYYMMDD].");
-
-    GET_COMMAND_HEX(serialnumber, getSerialNumber,
-                    "\n\tSerial number of detector.");
 
     GET_COMMAND(type, getDetectorType,
                 "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, "
@@ -1355,6 +1353,12 @@ class CmdProxy {
         "[value] [Gotthard2][Jungfrau] Set filter resistor. Increasing values "
         "for increasing resistance.\n\t[Gotthard2] Options: [0|1|2|3]. Default "
         "is 0.\n\t[Jungfrau] Options: [0|1]. Default is 1.");
+
+    INTEGER_COMMAND_VEC_ID(dbitpipeline, getDBITPipeline, setDBITPipeline,
+                           StringTo<int>,
+                           "[n_value]\n\t[Ctb][Gotthard2] Pipeline of the "
+                           "clock for latching digital bits.\n\t[Gotthard2] "
+                           "Options: 0-7\n\t[CTB] Options: 0-255");
 
     /** temperature */
     GET_COMMAND_NOID(
@@ -1993,10 +1997,6 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         dbitclk, getDBITClock, setDBITClock, StringTo<int>,
         "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz.");
-
-    INTEGER_COMMAND_VEC_ID(
-        dbitpipeline, getDBITPipeline, setDBITPipeline, StringTo<int>,
-        "[n_value]\n\t[Ctb] Pipeline of the clock for latching digital bits.");
 
     INTEGER_IND_COMMAND(v_a, getVoltage, setVoltage, StringTo<int>,
                         defs::V_POWER_A,

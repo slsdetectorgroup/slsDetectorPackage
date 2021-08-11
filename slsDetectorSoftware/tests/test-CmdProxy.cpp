@@ -105,7 +105,22 @@ TEST_CASE("serialnumber", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("serialnumber", {}, -1, GET));
-    REQUIRE_THROWS(proxy.Call("serialnumber", {"0"}, -1, PUT));
+    if (det.getDetectorType().squash() == defs::GOTTHARD2) {
+        auto prev_val = det.getSerialNumber();
+        std::ostringstream oss1, oss2, oss3;
+        proxy.Call("serialnumber", {"0x5d"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "serialnumber 0x5d\n");
+        proxy.Call("serialnumber", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "serialnumber 0x5d\n");
+        proxy.Call("serialnumber", {"0xffff"}, -1, PUT, oss3);
+        REQUIRE(oss3.str() == "serialnumber 0xffff\n");
+        REQUIRE_THROWS(proxy.Call("serialnumber", {"65536"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            det.setSerialNumber(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("serialnumber", {"0"}, -1, PUT));
+    }
 }
 
 TEST_CASE("type", "[.cmd]") {
@@ -1420,6 +1435,56 @@ TEST_CASE("filterresistor", "[.cmd]") {
         }
     } else {
         REQUIRE_THROWS(proxy.Call("filterresistor", {}, -1, GET));
+    }
+}
+
+TEST_CASE("dbitpipeline", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::GOTTHARD2) {
+        auto prev_val = det.getDBITPipeline();
+        {
+            std::ostringstream oss;
+            proxy.Call("dbitpipeline", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "dbitpipeline 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("dbitpipeline", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "dbitpipeline 0\n");
+        }
+        if (det_type == defs::CHIPTESTBOARD) {
+            {
+                std::ostringstream oss;
+                proxy.Call("dbitpipeline", {"15"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "dbitpipeline 15\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("dbitpipeline", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "dbitpipeline 15\n");
+            }
+            REQUIRE_THROWS(proxy.Call("dbitpipeline", {"256"}, -1, PUT));
+        } else {
+            {
+                std::ostringstream oss;
+                proxy.Call("dbitpipeline", {"7"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "dbitpipeline 7\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("dbitpipeline", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "dbitpipeline 7\n");
+            }
+            REQUIRE_THROWS(proxy.Call("dbitpipeline", {"8"}, -1, PUT));
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDBITPipeline(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("dbitpipeline", {}, -1, GET));
     }
 }
 

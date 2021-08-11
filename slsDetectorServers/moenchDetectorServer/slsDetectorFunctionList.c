@@ -550,7 +550,7 @@ void setupDetector() {
         LOG(logERROR, ("%s\n\n", initErrorMessage));
         initError = FAIL;
     }
-    setPipeline(ADC_CLK, DEFAULT_PIPELINE);
+    setADCPipeline(DEFAULT_PIPELINE);
     if (initError != FAIL) {
         initError = loadPatternFile(DEFAULT_PATTERN_FILE, initErrorMessage);
     }
@@ -1562,34 +1562,22 @@ void configureSyncFrequency(enum CLKINDEX ind) {
         setFrequency(SYNC_CLK, min);
 }
 
-// adc pipeline only
-void setPipeline(enum CLKINDEX ind, int val) {
-    if (ind != ADC_CLK) {
-        LOG(logERROR, ("Unknown clock index %d to set pipeline\n", ind));
-        return;
-    }
+void setADCPipeline(int val) {
     if (val < 0) {
         return;
     }
-    LOG(logINFO, ("Setting adc clock (%d) Pipeline to %d\n", ADC_CLK, val));
-    uint32_t offset = ADC_OFFSET_ADC_PPLN_OFST;
-    uint32_t mask = ADC_OFFSET_ADC_PPLN_MSK;
+    LOG(logINFO, ("Setting adc pipeline to %d\n", val));
     uint32_t addr = ADC_OFFSET_REG;
-    // reset value
-    bus_w(addr, bus_r(addr) & ~mask);
-    // set value
-    bus_w(addr, bus_r(addr) | ((val << offset) & mask));
-    LOG(logDEBUG1, (" adc clock (%d) Offset: 0x%8x\n", ADC_CLK, bus_r(addr)));
+    bus_w(addr, bus_r(addr) & ~ADC_OFFSET_ADC_PPLN_MSK);
+    bus_w(addr, bus_r(addr) | ((val << ADC_OFFSET_ADC_PPLN_OFST) &
+                               ADC_OFFSET_ADC_PPLN_MSK));
 }
 
-int getPipeline(enum CLKINDEX ind) {
-    if (ind != ADC_CLK) {
-        LOG(logERROR, ("Unknown clock index %d to get pipeline\n", ind));
-        return -1;
-    }
+int getADCPipeline() {
     return ((bus_r(ADC_OFFSET_REG) & ADC_OFFSET_ADC_PPLN_MSK) >>
             ADC_OFFSET_ADC_PPLN_OFST);
 }
+
 
 /* aquisition */
 

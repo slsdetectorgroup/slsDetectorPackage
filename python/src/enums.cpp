@@ -303,8 +303,8 @@ void init_enums(py::module &m) {
                  &operator&));
 
     py::enum_<slsDetectorDefs::vetoAlgorithm>(Defs, "vetoAlgorithm")
-        .value("DEFAULT_ALGORITHM",
-               slsDetectorDefs::vetoAlgorithm::DEFAULT_ALGORITHM)
+        .value("ALG_HITS", slsDetectorDefs::vetoAlgorithm::ALG_HITS)
+        .value("ALG_RAW", slsDetectorDefs::vetoAlgorithm::ALG_RAW)
         .export_values();
 
     py::enum_<slsDetectorDefs::gainMode>(Defs, "gainMode")

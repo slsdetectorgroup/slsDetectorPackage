@@ -631,34 +631,46 @@ TEST_CASE("vetoalg", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
-        auto prev_val_3g = det.getVetoAlgorithm(defs::streamingInterface::LOW_LATENCY_LINK);
+        auto prev_val_lll =
+            det.getVetoAlgorithm(defs::streamingInterface::LOW_LATENCY_LINK);
         auto prev_val_10g =
             det.getVetoAlgorithm(defs::streamingInterface::ETHERNET_10GB);
         {
             std::ostringstream oss;
-            proxy.Call("vetoalg", {"default", "lll"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "vetoalg default lll\n");
+            proxy.Call("vetoalg", {"hits", "lll"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "vetoalg hits lll\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("vetoalg", {"lll"}, -1, GET, oss);
-            REQUIRE(oss.str() == "vetoalg default lll\n");
+            REQUIRE(oss.str() == "vetoalg hits lll\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("vetoalg", {"default", "10gbe"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "vetoalg default 10gbe\n");
+            proxy.Call("vetoalg", {"hits", "10gbe"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "vetoalg hits 10gbe\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("vetoalg", {"10gbe"}, -1, GET, oss);
-            REQUIRE(oss.str() == "vetoalg default 10gbe\n");
+            REQUIRE(oss.str() == "vetoalg hits 10gbe\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("vetoalg", {"raw", "lll"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "vetoalg raw lll\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("vetoalg", {"raw", "10gbe"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "vetoalg raw 10gbe\n");
         }
         REQUIRE_THROWS(
             proxy.Call("vetoalg", {"default", "lll", "10gbe"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("vetoalg", {"default", "none"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("vetoalg", {"hits", "none"}, -1, PUT));
         for (int i = 0; i != det.size(); ++i) {
-            det.setVetoAlgorithm(prev_val_3g[i], defs::streamingInterface::LOW_LATENCY_LINK,
+            det.setVetoAlgorithm(prev_val_lll[i],
+                                 defs::streamingInterface::LOW_LATENCY_LINK,
                                  {i});
             det.setVetoAlgorithm(prev_val_10g[i],
                                  defs::streamingInterface::ETHERNET_10GB, {i});

@@ -49,6 +49,7 @@
 #define DEFAULT_SETTINGS            (DYNAMICGAIN)
 #define DEFAULT_CURRENT_SOURCE      (0)
 #define DEFAULT_TIMING_SOURCE       (TIMING_INTERNAL)
+#define DEFAULT_ALGORITHM           (ALG_HITS)
 
 #define DEFAULT_READOUT_C0 (6)  //(144444448) // rdo_clk, 144 MHz
 #define DEFAULT_READOUT_C1 (6)  //(144444448) // rdo_x2_clk, 144 MHz
@@ -62,6 +63,7 @@
 #define INT_SYSTEM_C0_FREQUENCY (144000000) // 144 MHz
 #define READOUT_PLL_VCO_FREQ_HZ (866666688) // 866 MHz
 #define SYSTEM_PLL_VCO_FREQ_HZ  (722222224) // 722 MHz
+
 #define VETO_DATA_SIZE          (160)
 typedef struct {
     uint64_t frameNumber;

@@ -93,6 +93,11 @@ int getChipVersion();
 void readDetectorNumber();
 #endif
 u_int32_t getDetectorNumber();
+#ifdef GOTTHARD2D
+uint16_t getSerialNumber();
+void setSerialNumber(uint16_t arg);
+int getMaxSerialNumber();
+#endif
 u_int64_t getDetectorMAC();
 u_int32_t getDetectorIP();
 #ifdef GOTTHARDD
@@ -430,11 +435,13 @@ int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
 int setFrequency(enum CLKINDEX ind, int val);
 int getFrequency(enum CLKINDEX ind);
 void configureSyncFrequency(enum CLKINDEX ind);
-void setPipeline(enum CLKINDEX ind, int val);
-int getPipeline(enum CLKINDEX ind);
+void setADCPipeline(int val);
+int getADCPipeline();
 #endif
 
 #ifdef CHIPTESTBOARDD
+void setDBITPipeline(int val);
+int getDBITPipeline();
 int setLEDEnable(int enable);
 void setDigitalIODelay(uint64_t pinMask, int delay);
 #endif
@@ -519,6 +526,8 @@ int getClockDivider(enum CLKINDEX ind);
 #elif GOTTHARD2D
 int checkDetectorType();
 int powerChip(int on);
+void setDBITPipeline(int val);
+int getDBITPipeline();
 int setPhase(enum CLKINDEX ind, int val, int degrees);
 int getPhase(enum CLKINDEX ind, int degrees);
 int getMaxPhase(enum CLKINDEX ind);
@@ -554,7 +563,8 @@ int getVeto();
 void setVetoStream(int value);
 int getVetoStream();
 enum vetoAlgorithm getVetoAlgorithm(enum streamingInterface interface);
-void setVetoAlgorithm(enum streamingInterface interface, enum vetoAlgorithm alg);
+void setVetoAlgorithm(enum vetoAlgorithm alg,
+                      enum streamingInterface interface);
 void setBadChannels(int nch, int *channels);
 int *getBadChannels(int *nch);
 #endif

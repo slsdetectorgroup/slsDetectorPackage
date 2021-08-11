@@ -80,6 +80,11 @@ class Detector {
 
     Result<int64_t> getSerialNumber(Positions pos = {}) const;
 
+    /** [Gotthard2] Can overwrite and is sent out as mod_id in
+     * sls_detector_header in header of UDP data packet streamed out from
+     * detector.*/
+    void setSerialNumber(const int64_t value, Positions pos = {});
+
     Result<int64_t> getReceiverVersion(Positions pos = {}) const;
 
     /** Options: EIGER, JUNGFRAU, GOTTHARD, MOENCH, MYTHEN3, GOTTHARD2,
@@ -495,6 +500,12 @@ class Detector {
     /** [Gotthard2][Jungfrau] Please refer documentation on currentSrcParameters
      * (sls_detector_defs.h) on the structure and its members */
     void setCurrentSource(defs::currentSrcParameters par, Positions pos = {});
+
+    /** [CTB][Gotthard2] */
+    Result<int> getDBITPipeline(Positions pos = {}) const;
+
+    /** [CTB] Options: 0-255 \n [Gotthard2] Options: 0-7 */
+    void setDBITPipeline(int value, Positions pos = {});
 
     ///@{
 
@@ -1337,7 +1348,7 @@ class Detector {
     getVetoAlgorithm(const defs::streamingInterface value,
                      Positions pos = {}) const;
 
-    /** [Gotthard2] Options(vetoAlgorithm): DEFAULT_ALGORITHM.
+    /** [Gotthard2] Options(vetoAlgorithm): ALG_HITS, ALG_RAW.
      * Options(streamingInterface): LOW_LATENCY_LINK, ETHERNET_10GB */
     void setVetoAlgorithm(const defs::vetoAlgorithm alg,
                           const defs::streamingInterface value,
@@ -1502,13 +1513,7 @@ class Detector {
     /** [CTB] */
     void setDBITClock(int value_in_MHz, Positions pos = {});
 
-    /** [CTB] */
-    Result<int> getDBITPipeline(Positions pos = {}) const;
-
-    /** [CTB] */
-    void setDBITPipeline(int value, Positions pos = {});
-
-    /**
+     /**
      * [CTB] mV
      * Options: V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D, V_POWER_IO */
     Result<int> getMeasuredVoltage(defs::dacIndex index,

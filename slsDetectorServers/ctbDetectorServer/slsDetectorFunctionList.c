@@ -1840,44 +1840,36 @@ void configureSyncFrequency(enum CLKINDEX ind) {
         setFrequency(SYNC_CLK, min);
 }
 
-void setPipeline(enum CLKINDEX ind, int val) {
-    if (ind != ADC_CLK && ind != DBIT_CLK) {
-        LOG(logERROR, ("Unknown clock index %d to set pipeline\n", ind));
-        return;
-    }
+void setADCPipeline(int val) {
     if (val < 0) {
         return;
     }
-    char *clock_names[] = {CLK_NAMES};
-    LOG(logINFO,
-        ("Setting %s clock (%d) Pipeline to %d\n", clock_names[ind], ind, val));
-    uint32_t offset = ADC_OFFSET_ADC_PPLN_OFST;
-    uint32_t mask = ADC_OFFSET_ADC_PPLN_MSK;
-    if (ind == DBIT_CLK) {
-        offset = ADC_OFFSET_DBT_PPLN_OFST;
-        mask = ADC_OFFSET_DBT_PPLN_MSK;
-    }
-
+    LOG(logINFO, ("Setting adc pipeline to %d\n", val));
     uint32_t addr = ADC_OFFSET_REG;
-    // reset value
-    bus_w(addr, bus_r(addr) & ~mask);
-    // set value
-    bus_w(addr, bus_r(addr) | ((val << offset) & mask));
-    LOG(logDEBUG1,
-        (" %s clock (%d) Offset: 0x%8x\n", clock_names[ind], ind, bus_r(addr)));
+    bus_w(addr, bus_r(addr) & ~ADC_OFFSET_ADC_PPLN_MSK);
+    bus_w(addr, bus_r(addr) | ((val << ADC_OFFSET_ADC_PPLN_OFST) &
+                               ADC_OFFSET_ADC_PPLN_MSK));
 }
 
-int getPipeline(enum CLKINDEX ind) {
-    if (ind != ADC_CLK && ind != DBIT_CLK) {
-        LOG(logERROR, ("Unknown clock index %d to get pipeline\n", ind));
-        return -1;
-    }
-    if (ind == DBIT_CLK) {
-        return ((bus_r(ADC_OFFSET_REG) & ADC_OFFSET_DBT_PPLN_MSK) >>
-                ADC_OFFSET_DBT_PPLN_OFST);
-    }
+int getADCPipeline() {
     return ((bus_r(ADC_OFFSET_REG) & ADC_OFFSET_ADC_PPLN_MSK) >>
             ADC_OFFSET_ADC_PPLN_OFST);
+}
+
+void setDBITPipeline(int val) {
+    if (val < 0) {
+        return;
+    }
+    LOG(logINFO, ("Setting dbit pipeline to %d\n", val));
+    uint32_t addr = ADC_OFFSET_REG;
+    bus_w(addr, bus_r(addr) & ~ADC_OFFSET_DBT_PPLN_MSK);
+    bus_w(addr, bus_r(addr) | ((val << ADC_OFFSET_DBT_PPLN_OFST) &
+                               ADC_OFFSET_DBT_PPLN_MSK));
+}
+
+int getDBITPipeline() {
+    return ((bus_r(ADC_OFFSET_REG) & ADC_OFFSET_DBT_PPLN_MSK) >>
+            ADC_OFFSET_DBT_PPLN_OFST);
 }
 
 int setLEDEnable(int enable) {

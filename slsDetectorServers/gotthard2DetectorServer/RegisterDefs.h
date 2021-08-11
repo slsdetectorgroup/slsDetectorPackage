@@ -90,16 +90,16 @@
 
 #define CONFIG_VETO_ENBL_OFST               (0)
 #define CONFIG_VETO_ENBL_MSK                (0x00000001 << CONFIG_VETO_ENBL_OFST)
-#define CONFIG_VETO_CH_3GB_ALG_OFST         (8)
-#define CONFIG_VETO_CH_3GB_ALG_MSK          (0x00000007 << CONFIG_VETO_CH_3GB_ALG_OFST)
-#define CONFIG_VETO_CH_3GB_ALG_DEFAULT_VAL  ((0x0 << CONFIG_VETO_CH_3GB_ALG_OFST) & CONFIG_VETO_CH_3GB_ALG_MSK)
-#define CONFIG_VETO_CH_3GB_ENBL_OFST        (11)
-#define CONFIG_VETO_CH_3GB_ENBL_MSK         (0x00000001 << CONFIG_VETO_CH_3GB_ENBL_OFST)
-#define CONFIG_VETO_CH_10GB_ALG_OFST        (12)
-#define CONFIG_VETO_CH_10GB_ALG_MSK         (0x00000007 << CONFIG_VETO_CH_10GB_ALG_OFST)
-#define CONFIG_VETO_CH_10GB_ALG_DEFAULT_VAL ((0x0 << CONFIG_VETO_CH_10GB_ALG_OFST) & CONFIG_VETO_CH_10GB_ALG_MSK)
-#define CONFIG_VETO_CH_10GB_ENBL_OFST       (15)
-#define CONFIG_VETO_CH_10GB_ENBL_MSK        (0x00000001 << CONFIG_VETO_CH_10GB_ENBL_OFST)
+#define CONFIG_VETO_CH_LLL_ALG_OFST         (8)
+#define CONFIG_VETO_CH_LLL_ALG_MSK          (0x00000007 << CONFIG_VETO_CH_LLL_ALG_OFST)
+#define CONFIG_VETO_CH_LLL_ENBL_OFST        (11)
+#define CONFIG_VETO_CH_LLL_ENBL_MSK         (0x00000001 << CONFIG_VETO_CH_LLL_ENBL_OFST)
+#define CONFIG_VETO_CH_10GBE_ALG_OFST       (12)
+#define CONFIG_VETO_CH_10GBE_ALG_MSK        (0x00000007 << CONFIG_VETO_CH_10GBE_ALG_OFST)
+#define CONFIG_VETO_CH_10GBE_ENBL_OFST      (15)
+#define CONFIG_VETO_CH_10GBE_ENBL_MSK       (0x00000001 << CONFIG_VETO_CH_10GBE_ENBL_OFST)
+#define ALGORITHM_HITS_VAL                  (0x0)
+#define ALGORITHM_RAW_VAL                   (0x7)
 
 /* Control RW register */
 #define CONTROL_REG                         (0x09 * REG_OFFSET + BASE_CONTROL)
@@ -121,6 +121,13 @@
 
 /** DTA Offset Register */
 #define DTA_OFFSET_REG                      (0x0A * REG_OFFSET + BASE_CONTROL)
+
+
+#define MOD_ID_REG                          (0x0D * REG_OFFSET + BASE_CONTROL)
+
+#define MOD_ID_OFST                         (0)
+#define MOD_ID_MSK                          (0x0000FFFF << MOD_ID_OFST)
+#define MOD_MAX_VAL                         (0xFFFF)
 
 /* ASIC registers --------------------------------------------------*/
 
@@ -163,6 +170,16 @@
 /* ASIC Exptime 64bit Register */
 #define ASIC_CONT_FRAMES_LSB_REG            (0x06 * REG_OFFSET + BASE_ASIC)
 #define ASIC_CONT_FRAMES_MSB_REG            (0x07 * REG_OFFSET + BASE_ASIC)
+
+
+/* ADIF registers --------------------------------------------------*/
+
+/* ADIF Config register */
+#define ADIF_CONFIG_REG                     (0x00 * REG_OFFSET + BASE_ADIF)
+
+#define ADIF_CONFIG_DBIT_PIPELINE_OFST      (4)
+#define ADIF_CONFIG_DBIT_PIPELINE_MSK       (0x00000007 << ADIF_CONFIG_DBIT_PIPELINE_OFST)
+
 
 /* Packetizer -------------------------------------------------------------*/
 

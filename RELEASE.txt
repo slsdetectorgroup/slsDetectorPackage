@@ -67,6 +67,13 @@ filter->filterResistor
 setBottom->setFlipRows
 currentsource expects currentsrcparameters structure instread of bool
 
+g2: 
+updated config file indetector server
+vetoalg
+vetostream
+serialnumber (put)
+dbitpipeline
+
 3. Firmware Requirements
 ========================
         

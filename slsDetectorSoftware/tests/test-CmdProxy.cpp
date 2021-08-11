@@ -1454,8 +1454,9 @@ TEST_CASE("currentsource", "[.cmd]") {
         }
         // jungfrau
         else {
-            auto chipVersion = det.getChipVersion().tsquash(
-                "inconsistent chip versions to test");
+            int chipVersion = det.getChipVersion().tsquash(
+                                  "inconsistent chip versions to test") *
+                              10;
             if (chipVersion == 10) {
                 REQUIRE_THROWS(proxy.Call("currentsource", {"1"}, -1, PUT));
                 REQUIRE_THROWS(

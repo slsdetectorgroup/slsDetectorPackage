@@ -148,6 +148,31 @@ std::ostream &operator<<(std::ostream &os,
     return os << ToString(r);
 }
 
+std::string ToString(const slsDetectorDefs::udpDestination &r) {
+    std::ostringstream oss;
+    oss << '[' << std::endl
+        << "entry " << r.entry << std::endl
+        << "ip " << IpAddr(r.ip) << std::endl
+        << "mac " << MacAddr(r.mac) << std::endl
+        << "port " << r.port << std::endl;
+    if (r.port2 != 0) {
+        oss << "port2 " << r.port2 << std::endl;
+    }
+    if (r.ip2 != 0) {
+        oss << "ip2 " << IpAddr(r.ip2) << std::endl;
+    }
+    if (r.mac2 != 0) {
+        oss << "mac2 " << MacAddr(r.mac2) << std::endl;
+    }
+    oss << ']';
+    return oss.str();
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::udpDestination &r) {
+    return os << ToString(r);
+}
+
 std::string ToString(const defs::runStatus s) {
     switch (s) {
     case defs::ERROR:

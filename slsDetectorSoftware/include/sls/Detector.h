@@ -657,6 +657,11 @@ class Detector {
     /** [Jungfrau] bottom half [Gotthard2] veto debugging */
     void setSourceUDPMAC2(const MacAddr mac, Positions pos = {});
 
+    Result<defs::udpDestination>
+    getDestinationUDPList(const int entry, Positions pos = {}) const;
+
+    void setDestinationUDPList(const defs::udpDestination, const int module_id);
+
     Result<IpAddr> getDestinationUDPIP(Positions pos = {}) const;
 
     /** IP of the interface in receiver that the detector sends data to */

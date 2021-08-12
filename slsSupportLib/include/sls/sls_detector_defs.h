@@ -466,7 +466,7 @@ typedef struct {
         currentSrcParameters() : enable(0), fix(-1), normal(-1), select(0) {}
 
         /** [Gotthard2] enable or disable */
-        currentSrcParameters(bool ena)
+        explicit currentSrcParameters(bool ena)
             : enable(static_cast<int>(ena)), fix(-1), normal(-1), select(0) {}
 
         /** [Jungfrau](chipv1.0) enable current src with fix or no fix,
@@ -486,6 +486,35 @@ typedef struct {
         bool operator==(const currentSrcParameters &other) const {
             return ((enable == other.enable) && (fix == other.fix) &&
                     (normal == other.normal) && (select == other.select));
+        }
+    } __attribute__((packed));
+
+    struct udpDestination {
+        int entry;
+        uint32_t ip{};
+        uint32_t ip2{};
+        uint64_t mac{};
+        uint64_t mac2{};
+        int port{};
+        int port2{};
+        udpDestination();
+        bool operator==(const udpDestination &other) const {
+            return ((entry == other.entry) && (ip == other.ip) &&
+                    (ip2 == other.ip2) && (mac == other.mac) &&
+                    (mac2 == other.mac2) && (port == other.port) &&
+                    (port2 == other.port2));
+        }
+        udpDestination operator=(const udpDestination &other) const {
+            if (this == &other)
+                return *this;
+            entry = other.entry;
+            ip = other.ip;
+            ip2 = other.ip2;
+            mac = other.mac;
+            mac2 = other.mac2;
+            port = other.port;
+            port2 = other.port2;
+            return *this;
         }
     } __attribute__((packed));
 

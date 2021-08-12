@@ -1368,6 +1368,86 @@ std::string CmdProxy::Trigger(int action) {
 
 /* Network Configuration (Detector<->Receiver) */
 
+IpAddr CmdProxy::getIpFromAuto() {
+    std::string rxHostname =
+        det->getRxHostname(std::vector<int>{det_id}).squash("none");
+    // Hostname could be ip try to decode otherwise look up the hostname
+    auto val = sls::IpAddr{rxHostname};
+    if (val == 0) {
+        val = HostnameToIp(rxHostname.c_str());
+    }
+    return val;
+}
+
+defs::udpDestination CmdProxy::getUdpList() {
+    defs::udpDestination dest{};
+    for (auto it : args) {
+        size_t pos = it.find('=');
+        std::string key = it.substr(0, pos);
+        std::string value = it.substr(pos + 1);
+        if (key == "ip") {
+            if (value == "auto") {
+                auto val = getIpFromAuto();
+                LOG(logINFO) << "Setting udp_dstip of detector " << det_id
+                             << " to " << val;
+                dest.ip = val.uint32();
+            } else {
+                dest.ip = IpAddr(value).uint32();
+            }
+        } else if (key == "ip2") {
+            if (value == "auto") {
+                auto val = getIpFromAuto();
+                LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id
+                             << " to " << val;
+                dest.ip2 = val.uint32();
+            } else {
+                dest.ip2 = IpAddr(value).uint32();
+            }
+        } else if (key == "mac") {
+            dest.mac = MacAddr(value).uint64();
+        } else if (key == "mac2") {
+            dest.mac2 = MacAddr(value).uint64();
+        } else if (key == "port") {
+            dest.port = StringTo<int>(value);
+        } else if (key == "port2") {
+            dest.port2 = StringTo<int>(value);
+        }
+    }
+    return dest;
+}
+
+std::string CmdProxy::UDPDestinationList(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[entry=n_val] [ip=x.x.x.x] [(optional)ip2=x.x.x.x] "
+              "\n[mac=xx:xx:xx:xx:xx:xx] "
+              "[(optional)mac2=xx:xx:xx:xx:xx:xx]\n[port=value] "
+              "[(optional)port2=value\n\tThe order of ip, mac and port does "
+              "not matter. entry_value can be >0 only for Eiger and Jungfrau "
+              "where round robin is implemented. If 'auto' used, then ip is "
+              "set to ip of rx_hostname."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        auto t = det->getDestinationUDPList(StringTo<int>(args[0]),
+                                            std::vector<int>{det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.empty()) {
+            WrongNumberOfParameters(1);
+        }
+        auto t = getUdpList();
+        det->setDestinationUDPList(t, det_id);
+        os << ToString(args) << std::endl;
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::UDPDestinationIP(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -1387,13 +1467,7 @@ std::string CmdProxy::UDPDestinationIP(int action) {
             WrongNumberOfParameters(1);
         }
         if (args[0] == "auto") {
-            std::string rxHostname =
-                det->getRxHostname(std::vector<int>{det_id}).squash("none");
-            // Hostname could be ip try to decode otherwise look up the hostname
-            auto val = sls::IpAddr{rxHostname};
-            if (val == 0) {
-                val = HostnameToIp(rxHostname.c_str());
-            }
+            auto val = getIpFromAuto();
             LOG(logINFO) << "Setting udp_dstip of detector " << det_id << " to "
                          << val;
             det->setDestinationUDPIP(val, std::vector<int>{det_id});
@@ -1429,13 +1503,7 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
             WrongNumberOfParameters(1);
         }
         if (args[0] == "auto") {
-            std::string rxHostname =
-                det->getRxHostname(std::vector<int>{det_id}).squash("none");
-            // Hostname could be ip try to decode otherwise look up the hostname
-            auto val = sls::IpAddr{rxHostname};
-            if (val == 0) {
-                val = HostnameToIp(rxHostname.c_str());
-            }
+            auto val = getIpFromAuto();
             LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id
                          << " to " << val;
             det->setDestinationUDPIP2(val, std::vector<int>{det_id});

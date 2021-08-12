@@ -928,6 +928,24 @@ void Module::setSourceUDPMAC2(const sls::MacAddr mac) {
     sendToDetector(F_SET_SOURCE_UDP_MAC2, mac, nullptr);
 }
 
+slsDetectorDefs::udpDestination
+Module::getDestinationUDPList(const int entry) const {
+    // return sendToDetector<udpDestination>(F_GET_DEST_UDP_LIST);
+    return bla;
+}
+
+void Module::setDestinationUDPList(const slsDetectorDefs::udpDestination dest) {
+    LOG(logINFO) << "setting stuff to " << dest;
+    bla.entry = dest.entry;
+    bla.ip = dest.ip;
+    bla.ip2 = dest.ip2;
+    bla.mac = dest.mac;
+    bla.mac2 = dest.mac2;
+    bla.port = dest.port;
+    bla.port2 = dest.port2;
+    // sendToDetector(F_SET_DEST_UDP_LIST, dest, nullptr);
+}
+
 sls::IpAddr Module::getDestinationUDPIP() const {
     return sendToDetector<sls::IpAddr>(F_GET_DEST_UDP_IP);
 }

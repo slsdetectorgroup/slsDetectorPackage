@@ -855,6 +855,7 @@ class CmdProxy {
         /* Network Configuration (Detector<->Receiver) */
         {"numinterfaces", &CmdProxy::numinterfaces},
         {"selinterface", &CmdProxy::selinterface},
+        {"udp_dstlist", &CmdProxy::UDPDestinationList},
         {"udp_srcip", &CmdProxy::udp_srcip},
         {"udp_srcip2", &CmdProxy::udp_srcip2},
         {"udp_dstip", &CmdProxy::UDPDestinationIP},
@@ -1112,6 +1113,9 @@ class CmdProxy {
     std::string Scan(int action);
     std::string Trigger(int action);
     /* Network Configuration (Detector<->Receiver) */
+    IpAddr getIpFromAuto();
+    slsDetectorDefs::udpDestination getUdpList();
+    std::string UDPDestinationList(int action);
     std::string UDPDestinationIP(int action);
     std::string UDPDestinationIP2(int action);
     /* Receiver Config */

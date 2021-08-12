@@ -280,17 +280,22 @@ u_int16_t getHardwareVersionNumber() {
             MCB_SERIAL_NO_VRSN_OFST);
 }
 
-uint16_t getSerialNumber() {
-    return ((bus_r(MOD_ID_REG) & MOD_ID_MSK) >> MOD_ID_OFST);
+u_int32_t getDetectorNumber() {
+#ifdef VIRTUAL
+    return 0;
+#endif
+    return bus_r(MCB_SERIAL_NO_REG);
 }
 
-void setSerialNumber(uint16_t arg) {
-    LOG(logINFOBLUE, ("Setting Serial Number to 0x%x\n", arg));
+int getModuleId() { return ((bus_r(MOD_ID_REG) & MOD_ID_MSK) >> MOD_ID_OFST); }
+
+void setModuleId(int arg) {
+    LOG(logINFOBLUE, ("Setting Module Id to 0x%x\n", arg));
     bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) & ~MOD_ID_MSK);
     bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) | ((arg << MOD_ID_OFST) & MOD_ID_MSK));
 }
 
-int getMaxSerialNumber() { return MOD_MAX_VAL; }
+int getMaxModuleId() { return MOD_MAX_VAL; }
 
 u_int64_t getDetectorMAC() {
 #ifdef VIRTUAL

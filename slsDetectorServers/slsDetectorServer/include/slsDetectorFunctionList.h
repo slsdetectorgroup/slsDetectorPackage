@@ -94,9 +94,9 @@ void readDetectorNumber();
 #endif
 u_int32_t getDetectorNumber();
 #ifdef GOTTHARD2D
-uint16_t getSerialNumber();
-void setSerialNumber(uint16_t arg);
-int getMaxSerialNumber();
+int getModuleId();
+void setModuleId(int arg);
+int getMaxModuleId();
 #endif
 u_int64_t getDetectorMAC();
 u_int32_t getDetectorIP();

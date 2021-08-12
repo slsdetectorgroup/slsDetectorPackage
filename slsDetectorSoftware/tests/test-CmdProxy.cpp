@@ -105,21 +105,27 @@ TEST_CASE("serialnumber", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("serialnumber", {}, -1, GET));
+}
+
+TEST_CASE("moduleid", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
     if (det.getDetectorType().squash() == defs::GOTTHARD2) {
-        auto prev_val = det.getSerialNumber();
+        auto prev_val = det.getModuleId();
+        REQUIRE_NOTHROW(proxy.Call("moduleid", {}, -1, GET));
         std::ostringstream oss1, oss2, oss3;
-        proxy.Call("serialnumber", {"0x5d"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "serialnumber 0x5d\n");
-        proxy.Call("serialnumber", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "serialnumber 0x5d\n");
-        proxy.Call("serialnumber", {"0xffff"}, -1, PUT, oss3);
-        REQUIRE(oss3.str() == "serialnumber 0xffff\n");
-        REQUIRE_THROWS(proxy.Call("serialnumber", {"65536"}, -1, PUT));
+        proxy.Call("moduleid", {"0x5d"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "moduleid 0x5d\n");
+        proxy.Call("moduleid", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "moduleid 0x5d\n");
+        proxy.Call("moduleid", {"0xffff"}, -1, PUT, oss3);
+        REQUIRE(oss3.str() == "moduleid 0xffff\n");
+        REQUIRE_THROWS(proxy.Call("moduleid", {"65536"}, -1, PUT));
         for (int i = 0; i != det.size(); ++i) {
-            det.setSerialNumber(prev_val[i], {i});
+            det.setModuleId(prev_val[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("serialnumber", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("moduleid", {"0"}, -1, GET));
     }
 }
 

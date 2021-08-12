@@ -119,8 +119,12 @@ Result<int64_t> Detector::getSerialNumber(Positions pos) const {
     return pimpl->Parallel(&Module::getSerialNumber, pos);
 }
 
-void Detector::setSerialNumber(const int64_t value, Positions pos) {
-    pimpl->Parallel(&Module::setSerialNumber, pos, value);
+Result<int> Detector::getModuleId(Positions pos) const {
+    return pimpl->Parallel(&Module::getModuleId, pos);
+}
+
+void Detector::setModuleId(const int value, Positions pos) {
+    pimpl->Parallel(&Module::setModuleId, pos, value);
 }
 
 Result<int64_t> Detector::getReceiverVersion(Positions pos) const {

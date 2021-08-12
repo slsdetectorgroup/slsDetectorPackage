@@ -90,7 +90,8 @@ class Module : public virtual slsDetectorDefs {
     int64_t getFirmwareVersion() const;
     int64_t getDetectorServerVersion() const;
     int64_t getSerialNumber() const;
-    void setSerialNumber(const int64_t value);
+    int getModuleId() const;
+    void setModuleId(const int value);
     int64_t getReceiverSoftwareVersion() const;
     static detectorType getTypeFromDetector(const std::string &hostname,
                                             int cport = DEFAULT_PORTNO);

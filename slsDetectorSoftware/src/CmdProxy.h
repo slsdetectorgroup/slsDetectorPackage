@@ -758,7 +758,8 @@ class CmdProxy {
         {"firmwareversion", &CmdProxy::FirmwareVersion},
         {"detectorserverversion", &CmdProxy::detectorserverversion},
         {"rx_version", &CmdProxy::rx_version},
-        {"serialnumber", &CmdProxy::SerialNumber},
+        {"serialnumber", &CmdProxy::serialnumber},
+        {"moduleid", &CmdProxy::moduleid},
         {"type", &CmdProxy::type},
         {"nmod", &CmdProxy::nmod},
         {"detsize", &CmdProxy::DetectorSize},
@@ -1078,7 +1079,6 @@ class CmdProxy {
     std::string Hostname(int action);
     std::string VirtualServer(int action);
     std::string FirmwareVersion(int action);
-    std::string SerialNumber(int action);
     std::string Versions(int action);
     std::string PackageVersion(int action);
     std::string ClientVersion(int action);
@@ -1191,6 +1191,14 @@ class CmdProxy {
 
     GET_COMMAND_HEX(rx_version, getReceiverVersion,
                     "\n\tReceiver version in format [0xYYMMDD].");
+
+    GET_COMMAND_HEX(serialnumber, getSerialNumber,
+                    "\n\tSerial number of detector.");
+
+    INTEGER_COMMAND_HEX(
+        moduleid, getModuleId, setModuleId, StringTo<int>,
+        "[value]\n\t[Gotthard2] 16 bit value (ideally unique) that is "
+        "streamed out in the UDP header of the detector. Default is 0.");
 
     GET_COMMAND(type, getDetectorType,
                 "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, "

@@ -94,8 +94,10 @@ int64_t Module::getSerialNumber() const {
     return sendToDetector<int64_t>(F_GET_SERIAL_NUMBER);
 }
 
-void Module::setSerialNumber(const int64_t value) {
-    return sendToDetector(F_SET_SERIAL_NUMBER, value, nullptr);
+int Module::getModuleId() const { return sendToDetector<int>(F_GET_MODULE_ID); }
+
+void Module::setModuleId(const int value) {
+    return sendToDetector(F_SET_MODULE_ID, value, nullptr);
 }
 
 int64_t Module::getReceiverSoftwareVersion() const {

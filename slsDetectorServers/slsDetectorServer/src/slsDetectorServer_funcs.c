@@ -392,7 +392,8 @@ void function_table() {
     flist[F_GET_ADC_PIPELINE] = &get_adc_pipeline;
     flist[F_SET_DBIT_PIPELINE] = &set_dbit_pipeline;
     flist[F_GET_DBIT_PIPELINE] = &get_dbit_pipeline;
-    flist[F_SET_SERIAL_NUMBER] = &set_serial_number;
+    flist[F_GET_MODULE_ID] = &get_module_id;
+    flist[F_SET_MODULE_ID] = &set_module_id;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -666,37 +667,9 @@ int get_serial_number(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
-#ifdef GOTTHARD2D
-    retval = getSerialNumber();
-#else
     retval = getDetectorNumber();
-#endif
     LOG(logDEBUG1, ("detector number retval: 0x%llx\n", (long long int)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
-}
-
-int set_serial_number(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int64_t arg = -1;
-
-    if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
-        return printSocketReadError();
-    LOG(logDEBUG1, ("Setting serial number to 0x%llx\n", (long long int)arg));
-
-#ifndef GOTTHARD2D
-    functionNotImplemented();
-#else
-    if (arg > getMaxSerialNumber()) {
-        ret = FAIL;
-        sprintf(mess, "Could not set serial number. Max value: %d\n",
-                getMaxSerialNumber());
-        LOG(logERROR, (mess));
-    } else {
-        setSerialNumber(arg);
-    }
-#endif
-    return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int set_firmware_test(int file_des) {
@@ -8952,4 +8925,44 @@ int get_dbit_pipeline(int file_des) {
     LOG(logDEBUG1, ("retval dbit pipeline: %d\n", retval));
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_module_id(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    retval = getModuleId();
+#endif
+    LOG(logDEBUG1, ("module id retval: 0x%x\n", retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_module_id(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting module id to 0x%x\n", arg));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    if (arg > getMaxModuleId()) {
+        ret = FAIL;
+        sprintf(mess, "Could not set module id. Max value: 0x%x\n",
+                getMaxModuleId());
+        LOG(logERROR, (mess));
+    } else {
+        setModuleId(arg);
+        int retval = getModuleId();
+        LOG(logDEBUG1, ("retval module id: %d\n", retval));
+        validate(&ret, mess, arg, retval, "set module id", DEC);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

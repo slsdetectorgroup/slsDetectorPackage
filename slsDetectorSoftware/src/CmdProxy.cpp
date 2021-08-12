@@ -257,33 +257,6 @@ std::string CmdProxy::FirmwareVersion(int action) {
     return os.str();
 }
 
-std::string CmdProxy::SerialNumber(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == slsDetectorDefs::HELP_ACTION)
-        os << "\n\tSerial number of detector.\n\t[Gotthard2] Can overwrite and "
-              "is sent out as mod_id in sls_detector_header in header of UDP "
-              "data packet streamed out from detector."
-           << '\n';
-    else if (action == slsDetectorDefs::GET_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getSerialNumber(std::vector<int>{det_id});
-        os << OutStringHex(t) << '\n';
-    } else if (action == slsDetectorDefs::PUT_ACTION) {
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
-        }
-        det->setSerialNumber(StringTo<int64_t>(args[0]),
-                             std::vector<int>{det_id});
-        os << args[0] << '\n';
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
 std::string CmdProxy::Versions(int action) {
     std::ostringstream os;
     os << cmd << ' ';

@@ -716,6 +716,7 @@ class CmdProxy {
         {"rx_datastream", "rx_zmqstream"},
 
         /* Eiger Specific */
+        {"readnlines", "partialread"},
         {"resmat", "partialreset"},
 
         /* Jungfrau Specific */
@@ -914,7 +915,7 @@ class CmdProxy {
         {"subdeadtime", &CmdProxy::subdeadtime},
         {"overflow", &CmdProxy::overflow},
         {"ratecorr", &CmdProxy::RateCorrection},
-        {"readnlines", &CmdProxy::readnlines},
+        {"partialread", &CmdProxy::partialread},
         {"interruptsubframe", &CmdProxy::interruptsubframe},
         {"measuredperiod", &CmdProxy::measuredperiod},
         {"measuredsubperiod", &CmdProxy::measuredsubperiod},
@@ -1809,7 +1810,7 @@ class CmdProxy {
         "32 bit mode. Default is disabled.");
 
     INTEGER_COMMAND_VEC_ID(
-        readnlines, getPartialReadout, setPartialReadout, StringTo<int>,
+        partialread, getPartialReadout, setPartialReadout, StringTo<int>,
         "[1 - 256]\n\t[Eiger] Number of rows to readout per half module "
         "starting from the centre. Options: 0 - 256. 256 is default. The "
         "permissible values depend on dynamic range and 10Gbe enabled.");

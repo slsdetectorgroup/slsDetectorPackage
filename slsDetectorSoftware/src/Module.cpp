@@ -1469,14 +1469,14 @@ void Module::sendReceiverRateCorrections(const std::vector<int64_t> &t) {
     }
 }
 
-int Module::getReadNLines() const {
-    return sendToDetector<int>(F_GET_READ_N_LINES);
+int Module::getPartialReadout() const {
+    return sendToDetector<int>(F_GET_PARTIAL_READOUT);
 }
 
-void Module::setReadNLines(const int value) {
-    sendToDetector(F_SET_READ_N_LINES, value, nullptr);
+void Module::setPartialReadout(const int value) {
+    sendToDetector(F_SET_PARTIAL_READOUT, value, nullptr);
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_SET_RECEIVER_READ_N_LINES, value, nullptr);
+        sendToReceiver(F_SET_RECEIVER_PARTIAL_READOUT, value, nullptr);
     }
 }
 

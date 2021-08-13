@@ -38,7 +38,7 @@ int Beb_top = 0;
 uint64_t Beb_deactivatedNextFrameNumber = 0;
 int Beb_quadEnable = 0;
 int Beb_positions[2] = {0, 0};
-int Beb_readNLines = MAX_ROWS_PER_READOUT;
+int Beb_partialReadout = MAX_ROWS_PER_READOUT;
 int Beb_deactivated_transmission_flowcontrol_10g = 0;
 int Beb_deactivated_transmission_delay_frame = 0;
 int Beb_deactivated_transmission_delay_left = 0;
@@ -1214,7 +1214,7 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
 
     unsigned int maxnl = MAX_ROWS_PER_READOUT;
     unsigned int maxnp = (ten_gig ? 4 : 16) * Beb_bit_mode;
-    unsigned int nl = Beb_readNLines;
+    unsigned int nl = Beb_partialReadout;
     unsigned int npackets = (nl * maxnp) / maxnl;
     if ((nl * maxnp) % maxnl) {
         LOG(logERROR, ("Read N Lines is incorrect. Switching to Full Image "
@@ -1612,7 +1612,7 @@ int Beb_GetNextFrameNumber(uint64_t *retval, int tengigaEnable) {
     return OK;
 }
 
-void Beb_SetReadNLines(int value) { Beb_readNLines = value; }
+void Beb_SetPartialReadout(int value) { Beb_partialReadout = value; }
 
 uint16_t Beb_swap_uint16(uint16_t val) { return (val << 8) | (val >> 8); }
 

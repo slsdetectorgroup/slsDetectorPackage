@@ -1846,9 +1846,9 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def readnlines(self):
+    def partialread(self):
         """
-        [Eiger] Number of lines to read out per half module 
+        [Eiger] Number of rows to read out per half module 
         Note
         ----
         Options: 0 - 256. 256 is default. \n
@@ -1856,8 +1856,8 @@ class Detector(CppDetectorApi):
         """
         return self.getPartialReadout()
 
-    @readnlines.setter
-    def readnlines(self, value):
+    @partialread.setter
+    def partialread(self, value):
         ut.set_using_dict(self.setPartialReadout, value)
 
 

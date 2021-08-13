@@ -409,8 +409,8 @@ int setQuad(int value);
 int getQuad();
 int setInterruptSubframe(int value);
 int getInterruptSubframe();
-int setReadNLines(int value);
-int getReadNLines();
+int setPartialReadout(int value);
+int getPartialReadout();
 #endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(EIGERD) ||          \
     defined(MYTHEN3D)

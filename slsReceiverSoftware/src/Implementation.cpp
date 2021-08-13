@@ -477,8 +477,8 @@ std::vector<uint64_t> Implementation::getNumMissingPackets() const {
         int np = generalData->packetsPerFrame;
         uint64_t totnp = np;
         // partial readout
-        if (numLinesReadout != MAX_EIGER_ROWS_PER_READOUT) {
-            totnp = ((numLinesReadout * np) / MAX_EIGER_ROWS_PER_READOUT);
+        if (partialReadout != MAX_EIGER_ROWS_PER_READOUT) {
+            totnp = ((partialReadout * np) / MAX_EIGER_ROWS_PER_READOUT);
         }
         totnp *= numberOfTotalFrames;
         mp[i] = listener[i]->GetNumMissingPacket(stoppedFlag, totnp);
@@ -765,7 +765,7 @@ void Implementation::SetupWriter() {
         masterAttributes->subExptime = subExpTime;
         masterAttributes->subPeriod = subPeriod;
         masterAttributes->quad = quadEnable;
-        masterAttributes->numLinesReadout = numLinesReadout;
+        masterAttributes->partialReadout = partialReadout;
         masterAttributes->ratecorr = rateCorrections;
         masterAttributes->adcmask =
             tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
@@ -1533,11 +1533,11 @@ void Implementation::setDeactivatedPadding(bool enable) {
                  << (deactivatedPaddingEnable ? "enabled" : "disabled");
 }
 
-int Implementation::getReadNLines() const { return numLinesReadout; }
+int Implementation::getPartialReadout() const { return partialReadout; }
 
-void Implementation::setReadNLines(const int value) {
-    numLinesReadout = value;
-    LOG(logINFO) << "Number of Lines to readout: " << numLinesReadout;
+void Implementation::setPartialReadout(const int value) {
+    partialReadout = value;
+    LOG(logINFO) << "Partial readout (#rows): " << partialReadout;
 }
 
 void Implementation::setThresholdEnergy(const int value) {

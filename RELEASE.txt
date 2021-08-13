@@ -73,6 +73,7 @@ vetoalg
 vetostream
 serialnumber (put)
 dbitpipeline
+readnlines->partialread
 
 3. Firmware Requirements
 ========================

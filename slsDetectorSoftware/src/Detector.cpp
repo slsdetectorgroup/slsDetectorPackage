@@ -1373,11 +1373,11 @@ void Detector::updateRxRateCorrections() {
 }
 
 Result<int> Detector::getPartialReadout(Positions pos) const {
-    return pimpl->Parallel(&Module::getReadNLines, pos);
+    return pimpl->Parallel(&Module::getPartialReadout, pos);
 }
 
 void Detector::setPartialReadout(const int lines, Positions pos) {
-    pimpl->Parallel(&Module::setReadNLines, pos, lines);
+    pimpl->Parallel(&Module::setPartialReadout, pos, lines);
 }
 
 Result<bool> Detector::getInterruptSubframe(Positions pos) const {

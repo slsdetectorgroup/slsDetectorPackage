@@ -337,8 +337,8 @@ class Module : public virtual slsDetectorDefs {
     void setDefaultRateCorrection();
     void setRateCorrection(int64_t t = 0);
     void sendReceiverRateCorrections(const std::vector<int64_t> &t);
-    int getReadNLines() const;
-    void setReadNLines(const int value);
+    int getPartialReadout() const;
+    void setPartialReadout(const int value);
     bool getInterruptSubframe() const;
     void setInterruptSubframe(const bool enable);
     int64_t getMeasuredPeriod() const;

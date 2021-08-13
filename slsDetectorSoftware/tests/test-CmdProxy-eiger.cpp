@@ -374,7 +374,7 @@ TEST_CASE("ratecorr", "[.cmd]") {
     }
 }
 
-TEST_CASE("readnlines", "[.cmd]") {
+TEST_CASE("partialread", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -382,25 +382,25 @@ TEST_CASE("readnlines", "[.cmd]") {
         auto prev_val = det.getPartialReadout();
         {
             std::ostringstream oss;
-            proxy.Call("readnlines", {"256"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "readnlines 256\n");
+            proxy.Call("partialread", {"256"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "partialread 256\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("readnlines", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "readnlines 256\n");
+            proxy.Call("partialread", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "partialread 256\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("readnlines", {"16"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "readnlines 16\n");
+            proxy.Call("partialread", {"16"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "partialread 16\n");
         }
-        REQUIRE_THROWS(proxy.Call("readnlines", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("partialread", {"0"}, -1, PUT));
         for (int i = 0; i != det.size(); ++i) {
             det.setPartialReadout(prev_val[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("readnlines", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("partialread", {}, -1, GET));
     }
 }
 

@@ -187,7 +187,7 @@ int ClientInterface::functionTable(){
 	flist[F_SET_RECEIVER_DBIT_OFFSET]		= 	&ClientInterface::set_dbit_offset;
 	flist[F_GET_RECEIVER_DBIT_OFFSET]		= 	&ClientInterface::get_dbit_offset;
     flist[F_SET_RECEIVER_QUAD]			    = 	&ClientInterface::set_quad_type;
-    flist[F_SET_RECEIVER_READ_N_LINES]      =   &ClientInterface::set_read_n_lines;
+    flist[F_SET_RECEIVER_PARTIAL_READOUT]   =   &ClientInterface::set_partial_readout;
     flist[F_SET_RECEIVER_UDP_IP]            =   &ClientInterface::set_udp_ip;
 	flist[F_SET_RECEIVER_UDP_IP2]           =   &ClientInterface::set_udp_ip2;
 	flist[F_SET_RECEIVER_UDP_PORT]          =   &ClientInterface::set_udp_port;
@@ -224,6 +224,7 @@ int ClientInterface::functionTable(){
 int ClientInterface::decodeFunction(Interface &socket) {
     ret = FAIL;
     socket.Receive(fnum);
+    socket.setFnum(fnum);
     if (fnum <= NUM_DET_FUNCTIONS || fnum >= NUM_REC_FUNCTIONS) {
         throw RuntimeError("Unrecognized Function enum " +
                            std::to_string(fnum) + "\n");
@@ -413,7 +414,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
                                std::to_string(arg.quad) +
                                " due to fifo strucutre memory allocation");
         }
-        impl()->setReadNLines(arg.numLinesReadout);
+        impl()->setPartialReadout(arg.partialReadout);
         impl()->setThresholdEnergy(arg.thresholdEnergyeV[0]);
     }
     if (myDetectorType == MYTHEN3) {
@@ -1403,16 +1404,16 @@ int ClientInterface::set_quad_type(Interface &socket) {
     return socket.Send(OK);
 }
 
-int ClientInterface::set_read_n_lines(Interface &socket) {
+int ClientInterface::set_partial_readout(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
         verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting Read N Lines:" << arg;
-        impl()->setReadNLines(arg);
+        LOG(logDEBUG1) << "Setting Partial Readout:" << arg;
+        impl()->setPartialReadout(arg);
     }
-    int retval = impl()->getReadNLines();
-    validate(arg, retval, "set read n lines", DEC);
-    LOG(logDEBUG1) << "read n lines retval:" << retval;
+    int retval = impl()->getPartialReadout();
+    validate(arg, retval, "set partial readout", DEC);
+    LOG(logDEBUG1) << "read partial readout:" << retval;
     return socket.Send(OK);
 }
 

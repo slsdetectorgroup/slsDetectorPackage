@@ -88,7 +88,7 @@ uint64_t eiger_virtual_nextframenumber = 1;
 int eiger_virtual_detPos[2] = {0, 0};
 int eiger_virtual_test_mode = 0;
 int eiger_virtual_quad_mode = 0;
-int eiger_virtual_read_nlines = 256;
+int eiger_virtual_partial_readout = 256;
 int eiger_virtual_interrupt_subframe = 0;
 int eiger_virtual_left_datastream = 1;
 int eiger_virtual_right_datastream = 1;
@@ -708,7 +708,7 @@ void setupDetector() {
     setIODelay(DEFAULT_IO_DELAY);
     setTiming(DEFAULT_TIMING_MODE);
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
-    setReadNLines(MAX_ROWS_PER_READOUT);
+    setPartialReadout(MAX_ROWS_PER_READOUT);
     // SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
     eiger_tau_ns = DEFAULT_RATE_CORRECTION;
     setRateCorrection(DEFAULT_RATE_CORRECTION);
@@ -1671,29 +1671,29 @@ int getInterruptSubframe() {
 #endif
 }
 
-int setReadNLines(int value) {
+int setPartialReadout(int value) {
     if (value < 0)
         return FAIL;
 #ifndef VIRTUAL
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_SetReadNLines(value)) {
+    if (!Feb_Control_SetPartialReadout(value)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
     sharedMemory_unlockLocalLink();
-    Beb_SetReadNLines(value);
+    Beb_SetPartialReadout(value);
 #else
-    eiger_virtual_read_nlines = value;
+    eiger_virtual_partial_readout = value;
 #endif
     return OK;
 }
 
-int getReadNLines() {
+int getPartialReadout() {
 #ifdef VIRTUAL
-    return eiger_virtual_read_nlines;
+    return eiger_virtual_partial_readout;
 #else
     sharedMemory_lockLocalLink();
-    int retval = Feb_Control_GetReadNLines();
+    int retval = Feb_Control_GetPartialReadout();
     sharedMemory_unlockLocalLink();
     return retval;
 #endif

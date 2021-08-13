@@ -473,7 +473,6 @@ void qTabSettings::Refresh() {
         GetThresholdEnergies();
     // eiger
     else if (spinThreshold->isEnabled()) {
-        LOG(logINFOBLUE) << "calling it!";
         GetThresholdEnergy();
     }
 

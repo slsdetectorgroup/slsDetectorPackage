@@ -178,7 +178,8 @@ class Module : public virtual slsDetectorDefs {
     void setCurrentSource(defs::currentSrcParameters par);
     int getDBITPipeline() const;
     void setDBITPipeline(int value);
-
+    int getPartialReadout() const;
+    void setPartialReadout(const int value);
     /**************************************************
      *                                                *
      *    Acquisition                                 *
@@ -337,8 +338,6 @@ class Module : public virtual slsDetectorDefs {
     void setDefaultRateCorrection();
     void setRateCorrection(int64_t t = 0);
     void sendReceiverRateCorrections(const std::vector<int64_t> &t);
-    int getPartialReadout() const;
-    void setPartialReadout(const int value);
     bool getInterruptSubframe() const;
     void setInterruptSubframe(const bool enable);
     int64_t getMeasuredPeriod() const;

@@ -480,6 +480,7 @@ void setupDetector() {
         setFilterCell(DEFAULT_FILTER_CELL);
     }
     disableCurrentSource();
+    setPartialReadout(MAX_ROWS_PER_READOUT);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -1596,6 +1597,39 @@ int *getDetectorPosition() { return detPos; }
 /* jungfrau specific - powerchip, autocompdisable, asictimer, clockdiv, pll,
  * flashing fpga */
 
+int setPartialReadout(int value) {
+    if (value < 0 || (value % PARTIAL_READOUT_MULTIPLE != 0))
+        return FAIL;
+
+    // regval is numpackets - 1 
+    int regval = (value / PARTIAL_READOUT_MULTIPLE) - 1;
+    uint32_t addr = PARTIAL_READOUT_REG;
+    LOG(logINFO, ("Setting Partial Readout: %d (regval:%d)\n", value, regval));
+    bus_w(addr, bus_r(addr) &~PARTIAL_READOUT_NUM_ROWS_MSK);
+    bus_w(addr, bus_r(addr) | ((regval << PARTIAL_READOUT_NUM_ROWS_OFST) & PARTIAL_READOUT_NUM_ROWS_MSK));
+
+    if (value == MAX_ROWS_PER_READOUT) {
+        LOG(logINFO, ("Disabling Partial Readout\n"));
+        bus_w(addr, bus_r(addr) &~PARTIAL_READOUT_ENBL_MSK);
+    } else {
+        LOG(logINFO, ("Enabling Partial Readout\n"));
+        bus_w(addr, bus_r(addr) | PARTIAL_READOUT_ENBL_MSK);
+    }
+    return OK;
+}
+
+int getPartialReadout() {
+    int enable = (bus_r(PARTIAL_READOUT_REG) & PARTIAL_READOUT_ENBL_MSK);
+    int regval = ((bus_r(PARTIAL_READOUT_REG) & PARTIAL_READOUT_NUM_ROWS_MSK) >> PARTIAL_READOUT_NUM_ROWS_OFST);
+ 
+  int maxRegval = (MAX_ROWS_PER_READOUT/ PARTIAL_READOUT_MULTIPLE) - 1;
+    if ((regval == maxRegval && enable) || (regval != maxRegval && !enable)) {
+        return -1;
+    }
+
+    return (regval  + 1) * PARTIAL_READOUT_MULTIPLE;
+}
+
 void initReadoutConfiguration() {
 
     LOG(logINFO, ("Initializing Readout Configuration:\n"
@@ -2263,6 +2297,8 @@ void *start_timer(void *arg) {
         return NULL;
     }
 
+    int transmissionDelayUs = getTransmissionDelayFrame() * 1000;
+
     int numInterfaces = getNumberofUDPInterfaces();
     int64_t periodNs = getPeriod();
     int numFrames = (getNumFrames() * getNumTriggers() *
@@ -2271,17 +2307,36 @@ void *start_timer(void *arg) {
     const int npixels = 256 * 256 * 8;
     const int dataSize = 8192;
     const int packetsize = dataSize + sizeof(sls_detector_header);
-    const int packetsPerFrame = numInterfaces == 1 ? 128 : 64;
-    int transmissionDelayUs = getTransmissionDelayFrame() * 1000;
+    int maxPacketsPerFrame = 128;
+    int maxRows = MAX_ROWS_PER_READOUT;
+    if (numInterfaces == 2) {
+        maxPacketsPerFrame /= 2;
+        maxRows /= 2;
+    }
+    int partialReadout = getPartialReadout();
+    if (partialReadout == -1) {
+        partialReadout = MAX_ROWS_PER_READOUT;
+    }
+    const int packetsPerFrame = (maxPacketsPerFrame  * partialReadout) / maxRows;
+    
+    //LOG(logINFOBLUE, ("packetsperframe:%d numFrames:%d partial:%d maxpacketsperframe:%d maxrows:%d \n", packetsPerFrame, numFrames, partialReadout, maxPacketsPerFrame, maxRows));
+
+    // starting packet number
+    //const int startPnum = (128 / 2) - ()
 
     // Generate data
     char imageData[DATA_BYTES];
     memset(imageData, 0, DATA_BYTES);
+    const int pixelsPerPacket = dataSize / 2;
+    int pixelVal = 0;
     for (int i = 0; i < npixels; ++i) {
         // avoiding gain also being divided when gappixels enabled in call
         // back
+        if (i > 0 && i % pixelsPerPacket == 0) {
+            ++pixelVal;
+        }
         *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
-            virtual_image_test_mode ? 0x0FFE : (uint16_t)i;
+            virtual_image_test_mode ? 0x0FFE : (uint16_t)pixelVal;
     }
 
     // Send data
@@ -2289,7 +2344,6 @@ void *start_timer(void *arg) {
         uint64_t frameNr = 0;
         getNextFrameNumber(&frameNr);
         for (int iframes = 0; iframes != numFrames; ++iframes) {
-
             usleep(transmissionDelayUs);
 
             // check if manual stop

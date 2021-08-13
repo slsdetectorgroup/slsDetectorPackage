@@ -4726,7 +4726,7 @@ int set_partial_readout(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting partial readout: %u\n", arg));
 
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -4734,11 +4734,12 @@ int set_partial_readout(int file_des) {
         if (arg <= 0 || arg > MAX_ROWS_PER_READOUT) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not set partial readout. Must be between 1 "
+                    "Could not set partial readout. Must be between %d "
                     "and %d\n",
-                    MAX_ROWS_PER_READOUT);
+                    MIN_ROWS_PER_READOUT, MAX_ROWS_PER_READOUT);
             LOG(logERROR, (mess));
         } else {
+#ifdef EIGERD
             int dr = setDynamicRange(GET_FLAG);
             int isTenGiga = enableTenGigabitEthernet(GET_FLAG);
             unsigned int maxnl = MAX_ROWS_PER_READOUT;
@@ -4753,7 +4754,16 @@ int set_partial_readout(int file_des) {
                         arg, dr, isTenGiga ? "enabled" : "disabled", arg, maxnp,
                         maxnl);
                 LOG(logERROR, (mess));
-            } else {
+            } else
+#elif JUNGFRAU
+            if (arg % PARTIAL_READOUT_MULTIPLE != 0) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set %d partial readout. %d must be a multiple of %d\n", arg, PARTIAL_READOUT_MULTIPLE);
+                LOG(logERROR, (mess));                
+            } else
+#endif
+            {
                 if (setPartialReadout(arg) == FAIL) {
                     ret = FAIL;
                     sprintf(mess, "Could not set partial readout to %d.\n", arg);
@@ -4783,7 +4793,7 @@ int get_partial_readout(int file_des) {
 
     LOG(logDEBUG1, ("Getting partial readout\n"));
 
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only

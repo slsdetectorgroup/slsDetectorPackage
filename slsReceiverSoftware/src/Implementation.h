@@ -219,7 +219,7 @@ class Implementation : private virtual slsDetectorDefs {
     /* [Eiger] */
     void setDeactivatedPadding(const bool enable);
     int getPartialReadout() const;
-    /* [Eiger] */
+    /* [Eiger][Jungfrau] */
     void setPartialReadout(const int value);
     /** [Eiger] */
     void setThresholdEnergy(const int value);
@@ -352,7 +352,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool activated{true};
     std::array<bool, 2> detectorDataStream = {{true, true}};
     bool deactivatedPaddingEnable{true};
-    int partialReadout{MAX_EIGER_ROWS_PER_READOUT};
+    int partialReadout{0};
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};
     std::vector<int64_t> rateCorrections;

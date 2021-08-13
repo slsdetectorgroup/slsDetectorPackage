@@ -414,8 +414,10 @@ int ClientInterface::setup_receiver(Interface &socket) {
                                std::to_string(arg.quad) +
                                " due to fifo strucutre memory allocation");
         }
-        impl()->setPartialReadout(arg.partialReadout);
         impl()->setThresholdEnergy(arg.thresholdEnergyeV[0]);
+    }
+    if (myDetectorType == EIGER || myDetectorType == JUNGFRAU) {
+        impl()->setPartialReadout(arg.partialReadout);
     }
     if (myDetectorType == MYTHEN3) {
         std::array<int, 3> val;
@@ -1408,6 +1410,9 @@ int ClientInterface::set_partial_readout(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
         verifyIdle(socket);
+        if (myDetectorType != EIGER && myDetectorType != JUNGFRAU) {
+            throw RuntimeError("Could not set partial readout. Not implemented for this detector");
+        }
         LOG(logDEBUG1) << "Setting Partial Readout:" << arg;
         impl()->setPartialReadout(arg);
     }

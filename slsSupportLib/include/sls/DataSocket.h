@@ -26,7 +26,7 @@ class DataSocket {
     DataSocket &operator=(DataSocket const &) = delete;
     int getSocketId() const { return sockfd_; }
     int getFnum() const { return fnum_; }
-    int setFnum(const int fnum);
+    void setFnum(const int fnum);
 
     int Send(const void *buffer, size_t size);
 

@@ -732,6 +732,14 @@ void Detector::setDBITPipeline(int value, Positions pos) {
     pimpl->Parallel(&Module::setDBITPipeline, pos, value);
 }
 
+Result<int> Detector::getPartialReadout(Positions pos) const {
+    return pimpl->Parallel(&Module::getPartialReadout, pos);
+}
+
+void Detector::setPartialReadout(const int lines, Positions pos) {
+    pimpl->Parallel(&Module::setPartialReadout, pos, lines);
+}
+
 // Acquisition
 
 void Detector::acquire() { pimpl->acquire(); }
@@ -1370,14 +1378,6 @@ void Detector::updateRxRateCorrections() {
                             dead_times);
         }
     }
-}
-
-Result<int> Detector::getPartialReadout(Positions pos) const {
-    return pimpl->Parallel(&Module::getPartialReadout, pos);
-}
-
-void Detector::setPartialReadout(const int lines, Positions pos) {
-    pimpl->Parallel(&Module::setPartialReadout, pos, lines);
 }
 
 Result<bool> Detector::getInterruptSubframe(Positions pos) const {

@@ -336,7 +336,8 @@ class JungfrauMasterAttributes : public MasterAttributes {
         oss << MasterAttributes::GetBinaryMasterAttributes()
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
             << "Period                     : " << sls::ToString(period) << '\n'
-            << "Number of UDP Interfaces   : " << numUDPInterfaces << '\n';
+            << "Number of UDP Interfaces   : " << numUDPInterfaces << '\n'
+            << "Partial Readout (rows)     : " << partialReadout << '\n';
         std::string message = oss.str();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
@@ -351,6 +352,13 @@ class JungfrauMasterAttributes : public MasterAttributes {
             DataSet dataset = group->createDataSet(
                 "Number of UDP Interfaces", PredType::NATIVE_INT, dataspace);
             dataset.write(&numUDPInterfaces, PredType::NATIVE_INT);
+        }
+        // partialReadout
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "Partial readout (rows)", PredType::NATIVE_INT, dataspace);
+            dataset.write(&partialReadout, PredType::NATIVE_INT);
         }
     };
 #endif

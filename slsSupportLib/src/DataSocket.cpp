@@ -42,7 +42,7 @@ DataSocket &DataSocket::operator=(DataSocket &&move) noexcept {
     return *this;
 }
 
-int DataSocket::setFnum(const int fnum) {
+void DataSocket::setFnum(const int fnum) {
     fnum_ = fnum;
 }
 

@@ -1,8 +1,5 @@
 /** API versions */
-#define GITBRANCH    "developer"
-#define APILIB       0x210225
-#define APIRECEIVER  0x210225
-#define APIGUI       0x210225
+#define GITBRANCH    "j10partial"
 
 #define APICTB 0x210813
 #define APIGOTTHARD 0x210813
@@ -11,3 +8,6 @@
 #define APIMYTHEN3 0x210813
 #define APIMOENCH 0x210813
 #define APIEIGER 0x210813
+#define APILIB 0x210813
+#define APIRECEIVER 0x210813
+#define APIGUI 0x210813

@@ -129,7 +129,7 @@ void DataStreamer::ThreadExecution() {
 }
 
 void DataStreamer::StopProcessing(char *buf) {
-    LOG(logINFOBLUE) << "DataStreamer " << index << ": Dummy";
+    LOG(logDEBUG1) << "DataStreamer " << index << ": Dummy";
 
     sls_receiver_header *header = (sls_receiver_header *)(buf);
     // send dummy header and data
@@ -149,7 +149,7 @@ void DataStreamer::ProcessAnImage(char *buf) {
     sls_receiver_header *header =
         (sls_receiver_header *)(buf + FIFO_HEADER_NUMBYTES);
     uint64_t fnum = header->detHeader.frameNumber;
-    LOG(logINFOBLUE) << "DataStreamer " << index << ": fnum:" << fnum;
+    LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
 
     if (!startedFlag) {
         RecordFirstIndex(fnum, buf);

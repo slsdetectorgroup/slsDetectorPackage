@@ -2335,11 +2335,13 @@ void *start_timer(void *arg) {
     memset(imageData, 0, databytes * 2);
     {
         int npixels = NCHAN * NCHIP;
-        const int pixelsPerPacket = (double)datasize / eiger_dynamicrange;
+        const int pixelsPerPacket = (double)datasize / bytesPerPixel;
         int pixelVal = 0;
         if (dr == 4) {
             npixels /= 2;
-        } 
+        }
+        LOG(logINFOBLUE,
+            ("pixels:%d pixelsperpacket:%d\n", npixels, pixelsPerPacket));
         for (int i = 0; i < npixels; ++i) {
             if (i > 0 && i % pixelsPerPacket == 0) {
                 ++pixelVal;
@@ -2349,7 +2351,10 @@ void *start_timer(void *arg) {
                 *((uint8_t *)(imageData + i)) =
                     eiger_virtual_test_mode
                         ? 0xEE
-                        : (uint8_t)(((2 * pixelVal & 0xF) << 4) | ((2 * pixelVal + 1) & 0xF));
+                        : (uint8_t)(((2 * pixelVal & 0xF) << 4) |
+                                    ((2 * pixelVal) & 0xF));
+                //: (uint8_t)(((2 * pixelVal & 0xF) << 4) | ((2 * pixelVal + 1)
+                //& 0xF));
                 break;
             case 8:
                 *((uint8_t *)(imageData + i)) =

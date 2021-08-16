@@ -25,6 +25,8 @@ class DataSocket {
     DataSocket(const DataSocket &) = delete;
     DataSocket &operator=(DataSocket const &) = delete;
     int getSocketId() const { return sockfd_; }
+    int getFnum() const { return fnum_; }
+    void setFnum(const int fnum);
 
     int Send(const void *buffer, size_t size);
 
@@ -82,6 +84,7 @@ class DataSocket {
 
   private:
     int sockfd_ = -1;
+    int fnum_ {0};
 };
 
 }; // namespace sls

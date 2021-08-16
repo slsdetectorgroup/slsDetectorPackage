@@ -63,6 +63,7 @@ int ClientSocket::sendCommandThenRead(int fnum, const void *args,
                                       size_t retval_size) {
     int ret = slsDetectorDefs::FAIL;
     Send(&fnum, sizeof(fnum));
+    setFnum(fnum);
     Send(args, args_size);
     readReply(ret, retval, retval_size);
     return ret;

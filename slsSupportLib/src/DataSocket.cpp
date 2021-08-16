@@ -1,5 +1,6 @@
 #include "sls/DataSocket.h"
 #include "sls/logger.h"
+#include "sls/sls_detector_funcs.h"
 #include "sls/sls_detector_exceptions.h"
 #include <algorithm>
 #include <arpa/inet.h>
@@ -41,6 +42,10 @@ DataSocket &DataSocket::operator=(DataSocket &&move) noexcept {
     return *this;
 }
 
+void DataSocket::setFnum(const int fnum) {
+    fnum_ = fnum;
+}
+
 int DataSocket::Receive(void *buffer, size_t size) {
     // TODO!(Erik) Add sleep? how many reties?
     int bytes_expected = static_cast<int>(size); // signed size
@@ -58,7 +63,7 @@ int DataSocket::Receive(void *buffer, size_t size) {
     } else {
         std::ostringstream ss;
         ss << "TCP socket read " << bytes_read << " bytes instead of "
-           << bytes_expected << " bytes";
+           << bytes_expected << " bytes (" << getFunctionNameFromEnum(static_cast<detFuncs>(fnum_)) << ')';
         throw sls::SocketError(ss.str());
     }
 }
@@ -83,7 +88,7 @@ int DataSocket::Send(const void *buffer, size_t size) {
     if (bytes_sent != data_size) {
         std::ostringstream ss;
         ss << "TCP socket sent " << bytes_sent << " bytes instead of "
-           << data_size << " bytes";
+           << data_size << " bytes (" << getFunctionNameFromEnum(static_cast<detFuncs>(fnum_)) << ')';
         throw sls::SocketError(ss.str());
     }
     return bytes_sent;

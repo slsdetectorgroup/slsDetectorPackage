@@ -26,7 +26,7 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
     if (sockfd.contextDescriptor == nullptr)
         throw sls::ZmqSocketError("Could not create contextDescriptor");
 
-    // create publisher
+    // create subscriber
     sockfd.socketDescriptor = zmq_socket(sockfd.contextDescriptor, ZMQ_SUB);
     if (sockfd.socketDescriptor == nullptr) {
         PrintError();

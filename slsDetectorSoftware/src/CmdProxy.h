@@ -593,6 +593,7 @@ class CmdProxy {
         {"vhighvoltage", "highvoltage"},
         {"digitest", "imagetest"},
         {"filter", "filterresistor"},
+        {"readnlines", "partialread"},
 
         /** temperature */
 
@@ -806,6 +807,7 @@ class CmdProxy {
         {"filterresistor", &CmdProxy::filterresistor},
         {"currentsource", &CmdProxy::CurrentSource},
         {"dbitpipeline", &CmdProxy::dbitpipeline},
+        {"partialread", &CmdProxy::partialread},
 
         /** temperature */
         {"templist", &CmdProxy::templist},
@@ -914,7 +916,6 @@ class CmdProxy {
         {"subdeadtime", &CmdProxy::subdeadtime},
         {"overflow", &CmdProxy::overflow},
         {"ratecorr", &CmdProxy::RateCorrection},
-        {"readnlines", &CmdProxy::readnlines},
         {"interruptsubframe", &CmdProxy::interruptsubframe},
         {"measuredperiod", &CmdProxy::measuredperiod},
         {"measuredsubperiod", &CmdProxy::measuredsubperiod},
@@ -1368,6 +1369,12 @@ class CmdProxy {
                            "clock for latching digital bits.\n\t[Gotthard2] "
                            "Options: 0-7\n\t[CTB] Options: 0-255");
 
+    INTEGER_COMMAND_VEC_ID(
+        partialread, getPartialReadout, setPartialReadout, StringTo<int>,
+        "[1 - 256]\n\t[Eiger] Number of rows to readout per half module "
+        "starting from the centre. Options: 0 - 256. 256 is default. The "
+        "permissible values depend on dynamic range and 10Gbe enabled.\n[8-512 (multiple of 8)]\n\t[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.");
+
     /** temperature */
     GET_COMMAND_NOID(
         templist, getTemperatureList,
@@ -1807,12 +1814,6 @@ class CmdProxy {
         overflow, getOverFlowMode, setOverFlowMode, StringTo<int>,
         "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in "
         "32 bit mode. Default is disabled.");
-
-    INTEGER_COMMAND_VEC_ID(
-        readnlines, getPartialReadout, setPartialReadout, StringTo<int>,
-        "[1 - 256]\n\t[Eiger] Number of rows to readout per half module "
-        "starting from the centre. Options: 0 - 256. 256 is default. The "
-        "permissible values depend on dynamic range and 10Gbe enabled.");
 
     INTEGER_COMMAND_VEC_ID(
         interruptsubframe, getInterruptSubframe, setInterruptSubframe,

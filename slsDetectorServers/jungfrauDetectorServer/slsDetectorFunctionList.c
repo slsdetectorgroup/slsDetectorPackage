@@ -2304,39 +2304,35 @@ void *start_timer(void *arg) {
     int numFrames = (getNumFrames() * getNumTriggers() *
                      (getNumAdditionalStorageCells() + 1));
     int64_t expUs = getExpTime() / 1000;
-    const int npixels = 256 * 256 * 8;
     const int dataSize = 8192;
     const int packetsize = dataSize + sizeof(sls_detector_header);
-    int maxPacketsPerFrame = 128;
-    int maxRows = MAX_ROWS_PER_READOUT;
-    if (numInterfaces == 2) {
-        maxPacketsPerFrame /= 2;
-        maxRows /= 2;
-    }
+    const int maxPacketsPerFrame = 128;
+    const int maxRows = MAX_ROWS_PER_READOUT;
     int partialReadout = getPartialReadout();
     if (partialReadout == -1) {
+        LOG(logERROR,
+            ("partial readout is -1. Assuming no partial readout.\n"));
         partialReadout = MAX_ROWS_PER_READOUT;
     }
-    const int packetsPerFrame = (maxPacketsPerFrame  * partialReadout) / maxRows;
-    
-    //LOG(logINFOBLUE, ("packetsperframe:%d numFrames:%d partial:%d maxpacketsperframe:%d maxrows:%d \n", packetsPerFrame, numFrames, partialReadout, maxPacketsPerFrame, maxRows));
-
-    // starting packet number
-    //const int startPnum = (128 / 2) - ()
+    const int packetsPerFrame =
+        ((maxPacketsPerFrame / 2) * partialReadout) / (maxRows / 2);
 
     // Generate data
     char imageData[DATA_BYTES];
     memset(imageData, 0, DATA_BYTES);
-    const int pixelsPerPacket = dataSize / 2;
-    int pixelVal = 0;
-    for (int i = 0; i < npixels; ++i) {
-        // avoiding gain also being divided when gappixels enabled in call
-        // back
-        if (i > 0 && i % pixelsPerPacket == 0) {
-            ++pixelVal;
+    {
+        const int npixels = (NCHAN * NCHIP);
+        const int pixelsPerPacket = dataSize / NUM_BYTES_PER_PIXEL;
+        int pixelVal = 0;
+        for (int i = 0; i < npixels; ++i) {
+            // avoiding gain also being divided when gappixels enabled in call
+            // back
+            if (i > 0 && i % pixelsPerPacket == 0) {
+                ++pixelVal;
+            }
+            *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                virtual_image_test_mode ? 0x0FFE : (uint16_t)pixelVal;
         }
-        *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
-            virtual_image_test_mode ? 0x0FFE : (uint16_t)pixelVal;
     }
 
     // Send data
@@ -2359,47 +2355,71 @@ void *start_timer(void *arg) {
 
             int srcOffset = 0;
             int srcOffset2 = DATA_BYTES / 2;
-            // loop packet
-            for (int i = 0; i != packetsPerFrame; ++i) {
-                // set header
-                char packetData[packetsize];
-                memset(packetData, 0, packetsize);
-                sls_detector_header *header =
-                    (sls_detector_header *)(packetData);
-                header->detType = (uint16_t)myDetectorType;
-                header->version = SLS_DETECTOR_HEADER_VERSION - 1;
-                header->frameNumber = frameNr + iframes;
-                header->packetNumber = i;
-                header->modId = 0;
-                header->row = detPos[2];
-                header->column = detPos[3];
+            // loop packet (128 packets)
+            for (int i = 0; i != maxPacketsPerFrame; ++i) {
 
-                // fill data
-                memcpy(packetData + sizeof(sls_detector_header),
-                       imageData + srcOffset, dataSize);
-                srcOffset += dataSize;
+                // send out only the partial packets
+                if (partialReadout != MAX_ROWS_PER_READOUT) {
+                    // get the mid point
+                    const int startval =
+                        (maxPacketsPerFrame / 2) - (packetsPerFrame / 2);
+                    const int endval = startval + packetsPerFrame - 1;
+                    LOG(logINFOBLUE,
+                        ("packetsperframe:%d startval:%d endval:%d'\n",
+                         packetsPerFrame, startval, endval));
+                    // skip sending out this packet
+                    if (i < startval || i > endval) {
+                        continue;
+                    }
+                }
+                int pnum = i;
 
-                sendUDPPacket(0, packetData, packetsize);
-
-                // second interface
-                char packetData2[packetsize];
-                memset(packetData2, 0, packetsize);
-                if (numInterfaces == 2) {
-                    header = (sls_detector_header *)(packetData2);
+                // first interface
+                if (numInterfaces == 1 || i < (maxPacketsPerFrame / 2)) {
+                    char packetData[packetsize];
+                    memset(packetData, 0, packetsize);
+                    sls_detector_header *header =
+                        (sls_detector_header *)(packetData);
                     header->detType = (uint16_t)myDetectorType;
                     header->version = SLS_DETECTOR_HEADER_VERSION - 1;
                     header->frameNumber = frameNr + iframes;
-                    header->packetNumber = i;
+                    header->packetNumber = pnum;
                     header->modId = 0;
                     header->row = detPos[0];
                     header->column = detPos[1];
 
                     // fill data
+                    memcpy(packetData + sizeof(sls_detector_header),
+                           imageData + srcOffset, dataSize);
+
+                    sendUDPPacket(0, packetData, packetsize);
+                    srcOffset += dataSize;
+                    LOG(logDEBUG1, ("Sent packet: %d [interface 0]\n", i));
+                }
+
+                // second interface
+                else if (numInterfaces == 2 && i >= (maxPacketsPerFrame / 2)) {
+                    pnum = i % (maxPacketsPerFrame / 2);
+
+                    char packetData2[packetsize];
+                    memset(packetData2, 0, packetsize);
+                    sls_detector_header *header =
+                        (sls_detector_header *)(packetData2);
+                    header->detType = (uint16_t)myDetectorType;
+                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+                    header->frameNumber = frameNr + iframes;
+                    header->packetNumber = pnum;
+                    header->modId = 0;
+                    header->row = detPos[2];
+                    header->column = detPos[3];
+
+                    // fill data
                     memcpy(packetData2 + sizeof(sls_detector_header),
                            imageData + srcOffset2, dataSize);
-                    srcOffset2 += dataSize;
 
                     sendUDPPacket(1, packetData2, packetsize);
+                    srcOffset2 += dataSize;
+                    LOG(logDEBUG1, ("Sent packet: %d [interface 1]\n", pnum));
                 }
             }
             LOG(logINFO, ("Sent frame: %d\n", iframes));

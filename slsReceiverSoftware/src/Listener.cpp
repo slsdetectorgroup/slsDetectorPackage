@@ -491,7 +491,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
 
         lastCaughtFrameIndex = fnum;
 
-        LOG(logDEBUG5) << "Listening " << index
+        LOG(logDEBUG1) << "Listening " << index
                        << ": currentfindex:" << currentFrameIndex
                        << ", fnum:" << fnum << ", pnum:" << pnum
                        << ", numpackets:" << numpackets;

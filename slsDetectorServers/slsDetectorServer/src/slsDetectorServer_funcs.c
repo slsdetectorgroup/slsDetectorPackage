@@ -1694,8 +1694,8 @@ int acquire(int blocking, int file_des) {
     // chipv1.1 has to be configured before acquisition
     if (getChipVersion() == 11 && !isChipConfigured()) {
             ret = FAIL;
-            strcpy(mess,
-                    "Could not start acquisition. Chip is not configured.\n");
+            strcpy(mess, "Could not start acquisition. Chip is not configured. "
+                         "Power it on to configure it.\n");
             LOG(logERROR, (mess));
     } else
 #endif
@@ -4755,11 +4755,13 @@ int set_partial_readout(int file_des) {
                         maxnl);
                 LOG(logERROR, (mess));
             } else
-#elif JUNGFRAU
+#elif JUNGFRAUD
             if (arg % PARTIAL_READOUT_MULTIPLE != 0) {
                 ret = FAIL;
                 sprintf(mess,
-                        "Could not set %d partial readout. %d must be a multiple of %d\n", arg, PARTIAL_READOUT_MULTIPLE);
+                        "Could not set partial readout. %d must be a multiple "
+                        "of %d\n",
+                        arg, PARTIAL_READOUT_MULTIPLE);
                 LOG(logERROR, (mess));                
             } else
 #endif
@@ -7137,7 +7139,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // partialReadout
-#ifdef EIGERD
+#if defined(EIGERD) || defined(JUNGFRAUD)
     i32 = getPartialReadout();
 #else
     i32 = 0;

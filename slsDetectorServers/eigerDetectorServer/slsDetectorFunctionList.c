@@ -2306,55 +2306,70 @@ void *start_timer(void *arg) {
     int tgEnable = send_to_ten_gig;
     int datasize = (tgEnable ? 4096 : 1024);
     int packetsize = datasize + sizeof(sls_detector_header);
-    int numPacketsPerFrame = (tgEnable ? 4 : 16) * dr;
+    int maxPacketsPerFrame = (tgEnable ? 4 : 16) * dr;
     int npixelsx = 256 * 2 * bytesPerPixel;
     int databytes = 256 * 256 * 2 * bytesPerPixel;
     int row = eiger_virtual_detPos[0];
     int colLeft = top ? eiger_virtual_detPos[1] : eiger_virtual_detPos[1] + 1;
     int colRight = top ? eiger_virtual_detPos[1] + 1 : eiger_virtual_detPos[1];
-    int ntotpixels = 256 * 256 * 4;
+
+    int partialReadout = getPartialReadout();
+    if (partialReadout == -1) {
+        LOG(logERROR,
+            ("partial readout is -1. Assuming no partial readout.\n"));
+        partialReadout = MAX_ROWS_PER_READOUT;
+    }
+    const int maxRows = MAX_ROWS_PER_READOUT;
+    const int packetsPerFrame =
+        (maxPacketsPerFrame * partialReadout) / maxRows;
+
 
     LOG(logDEBUG1,
         (" dr:%d\n bytesperpixel:%f\n tgenable:%d\n datasize:%d\n "
-         "packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n "
-         "ntotpixels:%d\n",
-         dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame,
-         npixelsx, databytes, ntotpixels));
+         "packetsize:%d\n maxnumpackes:%d\n npixelsx:%d\n databytes:%d\n",
+         dr, bytesPerPixel, tgEnable, datasize, packetsize, maxPacketsPerFrame,
+         npixelsx, databytes));
 
     // Generate data
     char imageData[databytes * 2];
     memset(imageData, 0, databytes * 2);
     {
-        switch (dr) {
-        case 4:
-            for (int i = 0; i < ntotpixels / 2; ++i) {
+        int npixels = NCHAN * NCHIP;
+        const int pixelsPerPacket = (double)datasize / eiger_dynamicrange;
+        int pixelVal = 0;
+        if (dr == 4) {
+            npixels /= 2;
+        } 
+        for (int i = 0; i < npixels; ++i) {
+            if (i > 0 && i % pixelsPerPacket == 0) {
+                ++pixelVal;
+            }
+            switch (dr) {
+            case 4:
                 *((uint8_t *)(imageData + i)) =
                     eiger_virtual_test_mode
                         ? 0xEE
-                        : (uint8_t)(((2 * i & 0xF) << 4) | ((2 * i + 1) & 0xF));
-            }
-            break;
-        case 8:
-            for (int i = 0; i < ntotpixels; ++i) {
+                        : (uint8_t)(((2 * pixelVal & 0xF) << 4) | ((2 * pixelVal + 1) & 0xF));
+                break;
+            case 8:
                 *((uint8_t *)(imageData + i)) =
-                    eiger_virtual_test_mode ? 0xFE : (uint8_t)i;
-            }
-            break;
-        case 16:
-            for (int i = 0; i < ntotpixels; ++i) {
+                    eiger_virtual_test_mode ? 0xFE : (uint8_t)pixelVal;
+                break;
+            case 16:
                 *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
-                    eiger_virtual_test_mode ? 0xFFE : (uint16_t)i;
-            }
-            break;
-        case 32:
-            for (int i = 0; i < ntotpixels; ++i) {
+                        eiger_virtual_test_mode ? 0xFFE
+                                                : (uint16_t)pixelVal;
+                break;
+            case 32:
                 *((uint32_t *)(imageData + i * sizeof(uint32_t))) =
-                    eiger_virtual_test_mode ? 0xFFFFFE : (uint32_t)i;
+                        eiger_virtual_test_mode ? 0xFFFFFE
+                                                : (uint32_t)pixelVal;
+                break;
+            default:
+                break;
             }
-            break;
-        default:
-            break;
         }
+        
     }
 
     // Send data
@@ -2381,7 +2396,13 @@ void *start_timer(void *arg) {
             int srcOffset2 = npixelsx;
 
             // loop packet
-            for (int i = 0; i != numPacketsPerFrame; ++i) {
+            for (int i = 0; i != maxPacketsPerFrame; ++i) {
+
+                // calculate for partial readout
+                const int startval = 0;
+                const int endval = startval + packetsPerFrame - 1;
+
+
                 // set header
                 char packetData[packetsize];
                 memset(packetData, 0, packetsize);
@@ -2443,13 +2464,15 @@ void *start_timer(void *arg) {
                         }
                     }
                 }
-                if (eiger_virtual_left_datastream) {
+                if (eiger_virtual_left_datastream && i >= startval && i <= endval) {
                     usleep(eiger_virtual_transmission_delay_left);
                     sendUDPPacket(0, packetData, packetsize);
+                    LOG(logDEBUG1, ("Sent left packet: %d\n", i));
                 }
-                if (eiger_virtual_right_datastream) {
+                if (eiger_virtual_right_datastream && i >= startval && i <= endval) {
                     usleep(eiger_virtual_transmission_delay_right);
                     sendUDPPacket(1, packetData2, packetsize);
+                    LOG(logDEBUG1, ("Sent right packet: %d\n", i));
                 }
             }
             LOG(logINFO, ("Sent frame: %d[%lld]\n", iframes,

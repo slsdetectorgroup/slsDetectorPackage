@@ -2358,20 +2358,9 @@ void *start_timer(void *arg) {
             // loop packet (128 packets)
             for (int i = 0; i != maxPacketsPerFrame; ++i) {
 
-                // send out only the partial packets
-                if (partialReadout != MAX_ROWS_PER_READOUT) {
-                    // get the mid point
-                    const int startval =
+                const int startval =
                         (maxPacketsPerFrame / 2) - (packetsPerFrame / 2);
-                    const int endval = startval + packetsPerFrame - 1;
-                    LOG(logINFOBLUE,
-                        ("packetsperframe:%d startval:%d endval:%d'\n",
-                         packetsPerFrame, startval, endval));
-                    // skip sending out this packet
-                    if (i < startval || i > endval) {
-                        continue;
-                    }
-                }
+                const int endval = startval + packetsPerFrame - 1;
                 int pnum = i;
 
                 // first interface
@@ -2391,10 +2380,12 @@ void *start_timer(void *arg) {
                     // fill data
                     memcpy(packetData + sizeof(sls_detector_header),
                            imageData + srcOffset, dataSize);
-
-                    sendUDPPacket(0, packetData, packetsize);
                     srcOffset += dataSize;
-                    LOG(logDEBUG1, ("Sent packet: %d [interface 0]\n", i));
+
+                    if (i >= startval && i <= endval) {
+                        sendUDPPacket(0, packetData, packetsize);
+                        LOG(logDEBUG1, ("Sent packet: %d [interface 0]\n", i));
+                    }
                 }
 
                 // second interface
@@ -2416,10 +2407,12 @@ void *start_timer(void *arg) {
                     // fill data
                     memcpy(packetData2 + sizeof(sls_detector_header),
                            imageData + srcOffset2, dataSize);
-
-                    sendUDPPacket(1, packetData2, packetsize);
                     srcOffset2 += dataSize;
-                    LOG(logDEBUG1, ("Sent packet: %d [interface 1]\n", pnum));
+                    
+                    if (i >= startval && i <= endval) {
+                        sendUDPPacket(1, packetData2, packetsize);
+                        LOG(logDEBUG1, ("Sent packet: %d [interface 1]\n", pnum));
+                    }
                 }
             }
             LOG(logINFO, ("Sent frame: %d\n", iframes));

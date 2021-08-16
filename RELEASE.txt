@@ -75,6 +75,10 @@ serialnumber (put)
 dbitpipeline
 readnlines->partialread
 
+setting number of udp interfaces from 1 to 2, didnt get image in gui 
+
+virtual server plots increasing values for every packet.. not every pixel
+
 3. Firmware Requirements
 ========================
         

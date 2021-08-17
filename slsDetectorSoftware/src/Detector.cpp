@@ -732,6 +732,14 @@ void Detector::setDBITPipeline(int value, Positions pos) {
     pimpl->Parallel(&Module::setDBITPipeline, pos, value);
 }
 
+Result<int> Detector::getPartialReadout(Positions pos) const {
+    return pimpl->Parallel(&Module::getPartialReadout, pos);
+}
+
+void Detector::setPartialReadout(const int lines, Positions pos) {
+    pimpl->Parallel(&Module::setPartialReadout, pos, lines);
+}
+
 // Acquisition
 
 void Detector::acquire() { pimpl->acquire(); }
@@ -839,13 +847,14 @@ void Detector::setNumberofUDPInterfaces_(int n, Positions pos) {
     bool previouslyClientStreaming = pimpl->getDataStreamingToClient();
     bool useReceiver = getUseReceiverFlag().squash(false);
     bool previouslyReceiverStreaming = false;
+    int startingPort = 0;
     if (useReceiver) {
         previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(true);
+        startingPort = getRxZmqPort({0}).squash(0);
     }
     pimpl->Parallel(&Module::setNumberofUDPInterfaces, pos, n);
     // ensure receiver zmq socket ports are multiplied by 2 (2 interfaces)
     if (getUseReceiverFlag().squash(false) && size()) {
-        int startingPort = getRxZmqPort({0}).squash(0);
         setRxZmqPort(startingPort, -1);
     }
     // redo the zmq sockets if enabled
@@ -1383,14 +1392,6 @@ void Detector::updateRxRateCorrections() {
                             dead_times);
         }
     }
-}
-
-Result<int> Detector::getPartialReadout(Positions pos) const {
-    return pimpl->Parallel(&Module::getReadNLines, pos);
-}
-
-void Detector::setPartialReadout(const int lines, Positions pos) {
-    pimpl->Parallel(&Module::setReadNLines, pos, lines);
 }
 
 Result<bool> Detector::getInterruptSubframe(Positions pos) const {

@@ -273,8 +273,8 @@ void function_table() {
     flist[F_GET_QUAD] = &get_quad;
     flist[F_SET_INTERRUPT_SUBFRAME] = &set_interrupt_subframe;
     flist[F_GET_INTERRUPT_SUBFRAME] = &get_interrupt_subframe;
-    flist[F_SET_READ_N_LINES] = &set_read_n_lines;
-    flist[F_GET_READ_N_LINES] = &get_read_n_lines;
+    flist[F_SET_PARTIAL_READOUT] = &set_partial_readout;
+    flist[F_GET_PARTIAL_READOUT] = &get_partial_readout;
     flist[F_SET_POSITION] = &set_detector_position;
     flist[F_SET_SOURCE_UDP_MAC] = &set_source_udp_mac;
     flist[F_GET_SOURCE_UDP_MAC] = &get_source_udp_mac;
@@ -1694,8 +1694,8 @@ int acquire(int blocking, int file_des) {
     // chipv1.1 has to be configured before acquisition
     if (getChipVersion() == 11 && !isChipConfigured()) {
             ret = FAIL;
-            strcpy(mess,
-                    "Could not start acquisition. Chip is not configured.\n");
+            strcpy(mess, "Could not start acquisition. Chip is not configured. "
+                         "Power it on to configure it.\n");
             LOG(logERROR, (mess));
     } else
 #endif
@@ -4717,16 +4717,16 @@ int get_interrupt_subframe(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_read_n_lines(int file_des) {
+int set_partial_readout(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int arg = 0;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting read n lines: %u\n", arg));
+    LOG(logDEBUG1, ("Setting partial readout: %u\n", arg));
 
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -4734,11 +4734,12 @@ int set_read_n_lines(int file_des) {
         if (arg <= 0 || arg > MAX_ROWS_PER_READOUT) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not set number of lines readout. Must be between 1 "
+                    "Could not set partial readout. Must be between %d "
                     "and %d\n",
-                    MAX_ROWS_PER_READOUT);
+                    MIN_ROWS_PER_READOUT, MAX_ROWS_PER_READOUT);
             LOG(logERROR, (mess));
         } else {
+#ifdef EIGERD
             int dr = setDynamicRange(GET_FLAG);
             int isTenGiga = enableTenGigabitEthernet(GET_FLAG);
             unsigned int maxnl = MAX_ROWS_PER_READOUT;
@@ -4746,24 +4747,35 @@ int set_read_n_lines(int file_des) {
             if ((arg * maxnp) % maxnl) {
                 ret = FAIL;
                 sprintf(mess,
-                        "Could not set %d number of lines readout. For %d bit "
+                        "Could not set %d partial readout. For %d bit "
                         "mode and 10 giga %s, (%d (num "
-                        "lines) x %d (max num packets for this mode)) must be "
+                        "rows) x %d (max num packets for this mode)) must be "
                         "divisible by %d\n",
                         arg, dr, isTenGiga ? "enabled" : "disabled", arg, maxnp,
                         maxnl);
                 LOG(logERROR, (mess));
-            } else {
-                if (setReadNLines(arg) == FAIL) {
+            } else
+#elif JUNGFRAUD
+            if ((check_detector_idle("set partial readout") == OK) && (arg % PARTIAL_READOUT_MULTIPLE != 0)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set partial readout. %d must be a multiple "
+                        "of %d\n",
+                        arg, PARTIAL_READOUT_MULTIPLE);
+                LOG(logERROR, (mess));
+            }  else
+#endif
+            {
+                if (setPartialReadout(arg) == FAIL) {
                     ret = FAIL;
-                    sprintf(mess, "Could not set read n lines to %d.\n", arg);
+                    sprintf(mess, "Could not set partial readout to %d.\n", arg);
                     LOG(logERROR, (mess));
                 } else {
-                    int retval = getReadNLines();
+                    int retval = getPartialReadout();
                     if (arg != retval) {
                         ret = FAIL;
                         sprintf(mess,
-                                "Could not set read n lines. Set %d, but "
+                                "Could not set partial readout. Set %d, but "
                                 "read %d\n",
                                 retval, arg);
                         LOG(logERROR, (mess));
@@ -4776,24 +4788,24 @@ int set_read_n_lines(int file_des) {
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
-int get_read_n_lines(int file_des) {
+int get_partial_readout(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-    LOG(logDEBUG1, ("Getting read n lines\n"));
+    LOG(logDEBUG1, ("Getting partial readout\n"));
 
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
-    retval = getReadNLines();
+    retval = getPartialReadout();
     if (retval == -1) {
         ret = FAIL;
-        sprintf(mess, "Could not get read n lines. \n");
+        sprintf(mess, "Could not get partial readout. \n");
         LOG(logERROR, (mess));
     } else {
-        LOG(logDEBUG1, ("Read N Lines retval: %u\n", retval));
+        LOG(logDEBUG1, ("Partial readout retval: %u\n", retval));
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -4877,7 +4889,7 @@ int set_detector_position(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             maxydet = args[0];
             detectorId = args[1];
             calculate_and_set_position();
@@ -4886,15 +4898,15 @@ int set_detector_position(int file_des) {
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
-int check_detector_idle() {
+int check_detector_idle(const char *s) {
     enum runStatus status = getRunStatus();
     if (status != IDLE && status != RUN_FINISHED && status != STOPPED &&
         status != ERROR) {
         ret = FAIL;
         sprintf(mess,
-                "Cannot configure mac when detector is not idle. Detector at "
+                "Cannot %s when detector is not idle. Detector at "
                 "%s state\n",
-                getRunStateName(status));
+                s, getRunStateName(status));
         LOG(logERROR, (mess));
     }
     return ret;
@@ -4986,7 +4998,7 @@ int set_source_udp_ip(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.srcip != arg) {
                 udpDetails.srcip = arg;
                 configure_mac();
@@ -5025,7 +5037,7 @@ int set_source_udp_ip2(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.srcip2 != arg) {
                 udpDetails.srcip2 = arg;
                 configure_mac();
@@ -5065,7 +5077,7 @@ int set_dest_udp_ip(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.dstip != arg) {
                 udpDetails.dstip = arg;
                 configure_mac();
@@ -5104,7 +5116,7 @@ int set_dest_udp_ip2(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.dstip2 != arg) {
                 udpDetails.dstip2 = arg;
                 configure_mac();
@@ -5143,7 +5155,7 @@ int set_source_udp_mac(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.srcmac != arg) {
                 udpDetails.srcmac = arg;
                 configure_mac();
@@ -5180,7 +5192,7 @@ int set_source_udp_mac2(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.srcmac2 != arg) {
                 udpDetails.srcmac2 = arg;
                 configure_mac();
@@ -5218,7 +5230,7 @@ int set_dest_udp_mac(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.dstmac != arg) {
                 udpDetails.dstmac = arg;
                 configure_mac();
@@ -5255,7 +5267,7 @@ int set_dest_udp_mac2(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.dstmac2 != arg) {
                 udpDetails.dstmac2 = arg;
                 configure_mac();
@@ -5293,7 +5305,7 @@ int set_dest_udp_port(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.dstport != arg) {
                 udpDetails.dstport = arg;
                 configure_mac();
@@ -5330,7 +5342,7 @@ int set_dest_udp_port2(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.dstport2 != arg) {
                 udpDetails.dstport2 = arg;
                 configure_mac();
@@ -5377,7 +5389,7 @@ int set_num_interfaces(int file_des) {
                     "Could not number of interfaces to %d. Options[1, 2]\n",
                     arg);
             LOG(logERROR, (mess));
-        } else if (check_detector_idle() == OK) {
+        } else if (check_detector_idle("configure mac") == OK) {
             if (getNumberofUDPInterfaces() != arg) {
                 setNumberofUDPInterfaces(arg);
                 calculate_and_set_position(); // aleady configures mac
@@ -5423,7 +5435,7 @@ int set_interface_sel(int file_des) {
             sprintf(mess, "Could not set primary interface %d. Options[0, 1]\n",
                     arg);
             LOG(logERROR, (mess));
-        } else if (check_detector_idle() == OK) {
+        } else if (check_detector_idle("configure mac") == OK) {
             if (getPrimaryInterface() != arg) {
                 selectPrimaryInterface(arg);
                 configure_mac();
@@ -7126,9 +7138,9 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-        // readnlines
-#ifdef EIGERD
-    i32 = getReadNLines();
+        // partialReadout
+#if defined(EIGERD) || defined(JUNGFRAUD)
+    i32 = getPartialReadout();
 #else
     i32 = 0;
 #endif
@@ -8074,7 +8086,7 @@ int reconfigure_udp(int file_des) {
 
     if (Server_VerifyLock() == OK) {
         LOG(logINFO, ("Reconfiguring UDP\n"));
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             configure_mac();
             if (configured == FAIL) {
                 ret = FAIL;

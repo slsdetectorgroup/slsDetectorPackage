@@ -51,6 +51,7 @@ class GeneralData {
     uint32_t vetoPacketSize{0};
     uint32_t vetoImageSize{0};
     uint32_t vetoHsize{0};
+    uint32_t maxRowsPerReadout{0};
 
     GeneralData(){};
     virtual ~GeneralData(){};
@@ -339,6 +340,7 @@ class EigerData : public GeneralData {
         threadsPerReceiver = 2;
         headerPacketSize = 40;
         standardheader = true;
+        maxRowsPerReadout = 256;
     };
 
     /**
@@ -384,6 +386,7 @@ class JungfrauData : public GeneralData {
         defaultFifoDepth = 2500;
         standardheader = true;
         defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
+        maxRowsPerReadout = 512;
     };
 
     /**

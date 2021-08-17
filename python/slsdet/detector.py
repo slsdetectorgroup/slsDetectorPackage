@@ -1846,18 +1846,20 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def readnlines(self):
+    def partialread(self):
         """
-        [Eiger] Number of lines to read out per half module 
+        [Eiger] Number of rows to read out per half module starting from the centre.
+        [Jungfrau] Number of rows to read per module starting from the centre.
         Note
         ----
-        Options: 0 - 256. 256 is default. \n
-        The permissible values depend on dynamic range and 10Gbe enabled.
+        [Eiger] Options: 1 - 256. 256 is default. \n
+        [Eiger]The permissible values depend on dynamic range and 10Gbe enabled.\n\n
+        [Jungfrau] Options: 8 - 512 (multiples of 8)
         """
         return self.getPartialReadout()
 
-    @readnlines.setter
-    def readnlines(self, value):
+    @partialread.setter
+    def partialread(self, value):
         ut.set_using_dict(self.setPartialReadout, value)
 
 

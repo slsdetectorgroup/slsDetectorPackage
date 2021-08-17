@@ -509,6 +509,15 @@ class Detector {
     /** [CTB] Options: 0-255 \n [Gotthard2] Options: 0-7 */
     void setDBITPipeline(int value, Positions pos = {});
 
+    /** [Eiger][Jungfrau] */
+    Result<int> getPartialReadout(Positions pos = {}) const;
+
+    /** [Eiger] Number of lines to read out per half module
+     * Options: 0 - 256. 256 is default. The permissible values depend on
+     * dynamic range and 10Gbe enabled. \n[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.
+     */
+    void setPartialReadout(const int lines, Positions pos = {});
+
     ///@{
 
     /** @name Acquisition */
@@ -1052,15 +1061,6 @@ class Detector {
      * 0 disable correction, > 0 custom deadtime, cannot be -1
      */
     void setRateCorrection(ns dead_time, Positions pos = {});
-
-    /** [Eiger] */
-    Result<int> getPartialReadout(Positions pos = {}) const;
-
-    /** [Eiger] Number of lines to read out per half module
-     * Options: 0 - 256. 256 is default. The permissible values depend on
-     * dynamic range and 10Gbe enabled.
-     */
-    void setPartialReadout(const int lines, Positions pos = {});
 
     /** [Eiger] */
     Result<bool> getInterruptSubframe(Positions pos = {}) const;

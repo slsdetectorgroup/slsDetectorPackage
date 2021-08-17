@@ -37,7 +37,7 @@ struct MasterAttributes {
     ns subExptime{0};
     ns subPeriod{0};
     uint32_t quad{0};
-    uint32_t numLinesReadout;
+    uint32_t partialReadout;
     std::vector<int64_t> ratecorr;
     uint32_t adcmask{0};
     uint32_t analog{0};
@@ -336,7 +336,8 @@ class JungfrauMasterAttributes : public MasterAttributes {
         oss << MasterAttributes::GetBinaryMasterAttributes()
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
             << "Period                     : " << sls::ToString(period) << '\n'
-            << "Number of UDP Interfaces   : " << numUDPInterfaces << '\n';
+            << "Number of UDP Interfaces   : " << numUDPInterfaces << '\n'
+            << "Partial Readout (rows)     : " << partialReadout << '\n';
         std::string message = oss.str();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
@@ -351,6 +352,13 @@ class JungfrauMasterAttributes : public MasterAttributes {
             DataSet dataset = group->createDataSet(
                 "Number of UDP Interfaces", PredType::NATIVE_INT, dataspace);
             dataset.write(&numUDPInterfaces, PredType::NATIVE_INT);
+        }
+        // partialReadout
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "Partial readout (rows)", PredType::NATIVE_INT, dataspace);
+            dataset.write(&partialReadout, PredType::NATIVE_INT);
         }
     };
 #endif
@@ -373,7 +381,7 @@ class EigerMasterAttributes : public MasterAttributes {
             << "SubPeriod                  : " << sls::ToString(subPeriod)
             << '\n'
             << "Quad                       : " << quad << '\n'
-            << "Number of Lines read out   : " << numLinesReadout << '\n'
+            << "Partial Readout (rows)     : " << partialReadout << '\n'
             << "Rate Corrections           : " << sls::ToString(ratecorr)
             << '\n';
         std::string message = oss.str();
@@ -427,12 +435,12 @@ class EigerMasterAttributes : public MasterAttributes {
             group->createDataSet("Quad", PredType::NATIVE_INT, dataspace);
             dataset.write(&quad, PredType::NATIVE_INT);
         }
-        // numLinesReadout
+        // partialReadout
         {
             DataSpace dataspace = DataSpace(H5S_SCALAR);
             DataSet dataset = group->createDataSet(
-                "Number of Lines read out", PredType::NATIVE_INT, dataspace);
-            dataset.write(&numLinesReadout, PredType::NATIVE_INT);
+                "Partial readout (rows)", PredType::NATIVE_INT, dataspace);
+            dataset.write(&partialReadout, PredType::NATIVE_INT);
         }
         // Rate corrections
         {

@@ -167,6 +167,15 @@
 #define ADC_PORT_INVERT_ADC_3_OFST          (24)
 #define ADC_PORT_INVERT_ADC_3_MSK           (0x000000FF << ADC_PORT_INVERT_ADC_3_OFST)
 
+/** Partial Readout Register */
+#define PARTIAL_READOUT_REG                 (0x44 << MEM_MAP_SHIFT)
+
+#define PARTIAL_READOUT_NUM_ROWS_OFST        (0)
+#define PARTIAL_READOUT_NUM_ROWS_MSK         (0x0000003F << PARTIAL_READOUT_NUM_ROWS_OFST)
+#define PARTIAL_READOUT_ENBL_OFST            (7)
+#define PARTIAL_READOUT_ENBL_MSK             (0x00000001 << PARTIAL_READOUT_ENBL_OFST)
+
+
 /* Configuration Register */
 #define CONFIG_REG                          (0x4D << MEM_MAP_SHIFT)
 

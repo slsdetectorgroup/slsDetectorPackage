@@ -374,36 +374,6 @@ TEST_CASE("ratecorr", "[.cmd]") {
     }
 }
 
-TEST_CASE("readnlines", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        auto prev_val = det.getPartialReadout();
-        {
-            std::ostringstream oss;
-            proxy.Call("readnlines", {"256"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "readnlines 256\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("readnlines", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "readnlines 256\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("readnlines", {"16"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "readnlines 16\n");
-        }
-        REQUIRE_THROWS(proxy.Call("readnlines", {"0"}, -1, PUT));
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPartialReadout(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("readnlines", {}, -1, GET));
-    }
-}
-
 TEST_CASE("interruptsubframe", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

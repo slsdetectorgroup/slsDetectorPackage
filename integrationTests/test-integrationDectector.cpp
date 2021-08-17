@@ -488,7 +488,7 @@ TEST_CASE("Eiger or Jungfrau nextframenumber",
     CHECK(m.getNextFrameNumber() == (val + 1));
 }
 
-TEST_CASE("Eiger readnlines", "[.eigerintegration][readnlines]") {
+TEST_CASE("Eiger partialread", "[.eigerintegration][partialread]") {
     SingleDetectorConfig c;
 
     // pick up multi detector from shm id 0
@@ -501,16 +501,16 @@ TEST_CASE("Eiger readnlines", "[.eigerintegration][readnlines]") {
 
     m.setDynamicRange(16);
     m.enableTenGigabitEthernet(0);
-    m.setReadNLines(256);
-    CHECK(m.getReadNLines() == 256);
-    m.setReadNLines(1);
-    CHECK(m.getReadNLines() == 1);
+    m.setPartialReadout(256);
+    CHECK(m.getPartialReadout() == 256);
+    m.setPartialReadout(1);
+    CHECK(m.getPartialReadout() == 1);
 
     m.setDynamicRange(8);
-    m.setReadNLines(256);
-    CHECK(m.getReadNLines() == 256);
-    CHECK_THROWS_AS(m.setReadNLines(1), sls::RuntimeError);
-    CHECK(m.getReadNLines() == 256);
-    CHECK_THROWS_AS(m.setReadNLines(0), sls::RuntimeError);
-    m.setReadNLines(256);
+    m.setPartialReadout(256);
+    CHECK(m.getPartialReadout() == 256);
+    CHECK_THROWS_AS(m.setPartialReadout(1), sls::RuntimeError);
+    CHECK(m.getPartialReadout() == 256);
+    CHECK_THROWS_AS(m.setPartialReadout(0), sls::RuntimeError);
+    m.setPartialReadout(256);
 }

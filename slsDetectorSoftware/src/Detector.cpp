@@ -909,7 +909,7 @@ void Detector::setSourceUDPMAC2(const MacAddr mac, Positions pos) {
 }
 
 Result<defs::udpDestination>
-Detector::getDestinationUDPList(const int entry, Positions pos) const {
+Detector::getDestinationUDPList(const uint32_t entry, Positions pos) const {
     return pimpl->Parallel(&Module::getDestinationUDPList, pos, entry);
 }
 

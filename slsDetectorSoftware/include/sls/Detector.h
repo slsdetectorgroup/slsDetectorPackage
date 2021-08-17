@@ -667,7 +667,7 @@ class Detector {
     void setSourceUDPMAC2(const MacAddr mac, Positions pos = {});
 
     Result<defs::udpDestination>
-    getDestinationUDPList(const int entry, Positions pos = {}) const;
+    getDestinationUDPList(const uint32_t entry, Positions pos = {}) const;
 
     void setDestinationUDPList(const defs::udpDestination, const int module_id);
 

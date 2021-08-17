@@ -222,7 +222,7 @@ class Module : public virtual slsDetectorDefs {
     void setSourceUDPMAC(const sls::MacAddr mac);
     sls::MacAddr getSourceUDPMAC2() const;
     void setSourceUDPMAC2(const sls::MacAddr mac);
-    udpDestination getDestinationUDPList(const int entry) const;
+    udpDestination getDestinationUDPList(const uint32_t entry) const;
     void setDestinationUDPList(const defs::udpDestination dest);
     sls::IpAddr getDestinationUDPIP() const;
     void setDestinationUDPIP(const sls::IpAddr ip);
@@ -745,7 +745,6 @@ class Module : public virtual slsDetectorDefs {
 
     const int moduleId;
     mutable sls::SharedMemory<sharedSlsDetector> shm{0, 0};
-    udpDestination bla{};
 };
 
 } // namespace sls

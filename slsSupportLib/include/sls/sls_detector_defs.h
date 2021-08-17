@@ -457,64 +457,63 @@ typedef struct {
     } __attribute__((packed));
 
     struct currentSrcParameters {
-        int enable;
-        int fix;
-        int normal;
-        uint64_t select;
+        int enable_;
+        int fix_;
+        int normal_;
+        uint64_t select_;
 
         /** [Gotthard2][Jungfrau] disable */
-        currentSrcParameters() : enable(0), fix(-1), normal(-1), select(0) {}
+        currentSrcParameters()
+            : enable_(0), fix_(-1), normal_(-1), select_(0) {}
 
         /** [Gotthard2] enable or disable */
-        explicit currentSrcParameters(bool ena)
-            : enable(static_cast<int>(ena)), fix(-1), normal(-1), select(0) {}
+        explicit currentSrcParameters(bool enable)
+            : enable_(static_cast<int>(enable)), fix_(-1), normal_(-1),
+              select_(0) {}
 
         /** [Jungfrau](chipv1.0) enable current src with fix or no fix,
-         * selectColumn is 0 to 63 columns only */
-        currentSrcParameters(bool fixCurrent, uint64_t selectColumn)
-            : enable(1), fix(static_cast<int>(fixCurrent)), normal(-1),
-              select(selectColumn) {}
+         * select is 0 to 63 columns only */
+        currentSrcParameters(bool fix, uint64_t select)
+            : enable_(1), fix_(static_cast<int>(fix)), normal_(-1),
+              select_(select) {}
 
-        /** [Jungfrau](chipv1.1) enable current src, fixCurrent[fix|no fix],
-         * selectColumn is a mask of 63 bits (muliple columns can be selected
-         * simultaneously, normalCurrent [normal|low] */
-        currentSrcParameters(bool fixCurrent, uint64_t selectColumn,
-                             bool normalCurrent)
-            : enable(1), fix(static_cast<int>(fixCurrent)),
-              normal(static_cast<int>(normalCurrent)), select(selectColumn) {}
+        /** [Jungfrau](chipv1.1) enable current src, fix[fix|no fix],
+         * select is a mask of 63 bits (muliple columns can be selected
+         * simultaneously, normal [normal|low] */
+        currentSrcParameters(bool fix, uint64_t select, bool normal)
+            : enable_(1), fix_(static_cast<int>(fix)),
+              normal_(static_cast<int>(normal)), select_(select) {}
 
         bool operator==(const currentSrcParameters &other) const {
-            return ((enable == other.enable) && (fix == other.fix) &&
-                    (normal == other.normal) && (select == other.select));
+            return ((enable_ == other.enable_) && (fix_ == other.fix_) &&
+                    (normal_ == other.normal_) && (select_ == other.select_));
         }
     } __attribute__((packed));
 
     struct udpDestination {
-        int entry;
-        uint32_t ip{};
-        uint32_t ip2{};
-        uint64_t mac{};
-        uint64_t mac2{};
-        int port{};
-        int port2{};
-        udpDestination();
+        uint32_t entry_{};
+        uint32_t port_{};
+        uint32_t port2_{};
+        uint32_t ip_{};
+        uint32_t ip2_{};
+        uint64_t mac_{};
+        uint64_t mac2_{};
+        udpDestination() {}
+        udpDestination(uint32_t entry, uint32_t port, uint32_t ip, uint64_t mac)
+            : entry_(entry), port_(port), ip_(ip), mac_(mac) {}
+        udpDestination(uint32_t entry, uint32_t port, uint32_t ip, uint64_t mac,
+                       uint32_t port2)
+            : entry_(entry), port_(port), port2_(port2), ip_(ip), mac_(mac) {}
+        udpDestination(uint32_t entry, uint32_t port, uint32_t ip, uint64_t mac,
+                       uint32_t port2, uint32_t ip2, uint64_t mac2)
+            : entry_(entry), port_(port), port2_(port2), ip_(ip), ip2_(ip2),
+              mac_(mac), mac2_(mac2) {}
+
         bool operator==(const udpDestination &other) const {
-            return ((entry == other.entry) && (ip == other.ip) &&
-                    (ip2 == other.ip2) && (mac == other.mac) &&
-                    (mac2 == other.mac2) && (port == other.port) &&
-                    (port2 == other.port2));
-        }
-        udpDestination operator=(const udpDestination &other) const {
-            if (this == &other)
-                return *this;
-            entry = other.entry;
-            ip = other.ip;
-            ip2 = other.ip2;
-            mac = other.mac;
-            mac2 = other.mac2;
-            port = other.port;
-            port2 = other.port2;
-            return *this;
+            return ((entry_ == other.entry_) && (port_ == other.port_) &&
+                    (port2_ == other.port2_) && (ip_ == other.ip_) &&
+                    (ip2_ == other.ip2_) && (mac_ == other.mac_) &&
+                    (mac2_ == other.mac2_));
         }
     } __attribute__((packed));
 

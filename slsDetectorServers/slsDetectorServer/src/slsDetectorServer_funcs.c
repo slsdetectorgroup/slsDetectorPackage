@@ -394,6 +394,8 @@ void function_table() {
     flist[F_GET_DBIT_PIPELINE] = &get_dbit_pipeline;
     flist[F_GET_MODULE_ID] = &get_module_id;
     flist[F_SET_MODULE_ID] = &set_module_id;
+    flist[F_GET_DEST_UDP_LIST] = &get_dest_udp_list;
+    flist[F_SET_DEST_UDP_LIST] = &set_dest_udp_list;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8974,6 +8976,148 @@ int set_module_id(int file_des) {
         int retval = getModuleId();
         LOG(logDEBUG1, ("retval module id: %d\n", retval));
         validate(&ret, mess, arg, retval, "set module id", DEC);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_dest_udp_list(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint32_t arg = 0;
+    uint32_t retvals[5] = {0, 0, 0, 0, 0};
+    uint64_t retvals64[2] = {0, 0};
+    LOG(logDEBUG1, ("Getting udp destination list for entry %d\n", arg));
+
+#if !defined(EIGERD) && !defined(JUNGFRAUD)
+    functionNotImplemented();
+#else
+    // get only (allow entry 0???? if so, then must talk to receiver)
+    retvals[] = getCurrentSource();
+    LOG(logDEBUG1, ("current source enable retval: %u\n", retvals[0]));
+#ifdef JUNGFRAUD
+    if (retvals[0]) {
+        retvals[1] = getFixCurrentSource();
+        retvals[2] = getNormalCurrentSource();
+        retval_select = getSelectCurrentSource();
+    }
+    LOG(logDEBUG1, ("current source parameters retval: [enable:%d fix:%d, "
+                    "normal:%d, select:%lld]\n",
+                    retvals[0], retvals[1], retvals[2], retval_select));
+#endif
+#endif
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret != FAIL) {
+        sendData(file_des, retvals, sizeof(retvals), INT32);
+        sendData(file_des, &retval_select, sizeof(retval_select), INT64);
+    }
+    return ret;
+}
+
+int set_dest_udp_list(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint64_t select = 0;
+    int args[3] = {-1, -1, -1};
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, &select, sizeof(select), INT64) < 0)
+        return printSocketReadError();
+    int enable = args[0];
+    int fix = args[1];
+    int normal = args[2];
+
+    LOG(logINFOBLUE, ("Setting current source [enable:%d, fix:%d, select:%lld, "
+                      "normal:%d]\n",
+                      enable, fix, (long long int)select, normal));
+
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (enable != 0 && enable != 1) {
+            ret = FAIL;
+            strcpy(mess, "Could not enable/disable current source. Enable can "
+                         "be 0 or 1 only.\n");
+            LOG(logERROR, (mess));
+        }
+        // disable
+        else if (enable == 0 && (fix != -1 || normal != -1)) {
+            ret = FAIL;
+            strcpy(
+                mess,
+                "Could not disable current source. Requires no parameters.\n");
+            LOG(logERROR, (mess));
+        }
+        // enable
+        else if (enable == 1) {
+#ifdef GOTTHARD2D
+            // no parameters allowed
+            if (fix != -1 || normal != -1) {
+                ret = FAIL;
+                strcpy(mess, "Could not enable current source. Fix and normal "
+                             "are invalid parameters for this detector.\n");
+                LOG(logERROR, (mess));
+            }
+#else
+            int chipVersion = getChipVersion();
+            if (ret == OK) {
+                if (chipVersion == 11) {
+                    // require both
+                    if ((fix != 0 && fix != 1) ||
+                        (normal != 0 && normal != 1)) {
+                        ret = FAIL;
+                        strcpy(mess, "Could not enable current source. Invalid "
+                                     "or insufficient parameters (fix or "
+                                     "normal). or Options: 0 or 1.\n");
+                        LOG(logERROR, (mess));
+                    }
+                }
+                // chipv1.0
+                else {
+                    // require only fix
+                    if (fix != 0 && fix != 1) {
+                        ret = FAIL;
+                        strcpy(mess,
+                               "Could not enable current source. Invalid value "
+                               "for parameter (fix). Options: 0 or 1.\n");
+                        LOG(logERROR, (mess));
+                    } else if (normal != -1) {
+                        ret = FAIL;
+                        strcpy(mess, "Could not enable current source. Invalid "
+                                     "parmaeter (normal). Require only fix and "
+                                     "select for chipv1.0.\n");
+                        LOG(logERROR, (mess));
+                    }
+                    // select can only be 0-63
+                    else if (select > MAX_SELECT_CHIP10_VAL) {
+                        ret = FAIL;
+                        strcpy(mess,
+                               "Could not enable current source. Invalid value "
+                               "for parameter (select). Options: 0-63.\n");
+                        LOG(logERROR, (mess));
+                    }
+                }
+            }
+#endif
+        }
+
+        if (ret == OK) {
+#ifdef JUNGFRAUD
+            if (enable == 0) {
+                disableCurrentSource();
+            } else {
+                enableCurrentSource(fix, select, normal);
+            }
+#else
+            setCurrentSource(enable);
+#endif
+            int retval = getCurrentSource();
+            LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
+            validate(&ret, mess, enable, retval, "set current source enable",
+                     DEC);
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

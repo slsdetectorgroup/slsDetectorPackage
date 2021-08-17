@@ -245,6 +245,8 @@ enum detFuncs {
     F_GET_DBIT_PIPELINE,
     F_GET_MODULE_ID,
     F_SET_MODULE_ID,
+    F_GET_DEST_UDP_LIST,
+    F_SET_DEST_UDP_LIST,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -597,6 +599,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_DBIT_PIPELINE:               return "F_GET_DBIT_PIPELINE";
     case F_GET_MODULE_ID:                   return "F_GET_MODULE_ID";
     case F_SET_MODULE_ID:                   return "F_SET_MODULE_ID";
+    case F_GET_DEST_UDP_LIST:               return "F_GET_DEST_UDP_LIST";
+    case F_SET_DEST_UDP_LIST:               return "F_SET_DEST_UDP_LIST";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

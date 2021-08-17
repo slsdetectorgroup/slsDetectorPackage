@@ -116,25 +116,25 @@ std::ostream &operator<<(std::ostream &os,
 
 std::string ToString(const slsDetectorDefs::currentSrcParameters &r) {
     std::ostringstream oss;
-    if (r.fix < -1 || r.fix > 1 || r.normal < -1 || r.normal > 1) {
+    if (r.fix_ < -1 || r.fix_ > 1 || r.normal_ < -1 || r.normal_ > 1) {
         throw sls::RuntimeError(
             "Invalid current source parameters. Cannot print.");
     }
     oss << '[';
-    if (r.enable) {
+    if (r.enable_) {
         oss << "enabled";
         // [jungfrau]
-        if (r.fix != -1) {
-            oss << (r.fix == 1 ? ", fix" : ", nofix");
+        if (r.fix_ != -1) {
+            oss << (r.fix_ == 1 ? ", fix" : ", nofix");
         }
         // [jungfrau chip v1.1]
-        if (r.normal != -1) {
-            oss << ", " << ToStringHex(r.select, 16);
-            oss << (r.normal == 1 ? ", normal" : ", low");
+        if (r.normal_ != -1) {
+            oss << ", " << ToStringHex(r.select_, 16);
+            oss << (r.normal_ == 1 ? ", normal" : ", low");
         }
         // [jungfrau chip v1.0]
         else {
-            oss << ", " << r.select;
+            oss << ", " << r.select_;
         }
     } else {
         oss << "disabled";
@@ -151,18 +151,18 @@ std::ostream &operator<<(std::ostream &os,
 std::string ToString(const slsDetectorDefs::udpDestination &r) {
     std::ostringstream oss;
     oss << '[' << std::endl
-        << "entry " << r.entry << std::endl
-        << "ip " << IpAddr(r.ip) << std::endl
-        << "mac " << MacAddr(r.mac) << std::endl
-        << "port " << r.port << std::endl;
-    if (r.port2 != 0) {
-        oss << "port2 " << r.port2 << std::endl;
+        << "entry " << r.entry_ << std::endl
+        << "ip " << IpAddr(r.ip_) << std::endl
+        << "mac " << MacAddr(r.mac_) << std::endl
+        << "port " << r.port_ << std::endl;
+    if (r.port2_ != 0) {
+        oss << "port2 " << r.port2_ << std::endl;
     }
-    if (r.ip2 != 0) {
-        oss << "ip2 " << IpAddr(r.ip2) << std::endl;
+    if (r.ip2_ != 0) {
+        oss << "ip2 " << IpAddr(r.ip2_) << std::endl;
     }
-    if (r.mac2 != 0) {
-        oss << "mac2 " << MacAddr(r.mac2) << std::endl;
+    if (r.mac2_ != 0) {
+        oss << "mac2 " << MacAddr(r.mac2_) << std::endl;
     }
     oss << ']';
     return oss.str();

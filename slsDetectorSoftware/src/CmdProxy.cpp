@@ -1380,40 +1380,69 @@ IpAddr CmdProxy::getIpFromAuto() {
 }
 
 defs::udpDestination CmdProxy::getUdpList() {
-    defs::udpDestination dest{};
+    uint32_t entry{};
+    uint32_t port{};
+    uint32_t port2{};
+    uint32_t ip{};
+    uint32_t ip2{};
+    uint64_t mac{};
+    uint64_t mac2{};
+
+    bool hasEntry = false;
+
     for (auto it : args) {
         size_t pos = it.find('=');
         std::string key = it.substr(0, pos);
         std::string value = it.substr(pos + 1);
-        if (key == "ip") {
+        if (key == "entry") {
+            entry = StringTo<int>(value);
+            hasEntry = true;
+        } else if (key == "ip") {
             if (value == "auto") {
                 auto val = getIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip of detector " << det_id
                              << " to " << val;
-                dest.ip = val.uint32();
+                ip = val.uint32();
             } else {
-                dest.ip = IpAddr(value).uint32();
+                ip = IpAddr(value).uint32();
             }
         } else if (key == "ip2") {
             if (value == "auto") {
                 auto val = getIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id
                              << " to " << val;
-                dest.ip2 = val.uint32();
+                ip2 = val.uint32();
             } else {
-                dest.ip2 = IpAddr(value).uint32();
+                ip2 = IpAddr(value).uint32();
             }
         } else if (key == "mac") {
-            dest.mac = MacAddr(value).uint64();
+            mac = MacAddr(value).uint64();
         } else if (key == "mac2") {
-            dest.mac2 = MacAddr(value).uint64();
+            mac2 = MacAddr(value).uint64();
         } else if (key == "port") {
-            dest.port = StringTo<int>(value);
+            port = StringTo<uint32_t>(value);
         } else if (key == "port2") {
-            dest.port2 = StringTo<int>(value);
+            port2 = StringTo<uint32_t>(value);
         }
     }
-    return dest;
+    // necessary arguments
+    if (hasEntry && ip != 0 && mac != 0 && port != 0) {
+        if (ip2 == 0 && mac2 == 0) {
+            // default (no second interface)
+            if (port2 == 0) {
+                return defs::udpDestination(entry, port, ip, mac);
+            }
+            // eiger (second udp port)
+            else {
+                return defs::udpDestination(entry, port, ip, mac, port2);
+            }
+        }
+        // jungfrau and gotthard2 (second interface)
+        if (ip2 != 0 && mac2 != 0 && port2 != 0) {
+            return defs::udpDestination(entry, port, ip, mac, port2, ip2, mac2);
+        }
+    }
+    throw sls::RuntimeError("Insufficient arguments");
 }
 
 std::string CmdProxy::UDPDestinationList(int action) {

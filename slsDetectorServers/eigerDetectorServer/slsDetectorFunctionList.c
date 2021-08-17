@@ -2340,7 +2340,7 @@ void *start_timer(void *arg) {
         if (dr == 4) {
             npixels /= 2;
         }
-        LOG(logDBUG1,
+        LOG(logDEBUG1,
             ("pixels:%d pixelsperpacket:%d\n", npixels, pixelsPerPacket));
         for (int i = 0; i < npixels; ++i) {
             if (i > 0 && i % pixelsPerPacket == 0) {

@@ -148,7 +148,7 @@ int set_partial_readout(int);
 int get_partial_readout(int);
 void calculate_and_set_position();
 int set_detector_position(int);
-int check_detector_idle();
+int check_detector_idle(const char *s);
 int is_udp_configured();
 void configure_mac();
 int set_source_udp_ip(int);

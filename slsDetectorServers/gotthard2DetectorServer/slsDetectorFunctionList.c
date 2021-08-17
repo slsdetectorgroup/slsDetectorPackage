@@ -1728,18 +1728,18 @@ void calcChecksum(udp_header *udp) {
 
 int configureMAC() {
 
-    uint32_t srcip = udpDetails.srcip;
-    uint32_t srcip2 = udpDetails.srcip2;
-    uint32_t dstip = udpDetails.dstip;
-    uint32_t dstip2 = udpDetails.dstip2;
-    uint64_t srcmac = udpDetails.srcmac;
-    uint64_t srcmac2 = udpDetails.srcmac2;
-    uint64_t dstmac = udpDetails.dstmac;
-    uint64_t dstmac2 = udpDetails.dstmac2;
-    int srcport = udpDetails.srcport;
-    int srcport2 = udpDetails.srcport2;
-    int dstport = udpDetails.dstport;
-    int dstport2 = udpDetails.dstport2;
+    uint32_t srcip = udpDetails[0].srcip;
+    uint32_t srcip2 = udpDetails[0].srcip2;
+    uint32_t dstip = udpDetails[0].dstip;
+    uint32_t dstip2 = udpDetails[0].dstip2;
+    uint64_t srcmac = udpDetails[0].srcmac;
+    uint64_t srcmac2 = udpDetails[0].srcmac2;
+    uint64_t dstmac = udpDetails[0].dstmac;
+    uint64_t dstmac2 = udpDetails[0].dstmac2;
+    int srcport = udpDetails[0].srcport;
+    int srcport2 = udpDetails[0].srcport2;
+    int dstport = udpDetails[0].dstport;
+    int dstport2 = udpDetails[0].dstport2;
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
     char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],

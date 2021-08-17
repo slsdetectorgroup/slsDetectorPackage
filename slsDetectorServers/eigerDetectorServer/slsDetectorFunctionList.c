@@ -136,8 +136,8 @@ void basictests() {
 
     // update default udpdstip and udpdstmac (1g is hardware ip and hardware
     // mac)
-    udpDetails.srcip = ipadd;
-    udpDetails.srcmac = macadd;
+    udpDetails[0].srcip = ipadd;
+    udpDetails[0].srcmac = macadd;
 
 #ifdef VIRTUAL
     return;
@@ -1518,13 +1518,13 @@ enum timingMode getTiming() {
 /* configure mac */
 
 int configureMAC() {
-    uint32_t srcip = udpDetails.srcip;
-    uint32_t dstip = udpDetails.dstip;
-    uint64_t srcmac = udpDetails.srcmac;
-    uint64_t dstmac = udpDetails.dstmac;
-    int srcport = udpDetails.srcport;
-    int dstport = udpDetails.dstport;
-    int dstport2 = udpDetails.dstport2;
+    uint32_t srcip = udpDetails[0].srcip;
+    uint32_t dstip = udpDetails[0].dstip;
+    uint64_t srcmac = udpDetails[0].srcmac;
+    uint64_t dstmac = udpDetails[0].dstmac;
+    int srcport = udpDetails[0].srcport;
+    int dstport = udpDetails[0].dstport;
+    int dstport2 = udpDetails[0].dstport2;
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
     char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],

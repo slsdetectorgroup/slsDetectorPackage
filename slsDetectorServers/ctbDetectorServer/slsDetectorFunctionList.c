@@ -1516,12 +1516,12 @@ void calcChecksum(udp_header *udp) {
 }
 
 int configureMAC() {
-    uint32_t srcip = udpDetails.srcip;
-    uint32_t dstip = udpDetails.dstip;
-    uint64_t srcmac = udpDetails.srcmac;
-    uint64_t dstmac = udpDetails.dstmac;
-    int srcport = udpDetails.srcport;
-    int dstport = udpDetails.dstport;
+    uint32_t srcip = udpDetails[0].srcip;
+    uint32_t dstip = udpDetails[0].dstip;
+    uint64_t srcmac = udpDetails[0].srcmac;
+    uint64_t dstmac = udpDetails[0].dstmac;
+    int srcport = udpDetails[0].srcport;
+    int dstport = udpDetails[0].dstport;
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
     char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],

@@ -477,7 +477,7 @@ std::vector<uint64_t> Implementation::getNumMissingPackets() const {
         int np = generalData->packetsPerFrame;
         uint64_t totnp = np;
         // partial readout
-        if (partialReadout != generalData->maxRowsPerReadout) {
+        if (partialReadout != (int)generalData->maxRowsPerReadout) {
             totnp = ((partialReadout * np) / generalData->maxRowsPerReadout);
         }
         totnp *= numberOfTotalFrames;

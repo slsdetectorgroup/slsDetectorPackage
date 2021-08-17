@@ -4756,14 +4756,14 @@ int set_partial_readout(int file_des) {
                 LOG(logERROR, (mess));
             } else
 #elif JUNGFRAUD
-            if (arg % PARTIAL_READOUT_MULTIPLE != 0) {
+            if ((check_detector_idle("set partial readout") == OK) && (arg % PARTIAL_READOUT_MULTIPLE != 0)) {
                 ret = FAIL;
                 sprintf(mess,
                         "Could not set partial readout. %d must be a multiple "
                         "of %d\n",
                         arg, PARTIAL_READOUT_MULTIPLE);
-                LOG(logERROR, (mess));                
-            } else
+                LOG(logERROR, (mess));
+            }  else
 #endif
             {
                 if (setPartialReadout(arg) == FAIL) {
@@ -4889,7 +4889,7 @@ int set_detector_position(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             maxydet = args[0];
             detectorId = args[1];
             calculate_and_set_position();
@@ -4898,15 +4898,15 @@ int set_detector_position(int file_des) {
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
-int check_detector_idle() {
+int check_detector_idle(const char *s) {
     enum runStatus status = getRunStatus();
     if (status != IDLE && status != RUN_FINISHED && status != STOPPED &&
         status != ERROR) {
         ret = FAIL;
         sprintf(mess,
-                "Cannot configure mac when detector is not idle. Detector at "
+                "Cannot %s when detector is not idle. Detector at "
                 "%s state\n",
-                getRunStateName(status));
+                s, getRunStateName(status));
         LOG(logERROR, (mess));
     }
     return ret;
@@ -4998,7 +4998,7 @@ int set_source_udp_ip(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.srcip != arg) {
                 udpDetails.srcip = arg;
                 configure_mac();
@@ -5037,7 +5037,7 @@ int set_source_udp_ip2(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.srcip2 != arg) {
                 udpDetails.srcip2 = arg;
                 configure_mac();
@@ -5077,7 +5077,7 @@ int set_dest_udp_ip(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.dstip != arg) {
                 udpDetails.dstip = arg;
                 configure_mac();
@@ -5116,7 +5116,7 @@ int set_dest_udp_ip2(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.dstip2 != arg) {
                 udpDetails.dstip2 = arg;
                 configure_mac();
@@ -5155,7 +5155,7 @@ int set_source_udp_mac(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.srcmac != arg) {
                 udpDetails.srcmac = arg;
                 configure_mac();
@@ -5192,7 +5192,7 @@ int set_source_udp_mac2(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.srcmac2 != arg) {
                 udpDetails.srcmac2 = arg;
                 configure_mac();
@@ -5230,7 +5230,7 @@ int set_dest_udp_mac(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.dstmac != arg) {
                 udpDetails.dstmac = arg;
                 configure_mac();
@@ -5267,7 +5267,7 @@ int set_dest_udp_mac2(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.dstmac2 != arg) {
                 udpDetails.dstmac2 = arg;
                 configure_mac();
@@ -5305,7 +5305,7 @@ int set_dest_udp_port(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.dstport != arg) {
                 udpDetails.dstport = arg;
                 configure_mac();
@@ -5342,7 +5342,7 @@ int set_dest_udp_port2(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             if (udpDetails.dstport2 != arg) {
                 udpDetails.dstport2 = arg;
                 configure_mac();
@@ -5389,7 +5389,7 @@ int set_num_interfaces(int file_des) {
                     "Could not number of interfaces to %d. Options[1, 2]\n",
                     arg);
             LOG(logERROR, (mess));
-        } else if (check_detector_idle() == OK) {
+        } else if (check_detector_idle("configure mac") == OK) {
             if (getNumberofUDPInterfaces() != arg) {
                 setNumberofUDPInterfaces(arg);
                 calculate_and_set_position(); // aleady configures mac
@@ -5435,7 +5435,7 @@ int set_interface_sel(int file_des) {
             sprintf(mess, "Could not set primary interface %d. Options[0, 1]\n",
                     arg);
             LOG(logERROR, (mess));
-        } else if (check_detector_idle() == OK) {
+        } else if (check_detector_idle("configure mac") == OK) {
             if (getPrimaryInterface() != arg) {
                 selectPrimaryInterface(arg);
                 configure_mac();
@@ -8086,7 +8086,7 @@ int reconfigure_udp(int file_des) {
 
     if (Server_VerifyLock() == OK) {
         LOG(logINFO, ("Reconfiguring UDP\n"));
-        if (check_detector_idle() == OK) {
+        if (check_detector_idle("configure mac") == OK) {
             configure_mac();
             if (configured == FAIL) {
                 ret = FAIL;

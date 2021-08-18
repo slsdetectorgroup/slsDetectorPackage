@@ -1163,10 +1163,6 @@ int Beb_SetUpTransferParameters(short the_bit_mode) {
         the_bit_mode != 32)
         return 0;
     Beb_bit_mode = the_bit_mode;
-
-    // nimages = the_number_of_images;
-    //  on_dst = 0;
-
     return 1;
 }
 
@@ -1209,7 +1205,7 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
     if (!Beb_activated)
         return 1;
 
-    if (dst_number > 64)
+    if (dst_number >= 64)
         return 0;
 
     unsigned int maxnl = MAX_ROWS_PER_READOUT;

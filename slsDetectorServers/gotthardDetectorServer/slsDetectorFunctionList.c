@@ -21,7 +21,7 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
-extern udpStruct udpDetails;
+extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern const enum detectorType myDetectorType;
 
 // Variables that will be exported
@@ -376,6 +376,7 @@ void setupDetector() {
 
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
+    setupUDPCommParameters();
 #endif
 
     // Initialization
@@ -1355,7 +1356,7 @@ int configureMAC() {
                   src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
 #ifdef VIRTUAL
-    if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
+    if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
         LOG(logERROR, ("could not set udp 1G destination IP and port\n"));
         return FAIL;
     }
@@ -1641,7 +1642,7 @@ void *start_timer(void *arg) {
             memcpy(packetData + 4, imageData + srcOffset, dataSize);
             srcOffset += dataSize;
 
-            sendUDPPacket(0, packetData, packetSize);
+            sendUDPPacket(0, 0, packetData, packetSize);
         }
         LOG(logINFO,
             ("Sent frame: %d [%d]\n", frameNr, virtual_currentFrameNumber));

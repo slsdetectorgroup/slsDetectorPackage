@@ -23,7 +23,8 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
-extern udpStruct udpDetails;
+extern udpStruct udpDetails[MAX_UDP_DESTINATION];
+extern int numUdpDestinations;
 extern const enum detectorType myDetectorType;
 
 // Global variable from communication_funcs.c
@@ -393,6 +394,7 @@ void setupDetector() {
     chipConfigured = 0;
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
+    setupUDPCommParameters();
 #endif
 
     // get chip version
@@ -1422,32 +1424,7 @@ void calcChecksum(udp_header *udp) {
 
 int configureMAC() {
 
-    uint32_t srcip = udpDetails[0].srcip;
-    uint32_t srcip2 = udpDetails[0].srcip2;
-    uint32_t dstip = udpDetails[0].dstip;
-    uint32_t dstip2 = udpDetails[0].dstip2;
-    uint64_t srcmac = udpDetails[0].srcmac;
-    uint64_t srcmac2 = udpDetails[0].srcmac2;
-    uint64_t dstmac = udpDetails[0].dstmac;
-    uint64_t dstmac2 = udpDetails[0].dstmac2;
-    int srcport = udpDetails[0].srcport;
-    int srcport2 = udpDetails[0].srcport2;
-    int dstport = udpDetails[0].dstport;
-    int dstport2 = udpDetails[0].dstport2;
-
     LOG(logINFOBLUE, ("Configuring MAC\n"));
-    char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
-        dst_ip[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac, 50, srcmac);
-    getMacAddressinString(dst_mac, 50, dstmac);
-    getIpAddressinString(src_ip, srcip);
-    getIpAddressinString(dst_ip, dstip);
-    char src_mac2[50], src_ip2[INET_ADDRSTRLEN], dst_mac2[50],
-        dst_ip2[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac2, 50, srcmac2);
-    getMacAddressinString(dst_mac2, 50, dstmac2);
-    getIpAddressinString(src_ip2, srcip2);
-    getIpAddressinString(dst_ip2, dstip2);
 
     int numInterfaces = getNumberofUDPInterfaces();
     int selInterface = getPrimaryInterface();
@@ -1455,62 +1432,90 @@ int configureMAC() {
     LOG(logINFO, ("\tInterface   : %d %s\n\n", selInterface,
                   (selInterface ? "Inner" : "Outer")));
 
-    LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2)
-                                      ? "(Bottom)"
-                                      : (selInterface ? "Not Used" : "Used")));
-    LOG(logINFO, ("\tSource IP   : %s\n"
-                  "\tSource MAC  : %s\n"
-                  "\tSource Port : %d\n"
-                  "\tDest IP     : %s\n"
-                  "\tDest MAC    : %s\n"
-                  "\tDest Port   : %d\n",
-                  src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+    for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+        uint32_t srcip = udpDetails[0].srcip;
+        uint32_t srcip2 = udpDetails[0].srcip2;
+        uint32_t dstip = udpDetails[0].dstip;
+        uint32_t dstip2 = udpDetails[0].dstip2;
+        uint64_t srcmac = udpDetails[0].srcmac;
+        uint64_t srcmac2 = udpDetails[0].srcmac2;
+        uint64_t dstmac = udpDetails[0].dstmac;
+        uint64_t dstmac2 = udpDetails[0].dstmac2;
+        int srcport = udpDetails[0].srcport;
+        int srcport2 = udpDetails[0].srcport2;
+        int dstport = udpDetails[0].dstport;
+        int dstport2 = udpDetails[0].dstport2;
 
-    LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2)
-                                      ? "(Top)"
-                                      : (selInterface ? "Used" : "Not Used")));
-    LOG(logINFO, ("\tSource IP2  : %s\n"
-                  "\tSource MAC2 : %s\n"
-                  "\tSource Port2: %d\n"
-                  "\tDest IP2    : %s\n"
-                  "\tDest MAC2   : %s\n"
-                  "\tDest Port2  : %d\n",
-                  src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
+        char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
+            dst_ip[INET_ADDRSTRLEN];
+        getMacAddressinString(src_mac, 50, srcmac);
+        getMacAddressinString(dst_mac, 50, dstmac);
+        getIpAddressinString(src_ip, srcip);
+        getIpAddressinString(dst_ip, dstip);
+        char src_mac2[50], src_ip2[INET_ADDRSTRLEN], dst_mac2[50],
+            dst_ip2[INET_ADDRSTRLEN];
+        getMacAddressinString(src_mac2, 50, srcmac2);
+        getMacAddressinString(dst_mac2, 50, dstmac2);
+        getIpAddressinString(src_ip2, srcip2);
+        getIpAddressinString(dst_ip2, dstip2);
+
+        LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2)
+                                        ? "(Bottom)"
+                                        : (selInterface ? "Not Used" : "Used")));
+        LOG(logINFO, ("\tSource IP   : %s\n"
+                    "\tSource MAC  : %s\n"
+                    "\tSource Port : %d\n"
+                    "\tDest IP     : %s\n"
+                    "\tDest MAC    : %s\n"
+                    "\tDest Port   : %d\n",
+                    src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+
+        LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2)
+                                        ? "(Top)"
+                                        : (selInterface ? "Used" : "Not Used")));
+        LOG(logINFO, ("\tSource IP2  : %s\n"
+                    "\tSource MAC2 : %s\n"
+                    "\tSource Port2: %d\n"
+                    "\tDest IP2    : %s\n"
+                    "\tDest MAC2   : %s\n"
+                    "\tDest Port2  : %d\n",
+                    src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
 
 #ifdef VIRTUAL
-    if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
-        LOG(logERROR,
-            ("could not set udp destination IP and port for interface 1\n"));
-        return FAIL;
-    }
-    if (numInterfaces == 2 &&
-        setUDPDestinationDetails(1, dst_ip2, dstport2) == FAIL) {
-        LOG(logERROR,
-            ("could not set udp destination IP and port for interface 2\n"));
-        return FAIL;
-    }
-    return OK;
+        if (setUDPDestinationDetails(iRxEntry, 0, dst_ip, dstport) == FAIL) {
+            LOG(logERROR, ("could not set udp destination IP and port for "
+                           "interface 1 [entry:%d] \n",
+                           iRxEntry));
+            return FAIL;
+        }
+        if (numInterfaces == 2 &&
+            setUDPDestinationDetails(iRxEntry, 1, dst_ip2, dstport2) == FAIL) {
+            LOG(logERROR, ("could not set udp destination IP and port for "
+                           "interface 2 [entry:%d]\n",
+                           iRxEntry));
+            return FAIL;
+        }
+        return OK;
 #endif
-    // default one rxr entry (others not yet implemented in client yet)
-    int iRxEntry = 0;
 
-    if (numInterfaces == 2) {
-        // bottom
-        setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip,
-                    srcport);
-        // top
-        setupHeader(iRxEntry, INNER, dstip2, dstmac2, dstport2, srcmac2, srcip2,
-                    srcport2);
-    }
-    // single interface
-    else {
-        // default
-        if (selInterface == 0) {
+        if (numInterfaces == 2) {
+            // bottom
             setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip,
                         srcport);
-        } else {
-            setupHeader(iRxEntry, INNER, dstip, dstmac, dstport, srcmac, srcip,
+            // top
+            setupHeader(iRxEntry, INNER, dstip2, dstmac2, dstport2, srcmac2, srcip2,
                         srcport2);
+        }
+        // single interface
+        else {
+            // default
+            if (selInterface == 0) {
+                setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip,
+                            srcport);
+            } else {
+                setupHeader(iRxEntry, INNER, dstip, dstmac, dstport, srcmac, srcip,
+                            srcport2);
+            }
         }
     }
 
@@ -2339,6 +2344,7 @@ void *start_timer(void *arg) {
     {
         uint64_t frameNr = 0;
         getNextFrameNumber(&frameNr);
+        int iRxEntry = 0;
         for (int iframes = 0; iframes != numFrames; ++iframes) {
             usleep(transmissionDelayUs);
 
@@ -2383,7 +2389,7 @@ void *start_timer(void *arg) {
                     srcOffset += dataSize;
 
                     if (i >= startval && i <= endval) {
-                        sendUDPPacket(0, packetData, packetsize);
+                        sendUDPPacket(iRxEntry, 0, packetData, packetsize);
                         LOG(logDEBUG1, ("Sent packet: %d [interface 0]\n", i));
                     }
                 }
@@ -2410,9 +2416,13 @@ void *start_timer(void *arg) {
                     srcOffset2 += dataSize;
                     
                     if (i >= startval && i <= endval) {
-                        sendUDPPacket(1, packetData2, packetsize);
+                        sendUDPPacket(iRxEntry, 1, packetData2, packetsize);
                         LOG(logDEBUG1, ("Sent packet: %d [interface 1]\n", pnum));
                     }
+                }
+                ++iRxEntry;
+                if (iRxEntry == numUdpDestinations) {
+                    iRxEntry = 0;
                 }
             }
             LOG(logINFO, ("Sent frame: %d\n", iframes));

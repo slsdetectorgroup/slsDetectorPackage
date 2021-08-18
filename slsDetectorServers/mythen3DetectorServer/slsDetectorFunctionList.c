@@ -25,7 +25,7 @@
 extern int debugflag;
 extern int updateFlag;
 extern int checkModuleFlag;
-extern udpStruct udpDetails;
+extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern const enum detectorType myDetectorType;
 
 // Global variable from communication_funcs.c
@@ -429,6 +429,7 @@ void setupDetector() {
     }
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
+    setupUDPCommParameters();
 #endif
 
     // pll defines
@@ -1746,7 +1747,7 @@ int configureMAC() {
                   src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
 #ifdef VIRTUAL
-    if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
+    if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
         LOG(logERROR, ("could not set udp destination IP and port\n"));
         return FAIL;
     }
@@ -2290,7 +2291,7 @@ void *start_timer(void *arg) {
                    imageData + srcOffset, dataSize);
             srcOffset += dataSize;
 
-            sendUDPPacket(0, packetData, packetSize);
+            sendUDPPacket(0, 0, packetData, packetSize);
         }
         LOG(logINFO, ("Sent frame: %d [%lld]\n", frameNr,
                       (long long unsigned int)virtual_currentFrameNumber));

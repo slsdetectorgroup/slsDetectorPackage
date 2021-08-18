@@ -24,7 +24,7 @@
 extern int debugflag;
 extern int updateFlag;
 extern int checkModuleFlag;
-extern udpStruct udpDetails;
+extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern const enum detectorType myDetectorType;
 
 // Global variable from communication_funcs.c
@@ -417,6 +417,7 @@ void setupDetector() {
     memset(adcConfiguration, 0, sizeof(adcConfiguration));
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
+    setupUDPCommParameters();
 #endif
 
     // pll defines
@@ -1786,11 +1787,11 @@ int configureMAC() {
                   src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
 
 #ifdef VIRTUAL
-    if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
+    if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
         LOG(logERROR, ("could not set udp destination IP and port\n"));
         return FAIL;
     }
-    if (i10gbe && setUDPDestinationDetails(1, dst_ip2, dstport2) == FAIL) {
+    if (i10gbe && setUDPDestinationDetails(0, 1, dst_ip2, dstport2) == FAIL) {
         LOG(logERROR, ("could not set udp destination IP and port for "
                        "interface 2\n"));
         return FAIL;
@@ -2915,7 +2916,7 @@ void *start_timer(void *arg) {
             memcpy(packetData + sizeof(sls_detector_header), imageData,
                    datasize);
             // send 1 packet = 1 frame
-            sendUDPPacket(0, packetData, packetsize);
+            sendUDPPacket(0, 0, packetData, packetsize);
 
             // second interface (veto)
             char packetData2[vetopacketsize];
@@ -2929,7 +2930,7 @@ void *start_timer(void *arg) {
                 memcpy(packetData2 + sizeof(veto_header), vetoData,
                        vetodatasize);
                 // send 1 packet = 1 frame
-                sendUDPPacket(1, packetData2, vetopacketsize);
+                sendUDPPacket(0, 1, packetData2, vetopacketsize);
             }
             LOG(logINFO, ("Sent frame %s: %d (bursts/ triggers: %d) [%lld]\n",
                           (i10gbe ? "(+veto)" : ""), frameNr, repeatNr,

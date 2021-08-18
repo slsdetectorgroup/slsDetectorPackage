@@ -21,7 +21,8 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
-extern udpStruct udpDetails;
+extern udpStruct udpDetails[MAX_UDP_DESTINATION];
+extern int numUdpDestinations;
 extern const enum detectorType myDetectorType;
 
 // Global variable from communication_funcs.c
@@ -689,6 +690,7 @@ void setupDetector() {
     resetToDefaultDacs(0);
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
+    setupUDPCommParameters();
 #endif
 
     LOG(logINFOBLUE, ("Setting Default Parameters\n"));
@@ -1518,79 +1520,87 @@ enum timingMode getTiming() {
 /* configure mac */
 
 int configureMAC() {
-    uint32_t srcip = udpDetails[0].srcip;
-    uint32_t dstip = udpDetails[0].dstip;
-    uint64_t srcmac = udpDetails[0].srcmac;
-    uint64_t dstmac = udpDetails[0].dstmac;
-    int srcport = udpDetails[0].srcport;
-    int dstport = udpDetails[0].dstport;
-    int dstport2 = udpDetails[0].dstport2;
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
-    char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
-        dst_ip[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac, 50, srcmac);
-    getMacAddressinString(dst_mac, 50, dstmac);
-    getIpAddressinString(src_ip, srcip);
-    getIpAddressinString(dst_ip, dstip);
 
-    LOG(logINFO,
-        ("\tSource IP   : %s\n"
-         "\tSource MAC  : %s\n"
-         "\tSource Port : %d\n"
-         "\tDest IP     : %s\n"
-         "\tDest MAC    : %s\n"
-         "\tDest Port   : %d\n"
-         "\tDest Port2  : %d\n",
-         src_ip, src_mac, srcport, dst_ip, dst_mac, dstport, dstport2));
+    for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+        uint32_t srcip = udpDetails[0].srcip;
+        uint32_t dstip = udpDetails[0].dstip;
+        uint64_t srcmac = udpDetails[0].srcmac;
+        uint64_t dstmac = udpDetails[0].dstmac;
+        int srcport = udpDetails[0].srcport;
+        int dstport = udpDetails[0].dstport;
+        int dstport2 = udpDetails[0].dstport2;
+
+        char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
+            dst_ip[INET_ADDRSTRLEN];
+        getMacAddressinString(src_mac, 50, srcmac);
+        getMacAddressinString(dst_mac, 50, dstmac);
+        getIpAddressinString(src_ip, srcip);
+        getIpAddressinString(dst_ip, dstip);
+
+        LOG(logINFO,
+            ("\tSource IP   : %s\n"
+            "\tSource MAC  : %s\n"
+            "\tSource Port : %d\n"
+            "\tDest IP     : %s\n"
+            "\tDest MAC    : %s\n"
+            "\tDest Port   : %d\n"
+            "\tDest Port2  : %d\n",
+            src_ip, src_mac, srcport, dst_ip, dst_mac, dstport, dstport2));
 
 #ifdef VIRTUAL
-    if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
-        LOG(logERROR, ("could not set udp destination IP and port\n"));
-        return FAIL;
-    }
-    if (setUDPDestinationDetails(1, dst_ip, dstport2) == FAIL) {
-        LOG(logERROR, ("could not set udp destination IP and port2\n"));
-        return FAIL;
-    }
-    return OK;
+        if (setUDPDestinationDetails(iRxEntry, 0, dst_ip, dstport) == FAIL) {
+            LOG(logERROR,
+                ("could not set udp destination IP and port [entry:%d]\n",
+                 iRxEntry));
+            return FAIL;
+        }
+        if (setUDPDestinationDetails(iRxEntry, 1, dst_ip, dstport2) == FAIL) {
+            LOG(logERROR,
+                ("could not set udp destination IP and port2 [entry:%d]\n",
+                 iRxEntry));
+            return FAIL;
+        }
+        return OK;
 #else
 
-    int beb_num = detid;
-    int header_number = 0;
-    int dst_port = dstport;
-    if (!top)
+        int beb_num = detid;
+        int dst_port = dstport;
+        if (!top)
+            dst_port = dstport2;
+
+        if (Beb_SetBebSrcHeaderInfos(beb_num, send_to_ten_gig, src_mac, src_ip,
+                                     srcport) &&
+            Beb_SetUpUDPHeader(beb_num, send_to_ten_gig, iRxEntry, dst_mac,
+                               dst_ip, dst_port)) {
+            LOG(logDEBUG1, ("\tset up left ok\n"));
+        } else {
+            return FAIL;
+        }
+
+        header_number = 32;
         dst_port = dstport2;
+        if (!top)
+            dst_port = dstport;
 
-    if (Beb_SetBebSrcHeaderInfos(beb_num, send_to_ten_gig, src_mac, src_ip,
-                                 srcport) &&
-        Beb_SetUpUDPHeader(beb_num, send_to_ten_gig, header_number, dst_mac,
-                           dst_ip, dst_port)) {
-        LOG(logDEBUG1, ("\tset up left ok\n"));
-    } else {
-        return FAIL;
-    }
+        if (Beb_SetBebSrcHeaderInfos(beb_num, send_to_ten_gig, src_mac, src_ip,
+                                     srcport) &&
+            Beb_SetUpUDPHeader(beb_num, send_to_ten_gig,
+                               iRxEntry + MAX_UDP_DESTINATION, dst_mac, dst_ip,
+                               dst_port)) {
+            LOG(logDEBUG1, (" set up right ok\n"));
+        } else {
+            return FAIL;
+        }
 
-    header_number = 32;
-    dst_port = dstport2;
-    if (!top)
-        dst_port = dstport;
+        on_dst = 0;
 
-    if (Beb_SetBebSrcHeaderInfos(beb_num, send_to_ten_gig, src_mac, src_ip,
-                                 srcport) &&
-        Beb_SetUpUDPHeader(beb_num, send_to_ten_gig, header_number, dst_mac,
-                           dst_ip, dst_port)) {
-        LOG(logDEBUG1, (" set up right ok\n"));
-    } else {
-        return FAIL;
-    }
-
-    on_dst = 0;
-
-    for (int i = 0; i < 32; ++i)
-        dst_requested[i] = 0; // clear dst requested
-    nimages_per_request = eiger_nexposures * eiger_ntriggers;
+        for (int i = 0; i < 32; ++i)
+            dst_requested[i] = 0; // clear dst requested
+        nimages_per_request = eiger_nexposures * eiger_ntriggers;
 #endif
+    }
     return OK;
 }
 
@@ -2381,6 +2391,7 @@ void *start_timer(void *arg) {
     if (!skipData) {
         uint64_t frameNr = 0;
         getNextFrameNumber(&frameNr);
+        int iRxEntry = 0;
         // loop over number of frames
         for (int iframes = 0; iframes != numFrames; ++iframes) {
 
@@ -2471,12 +2482,12 @@ void *start_timer(void *arg) {
                 }
                 if (eiger_virtual_left_datastream && i >= startval && i <= endval) {
                     usleep(eiger_virtual_transmission_delay_left);
-                    sendUDPPacket(0, packetData, packetsize);
+                    sendUDPPacket(iRxEntry, 0, packetData, packetsize);
                     LOG(logDEBUG1, ("Sent left packet: %d\n", i));
                 }
                 if (eiger_virtual_right_datastream && i >= startval && i <= endval) {
                     usleep(eiger_virtual_transmission_delay_right);
-                    sendUDPPacket(1, packetData2, packetsize);
+                    sendUDPPacket(iRxEntry, 1, packetData2, packetsize);
                     LOG(logDEBUG1, ("Sent right packet: %d\n", i));
                 }
             }
@@ -2491,6 +2502,10 @@ void *start_timer(void *arg) {
                 if (periodNs > timeNs) {
                     usleep((periodNs - timeNs) / 1000);
                 }
+            }
+            ++iRxEntry;
+            if (iRxEntry == numUdpDestinations) {
+                iRxEntry = 0;
             }
         }
         setNextFrameNumber(frameNr + numFrames);

@@ -34,3 +34,49 @@ Detector Servers include:
       *  Client requests for detector status, stop acquisition, temperature, advanced read/write registers.
 
 When using a blocking acquire command (sls_detector_acquire or Detector::acquire), the control server is blocked until end of acquisition. However, stop server commands could be used in parallel.
+
+
+Automatic start 
+------------------
+
+One can start the on-board detector server automatically upon powering on the board.
+
+First create a soft link to the binary on board. 
+   .. code-block:: bash
+      
+      ln -sf someDetectorServervx.x.x someDetectorServer
+
+Then, do the following depending on the detector type.
+
+
+Eiger
+   .. code-block:: bash
+      
+      # create script in rc5.d on the board
+      vi /etc/rc5.d/S50board_com.sh
+
+      # enter the following (edit server name)
+      #! /bin/sh
+      /home/root/executables/eigerDetectorServer &> /dev/null &
+      exit 0
+
+Jungfrau | Moench | CTB | Gotthard I
+   .. code-block:: bash
+      
+      # Edit inittab on board
+      vi /etc/inittab
+
+      # enter the following line
+      ttyS0::respawn:/./jungfrauDetectorServer
+
+
+Gotthard II | Mythen III
+   .. code-block:: bash
+      
+      # create script in init.d on the board
+      vi /etc/init.d/S99detServer.sh
+
+      # enter the following (edit server name)
+      #! /bin/sh
+      cd /root >> /dev/null
+      /root/mythen3DetectorServer >> /dev/null &

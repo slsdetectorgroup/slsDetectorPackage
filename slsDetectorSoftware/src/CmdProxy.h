@@ -858,6 +858,7 @@ class CmdProxy {
         {"numinterfaces", &CmdProxy::numinterfaces},
         {"selinterface", &CmdProxy::selinterface},
         {"udp_dstlist", &CmdProxy::UDPDestinationList},
+        {"udp_numdst", &CmdProxy::udp_numdst},
         {"udp_srcip", &CmdProxy::udp_srcip},
         {"udp_srcip2", &CmdProxy::udp_srcip2},
         {"udp_dstip", &CmdProxy::UDPDestinationIP},
@@ -1531,6 +1532,12 @@ class CmdProxy {
         StringTo<int>,
         "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. "
         "Effective only when number of interfaces is 1. Default: 0 (outer)");
+
+    INTEGER_COMMAND_VEC_ID(udp_numdst, getNumberofUDPDestinations,
+                           setNumberofUDPDestinations, StringTo<int>,
+                           "[1 - 32]\n\t[Jungfrau][Eiger] One can set upto 32 "
+                           "destinations that the detector will stream images "
+                           "out in a round robin fashion. Default: 1");
 
     INTEGER_COMMAND_VEC_ID(
         udp_srcip, getSourceUDPIP, setSourceUDPIP, IpAddr,

@@ -404,6 +404,8 @@ void function_table() {
     flist[F_SET_MODULE_ID] = &set_module_id;
     flist[F_GET_DEST_UDP_LIST] = &get_dest_udp_list;
     flist[F_SET_DEST_UDP_LIST] = &set_dest_udp_list;
+    flist[F_GET_NUM_DEST_UDP] = &get_num_dest_list;
+    flist[F_SET_NUM_DEST_UDP] = &set_num_dest_list;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -9107,6 +9109,47 @@ int set_dest_udp_list(int file_des) {
                 udpDetails[entry].dstmac2 = args64[1];
                 configure_mac();
             }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_num_dest_list(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+#if !defined(JUNGFRAUD) && !defined(EIGERD)
+    functionNotImplemented();
+#else
+    retval = numUdpDestinations;
+#endif
+    LOG(logDEBUG1, ("numUdpDestinations retval: 0x%x\n", retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_num_dest_list(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting number of udp destinations to %d\n", arg));
+
+#if !defined(JUNGFRAUD) && !defined(EIGERD)
+    functionNotImplemented();
+#else
+    if (arg < 1 || arg > MAX_UDP_DESTINATION) {
+        ret = FAIL;
+        sprintf(mess,
+                "Could not set number of udp destinations. Options: 1-%d\n",
+                MAX_UDP_DESTINATION);
+        LOG(logERROR, (mess));
+    } else {
+        if (check_detector_idle("set number of udp destinations") == OK) {
+            numUdpDestinations = arg;
+            configure_mac();
         }
     }
 #endif

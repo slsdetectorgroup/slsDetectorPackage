@@ -671,6 +671,12 @@ class Detector {
 
     void setDestinationUDPList(const defs::udpDestination, const int module_id);
 
+    /** [Jungfrau][Eiger] */
+    Result<int> getNumberofUDPDestinations(Positions pos = {}) const;
+
+    /**[Jungfrau][Eiger] Options 1-32 */
+    void setNumberofUDPDestinations(const int value, Positions pos = {});
+
     Result<IpAddr> getDestinationUDPIP(Positions pos = {}) const;
 
     /** IP of the interface in receiver that the detector sends data to */

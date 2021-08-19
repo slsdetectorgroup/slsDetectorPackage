@@ -1579,7 +1579,6 @@ int configureMAC() {
             return FAIL;
         }
 
-        header_number = 32;
         dst_port = dstport2;
         if (!top)
             dst_port = dstport;

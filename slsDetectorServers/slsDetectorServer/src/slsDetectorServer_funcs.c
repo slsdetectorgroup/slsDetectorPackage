@@ -83,8 +83,10 @@ void init_detector() {
     LOG(logINFO, ("This is a VIRTUAL detector\n"));
 #endif
     memset(udpDetails, 0, sizeof(udpDetails));
-    udpDetails[0].srcport = DEFAULT_UDP_SRC_PORTNO;
-    udpDetails[0].srcport2 = DEFAULT_UDP_SRC_PORTNO + 1;
+    for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION; ++iRxEntry) {
+        udpDetails[iRxEntry].srcport = DEFAULT_UDP_SRC_PORTNO;
+        udpDetails[iRxEntry].srcport2 = DEFAULT_UDP_SRC_PORTNO + 1;
+    }
     udpDetails[0].dstport = DEFAULT_UDP_DST_PORTNO;
     udpDetails[0].dstport2 = DEFAULT_UDP_DST_PORTNO + 1;
     if (isControlServer) {
@@ -2924,12 +2926,16 @@ int enable_ten_giga(int file_des) {
             uint64_t hardwaremac = getDetectorMAC();
             if (udpDetails[0].srcmac != hardwaremac) {
                 LOG(logINFOBLUE, ("Updating udp source mac\n"));
-                udpDetails[0].srcmac = hardwaremac;
+                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                    udpDetails[iRxEntry].srcmac = hardwaremac;
+                }
             }
             uint32_t hardwareip = getDetectorIP();
             if (arg == 0 && udpDetails[0].srcip != hardwareip) {
                 LOG(logINFOBLUE, ("Updating udp source ip\n"));
-                udpDetails[0].srcip = hardwareip;
+                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                    udpDetails[iRxEntry].srcip = hardwareip;
+                }
             }
 #endif
             configure_mac();
@@ -4866,6 +4872,9 @@ void calculate_and_set_position() {
             for (int i = 0; i < 6; ++i) {
                 udpDetails[0].srcmac = (udpDetails[0].srcmac << 8) + a[i];
             }
+            for (int iRxEntry = 1; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                udpDetails[iRxEntry].srcmac = udpDetails[0].srcmac;
+            }           
         }
 #if defined(JUNGFRAUD) || defined(GOTTHARD2D)
         if (getNumberofUDPInterfaces() > 1) {
@@ -4882,6 +4891,9 @@ void calculate_and_set_position() {
                 for (int i = 0; i < 6; ++i) {
                     udpDetails[0].srcmac2 = (udpDetails[0].srcmac2 << 8) + a[i];
                 }
+                for (int iRxEntry = 1; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                    udpDetails[iRxEntry].srcmac2 = udpDetails[0].srcmac2;
+                } 
             }
         }
 #endif
@@ -5014,7 +5026,9 @@ int set_source_udp_ip(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
             if (udpDetails[0].srcip != arg) {
-                udpDetails[0].srcip = arg;
+                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                    udpDetails[iRxEntry].srcip = arg;
+                }
                 configure_mac();
             }
         }
@@ -5053,7 +5067,9 @@ int set_source_udp_ip2(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
             if (udpDetails[0].srcip2 != arg) {
-                udpDetails[0].srcip2 = arg;
+                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                    udpDetails[iRxEntry].srcip2 = arg;
+                }
                 configure_mac();
             }
         }
@@ -5171,7 +5187,9 @@ int set_source_udp_mac(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
             if (udpDetails[0].srcmac != arg) {
-                udpDetails[0].srcmac = arg;
+                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                    udpDetails[iRxEntry].srcmac = arg;
+                }
                 configure_mac();
             }
         }
@@ -5208,7 +5226,9 @@ int set_source_udp_mac2(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
             if (udpDetails[0].srcmac2 != arg) {
-                udpDetails[0].srcmac2 = arg;
+                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                    udpDetails[iRxEntry].srcmac2 = arg;
+                }
                 configure_mac();
             }
         }
@@ -9149,6 +9169,14 @@ int set_num_dest_list(int file_des) {
     } else {
         if (check_detector_idle("set number of udp destinations") == OK) {
             numUdpDestinations = arg;
+            // copying src details from first src entry
+            for (int iRxEntry = 1; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                udpDetails[iRxEntry].srcip = udpDetails[0].srcip;
+                udpDetails[iRxEntry].srcip2 = udpDetails[0].srcip2;
+                udpDetails[iRxEntry].srcmac = udpDetails[0].srcmac;
+                udpDetails[iRxEntry].srcmac2 = udpDetails[0].srcmac2;
+
+            }
             configure_mac();
         }
     }

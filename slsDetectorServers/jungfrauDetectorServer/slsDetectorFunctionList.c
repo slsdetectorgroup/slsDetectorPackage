@@ -52,6 +52,9 @@ int detPos[4] = {};
 int chipVersion = 10; // (1.0)
 int chipConfigured = 0;
 
+// until firmware is done
+int temp_partialReadout = 512;
+
 int isInitCheckDone() { return initCheckDone; }
 
 int getInitResult(char **mess) {
@@ -1606,6 +1609,10 @@ int setPartialReadout(int value) {
     if (value < 0 || (value % PARTIAL_READOUT_MULTIPLE != 0))
         return FAIL;
 
+    // will be replaced when firmware is fixed
+    temp_partialReadout = value;
+    return OK;
+
     // regval is numpackets - 1 
     int regval = (value / PARTIAL_READOUT_MULTIPLE) - 1;
     uint32_t addr = PARTIAL_READOUT_REG;
@@ -1624,10 +1631,14 @@ int setPartialReadout(int value) {
 }
 
 int getPartialReadout() {
+    
+    // will be replaced when firmware is fixed
+    return temp_partialReadout;
+
     int enable = (bus_r(PARTIAL_READOUT_REG) & PARTIAL_READOUT_ENBL_MSK);
     int regval = ((bus_r(PARTIAL_READOUT_REG) & PARTIAL_READOUT_NUM_ROWS_MSK) >> PARTIAL_READOUT_NUM_ROWS_OFST);
  
-  int maxRegval = (MAX_ROWS_PER_READOUT/ PARTIAL_READOUT_MULTIPLE) - 1;
+    int maxRegval = (MAX_ROWS_PER_READOUT/ PARTIAL_READOUT_MULTIPLE) - 1;
     if ((regval == maxRegval && enable) || (regval != maxRegval && !enable)) {
         return -1;
     }

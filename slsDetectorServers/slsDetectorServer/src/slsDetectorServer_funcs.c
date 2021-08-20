@@ -4927,44 +4927,44 @@ int check_detector_idle(const char *s) {
 int is_udp_configured() {
     for (int i = 0; i != numUdpDestinations; ++i) {
         if (udpDetails[i].dstip == 0) {
-            strcpy(configureMessage, "udp destination ip not configured\n");
+            sprintf(configureMessage, "udp destination ip not configured [entry:%d]\n", i);
             LOG(logWARNING, ("%s", configureMessage));
             return FAIL;
         }
         if (udpDetails[i].srcip == 0) {
-            strcpy(configureMessage, "udp source ip not configured\n");
+            sprintf(configureMessage, "udp source ip not configured [entry:%d]\n", i);
             LOG(logWARNING, ("%s", configureMessage));
             return FAIL;
         }
         if (udpDetails[i].srcmac == 0) {
-            strcpy(configureMessage, "udp source mac not configured\n");
+            sprintf(configureMessage, "udp source mac not configured [entry:%d]\n", i);
             LOG(logWARNING, ("%s", configureMessage));
             return FAIL;
         }
         if (udpDetails[i].dstmac == 0) {
-            strcpy(configureMessage, "udp destination mac not configured\n");
+            sprintf(configureMessage, "udp destination mac not configured [entry:%d]\n", i);
             LOG(logWARNING, ("%s", configureMessage));
             return FAIL;
         }
 #if defined(JUNGFRAUD) || defined(GOTTHARD2D)
         if (getNumberofUDPInterfaces() == 2) {
             if (udpDetails[i].srcip2 == 0) {
-                strcpy(configureMessage, "udp source ip2 not configured\n");
+                sprintf(configureMessage, "udp source ip2 not configured [entry:%d]\n", i);
                 LOG(logWARNING, ("%s", configureMessage));
                 return FAIL;
             }
             if (udpDetails[i].dstip2 == 0) {
-                strcpy(configureMessage, "udp destination ip2 not configured\n");
+                sprintf(configureMessage, "udp destination ip2 not configured [entry:%d]\n", i);
                 LOG(logWARNING, ("%s", configureMessage));
                 return FAIL;
             }
             if (udpDetails[i].srcmac2 == 0) {
-                strcpy(configureMessage, "udp source mac2 not configured\n");
+                sprintf(configureMessage, "udp source mac2 not configured [entry:%d]\n", i);
                 LOG(logWARNING, ("%s", configureMessage));
                 return FAIL;
             }
             if (udpDetails[i].dstmac2 == 0) {
-                strcpy(configureMessage, "udp destination mac2 not configured\n");
+                sprintf(configureMessage, "udp destination mac2 not configured [entry:%d]\n", i);
                 LOG(logWARNING, ("%s", configureMessage));
                 return FAIL;
             }

@@ -290,6 +290,11 @@ void DetectorImpl::updateDetectorSize() {
     LOG(logDEBUG) << "Updating Multi-Detector Size: " << size();
 
     const slsDetectorDefs::xy det_size = detectors[0]->getNumberOfChannels();
+
+    if (det_size.x == 0 || det_size.y == 0) {
+        throw sls::RuntimeError("Module size for x or y dimensions is 0. Unable to proceed in updating detector size. ");
+    }
+
     int maxx = multi_shm()->numberOfChannels.x;
     int maxy = multi_shm()->numberOfChannels.y;
     int ndetx = 0, ndety = 0;

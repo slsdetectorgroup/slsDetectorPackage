@@ -55,10 +55,10 @@ char *digitalData = 0;
 char volatile *analogDataPtr = 0;
 char volatile *digitalDataPtr = 0;
 char udpPacketData[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
-uint32_t adcEnableMask_1g = 0;
+uint32_t adcEnableMask_1g = BIT32_MSK;
 
 // 10g readout
-uint8_t adcEnableMask_10g = 0;
+uint8_t adcEnableMask_10g = BIT32_MSK;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkFrequency[NUM_CLOCKS] = {40, 20, 20, 200};
@@ -470,8 +470,8 @@ void setupDetector() {
     }
     vLimit = DEFAULT_VLIMIT;
     highvoltage = 0;
-    adcEnableMask_1g = 0;
-    adcEnableMask_10g = 0;
+    adcEnableMask_1g = BIT32_MSK;
+    adcEnableMask_10g = BIT32_MSK;
     analogEnable = 1;
     digitalEnable = 0;
     naSamples = 1;

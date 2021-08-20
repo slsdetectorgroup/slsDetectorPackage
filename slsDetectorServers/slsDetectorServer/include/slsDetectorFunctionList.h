@@ -386,6 +386,8 @@ void setNumberofUDPInterfaces(int val);
 int getNumberofUDPInterfaces();
 #endif
 #ifdef JUNGFRAUD
+int getNumberofDestinations();
+void setNumberofDestinations(int value);
 void selectPrimaryInterface(int val);
 int getPrimaryInterface();
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,

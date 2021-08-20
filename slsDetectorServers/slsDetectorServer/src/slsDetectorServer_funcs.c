@@ -9143,6 +9143,15 @@ int get_num_dest_list(int file_des) {
     functionNotImplemented();
 #else
     retval = numUdpDestinations;
+#ifdef JUNGFRAUD
+    if (getNumberofDestinations() != retval) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not get  number of udp destinations. (server reads %d, fpga reads %d).\n", getNumberofDestinations(), retval);
+            LOG(logERROR, (mess));       
+    }
+#endif
 #endif
     LOG(logDEBUG1, ("numUdpDestinations retval: 0x%x\n", retval));
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));

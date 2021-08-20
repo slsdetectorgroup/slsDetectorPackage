@@ -1353,7 +1353,7 @@ int getPrimaryInterface() {
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
                  uint64_t destmac, uint32_t destport, uint64_t sourcemac,
                  uint32_t sourceip, uint32_t sourceport) {
-
+    
     // start addr
     uint32_t addr = (type == INNER ? RXR_ENDPOINT_INNER_START_REG
                                    : RXR_ENDPOINT_OUTER_START_REG);
@@ -1436,18 +1436,18 @@ int configureMAC() {
                   (selInterface ? "Inner" : "Outer")));
 
     for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
-        uint32_t srcip = udpDetails[0].srcip;
-        uint32_t srcip2 = udpDetails[0].srcip2;
-        uint32_t dstip = udpDetails[0].dstip;
-        uint32_t dstip2 = udpDetails[0].dstip2;
-        uint64_t srcmac = udpDetails[0].srcmac;
-        uint64_t srcmac2 = udpDetails[0].srcmac2;
-        uint64_t dstmac = udpDetails[0].dstmac;
-        uint64_t dstmac2 = udpDetails[0].dstmac2;
-        int srcport = udpDetails[0].srcport;
-        int srcport2 = udpDetails[0].srcport2;
-        int dstport = udpDetails[0].dstport;
-        int dstport2 = udpDetails[0].dstport2;
+        uint32_t srcip = udpDetails[iRxEntry].srcip;
+        uint32_t srcip2 = udpDetails[iRxEntry].srcip2;
+        uint32_t dstip = udpDetails[iRxEntry].dstip;
+        uint32_t dstip2 = udpDetails[iRxEntry].dstip2;
+        uint64_t srcmac = udpDetails[iRxEntry].srcmac;
+        uint64_t srcmac2 = udpDetails[iRxEntry].srcmac2;
+        uint64_t dstmac = udpDetails[iRxEntry].dstmac;
+        uint64_t dstmac2 = udpDetails[iRxEntry].dstmac2;
+        int srcport = udpDetails[iRxEntry].srcport;
+        int srcport2 = udpDetails[iRxEntry].srcport2;
+        int dstport = udpDetails[iRxEntry].dstport;
+        int dstport2 = udpDetails[iRxEntry].dstport2;
 
         char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
             dst_ip[INET_ADDRSTRLEN];
@@ -1461,6 +1461,7 @@ int configureMAC() {
         getMacAddressinString(dst_mac2, 50, dstmac2);
         getIpAddressinString(src_ip2, srcip2);
         getIpAddressinString(dst_ip2, dstip2);
+        LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
 
         LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2)
                                         ? "(Bottom)"

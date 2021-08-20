@@ -137,8 +137,10 @@ void basictests() {
 
     // update default udpdstip and udpdstmac (1g is hardware ip and hardware
     // mac)
-    udpDetails[0].srcip = ipadd;
-    udpDetails[0].srcmac = macadd;
+    for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+        udpDetails[iRxEntry].srcip = ipadd;
+        udpDetails[iRxEntry].srcmac = macadd;
+    }
 
 #ifdef VIRTUAL
     return;
@@ -1524,13 +1526,13 @@ int configureMAC() {
     LOG(logINFOBLUE, ("Configuring MAC\n"));
 
     for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
-        uint32_t srcip = udpDetails[0].srcip;
-        uint32_t dstip = udpDetails[0].dstip;
-        uint64_t srcmac = udpDetails[0].srcmac;
-        uint64_t dstmac = udpDetails[0].dstmac;
-        int srcport = udpDetails[0].srcport;
-        int dstport = udpDetails[0].dstport;
-        int dstport2 = udpDetails[0].dstport2;
+        uint32_t srcip = udpDetails[iRxEntry].srcip;
+        uint32_t dstip = udpDetails[iRxEntry].dstip;
+        uint64_t srcmac = udpDetails[iRxEntry].srcmac;
+        uint64_t dstmac = udpDetails[iRxEntry].dstmac;
+        int srcport = udpDetails[iRxEntry].srcport;
+        int dstport = udpDetails[iRxEntry].dstport;
+        int dstport2 = udpDetails[iRxEntry].dstport2;
 
         char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
             dst_ip[INET_ADDRSTRLEN];
@@ -1539,6 +1541,7 @@ int configureMAC() {
         getIpAddressinString(src_ip, srcip);
         getIpAddressinString(dst_ip, dstip);
 
+        LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
         LOG(logINFO,
             ("\tSource IP   : %s\n"
             "\tSource MAC  : %s\n"

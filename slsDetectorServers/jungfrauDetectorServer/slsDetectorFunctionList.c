@@ -1341,6 +1341,18 @@ void setNumberofDestinations(int value) {
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | ((value << CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST) & CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK));
 }
 
+int getFirstUDPDestination() {
+    return ((bus_r(CONTROL_REG) & CONTROL_RX_ENDPTS_START_MSK) >>
+            CONTROL_RX_ENDPTS_START_OFST);
+}
+
+void setFirstUDPDestination(int value) {
+    LOG(logINFO, ("Setting first entry to %d\n", value));
+    bus_w(CONTROL_REG,
+          bus_r(CONTROL_REG) | ((value << CONTROL_RX_ENDPTS_START_OFST) &
+                                CONTROL_RX_ENDPTS_START_MSK));
+}
+
 void selectPrimaryInterface(int val) {
     uint32_t addr = CONFIG_REG;
 

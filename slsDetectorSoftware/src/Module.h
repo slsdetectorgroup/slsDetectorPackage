@@ -226,6 +226,8 @@ class Module : public virtual slsDetectorDefs {
     void setDestinationUDPList(const defs::udpDestination dest);
     int getNumberofUDPDestinations() const;
     void setNumberofUDPDestinations(const int value);
+    int getFirstUDPDestination() const;
+    void setFirstUDPDestination(const int value);
     sls::IpAddr getDestinationUDPIP() const;
     void setDestinationUDPIP(const sls::IpAddr ip);
     sls::IpAddr getDestinationUDPIP2() const;

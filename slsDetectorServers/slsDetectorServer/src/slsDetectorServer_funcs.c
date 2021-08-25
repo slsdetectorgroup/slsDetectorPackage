@@ -52,6 +52,7 @@ int checkModuleFlag = 1;
 
 udpStruct udpDetails[MAX_UDP_DESTINATION];
 int numUdpDestinations = 1;
+int firstUDPDestination = 0;
 
 int configured = FAIL;
 char configureMessage[MAX_STR_LENGTH] = "udp parameters not configured yet";
@@ -408,6 +409,8 @@ void function_table() {
     flist[F_SET_DEST_UDP_LIST] = &set_dest_udp_list;
     flist[F_GET_NUM_DEST_UDP] = &get_num_dest_list;
     flist[F_SET_NUM_DEST_UDP] = &set_num_dest_list;
+    flist[F_GET_UDP_FIRST_DEST] = &get_udp_first_dest;
+    flist[F_SET_UDP_FIRST_DEST] = &set_udp_first_dest;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -2926,14 +2929,16 @@ int enable_ten_giga(int file_des) {
             uint64_t hardwaremac = getDetectorMAC();
             if (udpDetails[0].srcmac != hardwaremac) {
                 LOG(logINFOBLUE, ("Updating udp source mac\n"));
-                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION;
+                     ++iRxEntry) {
                     udpDetails[iRxEntry].srcmac = hardwaremac;
                 }
             }
             uint32_t hardwareip = getDetectorIP();
             if (arg == 0 && udpDetails[0].srcip != hardwareip) {
                 LOG(logINFOBLUE, ("Updating udp source ip\n"));
-                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION;
+                     ++iRxEntry) {
                     udpDetails[iRxEntry].srcip = hardwareip;
                 }
             }
@@ -4872,9 +4877,10 @@ void calculate_and_set_position() {
             for (int i = 0; i < 6; ++i) {
                 udpDetails[0].srcmac = (udpDetails[0].srcmac << 8) + a[i];
             }
-            for (int iRxEntry = 1; iRxEntry != numUdpDestinations; ++iRxEntry) {
+            for (int iRxEntry = 1; iRxEntry != MAX_UDP_DESTINATION;
+                 ++iRxEntry) {
                 udpDetails[iRxEntry].srcmac = udpDetails[0].srcmac;
-            }           
+            }
         }
 #if defined(JUNGFRAUD) || defined(GOTTHARD2D)
         if (getNumberofUDPInterfaces() > 1) {
@@ -4891,9 +4897,10 @@ void calculate_and_set_position() {
                 for (int i = 0; i < 6; ++i) {
                     udpDetails[0].srcmac2 = (udpDetails[0].srcmac2 << 8) + a[i];
                 }
-                for (int iRxEntry = 1; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                for (int iRxEntry = 1; iRxEntry != MAX_UDP_DESTINATION;
+                     ++iRxEntry) {
                     udpDetails[iRxEntry].srcmac2 = udpDetails[0].srcmac2;
-                } 
+                }
             }
         }
 #endif
@@ -4937,7 +4944,8 @@ int check_detector_idle(const char *s) {
 }
 
 int is_udp_configured() {
-    for (int i = 0; i != numUdpDestinations; ++i) {
+    for (int i = firstUDPDestination;
+         i != firstUDPDestination + numUdpDestinations; ++i) {
         if (udpDetails[i].dstip == 0) {
             sprintf(configureMessage, "udp destination ip not configured [entry:%d]\n", i);
             LOG(logWARNING, ("%s", configureMessage));
@@ -5026,7 +5034,8 @@ int set_source_udp_ip(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
             if (udpDetails[0].srcip != arg) {
-                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION;
+                     ++iRxEntry) {
                     udpDetails[iRxEntry].srcip = arg;
                 }
                 configure_mac();
@@ -5067,7 +5076,8 @@ int set_source_udp_ip2(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
             if (udpDetails[0].srcip2 != arg) {
-                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION;
+                     ++iRxEntry) {
                     udpDetails[iRxEntry].srcip2 = arg;
                 }
                 configure_mac();
@@ -5187,7 +5197,8 @@ int set_source_udp_mac(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
             if (udpDetails[0].srcmac != arg) {
-                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION;
+                     ++iRxEntry) {
                     udpDetails[iRxEntry].srcmac = arg;
                 }
                 configure_mac();
@@ -5226,7 +5237,8 @@ int set_source_udp_mac2(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
             if (udpDetails[0].srcmac2 != arg) {
-                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION;
+                     ++iRxEntry) {
                     udpDetails[iRxEntry].srcmac2 = arg;
                 }
                 configure_mac();
@@ -9178,14 +9190,56 @@ int set_num_dest_list(int file_des) {
     } else {
         if (check_detector_idle("set number of udp destinations") == OK) {
             numUdpDestinations = arg;
-            // copying src details from first src entry
-            for (int iRxEntry = 1; iRxEntry != numUdpDestinations; ++iRxEntry) {
-                udpDetails[iRxEntry].srcip = udpDetails[0].srcip;
-                udpDetails[iRxEntry].srcip2 = udpDetails[0].srcip2;
-                udpDetails[iRxEntry].srcmac = udpDetails[0].srcmac;
-                udpDetails[iRxEntry].srcmac2 = udpDetails[0].srcmac2;
+            configure_mac();
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
 
-            }
+int get_udp_first_dest(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+#if !defined(JUNGFRAUD) && !defined(EIGERD)
+    functionNotImplemented();
+#else
+    retval = firstUDPDestination;
+#ifdef JUNGFRAUD
+    if (getFirstUDPDestination() != retval) {
+        ret = FAIL;
+        sprintf(mess,
+                "Could not get first desintation. (server reads %d, fpga reads "
+                "%d).\n",
+                getFirstUDPDestination(), retval);
+        LOG(logERROR, (mess));
+    }
+#endif
+#endif
+    LOG(logDEBUG1, ("first udp destination retval: 0x%x\n", retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_udp_first_dest(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting first udp destination to %d\n", arg));
+
+#if !defined(JUNGFRAUD) && !defined(EIGERD)
+    functionNotImplemented();
+#else
+    if (arg < 0 || arg >= MAX_UDP_DESTINATION) {
+        ret = FAIL;
+        sprintf(mess, "Could not set first destination. Options: 0-%d\n",
+                MAX_UDP_DESTINATION - 1);
+        LOG(logERROR, (mess));
+    } else {
+        if (check_detector_idle("set first udp destination") == OK) {
+            firstUDPDestination = arg;
             configure_mac();
         }
     }

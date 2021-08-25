@@ -929,6 +929,14 @@ void Detector::setNumberofUDPDestinations(const int value, Positions pos) {
     pimpl->Parallel(&Module::setNumberofUDPDestinations, pos, value);
 }
 
+Result<int> Detector::getFirstUDPDestination(Positions pos) const {
+    return pimpl->Parallel(&Module::getFirstUDPDestination, pos);
+}
+
+void Detector::setFirstUDPDestination(const int value, Positions pos) {
+    pimpl->Parallel(&Module::setFirstUDPDestination, pos, value);
+}
+
 Result<IpAddr> Detector::getDestinationUDPIP(Positions pos) const {
     return pimpl->Parallel(&Module::getDestinationUDPIP, pos);
 }

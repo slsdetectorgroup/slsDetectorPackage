@@ -970,6 +970,14 @@ void Module::setNumberofUDPDestinations(const int value) {
     sendToDetector(F_SET_NUM_DEST_UDP, value, nullptr);
 }
 
+int Module::getFirstUDPDestination() const {
+    return sendToDetector<int>(F_GET_UDP_FIRST_DEST);
+}
+
+void Module::setFirstUDPDestination(const int value) {
+    sendToDetector(F_SET_UDP_FIRST_DEST, value, nullptr);
+}
+
 sls::IpAddr Module::getDestinationUDPIP() const {
     return sendToDetector<sls::IpAddr>(F_GET_DEST_UDP_IP);
 }

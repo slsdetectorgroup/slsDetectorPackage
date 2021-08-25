@@ -273,3 +273,5 @@ int get_dest_udp_list(int);
 int set_dest_udp_list(int);
 int get_num_dest_list(int);
 int set_num_dest_list(int);
+int get_udp_first_dest(int);
+int set_udp_first_dest(int);

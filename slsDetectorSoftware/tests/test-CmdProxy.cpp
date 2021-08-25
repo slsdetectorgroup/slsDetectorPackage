@@ -2262,6 +2262,37 @@ TEST_CASE("udp_numdst", "[.cmd]") {
     }
 }
 
+TEST_CASE("udp_firstdst", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::EIGER) {
+        auto prev_val = det.getFirstUDPDestination();
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_firstdst", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_firstdst 10\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_firstdst", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "udp_firstdst 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_firstdst", {"31"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_firstdst 31\n");
+        }
+        REQUIRE_THROWS(proxy.Call("udp_firstdst", {"33"}, -1, PUT));
+
+        for (int i = 0; i != det.size(); ++i) {
+            det.setFirstUDPDestination(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_numdst", {}, -1, GET));
+    }
+}
+
 TEST_CASE("udp_dstip", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

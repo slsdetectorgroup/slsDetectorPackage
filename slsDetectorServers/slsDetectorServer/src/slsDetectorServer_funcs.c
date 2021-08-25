@@ -1545,12 +1545,13 @@ int set_module(int file_des) {
     else if (Server_VerifyLock() == OK) {
         // check index
 
-#ifndef EIGERD
+// setsettings
+#ifndef MYTHEN3D
         validate_settings((enum detectorSettings)(module.reg));
 #endif
         ret = setModule(module, mess);
         enum detectorSettings retval = getSettings();
-#ifndef EIGERD
+#ifndef MYTHEN3D
         validate(&ret, mess, module.reg, (int)retval, "set module (settings)",
                  DEC);
 #endif

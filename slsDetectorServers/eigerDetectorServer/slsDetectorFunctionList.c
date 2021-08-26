@@ -133,7 +133,7 @@ void basictests() {
 
     // update default udpdstip and udpdstmac (1g is hardware ip and hardware
     // mac)
-    for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+    for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION; ++iRxEntry) {
         udpDetails[iRxEntry].srcip = ipadd;
         udpDetails[iRxEntry].srcmac = macadd;
     }

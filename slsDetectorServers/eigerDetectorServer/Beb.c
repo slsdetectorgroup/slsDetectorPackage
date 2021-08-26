@@ -1112,53 +1112,6 @@ void Beb_AdjustIPChecksum(struct udp_header_type *ip) {
     ip->ip_header_checksum[1] = ip_checksum & 0xff;
 }
 
-int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int left_right,
-                             int ten_gig, unsigned int dst_number,
-                             unsigned int npackets, unsigned int packet_size,
-                             int stop_read_when_fifo_empty) {
-
-    // This is a dead function, will be removed in future
-    // ==================================================
-
-    unsigned int i =
-        1; /*Beb_GetBebInfoIndex(beb_number); //zero is the global send*/
-
-    Beb_send_ndata = 3;
-    if (left_right == 1)
-        Beb_send_data[0] = 0x00040000;
-    else if (left_right == 2)
-        Beb_send_data[0] = 0x00080000;
-    else if (left_right == 3)
-        Beb_send_data[0] = 0x000c0000;
-    else
-        return 0;
-
-    // packet_size/=2;
-    if (dst_number > 0x3f)
-        return 0;
-    if (packet_size > 0x3ff)
-        return 0;
-    if (npackets == 0 || npackets > 0x100)
-        return 0;
-    npackets--;
-
-    Beb_send_data[1] = 0x62000000 | (!stop_read_when_fifo_empty) << 27 |
-                       (ten_gig == 1) << 24 | packet_size << 14 |
-                       dst_number << 8 | npackets;
-    LOG(logDEBUG1, ("Beb_send_data[1]:%X\n", Beb_send_data[1]));
-    Beb_send_data[2] = 0;
-
-    Beb_SwapDataFun(0, 2, &(Beb_send_data[1]));
-    LOG(logDEBUG1, ("Beb_send_data[1] Swapped:%X\n", Beb_send_data[1]));
-
-    if (Beb_activated) {
-        if (!Beb_WriteTo(i))
-            return 0;
-    }
-
-    return 1;
-}
-
 int Beb_SetUpTransferParameters(short the_bit_mode) {
     if (the_bit_mode != 4 && the_bit_mode != 8 && the_bit_mode != 16 &&
         the_bit_mode != 32)
@@ -1204,10 +1157,7 @@ int Beb_RequestNImages(int ten_gig, unsigned int nimages, int test_just_send_out
     if (!Beb_activated)
         return 1;
 
-    if (dst_number >= 64)
-        return 0;
-
-    unsigned int maxnl = MAX_ROWS_PER_READOUT;
+     unsigned int maxnl = MAX_ROWS_PER_READOUT;
     unsigned int maxnp = (ten_gig ? 4 : 16) * Beb_bit_mode;
     unsigned int nl = Beb_partialReadout;
     unsigned int npackets = (nl * maxnp) / maxnl;
@@ -1255,7 +1205,6 @@ int Beb_RequestNImages(int ten_gig, unsigned int nimages, int test_just_send_out
                 ("%X\n", Beb_Read32(csp0base, (LEFT_OFFSET + i * 4))));
         }
         LOG(logDEBUG1, ("%d\n", in_two_requests));
-        //"0x20 << 8" is dst_number (0x00 for left, 0x20 for right)
         // Left
         Beb_Write32(csp0base, (LEFT_OFFSET + FIRST_CMD_PART1_OFFSET), 0);
         Beb_Write32(csp0base, (LEFT_OFFSET + FIRST_CMD_PART2_OFFSET),
@@ -1300,41 +1249,6 @@ int Beb_RequestNImages(int ten_gig, unsigned int nimages, int test_just_send_out
         Beb_close(fd, csp0base);
 
         LOG(logDEBUG1, ("----Beb_RequestNImages----\n"));
-    }
-
-    return 1;
-}
-
-int Beb_Test(unsigned int beb_number) {
-    LOG(logINFO, ("Testing module number: %d\n", beb_number));
-
-    // int SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int
-    // header_number, string dst_mac, string dst_ip, unsigned int dst_port)
-    // { SetUpUDPHeader(26,0,0,"60:fb:42:f4:e3:d2","129.129.205.186",22000);
-
-    unsigned int index = Beb_GetBebInfoIndex(beb_number);
-    if (!index) {
-        LOG(logERROR, ("Error beb number (%d)not in list????\n", beb_number));
-        return 0;
-    }
-
-    for (unsigned int i = 0; i < 64; i++) {
-        if (!Beb_SetUpUDPHeader(beb_number, 0, i, "60:fb:42:f4:e3:d2",
-                                "129.129.205.186", 22000 + i)) {
-            LOG(logERROR, ("Error setting up header table....\n"));
-            return 0;
-        }
-    }
-
-    //  SendMultiReadRequest(unsigned int beb_number, unsigned int
-    //  left_right, int ten_gig, unsigned int dst_number, unsigned int
-    //  npackets, unsigned int packet_size, int
-    //  stop_read_when_fifo_empty=1);
-    for (unsigned int i = 0; i < 64; i++) {
-        if (!Beb_SendMultiReadRequest(beb_number, i % 3 + 1, 0, i, 1, 0, 1)) {
-            LOG(logERROR, ("Error requesting data....\n"));
-            return 0;
-        }
     }
 
     return 1;

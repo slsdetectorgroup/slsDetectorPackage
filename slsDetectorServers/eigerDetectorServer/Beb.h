@@ -78,14 +78,6 @@ int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig,
                        unsigned int header_number, char *dst_mac, char *dst_ip,
                        unsigned int dst_port);
 
-/*int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int
- * left_right, int ten_gig, unsigned int dst_number, unsigned int npackets,
- * unsigned int packet_size, int stop_read_when_fifo_empty=1);*/
-int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int left_right,
-                             int ten_gig, unsigned int dst_number,
-                             unsigned int npackets, unsigned int packet_size,
-                             int stop_read_when_fifo_empty);
-
 int Beb_StopAcquisition();
 int Beb_SetUpTransferParameters(short the_bit_mode);
 /*int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int
@@ -94,8 +86,6 @@ int Beb_SetUpTransferParameters(short the_bit_mode);
  * destination!*/
 int Beb_RequestNImages(int ten_gig, unsigned int nimages,
                        int test_just_send_out_packets_no_wait);
-
-int Beb_Test(unsigned int beb_number);
 
 int Beb_GetBebFPGATemp();
 

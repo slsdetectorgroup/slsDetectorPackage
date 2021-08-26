@@ -1547,7 +1547,7 @@ int Beb_GetNumberofDestinations(int *retval) {
                            retval1[0], retval1[1]));
             return FAIL;
         }
-        *retval = retval1[0];
+        *retval = ++retval1[0];
         return OK;
     }
 }
@@ -1571,9 +1571,10 @@ int Beb_SetNumberofDestinations(int value) {
                        "destinations. FAIL\n"));
         return FAIL;
     } else {
+        Beb_deactivated_num_destinations = value;
+        --value;
         Beb_Write32(csp0base, offset[0], value);
         Beb_Write32(csp0base, offset[1], value);
-        Beb_deactivated_num_destinations = value;
         Beb_close(fd, csp0base);
         return OK;
     }

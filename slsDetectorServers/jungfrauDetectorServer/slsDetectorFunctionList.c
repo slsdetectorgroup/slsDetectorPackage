@@ -1352,6 +1352,7 @@ int getFirstUDPDestination() {
 
 void setFirstUDPDestination(int value) {
     LOG(logINFO, ("Setting first entry to %d\n", value));
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_RX_ENDPTS_START_MSK);
     bus_w(CONTROL_REG,
           bus_r(CONTROL_REG) | ((value << CONTROL_RX_ENDPTS_START_OFST) &
                                 CONTROL_RX_ENDPTS_START_MSK));

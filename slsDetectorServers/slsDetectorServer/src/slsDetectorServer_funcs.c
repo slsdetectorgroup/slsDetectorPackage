@@ -9249,7 +9249,7 @@ int set_udp_first_dest(int file_des) {
             validate(&ret, mess, arg, retval, "set udp first destination", DEC);
             if (ret == OK) {
                 firstUDPDestination = arg;
-                configure_mac();
+                //configure_mac();
             }
         }
     }

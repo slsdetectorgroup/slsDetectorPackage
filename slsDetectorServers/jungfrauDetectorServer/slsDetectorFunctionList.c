@@ -1341,6 +1341,7 @@ int getNumberofDestinations(int *retval) {
 int setNumberofDestinations(int value) {
     LOG(logINFO, ("Setting number of entries to %d\n", value));
     --value;
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK);
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | ((value << CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST) & CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK));
     return OK;
 }

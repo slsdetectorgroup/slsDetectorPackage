@@ -9156,15 +9156,14 @@ int get_num_dest_list(int file_des) {
     functionNotImplemented();
 #else
     retval = numUdpDestinations;
-#ifdef JUNGFRAUD
-    if (getNumberofDestinations() != retval) {
+    int retval1 = 0;
+    if (getNumberofDestinations(&retval1) == FAIL || retval1 != retval) {
             ret = FAIL;
             sprintf(
                 mess,
-                "Could not get  number of udp destinations. (server reads %d, fpga reads %d).\n", getNumberofDestinations(), retval);
+                "Could not get number of udp destinations. (server reads %d, fpga reads %d).\n", retval1, retval);
             LOG(logERROR, (mess));       
     }
-#endif
 #endif
     LOG(logDEBUG1, ("numUdpDestinations retval: 0x%x\n", retval));
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -9190,8 +9189,15 @@ int set_num_dest_list(int file_des) {
         LOG(logERROR, (mess));
     } else {
         if (check_detector_idle("set number of udp destinations") == OK) {
-            numUdpDestinations = arg;
-            configure_mac();
+            if (setNumberofDestinations(arg) == FAIL) {
+                ret = FAIL;
+                strcpy(mess,
+                        "Could not set number of udp destinations.\n");
+                LOG(logERROR, (mess));  
+            } else {
+                numUdpDestinations = arg;
+                configure_mac();
+            }
         }
     }
 #endif
@@ -9202,11 +9208,10 @@ int get_udp_first_dest(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
-#if !defined(JUNGFRAUD) && !defined(EIGERD)
+#ifndef JUNGFRAUD
     functionNotImplemented();
 #else
     retval = firstUDPDestination;
-#ifdef JUNGFRAUD
     if (getFirstUDPDestination() != retval) {
         ret = FAIL;
         sprintf(mess,
@@ -9215,7 +9220,6 @@ int get_udp_first_dest(int file_des) {
                 getFirstUDPDestination(), retval);
         LOG(logERROR, (mess));
     }
-#endif
 #endif
     LOG(logDEBUG1, ("first udp destination retval: 0x%x\n", retval));
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -9230,7 +9234,7 @@ int set_udp_first_dest(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting first udp destination to %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(EIGERD)
+#ifndef JUNGFRAUD
     functionNotImplemented();
 #else
     if (arg < 0 || arg >= MAX_UDP_DESTINATION) {
@@ -9240,8 +9244,13 @@ int set_udp_first_dest(int file_des) {
         LOG(logERROR, (mess));
     } else {
         if (check_detector_idle("set first udp destination") == OK) {
-            firstUDPDestination = arg;
-            configure_mac();
+            setFirstUDPDestination(arg);
+            int retval = getFirstUDPDestination();
+            validate(&ret, mess, arg, retval, "set udp first destination", DEC);
+            if (ret == OK) {
+                firstUDPDestination = arg;
+                configure_mac();
+            }
         }
     }
 #endif

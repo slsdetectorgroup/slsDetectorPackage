@@ -41,11 +41,7 @@ int *detectorChans = NULL;
 int *detectorDacs = NULL;
 
 int send_to_ten_gig = 0;
-int ndsts_in_use = 32;
 unsigned int nimages_per_request = 1;
-int on_dst = 0;
-int dst_requested[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 int top = 0;
 int master = 0;
@@ -837,9 +833,6 @@ int setDynamicRange(int dr) {
 #ifndef VIRTUAL
         sharedMemory_lockLocalLink();
         if (Feb_Control_SetDynamicRange(dr)) {
-            on_dst = 0;
-            for (int i = 0; i < 32; ++i)
-                dst_requested[i] = 0; // clear dst requested
             if (!Beb_SetUpTransferParameters(dr)) {
                 LOG(logERROR, ("Could not set bit mode in the back end\n"));
                 sharedMemory_unlockLocalLink();
@@ -917,10 +910,6 @@ void setNumFrames(int64_t val) {
         sharedMemory_lockLocalLink();
         if (Feb_Control_SetNExposures((unsigned int)val * eiger_ntriggers)) {
             eiger_nexposures = val;
-            on_dst = 0;
-            for (int i = 0; i < 32; ++i)
-                dst_requested[i] = 0; // clear dst requested
-            ndsts_in_use = 1;
             nimages_per_request = eiger_nexposures * eiger_ntriggers;
         }
         sharedMemory_unlockLocalLink();
@@ -940,9 +929,6 @@ void setNumTriggers(int64_t val) {
         sharedMemory_lockLocalLink();
         if (Feb_Control_SetNExposures((unsigned int)val * eiger_nexposures)) {
             eiger_ntriggers = val;
-            on_dst = 0;
-            for (int i = 0; i < 32; ++i)
-                dst_requested[i] = 0; // clear dst requested
             nimages_per_request = eiger_nexposures * eiger_ntriggers;
         }
         sharedMemory_unlockLocalLink();
@@ -1521,6 +1507,24 @@ enum timingMode getTiming() {
 
 /* configure mac */
 
+int getNumberofDestinations(int *retval) {
+#ifdef VIRTUAL
+    *retval = numUdpDestinations;
+    return OK;
+#else
+    return Beb_GetNumberofDestinations(retval);
+#endif
+}
+
+int setNumberofDestinations(int value) {
+#ifdef VIRTUAL
+    // already set in funcs.c
+    return OK;
+#else
+    return Beb_SetNumberofDestinations(value);
+#endif
+}
+
 int configureMAC() {
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
@@ -1595,12 +1599,6 @@ int configureMAC() {
         } else {
             return FAIL;
         }
-
-        on_dst = 0;
-
-        for (int i = 0; i < 32; ++i)
-            dst_requested[i] = 0; // clear dst requested
-        nimages_per_request = eiger_nexposures * eiger_ntriggers;
 #endif
     }
     return OK;
@@ -2594,30 +2592,13 @@ int softwareTrigger(int block) {
 }
 
 int startReadOut() {
-
     LOG(logINFO, ("Requesting images...\n"));
-#ifdef VIRTUAL
-    return OK;
-#else
-    // RequestImages();
-    int ret_val = 0;
-    dst_requested[0] = 1;
-    while (dst_requested[on_dst]) {
-        // waits on data
-        int beb_num = detid;
-        if ((ret_val = (!Beb_RequestNImages(beb_num, send_to_ten_gig, on_dst,
-                                            nimages_per_request, 0))))
-            break;
-
-        dst_requested[on_dst++] = 0;
-        on_dst %= ndsts_in_use;
-    }
-
-    if (ret_val)
+#ifndef VIRTUAL
+    if (!Beb_RequestNImages(send_to_ten_gig, nimages_per_request, 0)) {
         return FAIL;
-    else
-        return OK;
+    }
 #endif
+    return OK;
 }
 
 enum runStatus getRunStatus() {

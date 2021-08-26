@@ -385,9 +385,12 @@ void calcChecksum(mac_conf *mac, int sourceip, int destip);
 void setNumberofUDPInterfaces(int val);
 int getNumberofUDPInterfaces();
 #endif
+
+#if defined(JUNGFRAUD) || defined(EIGERD)
+int getNumberofDestinations(int *retval);
+int setNumberofDestinations(int value);
+#endif
 #ifdef JUNGFRAUD
-int getNumberofDestinations();
-void setNumberofDestinations(int value);
 int getFirstUDPDestination();
 void setFirstUDPDestination(int value);
 void selectPrimaryInterface(int val);

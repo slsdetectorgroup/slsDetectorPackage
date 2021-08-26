@@ -45,6 +45,7 @@ int Beb_deactivated_transmission_delay_left = 0;
 int Beb_deactivated_transmission_delay_right = 0;
 int Beb_deactivated_left_datastream = 1;
 int Beb_deactivated_right_datastream = 1;
+int Beb_deactivated_num_destinations = 1;
 
 void BebInfo_BebInfo(struct BebInfo *bebInfo, unsigned int beb_num) {
     bebInfo->beb_number = beb_num;
@@ -1199,9 +1200,7 @@ int Beb_StopAcquisition() {
     return 1;
 }
 
-int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
-                       unsigned int dst_number, unsigned int nimages,
-                       int test_just_send_out_packets_no_wait) {
+int Beb_RequestNImages(int ten_gig, unsigned int nimages, int test_just_send_out_packets_no_wait) {
     if (!Beb_activated)
         return 1;
 
@@ -1225,10 +1224,10 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
     unsigned int packet_size = ten_gig ? 0x200 : 0x80; // 4k or  1k packets
 
     LOG(logDEBUG1, ("----Beb_RequestNImages Start----\n"));
-    LOG(logINFO, ("beb_number:%d, ten_gig:%d,dst_number:%d, npackets:%d, "
+    LOG(logINFO, ("ten_gig:%d, npackets:%d, "
                   "Beb_bit_mode:%d, header_size:%d, nimages:%d, "
                   "test_just_send_out_packets_no_wait:%d\n",
-                  beb_number, ten_gig, dst_number, npackets, Beb_bit_mode,
+                  ten_gig, npackets, Beb_bit_mode,
                   header_size, nimages, test_just_send_out_packets_no_wait));
 
     u_int32_t right_port_value = 0x2000;
@@ -1609,6 +1608,62 @@ int Beb_GetNextFrameNumber(uint64_t *retval, int tengigaEnable) {
 }
 
 void Beb_SetPartialReadout(int value) { Beb_partialReadout = value; }
+
+int Beb_GetNumberofDestinations(int *retval) {
+    if (!Beb_activated) {
+        *retval = Beb_deactivated_num_destinations;
+        return OK;
+    }
+    u_int32_t offset[2] = {LEFT_OFFSET + NUM_UDP_DEST_OFFSET,
+                           RIGHT_OFFSET + NUM_UDP_DEST_OFFSET};
+    u_int32_t *csp0base = 0;
+    int fd = Beb_open(&csp0base, XPAR_CMD_GENERATOR);
+    if (fd <= 0) {
+        LOG(logERROR, ("Could not read register to get number of udp "
+                       "destinations. FAIL\n"));
+        return FAIL;
+    } else {
+        int retval1[2] = {0, 0};
+        retval1[0] = Beb_Read32(csp0base, offset[0]);
+        retval1[1] = Beb_Read32(csp0base, offset[1]);
+        Beb_close(fd, csp0base);
+        if (retval1[0] != retval1[1]) {
+            LOG(logERROR, ("Inconsistent values on left (%d) and right (%d) "
+                           "fpga for number of destinations. FAIL\n",
+                           retval1[0], retval1[1]));
+            return FAIL;
+        }
+        *retval = retval1[0];
+        return OK;
+    }
+}
+
+int Beb_SetNumberofDestinations(int value) {
+    LOG(logINFO, ("Setting number of destinations to %d\n", value));
+    if (value < 0 || value >= MAX_UDP_DESTINATION) {
+        LOG(logERROR, ("Invalid number of destinations %d\n", value));
+        return FAIL;
+    }
+    if (!Beb_activated) {
+        Beb_deactivated_num_destinations = value;
+        return FAIL;
+    }
+    u_int32_t offset[2] = {LEFT_OFFSET + NUM_UDP_DEST_OFFSET,
+                           RIGHT_OFFSET + NUM_UDP_DEST_OFFSET};
+    u_int32_t *csp0base = 0;
+    int fd = Beb_open(&csp0base, XPAR_CMD_GENERATOR);
+    if (fd <= 0) {
+        LOG(logERROR, ("Could not read register to set number of udp "
+                       "destinations. FAIL\n"));
+        return FAIL;
+    } else {
+        Beb_Write32(csp0base, offset[0], value);
+        Beb_Write32(csp0base, offset[1], value);
+        Beb_deactivated_num_destinations = value;
+        Beb_close(fd, csp0base);
+        return OK;
+    }
+}
 
 uint16_t Beb_swap_uint16(uint16_t val) { return (val << 8) | (val >> 8); }
 

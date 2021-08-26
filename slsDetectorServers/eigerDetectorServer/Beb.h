@@ -92,8 +92,7 @@ int Beb_SetUpTransferParameters(short the_bit_mode);
  * ten_gig, unsigned int dst_number, unsigned int nimages, int
  * test_just_send_out_packets_no_wait=0); //all images go to the same
  * destination!*/
-int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
-                       unsigned int dst_number, unsigned int nimages,
+int Beb_RequestNImages(int ten_gig, unsigned int nimages,
                        int test_just_send_out_packets_no_wait);
 
 int Beb_Test(unsigned int beb_number);
@@ -109,6 +108,9 @@ int Beb_SetNextFrameNumber(uint64_t value);
 int Beb_GetNextFrameNumber(uint64_t *retval, int tengigaEnable);
 
 void Beb_SetPartialReadout(int value);
+
+int Beb_GetNumberofDestinations(int *retval);
+int Beb_SetNumberofDestinations(int value);
 
 uint16_t Beb_swap_uint16(uint16_t val);
 int Beb_open(u_int32_t **csp0base, u_int32_t offset);

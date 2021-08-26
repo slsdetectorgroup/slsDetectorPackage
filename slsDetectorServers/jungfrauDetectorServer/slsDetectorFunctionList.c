@@ -1331,14 +1331,18 @@ int getNumberofUDPInterfaces() {
     return ((bus_r(CONFIG_REG) & CONFIG_OPRTN_MDE_2_X_10GbE_MSK) ? 2 : 1);
 }
 
-int getNumberofDestinations() {
-    return (((bus_r(CONTROL_REG) & CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK) >> CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST) + 1);
+int getNumberofDestinations(int *retval) {
+    retval = (((bus_r(CONTROL_REG) & CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK) >>
+               CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST) +
+              1);
+    return OK;
 }
 
-void setNumberofDestinations(int value) {
+int setNumberofDestinations(int value) {
     LOG(logINFO, ("Setting number of entries to %d\n", value));
     --value;
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | ((value << CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST) & CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK));
+    return OK;
 }
 
 int getFirstUDPDestination() {
@@ -1544,7 +1548,6 @@ int configureMAC() {
             }
         }
     }
-    setNumberofDestinations(numUdpDestinations);
     setNumberofUDPInterfaces(numInterfaces);
     selectPrimaryInterface(selInterface);
 

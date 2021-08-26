@@ -208,6 +208,7 @@
 #define STOP_ACQ_BIT            0x40000000
 #define TWO_REQUESTS_OFFSET     0x1c
 #define TWO_REQUESTS_BIT        0x80000000
+#define NUM_UDP_DEST_OFFSET     0x20
 
 // version
 #define FIRMWARE_VERSION_OFFSET     0x4

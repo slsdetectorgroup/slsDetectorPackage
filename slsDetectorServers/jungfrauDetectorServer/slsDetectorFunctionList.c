@@ -1332,9 +1332,9 @@ int getNumberofUDPInterfaces() {
 }
 
 int getNumberofDestinations(int *retval) {
-    retval = (((bus_r(CONTROL_REG) & CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK) >>
-               CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST) +
-              1);
+    *retval = (((bus_r(CONTROL_REG) & CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK) >>
+                CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST) +
+               1);
     return OK;
 }
 

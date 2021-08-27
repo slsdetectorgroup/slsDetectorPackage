@@ -1425,24 +1425,10 @@ defs::udpDestination CmdProxy::getUdpList() {
             port2 = StringTo<uint32_t>(value);
         }
     }
-    // necessary arguments
-    if (hasEntry && ip != 0 && mac != 0 && port != 0) {
-        if (ip2 == 0 && mac2 == 0) {
-            // default (no second interface)
-            if (port2 == 0) {
-                return defs::udpDestination(entry, port, ip, mac);
-            }
-            // eiger (second udp port)
-            else {
-                return defs::udpDestination(entry, port, ip, mac, port2);
-            }
-        }
-        // jungfrau and gotthard2 (second interface)
-        if (ip2 != 0 && mac2 != 0 && port2 != 0) {
-            return defs::udpDestination(entry, port, ip, mac, port2, ip2, mac2);
-        }
+    if (!hasEntry) {
+        throw sls::RuntimeError("Found no entry argument.");
     }
-    throw sls::RuntimeError("Insufficient arguments");
+    return defs::udpDestination(entry, port, ip, mac, port2, ip2, mac2);
 }
 
 std::string CmdProxy::UDPDestinationList(int action) {

@@ -10,8 +10,8 @@
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
-struct BebInfo beb_infos[10];
-int bebInfoSize = 0;
+#define EMPTY_MAC_ADDRESS "00:00:00:00:00:00"
+#define EMPTY_IP_ADDRESS "000.000.000.000"
 
 struct LocalLinkInterface ll_beb_local, *ll_beb;
 
@@ -31,8 +31,6 @@ short Beb_bit_mode;
 int BEB_MMAP_SIZE = 0x1000;
 
 int Beb_activated = 1;
-
-uint32_t Beb_detid = 0;
 int Beb_top = 0;
 
 uint64_t Beb_deactivatedNextFrameNumber = 0;
@@ -47,71 +45,8 @@ int Beb_deactivated_left_datastream = 1;
 int Beb_deactivated_right_datastream = 1;
 int Beb_deactivated_num_destinations = 1;
 
-void BebInfo_BebInfo(struct BebInfo *bebInfo, unsigned int beb_num) {
-    bebInfo->beb_number = beb_num;
-    bebInfo->serial_address = 0;
-    strcpy(bebInfo->src_mac_1GbE, "");
-    strcpy(bebInfo->src_mac_10GbE, "");
-    strcpy(bebInfo->src_ip_1GbE, "");
-    strcpy(bebInfo->src_ip_10GbE, "");
-    bebInfo->src_port_1GbE = bebInfo->src_port_10GbE = 0;
-}
 
-int BebInfo_SetSerialAddress(struct BebInfo *bebInfo, unsigned int a) {
-    // address pre shifted
-    if (a > 0xff)
-        return 0;
-    bebInfo->serial_address = 0x04000000 | ((a & 0xff) << 16);
-    return 1;
-}
-
-int BebInfo_SetHeaderInfo(struct BebInfo *bebInfo, int ten_gig, char *src_mac,
-                          char *src_ip, unsigned int src_port) {
-    if (ten_gig) {
-        strcpy(bebInfo->src_mac_10GbE, src_mac);
-        strcpy(bebInfo->src_ip_10GbE, src_ip);
-        bebInfo->src_port_10GbE = src_port;
-    } else {
-        strcpy(bebInfo->src_mac_1GbE, src_mac);
-        strcpy(bebInfo->src_ip_1GbE, src_ip);
-        bebInfo->src_port_1GbE = src_port;
-    }
-    return 1;
-}
-
-unsigned int BebInfo_GetBebNumber(struct BebInfo *bebInfo) {
-    return bebInfo->beb_number;
-}
-unsigned int BebInfo_GetSerialAddress(struct BebInfo *bebInfo) {
-    return bebInfo->serial_address;
-}
-char *BebInfo_GetSrcMAC(struct BebInfo *bebInfo, int ten_gig) {
-    return ten_gig ? bebInfo->src_mac_10GbE : bebInfo->src_mac_1GbE;
-}
-char *BebInfo_GetSrcIP(struct BebInfo *bebInfo, int ten_gig) {
-    return ten_gig ? bebInfo->src_ip_10GbE : bebInfo->src_ip_1GbE;
-}
-unsigned int BebInfo_GetSrcPort(struct BebInfo *bebInfo, int ten_gig) {
-    return ten_gig ? bebInfo->src_port_10GbE : bebInfo->src_port_1GbE;
-}
-
-void BebInfo_Print(struct BebInfo *bebInfo) {
-    LOG(logINFO,
-        ("%d) Beb Info:\n"
-         "\tSerial Add: 0x%x\n"
-         "\tMAC   1GbE: %s\n"
-         "\tIP    1GbE: %s\n"
-         "\tPort  1GbE: %d\n"
-         "\tMAC  10GbE: %s\n"
-         "\tIP   10GbE: %s\n"
-         "\tPort 10GbE: %d\n",
-         bebInfo->beb_number, bebInfo->serial_address, bebInfo->src_mac_1GbE,
-         bebInfo->src_ip_1GbE, bebInfo->src_port_1GbE, bebInfo->src_mac_10GbE,
-         bebInfo->src_ip_10GbE, bebInfo->src_port_10GbE));
-}
-
-void Beb_Beb(int id) {
-    Beb_detid = id;
+void Beb_Beb() {
     Beb_send_ndata = 0;
     Beb_send_buffer_size = 1026;
     Beb_send_data_raw =
@@ -144,19 +79,149 @@ void Beb_Beb(int id) {
         {0x00, 0x00}, //{0x00, 0x11},
         {0x00, 0x00}};
 
-    if (!Beb_InitBebInfos())
-        exit(1);
-
-    LOG(logDEBUG1, ("Printing Beb infos:\n"));
-    for (unsigned int i = 1; i < bebInfoSize; i++)
-        BebInfo_Print(&beb_infos[i]);
+    Beb_ClearHeaderData(0);
+    Beb_ClearHeaderData(1);
 
     Beb_bit_mode = 4;
+}
 
-    //  ll_beb = &ll_beb_local;
-    //  Local_LocalLinkInterface(ll_beb,XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_LEFT_BASEADDR);
+void Beb_ClearHeaderData(int ten_gig) {
+    for (int i = 0; i < MAX_UDP_DESTINATION; ++i) {
+        if (!Beb_SetUpUDPHeader(i, ten_gig, EMPTY_MAC_ADDRESS, EMPTY_IP_ADDRESS, 0, EMPTY_MAC_ADDRESS, EMPTY_IP_ADDRESS, 0)) {
+            LOG(logERROR, ("Could not clear header data for entry %d (tengiga:%d)\n", i, ten_gig));
+        }
+    }
+}
 
-    //  Beb_SetByteOrder();
+
+int Beb_SetUpUDPHeader(unsigned int header_number, int ten_gig, char *src_mac, char *src_ip, unsigned int src_port, char *dst_mac, char *dst_ip, unsigned int dst_port) {
+
+    if (!Beb_activated)
+        return 1;
+
+    u_int32_t bram_phy_addr;
+    u_int32_t *csp0base = 0;
+    if (ten_gig)
+        bram_phy_addr = 0xC6002000;
+    else
+        bram_phy_addr = 0xC6001000;
+
+    if (!Beb_SetHeaderData(src_mac, src_ip, src_port, dst_mac, dst_ip, dst_port))
+        return 0;
+
+    int fd = Beb_open(&csp0base, bram_phy_addr);
+    if (fd < 0) {
+        LOG(logERROR, ("Set up UDP Header FAIL\n"));
+    } else {
+        // read data
+        memcpy(csp0base + header_number * 16, &udp_header, sizeof(udp_header));
+        // close file pointer
+        Beb_close(fd, csp0base);
+    }
+    return 1;
+}
+
+int Beb_SetHeaderData(char *src_mac, char *src_ip, unsigned int src_port, char *dst_mac, char *dst_ip, unsigned int dst_port) {
+    
+    if (!Beb_SetMAC(src_mac, &(udp_header.src_mac[0])))
+        return 0;
+    LOG(logINFO, ("Setting Source MAC to %s\n", src_mac));
+    if (!Beb_SetIP(src_ip, &(udp_header.src_ip[0])))
+        return 0;
+    LOG(logINFO, ("Setting Source IP to %s\n", src_ip));
+    if (!Beb_SetPortNumber(src_port, &(udp_header.src_port[0])))
+        return 0;
+    LOG(logINFO, ("Setting Source port to %d\n", src_port));
+
+    if (!Beb_SetMAC(dst_mac, &(udp_header.dst_mac[0])))
+        return 0;
+    LOG(logINFO, ("Setting Destination MAC to %s\n", dst_mac));
+    if (!Beb_SetIP(dst_ip, &(udp_header.dst_ip[0])))
+        return 0;
+    LOG(logINFO, ("Setting Destination IP to %s\n", dst_ip));
+    if (!Beb_SetPortNumber(dst_port, &(udp_header.dst_port[0])))
+        return 0;
+    LOG(logINFO, ("Setting Destination port to %d\n", dst_port));
+
+    Beb_AdjustIPChecksum(&udp_header);
+
+    unsigned int *base_ptr = (unsigned int *)&udp_header;
+    unsigned int num_words = (sizeof(struct udp_header_type) + 3) / 4;
+    for (unsigned int i = 0; i < num_words; i++)
+        Beb_send_data[i + 2] = base_ptr[i];
+    for (unsigned int i = num_words; i < 16; i++)
+        Beb_send_data[i + 2] = 0;
+
+    return 1;
+}
+
+
+int Beb_SetMAC(char *mac, uint8_t *dst_ptr) {
+    char macVal[50];
+    strcpy(macVal, mac);
+
+    int i = 0;
+    char *pch = strtok(macVal, ":");
+    while (pch != NULL) {
+        if (strlen(pch) != 2) {
+            LOG(logERROR, ("Error: in mac address -> %s\n", macVal));
+            return 0;
+        }
+
+        int itemp;
+        sscanf(pch, "%x", &itemp);
+        dst_ptr[i] = (u_int8_t)itemp;
+        pch = strtok(NULL, ":");
+        i++;
+    }
+    return 1;
+}
+
+int Beb_SetIP(char *ip, uint8_t *dst_ptr) {
+    char ipVal[50];
+    strcpy(ipVal, ip);
+    int i = 0;
+    char *pch = strtok(ipVal, ".");
+    while (pch != NULL) {
+        if (((i != 3) && ((strlen(pch) > 3) || (strlen(pch) < 1))) ||
+            ((i == 3) && ((strlen(pch) < 1) || (strlen(pch) > 3)))) {
+            LOG(logERROR, ("Error: in ip address -> %s\n", ipVal));
+            return 0;
+        }
+
+        int itemp;
+        sscanf(pch, "%d", &itemp);
+        dst_ptr[i] = (u_int8_t)itemp;
+        pch = strtok(NULL, ".");
+        i++;
+    }
+    return 1;
+}
+
+int Beb_SetPortNumber(unsigned int port_number, uint8_t *dst_ptr) {
+    dst_ptr[0] = (port_number >> 8) & 0xff;
+    dst_ptr[1] = port_number & 0xff;
+    return 1;
+}
+
+void Beb_AdjustIPChecksum(struct udp_header_type *ip) {
+    unsigned char *cptr = (unsigned char *)ip->ver_headerlen;
+
+    ip->ip_header_checksum[0] = 0;
+    ip->ip_header_checksum[1] = 0;
+    ip->total_length[0] = 0;
+    ip->total_length[1] = 28; // IP + UDP Header Length
+
+    // calc ip checksum
+    unsigned int ip_checksum = 0;
+    for (unsigned int i = 0; i < 10; i++) {
+        ip_checksum += ((cptr[2 * i] << 8) + (cptr[2 * i + 1]));
+        if (ip_checksum & 0x00010000)
+            ip_checksum = (ip_checksum + 1) & 0x0000ffff;
+    }
+
+    ip->ip_header_checksum[0] = (ip_checksum >> 8) & 0xff;
+    ip->ip_header_checksum[1] = ip_checksum & 0xff;
 }
 
 void Beb_GetModuleConfiguration(int *master, int *top, int *normal) {
@@ -817,301 +882,6 @@ void Beb_ResetFrameNumber() {
     }
 }
 
-void Beb_ClearBebInfos() { bebInfoSize = 0; }
-
-int Beb_InitBebInfos() { // file name at some point
-    Beb_ClearBebInfos();
-
-    struct BebInfo b0;
-    BebInfo_BebInfo(&b0, 0);
-    if (BebInfo_SetSerialAddress(
-            &b0,
-            0xff)) { // all bebs for reset and possibly get request data?
-        beb_infos[bebInfoSize] = b0;
-        bebInfoSize++;
-    }
-
-    int i0 = Beb_detid, i1 = 0;
-    if (Beb_GetBebInfoIndex(i0)) {
-        LOG(logERROR,
-            ("cant add beb. adding beb %d, beb number %d already added.\n",
-             Beb_detid, i0));
-        exit(0);
-    }
-    struct BebInfo b1;
-    BebInfo_BebInfo(&b1, i0);
-    BebInfo_SetSerialAddress(&b1, i1);
-    BebInfo_SetHeaderInfo(&b1, 0, (char *)"00:50:c2:46:d9:34",
-                          (char *)"129.129.205.78", 42000 + i0);
-    BebInfo_SetHeaderInfo(&b1, 1, (char *)"00:50:c2:46:d9:35",
-                          (char *)"10.0.26.1", 52000 + i0);
-    beb_infos[bebInfoSize] = b1;
-    bebInfoSize++;
-
-    /*
-//loop through file to fill vector.
-BebInfo* b = new BebInfo(26);
-b->SetSerialAddress(0); //0xc4000000
-b->SetHeaderInfo(0,"00:50:c2:46:d9:34","129.129.205.78",42000 + 26); // 1
-GbE, ip address can be acquire from the network "arp"
-b->SetHeaderInfo(1,"00:50:c2:46:d9:35","10.0.26.1",52000 + 26); //10 GbE,
-everything calculable/setable beb_infos.push_back(b);
-        */
-
-    return Beb_CheckSourceStuffBebInfo();
-}
-
-int Beb_SetBebSrcHeaderInfos(unsigned int beb_number, int ten_gig,
-                             char *src_mac, char *src_ip,
-                             unsigned int src_port) {
-    // so that the values can be reset externally for now....
-
-    unsigned int i = 1; /*Beb_GetBebInfoIndex(beb_number);*/
-    /******* if (!i) return 0;****************************/ // i must be
-                                                            // greater than
-                                                            // 0, zero is
-                                                            // the global
-                                                            // send
-    BebInfo_SetHeaderInfo(&beb_infos[i], ten_gig, src_mac, src_ip, src_port);
-
-    LOG(logINFO, ("Printing Beb info number (%d) :\n", i));
-    BebInfo_Print(&beb_infos[i]);
-
-    return 1;
-}
-
-int Beb_CheckSourceStuffBebInfo() {
-    for (unsigned int i = 1; i < bebInfoSize;
-         i++) { // header stuff always starts from 1
-        if (!Beb_SetHeaderData(BebInfo_GetBebNumber(&beb_infos[i]), 0,
-                               "00:00:00:00:00:00", "10.0.0.1", 20000) ||
-            !Beb_SetHeaderData(BebInfo_GetBebNumber(&beb_infos[i]), 1,
-                               "00:00:00:00:00:00", "10.0.0.1", 20000)) {
-            LOG(logINFO, ("Error in BebInfo for module number %d.\n",
-                          BebInfo_GetBebNumber(&beb_infos[i])));
-            BebInfo_Print(&beb_infos[i]);
-            return 0;
-        }
-    }
-    return 1;
-}
-
-unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb) {
-    for (unsigned int i = 1; i < bebInfoSize; i++)
-        if (beb_numb == BebInfo_GetBebNumber(&beb_infos[i])) {
-            LOG(logDEBUG1,
-                ("*****found beb index:%d, for beb number:%d\n", i, beb_numb));
-            return i;
-        }
-    LOG(logDEBUG1, ("*****Returning 0\n"));
-    return 0;
-}
-
-int Beb_WriteTo(unsigned int index) {
-
-    if (!Beb_activated)
-        return 1;
-
-    if (index >= bebInfoSize) {
-        LOG(logERROR, ("WriteTo index error.\n"));
-        return 0;
-    }
-
-    Beb_send_data_raw[0] =
-        0x90000000 | BebInfo_GetSerialAddress(&beb_infos[index]);
-    if (Local_Write(ll_beb, 4, Beb_send_data_raw) != 4)
-        return 0;
-
-    Beb_send_data_raw[0] = 0xc0000000;
-    if ((Beb_send_ndata + 1) * 4 !=
-        Local_Write(ll_beb, (Beb_send_ndata + 1) * 4, Beb_send_data_raw))
-        return 0;
-
-    return 1;
-}
-
-void Beb_SwapDataFun(int little_endian, unsigned int n, unsigned int *d) {
-    if (little_endian)
-        for (unsigned int i = 0; i < n; i++)
-            d[i] = (((d[i] & 0xff) << 24) | ((d[i] & 0xff00) << 8) |
-                    ((d[i] & 0xff0000) >> 8) |
-                    ((d[i] & 0xff000000) >> 24)); // little_endian
-    else
-        for (unsigned int i = 0; i < n; i++)
-            d[i] = (((d[i] & 0xffff) << 16) | ((d[i] & 0xffff0000) >> 16));
-}
-
-int Beb_SetByteOrder() { return 1; }
-
-int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig,
-                       unsigned int header_number, char *dst_mac, char *dst_ip,
-                       unsigned int dst_port) {
-
-    if (!Beb_activated)
-        return 1;
-
-    u_int32_t bram_phy_addr;
-    u_int32_t *csp0base = 0;
-    /*u_int32_t* bram_ptr = NULL;*/
-    if (ten_gig)
-        bram_phy_addr = 0xC6002000;
-    else
-        bram_phy_addr = 0xC6001000;
-
-    if (!Beb_SetHeaderData(beb_number, ten_gig, dst_mac, dst_ip, dst_port))
-        return 0;
-
-    int fd = Beb_open(&csp0base, bram_phy_addr);
-    if (fd < 0) {
-        LOG(logERROR, ("Set up UDP Header FAIL\n"));
-    } else {
-        // read data
-        memcpy(csp0base + header_number * 16, &udp_header, sizeof(udp_header));
-        // close file pointer
-        Beb_close(fd, csp0base);
-    }
-    return 1;
-}
-
-int Beb_SetHeaderData(unsigned int beb_number, int ten_gig, char *dst_mac,
-                      char *dst_ip, unsigned int dst_port) {
-    unsigned int i = 1; /*Beb_GetBebInfoIndex(beb_number);*/
-    /***********************************if (!i) return 0;
-     * *************************************///i must be greater than 0, zero is the global send
-    return Beb_SetHeaderData1(BebInfo_GetSrcMAC(&beb_infos[i], ten_gig),
-                              BebInfo_GetSrcIP(&beb_infos[i], ten_gig),
-                              BebInfo_GetSrcPort(&beb_infos[i], ten_gig),
-                              dst_mac, dst_ip, dst_port);
-}
-
-int Beb_SetHeaderData1(char *src_mac, char *src_ip, unsigned int src_port,
-                       char *dst_mac, char *dst_ip, unsigned int dst_port) {
-    /* example header*/
-    // static unsigned int*   word_ptr   = new unsigned int [16];
-    /*static*/
-    /*
-udp_header_type udp_header = {
-            {0x00, 0x50, 0xc5, 0xb2, 0xcb, 0x46},  // DST MAC
-            {0x00, 0x50, 0xc2, 0x46, 0xd9, 0x02},  // SRC MAC
-            {0x08, 0x00},
-            {0x45},
-            {0x00},
-            {0x00, 0x00},
-            {0x00, 0x00},
-            {0x40},
-            {0x00},
-            {0xff},
-            {0x11},
-            {0x00, 0x00},
-            {129, 205, 205, 128},  // Src IP
-            {129, 205, 205, 122},  // Dst IP
-            {0x0f, 0xa1},
-            {0x13, 0x89},
-            {0x00, 0x00}, //{0x00, 0x11},
-            {0x00, 0x00}
-    };
-        */
-
-    if (!Beb_SetMAC(src_mac, &(udp_header.src_mac[0])))
-        return 0;
-    LOG(logINFO, ("Setting Source MAC to %s\n", src_mac));
-    if (!Beb_SetIP(src_ip, &(udp_header.src_ip[0])))
-        return 0;
-    LOG(logINFO, ("Setting Source IP to %s\n", src_ip));
-    if (!Beb_SetPortNumber(src_port, &(udp_header.src_port[0])))
-        return 0;
-    LOG(logINFO, ("Setting Source port to %d\n", src_port));
-
-    if (!Beb_SetMAC(dst_mac, &(udp_header.dst_mac[0])))
-        return 0;
-    LOG(logINFO, ("Setting Destination MAC to %s\n", dst_mac));
-    if (!Beb_SetIP(dst_ip, &(udp_header.dst_ip[0])))
-        return 0;
-    LOG(logINFO, ("Setting Destination IP to %s\n", dst_ip));
-    if (!Beb_SetPortNumber(dst_port, &(udp_header.dst_port[0])))
-        return 0;
-    LOG(logINFO, ("Setting Destination port to %d\n", dst_port));
-
-    Beb_AdjustIPChecksum(&udp_header);
-
-    unsigned int *base_ptr = (unsigned int *)&udp_header;
-    unsigned int num_words = (sizeof(struct udp_header_type) + 3) / 4;
-    for (unsigned int i = 0; i < num_words; i++)
-        Beb_send_data[i + 2] = base_ptr[i];
-    for (unsigned int i = num_words; i < 16; i++)
-        Beb_send_data[i + 2] = 0;
-
-    return 1;
-}
-
-int Beb_SetMAC(char *mac, uint8_t *dst_ptr) {
-    char macVal[50];
-    strcpy(macVal, mac);
-
-    int i = 0;
-    char *pch = strtok(macVal, ":");
-    while (pch != NULL) {
-        if (strlen(pch) != 2) {
-            LOG(logERROR, ("Error: in mac address -> %s\n", macVal));
-            return 0;
-        }
-
-        int itemp;
-        sscanf(pch, "%x", &itemp);
-        dst_ptr[i] = (u_int8_t)itemp;
-        pch = strtok(NULL, ":");
-        i++;
-    }
-    return 1;
-}
-
-int Beb_SetIP(char *ip, uint8_t *dst_ptr) {
-    char ipVal[50];
-    strcpy(ipVal, ip);
-    int i = 0;
-    char *pch = strtok(ipVal, ".");
-    while (pch != NULL) {
-        if (((i != 3) && ((strlen(pch) > 3) || (strlen(pch) < 1))) ||
-            ((i == 3) && ((strlen(pch) < 1) || (strlen(pch) > 3)))) {
-            LOG(logERROR, ("Error: in ip address -> %s\n", ipVal));
-            return 0;
-        }
-
-        int itemp;
-        sscanf(pch, "%d", &itemp);
-        dst_ptr[i] = (u_int8_t)itemp;
-        pch = strtok(NULL, ".");
-        i++;
-    }
-    return 1;
-}
-
-int Beb_SetPortNumber(unsigned int port_number, uint8_t *dst_ptr) {
-    dst_ptr[0] = (port_number >> 8) & 0xff;
-    dst_ptr[1] = port_number & 0xff;
-    return 1;
-}
-
-void Beb_AdjustIPChecksum(struct udp_header_type *ip) {
-    unsigned char *cptr = (unsigned char *)ip->ver_headerlen;
-
-    ip->ip_header_checksum[0] = 0;
-    ip->ip_header_checksum[1] = 0;
-    ip->total_length[0] = 0;
-    ip->total_length[1] = 28; // IP + UDP Header Length
-
-    // calc ip checksum
-    unsigned int ip_checksum = 0;
-    for (unsigned int i = 0; i < 10; i++) {
-        ip_checksum += ((cptr[2 * i] << 8) + (cptr[2 * i + 1]));
-        if (ip_checksum & 0x00010000)
-            ip_checksum = (ip_checksum + 1) & 0x0000ffff;
-    }
-
-    ip->ip_header_checksum[0] = (ip_checksum >> 8) & 0xff;
-    ip->ip_header_checksum[1] = ip_checksum & 0xff;
-}
-
 int Beb_SetUpTransferParameters(short the_bit_mode) {
     if (the_bit_mode != 4 && the_bit_mode != 8 && the_bit_mode != 16 &&
         the_bit_mode != 32)
@@ -1560,7 +1330,7 @@ int Beb_SetNumberofDestinations(int value) {
     }
     if (!Beb_activated) {
         Beb_deactivated_num_destinations = value;
-        return FAIL;
+        return OK;
     }
     u_int32_t offset[2] = {LEFT_OFFSET + NUM_UDP_DEST_OFFSET,
                            RIGHT_OFFSET + NUM_UDP_DEST_OFFSET};

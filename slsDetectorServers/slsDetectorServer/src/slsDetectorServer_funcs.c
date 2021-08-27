@@ -84,12 +84,12 @@ void init_detector() {
     LOG(logINFO, ("This is a VIRTUAL detector\n"));
 #endif
     memset(udpDetails, 0, sizeof(udpDetails));
-    for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION; ++iRxEntry) {
-        udpDetails[iRxEntry].srcport = DEFAULT_UDP_SRC_PORTNO;
-        udpDetails[iRxEntry].srcport2 = DEFAULT_UDP_SRC_PORTNO + 1;
-    }
+    udpDetails[0].srcport = DEFAULT_UDP_SRC_PORTNO;
     udpDetails[0].dstport = DEFAULT_UDP_DST_PORTNO;
+#ifdef EIGERD
     udpDetails[0].dstport2 = DEFAULT_UDP_DST_PORTNO + 1;
+#endif    
+
     if (isControlServer) {
         basictests();
         initControlServer();
@@ -4945,8 +4945,7 @@ int check_detector_idle(const char *s) {
 }
 
 int is_udp_configured() {
-    for (int i = firstUDPDestination;
-         i != firstUDPDestination + numUdpDestinations; ++i) {
+    for (int i = 0; i != numUdpDestinations; ++i) {
         if (udpDetails[i].dstip == 0) {
             sprintf(configureMessage, "udp destination ip not configured [entry:%d]\n", i);
             LOG(logWARNING, ("%s", configureMessage));
@@ -5439,6 +5438,35 @@ int set_num_interfaces(int file_des) {
         } else if (check_detector_idle("configure mac") == OK) {
             if (getNumberofUDPInterfaces() != arg) {
                 setNumberofUDPInterfaces(arg);
+                for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+                    if (arg == 1) {
+                        udpDetails[iRxEntry].srcport2 = 0;
+                        udpDetails[iRxEntry].srcip2 = 0;
+                        udpDetails[iRxEntry].srcmac2 = 0;
+                        udpDetails[iRxEntry].dstport2 = 0;
+                        udpDetails[iRxEntry].dstip2 = 0;
+                        udpDetails[iRxEntry].dstmac2 = 0;
+                    } else {
+                         // if still 0, set defaults
+                        udpDetails[iRxEntry].srcport2 = DEFAULT_UDP_SRC_PORTNO + 1;
+                        if (udpDetails[iRxEntry].dstport2 == 0) {
+                            udpDetails[iRxEntry].dstport2 = 2 * iRxEntry + 1 + DEFAULT_UDP_DST_PORTNO;
+                        }
+                        // if still 0, copy from entry 0
+                        if (iRxEntry != 0) {
+                            if (udpDetails[iRxEntry].srcip2 == 0) {
+                                udpDetails[iRxEntry].srcip2 = udpDetails[0].srcip2;
+                            }
+                            if (udpDetails[iRxEntry].dstip2 == 0) {
+                                udpDetails[iRxEntry].dstip2 = udpDetails[0].dstip2;
+                            }
+                            if (udpDetails[iRxEntry].dstmac2 == 0) {
+                                udpDetails[iRxEntry].dstmac2 = udpDetails[0].dstmac2;
+                            }
+                            // srcmac2 will be set in configure_mac
+                        }
+                    }
+                }
                 calculate_and_set_position(); // aleady configures mac
             }
         }
@@ -9134,12 +9162,77 @@ int set_dest_udp_list(int file_des) {
 #endif
         else {
             if (check_detector_idle("set udp destination list entries") == OK) {
-                udpDetails[entry].dstport = args[1];
-                udpDetails[entry].dstport2 = args[2];
-                udpDetails[entry].dstip = args[3];
-                udpDetails[entry].dstip2 = args[4];
-                udpDetails[entry].dstmac = args64[0];
-                udpDetails[entry].dstmac2 = args64[1];
+                udpDetails[entry].srcport = 0;
+                udpDetails[entry].srcip = 0;
+                udpDetails[entry].srcmac = 0;
+                udpDetails[entry].dstport = 0;
+                udpDetails[entry].dstip = 0;
+                udpDetails[entry].dstmac = 0;
+                udpDetails[entry].srcport2 = 0;
+                udpDetails[entry].srcip2 = 0;
+                udpDetails[entry].srcmac2 = 0;
+                udpDetails[entry].dstport2 = 0;
+                udpDetails[entry].dstip2 = 0;
+                udpDetails[entry].dstmac2 = 0;
+
+                if (args[1] != 0) {
+                    udpDetails[entry].dstport = args[1];
+                }
+                if (args[2] != 0) { 
+                    udpDetails[entry].dstport2 = args[2];
+                }
+                if (args[3] != 0) {
+                    udpDetails[entry].dstip = args[3];
+                }
+                if (args[4] != 0) {
+                    udpDetails[entry].dstip2 = args[4];
+                }
+                if (args64[0] != 0) {
+                    udpDetails[entry].dstmac = args64[0];
+                }
+                if (args64[1] != 0) {
+                    udpDetails[entry].dstmac2 = args64[1];
+                }
+
+                // if still 0, set defaults
+                int twoInterfaces = 0;
+#if defined(JUNGFRAUD) || defined(GOTTHARD2D)
+                twoInterfaces = getNumberofUDPInterfaces() == 2 ? 1 : 0;
+#endif
+                udpDetails[entry].srcport = DEFAULT_UDP_SRC_PORTNO;
+                if (udpDetails[entry].dstport == 0) {
+                    udpDetails[entry].dstport = 2 * entry + DEFAULT_UDP_DST_PORTNO;
+                }
+                if (myDetectorType == EIGER || twoInterfaces) {
+                    udpDetails[entry].srcport2 = DEFAULT_UDP_SRC_PORTNO + 1;
+                    if (udpDetails[entry].dstport2 == 0) {
+                        udpDetails[entry].dstport2 = 2 * entry + 1 + DEFAULT_UDP_DST_PORTNO;
+                    }
+                }
+                // if still 0, copy from entry 0
+                if (entry != 0) {
+                    if (udpDetails[entry].srcip == 0) {
+                        udpDetails[entry].srcip = udpDetails[0].srcip;
+                    }
+                    if (udpDetails[entry].dstip == 0) {
+                        udpDetails[entry].dstip = udpDetails[0].dstip;
+                    }
+                    if (udpDetails[entry].dstmac == 0) {
+                        udpDetails[entry].dstmac = udpDetails[0].dstmac;
+                    }
+                    if (twoInterfaces) {
+                        if (udpDetails[entry].srcip2 == 0) {
+                            udpDetails[entry].srcip2 = udpDetails[0].srcip2;
+                        }
+                        if (udpDetails[entry].dstip2 == 0) {
+                            udpDetails[entry].dstip2 = udpDetails[0].dstip2;
+                        }
+                        if (udpDetails[entry].dstmac2 == 0) {
+                            udpDetails[entry].dstmac2 = udpDetails[0].dstmac2;
+                        }
+                    }
+                    // srcmac and srcmac2 will be set in configure_mac
+                }
                 configure_mac();
             }
         }

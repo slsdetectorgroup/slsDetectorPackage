@@ -354,7 +354,7 @@ void initControlServer() {
         sharedMemory_unlockLocalLink();
         LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
         Beb_SetTopVariable(top);
-        Beb_Beb(detid);
+        Beb_Beb();
         Beb_SetDetectorNumber(getDetectorNumber());
         LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
 #endif
@@ -1535,7 +1535,7 @@ int configureMAC() {
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
 
-    for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+    for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION; ++iRxEntry) {
         uint32_t srcip = udpDetails[iRxEntry].srcip;
         uint32_t dstip = udpDetails[iRxEntry].dstip;
         uint64_t srcmac = udpDetails[iRxEntry].srcmac;
@@ -1551,16 +1551,18 @@ int configureMAC() {
         getIpAddressinString(src_ip, srcip);
         getIpAddressinString(dst_ip, dstip);
 
-        LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
-        LOG(logINFO,
-            ("\tSource IP   : %s\n"
-            "\tSource MAC  : %s\n"
-            "\tSource Port : %d\n"
-            "\tDest IP     : %s\n"
-            "\tDest MAC    : %s\n"
-            "\tDest Port   : %d\n"
-            "\tDest Port2  : %d\n",
-            src_ip, src_mac, srcport, dst_ip, dst_mac, dstport, dstport2));
+       if (iRxEntry <= numUdpDestinations) {
+            LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
+            LOG(logINFO,
+                ("\tSource IP   : %s\n"
+                "\tSource MAC  : %s\n"
+                "\tSource Port : %d\n"
+                "\tDest IP     : %s\n"
+                "\tDest MAC    : %s\n"
+                "\tDest Port   : %d\n"
+                "\tDest Port2  : %d\n",
+                src_ip, src_mac, srcport, dst_ip, dst_mac, dstport, dstport2));
+        }
 
 #ifdef VIRTUAL
         if (setUDPDestinationDetails(iRxEntry, 0, dst_ip, dstport) == FAIL) {
@@ -1583,10 +1585,7 @@ int configureMAC() {
         if (!top)
             dst_port = dstport2;
 
-        if (Beb_SetBebSrcHeaderInfos(beb_num, send_to_ten_gig, src_mac, src_ip,
-                                     srcport) &&
-            Beb_SetUpUDPHeader(beb_num, send_to_ten_gig, iRxEntry, dst_mac,
-                               dst_ip, dst_port)) {
+        if (Beb_SetUpUDPHeader(iRxEntry, send_to_ten_gig, src_mac, src_ip, srcport, dst_mac, dst_ip, dst_port)) {
             LOG(logDEBUG1, ("\tset up left ok\n"));
         } else {
             return FAIL;
@@ -1596,12 +1595,8 @@ int configureMAC() {
         if (!top)
             dst_port = dstport;
 
-        if (Beb_SetBebSrcHeaderInfos(beb_num, send_to_ten_gig, src_mac, src_ip,
-                                     srcport) &&
-            Beb_SetUpUDPHeader(beb_num, send_to_ten_gig,
-                               iRxEntry + MAX_UDP_DESTINATION, dst_mac, dst_ip,
-                               dst_port)) {
-            LOG(logDEBUG1, (" set up right ok\n"));
+        if (Beb_SetUpUDPHeader(iRxEntry + MAX_UDP_DESTINATION, send_to_ten_gig, src_mac, src_ip, srcport, dst_mac, dst_ip, dst_port)) {
+            LOG(logDEBUG1, ("\tset up right ok\n"));
         } else {
             return FAIL;
         }
@@ -1722,6 +1717,9 @@ int enableTenGigabitEthernet(int val) {
             send_to_ten_gig = 1;
         else
             send_to_ten_gig = 0;
+#ifndef VIRTUAL
+        Beb_ClearHeaderData(send_to_ten_gig == 0 ? 1 : 0);
+#endif
     }
     return send_to_ten_gig;
 }

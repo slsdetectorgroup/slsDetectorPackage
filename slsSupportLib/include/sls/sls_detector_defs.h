@@ -502,14 +502,9 @@ typedef struct {
         uint32_t ip2_{};
         uint64_t mac_{};
         uint64_t mac2_{};
-        udpDestination() {}
-        udpDestination(uint32_t entry, uint32_t port, uint32_t ip, uint64_t mac)
-            : entry_(entry), port_(port), ip_(ip), mac_(mac) {}
-        udpDestination(uint32_t entry, uint32_t port, uint32_t ip, uint64_t mac,
-                       uint32_t port2)
-            : entry_(entry), port_(port), port2_(port2), ip_(ip), mac_(mac) {}
-        udpDestination(uint32_t entry, uint32_t port, uint32_t ip, uint64_t mac,
-                       uint32_t port2, uint32_t ip2, uint64_t mac2)
+        udpDestination() {}        
+        udpDestination(uint32_t entry, uint32_t port = 0, uint32_t ip = 0, uint64_t mac = 0,
+                       uint32_t port2 = 0, uint32_t ip2 = 0, uint64_t mac2 = 0)
             : entry_(entry), port_(port), port2_(port2), ip_(ip), ip2_(ip2),
               mac_(mac), mac2_(mac2) {}
 

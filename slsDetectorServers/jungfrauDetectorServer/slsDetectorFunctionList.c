@@ -1419,6 +1419,9 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
     // total length is redefined in firmware
 
     calcChecksum(udp);
+    if (iRxEntry <= numUdpDestinations) {
+        LOG(logINFO, ("\tIP checksum is 0x%lx\n", udp->ip_checksum));
+    }
 }
 
 void calcChecksum(udp_header *udp) {
@@ -1449,7 +1452,6 @@ void calcChecksum(udp_header *udp) {
         sum = (sum & 0xffff) + (sum >> 16); // Fold 32-bit sum to 16 bits
     long int checksum = sum & 0xffff;
     checksum += UDP_IP_HEADER_LENGTH_BYTES;
-    LOG(logINFO, ("\tIP checksum is 0x%lx\n", checksum));
     udp->ip_checksum = checksum;
 }
 
@@ -1463,7 +1465,7 @@ int configureMAC() {
     LOG(logINFO, ("\tInterface   : %d %s\n\n", selInterface,
                   (selInterface ? "Inner" : "Outer")));
 
-    for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
+    for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION; ++iRxEntry) {
         uint32_t srcip = udpDetails[iRxEntry].srcip;
         uint32_t srcip2 = udpDetails[iRxEntry].srcip2;
         uint32_t dstip = udpDetails[iRxEntry].dstip;
@@ -1489,30 +1491,32 @@ int configureMAC() {
         getMacAddressinString(dst_mac2, 50, dstmac2);
         getIpAddressinString(src_ip2, srcip2);
         getIpAddressinString(dst_ip2, dstip2);
-        LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
 
-        LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2)
-                                        ? "(Bottom)"
-                                        : (selInterface ? "Not Used" : "Used")));
-        LOG(logINFO, ("\tSource IP   : %s\n"
-                    "\tSource MAC  : %s\n"
-                    "\tSource Port : %d\n"
-                    "\tDest IP     : %s\n"
-                    "\tDest MAC    : %s\n"
-                    "\tDest Port   : %d\n",
-                    src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+        if (iRxEntry <= numUdpDestinations) {
+            LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
 
-        LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2)
-                                        ? "(Top)"
-                                        : (selInterface ? "Used" : "Not Used")));
-        LOG(logINFO, ("\tSource IP2  : %s\n"
-                    "\tSource MAC2 : %s\n"
-                    "\tSource Port2: %d\n"
-                    "\tDest IP2    : %s\n"
-                    "\tDest MAC2   : %s\n"
-                    "\tDest Port2  : %d\n",
-                    src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
+            LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2)
+                                            ? "(Bottom)"
+                                            : (selInterface ? "Not Used" : "Used")));
+            LOG(logINFO, ("\tSource IP   : %s\n"
+                        "\tSource MAC  : %s\n"
+                        "\tSource Port : %d\n"
+                        "\tDest IP     : %s\n"
+                        "\tDest MAC    : %s\n"
+                        "\tDest Port   : %d\n",
+                        src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
+            LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2)
+                                            ? "(Top)"
+                                            : (selInterface ? "Used" : "Not Used")));
+            LOG(logINFO, ("\tSource IP2  : %s\n"
+                        "\tSource MAC2 : %s\n"
+                        "\tSource Port2: %d\n"
+                        "\tDest IP2    : %s\n"
+                        "\tDest MAC2   : %s\n"
+                        "\tDest Port2  : %d\n",
+                        src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
+        }
 #ifdef VIRTUAL
         if (setUDPDestinationDetails(iRxEntry, 0, dst_ip, dstport) == FAIL) {
             LOG(logERROR, ("could not set udp destination IP and port for "

@@ -5454,16 +5454,14 @@ int set_num_interfaces(int file_des) {
                         }
                         // if still 0, copy from entry 0
                         if (iRxEntry != 0) {
-                            if (udpDetails[iRxEntry].srcip2 == 0) {
-                                udpDetails[iRxEntry].srcip2 = udpDetails[0].srcip2;
-                            }
+                            udpDetails[iRxEntry].srcip2 = udpDetails[0].srcip2;
+                            udpDetails[iRxEntry].srcmac2 = udpDetails[0].srcmac2;
                             if (udpDetails[iRxEntry].dstip2 == 0) {
                                 udpDetails[iRxEntry].dstip2 = udpDetails[0].dstip2;
                             }
                             if (udpDetails[iRxEntry].dstmac2 == 0) {
                                 udpDetails[iRxEntry].dstmac2 = udpDetails[0].dstmac2;
                             }
-                            // srcmac2 will be set in configure_mac
                         }
                     }
                 }
@@ -9162,19 +9160,6 @@ int set_dest_udp_list(int file_des) {
 #endif
         else {
             if (check_detector_idle("set udp destination list entries") == OK) {
-                udpDetails[entry].srcport = 0;
-                udpDetails[entry].srcip = 0;
-                udpDetails[entry].srcmac = 0;
-                udpDetails[entry].dstport = 0;
-                udpDetails[entry].dstip = 0;
-                udpDetails[entry].dstmac = 0;
-                udpDetails[entry].srcport2 = 0;
-                udpDetails[entry].srcip2 = 0;
-                udpDetails[entry].srcmac2 = 0;
-                udpDetails[entry].dstport2 = 0;
-                udpDetails[entry].dstip2 = 0;
-                udpDetails[entry].dstmac2 = 0;
-
                 if (args[1] != 0) {
                     udpDetails[entry].dstport = args[1];
                 }
@@ -9211,9 +9196,8 @@ int set_dest_udp_list(int file_des) {
                 }
                 // if still 0, copy from entry 0
                 if (entry != 0) {
-                    if (udpDetails[entry].srcip == 0) {
-                        udpDetails[entry].srcip = udpDetails[0].srcip;
-                    }
+                    udpDetails[entry].srcip = udpDetails[0].srcip;
+                    udpDetails[entry].srcmac = udpDetails[0].srcmac;
                     if (udpDetails[entry].dstip == 0) {
                         udpDetails[entry].dstip = udpDetails[0].dstip;
                     }
@@ -9221,9 +9205,8 @@ int set_dest_udp_list(int file_des) {
                         udpDetails[entry].dstmac = udpDetails[0].dstmac;
                     }
                     if (twoInterfaces) {
-                        if (udpDetails[entry].srcip2 == 0) {
-                            udpDetails[entry].srcip2 = udpDetails[0].srcip2;
-                        }
+                        udpDetails[entry].srcip2 = udpDetails[0].srcip2;
+                        udpDetails[entry].srcmac2 = udpDetails[0].srcmac2;
                         if (udpDetails[entry].dstip2 == 0) {
                             udpDetails[entry].dstip2 = udpDetails[0].dstip2;
                         }
@@ -9231,7 +9214,6 @@ int set_dest_udp_list(int file_des) {
                             udpDetails[entry].dstmac2 = udpDetails[0].dstmac2;
                         }
                     }
-                    // srcmac and srcmac2 will be set in configure_mac
                 }
                 configure_mac();
             }

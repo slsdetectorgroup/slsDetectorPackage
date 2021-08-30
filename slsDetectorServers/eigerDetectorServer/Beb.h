@@ -6,11 +6,12 @@
 
 void Beb_Beb();
 void Beb_ClearHeaderData(int ten_gig);
-int Beb_SetUpUDPHeader(unsigned int header_number, int ten_gig, char *src_mac, char *src_ip, unsigned int src_port, char *dst_mac, char *dst_ip, unsigned int dst_port);
-int Beb_SetHeaderData(char *src_mac, char *src_ip, unsigned int src_port, char *dst_mac, char *dst_ip, unsigned int dst_port);
-int Beb_SetMAC(char *mac, uint8_t *dst_ptr);
-int Beb_SetIP(char *ip, uint8_t *dst_ptr);
-int Beb_SetPortNumber(unsigned int port_number, uint8_t *dst_ptr);
+int Beb_SetUpUDPHeader(unsigned int header_number, int ten_gig,
+                       uint64_t src_mac, uint32_t src_ip, unsigned int src_port,
+                       uint64_t dst_mac, uint32_t dst_ip,
+                       unsigned int dst_port);
+int Beb_SetHeaderData(uint64_t src_mac, uint32_t src_ip, unsigned int src_port,
+                      uint64_t dst_mac, uint32_t dst_ip, unsigned int dst_port);
 void Beb_AdjustIPChecksum(struct udp_header_type *ip);
 
 void Beb_GetModuleConfiguration(int *master, int *top, int *normal);

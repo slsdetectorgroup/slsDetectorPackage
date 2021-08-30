@@ -1579,13 +1579,12 @@ int configureMAC() {
         }
         return OK;
 #else
-
-        int beb_num = detid;
         int dst_port = dstport;
         if (!top)
             dst_port = dstport2;
 
-        if (Beb_SetUpUDPHeader(iRxEntry, send_to_ten_gig, src_mac, src_ip, srcport, dst_mac, dst_ip, dst_port)) {
+        if (Beb_SetUpUDPHeader(iRxEntry, send_to_ten_gig, srcmac, srcip,
+                               srcport, dstmac, dstip, dst_port)) {
             LOG(logDEBUG1, ("\tset up left ok\n"));
         } else {
             return FAIL;
@@ -1595,7 +1594,9 @@ int configureMAC() {
         if (!top)
             dst_port = dstport;
 
-        if (Beb_SetUpUDPHeader(iRxEntry + MAX_UDP_DESTINATION, send_to_ten_gig, src_mac, src_ip, srcport, dst_mac, dst_ip, dst_port)) {
+        if (Beb_SetUpUDPHeader(iRxEntry + MAX_UDP_DESTINATION, send_to_ten_gig,
+                               srcmac, srcip, srcport, dstmac, dstip,
+                               dst_port)) {
             LOG(logDEBUG1, ("\tset up right ok\n"));
         } else {
             return FAIL;

@@ -1492,7 +1492,7 @@ int configureMAC() {
         getIpAddressinString(src_ip2, srcip2);
         getIpAddressinString(dst_ip2, dstip2);
 
-        if (iRxEntry <= numUdpDestinations) {
+        if (iRxEntry < numUdpDestinations) {
             LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
 
             LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2)

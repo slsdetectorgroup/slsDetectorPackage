@@ -1551,7 +1551,7 @@ int configureMAC() {
         getIpAddressinString(src_ip, srcip);
         getIpAddressinString(dst_ip, dstip);
 
-       if (iRxEntry <= numUdpDestinations) {
+        if (iRxEntry < numUdpDestinations) {
             LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
             LOG(logINFO,
                 ("\tSource IP   : %s\n"

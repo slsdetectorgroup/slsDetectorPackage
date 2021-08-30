@@ -33,6 +33,9 @@ int getUdPSocketDescriptor(int iRxEntry, int index) { return udpSockfd[iRxEntry]
 
 int setUDPDestinationDetails(int iRxEntry, int index, const char *ip,
                              unsigned short int port) {
+    LOG(logDEBUG1,
+        ("Setting udp destination details for socket %d [iRxEntry:%d]\n", index,
+         iRxEntry));
     udpDestinationPort[iRxEntry][index] = port;
     size_t len = strlen(ip);
     memset(udpDestinationIp[iRxEntry][index], 0, INET_ADDRSTRLEN);

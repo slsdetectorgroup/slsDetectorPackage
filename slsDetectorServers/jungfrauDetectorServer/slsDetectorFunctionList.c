@@ -1465,6 +1465,7 @@ int configureMAC() {
     LOG(logINFO, ("\tInterface   : %d %s\n\n", selInterface,
                   (selInterface ? "Inner" : "Outer")));
 
+    LOG(logINFO, ("Number of entries: %d\n", numUdpDestinations));
     for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION; ++iRxEntry) {
         uint32_t srcip = udpDetails[iRxEntry].srcip;
         uint32_t srcip2 = udpDetails[iRxEntry].srcip2;
@@ -1531,9 +1532,7 @@ int configureMAC() {
                            iRxEntry));
             return FAIL;
         }
-        return OK;
 #endif
-
         if (numInterfaces == 2) {
             // bottom
             setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip,

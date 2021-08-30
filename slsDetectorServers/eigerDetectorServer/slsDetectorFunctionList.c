@@ -1579,7 +1579,7 @@ int configureMAC() {
         }
         return OK;
 #else
-        int dst_port = dstport;
+        uint16_t dst_port = dstport;
         if (!top)
             dst_port = dstport2;
 

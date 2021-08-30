@@ -10,9 +10,6 @@
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
-#define EMPTY_MAC_ADDRESS "00:00:00:00:00:00"
-#define EMPTY_IP_ADDRESS "000.000.000.000"
-
 struct LocalLinkInterface ll_beb_local, *ll_beb;
 
 struct udp_header_type udp_header;
@@ -87,16 +84,15 @@ void Beb_Beb() {
 
 void Beb_ClearHeaderData(int ten_gig) {
     for (int i = 0; i < MAX_UDP_DESTINATION; ++i) {
-        if (!Beb_SetUpUDPHeader(i, ten_gig, EMPTY_MAC_ADDRESS, EMPTY_IP_ADDRESS, 0, EMPTY_MAC_ADDRESS, EMPTY_IP_ADDRESS, 0)) {
+        if (!Beb_SetUpUDPHeader(i, ten_gig, 0, 0, 0, 0, 0, 0)) {
             LOG(logERROR, ("Could not clear header data for entry %d (tengiga:%d)\n", i, ten_gig));
         }
     }
 }
 
 int Beb_SetUpUDPHeader(unsigned int header_number, int ten_gig,
-                       uint64_t src_mac, uint32_t src_ip, unsigned int src_port,
-                       uint64_t dst_mac, uint32_t dst_ip,
-                       unsigned int dst_port) {
+                       uint64_t src_mac, uint32_t src_ip, uint16_t src_port,
+                       uint64_t dst_mac, uint32_t dst_ip, uint16_t dst_port) {
 
     if (!Beb_activated)
         return 1;
@@ -123,27 +119,52 @@ int Beb_SetUpUDPHeader(unsigned int header_number, int ten_gig,
     return 1;
 }
 
-int Beb_SetHeaderData(uint64_t src_mac, uint32_t src_ip, unsigned int src_port,
-                      uint64_t dst_mac, uint32_t dst_ip,
-                      unsigned int dst_port) {
+int Beb_SetHeaderData(uint64_t src_mac, uint32_t src_ip, uint16_t src_port,
+                      uint64_t dst_mac, uint32_t dst_ip, uint16_t dst_port) {
 
-    memcpy(&(udp_header.src_mac[0]), &src_mac, sizeof(udp_header.src_mac));
-    LOG(logDEBUG1, ("Setting Source MAC to 0x%lx\n", (long long unsigned int)src_mac));
+    // src mac is after dst mac in structure (6 bit each)
+    uint16_t src_msb = ((src_mac >> 32) & BIT16_MASK);
+    uint32_t src_lsb = ((src_mac >> 0) & BIT32_MASK);
+    memcpy(&(udp_header.src_mac[0]), &src_msb, sizeof(src_msb));
+    memcpy(&(udp_header.src_mac[2]), &src_lsb, sizeof(src_lsb));
+    for (int i = 0; i < 6; ++i) {
+        LOG(logDEBUG1,
+            ("src mac[%d]: %02x\n", i, (uint8_t *)udp_header.src_mac[i]));
+    }
 
     memcpy(&(udp_header.src_ip[0]), &src_ip, sizeof(udp_header.src_ip));
-    LOG(logDEBUG1, ("Setting Source IP to 0x%x\n", src_ip));
+    for (int i = 0; i < 4; ++i) {
+        LOG(logDEBUG1,
+            ("src ip[%d]: %02x\n", i, (uint8_t *)udp_header.src_ip[i]));
+    }
 
     memcpy(&(udp_header.src_port[0]), &src_port, sizeof(udp_header.src_port));
-    LOG(logDEBUG1, ("Setting Source Port to 0x%x\n", src_port));
+    for (int i = 0; i < 2; ++i) {
+        LOG(logDEBUG1,
+            ("src port[%d]: %02x\n", i, (uint8_t *)udp_header.src_port[i]));
+    }
 
-    memcpy(&(udp_header.dst_mac[0]), &dst_mac, sizeof(udp_header.dst_mac));
-    LOG(logDEBUG1, ("Setting Destination MAC to 0x%lx\n", (long long unsigned int)dst_mac));
+        uint32_t dst_msb = ((dst_mac >> 16) & BIT32_MASK);
+        uint16_t dst_lsb = ((dst_mac >> 0) & BIT16_MASK);
+        memcpy(&(udp_header.dst_mac[0]), &dst_msb, sizeof(dst_msb));
+        memcpy(&(udp_header.dst_mac[4]), &dst_lsb, sizeof(dst_lsb));
+        for (int i = 0; i < 6; ++i) {
+            LOG(logDEBUG1,
+                ("dst mac[%d]: %02x\n", i, (uint8_t *)udp_header.dst_mac[i]));
+        }
 
     memcpy(&(udp_header.dst_ip[0]), &dst_ip, sizeof(udp_header.dst_ip));
-    LOG(logDEBUG1, ("Setting Destination IP to 0x%x\n", dst_ip));
+    for (int i = 0; i < 4; ++i) {
+        LOG(logDEBUG1,
+            ("dst ip[%d]: %02x\n", i, (uint8_t *)udp_header.dst_ip[i]));
+    }
 
-    memcpy(&(udp_header.src_port[0]), &dst_port, sizeof(udp_header.src_port));
-    LOG(logDEBUG1, ("Setting Source Port to 0x%x\n", dst_port));
+        memcpy(&(udp_header.dst_port[0]), &dst_port,
+               sizeof(udp_header.dst_port));
+        for (int i = 0; i < 2; ++i) {
+            LOG(logDEBUG1,
+                ("dst port[%d]: %02x\n", i, (uint8_t *)udp_header.dst_port[i]));
+        }
 
     Beb_AdjustIPChecksum(&udp_header);
 
@@ -156,7 +177,6 @@ int Beb_SetHeaderData(uint64_t src_mac, uint32_t src_ip, unsigned int src_port,
 
     return 1;
 }
-
 
 void Beb_AdjustIPChecksum(struct udp_header_type *ip) {
     unsigned char *cptr = (unsigned char *)ip->ver_headerlen;

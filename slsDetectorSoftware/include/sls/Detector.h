@@ -510,13 +510,13 @@ class Detector {
     void setDBITPipeline(int value, Positions pos = {});
 
     /** [Eiger][Jungfrau] */
-    Result<int> getPartialReadout(Positions pos = {}) const;
+    Result<int> getReadNRows(Positions pos = {}) const;
 
-    /** [Eiger] Number of lines to read out per half module
+    /** [Eiger] Number of rows to read out per half module
      * Options: 0 - 256. 256 is default. The permissible values depend on
      * dynamic range and 10Gbe enabled. \n[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.
      */
-    void setPartialReadout(const int lines, Positions pos = {});
+    void setReadNRows(const int lines, Positions pos = {});
 
     ///@{
 

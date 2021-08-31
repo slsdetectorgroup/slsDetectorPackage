@@ -33,7 +33,7 @@ int Beb_top = 0;
 uint64_t Beb_deactivatedNextFrameNumber = 0;
 int Beb_quadEnable = 0;
 int Beb_positions[2] = {0, 0};
-int Beb_partialReadout = MAX_ROWS_PER_READOUT;
+int Beb_readNRows = MAX_ROWS_PER_READOUT;
 int Beb_deactivated_transmission_flowcontrol_10g = 0;
 int Beb_deactivated_transmission_delay_frame = 0;
 int Beb_deactivated_transmission_delay_left = 0;
@@ -903,7 +903,7 @@ int Beb_RequestNImages(int ten_gig, unsigned int nimages, int test_just_send_out
 
      unsigned int maxnl = MAX_ROWS_PER_READOUT;
     unsigned int maxnp = (ten_gig ? 4 : 16) * Beb_bit_mode;
-    unsigned int nl = Beb_partialReadout;
+    unsigned int nl = Beb_readNRows;
     unsigned int npackets = (nl * maxnp) / maxnl;
     if ((nl * maxnp) % maxnl) {
         LOG(logERROR, ("Read N Lines is incorrect. Switching to Full Image "
@@ -1265,7 +1265,7 @@ int Beb_GetNextFrameNumber(uint64_t *retval, int tengigaEnable) {
     return OK;
 }
 
-void Beb_SetPartialReadout(int value) { Beb_partialReadout = value; }
+void Beb_SetReadNRows(int value) { Beb_readNRows = value; }
 
 int Beb_GetNumberofDestinations(int *retval) {
     if (!Beb_activated) {

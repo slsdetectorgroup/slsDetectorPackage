@@ -53,7 +53,7 @@ int chipVersion = 10; // (1.0)
 int chipConfigured = 0;
 
 // until firmware is done
-int temp_partialReadout = 512;
+int temp_readNRows = 512;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -485,7 +485,7 @@ void setupDetector() {
         setFilterCell(DEFAULT_FILTER_CELL);
     }
     disableCurrentSource();
-    setPartialReadout(MAX_ROWS_PER_READOUT);
+    setReadNRows(MAX_ROWS_PER_READOUT);
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -1636,45 +1636,48 @@ int *getDetectorPosition() { return detPos; }
 /* jungfrau specific - powerchip, autocompdisable, asictimer, clockdiv, pll,
  * flashing fpga */
 
-int setPartialReadout(int value) {
-    if (value < 0 || (value % PARTIAL_READOUT_MULTIPLE != 0))
+int setReadNRows(int value) {
+    if (value < 0 || (value % READ_N_ROWS_MULTIPLE != 0)) {
+        LOG(logERROR, ("Invalid number of rows %d\n", value));
         return FAIL;
+    }
 
     // will be replaced when firmware is fixed
-    temp_partialReadout = value;
+    LOG(logWARNING, ("Setting number of rows: %d (Not implemented in firmware yet)\n", value));
+    temp_readNRows = value;
     return OK;
 
     // regval is numpackets - 1 
-    int regval = (value / PARTIAL_READOUT_MULTIPLE) - 1;
-    uint32_t addr = PARTIAL_READOUT_REG;
-    LOG(logINFO, ("Setting Partial Readout: %d (regval:%d)\n", value, regval));
-    bus_w(addr, bus_r(addr) &~PARTIAL_READOUT_NUM_ROWS_MSK);
-    bus_w(addr, bus_r(addr) | ((regval << PARTIAL_READOUT_NUM_ROWS_OFST) & PARTIAL_READOUT_NUM_ROWS_MSK));
+    int regval = (value / READ_N_ROWS_MULTIPLE) - 1;
+    uint32_t addr = READ_N_ROWS_REG;
+    LOG(logINFO, ("Setting number of rows: %d (regval:%d)\n", value, regval));
+    bus_w(addr, bus_r(addr) &~READ_N_ROWS_NUM_ROWS_MSK);
+    bus_w(addr, bus_r(addr) | ((regval << READ_N_ROWS_NUM_ROWS_OFST) & READ_N_ROWS_NUM_ROWS_MSK));
 
     if (value == MAX_ROWS_PER_READOUT) {
-        LOG(logINFO, ("Disabling Partial Readout\n"));
-        bus_w(addr, bus_r(addr) &~PARTIAL_READOUT_ENBL_MSK);
+        LOG(logINFO, ("Disabling Partial Readout (#rows)\n"));
+        bus_w(addr, bus_r(addr) &~READ_N_ROWS_ENBL_MSK);
     } else {
-        LOG(logINFO, ("Enabling Partial Readout\n"));
-        bus_w(addr, bus_r(addr) | PARTIAL_READOUT_ENBL_MSK);
+        LOG(logINFO, ("Enabling Partial Readout (#rows)\n"));
+        bus_w(addr, bus_r(addr) | READ_N_ROWS_ENBL_MSK);
     }
     return OK;
 }
 
-int getPartialReadout() {
+int getReadNRows() {
     
     // will be replaced when firmware is fixed
-    return temp_partialReadout;
+    return temp_readNRows;
 
-    int enable = (bus_r(PARTIAL_READOUT_REG) & PARTIAL_READOUT_ENBL_MSK);
-    int regval = ((bus_r(PARTIAL_READOUT_REG) & PARTIAL_READOUT_NUM_ROWS_MSK) >> PARTIAL_READOUT_NUM_ROWS_OFST);
+    int enable = (bus_r(READ_N_ROWS_REG) & READ_N_ROWS_ENBL_MSK);
+    int regval = ((bus_r(READ_N_ROWS_REG) & READ_N_ROWS_NUM_ROWS_MSK) >> READ_N_ROWS_NUM_ROWS_OFST);
  
-    int maxRegval = (MAX_ROWS_PER_READOUT/ PARTIAL_READOUT_MULTIPLE) - 1;
+    int maxRegval = (MAX_ROWS_PER_READOUT/ READ_N_ROWS_MULTIPLE) - 1;
     if ((regval == maxRegval && enable) || (regval != maxRegval && !enable)) {
         return -1;
     }
 
-    return (regval  + 1) * PARTIAL_READOUT_MULTIPLE;
+    return (regval  + 1) * READ_N_ROWS_MULTIPLE;
 }
 
 void initReadoutConfiguration() {
@@ -2354,14 +2357,14 @@ void *start_timer(void *arg) {
     const int packetsize = dataSize + sizeof(sls_detector_header);
     const int maxPacketsPerFrame = 128;
     const int maxRows = MAX_ROWS_PER_READOUT;
-    int partialReadout = getPartialReadout();
-    if (partialReadout == -1) {
+    int readNRows = getReadNRows();
+    if (readNRows == -1) {
         LOG(logERROR,
-            ("partial readout is -1. Assuming no partial readout.\n"));
-        partialReadout = MAX_ROWS_PER_READOUT;
+            ("number of rows is -1. Assuming no partial readout (#rows).\n"));
+        readNRows = MAX_ROWS_PER_READOUT;
     }
     const int packetsPerFrame =
-        ((maxPacketsPerFrame / 2) * partialReadout) / (maxRows / 2);
+        ((maxPacketsPerFrame / 2) * readNRows) / (maxRows / 2);
 
     // Generate data
     char imageData[DATA_BYTES];

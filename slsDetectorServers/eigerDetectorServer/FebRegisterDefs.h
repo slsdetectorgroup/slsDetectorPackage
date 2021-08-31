@@ -13,7 +13,7 @@
 #define DAQ_REG_EXPOSURE_REPEAT_TIMER 5 // == (31 downto 3) * 10^(2 downto 0)
 #define DAQ_REG_SUBFRAME_EXPOSURES    6
 #define DAQ_REG_SUBFRAME_PERIOD       7 // also pg and fifo status register
-#define DAQ_REG_PARTIAL_READOUT       8
+#define DAQ_REG_READ_N_ROWS             8
 
 #define DAQ_REG_HRDWRE 12
 // clang-format off

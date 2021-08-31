@@ -85,7 +85,7 @@ uint64_t eiger_virtual_nextframenumber = 1;
 int eiger_virtual_detPos[2] = {0, 0};
 int eiger_virtual_test_mode = 0;
 int eiger_virtual_quad_mode = 0;
-int eiger_virtual_partial_readout = 256;
+int eiger_virtual_read_n_rows = 256;
 int eiger_virtual_interrupt_subframe = 0;
 int eiger_virtual_left_datastream = 1;
 int eiger_virtual_right_datastream = 1;
@@ -708,7 +708,7 @@ void setupDetector() {
     setIODelay(DEFAULT_IO_DELAY);
     setTiming(DEFAULT_TIMING_MODE);
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
-    setPartialReadout(MAX_ROWS_PER_READOUT);
+    setReadNRows(MAX_ROWS_PER_READOUT);
     // SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
     eiger_tau_ns = DEFAULT_RATE_CORRECTION;
     setRateCorrection(DEFAULT_RATE_CORRECTION);
@@ -1683,29 +1683,29 @@ int getInterruptSubframe() {
 #endif
 }
 
-int setPartialReadout(int value) {
+int setReadNRows(int value) {
     if (value < 0)
         return FAIL;
 #ifndef VIRTUAL
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_SetPartialReadout(value)) {
+    if (!Feb_Control_SetReadNRows(value)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
     sharedMemory_unlockLocalLink();
-    Beb_SetPartialReadout(value);
+    Beb_SetReadNRows(value);
 #else
-    eiger_virtual_partial_readout = value;
+    eiger_virtual_read_n_rows = value;
 #endif
     return OK;
 }
 
-int getPartialReadout() {
+int getReadNRows() {
 #ifdef VIRTUAL
-    return eiger_virtual_partial_readout;
+    return eiger_virtual_read_n_rows;
 #else
     sharedMemory_lockLocalLink();
-    int retval = Feb_Control_GetPartialReadout();
+    int retval = Feb_Control_GetReadNRows();
     sharedMemory_unlockLocalLink();
     return retval;
 #endif
@@ -2328,15 +2328,15 @@ void *start_timer(void *arg) {
     int colLeft = top ? eiger_virtual_detPos[1] : eiger_virtual_detPos[1] + 1;
     int colRight = top ? eiger_virtual_detPos[1] + 1 : eiger_virtual_detPos[1];
 
-    int partialReadout = getPartialReadout();
-    if (partialReadout == -1) {
+    int readNRows = getReadNRows();
+    if (readNRows == -1) {
         LOG(logERROR,
-            ("partial readout is -1. Assuming no partial readout.\n"));
-        partialReadout = MAX_ROWS_PER_READOUT;
+            ("readNRows is -1. Assuming no readNRows.\n"));
+        readNRows = MAX_ROWS_PER_READOUT;
     }
     const int maxRows = MAX_ROWS_PER_READOUT;
     const int packetsPerFrame =
-        (maxPacketsPerFrame * partialReadout) / maxRows;
+        (maxPacketsPerFrame * readNRows) / maxRows;
 
 
     LOG(logDEBUG1,
@@ -2419,7 +2419,7 @@ void *start_timer(void *arg) {
             // loop packet
             for (int i = 0; i != maxPacketsPerFrame; ++i) {
 
-                // calculate for partial readout
+                // calculate for readNRows
                 const int startval = 0;
                 const int endval = startval + packetsPerFrame - 1;
 

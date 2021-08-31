@@ -88,8 +88,8 @@ void Feb_Control_SetMasterVariable(int val);
 int Feb_Control_SetMaster(enum MASTERINDEX ind);
 int Feb_Control_SetQuad(int val);
 int Feb_Control_SetChipSignalsToTrimQuad(int enable);
-int Feb_Control_SetPartialReadout(int value);
-int Feb_Control_GetPartialReadout();
+int Feb_Control_SetReadNRows(int value);
+int Feb_Control_GetReadNRows();
 int Feb_Control_WriteRegister(uint32_t offset, uint32_t data);
 int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval);
 

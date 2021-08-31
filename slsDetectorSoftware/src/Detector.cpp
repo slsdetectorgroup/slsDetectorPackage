@@ -732,12 +732,12 @@ void Detector::setDBITPipeline(int value, Positions pos) {
     pimpl->Parallel(&Module::setDBITPipeline, pos, value);
 }
 
-Result<int> Detector::getPartialReadout(Positions pos) const {
-    return pimpl->Parallel(&Module::getPartialReadout, pos);
+Result<int> Detector::getReadNRows(Positions pos) const {
+    return pimpl->Parallel(&Module::getReadNRows, pos);
 }
 
-void Detector::setPartialReadout(const int lines, Positions pos) {
-    pimpl->Parallel(&Module::setPartialReadout, pos, lines);
+void Detector::setReadNRows(const int lines, Positions pos) {
+    pimpl->Parallel(&Module::setReadNRows, pos, lines);
 }
 
 // Acquisition

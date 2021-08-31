@@ -545,7 +545,7 @@ typedef struct {
         int dataStreamLeft{0};
         int dataStreamRight{0};
         int quad{0};
-        int partialReadout{0};
+        int readNRows{0};
         int thresholdEnergyeV[3]{0, 0, 0};
         int dynamicRange{16};
         timingMode timMode{AUTO_TIMING};

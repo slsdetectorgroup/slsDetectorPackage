@@ -593,7 +593,7 @@ class CmdProxy {
         {"vhighvoltage", "highvoltage"},
         {"digitest", "imagetest"},
         {"filter", "filterresistor"},
-        {"readnlines", "partialread"},
+        {"readnlines", "readnrows"},
 
         /** temperature */
 
@@ -807,7 +807,7 @@ class CmdProxy {
         {"filterresistor", &CmdProxy::filterresistor},
         {"currentsource", &CmdProxy::CurrentSource},
         {"dbitpipeline", &CmdProxy::dbitpipeline},
-        {"partialread", &CmdProxy::partialread},
+        {"readnrows", &CmdProxy::readnrows},
 
         /** temperature */
         {"templist", &CmdProxy::templist},
@@ -1376,7 +1376,7 @@ class CmdProxy {
                            "Options: 0-7\n\t[CTB] Options: 0-255");
 
     INTEGER_COMMAND_VEC_ID(
-        partialread, getPartialReadout, setPartialReadout, StringTo<int>,
+        readnrows, getReadNRows, setReadNRows, StringTo<int>,
         "[1 - 256]\n\t[Eiger] Number of rows to readout per half module "
         "starting from the centre. Options: 0 - 256. 256 is default. The "
         "permissible values depend on dynamic range and 10Gbe enabled.\n[8-512 (multiple of 8)]\n\t[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.");

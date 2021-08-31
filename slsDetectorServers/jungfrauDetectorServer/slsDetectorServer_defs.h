@@ -116,7 +116,7 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define MAX_FILTER_CELL_VAL (12)
 #define MIN_ROWS_PER_READOUT (8)
 #define MAX_ROWS_PER_READOUT (512)
-#define PARTIAL_READOUT_MULTIPLE (8) //512 rows/128packets * 2 interfaces
+#define READ_N_ROWS_MULTIPLE (8) //512 rows/128packets * 2 interfaces
  
 /* Defines in the Firmware */
 #define MAX_TIMESLOT_VAL            (0x1F)

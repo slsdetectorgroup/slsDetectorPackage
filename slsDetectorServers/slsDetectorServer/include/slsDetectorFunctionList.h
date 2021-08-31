@@ -416,8 +416,8 @@ int setQuad(int value);
 int getQuad();
 int setInterruptSubframe(int value);
 int getInterruptSubframe();
-int setPartialReadout(int value);
-int getPartialReadout();
+int setReadNRows(int value);
+int getReadNRows();
 #endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(EIGERD) ||          \
     defined(MYTHEN3D)
@@ -456,8 +456,8 @@ void setDigitalIODelay(uint64_t pinMask, int delay);
 // jungfrau specific - powerchip, autocompdisable, clockdiv, asictimer, clock,
 // pll, flashing firmware
 #ifdef JUNGFRAUD
-int setPartialReadout(int value);
-int getPartialReadout();
+int setReadNRows(int value);
+int getReadNRows();
 void initReadoutConfiguration();
 int powerChip(int on);
 int isChipConfigured();

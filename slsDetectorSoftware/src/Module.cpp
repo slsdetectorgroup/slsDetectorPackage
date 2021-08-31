@@ -947,14 +947,22 @@ Module::getDestinationUDPList(const uint32_t entry) const {
 void Module::setDestinationUDPList(const slsDetectorDefs::udpDestination dest) {
     // set them in the default way so the receivers are also set up
     if (dest.entry_ == 0) {
-        setDestinationUDPPort(dest.port_);
-        setDestinationUDPIP(IpAddr(dest.ip_));
-        setDestinationUDPMAC(MacAddr(dest.mac_));
         if (dest.port_ != 0) {
+            setDestinationUDPPort(dest.port_);
+        }
+        if (dest.ip_ != 0) {
+            setDestinationUDPIP(IpAddr(dest.ip_));
+        }
+        if (dest.mac_ != 0) {
+            setDestinationUDPMAC(MacAddr(dest.mac_));
+        }
+        if (dest.port2_ != 0) {
             setDestinationUDPPort2(dest.port2_);
         }
         if (dest.ip2_ != 0) {
             setDestinationUDPIP2(IpAddr(dest.ip2_));
+        }
+        if (dest.mac2_ != 0) {
             setDestinationUDPMAC2(MacAddr(dest.mac2_));
         }
     } else {

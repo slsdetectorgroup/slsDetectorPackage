@@ -1419,8 +1419,8 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
     // total length is redefined in firmware
 
     calcChecksum(udp);
-    if (iRxEntry <= numUdpDestinations) {
-        LOG(logINFO, ("\tIP checksum is 0x%lx\n", udp->ip_checksum));
+    if (iRxEntry < numUdpDestinations) {
+        LOG(logINFO, ("\tIP checksum : 0x%lx\n\n", udp->ip_checksum));
     }
 }
 
@@ -1465,7 +1465,7 @@ int configureMAC() {
     LOG(logINFO, ("\tInterface   : %d %s\n\n", selInterface,
                   (selInterface ? "Inner" : "Outer")));
 
-    LOG(logINFO, ("Number of entries: %d\n", numUdpDestinations));
+    LOG(logINFO, ("Number of entries: %d\n\n", numUdpDestinations));
     for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION; ++iRxEntry) {
         uint32_t srcip = udpDetails[iRxEntry].srcip;
         uint32_t srcip2 = udpDetails[iRxEntry].srcip2;
@@ -1504,7 +1504,7 @@ int configureMAC() {
                         "\tSource Port : %d\n"
                         "\tDest IP     : %s\n"
                         "\tDest MAC    : %s\n"
-                        "\tDest Port   : %d\n",
+                        "\tDest Port   : %d\n\n",
                         src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
             LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2)
@@ -1515,7 +1515,7 @@ int configureMAC() {
                         "\tSource Port2: %d\n"
                         "\tDest IP2    : %s\n"
                         "\tDest MAC2   : %s\n"
-                        "\tDest Port2  : %d\n",
+                        "\tDest Port2  : %d\n\n",
                         src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
         }
 #ifdef VIRTUAL

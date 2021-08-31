@@ -2266,7 +2266,7 @@ TEST_CASE("udp_firstdst", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::EIGER) {
+    if (det_type == defs::JUNGFRAU) {
         auto prev_val = det.getFirstUDPDestination();
         {
             std::ostringstream oss;
@@ -2280,8 +2280,8 @@ TEST_CASE("udp_firstdst", "[.cmd]") {
         }
         {
             std::ostringstream oss;
-            proxy.Call("udp_firstdst", {"31"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "udp_firstdst 31\n");
+            proxy.Call("udp_firstdst", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_firstdst 1\n");
         }
         REQUIRE_THROWS(proxy.Call("udp_firstdst", {"33"}, -1, PUT));
 

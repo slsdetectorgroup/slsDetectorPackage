@@ -2343,9 +2343,8 @@ void *start_timer(void *arg) {
     if (!isControlServer) {
         return NULL;
     }
-
+    int firstDest = getFirstUDPDestination();
     int transmissionDelayUs = getTransmissionDelayFrame() * 1000;
-
     int numInterfaces = getNumberofUDPInterfaces();
     int64_t periodNs = getPeriod();
     int numFrames = (getNumFrames() * getNumTriggers() *
@@ -2386,9 +2385,8 @@ void *start_timer(void *arg) {
     {
         uint64_t frameNr = 0;
         getNextFrameNumber(&frameNr);
-        int iRxEntry = 0;
+        int iRxEntry = firstDest;
         for (int iframes = 0; iframes != numFrames; ++iframes) {
-            LOG(logINFOBLUE, ("iRxEntry:%d\n", iRxEntry));
             usleep(transmissionDelayUs);
 
             // check if manual stop
@@ -2464,7 +2462,7 @@ void *start_timer(void *arg) {
                     }
                 }
             }
-            LOG(logINFO, ("Sent frame: %d\n", iframes));
+            LOG(logINFO, ("Sent frame %d [#%ld] to E%d\n", iframes, frameNr + iframes, iRxEntry));
             clock_gettime(CLOCK_REALTIME, &end);
             int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
                               (end.tv_nsec - begin.tv_nsec));

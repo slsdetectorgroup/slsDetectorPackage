@@ -9312,10 +9312,10 @@ int set_udp_first_dest(int file_des) {
 #ifndef JUNGFRAUD
     functionNotImplemented();
 #else
-    if (arg < 0 || arg >= MAX_UDP_DESTINATION) {
+    if (arg < 0 || arg >= numUdpDestinations) {
         ret = FAIL;
         sprintf(mess, "Could not set first destination. Options: 0-%d\n",
-                MAX_UDP_DESTINATION - 1);
+                numUdpDestinations - 1);
         LOG(logERROR, (mess));
     } else {
         if (check_detector_idle("set first udp destination") == OK) {

@@ -1535,6 +1535,7 @@ int configureMAC() {
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
 
+    LOG(logINFO, ("Number of entries: %d\n", numUdpDestinations));
     for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION; ++iRxEntry) {
         uint32_t srcip = udpDetails[iRxEntry].srcip;
         uint32_t dstip = udpDetails[iRxEntry].dstip;
@@ -1577,7 +1578,6 @@ int configureMAC() {
                  iRxEntry));
             return FAIL;
         }
-        return OK;
 #else
         uint16_t dst_port = dstport;
         if (!top)
@@ -2496,8 +2496,7 @@ void *start_timer(void *arg) {
                     LOG(logDEBUG1, ("Sent right packet: %d\n", i));
                 }
             }
-            LOG(logINFO, ("Sent frame: %d[%lld]\n", iframes,
-                          (long long unsigned int)(frameNr + iframes)));
+            LOG(logINFO, ("Sent frame %d [#%ld] to E%d\n", iframes, frameNr + iframes, iRxEntry));
             clock_gettime(CLOCK_REALTIME, &end);
             int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
                               (end.tv_nsec - begin.tv_nsec));

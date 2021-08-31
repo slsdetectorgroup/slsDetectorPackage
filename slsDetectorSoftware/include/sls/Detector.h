@@ -680,7 +680,7 @@ class Detector {
     /** [Jungfrau] */
     Result<int> getFirstUDPDestination(Positions pos = {}) const;
 
-    /**[Jungfrau] Options 0-31 */
+    /**[Jungfrau] Options 0-31 (or number of udp destinations) */
     void setFirstUDPDestination(const int value, Positions pos = {});
 
     Result<IpAddr> getDestinationUDPIP(Positions pos = {}) const;

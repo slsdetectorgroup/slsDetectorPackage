@@ -2388,6 +2388,7 @@ void *start_timer(void *arg) {
         getNextFrameNumber(&frameNr);
         int iRxEntry = 0;
         for (int iframes = 0; iframes != numFrames; ++iframes) {
+            LOG(logINFOBLUE, ("iRxEntry:%d\n", iRxEntry));
             usleep(transmissionDelayUs);
 
             // check if manual stop
@@ -2462,10 +2463,6 @@ void *start_timer(void *arg) {
                         LOG(logDEBUG1, ("Sent packet: %d [interface 1]\n", pnum));
                     }
                 }
-                ++iRxEntry;
-                if (iRxEntry == numUdpDestinations) {
-                    iRxEntry = 0;
-                }
             }
             LOG(logINFO, ("Sent frame: %d\n", iframes));
             clock_gettime(CLOCK_REALTIME, &end);
@@ -2477,6 +2474,10 @@ void *start_timer(void *arg) {
                 if (periodNs > timeNs) {
                     usleep((periodNs - timeNs) / 1000);
                 }
+            }
+            ++iRxEntry;
+            if (iRxEntry == numUdpDestinations) {
+                iRxEntry = 0;
             }
         }
         setNextFrameNumber(frameNr + numFrames);

@@ -1,8 +1,5 @@
 /** API versions */
-#define GITBRANCH    "j10partial"
-#define APILIB 0x210816
-#define APIRECEIVER 0x210816
-#define APIGUI 0x210816
+#define GITBRANCH    "roundrobin"
 
 
 
@@ -13,3 +10,6 @@
 #define APIJUNGFRAU 0x210831
 #define APIMYTHEN3 0x210831
 #define APIMOENCH 0x210827
+#define APILIB 0x210831
+#define APIRECEIVER 0x210831
+#define APIGUI 0x210819

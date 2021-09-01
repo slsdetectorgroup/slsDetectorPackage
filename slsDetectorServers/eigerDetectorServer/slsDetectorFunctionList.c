@@ -317,7 +317,7 @@ void initControlServer() {
         Feb_Interface_FebInterface();
         Feb_Control_FebControl();
         // same addresses for top and bottom
-        if (!Feb_Control_Init(master, normal, getDetectorNumber())) {
+        if (!Feb_Control_Init(master, normal)) {
             initError = FAIL;
             sprintf(initErrorMessage, "Could not intitalize feb control\n");
             LOG(logERROR, (initErrorMessage));

@@ -6,7 +6,7 @@
 // setup
 void Feb_Control_activate(int activate);
 void Feb_Control_FebControl();
-int Feb_Control_Init(int master, int normal, int module_num);
+int Feb_Control_Init(int master, int normal);
 int Feb_Control_OpenSerialCommunication();
 void Feb_Control_CloseSerialCommunication();
 int Feb_Control_CheckSetup();

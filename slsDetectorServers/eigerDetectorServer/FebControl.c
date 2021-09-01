@@ -57,7 +57,7 @@ void Feb_Control_FebControl() {
         malloc(Feb_Control_trimbit_size * sizeof(int));
 }
 
-int Feb_Control_Init(int master, int normal, int module_num) {
+int Feb_Control_Init(int master, int normal) {
     Feb_Control_master = master;
     Feb_Control_normal = normal;
     Feb_Interface_SetAddress(Feb_Control_rightAddress, Feb_Control_leftAddress);

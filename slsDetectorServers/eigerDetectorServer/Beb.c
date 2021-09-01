@@ -127,44 +127,14 @@ int Beb_SetHeaderData(uint64_t src_mac, uint32_t src_ip, uint16_t src_port,
     uint32_t src_lsb = ((src_mac >> 0) & BIT32_MASK);
     memcpy(&(udp_header.src_mac[0]), &src_msb, sizeof(src_msb));
     memcpy(&(udp_header.src_mac[2]), &src_lsb, sizeof(src_lsb));
-    for (int i = 0; i < 6; ++i) {
-        LOG(logDEBUG1, ("src mac[%d]: %02x\n", i,
-                        (uint8_t)(uint8_t *)udp_header.src_mac[i]));
-    }
-
     memcpy(&(udp_header.src_ip[0]), &src_ip, sizeof(udp_header.src_ip));
-    for (int i = 0; i < 4; ++i) {
-        LOG(logDEBUG1,
-            ("src ip[%d]: %02x\n", i, (uint8_t *)udp_header.src_ip[i]));
-    }
-
     memcpy(&(udp_header.src_port[0]), &src_port, sizeof(udp_header.src_port));
-    for (int i = 0; i < 2; ++i) {
-        LOG(logDEBUG1,
-            ("src port[%d]: %02x\n", i, (uint8_t *)udp_header.src_port[i]));
-    }
-
-        uint32_t dst_msb = ((dst_mac >> 16) & BIT32_MASK);
-        uint16_t dst_lsb = ((dst_mac >> 0) & BIT16_MASK);
-        memcpy(&(udp_header.dst_mac[0]), &dst_msb, sizeof(dst_msb));
-        memcpy(&(udp_header.dst_mac[4]), &dst_lsb, sizeof(dst_lsb));
-        for (int i = 0; i < 6; ++i) {
-            LOG(logDEBUG1,
-                ("dst mac[%d]: %02x\n", i, (uint8_t *)udp_header.dst_mac[i]));
-        }
-
+    uint32_t dst_msb = ((dst_mac >> 16) & BIT32_MASK);
+    uint16_t dst_lsb = ((dst_mac >> 0) & BIT16_MASK);
+    memcpy(&(udp_header.dst_mac[0]), &dst_msb, sizeof(dst_msb));
+    memcpy(&(udp_header.dst_mac[4]), &dst_lsb, sizeof(dst_lsb));
     memcpy(&(udp_header.dst_ip[0]), &dst_ip, sizeof(udp_header.dst_ip));
-    for (int i = 0; i < 4; ++i) {
-        LOG(logDEBUG1,
-            ("dst ip[%d]: %02x\n", i, (uint8_t *)udp_header.dst_ip[i]));
-    }
-
-        memcpy(&(udp_header.dst_port[0]), &dst_port,
-               sizeof(udp_header.dst_port));
-        for (int i = 0; i < 2; ++i) {
-            LOG(logDEBUG1,
-                ("dst port[%d]: %02x\n", i, (uint8_t *)udp_header.dst_port[i]));
-        }
+    memcpy(&(udp_header.dst_port[0]), &dst_port, sizeof(udp_header.dst_port));
 
     Beb_AdjustIPChecksum(&udp_header);
 

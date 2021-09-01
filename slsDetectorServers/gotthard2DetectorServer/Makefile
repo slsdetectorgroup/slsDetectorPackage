@@ -33,7 +33,7 @@ $(PROGS): $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)  $(LDLIBS)  
 	mv $(PROGS) $(DESTDIR)
 	cp config_gotthard2.txt $(DESTDIR)
-	cp detid_gotthard2.txt $s(DESTDIR)
+	cp detid_gotthard2.txt $(DESTDIR)
 	rm $(main_src)*.o	
 
 clean:

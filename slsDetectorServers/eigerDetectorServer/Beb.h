@@ -49,7 +49,7 @@ int *Beb_GetDetectorPosition();
 int Beb_SetDetectorPosition(int pos[]);
 int Beb_SetNextFrameNumber(uint64_t value);
 int Beb_GetNextFrameNumber(uint64_t *retval, int tengigaEnable);
-void Beb_SetPartialReadout(int value);
+void Beb_SetReadNRows(int value);
 int Beb_GetNumberofDestinations(int *retval);
 int Beb_SetNumberofDestinations(int value);
 

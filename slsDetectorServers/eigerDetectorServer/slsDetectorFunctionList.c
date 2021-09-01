@@ -363,14 +363,13 @@ void initStopServer() {
     usleep(WAIT_STOP_SERVER_START);
     LOG(logINFOBLUE, ("Configuring Stop server\n"));
     // exit(-1);
-    readDetectorNumber();
     getModuleConfiguration();
     sharedMemory_lockLocalLink();
     Feb_Control_SetMasterVariable(master);
     Feb_Interface_FebInterface();
     Feb_Control_FebControl();
     // same addresses for top and bottom
-    Feb_Control_Init(master, normal, getDetectorNumber());
+    Feb_Control_Init(master, normal);
     sharedMemory_unlockLocalLink();
     LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
 #endif

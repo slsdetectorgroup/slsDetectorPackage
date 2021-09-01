@@ -128,8 +128,8 @@ int Beb_SetHeaderData(uint64_t src_mac, uint32_t src_ip, uint16_t src_port,
     memcpy(&(udp_header.src_mac[0]), &src_msb, sizeof(src_msb));
     memcpy(&(udp_header.src_mac[2]), &src_lsb, sizeof(src_lsb));
     for (int i = 0; i < 6; ++i) {
-        LOG(logDEBUG1,
-            ("src mac[%d]: %02x\n", i, (uint8_t *)udp_header.src_mac[i]));
+        LOG(logDEBUG1, ("src mac[%d]: %02x\n", i,
+                        (uint8_t)(uint8_t *)udp_header.src_mac[i]));
     }
 
     memcpy(&(udp_header.src_ip[0]), &src_ip, sizeof(udp_header.src_ip));
@@ -1063,6 +1063,7 @@ int Beb_SetModuleId(uint32_t detid) {
         Beb_close(fd, csp0base);
     }
     LOG(logINFO, ("Module id %d set in UDP Header\n\n", detid));
+    return OK;
 }
 
 int Beb_SetQuad(int value) {

@@ -89,14 +89,14 @@ u_int16_t getHardwareSerialNumber();
 int isHardwareVersion2();
 int getChipVersion();
 #endif
-#if defined(EIGERD) || defined(MYTHEN3D)
-void readDetectorNumber();
-#endif
+#ifndef EIGERD
 u_int32_t getDetectorNumber();
+#endif
+#if defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D)
+int getModuleId(int *ret, char *mess);
+#endif
 #ifdef GOTTHARD2D
-int getModuleId();
-void setModuleId(int arg);
-int getMaxModuleId();
+void setModuleId(int *ret, char *mess, int arg);
 #endif
 u_int64_t getDetectorMAC();
 u_int32_t getDetectorIP();

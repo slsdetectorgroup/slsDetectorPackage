@@ -100,3 +100,4 @@ install(TARGETS eigerDetectorServerSlaveBottom_virtual
 
 
 configure_file(config_eiger.txt ${CMAKE_BINARY_DIR}/bin/config_eiger.txt COPYONLY)
+configure_file(detid_eiger.txt ${CMAKE_BINARY_DIR}/bin/detid_eiger.txt COPYONLY)

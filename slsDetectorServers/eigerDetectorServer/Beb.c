@@ -1022,18 +1022,19 @@ int Beb_GetBebFPGATemp() {
     return temperature;
 }
 
-void Beb_SetDetectorNumber(uint32_t detid) {
+int Beb_SetModuleId(uint32_t detid) {
     if (!Beb_activated)
-        return;
+        return OK;
 
     uint32_t swapid = Beb_swap_uint16(detid);
     // LOG(logINFO, "detector id %d swapped %d\n", detid, swapid));
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_TEST_BASEADDR);
     if (fd < 0) {
-        LOG(logERROR, ("Set Detector ID FAIL\n"));
-        return;
+        LOG(logERROR, ("Set module id FAIL\n"));
+        return FAIL;
     } else {
+        // left
         uint32_t value = Beb_Read32(csp0base, UDP_HEADER_A_LEFT_OFST);
         value &= UDP_HEADER_X_MSK; // to keep previous x value
         Beb_Write32(csp0base, UDP_HEADER_A_LEFT_OFST,
@@ -1042,8 +1043,11 @@ void Beb_SetDetectorNumber(uint32_t detid) {
         value = Beb_Read32(csp0base, UDP_HEADER_A_LEFT_OFST);
         if ((value & UDP_HEADER_ID_MSK) !=
             ((swapid << UDP_HEADER_ID_OFST) & UDP_HEADER_ID_MSK)) {
-            LOG(logERROR, ("Set Detector ID FAIL\n"));
+            LOG(logERROR, ("Set module id FAIL\n"));
+            Beb_close(fd, csp0base);
+            return FAIL;
         }
+        // right
         value = Beb_Read32(csp0base, UDP_HEADER_A_RIGHT_OFST);
         value &= UDP_HEADER_X_MSK; // to keep previous x value
         Beb_Write32(csp0base, UDP_HEADER_A_RIGHT_OFST,
@@ -1052,11 +1056,13 @@ void Beb_SetDetectorNumber(uint32_t detid) {
         value = Beb_Read32(csp0base, UDP_HEADER_A_RIGHT_OFST);
         if ((value & UDP_HEADER_ID_MSK) !=
             ((swapid << UDP_HEADER_ID_OFST) & UDP_HEADER_ID_MSK)) {
-            LOG(logERROR, ("Set Detector ID FAIL\n"));
+            LOG(logERROR, ("Set module id FAIL\n"));
+            Beb_close(fd, csp0base);
+            return FAIL;
         }
         Beb_close(fd, csp0base);
     }
-    LOG(logINFO, ("Detector id %d set in UDP Header\n\n", detid));
+    LOG(logINFO, ("Module id %d set in UDP Header\n\n", detid));
 }
 
 int Beb_SetQuad(int value) {

@@ -42,3 +42,4 @@ install(TARGETS mythen3DetectorServer_virtual
 )
 
 configure_file(DefaultPattern_mythen3.txt ${CMAKE_BINARY_DIR}/bin/DefaultPattern_mythen3.txt COPYONLY)
+configure_file(detid_mythen3.txt ${CMAKE_BINARY_DIR}/bin/detid_mythen3.txt COPYONLY)

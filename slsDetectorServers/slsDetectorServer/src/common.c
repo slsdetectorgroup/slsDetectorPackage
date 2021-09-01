@@ -7,9 +7,6 @@
 #include <string.h>
 #include <unistd.h> // readlink
 
-extern int ret;
-extern char mess[MAX_STR_LENGTH];
-
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue) {
     LOG(logDEBUG1, (" Input Value: %d (Input:(%d - %d), Output:(%d - %d))\n",
@@ -102,4 +99,82 @@ void validate64(int *ret, char *mess, int64_t arg, int64_t retval,
                     (long long unsigned int)retval);
         LOG(logERROR, (mess));
     }
+}
+
+int getModuleIdInFile(int *ret, char *mess, char *fileName) {
+    const int fileNameSize = 128;
+    char fname[fileNameSize];
+    if (getAbsPath(fname, fileNameSize, fileName) == FAIL) {
+        *ret = FAIL;
+        strcpy(mess, "Could not find detid file\n");
+        LOG(logERROR, ("%s\n\n", mess));
+        return -1;
+    }
+
+    // open id file
+    FILE *fd = fopen(fname, "r");
+    if (fd == NULL) {
+        *ret = FAIL;
+        strcpy(mess, "Could not find detid file\n");
+        LOG(logERROR, ("%s\n\n", mess));
+        return -1;
+    }
+    LOG(logDEBUG1, ("Reading det id file %s\n", fileName));
+
+    // read line
+    const size_t len = 256;
+    char line[len];
+    memset(line, 0, len);
+    if (NULL == fgets(line, len, fd)) {
+        *ret = FAIL;
+        strcpy(mess, "Could not find detid file\n");
+        LOG(logERROR, ("%s\n\n", mess));
+        return -1;
+    }
+    // read id
+    int retval = 0;
+    if (sscanf(line, "%x", &retval) != 1) {
+        *ret = FAIL;
+        sprintf(mess,
+                "Could not scan det id from on-board server "
+                "id file. Line:[%s].\n",
+                line);
+        LOG(logERROR, ("%s\n\n", mess));
+        return -1;
+    }
+    LOG(logINFOBLUE, ("Module Id: 0x%x (File)\n", retval));
+    return retval;
+}
+
+int setModuleIdInFile(char *mess, int arg, char *fileName) {
+    LOG(logINFOBLUE, ("Setting Module Id: 0x%x (File)\n", arg));
+
+    const int fileNameSize = 128;
+    char fname[fileNameSize];
+    if (getAbsPath(fname, fileNameSize, fileName) == FAIL) {
+        strcpy(mess, "Could not find detid file\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    // open id file
+    FILE *fd = fopen(fname, "r");
+    if (fd == NULL) {
+        strcpy(mess, "Could not find detid file\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logDEBUG1, ("Writing det id to file %s\n", fileName));
+
+    // write id
+    const size_t len = 256;
+    char line[len];
+    memset(line, 0, len);
+    sprintf(line, "%x", arg);
+    if (EOF == fputs(line, fd)) {
+        strcpy(mess, "Could not write to detid file\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
 }

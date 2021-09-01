@@ -42,7 +42,7 @@ int Beb_StopAcquisition();
 int Beb_RequestNImages(int ten_gig, unsigned int nimages,
                        int test_just_send_out_packets_no_wait);
 int Beb_GetBebFPGATemp();
-void Beb_SetDetectorNumber(uint32_t detid);
+int Beb_SetModuleId(uint32_t detid);
 int Beb_SetQuad(int value);
 int Beb_GetQuad();
 int *Beb_GetDetectorPosition();

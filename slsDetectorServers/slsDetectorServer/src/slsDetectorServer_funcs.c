@@ -684,8 +684,12 @@ int get_serial_number(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
+#ifdef EIGERD
+    functionNotImplemented();
+#else
     retval = getDetectorNumber();
     LOG(logDEBUG1, ("detector number retval: 0x%llx\n", (long long int)retval));
+#endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -9016,12 +9020,12 @@ int get_module_id(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
-#ifndef GOTTHARD2D
+#if !(defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D))
     functionNotImplemented();
 #else
-    retval = getModuleId();
-#endif
+    retval = getModuleId(&ret, mess);
     LOG(logDEBUG1, ("module id retval: 0x%x\n", retval));
+#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -9037,16 +9041,17 @@ int set_module_id(int file_des) {
 #ifndef GOTTHARD2D
     functionNotImplemented();
 #else
-    if (arg > getMaxModuleId()) {
+    if (arg > 0xFFFF) {
         ret = FAIL;
-        sprintf(mess, "Could not set module id. Max value: 0x%x\n",
-                getMaxModuleId());
+        sprintf(mess, "Could not set module id. Max value: 0x%x\n", 0xFFFF);
         LOG(logERROR, (mess));
     } else {
-        setModuleId(arg);
-        int retval = getModuleId();
-        LOG(logDEBUG1, ("retval module id: %d\n", retval));
-        validate(&ret, mess, arg, retval, "set module id", DEC);
+        setModuleId(&ret, mess, arg);
+        if (ret != FAIL) {
+            int retval = getModuleId(&ret, mess);
+            LOG(logDEBUG1, ("retval module id: %d\n", retval));
+            validate(&ret, mess, arg, retval, "set module id", DEC);
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

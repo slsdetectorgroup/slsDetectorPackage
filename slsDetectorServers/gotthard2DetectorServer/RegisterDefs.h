@@ -127,7 +127,6 @@
 
 #define MOD_ID_OFST                         (0)
 #define MOD_ID_MSK                          (0x0000FFFF << MOD_ID_OFST)
-#define MOD_MAX_VAL                         (0xFFFF)
 
 /* ASIC registers --------------------------------------------------*/
 

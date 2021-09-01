@@ -287,15 +287,18 @@ u_int32_t getDetectorNumber() {
     return bus_r(MCB_SERIAL_NO_REG);
 }
 
-int getModuleId() { return ((bus_r(MOD_ID_REG) & MOD_ID_MSK) >> MOD_ID_OFST); }
+int getModuleId(int *ret, char *mess) {
+    return getModuleIdInFile(ret, mess, ID_FILE);
+}
 
-void setModuleId(int arg) {
-    LOG(logINFOBLUE, ("Setting Module Id to 0x%x\n", arg));
+void setModuleId(int *ret, char *mess, int arg) {
+    *ret = setModuleIdInFile(mess, arg, ID_FILE);
+    if (*ret == FAIL) {
+        return;
+    }
     bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) & ~MOD_ID_MSK);
     bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) | ((arg << MOD_ID_OFST) & MOD_ID_MSK));
 }
-
-int getMaxModuleId() { return MOD_MAX_VAL; }
 
 u_int64_t getDetectorMAC() {
 #ifdef VIRTUAL
@@ -419,7 +422,10 @@ void setupDetector() {
     sharedMemory_setStatus(IDLE);
     setupUDPCommParameters();
 #endif
-
+    getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+    if (initError == FAIL) {
+        return;
+    }
     // pll defines
     ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL,
                               PLL_RESET_REG, PLL_RESET_READOUT_MSK,

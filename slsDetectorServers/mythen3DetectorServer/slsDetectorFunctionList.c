@@ -274,28 +274,17 @@ u_int16_t getHardwareVersionNumber() {
             MCB_SERIAL_NO_VRSN_OFST);
 }
 
-void readDetectorNumber() {
-#ifndef VIRTUAL
-    if (initError == FAIL) {
-        return;
-    }
-    FILE *fd = fopen(ID_FILE, "r");
-    if (fd == NULL) {
-        sprintf(initErrorMessage, "No %s file found.\n", ID_FILE);
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
-        initError = FAIL;
-        return;
-    }
-    char output[255];
-    fgets(output, sizeof(output), fd);
-    sscanf(output, "%u", &detID);
-    if (isControlServer) {
-        LOG(logINFOBLUE, ("Detector ID: %u\n", detID));
-    }
+u_int32_t getDetectorNumber() {
+#ifdef VIRTUAL
+    return 0;
 #endif
+    return bus_r(MCB_SERIAL_NO_REG);
 }
 
-u_int32_t getDetectorNumber() { return detID; }
+
+int getModuleId(int *ret, char *mess) {
+    return getModuleIdInFile(ret, mess, ID_FILE);
+}
 
 u_int64_t getDetectorMAC() {
 #ifdef VIRTUAL
@@ -481,7 +470,7 @@ void setupDetector() {
 #ifdef VIRTUAL
     enableTenGigabitEthernet(0);
 #endif
-    readDetectorNumber();
+    getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
     if (initError == FAIL) {
         return;
     }

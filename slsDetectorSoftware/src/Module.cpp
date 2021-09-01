@@ -416,14 +416,14 @@ void Module::loadSettingsFile(const std::string &fname) {
     if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
         std::ostringstream ostfn;
         ostfn << fname;
-        int serialNumberWidth = 3;
+        int moduleIdWidth = 3;
         if (shm()->myDetectorType == MYTHEN3) {
-            serialNumberWidth = 4;
+            moduleIdWidth = 4;
         }
         if ((fname.find(".sn") == std::string::npos) &&
             (fname.find(".trim") == std::string::npos)) {
-            ostfn << ".sn" << std::setfill('0') << std::setw(serialNumberWidth)
-                  << std::dec << getSerialNumber();
+            ostfn << ".sn" << std::setfill('0') << std::setw(moduleIdWidth)
+                  << std::dec << getModuleId();
         }
         auto myMod = readSettingsFile(ostfn.str());
         setModule(myMod);
@@ -3326,12 +3326,12 @@ std::string Module::getTrimbitFilename(detectorSettings s, int e_eV) {
         throw RuntimeError(
             "Settings or trimbit files not defined for this detector.");
     }
-    int serialNumberWidth = 3;
+    int moduleIdWidth = 3;
     if (shm()->myDetectorType == MYTHEN3) {
-        serialNumberWidth = 4;
+        moduleIdWidth = 4;
     }
-    ostfn << std::setfill('0') << std::setw(serialNumberWidth) << std::dec
-          << getSerialNumber() << std::setbase(10);
+    ostfn << std::setfill('0') << std::setw(moduleIdWidth) << std::dec
+          << getModuleId() << std::setbase(10);
     return ostfn.str();
 }
 

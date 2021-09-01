@@ -2,7 +2,11 @@
 #include "sls/sls_detector_defs.h"
 
 #define REQUIRED_FIRMWARE_VERSION (27)
-#define IDFILECOMMAND             "more /home/root/executables/detid.txt"
+#ifdef VIRTUAL
+#define ID_FILE "detid_eiger.txt"
+#else
+#define ID_FILE "detid.txt"
+#endif
 #define CONFIG_FILE               ("config_eiger.txt")
 #define WAIT_STOP_SERVER_START    (1 * 1000 * 1000)
 

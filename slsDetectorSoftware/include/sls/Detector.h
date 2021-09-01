@@ -78,13 +78,14 @@ class Detector {
 
     Result<int64_t> getDetectorServerVersion(Positions pos = {}) const;
 
+    /* [Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench] */
     Result<int64_t> getSerialNumber(Positions pos = {}) const;
 
-    /** [Gotthard2] */
+    /** [Eiger][Gotthard2][Mythen3] */
     Result<int> getModuleId(Positions pos = {}) const;
 
     /** [Gotthard2] 6 bit value (ideally unique) that is "
-        "streamed out1 in the UDP header of the detector. Default is 0. */
+        "streamed out1 in the UDP header of the detector.  */
     void setModuleId(const int value, Positions pos = {});
 
     Result<int64_t> getReceiverVersion(Positions pos = {}) const;

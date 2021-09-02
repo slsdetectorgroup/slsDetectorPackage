@@ -3740,7 +3740,7 @@ int program_fpga(int file_des) {
                             (long long unsigned int)offset, (long long unsigned int)filesize));
 
             // receive part of program
-            if (receiveData(file_des, fpgasrc + offset, unitprogramsize, OTHER) < 0) {
+            if (receiveData(file_des, (char*)(fpgasrc + offset), unitprogramsize, OTHER) < 0) {
                 printSocketReadError();
                 clientSocketCrash = 1;
                 ret = FAIL;

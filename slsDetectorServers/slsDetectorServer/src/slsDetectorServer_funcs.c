@@ -3725,8 +3725,9 @@ int program_fpga(int file_des) {
             return printSocketReadError();
         LOG(logINFOBLUE, ("Program size is: %lld\n",
                         (long long unsigned int)filesize));
-        fpgasrc = malloc(filesize + 1);
-        uint64_t totalsize = filesize + 1;
+        fpgasrc = malloc(MAX_FPGAPROGRAMSIZE);
+        //fpgasrc = malloc(filesize + 1);
+        uint64_t totalsize = filesize;
 
         // writing to flash part by part
         int clientSocketCrash = 0;
@@ -3780,9 +3781,9 @@ int program_fpga(int file_des) {
                 */
             }
         }
-        if (ret != FAIL) {
+      /*  if (ret != FAIL) {
             fpgasrc[totalsize] = '\0';
-        }
+        }*/
 
 /*
 

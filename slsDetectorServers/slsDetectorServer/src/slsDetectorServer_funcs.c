@@ -3744,9 +3744,11 @@ int program_fpga(int file_des) {
                 printSocketReadError();
                 clientSocketCrash = 1;
                 ret = FAIL;
+                LOG(logERROR, ("error, not receiverd\n"));
             }
             // client has not crashed yet, so write to flash and send ret
             else {
+                LOG(logINFOBLUE, ("receiverd\n"));
                 offset += unitprogramsize;
                 Server_SendResult(file_des, INT32, NULL, 0);
                 

@@ -3725,7 +3725,8 @@ int program_fpga(int file_des) {
             return printSocketReadError();
         LOG(logINFOBLUE, ("Program size is: %lld\n",
                         (long long unsigned int)filesize));
-        fpgasrc = malloc(filesize);
+        int fsize = filesize;
+        fpgasrc = malloc(fsize);
         if (fpgasrc == NULL) {
             LOG(logERROR, ("Could not malloc\n"));
             ret = FAIL;

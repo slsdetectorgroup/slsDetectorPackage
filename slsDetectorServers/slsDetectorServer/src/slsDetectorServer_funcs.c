@@ -3725,7 +3725,7 @@ int program_fpga(int file_des) {
             return printSocketReadError();
         LOG(logINFOBLUE, ("Program size is: %lld\n",
                         (long long unsigned int)filesize));
-        fpgasrc = malloc(filesize);
+        fpgasrc = malloc(MAX_FPGAPROGRAMSIZE);
         //fpgasrc = malloc(filesize + 1);
         uint64_t totalsize = filesize;
 
@@ -3737,7 +3737,7 @@ int program_fpga(int file_des) {
             if (unitprogramsize > filesize)                 // less than 2mb
                 unitprogramsize = filesize;
             LOG(logINFOBLUE,
-                ("unit size to receive is:%lld [offset:%lld, filesize:%lld]\n",
+                ("unit size to receive is:%lld [ooffset:%lld, filesize:%lld]\n",
                  (long long unsigned int)unitprogramsize,
                  (long long unsigned int)offset,
                  (long long unsigned int)filesize));

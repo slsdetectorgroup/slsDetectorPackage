@@ -3417,37 +3417,9 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_PROGRAM_FPGA);
     client.Send(filesize);
-    // error in detector at opening file pointer to flash
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Detector " << moduleId << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw RuntimeError(os.str());
-    }
+    printf("%d%%\r", 0);
+    std::cout << std::flush;
 
-    // erasing flash
-    LOG(logINFO) << "Erasing Flash for detector " << moduleId << " ("
-                 << shm()->hostname << ")";
-    printf("%d%%\r", 0);
-    std::cout << std::flush;
-    // erasing takes 65 seconds, printing here (otherwise need threads
-    // in server-unnecessary)
-    const int ERASE_TIME = 65;
-    int count = ERASE_TIME + 1;
-    while (count > 0) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        --count;
-        printf(
-            "%d%%\r",
-            static_cast<int>(
-                (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
-        std::cout << std::flush;
-    }
-    printf("\n");
-    LOG(logINFO) << "Writing to Flash to detector " << moduleId << " ("
-                 << shm()->hostname << ")";
-    printf("%d%%\r", 0);
-    std::cout << std::flush;
 
     // sending program in parts of 2mb each
     uint64_t unitprogramsize = 0;
@@ -3481,7 +3453,9 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     }
     std::cout << '\n';
 
-    // fpga has picked up from flash successfully
+
+/*
+    // error in detector at opening file pointer to flash
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleId << " (" << shm()->hostname << ")"
@@ -3489,8 +3463,46 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         throw RuntimeError(os.str());
     }
 
+
+
+    // erasing flash
+    LOG(logINFO) << "Erasing Flash for detector " << moduleId << " ("
+                 << shm()->hostname << ")";
+    printf("%d%%\r", 0);
+    std::cout << std::flush;
+    // erasing takes 65 seconds, printing here (otherwise need threads
+    // in server-unnecessary)
+    const int ERASE_TIME = 65;
+    int count = ERASE_TIME + 1;
+    while (count > 0) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        --count;
+        printf(
+            "%d%%\r",
+            static_cast<int>(
+                (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+        std::cout << std::flush;
+    }
+
+    // fpga has written to flash successfully
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Detector " << moduleId << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw RuntimeError(os.str());
+    }
+
+
+    // fpga has picked up from flash successfully
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Detector " << moduleId << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw RuntimeError(os.str());
+    }
+*/
     LOG(logINFO) << "FPGA programmed successfully";
-    rebootController();
+    //rebootController();
 }
 
 void Module::programFPGAviaNios(std::vector<char> buffer) {

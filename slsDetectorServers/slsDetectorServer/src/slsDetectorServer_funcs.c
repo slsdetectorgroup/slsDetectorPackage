@@ -3675,7 +3675,6 @@ int program_fpga(int file_des) {
         n = receiveData(file_des, mess, MAX_STR_LENGTH, OTHER);
     functionNotImplemented();
 #else
-#ifndef VIRTUAL
     // only set
     if (Server_VerifyLock() == OK) {
 
@@ -3704,8 +3703,9 @@ int program_fpga(int file_des) {
             char *fpgasrc = malloc(filesize);
             if (receiveData(file_des, fpgasrc, filesize, OTHER) < 0)
                 return printSocketReadError();
-
+#ifndef VIRTUAL
             ret = eraseAndWriteToFlash(mess, fpgasrc, filesize);
+#endif
             Server_SendResult(file_des, INT32, NULL, 0);
 
             // free resources
@@ -3714,58 +3714,50 @@ int program_fpga(int file_des) {
 
 #else // jungfrau, ctb, moench
         uint64_t filesize = 0;
-        uint64_t totalsize = 0;
-        uint64_t unitprogramsize = 0;
         char *fpgasrc = NULL;
-        FILE *fp = NULL;
+        FILE *fp = NULL; 
+        uint64_t offset = 0;
+
+
 
         // filesize
-        if (receiveData(file_des, &filesize, sizeof(filesize), INT32) < 0)
+        if (receiveData(file_des, &filesize, sizeof(filesize), INT64) < 0)
             return printSocketReadError();
-        totalsize = filesize;
-        LOG(logDEBUG1, ("Total program size is: %lld\n",
-                        (long long unsigned int)totalsize));
+        LOG(logDEBUG1, ("Program size is: %lld\n",
+                        (long long unsigned int)filesize));
+        fpgasrc = malloc(filesize + 1);
 
-        // opening file pointer to flash and telling FPGA to not touch flash
-        if (startWritingFPGAprogram(&fp) != OK) {
-            ret = FAIL;
-            sprintf(mess, "Could not write to flash. Error at startup.\n");
-            LOG(logERROR, (mess));
-        }
-        Server_SendResult(file_des, INT32, NULL, 0);
-
-        // erasing flash
-        if (ret != FAIL) {
-            eraseFlash();
-            fpgasrc = malloc(MAX_FPGAPROGRAMSIZE);
-        }
 
         // writing to flash part by part
         int clientSocketCrash = 0;
-        while (ret != FAIL && filesize) {
+        while (ret != FAIL && offset < filesize) {
 
-            unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
-            if (unitprogramsize > filesize)        // less than 2mb
-                unitprogramsize = filesize;
-            LOG(logDEBUG1, ("unit size to receive is:%lld\nfilesize:%lld\n",
+            uint64_t unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
+            if (offset + unitprogramsize > filesize)        // less than 2mb
+                unitprogramsize = filesize - offset;
+            LOG(logDEBUG1, ("unit size to receive is:%lld [offset:%lld, filesize:%lld]\n",
                             (long long unsigned int)unitprogramsize,
-                            (long long unsigned int)filesize));
+                            (long long unsigned int)offset, (long long unsigned int)filesize));
 
             // receive part of program
-            if (receiveData(file_des, fpgasrc, unitprogramsize, OTHER) < 0) {
+            if (receiveData(file_des, fpgasrc + offset, unitprogramsize, OTHER) < 0) {
                 printSocketReadError();
                 clientSocketCrash = 1;
                 ret = FAIL;
             }
             // client has not crashed yet, so write to flash and send ret
             else {
-                if (!(unitprogramsize - filesize)) {
-                    fpgasrc[unitprogramsize] = '\0';
-                    filesize -= unitprogramsize;
-                    unitprogramsize++;
-                } else
-                    filesize -= unitprogramsize;
-
+                offset += unitprogramsize;
+                Server_SendResult(file_des, INT32, NULL, 0);
+                
+                // print progress
+                LOG(logINFOBLUE,
+                        ("Writing to Flash:%d%%\r",
+                         (int)(((double)(filesize - offset) / filesize) *
+                               100)));
+                fflush(stdout);
+                
+                /*
                 // write part to flash
                 ret = writeFPGAProgram(fpgasrc, unitprogramsize, fp);
                 Server_SendResult(file_des, INT32, NULL, 0);
@@ -3782,8 +3774,38 @@ int program_fpga(int file_des) {
                                100)));
                     fflush(stdout);
                 }
+                */
             }
         }
+        if (ret != FAIL) {
+            fpgasrc[filesize] = '\0';
+        }
+        ++filesize;
+
+
+
+
+
+
+
+/*
+
+        // opening file pointer to flash and telling FPGA to not touch flash
+        if (startWritingFPGAprogram(&fp) != OK) {
+            ret = FAIL;
+            sprintf(mess, "Could not write to flash. Error at startup.\n");
+            LOG(logERROR, (mess));
+        }
+        Server_SendResult(file_des, INT32, NULL, 0);
+
+
+
+
+        // erasing flash
+        if (ret != FAIL) {
+            eraseFlash();
+        }
+
 
         if (ret == OK) {
             LOG(logINFO, ("Done copying program\n"));
@@ -3796,7 +3818,7 @@ int program_fpga(int file_des) {
                 LOG(logERROR, (mess));
             }
         }
-
+*/
         // free resources
         free(fpgasrc);
         if (fp != NULL)
@@ -3807,6 +3829,8 @@ int program_fpga(int file_des) {
             Server_SendResult(file_des, INT32, NULL, 0);
         }
 
+
+
 #endif // end of Blackfin programming
         if (ret == FAIL) {
             LOG(logERROR, ("Program FPGA FAIL!\n"));
@@ -3814,7 +3838,6 @@ int program_fpga(int file_des) {
             LOG(logINFOGREEN, ("Programming FPGA completed successfully\n"));
         }
     }
-#endif
 #endif
     return ret;
 }

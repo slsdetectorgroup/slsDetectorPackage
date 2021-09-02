@@ -3726,21 +3726,21 @@ int program_fpga(int file_des) {
         LOG(logINFOBLUE, ("Program size is: %lld\n",
                         (long long unsigned int)filesize));
         fpgasrc = malloc(filesize + 1);
-
+        uint64_t totalsize = filesize + 1;
 
         // writing to flash part by part
         int clientSocketCrash = 0;
-        while (ret != FAIL && offset < filesize) {
+        while (ret != FAIL && filesize) {
 
             uint64_t unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
-            if (offset + unitprogramsize > filesize)        // less than 2mb
-                unitprogramsize = filesize - offset;
+            if (unitprogramsize > filesize)                 // less than 2mb
+                unitprogramsize = filesize;
             LOG(logINFOBLUE, ("unit size to receive is:%lld [offset:%lld, filesize:%lld]\n",
                             (long long unsigned int)unitprogramsize,
                             (long long unsigned int)offset, (long long unsigned int)filesize));
 
             // receive part of program
-            if (receiveData(file_des, (char*)(fpgasrc + offset), unitprogramsize, OTHER) < 0) {
+            if (receiveData(file_des, fpgasrc, unitprogramsize, OTHER) < 0) {
                 printSocketReadError();
                 clientSocketCrash = 1;
                 ret = FAIL;
@@ -3750,13 +3750,14 @@ int program_fpga(int file_des) {
             else {
                 LOG(logINFOBLUE, ("receiverd\n"));
                 offset += unitprogramsize;
+                filesize -= unitprogramsize;
                 Server_SendResult(file_des, INT32, NULL, 0);
                 
                 // print progress
                 LOG(logINFOBLUE,
-                        ("Writing to Flash:%d%%\r",
-                         (int)(((double)(filesize - offset) / filesize) *
-                               100)));
+                    ("Writing to Flash:%d%%\r",
+                     (int)(((double)(totalsize - filesize) / totalsize) *
+                           100)));
                 fflush(stdout);
                 
                 /*
@@ -3780,15 +3781,8 @@ int program_fpga(int file_des) {
             }
         }
         if (ret != FAIL) {
-            fpgasrc[filesize] = '\0';
+            fpgasrc[totalsize] = '\0';
         }
-        ++filesize;
-
-
-
-
-
-
 
 /*
 

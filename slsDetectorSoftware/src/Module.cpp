@@ -3430,8 +3430,8 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         if (unitprogramsize > filesize) {      // less than 2mb
             unitprogramsize = filesize;
         }
-        LOG(logDEBUG1) << "unitprogramsize:" << unitprogramsize
-                       << "\t filesize:" << filesize;
+        LOG(logINFOBLUE) << "unitprogramsize:" << unitprogramsize
+                         << "\t filesize:" << filesize;
 
         client.Send(&buffer[currentPointer], unitprogramsize);
         if (client.Receive<int>() == FAIL) {

@@ -3725,6 +3725,13 @@ int program_fpga(int file_des) {
         LOG(logDEBUG1,
             ("Program size is: %lld\n", (long long unsigned int)filesize));
 
+        // checksum
+        char checksum[MAX_STR_LENGTH];
+        memset(checksum, 0, MAX_STR_LENGTH);
+        if (receiveData(file_des, checksum, MAX_STR_LENGTH, OTHER) < 0)
+            return printSocketReadError();
+        LOG(logINFOBLUE, ("checksum is: %s\n", checksum));
+
         // open file and allocate memory for part program
         FILE *fd = NULL;
         ret = startCopyingFPGAProgram(&fd, filesize, mess);

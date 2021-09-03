@@ -1328,7 +1328,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname,
             // print progress
             int progress = (int)(((double)(dstFilePos) / srcSize) * 100);
             if (oldProgress != progress) {
-                printf("%d%%\r", );
+                printf("%d%%\r", progress);
                 fflush(stdout);
                 oldProgress = progress;
             }

@@ -3729,7 +3729,7 @@ int program_fpga(int file_des) {
 
         struct sysinfo info;
         sysinfo(&info);
-        printf("freeram %ld ", info.freeram);
+        printf("freeram %ld\n", info.freeram);
         /*
                 // delete old /var/tmp/file
                 char cmd[MAX_STR_LENGTH] = {0};

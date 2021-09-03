@@ -1349,6 +1349,9 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             throw RuntimeError(
                 "Could not convert programming file. EOF before end of flash");
         }
+        // write 0 to tthe end
+        char c = '\0';
+        write(dst, &c, 1);
     }
     if (fclose(src) != 0) {
         throw RuntimeError("Program FPGA: Could not close source file");

@@ -3757,9 +3757,9 @@ int program_fpga(int file_des) {
             }
 
             if (unitprogramsize - filesize == 0) {
-                src[unitprogramsize] = '\0';
+                // src[unitprogramsize] = '\0';
                 filesize -= unitprogramsize;
-                unitprogramsize++;
+                // unitprogramsize++;
             } else
                 filesize -= unitprogramsize;
  

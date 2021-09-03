@@ -153,6 +153,15 @@ int startCopyingFPGAProgram(FILE **fd, uint64_t fsize, char *mess) {
             // LOG(logERROR, (mess)); already printed in executecommand
             return FAIL;
         }
+        LOG(logINFO, ("Deleted old file\n"));
+        memset(cmd, 0, MAX_STR_LENGTH);
+        strcpy(cmd, "ls -lrt /va/tmp/*");
+        memset(retvals, 0, MAX_STR_LENGTH);
+        if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
+            strcpy(mess, retvals);
+            // LOG(logERROR, (mess)); already printed in executecommand
+            return FAIL;
+        }
     }
 
     // check available memory to copy program

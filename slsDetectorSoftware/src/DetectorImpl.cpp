@@ -1314,10 +1314,10 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         // Swap bits from source and write to dest
         while (!feof(src)) {
             // print progress
-            LOG(logINFO,
-                ("Converting program to rawbin :%d%%\r",
+            LOG(logINFO) << "Converting program to rawbin";
+            printf("%d%%\r",
                  (int)(((double)(pofFooterOfst - dstFilePos) / pofFooterOfst) *
-                       100)));
+                       100));
             fflush(stdout);
             // pof: exit early to discard footer
             if (isPof && dstFilePos >= pofFooterOfst) {

@@ -3730,15 +3730,12 @@ int program_fpga(int file_des) {
         ret = startCopyingFPGAProgram(&fd, filesize, mess);
         char *src = NULL;
         if (ret == OK) {
-            LOG(logINFOBLUE, ("successssssssss\n"));
             src = malloc(MAX_FPGAPROGRAMSIZE);
             if (src == NULL) {  
                 strcpy(mess, "Could not allocate memory to get fpga program\n");
                 LOG(logERROR, (mess));
                 ret = FAIL;
             }
-        } else {
-            LOG(logERROR, ("failllllllllllllll\n"));
         }
         Server_SendResult(file_des, INT32, NULL, 0);
         if (ret == FAIL) {

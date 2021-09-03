@@ -3415,7 +3415,7 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 void Module::programFPGAviaBlackfin(std::vector<char> buffer,
                                     const std::string &checksum) {
     uint64_t filesize = buffer.size();
-    LOG(logINFOBLUE) << "checksum:" << checksum;
+    LOG(logDEBUG1) << "checksum:" << checksum;
 
     // send program from memory to detector
     LOG(logINFO) << "Sending programming binary (from pof) to detector "

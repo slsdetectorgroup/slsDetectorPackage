@@ -162,7 +162,8 @@ int startCopyingFPGAProgram(FILE **fd, uint64_t fsize, char *mess) {
         sprintf(mess,
                 "Could not program fpga. Not enough memory to copy "
                 "program. [File size:%ldMB, free RAM: %ldMB]\n",
-                (fsize / (1024 * 1024)), (info.freeram / (1024 * 1024)));
+                (long int)(fsize / (1024 * 1024)),
+                (long int)(info.freeram / (1024 * 1024)));
         LOG(logERROR, (mess));
         return FAIL;
     }

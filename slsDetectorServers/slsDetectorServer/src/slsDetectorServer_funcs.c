@@ -3742,6 +3742,7 @@ int program_fpga(int file_des) {
             fclose(fd);
             return FAIL;
         }
+        
         // copying program part by part
         uint64_t totalsize = filesize;
         while (ret != FAIL && filesize) {

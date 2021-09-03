@@ -13,6 +13,7 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <string.h>
+#include <sys/sysinfo.h>
 #include <unistd.h>
 
 // defined in the detector specific Makefile
@@ -3726,30 +3727,9 @@ int program_fpga(int file_des) {
         LOG(logINFOBLUE, ("Program size is: %lld\n",
                         (long long unsigned int)filesize));
 
-        int rc;
-        u_int page_size;
-        struct vmtotal vmt;
-        size_t vmt_size, uint_size;
-
-        vmt_size = sizeof(vmt);
-        uint_size = sizeof(page_size);
-
-        rc = sysctlbyname("vm.vmtotal", &vmt, &vmt_size, NULL, 0);
-        if (rc < 0) {
-            perror("sysctlbyname");
-            return 1;
-        }
-
-        rc = sysctlbyname("vm.stats.vm.v_page_size", &page_size, &uint_size,
-                          NULL, 0);
-        if (rc < 0) {
-            perror("sysctlbyname");
-            return 1;
-        }
-
-        printf("Free memory       : %ld\n", vmt.t_free * (u_int64_t)page_size);
-        printf("Available memory  : %ld\n", vmt.t_avm * (u_int64_t)page_size);
-
+        struct sysinfo info;
+        sysinfo(&info);
+        printf("freeram %ld ", info.freeram);
         /*
                 // delete old /var/tmp/file
                 char cmd[MAX_STR_LENGTH] = {0};

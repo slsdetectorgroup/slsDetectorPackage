@@ -184,7 +184,7 @@ int writeFPGAProgram(uint64_t fsize, FILE *fd, char *src, char* msg, char* mess)
         ("%s [fsize:%lu,fd:%p,src:%p\n", msg, (long long unsigned int)fsize, (void *)fd, (void *)src));
 
     if (fwrite((void *)src, sizeof(char), fsize, fd) != fsize) {
-        sprintf(mess, "Could not %s (size:%lu)\n", msg, (long long unsigned int)fsize);
+        sprintf(mess, "Could not %s (size:%ld)\n", msg, (long int)fsize);
         LOG(logERROR, (mess));
         return FAIL;
     }

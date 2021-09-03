@@ -1303,7 +1303,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
 
     // convert src to dst rawbin
     LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
-    LOG(logINFO) << "Converting program to rawbin";
+    LOG(logINFO) << "Converting program to rawbin (srcSise:" << srcSize << ")";
     {
         constexpr int pofNumHeaderBytes = 0x11C;
         constexpr int pofFooterOfst = 0x1000000;

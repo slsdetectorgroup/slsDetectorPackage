@@ -3725,32 +3725,57 @@ int program_fpga(int file_des) {
             return printSocketReadError();
         LOG(logINFOBLUE, ("Program size is: %lld\n",
                         (long long unsigned int)filesize));
-        
-/*
-        // delete old /var/tmp/file
-        char cmd[MAX_STR_LENGTH] = {0};
-        memset(cmd, 0, MAX_STR_LENGTH);
-        sprintf(cmd, "rm -fr /var/tmp/tmp.pof");
-        char retvals[MAX_STR_LENGTH] = {0};
-        memset(retvals, 0, MAX_STR_LENGTH);
-        int success = executeCommand(cmd, retvals, logDEBUG1);
-        if (success == FAIL) {
-            ret = FAIL;
-            strcpy(mess, retvals);
-            // LOG(logERROR, (mess)); already printed in executecommand
-        } else {
-            memset(cmd, 0, MAX_STR_LENGTH);
-            sprintf(cmd, "free | grep Mem | cut -f 2");.// fix this
-            memset(retvals, 0, MAX_STR_LENGTH);
-            int success = executeCommand(cmd, retvals, logDEBUG1);
-            if (success == FAIL) {
-                ret = FAIL;
-                strcpy(mess, retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            }
+
+        int rc;
+        u_int page_size;
+        struct vmtotal vmt;
+        size_t vmt_size, uint_size;
+
+        vmt_size = sizeof(vmt);
+        uint_size = sizeof(page_size);
+
+        rc = sysctlbyname("vm.vmtotal", &vmt, &vmt_size, NULL, 0);
+        if (rc < 0) {
+            perror("sysctlbyname");
+            return 1;
         }
-        Server_SendResult(file_des, INT32, NULL, 0);        
-*/
+
+        rc = sysctlbyname("vm.stats.vm.v_page_size", &page_size, &uint_size,
+                          NULL, 0);
+        if (rc < 0) {
+            perror("sysctlbyname");
+            return 1;
+        }
+
+        printf("Free memory       : %ld\n", vmt.t_free * (u_int64_t)page_size);
+        printf("Available memory  : %ld\n", vmt.t_avm * (u_int64_t)page_size);
+
+        /*
+                // delete old /var/tmp/file
+                char cmd[MAX_STR_LENGTH] = {0};
+                memset(cmd, 0, MAX_STR_LENGTH);
+                sprintf(cmd, "rm -fr /var/tmp/tmp.pof");
+                char retvals[MAX_STR_LENGTH] = {0};
+                memset(retvals, 0, MAX_STR_LENGTH);
+                int success = executeCommand(cmd, retvals, logDEBUG1);
+                if (success == FAIL) {
+                    ret = FAIL;
+                    strcpy(mess, retvals);
+                    // LOG(logERROR, (mess)); already printed in executecommand
+                } else {
+                    memset(cmd, 0, MAX_STR_LENGTH);
+                    sprintf(cmd, "free | grep Mem | cut -f 2");.// fix this
+                    memset(retvals, 0, MAX_STR_LENGTH);
+                    int success = executeCommand(cmd, retvals, logDEBUG1);
+                    if (success == FAIL) {
+                        ret = FAIL;
+                        strcpy(mess, retvals);
+                        // LOG(logERROR, (mess)); already printed in
+           executecommand
+                    }
+                }
+                Server_SendResult(file_des, INT32, NULL, 0);
+        */
 
         size_t fsize = filesize;
         fpgasrc = malloc(fsize);

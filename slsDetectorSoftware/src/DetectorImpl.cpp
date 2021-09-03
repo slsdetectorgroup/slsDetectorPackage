@@ -1266,7 +1266,6 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         << "Updating Firmware. This can take awhile. Please be patient...";
     LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
 
-    size_t filesize = 0;
     // check if it exists
     struct stat st;
     if (stat(fname.c_str(), &st) != 0) {
@@ -1294,6 +1293,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
 
     // convert src to dst rawbin
     LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
+    LOG(logINFO) << "Converting program to rawbin";
     {
         constexpr int pofNumHeaderBytes = 0x11C;
         constexpr int pofFooterOfst = 0x1000000;
@@ -1314,14 +1314,17 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         // Swap bits from source and write to dest
         while (!feof(src)) {
             // print progress
-            LOG(logINFO) << "Converting program to rawbin";
-            printf("%d%%\r",
-                 (int)(((double)(pofFooterOfst - dstFilePos) / pofFooterOfst) *
-                       100));
-            fflush(stdout);
-            // pof: exit early to discard footer
-            if (isPof && dstFilePos >= pofFooterOfst) {
-                break;
+            if (isPof) {
+                printf("pofFooterOfst:%d, dstfilepos:%d %d%%\r", pofFooterOfst,
+                       dstFilePos,
+                       (int)(((double)(pofFooterOfst - dstFilePos) /
+                              pofFooterOfst) *
+                             100));
+                fflush(stdout);
+                // pof: exit early to discard footer
+                if (dstFilePos >= pofFooterOfst) {
+                    break;
+                }
             }
             // read source
             int s = fgetc(src);
@@ -1358,7 +1361,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     if (fseek(fp, 0, SEEK_END) != 0) {
         throw RuntimeError("Program FPGA: Seek error in rawbin file");
     }
-    filesize = ftell(fp);
+    size_t filesize = ftell(fp);
     if (filesize <= 0) {
         throw RuntimeError("Program FPGA: Could not get length of rawbin file");
     }

@@ -3714,56 +3714,61 @@ int program_fpga(int file_des) {
         }
 
 #else // jungfrau, ctb, moench
-        uint64_t filesize = 0;
-        char *fpgasrc = NULL;
-        FILE *fp = NULL; 
-        uint64_t offset = 0;
-
-
 
         // filesize
+        uint64_t filesize = 0;
         if (receiveData(file_des, &filesize, sizeof(filesize), INT64) < 0)
             return printSocketReadError();
         LOG(logINFOBLUE, ("Program size is: %lld\n",
                         (long long unsigned int)filesize));
 
-        struct sysinfo info;
-        sysinfo(&info);
-        printf("freeram %ld\n", info.freeram);
-        /*
-                // delete old /var/tmp/file
-                char cmd[MAX_STR_LENGTH] = {0};
-                memset(cmd, 0, MAX_STR_LENGTH);
-                sprintf(cmd, "rm -fr /var/tmp/tmp.pof");
-                char retvals[MAX_STR_LENGTH] = {0};
-                memset(retvals, 0, MAX_STR_LENGTH);
-                int success = executeCommand(cmd, retvals, logDEBUG1);
-                if (success == FAIL) {
-                    ret = FAIL;
-                    strcpy(mess, retvals);
-                    // LOG(logERROR, (mess)); already printed in executecommand
-                } else {
-                    memset(cmd, 0, MAX_STR_LENGTH);
-                    sprintf(cmd, "free | grep Mem | cut -f 2");.// fix this
-                    memset(retvals, 0, MAX_STR_LENGTH);
-                    int success = executeCommand(cmd, retvals, logDEBUG1);
-                    if (success == FAIL) {
-                        ret = FAIL;
-                        strcpy(mess, retvals);
-                        // LOG(logERROR, (mess)); already printed in
-           executecommand
-                    }
-                }
-                Server_SendResult(file_des, INT32, NULL, 0);
-        */
-
-        size_t fsize = filesize;
-        fpgasrc = malloc(fsize);
-        if (fpgasrc == NULL) {
-            LOG(logERROR, ("Could not malloc\n"));
-            ret = FAIL;
+        // delete old /var/tmp/file
+        {
+            char cmd[MAX_STR_LENGTH] = {0};
+            memset(cmd, 0, MAX_STR_LENGTH);
+            sprintf(cmd, "rm -fr %s", TEMP_PROG_FILE_NAME);
+            char retvals[MAX_STR_LENGTH] = {0};
+            memset(retvals, 0, MAX_STR_LENGTH);
+            ret = executeCommand(cmd, retvals, logDEBUG1);
+            if (ret == FAIL) {
+                strcpy(mess, retvals);
+                // LOG(logERROR, (mess)); already printed in executecommand
+            }
         }
-        //fpgasrc = malloc(filesize + 1);
+
+        // check available memory to copy program
+        if (ret == OK) {
+            struct sysinfo info;
+            sysinfo(&info);
+            if (filesize >= info.freeram) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not program fpga. Not enough memory to copy "
+                        "program. [File size:%dMb, free RAM: %dMb]\n",
+                        (filesize / (1024 * 1024), (info.freeram / (1024 * 1024))));
+                LOG(logERROR, (mess));
+            }
+        }
+
+        // open file to copy
+
+ Server_SendResult(file_des, INT32, NULL, 0);
+
+
+
+
+    
+                /*
+                        size_t fsize = filesize;
+                        fpgasrc = malloc(fsize);
+                        if (fpgasrc == NULL) {
+                            LOG(logERROR, ("Could not malloc\n"));
+                            ret = FAIL;
+                        }*/
+        //  fpgasrc = malloc(filesize + 1);
+               char *fpgasrc = NULL;
+        FILE *fp = NULL; 
+        uint64_t offset = 0;
         uint64_t totalsize = filesize;
 
         // writing to flash part by part

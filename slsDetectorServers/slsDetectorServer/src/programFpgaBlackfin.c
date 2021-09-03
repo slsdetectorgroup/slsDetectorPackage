@@ -10,6 +10,8 @@
 #define MTDSIZE                      10
 #define MAX_TIME_FPGA_TOUCH_FLASH_US (10 * 1000 * 1000) // 10s
 
+#define TEMP_PROG_FILE_NAME "/var/tmp/tmp.pof"
+
 int gpioDefined = 0;
 char mtdvalue[MTDSIZE] = {0};
 

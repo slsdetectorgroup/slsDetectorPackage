@@ -35,6 +35,10 @@ const enum detectorType myDetectorType = GOTTHARD2;
 const enum detectorType myDetectorType = GENERIC;
 #endif
 
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) 
+#define TEMP_PROG_FILE_NAME "/var/tmp/tmp.pof"
+#endif
+
 // Global variables from communication_funcs
 extern int lockStatus;
 extern uint32_t lastClientIP;

@@ -159,9 +159,11 @@ int startCopyingFPGAProgram(FILE **fd, uint64_t fsize, char *mess) {
         memset(retvals, 0, MAX_STR_LENGTH);
         if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
             strcpy(mess, retvals);
+            LOG(logERROR, ("fail\n"));
             // LOG(logERROR, (mess)); already printed in executecommand
             return FAIL;
         }
+        LOG(logINFOBLUE, ("success\n"));
     }
 
     // check available memory to copy program

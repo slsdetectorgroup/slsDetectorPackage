@@ -3736,7 +3736,8 @@ int program_fpga(int file_des) {
                 LOG(logERROR, (mess));
                 ret = FAIL;
             }
-        }
+        } else
+            LOG(logERROR, ("fail\n"));
         Server_SendResult(file_des, INT32, NULL, 0);
         if (ret == FAIL) {
             if (fd != NULL) {

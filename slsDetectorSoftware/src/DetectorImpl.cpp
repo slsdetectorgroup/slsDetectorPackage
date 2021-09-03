@@ -1323,11 +1323,15 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname,
             }
         }
         // Swap bits from source and write to dest
+        int oldProgress = 0;
         while (!feof(src)) {
             // print progress
-            printf("%d%%\r", (int)(((double)(dstFilePos) / srcSize) * 100));
-            fflush(stdout);
-
+            int progress = (int)(((double)(dstFilePos) / srcSize) * 100);
+            if (oldProgress != progress) {
+                printf("%d%%\r", );
+                fflush(stdout);
+                oldProgress = progress;
+            }
             // pof: exit early to discard footer
             if (isPof && dstFilePos >= pofFooterOfst) {
                 break;

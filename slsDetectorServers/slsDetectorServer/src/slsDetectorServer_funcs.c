@@ -3739,10 +3739,12 @@ int program_fpga(int file_des) {
         }
         Server_SendResult(file_des, INT32, NULL, 0);
         if (ret == FAIL) {
-            fclose(fd);
+            if (fd != NULL) {
+                fclose(fd);
+            }
             return FAIL;
         }
-        
+
         // copying program part by part
         uint64_t totalsize = filesize;
         while (ret != FAIL && filesize) {

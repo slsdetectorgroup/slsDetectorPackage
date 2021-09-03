@@ -1240,7 +1240,8 @@ int DetectorImpl::kbhit() {
     return FD_ISSET(STDIN_FILENO, &fds);
 }
 
-std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
+std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname,
+                                                    std::string &checksum) {
     // validate type of file
     bool isPof = false;
     switch (multi_shm()->multiDetectorType) {
@@ -1384,10 +1385,37 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         throw RuntimeError(
             "Program FPGA: Could not close destination file after converting");
     }
-    // unlink(destfname); // delete temporary file
+
+    // calculate checksum before deleting file
+    checksum = getMd5Checksum(destfname);
+
+    unlink(destfname); // delete temporary file
     LOG(logDEBUG1) << "Successfully loaded the rawbin file to program memory";
     LOG(logINFO) << "Read file into memory";
     return buffer;
+}
+
+std::string DetectorImpl::getMd5Checksum(const std::string &fname) {
+    std::string cmd = "md5sum " + fname;
+    FILE *pipe = popen(cmd.c_str(), "r");
+    if (!pipe) {
+        throw RuntimeError("Could not get md5 checksum to program fpga");
+    }
+    char buffer[256];
+    memset(buffer, 0, sizeof(buffer));
+    std::string result;
+    try {
+        while (fgets(buffer, sizeof buffer, pipe) != NULL) {
+            result += buffer;
+        }
+    } catch (std::exception &e) {
+        pclose(pipe);
+        throw RuntimeError(
+            std::string("Could not get md5 checsum to program fpga. Threw ") +
+            std::string(e.what()));
+    }
+    pclose(pipe);
+    return result;
 }
 
 sls::Result<int> DetectorImpl::getNumberofUDPInterfaces(Positions pos) const {

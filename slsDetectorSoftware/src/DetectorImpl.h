@@ -289,7 +289,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @param fname name of pof/rbf file
      * @returns binary of the program
      */
-    std::vector<char> readProgrammingFile(const std::string &fname);
+    std::vector<char> readProgrammingFile(const std::string &fname,
+                                          std::string &checksum);
+    std::string getMd5Checksum(const std::string &fname);
 
     sls::Result<int> getNumberofUDPInterfaces(Positions pos) const;
     void setNumberofUDPInterfaces(int n, Positions pos);

@@ -535,7 +535,7 @@ class Module : public virtual slsDetectorDefs {
      *    Advanced                                    *
      *                                                *
      * ************************************************/
-    void programFPGA(std::vector<char> buffer);
+    void programFPGA(std::vector<char> buffer, const std::string &checksum);
     void resetFPGA();
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname);
@@ -744,8 +744,8 @@ class Module : public virtual slsDetectorDefs {
     std::string getTrimbitFilename(detectorSettings settings, int e_eV);
     sls_detector_module readSettingsFile(const std::string &fname,
                                          bool trimbits = true);
-    int calculateChecksum(char *buffer, size_t bsize);
-    void programFPGAviaBlackfin(std::vector<char> buffer);
+    void programFPGAviaBlackfin(std::vector<char> buffer,
+                                const std::string &checksum);
     void programFPGAviaNios(std::vector<char> buffer);
 
     const int moduleId;

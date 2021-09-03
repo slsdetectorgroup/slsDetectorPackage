@@ -2140,8 +2140,9 @@ void Detector::setAdditionalJsonParameter(const std::string &key,
 // Advanced
 
 void Detector::programFPGA(const std::string &fname, Positions pos) {
-    std::vector<char> buffer = pimpl->readProgrammingFile(fname);
-    pimpl->Parallel(&Module::programFPGA, pos, buffer);
+    std::string checksum;
+    std::vector<char> buffer = pimpl->readProgrammingFile(fname, checksum);
+    pimpl->Parallel(&Module::programFPGA, pos, buffer, checksum);
 }
 
 void Detector::resetFPGA(Positions pos) {

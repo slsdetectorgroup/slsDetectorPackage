@@ -23,7 +23,6 @@
 #include <iterator>
 #include <sstream>
 #include <thread>
-#include <openssl/md5.h>
 
 namespace sls {
 
@@ -2486,12 +2485,13 @@ void Module::setAdditionalJsonParameter(const std::string &key,
 }
 
 // Advanced
-void Module::programFPGA(std::vector<char> buffer) {
+void Module::programFPGA(std::vector<char> buffer,
+                         const std::string &checksum) {
     switch (shm()->myDetectorType) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
     case MOENCH:
-        programFPGAviaBlackfin(buffer);
+        programFPGAviaBlackfin(buffer, checksum);
         break;
     case MYTHEN3:
     case GOTTHARD2:
@@ -3412,25 +3412,18 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
     return myMod;
 }
 
-int Module::calculateChecksum(char *buffer, size_t bsize) {
-    unsigned char checksum = 0;
-    for(size_t i = 0; i != bsize; ++i)) {
-        checksum ^= fgetc(fp);
-    }
-    return 0;  
-}
-
-void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
-    // calculate checksum
+void Module::programFPGAviaBlackfin(std::vector<char> buffer,
+                                    const std::string &checksum) {
     uint64_t filesize = buffer.size();
-    int checksum = calculateChecksum(&buffer[0], filesize);
     LOG(logINFOBLUE) << "checksum:" << checksum;
+
     // send program from memory to detector
     LOG(logINFO) << "Sending programming binary (from pof) to detector "
                  << moduleId << " (" << shm()->hostname << ")";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_PROGRAM_FPGA);
     client.Send(filesize);
+    // client.Send(checksum);
 
     //  opening file fail
     if (client.Receive<int>() == FAIL) {

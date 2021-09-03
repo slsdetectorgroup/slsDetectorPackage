@@ -3722,8 +3722,8 @@ int program_fpga(int file_des) {
         uint64_t filesize = 0;
         if (receiveData(file_des, &filesize, sizeof(filesize), INT64) < 0)
             return printSocketReadError();
-        LOG(logINFOBLUE, ("Program size is: %lld\n",
-                        (long long unsigned int)filesize));
+        LOG(logDEBUG1,
+            ("Program size is: %lld\n", (long long unsigned int)filesize));
 
         // open file and allocate memory for part program
         FILE *fd = NULL;
@@ -3784,42 +3784,41 @@ int program_fpga(int file_des) {
         }
         free(src);
         fclose(fd);
+        LOG(logINFO, ("\tCopying done\n"));
 
-      /*  if (ret != FAIL) {
-            fpgasrc[totalsize] = '\0';
-        }*/
+        /*  if (ret != FAIL) {
+              fpgasrc[totalsize] = '\0';
+          }*/
 
-/*
+        /*
 
-        // opening file pointer to flash and telling FPGA to not touch flash
-        if (startWritingFPGAprogram(&fp) != OK) {
-            ret = FAIL;
-            sprintf(mess, "Could not write to flash. Error at startup.\n");
-            LOG(logERROR, (mess));
-        }
-        Server_SendResult(file_des, INT32, NULL, 0);
-
-
+                // opening file pointer to flash and telling FPGA to not touch
+           flash if (startWritingFPGAprogram(&fp) != OK) { ret = FAIL;
+                    sprintf(mess, "Could not write to flash. Error at
+           startup.\n"); LOG(logERROR, (mess));
+                }
+                Server_SendResult(file_des, INT32, NULL, 0);
 
 
-        // erasing flash
-        if (ret != FAIL) {
-            eraseFlash();
-        }
 
 
-        if (ret == OK) {
-            LOG(logINFO, ("Done copying program\n"));
-            // closing file pointer to flash and informing FPGA
-            ret = stopWritingFPGAprogram(fp);
-            if (ret == FAIL) {
-                strcpy(mess, "Failed to program fpga. FPGA is taking too long "
-                             "to pick up program from flash! Try to flash "
-                             "again without rebooting!\n");
-                LOG(logERROR, (mess));
-            }
-        }
-*/
+                // erasing flash
+                if (ret != FAIL) {
+                    eraseFlash();
+                }
+
+
+                if (ret == OK) {
+                    LOG(logINFO, ("Done copying program\n"));
+                    // closing file pointer to flash and informing FPGA
+                    ret = stopWritingFPGAprogram(fp);
+                    if (ret == FAIL) {
+                        strcpy(mess, "Failed to program fpga. FPGA is taking too
+           long " "to pick up program from flash! Try to flash " "again without
+           rebooting!\n"); LOG(logERROR, (mess));
+                    }
+                }
+        */
 
 
 #endif // end of Blackfin programming

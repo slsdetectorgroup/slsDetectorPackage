@@ -1293,7 +1293,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     }
 
     // convert src to dst rawbin
-    LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
+    LOG(logINFOBLUE) << "Converting " << fname << " to " << destfname;
     {
         constexpr int pofNumHeaderBytes = 0x11C;
         constexpr int pofFooterOfst = 0x1000000;
@@ -1342,7 +1342,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     if (close(dst) != 0) {
         throw RuntimeError("Program FPGA: Could not close destination file");
     }
-    LOG(logDEBUG1) << "File has been converted to " << destfname;
+    LOG(logINFOBLUE) << "File has been converted to " << destfname;
 
     // loading dst file to memory
     FILE *fp = fopen(destfname, "r");

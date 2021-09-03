@@ -175,7 +175,7 @@ int startCopyingFPGAProgram(FILE **fd, uint64_t fsize, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("ready to copy program to %s\n", TEMP_PROG_FILE_NAME));
+    LOG(logINFO, ("Copying program to %s\n", TEMP_PROG_FILE_NAME));
     return OK;
 }
 

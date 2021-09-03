@@ -1279,6 +1279,11 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             "Program FPGA: Could not open source file for programming: " +
             fname);
     }
+    size_t srcSize = ftell(src);
+    if (srcSize <= 0) {
+        throw RuntimeError("Program FPGA: Could not get length of source file");
+    }
+    rewind(src);
 
     // create temp destination file
     char destfname[] = "/tmp/SLS_DET_MCB.XXXXXX";
@@ -1314,15 +1319,11 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         // Swap bits from source and write to dest
         while (!feof(src)) {
             // print progress
-            if (isPof) {
-                printf("pofFooterOfst:%d, dstfilepos:%d %d%%\r", pofFooterOfst,
-                       dstFilePos,
-                       (int)(((double)(dstFilePos) / pofFooterOfst) * 100));
-                fflush(stdout);
-                // pof: exit early to discard footer
-                if (dstFilePos >= pofFooterOfst) {
-                    break;
-                }
+            printf("%d%%\r", (int)(((double)(dstFilePos) / srcSize) * 100));
+            fflush(stdout);
+            // pof: exit early to discard footer
+            if (isPof && dstFilePos >= pofFooterOfst) {
+                break;
             }
             // read source
             int s = fgetc(src);

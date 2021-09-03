@@ -1,8 +1,8 @@
 #pragma once
 
+#include <openssl/md5.h>
 #include <stdint.h>
 #include <stdio.h>
-
 /**
  * Define GPIO pins if not defined
  */

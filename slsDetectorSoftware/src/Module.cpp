@@ -10,6 +10,8 @@
 #include "sls/sls_detector_funcs.h"
 #include "sls/string_utils.h"
 #include "sls/versionAPI.h"
+
+
 #include <algorithm>
 #include <array>
 #include <bitset>
@@ -21,6 +23,7 @@
 #include <iterator>
 #include <sstream>
 #include <thread>
+#include <openssl/md5.h>
 
 namespace sls {
 
@@ -3409,8 +3412,19 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
     return myMod;
 }
 
+int Module::calculateChecksum(char *buffer, size_t bsize) {
+    unsigned char checksum = 0;
+    for(size_t i = 0; i != bsize; ++i)) {
+        checksum ^= fgetc(fp);
+    }
+    return 0;  
+}
+
 void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
+    // calculate checksum
     uint64_t filesize = buffer.size();
+    int checksum = calculateChecksum(&buffer[0], filesize);
+    LOG(logINFOBLUE) << "checksum:" << checksum;
     // send program from memory to detector
     LOG(logINFO) << "Sending programming binary (from pof) to detector "
                  << moduleId << " (" << shm()->hostname << ")";

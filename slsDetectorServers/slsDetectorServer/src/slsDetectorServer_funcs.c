@@ -3771,9 +3771,8 @@ int program_fpga(int file_des) {
             }
             // print progress
             LOG(logINFO,
-                ("Copying Program to /var/tmp/:%d%%\r",
-                    (int)(((double)(totalsize - filesize) / totalsize) *
-                        100)));
+                ("\tCopying Program to /var/tmp/:%d%%\r",
+                 (int)(((double)(totalsize - filesize) / totalsize) * 100)));
             fflush(stdout);
         }
         if (ret == FAIL) {
@@ -3784,7 +3783,7 @@ int program_fpga(int file_des) {
         }
         free(src);
         fclose(fd);
-        LOG(logINFO, ("\tCopying done\n"));
+        LOG(logINFO, ("\n\tCopying done\n"));
 
         /*  if (ret != FAIL) {
               fpgasrc[totalsize] = '\0';

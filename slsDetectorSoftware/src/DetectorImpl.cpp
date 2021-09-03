@@ -1317,9 +1317,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             if (isPof) {
                 printf("pofFooterOfst:%d, dstfilepos:%d %d%%\r", pofFooterOfst,
                        dstFilePos,
-                       (int)(((double)(pofFooterOfst - dstFilePos) /
-                              pofFooterOfst) *
-                             100));
+                       (int)(((double)(dstFilePos) / pofFooterOfst) * 100));
                 fflush(stdout);
                 // pof: exit early to discard footer
                 if (dstFilePos >= pofFooterOfst) {

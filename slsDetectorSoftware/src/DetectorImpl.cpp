@@ -1381,7 +1381,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         throw RuntimeError(
             "Program FPGA: Could not close destination file after converting");
     }
-    unlink(destfname); // delete temporary file
+    // unlink(destfname); // delete temporary file
     LOG(logDEBUG1) << "Successfully loaded the rawbin file to program memory";
     LOG(logINFO) << "Read file into memory";
     return buffer;

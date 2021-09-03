@@ -3417,9 +3417,15 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_PROGRAM_FPGA);
     client.Send(filesize);
-    printf("%d%%\r", 0);
-    std::cout << std::flush;
 
+    //  opening file fail
+    if (client.Receive<int>() == FAIL) {
+        std::cout << '\n';
+        std::ostringstream os;
+        os << "Detector " << moduleId << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw RuntimeError(os.str());
+    }
 
     // sending program in parts of 2mb each
     uint64_t unitprogramsize = 0;

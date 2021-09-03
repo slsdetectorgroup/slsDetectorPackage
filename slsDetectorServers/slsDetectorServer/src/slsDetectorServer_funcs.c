@@ -3725,7 +3725,34 @@ int program_fpga(int file_des) {
             return printSocketReadError();
         LOG(logINFOBLUE, ("Program size is: %lld\n",
                         (long long unsigned int)filesize));
-        int fsize = filesize;
+        
+/*
+        // delete old /var/tmp/file
+        char cmd[MAX_STR_LENGTH] = {0};
+        memset(cmd, 0, MAX_STR_LENGTH);
+        sprintf(cmd, "rm -fr /var/tmp/tmp.pof");
+        char retvals[MAX_STR_LENGTH] = {0};
+        memset(retvals, 0, MAX_STR_LENGTH);
+        int success = executeCommand(cmd, retvals, logDEBUG1);
+        if (success == FAIL) {
+            ret = FAIL;
+            strcpy(mess, retvals);
+            // LOG(logERROR, (mess)); already printed in executecommand
+        } else {
+            memset(cmd, 0, MAX_STR_LENGTH);
+            sprintf(cmd, "free | grep Mem | cut -f 2");.// fix this
+            memset(retvals, 0, MAX_STR_LENGTH);
+            int success = executeCommand(cmd, retvals, logDEBUG1);
+            if (success == FAIL) {
+                ret = FAIL;
+                strcpy(mess, retvals);
+                // LOG(logERROR, (mess)); already printed in executecommand
+            }
+        }
+        Server_SendResult(file_des, INT32, NULL, 0);        
+*/
+
+        size_t fsize = filesize;
         fpgasrc = malloc(fsize);
         if (fpgasrc == NULL) {
             LOG(logERROR, ("Could not malloc\n"));

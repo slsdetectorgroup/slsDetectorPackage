@@ -3771,7 +3771,7 @@ int program_fpga(int file_des) {
             }
             // print progress
             LOG(logINFO,
-                ("\tCopying Program to /var/tmp/:%d%%\r",
+                ("\t%d%%\r",
                  (int)(((double)(totalsize - filesize) / totalsize) * 100)));
             fflush(stdout);
         }

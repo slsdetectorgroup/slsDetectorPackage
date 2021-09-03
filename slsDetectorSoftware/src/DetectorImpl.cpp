@@ -1303,7 +1303,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
 
     // convert src to dst rawbin
     LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
-    LOG(logINFO) << "Converting program to rawbin (srcSise:" << srcSize << ")";
+    LOG(logINFO) << "Converting program to rawbin";
     {
         constexpr int pofNumHeaderBytes = 0x11C;
         constexpr int pofFooterOfst = 0x1000000;
@@ -1326,6 +1326,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             // print progress
             printf("%d%%\r", (int)(((double)(dstFilePos) / srcSize) * 100));
             fflush(stdout);
+
             // pof: exit early to discard footer
             if (isPof && dstFilePos >= pofFooterOfst) {
                 break;

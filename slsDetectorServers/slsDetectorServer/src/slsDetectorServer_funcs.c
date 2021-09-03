@@ -3734,12 +3734,14 @@ int program_fpga(int file_des) {
             if (src == NULL) {  
                 strcpy(mess, "Could not allocate memory to get fpga program\n");
                 LOG(logERROR, (mess));
-                fclose(fd);
-                return FAIL;
+                ret = FAIL;
             }
         }
         Server_SendResult(file_des, INT32, NULL, 0);
-
+        if (ret == FAIL) {
+            fclose(fd);
+            return FAIL;
+        }
         // copying program part by part
         uint64_t totalsize = filesize;
         while (ret != FAIL && filesize) {

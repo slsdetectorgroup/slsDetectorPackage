@@ -3423,7 +3423,10 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer,
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_PROGRAM_FPGA);
     client.Send(filesize);
-    // client.Send(checksum);
+    char cChecksum[MAX_STR_LENGTH];
+    memset(cChecksum, 0, MAX_STR_LENGTH);
+    strcpy(cChecksum, checksum.c_str());
+    client.Send(cChecksum);
 
     //  opening file fail
     if (client.Receive<int>() == FAIL) {

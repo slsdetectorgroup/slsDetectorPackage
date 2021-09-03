@@ -1279,6 +1279,8 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             "Program FPGA: Could not open source file for programming: " +
             fname);
     }
+
+    // get srcSize to print progress
     if (fseek(src, 0, SEEK_END) != 0) {
         throw RuntimeError("Program FPGA: Seek error in src file");
     }

@@ -5,13 +5,18 @@
 
 #include <string.h>
 #include <unistd.h> // usleep
+#include <sys/sysinfo.h>
 
 /* global variables */
 #define MTDSIZE                      10
 #define MAX_TIME_FPGA_TOUCH_FLASH_US (10 * 1000 * 1000) // 10s
+#define TEMP_PROG_FILE_NAME "/var/tmp/tmp.pof"
+
 
 int gpioDefined = 0;
 char mtdvalue[MTDSIZE] = {0};
+
+extern int executeCommand(char *command, char *result, enum TLogLevel level);
 
 void defineGPIOpins() {
     if (!gpioDefined) {
@@ -70,11 +75,11 @@ int startWritingFPGAprogram(FILE **filefp) {
         "awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd", "r");
     if (fp == NULL) {
         LOG(logERROR, ("popen returned NULL. Need that to get mtd drive.\n"));
-        return 1;
+        return FAIL;
     }
     if (fgets(output, sizeof(output), fp) == NULL) {
         LOG(logERROR, ("fgets returned NULL. Need that to get mtd drive.\n"));
-        return 1;
+        return FAIL;
     }
     pclose(fp);
     memset(mtdvalue, 0, MTDSIZE);
@@ -82,7 +87,7 @@ int startWritingFPGAprogram(FILE **filefp) {
     char *pch = strtok(output, ":");
     if (pch == NULL) {
         LOG(logERROR, ("Could not get mtd value\n"));
-        return 1;
+        return FAIL;
     }
     strcat(mtdvalue, pch);
     LOG(logINFO, ("Flash drive found: %s\n", mtdvalue));
@@ -93,11 +98,11 @@ int startWritingFPGAprogram(FILE **filefp) {
     *filefp = fopen(mtdvalue, "w");
     if (*filefp == NULL) {
         LOG(logERROR, ("Unable to open %s in write mode\n", mtdvalue));
-        return 1;
+        return FAIL;
     }
     LOG(logINFO, ("Flash ready for writing\n"));
 
-    return 0;
+    return OK;
 }
 
 int stopWritingFPGAprogram(FILE *filefp) {
@@ -120,7 +125,7 @@ int stopWritingFPGAprogram(FILE *filefp) {
         usleep(1000);
         timeSpent += 1000;
         if (timeSpent >= MAX_TIME_FPGA_TOUCH_FLASH_US) {
-            return 1;
+            return FAIL;
         }
         FILE *sysFile = popen("cat /sys/class/gpio/gpio7/value", "r");
         fgets(output, sizeof(output), sysFile);
@@ -129,21 +134,60 @@ int stopWritingFPGAprogram(FILE *filefp) {
         LOG(logDEBUG1, ("gpi07 returned %d\n", res));
     }
     LOG(logINFO, ("FPGA has picked up the program from flash\n"));
-    return 0;
+    return OK;
 }
 
-int writeFPGAProgram(char *fpgasrc, uint64_t fsize, FILE *filefp) {
-    LOG(logDEBUG1,
-        ("Writing of FPGA Program\n"
-         "\taddress of fpgasrc:%p\n"
-         "\tfsize:%llu\n\tpointer:%p\n",
-         (void *)fpgasrc, (long long unsigned int)fsize, (void *)filefp));
 
-    if (fwrite((void *)fpgasrc, sizeof(char), fsize, filefp) != fsize) {
-        LOG(logERROR, ("Could not write FPGA source to flash (size:%llu)\n",
-                       (long long unsigned int)fsize));
-        return 1;
+
+int startCopyingFPGAProgram(FILE **fd, uint64_t fsize, char *mess) {
+
+    // delete old /var/tmp/file
+    {
+        char cmd[MAX_STR_LENGTH] = {0};
+        memset(cmd, 0, MAX_STR_LENGTH);
+        sprintf(cmd, "rm -fr %s", TEMP_PROG_FILE_NAME);
+        char retvals[MAX_STR_LENGTH] = {0};
+        memset(retvals, 0, MAX_STR_LENGTH);
+        if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
+            strcpy(mess, retvals);
+            // LOG(logERROR, (mess)); already printed in executecommand
+            return FAIL;
+        }
     }
-    LOG(logDEBUG1, ("program written to flash\n"));
-    return 0;
+
+    // check available memory to copy program
+    struct sysinfo info;
+    sysinfo(&info);
+    if (fsize >= info.freeram) {
+        sprintf(mess,
+                "Could not program fpga. Not enough memory to copy "
+                "program. [File size:l%dMB, free RAM: l%dMB]\n",
+                (fsize / (1024 * 1024)), (info.freeram / (1024 * 1024)));
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    // open file to copy program
+    *fd = fopen(TEMP_PROG_FILE_NAME, "w");
+    if (*fd == NULL) {
+        sprintf(mess, "Unable to open %s in write mode\n", TEMP_PROG_FILE_NAME);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("%s ready to copy program\n", TEMP_PROG_FILE_NAME));
+    return OK;
 }
+
+int writeFPGAProgram(uint64_t fsize, FILE *fd, char *src, char* msg, char* mess) {
+    LOG(logDEBUG1,
+        ("%s [fsize:%lu,fd:%p,src:%p\n", msg, (long long unsigned int)fsize, (void *)fd, (void *)src));
+
+    if (fwrite((void *)src, sizeof(char), fsize, fd) != fsize) {
+        sprintf(mess, "Could not %s (size:%lu)\n", msg, (long long unsigned int)fsize);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logDEBUG1, ("%s\n", msg));
+    return OK;
+}
+

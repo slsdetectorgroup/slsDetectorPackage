@@ -45,11 +45,6 @@ int startWritingFPGAprogram(FILE **filefp);
  */
 int stopWritingFPGAprogram(FILE *filefp);
 
-/**
- * Write FPGA Program to flash
- * @param fpgasrc source program
- * @param fsize size of program
- * @param filefp pointer to flash
- * @return 0 for success, 1 for fail (cannot write)
- */
-int writeFPGAProgram(char *fpgasrc, uint64_t fsize, FILE *filefp);
+int startCopyingFPGAProgram(FILE **fd, uint64_t fsize, char *mess);
+int writeFPGAProgram(uint64_t fsize, FILE *fd, char *src, char *msg,
+                     char *mess);

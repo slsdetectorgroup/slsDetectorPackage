@@ -3450,16 +3450,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         }
         filesize -= unitprogramsize;
         currentPointer += unitprogramsize;
-
-        // print progress
-        printf(
-            "%d%%\r",
-            static_cast<int>(
-                (static_cast<double>(totalsize - filesize) / totalsize) * 100));
-        std::cout << std::flush;
     }
-    std::cout << '\n';
-
 
 /*
     // error in detector at opening file pointer to flash

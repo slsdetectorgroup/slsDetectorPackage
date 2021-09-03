@@ -13,7 +13,6 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <string.h>
-#include <sys/sysinfo.h>
 #include <unistd.h>
 
 // defined in the detector specific Makefile
@@ -33,10 +32,6 @@ const enum detectorType myDetectorType = MYTHEN3;
 const enum detectorType myDetectorType = GOTTHARD2;
 #else
 const enum detectorType myDetectorType = GENERIC;
-#endif
-
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) 
-#define TEMP_PROG_FILE_NAME "/var/tmp/tmp.pof"
 #endif
 
 // Global variables from communication_funcs
@@ -3716,6 +3711,10 @@ int program_fpga(int file_des) {
             // free resources
             free(fpgasrc);
         }
+        if (ret == FAIL) {
+            LOG(logERROR, ("Program FPGA FAIL!\n"));
+            return FAIL;
+        }
 
 #else // jungfrau, ctb, moench
 
@@ -3726,109 +3725,67 @@ int program_fpga(int file_des) {
         LOG(logINFOBLUE, ("Program size is: %lld\n",
                         (long long unsigned int)filesize));
 
-        // delete old /var/tmp/file
-        {
-            char cmd[MAX_STR_LENGTH] = {0};
-            memset(cmd, 0, MAX_STR_LENGTH);
-            sprintf(cmd, "rm -fr %s", TEMP_PROG_FILE_NAME);
-            char retvals[MAX_STR_LENGTH] = {0};
-            memset(retvals, 0, MAX_STR_LENGTH);
-            ret = executeCommand(cmd, retvals, logDEBUG1);
-            if (ret == FAIL) {
-                strcpy(mess, retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            }
-        }
-
-        // check available memory to copy program
+        // open file and allocate memory for part program
+        FILE *fd = NULL;
+        ret = startCopyingFPGAProgram(&fd, filesize, mess);
+        char *src = NULL;
         if (ret == OK) {
-            struct sysinfo info;
-            sysinfo(&info);
-            if (filesize >= info.freeram) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Could not program fpga. Not enough memory to copy "
-                        "program. [File size:%dMb, free RAM: %dMb]\n",
-                        (filesize / (1024 * 1024), (info.freeram / (1024 * 1024))));
+            src = malloc(MAX_FPGAPROGRAMSIZE);
+            if (src == NULL) {  
+                strcpy(mess, "Could not allocate memory to get fpga program\n");
                 LOG(logERROR, (mess));
+                fclose(fd);
+                return FAIL;
             }
         }
+        Server_SendResult(file_des, INT32, NULL, 0);
 
-        // open file to copy
-
- Server_SendResult(file_des, INT32, NULL, 0);
-
-
-
-
-    
-                /*
-                        size_t fsize = filesize;
-                        fpgasrc = malloc(fsize);
-                        if (fpgasrc == NULL) {
-                            LOG(logERROR, ("Could not malloc\n"));
-                            ret = FAIL;
-                        }*/
-        //  fpgasrc = malloc(filesize + 1);
-               char *fpgasrc = NULL;
-        FILE *fp = NULL; 
-        uint64_t offset = 0;
+        // copying program part by part
         uint64_t totalsize = filesize;
-
-        // writing to flash part by part
-        int clientSocketCrash = 0;
         while (ret != FAIL && filesize) {
-
             uint64_t unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
             if (unitprogramsize > filesize)                 // less than 2mb
                 unitprogramsize = filesize;
             LOG(logINFOBLUE,
-                ("unit size to receive is:%lld [ooffset:%lld, filesize:%lld]\n",
+                ("unit size to receive is:%lld [filesize:%lld]\n",
                  (long long unsigned int)unitprogramsize,
-                 (long long unsigned int)offset,
                  (long long unsigned int)filesize));
 
             // receive part of program
-            if (receiveData(file_des, fpgasrc, unitprogramsize, OTHER) < 0) {
+            if (receiveData(file_des, src, unitprogramsize, OTHER) < 0) {
                 printSocketReadError();
-                clientSocketCrash = 1;
-                ret = FAIL;
-                LOG(logERROR, ("error, not receiverd\n"));
+                break;
             }
-            // client has not crashed yet, so write to flash and send ret
-            else {
-                LOG(logINFOBLUE, ("receiverd\n"));
-                offset += unitprogramsize;
+
+            if (unitprogramsize - filesize == 0) {
+                src[unitprogramsize] = '\0';
                 filesize -= unitprogramsize;
-                Server_SendResult(file_des, INT32, NULL, 0);
-                
-                // print progress
-                LOG(logINFOBLUE,
-                    ("Writing to Flash:%d%%\r",
-                     (int)(((double)(totalsize - filesize) / totalsize) *
-                           100)));
-                fflush(stdout);
-                
-                /*
-                // write part to flash
-                ret = writeFPGAProgram(fpgasrc, unitprogramsize, fp);
-                Server_SendResult(file_des, INT32, NULL, 0);
-                if (ret == FAIL) {
-                    strcpy(mess, "Could not write to flash. Breaking out of "
-                                 "program receiving. Try to flash again "
-                                 "without rebooting.\n");
-                    LOG(logERROR, (mess));
-                } else {
-                    // print progress
-                    LOG(logINFO,
-                        ("Writing to Flash:%d%%\r",
-                         (int)(((double)(totalsize - filesize) / totalsize) *
-                               100)));
-                    fflush(stdout);
-                }
-                */
+                unitprogramsize++;
+            } else
+                filesize -= unitprogramsize;
+ 
+            // copy program
+            ret = writeFPGAProgram(unitprogramsize, fd, src, "copy program to /var/tmp", mess);
+            Server_SendResult(file_des, INT32, NULL, 0);
+            if (ret == FAIL) {
+                break;
             }
+            // print progress
+            LOG(logINFO,
+                ("Copying Program to /var/tmp/:%d%%\r",
+                    (int)(((double)(totalsize - filesize) / totalsize) *
+                        100)));
+            fflush(stdout);
         }
+        if (ret == FAIL) {
+            free(src);
+            fclose(fd);
+            LOG(logERROR, ("Program FPGA FAIL!\n"));
+            return FAIL;            
+        }
+        free(src);
+        fclose(fd);
+
       /*  if (ret != FAIL) {
             fpgasrc[totalsize] = '\0';
         }*/
@@ -3864,24 +3821,10 @@ int program_fpga(int file_des) {
             }
         }
 */
-        // free resources
-        free(fpgasrc);
-        if (fp != NULL)
-            fclose(fp);
-
-        // send final ret (if no client crash)
-        if (clientSocketCrash == 0) {
-            Server_SendResult(file_des, INT32, NULL, 0);
-        }
-
 
 
 #endif // end of Blackfin programming
-        if (ret == FAIL) {
-            LOG(logERROR, ("Program FPGA FAIL!\n"));
-        } else {
-            LOG(logINFOGREEN, ("Programming FPGA completed successfully\n"));
-        }
+        LOG(logINFOGREEN, ("Programming FPGA completed successfully\n"));
     }
 #endif
     return ret;

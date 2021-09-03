@@ -3746,10 +3746,9 @@ int program_fpga(int file_des) {
             uint64_t unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
             if (unitprogramsize > filesize)                 // less than 2mb
                 unitprogramsize = filesize;
-            LOG(logINFOBLUE,
-                ("unit size to receive is:%lld [filesize:%lld]\n",
-                 (long long unsigned int)unitprogramsize,
-                 (long long unsigned int)filesize));
+            LOG(logDEBUG1, ("unit size to receive is:%lld [filesize:%lld]\n",
+                            (long long unsigned int)unitprogramsize,
+                            (long long unsigned int)filesize));
 
             // receive part of program
             if (receiveData(file_des, src, unitprogramsize, OTHER) < 0) {

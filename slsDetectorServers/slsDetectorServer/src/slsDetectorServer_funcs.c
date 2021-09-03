@@ -3730,7 +3730,7 @@ int program_fpga(int file_des) {
         memset(checksum, 0, MAX_STR_LENGTH);
         if (receiveData(file_des, checksum, MAX_STR_LENGTH, OTHER) < 0)
             return printSocketReadError();
-        LOG(logINFOBLUE, ("checksum is: %s\n", checksum));
+        LOG(logINFOBLUE, ("checksum is: %s\n\n", checksum));
 
         // open file and allocate memory for part program
         FILE *fd = NULL;

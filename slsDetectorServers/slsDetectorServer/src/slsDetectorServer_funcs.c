@@ -3730,7 +3730,7 @@ int program_fpga(int file_des) {
         memset(checksum, 0, MAX_STR_LENGTH);
         if (receiveData(file_des, checksum, MAX_STR_LENGTH, OTHER) < 0)
             return printSocketReadError();
-        LOG(logINFOBLUE, ("checksum is: %s\n\n", checksum));
+        LOG(logDEBUG1, ("checksum is: %s\n\n", checksum));
 
         // open file and allocate memory for part program
         FILE *fd = NULL;
@@ -3746,15 +3746,20 @@ int program_fpga(int file_des) {
         }
         Server_SendResult(file_des, INT32, NULL, 0);
         if (ret == FAIL) {
+            if (src != NULL) {
+                free(src);
+            }
             if (fd != NULL) {
                 fclose(fd);
             }
+            LOG(logERROR, ("Program FPGA FAIL1!\n"));
             return FAIL;
         }
 
+
         // copying program part by part
         uint64_t totalsize = filesize;
-        while (ret != FAIL && filesize) {
+        while (ret == OK && filesize) {
             uint64_t unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
             if (unitprogramsize > filesize)                 // less than 2mb
                 unitprogramsize = filesize;
@@ -3776,7 +3781,7 @@ int program_fpga(int file_des) {
                 filesize -= unitprogramsize;
  
             // copy program
-            ret = writeFPGAProgram(unitprogramsize, fd, src, "copy program to /var/tmp", mess);
+            ret = writeFPGAProgram(fd, src, unitprogramsize, "copy program to /var/tmp", mess);
             Server_SendResult(file_des, INT32, NULL, 0);
             if (ret == FAIL) {
                 break;
@@ -3787,15 +3792,23 @@ int program_fpga(int file_des) {
                  (int)(((double)(totalsize - filesize) / totalsize) * 100)));
             fflush(stdout);
         }
-        if (ret == FAIL) {
+        if (src != NULL) {
             free(src);
+        }
+        if (fd != NULL) {
             fclose(fd);
+        }
+
+        // checksum of copied program
+        if (ret == OK) {
+            ret = verifyCheckSumofProgram(checksum, mess);
+        }
+        Server_SendResult(file_des, INT32, NULL, 0);
+
+        if (ret == FAIL) {
             LOG(logERROR, ("Program FPGA FAIL!\n"));
             return FAIL;            
         }
-        free(src);
-        fclose(fd);
-        LOG(logINFO, ("\n\tCopying done\n"));
 
         /*  if (ret != FAIL) {
               fpgasrc[totalsize] = '\0';

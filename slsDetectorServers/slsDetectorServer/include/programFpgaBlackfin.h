@@ -45,5 +45,6 @@ int startWritingFPGAprogram(FILE **filefp);
 int stopWritingFPGAprogram(FILE *filefp);
 
 int startCopyingFPGAProgram(FILE **fd, uint64_t fsize, char *mess);
-int writeFPGAProgram(uint64_t fsize, FILE *fd, char *src, char *msg,
+int writeFPGAProgram(FILE *fd, char *src, uint64_t fsize, char *msg,
                      char *mess);
+int verifyCheckSumofProgram(char* clientChecksum, char* mess);             

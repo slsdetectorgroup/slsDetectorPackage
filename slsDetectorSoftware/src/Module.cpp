@@ -3418,7 +3418,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer,
     LOG(logDEBUG1) << "checksum:" << checksum;
 
     // send program from memory to detector
-    LOG(logINFO) << "Sending programming binary (from pof) to detector "
+    LOG(logINFO) << "Sending programming binary (from pof) to module "
                  << moduleId << " (" << shm()->hostname << ")";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_PROGRAM_FPGA);
@@ -3440,7 +3440,6 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer,
     // sending program in parts of 2mb each
     uint64_t unitprogramsize = 0;
     int currentPointer = 0;
-    uint64_t totalsize = filesize;
     while (filesize > 0) {
         unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
         if (unitprogramsize > filesize) {      // less than 2mb
@@ -3461,6 +3460,13 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer,
         currentPointer += unitprogramsize;
     }
 
+    // checksum 
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Detector " << moduleId << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw RuntimeError(os.str());
+    }
 /*
     // error in detector at opening file pointer to flash
     if (client.Receive<int>() == FAIL) {

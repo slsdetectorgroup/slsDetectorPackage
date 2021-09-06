@@ -1419,7 +1419,8 @@ std::string DetectorImpl::getMd5Checksum(const std::string &fname) {
             std::string(e.what()));
     }
     pclose(pipe);
-    return result;
+    auto list = sls::split(result, ' ');
+    return list[0];
 }
 
 sls::Result<int> DetectorImpl::getNumberofUDPInterfaces(Positions pos) const {

@@ -236,7 +236,7 @@ int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c) {
     memset(checksum, 0, 512);
     for (int i = 0; i != MD5_DIGEST_LENGTH; ++i) {
         char part[16];
-        memset(byteparts, 0, 16);
+        memset(part, 0, 16);
         sprintf(part, "%02x", out[i]);
         strcat(checksum, part);
     }

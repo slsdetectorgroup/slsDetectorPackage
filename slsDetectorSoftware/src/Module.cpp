@@ -2485,13 +2485,12 @@ void Module::setAdditionalJsonParameter(const std::string &key,
 }
 
 // Advanced
-void Module::programFPGA(std::vector<char> buffer,
-                         const std::string &checksum) {
+void Module::programFPGA(std::vector<char> buffer) {
     switch (shm()->myDetectorType) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
     case MOENCH:
-        programFPGAviaBlackfin(buffer, checksum);
+        programFPGAviaBlackfin(buffer);
         break;
     case MYTHEN3:
     case GOTTHARD2:
@@ -3418,15 +3417,16 @@ std::string Module::calculateChecksum(char *buffer, ssize_t bytes) {
     MD5_Update(&c, buffer, bytes);
     unsigned char out[MD5_DIGEST_LENGTH];
     MD5_Final(out, &c);
-    return std::string(reinterpret_cast<char const *>(out));
+    std::ostringstream oss;
+    for (int i = 0; i != MD5_DIGEST_LENGTH; ++i)
+        oss << std::hex << std::setw(2) << std::setfill('0') << +out[i];
+    return oss.str();
 }
 
-void Module::programFPGAviaBlackfin(std::vector<char> buffer,
-                                    const std::string &checksum) {
+void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     uint64_t filesize = buffer.size();
-    LOG(logINFOBLUE) << "checksum 1:" << checksum;
-    LOG(logINFOBLUE) << "checksum 2:"
-                     << calculateChecksum(buffer.data(), filesize);
+    std::string checksum = calculateChecksum(buffer.data(), filesize);
+    LOG(logDEBUG1) << "Checksum:" << checksum;
 
     // send program from memory to detector
     LOG(logINFO) << "Sending programming binary (from pof) to module "

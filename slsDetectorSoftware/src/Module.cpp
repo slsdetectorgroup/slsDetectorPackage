@@ -1,5 +1,6 @@
 #include "Module.h"
 #include "SharedMemory.h"
+#include "md5.h"
 #include "sls/ClientSocket.h"
 #include "sls/ToString.h"
 #include "sls/bit_utils.h"
@@ -10,7 +11,6 @@
 #include "sls/sls_detector_funcs.h"
 #include "sls/string_utils.h"
 #include "sls/versionAPI.h"
-
 
 #include <algorithm>
 #include <array>
@@ -3412,10 +3412,21 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
     return myMod;
 }
 
+std::string Module::calculateChecksum(char *buffer, ssize_t bytes) {
+    MD5_CTX c;
+    MD5_Init(&c);
+    MD5_Update(&c, bufer, bytes);
+    unsigned char out[MD5_DIGEST_LENGTH];
+    MD5_Final(out, &c);
+    return std::string(out);
+}
+
 void Module::programFPGAviaBlackfin(std::vector<char> buffer,
                                     const std::string &checksum) {
     uint64_t filesize = buffer.size();
-    LOG(logDEBUG1) << "checksum:" << checksum;
+    LOG(logINFOBLUE) << "checksum 1:" << checksum;
+    LOG(logINFOBLUE) << "checksum 2:"
+                     << calculateChecksum(buffer.data(), filesize);
 
     // send program from memory to detector
     LOG(logINFO) << "Sending programming binary (from pof) to module "

@@ -5,6 +5,7 @@ set(SOURCES
     src/CmdProxy.cpp
     src/CmdParser.cpp
     src/Pattern.cpp
+    ../slsSupportLib/opensslMd5/md5.c
 )
 
 add_library(slsDetectorObject OBJECT
@@ -34,6 +35,7 @@ set(PUBLICHEADERS
     include/sls/Detector.h
     include/sls/Result.h
     include/sls/Pattern.h
+    ../slsSupportLib/opensslMd5/md5.h
 )
 
 #Shared library

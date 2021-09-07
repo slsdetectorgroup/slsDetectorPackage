@@ -116,25 +116,25 @@ std::ostream &operator<<(std::ostream &os,
 
 std::string ToString(const slsDetectorDefs::currentSrcParameters &r) {
     std::ostringstream oss;
-    if (r.fix < -1 || r.fix > 1 || r.normal < -1 || r.normal > 1) {
+    if (r.fix_ < -1 || r.fix_ > 1 || r.normal_ < -1 || r.normal_ > 1) {
         throw sls::RuntimeError(
             "Invalid current source parameters. Cannot print.");
     }
     oss << '[';
-    if (r.enable) {
+    if (r.enable_) {
         oss << "enabled";
         // [jungfrau]
-        if (r.fix != -1) {
-            oss << (r.fix == 1 ? ", fix" : ", nofix");
+        if (r.fix_ != -1) {
+            oss << (r.fix_ == 1 ? ", fix" : ", nofix");
         }
         // [jungfrau chip v1.1]
-        if (r.normal != -1) {
-            oss << ", " << ToStringHex(r.select, 16);
-            oss << (r.normal == 1 ? ", normal" : ", low");
+        if (r.normal_ != -1) {
+            oss << ", " << ToStringHex(r.select_, 16);
+            oss << (r.normal_ == 1 ? ", normal" : ", low");
         }
         // [jungfrau chip v1.0]
         else {
-            oss << ", " << r.select;
+            oss << ", " << r.select_;
         }
     } else {
         oss << "disabled";

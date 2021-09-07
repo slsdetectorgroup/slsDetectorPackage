@@ -52,6 +52,7 @@ typedef struct udpStruct_s {
     uint32_t dstip;
     uint32_t dstip2;
 } udpStruct;
+#define MAC_ADDRESS_SIZE 18
 
 // basic tests
 int isInitCheckDone();
@@ -385,7 +386,14 @@ void calcChecksum(mac_conf *mac, int sourceip, int destip);
 void setNumberofUDPInterfaces(int val);
 int getNumberofUDPInterfaces();
 #endif
+
+#if defined(JUNGFRAUD) || defined(EIGERD)
+int getNumberofDestinations(int *retval);
+int setNumberofDestinations(int value);
+#endif
 #ifdef JUNGFRAUD
+int getFirstUDPDestination();
+void setFirstUDPDestination(int value);
 void selectPrimaryInterface(int val);
 int getPrimaryInterface();
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,

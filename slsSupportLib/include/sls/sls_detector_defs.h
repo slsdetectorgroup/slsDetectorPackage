@@ -36,6 +36,10 @@
 #define DEFAULT_UDP_PORTNO    50001
 #define DEFAULT_ZMQ_CL_PORTNO 30001
 #define DEFAULT_ZMQ_RX_PORTNO 30001
+#define DEFAULT_UDP_SRC_PORTNO 32410
+#define DEFAULT_UDP_DST_PORTNO 50001
+
+#define MAX_UDP_DESTINATION 32
 
 #define SLS_DETECTOR_HEADER_VERSION      0x2
 #define SLS_DETECTOR_JSON_HEADER_VERSION 0x4
@@ -457,35 +461,36 @@ typedef struct {
     } __attribute__((packed));
 
     struct currentSrcParameters {
-        int enable;
-        int fix;
-        int normal;
-        uint64_t select;
+        int enable_;
+        int fix_;
+        int normal_;
+        uint64_t select_;
 
         /** [Gotthard2][Jungfrau] disable */
-        currentSrcParameters() : enable(0), fix(-1), normal(-1), select(0) {}
+        currentSrcParameters()
+            : enable_(0), fix_(-1), normal_(-1), select_(0) {}
 
         /** [Gotthard2] enable or disable */
-        currentSrcParameters(bool ena)
-            : enable(static_cast<int>(ena)), fix(-1), normal(-1), select(0) {}
+        explicit currentSrcParameters(bool enable)
+            : enable_(static_cast<int>(enable)), fix_(-1), normal_(-1),
+              select_(0) {}
 
         /** [Jungfrau](chipv1.0) enable current src with fix or no fix,
-         * selectColumn is 0 to 63 columns only */
-        currentSrcParameters(bool fixCurrent, uint64_t selectColumn)
-            : enable(1), fix(static_cast<int>(fixCurrent)), normal(-1),
-              select(selectColumn) {}
+         * select is 0 to 63 columns only */
+        currentSrcParameters(bool fix, uint64_t select)
+            : enable_(1), fix_(static_cast<int>(fix)), normal_(-1),
+              select_(select) {}
 
-        /** [Jungfrau](chipv1.1) enable current src, fixCurrent[fix|no fix],
-         * selectColumn is a mask of 63 bits (muliple columns can be selected
-         * simultaneously, normalCurrent [normal|low] */
-        currentSrcParameters(bool fixCurrent, uint64_t selectColumn,
-                             bool normalCurrent)
-            : enable(1), fix(static_cast<int>(fixCurrent)),
-              normal(static_cast<int>(normalCurrent)), select(selectColumn) {}
+        /** [Jungfrau](chipv1.1) enable current src, fix[fix|no fix],
+         * select is a mask of 63 bits (muliple columns can be selected
+         * simultaneously, normal [normal|low] */
+        currentSrcParameters(bool fix, uint64_t select, bool normal)
+            : enable_(1), fix_(static_cast<int>(fix)),
+              normal_(static_cast<int>(normal)), select_(select) {}
 
         bool operator==(const currentSrcParameters &other) const {
-            return ((enable == other.enable) && (fix == other.fix) &&
-                    (normal == other.normal) && (select == other.select));
+            return ((enable_ == other.enable_) && (fix_ == other.fix_) &&
+                    (normal_ == other.normal_) && (select_ == other.select_));
         }
     } __attribute__((packed));
 

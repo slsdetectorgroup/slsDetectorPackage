@@ -25,7 +25,7 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
-extern udpStruct udpDetails;
+extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern const enum detectorType myDetectorType;
 
 // Global variable from UDPPacketHeaderGenerator
@@ -55,10 +55,10 @@ char *digitalData = 0;
 char volatile *analogDataPtr = 0;
 char volatile *digitalDataPtr = 0;
 char udpPacketData[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
-uint32_t adcEnableMask_1g = 0;
+uint32_t adcEnableMask_1g = BIT32_MSK;
 
 // 10g readout
-uint8_t adcEnableMask_10g = 0;
+uint8_t adcEnableMask_10g = 0xFF;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkFrequency[NUM_CLOCKS] = {40, 20, 20, 200};
@@ -392,7 +392,7 @@ uint32_t getDetectorIP() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    char temp[50] = "";
+    char temp[INET_ADDRSTRLEN] = "";
     uint32_t res = 0;
     // execute and get address
     char output[255];
@@ -470,8 +470,8 @@ void setupDetector() {
     }
     vLimit = DEFAULT_VLIMIT;
     highvoltage = 0;
-    adcEnableMask_1g = 0;
-    adcEnableMask_10g = 0;
+    adcEnableMask_1g = BIT32_MSK;
+    adcEnableMask_10g = 0xFF;
     analogEnable = 1;
     digitalEnable = 0;
     naSamples = 1;
@@ -480,6 +480,7 @@ void setupDetector() {
     sharedMemory_setStatus(IDLE);
     initializePatternWord();
 #endif
+    setupUDPCommParameters();
 
     ALTERA_PLL_ResetPLLAndReconfiguration();
     resetCore();
@@ -1516,18 +1517,18 @@ void calcChecksum(udp_header *udp) {
 }
 
 int configureMAC() {
-    uint32_t srcip = udpDetails.srcip;
-    uint32_t dstip = udpDetails.dstip;
-    uint64_t srcmac = udpDetails.srcmac;
-    uint64_t dstmac = udpDetails.dstmac;
-    int srcport = udpDetails.srcport;
-    int dstport = udpDetails.dstport;
+    uint32_t srcip = udpDetails[0].srcip;
+    uint32_t dstip = udpDetails[0].dstip;
+    uint64_t srcmac = udpDetails[0].srcmac;
+    uint64_t dstmac = udpDetails[0].dstmac;
+    int srcport = udpDetails[0].srcport;
+    int dstport = udpDetails[0].dstport;
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
-    char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
-        dst_ip[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac, 50, srcmac);
-    getMacAddressinString(dst_mac, 50, dstmac);
+    char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
+        dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
+    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
+    getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
     getIpAddressinString(src_ip, srcip);
     getIpAddressinString(dst_ip, dstip);
 
@@ -1544,7 +1545,7 @@ int configureMAC() {
         LOG(logINFOBLUE, ("\t1G MAC\n"));
         if (updateDatabytesandAllocateRAM() == FAIL)
             return -1;
-        if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
+        if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
             LOG(logERROR, ("could not set udp 1G destination IP and port\n"));
             return FAIL;
         }
@@ -2023,7 +2024,7 @@ void *start_timer(void *arg) {
                    imageData + srcOffset, dataSize);
             srcOffset += dataSize;
 
-            sendUDPPacket(0, packetData, packetSize);
+            sendUDPPacket(0, 0, packetData, packetSize);
         }
         LOG(logINFO, ("Sent frame: %d [%lld]\n", frameNr,
                       (long long unsigned int)virtual_currentFrameNumber));
@@ -2140,10 +2141,10 @@ void readandSendUDPFrames(int *ret, char *mess) {
     LOG(logDEBUG1, ("Reading from 1G UDP\n"));
 
     // validate udp socket
-    if (getUdPSocketDescriptor(0) <= 0) {
+    if (getUdPSocketDescriptor(0, 0) <= 0) {
         *ret = FAIL;
         sprintf(mess, "UDP Socket not created. sockfd:%d\n",
-                getUdPSocketDescriptor(0));
+                getUdPSocketDescriptor(0, 0));
         LOG(logERROR, (mess));
         return;
     }
@@ -2152,7 +2153,7 @@ void readandSendUDPFrames(int *ret, char *mess) {
     while (readFrameFromFifo() == OK) {
         int bytesToSend = 0, n = 0;
         while ((bytesToSend = fillUDPPacket(udpPacketData))) {
-            n += sendUDPPacket(0, udpPacketData, bytesToSend);
+            n += sendUDPPacket(0, 0, udpPacketData, bytesToSend);
         }
         if (n >= dataBytes) {
             LOG(logINFO, (" Frame %lld sent (%d packets, %d databytes, n:%d "

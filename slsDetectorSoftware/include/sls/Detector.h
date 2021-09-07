@@ -666,6 +666,23 @@ class Detector {
     /** [Jungfrau] bottom half [Gotthard2] veto debugging */
     void setSourceUDPMAC2(const MacAddr mac, Positions pos = {});
 
+    Result<UdpDestination> getDestinationUDPList(const uint32_t entry,
+                                                 Positions pos = {}) const;
+
+    void setDestinationUDPList(const UdpDestination, const int module_id);
+
+    /** [Jungfrau][Eiger] */
+    Result<int> getNumberofUDPDestinations(Positions pos = {}) const;
+
+    /**[Jungfrau][Eiger] Options 1-32 */
+    void setNumberofUDPDestinations(const int value, Positions pos = {});
+
+    /** [Jungfrau] */
+    Result<int> getFirstUDPDestination(Positions pos = {}) const;
+
+    /**[Jungfrau] Options 0-31 (or number of udp destinations) */
+    void setFirstUDPDestination(const int value, Positions pos = {});
+
     Result<IpAddr> getDestinationUDPIP(Positions pos = {}) const;
 
     /** IP of the interface in receiver that the detector sends data to */

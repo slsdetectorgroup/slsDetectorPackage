@@ -23,7 +23,8 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
-extern udpStruct udpDetails;
+extern udpStruct udpDetails[MAX_UDP_DESTINATION];
+extern int numUdpDestinations;
 extern const enum detectorType myDetectorType;
 
 // Global variable from communication_funcs.c
@@ -50,6 +51,9 @@ int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
 int chipVersion = 10; // (1.0)
 int chipConfigured = 0;
+
+// until firmware is done
+int temp_partialReadout = 512;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -333,7 +337,7 @@ u_int32_t getDetectorIP() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    char temp[50] = "";
+    char temp[INET_ADDRSTRLEN] = "";
     u_int32_t res = 0;
     // execute and get address
     char output[255];
@@ -393,6 +397,7 @@ void setupDetector() {
     chipConfigured = 0;
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
+    setupUDPCommParameters();
 #endif
 
     // get chip version
@@ -1326,6 +1331,34 @@ int getNumberofUDPInterfaces() {
     return ((bus_r(CONFIG_REG) & CONFIG_OPRTN_MDE_2_X_10GbE_MSK) ? 2 : 1);
 }
 
+int getNumberofDestinations(int *retval) {
+    *retval = (((bus_r(CONTROL_REG) & CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK) >>
+                CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST) +
+               1);
+    return OK;
+}
+
+int setNumberofDestinations(int value) {
+    LOG(logINFO, ("Setting number of entries to %d\n", value));
+    --value;
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK);
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) | ((value << CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST) & CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK));
+    return OK;
+}
+
+int getFirstUDPDestination() {
+    return ((bus_r(CONTROL_REG) & CONTROL_RX_ENDPTS_START_MSK) >>
+            CONTROL_RX_ENDPTS_START_OFST);
+}
+
+void setFirstUDPDestination(int value) {
+    LOG(logINFO, ("Setting first entry to %d\n", value));
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_RX_ENDPTS_START_MSK);
+    bus_w(CONTROL_REG,
+          bus_r(CONTROL_REG) | ((value << CONTROL_RX_ENDPTS_START_OFST) &
+                                CONTROL_RX_ENDPTS_START_MSK));
+}
+
 void selectPrimaryInterface(int val) {
     uint32_t addr = CONFIG_REG;
 
@@ -1348,7 +1381,7 @@ int getPrimaryInterface() {
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
                  uint64_t destmac, uint32_t destport, uint64_t sourcemac,
                  uint32_t sourceip, uint32_t sourceport) {
-
+    
     // start addr
     uint32_t addr = (type == INNER ? RXR_ENDPOINT_INNER_START_REG
                                    : RXR_ENDPOINT_OUTER_START_REG);
@@ -1386,6 +1419,9 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
     // total length is redefined in firmware
 
     calcChecksum(udp);
+    if (iRxEntry < numUdpDestinations) {
+        LOG(logINFO, ("\tIP checksum : 0x%lx\n\n", udp->ip_checksum));
+    }
 }
 
 void calcChecksum(udp_header *udp) {
@@ -1416,38 +1452,12 @@ void calcChecksum(udp_header *udp) {
         sum = (sum & 0xffff) + (sum >> 16); // Fold 32-bit sum to 16 bits
     long int checksum = sum & 0xffff;
     checksum += UDP_IP_HEADER_LENGTH_BYTES;
-    LOG(logINFO, ("\tIP checksum is 0x%lx\n", checksum));
     udp->ip_checksum = checksum;
 }
 
 int configureMAC() {
 
-    uint32_t srcip = udpDetails.srcip;
-    uint32_t srcip2 = udpDetails.srcip2;
-    uint32_t dstip = udpDetails.dstip;
-    uint32_t dstip2 = udpDetails.dstip2;
-    uint64_t srcmac = udpDetails.srcmac;
-    uint64_t srcmac2 = udpDetails.srcmac2;
-    uint64_t dstmac = udpDetails.dstmac;
-    uint64_t dstmac2 = udpDetails.dstmac2;
-    int srcport = udpDetails.srcport;
-    int srcport2 = udpDetails.srcport2;
-    int dstport = udpDetails.dstport;
-    int dstport2 = udpDetails.dstport2;
-
     LOG(logINFOBLUE, ("Configuring MAC\n"));
-    char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
-        dst_ip[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac, 50, srcmac);
-    getMacAddressinString(dst_mac, 50, dstmac);
-    getIpAddressinString(src_ip, srcip);
-    getIpAddressinString(dst_ip, dstip);
-    char src_mac2[50], src_ip2[INET_ADDRSTRLEN], dst_mac2[50],
-        dst_ip2[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac2, 50, srcmac2);
-    getMacAddressinString(dst_mac2, 50, dstmac2);
-    getIpAddressinString(src_ip2, srcip2);
-    getIpAddressinString(dst_ip2, dstip2);
 
     int numInterfaces = getNumberofUDPInterfaces();
     int selInterface = getPrimaryInterface();
@@ -1455,65 +1465,94 @@ int configureMAC() {
     LOG(logINFO, ("\tInterface   : %d %s\n\n", selInterface,
                   (selInterface ? "Inner" : "Outer")));
 
-    LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2)
-                                      ? "(Bottom)"
-                                      : (selInterface ? "Not Used" : "Used")));
-    LOG(logINFO, ("\tSource IP   : %s\n"
-                  "\tSource MAC  : %s\n"
-                  "\tSource Port : %d\n"
-                  "\tDest IP     : %s\n"
-                  "\tDest MAC    : %s\n"
-                  "\tDest Port   : %d\n",
-                  src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+    LOG(logINFO, ("Number of entries: %d\n\n", numUdpDestinations));
+    for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION; ++iRxEntry) {
+        uint32_t srcip = udpDetails[iRxEntry].srcip;
+        uint32_t srcip2 = udpDetails[iRxEntry].srcip2;
+        uint32_t dstip = udpDetails[iRxEntry].dstip;
+        uint32_t dstip2 = udpDetails[iRxEntry].dstip2;
+        uint64_t srcmac = udpDetails[iRxEntry].srcmac;
+        uint64_t srcmac2 = udpDetails[iRxEntry].srcmac2;
+        uint64_t dstmac = udpDetails[iRxEntry].dstmac;
+        uint64_t dstmac2 = udpDetails[iRxEntry].dstmac2;
+        int srcport = udpDetails[iRxEntry].srcport;
+        int srcport2 = udpDetails[iRxEntry].srcport2;
+        int dstport = udpDetails[iRxEntry].dstport;
+        int dstport2 = udpDetails[iRxEntry].dstport2;
 
-    LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2)
-                                      ? "(Top)"
-                                      : (selInterface ? "Used" : "Not Used")));
-    LOG(logINFO, ("\tSource IP2  : %s\n"
-                  "\tSource MAC2 : %s\n"
-                  "\tSource Port2: %d\n"
-                  "\tDest IP2    : %s\n"
-                  "\tDest MAC2   : %s\n"
-                  "\tDest Port2  : %d\n",
-                  src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
+        char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
+            dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
+        getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
+        getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
+        getIpAddressinString(src_ip, srcip);
+        getIpAddressinString(dst_ip, dstip);
+        char src_mac2[MAC_ADDRESS_SIZE], src_ip2[INET_ADDRSTRLEN],
+            dst_mac2[MAC_ADDRESS_SIZE], dst_ip2[INET_ADDRSTRLEN];
+        getMacAddressinString(src_mac2, MAC_ADDRESS_SIZE, srcmac2);
+        getMacAddressinString(dst_mac2, MAC_ADDRESS_SIZE, dstmac2);
+        getIpAddressinString(src_ip2, srcip2);
+        getIpAddressinString(dst_ip2, dstip2);
 
+        if (iRxEntry < numUdpDestinations) {
+            LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
+
+            LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2)
+                                            ? "(Bottom)"
+                                            : (selInterface ? "Not Used" : "Used")));
+            LOG(logINFO, ("\tSource IP   : %s\n"
+                        "\tSource MAC  : %s\n"
+                        "\tSource Port : %d\n"
+                        "\tDest IP     : %s\n"
+                        "\tDest MAC    : %s\n"
+                        "\tDest Port   : %d\n\n",
+                        src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+
+            LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2)
+                                            ? "(Top)"
+                                            : (selInterface ? "Used" : "Not Used")));
+            LOG(logINFO, ("\tSource IP2  : %s\n"
+                        "\tSource MAC2 : %s\n"
+                        "\tSource Port2: %d\n"
+                        "\tDest IP2    : %s\n"
+                        "\tDest MAC2   : %s\n"
+                        "\tDest Port2  : %d\n\n",
+                        src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
+        }
 #ifdef VIRTUAL
-    if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
-        LOG(logERROR,
-            ("could not set udp destination IP and port for interface 1\n"));
-        return FAIL;
-    }
-    if (numInterfaces == 2 &&
-        setUDPDestinationDetails(1, dst_ip2, dstport2) == FAIL) {
-        LOG(logERROR,
-            ("could not set udp destination IP and port for interface 2\n"));
-        return FAIL;
-    }
-    return OK;
+        if (setUDPDestinationDetails(iRxEntry, 0, dst_ip, dstport) == FAIL) {
+            LOG(logERROR, ("could not set udp destination IP and port for "
+                           "interface 1 [entry:%d] \n",
+                           iRxEntry));
+            return FAIL;
+        }
+        if (numInterfaces == 2 &&
+            setUDPDestinationDetails(iRxEntry, 1, dst_ip2, dstport2) == FAIL) {
+            LOG(logERROR, ("could not set udp destination IP and port for "
+                           "interface 2 [entry:%d]\n",
+                           iRxEntry));
+            return FAIL;
+        }
 #endif
-    // default one rxr entry (others not yet implemented in client yet)
-    int iRxEntry = 0;
-
-    if (numInterfaces == 2) {
-        // bottom
-        setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip,
-                    srcport);
-        // top
-        setupHeader(iRxEntry, INNER, dstip2, dstmac2, dstport2, srcmac2, srcip2,
-                    srcport2);
-    }
-    // single interface
-    else {
-        // default
-        if (selInterface == 0) {
+        if (numInterfaces == 2) {
+            // bottom
             setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip,
                         srcport);
-        } else {
-            setupHeader(iRxEntry, INNER, dstip, dstmac, dstport, srcmac, srcip,
+            // top
+            setupHeader(iRxEntry, INNER, dstip2, dstmac2, dstport2, srcmac2, srcip2,
                         srcport2);
         }
+        // single interface
+        else {
+            // default
+            if (selInterface == 0) {
+                setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip,
+                            srcport);
+            } else {
+                setupHeader(iRxEntry, INNER, dstip, dstmac, dstport, srcmac, srcip,
+                            srcport2);
+            }
+        }
     }
-
     setNumberofUDPInterfaces(numInterfaces);
     selectPrimaryInterface(selInterface);
 
@@ -1601,6 +1640,10 @@ int setPartialReadout(int value) {
     if (value < 0 || (value % PARTIAL_READOUT_MULTIPLE != 0))
         return FAIL;
 
+    // will be replaced when firmware is fixed
+    temp_partialReadout = value;
+    return OK;
+
     // regval is numpackets - 1 
     int regval = (value / PARTIAL_READOUT_MULTIPLE) - 1;
     uint32_t addr = PARTIAL_READOUT_REG;
@@ -1619,10 +1662,14 @@ int setPartialReadout(int value) {
 }
 
 int getPartialReadout() {
+    
+    // will be replaced when firmware is fixed
+    return temp_partialReadout;
+
     int enable = (bus_r(PARTIAL_READOUT_REG) & PARTIAL_READOUT_ENBL_MSK);
     int regval = ((bus_r(PARTIAL_READOUT_REG) & PARTIAL_READOUT_NUM_ROWS_MSK) >> PARTIAL_READOUT_NUM_ROWS_OFST);
  
-  int maxRegval = (MAX_ROWS_PER_READOUT/ PARTIAL_READOUT_MULTIPLE) - 1;
+    int maxRegval = (MAX_ROWS_PER_READOUT/ PARTIAL_READOUT_MULTIPLE) - 1;
     if ((regval == maxRegval && enable) || (regval != maxRegval && !enable)) {
         return -1;
     }
@@ -2296,9 +2343,8 @@ void *start_timer(void *arg) {
     if (!isControlServer) {
         return NULL;
     }
-
+    int firstDest = getFirstUDPDestination();
     int transmissionDelayUs = getTransmissionDelayFrame() * 1000;
-
     int numInterfaces = getNumberofUDPInterfaces();
     int64_t periodNs = getPeriod();
     int numFrames = (getNumFrames() * getNumTriggers() *
@@ -2339,6 +2385,7 @@ void *start_timer(void *arg) {
     {
         uint64_t frameNr = 0;
         getNextFrameNumber(&frameNr);
+        int iRxEntry = firstDest;
         for (int iframes = 0; iframes != numFrames; ++iframes) {
             usleep(transmissionDelayUs);
 
@@ -2383,7 +2430,7 @@ void *start_timer(void *arg) {
                     srcOffset += dataSize;
 
                     if (i >= startval && i <= endval) {
-                        sendUDPPacket(0, packetData, packetsize);
+                        sendUDPPacket(iRxEntry, 0, packetData, packetsize);
                         LOG(logDEBUG1, ("Sent packet: %d [interface 0]\n", i));
                     }
                 }
@@ -2410,12 +2457,12 @@ void *start_timer(void *arg) {
                     srcOffset2 += dataSize;
                     
                     if (i >= startval && i <= endval) {
-                        sendUDPPacket(1, packetData2, packetsize);
+                        sendUDPPacket(iRxEntry, 1, packetData2, packetsize);
                         LOG(logDEBUG1, ("Sent packet: %d [interface 1]\n", pnum));
                     }
                 }
             }
-            LOG(logINFO, ("Sent frame: %d\n", iframes));
+            LOG(logINFO, ("Sent frame %d [#%ld] to E%d\n", iframes, frameNr + iframes, iRxEntry));
             clock_gettime(CLOCK_REALTIME, &end);
             int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
                               (end.tv_nsec - begin.tv_nsec));
@@ -2425,6 +2472,10 @@ void *start_timer(void *arg) {
                 if (periodNs > timeNs) {
                     usleep((periodNs - timeNs) / 1000);
                 }
+            }
+            ++iRxEntry;
+            if (iRxEntry == numUdpDestinations) {
+                iRxEntry = 0;
             }
         }
         setNextFrameNumber(frameNr + numFrames);

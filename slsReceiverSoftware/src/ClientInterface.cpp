@@ -1669,7 +1669,7 @@ int ClientInterface::set_rate_correct(Interface &socket) {
     std::vector<int64_t> t(index);
     socket.Receive(t);
     verifyIdle(socket);
-    LOG(logINFOBLUE) << "Setting rate corrections[" << index << ']';
+    LOG(logINFO) << "Setting rate corrections[" << index << ']';
     impl()->setRateCorrections(t);
     return socket.Send(OK);
 }

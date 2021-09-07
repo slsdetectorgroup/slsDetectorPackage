@@ -939,6 +939,52 @@ void Module::setSourceUDPMAC2(const sls::MacAddr mac) {
     sendToDetector(F_SET_SOURCE_UDP_MAC2, mac, nullptr);
 }
 
+sls::UdpDestination Module::getDestinationUDPList(const uint32_t entry) const {
+    return sendToDetector<sls::UdpDestination>(F_GET_DEST_UDP_LIST, entry);
+}
+
+void Module::setDestinationUDPList(const sls::UdpDestination dest) {
+    // set them in the default way so the receivers are also set up
+    if (dest.entry == 0) {
+        if (dest.port != 0) {
+            setDestinationUDPPort(dest.port);
+        }
+        if (dest.ip != 0) {
+            setDestinationUDPIP(dest.ip);
+        }
+        if (dest.mac != 0) {
+            setDestinationUDPMAC(dest.mac);
+        }
+        if (dest.port2 != 0) {
+            setDestinationUDPPort2(dest.port2);
+        }
+        if (dest.ip2 != 0) {
+            setDestinationUDPIP2(dest.ip2);
+        }
+        if (dest.mac2 != 0) {
+            setDestinationUDPMAC2(dest.mac2);
+        }
+    } else {
+        sendToDetector(F_SET_DEST_UDP_LIST, dest, nullptr);
+    }
+}
+
+int Module::getNumberofUDPDestinations() const {
+    return sendToDetector<int>(F_GET_NUM_DEST_UDP);
+}
+
+void Module::setNumberofUDPDestinations(const int value) {
+    sendToDetector(F_SET_NUM_DEST_UDP, value, nullptr);
+}
+
+int Module::getFirstUDPDestination() const {
+    return sendToDetector<int>(F_GET_UDP_FIRST_DEST);
+}
+
+void Module::setFirstUDPDestination(const int value) {
+    sendToDetector(F_SET_UDP_FIRST_DEST, value, nullptr);
+}
+
 sls::IpAddr Module::getDestinationUDPIP() const {
     return sendToDetector<sls::IpAddr>(F_GET_DEST_UDP_IP);
 }

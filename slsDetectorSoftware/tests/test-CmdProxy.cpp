@@ -2215,6 +2215,84 @@ TEST_CASE("udp_srcip", "[.cmd]") {
     }
 }
 
+TEST_CASE("udp_dstlist", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::EIGER) {
+        REQUIRE_NOTHROW(proxy.Call("udp_dstlist", {"0"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call(
+            "udp_dstlist",
+            {"entry=0", "ip=0.0.0.0", "mac=00:00:00:00:00:00", "port=1233"}, -1,
+            PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_dstlist", {"0"}, -1, GET));
+    }
+}
+
+TEST_CASE("udp_numdst", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::EIGER) {
+        auto prev_val = det.getNumberofUDPDestinations();
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_numdst", {"10"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_numdst 10\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_numdst", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "udp_numdst 10\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_numdst", {"32"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_numdst 32\n");
+        }
+        REQUIRE_THROWS(proxy.Call("udp_numdst", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("udp_numdst", {"33"}, -1, PUT));
+
+        for (int i = 0; i != det.size(); ++i) {
+            det.setNumberofUDPDestinations(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_numdst", {}, -1, GET));
+    }
+}
+
+TEST_CASE("udp_firstdst", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getFirstUDPDestination();
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_firstdst", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_firstdst 10\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_firstdst", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "udp_firstdst 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_firstdst", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_firstdst 1\n");
+        }
+        REQUIRE_THROWS(proxy.Call("udp_firstdst", {"33"}, -1, PUT));
+
+        for (int i = 0; i != det.size(); ++i) {
+            det.setFirstUDPDestination(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_numdst", {}, -1, GET));
+    }
+}
+
 TEST_CASE("udp_dstip", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

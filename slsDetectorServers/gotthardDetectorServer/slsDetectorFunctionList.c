@@ -21,7 +21,7 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
-extern udpStruct udpDetails;
+extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern const enum detectorType myDetectorType;
 
 // Variables that will be exported
@@ -315,7 +315,7 @@ u_int32_t getDetectorIP() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    char temp[50] = "";
+    char temp[INET_ADDRSTRLEN] = "";
     u_int32_t res = 0;
     // execute and get address
     char output[255];
@@ -376,6 +376,7 @@ void setupDetector() {
 
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
+    setupUDPCommParameters();
 #endif
 
     // Initialization
@@ -1331,18 +1332,18 @@ void calcChecksum(mac_conf *mac, int sourceip, int destip) {
 }
 
 int configureMAC() {
-    uint32_t srcip = udpDetails.srcip;
-    uint32_t dstip = udpDetails.dstip;
-    uint64_t srcmac = udpDetails.srcmac;
-    uint64_t dstmac = udpDetails.dstmac;
-    int srcport = udpDetails.srcport;
-    int dstport = udpDetails.dstport;
+    uint32_t srcip = udpDetails[0].srcip;
+    uint32_t dstip = udpDetails[0].dstip;
+    uint64_t srcmac = udpDetails[0].srcmac;
+    uint64_t dstmac = udpDetails[0].dstmac;
+    int srcport = udpDetails[0].srcport;
+    int dstport = udpDetails[0].dstport;
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
-    char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
-        dst_ip[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac, 50, srcmac);
-    getMacAddressinString(dst_mac, 50, dstmac);
+    char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
+        dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
+    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
+    getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
     getIpAddressinString(src_ip, srcip);
     getIpAddressinString(dst_ip, dstip);
 
@@ -1355,7 +1356,7 @@ int configureMAC() {
                   src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
 #ifdef VIRTUAL
-    if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
+    if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
         LOG(logERROR, ("could not set udp 1G destination IP and port\n"));
         return FAIL;
     }
@@ -1641,7 +1642,7 @@ void *start_timer(void *arg) {
             memcpy(packetData + 4, imageData + srcOffset, dataSize);
             srcOffset += dataSize;
 
-            sendUDPPacket(0, packetData, packetSize);
+            sendUDPPacket(0, 0, packetData, packetSize);
         }
         LOG(logINFO,
             ("Sent frame: %d [%d]\n", frameNr, virtual_currentFrameNumber));

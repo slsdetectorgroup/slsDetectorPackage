@@ -24,7 +24,7 @@
 extern int debugflag;
 extern int updateFlag;
 extern int checkModuleFlag;
-extern udpStruct udpDetails;
+extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern const enum detectorType myDetectorType;
 
 // Global variable from communication_funcs.c
@@ -323,7 +323,7 @@ u_int32_t getDetectorIP() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    char temp[50] = "";
+    char temp[INET_ADDRSTRLEN] = "";
     u_int32_t res = 0;
     // execute and get address
     char output[255];
@@ -417,6 +417,7 @@ void setupDetector() {
     memset(adcConfiguration, 0, sizeof(adcConfiguration));
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
+    setupUDPCommParameters();
 #endif
 
     // pll defines
@@ -1728,30 +1729,30 @@ void calcChecksum(udp_header *udp) {
 
 int configureMAC() {
 
-    uint32_t srcip = udpDetails.srcip;
-    uint32_t srcip2 = udpDetails.srcip2;
-    uint32_t dstip = udpDetails.dstip;
-    uint32_t dstip2 = udpDetails.dstip2;
-    uint64_t srcmac = udpDetails.srcmac;
-    uint64_t srcmac2 = udpDetails.srcmac2;
-    uint64_t dstmac = udpDetails.dstmac;
-    uint64_t dstmac2 = udpDetails.dstmac2;
-    int srcport = udpDetails.srcport;
-    int srcport2 = udpDetails.srcport2;
-    int dstport = udpDetails.dstport;
-    int dstport2 = udpDetails.dstport2;
+    uint32_t srcip = udpDetails[0].srcip;
+    uint32_t srcip2 = udpDetails[0].srcip2;
+    uint32_t dstip = udpDetails[0].dstip;
+    uint32_t dstip2 = udpDetails[0].dstip2;
+    uint64_t srcmac = udpDetails[0].srcmac;
+    uint64_t srcmac2 = udpDetails[0].srcmac2;
+    uint64_t dstmac = udpDetails[0].dstmac;
+    uint64_t dstmac2 = udpDetails[0].dstmac2;
+    int srcport = udpDetails[0].srcport;
+    int srcport2 = udpDetails[0].srcport2;
+    int dstport = udpDetails[0].dstport;
+    int dstport2 = udpDetails[0].dstport2;
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
-    char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
-        dst_ip[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac, 50, srcmac);
-    getMacAddressinString(dst_mac, 50, dstmac);
+    char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
+        dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
+    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
+    getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
     getIpAddressinString(src_ip, srcip);
     getIpAddressinString(dst_ip, dstip);
-    char src_mac2[50], src_ip2[INET_ADDRSTRLEN], dst_mac2[50],
-        dst_ip2[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac2, 50, srcmac2);
-    getMacAddressinString(dst_mac2, 50, dstmac2);
+    char src_mac2[MAC_ADDRESS_SIZE], src_ip2[INET_ADDRSTRLEN],
+        dst_mac2[MAC_ADDRESS_SIZE], dst_ip2[INET_ADDRSTRLEN];
+    getMacAddressinString(src_mac2, MAC_ADDRESS_SIZE, srcmac2);
+    getMacAddressinString(dst_mac2, MAC_ADDRESS_SIZE, dstmac2);
     getIpAddressinString(src_ip2, srcip2);
     getIpAddressinString(dst_ip2, dstip2);
 
@@ -1786,11 +1787,11 @@ int configureMAC() {
                   src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
 
 #ifdef VIRTUAL
-    if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
+    if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
         LOG(logERROR, ("could not set udp destination IP and port\n"));
         return FAIL;
     }
-    if (i10gbe && setUDPDestinationDetails(1, dst_ip2, dstport2) == FAIL) {
+    if (i10gbe && setUDPDestinationDetails(0, 1, dst_ip2, dstport2) == FAIL) {
         LOG(logERROR, ("could not set udp destination IP and port for "
                        "interface 2\n"));
         return FAIL;
@@ -2915,7 +2916,7 @@ void *start_timer(void *arg) {
             memcpy(packetData + sizeof(sls_detector_header), imageData,
                    datasize);
             // send 1 packet = 1 frame
-            sendUDPPacket(0, packetData, packetsize);
+            sendUDPPacket(0, 0, packetData, packetsize);
 
             // second interface (veto)
             char packetData2[vetopacketsize];
@@ -2929,7 +2930,7 @@ void *start_timer(void *arg) {
                 memcpy(packetData2 + sizeof(veto_header), vetoData,
                        vetodatasize);
                 // send 1 packet = 1 frame
-                sendUDPPacket(1, packetData2, vetopacketsize);
+                sendUDPPacket(0, 1, packetData2, vetopacketsize);
             }
             LOG(logINFO, ("Sent frame %s: %d (bursts/ triggers: %d) [%lld]\n",
                           (i10gbe ? "(+veto)" : ""), frameNr, repeatNr,

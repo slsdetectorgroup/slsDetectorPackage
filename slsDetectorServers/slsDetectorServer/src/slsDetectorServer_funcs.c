@@ -3711,7 +3711,7 @@ int program_fpga(int file_des) {
             if (receiveData(file_des, fpgasrc, filesize, OTHER) < 0)
                 return printSocketReadError();
 #ifndef VIRTUAL
-            ret = eraseAndWriteToFlash(mess, fpgasrc, filesize);
+            ret = eraseAndWriteToFlash(mess, checksum, fpgasrc, filesize);
 #endif
             Server_SendResult(file_des, INT32, NULL, 0);
 

@@ -14,6 +14,7 @@ add_library(slsDetectorObject OBJECT
 
 target_include_directories(slsDetectorObject PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../slsSupportLib/opensslMd5>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 

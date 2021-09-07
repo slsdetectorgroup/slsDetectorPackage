@@ -3415,10 +3415,10 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 std::string Module::calculateChecksum(char *buffer, ssize_t bytes) {
     MD5_CTX c;
     MD5_Init(&c);
-    MD5_Update(&c, bufer, bytes);
+    MD5_Update(&c, buffer, bytes);
     unsigned char out[MD5_DIGEST_LENGTH];
     MD5_Final(out, &c);
-    return std::string(out);
+    return std::string(reinterpret_cast<char const *>(out));
 }
 
 void Module::programFPGAviaBlackfin(std::vector<char> buffer,

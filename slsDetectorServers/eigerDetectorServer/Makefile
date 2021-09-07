@@ -44,6 +44,6 @@ hv9m_blackfin_server:9mhvserial_bf.c
 	rm hv9m_blackfin_server.gdb  $(main_src)*.o $(md5_dir)*.o
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o $(DESTDIR)/hv9m_blackfin_server  $(main_src)*.o
+	rm -rf $(DESTDIR)/$(PROGS)  *.o $(DESTDIR)/hv9m_blackfin_server  $(main_src)*.o  $(md5_dir)*.o
 	
 	

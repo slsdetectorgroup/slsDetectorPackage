@@ -40,7 +40,7 @@ $(PROGS): $(OBJS)
 	rm *.o  $(md5_dir)*.o
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o
+	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o $(md5_dir)*.o
 	
 
 	

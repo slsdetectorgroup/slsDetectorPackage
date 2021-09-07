@@ -3,6 +3,7 @@
 #include "md5.h"
 #include <stdint.h> // int64_t
 #include <stdio.h>
+#include <sys/types.h>
 #include <time.h>
 
 enum numberMode { DEC, HEX };

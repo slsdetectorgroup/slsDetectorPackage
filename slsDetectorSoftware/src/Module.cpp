@@ -945,24 +945,24 @@ sls::UdpDestination Module::getDestinationUDPList(const uint32_t entry) const {
 
 void Module::setDestinationUDPList(const sls::UdpDestination dest) {
     // set them in the default way so the receivers are also set up
-    if (dest.getEntry() == 0) {
-        if (dest.getPort() != 0) {
-            setDestinationUDPPort(dest.getPort());
+    if (dest.entry == 0) {
+        if (dest.port != 0) {
+            setDestinationUDPPort(dest.port);
         }
-        if (dest.getIp() != 0) {
-            setDestinationUDPIP(IpAddr(dest.getIp()));
+        if (dest.ip != 0) {
+            setDestinationUDPIP(dest.ip);
         }
-        if (dest.getMac() != 0) {
-            setDestinationUDPMAC(MacAddr(dest.getMac()));
+        if (dest.mac != 0) {
+            setDestinationUDPMAC(dest.mac);
         }
-        if (dest.getPort2() != 0) {
-            setDestinationUDPPort2(dest.getPort2());
+        if (dest.port2 != 0) {
+            setDestinationUDPPort2(dest.port2);
         }
-        if (dest.getIp2() != 0) {
-            setDestinationUDPIP2(IpAddr(dest.getIp2()));
+        if (dest.ip2 != 0) {
+            setDestinationUDPIP2(dest.ip2);
         }
-        if (dest.getMac2() != 0) {
-            setDestinationUDPMAC2(MacAddr(dest.getMac2()));
+        if (dest.mac2 != 0) {
+            setDestinationUDPMAC2(dest.mac2);
         }
     } else {
         sendToDetector(F_SET_DEST_UDP_LIST, dest, nullptr);

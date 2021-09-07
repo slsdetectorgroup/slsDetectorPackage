@@ -1388,34 +1388,34 @@ UdpDestination CmdProxy::getUdpEntry() {
         std::string key = it.substr(0, pos);
         std::string value = it.substr(pos + 1);
         if (key == "entry") {
-            udpDestination.setEntry(StringTo<int>(value));
+            udpDestination.entry = StringTo<int>(value);
             hasEntry = true;
         } else if (key == "ip") {
             if (value == "auto") {
                 auto val = getIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip of detector " << det_id
                              << " to " << val;
-                udpDestination.setIp(val);
+                udpDestination.ip = val;
             } else {
-                udpDestination.setIp(IpAddr(value));
+                udpDestination.ip = IpAddr(value);
             }
         } else if (key == "ip2") {
             if (value == "auto") {
                 auto val = getIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id
                              << " to " << val;
-                udpDestination.setIp2(val);
+                udpDestination.ip2 = val;
             } else {
-                udpDestination.setIp2(IpAddr(value));
+                udpDestination.ip2 = IpAddr(value);
             }
         } else if (key == "mac") {
-            udpDestination.setMac(MacAddr(value));
+            udpDestination.mac = MacAddr(value);
         } else if (key == "mac2") {
-            udpDestination.setMac2(MacAddr(value));
+            udpDestination.mac2 = MacAddr(value);
         } else if (key == "port") {
-            udpDestination.setPort(StringTo<uint32_t>(value));
+            udpDestination.port = StringTo<uint32_t>(value);
         } else if (key == "port2") {
-            udpDestination.setPort2(StringTo<uint32_t>(value));
+            udpDestination.port2 = StringTo<uint32_t>(value);
         }
     }
     if (!hasEntry) {

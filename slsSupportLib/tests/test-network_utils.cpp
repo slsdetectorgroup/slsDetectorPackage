@@ -112,4 +112,12 @@ TEST_CASE("Copy construct a MacAddr") {
     CHECK(addr == addr2);
 }
 
+
+TEST_CASE("udp dst struct"){
+    static_assert(sizeof(UdpDestination) == 36);
+    UdpDestination dst{};
+    REQUIRE(dst.ip == 0); 
+}
+
+
 // TODO!(Erik) Look up a real hostname and verify the IP

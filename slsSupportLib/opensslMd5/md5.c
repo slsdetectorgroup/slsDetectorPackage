@@ -298,11 +298,7 @@ int HASH_FINAL(unsigned char *md, HASH_CTX *c)
     //Erik: Since we don't do encryption secure cleaning is not needed
     memset(p, 0, HASH_CBLOCK);
 
-#ifndef HASH_MAKE_STRING
-# error "HASH_MAKE_STRING must be defined!"
-#else
     HASH_MAKE_STRING(c, md);
-#endif
 
     return 1;
 }

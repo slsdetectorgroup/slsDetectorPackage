@@ -1,7 +1,7 @@
 current_dir = $(shell pwd)
 main_inc = ../slsDetectorServer/include/
 main_src = ../slsDetectorServer/src/
-support_lib = ../../slsSupportLib/include/sls/
+support_lib = ../../slsSupportLib/include/
 md5_dir = ../../slsSupportLib/opensslMd5/
 
 CROSS  		= nios2-buildroot-linux-gnu-

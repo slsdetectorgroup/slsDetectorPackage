@@ -1,18 +1,19 @@
 current_dir = $(shell pwd)
 main_inc = ../slsDetectorServer/include/
 main_src = ../slsDetectorServer/src/
-support_lib = ../../slsSupportLib/include/
+support_lib = ../../slsSupportLib/include/sls/
+md5_dir = ../../slsSupportLib/opensslMd5/
 
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -std=gnu99 -DJUNGFRAUD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -std=gnu99 -DJUNGFRAUD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)  -I$(md5_dir) #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread
 PROGS		= 	jungfrauDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS	=	slsDetectorFunctionList.c 
-SRCS	+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c $(main_src)common.c $(main_src)commonServerFunctions.c  $(main_src)AD9257.c $(main_src)ALTERA_PLL.c $(main_src)LTC2620.c $(main_src)MAX1932.c $(main_src)programFpgaBlackfin.c $(main_src)/sharedMemory.c
+SRCS	+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c $(main_src)common.c $(main_src)commonServerFunctions.c  $(main_src)AD9257.c $(main_src)ALTERA_PLL.c $(main_src)LTC2620.c $(main_src)MAX1932.c $(main_src)programFpgaBlackfin.c $(main_src)/sharedMemory.c $(md5_dir)md5.c
 
 OBJS 	= 	$(SRCS:.c=.o) 
  

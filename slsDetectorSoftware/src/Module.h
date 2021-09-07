@@ -222,8 +222,8 @@ class Module : public virtual slsDetectorDefs {
     void setSourceUDPMAC(const sls::MacAddr mac);
     sls::MacAddr getSourceUDPMAC2() const;
     void setSourceUDPMAC2(const sls::MacAddr mac);
-    udpDestination getDestinationUDPList(const uint32_t entry) const;
-    void setDestinationUDPList(const defs::udpDestination dest);
+    sls::UdpDestination getDestinationUDPList(const uint32_t entry) const;
+    void setDestinationUDPList(const sls::UdpDestination dest);
     int getNumberofUDPDestinations() const;
     void setNumberofUDPDestinations(const int value);
     int getFirstUDPDestination() const;

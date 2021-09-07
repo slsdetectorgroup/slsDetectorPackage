@@ -69,12 +69,36 @@ std::string MacAddr::str() const { return to_hex(':'); }
 
 std::string MacAddr::hex() const { return to_hex(); }
 
+std::string UdpDestination::str() const {
+    std::ostringstream oss;
+    oss << '[' << std::endl
+        << "entry " << entry_ << std::endl
+        << "ip " << ip_ << std::endl
+        << "mac " << mac_ << std::endl
+        << "port " << port_ << std::endl;
+    if (port2_ != 0) {
+        oss << "port2 " << port2_ << std::endl;
+    }
+    if (ip2_ != 0) {
+        oss << "ip2 " << ip2_ << std::endl;
+    }
+    if (mac2_ != 0) {
+        oss << "mac2 " << mac2_ << std::endl;
+    }
+    oss << ']';
+    return oss.str();
+}
+
 std::ostream &operator<<(std::ostream &out, const IpAddr &addr) {
     return out << addr.str();
 }
 
 std::ostream &operator<<(std::ostream &out, const MacAddr &addr) {
     return out << addr.str();
+}
+
+std::ostream &operator<<(std::ostream &out, const UdpDestination &dest) {
+    return out << dest.str();
 }
 
 IpAddr HostnameToIp(const char *hostname) {

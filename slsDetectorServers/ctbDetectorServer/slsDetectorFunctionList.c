@@ -392,7 +392,7 @@ uint32_t getDetectorIP() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    char temp[50] = "";
+    char temp[INET_ADDRSTRLEN] = "";
     uint32_t res = 0;
     // execute and get address
     char output[255];
@@ -1525,10 +1525,10 @@ int configureMAC() {
     int dstport = udpDetails[0].dstport;
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
-    char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
-        dst_ip[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac, 50, srcmac);
-    getMacAddressinString(dst_mac, 50, dstmac);
+    char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
+        dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
+    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
+    getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
     getIpAddressinString(src_ip, srcip);
     getIpAddressinString(dst_ip, dstip);
 

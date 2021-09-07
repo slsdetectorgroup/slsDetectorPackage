@@ -41,9 +41,9 @@ $(PROGS):  $(OBJS)
 hv9m_blackfin_server:9mhvserial_bf.c
 	$(BLACKFIN_CC) -o hv9m_blackfin_server 9mhvserial_bf.c -Wall #-DVERBOSE
 	mv hv9m_blackfin_server $(DESTDIR)	
-	rm hv9m_blackfin_server.gdb  $(main_server)*.o $(md5_dir)*.o
+	rm hv9m_blackfin_server.gdb  $(main_src)*.o $(md5_dir)*.o
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o $(DESTDIR)/hv9m_blackfin_server  $(main_server)*.o
+	rm -rf $(DESTDIR)/$(PROGS)  *.o $(DESTDIR)/hv9m_blackfin_server  $(main_src)*.o
 	
 	

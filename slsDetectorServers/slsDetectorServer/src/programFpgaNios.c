@@ -1,5 +1,6 @@
 #include "programFpgaNios.h"
 #include "clogger.h"
+#include "common.h"
 #include "sls/ansi.h"
 #include "slsDetectorServer_defs.h"
 
@@ -74,10 +75,16 @@ void eraseFlash() {
     LOG(logINFO, ("\tFlash erased\n"));
 }
 
-int eraseAndWriteToFlash(char *mess, char *fpgasrc, uint64_t fsize) {
+int eraseAndWriteToFlash(char *mess, char *checksum, char *fpgasrc,
+                         uint64_t fsize) {
     if (findFlash(mess) == FAIL) {
         return FAIL;
     }
+
+    if (verifyChecksumFromBuffer(mess, checksum, fpgasrc, fsize) == FAIL) {
+        return FAIL;
+    }
+
     eraseFlash();
 
     // open file pointer to flash

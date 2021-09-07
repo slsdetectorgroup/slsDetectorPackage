@@ -11,11 +11,13 @@ add_executable(gotthardDetectorServer_virtual
     ../slsDetectorServer/src/commonServerFunctions.c    
     ../slsDetectorServer/src/communication_funcs_UDP.c    
     ../slsDetectorServer/src/sharedMemory.c
+    ../../slsSupportLib/opensslMd5/md5.c
 )
 
 include_directories(
     ../slsDetectorServer/include
     ../../slsSupportLib/include
+    ../../slsSupportLib/opensslMd5
 )
 
 target_include_directories(gotthardDetectorServer_virtual

@@ -3680,13 +3680,20 @@ int program_fpga(int file_des) {
 
         LOG(logINFOBLUE, ("Programming FPGA...\n"));
 
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
-        uint64_t filesize = 0;
         // filesize
+        uint64_t filesize = 0;
         if (receiveData(file_des, &filesize, sizeof(filesize), INT64) < 0)
             return printSocketReadError();
-        LOG(logDEBUG1, ("Total program size is: %llx\n",
-                        (long long unsigned int)filesize));
+        LOG(logDEBUG1, ("Program size is: %lld\n", (long long int)filesize));
+
+        // checksum
+        char checksum[MAX_STR_LENGTH];
+        memset(checksum, 0, MAX_STR_LENGTH);
+        if (receiveData(file_des, checksum, MAX_STR_LENGTH, OTHER) < 0)
+            return printSocketReadError();
+        LOG(logDEBUG1, ("checksum is: %s\n\n", checksum));
+
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
         if (filesize > NIOS_MAX_APP_IMAGE_SIZE) {
             ret = FAIL;
             sprintf(mess,
@@ -3717,20 +3724,6 @@ int program_fpga(int file_des) {
         }
 
 #else // jungfrau, ctb, moench
-
-        // filesize
-        uint64_t filesize = 0;
-        if (receiveData(file_des, &filesize, sizeof(filesize), INT64) < 0)
-            return printSocketReadError();
-        LOG(logDEBUG1,
-            ("Program size is: %lld\n", (long long unsigned int)filesize));
-
-        // checksum
-        char checksum[MAX_STR_LENGTH];
-        memset(checksum, 0, MAX_STR_LENGTH);
-        if (receiveData(file_des, checksum, MAX_STR_LENGTH, OTHER) < 0)
-            return printSocketReadError();
-        LOG(logDEBUG1, ("checksum is: %s\n\n", checksum));
 
         // open file and allocate memory for part program
         FILE *fd = NULL;

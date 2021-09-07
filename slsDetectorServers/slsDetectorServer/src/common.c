@@ -178,3 +178,81 @@ int setModuleIdInFile(char *mess, int arg, char *fileName) {
     }
     return OK;
 }
+
+int verifyChecksumFromBuffer(char *mess, char *clientChecksum, char *buffer,
+                             ssize_t bytes) {
+    MD5_CTX c;
+    if (!MD5_Init(&c)) {
+        strcpy(mess, "Unable to calculate checksum (MD5_Init)\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (!MD5_Update(&c, buffer, bytes)) {
+        strcpy(mess, "Unable to calculate checksum (MD5_Update)\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return verifyChecksum(mess, clientChecksum, &c);
+}
+
+int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
+    FILE *fp = fopen(fname, "r");
+    if (fp == NULL) {
+        sprintf(mess, "Unable to open %s in read mode to get checksum\n",
+                fname);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    MD5_CTX c;
+    if (!MD5_Init(&c)) {
+        strcpy(mess, "Unable to calculate checksum (MD5_Init)\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    char buf[512];
+    ssize_t bytes = fread(buf, 1, 512, fp);
+    while (bytes > 0) {
+        if (!MD5_Update(&c, buf, bytes)) {
+            strcpy(mess, "Unable to calculate checksum (MD5_Update)\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        bytes = fread(buf, 1, 512, fp);
+    }
+    fclose(fp);
+    return verifyChecksum(mess, clientChecksum, &c);
+}
+
+int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c) {
+    unsigned char out[MD5_DIGEST_LENGTH];
+    if (!MD5_Final(out, c)) {
+        strcpy(mess, "Unable to calculate checksum (MD5_Final)\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    char checksum[512];
+    memset(checksum, 0, 512);
+    for (int i = 0; i != MD5_DIGEST_LENGTH; ++i) {
+        char part[16];
+        memset(byteparts, 0, 16);
+        sprintf(part, "%02x", out[i]);
+        strcat(checksum, part);
+    }
+
+    LOG(logDEBUG1,
+        ("\nC checksum: %s\nS checksum: %s\n", clientChecksum, checksum));
+
+    // compare checksum
+    if (strcmp(clientChecksum, checksum)) {
+        sprintf(mess,
+                "Checksum of copied fpga program does not match. Client "
+                "checksum:%s, copied checksum:%s\n",
+                clientChecksum, checksum);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tChecksum verified from copied program\n"));
+    return OK;
+}

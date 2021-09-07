@@ -1,5 +1,6 @@
 #pragma once
 
+#include "md5.h"
 #include <stdint.h> // int64_t
 #include <stdio.h>
 #include <time.h>
@@ -31,3 +32,7 @@ void validate64(int *ret, char *mess, int64_t arg, int64_t retval,
 
 int getModuleIdInFile(int *ret, char *mess, char *fileName);
 int setModuleIdInFile(char *mess, int arg, char *fileName);
+int verifyChecksumFromBuffer(char *mess, char *clientChecksum, char *buffer,
+                             ssize_t bytes);
+int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname);
+int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c);

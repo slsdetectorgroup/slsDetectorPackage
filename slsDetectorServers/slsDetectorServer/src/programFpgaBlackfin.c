@@ -1,5 +1,6 @@
 #include "programFpgaBlackfin.h"
 #include "clogger.h"
+#include "common.h"
 #include "sls/ansi.h"
 #include "slsDetectorServer_defs.h"
 
@@ -193,32 +194,5 @@ int writeFPGAProgram(FILE *fd, char *src, uint64_t fsize, char* msg, char* mess)
 }
 
 int verifyCheckSumofProgram(char* clientChecksum, char* mess) {
-    LOG(logINFOBLUE, ("\tVerifying Checksum\n"));
-
-    // get checksum from copied file
-    char cmd[MAX_STR_LENGTH] = {0};
-    memset(cmd, 0, MAX_STR_LENGTH);
-    sprintf(cmd, "md5sum %s", TEMP_PROG_FILE_NAME);
-    char retvals[MAX_STR_LENGTH] = {0};
-    memset(retvals, 0, MAX_STR_LENGTH);
-    if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
-        strcpy(mess, retvals);
-        // LOG(logERROR, (mess)); already printed in executecommand
-        return FAIL;
-    }
-    char checksum[MAX_STR_LENGTH];
-    memset(checksum, 0, sizeof(checksum));
-    if (sscanf(retvals, "%s", checksum) != 1) {
-        sprintf(mess, "Could not get checksum of fpga program copied over");
-        LOG(logERROR, (mess));
-        return FAIL;        
-    }
-    // compare checksum
-    if (strcmp(clientChecksum, checksum)) {
-        sprintf(mess, "Checksum of copied fpga program does not match. Client checksum:%s, copied checksum:%s\n", clientChecksum, checksum);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    LOG(logINFO, ("\tChecksum verified from copied program\n"));
-    return OK;
+    return verifyChecksumFromFile(mess, clientChecksum, TEMP_PROG_FILE_NAME);
 }

@@ -3424,16 +3424,17 @@ std::string Module::calculateChecksum(char *buffer, ssize_t bytes) {
 }
 
 void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
-    uint64_t filesize = buffer.size();
-    std::string checksum = calculateChecksum(buffer.data(), filesize);
-    LOG(logDEBUG1) << "Checksum:" << checksum;
-
     // send program from memory to detector
     LOG(logINFO) << "Sending programming binary (from pof) to module "
                  << moduleId << " (" << shm()->hostname << ")";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_PROGRAM_FPGA);
+    uint64_t filesize = buffer.size();
     client.Send(filesize);
+
+    // checksum
+    std::string checksum = calculateChecksum(buffer.data(), filesize);
+    LOG(logDEBUG1) << "Checksum:" << checksum;
     char cChecksum[MAX_STR_LENGTH];
     memset(cChecksum, 0, MAX_STR_LENGTH);
     strcpy(cChecksum, checksum.c_str());
@@ -3537,6 +3538,15 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
     client.Send(F_PROGRAM_FPGA);
     uint64_t filesize = buffer.size();
     client.Send(filesize);
+
+    // checksum
+    std::string checksum = calculateChecksum(buffer.data(), filesize);
+    LOG(logDEBUG1) << "Checksum:" << checksum;
+    char cChecksum[MAX_STR_LENGTH];
+    memset(cChecksum, 0, MAX_STR_LENGTH);
+    strcpy(cChecksum, checksum.c_str());
+    client.Send(cChecksum);
+
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleId << " (" << shm()->hostname << ")"

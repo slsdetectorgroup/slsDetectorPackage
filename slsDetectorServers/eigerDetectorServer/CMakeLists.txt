@@ -6,11 +6,13 @@ set(src
     ../slsDetectorServer/src/communication_funcs_UDP.c
     ../slsDetectorServer/src/common.c
     ../slsDetectorServer/src/sharedMemory.c
+    ../../slsSupportLib/opensslMd5/md5.c
 )
 
 include_directories(
     ../slsDetectorServer/include
     ../../slsSupportLib/include
+    ../../slsSupportLib/opensslMd5
 )
 
 add_executable(eigerDetectorServerMaster_virtual 

@@ -35,7 +35,7 @@ $(PROGS): $(OBJS)
 	mv $(PROGS) $(DESTDIR)
 	cp config_gotthard2.txt $(DESTDIR)
 	cp detid_gotthard2.txt $(DESTDIR)
-	rm $(main_src)*.o	
+	rm $(main_src)*.o	 $(md5_dir)*.o
 
 clean:
 	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o

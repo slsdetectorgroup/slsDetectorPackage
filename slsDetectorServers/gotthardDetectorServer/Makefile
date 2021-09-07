@@ -34,7 +34,7 @@ $(PROGS): $(OBJS)
 	mv $(PROGS) $(DESTDIR)
 	cp config_gotthard.txt $(DESTDIR)
 	rm *.gdb
-	rm $(main_src)*.o
+	rm $(main_src)*.o $(md5_dir)*.o
 
 clean:
 	rm -rf $(DESTDIR)/$(PROGS) *.o *.gdb $(main_src)*.o

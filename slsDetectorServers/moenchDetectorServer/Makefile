@@ -37,7 +37,7 @@ $(PROGS): $(OBJS)
 	cp DefaultPattern_moench.txt $(DESTDIR)
 	rm *.gdb
 	rm $(main_src)*.o
-	rm *.o
+	rm *.o  $(md5_dir)*.o
 
 clean:
 	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o

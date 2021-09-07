@@ -9,7 +9,7 @@ TEST_CASE("Get size of empty file") {
     char fname[] = "temfile_XXXXXX";
     std::ifstream ifs(fname);
     auto size = sls::getFileSize(ifs);
-    REQUIRE(size == 0);
+    REQUIRE(size <= 0); // -1 or zero
 }
 
 TEST_CASE("Get size of file with data") {

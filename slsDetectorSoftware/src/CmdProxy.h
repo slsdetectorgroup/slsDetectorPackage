@@ -1117,7 +1117,7 @@ class CmdProxy {
     std::string Trigger(int action);
     /* Network Configuration (Detector<->Receiver) */
     IpAddr getIpFromAuto();
-    slsDetectorDefs::udpDestination getUdpList();
+    UdpDestination getUdpEntry();
     std::string UDPDestinationList(int action);
     std::string UDPDestinationIP(int action);
     std::string UDPDestinationIP2(int action);

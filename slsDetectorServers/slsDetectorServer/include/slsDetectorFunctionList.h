@@ -52,6 +52,7 @@ typedef struct udpStruct_s {
     uint32_t dstip;
     uint32_t dstip2;
 } udpStruct;
+#define MAC_ADDRESS_SIZE 18
 
 // basic tests
 int isInitCheckDone();

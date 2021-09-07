@@ -30,7 +30,7 @@ class IpAddr {
         return addr_ != other;
     }
     constexpr uint32_t uint32() const noexcept { return addr_; }
-};
+} __attribute__((packed));
 
 class MacAddr {
   private:
@@ -57,13 +57,33 @@ class MacAddr {
         return addr_ != other;
     }
     constexpr uint64_t uint64() const noexcept { return addr_; }
-};
+} __attribute__((packed));
+
+struct UdpDestination {
+    uint32_t entry{};
+    uint32_t port{};
+    uint32_t port2{};
+    IpAddr ip;
+    IpAddr ip2;
+    MacAddr mac;
+    MacAddr mac2;
+    std::string str() const;
+
+    constexpr bool operator==(const UdpDestination &other) const {
+        return ((entry == other.entry) && (port == other.port) &&
+                (port2 == other.port2) && (ip== other.ip) &&
+                (ip2 == other.ip2) && (mac == other.mac) &&
+                (mac2 == other.mac2));
+    }
+} __attribute__((packed));
+
+std::ostream &operator<<(std::ostream &out, const IpAddr &addr);
+std::ostream &operator<<(std::ostream &out, const MacAddr &addr);
+std::ostream &operator<<(std::ostream &out, const UdpDestination &dest);
 
 IpAddr HostnameToIp(const char *hostname);
 std::string IpToInterfaceName(const std::string &ip);
 MacAddr InterfaceNameToMac(const std::string &inf);
 IpAddr InterfaceNameToIp(const std::string &ifn);
-std::ostream &operator<<(std::ostream &out, const IpAddr &addr);
-std::ostream &operator<<(std::ostream &out, const MacAddr &addr);
 
 } // namespace sls

@@ -191,7 +191,7 @@ int openFileForFlash(FILE **flashfd, FILE **srcfd, char *mess) {
         char cmd[MAX_STR_LENGTH] = {0};
         char retvals[MAX_STR_LENGTH] = {0};
         strcpy(cmd, "ls -lrt /var/tmp/");
-        if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
+        if (FAIL == executeCommand(cmd, retvals, logINFOBLUE)) {
             strcpy(mess, "Could not program fpga. Could not delete old file: ");
             strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
             strcat(mess, "\n");

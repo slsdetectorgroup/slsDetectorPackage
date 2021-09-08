@@ -230,7 +230,7 @@ int writeToFlash(FILE *flashfd, FILE *srcfd, char *mess) {
     if (buffer == NULL) {
         fclose(flashfd);
         fclose(srcfd);
-        strcpy(mess, "Could not program foga. Memory allocation to write to "
+        strcpy(mess, "Could not program fpga. Memory allocation to write to "
                      "flash failed.\n");
         LOG(logERROR, (mess));
         return FAIL;
@@ -243,6 +243,7 @@ int writeToFlash(FILE *flashfd, FILE *srcfd, char *mess) {
             fwrite((void *)buffer, sizeof(char), bytes, flashfd);
         totalBytes += bytesWritten;
         if (bytesWritten != bytes) {
+            free(buffer);
             fclose(flashfd);
             fclose(srcfd);
             sprintf(mess,
@@ -257,6 +258,7 @@ int writeToFlash(FILE *flashfd, FILE *srcfd, char *mess) {
         printf(".");
     }
     printf("\n");
+    free(buffer);
     fclose(flashfd);
     fclose(srcfd);
     LOG(logINFO, ("\tWrote %ld bytes to flash\n", totalBytes));

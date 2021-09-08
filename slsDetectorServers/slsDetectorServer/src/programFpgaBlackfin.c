@@ -154,7 +154,7 @@ int getDrive(char *mess) {
 
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
-    strcpy(retvals, CMD_GET_FLASH);
+    strcpy(cmd, CMD_GET_FLASH);
     if (executeCommand(cmd, retvals, logINFO) == FAIL) {
         strcpy(mess, "Could not program fpga. (could not get flash drive: ");
         strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);

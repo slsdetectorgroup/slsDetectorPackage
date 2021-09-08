@@ -3798,6 +3798,20 @@ int program_fpga(int file_des) {
             return FAIL;
         }
 
+        {
+            char cmd[MAX_STR_LENGTH] = {0};
+            char retvals[MAX_STR_LENGTH] = {0};
+            strcpy(cmd, "ls -lrt /var/tmp/");
+            if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
+                sprintf(
+                    mess,
+                    "Could not program fpga. (could not delete old file: %s)",
+                    retvals);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+        }
+
         // copy to flash
         ret = copyToFlash(checksum, mess);
         Server_SendResult(file_des, INT32, NULL, 0);

@@ -3808,6 +3808,8 @@ int program_fpga(int file_des) {
                     retvals);
                 LOG(logERROR, (mess));
                 return FAIL;
+            } else {
+                LOG(logINFO, ("Result:%s\n"), retvals);
             }
         }
 

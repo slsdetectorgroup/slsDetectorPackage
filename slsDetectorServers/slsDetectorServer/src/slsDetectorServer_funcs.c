@@ -3804,6 +3804,7 @@ int program_fpga(int file_des) {
             char retvals[MAX_STR_LENGTH] = {0};
             strcpy(cmd, "ls -lrt /var/tmp/");
             if (FAIL == executeCommand(cmd, retvals, logINFO)) {
+                LOG(logERROR, ("blabal\n"));
                 strcpy(mess,
                        "Could not program fpga. Could not delete old file: ");
                 strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);

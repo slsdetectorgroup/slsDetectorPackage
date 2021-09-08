@@ -3799,10 +3799,10 @@ int program_fpga(int file_des) {
         }
 
         {
+            char cmd[MAX_STR_LENGTH] = {0};
             char retvals[MAX_STR_LENGTH] = {0};
-            memset(retvals, 0, MAX_STR_LENGTH);
-            if (FAIL ==
-                executeCommand("ls -lrt /var/tmp/", retvals, logDEBUG1)) {
+            strcpy(cmd, "ls -lrt /var/tmp/");
+            if (FAIL == executeCommand(cmd, retvals, logINFO)) {
                 sprintf(
                     mess,
                     "Could not program fpga. (could not delete old file: %s)",

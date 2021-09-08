@@ -3811,7 +3811,7 @@ int program_fpga(int file_des) {
                 LOG(logERROR, (mess));
                 return FAIL;
             } else {
-                LOG(logINFO, ("Result:%s\n"), retvals);
+                LOG(logINFO, ("Result:[%s]\n"), retvals);
             }
         }
 

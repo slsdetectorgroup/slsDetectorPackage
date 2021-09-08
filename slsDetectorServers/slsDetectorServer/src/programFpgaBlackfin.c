@@ -153,7 +153,7 @@ int getDrive(char *mess) {
     // mtd3: 01000000 00010000 "bitfile(spi)"
 
     char retvals[MAX_STR_LENGTH] = {0};
-    if (executeCommand(CMD_GET_FLASH, retvals, logDEBUG1) == FAIL) {
+    if (executeCommand(CMD_GET_FLASH, retvals, logINFO) == FAIL) {
         strcpy(mess, "Could not program fpga. (could not get flash drive: ");
         strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
         strcat(mess, "\n");

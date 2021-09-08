@@ -470,6 +470,8 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
         } else {
             LOG(level, ("Result:\n[%s]\n", result));
         }
+    } else {
+        LOG(level, ("No result\n"));
     }
     return success;
 }

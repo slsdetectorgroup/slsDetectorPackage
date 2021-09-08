@@ -254,7 +254,9 @@ int writeToFlash(FILE *flashfd, FILE *srcfd, char *mess) {
             return FAIL;
         }
         bytes = fread(buffer, sizeof(char), bytes, srcfd);
+        printf(".");
     }
+    printf("\n");
     fclose(flashfd);
     fclose(srcfd);
     LOG(logINFO, ("\tWrote %ld bytes to flash\n", totalBytes));

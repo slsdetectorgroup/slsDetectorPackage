@@ -461,6 +461,7 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
         strncat(result, temp, tempsize);
         memset(temp, 0, tempsize);
     }
+    result[MAX_STR_LENGTH - 1] = '\0';
     int sucess = pclose(sysFile);
     if (strlen(result)) {
         if (sucess) {
@@ -3803,10 +3804,10 @@ int program_fpga(int file_des) {
             char retvals[MAX_STR_LENGTH] = {0};
             strcpy(cmd, "ls -lrt /var/tmp/");
             if (FAIL == executeCommand(cmd, retvals, logINFO)) {
-                sprintf(
-                    mess,
-                    "Could not program fpga. (could not delete old file: %s)",
-                    retvals);
+                strcpy(mess,
+                       "Could not program fpga. Could not delete old file: ");
+                strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
+                strcat(mess, "\n");
                 LOG(logERROR, (mess));
                 return FAIL;
             } else {

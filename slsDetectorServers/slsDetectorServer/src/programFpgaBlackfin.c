@@ -72,9 +72,10 @@ int preparetoCopyFPGAProgram(FILE **fd, uint64_t fsize, char *mess) {
         char retvals[MAX_STR_LENGTH] = {0};
         sprintf(cmd, "rm -fr %s", TEMP_PROG_FILE_NAME);
         if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
-            sprintf(mess,
-                    "Could not program fpga. (could not delete old file: %s)",
-                    retvals);
+            strcpy(mess,
+                   "Could not program fpga. (could not delete old file: ");
+            strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
+            strcat(mess, "\n");
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -155,16 +156,18 @@ int getDrive(char *mess) {
     char retvals[MAX_STR_LENGTH] = {0};
     sprintf(cmd, "rm -fr %s", TEMP_PROG_FILE_NAME);
     if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
-        sprintf(mess, "Could not program fpga. (could not delete old file: %s)",
-                retvals);
+        strcpy(mess, "Could not program fpga. (could not delete old file: ");
+        strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
+        strcat(mess, "\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
 
     memset(retvals, 0, MAX_STR_LENGTH);
     if (executeCommand(CMD_GET_FLASH, retvals, logDEBUG1) == FAIL) {
-        sprintf(mess, "Could not program fpga. (could not get flash drive: %s)",
-                retvals);
+        strcpy(mess, "Could not program fpga. (could not get flash drive: ");
+        strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
+        strcat(mess, "\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -220,8 +223,9 @@ int eraseFlash(char *mess) {
     char retvals[MAX_STR_LENGTH] = {0};
     sprintf(cmd, "flash_eraseall %s", flashDriveName);
     if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
-        sprintf(mess, "Could not program fpga. (could not erase flash: %s)",
-                retvals);
+        strcpy(mess, "Could not program fpga. (could not erase flash: ");
+        strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
+        strcat(mess, "\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -293,8 +297,10 @@ int waitForFPGAtoTouchFlash(char* mess) {
         // read gpio status 
         char retvals[MAX_STR_LENGTH] = {0};
         if (FAIL == executeCommand(CMD_FPGA_PICKED_STATUS, retvals, logDEBUG1)) {
-            sprintf(mess, "Could not program fpga. (could not read gpio status: %s)\n",
-                    retvals);
+            strcpy(mess,
+                   "Could not program fpga. (could not read gpio status: ");
+            strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
+            strcat(mess, "\n");
             LOG(logERROR, (mess));
             return FAIL;
         }

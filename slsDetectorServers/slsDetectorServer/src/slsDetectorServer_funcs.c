@@ -3727,11 +3727,12 @@ int program_fpga(int file_des) {
 
         // open file and allocate memory for part program
         FILE *fd = NULL;
-        ret = startCopyingFPGAProgram(&fd, filesize, mess);
+        ret = preparetoCopyFPGAProgram(&fd, filesize, mess);
         char *src = NULL;
         if (ret == OK) {
             src = malloc(MAX_FPGAPROGRAMSIZE);
-            if (src == NULL) {  
+            if (src == NULL) {
+                fclose(fd);
                 strcpy(mess, "Could not allocate memory to get fpga program\n");
                 LOG(logERROR, (mess));
                 ret = FAIL;
@@ -3739,16 +3740,9 @@ int program_fpga(int file_des) {
         }
         Server_SendResult(file_des, INT32, NULL, 0);
         if (ret == FAIL) {
-            if (src != NULL) {
-                free(src);
-            }
-            if (fd != NULL) {
-                fclose(fd);
-            }
             LOG(logERROR, ("Program FPGA FAIL1!\n"));
             return FAIL;
         }
-
 
         // copying program part by part
         uint64_t totalsize = filesize;
@@ -3774,7 +3768,13 @@ int program_fpga(int file_des) {
                 filesize -= unitprogramsize;
  
             // copy program
-            ret = writeFPGAProgram(fd, src, unitprogramsize, "copy program to /var/tmp", mess);
+            if (fwrite((void *)src, sizeof(char), unitprogramsize, fd) !=
+                unitprogramsize) {
+                ret = FAIL;
+                sprintf(mess, "Could not copy program to /var/tmp (size:%ld)\n",
+                        (long int)unitprogramsize);
+                LOG(logERROR, (mess));
+            }
             Server_SendResult(file_des, INT32, NULL, 0);
             if (ret == FAIL) {
                 break;
@@ -3785,58 +3785,26 @@ int program_fpga(int file_des) {
                  (int)(((double)(totalsize - filesize) / totalsize) * 100)));
             fflush(stdout);
         }
-        if (src != NULL) {
-            free(src);
-        }
-        if (fd != NULL) {
-            fclose(fd);
-        }
+        free(src);
+        fclose(fd);
 
         // checksum of copied program
         if (ret == OK) {
-            ret = verifyCheckSumofProgram(checksum, mess);
+            ret = verifyChecksumFromFile(mess, checksum, TEMP_PROG_FILE_NAME);
         }
         Server_SendResult(file_des, INT32, NULL, 0);
+        if (ret == FAIL) {
+            LOG(logERROR, ("Program FPGA FAIL!\n"));
+            return FAIL;
+        }
 
+        // copy to flash
+        ret = copyToFlash(checksum, mess);
+        Server_SendResult(file_des, INT32, NULL, 0);
         if (ret == FAIL) {
             LOG(logERROR, ("Program FPGA FAIL!\n"));
             return FAIL;            
         }
-
-        /*  if (ret != FAIL) {
-              fpgasrc[totalsize] = '\0';
-          }*/
-
-        /*
-
-                // opening file pointer to flash and telling FPGA to not touch
-           flash if (startWritingFPGAprogram(&fp) != OK) { ret = FAIL;
-                    sprintf(mess, "Could not write to flash. Error at
-           startup.\n"); LOG(logERROR, (mess));
-                }
-                Server_SendResult(file_des, INT32, NULL, 0);
-
-
-
-
-                // erasing flash
-                if (ret != FAIL) {
-                    eraseFlash();
-                }
-
-
-                if (ret == OK) {
-                    LOG(logINFO, ("Done copying program\n"));
-                    // closing file pointer to flash and informing FPGA
-                    ret = stopWritingFPGAprogram(fp);
-                    if (ret == FAIL) {
-                        strcpy(mess, "Failed to program fpga. FPGA is taking too
-           long " "to pick up program from flash! Try to flash " "again without
-           rebooting!\n"); LOG(logERROR, (mess));
-                    }
-                }
-        */
-
 
 #endif // end of Blackfin programming
         LOG(logINFOGREEN, ("Programming FPGA completed successfully\n"));
@@ -4349,11 +4317,19 @@ int reboot_controller(int file_des) {
         Server_SendResult(file_des, INT32, NULL, 0);
         return GOODBYE;
     }
+#ifdef VIRTUAL
+    ret = GOODBYE;
+#else
     ret = REBOOT;
+#endif
 #elif EIGERD
     functionNotImplemented();
 #else
+#ifdef VIRTUAL
+    ret = GOODBYE;
+#else
     ret = REBOOT;
+#endif
 #endif
     Server_SendResult(file_des, INT32, NULL, 0);
     return ret;
@@ -4810,7 +4786,7 @@ int set_read_n_rows(int file_des) {
                 LOG(logERROR, (mess));
             } else
 #elif JUNGFRAUD
-            if ((check_detector_idle("set nmber of rows") == OK) && (arg % READ_N_ROWS_MULTIPLE != 0)) {
+            if ((check_detector_idle("set number of rows") == OK) && (arg % READ_N_ROWS_MULTIPLE != 0)) {
                 ret = FAIL;
                 sprintf(mess,
                         "Could not set number of rows. %d must be a multiple "

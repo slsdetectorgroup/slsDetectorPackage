@@ -3479,55 +3479,23 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
            << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }
-/*
-    // error in detector at opening file pointer to flash
+    if (moduleId == 0) {
+        LOG(logINFO) << "Checksum verified";
+    }
+
+    // copied to flash
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleId << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }
-
-
-
-    // erasing flash
-    LOG(logINFO) << "Erasing Flash for detector " << moduleId << " ("
-                 << shm()->hostname << ")";
-    printf("%d%%\r", 0);
-    std::cout << std::flush;
-    // erasing takes 65 seconds, printing here (otherwise need threads
-    // in server-unnecessary)
-    const int ERASE_TIME = 65;
-    int count = ERASE_TIME + 1;
-    while (count > 0) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        --count;
-        printf(
-            "%d%%\r",
-            static_cast<int>(
-                (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
-        std::cout << std::flush;
+    if (moduleId == 0) {
+        LOG(logINFO) << "Copied to flash and checksum verified";
     }
 
-    // fpga has written to flash successfully
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Detector " << moduleId << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw RuntimeError(os.str());
-    }
-
-
-    // fpga has picked up from flash successfully
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Detector " << moduleId << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw RuntimeError(os.str());
-    }
-*/
     LOG(logINFO) << "FPGA programmed successfully";
-    //rebootController();
+    rebootController();
 }
 
 void Module::programFPGAviaNios(std::vector<char> buffer) {

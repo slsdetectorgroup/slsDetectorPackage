@@ -1391,7 +1391,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
 
     unlink(destfname); // delete temporary file
     LOG(logDEBUG1) << "Successfully loaded the rawbin file to program memory";
-    LOG(logINFO) << "Read file into memory";
+    LOG(logDEBUG1) << "Read file into memory";
     return buffer;
 }
 

@@ -2,49 +2,28 @@
 
 #include <stdint.h>
 #include <stdio.h>
-/**
- * Define GPIO pins if not defined
- */
+
+#define TEMP_PROG_FILE_NAME "/var/tmp/tmp.pof"
+
+
 void defineGPIOpins();
-
-/**
- * Notify FPGA to not touch flash
- */
 void FPGAdontTouchFlash();
-
-/**
- * Notify FPGA to program from flash
- */
 void FPGATouchFlash();
-
-/**
- * Reset FPGA
- */
 void resetFPGA();
 
 /**
- * Erasing flash
+ * deletes old file
+ * verify memory available to copy
+ * open file to copy
  */
-void eraseFlash();
-
-/**
- * Open the drive to copy program and
- * notify FPGA not to touch the program
- * @param filefp pointer to flash
- * @return 0 for success, 1 for fail (cannot open file for writing program)
+int preparetoCopyFPGAProgram(FILE **fd, uint64_t fsize, char *mess);
+int copyToFlash(char *clientChecksum, char *mess);
+int getDrive(char *mess);
+/** Notify fpga not to touch flash, open src and flash drive to write */
+int openFileForFlash(FILE **flashfd, FILE **srcfd, char *mess);
+int eraseFlash(char *mess);
+/* write from tmp file to flash */
+int writeToFlash(FILE *flashfd, FILE *srcfd, char *mess);
+/** Notify fpga to pick up firmware from flash and wait for status confirmation
  */
-int startWritingFPGAprogram(FILE **filefp);
-
-/**
- * When done writing the program, close file pointer and
- * notify FPGA to pick up the program from flash
- * @param filefp pointer to flash
- * @return 0 for success, 1 for fail (time taken for fpga to touch flash
- * exceeded)
- */
-int stopWritingFPGAprogram(FILE *filefp);
-
-int startCopyingFPGAProgram(FILE **fd, uint64_t fsize, char *mess);
-int writeFPGAProgram(FILE *fd, char *src, uint64_t fsize, char *msg,
-                     char *mess);
-int verifyCheckSumofProgram(char* clientChecksum, char* mess);             
+int waitForFPGAtoTouchFlash(char *mess);

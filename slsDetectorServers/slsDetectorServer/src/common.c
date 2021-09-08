@@ -206,6 +206,7 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
 
     MD5_CTX c;
     if (!MD5_Init(&c)) {
+        fclose(fp);
         strcpy(mess, "Unable to calculate checksum (MD5_Init)\n");
         LOG(logERROR, (mess));
         return FAIL;
@@ -214,6 +215,7 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
     ssize_t bytes = fread(buf, 1, 512, fp);
     while (bytes > 0) {
         if (!MD5_Update(&c, buf, bytes)) {
+            fclose(fp);
             strcpy(mess, "Unable to calculate checksum (MD5_Update)\n");
             LOG(logERROR, (mess));
             return FAIL;

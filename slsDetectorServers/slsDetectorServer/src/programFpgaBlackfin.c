@@ -178,7 +178,7 @@ int getDrive(char *mess) {
 
     strcpy(flashDriveName, "/dev/");
     strcat(flashDriveName, pch);
-    LOG(logINFO, ("Flash drive found: %s\n", flashDriveName));
+    LOG(logINFO, ("\tFlash drive found: %s\n", flashDriveName));
     return OK;
 }
 
@@ -206,7 +206,7 @@ int openFileForFlash(FILE **flashfd, FILE **srcfd, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("Flash ready for writing\n"));
+    LOG(logINFO, ("\tFlash ready for writing\n"));
     return OK;
 }
 
@@ -226,7 +226,7 @@ int eraseFlash(char *mess) {
         return FAIL;
     }
 
-    LOG(logINFO, ("Flash erased\n"));
+    LOG(logINFO, ("\tFlash erased\n"));
     return OK;
 }
 
@@ -264,7 +264,7 @@ int writeToFlash(FILE *flashfd, FILE *srcfd, char *mess) {
     }
     fclose(flashfd);
     fclose(srcfd);
-    LOG(logINFO, ("Wrote %ld bytes to flash\n", totalBytes));
+    LOG(logINFO, ("\tWrote %ld bytes to flash\n", totalBytes));
     return OK;
 }
 
@@ -308,6 +308,6 @@ int waitForFPGAtoTouchFlash(char* mess) {
         }
         LOG(logDEBUG1, ("gpi07 returned %d\n", result));
     }
-    LOG(logINFO, ("FPGA has picked up the program from flash\n"));
+    LOG(logINFO, ("\tFPGA has picked up the program from flash\n"));
     return OK;
 }

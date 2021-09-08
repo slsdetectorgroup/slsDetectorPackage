@@ -462,16 +462,17 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
         memset(temp, 0, tempsize);
     }
     result[MAX_STR_LENGTH - 1] = '\0';
-    int sucess = pclose(sysFile);
+    int success = pclose(sysFile);
     if (strlen(result)) {
-        if (sucess) {
-            sucess = FAIL;
+        if (success) {
+            success = FAIL;
             LOG(logERROR, ("%s\n", result));
         } else {
             LOG(level, ("Result:\n[%s]\n", result));
+            LOG(level, ("balba\n"));
         }
     }
-    return sucess;
+    return success;
 }
 
 int M_nofunc(int file_des) {

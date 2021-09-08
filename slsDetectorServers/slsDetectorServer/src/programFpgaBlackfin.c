@@ -152,18 +152,7 @@ int getDrive(char *mess) {
     // mtd2: 002c0000 00020000 "file system(nor)"
     // mtd3: 01000000 00010000 "bitfile(spi)"
 
-    char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
-    sprintf(cmd, "rm -fr %s", TEMP_PROG_FILE_NAME);
-    if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
-        strcpy(mess, "Could not program fpga. (could not delete old file: ");
-        strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
-        strcat(mess, "\n");
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-
-    memset(retvals, 0, MAX_STR_LENGTH);
     if (executeCommand(CMD_GET_FLASH, retvals, logDEBUG1) == FAIL) {
         strcpy(mess, "Could not program fpga. (could not get flash drive: ");
         strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);

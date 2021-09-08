@@ -3800,6 +3800,7 @@ int program_fpga(int file_des) {
 
         {
             char retvals[MAX_STR_LENGTH] = {0};
+            memset(retvals, 0, MAX_STR_LENGTH);
             if (FAIL ==
                 executeCommand("ls -lrt /var/tmp/", retvals, logDEBUG1)) {
                 sprintf(

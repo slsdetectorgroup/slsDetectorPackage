@@ -1554,24 +1554,24 @@ int Feb_Control_SetChipSignalsToTrimQuad(int enable) {
     return 1;
 }
 
-int Feb_Control_SetPartialReadout(int value) {
-    LOG(logINFO, ("Setting Partial Readout to %d\n", value));
+int Feb_Control_SetReadNRows(int value) {
+    LOG(logINFO, ("Setting number of rows to %d\n", value));
     if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                     DAQ_REG_PARTIAL_READOUT, value, 0, 0)) {
-        LOG(logERROR, ("Could not write %d to Partial Readout reg\n", value));
+                                     DAQ_REG_READ_N_ROWS, value, 0, 0)) {
+        LOG(logERROR, ("Could not write %d to number of rows reg\n", value));
         return 0;
     }
     return 1;
 }
 
-int Feb_Control_GetPartialReadout() {
+int Feb_Control_GetReadNRows() {
     uint32_t regVal = 0;
     if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
-                                    DAQ_REG_PARTIAL_READOUT, &regVal)) {
-        LOG(logERROR, ("Could not read back Partial Readout reg\n"));
+                                    DAQ_REG_READ_N_ROWS, &regVal)) {
+        LOG(logERROR, ("Could not read back ReadNRows reg\n"));
         return -1;
     }
-    LOG(logDEBUG1, ("Retval Partial Readout: %d\n", regVal));
+    LOG(logDEBUG1, ("Retval ReadNRows: %d\n", regVal));
     return regVal;
 }
 

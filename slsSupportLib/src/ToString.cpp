@@ -55,7 +55,7 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << "leftDataStream:" << r.dataStreamLeft << std::endl
         << "rightDataStream:" << r.dataStreamRight << std::endl
         << "quad:" << r.quad << std::endl
-        << "partialReadout:" << r.partialReadout << std::endl
+        << "readNRows:" << r.readNRows << std::endl
         << "thresholdEnergyeV:" << ToString(r.thresholdEnergyeV) << std::endl
         << "dynamicRange:" << r.dynamicRange << std::endl
         << "timMode:" << r.timMode << std::endl

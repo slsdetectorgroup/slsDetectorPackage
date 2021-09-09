@@ -178,8 +178,8 @@ class Module : public virtual slsDetectorDefs {
     void setCurrentSource(defs::currentSrcParameters par);
     int getDBITPipeline() const;
     void setDBITPipeline(int value);
-    int getPartialReadout() const;
-    void setPartialReadout(const int value);
+    int getReadNRows() const;
+    void setReadNRows(const int value);
     /**************************************************
      *                                                *
      *    Acquisition                                 *

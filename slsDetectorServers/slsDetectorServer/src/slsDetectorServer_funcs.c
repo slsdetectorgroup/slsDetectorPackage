@@ -284,8 +284,8 @@ void function_table() {
     flist[F_GET_QUAD] = &get_quad;
     flist[F_SET_INTERRUPT_SUBFRAME] = &set_interrupt_subframe;
     flist[F_GET_INTERRUPT_SUBFRAME] = &get_interrupt_subframe;
-    flist[F_SET_PARTIAL_READOUT] = &set_partial_readout;
-    flist[F_GET_PARTIAL_READOUT] = &get_partial_readout;
+    flist[F_SET_READ_N_ROWS] = &set_read_n_rows;
+    flist[F_GET_READ_N_ROWS] = &get_read_n_rows;
     flist[F_SET_POSITION] = &set_detector_position;
     flist[F_SET_SOURCE_UDP_MAC] = &set_source_udp_mac;
     flist[F_GET_SOURCE_UDP_MAC] = &get_source_udp_mac;
@@ -4741,14 +4741,14 @@ int get_interrupt_subframe(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_partial_readout(int file_des) {
+int set_read_n_rows(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int arg = 0;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logDEBUG1, ("Setting partial readout: %u\n", arg));
+    LOG(logDEBUG1, ("Setting number of rows: %u\n", arg));
 
 #if !defined(EIGERD) && !defined(JUNGFRAUD)
     functionNotImplemented();
@@ -4758,7 +4758,7 @@ int set_partial_readout(int file_des) {
         if (arg <= 0 || arg > MAX_ROWS_PER_READOUT) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not set partial readout. Must be between %d "
+                    "Could not set read n rows. Must be between %d "
                     "and %d\n",
                     MIN_ROWS_PER_READOUT, MAX_ROWS_PER_READOUT);
             LOG(logERROR, (mess));
@@ -4771,7 +4771,7 @@ int set_partial_readout(int file_des) {
             if ((arg * maxnp) % maxnl) {
                 ret = FAIL;
                 sprintf(mess,
-                        "Could not set %d partial readout. For %d bit "
+                        "Could not set number of rows to %d. For %d bit "
                         "mode and 10 giga %s, (%d (num "
                         "rows) x %d (max num packets for this mode)) must be "
                         "divisible by %d\n",
@@ -4780,26 +4780,26 @@ int set_partial_readout(int file_des) {
                 LOG(logERROR, (mess));
             } else
 #elif JUNGFRAUD
-            if ((check_detector_idle("set partial readout") == OK) && (arg % PARTIAL_READOUT_MULTIPLE != 0)) {
+            if ((check_detector_idle("set nmber of rows") == OK) && (arg % READ_N_ROWS_MULTIPLE != 0)) {
                 ret = FAIL;
                 sprintf(mess,
-                        "Could not set partial readout. %d must be a multiple "
+                        "Could not set number of rows. %d must be a multiple "
                         "of %d\n",
-                        arg, PARTIAL_READOUT_MULTIPLE);
+                        arg, READ_N_ROWS_MULTIPLE);
                 LOG(logERROR, (mess));
             }  else
 #endif
             {
-                if (setPartialReadout(arg) == FAIL) {
+                if (setReadNRows(arg) == FAIL) {
                     ret = FAIL;
-                    sprintf(mess, "Could not set partial readout to %d.\n", arg);
+                    sprintf(mess, "Could not set number of rows to %d.\n", arg);
                     LOG(logERROR, (mess));
                 } else {
-                    int retval = getPartialReadout();
+                    int retval = getReadNRows();
                     if (arg != retval) {
                         ret = FAIL;
                         sprintf(mess,
-                                "Could not set partial readout. Set %d, but "
+                                "Could not set number of rows. Set %d, but "
                                 "read %d\n",
                                 retval, arg);
                         LOG(logERROR, (mess));
@@ -4812,24 +4812,24 @@ int set_partial_readout(int file_des) {
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
-int get_partial_readout(int file_des) {
+int get_read_n_rows(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-    LOG(logDEBUG1, ("Getting partial readout\n"));
+    LOG(logDEBUG1, ("Getting number of rows\n"));
 
 #if !defined(EIGERD) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
-    retval = getPartialReadout();
+    retval = getReadNRows();
     if (retval == -1) {
         ret = FAIL;
-        sprintf(mess, "Could not get partial readout. \n");
+        sprintf(mess, "Could not get numbr of rows. \n");
         LOG(logERROR, (mess));
     } else {
-        LOG(logDEBUG1, ("Partial readout retval: %u\n", retval));
+        LOG(logDEBUG1, ("number of rows retval: %u\n", retval));
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -7211,9 +7211,9 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-        // partialReadout
+        // ReadNRows
 #if defined(EIGERD) || defined(JUNGFRAUD)
-    i32 = getPartialReadout();
+    i32 = getReadNRows();
 #else
     i32 = 0;
 #endif

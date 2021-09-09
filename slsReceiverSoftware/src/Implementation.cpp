@@ -476,9 +476,9 @@ std::vector<uint64_t> Implementation::getNumMissingPackets() const {
     for (int i = 0; i < numThreads; i++) {
         int np = generalData->packetsPerFrame;
         uint64_t totnp = np;
-        // partial readout
-        if (partialReadout != (int)generalData->maxRowsPerReadout) {
-            totnp = ((partialReadout * np) / generalData->maxRowsPerReadout);
+        // ReadNRows
+        if (readNRows != (int)generalData->maxRowsPerReadout) {
+            totnp = ((readNRows * np) / generalData->maxRowsPerReadout);
         }
         totnp *= numberOfTotalFrames;
         mp[i] = listener[i]->GetNumMissingPacket(stoppedFlag, totnp);
@@ -765,7 +765,7 @@ void Implementation::SetupWriter() {
         masterAttributes->subExptime = subExpTime;
         masterAttributes->subPeriod = subPeriod;
         masterAttributes->quad = quadEnable;
-        masterAttributes->partialReadout = partialReadout;
+        masterAttributes->readNRows = readNRows;
         masterAttributes->ratecorr = rateCorrections;
         masterAttributes->adcmask =
             tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
@@ -1533,11 +1533,11 @@ void Implementation::setDeactivatedPadding(bool enable) {
                  << (deactivatedPaddingEnable ? "enabled" : "disabled");
 }
 
-int Implementation::getPartialReadout() const { return partialReadout; }
+int Implementation::getReadNRows() const { return readNRows; }
 
-void Implementation::setPartialReadout(const int value) {
-    partialReadout = value;
-    LOG(logINFO) << "Partial readout (#rows): " << partialReadout;
+void Implementation::setReadNRows(const int value) {
+    readNRows = value;
+    LOG(logINFO) << "Number of rows: " << readNRows;
 }
 
 void Implementation::setThresholdEnergy(const int value) {

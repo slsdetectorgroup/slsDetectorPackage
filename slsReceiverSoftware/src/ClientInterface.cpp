@@ -187,7 +187,7 @@ int ClientInterface::functionTable(){
 	flist[F_SET_RECEIVER_DBIT_OFFSET]		= 	&ClientInterface::set_dbit_offset;
 	flist[F_GET_RECEIVER_DBIT_OFFSET]		= 	&ClientInterface::get_dbit_offset;
     flist[F_SET_RECEIVER_QUAD]			    = 	&ClientInterface::set_quad_type;
-    flist[F_SET_RECEIVER_PARTIAL_READOUT]   =   &ClientInterface::set_partial_readout;
+    flist[F_SET_RECEIVER_READ_N_ROWS]       =   &ClientInterface::set_read_n_rows;
     flist[F_SET_RECEIVER_UDP_IP]            =   &ClientInterface::set_udp_ip;
 	flist[F_SET_RECEIVER_UDP_IP2]           =   &ClientInterface::set_udp_ip2;
 	flist[F_SET_RECEIVER_UDP_PORT]          =   &ClientInterface::set_udp_port;
@@ -417,7 +417,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
         impl()->setThresholdEnergy(arg.thresholdEnergyeV[0]);
     }
     if (myDetectorType == EIGER || myDetectorType == JUNGFRAU) {
-        impl()->setPartialReadout(arg.partialReadout);
+        impl()->setReadNRows(arg.readNRows);
     }
     if (myDetectorType == MYTHEN3) {
         std::array<int, 3> val;
@@ -1406,19 +1406,19 @@ int ClientInterface::set_quad_type(Interface &socket) {
     return socket.Send(OK);
 }
 
-int ClientInterface::set_partial_readout(Interface &socket) {
+int ClientInterface::set_read_n_rows(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
         verifyIdle(socket);
         if (myDetectorType != EIGER && myDetectorType != JUNGFRAU) {
-            throw RuntimeError("Could not set partial readout. Not implemented for this detector");
+            throw RuntimeError("Could not set number of rows. Not implemented for this detector");
         }
-        LOG(logDEBUG1) << "Setting Partial Readout:" << arg;
-        impl()->setPartialReadout(arg);
+        LOG(logDEBUG1) << "Setting number of rows:" << arg;
+        impl()->setReadNRows(arg);
     }
-    int retval = impl()->getPartialReadout();
-    validate(arg, retval, "set partial readout", DEC);
-    LOG(logDEBUG1) << "read partial readout:" << retval;
+    int retval = impl()->getReadNRows();
+    validate(arg, retval, "set number of rows", DEC);
+    LOG(logDEBUG1) << "read number of rows:" << retval;
     return socket.Send(OK);
 }
 

@@ -874,13 +874,13 @@ void init_det(py::module &m) {
              (void (Detector::*)(sls::ns, sls::Positions)) &
                  Detector::setRateCorrection,
              py::arg(), py::arg() = Positions{})
-        .def("getPartialReadout",
+        .def("getReadNRows",
              (Result<int>(Detector::*)(sls::Positions) const) &
-                 Detector::getPartialReadout,
+                 Detector::getReadNRows,
              py::arg() = Positions{})
-        .def("setPartialReadout",
+        .def("setReadNRows",
              (void (Detector::*)(const int, sls::Positions)) &
-                 Detector::setPartialReadout,
+                 Detector::setReadNRows,
              py::arg(), py::arg() = Positions{})
         .def("getInterruptSubframe",
              (Result<bool>(Detector::*)(sls::Positions) const) &

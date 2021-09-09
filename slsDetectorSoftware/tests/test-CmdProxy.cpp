@@ -1494,40 +1494,40 @@ TEST_CASE("dbitpipeline", "[.cmd]") {
     }
 }
 
-TEST_CASE("partialread", "[.cmd]") {
+TEST_CASE("readnrows", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getPartialReadout();
+        auto prev_val = det.getReadNRows();
         {
             std::ostringstream oss;
-            proxy.Call("partialread", {"256"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "partialread 256\n");
+            proxy.Call("readnrows", {"256"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "readnrows 256\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("partialread", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "partialread 256\n");
+            proxy.Call("readnrows", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "readnrows 256\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("partialread", {"16"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "partialread 16\n");
+            proxy.Call("readnrows", {"16"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "readnrows 16\n");
         }
         if (det_type == defs::JUNGFRAU) {
-            REQUIRE_THROWS(proxy.Call("partialread", {"7"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("partialread", {"20"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("partialread", {"44"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("partialread", {"513"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("partialread", {"1"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("readnrows", {"7"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("readnrows", {"20"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("readnrows", {"44"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("readnrows", {"513"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("readnrows", {"1"}, -1, PUT));
         }
-        REQUIRE_THROWS(proxy.Call("partialread", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("readnrows", {"0"}, -1, PUT));
         for (int i = 0; i != det.size(); ++i) {
-            det.setPartialReadout(prev_val[i], {i});
+            det.setReadNRows(prev_val[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("partialread", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("readnrows", {}, -1, GET));
     }
 }
 

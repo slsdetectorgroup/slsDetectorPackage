@@ -14,6 +14,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/sysinfo.h>
 
 // defined in the detector specific Makefile
 #ifdef GOTTHARDD
@@ -3735,7 +3736,9 @@ int program_fpga(int file_des) {
             src = malloc(MAX_FPGAPROGRAMSIZE);
             if (src == NULL) {
                 fclose(fd);
-                strcpy(mess, "Could not allocate memory to get fpga program\n");
+                struct sysinfo info;
+                sysinfo(&info);
+                sprintf(mess, "Could not allocate memory to get fpga program. Free space: %d MB\n", (int)(info.freeram/ (1024 * 1024)));
                 LOG(logERROR, (mess));
                 ret = FAIL;
             }
@@ -3792,7 +3795,7 @@ int program_fpga(int file_des) {
 
         // checksum of copied program
         if (ret == OK) {
-            ret = verifyChecksumFromFile(mess, checksum, TEMP_PROG_FILE_NAME);
+            ret = verifyChecksumFromFile(mess, checksum, TEMP_PROG_FILE_NAME, 0);
         }
         Server_SendResult(file_des, INT32, NULL, 0);
         if (ret == FAIL) {
@@ -3801,7 +3804,7 @@ int program_fpga(int file_des) {
         }
 
         // copy to flash
-        ret = copyToFlash(checksum, mess);
+        ret = copyToFlash(totalsize, checksum, mess);
         Server_SendResult(file_des, INT32, NULL, 0);
         if (ret == FAIL) {
             LOG(logERROR, ("Program FPGA FAIL!\n"));

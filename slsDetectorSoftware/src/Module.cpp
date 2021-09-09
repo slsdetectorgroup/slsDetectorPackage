@@ -3474,11 +3474,34 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
            << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }
-    if (moduleIndex == 0) {
-        LOG(logINFO) << "Checksum verified";
+    LOG(logINFO) << "Checksum verified for module " << moduleIndex << " ("
+                 << shm()->hostname << ")";
+
+    // erasing flash
+    {
+        LOG(logINFO) << "Erasing Flash for module " << moduleIndex << " ("
+                    << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // erasing takes 65 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 65;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            --count;
+            printf(
+                "%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            std::cout << std::flush;
+        }
+        printf("\n");
     }
 
     // copied to flash
+    LOG(logINFO) << "Writing to Flash to module " << moduleIndex << " ("
+                 << shm()->hostname << ")";
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"

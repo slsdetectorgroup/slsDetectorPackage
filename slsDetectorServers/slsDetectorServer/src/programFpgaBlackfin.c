@@ -9,10 +9,12 @@
 #include <sys/sysinfo.h>
 
 /* global variables */
+// clang-format off
 #define MAX_TIME_FPGA_TOUCH_FLASH_US (10 * 1000 * 1000) // 10s
-#define CMD_GET_FLASH                                                          \
-    "awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd"
+#define CMD_GET_FLASH    "awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd"
 #define CMD_FPGA_PICKED_STATUS  "cat /sys/class/gpio/gpio7/value"
+#define FLASH_BUFFER_MEMORY_SIZE (128 * 1024) // 500 KB
+// clang-format on
 
 #define  FLASH_DRIVE_NAME_SIZE   16
 char flashDriveName[FLASH_DRIVE_NAME_SIZE] = {0};
@@ -107,7 +109,7 @@ int preparetoCopyFPGAProgram(FILE **fd, uint64_t fsize, char *mess) {
     return OK;
 }
 
-int copyToFlash(char *clientChecksum, char *mess) {
+int copyToFlash(ssize_t fsize, char *clientChecksum, char *mess) {
 
     if (getDrive(mess) == FAIL) {
         return FAIL;
@@ -115,19 +117,21 @@ int copyToFlash(char *clientChecksum, char *mess) {
 
     FILE *flashfd = NULL;
     FILE *srcfd = NULL;
-    if (openFileForFlash(&flashfd, &srcfd,  mess) == FAIL) {
+    if (openFileForFlash(&flashfd, &srcfd, mess) == FAIL) {
         return FAIL;
     }
 
     if (eraseFlash(mess) == FAIL) {
+        fclose(flashfd);
+        fclose(srcfd);
         return FAIL;
     }
 
-    if (writeToFlash(flashfd, srcfd, mess) == FAIL) {
+    if (writeToFlash(fsize, flashfd, srcfd, mess) == FAIL) {
         return FAIL;
     }
 
-    if (verifyChecksumFromFile(mess, clientChecksum, flashDriveName) == FAIL) {
+    if (verifyChecksumFromFile(mess, clientChecksum, flashDriveName, fsize) == FAIL) {
         return FAIL;
     }
     LOG(logINFO, ("Checksum in Flash verified\n"));
@@ -155,7 +159,7 @@ int getDrive(char *mess) {
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
     strcpy(cmd, CMD_GET_FLASH);
-    if (executeCommand(cmd, retvals, logINFO) == FAIL) {
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
         strcpy(mess, "Could not program fpga. (could not get flash drive: ");
         strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
         strcat(mess, "\n");
@@ -205,7 +209,7 @@ int openFileForFlash(FILE **flashfd, FILE **srcfd, char *mess) {
 }
 
 int eraseFlash(char *mess) {
-    LOG(logDEBUG1, ("Erasing Flash\n"));
+    LOG(logINFO, ("\tErasing Flash...\n"));
 
 #ifdef VIRTUAL
     return OK;
@@ -225,10 +229,11 @@ int eraseFlash(char *mess) {
     return OK;
 }
 
-int writeToFlash(FILE *flashfd, FILE *srcfd, char *mess) {
+int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
     LOG(logDEBUG1, ("writing to flash\n"));
 
-    char* buffer = malloc(MAX_FPGAPROGRAMSIZE);
+
+    char* buffer = malloc(FLASH_BUFFER_MEMORY_SIZE);
     if (buffer == NULL) {
         fclose(flashfd);
         fclose(srcfd);
@@ -237,13 +242,18 @@ int writeToFlash(FILE *flashfd, FILE *srcfd, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
+    LOG(logINFO, ("\tWriting to Flash...\n"));
 
+    int oldProgress = 0;
     ssize_t totalBytes = 0;
-    ssize_t bytes = fread(buffer, sizeof(char), MAX_FPGAPROGRAMSIZE, srcfd);
+    ssize_t bytes = fread((void*)buffer, sizeof(char), FLASH_BUFFER_MEMORY_SIZE, srcfd);
+
     while (bytes > 0) {
+
         ssize_t bytesWritten =
-            fwrite((void *)buffer, sizeof(char), bytes, flashfd);
+            fwrite((void*)buffer, sizeof(char), bytes, flashfd);
         totalBytes += bytesWritten;
+
         if (bytesWritten != bytes) {
             free(buffer);
             fclose(flashfd);
@@ -256,14 +266,32 @@ int writeToFlash(FILE *flashfd, FILE *srcfd, char *mess) {
             LOG(logERROR, (mess));
             return FAIL;
         }
-        bytes = fread(buffer, sizeof(char), bytes, srcfd);
-        printf(".");
+
+        // print progress
+        if (fsize > 0) {
+            int progress = (int)(((double)(totalBytes) / fsize) * 100);
+            if (oldProgress != progress) {
+                printf("%d%%\r", progress);
+                fflush(stdout);
+                oldProgress = progress;
+            }
+        } else printf(".");
+
+        bytes = fread((void*)buffer, sizeof(char), FLASH_BUFFER_MEMORY_SIZE, srcfd);
     }
-    printf("\n");
+    if (fsize <= 0) {
+        printf("\n");
+    }
     free(buffer);
     fclose(flashfd);
     fclose(srcfd);
     LOG(logINFO, ("\tWrote %ld bytes to flash\n", totalBytes));
+
+    if (totalBytes != fsize) {
+        sprintf(mess, "Could not program fpga. Incorrect bytes written to flash %lu [expected: %lu]\n", totalBytes, fsize);
+        LOG(logERROR, (mess));
+        return FAIL;        
+    }
     return OK;
 }
 

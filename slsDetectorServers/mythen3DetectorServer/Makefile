@@ -34,6 +34,7 @@ $(PROGS): $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)  $(LDLIBS)  
 	mv $(PROGS) $(DESTDIR)
 	cp DefaultPattern_mythen3.txt $(DESTDIR)
+	cp detid_mythen3.txt $(DESTDIR)
 	rm $(main_src)*.o
 
 clean:

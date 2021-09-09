@@ -28,7 +28,7 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
     oss << '[' << "detType:" << r.detType << std::endl
         << "numberOfDetector.x:" << r.numberOfDetector.x << std::endl
         << "numberOfDetector.y:" << r.numberOfDetector.y << std::endl
-        << "moduleId:" << r.moduleId << std::endl
+        << "moduleIndex:" << r.moduleIndex << std::endl
         << "hostname:" << r.hostname << std::endl
         << "udpInterfaces:" << r.udpInterfaces << std::endl
         << "udp_dstport:" << r.udp_dstport << std::endl

@@ -123,10 +123,6 @@ Result<int> Detector::getModuleId(Positions pos) const {
     return pimpl->Parallel(&Module::getModuleId, pos);
 }
 
-void Detector::setModuleId(const int value, Positions pos) {
-    pimpl->Parallel(&Module::setModuleId, pos, value);
-}
-
 Result<int64_t> Detector::getReceiverVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverSoftwareVersion, pos);
 }

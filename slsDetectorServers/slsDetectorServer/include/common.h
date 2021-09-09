@@ -28,3 +28,6 @@ void validate(int *ret, char *mess, int arg, int retval, char *modename,
               enum numberMode nummode);
 void validate64(int *ret, char *mess, int64_t arg, int64_t retval,
                 char *modename, enum numberMode nummode);
+
+int getModuleIdInFile(int *ret, char *mess, char *fileName);
+int setModuleIdInFile(char *mess, int arg, char *fileName);

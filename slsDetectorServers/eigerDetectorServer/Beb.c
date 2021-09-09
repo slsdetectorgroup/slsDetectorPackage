@@ -127,44 +127,14 @@ int Beb_SetHeaderData(uint64_t src_mac, uint32_t src_ip, uint16_t src_port,
     uint32_t src_lsb = ((src_mac >> 0) & BIT32_MASK);
     memcpy(&(udp_header.src_mac[0]), &src_msb, sizeof(src_msb));
     memcpy(&(udp_header.src_mac[2]), &src_lsb, sizeof(src_lsb));
-    for (int i = 0; i < 6; ++i) {
-        LOG(logDEBUG1,
-            ("src mac[%d]: %02x\n", i, (uint8_t *)udp_header.src_mac[i]));
-    }
-
     memcpy(&(udp_header.src_ip[0]), &src_ip, sizeof(udp_header.src_ip));
-    for (int i = 0; i < 4; ++i) {
-        LOG(logDEBUG1,
-            ("src ip[%d]: %02x\n", i, (uint8_t *)udp_header.src_ip[i]));
-    }
-
     memcpy(&(udp_header.src_port[0]), &src_port, sizeof(udp_header.src_port));
-    for (int i = 0; i < 2; ++i) {
-        LOG(logDEBUG1,
-            ("src port[%d]: %02x\n", i, (uint8_t *)udp_header.src_port[i]));
-    }
-
-        uint32_t dst_msb = ((dst_mac >> 16) & BIT32_MASK);
-        uint16_t dst_lsb = ((dst_mac >> 0) & BIT16_MASK);
-        memcpy(&(udp_header.dst_mac[0]), &dst_msb, sizeof(dst_msb));
-        memcpy(&(udp_header.dst_mac[4]), &dst_lsb, sizeof(dst_lsb));
-        for (int i = 0; i < 6; ++i) {
-            LOG(logDEBUG1,
-                ("dst mac[%d]: %02x\n", i, (uint8_t *)udp_header.dst_mac[i]));
-        }
-
+    uint32_t dst_msb = ((dst_mac >> 16) & BIT32_MASK);
+    uint16_t dst_lsb = ((dst_mac >> 0) & BIT16_MASK);
+    memcpy(&(udp_header.dst_mac[0]), &dst_msb, sizeof(dst_msb));
+    memcpy(&(udp_header.dst_mac[4]), &dst_lsb, sizeof(dst_lsb));
     memcpy(&(udp_header.dst_ip[0]), &dst_ip, sizeof(udp_header.dst_ip));
-    for (int i = 0; i < 4; ++i) {
-        LOG(logDEBUG1,
-            ("dst ip[%d]: %02x\n", i, (uint8_t *)udp_header.dst_ip[i]));
-    }
-
-        memcpy(&(udp_header.dst_port[0]), &dst_port,
-               sizeof(udp_header.dst_port));
-        for (int i = 0; i < 2; ++i) {
-            LOG(logDEBUG1,
-                ("dst port[%d]: %02x\n", i, (uint8_t *)udp_header.dst_port[i]));
-        }
+    memcpy(&(udp_header.dst_port[0]), &dst_port, sizeof(udp_header.dst_port));
 
     Beb_AdjustIPChecksum(&udp_header);
 
@@ -1022,18 +992,19 @@ int Beb_GetBebFPGATemp() {
     return temperature;
 }
 
-void Beb_SetDetectorNumber(uint32_t detid) {
+int Beb_SetModuleId(uint32_t detid) {
     if (!Beb_activated)
-        return;
+        return OK;
 
     uint32_t swapid = Beb_swap_uint16(detid);
     // LOG(logINFO, "detector id %d swapped %d\n", detid, swapid));
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_TEST_BASEADDR);
     if (fd < 0) {
-        LOG(logERROR, ("Set Detector ID FAIL\n"));
-        return;
+        LOG(logERROR, ("Set module id FAIL\n"));
+        return FAIL;
     } else {
+        // left
         uint32_t value = Beb_Read32(csp0base, UDP_HEADER_A_LEFT_OFST);
         value &= UDP_HEADER_X_MSK; // to keep previous x value
         Beb_Write32(csp0base, UDP_HEADER_A_LEFT_OFST,
@@ -1042,8 +1013,11 @@ void Beb_SetDetectorNumber(uint32_t detid) {
         value = Beb_Read32(csp0base, UDP_HEADER_A_LEFT_OFST);
         if ((value & UDP_HEADER_ID_MSK) !=
             ((swapid << UDP_HEADER_ID_OFST) & UDP_HEADER_ID_MSK)) {
-            LOG(logERROR, ("Set Detector ID FAIL\n"));
+            LOG(logERROR, ("Set module id FAIL\n"));
+            Beb_close(fd, csp0base);
+            return FAIL;
         }
+        // right
         value = Beb_Read32(csp0base, UDP_HEADER_A_RIGHT_OFST);
         value &= UDP_HEADER_X_MSK; // to keep previous x value
         Beb_Write32(csp0base, UDP_HEADER_A_RIGHT_OFST,
@@ -1052,11 +1026,14 @@ void Beb_SetDetectorNumber(uint32_t detid) {
         value = Beb_Read32(csp0base, UDP_HEADER_A_RIGHT_OFST);
         if ((value & UDP_HEADER_ID_MSK) !=
             ((swapid << UDP_HEADER_ID_OFST) & UDP_HEADER_ID_MSK)) {
-            LOG(logERROR, ("Set Detector ID FAIL\n"));
+            LOG(logERROR, ("Set module id FAIL\n"));
+            Beb_close(fd, csp0base);
+            return FAIL;
         }
         Beb_close(fd, csp0base);
     }
-    LOG(logINFO, ("Detector id %d set in UDP Header\n\n", detid));
+    LOG(logINFO, ("Module id %d set in UDP Header\n\n", detid));
+    return OK;
 }
 
 int Beb_SetQuad(int value) {

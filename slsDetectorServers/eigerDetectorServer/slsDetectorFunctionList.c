@@ -46,9 +46,6 @@ unsigned int nimages_per_request = 1;
 int top = 0;
 int master = 0;
 int normal = 0;
-#ifndef VIRTUAL
-uint32_t detid = 0;
-#endif
 
 int eiger_highvoltage = 0;
 int eiger_theo_highvoltage = 0;
@@ -222,25 +219,8 @@ u_int64_t getFirmwareAPIVersion() {
 #endif
 }
 
-void readDetectorNumber() {
-#ifndef VIRTUAL
-    char output[255];
-    FILE *sysFile = popen(IDFILECOMMAND, "r");
-    fgets(output, sizeof(output), sysFile);
-    pclose(sysFile);
-    sscanf(output, "%u", &detid);
-    if (isControlServer) {
-        LOG(logINFOBLUE, ("Detector ID: %u\n", detid));
-    }
-#endif
-}
-
-u_int32_t getDetectorNumber() {
-#ifdef VIRTUAL
-    return 0;
-#else
-    return detid;
-#endif
+int getModuleId(int *ret, char *mess) {
+    return getModuleIdInFile(ret, mess, ID_FILE);
 }
 
 u_int64_t getDetectorMAC() {
@@ -322,7 +302,14 @@ u_int32_t getDetectorIP() {
 void initControlServer() {
     LOG(logINFOBLUE, ("Configuring Control server\n"));
     if (!updateFlag && initError == OK) {
-        readDetectorNumber();
+#ifndef VIRTUAL
+        int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+#else
+        getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+#endif
+        if (initError == FAIL) {
+            return;
+        }
         getModuleConfiguration();
 #ifndef VIRTUAL
         sharedMemory_lockLocalLink();
@@ -330,7 +317,7 @@ void initControlServer() {
         Feb_Interface_FebInterface();
         Feb_Control_FebControl();
         // same addresses for top and bottom
-        if (!Feb_Control_Init(master, normal, getDetectorNumber())) {
+        if (!Feb_Control_Init(master, normal)) {
             initError = FAIL;
             sprintf(initErrorMessage, "Could not intitalize feb control\n");
             LOG(logERROR, (initErrorMessage));
@@ -355,7 +342,7 @@ void initControlServer() {
         LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
         Beb_SetTopVariable(top);
         Beb_Beb();
-        Beb_SetDetectorNumber(getDetectorNumber());
+        Beb_SetModuleId(modid);
         LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
 #endif
         // also reads config file and deactivates
@@ -376,14 +363,13 @@ void initStopServer() {
     usleep(WAIT_STOP_SERVER_START);
     LOG(logINFOBLUE, ("Configuring Stop server\n"));
     // exit(-1);
-    readDetectorNumber();
     getModuleConfiguration();
     sharedMemory_lockLocalLink();
     Feb_Control_SetMasterVariable(master);
     Feb_Interface_FebInterface();
     Feb_Control_FebControl();
     // same addresses for top and bottom
-    Feb_Control_Init(master, normal, getDetectorNumber());
+    Feb_Control_Init(master, normal);
     sharedMemory_unlockLocalLink();
     LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
 #endif

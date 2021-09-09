@@ -500,7 +500,7 @@ typedef struct {
     struct rxParameters {
         detectorType detType{GENERIC};
         xy numberOfDetector;
-        int moduleId{0};
+        int moduleIndex{0};
         char hostname[MAX_STR_LENGTH];
         int udpInterfaces{1};
         int udp_dstport{0};

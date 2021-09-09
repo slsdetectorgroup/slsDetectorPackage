@@ -73,7 +73,8 @@ vetoalg
 vetostream
 serialnumber (put)
 dbitpipeline
-readnlines->partialread
+readnlines->readnrows
+serialnumber->moduleid
 
 setting number of udp interfaces from 1 to 2, didnt get image in gui 
 

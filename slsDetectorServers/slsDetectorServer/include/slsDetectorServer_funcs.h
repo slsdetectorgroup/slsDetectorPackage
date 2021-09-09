@@ -268,7 +268,6 @@ int get_adc_pipeline(int);
 int set_dbit_pipeline(int);
 int get_dbit_pipeline(int);
 int get_module_id(int);
-int set_module_id(int);
 int get_dest_udp_list(int);
 int set_dest_udp_list(int);
 int get_num_dest_list(int);

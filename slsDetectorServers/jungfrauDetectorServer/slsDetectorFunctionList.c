@@ -52,9 +52,6 @@ int detPos[4] = {};
 int chipVersion = 10; // (1.0)
 int chipConfigured = 0;
 
-// until firmware is done
-int temp_readNRows = 512;
-
 int isInitCheckDone() { return initCheckDone; }
 
 int getInitResult(char **mess) {
@@ -1642,11 +1639,6 @@ int setReadNRows(int value) {
         return FAIL;
     }
 
-    // will be replaced when firmware is fixed
-    LOG(logWARNING, ("Setting number of rows: %d (Not implemented in firmware yet)\n", value));
-    temp_readNRows = value;
-    return OK;
-
     // regval is numpackets - 1 
     int regval = (value / READ_N_ROWS_MULTIPLE) - 1;
     uint32_t addr = READ_N_ROWS_REG;
@@ -1665,10 +1657,6 @@ int setReadNRows(int value) {
 }
 
 int getReadNRows() {
-    
-    // will be replaced when firmware is fixed
-    return temp_readNRows;
-
     int enable = (bus_r(READ_N_ROWS_REG) & READ_N_ROWS_ENBL_MSK);
     int regval = ((bus_r(READ_N_ROWS_REG) & READ_N_ROWS_NUM_ROWS_MSK) >> READ_N_ROWS_NUM_ROWS_OFST);
  

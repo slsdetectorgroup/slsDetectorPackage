@@ -97,7 +97,7 @@ u_int32_t getDetectorNumber();
 int getModuleId(int *ret, char *mess);
 #endif
 #ifdef GOTTHARD2D
-void setModuleId(int *ret, char *mess, int arg);
+void setModuleId(int modid);
 #endif
 u_int64_t getDetectorMAC();
 u_int32_t getDetectorIP();

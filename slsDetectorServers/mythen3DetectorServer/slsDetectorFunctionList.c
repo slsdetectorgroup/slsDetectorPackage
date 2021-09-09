@@ -444,6 +444,14 @@ void setupDetector() {
     setASICDefaults();
     setADIFDefaults();
 
+    // set module id in register
+    getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+    if (initError == FAIL) {
+        return;
+    }
+    // until firmware is done
+    // setModuleId(modid);    
+
     // set trigger flow for m3 (for all timing modes)
     bus_w(FLOW_TRIGGER_REG, bus_r(FLOW_TRIGGER_REG) | FLOW_TRIGGER_MSK);
 

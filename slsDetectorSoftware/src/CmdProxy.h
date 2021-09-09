@@ -1203,11 +1203,10 @@ class CmdProxy {
                     "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench]"
                     "Serial number of detector.");
 
-    INTEGER_COMMAND_HEX(
-        moduleid, getModuleId, setModuleId, StringTo<int>,
-        "[value]\n\t[Gotthard2][Eiger][Mythen3] 16 bit value (ideally unique) "
-        "that is streamed out in the UDP header of the detector. "
-        "\n\t[Gotthard2] Can set it too.");
+    GET_COMMAND_HEX(
+        moduleid, getModuleId, 
+        "\n\t[Gotthard2][Eiger][Mythen3] 16 bit value (ideally unique) "
+        "that is streamed out in the UDP header of the detector. Picked up from a file on the module.");
 
     GET_COMMAND(type, getDetectorType,
                 "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, "

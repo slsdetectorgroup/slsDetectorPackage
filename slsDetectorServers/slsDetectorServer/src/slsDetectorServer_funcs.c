@@ -404,7 +404,6 @@ void function_table() {
     flist[F_SET_DBIT_PIPELINE] = &set_dbit_pipeline;
     flist[F_GET_DBIT_PIPELINE] = &get_dbit_pipeline;
     flist[F_GET_MODULE_ID] = &get_module_id;
-    flist[F_SET_MODULE_ID] = &set_module_id;
     flist[F_GET_DEST_UDP_LIST] = &get_dest_udp_list;
     flist[F_SET_DEST_UDP_LIST] = &set_dest_udp_list;
     flist[F_GET_NUM_DEST_UDP] = &get_num_dest_list;
@@ -9027,34 +9026,6 @@ int get_module_id(int file_des) {
     LOG(logDEBUG1, ("module id retval: 0x%x\n", retval));
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
-}
-
-int set_module_id(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int arg = -1;
-
-    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-        return printSocketReadError();
-    LOG(logDEBUG1, ("Setting module id to 0x%x\n", arg));
-
-#ifndef GOTTHARD2D
-    functionNotImplemented();
-#else
-    if (arg > 0xFFFF) {
-        ret = FAIL;
-        sprintf(mess, "Could not set module id. Max value: 0x%x\n", 0xFFFF);
-        LOG(logERROR, (mess));
-    } else {
-        setModuleId(&ret, mess, arg);
-        if (ret != FAIL) {
-            int retval = getModuleId(&ret, mess);
-            LOG(logDEBUG1, ("retval module id: %d\n", retval));
-            validate(&ret, mess, arg, retval, "set module id", DEC);
-        }
-    }
-#endif
-    return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_dest_udp_list(int file_des) {

@@ -244,7 +244,6 @@ enum detFuncs {
     F_SET_DBIT_PIPELINE,
     F_GET_DBIT_PIPELINE,
     F_GET_MODULE_ID,
-    F_SET_MODULE_ID,
     F_GET_DEST_UDP_LIST,
     F_SET_DEST_UDP_LIST,
     F_GET_NUM_DEST_UDP,
@@ -602,7 +601,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_DBIT_PIPELINE:               return "F_SET_DBIT_PIPELINE";
     case F_GET_DBIT_PIPELINE:               return "F_GET_DBIT_PIPELINE";
     case F_GET_MODULE_ID:                   return "F_GET_MODULE_ID";
-    case F_SET_MODULE_ID:                   return "F_SET_MODULE_ID";
     case F_GET_DEST_UDP_LIST:               return "F_GET_DEST_UDP_LIST";
     case F_SET_DEST_UDP_LIST:               return "F_SET_DEST_UDP_LIST";
     case F_GET_NUM_DEST_UDP:                return "F_GET_NUM_DEST_UDP";

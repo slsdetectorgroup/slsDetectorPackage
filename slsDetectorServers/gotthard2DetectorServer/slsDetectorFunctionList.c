@@ -288,16 +288,13 @@ u_int32_t getDetectorNumber() {
 }
 
 int getModuleId(int *ret, char *mess) {
-    return getModuleIdInFile(ret, mess, ID_FILE);
+    return ((bus_r(MOD_ID_REG) & ~MOD_ID_MSK) >> MOD_ID_OFST);
 }
 
-void setModuleId(int *ret, char *mess, int arg) {
-    *ret = setModuleIdInFile(mess, arg, ID_FILE);
-    if (*ret == FAIL) {
-        return;
-    }
+void setModuleId(int modid) {
+    LOG(logINFOBLUE, ("Setting module id in fpga: %d\n", modid))
     bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) & ~MOD_ID_MSK);
-    bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) | ((arg << MOD_ID_OFST) & MOD_ID_MSK));
+    bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) | ((modid << MOD_ID_OFST) & MOD_ID_MSK));
 }
 
 u_int64_t getDetectorMAC() {
@@ -422,10 +419,6 @@ void setupDetector() {
     sharedMemory_setStatus(IDLE);
     setupUDPCommParameters();
 #endif
-    getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
-    if (initError == FAIL) {
-        return;
-    }
     // pll defines
     ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL,
                               PLL_RESET_REG, PLL_RESET_READOUT_MSK,
@@ -483,6 +476,14 @@ void setupDetector() {
     if (readConfigFile() == FAIL) {
         return;
     }
+
+    // set module id in register
+    int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+    if (initError == FAIL) {
+        return;
+    }
+    setModuleId(modid);
+
     setBurstMode(DEFAULT_BURST_MODE);
     setFilterResistor(DEFAULT_FILTER_RESISTOR);
     setCDSGain(DEFAILT_CDS_GAIN);

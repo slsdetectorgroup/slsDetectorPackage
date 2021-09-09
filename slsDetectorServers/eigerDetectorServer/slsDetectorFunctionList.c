@@ -303,7 +303,7 @@ void initControlServer() {
     LOG(logINFOBLUE, ("Configuring Control server\n"));
     if (!updateFlag && initError == OK) {
 #ifndef VIRTUAL
-        int detid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+        int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
 #else
         getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
 #endif
@@ -342,7 +342,7 @@ void initControlServer() {
         LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
         Beb_SetTopVariable(top);
         Beb_Beb();
-        Beb_SetModuleId(detid);
+        Beb_SetModuleId(modid);
         LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
 #endif
         // also reads config file and deactivates

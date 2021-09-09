@@ -73,9 +73,6 @@ void init_det(py::module &m) {
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getModuleId,
              py::arg() = Positions{})
-        .def("setModuleId",
-             (void (Detector::*)(int, sls::Positions)) & Detector::setModuleId,
-             py::arg(), py::arg() = Positions{})
         .def("getReceiverVersion",
              (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getReceiverVersion,

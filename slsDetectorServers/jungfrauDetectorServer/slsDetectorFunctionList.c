@@ -52,9 +52,6 @@ int detPos[4] = {};
 int chipVersion = 10; // (1.0)
 int chipConfigured = 0;
 
-// until firmware is done
-int temp_readNRows = 512;
-
 int isInitCheckDone() { return initCheckDone; }
 
 int getInitResult(char **mess) {
@@ -337,7 +334,7 @@ u_int32_t getDetectorIP() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    char temp[50] = "";
+    char temp[INET_ADDRSTRLEN] = "";
     u_int32_t res = 0;
     // execute and get address
     char output[255];
@@ -1480,16 +1477,16 @@ int configureMAC() {
         int dstport = udpDetails[iRxEntry].dstport;
         int dstport2 = udpDetails[iRxEntry].dstport2;
 
-        char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
-            dst_ip[INET_ADDRSTRLEN];
-        getMacAddressinString(src_mac, 50, srcmac);
-        getMacAddressinString(dst_mac, 50, dstmac);
+        char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
+            dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
+        getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
+        getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
         getIpAddressinString(src_ip, srcip);
         getIpAddressinString(dst_ip, dstip);
-        char src_mac2[50], src_ip2[INET_ADDRSTRLEN], dst_mac2[50],
-            dst_ip2[INET_ADDRSTRLEN];
-        getMacAddressinString(src_mac2, 50, srcmac2);
-        getMacAddressinString(dst_mac2, 50, dstmac2);
+        char src_mac2[MAC_ADDRESS_SIZE], src_ip2[INET_ADDRSTRLEN],
+            dst_mac2[MAC_ADDRESS_SIZE], dst_ip2[INET_ADDRSTRLEN];
+        getMacAddressinString(src_mac2, MAC_ADDRESS_SIZE, srcmac2);
+        getMacAddressinString(dst_mac2, MAC_ADDRESS_SIZE, dstmac2);
         getIpAddressinString(src_ip2, srcip2);
         getIpAddressinString(dst_ip2, dstip2);
 
@@ -1642,11 +1639,6 @@ int setReadNRows(int value) {
         return FAIL;
     }
 
-    // will be replaced when firmware is fixed
-    LOG(logWARNING, ("Setting number of rows: %d (Not implemented in firmware yet)\n", value));
-    temp_readNRows = value;
-    return OK;
-
     // regval is numpackets - 1 
     int regval = (value / READ_N_ROWS_MULTIPLE) - 1;
     uint32_t addr = READ_N_ROWS_REG;
@@ -1665,10 +1657,6 @@ int setReadNRows(int value) {
 }
 
 int getReadNRows() {
-    
-    // will be replaced when firmware is fixed
-    return temp_readNRows;
-
     int enable = (bus_r(READ_N_ROWS_REG) & READ_N_ROWS_ENBL_MSK);
     int regval = ((bus_r(READ_N_ROWS_REG) & READ_N_ROWS_NUM_ROWS_MSK) >> READ_N_ROWS_NUM_ROWS_OFST);
  

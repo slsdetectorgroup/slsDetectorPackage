@@ -41,7 +41,7 @@ def list_to_bitmask(values):
     return mask
 
 def make_bitmask(args):
-    if isinstance(args, list):
+    if isinstance(args, (list,tuple)):
         return list_to_bitmask(args)
     elif isinstance(args, dict):
         return {key: list_to_bitmask(value) for key, value in args.items()}

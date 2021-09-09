@@ -908,12 +908,12 @@ void Detector::setSourceUDPMAC2(const MacAddr mac, Positions pos) {
     pimpl->Parallel(&Module::setSourceUDPMAC2, pos, mac);
 }
 
-Result<defs::udpDestination>
-Detector::getDestinationUDPList(const uint32_t entry, Positions pos) const {
+Result<UdpDestination> Detector::getDestinationUDPList(const uint32_t entry,
+                                                       Positions pos) const {
     return pimpl->Parallel(&Module::getDestinationUDPList, pos, entry);
 }
 
-void Detector::setDestinationUDPList(const defs::udpDestination dest,
+void Detector::setDestinationUDPList(const UdpDestination dest,
                                      const int module_id) {
     if (module_id == -1 && size() > 1) {
         throw sls::RuntimeError("Cannot set this parameter at detector level.");

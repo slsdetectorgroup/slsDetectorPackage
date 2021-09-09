@@ -667,10 +667,10 @@ class Detector {
     /** [Jungfrau] bottom half [Gotthard2] veto debugging */
     void setSourceUDPMAC2(const MacAddr mac, Positions pos = {});
 
-    Result<defs::udpDestination>
-    getDestinationUDPList(const uint32_t entry, Positions pos = {}) const;
+    Result<UdpDestination> getDestinationUDPList(const uint32_t entry,
+                                                 Positions pos = {}) const;
 
-    void setDestinationUDPList(const defs::udpDestination, const int module_id);
+    void setDestinationUDPList(const UdpDestination, const int module_id);
 
     /** [Jungfrau][Eiger] */
     Result<int> getNumberofUDPDestinations(Positions pos = {}) const;

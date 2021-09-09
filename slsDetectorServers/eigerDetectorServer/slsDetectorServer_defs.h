@@ -2,6 +2,8 @@
 #include "sls/sls_detector_defs.h"
 
 #define REQUIRED_FIRMWARE_VERSION (27)
+// virtual ones renamed for consistency
+// real ones keep previous name for compatibility (already in production)
 #ifdef VIRTUAL
 #define ID_FILE "detid_eiger.txt"
 #else

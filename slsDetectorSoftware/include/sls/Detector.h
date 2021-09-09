@@ -81,12 +81,8 @@ class Detector {
     /* [Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench] */
     Result<int64_t> getSerialNumber(Positions pos = {}) const;
 
-    /** [Eiger][Gotthard2][Mythen3] */
+    /** [Eiger][Gotthard2][Mythen3] 6 bit value (ideally unique) that is streamed out in the UDP header of the detector.*/
     Result<int> getModuleId(Positions pos = {}) const;
-
-    /** [Gotthard2] 6 bit value (ideally unique) that is "
-        "streamed out1 in the UDP header of the detector.  */
-    void setModuleId(const int value, Positions pos = {});
 
     Result<int64_t> getReceiverVersion(Positions pos = {}) const;
 
@@ -667,10 +663,10 @@ class Detector {
     /** [Jungfrau] bottom half [Gotthard2] veto debugging */
     void setSourceUDPMAC2(const MacAddr mac, Positions pos = {});
 
-    Result<defs::udpDestination>
-    getDestinationUDPList(const uint32_t entry, Positions pos = {}) const;
+    Result<UdpDestination> getDestinationUDPList(const uint32_t entry,
+                                                 Positions pos = {}) const;
 
-    void setDestinationUDPList(const defs::udpDestination, const int module_id);
+    void setDestinationUDPList(const UdpDestination, const int module_id);
 
     /** [Jungfrau][Eiger] */
     Result<int> getNumberofUDPDestinations(Positions pos = {}) const;

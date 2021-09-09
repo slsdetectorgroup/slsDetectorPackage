@@ -337,7 +337,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
         int msize[2] = {arg.numberOfDetector.x, arg.numberOfDetector.y};
         impl()->setDetectorSize(msize);
     }
-    impl()->setModulePositionId(arg.moduleId);
+    impl()->setModulePositionId(arg.moduleIndex);
     impl()->setDetectorHostname(arg.hostname);
 
     // udp setup

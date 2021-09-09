@@ -28,7 +28,7 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
     oss << '[' << "detType:" << r.detType << std::endl
         << "numberOfDetector.x:" << r.numberOfDetector.x << std::endl
         << "numberOfDetector.y:" << r.numberOfDetector.y << std::endl
-        << "moduleId:" << r.moduleId << std::endl
+        << "moduleIndex:" << r.moduleIndex << std::endl
         << "hostname:" << r.hostname << std::endl
         << "udpInterfaces:" << r.udpInterfaces << std::endl
         << "udp_dstport:" << r.udp_dstport << std::endl
@@ -145,31 +145,6 @@ std::string ToString(const slsDetectorDefs::currentSrcParameters &r) {
 
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::currentSrcParameters &r) {
-    return os << ToString(r);
-}
-
-std::string ToString(const slsDetectorDefs::udpDestination &r) {
-    std::ostringstream oss;
-    oss << '[' << std::endl
-        << "entry " << r.entry_ << std::endl
-        << "ip " << IpAddr(r.ip_) << std::endl
-        << "mac " << MacAddr(r.mac_) << std::endl
-        << "port " << r.port_ << std::endl;
-    if (r.port2_ != 0) {
-        oss << "port2 " << r.port2_ << std::endl;
-    }
-    if (r.ip2_ != 0) {
-        oss << "ip2 " << IpAddr(r.ip2_) << std::endl;
-    }
-    if (r.mac2_ != 0) {
-        oss << "mac2 " << MacAddr(r.mac2_) << std::endl;
-    }
-    oss << ']';
-    return oss.str();
-}
-
-std::ostream &operator<<(std::ostream &os,
-                         const slsDetectorDefs::udpDestination &r) {
     return os << ToString(r);
 }
 

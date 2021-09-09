@@ -52,6 +52,7 @@ typedef struct udpStruct_s {
     uint32_t dstip;
     uint32_t dstip2;
 } udpStruct;
+#define MAC_ADDRESS_SIZE 18
 
 // basic tests
 int isInitCheckDone();
@@ -96,7 +97,7 @@ u_int32_t getDetectorNumber();
 int getModuleId(int *ret, char *mess);
 #endif
 #ifdef GOTTHARD2D
-void setModuleId(int *ret, char *mess, int arg);
+void setModuleId(int modid);
 #endif
 u_int64_t getDetectorMAC();
 u_int32_t getDetectorIP();

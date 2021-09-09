@@ -494,35 +494,13 @@ typedef struct {
         }
     } __attribute__((packed));
 
-    struct udpDestination {
-        uint32_t entry_{};
-        uint32_t port_{};
-        uint32_t port2_{};
-        uint32_t ip_{};
-        uint32_t ip2_{};
-        uint64_t mac_{};
-        uint64_t mac2_{};
-        udpDestination() {}        
-        udpDestination(uint32_t entry, uint32_t port = 0, uint32_t ip = 0, uint64_t mac = 0,
-                       uint32_t port2 = 0, uint32_t ip2 = 0, uint64_t mac2 = 0)
-            : entry_(entry), port_(port), port2_(port2), ip_(ip), ip2_(ip2),
-              mac_(mac), mac2_(mac2) {}
-
-        bool operator==(const udpDestination &other) const {
-            return ((entry_ == other.entry_) && (port_ == other.port_) &&
-                    (port2_ == other.port2_) && (ip_ == other.ip_) &&
-                    (ip2_ == other.ip2_) && (mac_ == other.mac_) &&
-                    (mac2_ == other.mac2_));
-        }
-    } __attribute__((packed));
-
     /**
      * structure to udpate receiver
      */
     struct rxParameters {
         detectorType detType{GENERIC};
         xy numberOfDetector;
-        int moduleId{0};
+        int moduleIndex{0};
         char hostname[MAX_STR_LENGTH];
         int udpInterfaces{1};
         int udp_dstport{0};

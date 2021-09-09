@@ -66,12 +66,12 @@ class Module : public virtual slsDetectorDefs {
 
     /** creating new shared memory
     verify is if shared memory version matches existing one */
-    explicit Module(detectorType type, int det_id = 0, int module_id = 0,
+    explicit Module(detectorType type, int det_id = 0, int module_index = 0,
                     bool verify = true);
 
     /** opening existing shared memory
     verify is if shared memory version matches existing one */
-    explicit Module(int det_id = 0, int module_id = 0, bool verify = true);
+    explicit Module(int det_id = 0, int module_index = 0, bool verify = true);
 
     virtual ~Module();
 
@@ -91,7 +91,6 @@ class Module : public virtual slsDetectorDefs {
     int64_t getDetectorServerVersion() const;
     int64_t getSerialNumber() const;
     int getModuleId() const;
-    void setModuleId(const int value);
     int64_t getReceiverSoftwareVersion() const;
     static detectorType getTypeFromDetector(const std::string &hostname,
                                             int cport = DEFAULT_PORTNO);
@@ -222,8 +221,8 @@ class Module : public virtual slsDetectorDefs {
     void setSourceUDPMAC(const sls::MacAddr mac);
     sls::MacAddr getSourceUDPMAC2() const;
     void setSourceUDPMAC2(const sls::MacAddr mac);
-    udpDestination getDestinationUDPList(const uint32_t entry) const;
-    void setDestinationUDPList(const defs::udpDestination dest);
+    sls::UdpDestination getDestinationUDPList(const uint32_t entry) const;
+    void setDestinationUDPList(const sls::UdpDestination dest);
     int getNumberofUDPDestinations() const;
     void setNumberofUDPDestinations(const int value);
     int getFirstUDPDestination() const;
@@ -748,7 +747,7 @@ class Module : public virtual slsDetectorDefs {
     void programFPGAviaBlackfin(std::vector<char> buffer);
     void programFPGAviaNios(std::vector<char> buffer);
 
-    const int moduleId;
+    const int moduleIndex;
     mutable sls::SharedMemory<sharedSlsDetector> shm{0, 0};
 };
 

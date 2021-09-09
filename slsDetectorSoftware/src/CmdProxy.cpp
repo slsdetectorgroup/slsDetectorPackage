@@ -1379,15 +1379,8 @@ IpAddr CmdProxy::getIpFromAuto() {
     return val;
 }
 
-defs::udpDestination CmdProxy::getUdpList() {
-    uint32_t entry{};
-    uint32_t port{};
-    uint32_t port2{};
-    uint32_t ip{};
-    uint32_t ip2{};
-    uint64_t mac{};
-    uint64_t mac2{};
-
+UdpDestination CmdProxy::getUdpEntry() {
+    UdpDestination udpDestination{};
     bool hasEntry = false;
 
     for (auto it : args) {
@@ -1395,40 +1388,40 @@ defs::udpDestination CmdProxy::getUdpList() {
         std::string key = it.substr(0, pos);
         std::string value = it.substr(pos + 1);
         if (key == "entry") {
-            entry = StringTo<int>(value);
+            udpDestination.entry = StringTo<int>(value);
             hasEntry = true;
         } else if (key == "ip") {
             if (value == "auto") {
                 auto val = getIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip of detector " << det_id
                              << " to " << val;
-                ip = val.uint32();
+                udpDestination.ip = val;
             } else {
-                ip = IpAddr(value).uint32();
+                udpDestination.ip = IpAddr(value);
             }
         } else if (key == "ip2") {
             if (value == "auto") {
                 auto val = getIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id
                              << " to " << val;
-                ip2 = val.uint32();
+                udpDestination.ip2 = val;
             } else {
-                ip2 = IpAddr(value).uint32();
+                udpDestination.ip2 = IpAddr(value);
             }
         } else if (key == "mac") {
-            mac = MacAddr(value).uint64();
+            udpDestination.mac = MacAddr(value);
         } else if (key == "mac2") {
-            mac2 = MacAddr(value).uint64();
+            udpDestination.mac2 = MacAddr(value);
         } else if (key == "port") {
-            port = StringTo<uint32_t>(value);
+            udpDestination.port = StringTo<uint32_t>(value);
         } else if (key == "port2") {
-            port2 = StringTo<uint32_t>(value);
+            udpDestination.port2 = StringTo<uint32_t>(value);
         }
     }
     if (!hasEntry) {
         throw sls::RuntimeError("Found no entry argument.");
     }
-    return defs::udpDestination(entry, port, ip, mac, port2, ip2, mac2);
+    return udpDestination;
 }
 
 std::string CmdProxy::UDPDestinationList(int action) {
@@ -1454,7 +1447,7 @@ std::string CmdProxy::UDPDestinationList(int action) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
         }
-        auto t = getUdpList();
+        auto t = getUdpEntry();
         det->setDestinationUDPList(t, det_id);
         os << ToString(args) << std::endl;
     } else {

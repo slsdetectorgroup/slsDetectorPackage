@@ -404,7 +404,6 @@ void function_table() {
     flist[F_SET_DBIT_PIPELINE] = &set_dbit_pipeline;
     flist[F_GET_DBIT_PIPELINE] = &get_dbit_pipeline;
     flist[F_GET_MODULE_ID] = &get_module_id;
-    flist[F_SET_MODULE_ID] = &set_module_id;
     flist[F_GET_DEST_UDP_LIST] = &get_dest_udp_list;
     flist[F_SET_DEST_UDP_LIST] = &set_dest_udp_list;
     flist[F_GET_NUM_DEST_UDP] = &get_num_dest_list;
@@ -1760,8 +1759,8 @@ int acquire(int blocking, int file_des) {
             if (udpDetails[0].srcmac != getDetectorMAC()) {
             ret = FAIL;
             uint64_t sourcemac = getDetectorMAC();
-            char src_mac[50];
-            getMacAddressinString(src_mac, 50, sourcemac);
+            char src_mac[MAC_ADDRESS_SIZE];
+            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
             sprintf(mess,
                     "Invalid udp source mac address for this detector. Must be "
                     "same as hardware detector mac address %s\n",
@@ -4875,8 +4874,8 @@ void calculate_and_set_position() {
     else {
         // create detector mac from x and y
         if (udpDetails[0].srcmac == 0) {
-            char dmac[50];
-            memset(dmac, 0, 50);
+            char dmac[MAC_ADDRESS_SIZE];
+            memset(dmac, 0, MAC_ADDRESS_SIZE);
             sprintf(dmac, "aa:bb:cc:dd:%02x:%02x", pos[0] & 0xFF,
                     pos[1] & 0xFF);
             LOG(logINFO, ("Udp source mac address created: %s\n", dmac));
@@ -4895,8 +4894,8 @@ void calculate_and_set_position() {
 #if defined(JUNGFRAUD) || defined(GOTTHARD2D)
         if (getNumberofUDPInterfaces() > 1) {
             if (udpDetails[0].srcmac2 == 0) {
-                char dmac2[50];
-                memset(dmac2, 0, 50);
+                char dmac2[MAC_ADDRESS_SIZE];
+                memset(dmac2, 0, MAC_ADDRESS_SIZE);
                 sprintf(dmac2, "aa:bb:cc:dd:%02x:%02x", (pos[0] + 1) & 0xFF,
                         pos[1] & 0xFF);
                 LOG(logINFO, ("Udp source mac address2 created: %s\n", dmac2));
@@ -9034,34 +9033,6 @@ int get_module_id(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_module_id(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int arg = -1;
-
-    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-        return printSocketReadError();
-    LOG(logDEBUG1, ("Setting module id to 0x%x\n", arg));
-
-#ifndef GOTTHARD2D
-    functionNotImplemented();
-#else
-    if (arg > 0xFFFF) {
-        ret = FAIL;
-        sprintf(mess, "Could not set module id. Max value: 0x%x\n", 0xFFFF);
-        LOG(logERROR, (mess));
-    } else {
-        setModuleId(&ret, mess, arg);
-        if (ret != FAIL) {
-            int retval = getModuleId(&ret, mess);
-            LOG(logDEBUG1, ("retval module id: %d\n", retval));
-            validate(&ret, mess, arg, retval, "set module id", DEC);
-        }
-    }
-#endif
-    return Server_SendResult(file_des, INT32, NULL, 0);
-}
-
 int get_dest_udp_list(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
@@ -9100,9 +9071,9 @@ int get_dest_udp_list(int file_des) {
         char ip[INET_ADDRSTRLEN], ip2[INET_ADDRSTRLEN];
         getIpAddressinString(ip, retvals[3]);
         getIpAddressinString(ip2, retvals[4]);
-        char mac[50], mac2[50];
-        getMacAddressinString(mac, 50, retvals64[0]);
-        getMacAddressinString(mac2, 50, retvals64[1]);
+        char mac[MAC_ADDRESS_SIZE], mac2[MAC_ADDRESS_SIZE];
+        getMacAddressinString(mac, MAC_ADDRESS_SIZE, retvals64[0]);
+        getMacAddressinString(mac2, MAC_ADDRESS_SIZE, retvals64[1]);
         LOG(logDEBUG1,
             ("Udp Dest. retval [%d]: [port %d, port2 %d, ip %s, ip2 %s, "
              "mac %s, mac2 %s]\n",
@@ -9136,9 +9107,9 @@ int set_dest_udp_list(int file_des) {
     char ip[INET_ADDRSTRLEN], ip2[INET_ADDRSTRLEN];
     getIpAddressinString(ip, args[3]);
     getIpAddressinString(ip2, args[4]);
-    char mac[50], mac2[50];
-    getMacAddressinString(mac, 50, args64[0]);
-    getMacAddressinString(mac2, 50, args64[1]);
+    char mac[MAC_ADDRESS_SIZE], mac2[MAC_ADDRESS_SIZE];
+    getMacAddressinString(mac, MAC_ADDRESS_SIZE, args64[0]);
+    getMacAddressinString(mac2, MAC_ADDRESS_SIZE, args64[1]);
 
 #if !defined(EIGERD) && !defined(JUNGFRAUD)
     functionNotImplemented();

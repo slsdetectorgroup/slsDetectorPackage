@@ -288,16 +288,13 @@ u_int32_t getDetectorNumber() {
 }
 
 int getModuleId(int *ret, char *mess) {
-    return getModuleIdInFile(ret, mess, ID_FILE);
+    return ((bus_r(MOD_ID_REG) & ~MOD_ID_MSK) >> MOD_ID_OFST);
 }
 
-void setModuleId(int *ret, char *mess, int arg) {
-    *ret = setModuleIdInFile(mess, arg, ID_FILE);
-    if (*ret == FAIL) {
-        return;
-    }
+void setModuleId(int modid) {
+    LOG(logINFOBLUE, ("Setting module id in fpga: %d\n", modid))
     bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) & ~MOD_ID_MSK);
-    bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) | ((arg << MOD_ID_OFST) & MOD_ID_MSK));
+    bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) | ((modid << MOD_ID_OFST) & MOD_ID_MSK));
 }
 
 u_int64_t getDetectorMAC() {
@@ -326,7 +323,7 @@ u_int32_t getDetectorIP() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    char temp[50] = "";
+    char temp[INET_ADDRSTRLEN] = "";
     u_int32_t res = 0;
     // execute and get address
     char output[255];
@@ -422,10 +419,6 @@ void setupDetector() {
     sharedMemory_setStatus(IDLE);
     setupUDPCommParameters();
 #endif
-    getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
-    if (initError == FAIL) {
-        return;
-    }
     // pll defines
     ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL,
                               PLL_RESET_REG, PLL_RESET_READOUT_MSK,
@@ -483,6 +476,14 @@ void setupDetector() {
     if (readConfigFile() == FAIL) {
         return;
     }
+
+    // set module id in register
+    int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+    if (initError == FAIL) {
+        return;
+    }
+    setModuleId(modid);
+
     setBurstMode(DEFAULT_BURST_MODE);
     setFilterResistor(DEFAULT_FILTER_RESISTOR);
     setCDSGain(DEFAILT_CDS_GAIN);
@@ -1749,16 +1750,16 @@ int configureMAC() {
     int dstport2 = udpDetails[0].dstport2;
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
-    char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
-        dst_ip[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac, 50, srcmac);
-    getMacAddressinString(dst_mac, 50, dstmac);
+    char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
+        dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
+    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
+    getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
     getIpAddressinString(src_ip, srcip);
     getIpAddressinString(dst_ip, dstip);
-    char src_mac2[50], src_ip2[INET_ADDRSTRLEN], dst_mac2[50],
-        dst_ip2[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac2, 50, srcmac2);
-    getMacAddressinString(dst_mac2, 50, dstmac2);
+    char src_mac2[MAC_ADDRESS_SIZE], src_ip2[INET_ADDRSTRLEN],
+        dst_mac2[MAC_ADDRESS_SIZE], dst_ip2[INET_ADDRSTRLEN];
+    getMacAddressinString(src_mac2, MAC_ADDRESS_SIZE, srcmac2);
+    getMacAddressinString(dst_mac2, MAC_ADDRESS_SIZE, dstmac2);
     getIpAddressinString(src_ip2, srcip2);
     getIpAddressinString(dst_ip2, dstip2);
 

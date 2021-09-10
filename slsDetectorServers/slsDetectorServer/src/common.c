@@ -235,7 +235,7 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
 
 int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
                             ssize_t fsize) {
-    LOG(logINFO, ("\tVerifying Checksum...\n"));
+    LOG(logINFO, ("\tVerifying Flash Checksum...\n"));
 
     FILE *fp = fopen(fname, "r");
     if (fp == NULL) {

@@ -195,7 +195,7 @@ int verifyChecksumFromBuffer(char *mess, char *clientChecksum, char *buffer,
         LOG(logERROR, (mess));
         return FAIL;
     }
-    return verifyChecksum(mess, clientChecksum, &c);
+    return verifyChecksum(mess, clientChecksum, &c, "copied program");
 }
 
 int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
@@ -232,7 +232,7 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
     }
     LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));
     fclose(fp);
-    return verifyChecksum(mess, clientChecksum, &c);
+    return verifyChecksum(mess, clientChecksum, &c, "copied program");
 }
 
 int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,

@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h> // readlink
 
-#define FLASH_CONVERTED_NAME "test.rawbin"
+#define FLASH_CONVERTED_NAME "/var/tmp/test.rawbin"
 
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue) {

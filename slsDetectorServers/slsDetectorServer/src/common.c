@@ -222,12 +222,12 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname, ssize_
     char lastByte = buf[0];
     // bytes = 128
     while (bytes > 0) {
-        buf[0] = lastbyte;
+        buf[0] = lastByte;
         // shift by 4 bits to the left
         for (int i = 0; i < bytes; ++i) {
             buf[i] = ((buf[i] & 0xf) << 4) + ((buf[i + 1] >> 4) & 0xf);
         }
-        lastbyte = buf[bytes];
+        lastByte = buf[bytes];
         if (!MD5_Update(&c, buf, bytes)) {
             fclose(fp);
             strcpy(mess, "Unable to calculate checksum (MD5_Update)\n");

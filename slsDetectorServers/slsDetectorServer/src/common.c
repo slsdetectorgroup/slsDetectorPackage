@@ -7,6 +7,8 @@
 #include <string.h>
 #include <unistd.h> // readlink
 
+#define FLASH_READ_FNAME "/var/tmp/flash.rawbin"
+
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue) {
     LOG(logDEBUG1, (" Input Value: %d (Input:(%d - %d), Output:(%d - %d))\n",
@@ -251,6 +253,14 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         return FAIL;
     }
 
+    FILE *flashfp = fopen(FLASH_READ_FNAME, "w");
+    if (fp == NULL) {
+        sprintf(mess, "Unable to open %s in write mode to get from flash\n",
+                FLASH_READ_FNAME);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
     LOG(logINFO, ("\tReading from flash\n"));
     int oldProgress = 0;
     ssize_t bytes = 0;
@@ -268,6 +278,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
             break;
         }
         ++bytes;
+        write(flashfp, &s, 1);
         // swap bits
         int d = 0;
         for (int i = 0; i < 8; ++i) {
@@ -283,6 +294,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
     }
     LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", (long int)bytes));
     fclose(fp);
+    fclose(flashfp);
     return verifyChecksum(mess, clientChecksum, &c);
 }
 

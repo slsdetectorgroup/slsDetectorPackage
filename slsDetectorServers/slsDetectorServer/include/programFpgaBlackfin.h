@@ -4,8 +4,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-#define TEMP_PROG_FILE_NAME "/var/tmp/tmp.pof"
-
+#define TEMP_PROG_FILE_NAME "/var/tmp/tmp.rawbin"
 
 void defineGPIOpins();
 void FPGAdontTouchFlash();
@@ -17,6 +16,7 @@ void resetFPGA();
  * verify memory available to copy
  * open file to copy
  */
+int deleteOldFile(char *mess);
 int preparetoCopyFPGAProgram(FILE **fd, uint64_t fsize, char *mess);
 int copyToFlash(ssize_t fsize, char *clientChecksum, char *mess);
 int getDrive(char *mess);

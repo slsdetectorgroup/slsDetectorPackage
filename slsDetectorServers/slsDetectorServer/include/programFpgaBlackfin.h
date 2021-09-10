@@ -11,6 +11,7 @@ void FPGAdontTouchFlash();
 void FPGATouchFlash();
 void resetFPGA();
 
+int deleteOldFile(char *mess);
 /**
  * deletes old file
  * verify memory available to copy

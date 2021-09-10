@@ -66,21 +66,25 @@ void resetFPGA() {
     usleep(CTRL_SRVR_INIT_TIME_US);
 }
 
+int deleteOldFile(char *mess) {
+    char cmd[MAX_STR_LENGTH] = {0};
+    char retvals[MAX_STR_LENGTH] = {0};
+    sprintf(cmd, "rm -fr %s", TEMP_PROG_FILE_NAME);
+    if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
+        strcpy(mess,
+                "Could not program fpga. (could not delete old file: ");
+        strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
+        strcat(mess, "\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return OK;
+}
+
 int preparetoCopyFPGAProgram(FILE **fd, uint64_t fsize, char *mess) {
 
-    // delete old /var/tmp/file
-    {
-        char cmd[MAX_STR_LENGTH] = {0};
-        char retvals[MAX_STR_LENGTH] = {0};
-        sprintf(cmd, "rm -fr %s", TEMP_PROG_FILE_NAME);
-        if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
-            strcpy(mess,
-                   "Could not program fpga. (could not delete old file: ");
-            strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
-            strcat(mess, "\n");
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
+    if (deleteOldFile(mess) == FAIL) {
+        return FAIL;
     }
 
     // check available memory to copy program
@@ -128,6 +132,10 @@ int copyToFlash(ssize_t fsize, char *clientChecksum, char *mess) {
     }
 
     if (writeToFlash(fsize, flashfd, srcfd, mess) == FAIL) {
+        return FAIL;
+    }
+
+    if (deleteOldFile(mess) == FAIL) {
         return FAIL;
     }
 

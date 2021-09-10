@@ -7,6 +7,8 @@
 #include <string.h>
 #include <unistd.h> // readlink
 
+#define FLASH_CONVERTED_NAME "test.rawbin"
+
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue) {
     LOG(logDEBUG1, (" Input Value: %d (Input:(%d - %d), Output:(%d - %d))\n",
@@ -245,6 +247,14 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         return FAIL;
     }
 
+    FILE *flashfp = fopen(FLASH_CONVERTED_NAME, "w");
+    if (flashfp == NULL) {
+        sprintf(mess, "Unable to open %s in write mode to write checksum\n",
+                FLASH_CONVERTED_NAME);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
     MD5_CTX c;
     if (!MD5_Init(&c)) {
         fclose(fp);
@@ -281,6 +291,9 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
             LOG(logERROR, (mess));
             return FAIL;
         }
+        if (fwrite((void *)buf, sizeof(char), bytes, flashfp) != bytes) {
+            LOG(logERROR, ("Could not write to flash fp file\n"));
+        }
         // read only until a particular size (drive)
         if (fsize != 0 && totalBytesRead >= fsize) {
             LOG(logINFOBLUE, ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
@@ -302,6 +315,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
     }*/
     LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));
     fclose(fp);
+    fclose(flashfp);
     return verifyChecksum(mess, clientChecksum, &c);
 }
 

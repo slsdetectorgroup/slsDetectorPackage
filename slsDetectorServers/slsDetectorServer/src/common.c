@@ -283,8 +283,11 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         }
 
         buf[0] = lastByte;
-        if (totalBytesRead == 2 * bytes) {
-            for (int i = 0; i < 26; ++i) {
+        if (totalBytesRead <= 2 * bytes) {
+            for (int i = 0; i < 3; ++i) {
+                printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
+            }
+            for (int i = 125; i < 128; ++i) {
                 printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
             }
         }
@@ -292,11 +295,15 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         for (int i = 0; i < bytes; ++i) {
             buf[i] = ((buf[i] & 0xf) << 4) + ((buf[i + 1] >> 4) & 0xf);
         }
-        if (totalBytesRead == 2 * bytes) {
-            for (int i = 0; i < 26; ++i) {
+        if (totalBytesRead <= 2 * bytes) {
+            for (int i = 0; i < 3; ++i) {
+                printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
+            }
+            for (int i = 125; i < 128; ++i) {
                 printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
             }
         }
+        printf("\n");
         lastByte = buf[bytes];
         if (!MD5_Update(&c, buf, bytes)) {
             fclose(fp);

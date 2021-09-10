@@ -283,7 +283,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         buf[0] = lastByte;
         if (totalBytesRead == 2 * bytes) {
             for (int i = 0; i < 26; ++i) {
-                printf("i:[0x%02x]\n", i, (uint8_t)buf[i]);
+                printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
             }
         }
         // shift by 4 bits to the left
@@ -292,7 +292,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         }
         if (totalBytesRead == 2 * bytes) {
             for (int i = 0; i < 26; ++i) {
-                printf("i:[0x%02x]\n", i, (uint8_t)buf[i]);
+                printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
             }
         }
         lastByte = buf[bytes];

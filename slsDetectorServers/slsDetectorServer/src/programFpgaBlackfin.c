@@ -131,7 +131,7 @@ int copyToFlash(ssize_t fsize, char *clientChecksum, char *mess) {
         return FAIL;
     }
 
-    if (verifyChecksumFromFile(mess, clientChecksum, flashDriveName, fsize) ==
+    if (verifyChecksumFromFlash(mess, clientChecksum, flashDriveName, fsize) ==
         FAIL) {
         return FAIL;
     }

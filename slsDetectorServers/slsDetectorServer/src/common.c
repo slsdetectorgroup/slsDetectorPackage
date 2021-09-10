@@ -266,7 +266,8 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
     char buf[readUnitSize + 1];
     ssize_t bytes = fread(buf, 1, readUnitSize + 1, fp);
     // the first time, extra bytes are read
-    ssize_t totalBytesRead = bytes - 1;
+    --bytes;
+    ssize_t totalBytesRead = bytes;
     char lastByte = buf[0];
     int oldProgress = 0;
 
@@ -280,9 +281,23 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         }
 
         buf[0] = lastByte;
+        if (totalBytesRead == bytes) {
+            printf("\n");
+            for (int i = 0; i < 10; ++i) {
+                printf("[0x%x] ", buf[i]);
+            }
+            printf("\n");
+        }
         // shift by 4 bits to the left
         for (int i = 0; i < bytes; ++i) {
             buf[i] = ((buf[i] & 0xf) << 4) + ((buf[i + 1] >> 4) & 0xf);
+        }
+        if (totalBytesRead == bytes) {
+            printf("after the fix\n");
+            for (int i = 0; i < 10; ++i) {
+                printf("[0x%x] ", buf[i]);
+            }
+            printf("\n");
         }
         lastByte = buf[bytes];
         if (!MD5_Update(&c, buf, bytes)) {

@@ -215,11 +215,19 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname, ssize_
         return FAIL;
     }
     const int readUnitSize = 128;
-    char buf[readUnitSize];
-    buf[0]=0xf;
-    ssize_t bytes = 1;
-    ssize_t totalBytesRead = bytes;
+    char buf[readUnitSize + 1];
+    bytes = fread(buf, 1, readUnitSize + 1, fp);
+    // the first time, extra bytes are read
+    ssize_t totalBytesRead = bytes - 1;
+    char lastByte = buf[0];
+    // bytes = 128
     while (bytes > 0) {
+        buf[0] = lastbyte;
+        // shift by 4 bits to the left
+        for (int i = 0; i < bytes; ++i) {
+            buf[i] = ((buf[i] & 0xf) << 4) + ((buf[i + 1] >> 4) & 0xf);
+        }
+        lastbyte = buf[bytes];
         if (!MD5_Update(&c, buf, bytes)) {
             fclose(fp);
             strcpy(mess, "Unable to calculate checksum (MD5_Update)\n");
@@ -231,7 +239,7 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname, ssize_
             LOG(logINFOBLUE, ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
             break;
         }
-        bytes = fread(buf, 1, readUnitSize, fp);
+        bytes = fread(buf + 1, 1, readUnitSize, fp);
         totalBytesRead += bytes;
     }
     // last null character (if size does not match)

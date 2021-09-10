@@ -287,7 +287,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
             for (int i = 0; i < 3; ++i) {
                 printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
             }
-            for (int i = 125; i < 128; ++i) {
+            for (int i = 126; i < 129; ++i) {
                 printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
             }
         }
@@ -299,7 +299,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
             for (int i = 0; i < 3; ++i) {
                 printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
             }
-            for (int i = 125; i < 128; ++i) {
+            for (int i = 126; i < 129; ++i) {
                 printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
             }
             printf("\n");

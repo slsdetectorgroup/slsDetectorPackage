@@ -3795,7 +3795,7 @@ int program_fpga(int file_des) {
 
         // checksum of copied program
         if (ret == OK) {
-            ret = verifyChecksumFromFile(mess, checksum, TEMP_PROG_FILE_NAME, 0);
+            ret = verifyChecksumFromFile(mess, checksum, TEMP_PROG_FILE_NAME);
         }
         Server_SendResult(file_des, INT32, NULL, 0);
         if (ret == FAIL) {

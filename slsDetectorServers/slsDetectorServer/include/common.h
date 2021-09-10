@@ -36,5 +36,7 @@ int setModuleIdInFile(char *mess, int arg, char *fileName);
 int verifyChecksumFromBuffer(char *mess, char *clientChecksum, char *buffer,
                              ssize_t bytes);
 // fsize is specified only if it is less than intended size (drive)
-int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname, ssize_t fsize);
+int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname);
+int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
+                            ssize_t fsize);
 int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c);

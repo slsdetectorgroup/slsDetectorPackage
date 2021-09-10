@@ -1241,7 +1241,7 @@ int DetectorImpl::kbhit() {
 }
 
 std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
-/*    // validate type of file
+    // validate type of file
     bool isPof = false;
     switch (multi_shm()->multiDetectorType) {
     case JUNGFRAU:
@@ -1353,9 +1353,6 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             throw RuntimeError(
                 "Could not convert programming file. EOF before end of flash");
         }
-        // write 0 to tthe end
-        char c = '\0';
-        write(dst, &c, 1);
     }
     if (fclose(src) != 0) {
         throw RuntimeError("Program FPGA: Could not close source file");
@@ -1364,9 +1361,9 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         throw RuntimeError("Program FPGA: Could not close destination file");
     }
     LOG(logINFOBLUE) << "File has been converted to " << destfname;
-*/
+
     // loading dst file to memory
-    FILE *fp = fopen("/tmp/SLS_DET_MCB.ZpfQln", "r");//
+    FILE *fp = fopen(destfname, "r");
     if (fp == nullptr) {
         throw RuntimeError("Program FPGA: Could not open rawbin file");
     }

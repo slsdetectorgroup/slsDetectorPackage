@@ -302,8 +302,8 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
             for (int i = 125; i < 128; ++i) {
                 printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
             }
+            printf("\n");
         }
-        printf("\n");
         lastByte = buf[bytes];
         if (!MD5_Update(&c, buf, bytes)) {
             fclose(fp);

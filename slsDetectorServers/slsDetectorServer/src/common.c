@@ -321,6 +321,15 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         }
         bytes = fread(buf + 1, 1, readUnitSize, fp);
         totalBytesRead += bytes;
+        if (totalBytesRead <= 2 * bytes) {
+            for (int i = 0; i < 3; ++i) {
+                printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
+            }
+            for (int i = 126; i < 129; ++i) {
+                printf("%d:[0x%02x]\n", i, (uint8_t)buf[i]);
+            }
+            printf("\n");
+        }
     }
     // last null character (if size does not match)
     /*if (fsize == totalBytesRead + 1) {

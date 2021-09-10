@@ -16,7 +16,6 @@ void resetFPGA();
  * verify memory available to copy
  * open file to copy
  */
-int deleteOldFile(char *mess);
 int preparetoCopyFPGAProgram(FILE **fd, uint64_t fsize, char *mess);
 int copyToFlash(ssize_t fsize, char *clientChecksum, char *mess);
 int getDrive(char *mess);

@@ -258,8 +258,17 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
     // the first time, extra bytes are read
     ssize_t totalBytesRead = bytes - 1;
     char lastByte = buf[0];
-    // bytes = 128
+    int oldProgress = 0;
+
     while (bytes > 0) {
+
+        int progress = (int)(((double)(totalBytesRead) / fsize) * 100);
+        if (oldProgress != progress) {
+            printf("%d%%\r", progress);
+            fflush(stdout);
+            oldProgress = progress;
+        }
+
         buf[0] = lastByte;
         // shift by 4 bits to the left
         for (int i = 0; i < bytes; ++i) {

@@ -284,7 +284,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         if (totalBytesRead == bytes) {
             printf("\n");
             for (int i = 16; i < 26; ++i) {
-                printf("[0x%x] ", buf[i]);
+                printf("[0x%02x] ", buf[i]);
             }
             printf("\n");
         }
@@ -295,7 +295,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         if (totalBytesRead == bytes) {
             printf("after the fix\n");
             for (int i = 16; i < 26; ++i) {
-                printf("[0x%x] ", buf[i]);
+                printf("[0x%02x] ", buf[i]);
             }
             printf("\n");
         }

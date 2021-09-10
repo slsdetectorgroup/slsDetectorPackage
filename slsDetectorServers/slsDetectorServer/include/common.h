@@ -38,4 +38,4 @@ int verifyChecksumFromBuffer(char *mess, char *clientChecksum, char *buffer,
 int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname);
 int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
                             ssize_t fsize);
-int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c);
+int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c, char *msg);

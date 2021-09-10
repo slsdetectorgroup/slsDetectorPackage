@@ -272,7 +272,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
     int oldProgress = 0;
 
     while (bytes > 0) {
-
+        LOG(logINFO, ("bytes:%d\n", bytes));
         int progress = (int)(((double)(totalBytesRead) / fsize) * 100);
         if (oldProgress != progress) {
             printf("%d%%\r", progress);
@@ -327,10 +327,10 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
     LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));
     fclose(fp);
     fclose(flashfp);
-    return verifyChecksum(mess, clientChecksum, &c);
+    return verifyChecksum(mess, clientChecksum, &c, "flash");
 }
 
-int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c) {
+int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c, char *msg) {
     unsigned char out[MD5_DIGEST_LENGTH];
     if (!MD5_Final(out, c)) {
         strcpy(mess, "Unable to calculate checksum (MD5_Final)\n");
@@ -353,9 +353,9 @@ int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c) {
     // compare checksum
     if (strcmp(clientChecksum, checksum)) {
         sprintf(mess,
-                "Checksum of copied fpga program does not match. Client "
+                "Checksum of %s does not match. Client "
                 "checksum:%s, copied checksum:%s\n",
-                clientChecksum, checksum);
+                msg, clientChecksum, checksum);
         LOG(logERROR, (mess));
         return FAIL;
     }

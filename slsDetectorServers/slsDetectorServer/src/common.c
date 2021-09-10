@@ -216,7 +216,7 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname, ssize_
     }
     const int readUnitSize = 128;
     char buf[readUnitSize + 1];
-    bytes = fread(buf, 1, readUnitSize + 1, fp);
+    ssize_t bytes = fread(buf, 1, readUnitSize + 1, fp);
     // the first time, extra bytes are read
     ssize_t totalBytesRead = bytes - 1;
     char lastByte = buf[0];

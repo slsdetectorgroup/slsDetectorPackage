@@ -272,7 +272,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
     int oldProgress = 0;
 
     while (bytes > 0) {
-        if (totalBytesRead == 2 * bytes) {
+        if (totalBytesRead <= 2 * bytes) {
             LOG(logINFO, ("bytes:%d\n", bytes));
         }
         int progress = (int)(((double)(totalBytesRead) / fsize) * 100);

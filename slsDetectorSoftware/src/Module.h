@@ -15,9 +15,14 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION    0x200402
+#define SLS_SHMVERSION    0x210913
 
 namespace sls {
+
+struct sharedReceiver {
+    char hostname[MAX_STR_LENGTH]{};
+    int tcpPort{};
+};
 
 /**
  * @short structure allocated in shared memory to store detector settings for
@@ -43,8 +48,11 @@ struct sharedSlsDetector {
     slsDetectorDefs::xy nChan;
     slsDetectorDefs::xy nChip;
     int nDacs;
-    char rxHostname[MAX_STR_LENGTH];
-    int rxTCPPort;
+
+    /** receiver details for each module */
+    int numReceivers;
+    sharedReceiver receivers[MAX_UDP_DESTINATION];
+
     /** if rxHostname and rxTCPPort can be connected to */
     bool useReceiverFlag;
     /** Listening tcp port from gui (only data) */
@@ -227,21 +235,21 @@ class Module : public virtual slsDetectorDefs {
     void setNumberofUDPDestinations(const int value);
     int getFirstUDPDestination() const;
     void setFirstUDPDestination(const int value);
-    sls::IpAddr getDestinationUDPIP() const;
-    void setDestinationUDPIP(const sls::IpAddr ip);
-    sls::IpAddr getDestinationUDPIP2() const;
-    void setDestinationUDPIP2(const sls::IpAddr ip);
-    sls::MacAddr getDestinationUDPMAC() const;
-    void setDestinationUDPMAC(const sls::MacAddr mac);
-    sls::MacAddr getDestinationUDPMAC2() const;
-    void setDestinationUDPMAC2(const sls::MacAddr mac);
-    int getDestinationUDPPort() const;
-    void setDestinationUDPPort(int udpport);
-    int getDestinationUDPPort2() const;
-    void setDestinationUDPPort2(int udpport);
+    sls::IpAddr getDestinationUDPIP(const int rxIndex) const;
+    void setDestinationUDPIP(const sls::IpAddr ip, const int rxIndex);
+    sls::IpAddr getDestinationUDPIP2(const int rxIndex) const;
+    void setDestinationUDPIP2(const sls::IpAddr ip, const int rxIndex);
+    sls::MacAddr getDestinationUDPMAC(const int rxIndex) const;
+    void setDestinationUDPMAC(const sls::MacAddr mac, const int rxIndex);
+    sls::MacAddr getDestinationUDPMAC2(const int rxIndex) const;
+    void setDestinationUDPMAC2(const sls::MacAddr mac, const int rxIndex);
+    int getDestinationUDPPort(const int rxIndex) const;
+    void setDestinationUDPPort(int udpport, const int rxIndex);
+    int getDestinationUDPPort2(const int rxIndex) const;
+    void setDestinationUDPPort2(int udpport, const int rxIndex);
     void reconfigureUDPDestination();
     void validateUDPConfiguration();
-    std::string printReceiverConfiguration();
+    std::string printReceiverConfiguration(const int rxIndex);
     bool getTenGiga() const;
     void setTenGiga(bool value);
     bool getTenGigaFlowControl() const;
@@ -259,10 +267,10 @@ class Module : public virtual slsDetectorDefs {
      *                                                *
      * ************************************************/
     bool getUseReceiverFlag() const;
-    std::string getReceiverHostname() const;
-    void setReceiverHostname(const std::string &receiver);
-    int getReceiverPort() const;
-    int setReceiverPort(int port_number);
+    std::string getReceiverHostname(const int rxIndex) const;
+    void setReceiverHostname(const std::string &receiver, const int rxIndex);
+    int getReceiverPort(const int rxIndex) const;
+    int setReceiverPort(int port_number, const int rxIndex);
     int getReceiverFifoDepth() const;
     void setReceiverFifoDepth(int n_frames);
     bool getReceiverSilentMode() const;
@@ -320,7 +328,7 @@ class Module : public virtual slsDetectorDefs {
     int getReceiverStreamingPort() const;
     void setReceiverStreamingPort(int port);
     sls::IpAddr getReceiverStreamingIP() const;
-    void setReceiverStreamingIP(const sls::IpAddr ip);
+    void setReceiverStreamingIP(const sls::IpAddr ip, const int rxIndex);
     int getClientStreamingPort() const;
     void setClientStreamingPort(int port);
     sls::IpAddr getClientStreamingIP() const;
@@ -656,43 +664,51 @@ class Module : public virtual slsDetectorDefs {
     Ret sendToDetectorStop(int fnum, const Arg &args) const;
 
     /** Send function parameters to receiver */
-    void sendToReceiver(int fnum, const void *args, size_t args_size,
-                        void *retval, size_t retval_size);
+    void sendToReceiver(const int rxIndex, int fnum, const void *args,
+                        size_t args_size, void *retval, size_t retval_size);
 
-    void sendToReceiver(int fnum, const void *args, size_t args_size,
-                        void *retval, size_t retval_size) const;
-
-    template <typename Arg, typename Ret>
-    void sendToReceiver(int fnum, const Arg &args, Ret &retval);
+    void sendToReceiver(const int rxIndex, int fnum, const void *args,
+                        size_t args_size, void *retval,
+                        size_t retval_size) const;
 
     template <typename Arg, typename Ret>
-    void sendToReceiver(int fnum, const Arg &args, Ret &retval) const;
+    void sendToReceiver(const int rxIndex, int fnum, const Arg &args,
+                        Ret &retval);
+
+    template <typename Arg, typename Ret>
+    void sendToReceiver(const int rxIndex, int fnum, const Arg &args,
+                        Ret &retval) const;
 
     template <typename Arg>
-    void sendToReceiver(int fnum, const Arg &args, std::nullptr_t);
+    void sendToReceiver(const int rxIndex, int fnum, const Arg &args,
+                        std::nullptr_t);
 
     template <typename Arg>
-    void sendToReceiver(int fnum, const Arg &args, std::nullptr_t) const;
+    void sendToReceiver(const int rxIndex, int fnum, const Arg &args,
+                        std::nullptr_t) const;
 
     template <typename Ret>
-    void sendToReceiver(int fnum, std::nullptr_t, Ret &retval);
+    void sendToReceiver(const int rxIndex, int fnum, std::nullptr_t,
+                        Ret &retval);
 
     template <typename Ret>
-    void sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const;
+    void sendToReceiver(const int rxIndex, int fnum, std::nullptr_t,
+                        Ret &retval) const;
 
-    template <typename Ret> Ret sendToReceiver(int fnum);
+    template <typename Ret> Ret sendToReceiver(const int rxIndex, int fnum);
 
-    template <typename Ret> Ret sendToReceiver(int fnum) const;
+    template <typename Ret>
+    Ret sendToReceiver(const int rxIndex, int fnum) const;
 
-    void sendToReceiver(int fnum);
+    void sendToReceiver(const int rxIndex, int fnum);
 
-    void sendToReceiver(int fnum) const;
+    void sendToReceiver(const int rxIndex, int fnum) const;
 
     template <typename Ret, typename Arg>
-    Ret sendToReceiver(int fnum, const Arg &args);
+    Ret sendToReceiver(const int rxIndex, int fnum, const Arg &args);
 
     template <typename Ret, typename Arg>
-    Ret sendToReceiver(int fnum, const Arg &args) const;
+    Ret sendToReceiver(const int rxIndex, int fnum, const Arg &args) const;
 
     /** Get Detector Type from Shared Memory
     verify is if shm size matches existing one */
@@ -710,7 +726,7 @@ class Module : public virtual slsDetectorDefs {
     void checkReceiverVersionCompatibility();
     void setModule(sls_detector_module &module, bool trimbits = true);
     int sendModule(sls_detector_module *myMod, sls::ClientSocket &client);
-    void updateReceiverStreamingIP();
+    void updateReceiverStreamingIP(const int rxIndex);
 
     void updateRateCorrection();
     /** Template function to do linear interpolation between two points (Eiger

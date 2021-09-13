@@ -680,48 +680,60 @@ class Detector {
     /**[Jungfrau] Options 0-31 (or number of udp destinations) */
     void setFirstUDPDestination(const int value, Positions pos = {});
 
-    Result<IpAddr> getDestinationUDPIP(Positions pos = {}) const;
+    Result<IpAddr> getDestinationUDPIP(Positions pos = {},
+                                       const int rx_index = 0) const;
 
     /** IP of the interface in receiver that the detector sends data to */
-    void setDestinationUDPIP(const IpAddr ip, Positions pos = {});
+    void setDestinationUDPIP(const IpAddr ip, Positions pos = {},
+                             const int rx_index = 0);
 
     /** [Jungfrau] bottom half \n [Gotthard2] veto debugging */
-    Result<IpAddr> getDestinationUDPIP2(Positions pos = {}) const;
+    Result<IpAddr> getDestinationUDPIP2(Positions pos = {},
+                                        const int rx_index = 0) const;
 
     /** [Jungfrau] bottom half \n [Gotthard2] veto debugging */
-    void setDestinationUDPIP2(const IpAddr ip, Positions pos = {});
+    void setDestinationUDPIP2(const IpAddr ip, Positions pos = {},
+                              const int rx_index = 0);
 
-    Result<MacAddr> getDestinationUDPMAC(Positions pos = {}) const;
+    Result<MacAddr> getDestinationUDPMAC(Positions pos = {},
+                                         const int rxIndex = 0) const;
 
     /** Mac address of the receiver (destination) udp interface. Not mandatory
      * to set as setDestinationUDPIP (udp_dstip) retrieves it from slsReceiver
      * process but must be set if you use a custom receiver (not slsReceiver).
      */
-    void setDestinationUDPMAC(const MacAddr mac, Positions pos = {});
+    void setDestinationUDPMAC(const MacAddr mac, Positions pos = {},
+                              const int rx_index = 0);
 
     /** [Jungfrau] bottom half \n [Gotthard2] veto debugging */
-    Result<MacAddr> getDestinationUDPMAC2(Positions pos = {}) const;
+    Result<MacAddr> getDestinationUDPMAC2(Positions pos = {},
+                                          const int rx_index = 0) const;
 
     /* [Jungfrau][Gotthard2] Mac address of the receiver (destination) udp
     interface 2. \n Not mandatory to set as udp_dstip2 retrieves it from
     slsReceiver process but must be set if you use a custom receiver (not
     slsReceiver). \n [Jungfrau] bottom half \n [Gotthard2] veto debugging \n
     */
-    void setDestinationUDPMAC2(const MacAddr mac, Positions pos = {});
+    void setDestinationUDPMAC2(const MacAddr mac, Positions pos = {},
+                               const int rx_index = 0);
 
-    Result<int> getDestinationUDPPort(Positions pos = {}) const;
+    Result<int> getDestinationUDPPort(Positions pos = {},
+                                      const int rx_index = 0) const;
 
     /** Default is 50001. \n If module_id is -1, ports for each module is
      * calculated (incremented by 1 if no 2nd interface) */
-    void setDestinationUDPPort(int port, int module_id = -1);
+    void setDestinationUDPPort(int port, int module_id = -1,
+                               const int rxIndex = 0);
 
     /** [Eiger] right port[Jungfrau] bottom half [Gotthard2] veto debugging */
-    Result<int> getDestinationUDPPort2(Positions pos = {}) const;
+    Result<int> getDestinationUDPPort2(Positions pos = {},
+                                       const int rx_index = 0) const;
 
     /** [Eiger] right port[Jungfrau] bottom half [Gotthard2] veto debugging \n
      * Default is 50002. \n If module_id is -1, ports for each module is
      * calculated (incremented by 1 if no 2nd interface)*/
-    void setDestinationUDPPort2(int port, int module_id = -1);
+    void setDestinationUDPPort2(int port, int module_id = -1,
+                                const int rxIndex = 0);
 
     /** Reconfigures Detector with UDP destination. More for debugging as the
      * configuration is done automatically when the detector has sufficient UDP
@@ -733,7 +745,8 @@ class Detector {
      * information */
     void validateUDPConfiguration(Positions pos = {});
 
-    Result<std::string> printRxConfiguration(Positions pos = {}) const;
+    Result<std::string> printRxConfiguration(Positions pos = {},
+                                             const int rx_index = 0) const;
 
     /** [Eiger][CTB][Moench][Mythen3] */
     Result<bool> getTenGiga(Positions pos = {}) const;
@@ -792,7 +805,8 @@ class Detector {
     /** true when slsReceiver is used */
     Result<bool> getUseReceiverFlag(Positions pos = {}) const;
 
-    Result<std::string> getRxHostname(Positions pos = {}) const;
+    Result<std::string> getRxHostname(Positions pos = {},
+                                      const int rx_index = 0) const;
 
     /**
      * Sets receiver hostname or IP address for each module. \n Used for TCP
@@ -801,19 +815,21 @@ class Detector {
      * receiver property (not on detector). \n receiver is receiver hostname or
      * IP address, can include tcp port eg. hostname:port
      */
-    void setRxHostname(const std::string &receiver, Positions pos = {});
+    void setRxHostname(const std::string &receiver, Positions pos = {},
+                       const int rx_index = 0);
 
     /** multiple rx hostnames. Single element will set it for all */
-    void setRxHostname(const std::vector<std::string> &name);
+    void setRxHostname(const std::vector<std::string> &name,
+                       const int rx_index = 0);
 
-    Result<int> getRxPort(Positions pos = {}) const;
+    Result<int> getRxPort(Positions pos = {}, const int rx_index = 0) const;
 
     /** TCP port for client-receiver communication. \n
      *  Default is 1954. \n  Must be different if multiple receivers on same pc.
      * \n Must be first command to set a receiver parameter to be able to
      * communicate. \n Multi command will automatically increment port for
      * individual modules.*/
-    void setRxPort(int port, int module_id = -1);
+    void setRxPort(int port, int module_id = -1, const int rx_index = 0);
 
     Result<int> getRxFifoDepth(Positions pos = {}) const;
 
@@ -989,7 +1005,8 @@ class Detector {
      * Also restarts receiver zmq streaming if enabled. \n Default is from
      * rx_hostname. \n Modified only when using an intermediate process between
      * receiver. */
-    void setRxZmqIP(const IpAddr ip, Positions pos = {});
+    void setRxZmqIP(const IpAddr ip, Positions pos = {},
+                    const int rx_index = 0);
 
     Result<int> getClientZmqPort(Positions pos = {}) const;
 

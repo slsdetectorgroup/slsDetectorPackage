@@ -933,67 +933,81 @@ void Detector::setFirstUDPDestination(const int value, Positions pos) {
     pimpl->Parallel(&Module::setFirstUDPDestination, pos, value);
 }
 
-Result<IpAddr> Detector::getDestinationUDPIP(Positions pos) const {
-    return pimpl->Parallel(&Module::getDestinationUDPIP, pos);
+Result<IpAddr> Detector::getDestinationUDPIP(Positions pos,
+                                             const int rx_index) const {
+    return pimpl->Parallel(&Module::getDestinationUDPIP, pos, rx_index);
 }
 
-void Detector::setDestinationUDPIP(const IpAddr ip, Positions pos) {
-    pimpl->Parallel(&Module::setDestinationUDPIP, pos, ip);
+void Detector::setDestinationUDPIP(const IpAddr ip, Positions pos,
+                                   const int rx_index) {
+    pimpl->Parallel(&Module::setDestinationUDPIP, pos, ip, rx_index);
 }
 
-Result<IpAddr> Detector::getDestinationUDPIP2(Positions pos) const {
-    return pimpl->Parallel(&Module::getDestinationUDPIP2, pos);
+Result<IpAddr> Detector::getDestinationUDPIP2(Positions pos,
+                                              const int rx_index) const {
+    return pimpl->Parallel(&Module::getDestinationUDPIP2, pos, rx_index);
 }
 
-void Detector::setDestinationUDPIP2(const IpAddr ip, Positions pos) {
-    pimpl->Parallel(&Module::setDestinationUDPIP2, pos, ip);
+void Detector::setDestinationUDPIP2(const IpAddr ip, Positions pos,
+                                    const int rx_index) {
+    pimpl->Parallel(&Module::setDestinationUDPIP2, pos, ip, rx_index);
 }
 
-Result<MacAddr> Detector::getDestinationUDPMAC(Positions pos) const {
-    return pimpl->Parallel(&Module::getDestinationUDPMAC, pos);
+Result<MacAddr> Detector::getDestinationUDPMAC(Positions pos,
+                                               const int rx_index) const {
+    return pimpl->Parallel(&Module::getDestinationUDPMAC, pos, rx_index);
 }
 
-void Detector::setDestinationUDPMAC(const MacAddr mac, Positions pos) {
-    pimpl->Parallel(&Module::setDestinationUDPMAC, pos, mac);
+void Detector::setDestinationUDPMAC(const MacAddr mac, Positions pos,
+                                    const int rx_index) {
+    pimpl->Parallel(&Module::setDestinationUDPMAC, pos, mac, rx_index);
 }
 
-Result<MacAddr> Detector::getDestinationUDPMAC2(Positions pos) const {
-    return pimpl->Parallel(&Module::getDestinationUDPMAC2, pos);
+Result<MacAddr> Detector::getDestinationUDPMAC2(Positions pos,
+                                                const int rx_index) const {
+    return pimpl->Parallel(&Module::getDestinationUDPMAC2, pos, rx_index);
 }
 
-void Detector::setDestinationUDPMAC2(const MacAddr mac, Positions pos) {
-    pimpl->Parallel(&Module::setDestinationUDPMAC2, pos, mac);
+void Detector::setDestinationUDPMAC2(const MacAddr mac, Positions pos,
+                                     const int rx_index) {
+    pimpl->Parallel(&Module::setDestinationUDPMAC2, pos, mac, rx_index);
 }
 
-Result<int> Detector::getDestinationUDPPort(Positions pos) const {
-    return pimpl->Parallel(&Module::getDestinationUDPPort, pos);
+Result<int> Detector::getDestinationUDPPort(Positions pos,
+                                            const int rx_index) const {
+    return pimpl->Parallel(&Module::getDestinationUDPPort, pos, rx_index);
 }
 
-void Detector::setDestinationUDPPort(int port, int module_id) {
+void Detector::setDestinationUDPPort(int port, int module_id,
+                                     const int rx_index) {
     if (module_id == -1) {
         std::vector<int> port_list = getPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setDestinationUDPPort, {idet},
-                            port_list[idet]);
+                            port_list[idet], rx_index);
         }
     } else {
-        pimpl->Parallel(&Module::setDestinationUDPPort, {module_id}, port);
+        pimpl->Parallel(&Module::setDestinationUDPPort, {module_id}, port,
+                        rx_index);
     }
 }
 
-Result<int> Detector::getDestinationUDPPort2(Positions pos) const {
-    return pimpl->Parallel(&Module::getDestinationUDPPort2, pos);
+Result<int> Detector::getDestinationUDPPort2(Positions pos,
+                                             const int rx_index) const {
+    return pimpl->Parallel(&Module::getDestinationUDPPort2, pos, rx_index);
 }
 
-void Detector::setDestinationUDPPort2(int port, int module_id) {
+void Detector::setDestinationUDPPort2(int port, int module_id,
+                                      const int rx_index) {
     if (module_id == -1) {
         std::vector<int> port_list = getPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setDestinationUDPPort2, {idet},
-                            port_list[idet]);
+                            port_list[idet], rx_index);
         }
     } else {
-        pimpl->Parallel(&Module::setDestinationUDPPort2, {module_id}, port);
+        pimpl->Parallel(&Module::setDestinationUDPPort2, {module_id}, port,
+                        rx_index);
     }
 }
 
@@ -1005,8 +1019,9 @@ void Detector::validateUDPConfiguration(Positions pos) {
     pimpl->Parallel(&Module::validateUDPConfiguration, pos);
 }
 
-Result<std::string> Detector::printRxConfiguration(Positions pos) const {
-    return pimpl->Parallel(&Module::printReceiverConfiguration, pos);
+Result<std::string> Detector::printRxConfiguration(Positions pos,
+                                                   const int rx_index) const {
+    return pimpl->Parallel(&Module::printReceiverConfiguration, pos, rx_index);
 }
 
 Result<bool> Detector::getTenGiga(Positions pos) const {
@@ -1055,19 +1070,22 @@ Result<bool> Detector::getUseReceiverFlag(Positions pos) const {
     return pimpl->Parallel(&Module::getUseReceiverFlag, pos);
 }
 
-Result<std::string> Detector::getRxHostname(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverHostname, pos);
+Result<std::string> Detector::getRxHostname(Positions pos,
+                                            const int rx_index) const {
+    return pimpl->Parallel(&Module::getReceiverHostname, pos, rx_index);
 }
 
-void Detector::setRxHostname(const std::string &receiver, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverHostname, pos, receiver);
+void Detector::setRxHostname(const std::string &receiver, Positions pos,
+                             const int rx_index) {
+    pimpl->Parallel(&Module::setReceiverHostname, pos, receiver, rx_index);
     updateRxRateCorrections();
 }
 
-void Detector::setRxHostname(const std::vector<std::string> &name) {
+void Detector::setRxHostname(const std::vector<std::string> &name,
+                             const int rx_index) {
     // set all to same rx_hostname
     if (name.size() == 1) {
-        pimpl->Parallel(&Module::setReceiverHostname, {}, name[0]);
+        pimpl->Parallel(&Module::setReceiverHostname, {}, name[0], rx_index);
     } else {
         if ((int)name.size() != size()) {
             throw RuntimeError(
@@ -1076,27 +1094,29 @@ void Detector::setRxHostname(const std::vector<std::string> &name) {
         }
         // set each rx_hostname
         for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet]);
+            pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet],
+                            rx_index);
         }
     }
     updateRxRateCorrections();
 }
 
-Result<int> Detector::getRxPort(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverPort, pos);
+Result<int> Detector::getRxPort(Positions pos, const int rx_index) const {
+    return pimpl->Parallel(&Module::getReceiverPort, pos, rx_index);
 }
 
-void Detector::setRxPort(int port, int module_id) {
+void Detector::setRxPort(int port, int module_id, const int rx_index) {
     if (module_id == -1) {
         std::vector<int> port_list(size());
         for (auto &it : port_list) {
             it = port++;
         }
         for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setReceiverPort, {idet}, port_list[idet]);
+            pimpl->Parallel(&Module::setReceiverPort, {idet}, port_list[idet],
+                            rx_index);
         }
     } else {
-        pimpl->Parallel(&Module::setReceiverPort, {module_id}, port);
+        pimpl->Parallel(&Module::setReceiverPort, {module_id}, port, rx_index);
     }
 }
 
@@ -1290,9 +1310,9 @@ Result<IpAddr> Detector::getRxZmqIP(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverStreamingIP, pos);
 }
 
-void Detector::setRxZmqIP(const IpAddr ip, Positions pos) {
+void Detector::setRxZmqIP(const IpAddr ip, Positions pos, const int rx_index) {
     bool previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(false);
-    pimpl->Parallel(&Module::setReceiverStreamingIP, pos, ip);
+    pimpl->Parallel(&Module::setReceiverStreamingIP, pos, ip, rx_index);
     if (previouslyReceiverStreaming) {
         setRxZmqDataStream(false, pos);
         setRxZmqDataStream(true, pos);

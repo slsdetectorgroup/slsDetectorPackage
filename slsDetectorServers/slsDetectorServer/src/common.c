@@ -365,7 +365,6 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         return FAIL;
     }
     const int readUnitSize = 128;
-    char buf[readUnitSize]{};
     int c = fgetc(fp);
     int oldProgress = 0;
     ssize_t totalBytesRead = 1;

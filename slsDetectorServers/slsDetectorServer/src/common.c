@@ -391,7 +391,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
             LOG(logINFOBLUE, ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
             break;
         }
-        c = fgetc(fp);
+        character = fgetc(fp);
         ++totalBytesRead;
     }
 

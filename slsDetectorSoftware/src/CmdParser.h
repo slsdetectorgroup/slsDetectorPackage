@@ -22,7 +22,7 @@ namespace sls {
 class CmdParser {
   public:
     void Parse(int argc, const char *const argv[]);
-    void Parse(const std::string &s);
+    void Parse(std::string s);
     void Print();
 
     int multi_id() const noexcept { return multi_id_; };

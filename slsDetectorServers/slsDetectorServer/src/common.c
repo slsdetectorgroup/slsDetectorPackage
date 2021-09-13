@@ -365,7 +365,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         return FAIL;
     }
     const int readUnitSize = 128;
-    int c = fgetc(fp);
+    int character = fgetc(fp);
     int oldProgress = 0;
     ssize_t totalBytesRead = 1;
 
@@ -383,7 +383,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
             LOG(logERROR, (mess));
             return FAIL;
         }
-        if (fputc(c, flashfp) != c) {
+        if (fputc(character, flashfp) != character) {
             LOG(logERROR, ("Could not write to flash fp file\n"));
         }
         // read only until a particular size (drive)

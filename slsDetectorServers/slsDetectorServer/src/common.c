@@ -377,7 +377,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
             oldProgress = progress;
         }
 
-        if (!MD5_Update(&c, buf, bytes)) {
+        if (!MD5_Update(&c, &character, 1)) {
             fclose(fp);
             strcpy(mess, "Unable to calculate checksum (MD5_Update)\n");
             LOG(logERROR, (mess));

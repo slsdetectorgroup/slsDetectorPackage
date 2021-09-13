@@ -365,12 +365,12 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
         return FAIL;
     }
     const int readUnitSize = 128;
-    char buf[readUnitSize];
-    ssize_t bytes = fread(buf, 1, readUnitSize, fp);
-    ssize_t totalBytesRead = bytes;
+    char buf[readUnitSize]{};
+    int c = fgetc(fp);
     int oldProgress = 0;
+    ssize_t totalBytesRead = 1;
 
-    while (bytes > 0) {
+    while (!feof(fp)) {
         int progress = (int)(((double)(totalBytesRead) / fsize) * 100);
         if (oldProgress != progress) {
             printf("%d%%\r", progress);
@@ -384,7 +384,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
             LOG(logERROR, (mess));
             return FAIL;
         }
-        if (fwrite((void *)buf, sizeof(char), bytes, flashfp) != bytes) {
+        if (fputc(c, flashfp) != c) {
             LOG(logERROR, ("Could not write to flash fp file\n"));
         }
         // read only until a particular size (drive)
@@ -392,8 +392,8 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
             LOG(logINFOBLUE, ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
             break;
         }
-        bytes = fread(buf, 1, readUnitSize, fp);
-        totalBytesRead += bytes;
+        c = fgetc(fp);
+        ++totalBytesRead;
     }
 
     LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));

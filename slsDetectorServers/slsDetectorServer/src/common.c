@@ -234,7 +234,7 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
     fclose(fp);
     return verifyChecksum(mess, clientChecksum, &c, "copied program");
 }
-
+/*
 int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
                             ssize_t fsize) {
     LOG(logINFO, ("\tVerifying FlashChecksum...\n"));
@@ -331,17 +331,71 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
             printf("\n");
         }
     }
-    // last null character (if size does not match)
-    /*if (fsize == totalBytesRead + 1) {
-        bytes = 1;
-        totalBytesRead += bytes;
+    LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));
+    fclose(fp);
+    fclose(flashfp);
+    return verifyChecksum(mess, clientChecksum, &c, "flash");
+}
+*/
+int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
+                            ssize_t fsize) {
+    LOG(logINFO, ("\tVerifying FlashChecksum...\n"));
+
+    FILE *fp = fopen(fname, "r");
+    if (fp == NULL) {
+        sprintf(mess, "Unable to open %s in read mode to get checksum\n",
+                fname);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    FILE *flashfp = fopen(FLASH_CONVERTED_NAME, "w");
+    if (flashfp == NULL) {
+        sprintf(mess, "Unable to open %s in write mode to write checksum\n",
+                FLASH_CONVERTED_NAME);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    MD5_CTX c;
+    if (!MD5_Init(&c)) {
+        fclose(fp);
+        strcpy(mess, "Unable to calculate checksum (MD5_Init)\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    const int readUnitSize = 128;
+    char buf[readUnitSize];
+    ssize_t bytes = fread(buf, 1, readUnitSize, fp);
+    ssize_t totalBytesRead = bytes;
+    int oldProgress = 0;
+
+    while (bytes > 0) {
+        int progress = (int)(((double)(totalBytesRead) / fsize) * 100);
+        if (oldProgress != progress) {
+            printf("%d%%\r", progress);
+            fflush(stdout);
+            oldProgress = progress;
+        }
+
         if (!MD5_Update(&c, buf, bytes)) {
             fclose(fp);
             strcpy(mess, "Unable to calculate checksum (MD5_Update)\n");
             LOG(logERROR, (mess));
             return FAIL;
-        }        
-    }*/
+        }
+        if (fwrite((void *)buf, sizeof(char), bytes, flashfp) != bytes) {
+            LOG(logERROR, ("Could not write to flash fp file\n"));
+        }
+        // read only until a particular size (drive)
+        if (fsize != 0 && totalBytesRead >= fsize) {
+            LOG(logINFOBLUE, ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
+            break;
+        }
+        bytes = fread(buf, 1, readUnitSize, fp);
+        totalBytesRead += bytes;
+    }
+
     LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));
     fclose(fp);
     fclose(flashfp);

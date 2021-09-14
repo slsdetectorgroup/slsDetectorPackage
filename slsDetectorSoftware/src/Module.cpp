@@ -3477,7 +3477,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     LOG(logINFO) << "Checksum verified for module " << moduleIndex << " ("
                  << shm()->hostname << ")";
 
-    // erasing flash
+    // simulating erasing flash
     {
         LOG(logINFO) << "Erasing Flash for module " << moduleIndex << " ("
                     << shm()->hostname << ")";
@@ -3533,6 +3533,7 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
     strcpy(cChecksum, checksum.c_str());
     client.Send(cChecksum);
 
+    // validate file size before sending program
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"
@@ -3540,6 +3541,49 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
         throw RuntimeError(os.str());
     }
     client.Send(buffer);
+
+    // simulating erasing flash
+    {
+        LOG(logINFO) << "(Simulating) Erasing Flash for module " << moduleIndex << " ("
+                    << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // erasing takes 10 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 10;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            --count;
+            printf(
+                "%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            std::cout << std::flush;
+        }
+        printf("\n");
+    }
+
+    // simulating writing to flash
+    {
+        LOG(logINFO) << "(Simulating) Writing to Flash for module " << moduleIndex << " (" << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // writing takes 45 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 45;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            --count;
+            printf(
+                "%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            std::cout << std::flush;
+        }
+        printf("\n");
+    }
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"
@@ -3547,6 +3591,6 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
         throw RuntimeError(os.str());
     }
     LOG(logINFO) << "FPGA programmed successfully";
-    rebootController();
+    //rebootController();
 }
 } // namespace sls

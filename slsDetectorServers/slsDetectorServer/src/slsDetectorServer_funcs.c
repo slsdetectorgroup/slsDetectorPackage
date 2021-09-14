@@ -3711,14 +3711,14 @@ int program_fpga(int file_des) {
         // receive program
         if (ret == OK) {
             char *fpgasrc = malloc(filesize);
-            if (receiveData(file_des, fpgasrc, filesize, OTHER) < 0)
+            if (receiveData(file_des, fpgasrc, filesize, OTHER) < 0) {
+                free(fpgasrc);
                 return printSocketReadError();
+            }
 #ifndef VIRTUAL
             ret = eraseAndWriteToFlash(mess, checksum, fpgasrc, filesize);
 #endif
             Server_SendResult(file_des, INT32, NULL, 0);
-
-            // free resources
             free(fpgasrc);
         }
         if (ret == FAIL) {

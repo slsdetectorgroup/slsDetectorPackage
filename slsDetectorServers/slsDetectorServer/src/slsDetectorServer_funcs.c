@@ -445,11 +445,13 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
     memset(temp, 0, tempsize);
     memset(result, 0, MAX_STR_LENGTH);
 
-    LOG(level, ("Executing command:\n[%s]\n", command));
-    strcat(command, " 2>&1");
+    // copy command
+    char cmd[MAX_STR_LENGTH]= {0};
+    sprintf(cmd, "%s 2>&1", command);
+    LOG(level, ("Executing command:\n[%s]\n", cmd));
 
     fflush(stdout);
-    FILE *sysFile = popen(command, "r");
+    FILE *sysFile = popen(cmd, "r");
     while (fgets(temp, tempsize, sysFile) != NULL) {
         // size left excludes terminating character
         size_t sizeleft = MAX_STR_LENGTH - strlen(result) - 1;

@@ -78,6 +78,7 @@ int deleteOldFile(char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
+    LOG(logINFO, ("\tDeleted old programming file (%s)\n", TEMP_PROG_FILE_NAME));
     return OK;
 }
 
@@ -139,11 +140,12 @@ int copyToFlash(ssize_t fsize, char *clientChecksum, char *mess) {
         return FAIL;
     }
 
+/* ignoring this until a consistent way to read from bfin flash
     if (verifyChecksumFromFlash(mess, clientChecksum, flashDriveName, fsize) ==
         FAIL) {
         return FAIL;
     }
-
+*/
     if (waitForFPGAtoTouchFlash(mess) == FAIL) {
         return FAIL;
     }
@@ -312,7 +314,7 @@ int waitForFPGAtoTouchFlash(char* mess) {
 #ifdef VIRTUAL
     return OK;
 #endif
-    LOG(logINFO, ("Waiting for FPGA to program from flash\n"));
+    LOG(logINFO, ("\tWaiting for FPGA to program from flash\n"));
     int timeSpent = 0;
     
     int result = 0;
@@ -339,9 +341,11 @@ int waitForFPGAtoTouchFlash(char* mess) {
         }
 
         // convert to int
-        if (sscanf(retvals, "%d", &result) != 1) {
-            sprintf(mess, "Could not program fpga. (could not scan int for gpio status: %s)\n",
-                    retvals);
+        result = 1;
+        int retval = sscanf(retvals, "%d\n", &result);
+        if (retval != 1) {
+            sprintf(mess, "Could not program fpga. (could not scan int for gpio status: [%s] retval:%d, result:%d)\n",
+                    retvals, retval, result);
             LOG(logERROR, (mess));
             return FAIL;            
         }

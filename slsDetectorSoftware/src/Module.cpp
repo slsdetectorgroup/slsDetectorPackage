@@ -3479,7 +3479,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
 
     // simulating erasing flash
     {
-        LOG(logINFO) << "Erasing Flash for module " << moduleIndex << " ("
+        LOG(logINFO) << "(Simulating) Erasing Flash for module " << moduleIndex << " ("
                     << shm()->hostname << ")";
         printf("%d%%\r", 0);
         std::cout << std::flush;
@@ -3499,9 +3499,27 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         printf("\n");
     }
 
-    // copied to flash
-    LOG(logINFO) << "Writing to Flash to module " << moduleIndex << " ("
-                 << shm()->hostname << ")";
+    // simulating writing to flash
+    {
+        LOG(logINFO) << "(Simulating) Writing to Flash for module " << moduleIndex << " (" << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // writing takes 30 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 30;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            --count;
+            printf(
+                "%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            std::cout << std::flush;
+        }
+        printf("\n");
+    }
+
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"

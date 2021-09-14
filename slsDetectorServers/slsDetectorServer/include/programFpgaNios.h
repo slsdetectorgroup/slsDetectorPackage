@@ -10,8 +10,9 @@ void NotifyServerStartSuccess();
 
 /** reset fpga and controller(only implemented for >= v1.1 boards) */
 void rebootControllerAndFPGA();
-int findFlash(char *mess);
-void eraseFlash();
-int eraseAndWriteToFlash(char *mess, char *checksum, char *fpgasrc,
-                         uint64_t fsize);
-int writeFPGAProgram(char *mess, char *fpgasrc, uint64_t fsize, FILE *filefp);
+
+int eraseAndWriteToFlash(char *mess, char *checksum, char *fpgasrc, uint64_t fsize);
+int getDrive(char *mess);
+int openFileForFlash(FILE **flashfd, char *mess);
+int eraseFlash(char *mess);
+int writeToFlash(ssize_t fsize, FILE *flashfd, char *buffer, char *mess);

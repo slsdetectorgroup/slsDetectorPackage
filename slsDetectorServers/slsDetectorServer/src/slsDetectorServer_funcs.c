@@ -3715,9 +3715,7 @@ int program_fpga(int file_des) {
                 free(fpgasrc);
                 return printSocketReadError();
             }
-#ifndef VIRTUAL
             ret = eraseAndWriteToFlash(mess, checksum, fpgasrc, filesize);
-#endif
             Server_SendResult(file_des, INT32, NULL, 0);
             free(fpgasrc);
         }

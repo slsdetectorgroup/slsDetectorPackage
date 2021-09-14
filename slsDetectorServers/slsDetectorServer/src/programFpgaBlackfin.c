@@ -143,7 +143,6 @@ int copyToFlash(ssize_t fsize, char *clientChecksum, char *mess) {
         FAIL) {
         return FAIL;
     }
-    LOG(logINFO, ("Checksum in Flash verified\n"));
 
     if (waitForFPGAtoTouchFlash(mess) == FAIL) {
         return FAIL;
@@ -157,6 +156,7 @@ int getDrive(char *mess) {
     strcpy(flashDriveName, "/tmp/SLS_mtd3");
     return OK;
 #endif
+    LOG(logDEBUG1, ("Finding flash drive...\n"));
     // getting the drive
     // root:/>  cat /proc/mtd
     // dev:    size   erasesize  name
@@ -183,6 +183,7 @@ int getDrive(char *mess) {
         return FAIL;
     }
 
+    memset(flashDriveName, 0, sizeof(flashDriveName));
     strcpy(flashDriveName, "/dev/");
     strcat(flashDriveName, pch);
     LOG(logINFO, ("\tFlash drive found: %s\n", flashDriveName));

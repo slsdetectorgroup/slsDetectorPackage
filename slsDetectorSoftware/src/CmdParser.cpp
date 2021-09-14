@@ -1,6 +1,7 @@
 
 #include "CmdParser.h"
 #include "sls/sls_detector_defs.h"
+#include "sls/string_utils.h"
 #include <cstdio>
 #include <cstring>
 #include <iostream>
@@ -41,8 +42,11 @@ void CmdParser::Parse(std::string s) {
     Reset();
 
     //Are we looking at -h --help?
-    
+    bool h = replace_first(&s, "--help", " ");
+    h = h || replace_first(&s, "-h", " ");
+    help_ = h;
 
+    // Extract the position indicies
     auto pos = s.find_first_not_of("0123456789:- ");
     if (pos!=0){
         auto pre = s.substr(0, pos);
@@ -51,105 +55,58 @@ void CmdParser::Parse(std::string s) {
         DecodeIdAndPosition(pre.c_str());
     }
     
-
-    //Load string 
+    //Command and args should now be all that's left in the string
     std::istringstream iss(s);
     auto it = std::istream_iterator<std::string>(iss);
     command_ = *it++; //First arg is the comand to run
 
     arguments_ =
         std::vector<std::string>(it, std::istream_iterator<std::string>());
-    auto old_size = arguments_.size();
-    arguments_.erase(std::remove_if(begin(arguments_), end(arguments_),
-                                    [](const std::string &item) {
-                                        return (item == "-h" ||
-                                                item == "--help");
-                                    }),
-                     end(arguments_));
-    if (old_size - arguments_.size() > 0)
-        help_ = true;
-    // if (!arguments_.empty()) {
-    //     command_ = arguments_[0];
-    //     arguments_.erase(begin(arguments_));
-    // }
+
     //allow comma sep
     for (auto& arg : arguments_){
         if (arg.back() == ',')
             arg.pop_back();
     }
-
-    // DecodeIdAndPosition(command_.c_str());
 }
 
-void CmdParser::DecodeIdAndPosition(const char *c) {
-    bool contains_id = std::strchr(c, '-') != nullptr;
-    bool contains_pos = std::strchr(c, ':') != nullptr;
-
-    // if (!isdigit(c[0])){
-    //     // The first char is not a digit which means we have a command.
-    //     // or at least a candidate, calling could still fail 
-    //     command_ = c;
-    //     return;
-    // }
-
-    if (contains_id && contains_pos) {
-        int r = sscanf(c, "%d-%d:", &multi_id_, &detector_id_);
-        if (r != 2) {
-            throw(sls::RuntimeError(
-                "Cannot decode client or detector id from: \"" +
-                std::string(c) + "\"\n"));
-        }
-        // command_ = tmp;
-    } else if (contains_id && !contains_pos) {
-        int r = sscanf(c, "%d-", &multi_id_);
-        if (r != 1) {
-            throw(sls::RuntimeError("Cannot decode client id from: \"" +
-                                    std::string(c) + "\"\n"));
-        }
-        // command_ = tmp;
-    } else if (!contains_id && contains_pos) {
-        int r = sscanf(c, "%d:", &detector_id_);
-        if (r != 1) {
-            throw(sls::RuntimeError("Cannot decode detector id from: \"" +
-                                    std::string(c) + "\"\n"));
-        }
-        // command_ = tmp;
-    } else {
-        // command_ = c;
+void CmdParser::DecodeIdAndPosition(std::string pre){
+    if(pre.empty())
+        return;
+        
+    //Get the detector id 
+    auto pos = pre.find_first_of("-");
+    if (pos != std::string::npos){
+        multi_id_ = std::stoi(pre);
+        pre.erase(0,pos+1);
     }
+
+    //if there is nothing left to parse we need to return
+    if(pre.empty()){
+        return;
+    }
+
+    //now lets see if there is a :
+    pos = pre.find_first_of(":");
+    if (pos == std::string::npos){
+        //no : we only have the multi id
+        detector_id_ = std::stoi(pre);
+
+    }else if(pos == 0){
+        //do nothing, there is no multi id specified
+        pre.erase(0,1);
+    }else{
+        // the : is somewhere in the middle
+        detector_id_ = std::stoi(pre);
+        pre.erase(0,pos+1);
+    }
+
+    //now if the string is not empty we also have a receiver id
+    if(!pre.empty()){
+        receiver_id_ = std::stoi(pre);
+    }
+
 }
-
-// void CmdParser::DecodeIdAndPosition(const char *c) {
-//     bool contains_id = std::strchr(c, '-') != nullptr;
-//     bool contains_pos = std::strchr(c, ':') != nullptr;
-//     char tmp[100];
-
-//     if (contains_id && contains_pos) {
-//         int r = sscanf(c, "%d-%d:%s", &multi_id_, &detector_id_, tmp);
-//         if (r != 3) {
-//             throw(sls::RuntimeError(
-//                 "Cannot decode client or detector id from: \"" +
-//                 std::string(c) + "\"\n"));
-//         }
-//         command_ = tmp;
-//     } else if (contains_id && !contains_pos) {
-//         int r = sscanf(c, "%d-%s", &multi_id_, tmp);
-//         if (r != 2) {
-//             throw(sls::RuntimeError("Cannot decode client id from: \"" +
-//                                     std::string(c) + "\"\n"));
-//         }
-//         command_ = tmp;
-//     } else if (!contains_id && contains_pos) {
-//         int r = sscanf(c, "%d:%s", &detector_id_, tmp);
-//         if (r != 2) {
-//             throw(sls::RuntimeError("Cannot decode detector id from: \"" +
-//                                     std::string(c) + "\"\n"));
-//         }
-//         command_ = tmp;
-//     } else {
-//         command_ = c;
-//     }
-// }
 
 std::vector<const char *> CmdParser::argv() const {
     std::vector<const char *> vec;

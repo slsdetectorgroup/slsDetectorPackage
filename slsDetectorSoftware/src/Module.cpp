@@ -3609,6 +3609,6 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
         throw RuntimeError(os.str());
     }
     LOG(logINFO) << "FPGA programmed successfully";
-    //rebootController();
+    rebootController();
 }
 } // namespace sls

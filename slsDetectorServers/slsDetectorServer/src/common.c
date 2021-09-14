@@ -276,7 +276,7 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
 
         // read only until a particular size (drive)
         if (fsize != 0 && totalBytesRead >= fsize) {
-            LOG(logINFOBLUE, ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
+            LOG(logINFO, ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
             break;
         }
         bytes = fread(buf, 1, readUnitSize, fp);

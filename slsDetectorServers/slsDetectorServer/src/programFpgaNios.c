@@ -57,12 +57,12 @@ int eraseAndWriteToFlash(char *mess, char *checksum, char *fpgasrc,
     if (writeToFlash(fsize, flashfd, fpgasrc, mess) == FAIL) {
         return FAIL;
     }
-
+    /* ignoring this until a consistent way to read from nios flash
     if (verifyChecksumFromFlash(mess, checksum, flashDriveName, fsize) ==
         FAIL) {
         return FAIL;
     }
-
+    */
     return OK;
 }
 
@@ -127,7 +127,7 @@ int eraseFlash(char *mess) {
 #endif
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
-    sprintf(cmd, "flash_erase %s", flashDriveName);
+    sprintf(cmd, "flash_erase %s 0 0", flashDriveName);
     if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
         strcpy(mess, "Could not program fpga. (could not erase flash: ");
         strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);

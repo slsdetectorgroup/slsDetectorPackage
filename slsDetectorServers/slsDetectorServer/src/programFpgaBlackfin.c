@@ -341,11 +341,9 @@ int waitForFPGAtoTouchFlash(char* mess) {
         }
 
         // convert to int
-        result = 1;
-        int retval = sscanf(retvals, "%d\n", &result);
-        if (retval != 1) {
-            sprintf(mess, "Could not program fpga. (could not scan int for gpio status: [%s] retval:%d, result:%d)\n",
-                    retvals, retval, result);
+        if (sscanf(retvals, "%d\n", &result) != 1) {
+            sprintf(mess, "Could not program fpga. (could not scan int for gpio status: [%s])\n",
+                    retvals);
             LOG(logERROR, (mess));
             return FAIL;            
         }

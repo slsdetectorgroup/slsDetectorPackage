@@ -96,7 +96,7 @@ u_int32_t getDetectorNumber();
 #if defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D)
 int getModuleId(int *ret, char *mess);
 #endif
-#ifdef GOTTHARD2D
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
 void setModuleId(int modid);
 #endif
 u_int64_t getDetectorMAC();

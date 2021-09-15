@@ -113,6 +113,12 @@
 #define SYSTEM_STATUS_SLV_BRD_DTCT_MSK  (0x00000001 << SYSTEM_STATUS_SLV_BRD_DTCT_OFST)
 
 
+#define MOD_ID_REG                      (0x0B * REG_OFFSET + BASE_CONTROL)
+
+#define MOD_ID_OFST                     (0)
+#define MOD_ID_MSK                      (0x0000FFFF << MOD_ID_OFST)
+
+
 /* Config RW regiseter */
 #define CONFIG_REG                      (0x20 * REG_OFFSET + BASE_CONTROL)
 

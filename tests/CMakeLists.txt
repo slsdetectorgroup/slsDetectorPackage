@@ -21,7 +21,7 @@ add_executable(tests ${SLS_TEST_SOURCES})
 target_link_libraries(tests
     PUBLIC 
       slsProjectOptions
-      slsSupportShared
+      slsSupportStatic
       pthread
       rt
     PRIVATE
@@ -30,7 +30,7 @@ target_link_libraries(tests
 
 if (SLS_USE_DETECTOR)
     target_link_libraries(tests PUBLIC
-        slsDetectorShared
+        slsDetectorStatic
     )
 endif (SLS_USE_DETECTOR)
 

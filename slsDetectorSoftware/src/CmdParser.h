@@ -23,7 +23,6 @@ class CmdParser {
   public:
     void Parse(int argc, const char *const argv[]);
     void Parse(std::string s);
-    void Print();
 
     int multi_id() const noexcept { return multi_id_; };
     int detector_id() const noexcept { return detector_id_; };
@@ -37,8 +36,6 @@ class CmdParser {
     const std::vector<std::string> &arguments() const noexcept {
         return arguments_;
     };
-    std::vector<const char *> argv() const;
-    std::string cli_line() const;
 
   private:
     void DecodeIdAndPosition(std::string pre);

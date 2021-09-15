@@ -18,8 +18,8 @@ SCENARIO("Construction", "[support]") {
             REQUIRE(p.multi_id() == 0);
             REQUIRE(p.command().empty());
             REQUIRE(p.arguments().empty());
-            REQUIRE(p.argv().empty());
-            REQUIRE(p.argv().data() == nullptr);
+            // REQUIRE(p.argv().empty());
+            // REQUIRE(p.argv().data() == nullptr);
         }
     }
 }
@@ -35,7 +35,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
                 REQUIRE(p.multi_id() == 0);
                 REQUIRE(p.command().empty());
                 REQUIRE(p.arguments().empty());
-                REQUIRE(p.argv().empty());
+                // REQUIRE(p.argv().empty());
             }
         }
         WHEN("Parsing a string with a single command") {
@@ -46,7 +46,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
                 REQUIRE(p.detector_id() == -1);
                 REQUIRE(p.multi_id() == 0);
                 REQUIRE(p.arguments().empty());
-                REQUIRE(p.argv().size() == 1);
+                // REQUIRE(p.argv().size() == 1);
             }
         }
         WHEN("Parsing a string with command and value") {
@@ -72,7 +72,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
                     REQUIRE(p.multi_id() == 0);
                     REQUIRE(p.command() == res[i]);
                     REQUIRE(p.arguments().empty());
-                    REQUIRE(p.argv().size() == 1);
+                    // REQUIRE(p.argv().size() == 1);
                 }
             }
         }
@@ -89,7 +89,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
                     REQUIRE(p.multi_id() == multi_id[i]);
                     REQUIRE(p.command() == res[i]);
                     REQUIRE(p.arguments().empty());
-                    REQUIRE(p.argv().size() == 1);
+                    // REQUIRE(p.argv().size() == 1);
                 }
             }
         }
@@ -121,7 +121,7 @@ SCENARIO("Parsing strings with -h or --help", "[support]") {
                 REQUIRE(p.command() == "list");
                 REQUIRE(p.isHelp());
                 REQUIRE(p.arguments().empty());
-                REQUIRE(p.argv().size() == 1);
+                // REQUIRE(p.argv().size() == 1);
             }
         }
         WHEN("Parsing a string with -h at a different position") {
@@ -271,16 +271,6 @@ TEST_CASE("Double digit id", "[support]") {
 }
 
 
-TEST_CASE("Build up argv", "[support]") {
-    CmdParser p;
-    REQUIRE(p.argv().empty());
-    REQUIRE(p.argv().data() == nullptr);
-
-    std::string s = "trimen 3000 4000\n";
-    p.Parse(s);
-    REQUIRE(p.argv().data() != nullptr);
-    REQUIRE(p.argv().size() == 3);
-}
 
 TEST_CASE("Allows space between mod id and command"){
     CmdParser p;

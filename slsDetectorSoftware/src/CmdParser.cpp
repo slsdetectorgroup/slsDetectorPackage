@@ -10,20 +10,6 @@
 
 namespace sls {
 
-void CmdParser::Print() {
-    std::cout << "\nCmdParser::Print()\n";
-    std::cout << "\tmulti_id: " << multi_id_
-              << ", detector_id: " << detector_id_ << std::endl;
-    std::cout << "\texecutable: " << executable_ << '\n';
-    std::cout << "\tcommand: " << command_ << '\n';
-    std::cout << "\tn_arguments: " << n_arguments() << '\n';
-    std::cout << "\targuments: ";
-    for (const auto &argument : arguments_) {
-        std::cout << argument << " ";
-    }
-    std::cout << "\n\n";
-};
-
 void CmdParser::Parse(int argc, const char *const argv[]) {
     Reset();
     executable_ = argv[0]; // first arg is calling binary
@@ -108,28 +94,10 @@ void CmdParser::DecodeIdAndPosition(std::string pre){
 
 }
 
-std::vector<const char *> CmdParser::argv() const {
-    std::vector<const char *> vec;
-    if (!command_.empty()) {
-        vec.push_back(&command_.front());
-    }
-    for (auto &arg : arguments_) {
-        vec.push_back(&arg.front());
-    }
-    return vec;
-}
-
-std::string CmdParser::cli_line() const {
-    std::ostringstream os;
-    os << command_;
-    for (const auto &arg : arguments_)
-        os << " " << arg;
-    return os.str();
-}
-
 void CmdParser::Reset() {
     multi_id_ = 0;
     detector_id_ = -1;
+    receiver_id_ = -1;
     help_ = false;
     command_.clear();
     executable_.clear();

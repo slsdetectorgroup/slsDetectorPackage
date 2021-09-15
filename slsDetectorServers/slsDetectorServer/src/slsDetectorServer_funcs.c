@@ -8858,8 +8858,7 @@ int set_flip_rows(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-
-        if (arg != 0 && arg != 1) {
+        if ((check_detector_idle("set flip rows") == OK) && (arg != 0 && arg != 1)) {
             ret = FAIL;
             sprintf(mess,
                     "Could not set flip rows. Invalid argument %d.\n",

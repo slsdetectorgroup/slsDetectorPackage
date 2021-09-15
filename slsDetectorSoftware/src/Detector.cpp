@@ -256,7 +256,7 @@ void Detector::setSettingsPath(const std::string &value, Positions pos) {
 }
 
 void Detector::loadTrimbits(const std::string &fname, Positions pos) {
-    pimpl->Parallel(&Module::loadSettingsFile, pos, fname);
+    pimpl->Parallel(&Module::loadTrimbits, pos, fname);
 }
 
 Result<int> Detector::getAllTrimbits(Positions pos) const {

@@ -1503,7 +1503,7 @@ int set_module(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARD2D)
+#if !(defined(MYTHEN3D) && defined(EIGERD))
     functionNotImplemented();
 #else
 
@@ -1524,7 +1524,6 @@ int set_module(int file_des) {
     } else
         module.dacs = myDac;
 
-#if defined(EIGERD) || defined(MYTHEN3D)
     // allocate chans
     if (ret == OK) {
         myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
@@ -1535,7 +1534,6 @@ int set_module(int file_des) {
         } else
             module.chanregs = myChan;
     }
-#endif
     // receive arguments
     if (ret == OK) {
         module.nchip = getNumberOfChips();
@@ -1573,6 +1571,7 @@ int set_module(int file_des) {
 
 // setsettings
 #ifndef MYTHEN3D
+        // m3 uses reg for chip (not settings)
         validate_settings((enum detectorSettings)(module.reg));
 #endif
         ret = setModule(module, mess);

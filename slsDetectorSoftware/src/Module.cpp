@@ -409,7 +409,7 @@ std::string Module::setSettingsDir(const std::string &dir) {
     return shm()->settingsDir;
 }
 
-void Module::loadSettingsFile(const std::string &fname) {
+void Module::loadTrimbits(const std::string &fname) {
     // find specific file if it has detid in file name (.snxxx)
     if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
         std::ostringstream ostfn;

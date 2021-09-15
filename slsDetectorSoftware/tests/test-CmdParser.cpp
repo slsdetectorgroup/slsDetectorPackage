@@ -394,3 +394,19 @@ TEST_CASE("Parse a command that has -h in it"){
     REQUIRE(p.arguments()[0]== "somepc");
 
 }
+
+TEST_CASE("Parse a command in the form 0-1 command"){
+    CmdParser p;
+    p.Parse("3-5 exptime");
+    REQUIRE(p.multi_id() == 3);
+    REQUIRE(p.detector_id() == 5);
+    REQUIRE(p.command() == "exptime");
+}
+
+TEST_CASE("Parse a command in the form 0-1:command"){
+    CmdParser p;
+    p.Parse("3-5:exptime");
+    REQUIRE(p.multi_id() == 3);
+    REQUIRE(p.detector_id() == 5);
+    REQUIRE(p.command() == "exptime");
+}

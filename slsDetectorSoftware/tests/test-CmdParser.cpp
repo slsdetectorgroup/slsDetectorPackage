@@ -384,3 +384,13 @@ TEST_CASE("All stuff"){
     REQUIRE(p.multi_id() == 3);
     REQUIRE(p.command() == "exptime");
 }
+
+TEST_CASE("Parse a command that has -h in it"){
+    CmdParser p;
+    p.Parse("1-hostname somepc");
+    REQUIRE(p.multi_id() == 1);
+    REQUIRE(p.command() == "hostname");
+    REQUIRE(p.arguments().size() == 1);
+    REQUIRE(p.arguments()[0]== "somepc");
+
+}

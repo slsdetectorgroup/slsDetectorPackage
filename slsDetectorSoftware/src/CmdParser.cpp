@@ -25,9 +25,11 @@ void CmdParser::Parse(std::string s) {
     // taking s by value we can modify it.
     Reset();
 
-    // Are we looking at -h --help?
+    // Are we looking at -h --help? avoid removing h from command starting
+    // with h when combined with detector id (ex, 1-hostname)
     bool h = replace_first(&s, "--help", " ");
-    h = h || replace_first(&s, "-h", " ");
+    h = h || replace_first(&s, " -h", " ");
+    h = h || replace_first(&s, "-h ", " ");
     help_ = h;
 
     // Extract the position indicies

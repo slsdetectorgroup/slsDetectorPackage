@@ -429,7 +429,7 @@ uint64_t Implementation::getFramesCaught() const {
 
     for (const auto &it : dataProcessor) {
         flagsum += it->GetStartedFlag();
-        min = std::min(min, it->GetNumFramesCaught());
+        min = std::min(min, it->GetNumCompleteFramesCaught());
     }
     // no data processed
     if (flagsum != dataProcessor.size())
@@ -571,6 +571,13 @@ void Implementation::stopReceiver() {
         }
     }
 #endif
+    if (fileWriteEnable && masterFileWriteEnable && modulePos == 0) {
+        try {
+            dataProcessor[0]->UpdateMasterFile(silentMode);
+        } catch (...) {
+            ; // ignore it and just print it
+        }
+    }
 
     // wait for the processes (dataStreamer) to be done
     running = true;
@@ -589,7 +596,7 @@ void Implementation::stopReceiver() {
         std::vector<uint64_t> mp = getNumMissingPackets();
         uint64_t tot = 0;
         for (int i = 0; i < numThreads; i++) {
-            int nf = dataProcessor[i]->GetNumFramesCaught();
+            int nf = dataProcessor[i]->GetNumCompleteFramesCaught();
             tot += nf;
             std::string mpMessage = std::to_string((int64_t)mp[i]);
             if ((int64_t)mp[i] < 0) {

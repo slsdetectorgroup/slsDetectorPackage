@@ -15,6 +15,7 @@ class BinaryMasterFile : private virtual slsDetectorDefs, public File {
                           const uint64_t fileIndex, const bool overWriteEnable,
                           const bool silentMode,
                           MasterAttributes *attr) override;
+    void UpdateMasterFile(MasterAttributes *attr, bool silentMode) override;
 
   private:
     FILE *fd_{nullptr};

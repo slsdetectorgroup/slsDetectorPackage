@@ -16,6 +16,7 @@ using namespace H5;
 using ns = std::chrono::nanoseconds;
 
 struct MasterAttributes {
+    // (before acquisition)
     slsDetectorDefs::detectorType detType{slsDetectorDefs::GENERIC};
     slsDetectorDefs::timingMode timingMode{slsDetectorDefs::AUTO_TIMING};
     uint32_t imageSize{0};
@@ -57,6 +58,9 @@ struct MasterAttributes {
     uint32_t gates;
     std::map<std::string, std::string> additionalJsonHeader;
 
+    // Final Attributes (after acquisition)
+    uint64_t framesInFile{0};
+
     MasterAttributes(){};
     virtual ~MasterAttributes(){};
 
@@ -87,30 +91,42 @@ struct MasterAttributes {
     };
 
     void WriteBinaryAttributes(FILE *fd, std::string message) {
+        if (fwrite((void *)message.c_str(), 1, message.length(), fd) !=
+            message.length()) {
+            throw sls::RuntimeError(
+                "Master binary file incorrect number of bytes written to file");
+        }
+    };
+
+    void WriteFinalBinaryAttributes(FILE *fd) {
         // adding few common parameters to the end
+        std::ostringstream oss;
+
         if (!additionalJsonHeader.empty()) {
-            std::ostringstream oss;
             oss << "Additional Json Header     : "
                 << sls::ToString(additionalJsonHeader) << '\n';
-            message += oss.str();
         }
+        oss << "Frames in File             : " << framesInFile << '\n';
 
         // adding sls_receiver header format
-        message += std::string("\n#Frame Header\n"
-                               "Frame Number               : 8 bytes\n"
-                               "SubFrame Number/ExpLength  : 4 bytes\n"
-                               "Packet Number              : 4 bytes\n"
-                               "Bunch ID                   : 8 bytes\n"
-                               "Timestamp                  : 8 bytes\n"
-                               "Module Id                  : 2 bytes\n"
-                               "Row                        : 2 bytes\n"
-                               "Column                     : 2 bytes\n"
-                               "Reserved                   : 2 bytes\n"
-                               "Debug                      : 4 bytes\n"
-                               "Round Robin Number         : 2 bytes\n"
-                               "Detector Type              : 1 byte\n"
-                               "Header Version             : 1 byte\n"
-                               "Packets Caught Mask        : 64 bytes\n");
+        oss << '\n'
+            << "#Frame Header" << '\n'
+            << "Frame Number               : 8 bytes" << '\n'
+            << "SubFrame Number/ExpLength  : 4 bytes" << '\n'
+            << "Packet Number              : 4 bytes" << '\n'
+            << "Bunch ID                   : 8 bytes" << '\n'
+            << "Timestamp                  : 8 bytes" << '\n'
+            << "Module Id                  : 2 bytes" << '\n'
+            << "Row                        : 2 bytes" << '\n'
+            << "Column                     : 2 bytes" << '\n'
+            << "Reserved                   : 2 bytes" << '\n'
+            << "Debug                      : 4 bytes" << '\n'
+            << "Round Robin Number         : 2 bytes" << '\n'
+            << "Detector Type              : 1 byte" << '\n'
+            << "Header Version             : 1 byte" << '\n'
+            << "Packets Caught Mask        : 64 bytes" << '\n';
+
+        std::string message = oss.str();
 
         // writing to file
         if (fwrite((void *)message.c_str(), 1, message.length(), fd) !=
@@ -232,6 +248,18 @@ struct MasterAttributes {
             DataSet dataset = group->createDataSet(
                 "Total Frames", PredType::STD_U64LE, dataspace);
             dataset.write(&totalFrames, PredType::STD_U64LE);
+        }
+    };
+
+    void WriteFinalHDF5Attributes(H5File *fd, Group *group) {
+        char c[1024];
+        memset(c, 0, sizeof(c));
+        // Total Frames in file
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "Frames in File", PredType::STD_U64LE, dataspace);
+            dataset.write(&framesInFile, PredType::STD_U64LE);
         }
         // additional json header
         if (!additionalJsonHeader.empty()) {

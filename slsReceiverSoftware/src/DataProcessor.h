@@ -37,6 +37,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     bool GetStartedFlag();
     uint64_t GetNumFramesCaught();
+    uint64_t GetNumCompleteFramesCaught();
     /** (-1 if no frames have been caught */
     uint64_t GetCurrentFrameIndex();
     /** (-1 if no frames have been caught) */
@@ -76,6 +77,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                            const int numModY);
     void LinkDataInMasterFile(const bool silentMode);
 #endif
+    void UpdateMasterFile(bool silentMode);
     /**
      * Call back for raw data
      * args to raw data ready callback are
@@ -174,8 +176,11 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     std::atomic<uint64_t> firstIndex_{0};
 
     // for statistics
-    /** Number of complete frames caught */
+    /** Number of frames caught */
     uint64_t numFramesCaught_{0};
+
+    /** Number of complete frames caught */
+    uint64_t numCompleteFramesCaught_{0};
 
     /** Frame Number of latest processed frame number */
     std::atomic<uint64_t> currentFrameIndex_{0};

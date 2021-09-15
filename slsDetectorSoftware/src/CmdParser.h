@@ -22,11 +22,11 @@ namespace sls {
 class CmdParser {
   public:
     void Parse(int argc, const char *const argv[]);
-    void Parse(const std::string &s);
-    void Print();
+    void Parse(std::string s);
 
     int multi_id() const noexcept { return multi_id_; };
     int detector_id() const noexcept { return detector_id_; };
+    int receiver_id() const noexcept { return receiver_id_; };
     int n_arguments() const noexcept { return arguments_.size(); }
     const std::string &command() const noexcept { return command_; }
     void setCommand(std::string cmd) { command_ = cmd; }
@@ -36,14 +36,13 @@ class CmdParser {
     const std::vector<std::string> &arguments() const noexcept {
         return arguments_;
     };
-    std::vector<const char *> argv() const;
-    std::string cli_line() const;
 
   private:
-    void DecodeIdAndPosition(const char *c);
+    void DecodeIdAndPosition(std::string pre);
     void Reset(); // reset all private variables
     int multi_id_ = 0;
     int detector_id_ = -1;
+    int receiver_id_ = -1;
     bool help_ = false;
     std::string command_;
     std::string executable_;

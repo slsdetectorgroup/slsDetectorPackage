@@ -18,8 +18,8 @@ SCENARIO("Construction", "[support]") {
             REQUIRE(p.multi_id() == 0);
             REQUIRE(p.command().empty());
             REQUIRE(p.arguments().empty());
-            REQUIRE(p.argv().empty());
-            REQUIRE(p.argv().data() == nullptr);
+            // REQUIRE(p.argv().empty());
+            // REQUIRE(p.argv().data() == nullptr);
         }
     }
 }
@@ -35,7 +35,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
                 REQUIRE(p.multi_id() == 0);
                 REQUIRE(p.command().empty());
                 REQUIRE(p.arguments().empty());
-                REQUIRE(p.argv().empty());
+                // REQUIRE(p.argv().empty());
             }
         }
         WHEN("Parsing a string with a single command") {
@@ -46,7 +46,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
                 REQUIRE(p.detector_id() == -1);
                 REQUIRE(p.multi_id() == 0);
                 REQUIRE(p.arguments().empty());
-                REQUIRE(p.argv().size() == 1);
+                // REQUIRE(p.argv().size() == 1);
             }
         }
         WHEN("Parsing a string with command and value") {
@@ -72,7 +72,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
                     REQUIRE(p.multi_id() == 0);
                     REQUIRE(p.command() == res[i]);
                     REQUIRE(p.arguments().empty());
-                    REQUIRE(p.argv().size() == 1);
+                    // REQUIRE(p.argv().size() == 1);
                 }
             }
         }
@@ -89,7 +89,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
                     REQUIRE(p.multi_id() == multi_id[i]);
                     REQUIRE(p.command() == res[i]);
                     REQUIRE(p.arguments().empty());
-                    REQUIRE(p.argv().size() == 1);
+                    // REQUIRE(p.argv().size() == 1);
                 }
             }
         }
@@ -103,16 +103,6 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
                 REQUIRE(p.arguments()[0] == "5000");
                 REQUIRE(p.arguments()[1] == "6000");
                 REQUIRE(p.arguments()[2] == "7000");
-            }
-        }
-
-        WHEN("Cliend id and or detector id cannot be decoded") {
-            vs arg{"o:cmd",     "-5:cmd",    "aedpva:cmd",
-                   "5-svc:vrf", "asv-5:cmd", "savc-asa:cmd"};
-            THEN("Parsing Throws") {
-                for (size_t i = 0; i != arg.size(); ++i) {
-                    REQUIRE_THROWS(p.Parse(arg[i]));
-                }
             }
         }
     }
@@ -131,7 +121,7 @@ SCENARIO("Parsing strings with -h or --help", "[support]") {
                 REQUIRE(p.command() == "list");
                 REQUIRE(p.isHelp());
                 REQUIRE(p.arguments().empty());
-                REQUIRE(p.argv().size() == 1);
+                // REQUIRE(p.argv().size() == 1);
             }
         }
         WHEN("Parsing a string with -h at a different position") {
@@ -155,6 +145,20 @@ SCENARIO("Parsing strings with -h or --help", "[support]") {
             }
         }
     }
+}
+
+TEST_CASE("Parse string with --help"){
+    CmdParser p;
+    p.Parse("list --help");
+    REQUIRE(p.isHelp()==true);
+    REQUIRE(p.command()=="list");
+}
+
+TEST_CASE("Parse string with -h"){
+    CmdParser p;
+    p.Parse("list -h");
+    REQUIRE(p.isHelp()==true);
+    REQUIRE(p.command()=="list");
 }
 
 TEST_CASE("Parsing consecutive strings resets not found det id") {
@@ -266,27 +270,143 @@ TEST_CASE("Double digit id", "[support]") {
     REQUIRE(p.arguments().empty());
 }
 
-TEST_CASE("Calling with wrong id throws invalid_argument", "[support]") {
-    int argc = 2;
-    const char *const argv[]{"caller", "asvldkn:vrf"};
+
+
+TEST_CASE("Allows space between mod id and command"){
     CmdParser p;
-    CHECK_THROWS(p.Parse(argc, argv));
+    p.Parse("7: exptime 0.5");
+    REQUIRE(p.detector_id() == 7);
+    REQUIRE(p.command() == "exptime");
+    REQUIRE(p.arguments().size() == 1);
+    REQUIRE(p.arguments()[0] == "0.5");
 }
 
-TEST_CASE("Calling with wrong client throws invalid_argument", "[support]") {
-    int argc = 2;
-    const char *const argv[]{"caller", "lki-3:vrf"};
+TEST_CASE("Allows space between mod id and command also without :"){
     CmdParser p;
-    CHECK_THROWS(p.Parse(argc, argv));
+    p.Parse("1 exptime 0.5");
+    REQUIRE(p.detector_id() == 1);
+    REQUIRE(p.command() == "exptime");
+    REQUIRE(p.arguments().size() == 1);
+    REQUIRE(p.arguments()[0] == "0.5");
 }
 
-TEST_CASE("Build up argv", "[support]") {
+TEST_CASE("Allows space between mod id and command when detector id is used"){
     CmdParser p;
-    REQUIRE(p.argv().empty());
-    REQUIRE(p.argv().data() == nullptr);
+    p.Parse("1-5 exptime 0.5");
+    REQUIRE(p.detector_id() == 5);
+    REQUIRE(p.multi_id() == 1);
+    REQUIRE(p.command() == "exptime");
+    REQUIRE(p.arguments().size() == 1);
+    REQUIRE(p.arguments()[0] == "0.5");
+}
 
-    std::string s = "trimen 3000 4000\n";
-    p.Parse(s);
-    REQUIRE(p.argv().data() != nullptr);
-    REQUIRE(p.argv().size() == 3);
+TEST_CASE("Allows space between mod id and command with detector id and :"){
+    CmdParser p;
+    p.Parse("1-5: exptime 0.5");
+    REQUIRE(p.detector_id() == 5);
+    REQUIRE(p.multi_id() == 1);
+    REQUIRE(p.command() == "exptime");
+    REQUIRE(p.arguments().size() == 1);
+    REQUIRE(p.arguments()[0] == "0.5");
+}
+
+TEST_CASE("Parse receiver ID"){
+    CmdParser p;
+    p.Parse("2-5:3 flowcontrol10g 1");
+    REQUIRE(p.detector_id() == 5);
+    REQUIRE(p.multi_id() == 2);
+    REQUIRE(p.command() == "flowcontrol10g");
+    REQUIRE(p.arguments().size() == 1);
+    REQUIRE(p.arguments()[0] == "1");
+    REQUIRE(p.receiver_id()==3);
+}
+
+TEST_CASE("Parse receiver ID no det id"){
+    CmdParser p;
+    p.Parse("5:95 flowcontrol10g");
+    REQUIRE(p.detector_id() == 5);
+    REQUIRE(p.multi_id() == 0);
+    REQUIRE(p.command() == "flowcontrol10g");
+    REQUIRE(p.arguments().size() == 0);
+    REQUIRE(p.receiver_id()==95);
+}
+
+
+
+TEST_CASE("Det id but no mod id"){
+    CmdParser p;
+    p.Parse("1-exptime");
+    REQUIRE(p.detector_id() == -1); //not there
+    REQUIRE(p.multi_id() == 1);
+    REQUIRE(p.command() == "exptime");
+}
+
+TEST_CASE("Det id but no mod id but with space after -"){
+    CmdParser p;
+    p.Parse("1- exptime");
+    REQUIRE(p.detector_id() == -1); //not there
+    REQUIRE(p.multi_id() == 1);
+    REQUIRE(p.command() == "exptime");
+}
+
+TEST_CASE("Parse receiver ID no det id no mod"){
+    CmdParser p;
+    p.Parse(":95 flowcontrol10g");
+    REQUIRE(p.detector_id() == -1); //not there
+    REQUIRE(p.multi_id() == 0);
+    REQUIRE(p.command() == "flowcontrol10g");
+    REQUIRE(p.arguments().size() == 0);
+    REQUIRE(p.receiver_id()==95);
+}
+
+TEST_CASE("Parse mod and receiver id"){
+    CmdParser p;
+    p.Parse("1:3 exptime");
+    REQUIRE(p.detector_id() == 1); 
+    REQUIRE(p.receiver_id()==3);
+    REQUIRE(p.command() == "exptime");
+}
+
+TEST_CASE("Det id but no no mod"){
+    CmdParser p;
+    p.Parse("2-:35 exptime");
+    REQUIRE(p.detector_id() == -1); 
+    REQUIRE(p.receiver_id()==35);
+    REQUIRE(p.multi_id() == 2);
+    REQUIRE(p.command() == "exptime");
+}
+
+TEST_CASE("All stuff"){
+    CmdParser p;
+    p.Parse("3-4:2 exptime");
+    REQUIRE(p.detector_id() == 4); 
+    REQUIRE(p.receiver_id()==2);
+    REQUIRE(p.multi_id() == 3);
+    REQUIRE(p.command() == "exptime");
+}
+
+TEST_CASE("Parse a command that has -h in it"){
+    CmdParser p;
+    p.Parse("1-hostname somepc");
+    REQUIRE(p.multi_id() == 1);
+    REQUIRE(p.command() == "hostname");
+    REQUIRE(p.arguments().size() == 1);
+    REQUIRE(p.arguments()[0]== "somepc");
+
+}
+
+TEST_CASE("Parse a command in the form 0-1 command"){
+    CmdParser p;
+    p.Parse("3-5 exptime");
+    REQUIRE(p.multi_id() == 3);
+    REQUIRE(p.detector_id() == 5);
+    REQUIRE(p.command() == "exptime");
+}
+
+TEST_CASE("Parse a command in the form 0-1:command"){
+    CmdParser p;
+    p.Parse("3-5:exptime");
+    REQUIRE(p.multi_id() == 3);
+    REQUIRE(p.detector_id() == 5);
+    REQUIRE(p.command() == "exptime");
 }

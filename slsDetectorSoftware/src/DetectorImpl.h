@@ -15,8 +15,8 @@ class detectorData;
 #include <thread>
 #include <vector>
 
-#define MULTI_SHMAPIVERSION 0x190809
-#define MULTI_SHMVERSION    0x201007
+#define DETECTOR_SHMAPIVERSION 0x190809
+#define DETECTOR_SHMVERSION    0x201007
 #define SHORT_STRING_LENGTH 50
 
 #include <future>
@@ -30,7 +30,7 @@ class Module;
  * @short structure allocated in shared memory to store detector settings
  * for IPC and cache
  */
-struct sharedMultiSlsDetector {
+struct sharedDetector {
 
     /* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND
      * ------*/
@@ -47,14 +47,14 @@ struct sharedMultiSlsDetector {
     /** last time stamp when accessing the shared memory */
     char lastDate[SHORT_STRING_LENGTH];
 
-    int numberOfDetectors;
-    slsDetectorDefs::detectorType multiDetectorType;
+    int numberOfModules;
+    slsDetectorDefs::detectorType detType;
 
     /** END OF FIXED PATTERN
      * -----------------------------------------------*/
 
-    /** Number of detectors operated at once */
-    slsDetectorDefs::xy numberOfDetector;
+    /** Number of modules operated at once */
+    slsDetectorDefs::xy numberOfModule;
 
     /**  max number of channels for complete detector*/
     slsDetectorDefs::xy numberOfChannels;
@@ -69,13 +69,11 @@ struct sharedMultiSlsDetector {
 class DetectorImpl : public virtual slsDetectorDefs {
   public:
     /**
-     * Constructor
-     * @param multi_id multi detector id
      * @param verify true to verify if shared memory version matches existing
      * one
      * @param update true to update last user pid, date etc
      */
-    explicit DetectorImpl(int multi_id = 0, bool verify = true,
+    explicit DetectorImpl(int detector_index = 0, bool verify = true,
                           bool update = true);
 
     /**
@@ -89,20 +87,20 @@ class DetectorImpl : public virtual slsDetectorDefs {
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) {
 
-        if (detectors.empty())
-            throw sls::RuntimeError("No detectors added");
+        if (modules.empty())
+            throw sls::RuntimeError("No modules added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
-            positions.resize(detectors.size());
+            positions.resize(modules.size());
             std::iota(begin(positions), end(positions), 0);
         }
         std::vector<std::future<RT>> futures;
         futures.reserve(positions.size());
         for (size_t i : positions) {
-            if (i >= detectors.size())
-                throw sls::RuntimeError("Detector out of range");
+            if (i >= modules.size())
+                throw sls::RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
-                                         detectors[i].get(), Args...));
+                                         modules[i].get(), Args...));
         }
         sls::Result<RT> result;
         result.reserve(positions.size());
@@ -117,20 +115,20 @@ class DetectorImpl : public virtual slsDetectorDefs {
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) const {
 
-        if (detectors.empty())
-            throw sls::RuntimeError("No detectors added");
+        if (modules.empty())
+            throw sls::RuntimeError("No modules added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
-            positions.resize(detectors.size());
+            positions.resize(modules.size());
             std::iota(begin(positions), end(positions), 0);
         }
         std::vector<std::future<RT>> futures;
         futures.reserve(positions.size());
         for (size_t i : positions) {
-            if (i >= detectors.size())
-                throw sls::RuntimeError("Detector out of range");
+            if (i >= modules.size())
+                throw sls::RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
-                                         detectors[i].get(), Args...));
+                                         modules[i].get(), Args...));
         }
         sls::Result<RT> result;
         result.reserve(positions.size());
@@ -145,20 +143,20 @@ class DetectorImpl : public virtual slsDetectorDefs {
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) {
 
-        if (detectors.empty())
-            throw sls::RuntimeError("No detectors added");
+        if (modules.empty())
+            throw sls::RuntimeError("No modules added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
-            positions.resize(detectors.size());
+            positions.resize(modules.size());
             std::iota(begin(positions), end(positions), 0);
         }
         std::vector<std::future<void>> futures;
         futures.reserve(positions.size());
         for (size_t i : positions) {
-            if (i >= detectors.size())
-                throw sls::RuntimeError("Detector out of range");
+            if (i >= modules.size())
+                throw sls::RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
-                                         detectors[i].get(), Args...));
+                                         modules[i].get(), Args...));
         }
         for (auto &i : futures) {
             i.get();
@@ -170,20 +168,20 @@ class DetectorImpl : public virtual slsDetectorDefs {
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) const {
 
-        if (detectors.empty())
-            throw sls::RuntimeError("No detectors added");
+        if (modules.empty())
+            throw sls::RuntimeError("No modules added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
-            positions.resize(detectors.size());
+            positions.resize(modules.size());
             std::iota(begin(positions), end(positions), 0);
         }
         std::vector<std::future<void>> futures;
         futures.reserve(positions.size());
         for (size_t i : positions) {
-            if (i >= detectors.size())
-                throw sls::RuntimeError("Detector out of range");
+            if (i >= modules.size())
+                throw sls::RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
-                                         detectors[i].get(), Args...));
+                                         modules[i].get(), Args...));
         }
         for (auto &i : futures) {
             i.get();
@@ -193,12 +191,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag);
 
-    /** return multi detector shared memory ID */
-    int getMultiId() const;
+    /** return detector index in shared memory */
+    int getDetectorIndex() const;
 
     /** Free specific shared memory from the command line without creating
      * object */
-    static void freeSharedMemory(int multiId, int detPos = -1);
+    static void freeSharedMemory(int detectorIndex, int detPos = -1);
 
     /** Free all modules from current multi Id shared memory and delete members
      */
@@ -215,24 +213,24 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     /**
      * Connect to Virtual Detector Servers at local host
-     * @param numdet number of detectors
+     * @param numdet number of modules
      * @param port starting port number
      */
     void setVirtualDetectorServers(const int numdet, const int port);
 
-    /** Sets the hostname of all sls detectors in shared memory and updates
+    /** Sets the hostname of all sls modules in shared memory and updates
      * local cache */
     void setHostname(const std::vector<std::string> &name);
 
-    /** Gets the total number of detectors */
+    /** Gets the total number of modules */
     int size() const;
 
-    slsDetectorDefs::xy getNumberOfDetectors() const;
+    slsDetectorDefs::xy getNumberOfModules() const;
 
     slsDetectorDefs::xy getNumberOfChannels() const;
 
     /** Must be set before setting hostname
-     * Sets maximum number of channels of all sls detectors */
+     * Sets maximum number of channels of all sls modules */
     void setNumberOfChannels(const slsDetectorDefs::xy c);
 
     /** [Eiger][Jungfrau] */
@@ -248,14 +246,14 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /**
      * register callback for accessing acquisition final data
      * @param func function to be called at the end of the acquisition.
-     * gets detector status and progress index as arguments
+     * gets module status and progress index as arguments
      * @param pArg argument
      */
     void registerAcquisitionFinishedCallback(void (*func)(double, int, void *),
                                              void *pArg);
 
     /**
-     * register calbback for accessing detector final data,
+     * register calbback for accessing module final data,
      * also enables data streaming in client and receiver
      * @param userCallback function for plotting/analyzing the data.
      * Its arguments are
@@ -307,7 +305,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * one
      * @param update true to update last user pid, date etc
      */
-    void setupMultiDetector(bool verify = true, bool update = true);
+    void setupDetector(bool verify = true, bool update = true);
 
     /**
      * Creates shm and initializes shm structure OR
@@ -319,7 +317,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** Initialize detector structure for the shared memory just created */
     void initializeDetectorStructure();
 
-    /** Initialize members (eg. slsDetectors from shm, zmqsockets)
+    /** Initialize members (eg. modules from shm, zmqsockets)
      * @param verify true to verify if shm size matches existing one
      */
     void initializeMembers(bool verify = true);
@@ -332,7 +330,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** Execute command in terminal and return result */
     std::string exec(const char *cmd);
 
-    void addSlsDetector(const std::string &hostname);
+    void addModule(const std::string &hostname);
 
     void updateDetectorSize();
 
@@ -380,22 +378,13 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int kbhit();
 
-    /** Multi detector Id */
-    const int multiId{0};
-
-    /** Shared Memory object */
-    sls::SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};
-
-    /** pointers to the Module structures */
-    std::vector<std::unique_ptr<sls::Module>> detectors;
+    const int detectorIndex{0};
+    sls::SharedMemory<sharedDetector> shm{0, -1};
+    std::vector<std::unique_ptr<sls::Module>> modules;
 
     /** data streaming (down stream) enabled in client (zmq sckets created) */
     bool client_downstream{false};
-
-    /** ZMQ Socket - Receiver to Client */
     std::vector<std::unique_ptr<ZmqSocket>> zmqSocket;
-
-    /** number of zmq sockets running currently */
     volatile int numZmqRunning{0};
 
     /** mutex to synchronize main and data processing threads */

@@ -35,7 +35,7 @@ ClientInterface::~ClientInterface() {
 }
 
 ClientInterface::ClientInterface(int portNumber)
-    : myDetectorType(GOTTHARD),
+    : detType(GOTTHARD),
       portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2),
       server(portNumber) {
     functionTable();
@@ -334,7 +334,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
     // basic setup
     setDetectorType(arg.detType);
     {
-        int msize[2] = {arg.numberOfDetector.x, arg.numberOfDetector.y};
+        int msize[2] = {arg.numberOfModule.x, arg.numberOfModule.y};
         impl()->setDetectorSize(msize);
     }
     impl()->setModulePositionId(arg.moduleIndex);
@@ -359,7 +359,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
     }
     impl()->setUDPPortNumber(arg.udp_dstport);
     impl()->setUDPPortNumber2(arg.udp_dstport2);
-    if (myDetectorType == JUNGFRAU || myDetectorType == GOTTHARD2) {
+    if (detType == JUNGFRAU || detType == GOTTHARD2) {
         try {
             impl()->setNumberofUDPInterfaces(arg.udpInterfaces);
         } catch (const RuntimeError &e) {
@@ -372,13 +372,13 @@ int ClientInterface::setup_receiver(Interface &socket) {
     // acquisition parameters
     impl()->setNumberOfFrames(arg.frames);
     impl()->setNumberOfTriggers(arg.triggers);
-    if (myDetectorType == GOTTHARD2) {
+    if (detType == GOTTHARD2) {
         impl()->setNumberOfBursts(arg.bursts);
     }
-    if (myDetectorType == JUNGFRAU) {
+    if (detType == JUNGFRAU) {
         impl()->setNumberOfAdditionalStorageCells(arg.additionalStorageCells);
     }
-    if (myDetectorType == MOENCH || myDetectorType == CHIPTESTBOARD) {
+    if (detType == MOENCH || detType == CHIPTESTBOARD) {
         try {
             impl()->setNumberofAnalogSamples(arg.analogSamples);
         } catch (const RuntimeError &e) {
@@ -387,7 +387,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
                                " due to fifo structure memory allocation.");
         }
     }
-    if (myDetectorType == CHIPTESTBOARD) {
+    if (detType == CHIPTESTBOARD) {
         try {
             impl()->setNumberofDigitalSamples(arg.digitalSamples);
         } catch (const RuntimeError &e) {
@@ -396,11 +396,11 @@ int ClientInterface::setup_receiver(Interface &socket) {
                                " due to fifo structure memory allocation.");
         }
     }
-    if (myDetectorType != MYTHEN3) {
+    if (detType != MYTHEN3) {
         impl()->setAcquisitionTime(std::chrono::nanoseconds(arg.expTimeNs));
     }
     impl()->setAcquisitionPeriod(std::chrono::nanoseconds(arg.periodNs));
-    if (myDetectorType == EIGER) {
+    if (detType == EIGER) {
         impl()->setSubExpTime(std::chrono::nanoseconds(arg.subExpTimeNs));
         impl()->setSubPeriod(std::chrono::nanoseconds(arg.subExpTimeNs) +
                              std::chrono::nanoseconds(arg.subDeadTimeNs));
@@ -416,17 +416,17 @@ int ClientInterface::setup_receiver(Interface &socket) {
         }
         impl()->setThresholdEnergy(arg.thresholdEnergyeV[0]);
     }
-    if (myDetectorType == EIGER || myDetectorType == JUNGFRAU) {
+    if (detType == EIGER || detType == JUNGFRAU) {
         impl()->setReadNRows(arg.readNRows);
     }
-    if (myDetectorType == MYTHEN3) {
+    if (detType == MYTHEN3) {
         std::array<int, 3> val;
         for (int i = 0; i < 3; ++i) {
             val[i] = arg.thresholdEnergyeV[i];
         }
         impl()->setThresholdEnergy(val);
     }
-    if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
+    if (detType == EIGER || detType == MYTHEN3) {
         try {
             impl()->setDynamicRange(arg.dynamicRange);
         } catch (const RuntimeError &e) {
@@ -436,15 +436,15 @@ int ClientInterface::setup_receiver(Interface &socket) {
         }
     }
     impl()->setTimingMode(arg.timMode);
-    if (myDetectorType == EIGER || myDetectorType == MOENCH ||
-        myDetectorType == CHIPTESTBOARD || myDetectorType == MYTHEN3) {
+    if (detType == EIGER || detType == MOENCH || detType == CHIPTESTBOARD ||
+        detType == MYTHEN3) {
         try {
             impl()->setTenGigaEnable(arg.tenGiga);
         } catch (const RuntimeError &e) {
             throw RuntimeError("Could not set 10GbE.");
         }
     }
-    if (myDetectorType == CHIPTESTBOARD) {
+    if (detType == CHIPTESTBOARD) {
         try {
             impl()->setReadoutMode(arg.roMode);
         } catch (const RuntimeError &e) {
@@ -452,7 +452,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
                                "due to fifo memory allocation.");
         }
     }
-    if (myDetectorType == CHIPTESTBOARD || myDetectorType == MOENCH) {
+    if (detType == CHIPTESTBOARD || detType == MOENCH) {
         try {
             impl()->setADCEnableMask(arg.adcMask);
         } catch (const RuntimeError &e) {
@@ -466,14 +466,14 @@ int ClientInterface::setup_receiver(Interface &socket) {
                                "due to fifo memory allcoation");
         }
     }
-    if (myDetectorType == GOTTHARD) {
+    if (detType == GOTTHARD) {
         try {
             impl()->setROI(arg.roi);
         } catch (const RuntimeError &e) {
             throw RuntimeError("Could not set ROI");
         }
     }
-    if (myDetectorType == MYTHEN3) {
+    if (detType == MYTHEN3) {
         impl()->setCounterMask(arg.countermask);
         impl()->setAcquisitionTime1(std::chrono::nanoseconds(arg.expTime1Ns));
         impl()->setAcquisitionTime2(std::chrono::nanoseconds(arg.expTime2Ns));
@@ -483,7 +483,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
         impl()->setGateDelay3(std::chrono::nanoseconds(arg.gateDelay3Ns));
         impl()->setNumberOfGates(arg.gates);
     }
-    if (myDetectorType == GOTTHARD2) {
+    if (detType == GOTTHARD2) {
         impl()->setBurstMode(arg.burstType);
     }
     impl()->setScan(arg.scanParams);
@@ -507,9 +507,9 @@ void ClientInterface::setDetectorType(detectorType arg) {
     }
 
     try {
-        myDetectorType = GENERIC;
+        detType = GENERIC;
         receiver = sls::make_unique<Implementation>(arg);
-        myDetectorType = arg;
+        detType = arg;
     } catch (...) {
         throw RuntimeError("Could not set detector type");
     }
@@ -535,7 +535,7 @@ int ClientInterface::set_roi(Interface &socket) {
     auto arg = socket.Receive<ROI>();
     LOG(logDEBUG1) << "Set ROI: [" << arg.xmin << ", " << arg.xmax << "]";
 
-    if (myDetectorType != GOTTHARD)
+    if (detType != GOTTHARD)
         functionNotImplemented();
 
     verifyIdle(socket);
@@ -616,7 +616,7 @@ int ClientInterface::set_burst_mode(Interface &socket) {
 int ClientInterface::set_num_analog_samples(Interface &socket) {
     auto value = socket.Receive<int>();
     LOG(logDEBUG1) << "Setting num analog samples to " << value;
-    if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
+    if (detType != CHIPTESTBOARD && detType != MOENCH) {
         functionNotImplemented();
     }
     try {
@@ -632,7 +632,7 @@ int ClientInterface::set_num_analog_samples(Interface &socket) {
 int ClientInterface::set_num_digital_samples(Interface &socket) {
     auto value = socket.Receive<int>();
     LOG(logDEBUG1) << "Setting num digital samples to " << value;
-    if (myDetectorType != CHIPTESTBOARD) {
+    if (detType != CHIPTESTBOARD) {
         functionNotImplemented();
     }
     try {
@@ -654,7 +654,7 @@ int ClientInterface::set_exptime(Interface &socket) {
                    << " (gateIndex: " << gateIndex << ")";
     switch (gateIndex) {
     case -1:
-        if (myDetectorType == MYTHEN3) {
+        if (detType == MYTHEN3) {
             impl()->setAcquisitionTime1(value);
             impl()->setAcquisitionTime2(value);
             impl()->setAcquisitionTime3(value);
@@ -663,19 +663,19 @@ int ClientInterface::set_exptime(Interface &socket) {
         }
         break;
     case 0:
-        if (myDetectorType != MYTHEN3) {
+        if (detType != MYTHEN3) {
             functionNotImplemented();
         }
         impl()->setAcquisitionTime1(value);
         break;
     case 1:
-        if (myDetectorType != MYTHEN3) {
+        if (detType != MYTHEN3) {
             functionNotImplemented();
         }
         impl()->setAcquisitionTime2(value);
         break;
     case 2:
-        if (myDetectorType != MYTHEN3) {
+        if (detType != MYTHEN3) {
             functionNotImplemented();
         }
         impl()->setAcquisitionTime3(value);
@@ -723,19 +723,19 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
             exists = true;
             break;
         /*case 1: //TODO: Not yet implemented in firmware
-            if (myDetectorType == MYTHEN3) {
+            if (detType == MYTHEN3) {
                 exists = true;
             }
             break;
         */
         case 4:
-            if (myDetectorType == EIGER) {
+            if (detType == EIGER) {
                 exists = true;
             }
             break;
         case 8:
         case 32:
-            if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
+            if (detType == EIGER || detType == MYTHEN3) {
                 exists = true;
             }
             break;
@@ -935,8 +935,8 @@ int ClientInterface::get_overwrite(Interface &socket) {
 
 int ClientInterface::enable_tengiga(Interface &socket) {
     auto val = socket.Receive<int>();
-    if (myDetectorType != EIGER && myDetectorType != CHIPTESTBOARD &&
-        myDetectorType != MOENCH && myDetectorType != MYTHEN3)
+    if (detType != EIGER && detType != CHIPTESTBOARD && detType != MOENCH &&
+        detType != MYTHEN3)
         functionNotImplemented();
 
     if (val >= 0) {
@@ -974,7 +974,7 @@ int ClientInterface::set_fifo_depth(Interface &socket) {
 
 int ClientInterface::set_activate(Interface &socket) {
     auto enable = socket.Receive<int>();
-    if (myDetectorType != EIGER)
+    if (detType != EIGER)
         functionNotImplemented();
 
     if (enable >= 0) {
@@ -1025,7 +1025,7 @@ int ClientInterface::set_streaming_timer(Interface &socket) {
 }
 
 int ClientInterface::get_flip_rows(Interface &socket) {
-    if (myDetectorType != EIGER)
+    if (detType != EIGER)
         functionNotImplemented();
 
     int retval = impl()->getFlipRows();
@@ -1036,7 +1036,7 @@ int ClientInterface::get_flip_rows(Interface &socket) {
 int ClientInterface::set_flip_rows(Interface &socket) {
     auto arg = socket.Receive<int>();
 
-    if (myDetectorType != EIGER)
+    if (detType != EIGER)
         functionNotImplemented();
 
     if (arg != 0 && arg != 1) {
@@ -1277,7 +1277,7 @@ int ClientInterface::get_padding_enable(Interface &socket) {
 
 int ClientInterface::set_deactivated_padding_enable(Interface &socket) {
     auto enable = socket.Receive<int>();
-    if (myDetectorType != EIGER) {
+    if (detType != EIGER) {
         functionNotImplemented();
     }
     if (enable < 0) {
@@ -1291,7 +1291,7 @@ int ClientInterface::set_deactivated_padding_enable(Interface &socket) {
 }
 
 int ClientInterface::get_deactivated_padding_enable(Interface &socket) {
-    if (myDetectorType != EIGER)
+    if (detType != EIGER)
         functionNotImplemented();
     auto retval = static_cast<int>(impl()->getDeactivatedPadding());
     LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
@@ -1301,7 +1301,7 @@ int ClientInterface::get_deactivated_padding_enable(Interface &socket) {
 int ClientInterface::set_readout_mode(Interface &socket) {
     auto arg = socket.Receive<readoutMode>();
 
-    if (myDetectorType != CHIPTESTBOARD)
+    if (detType != CHIPTESTBOARD)
         functionNotImplemented();
 
     if (arg >= 0) {
@@ -1345,7 +1345,7 @@ int ClientInterface::set_adc_mask(Interface &socket) {
 int ClientInterface::set_dbit_list(Interface &socket) {
     sls::StaticVector<int, MAX_RX_DBIT> args;
     socket.Receive(args);
-    if (myDetectorType != CHIPTESTBOARD)
+    if (detType != CHIPTESTBOARD)
         functionNotImplemented();
     LOG(logDEBUG1) << "Setting DBIT list";
     for (auto &it : args) {
@@ -1358,7 +1358,7 @@ int ClientInterface::set_dbit_list(Interface &socket) {
 }
 
 int ClientInterface::get_dbit_list(Interface &socket) {
-    if (myDetectorType != CHIPTESTBOARD)
+    if (detType != CHIPTESTBOARD)
         functionNotImplemented();
     sls::StaticVector<int, MAX_RX_DBIT> retval;
     retval = impl()->getDbitList();
@@ -1368,7 +1368,7 @@ int ClientInterface::get_dbit_list(Interface &socket) {
 
 int ClientInterface::set_dbit_offset(Interface &socket) {
     auto arg = socket.Receive<int>();
-    if (myDetectorType != CHIPTESTBOARD)
+    if (detType != CHIPTESTBOARD)
         functionNotImplemented();
     if (arg < 0) {
         throw RuntimeError("Invalid dbit offset: " + std::to_string(arg));
@@ -1380,7 +1380,7 @@ int ClientInterface::set_dbit_offset(Interface &socket) {
 }
 
 int ClientInterface::get_dbit_offset(Interface &socket) {
-    if (myDetectorType != CHIPTESTBOARD)
+    if (detType != CHIPTESTBOARD)
         functionNotImplemented();
     int retval = impl()->getDbitOffset();
     LOG(logDEBUG1) << "Dbit offset retval: " << retval;
@@ -1410,7 +1410,7 @@ int ClientInterface::set_read_n_rows(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
         verifyIdle(socket);
-        if (myDetectorType != EIGER && myDetectorType != JUNGFRAU) {
+        if (detType != EIGER && detType != JUNGFRAU) {
             throw RuntimeError("Could not set number of rows. Not implemented for this detector");
         }
         LOG(logDEBUG1) << "Setting number of rows:" << arg;
@@ -1436,7 +1436,7 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
                       << ". Got " << eth;
     }
     impl()->setEthernetInterface(eth);
-    if (myDetectorType == EIGER) {
+    if (detType == EIGER) {
         impl()->setEthernetInterface2(eth);
     }
     // get mac address
@@ -1485,7 +1485,7 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
 int ClientInterface::set_udp_ip2(Interface &socket) {
     auto arg = socket.Receive<sls::IpAddr>();
     verifyIdle(socket);
-    if (myDetectorType != JUNGFRAU && myDetectorType != GOTTHARD2) {
+    if (detType != JUNGFRAU && detType != GOTTHARD2) {
         throw RuntimeError(
             "UDP Destination IP2 not implemented for this detector");
     }
@@ -1504,8 +1504,7 @@ int ClientInterface::set_udp_port(Interface &socket) {
 int ClientInterface::set_udp_port2(Interface &socket) {
     auto arg = socket.Receive<int>();
     verifyIdle(socket);
-    if (myDetectorType != JUNGFRAU && myDetectorType != EIGER &&
-        myDetectorType != GOTTHARD2) {
+    if (detType != JUNGFRAU && detType != EIGER && detType != GOTTHARD2) {
         throw RuntimeError(
             "UDP Destination Port2 not implemented for this detector");
     }
@@ -1518,7 +1517,7 @@ int ClientInterface::set_num_interfaces(Interface &socket) {
     auto arg = socket.Receive<int>();
     arg = (arg > 1 ? 2 : 1);
     verifyIdle(socket);
-    if (myDetectorType != JUNGFRAU && myDetectorType != GOTTHARD2) {
+    if (detType != JUNGFRAU && detType != GOTTHARD2) {
         throw RuntimeError(
             "Number of interfaces not implemented for this detector");
     }
@@ -1596,7 +1595,7 @@ int ClientInterface::get_progress(Interface &socket) {
 int ClientInterface::set_num_gates(Interface &socket) {
     auto value = socket.Receive<int>();
     LOG(logDEBUG1) << "Setting num gates to " << value;
-    if (myDetectorType != MYTHEN3) {
+    if (detType != MYTHEN3) {
         functionNotImplemented();
     }
     impl()->setNumberOfGates(value);
@@ -1610,7 +1609,7 @@ int ClientInterface::set_gate_delay(Interface &socket) {
     auto value = std::chrono::nanoseconds(args[1]);
     LOG(logDEBUG1) << "Setting gate delay to " << sls::ToString(value)
                    << " (gateIndex: " << gateIndex << ")";
-    if (myDetectorType != MYTHEN3) {
+    if (detType != MYTHEN3) {
         functionNotImplemented();
     }
     switch (gateIndex) {
@@ -1685,7 +1684,7 @@ int ClientInterface::set_scan(Interface &socket) {
 int ClientInterface::set_threshold(Interface &socket) {
     auto arg = socket.Receive<int>();
     LOG(logDEBUG) << "Threshold: " << arg << " eV";
-    if (myDetectorType != EIGER)
+    if (detType != EIGER)
         functionNotImplemented();
     verifyIdle(socket);
     impl()->setThresholdEnergy(arg);
@@ -1712,7 +1711,7 @@ int ClientInterface::set_streaming_hwm(Interface &socket) {
 int ClientInterface::set_all_threshold(Interface &socket) {
     auto eVs = socket.Receive<std::array<int, 3>>();
     LOG(logDEBUG) << "Threshold:" << sls::ToString(eVs);
-    if (myDetectorType != MYTHEN3)
+    if (detType != MYTHEN3)
         functionNotImplemented();
     verifyIdle(socket);
     impl()->setThresholdEnergy(eVs);
@@ -1733,7 +1732,7 @@ int ClientInterface::set_detector_datastream(Interface &socket) {
     bool enable = static_cast<int>(args[1]);
     LOG(logDEBUG1) << "Setting datastream (" << sls::ToString(port) << ") to "
                    << sls::ToString(enable);
-    if (myDetectorType != EIGER)
+    if (detType != EIGER)
         functionNotImplemented();
     verifyIdle(socket);
     impl()->setDetectorDataStream(port, enable);

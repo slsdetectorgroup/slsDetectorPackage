@@ -14,30 +14,30 @@
 
 class ServerInterface;
 
-#define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION    0x200402
+#define MODULE_SHMAPIVERSION 0x190726
+#define MODULE_SHMVERSION    0x200402
 
 namespace sls {
 
 /**
- * @short structure allocated in shared memory to store detector settings for
+ * @short structure allocated in shared memory to store Module settings for
  * IPC and cache
  */
-struct sharedSlsDetector {
+struct sharedModule {
 
     /* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND ------*/
 
     int shmversion;
     char hostname[MAX_STR_LENGTH];
-    slsDetectorDefs::detectorType myDetectorType;
+    slsDetectorDefs::detectorType detType;
 
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
-    slsDetectorDefs::xy numberOfDetector;
+    slsDetectorDefs::xy numberOfModule;
     int controlPort;
     int stopPort;
     char settingsDir[MAX_STR_LENGTH];
-    /** list of the energies at which the detector has been trimmed  */
+    /** list of the energies at which the Module has been trimmed  */
     sls::StaticVector<int, MAX_TRIMEN> trimEnergies;
     /**  number of channels per chip */
     slsDetectorDefs::xy nChan;
@@ -76,7 +76,7 @@ class Module : public virtual slsDetectorDefs {
     virtual ~Module();
 
     /** Frees shared memory and deletes shared memory structure
-    Safe to call only if detector shm also deleted or its numberOfDetectors is
+    Safe to call only if detector shm also deleted or its numberOfModules is
     updated */
     void freeSharedMemory();
     bool isFixedPatternSharedMemoryCompatible() const;
@@ -99,7 +99,7 @@ class Module : public virtual slsDetectorDefs {
     detectorType getDetectorType() const;
     void updateNumberOfChannels();
     slsDetectorDefs::xy getNumberOfChannels() const;
-    void updateNumberOfDetector(slsDetectorDefs::xy det);
+    void updateNumberOfModule(slsDetectorDefs::xy det);
     detectorSettings getSettings() const;
     void setSettings(detectorSettings isettings);
     int getThresholdEnergy() const;
@@ -702,9 +702,9 @@ class Module : public virtual slsDetectorDefs {
     verify is if shm size matches existing one  */
     void initSharedMemory(detectorType type, int det_id, bool verify = true);
 
-    /** Initialize detector structure to defaults,
+    /** Initialize module structure to defaults,
     Called when new shared memory is created */
-    void initializeDetectorStructure(detectorType type);
+    void initializeModuleStructure(detectorType type);
 
     void checkDetectorVersionCompatibility();
     void checkReceiverVersionCompatibility();
@@ -748,7 +748,7 @@ class Module : public virtual slsDetectorDefs {
     void programFPGAviaNios(std::vector<char> buffer);
 
     const int moduleIndex;
-    mutable sls::SharedMemory<sharedSlsDetector> shm{0, 0};
+    mutable sls::SharedMemory<sharedModule> shm{0, 0};
 };
 
 } // namespace sls

@@ -29,10 +29,11 @@ std::ostream &operator<<(std::ostream &os,
 
 void CmdProxy::Call(const std::string &command,
                     const std::vector<std::string> &arguments, int detector_id,
-                    int action, std::ostream &os) {
+                    int action, std::ostream &os, int receiver_id) {
     cmd = command;
     args = arguments;
     det_id = detector_id;
+    rx_id = receiver_id;
 
     std::string temp;
     while (temp != cmd) {
@@ -1381,16 +1382,13 @@ IpAddr CmdProxy::getIpFromAuto() {
 
 UdpDestination CmdProxy::getUdpEntry() {
     UdpDestination udpDestination{};
-    bool hasEntry = false;
+    udpDestination.entry = rx_id;
 
     for (auto it : args) {
         size_t pos = it.find('=');
         std::string key = it.substr(0, pos);
         std::string value = it.substr(pos + 1);
-        if (key == "entry") {
-            udpDestination.entry = StringTo<int>(value);
-            hasEntry = true;
-        } else if (key == "ip") {
+        if (key == "ip") {
             if (value == "auto") {
                 auto val = getIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip of detector " << det_id
@@ -1418,9 +1416,6 @@ UdpDestination CmdProxy::getUdpEntry() {
             udpDestination.port2 = StringTo<uint32_t>(value);
         }
     }
-    if (!hasEntry) {
-        throw sls::RuntimeError("Found no entry argument.");
-    }
     return udpDestination;
 }
 
@@ -1437,15 +1432,28 @@ std::string CmdProxy::UDPDestinationList(int action) {
               "set to ip of rx_hostname."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
         }
-        auto t = det->getDestinationUDPList(StringTo<int>(args[0]),
-                                            std::vector<int>{det_id});
+        if (det_id == -1) {
+            throw sls::RuntimeError("udp_dstlist must be at module level.");
+        }
+        if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
+            throw sls::RuntimeError(
+                "Invalid receiver index to get round robin entry.");
+        }
+        auto t = det->getDestinationUDPList(rx_id, std::vector<int>{det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
+        }
+        if (det_id == -1) {
+            throw sls::RuntimeError("udp_dstlist must be at module level.");
+        }
+        if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
+            throw sls::RuntimeError(
+                "Invalid receiver index to set round robin entry.");
         }
         auto t = getUdpEntry();
         det->setDestinationUDPList(t, det_id);

@@ -25,5 +25,5 @@ class HDF5MasterFile : private virtual slsDetectorDefs, public File {
     std::mutex *hdf5Lib_;
     H5File *fd_{nullptr};
     std::string fileName_;
-    hid_t groupId_{0};
+    std::string attrGroupName_;
 };

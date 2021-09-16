@@ -2,11 +2,11 @@ current_dir = $(shell pwd)
 main_inc = ../slsDetectorServer/include/
 main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
-md5_dir = ../../slsSupportLib/opensslMd5/
+md5_dir = ../../slsSupportLib/src/
 
 CROSS  		= nios2-buildroot-linux-gnu-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -std=gnu99 -DGOTTHARD2D  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)  -I$(md5_dir) #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -std=gnu99 -DGOTTHARD2D  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)   #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread
 PROGS		= 	gotthard2DetectorServer 
 DESTDIR		?= 	bin

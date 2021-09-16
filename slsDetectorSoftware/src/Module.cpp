@@ -1,11 +1,11 @@
 #include "Module.h"
 #include "SharedMemory.h"
-#include "md5.h"
 #include "sls/ClientSocket.h"
 #include "sls/ToString.h"
 #include "sls/bit_utils.h"
 #include "sls/container_utils.h"
 #include "sls/file_utils.h"
+#include "sls/md5_helper.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/sls_detector_funcs.h"
@@ -3406,18 +3406,6 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
     return myMod;
 }
 
-std::string Module::calculateChecksum(char *buffer, ssize_t bytes) {
-    MD5_CTX c;
-    MD5_Init(&c);
-    MD5_Update(&c, buffer, bytes);
-    unsigned char out[MD5_DIGEST_LENGTH];
-    MD5_Final(out, &c);
-    std::ostringstream oss;
-    for (int i = 0; i != MD5_DIGEST_LENGTH; ++i)
-        oss << std::hex << std::setw(2) << std::setfill('0') << +out[i];
-    return oss.str();
-}
-
 void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     // send program from memory to detector
     LOG(logINFO) << "Sending programming binary (from pof) to module "
@@ -3428,7 +3416,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     client.Send(filesize);
 
     // checksum
-    std::string checksum = calculateChecksum(buffer.data(), filesize);
+    std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
     LOG(logDEBUG1) << "Checksum:" << checksum;
     char cChecksum[MAX_STR_LENGTH];
     memset(cChecksum, 0, MAX_STR_LENGTH);
@@ -3544,7 +3532,7 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
     client.Send(filesize);
 
     // checksum
-    std::string checksum = calculateChecksum(buffer.data(), filesize);
+    std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
     LOG(logDEBUG1) << "Checksum:" << checksum;
     char cChecksum[MAX_STR_LENGTH];
     memset(cChecksum, 0, MAX_STR_LENGTH);

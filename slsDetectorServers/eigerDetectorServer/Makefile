@@ -2,12 +2,12 @@ current_dir = $(shell pwd)
 main_inc = ../slsDetectorServer/include/
 main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
-md5_dir = ../../slsSupportLib/opensslMd5/
+md5_dir = ../../slsSupportLib/src/
 
 BLACKFIN_CC = bfin-uclinux-gcc
 CROSS		= powerpc-4xx-softfloat-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -std=gnu99 -DEIGERD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)  -I$(md5_dir)#-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -std=gnu99 -DEIGERD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)  #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread
 PROGS		= 	eigerDetectorServer 
 DESTDIR		= 	bin

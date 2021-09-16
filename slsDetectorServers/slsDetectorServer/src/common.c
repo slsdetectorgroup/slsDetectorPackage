@@ -184,13 +184,13 @@ int verifyChecksumFromBuffer(char *mess, char *clientChecksum, char *buffer,
                              ssize_t bytes) {
     LOG(logINFO, ("\tVerifying Checksum...\n"));
     MD5_CTX c;
-    if (!MD5_Init(&c)) {
-        strcpy(mess, "Unable to calculate checksum (MD5_Init)\n");
+    if (!MD5_Init_SLS(&c)) {
+        strcpy(mess, "Unable to calculate checksum (MD5_Init_SLS)\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
-    if (!MD5_Update(&c, buffer, bytes)) {
-        strcpy(mess, "Unable to calculate checksum (MD5_Update)\n");
+    if (!MD5_Update_SLS(&c, buffer, bytes)) {
+        strcpy(mess, "Unable to calculate checksum (MD5_Update_SLS)\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -209,9 +209,9 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
     }
 
     MD5_CTX c;
-    if (!MD5_Init(&c)) {
+    if (!MD5_Init_SLS(&c)) {
         fclose(fp);
-        strcpy(mess, "Unable to calculate checksum (MD5_Init)\n");
+        strcpy(mess, "Unable to calculate checksum (MD5_Init_SLS)\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -220,9 +220,9 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
     ssize_t bytes = fread(buf, 1, readUnitSize, fp);
     ssize_t totalBytesRead = bytes;
     while (bytes > 0) {
-        if (!MD5_Update(&c, buf, bytes)) {
+        if (!MD5_Update_SLS(&c, buf, bytes)) {
             fclose(fp);
-            strcpy(mess, "Unable to calculate checksum (MD5_Update)\n");
+            strcpy(mess, "Unable to calculate checksum (MD5_Update_SLS)\n");
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -247,9 +247,9 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
     }
 
     MD5_CTX c;
-    if (!MD5_Init(&c)) {
+    if (!MD5_Init_SLS(&c)) {
         fclose(fp);
-        strcpy(mess, "Unable to calculate checksum (MD5_Init)\n");
+        strcpy(mess, "Unable to calculate checksum (MD5_Init_SLS)\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -267,9 +267,9 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
             oldProgress = progress;
         }
 
-        if (!MD5_Update(&c, buf, bytes)) {
+        if (!MD5_Update_SLS(&c, buf, bytes)) {
             fclose(fp);
-            strcpy(mess, "Unable to calculate checksum (MD5_Update)\n");
+            strcpy(mess, "Unable to calculate checksum (MD5_Update_SLS)\n");
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -293,8 +293,8 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
 
 int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c, char *msg) {
     unsigned char out[MD5_DIGEST_LENGTH];
-    if (!MD5_Final(out, c)) {
-        strcpy(mess, "Unable to calculate checksum (MD5_Final)\n");
+    if (!MD5_Final_SLS(out, c)) {
+        strcpy(mess, "Unable to calculate checksum (MD5_Final_SLS)\n");
         LOG(logERROR, (mess));
         return FAIL;
     }

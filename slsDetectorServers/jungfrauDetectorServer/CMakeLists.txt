@@ -13,14 +13,13 @@ add_executable(jungfrauDetectorServer_virtual
     ../slsDetectorServer/src/programFpgaBlackfin.c
     ../slsDetectorServer/src/communication_funcs_UDP.c    
     ../slsDetectorServer/src/sharedMemory.c
-    ../../slsSupportLib/opensslMd5/md5.c
+    ../../slsSupportLib/src/md5.c
 )
 
 target_include_directories(jungfrauDetectorServer_virtual
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     ../slsDetectorServer/include
     ../../slsSupportLib/include
-    ../../slsSupportLib/opensslMd5
 )
 
 target_compile_definitions(jungfrauDetectorServer_virtual

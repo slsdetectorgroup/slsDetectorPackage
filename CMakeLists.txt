@@ -96,6 +96,20 @@ target_compile_options(slsProjectWarnings INTERFACE
 
                                  )
 
+#Settings for C code
+add_library(slsProjectCSettings INTERFACE)
+target_compile_features(slsProjectCSettings INTERFACE c_std_99)
+target_compile_options(slsProjectCSettings INTERFACE 
+                                            -Wall
+                                            -Wextra
+                                            -Wno-unused-parameter
+                                            -Wdouble-promotion
+                                            -Wformat=2
+                                            -Wredundant-decls
+                                            -Wdouble-promotion
+                                            -Werror=return-type
+                                )
+
 
 #Testing for minimum version for compilers
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

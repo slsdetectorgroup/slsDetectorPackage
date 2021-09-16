@@ -5,7 +5,6 @@ set(SOURCES
     src/CmdProxy.cpp
     src/CmdParser.cpp
     src/Pattern.cpp
-    ../slsSupportLib/opensslMd5/md5.c
 )
 
 add_library(slsDetectorObject OBJECT
@@ -14,7 +13,6 @@ add_library(slsDetectorObject OBJECT
 
 target_include_directories(slsDetectorObject PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../slsSupportLib/opensslMd5>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
@@ -36,7 +34,6 @@ set(PUBLICHEADERS
     include/sls/Detector.h
     include/sls/Result.h
     include/sls/Pattern.h
-    ../slsSupportLib/opensslMd5/md5.h
 )
 
 #Shared library

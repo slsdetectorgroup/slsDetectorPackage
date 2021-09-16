@@ -222,7 +222,13 @@
 
 # include <stddef.h>
 
+
 # ifdef  __cplusplus
+/*
+ * Modifications 2021 Paul Scherrer Institut
+ * namespace sls added
+ */
+namespace sls {
 extern "C" {
 # endif
 
@@ -372,5 +378,8 @@ int MD5_Final(unsigned char *md, MD5_CTX *c);
 void md5_block_data_order(MD5_CTX *c, const void *p, size_t num);
 # ifdef  __cplusplus
 }
+
+} // namespace sls
 # endif
 # endif
+

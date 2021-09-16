@@ -11,6 +11,8 @@ set(SOURCES
     src/UdpRxSocket.cpp
     src/sls_detector_exceptions.cpp
     # src/sls_detector_defs.cpp
+    src/md5.c
+    src/md5_helper.cpp
 )
 
 # Header files to install as a part of the library
@@ -44,6 +46,8 @@ if(SLS_DEVEL_HEADERS)
         include/sls/versionAPI.h
         include/sls/ZmqSocket.h
         include/sls/bit_utils.h
+        include/sls/mdf5.h
+        include/sls/md5_helper.h
     )
 endif()
 

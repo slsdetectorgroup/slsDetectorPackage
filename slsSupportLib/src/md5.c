@@ -224,13 +224,17 @@
 
 #include <stdio.h>
 
-/** 
- * Modification 2021 Paul Scherrer Institut 
- * Header included was md5_local.h 
- * and included string.h header
+/**
+ * Modification 2021 Paul Scherrer Institut
+ * Header included was md5_local.h
+ * and string.h header was included
+ * sls namespace added
  */
+#include "sls/md5.h"
 #include <string.h>
-#include "md5.h"
+#ifdef __cplusplus
+namespace sls {
+#endif
 
 /** 
  * Modification 2021 Paul Scherrer Institut 
@@ -505,3 +509,7 @@ int HASH_FINAL(unsigned char *md, HASH_CTX *c)
 
     return 1;
 }
+
+#ifdef __cplusplus
+} // namespace sls
+#endif

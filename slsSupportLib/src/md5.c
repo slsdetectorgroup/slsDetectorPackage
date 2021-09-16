@@ -276,7 +276,7 @@ namespace sls {
 #define INIT_DATA_C (unsigned long)0x98badcfeL
 #define INIT_DATA_D (unsigned long)0x10325476L
 
-int MD5_Init(MD5_CTX *c)
+int MD5_Init_SLS(MD5_CTX *c)
 {
     memset(c, 0, sizeof(*c));
     c->A = INIT_DATA_A;

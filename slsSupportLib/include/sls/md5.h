@@ -296,9 +296,9 @@ extern "C" {
  *      #define HASH_LONG               MD5_LONG
  *      #define HASH_CTX                MD5_CTX
  *      #define HASH_CBLOCK             MD5_CBLOCK
- *      #define HASH_UPDATE             MD5_Update
+ *      #define HASH_UPDATE             MD5_Update_SLS
  *      #define HASH_TRANSFORM          MD5_Transform
- *      #define HASH_FINAL              MD5_Final
+ *      #define HASH_FINAL              MD5_Final_SLS
  *      #define HASH_BLOCK_DATA_ORDER   md5_block_data_order
  */
 #  define MD32_REG_T int
@@ -318,9 +318,9 @@ extern "C" {
 #define HASH_LONG               MD5_LONG
 #define HASH_CTX                MD5_CTX
 #define HASH_CBLOCK             MD5_CBLOCK
-#define HASH_UPDATE             MD5_Update
+#define HASH_UPDATE             MD5_Update_SLS
 #define HASH_TRANSFORM          MD5_Transform
-#define HASH_FINAL              MD5_Final
+#define HASH_FINAL              MD5_Final_SLS
 #define HASH_BLOCK_DATA_ORDER   md5_block_data_order
 #define HASH_MAKE_STRING(c,s)   do {    \
         unsigned long ll;               \
@@ -367,9 +367,9 @@ typedef struct MD5state_st {
     unsigned int num;
 } MD5_CTX;
 
-int MD5_Init(MD5_CTX *c);
-int MD5_Update(MD5_CTX *c, const void *data, size_t len);
-int MD5_Final(unsigned char *md, MD5_CTX *c);
+int MD5_Init_SLS(MD5_CTX *c);
+int MD5_Update_SLS(MD5_CTX *c, const void *data, size_t len);
+int MD5_Final_SLS(unsigned char *md, MD5_CTX *c);
 
 /** 
  * Modification 2021 Paul Scherrer Institut 

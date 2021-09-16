@@ -3,11 +3,11 @@ main_inc = ../slsDetectorServer/include/
 main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
 det_lib = ../../slsDetectorSoftware/include/sls/
-md5_dir = ../../slsSupportLib/opensslMd5/
+md5_dir = ../../slsSupportLib/src/
 
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -std=gnu99 -DCHIPTESTBOARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir) -I$(md5_dir) #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -std=gnu99 -DCHIPTESTBOARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir) #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread
 PROGS		= 	ctbDetectorServer 
 DESTDIR		?= 	bin

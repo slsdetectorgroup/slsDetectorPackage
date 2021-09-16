@@ -13,14 +13,13 @@ add_executable(mythen3DetectorServer_virtual
     ../slsDetectorServer/src/programFpgaNios.c
     ../slsDetectorServer/src/loadPattern.c 
     ../slsDetectorServer/src/sharedMemory.c
-    ../../slsSupportLib/opensslMd5/md5.c
+    ../../slsSupportLib/src/md5.c
 )
 
 include_directories(
     ../slsDetectorServer/include
     ../../slsSupportLib/include
     ../../slsDetectorSoftware/include/sls/
-    ../../slsSupportLib/opensslMd5
 )
 
 target_include_directories(mythen3DetectorServer_virtual

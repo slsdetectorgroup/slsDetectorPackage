@@ -12,6 +12,7 @@ add_executable(gotthard2DetectorServer_virtual
     ../slsDetectorServer/src/ASIC_Driver.c
     ../slsDetectorServer/src/programFpgaNios.c
     ../slsDetectorServer/src/sharedMemory.c
+    ../../slsSupportLib/src/md5.c
 )
 
 include_directories(

@@ -1,5 +1,6 @@
 #include "programFpgaNios.h"
 #include "clogger.h"
+#include "common.h"
 #include "sls/ansi.h"
 #include "slsDetectorServer_defs.h"
 
@@ -7,9 +8,14 @@
 #include <unistd.h> // usleep
 
 /* global variables */
-#define MTDSIZE 10
-char mtdvalue[MTDSIZE] = {0};
+
+#define CMD_GET_FLASH    "awk \'$5== \"Application\" {print $1}\' /proc/mtd"
+
+#define  FLASH_DRIVE_NAME_SIZE   16
+char flashDriveName[FLASH_DRIVE_NAME_SIZE] = {0};
 #define MICROCONTROLLER_FILE "/dev/ttyAL0"
+
+extern int executeCommand(char *command, char *result, enum TLogLevel level);
 
 void NotifyServerStartSuccess() {
     LOG(logINFOBLUE, ("Server started successfully\n"));
@@ -27,7 +33,44 @@ void rebootControllerAndFPGA() {
     system(command);
 }
 
-int findFlash(char *mess) {
+int eraseAndWriteToFlash(char *mess, char *checksum, char *fpgasrc,
+                         uint64_t fsize) {
+
+    if (verifyChecksumFromBuffer(mess, checksum, fpgasrc, fsize) == FAIL) {
+        return FAIL;
+    }
+
+    if (getDrive(mess) == FAIL) {
+        return FAIL;
+    }
+
+    FILE *flashfd = NULL;
+    if (openFileForFlash(&flashfd, mess) == FAIL) {
+        return FAIL;
+    }
+
+   if (eraseFlash(mess) == FAIL) {
+        fclose(flashfd);
+        return FAIL;
+    }
+
+    if (writeToFlash(fsize, flashfd, fpgasrc, mess) == FAIL) {
+        return FAIL;
+    }
+    /* ignoring this until a consistent way to read from nios flash
+    if (verifyChecksumFromFlash(mess, checksum, flashDriveName, fsize) ==
+        FAIL) {
+        return FAIL;
+    }
+    */
+    return OK;
+}
+
+int getDrive(char *mess) {
+#ifdef VIRTUAL
+    strcpy(flashDriveName, "/tmp/SLS_mtd3");
+    return OK;
+#endif
     LOG(logDEBUG1, ("Finding flash drive...\n"));
     // getting the drive
     // # cat /proc/mtd
@@ -38,82 +81,78 @@ int findFlash(char *mess) {
     // mtd3: 00800000 00010000 "qspi Linux Kernel with initramfs Backup"
     // mtd4: 02500000 00010000 "qspi ubi filesystem"
     // mtd5: 04000000 00010000 "qspi Complete Flash"
-    char output[255];
-    memset(output, 0, 255);
-    FILE *fp = popen("awk \'$5== \"Application\" {print $1}\' /proc/mtd", "r");
-    if (fp == NULL) {
-        strcpy(mess, "popen returned NULL. Need that to get mtd drive.\n");
+
+    char cmd[MAX_STR_LENGTH] = {0};
+    char retvals[MAX_STR_LENGTH] = {0};
+    strcpy(cmd, CMD_GET_FLASH);
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        strcpy(mess, "Could not program fpga. (could not get flash drive: ");
+        strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
+        strcat(mess, "\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
-    if (fgets(output, sizeof(output), fp) == NULL) {
-        strcpy(mess, "fgets returned NULL. Need that to get mtd drive.\n");
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    pclose(fp);
-    memset(mtdvalue, 0, MTDSIZE);
-    strcpy(mtdvalue, "/dev/");
-    char *pch = strtok(output, ":");
+
+    char *pch = strtok(retvals, ":");
     if (pch == NULL) {
-        strcpy(mess, "Could not get mtd value\n");
+        strcpy(mess, "Could not get mtd drive to flash (strtok fail).\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
-    strcat(mtdvalue, pch);
-    LOG(logINFO, ("\tFlash drive found: %s\n", mtdvalue));
+
+    memset(flashDriveName, 0, sizeof(flashDriveName));
+    strcpy(flashDriveName, "/dev/");
+    strcat(flashDriveName, pch);
+    LOG(logINFO, ("\tFlash drive found: %s\n", flashDriveName));
     return OK;
 }
 
-void eraseFlash() {
-    LOG(logDEBUG1, ("Erasing Flash...\n"));
-    char command[255];
-    memset(command, 0, 255);
-    sprintf(command, "flash_erase %s 0 0", mtdvalue);
-    system(command);
-    LOG(logINFO, ("\tFlash erased\n"));
-}
-
-int eraseAndWriteToFlash(char *mess, char *fpgasrc, uint64_t fsize) {
-    if (findFlash(mess) == FAIL) {
-        return FAIL;
-    }
-    eraseFlash();
-
-    // open file pointer to flash
-    FILE *filefp = fopen(mtdvalue, "w");
-    if (filefp == NULL) {
-        sprintf(mess, "Unable to open %s in write mode\n", mtdvalue);
+int openFileForFlash(FILE **flashfd, char *mess) {
+    *flashfd = fopen(flashDriveName, "w");
+    if (*flashfd == NULL) {
+        sprintf(mess, "Unable to open flash drive %s in write mode\n",
+                flashDriveName);
         LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("\tFlash ready for writing\n"));
-
-    // write to flash
-    if (writeFPGAProgram(mess, fpgasrc, fsize, filefp) == FAIL) {
-        fclose(filefp);
-        return FAIL;
-    }
-
-    fclose(filefp);
     return OK;
 }
 
-int writeFPGAProgram(char *mess, char *fpgasrc, uint64_t fsize, FILE *filefp) {
-    LOG(logDEBUG1, ("Writing to flash...\n"
-                    "\taddress of fpgasrc:%p\n"
-                    "\tfsize:%lu\n\tpointer:%p\n",
-                    (void *)fpgasrc, fsize, (void *)filefp));
+int eraseFlash(char *mess) {
+    LOG(logINFO, ("\tErasing Flash...\n"));
 
-    uint64_t retval = fwrite((void *)fpgasrc, sizeof(char), fsize, filefp);
-    if (retval != fsize) {
-        sprintf(
-            mess,
-            "Could not write FPGA source to flash (size:%llu), write %llu\n",
-            (long long unsigned int)fsize, (long long unsigned int)retval);
+#ifdef VIRTUAL
+    return OK;
+#endif
+    char cmd[MAX_STR_LENGTH] = {0};
+    char retvals[MAX_STR_LENGTH] = {0};
+    sprintf(cmd, "flash_erase %s 0 0", flashDriveName);
+    if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
+        strcpy(mess, "Could not program fpga. (could not erase flash: ");
+        strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
+        strcat(mess, "\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tProgram written to flash\n"));
+
+    LOG(logINFO, ("\tFlash erased\n"));
+    return OK;
+}
+
+int writeToFlash(ssize_t fsize, FILE *flashfd, char *buffer, char *mess) {
+    LOG(logINFO, ("\tWriting to Flash...\n"));
+
+    ssize_t bytesWritten = fwrite((void *)buffer, sizeof(char), fsize, flashfd);
+    if (bytesWritten != fsize) {
+        fclose(flashfd);
+        sprintf(
+            mess,
+            "Could not program fpga. Incorrect bytes written to flash  %lu [expected: %lu]\n",
+            (long int)bytesWritten, (long int)fsize);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tWritten to Flash\n"));
     return OK;
 }

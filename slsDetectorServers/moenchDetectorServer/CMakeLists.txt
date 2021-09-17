@@ -15,6 +15,7 @@ add_executable(moenchDetectorServer_virtual
     ../slsDetectorServer/src/programFpgaBlackfin.c   
     ../slsDetectorServer/src/loadPattern.c         
     ../slsDetectorServer/src/sharedMemory.c
+    ../../slsSupportLib/src/md5.c
 )
 
 include_directories(

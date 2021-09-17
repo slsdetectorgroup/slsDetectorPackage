@@ -1266,7 +1266,6 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         << "Updating Firmware. This can take awhile. Please be patient...";
     LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
 
-    size_t filesize = 0;
     // check if it exists
     struct stat st;
     if (stat(fname.c_str(), &st) != 0) {
@@ -1281,6 +1280,16 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             fname);
     }
 
+    // get srcSize to print progress
+    if (fseek(src, 0, SEEK_END) != 0) {
+        throw RuntimeError("Program FPGA: Seek error in src file");
+    }
+    size_t srcSize = ftell(src);
+    if (srcSize <= 0) {
+        throw RuntimeError("Program FPGA: Could not get length of source file");
+    }
+    rewind(src);
+
     // create temp destination file
     char destfname[] = "/tmp/SLS_DET_MCB.XXXXXX";
     int dst = mkstemp(destfname); // create temporary file and open it in r/w
@@ -1294,6 +1303,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
 
     // convert src to dst rawbin
     LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
+    LOG(logINFO) << "Converting program to rawbin";
     {
         constexpr int pofNumHeaderBytes = 0x11C;
         constexpr int pofFooterOfst = 0x1000000;
@@ -1312,7 +1322,15 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             }
         }
         // Swap bits from source and write to dest
+        int oldProgress = 0;
         while (!feof(src)) {
+            // print progress
+            int progress = (int)(((double)(dstFilePos) / srcSize) * 100);
+            if (oldProgress != progress) {
+                printf("%d%%\r", progress);
+                fflush(stdout);
+                oldProgress = progress;
+            }
             // pof: exit early to discard footer
             if (isPof && dstFilePos >= pofFooterOfst) {
                 break;
@@ -1342,9 +1360,10 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     if (close(dst) != 0) {
         throw RuntimeError("Program FPGA: Could not close destination file");
     }
-    LOG(logDEBUG1) << "File has been converted to " << destfname;
+    LOG(logINFOBLUE) << "File has been converted to " << destfname;
 
     // loading dst file to memory
+   // FILE *fp = fopen("/tmp/SLS_DET_MCB.tzgmUT", "r");
     FILE *fp = fopen(destfname, "r");
     if (fp == nullptr) {
         throw RuntimeError("Program FPGA: Could not open rawbin file");
@@ -1352,7 +1371,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     if (fseek(fp, 0, SEEK_END) != 0) {
         throw RuntimeError("Program FPGA: Seek error in rawbin file");
     }
-    filesize = ftell(fp);
+    size_t filesize = ftell(fp);
     if (filesize <= 0) {
         throw RuntimeError("Program FPGA: Could not get length of rawbin file");
     }
@@ -1367,9 +1386,10 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         throw RuntimeError(
             "Program FPGA: Could not close destination file after converting");
     }
-    unlink(destfname); // delete temporary file
+
+    //unlink(destfname); // delete temporary file
     LOG(logDEBUG1) << "Successfully loaded the rawbin file to program memory";
-    LOG(logINFO) << "Read file into memory";
+    LOG(logDEBUG1) << "Read file into memory";
     return buffer;
 }
 

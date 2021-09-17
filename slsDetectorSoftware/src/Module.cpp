@@ -5,11 +5,13 @@
 #include "sls/bit_utils.h"
 #include "sls/container_utils.h"
 #include "sls/file_utils.h"
+#include "sls/md5_helper.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/sls_detector_funcs.h"
 #include "sls/string_utils.h"
 #include "sls/versionAPI.h"
+
 #include <algorithm>
 #include <array>
 #include <bitset>
@@ -3405,56 +3407,41 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 }
 
 void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
-    uint64_t filesize = buffer.size();
     // send program from memory to detector
-    LOG(logINFO) << "Sending programming binary (from pof) to detector "
+    LOG(logINFO) << "Sending programming binary (from pof) to module "
                  << moduleIndex << " (" << shm()->hostname << ")";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_PROGRAM_FPGA);
+    uint64_t filesize = buffer.size();
     client.Send(filesize);
-    // error in detector at opening file pointer to flash
+
+    // checksum
+    std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
+    LOG(logDEBUG1) << "Checksum:" << checksum;
+    char cChecksum[MAX_STR_LENGTH];
+    memset(cChecksum, 0, MAX_STR_LENGTH);
+    strcpy(cChecksum, checksum.c_str());
+    client.Send(cChecksum);
+
+    //  opening file fail
     if (client.Receive<int>() == FAIL) {
+        std::cout << '\n';
         std::ostringstream os;
         os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }
 
-    // erasing flash
-    LOG(logINFO) << "Erasing Flash for detector " << moduleIndex << " ("
-                 << shm()->hostname << ")";
-    printf("%d%%\r", 0);
-    std::cout << std::flush;
-    // erasing takes 65 seconds, printing here (otherwise need threads
-    // in server-unnecessary)
-    const int ERASE_TIME = 65;
-    int count = ERASE_TIME + 1;
-    while (count > 0) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        --count;
-        printf(
-            "%d%%\r",
-            static_cast<int>(
-                (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
-        std::cout << std::flush;
-    }
-    printf("\n");
-    LOG(logINFO) << "Writing to Flash to detector " << moduleIndex << " ("
-                 << shm()->hostname << ")";
-    printf("%d%%\r", 0);
-    std::cout << std::flush;
-
     // sending program in parts of 2mb each
     uint64_t unitprogramsize = 0;
     int currentPointer = 0;
-    uint64_t totalsize = filesize;
     while (filesize > 0) {
         unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
         if (unitprogramsize > filesize) {      // less than 2mb
             unitprogramsize = filesize;
         }
-        LOG(logDEBUG1) << "unitprogramsize:" << unitprogramsize
-                       << "\t filesize:" << filesize;
+        LOG(logDEBUG) << "unitprogramsize:" << unitprogramsize
+                      << "\t filesize:" << filesize;
 
         client.Send(&buffer[currentPointer], unitprogramsize);
         if (client.Receive<int>() == FAIL) {
@@ -3466,22 +3453,69 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         }
         filesize -= unitprogramsize;
         currentPointer += unitprogramsize;
-
-        // print progress
-        printf(
-            "%d%%\r",
-            static_cast<int>(
-                (static_cast<double>(totalsize - filesize) / totalsize) * 100));
-        std::cout << std::flush;
     }
-    std::cout << '\n';
 
-    // fpga has picked up from flash successfully
+    // checksum 
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
+    }
+    LOG(logINFO) << "Checksum verified for module " << moduleIndex << " ("
+                 << shm()->hostname << ")";
+
+    // simulating erasing flash
+    {
+        LOG(logINFO) << "(Simulating) Erasing Flash for module " << moduleIndex << " ("
+                    << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // erasing takes 65 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 65;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            --count;
+            printf(
+                "%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            std::cout << std::flush;
+        }
+        printf("\n");
+    }
+
+    // simulating writing to flash
+    {
+        LOG(logINFO) << "(Simulating) Writing to Flash for module " << moduleIndex << " (" << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // writing takes 30 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 30;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            --count;
+            printf(
+                "%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            std::cout << std::flush;
+        }
+        printf("\n");
+    }
+
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw RuntimeError(os.str());
+    }
+    if (moduleIndex == 0) {
+        LOG(logINFO) << "Copied to flash and checksum verified";
     }
 
     LOG(logINFO) << "FPGA programmed successfully";
@@ -3496,6 +3530,16 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
     client.Send(F_PROGRAM_FPGA);
     uint64_t filesize = buffer.size();
     client.Send(filesize);
+
+    // checksum
+    std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
+    LOG(logDEBUG1) << "Checksum:" << checksum;
+    char cChecksum[MAX_STR_LENGTH];
+    memset(cChecksum, 0, MAX_STR_LENGTH);
+    strcpy(cChecksum, checksum.c_str());
+    client.Send(cChecksum);
+
+    // validate file size before sending program
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"
@@ -3503,6 +3547,49 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
         throw RuntimeError(os.str());
     }
     client.Send(buffer);
+
+    // simulating erasing flash
+    {
+        LOG(logINFO) << "(Simulating) Erasing Flash for module " << moduleIndex << " ("
+                    << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // erasing takes 10 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 10;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            --count;
+            printf(
+                "%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            std::cout << std::flush;
+        }
+        printf("\n");
+    }
+
+    // simulating writing to flash
+    {
+        LOG(logINFO) << "(Simulating) Writing to Flash for module " << moduleIndex << " (" << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // writing takes 45 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 45;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            --count;
+            printf(
+                "%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            std::cout << std::flush;
+        }
+        printf("\n");
+    }
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"

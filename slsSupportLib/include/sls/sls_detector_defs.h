@@ -54,7 +54,8 @@
 #define MAX_TRIMEN 100
 
 /** maximum unit size of program sent to detector */
-#define MAX_FPGAPROGRAMSIZE (2 * 1024 * 1024)
+//#define MAX_FPGAPROGRAMSIZE (2 * 1024 * 1024)
+#define MAX_FPGAPROGRAMSIZE (128 * 1024)
 
 #define GET_FLAG -1
 

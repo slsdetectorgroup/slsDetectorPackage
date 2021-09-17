@@ -529,7 +529,8 @@ class CmdProxy {
 
     void Call(const std::string &command,
               const std::vector<std::string> &arguments, int detector_id = -1,
-              int action = -1, std::ostream &os = std::cout);
+              int action = -1, std::ostream &os = std::cout,
+              int receiver_id = -1);
 
     bool ReplaceIfDepreciated(std::string &command);
     size_t GetFunctionMapSize() const noexcept { return functions.size(); };
@@ -541,6 +542,7 @@ class CmdProxy {
     std::string cmd;
     std::vector<std::string> args;
     int det_id{-1};
+    int rx_id{-1};
 
     template <typename V> std::string OutStringHex(const V &value) {
         if (value.equal())

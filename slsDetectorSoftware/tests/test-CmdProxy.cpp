@@ -2215,13 +2215,12 @@ TEST_CASE("udp_dstlist", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::EIGER) {
-        REQUIRE_NOTHROW(proxy.Call("udp_dstlist", {"0"}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("udp_dstlist", {}, 0, GET, std::cout, 0));
         REQUIRE_THROWS(proxy.Call(
-            "udp_dstlist",
-            {"entry=0", "ip=0.0.0.0", "mac=00:00:00:00:00:00", "port=1233"}, -1,
-            PUT));
+            "udp_dstlist", {"ip=0.0.0.0", "mac=00:00:00:00:00:00", "port=1233"},
+            -1, PUT, std::cout, 0));
     } else {
-        REQUIRE_THROWS(proxy.Call("udp_dstlist", {"0"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("udp_dstlist", {}, -1, GET, std::cout, 0));
     }
 }
 

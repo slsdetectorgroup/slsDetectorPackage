@@ -110,7 +110,7 @@ class Module : public virtual slsDetectorDefs {
                                detectorSettings isettings, bool trimbits);
     std::string getSettingsDir() const;
     std::string setSettingsDir(const std::string &dir);
-    void loadSettingsFile(const std::string &fname);
+    void loadTrimbits(const std::string &fname);
     int getAllTrimbits() const;
     void setAllTrimbits(int val);
     std::vector<int> getTrimEn() const;

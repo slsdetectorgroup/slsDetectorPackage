@@ -2229,31 +2229,18 @@ TEST_CASE("udp_numdst", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::EIGER) {
-        auto prev_val = det.getNumberofUDPDestinations();
-        {
-            std::ostringstream oss;
-            proxy.Call("udp_numdst", {"10"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "udp_numdst 10\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("udp_numdst", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "udp_numdst 10\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("udp_numdst", {"32"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "udp_numdst 32\n");
-        }
-        REQUIRE_THROWS(proxy.Call("udp_numdst", {"0"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("udp_numdst", {"33"}, -1, PUT));
-
-        for (int i = 0; i != det.size(); ++i) {
-            det.setNumberofUDPDestinations(prev_val[i], {i});
-        }
+        REQUIRE_NOTHROW(proxy.Call("udp_numdst", {}, -1, GET));
     } else {
         REQUIRE_THROWS(proxy.Call("udp_numdst", {}, -1, GET));
     }
+}
+
+
+TEST_CASE("udp_cleardst", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("udp_cleardst", {}, -1, GET));
+    REQUIRE_NOTHROW(proxy.Call("udp_cleardst", {}, -1, PUT));
 }
 
 TEST_CASE("udp_firstdst", "[.cmd]") {

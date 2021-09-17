@@ -247,7 +247,7 @@ enum detFuncs {
     F_GET_DEST_UDP_LIST,
     F_SET_DEST_UDP_LIST,
     F_GET_NUM_DEST_UDP,
-    F_SET_NUM_DEST_UDP,
+    F_CLEAR_ALL_UDP_DEST,
     F_GET_UDP_FIRST_DEST,
     F_SET_UDP_FIRST_DEST,
 
@@ -604,7 +604,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_DEST_UDP_LIST:               return "F_GET_DEST_UDP_LIST";
     case F_SET_DEST_UDP_LIST:               return "F_SET_DEST_UDP_LIST";
     case F_GET_NUM_DEST_UDP:                return "F_GET_NUM_DEST_UDP";
-    case F_SET_NUM_DEST_UDP:                return "F_SET_NUM_DEST_UDP";
+    case F_CLEAR_ALL_UDP_DEST:              return "F_CLEAR_ALL_UDP_DEST";
     case F_GET_UDP_FIRST_DEST:              return "F_GET_UDP_FIRST_DEST";
     case F_SET_UDP_FIRST_DEST:              return "F_SET_UDP_FIRST_DEST";
 

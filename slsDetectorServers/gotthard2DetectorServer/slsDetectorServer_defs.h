@@ -52,8 +52,8 @@
 #define DEFAULT_TIMING_SOURCE       (TIMING_INTERNAL)
 #define DEFAULT_ALGORITHM           (ALG_HITS)
 
-#define DEFAULT_READOUT_C0 (6)  //(144444448) // rdo_clk, 144 MHz
-#define DEFAULT_READOUT_C1 (6)  //(144444448) // rdo_x2_clk, 144 MHz
+#define DEFAULT_READOUT_C0 (8) //(108333336) // rdo_clk, 144 MHz
+#define DEFAULT_READOUT_C1 (8) //(108333336) // rdo_x2_clk, 144 MHz
 #define DEFAULT_SYSTEM_C0  (5)  //(144444448) // run_clk, 144 MHz
 #define DEFAULT_SYSTEM_C1  (10) //(72222224) // chip_clk, 72 MHz
 #define DEFAULT_SYSTEM_C2  (5)  //(144444448) // sync_clk, 144 MHz
@@ -64,6 +64,10 @@
 #define INT_SYSTEM_C0_FREQUENCY (144000000) // 144 MHz
 #define READOUT_PLL_VCO_FREQ_HZ (866666688) // 866 MHz
 #define SYSTEM_PLL_VCO_FREQ_HZ  (722222224) // 722 MHz
+
+#define DEFAULT_CLK1_PHASE_DEG    (270)
+#define DEFAULT_DBIT_PIPELINE     (1)
+#define DEFAULT_ASIC_CONFIG_VALUE (0x80350000)
 
 #define VETO_DATA_SIZE          (160)
 typedef struct {

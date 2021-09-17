@@ -472,6 +472,12 @@ void setupDetector() {
     // power on chip
     powerChip(1);
 
+    // default asic value (masks? what do they mean? TODO)
+    bus_w(ASIC_CONFIG_REG, DEFAULT_ASIC_CONFIG_VALUE);
+
+    setPhase(READOUT_C1, DEFAULT_CLK1_PHASE_DEG, 1);
+    setDBITPipeline(DEFAULT_DBIT_PIPELINE);
+
     // also sets default dac and on chip dac values
     if (readConfigFile() == FAIL) {
         return;

@@ -1503,7 +1503,7 @@ int set_module(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if !(defined(MYTHEN3D) && defined(EIGERD))
+#if !(defined(MYTHEN3D) || defined(EIGERD))
     functionNotImplemented();
 #else
 

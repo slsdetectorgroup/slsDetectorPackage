@@ -26,8 +26,8 @@ std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::ROI &roi) {
 std::string ToString(const slsDetectorDefs::rxParameters &r) {
     std::ostringstream oss;
     oss << '[' << "detType:" << r.detType << std::endl
-        << "numberOfDetector.x:" << r.numberOfDetector.x << std::endl
-        << "numberOfDetector.y:" << r.numberOfDetector.y << std::endl
+        << "numberOfModule.x:" << r.numberOfModule.x << std::endl
+        << "numberOfModule.y:" << r.numberOfModule.y << std::endl
         << "moduleIndex:" << r.moduleIndex << std::endl
         << "hostname:" << r.hostname << std::endl
         << "udpInterfaces:" << r.udpInterfaces << std::endl

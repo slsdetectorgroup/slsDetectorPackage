@@ -117,6 +117,9 @@ void HDF5MasterFile::CreateMasterFile(const std::string filePath,
         Group group5(group3.createGroup("detector"));
         Group group6(group1.createGroup("sample"));
 
+        // TODO find a way to get complete group link
+        attrGroupName_ = "/entry/instrument/detector";
+
         attr->WriteMasterHDF5Attributes(fd_, &group5);
         fd_->close();
 
@@ -128,5 +131,30 @@ void HDF5MasterFile::CreateMasterFile(const std::string filePath,
     }
     if (!silentMode) {
         LOG(logINFO) << "Master File: " << fileName_;
+    }
+}
+
+void HDF5MasterFile::UpdateMasterFile(MasterAttributes *attr, bool silentMode) {
+    std::lock_guard<std::mutex> lock(*hdf5Lib_);
+
+    try {
+        Exception::dontPrint(); // to handle errors
+        FileAccPropList flist;
+        flist.setFcloseDegree(H5F_CLOSE_STRONG);
+        fd_ = new H5File(fileName_.c_str(), H5F_ACC_RDWR,
+                         FileCreatPropList::DEFAULT, flist);
+
+        Group group = fd_->openGroup(attrGroupName_.c_str());
+        attr->WriteFinalHDF5Attributes(fd_, &group);
+        fd_->close();
+
+    } catch (const Exception &error) {
+        error.printErrorStack();
+        CloseFile();
+        throw sls::RuntimeError(
+            "Could not create/overwrite master HDF5 handles");
+    }
+    if (!silentMode) {
+        LOG(logINFO) << "Updated Master File";
     }
 }

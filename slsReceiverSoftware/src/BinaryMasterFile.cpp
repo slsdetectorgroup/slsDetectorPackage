@@ -42,3 +42,17 @@ void BinaryMasterFile::CreateMasterFile(const std::string filePath,
     attr->WriteMasterBinaryAttributes(fd_);
     CloseFile();
 }
+
+void BinaryMasterFile::UpdateMasterFile(MasterAttributes *attr,
+                                        bool silentMode) {
+    if (nullptr == (fd_ = fopen((const char *)fileName_.c_str(), "a"))) {
+        fd_ = nullptr;
+        throw sls::RuntimeError("Could not append binary master file " +
+                                fileName_);
+    }
+    attr->WriteFinalBinaryAttributes(fd_);
+    CloseFile();
+    if (!silentMode) {
+        LOG(logINFO) << "Updated Master File";
+    }
+}

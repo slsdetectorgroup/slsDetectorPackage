@@ -67,9 +67,9 @@ enum DACINDEX {
 #define NSPECIALDACS                         (3)
 #define SPECIALDACINDEX                      {J_VREF_PRECH, J_VREF_DS, J_VREF_COMP};
 #define SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS                                      \
-    { 1000, 500, 400 }
+    { 1450, 480, 420 }
 #define SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS                                   \
-    { 1500, 550, 450 }
+    { 1450, 480, 420 }
 
 enum NETWORKINDEX { TXN_FRAME, FLOWCTRL_10G };
 enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };

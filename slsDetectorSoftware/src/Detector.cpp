@@ -921,8 +921,8 @@ Result<int> Detector::getNumberofUDPDestinations(Positions pos) const {
     return pimpl->Parallel(&Module::getNumberofUDPDestinations, pos);
 }
 
-void Detector::clearUDPDestination(Positions pos) {
-    pimpl->Parallel(&Module::clearUDPDestination, pos);
+void Detector::clearUDPDestinations(Positions pos) {
+    pimpl->Parallel(&Module::clearUDPDestinations, pos);
 }
 
 Result<int> Detector::getFirstUDPDestination(Positions pos) const {

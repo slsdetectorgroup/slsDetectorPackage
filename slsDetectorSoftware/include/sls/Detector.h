@@ -671,7 +671,7 @@ class Detector {
     /** [Jungfrau][Eiger] */
     Result<int> getNumberofUDPDestinations(Positions pos = {}) const;
 
-    void clearUDPDestination(Positions pos = {});
+    void clearUDPDestinations(Positions pos = {});
 
     /** [Jungfrau] */
     Result<int> getFirstUDPDestination(Positions pos = {}) const;

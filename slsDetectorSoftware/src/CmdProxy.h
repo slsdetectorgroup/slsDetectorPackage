@@ -1543,7 +1543,7 @@ class CmdProxy {
                            "destinations that the detector will stream images "
                            "out in a round robin fashion. This is get only command. Default: 1");
 
-    EXECUTE_SET_COMMAND(udp_cleardst, clearUDPDestination,
+    EXECUTE_SET_COMMAND(udp_cleardst, clearUDPDestinations,
                         "\n\tClears udp destination details on the detector.");
 
     INTEGER_COMMAND_VEC_ID(

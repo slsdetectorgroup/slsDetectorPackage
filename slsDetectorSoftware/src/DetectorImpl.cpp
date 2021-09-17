@@ -75,8 +75,8 @@ void DetectorImpl::freeSharedMemory(int detectorIndex, int detPos) {
 
 void DetectorImpl::freeSharedMemory() {
     zmqSocket.clear();
-    for (auto &d : modules) {
-        d->freeSharedMemory();
+    for (auto &module : modules) {
+        module->freeSharedMemory();
     }
     modules.clear();
 
@@ -92,9 +92,10 @@ std::string DetectorImpl::getUserDetails() {
 
     std::ostringstream sstream;
     sstream << "\nHostname: ";
-    for (auto &d : modules) {
-        sstream << (d->isFixedPatternSharedMemoryCompatible() ? d->getHostname()
-                                                              : "Unknown")
+    for (auto &module : modules) {
+        sstream << (module->isFixedPatternSharedMemoryCompatible()
+                        ? module->getHostname()
+                        : "Unknown")
                 << "+";
     }
     sstream << "\nType: ";
@@ -104,9 +105,9 @@ std::string DetectorImpl::getUserDetails() {
     }
     // get type from module shm
     else {
-        for (auto &d : modules) {
-            sstream << (d->isFixedPatternSharedMemoryCompatible()
-                            ? ToString(d->getDetectorType())
+        for (auto &module : modules) {
+            sstream << (module->isFixedPatternSharedMemoryCompatible()
+                            ? ToString(module->getDetectorType())
                             : "Unknown")
                     << "+";
         }
@@ -255,8 +256,8 @@ void DetectorImpl::addModule(const std::string &hostname) {
     }
 
     if (host != "localhost") {
-        for (auto &d : modules) {
-            if (d->getHostname() == host) {
+        for (auto &module : modules) {
+            if (module->getHostname() == host) {
                 LOG(logWARNING)
                     << "Module " << host << "already part of the Detector!"
                     << std::endl
@@ -331,8 +332,8 @@ void DetectorImpl::updateDetectorSize() {
                   << "\n\tNumber of Channels in Y direction:"
                   << shm()->numberOfChannels.y;
 
-    for (auto &d : modules) {
-        d->updateNumberOfModule(shm()->numberOfModule);
+    for (auto &module : modules) {
+        module->updateNumberOfModule(shm()->numberOfModule);
     }
 }
 

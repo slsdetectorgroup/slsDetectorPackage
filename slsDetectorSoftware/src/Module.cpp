@@ -970,9 +970,7 @@ int Module::getNumberofUDPDestinations() const {
     return sendToDetector<int>(F_GET_NUM_DEST_UDP);
 }
 
-void Module::setNumberofUDPDestinations(const int value) {
-    sendToDetector(F_SET_NUM_DEST_UDP, value, nullptr);
-}
+void Module::clearUDPDestination() { sendToDetector(F_CLEAR_ALL_UDP_DEST); }
 
 int Module::getFirstUDPDestination() const {
     return sendToDetector<int>(F_GET_UDP_FIRST_DEST);

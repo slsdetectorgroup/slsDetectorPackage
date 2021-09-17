@@ -861,6 +861,7 @@ class CmdProxy {
         {"selinterface", &CmdProxy::selinterface},
         {"udp_dstlist", &CmdProxy::UDPDestinationList},
         {"udp_numdst", &CmdProxy::udp_numdst},
+        {"udp_cleardst", &CmdProxy::udp_cleardst},
         {"udp_firstdst", &CmdProxy::udp_firstdst},
         {"udp_srcip", &CmdProxy::udp_srcip},
         {"udp_srcip2", &CmdProxy::udp_srcip2},
@@ -1541,6 +1542,9 @@ class CmdProxy {
                            "\n\t[Jungfrau][Eiger] One can enter upto 32 "
                            "destinations that the detector will stream images "
                            "out in a round robin fashion. This is get only command. Default: 1");
+
+    EXECUTE_SET_COMMAND(udp_cleardst, clearUDPDestination,
+                        "\n\tClears udp destination details on the detector.");
 
     INTEGER_COMMAND_VEC_ID(
         udp_firstdst, getFirstUDPDestination, setFirstUDPDestination,

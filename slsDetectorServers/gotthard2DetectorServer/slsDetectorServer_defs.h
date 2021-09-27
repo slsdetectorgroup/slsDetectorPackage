@@ -67,7 +67,8 @@
 
 #define DEFAULT_CLK1_PHASE_DEG    (270)
 #define DEFAULT_DBIT_PIPELINE     (1)
-#define DEFAULT_ASIC_CONFIG_VALUE (0x80350000)
+#define DEFAULT_ASIC_DOUT_RDY_SRC (0x5)
+#define DEFAULT_ASIC_DOUT_RDY_DLY (0x3)
 
 #define VETO_DATA_SIZE          (160)
 typedef struct {

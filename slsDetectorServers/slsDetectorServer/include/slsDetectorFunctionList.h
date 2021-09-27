@@ -128,8 +128,10 @@ int resetToDefaultDacs(int hardReset);
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett, int *retval);
 int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value);
 #endif
-#ifdef MYTHEN3D
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
 void setASICDefaults();
+#endif
+#ifdef MYTHEN3D
 void setADIFDefaults();
 #endif
 #if defined(GOTTHARD2D) || defined(EIGERD) || defined(JUNGFRAUD)

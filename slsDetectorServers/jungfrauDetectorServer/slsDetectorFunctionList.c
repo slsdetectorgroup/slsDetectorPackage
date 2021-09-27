@@ -49,7 +49,6 @@ int defaultDacValue_G0[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
 int defaultDacValue_HG0[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
 int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
-int chipVersion = 10; // (1.0)
 int chipConfigured = 0;
 
 int isInitCheckDone() { return initCheckDone; }
@@ -299,7 +298,24 @@ int isHardwareVersion2() {
                 : 0);
 }
 
-int getChipVersion() { return chipVersion; }
+int getChipVersion() {
+    // chip v1.1
+    if (bus_r(DAQ_REG | DAQ_CHIP11_VRSN_MSK)) {
+        return 11;
+    }
+    // chip v1.0
+    return 10;
+}
+
+void setChipVersion(int version) {
+    LOG(logINFO,
+        ("Setting chip version to %0.1f in FPGA\n", (double)version / 10.0));
+    if (version == 11) {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_CHIP11_VRSN_MSK);
+    } else {
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CHIP11_VRSN_MSK);
+    }
+}
 
 u_int32_t getDetectorNumber() {
 #ifdef VIRTUAL
@@ -397,11 +413,6 @@ void setupDetector() {
     setupUDPCommParameters();
 #endif
 
-    // get chip version
-    if (readConfigFile() == FAIL) {
-        return;
-    }
-
     ALTERA_PLL_ResetPLL();
     resetCore();
     resetPeripheral();
@@ -439,6 +450,12 @@ void setupDetector() {
     bus_w(DAQ_REG, 0x0); /* Only once at server startup */
 
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
+
+    // get chip version
+    if (readConfigFile() == FAIL) {
+        return;
+    }
+
     setClockDivider(RUN_CLK, HALF_SPEED);
     cleanFifos();
     resetCore();
@@ -713,17 +730,14 @@ int readConfigFile() {
                         version, line);
                 break;
             }
-
-            // validations
-            chipVersion = version;
-            LOG(logINFOBLUE, ("Chip Version: v%.01f\n", chipVersion / 10.0));
-
             // version 1.1 and HW 1.0 (version reg value = 2) is incompatible
-            if (chipVersion == 11 && isHardwareVersion2()) {
+            if (version == 11 && isHardwareVersion2()) {
                 strcpy(initErrorMessage,
                         "Chip version 1.1 (from on-board config file) is incompatible with old board (v1.0). Please update board or correct on-board config file.\n");
-                break;                
+                break;
             }
+
+            setChipVersion(version);
         }
 
         memset(line, 0, LZ);
@@ -1735,7 +1749,7 @@ int isChipConfigured() {
 
 void configureChip() {
     // only for chipv1.1
-    if (chipVersion == 11) {
+    if (getChipVersion() == 11) {
         LOG(logINFOBLUE, ("Configuring chip\n"));
         // write same register values back to configure chip
         uint32_t val = bus_r(CONFIG_V11_REG);
@@ -2190,7 +2204,7 @@ void disableCurrentSource() {
 }
 
 void enableCurrentSource(int fix, uint64_t select, int normal) {
-    if (chipVersion == 11) {
+    if (getChipVersion() == 11) {
         LOG(logINFO, ("Enabling current source [fix:%d, select:%lld]\n", fix,
                       (long long int)select));
     } else {
@@ -2206,7 +2220,7 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
     } else {
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_FIX_MSK);
     }
-    if (chipVersion == 10) {
+    if (getChipVersion() == 10) {
         // select
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_SLCT_MSK);
         bus_w(DAQ_REG,
@@ -2260,7 +2274,7 @@ int getNormalCurrentSource() {
 }
 
 uint64_t getSelectCurrentSource() {
-    if (chipVersion == 10) {
+    if (getChipVersion() == 10) {
         return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_SLCT_MSK) >>
                 DAQ_CRRNT_SRC_CLMN_SLCT_OFST);
     } else {

@@ -89,6 +89,7 @@ u_int16_t getHardwareSerialNumber();
 #ifdef JUNGFRAUD
 int isHardwareVersion2();
 int getChipVersion();
+void setChipVersion(int version);
 #endif
 #ifndef EIGERD
 u_int32_t getDetectorNumber();

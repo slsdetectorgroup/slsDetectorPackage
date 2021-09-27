@@ -141,7 +141,18 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define ADC_PORT_INVERT_VAL        (0x5A5A5A5A)
 #define ADC_PORT_INVERT_BOARD2_VAL (0x453b2a9c)
 
-// 2.0 pcb
+// 2.0 pcb (chipv1.1)
+#define SAMPLE_ADC_FULL_SPEED                                                  \
+    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
+     SAMPLE_DGTL_SAMPLE_0_VAL + SAMPLE_DECMT_FACTOR_FULL_VAL) // 0x0000
+#define SAMPLE_ADC_HALF_SPEED                                                  \
+    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
+     SAMPLE_DGTL_SAMPLE_1_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1110
+#define SAMPLE_ADC_QUARTER_SPEED                                               \
+    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_3_VAL +                 \
+     SAMPLE_DGTL_SAMPLE_2_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2230
+
+// 2.0 pcb (chipv1.0)
 #define SAMPLE_ADC_FULL_SPEED                                                  \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
      SAMPLE_DGTL_SAMPLE_1_VAL + SAMPLE_DECMT_FACTOR_FULL_VAL) // 0x0100
@@ -151,6 +162,7 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define SAMPLE_ADC_QUARTER_SPEED                                               \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_3_VAL +                 \
      SAMPLE_DGTL_SAMPLE_6_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2630
+
 // 1.0 pcb (2 resistor network)
 #define SAMPLE_ADC_HALF_SPEED_BOARD2                                           \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \

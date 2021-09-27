@@ -1821,7 +1821,11 @@ int setClockDivider(enum CLKINDEX ind, int val) {
         }
         LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
         adcOfst = ADC_OFST_FULL_SPEED_VAL;
-        sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED;
+        if (getChipVersion() == 10) {
+            sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED_CHIP10;
+        } else {
+            sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED;
+        }
         adcPhase = ADC_PHASE_FULL_SPEED;
         dbitPhase = DBIT_PHASE_FULL_SPEED;
         config = CONFIG_FULL_SPEED_40MHZ_VAL;
@@ -1829,27 +1833,43 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 
     case HALF_SPEED:
         LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
-        adcOfst = isHardwareVersion2() ? ADC_OFST_HALF_SPEED_BOARD2_VAL
-                                       : ADC_OFST_HALF_SPEED_VAL;
-        sampleAdcSpeed = isHardwareVersion2() ? SAMPLE_ADC_HALF_SPEED_BOARD2
-                                              : SAMPLE_ADC_HALF_SPEED;
-        adcPhase = isHardwareVersion2() ? ADC_PHASE_HALF_SPEED_BOARD2
-                                        : ADC_PHASE_HALF_SPEED;
-        dbitPhase = isHardwareVersion2() ? DBIT_PHASE_HALF_SPEED_BOARD2
-                                         : DBIT_PHASE_HALF_SPEED;
+        if (isHardwareVersion2()) {
+            adcOfst = ADC_OFST_HALF_SPEED_BOARD2_VAL;
+            sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_BOARD2;
+            adcPhase = ADC_PHASE_HALF_SPEED_BOARD2;
+            dbitPhase = DBIT_PHASE_HALF_SPEED_BOARD2;
+        } else if (getChipVersion() == 10) {
+            adcOfst = ADC_OFST_HALF_SPEED_VAL;
+            sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_CHIP10;
+            adcPhase = ADC_PHASE_HALF_SPEED;
+            dbitPhase = DBIT_PHASE_HALF_SPEED;
+        } else {
+            adcOfst = ADC_OFST_HALF_SPEED_VAL;
+            sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED;
+            adcPhase = ADC_PHASE_HALF_SPEED;
+            dbitPhase = DBIT_PHASE_HALF_SPEED;
+        }
         config = CONFIG_HALF_SPEED_20MHZ_VAL;
         break;
 
     case QUARTER_SPEED:
         LOG(logINFO, ("Setting Half Speed (10 MHz):\n"));
-        adcOfst = isHardwareVersion2() ? ADC_OFST_QUARTER_SPEED_BOARD2_VAL
-                                       : ADC_OFST_QUARTER_SPEED_VAL;
-        sampleAdcSpeed = isHardwareVersion2() ? SAMPLE_ADC_QUARTER_SPEED_BOARD2
-                                              : SAMPLE_ADC_QUARTER_SPEED;
-        adcPhase = isHardwareVersion2() ? ADC_PHASE_QUARTER_SPEED_BOARD2
-                                        : ADC_PHASE_QUARTER_SPEED;
-        dbitPhase = isHardwareVersion2() ? DBIT_PHASE_QUARTER_SPEED_BOARD2
-                                         : DBIT_PHASE_QUARTER_SPEED;
+        if (isHardwareVersion2()) {
+            adcOfst = ADC_OFST_QUARTER_SPEED_BOARD2_VAL;
+            sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_BOARD2;
+            adcPhase = ADC_PHASE_QUARTER_SPEED_BOARD2;
+            dbitPhase = DBIT_PHASE_QUARTER_SPEED_BOARD2;
+        } else if (getChipVersion() == 10) {
+            adcOfst = ADC_OFST_QUARTER_SPEED_VAL;
+            sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_CHIP10;
+            adcPhase = ADC_PHASE_QUARTER_SPEED;
+            dbitPhase = DBIT_PHASE_QUARTER_SPEED;
+        } else {
+            adcOfst = ADC_OFST_QUARTER_SPEED_VAL;
+            sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED;
+            adcPhase = ADC_PHASE_QUARTER_SPEED;
+            dbitPhase = DBIT_PHASE_QUARTER_SPEED;
+        }
         config = CONFIG_QUARTER_SPEED_10MHZ_VAL;
         break;
 

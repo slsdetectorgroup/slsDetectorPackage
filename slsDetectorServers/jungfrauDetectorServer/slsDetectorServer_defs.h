@@ -153,13 +153,13 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
      SAMPLE_DGTL_SAMPLE_2_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2230
 
 // 2.0 pcb (chipv1.0)
-#define SAMPLE_ADC_FULL_SPEED                                                  \
+#define SAMPLE_ADC_FULL_SPEED_CHIP10                                           \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
      SAMPLE_DGTL_SAMPLE_1_VAL + SAMPLE_DECMT_FACTOR_FULL_VAL) // 0x0100
-#define SAMPLE_ADC_HALF_SPEED                                                  \
+#define SAMPLE_ADC_HALF_SPEED_CHIP10                                           \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
      SAMPLE_DGTL_SAMPLE_3_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1310
-#define SAMPLE_ADC_QUARTER_SPEED                                               \
+#define SAMPLE_ADC_QUARTER_SPEED_CHIP10                                        \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_3_VAL +                 \
      SAMPLE_DGTL_SAMPLE_6_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2630
 

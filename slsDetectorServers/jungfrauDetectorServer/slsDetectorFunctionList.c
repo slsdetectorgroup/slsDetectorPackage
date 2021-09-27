@@ -447,7 +447,8 @@ void setupDetector() {
         PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
         PLL_CNTRL_ADDR_OFST, PLL_CNTRL_DBIT_WR_PRMTR_MSK, DBIT_CLK_INDEX);
 
-    bus_w(DAQ_REG, 0x0); /* Only once at server startup */
+    /* Only once at server startup */
+    bus_w(DAQ_REG, 0x0);
 
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
 
@@ -1752,8 +1753,10 @@ void configureChip() {
     if (getChipVersion() == 11) {
         LOG(logINFOBLUE, ("Configuring chip\n"));
         // write same register values back to configure chip
-        uint32_t val = bus_r(CONFIG_V11_REG);
-        bus_w(CONFIG_V11_REG, val);
+        bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG));
+        // default values for current source
+        bus_w(CRRNT_SRC_COL_LSB_REG, BIT32_MASK);
+        bus_w(CRRNT_SRC_COL_MSB_REG, BIT32_MASK);
         chipConfigured = 1;
     }
 }

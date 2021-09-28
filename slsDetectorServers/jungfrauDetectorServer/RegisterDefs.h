@@ -343,6 +343,8 @@
 #define DAQ_FIX_GAIN_STG_2_VAL              ((0x3 << DAQ_FIX_GAIN_OFST) & DAQ_FIX_GAIN_MSK)
 #define DAQ_CMP_RST_OFST                    (4)
 #define DAQ_CMP_RST_MSK                     (0x00000001 << DAQ_CMP_RST_OFST)
+#define DAQ_CHIP11_VRSN_OFST                (7)
+#define DAQ_CHIP11_VRSN_MSK                 (0x00000001 << DAQ_CHIP11_VRSN_OFST)
 #define DAQ_STRG_CELL_SLCT_OFST             (8)
 #define DAQ_STRG_CELL_SLCT_MSK              (0x0000000F << DAQ_STRG_CELL_SLCT_OFST)
 #define DAQ_FRCE_SWTCH_GAIN_OFST            (12)

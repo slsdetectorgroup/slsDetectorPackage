@@ -14,6 +14,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/sysinfo.h>
 
 // defined in the detector specific Makefile
 #ifdef GOTTHARDD
@@ -407,7 +408,7 @@ void function_table() {
     flist[F_GET_DEST_UDP_LIST] = &get_dest_udp_list;
     flist[F_SET_DEST_UDP_LIST] = &set_dest_udp_list;
     flist[F_GET_NUM_DEST_UDP] = &get_num_dest_list;
-    flist[F_SET_NUM_DEST_UDP] = &set_num_dest_list;
+    flist[F_CLEAR_ALL_UDP_DEST] = &clear_all_udp_dst;
     flist[F_GET_UDP_FIRST_DEST] = &get_udp_first_dest;
     flist[F_SET_UDP_FIRST_DEST] = &set_udp_first_dest;
 
@@ -444,11 +445,13 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
     memset(temp, 0, tempsize);
     memset(result, 0, MAX_STR_LENGTH);
 
-    LOG(level, ("Executing command:\n[%s]\n", command));
-    strcat(command, " 2>&1");
+    // copy command
+    char cmd[MAX_STR_LENGTH]= {0};
+    sprintf(cmd, "%s 2>&1", command);
+    LOG(level, ("Executing command:\n[%s]\n", cmd));
 
     fflush(stdout);
-    FILE *sysFile = popen(command, "r");
+    FILE *sysFile = popen(cmd, "r");
     while (fgets(temp, tempsize, sysFile) != NULL) {
         // size left excludes terminating character
         size_t sizeleft = MAX_STR_LENGTH - strlen(result) - 1;
@@ -460,16 +463,19 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
         strncat(result, temp, tempsize);
         memset(temp, 0, tempsize);
     }
-    int sucess = pclose(sysFile);
+    result[MAX_STR_LENGTH - 1] = '\0';
+    int success = pclose(sysFile);
     if (strlen(result)) {
-        if (sucess) {
-            sucess = FAIL;
+        if (success) {
+            success = FAIL;
             LOG(logERROR, ("%s\n", result));
         } else {
             LOG(level, ("Result:\n[%s]\n", result));
         }
+    } else {
+        LOG(level, ("No result\n"));
     }
-    return sucess;
+    return success;
 }
 
 int M_nofunc(int file_des) {
@@ -1497,7 +1503,7 @@ int set_module(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARD2D)
+#if !(defined(MYTHEN3D) || defined(EIGERD))
     functionNotImplemented();
 #else
 
@@ -1518,7 +1524,6 @@ int set_module(int file_des) {
     } else
         module.dacs = myDac;
 
-#if defined(EIGERD) || defined(MYTHEN3D)
     // allocate chans
     if (ret == OK) {
         myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
@@ -1529,7 +1534,6 @@ int set_module(int file_des) {
         } else
             module.chanregs = myChan;
     }
-#endif
     // receive arguments
     if (ret == OK) {
         module.nchip = getNumberOfChips();
@@ -1567,6 +1571,7 @@ int set_module(int file_des) {
 
 // setsettings
 #ifndef MYTHEN3D
+        // m3 uses reg for chip (not settings)
         validate_settings((enum detectorSettings)(module.reg));
 #endif
         ret = setModule(module, mess);
@@ -3674,19 +3679,25 @@ int program_fpga(int file_des) {
         n = receiveData(file_des, mess, MAX_STR_LENGTH, OTHER);
     functionNotImplemented();
 #else
-#ifndef VIRTUAL
     // only set
     if (Server_VerifyLock() == OK) {
 
         LOG(logINFOBLUE, ("Programming FPGA...\n"));
 
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
-        uint64_t filesize = 0;
         // filesize
+        uint64_t filesize = 0;
         if (receiveData(file_des, &filesize, sizeof(filesize), INT64) < 0)
             return printSocketReadError();
-        LOG(logDEBUG1, ("Total program size is: %llx\n",
-                        (long long unsigned int)filesize));
+        LOG(logDEBUG1, ("Program size is: %lld\n", (long long int)filesize));
+
+        // checksum
+        char checksum[MAX_STR_LENGTH];
+        memset(checksum, 0, MAX_STR_LENGTH);
+        if (receiveData(file_des, checksum, MAX_STR_LENGTH, OTHER) < 0)
+            return printSocketReadError();
+        LOG(logDEBUG1, ("checksum is: %s\n\n", checksum));
+
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
         if (filesize > NIOS_MAX_APP_IMAGE_SIZE) {
             ret = FAIL;
             sprintf(mess,
@@ -3701,119 +3712,108 @@ int program_fpga(int file_des) {
         // receive program
         if (ret == OK) {
             char *fpgasrc = malloc(filesize);
-            if (receiveData(file_des, fpgasrc, filesize, OTHER) < 0)
+            if (receiveData(file_des, fpgasrc, filesize, OTHER) < 0) {
+                free(fpgasrc);
                 return printSocketReadError();
-
-            ret = eraseAndWriteToFlash(mess, fpgasrc, filesize);
+            }
+            ret = eraseAndWriteToFlash(mess, checksum, fpgasrc, filesize);
             Server_SendResult(file_des, INT32, NULL, 0);
-
-            // free resources
             free(fpgasrc);
+        }
+        if (ret == FAIL) {
+            LOG(logERROR, ("Program FPGA FAIL!\n"));
+            return FAIL;
         }
 
 #else // jungfrau, ctb, moench
-        uint64_t filesize = 0;
-        uint64_t totalsize = 0;
-        uint64_t unitprogramsize = 0;
-        char *fpgasrc = NULL;
-        FILE *fp = NULL;
 
-        // filesize
-        if (receiveData(file_des, &filesize, sizeof(filesize), INT32) < 0)
-            return printSocketReadError();
-        totalsize = filesize;
-        LOG(logDEBUG1, ("Total program size is: %lld\n",
-                        (long long unsigned int)totalsize));
-
-        // opening file pointer to flash and telling FPGA to not touch flash
-        if (startWritingFPGAprogram(&fp) != OK) {
-            ret = FAIL;
-            sprintf(mess, "Could not write to flash. Error at startup.\n");
-            LOG(logERROR, (mess));
+        // open file and allocate memory for part program
+        FILE *fd = NULL;
+        ret = preparetoCopyFPGAProgram(&fd, filesize, mess);
+        char *src = NULL;
+        if (ret == OK) {
+            src = malloc(MAX_FPGAPROGRAMSIZE);
+            if (src == NULL) {
+                fclose(fd);
+                struct sysinfo info;
+                sysinfo(&info);
+                sprintf(mess, "Could not allocate memory to get fpga program. Free space: %d MB\n", (int)(info.freeram/ (1024 * 1024)));
+                LOG(logERROR, (mess));
+                ret = FAIL;
+            }
         }
         Server_SendResult(file_des, INT32, NULL, 0);
-
-        // erasing flash
-        if (ret != FAIL) {
-            eraseFlash();
-            fpgasrc = malloc(MAX_FPGAPROGRAMSIZE);
+        if (ret == FAIL) {
+            LOG(logERROR, ("Program FPGA FAIL1!\n"));
+            return FAIL;
         }
 
-        // writing to flash part by part
-        int clientSocketCrash = 0;
-        while (ret != FAIL && filesize) {
-
-            unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
-            if (unitprogramsize > filesize)        // less than 2mb
+        // copying program part by part
+        uint64_t totalsize = filesize;
+        while (ret == OK && filesize) {
+            uint64_t unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
+            if (unitprogramsize > filesize)                 // less than 2mb
                 unitprogramsize = filesize;
-            LOG(logDEBUG1, ("unit size to receive is:%lld\nfilesize:%lld\n",
+            LOG(logDEBUG1, ("unit size to receive is:%lld [filesize:%lld]\n",
                             (long long unsigned int)unitprogramsize,
                             (long long unsigned int)filesize));
 
             // receive part of program
-            if (receiveData(file_des, fpgasrc, unitprogramsize, OTHER) < 0) {
+            if (receiveData(file_des, src, unitprogramsize, OTHER) < 0) {
                 printSocketReadError();
-                clientSocketCrash = 1;
+                break;
+            }
+
+            if (unitprogramsize - filesize == 0) {
+                // src[unitprogramsize] = '\0';
+                filesize -= unitprogramsize;
+                // unitprogramsize++;
+            } else
+                filesize -= unitprogramsize;
+ 
+            // copy program
+            if (fwrite((void *)src, sizeof(char), unitprogramsize, fd) !=
+                unitprogramsize) {
                 ret = FAIL;
-            }
-            // client has not crashed yet, so write to flash and send ret
-            else {
-                if (!(unitprogramsize - filesize)) {
-                    fpgasrc[unitprogramsize] = '\0';
-                    filesize -= unitprogramsize;
-                    unitprogramsize++;
-                } else
-                    filesize -= unitprogramsize;
-
-                // write part to flash
-                ret = writeFPGAProgram(fpgasrc, unitprogramsize, fp);
-                Server_SendResult(file_des, INT32, NULL, 0);
-                if (ret == FAIL) {
-                    strcpy(mess, "Could not write to flash. Breaking out of "
-                                 "program receiving. Try to flash again "
-                                 "without rebooting.\n");
-                    LOG(logERROR, (mess));
-                } else {
-                    // print progress
-                    LOG(logINFO,
-                        ("Writing to Flash:%d%%\r",
-                         (int)(((double)(totalsize - filesize) / totalsize) *
-                               100)));
-                    fflush(stdout);
-                }
-            }
-        }
-
-        if (ret == OK) {
-            LOG(logINFO, ("Done copying program\n"));
-            // closing file pointer to flash and informing FPGA
-            ret = stopWritingFPGAprogram(fp);
-            if (ret == FAIL) {
-                strcpy(mess, "Failed to program fpga. FPGA is taking too long "
-                             "to pick up program from flash! Try to flash "
-                             "again without rebooting!\n");
+                sprintf(mess, "Could not copy program to /var/tmp (size:%ld)\n",
+                        (long int)unitprogramsize);
                 LOG(logERROR, (mess));
             }
+            Server_SendResult(file_des, INT32, NULL, 0);
+            if (ret == FAIL) {
+                break;
+            }
+            // print progress
+            LOG(logINFO,
+                ("\t%d%%\r",
+                 (int)(((double)(totalsize - filesize) / totalsize) * 100)));
+            fflush(stdout);
+        }
+        free(src);
+        fclose(fd);
+
+        // checksum of copied program
+        if (ret == OK) {
+            ret =
+                verifyChecksumFromFile(mess, checksum, TEMP_PROG_FILE_NAME);
+        }
+        Server_SendResult(file_des, INT32, NULL, 0);
+        if (ret == FAIL) {
+            LOG(logERROR, ("Program FPGA FAIL!\n"));
+            return FAIL;
         }
 
-        // free resources
-        free(fpgasrc);
-        if (fp != NULL)
-            fclose(fp);
-
-        // send final ret (if no client crash)
-        if (clientSocketCrash == 0) {
-            Server_SendResult(file_des, INT32, NULL, 0);
+        // copy to flash
+        ret = copyToFlash(totalsize, checksum, mess);
+        Server_SendResult(file_des, INT32, NULL, 0);
+        if (ret == FAIL) {
+            LOG(logERROR, ("Program FPGA FAIL!\n"));
+            return FAIL;            
         }
 
 #endif // end of Blackfin programming
-        if (ret == FAIL) {
-            LOG(logERROR, ("Program FPGA FAIL!\n"));
-        } else {
-            LOG(logINFOGREEN, ("Programming FPGA completed successfully\n"));
-        }
+        LOG(logINFOGREEN, ("Programming FPGA completed successfully\n"));
     }
-#endif
 #endif
     return ret;
 }
@@ -4322,11 +4322,19 @@ int reboot_controller(int file_des) {
         Server_SendResult(file_des, INT32, NULL, 0);
         return GOODBYE;
     }
+#ifdef VIRTUAL
+    ret = GOODBYE;
+#else
     ret = REBOOT;
+#endif
 #elif EIGERD
     functionNotImplemented();
 #else
+#ifdef VIRTUAL
+    ret = GOODBYE;
+#else
     ret = REBOOT;
+#endif
 #endif
     Server_SendResult(file_des, INT32, NULL, 0);
     return ret;
@@ -4783,7 +4791,7 @@ int set_read_n_rows(int file_des) {
                 LOG(logERROR, (mess));
             } else
 #elif JUNGFRAUD
-            if ((check_detector_idle("set nmber of rows") == OK) && (arg % READ_N_ROWS_MULTIPLE != 0)) {
+            if ((check_detector_idle("set number of rows") == OK) && (arg % READ_N_ROWS_MULTIPLE != 0)) {
                 ret = FAIL;
                 sprintf(mess,
                         "Could not set number of rows. %d must be a multiple "
@@ -8849,8 +8857,7 @@ int set_flip_rows(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-
-        if (arg != 0 && arg != 1) {
+        if ((check_detector_idle("set flip rows") == OK) && (arg != 0 && arg != 1)) {
             ret = FAIL;
             sprintf(mess,
                     "Could not set flip rows. Invalid argument %d.\n",
@@ -9191,7 +9198,32 @@ int set_dest_udp_list(int file_des) {
                         }
                     }
                 }
-                configure_mac();
+                // find number of destinations
+                int numdest = 0;
+                for (int i = MAX_UDP_DESTINATION; i >= 0; --i) {
+                    if (udpDetails[i].dstip != 0) {
+                        numdest = i + 1;
+                        break;
+                    }
+                }
+                // atleast 1 destination
+                if (numdest == 0) {
+                    numdest = 1;
+                }
+                // set number of destinations
+#if defined(JUNGFRAUD) || defined(EIGERD)
+                if (setNumberofDestinations(numdest) == FAIL) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not set number of udp destinations.\n");
+                    LOG(logERROR, (mess));
+                } else
+#endif
+                {
+                    numUdpDestinations = numdest;
+                    LOG(logINFOBLUE, ("Number of UDP Destinations: %d\n",
+                                      numUdpDestinations));
+                    configure_mac();
+                }
             }
         }
     }
@@ -9203,10 +9235,13 @@ int get_num_dest_list(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
+
 #if !defined(JUNGFRAUD) && !defined(EIGERD)
     functionNotImplemented();
 #else
     retval = numUdpDestinations;
+    LOG(logDEBUG1, ("numUdpDestinations retval: 0x%x\n", retval));
+
     int retval1 = 0;
     if (getNumberofDestinations(&retval1) == FAIL || retval1 != retval) {
             ret = FAIL;
@@ -9216,42 +9251,23 @@ int get_num_dest_list(int file_des) {
             LOG(logERROR, (mess));       
     }
 #endif
-    LOG(logDEBUG1, ("numUdpDestinations retval: 0x%x\n", retval));
+
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_num_dest_list(int file_des) {
+int clear_all_udp_dst(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int arg = -1;
 
-    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-        return printSocketReadError();
-    LOG(logDEBUG1, ("Setting number of udp destinations to %d\n", arg));
-
-#if !defined(JUNGFRAUD) && !defined(EIGERD)
-    functionNotImplemented();
-#else
-    if (arg < 1 || arg > MAX_UDP_DESTINATION) {
-        ret = FAIL;
-        sprintf(mess,
-                "Could not set number of udp destinations. Options: 1-%d\n",
-                MAX_UDP_DESTINATION);
-        LOG(logERROR, (mess));
-    } else {
-        if (check_detector_idle("set number of udp destinations") == OK) {
-            if (setNumberofDestinations(arg) == FAIL) {
-                ret = FAIL;
-                strcpy(mess,
-                        "Could not set number of udp destinations.\n");
-                LOG(logERROR, (mess));  
-            } else {
-                numUdpDestinations = arg;
-                configure_mac();
-            }
+    LOG(logINFO, ("Clearing all udp destinations\n"));
+    if (Server_VerifyLock() == OK) {
+        if (check_detector_idle("clear all udp destinations") == OK) {
+            memset(udpDetails, 0, sizeof(udpDetails));
+            // minimum 1 destination in fpga
+            numUdpDestinations = 1;
+            configure_mac();
         }
     }
-#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -9288,19 +9304,22 @@ int set_udp_first_dest(int file_des) {
 #ifndef JUNGFRAUD
     functionNotImplemented();
 #else
-    if (arg < 0 || arg >= numUdpDestinations) {
-        ret = FAIL;
-        sprintf(mess, "Could not set first destination. Options: 0-%d\n",
-                numUdpDestinations - 1);
-        LOG(logERROR, (mess));
-    } else {
-        if (check_detector_idle("set first udp destination") == OK) {
-            setFirstUDPDestination(arg);
-            int retval = getFirstUDPDestination();
-            validate(&ret, mess, arg, retval, "set udp first destination", DEC);
-            if (ret == OK) {
-                firstUDPDestination = arg;
-                //configure_mac();
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg < 0 || arg >= numUdpDestinations) {
+            ret = FAIL;
+            sprintf(mess, "Could not set first destination. Options: 0-%d\n",
+                    numUdpDestinations - 1);
+            LOG(logERROR, (mess));
+        } else {
+            if (check_detector_idle("set first udp destination") == OK) {
+                setFirstUDPDestination(arg);
+                int retval = getFirstUDPDestination();
+                validate(&ret, mess, arg, retval, "set udp first destination", DEC);
+                if (ret == OK) {
+                    firstUDPDestination = arg;
+                    //configure_mac();
+                }
             }
         }
     }

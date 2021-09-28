@@ -3,17 +3,18 @@ main_inc = ../slsDetectorServer/include/
 main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
 det_lib = ../../slsDetectorSoftware/include/sls/
+md5_dir = ../../slsSupportLib/src/
 
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -std=gnu99 -DMOENCHD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -std=gnu99 -DMOENCHD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(det_lib) -I$(current_dir)   #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread  
 PROGS		= 	moenchDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS 		= 	slsDetectorFunctionList.c 
-SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c $(main_src)common.c $(main_src)commonServerFunctions.c $(main_src)communication_funcs_UDP.c $(main_src)UDPPacketHeaderGenerator.c $(main_src)AD9257.c $(main_src)ALTERA_PLL.c $(main_src)LTC2620.c $(main_src)MAX1932.c $(main_src)programFpgaBlackfin.c $(main_src)loadPattern.c $(main_src)/sharedMemory.c
+SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c $(main_src)common.c $(main_src)commonServerFunctions.c $(main_src)communication_funcs_UDP.c $(main_src)UDPPacketHeaderGenerator.c $(main_src)AD9257.c $(main_src)ALTERA_PLL.c $(main_src)LTC2620.c $(main_src)MAX1932.c $(main_src)programFpgaBlackfin.c $(main_src)loadPattern.c $(main_src)/sharedMemory.c $(md5_dir)md5.c
 
 OBJS 		= 	$(SRCS:.c=.o) 
 
@@ -36,10 +37,10 @@ $(PROGS): $(OBJS)
 	cp DefaultPattern_moench.txt $(DESTDIR)
 	rm *.gdb
 	rm $(main_src)*.o
-	rm *.o
+	rm *.o  $(md5_dir)*.o
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o
+	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o $(md5_dir)*.o
 	
 
 	

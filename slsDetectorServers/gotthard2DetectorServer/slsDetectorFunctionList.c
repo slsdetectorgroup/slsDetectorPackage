@@ -472,6 +472,11 @@ void setupDetector() {
     // power on chip
     powerChip(1);
 
+    setASICDefaults();
+
+    setPhase(READOUT_C1, DEFAULT_CLK1_PHASE_DEG, 1);
+    setDBITPipeline(DEFAULT_DBIT_PIPELINE);
+
     // also sets default dac and on chip dac values
     if (readConfigFile() == FAIL) {
         return;
@@ -501,6 +506,24 @@ void setupDetector() {
     setCurrentSource(DEFAULT_CURRENT_SOURCE);
     setVetoAlgorithm(DEFAULT_ALGORITHM, LOW_LATENCY_LINK);
     setVetoAlgorithm(DEFAULT_ALGORITHM, ETHERNET_10GB);
+}
+
+void setASICDefaults() {
+    uint32_t addr = ASIC_CONFIG_REG;
+
+    // dout ready source
+    bus_w(addr, bus_r(addr) & ~ASIC_CONFIG_DOUT_RDY_SRC_MSK);
+    bus_w(addr, bus_r(addr) | ((DEFAULT_ASIC_DOUT_RDY_SRC
+                                << ASIC_CONFIG_DOUT_RDY_SRC_OFST) &
+                               ASIC_CONFIG_DOUT_RDY_SRC_MSK));
+    // dout ready delay
+    bus_w(addr, bus_r(addr) & ~ASIC_CONFIG_DOUT_RDY_DLY_MSK);
+    bus_w(addr, bus_r(addr) | ((DEFAULT_ASIC_DOUT_RDY_DLY
+                                << ASIC_CONFIG_DOUT_RDY_DLY_OFST) &
+                               ASIC_CONFIG_DOUT_RDY_DLY_MSK));
+    // config done
+    bus_w(addr, bus_r(addr) | ASIC_CONFIG_DONE_MSK);
+    LOG(logINFO, ("Setting ASIC Defaults (0x%x)\n", bus_r(addr)));
 }
 
 int resetToDefaultDacs(int hardReset) {

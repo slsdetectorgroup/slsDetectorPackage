@@ -283,7 +283,14 @@ u_int32_t getDetectorNumber() {
 
 
 int getModuleId(int *ret, char *mess) {
-    return getModuleIdInFile(ret, mess, ID_FILE);
+    return ((bus_r(MOD_ID_REG) & ~MOD_ID_MSK) >> MOD_ID_OFST);
+}
+
+void setModuleId(int modid) {
+    LOG(logINFOBLUE, ("Setting module id in fpga: %d\n", modid))
+    bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) & ~MOD_ID_MSK);
+    bus_w(MOD_ID_REG,
+          bus_r(MOD_ID_REG) | ((modid << MOD_ID_OFST) & MOD_ID_MSK));
 }
 
 u_int64_t getDetectorMAC() {
@@ -445,12 +452,11 @@ void setupDetector() {
     setADIFDefaults();
 
     // set module id in register
-    getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+    int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
     if (initError == FAIL) {
         return;
     }
-    // until firmware is done
-    // setModuleId(modid);    
+    setModuleId(modid);
 
     // set trigger flow for m3 (for all timing modes)
     bus_w(FLOW_TRIGGER_REG, bus_r(FLOW_TRIGGER_REG) | FLOW_TRIGGER_MSK);

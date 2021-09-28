@@ -118,6 +118,11 @@ class File : private virtual slsDetectorDefs {
                          "should be overloaded by a derived class";
     };
 
+    virtual void UpdateMasterFile(MasterAttributes *attr, bool silentMode) {
+        LOG(logERROR) << "This is a generic function UpdateMasterFile that "
+                         "should be overloaded by a derived class";
+    };
+
   protected:
     slsDetectorDefs::fileFormat format_;
 };

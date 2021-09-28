@@ -18,6 +18,7 @@ add_executable(ctbDetectorServer_virtual
     ../slsDetectorServer/src/programFpgaBlackfin.c
     ../slsDetectorServer/src/sharedMemory.c
     ../slsDetectorServer/src/loadPattern.c
+    ../../slsSupportLib/src/md5.c
 )
 
 include_directories(

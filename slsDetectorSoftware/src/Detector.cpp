@@ -17,29 +17,29 @@
 
 namespace sls {
 
-void freeSharedMemory(int multiId, int detPos) {
-    // single
-    if (detPos >= 0) {
-        SharedMemory<sharedSlsDetector> temp_shm(multiId, detPos);
-        if (temp_shm.IsExisting()) {
-            temp_shm.RemoveSharedMemory();
+void freeSharedMemory(int detectorIndex, int moduleIndex) {
+    // single module
+    if (moduleIndex >= 0) {
+        SharedMemory<sharedModule> moduleShm(detectorIndex, moduleIndex);
+        if (moduleShm.IsExisting()) {
+            moduleShm.RemoveSharedMemory();
         }
         return;
     }
 
-    // multi - get number of detectors from shm
-    SharedMemory<sharedMultiSlsDetector> multiShm(multiId, -1);
+    // detector - multi module - get number of detectors from shm
+    SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     int numDetectors = 0;
 
-    if (multiShm.IsExisting()) {
-        multiShm.OpenSharedMemory();
-        numDetectors = multiShm()->numberOfDetectors;
-        multiShm.RemoveSharedMemory();
+    if (detectorShm.IsExisting()) {
+        detectorShm.OpenSharedMemory();
+        numDetectors = detectorShm()->numberOfModules;
+        detectorShm.RemoveSharedMemory();
     }
 
     for (int i = 0; i < numDetectors; ++i) {
-        SharedMemory<sharedSlsDetector> shm(multiId, i);
-        shm.RemoveSharedMemory();
+        SharedMemory<sharedModule> moduleShm(detectorIndex, i);
+        moduleShm.RemoveSharedMemory();
     }
 }
 
@@ -101,7 +101,7 @@ void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
     pimpl->setVirtualDetectorServers(numServers, startingPort);
 }
 
-int Detector::getShmId() const { return pimpl->getMultiId(); }
+int Detector::getShmId() const { return pimpl->getDetectorIndex(); }
 
 std::string Detector::getPackageVersion() const { return GITBRANCH; }
 
@@ -136,7 +136,7 @@ int Detector::size() const { return pimpl->size(); }
 bool Detector::empty() const { return pimpl->size() == 0; }
 
 defs::xy Detector::getModuleGeometry() const {
-    return pimpl->getNumberOfDetectors();
+    return pimpl->getNumberOfModules();
 }
 
 Result<defs::xy> Detector::getModuleSize(Positions pos) const {
@@ -256,7 +256,7 @@ void Detector::setSettingsPath(const std::string &value, Positions pos) {
 }
 
 void Detector::loadTrimbits(const std::string &fname, Positions pos) {
-    pimpl->Parallel(&Module::loadSettingsFile, pos, fname);
+    pimpl->Parallel(&Module::loadTrimbits, pos, fname);
 }
 
 Result<int> Detector::getAllTrimbits(Positions pos) const {
@@ -921,8 +921,8 @@ Result<int> Detector::getNumberofUDPDestinations(Positions pos) const {
     return pimpl->Parallel(&Module::getNumberofUDPDestinations, pos);
 }
 
-void Detector::setNumberofUDPDestinations(const int value, Positions pos) {
-    pimpl->Parallel(&Module::setNumberofUDPDestinations, pos, value);
+void Detector::clearUDPDestinations(Positions pos) {
+    pimpl->Parallel(&Module::clearUDPDestinations, pos);
 }
 
 Result<int> Detector::getFirstUDPDestination(Positions pos) const {

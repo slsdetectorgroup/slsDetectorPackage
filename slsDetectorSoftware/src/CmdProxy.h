@@ -529,7 +529,8 @@ class CmdProxy {
 
     void Call(const std::string &command,
               const std::vector<std::string> &arguments, int detector_id = -1,
-              int action = -1, std::ostream &os = std::cout);
+              int action = -1, std::ostream &os = std::cout,
+              int receiver_id = -1);
 
     bool ReplaceIfDepreciated(std::string &command);
     size_t GetFunctionMapSize() const noexcept { return functions.size(); };
@@ -541,6 +542,7 @@ class CmdProxy {
     std::string cmd;
     std::vector<std::string> args;
     int det_id{-1};
+    int rx_id{-1};
 
     template <typename V> std::string OutStringHex(const V &value) {
         if (value.equal())
@@ -859,6 +861,7 @@ class CmdProxy {
         {"selinterface", &CmdProxy::selinterface},
         {"udp_dstlist", &CmdProxy::UDPDestinationList},
         {"udp_numdst", &CmdProxy::udp_numdst},
+        {"udp_cleardst", &CmdProxy::udp_cleardst},
         {"udp_firstdst", &CmdProxy::udp_firstdst},
         {"udp_srcip", &CmdProxy::udp_srcip},
         {"udp_srcip2", &CmdProxy::udp_srcip2},
@@ -1535,11 +1538,13 @@ class CmdProxy {
         "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. "
         "Effective only when number of interfaces is 1. Default: 0 (outer)");
 
-    INTEGER_COMMAND_VEC_ID(udp_numdst, getNumberofUDPDestinations,
-                           setNumberofUDPDestinations, StringTo<int>,
-                           "[1 - 32]\n\t[Jungfrau][Eiger] One can set upto 32 "
+    GET_COMMAND(udp_numdst, getNumberofUDPDestinations,
+                           "\n\t[Jungfrau][Eiger] One can enter upto 32 "
                            "destinations that the detector will stream images "
-                           "out in a round robin fashion. Default: 1");
+                           "out in a round robin fashion. This is get only command. Default: 1");
+
+    EXECUTE_SET_COMMAND(udp_cleardst, clearUDPDestinations,
+                        "\n\tClears udp destination details on the detector.");
 
     INTEGER_COMMAND_VEC_ID(
         udp_firstdst, getFirstUDPDestination, setFirstUDPDestination,

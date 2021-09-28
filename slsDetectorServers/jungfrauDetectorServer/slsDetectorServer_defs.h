@@ -3,8 +3,8 @@
 #include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API  0x171220
-#define REQRD_FRMWRE_VRSN_BOARD2 0x210621 // 1.0 pcb (version = 010)
-#define REQRD_FRMWRE_VRSN        0x210622 // 2.0 pcb (version = 011)
+#define REQRD_FRMWRE_VRSN_BOARD2 0x210831 // 1.0 pcb (version = 010)
+#define REQRD_FRMWRE_VRSN        0x210910 // 2.0 pcb (version = 011)
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 
@@ -67,9 +67,9 @@ enum DACINDEX {
 #define NSPECIALDACS                         (3)
 #define SPECIALDACINDEX                      {J_VREF_PRECH, J_VREF_DS, J_VREF_COMP};
 #define SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS                                      \
-    { 1000, 500, 400 }
+    { 1450, 480, 420 }
 #define SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS                                   \
-    { 1500, 550, 450 }
+    { 1450, 480, 420 }
 
 enum NETWORKINDEX { TXN_FRAME, FLOWCTRL_10G };
 enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
@@ -141,16 +141,28 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define ADC_PORT_INVERT_VAL        (0x5A5A5A5A)
 #define ADC_PORT_INVERT_BOARD2_VAL (0x453b2a9c)
 
-// 2.0 pcb
+// 2.0 pcb (chipv1.1)
 #define SAMPLE_ADC_FULL_SPEED                                                  \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_1_VAL + SAMPLE_DECMT_FACTOR_FULL_VAL) // 0x100
+     SAMPLE_DGTL_SAMPLE_0_VAL + SAMPLE_DECMT_FACTOR_FULL_VAL) // 0x0000
 #define SAMPLE_ADC_HALF_SPEED                                                  \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_3_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1310
+     SAMPLE_DGTL_SAMPLE_1_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1110
 #define SAMPLE_ADC_QUARTER_SPEED                                               \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_3_VAL +                 \
+     SAMPLE_DGTL_SAMPLE_2_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2230
+
+// 2.0 pcb (chipv1.0)
+#define SAMPLE_ADC_FULL_SPEED_CHIP10                                           \
+    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
+     SAMPLE_DGTL_SAMPLE_1_VAL + SAMPLE_DECMT_FACTOR_FULL_VAL) // 0x0100
+#define SAMPLE_ADC_HALF_SPEED_CHIP10                                           \
+    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
+     SAMPLE_DGTL_SAMPLE_3_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1310
+#define SAMPLE_ADC_QUARTER_SPEED_CHIP10                                        \
+    (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_3_VAL +                 \
      SAMPLE_DGTL_SAMPLE_6_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2630
+
 // 1.0 pcb (2 resistor network)
 #define SAMPLE_ADC_HALF_SPEED_BOARD2                                           \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
@@ -159,13 +171,13 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
      SAMPLE_DGTL_SAMPLE_6_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2610
 
-#define ADC_PHASE_FULL_SPEED           (150) // 2.0 pcb
-#define ADC_PHASE_HALF_SPEED           (200) // 2.0 pcb
-#define ADC_PHASE_QUARTER_SPEED        (200) // 2.0 pcb
+#define ADC_PHASE_FULL_SPEED           (175) // 2.0 pcb
+#define ADC_PHASE_HALF_SPEED           (175) // 2.0 pcb
+#define ADC_PHASE_QUARTER_SPEED        (175) // 2.0 pcb
 #define ADC_PHASE_HALF_SPEED_BOARD2    (110)  // 1.0 pcb (2 resistor network)
 #define ADC_PHASE_QUARTER_SPEED_BOARD2 (220)  // 1.0 pcb (2 resistor network)
 
-#define DBIT_PHASE_FULL_SPEED           (85)  // 2.0 pcb
+#define DBIT_PHASE_FULL_SPEED           (100) // 2.0 pcb
 #define DBIT_PHASE_HALF_SPEED           (150) // 2.0 pcb
 #define DBIT_PHASE_QUARTER_SPEED        (150) // 2.0 pcb
 #define DBIT_PHASE_HALF_SPEED_BOARD2    (150) // 1.0 pcb (2 resistor network)

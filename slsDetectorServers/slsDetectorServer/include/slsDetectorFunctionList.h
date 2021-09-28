@@ -89,6 +89,7 @@ u_int16_t getHardwareSerialNumber();
 #ifdef JUNGFRAUD
 int isHardwareVersion2();
 int getChipVersion();
+void setChipVersion(int version);
 #endif
 #ifndef EIGERD
 u_int32_t getDetectorNumber();
@@ -96,7 +97,7 @@ u_int32_t getDetectorNumber();
 #if defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D)
 int getModuleId(int *ret, char *mess);
 #endif
-#ifdef GOTTHARD2D
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
 void setModuleId(int modid);
 #endif
 u_int64_t getDetectorMAC();
@@ -127,8 +128,10 @@ int resetToDefaultDacs(int hardReset);
 int getDefaultDac(enum DACINDEX index, enum detectorSettings sett, int *retval);
 int setDefaultDac(enum DACINDEX index, enum detectorSettings sett, int value);
 #endif
-#ifdef MYTHEN3D
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
 void setASICDefaults();
+#endif
+#ifdef MYTHEN3D
 void setADIFDefaults();
 #endif
 #if defined(GOTTHARD2D) || defined(EIGERD) || defined(JUNGFRAUD)

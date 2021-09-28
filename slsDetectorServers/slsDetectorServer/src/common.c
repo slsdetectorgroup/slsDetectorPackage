@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h> // readlink
 
+
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue) {
     LOG(logDEBUG1, (" Input Value: %d (Input:(%d - %d), Output:(%d - %d))\n",
@@ -176,5 +177,149 @@ int setModuleIdInFile(char *mess, int arg, char *fileName) {
         LOG(logERROR, (mess));
         return FAIL;
     }
+    return OK;
+}
+
+int verifyChecksumFromBuffer(char *mess, char *clientChecksum, char *buffer,
+                             ssize_t bytes) {
+    LOG(logINFO, ("\tVerifying Checksum...\n"));
+    MD5_CTX c;
+    if (!MD5_Init_SLS(&c)) {
+        strcpy(mess, "Unable to calculate checksum (MD5_Init_SLS)\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (!MD5_Update_SLS(&c, buffer, bytes)) {
+        strcpy(mess, "Unable to calculate checksum (MD5_Update_SLS)\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    return verifyChecksum(mess, clientChecksum, &c, "copied program");
+}
+
+int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
+    LOG(logINFO, ("\tVerifying Checksum...\n"));
+
+    FILE *fp = fopen(fname, "r");
+    if (fp == NULL) {
+        sprintf(mess, "Unable to open %s in read mode to get checksum\n",
+                fname);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    MD5_CTX c;
+    if (!MD5_Init_SLS(&c)) {
+        fclose(fp);
+        strcpy(mess, "Unable to calculate checksum (MD5_Init_SLS)\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    const int readUnitSize = 128;
+    char buf[readUnitSize];
+    ssize_t bytes = fread(buf, 1, readUnitSize, fp);
+    ssize_t totalBytesRead = bytes;
+    while (bytes > 0) {
+        if (!MD5_Update_SLS(&c, buf, bytes)) {
+            fclose(fp);
+            strcpy(mess, "Unable to calculate checksum (MD5_Update_SLS)\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        bytes = fread(buf, 1, readUnitSize, fp);
+        totalBytesRead += bytes;
+    }
+    LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));
+    fclose(fp);
+    return verifyChecksum(mess, clientChecksum, &c, "copied program");
+}
+
+int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
+                            ssize_t fsize) {
+    LOG(logINFO, ("\tVerifying FlashChecksum...\n"));
+
+    FILE *fp = fopen(fname, "r");
+    if (fp == NULL) {
+        sprintf(mess, "Unable to open %s in read mode to get checksum\n",
+                fname);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    MD5_CTX c;
+    if (!MD5_Init_SLS(&c)) {
+        fclose(fp);
+        strcpy(mess, "Unable to calculate checksum (MD5_Init_SLS)\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    const int readUnitSize = 128;
+    char buf[readUnitSize];
+    ssize_t bytes = fread(buf, 1, readUnitSize, fp);
+    ssize_t totalBytesRead = bytes;
+    int oldProgress = 0;
+
+    while (bytes > 0) {
+        int progress = (int)(((double)(totalBytesRead) / fsize) * 100);
+        if (oldProgress != progress) {
+            printf("%d%%\r", progress);
+            fflush(stdout);
+            oldProgress = progress;
+        }
+
+        if (!MD5_Update_SLS(&c, buf, bytes)) {
+            fclose(fp);
+            strcpy(mess, "Unable to calculate checksum (MD5_Update_SLS)\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+
+        // read only until a particular size (drive)
+        if (fsize != 0 && totalBytesRead >= fsize) {
+            LOG(logINFO, ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
+            break;
+        }
+        bytes = fread(buf, 1, readUnitSize, fp);
+        totalBytesRead += bytes;
+    }
+    LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));
+    fclose(fp);
+    int ret = verifyChecksum(mess, clientChecksum, &c, "flash");
+    if (ret == OK) {
+        LOG(logINFO, ("Checksum in Flash verified\n"));
+    }
+    return ret;
+}
+
+int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c, char *msg) {
+    unsigned char out[MD5_DIGEST_LENGTH];
+    if (!MD5_Final_SLS(out, c)) {
+        strcpy(mess, "Unable to calculate checksum (MD5_Final_SLS)\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    char checksum[512];
+    memset(checksum, 0, 512);
+    for (int i = 0; i != MD5_DIGEST_LENGTH; ++i) {
+        char part[16];
+        memset(part, 0, 16);
+        sprintf(part, "%02x", out[i]);
+        strcat(checksum, part);
+    }
+
+    LOG(logDEBUG1,
+        ("\nC checksum: %s\nS checksum: %s\n", clientChecksum, checksum));
+
+    // compare checksum
+    if (strcmp(clientChecksum, checksum)) {
+        sprintf(mess,
+                "Checksum of %s does not match. Client "
+                "checksum:%s, copied checksum:%s\n",
+                msg, clientChecksum, checksum);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tChecksum verified\n"));
     return OK;
 }

@@ -19,7 +19,7 @@ class IpAddr;
 // Free function to avoid dependence on class
 // and avoid the option to free another objects
 // shm by mistake
-void freeSharedMemory(int multiId, int detPos = -1);
+void freeSharedMemory(int detectorIndex, int moduleIndex = -1);
 
 /**
  * \class Detector
@@ -671,8 +671,7 @@ class Detector {
     /** [Jungfrau][Eiger] */
     Result<int> getNumberofUDPDestinations(Positions pos = {}) const;
 
-    /**[Jungfrau][Eiger] Options 1-32 */
-    void setNumberofUDPDestinations(const int value, Positions pos = {});
+    void clearUDPDestinations(Positions pos = {});
 
     /** [Jungfrau] */
     Result<int> getFirstUDPDestination(Positions pos = {}) const;

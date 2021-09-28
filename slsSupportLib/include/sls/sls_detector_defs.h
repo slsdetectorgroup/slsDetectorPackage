@@ -54,7 +54,8 @@
 #define MAX_TRIMEN 100
 
 /** maximum unit size of program sent to detector */
-#define MAX_FPGAPROGRAMSIZE (2 * 1024 * 1024)
+//#define MAX_FPGAPROGRAMSIZE (2 * 1024 * 1024)
+#define MAX_FPGAPROGRAMSIZE (128 * 1024)
 
 #define GET_FLAG -1
 
@@ -499,7 +500,7 @@ typedef struct {
      */
     struct rxParameters {
         detectorType detType{GENERIC};
-        xy numberOfDetector;
+        xy numberOfModule;
         int moduleIndex{0};
         char hostname[MAX_STR_LENGTH];
         int udpInterfaces{1};

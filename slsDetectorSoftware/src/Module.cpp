@@ -5,11 +5,13 @@
 #include "sls/bit_utils.h"
 #include "sls/container_utils.h"
 #include "sls/file_utils.h"
+#include "sls/md5_helper.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/sls_detector_funcs.h"
 #include "sls/string_utils.h"
 #include "sls/versionAPI.h"
+
 #include <algorithm>
 #include <array>
 #include <bitset>
@@ -57,7 +59,7 @@ void Module::freeSharedMemory() {
 }
 
 bool Module::isFixedPatternSharedMemoryCompatible() const {
-    return (shm()->shmversion >= SLS_SHMAPIVERSION);
+    return (shm()->shmversion >= MODULE_SHMAPIVERSION);
 }
 
 std::string Module::getHostname() const { return shm()->hostname; }
@@ -69,7 +71,7 @@ void Module::setHostname(const std::string &hostname,
     client.close();
     try {
         checkDetectorVersionCompatibility();
-        LOG(logINFO) << "Detector Version Compatibility - Success";
+        LOG(logINFO) << "Module Version Compatibility - Success";
     } catch (const DetectorError &e) {
         if (!initialChecks) {
             LOG(logWARNING) << "Bypassing Initial Checks at your own risk!";
@@ -77,7 +79,7 @@ void Module::setHostname(const std::string &hostname,
             throw;
         }
     }
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->detType == EIGER) {
         setActivate(true);
     }
 }
@@ -107,22 +109,21 @@ int64_t Module::getReceiverSoftwareVersion() const {
 // static function
 slsDetectorDefs::detectorType
 Module::getTypeFromDetector(const std::string &hostname, int cport) {
-    LOG(logDEBUG1) << "Getting detector type ";
+    LOG(logDEBUG1) << "Getting Module type ";
     sls::ClientSocket socket("Detector", hostname, cport);
     socket.Send(F_GET_DETECTOR_TYPE);
     socket.Receive<int>(); // TODO! Should we look at this OK/FAIL?
     auto retval = socket.Receive<detectorType>();
-    LOG(logDEBUG1) << "Detector type is " << retval;
+    LOG(logDEBUG1) << "Module type is " << retval;
     return retval;
 }
 
 slsDetectorDefs::detectorType Module::getDetectorType() const {
-    return shm()->myDetectorType;
+    return shm()->detType;
 }
 
 void Module::updateNumberOfChannels() {
-    if (shm()->myDetectorType == CHIPTESTBOARD ||
-        shm()->myDetectorType == MOENCH) {
+    if (shm()->detType == CHIPTESTBOARD || shm()->detType == MOENCH) {
         std::array<int, 2> retvals{};
         sendToDetector(F_GET_NUM_CHANNELS, nullptr, retvals);
         shm()->nChan.x = retvals[0];
@@ -137,9 +138,9 @@ slsDetectorDefs::xy Module::getNumberOfChannels() const {
     return coord;
 }
 
-void Module::updateNumberOfDetector(slsDetectorDefs::xy det) {
-    shm()->numberOfDetector = det;
-    int args[2] = {shm()->numberOfDetector.y, moduleIndex};
+void Module::updateNumberOfModule(slsDetectorDefs::xy det) {
+    shm()->numberOfModule = det;
+    int args[2] = {shm()->numberOfModule.y, moduleIndex};
     sendToDetector(F_SET_POSITION, args, nullptr);
 }
 
@@ -148,7 +149,7 @@ slsDetectorDefs::detectorSettings Module::getSettings() const {
 }
 
 void Module::setSettings(detectorSettings isettings) {
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->detType == EIGER) {
         throw RuntimeError(
             "Cannot set settings for Eiger. Use threshold energy.");
     }
@@ -176,7 +177,7 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
         std::all_of(shm()->trimEnergies.begin(), shm()->trimEnergies.end(),
                     [e_eV](const int &e) { return e != e_eV; });
 
-    sls_detector_module myMod{shm()->myDetectorType};
+    sls_detector_module myMod{shm()->detType};
 
     if (!interpolate) {
         std::string settingsfname = getTrimbitFilename(isettings, e_eV);
@@ -213,7 +214,7 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
     setModule(myMod, trimbits);
     if (getSettings() != isettings) {
         throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
-                           "settings in detector");
+                           "settings in Module");
     }
 
     if (shm()->useReceiverFlag) {
@@ -249,7 +250,7 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
         M_VDCSH
     };
 
-    std::vector<sls_detector_module> myMods{shm()->myDetectorType};
+    std::vector<sls_detector_module> myMods{shm()->detType};
     std::vector<int> energy(e_eV.begin(), e_eV.end());
     // if all energies are same
     if (allEqualTo(energy, energy[0])) {
@@ -307,7 +308,7 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
         }
     }
 
-    sls_detector_module myMod{shm()->myDetectorType};
+    sls_detector_module myMod{shm()->detType};
     myMod = myMods[0];
 
     // if multiple thresholds, combine
@@ -392,7 +393,7 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
     setModule(myMod, trimbits);
     if (getSettings() != isettings) {
         throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
-                           "settings in detector");
+                           "settings in Module");
     }
 
     if (shm()->useReceiverFlag) {
@@ -410,13 +411,13 @@ std::string Module::setSettingsDir(const std::string &dir) {
     return shm()->settingsDir;
 }
 
-void Module::loadSettingsFile(const std::string &fname) {
+void Module::loadTrimbits(const std::string &fname) {
     // find specific file if it has detid in file name (.snxxx)
-    if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
+    if (shm()->detType == EIGER || shm()->detType == MYTHEN3) {
         std::ostringstream ostfn;
         ostfn << fname;
         int moduleIdWidth = 3;
-        if (shm()->myDetectorType == MYTHEN3) {
+        if (shm()->detType == MYTHEN3) {
             moduleIdWidth = 4;
         }
         if ((fname.find(".sn") == std::string::npos) &&
@@ -440,7 +441,7 @@ void Module::setAllTrimbits(int val) {
 }
 
 std::vector<int> Module::getTrimEn() const {
-    if (shm()->myDetectorType != EIGER && shm()->myDetectorType != MYTHEN3) {
+    if (shm()->detType != EIGER && shm()->detType != MYTHEN3) {
         throw RuntimeError("getTrimEn not implemented for this detector.");
     }
     return std::vector<int>(shm()->trimEnergies.begin(),
@@ -448,7 +449,7 @@ std::vector<int> Module::getTrimEn() const {
 }
 
 int Module::setTrimEn(const std::vector<int> &energies) {
-    if (shm()->myDetectorType != EIGER && shm()->myDetectorType != MYTHEN3) {
+    if (shm()->detType != EIGER && shm()->detType != MYTHEN3) {
         throw RuntimeError("setTrimEn not implemented for this detector.");
     }
     if (energies.size() > MAX_TRIMEN) {
@@ -464,7 +465,7 @@ int Module::setTrimEn(const std::vector<int> &energies) {
 }
 
 bool Module::getFlipRows() const {
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->detType == EIGER) {
         const int rxIndex = 0;
         return sendToReceiver<int>(rxIndex, F_GET_FLIP_ROWS_RECEIVER);
     }
@@ -472,7 +473,7 @@ bool Module::getFlipRows() const {
 }
 
 void Module::setFlipRows(bool value) {
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->detType == EIGER) {
         const int rxIndex = -1;
         sendToReceiver<int>(rxIndex, F_SET_FLIP_ROWS_RECEIVER, static_cast<int>(value));
     } else {
@@ -514,7 +515,7 @@ int64_t Module::getExptime(int gateIndex) const {
 
 void Module::setExptime(int gateIndex, int64_t value) {
     int64_t prevVal = value;
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->detType == EIGER) {
         prevVal = getExptime(-1);
     }
     int64_t args[]{static_cast<int64_t>(gateIndex), value};
@@ -570,7 +571,7 @@ int Module::getDynamicRange() const {
 
 void Module::setDynamicRange(int dr) {
     int prev_val = dr;
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->detType == EIGER) {
         prev_val = getDynamicRange();
     }
 
@@ -581,7 +582,7 @@ void Module::setDynamicRange(int dr) {
     }
 
     // update speed
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->detType == EIGER) {
         if (dr == 32) {
             LOG(logINFO) << "Setting Clock to Quarter Speed to cope with "
                             "Dynamic Range of 32";
@@ -991,9 +992,7 @@ int Module::getNumberofUDPDestinations() const {
     return sendToDetector<int>(F_GET_NUM_DEST_UDP);
 }
 
-void Module::setNumberofUDPDestinations(const int value) {
-    sendToDetector(F_SET_NUM_DEST_UDP, value, nullptr);
-}
+void Module::clearUDPDestinations() { sendToDetector(F_CLEAR_ALL_UDP_DEST); }
 
 int Module::getFirstUDPDestination() const {
     return sendToDetector<int>(F_GET_UDP_FIRST_DEST);
@@ -1026,7 +1025,7 @@ void Module::setDestinationUDPIP(const IpAddr ip, const int rxIndex) {
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0LU);
         sendToReceiver(rxIndex,  F_SET_RECEIVER_UDP_IP, ip, retval);
-        LOG(logINFO) << "Setting destination udp mac of detector [" << moduleIndex
+        LOG(logINFO) << "Setting destination udp mac of Module [" << moduleIndex
                      << ", " << rxIndex << "] to " << retval;
         if (rxIndex == 0) {
             sendToDetector(F_SET_DEST_UDP_MAC, retval, nullptr);
@@ -1063,7 +1062,7 @@ void Module::setDestinationUDPIP2(const IpAddr ip, const int rxIndex) {
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0LU);
         sendToReceiver(rxIndex,  F_SET_RECEIVER_UDP_IP2, ip, retval);
-        LOG(logINFO) << "Setting destination udp mac2 of detector " << moduleIndex
+        LOG(logINFO) << "Setting destination udp mac2 of Module " << moduleIndex
                      << " to " << retval;
         if (rxIndex == 0) {
             sendToDetector(F_SET_DEST_UDP_MAC2, retval, nullptr);
@@ -1167,28 +1166,28 @@ void Module::validateUDPConfiguration() {
 
 std::string Module::printReceiverConfiguration(const int rxIndex) {
     std::ostringstream os;
-    os << "\n\nDetector " << moduleIndex << "\nReceiver [" << rxIndex << "] Hostname:\t"
+    os << "\n\nModule " << moduleIndex << "\nReceiver [" << rxIndex << "] Hostname:\t"
        << getReceiverHostname(rxIndex);
 
-    if (shm()->myDetectorType == JUNGFRAU) {
+    if (shm()->detType == JUNGFRAU) {
         os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfaces()
            << "\nSelected Interface:\t" << getSelectedUDPInterface();
     }
     auto t = getDestinationUDPList(rxIndex);
     
-    os << "\nDetector UDP IP:\t" << getSourceUDPIP() << "\nDetector UDP MAC:\t"
-       << getSourceUDPMAC() << "\nReceiver UDP IP:\t" << t.ip
-       << "\nReceiver UDP MAC:\t" << t.mac;
+    os << "\nSource UDP IP:\t" << getSourceUDPIP() << "\nSource UDP MAC:\t"
+       << getSourceUDPMAC() << "\nDestination UDP IP:\t" << t.ip
+       << "\nDestination UDP MAC:\t" << t.mac;
 
-    if (shm()->myDetectorType == JUNGFRAU) {
-        os << "\nDetector UDP IP2:\t" << getSourceUDPIP2()
-           << "\nDetector UDP MAC2:\t" << getSourceUDPMAC2()
-           << "\nReceiver UDP IP2:\t" << t.ip2
-           << "\nReceiver UDP MAC2:\t" << t.mac2;
+    if (shm()->detType == JUNGFRAU) {
+        os << "\nSource UDP IP2:\t" << getSourceUDPIP2()
+           << "\nSource UDP MAC2:\t" << getSourceUDPMAC2()
+           << "\nDestination UDP IP2:\t" << t.ip2
+           << "\nDestination UDP MAC2:\t" << t.mac2;
     }
-    os << "\nReceiver UDP Port:\t" << t.port;
-    if (shm()->myDetectorType == JUNGFRAU || shm()->myDetectorType == EIGER) {
-        os << "\nReceiver UDP Port2:\t" << t.port2;
+    os << "\nDestination UDP Port:\t" << t.port;
+    if (shm()->detType == JUNGFRAU || shm()->detType == EIGER) {
+        os << "\nDestination UDP Port2:\t" << t.port2;
     }
     os << "\n";
     return os.str();
@@ -1280,25 +1279,25 @@ void Module::setReceiverHostname(const std::string &receiverIP, const int rxInde
     sendToDetector(F_GET_RECEIVER_PARAMETERS, nullptr, retval);
 
     // populate from shared memory
-    retval.detType = shm()->myDetectorType;
-    retval.numberOfDetector.x = shm()->numberOfDetector.x;
-    retval.numberOfDetector.y = shm()->numberOfDetector.y;
+    retval.detType = shm()->detType;
+    retval.numberOfModule.x = shm()->numberOfModule.x;
+    retval.numberOfModule.y = shm()->numberOfModule.y;
     retval.moduleIndex = moduleIndex;
     memset(retval.hostname, 0, sizeof(retval.hostname));
     strcpy_safe(retval.hostname, shm()->hostname);
 
     sls::MacAddr retvals[2];
     sendToReceiver(rxIndex,  F_SETUP_RECEIVER, retval, retvals);
-    // update detectors with dest mac
+    // update Modules with dest mac
     if (retval.udp_dstmac == 0 && retvals[0] != 0) {
         LOG(logINFO) << "Setting destination udp mac of "
-                        "detector "
+                        "Module "
                      << moduleIndex << " to " << retvals[0];
         sendToDetector(F_SET_DEST_UDP_MAC, retvals[0], nullptr);
     }
     if (retval.udp_dstmac2 == 0 && retvals[1] != 0) {
         LOG(logINFO) << "Setting destination udp mac2 of "
-                        "detector "
+                        "Module "
                      << moduleIndex << " to " << retvals[1];
         sendToDetector(F_SET_DEST_UDP_MAC2, retvals[1], nullptr);
     }
@@ -1610,7 +1609,7 @@ int64_t Module::getSubExptime() const {
 
 void Module::setSubExptime(int64_t value) {
     int64_t prevVal = value;
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->detType == EIGER) {
         prevVal = getSubExptime();
     }
     sendToDetector(F_SET_SUB_EXPTIME, value, nullptr);
@@ -1977,7 +1976,7 @@ void Module::getVetoPhoton(const int chipIndex,
 
 void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
                            const int energy, const std::string &fname) {
-    if (shm()->myDetectorType != GOTTHARD2) {
+    if (shm()->detType != GOTTHARD2) {
         throw RuntimeError(
             "Set Veto reference is not implemented for this detector");
     }
@@ -2058,7 +2057,7 @@ void Module::setVetoReference(const int gainIndex, const int value) {
 }
 
 void Module::setVetoFile(const int chipIndex, const std::string &fname) {
-    if (shm()->myDetectorType != GOTTHARD2) {
+    if (shm()->detType != GOTTHARD2) {
         throw RuntimeError(
             "Set Veto file is not implemented for this detector");
     }
@@ -2386,7 +2385,7 @@ void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
     auto arg = static_cast<uint32_t>(mode); // TODO! unit?
     sendToDetector(F_SET_READOUT_MODE, arg, nullptr);
     // update #nchan, as it depends on #samples, adcmask,
-    if (shm()->myDetectorType == CHIPTESTBOARD) {
+    if (shm()->detType == CHIPTESTBOARD) {
         updateNumberOfChannels();
     }
     if (shm()->useReceiverFlag) {
@@ -2651,7 +2650,7 @@ void Module::setAdditionalJsonParameter(const std::string &key,
 
 // Advanced
 void Module::programFPGA(std::vector<char> buffer) {
-    switch (shm()->myDetectorType) {
+    switch (shm()->detType) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
     case MOENCH:
@@ -3197,42 +3196,42 @@ slsDetectorDefs::detectorType Module::getDetectorTypeFromShm(int det_id,
     }
 
     shm.OpenSharedMemory();
-    if (verify && shm()->shmversion != SLS_SHMVERSION) {
+    if (verify && shm()->shmversion != MODULE_SHMVERSION) {
         std::ostringstream ss;
         ss << "Single shared memory (" << det_id << "-" << moduleIndex
-           << ":)version mismatch (expected 0x" << std::hex << SLS_SHMVERSION
+           << ":)version mismatch (expected 0x" << std::hex << MODULE_SHMVERSION
            << " but got 0x" << shm()->shmversion << ")" << std::dec
            << ". Clear Shared memory to continue.";
         shm.UnmapSharedMemory();
         throw SharedMemoryError(ss.str());
     }
-    return shm()->myDetectorType;
+    return shm()->detType;
 }
 
 void Module::initSharedMemory(detectorType type, int det_id, bool verify) {
-    shm = SharedMemory<sharedSlsDetector>(det_id, moduleIndex);
+    shm = SharedMemory<sharedModule>(det_id, moduleIndex);
     if (!shm.IsExisting()) {
         shm.CreateSharedMemory();
-        initializeDetectorStructure(type);
+        initializeModuleStructure(type);
     } else {
         shm.OpenSharedMemory();
-        if (verify && shm()->shmversion != SLS_SHMVERSION) {
+        if (verify && shm()->shmversion != MODULE_SHMVERSION) {
             std::ostringstream ss;
             ss << "Single shared memory (" << det_id << "-" << moduleIndex
                << ":) version mismatch (expected 0x" << std::hex
-               << SLS_SHMVERSION << " but got 0x" << shm()->shmversion << ")"
+               << MODULE_SHMVERSION << " but got 0x" << shm()->shmversion << ")"
                << std::dec << ". Clear Shared memory to continue.";
             throw SharedMemoryError(ss.str());
         }
     }
 }
 
-void Module::initializeDetectorStructure(detectorType type) {
-    shm()->shmversion = SLS_SHMVERSION;
+void Module::initializeModuleStructure(detectorType type) {
+    shm()->shmversion = MODULE_SHMVERSION;
     memset(shm()->hostname, 0, MAX_STR_LENGTH);
-    shm()->myDetectorType = type;
-    shm()->numberOfDetector.x = 0;
-    shm()->numberOfDetector.y = 0;
+    shm()->detType = type;
+    shm()->numberOfModule.x = 0;
+    shm()->numberOfModule.y = 0;
     shm()->controlPort = DEFAULT_PORTNO;
     shm()->stopPort = DEFAULT_PORTNO + 1;
     sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
@@ -3243,12 +3242,12 @@ void Module::initializeDetectorStructure(detectorType type) {
     }
     shm()->useReceiverFlag = false;
     shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
-                     (moduleIndex * ((shm()->myDetectorType == EIGER) ? 2 : 1));
+                     (moduleIndex * ((shm()->detType == EIGER) ? 2 : 1));
     shm()->zmqip = IpAddr{};
     shm()->numUDPInterfaces = 1;
     shm()->stoppedFlag = false;
 
-    // get the detector parameters based on type
+    // get the Module parameters based on type
     detParameters parameters{type};
     shm()->nChan.x = parameters.nChanX;
     shm()->nChan.y = parameters.nChanY;
@@ -3259,7 +3258,7 @@ void Module::initializeDetectorStructure(detectorType type) {
 
 void Module::checkDetectorVersionCompatibility() {
     int64_t arg = 0;
-    switch (shm()->myDetectorType) {
+    switch (shm()->detType) {
     case EIGER:
         arg = APIEIGER;
         break;
@@ -3338,7 +3337,7 @@ int Module::sendModule(sls_detector_module *myMod, sls::ClientSocket &client) {
     ts += n;
     LOG(level) << "dacs sent. " << n << " bytes";
 
-    if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
+    if (shm()->detType == EIGER || shm()->detType == MYTHEN3) {
         n = client.Send(myMod->chanregs, sizeof(int) * (myMod->nchan));
         ts += n;
         LOG(level) << "channels sent. " << n << " bytes";
@@ -3386,12 +3385,12 @@ sls_detector_module Module::interpolateTrim(sls_detector_module *a,
                                             const int energy, const int e1,
                                             const int e2, bool trimbits) {
     // dacs specified only for eiger and mythen3
-    if (shm()->myDetectorType != EIGER && shm()->myDetectorType != MYTHEN3) {
+    if (shm()->detType != EIGER && shm()->detType != MYTHEN3) {
         throw NotImplementedError(
             "Interpolation of Trim values not implemented for this detector!");
     }
 
-    sls_detector_module myMod{shm()->myDetectorType};
+    sls_detector_module myMod{shm()->detType};
     enum eiger_DacIndex {
         E_SVP,
         E_VTR,
@@ -3431,7 +3430,7 @@ sls_detector_module Module::interpolateTrim(sls_detector_module *a,
 
     // create copy and interpolate dac lists
     std::vector<int> dacs_to_copy, dacs_to_interpolate;
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->detType == EIGER) {
         dacs_to_copy.insert(
             dacs_to_copy.end(),
             {E_SVP, E_VTR, E_SVN, E_VTGSTV, E_RXB_RB, E_RXB_LB, E_VCN, E_VIS});
@@ -3466,7 +3465,7 @@ sls_detector_module Module::interpolateTrim(sls_detector_module *a,
     }
 
     // Copy irrelevant dacs (without failing)
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->detType == EIGER) {
         // CAL
         if (a->dacs[E_CAL] != b->dacs[E_CAL]) {
             LOG(logWARNING)
@@ -3514,16 +3513,16 @@ std::string Module::getTrimbitFilename(detectorSettings s, int e_eV) {
     }
     std::ostringstream ostfn;
     ostfn << shm()->settingsDir << ssettings << "/" << e_eV << "eV";
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->detType == EIGER) {
         ostfn << "/noise.sn";
-    } else if (shm()->myDetectorType == MYTHEN3) {
+    } else if (shm()->detType == MYTHEN3) {
         ostfn << "/trim.sn";
     } else {
         throw RuntimeError(
             "Settings or trimbit files not defined for this detector.");
     }
     int moduleIdWidth = 3;
-    if (shm()->myDetectorType == MYTHEN3) {
+    if (shm()->detType == MYTHEN3) {
         moduleIdWidth = 4;
     }
     ostfn << std::setfill('0') << std::setw(moduleIdWidth) << std::dec
@@ -3534,10 +3533,10 @@ std::string Module::getTrimbitFilename(detectorSettings s, int e_eV) {
 sls_detector_module Module::readSettingsFile(const std::string &fname,
                                              bool trimbits) {
     LOG(logDEBUG1) << "Read settings file " << fname;
-    sls_detector_module myMod(shm()->myDetectorType);
+    sls_detector_module myMod(shm()->detType);
     // open file
     std::ifstream infile;
-    if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
+    if (shm()->detType == EIGER || shm()->detType == MYTHEN3) {
         infile.open(fname.c_str(), std::ifstream::binary);
     } else {
         infile.open(fname.c_str(), std::ios_base::in);
@@ -3549,7 +3548,7 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
     auto file_size = getFileSize(infile);
 
     // eiger
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->detType == EIGER) {
         infile.read(reinterpret_cast<char *>(myMod.dacs),
                     sizeof(int) * (myMod.ndac));
         infile.read(reinterpret_cast<char *>(&myMod.iodelay),
@@ -3572,7 +3571,7 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
     }
 
     // mythen3 (dacs, trimbits)
-    else if (shm()->myDetectorType == MYTHEN3) {
+    else if (shm()->detType == MYTHEN3) {
         int expected_size = sizeof(int) * myMod.ndac +
                             sizeof(int) * myMod.nchan + sizeof(myMod.reg);
         if (file_size != expected_size) {
@@ -3606,83 +3605,115 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 }
 
 void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
-    uint64_t filesize = buffer.size();
     // send program from memory to detector
-    LOG(logINFO) << "Sending programming binary (from pof) to detector "
+    LOG(logINFO) << "Sending programming binary (from pof) to module "
                  << moduleIndex << " (" << shm()->hostname << ")";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_PROGRAM_FPGA);
+    uint64_t filesize = buffer.size();
     client.Send(filesize);
-    // error in detector at opening file pointer to flash
+
+    // checksum
+    std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
+    LOG(logDEBUG1) << "Checksum:" << checksum;
+    char cChecksum[MAX_STR_LENGTH];
+    memset(cChecksum, 0, MAX_STR_LENGTH);
+    strcpy(cChecksum, checksum.c_str());
+    client.Send(cChecksum);
+
+    //  opening file fail
     if (client.Receive<int>() == FAIL) {
+        std::cout << '\n';
         std::ostringstream os;
-        os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }
 
-    // erasing flash
-    LOG(logINFO) << "Erasing Flash for detector " << moduleIndex << " ("
-                 << shm()->hostname << ")";
-    printf("%d%%\r", 0);
-    std::cout << std::flush;
-    // erasing takes 65 seconds, printing here (otherwise need threads
-    // in server-unnecessary)
-    const int ERASE_TIME = 65;
-    int count = ERASE_TIME + 1;
-    while (count > 0) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        --count;
-        printf(
-            "%d%%\r",
-            static_cast<int>(
-                (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
-        std::cout << std::flush;
-    }
-    printf("\n");
-    LOG(logINFO) << "Writing to Flash to detector " << moduleIndex << " ("
-                 << shm()->hostname << ")";
-    printf("%d%%\r", 0);
-    std::cout << std::flush;
-
     // sending program in parts of 2mb each
     uint64_t unitprogramsize = 0;
     int currentPointer = 0;
-    uint64_t totalsize = filesize;
     while (filesize > 0) {
         unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
         if (unitprogramsize > filesize) {      // less than 2mb
             unitprogramsize = filesize;
         }
-        LOG(logDEBUG1) << "unitprogramsize:" << unitprogramsize
-                       << "\t filesize:" << filesize;
+        LOG(logDEBUG) << "unitprogramsize:" << unitprogramsize
+                      << "\t filesize:" << filesize;
 
         client.Send(&buffer[currentPointer], unitprogramsize);
         if (client.Receive<int>() == FAIL) {
             std::cout << '\n';
             std::ostringstream os;
-            os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"
+            os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
                << " returned error: " << client.readErrorMessage();
             throw RuntimeError(os.str());
         }
         filesize -= unitprogramsize;
         currentPointer += unitprogramsize;
-
-        // print progress
-        printf(
-            "%d%%\r",
-            static_cast<int>(
-                (static_cast<double>(totalsize - filesize) / totalsize) * 100));
-        std::cout << std::flush;
     }
-    std::cout << '\n';
 
-    // fpga has picked up from flash successfully
+    // checksum 
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
-        os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
+    }
+    LOG(logINFO) << "Checksum verified for module " << moduleIndex << " ("
+                 << shm()->hostname << ")";
+
+    // simulating erasing flash
+    {
+        LOG(logINFO) << "(Simulating) Erasing Flash for module " << moduleIndex << " ("
+                    << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // erasing takes 65 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 65;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            --count;
+            printf(
+                "%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            std::cout << std::flush;
+        }
+        printf("\n");
+    }
+
+    // simulating writing to flash
+    {
+        LOG(logINFO) << "(Simulating) Writing to Flash for module " << moduleIndex << " (" << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // writing takes 30 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 30;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            --count;
+            printf(
+                "%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            std::cout << std::flush;
+        }
+        printf("\n");
+    }
+
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw RuntimeError(os.str());
+    }
+    if (moduleIndex == 0) {
+        LOG(logINFO) << "Copied to flash and checksum verified";
     }
 
     LOG(logINFO) << "FPGA programmed successfully";
@@ -3690,23 +3721,76 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
 }
 
 void Module::programFPGAviaNios(std::vector<char> buffer) {
-    LOG(logINFO) << "Sending programming binary (from rbf) to detector "
+    LOG(logINFO) << "Sending programming binary (from rbf) to Module "
                  << moduleIndex << " (" << shm()->hostname << ")";
 
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_PROGRAM_FPGA);
     uint64_t filesize = buffer.size();
     client.Send(filesize);
+
+    // checksum
+    std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
+    LOG(logDEBUG1) << "Checksum:" << checksum;
+    char cChecksum[MAX_STR_LENGTH];
+    memset(cChecksum, 0, MAX_STR_LENGTH);
+    strcpy(cChecksum, checksum.c_str());
+    client.Send(cChecksum);
+
+    // validate file size before sending program
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
-        os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }
     client.Send(buffer);
+
+    // simulating erasing flash
+    {
+        LOG(logINFO) << "(Simulating) Erasing Flash for module " << moduleIndex << " ("
+                    << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // erasing takes 10 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 10;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            --count;
+            printf(
+                "%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            std::cout << std::flush;
+        }
+        printf("\n");
+    }
+
+    // simulating writing to flash
+    {
+        LOG(logINFO) << "(Simulating) Writing to Flash for module " << moduleIndex << " (" << shm()->hostname << ")";
+        printf("%d%%\r", 0);
+        std::cout << std::flush;
+        // writing takes 45 seconds, printing here (otherwise need threads
+        // in server-unnecessary)
+        const int ERASE_TIME = 45;
+        int count = ERASE_TIME + 1;
+        while (count > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            --count;
+            printf(
+                "%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            std::cout << std::flush;
+        }
+        printf("\n");
+    }
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
-        os << "Detector " << moduleIndex << " (" << shm()->hostname << ")"
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }

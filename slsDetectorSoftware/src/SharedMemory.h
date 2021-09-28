@@ -22,8 +22,8 @@
 #include <sys/stat.h> // fstat
 #include <unistd.h>
 
-#define SHM_MULTI_PREFIX "/slsDetectorPackage_multi_"
-#define SHM_SLS_PREFIX   "_sls_"
+#define SHM_DETECTOR_PREFIX "/slsDetectorPackage_detector_"
+#define SHM_MODULE_PREFIX   "_module_"
 #define SHM_ENV_NAME     "SLSDETNAME"
 
 #include <iostream>
@@ -35,13 +35,10 @@ template <typename T> class SharedMemory {
 
   public:
     /**
-     * Constructor
-     * creates the single/multi detector shared memory name
-     * @param multiId multi detector id
-     * @param slsId sls detector id, -1 if a multi detector shared memory
+     * moduleid of -1 creates a detector only shared memory
      */
-    SharedMemory(int multiId, int slsId) {
-        name = ConstructSharedMemoryName(multiId, slsId);
+    SharedMemory(int detectorId, int moduleIndex) {
+        name = ConstructSharedMemoryName(detectorId, moduleIndex);
     }
 
     /**
@@ -208,11 +205,11 @@ template <typename T> class SharedMemory {
     /**
      * Create Shared memory name
      * throws exception if name created is longer than required 255(manpages)
-     * @param multiId multi detector id
-     * @param slsId sls detector id, -1 if a multi detector shared memory
+     * @param detectorId  detector id
+     * @param moduleIndex module id, -1 if a detector shared memory
      * @returns shared memory name
      */
-    std::string ConstructSharedMemoryName(int multiId, int slsId) {
+    std::string ConstructSharedMemoryName(int detectorId, int moduleIndex) {
 
         // using environment path
         std::string sEnvPath;
@@ -223,11 +220,11 @@ template <typename T> class SharedMemory {
         }
 
         std::stringstream ss;
-        if (slsId < 0)
-            ss << SHM_MULTI_PREFIX << multiId << sEnvPath;
+        if (moduleIndex < 0)
+            ss << SHM_DETECTOR_PREFIX << detectorId << sEnvPath;
         else
-            ss << SHM_MULTI_PREFIX << multiId << SHM_SLS_PREFIX << slsId
-               << sEnvPath;
+            ss << SHM_DETECTOR_PREFIX << detectorId << SHM_MODULE_PREFIX
+               << moduleIndex << sEnvPath;
 
         std::string temp = ss.str();
         if (temp.length() > NAME_MAX_LENGTH) {

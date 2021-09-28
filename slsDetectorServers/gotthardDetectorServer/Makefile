@@ -2,17 +2,18 @@ current_dir = $(shell pwd)
 main_inc = ../slsDetectorServer/include/
 main_src = ../slsDetectorServer/src/
 support_lib = ../../slsSupportLib/include/
+md5_dir = ../../slsSupportLib/src/
 
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -std=gnu99 -DGOTTHARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -std=gnu99 -DGOTTHARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)  #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm -lrt -pthread  
 PROGS		= 	gotthardDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS 		= 	slsDetectorFunctionList.c  
-SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c $(main_src)AD9252.c $(main_src)AD9257.c $(main_src)LTC2620.c $(main_src)common.c $(main_src)commonServerFunctions.c $(main_src)/sharedMemory.c
+SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c $(main_src)AD9252.c $(main_src)AD9257.c $(main_src)LTC2620.c $(main_src)common.c $(main_src)commonServerFunctions.c $(main_src)/sharedMemory.c $(md5_dir)md5.c
 OBJS 		= 	$(SRCS:.c=.o) 
 
 all: clean $(PROGS)
@@ -33,10 +34,10 @@ $(PROGS): $(OBJS)
 	mv $(PROGS) $(DESTDIR)
 	cp config_gotthard.txt $(DESTDIR)
 	rm *.gdb
-	rm $(main_src)*.o
+	rm $(main_src)*.o $(md5_dir)*.o
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS) *.o *.gdb $(main_src)*.o
+	rm -rf $(DESTDIR)/$(PROGS) *.o *.gdb $(main_src)*.o $(md5_dir)*.o
 
 
 

@@ -17,6 +17,7 @@
 #include "HDF5VirtualFile.h"
 #endif
 #include "DataStreamer.h"
+#include "sls/container_utils.h"
 #include "sls/sls_detector_exceptions.h"
 
 #include <cerrno>
@@ -56,6 +57,10 @@ bool DataProcessor::GetStartedFlag() { return startedFlag_; }
 
 uint64_t DataProcessor::GetNumFramesCaught() { return numFramesCaught_; }
 
+uint64_t DataProcessor::GetNumCompleteFramesCaught() {
+    return numCompleteFramesCaught_;
+}
+
 uint64_t DataProcessor::GetCurrentFrameIndex() { return currentFrameIndex_; }
 
 uint64_t DataProcessor::GetProcessedIndex() {
@@ -68,6 +73,7 @@ void DataProcessor::ResetParametersforNewAcquisition() {
     StopRunning();
     startedFlag_ = false;
     numFramesCaught_ = 0;
+    numCompleteFramesCaught_ = 0;
     firstIndex_ = 0;
     currentFrameIndex_ = 0;
     firstStreamerFrame_ = true;
@@ -248,6 +254,41 @@ void DataProcessor::LinkDataInMasterFile(const bool silentMode) {
 }
 #endif
 
+void DataProcessor::UpdateMasterFile(bool silentMode) {
+    if (masterFile_) {
+        // final attributes
+        std::unique_ptr<MasterAttributes> masterAttributes;
+        switch (detectorType_) {
+        case GOTTHARD:
+            masterAttributes = sls::make_unique<GotthardMasterAttributes>();
+            break;
+        case JUNGFRAU:
+            masterAttributes = sls::make_unique<JungfrauMasterAttributes>();
+            break;
+        case EIGER:
+            masterAttributes = sls::make_unique<EigerMasterAttributes>();
+            break;
+        case MYTHEN3:
+            masterAttributes = sls::make_unique<Mythen3MasterAttributes>();
+            break;
+        case GOTTHARD2:
+            masterAttributes = sls::make_unique<Gotthard2MasterAttributes>();
+            break;
+        case MOENCH:
+            masterAttributes = sls::make_unique<MoenchMasterAttributes>();
+            break;
+        case CHIPTESTBOARD:
+            masterAttributes = sls::make_unique<CtbMasterAttributes>();
+            break;
+        default:
+            throw sls::RuntimeError(
+                "Unknown detector type to set up master file attributes");
+        }
+        masterAttributes->framesInFile = numFramesCaught_;
+        masterFile_->UpdateMasterFile(masterAttributes.get(), silentMode);
+    }
+}
+
 void DataProcessor::ThreadExecution() {
     char *buffer = nullptr;
     fifo_->PopAddress(buffer);
@@ -306,9 +347,10 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
     sls_detector_header header = rheader->detHeader;
     uint64_t fnum = header.frameNumber;
     currentFrameIndex_ = fnum;
+    numFramesCaught_++;
     uint32_t nump = header.packetNumber;
     if (nump == generalData_->packetsPerFrame) {
-        numFramesCaught_++;
+        numCompleteFramesCaught_++;
     }
 
     LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;

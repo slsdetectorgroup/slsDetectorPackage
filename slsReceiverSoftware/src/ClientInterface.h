@@ -11,7 +11,7 @@ class ServerInterface;
 
 class ClientInterface : private virtual slsDetectorDefs {
     enum numberMode { DEC, HEX };
-    detectorType myDetectorType;
+    detectorType detType;
     int portNumber{0};
     sls::ServerSocket server;
     std::unique_ptr<Implementation> receiver;

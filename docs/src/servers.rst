@@ -41,42 +41,55 @@ Automatic start
 
 One can start the on-board detector server automatically upon powering on the board.
 
-First create a soft link to the binary on board. 
-   .. code-block:: bash
+#. Create a soft link to the binary on board 
+   :
+      .. code-block:: bash
       
-      ln -sf someDetectorServervx.x.x someDetectorServer
-
-Then, do the following depending on the detector type.
+         ln -sf someDetectorServervx.x.x someDetectorServer
 
 
-Eiger
-   .. code-block:: bash
+
+#. Do the following depending on the detector type :
+
+   Eiger
+      .. code-block:: bash
+         
+         # create script in rc5.d on the board
+         vi /etc/rc5.d/S50board_com.sh
+
+         # enter the following (edit server name)
+         #! /bin/sh
+         /home/root/executables/eigerDetectorServer &> /dev/null &
+         exit 0
+
+   Jungfrau | Moench | CTB | Gotthard I
+      .. code-block:: bash
+
+         # Edit inittab on board
+         vi /etc/inittab
+
+         # enter the following line
+         ttyS0::respawn:/./xxxDetectorServer
+
+
+   Gotthard II | Mythen III
+      .. code-block:: bash
+         
+         # create script in init.d on board
+         vi /etc/init.d/S99detServer.sh
+
+         # enter the following (edit server name)
+         #! /bin/sh
+         cd /root >> /dev/null
+         /root/xxxDetectorServer >> /dev/null &
+
+
+#. Sync, reboot and verify
+   :
+      .. code-block:: bash
       
-      # create script in rc5.d on the board
-      vi /etc/rc5.d/S50board_com.sh
+         sync
+         reboot
 
-      # enter the following (edit server name)
-      #! /bin/sh
-      /home/root/executables/eigerDetectorServer &> /dev/null &
-      exit 0
-
-Jungfrau | Moench | CTB | Gotthard I
-   .. code-block:: bash
-      
-      # Edit inittab on board
-      vi /etc/inittab
-
-      # enter the following line
-      ttyS0::respawn:/./jungfrauDetectorServer
-
-
-Gotthard II | Mythen III
-   .. code-block:: bash
-      
-      # create script in init.d on the board
-      vi /etc/init.d/S99detServer.sh
-
-      # enter the following (edit server name)
-      #! /bin/sh
-      cd /root >> /dev/null
-      /root/mythen3DetectorServer >> /dev/null &
+         # verify
+         ps -ef | grep xxxDetectorServer

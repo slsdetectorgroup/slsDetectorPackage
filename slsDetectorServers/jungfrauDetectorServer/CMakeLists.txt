@@ -13,6 +13,7 @@ add_executable(jungfrauDetectorServer_virtual
     ../slsDetectorServer/src/programFpgaBlackfin.c
     ../slsDetectorServer/src/communication_funcs_UDP.c    
     ../slsDetectorServer/src/sharedMemory.c
+    ../../slsSupportLib/src/md5.c
 )
 
 target_include_directories(jungfrauDetectorServer_virtual

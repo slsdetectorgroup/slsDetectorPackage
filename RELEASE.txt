@@ -1,7 +1,7 @@
-SLS Detector Package 5.2.0 released on 28.07.2021 (Minor Release)
+SLS Detector Package 6.0.0 released on xx.10.2021 (Major Release)
 ===================================================================
 
-This document describes the differences between 5.2.0 and 5.1.0 releases.   
+This document describes the differences between 6.0.0 and 5.2.0 releases.   
 
 
 
@@ -83,16 +83,71 @@ virtual server plots increasing values for every packet.. not every pixel
 3. Firmware Requirements
 ========================
         
-    Gotthard2: 0x210201 ???
+    Eiger
+    =====  
+    Compatible version : 08.09.2020 (v27)
+    
+    Jungfrau
+    ========       
+    Compatible version : 31.08.2021 (v1.2, PCB v1.0) 
+                       : 10.09.2021 (v2.2, PCB v2.0)
 
-    Other detectors no updates from 5.1.0
+    Gotthard
+    ========   
+    Compatible version : 08.02.2018 (50um and 25um Master)
+                       : 09.02.2018 (25 um Slave) 
+
+    Mythen3
+    =======
+    Compatible version : 10.09.2021 (development)
+
+    Gotthard2
+    =========
+    Compatible version : 27.05.2021 (v1.0)
+
+    Moench
+    ======
+    Compatible version : 05.10.2020 (v1.0)
+
+    Ctb
+    ===
+    Compatible version : 05.10.2020 (v1.0)
+
+    Detector Upgrade
+    ================
+
+    The following can be upgraded remotely:
+    Eiger      via bit files
+    Jungfrau   via command <.pof>
+    Mythen3    via command <.rbf>
+    Gotthard2  via command <.rbf> 
+    Moench     via command <.pof>
+    Ctb        via command <.pof>
+
+    The following cannot be upgraded remotely:
+    Gotthard   
+
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+    and
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
 
 
 
 5. Known Issues
 ===============
 
-    No updates from 5.1.0
+    Receiver
+    --------
+    1.  It does not handle readnrows or partial readout. Only the summary
+        is adjusted to print in red. However, it will still write complete
+        images with missing data padded. Roi will be implemented in future
+        that can be complimented with this feature to remove the additional
+        data in files.
+
+    2.  Round robin is not implemented in receiver side, ie. one cannot configure
+        more than 1 receiver at a time. This will/might be done in the future.
 
 
 

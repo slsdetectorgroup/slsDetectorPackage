@@ -19,6 +19,30 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
 1. New Features
 ===============
 
+    Jungfrau server
+    ---------------
+    1.  Features for chipv1.1 incorporated
+
+    2.  chipversion - getchipVersion 
+        gets chip version (1.0 or 1.1)
+        chipv1.1 requires config_jungfrau.txt on detector server.
+    
+    3.  chip configuration (only chipv1.1)
+        powering on the chip and changing settings will configure the chip.
+        Hence, required before acquisition.
+
+    4.  Settings and Gain mode
+        Settings can be gain0 and highgain0. Gain mode can be dynamicgain, 
+        forceswitchg1, forceswitchg2, fixg1, fixg2, fixg0. fixg0 must be 
+        used with EXTRA caution as you can damage the detector.
+        Changing settings also changes dac values of 3 dacs () and reconfigures
+        chip (only v1.1)
+
+    5.  default dacs
+        
+
+
+
     Client
     ------
     1. Setting Mythen3 gain from command line

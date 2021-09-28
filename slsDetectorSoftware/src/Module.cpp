@@ -1080,7 +1080,7 @@ std::string Module::printReceiverConfiguration() {
 
     os << "\nSource UDP IP:\t" << getSourceUDPIP() << "\nSource UDP MAC:\t"
        << getSourceUDPMAC() << "\nDestination UDP IP:\t"
-       << getDestinationUDPIP() << "\nReceiver UDP MAC:\t"
+       << getDestinationUDPIP() << "\nDestination UDP MAC:\t"
        << getDestinationUDPMAC();
 
     if (shm()->detType == JUNGFRAU) {
@@ -1510,7 +1510,7 @@ void Module::setRateCorrection(int64_t t) {
 }
 
 void Module::sendReceiverRateCorrections(const std::vector<int64_t> &t) {
-    LOG(logDEBUG) << "Sending to Module [rate corrections: " << ToString(t)
+    LOG(logDEBUG) << "Sending to receiver 0 [rate corrections: " << ToString(t)
                   << ']';
     auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     receiver.Send(F_SET_RECEIVER_RATE_CORRECT);

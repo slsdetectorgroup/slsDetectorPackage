@@ -154,6 +154,8 @@ Upgrade (from v5.0.0)
 
 Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
 
+Always ensure that the client and server software are of the same release.
+
 
 #. Program from console
     .. code-block:: bash
@@ -222,6 +224,8 @@ Download
 Upgrade (from v5.0.0)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Always ensure that the client and server software are of the same release.
+
 #. Program from console
     .. code-block:: bash
 
@@ -251,6 +255,8 @@ Download
 Upgrade (from v5.0.0)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Always ensure that the client and server software are of the same release.
+
 #. Program from console
     .. code-block:: bash
 
@@ -278,6 +284,8 @@ Upgrade (from v5.0.0)
 
 Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
 
+Always ensure that the client and server software are of the same release.
+
 #. Program from console
     .. code-block:: bash
 
@@ -303,6 +311,8 @@ Upgrade (from v5.0.0)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
+
+Always ensure that the client and server software are of the same release.
 
 #. Program from console
     .. code-block:: bash
@@ -344,26 +354,43 @@ Firmware Troubleshooting with blackfin
 
 5. If one can't list it, read the next section to try to get the blackfin to list it.
 
-How to get back mtd3 drive remotely
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-This might take a few reruns (maybe even 10) until the mtd drive is accessed by the blackfin upon linux startup.
+How to get back mtd3 drive remotely (copying new kernel)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
   .. code-block:: bash
     
-    # step 1: connect to the board
+    # step 1: get the kernel image (uImage.lzma) from slsdetectorgroup
+    # and copy it to pc's tftp folder
+
+    # step 2: connect to the board
     telnet bchipxxx
 
-    # step 2: check if mtd3 drive listed
-    more /proc/mtd
+    #step 3: go to directory for space
+    cd /var/tmp/
 
-    # step 3: tell fpga not to touch flash and reboot
-    echo 9 > /sys/class/gpio/export; 
-    echo out > /sys/class/gpio/gpio9/direction; 
-    echo 0 > /sys/class/gpio/gpio9/value;
+    # step 3: copy kernel to board
+    tftp pcxxx -r uImage.lzma -g
+
+    # step 4: verify kernel copied properly
+    ls -lrt
+    
+    # step 5: erase flash
+    flash_eraseall /dev/mtd1
+    
+    # step 6: copy new image to kernel drive
+    cat uImage.lzma > /dev/mtd1
+    
+    # step 7:
+    sync
+    
+    # step 8:
     reboot
-
-    # step 4: repeat steps 1 - 3 until you see the mtd3 drive
-
+    
+    # step 9: verification
+    telnet bchipxxx
+    uname -a # verify kernel date
+    more /proc/mtd # verify mtd3 is listed
+    
 
 Last Resort using USB Blaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -62,6 +62,7 @@ Welcome to slsDetectorPackage's documentation!
     :maxdepth: 2
 
     servers
+    serverbackground
     serverupgrade
     virtualserver
     serverdefaults

@@ -228,6 +228,8 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
     1.  Disabled port or deactivated (half) modules will not create files.
 
 
+- better control of what is built (PR)?
+- cmake package has hardcoded path to zeromq library
 
 
 3. Firmware Requirements

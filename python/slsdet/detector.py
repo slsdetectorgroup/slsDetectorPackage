@@ -2454,7 +2454,7 @@ class Detector(CppDetectorApi):
         Note
         ----
         Options:
-        (vetoAlgorithm): ALG_HITS, ALG_RAW
+        (vetoAlgorithm): ALG_HITS (default), ALG_RAW
         (streamingInterface): ETHERNET_10GB, LOW_LATENCY_LINK
         Example
         ----------

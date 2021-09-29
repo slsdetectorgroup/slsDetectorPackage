@@ -73,7 +73,6 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
         [Eiger] same as before
         [Jungfrau] Options: 8 - 512, multiples of 8. Default is 512.
 
-
     10. [Gotthard2][Jungfrau] Current source 
         Command line: currentsource, API: getCurrentSource, setCurrentSource
         Enable or disable current source. Default is disabled.
@@ -106,6 +105,7 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
         Command line: vetostream, API: getVetoStream, setVetoStream
         Options: None, local link interface, 10 10GbE, Both
         Default: None
+        10GbE (as before) will enable 2 udp interfaces in receiver.
 
     16. [Gotthard2] Veto algorithm
         Command line: vetoalg, API: getVetoAlgorithm/ setVetoAlgorithm
@@ -121,11 +121,50 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
         Command line: dbitpipeline, API: getDBITPipeline/ setDBITPipeline 
         Set pipeline to latch digital bits. Options: 0-7
 
+    19. [Eiger][Jungfrau] Round Robin commands
+        Command line, udp_dstlist, API: getDestinationUDPList/ 
+        setDestinationUDPList
+        Round robin commands at the moment does not configure the receiver.
+        Set multiple udp destinations in the detector to stream udp data packets 
+        to. Upto 32 destinations. Refer documentation for details.
+
+        Command line, udp_numdst, API: getNumberofUDPDestinations
+
+        [Jungfrau] Command line, udp_firstdst, API: getFirstUDPDestination/ 
+        setFirstUDPDestination
+    
+    20. Command Line Parsing 
+        Parsing of detector index and module index has been modified to 
+        integrate round robin index.
+        [detector index]-[module index]:[round robin index] [command]
+
+        It is backwards compatible.
+        For ease, one can also execute
+        sls_detector_put [module index] [command]
+
+    21. Clear Udp Destination
+        Command line, udp_cleardst, API: clearUDPDestinations
+        This is useful when changing receivers for a detector or for round robin
+        system.
+
+    22. Shared Memory Naming
+        Shared memory name has been changed to reflect a more appropriate naming 
+        scheme.
+
+    23. [Eiger][Mythen3] Blocking trigger 
+        Command line: blockingtrigger, API: sendSoftwareTrigger
+        Sends software trigger signal to detector and blocks till frames are
+        sent out for that trigger.
+
+    24. [Eiger] Data stream enable for ports
+        Command line: datastream, API: getDataStream/ setDataStream
+        Enable or disable each port. Default: enabled
 
     Detector servers
     ----------------
 
-    1.  [Gotthard2] Bad Channels moved to a new register
+    1.  [Gotthard2] Bad Channels moved to a new register, default settings 
+        including clock frequency changed
 
     2.  [Gotthard2] Updated config file in detector server
     
@@ -135,7 +174,21 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
 
     1.  Artifical pixel values increasing by every packet, instead of every pixel.
 
+    2.  All possible features updated.
 
+
+    Receiver
+    --------
+
+    1.  Frames caught in metadata
+        Frames caught by the master receiver is added to master file metadata.
+        Hdf5 and Binary version numbers changed to 6.3
+
+
+    Gui
+    ----
+
+    1. [Mythen3] counters added in settings tab
 
 
 2. Resolved Issues
@@ -147,13 +200,33 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
     1.  [Gotthard2] Tolerance in time parameters. 
         Eg. 220 ns was being set to 215 ns, instead of 222ns.
 
-    1.  [Jungfrau] Stopping in trigger mode and then switching to auto timing mode 
+    2.  [Jungfrau] Stopping in trigger mode and then switching to auto timing mode 
         blocks data streaming from detector. Workaround fix made in 
         detector server to reset core until next firmware release.
 
+    3.  [Jungfrau][CTB][Moench][Gotthard][Gotthard2][Mythen3] Firmware Programming
+        Firmware programming incorporates more validations such as checksum of 
+        program. Always ensure client and server are of same release before 
+        programming firmware.
 
+    4.  [Eiger] Stop sends last frame
+        Stop acquisition will now also send out all complete frames in fifo.
 
-setting number of udp interfaces from 1 to 2, didnt get image in gui 
+    5.  [Eiger] Bottom not rotated in quad mode. Fixed.
+
+    6.  [Mythen3] counter mask effect on vthreshold
+        Setting counter mask changes vth daac values (ie. disabling sets to 2800),
+        vthreshold only changes for enabled counters, setting vth overwrites
+        dac even if counter disabled and when counters enabled, remembers set 
+        values.
+    
+    7.  [Eiger] fast quad fix for loading trimbits
+    
+    Receiver
+    --------
+
+    1.  Disabled port or deactivated (half) modules will not create files.
+
 
 
 

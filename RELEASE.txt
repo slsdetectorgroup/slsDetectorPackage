@@ -7,7 +7,7 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
 
     CONTENTS
     --------
-    1.  New Features
+    1.  New or Changed Features
     2.  Resolved Issues
     3.  Known Issues
     4.  Firmware Requirements
@@ -16,18 +16,20 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
 
 
 
-1. New Features
-===============
+1. New or Changed Features
+==========================
 
-    Jungfrau server
-    ---------------
+    Jungfrau
+    --------
+
     1.  Features for chipv1.1 incorporated
 
-    2.  chipversion - getchipVersion 
+    2.  Chip version
+        Command line: chipversion, API: getchipVersion 
         gets chip version (1.0 or 1.1)
         chipv1.1 requires config_jungfrau.txt on detector server.
     
-    3.  chip configuration (only chipv1.1)
+    3.  Chip configuration (only chipv1.1)
         powering on the chip and changing settings will configure the chip.
         Hence, required before acquisition.
 
@@ -38,7 +40,62 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
         Changing settings also changes dac values of 3 dacs () and reconfigures
         chip (only v1.1)
 
-    5.  default dacs
+    5.  Storage cells (only chipv1.1)
+        Additional number of storage cells not applicable for chipv1.1.
+        Storage cell start is only allowed from 0 - 3 for chipv1.1 
+        (0 - 15 for chipv1.0).
+    
+    6.  Filter cell (only chipv1.1)
+        Command line: filtercell, API: getFilterCell/ setFilterCell
+        Set filter cell. Options: [0-12]. Advanced user command.
+
+    7.  Comparator disable time (only chipv1.1)
+        Command line: comp_disable_time, API: getComparatorDisableTime/ 
+        setComparatorDisableTime 
+        One can customize the period to disable comparator.
+
+    Others
+    ------
+
+    1.  Flip rows [Eiger][Jungfrau]
+        Command line: fliprows, API: getFlipRows/ setFlipRows
+        Previous command: flippeddatax, setBottom/ getBottom
+        [Jungfrau] Flips rows in detector only for HW v2.0.
+        slsReceiver and slsDetectorGui will not flip them again.
+        [Eiger] same as before.
+
+    2.  Read n rows [Eiger][Jungfrau]
+        Command line: readnrows, API: getReadNRows/ setReadNRows
+        Previous Command: readnlines, getPartialReadout/ setPartialReadout
+        [Eiger] same as before
+        [Jungfrau] Options: 8 - 512, multiples of 8. Default is 512.
+
+    2.  Filter Resistor [Gotthard2][Jungfrau]
+        Command line: filterresistor, API: getFilterResistor/ setFilterResistor
+        Previous Command: filter, setFilter/ getFilter
+        Set Filter resistor. Increasing values for increasing resistance.
+        [Jungfrau] only for chipv1.1. Options: [0|1]. Default is 1.
+        [Gotthard2] Options: [0|1|2|3]. Default is 0.
+
+    3.  Current source [Gotthard2][Jungfrau]
+        Command line: currentsource, API: getCurrentSource, setCurrentSource
+        Enable or disable current source. Default is disabled.
+        [Gotthard2] Can only enable or disable.
+        [Jungfrau] Can choose to fix, select source and choose normal or low 
+        current. Normal/ low only for chipv1.1. 
+        Select source is 0-63 for chipv1.0 and a 64 bit mask for chipv1.1. 
+
+    2.  Default dac 
+        Command line: defaultdac, API: getDefaultDac/ setDefaultDac
+        change default value of a dac
+        [Jungfrau][Mythen3] Also change default value of dac for particular 
+        setting.
+
+    3.  Reset dacs
+        Command line: resetdacs, API: resetToDefaultDacs
+        Previous command: defaultdacs
+        Resets dacs to their default values or hard coded values.
+
         
 
 
@@ -49,7 +106,8 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
 
 
     2.  (Gotthard2) veto streaming
-        New command to enable/ disable veto streaming via 2.5GbE or/ and 10GbE (debugging). 
+        New command to enable/ disable veto streaming via 2.5GbE or/ and 10GbE 
+        (debugging). 
         Command: vetostream, Detector::setVetoStream
         
 
@@ -69,6 +127,11 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
 
 2. Resolved Issues
 ==================
+
+    Jungfrau
+    --------
+
+    1.  
 
     Gotthard2 Server
     ----------------
@@ -127,7 +190,7 @@ virtual server plots increasing values for every packet.. not every pixel
 
     Gotthard2
     =========
-    Compatible version : 27.05.2021 (v1.0)
+    Compatible version : 27.05.2021 (development)
 
     Moench
     ======

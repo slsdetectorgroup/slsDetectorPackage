@@ -1933,7 +1933,7 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         filtercell, getFilterCell, setFilterCell, sls::StringTo<int>,
-        "[0-12]\n\t[Jungfrau] Set Filter Cell. Advanced user Command");
+        "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for chipv1.1. Advanced user Command");
 
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft,

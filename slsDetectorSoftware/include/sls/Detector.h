@@ -1236,7 +1236,7 @@ class Detector {
     /** [Jungfrau] Advanced */
     Result<int> getFilterCell(Positions pos = {}) const;
 
-    /** [Jungfrau] Advanced Options[0-12]
+    /** [Jungfrau] Advanced Options[0-12], only for chip v1.1
      */
     void setFilterCell(int cell, Positions pos = {});
 

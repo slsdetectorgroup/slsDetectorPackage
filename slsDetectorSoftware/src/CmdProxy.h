@@ -1381,9 +1381,9 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         readnrows, getReadNRows, setReadNRows, StringTo<int>,
-        "[1 - 256]\n\t[Eiger] Number of rows to readout per half module "
+        "\n\t[1-256]\n\t\t[Eiger] Number of rows to readout per half module "
         "starting from the centre. Options: 0 - 256. 256 is default. The "
-        "permissible values depend on dynamic range and 10Gbe enabled.\n[8-512 (multiple of 8)]\n\t[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.");
+        "permissible values depend on dynamic range and 10Gbe enabled.\n\t[8-512 (multiple of 8)]\n\t\t[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.");
 
     /** temperature */
     GET_COMMAND_NOID(

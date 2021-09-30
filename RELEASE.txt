@@ -7,7 +7,7 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
 
     CONTENTS
     --------
-    1.  New Features
+    1.  New or Changed Features
     2.  Resolved Issues
     3.  Known Issues
     4.  Firmware Requirements
@@ -16,69 +16,221 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
 
 
 
-1. New Features
-===============
+1. New or Changed Features
+==========================
 
-    Client
+    Client 
     ------
-    1. Setting Mythen3 gain from command line
 
+    1.  [Jungfrau] Chip version 
+        Features for chipv1.1 incorporated
+        Command line: chipversion, API: getchipVersion 
+        gets chip version (1.0 or 1.1)
+        chipv1.1 requires config_jungfrau.txt on detector server.
+    
+    2.  [Jungfrau] Chip configuration (only chipv1.1)
+        powering on the chip and changing settings will configure the chip.
+        Hence, required before acquisition.
 
-    2.  (Gotthard2) veto streaming
-        New command to enable/ disable veto streaming via 2.5GbE or/ and 10GbE (debugging). 
-        Command: vetostream, Detector::setVetoStream
+    3.  [Jungfrau] Settings and Gain mode 
+        Settings can be gain0 and highgain0. Gain mode can be dynamicgain, 
+        forceswitchg1, forceswitchg2, fixg1, fixg2, fixg0. fixg0 must be 
+        used with EXTRA caution as you can damage the detector.
+        Changing settings also changes dac values of 3 dacs () and reconfigures
+        chip (only v1.1)
+
+    4.  [Jungfrau] Storage cells (only chipv1.1)
+        Additional number of storage cells not applicable for chipv1.1.
+        Storage cell start is only allowed from 0 - 3 for chipv1.1 
+        (0 - 15 for chipv1.0).
+    
+    5.  [Gotthard2][Jungfrau] Filter Resistor 
+        Command line: filterresistor, API: getFilterResistor/ setFilterResistor
+        Previous Command: filter, setFilter/ getFilter
+        Set Filter resistor. Increasing values for increasing resistance.
+        [Jungfrau] only for chipv1.1. Options: [0|1]. Default is 1.
+        [Gotthard2] Options: [0|1|2|3]. Default is 0.
+
+    6.  [Jungfrau] Filter cell (only chipv1.1)
+        Command line: filtercell, API: getFilterCell/ setFilterCell
+        Set filter cell. Options: [0-12]. Advanced user command.
+
+    7.  [Jungfrau] Comparator disable time (only chipv1.1)
+        Command line: comp_disable_time, API: getComparatorDisableTime/ 
+        setComparatorDisableTime 
+        One can customize the period to disable comparator.
+
+    8.  [Eiger][Jungfrau] Flip rows
+        Command line: fliprows, API: getFlipRows/ setFlipRows
+        Previous command: flippeddatax, setBottom/ getBottom
+        [Jungfrau] Flips rows in detector only for HW v2.0.
+        slsReceiver and slsDetectorGui will not flip them again.
+        [Eiger] same as before.
+
+    9.  [Eiger][Jungfrau] Read n rows
+        Command line: readnrows, API: getReadNRows/ setReadNRows
+        Previous Command: readnlines, getPartialReadout/ setPartialReadout
+        [Eiger] same as before
+        [Jungfrau] Options: 8 - 512, multiples of 8. Default is 512.
+
+    10. [Gotthard2][Jungfrau] Current source 
+        Command line: currentsource, API: getCurrentSource, setCurrentSource
+        Enable or disable current source. Default is disabled.
+        [Gotthard2] Can only enable or disable.
+        [Jungfrau] Can choose to fix, select source and choose normal or low 
+        current. Normal/ low only for chipv1.1. 
+        Select source is 0-63 for chipv1.0 and a 64 bit mask for chipv1.1. 
+
+    11. Default dac 
+        Command line: defaultdac, API: getDefaultDac/ setDefaultDac
+        change default value of a dac
+        [Jungfrau][Mythen3] Also change default value of dac for particular 
+        setting.
+
+    12. Reset dacs
+        Command line: resetdacs, API: resetToDefaultDacs
+        Previous command: defaultdacs
+        Resets dacs to their default values or hard coded values.
         
+    13. [Mythen3] Gain Capacitance
+        Command line: gaincaps, API: getGainCaps/ setGainCaps
+        Set various gain capacitances.
 
-    2.  (Gotthard2) veto algorithm
-        New command to set veto algorithm for 2.5GbE or 10GbE (debugging). 
-        Command: vetoalg, Detector::setVetoAlgorithm
+    14. [Gotthard2] Veto Streaming from chip
+        Command line: veto, API: getVeto/ setVeto
+        This command used to mean veto streaming from detector. Now, it means
+        veto streaming from chip (New feature). Default is disabled.
 
-    Gotthard2 server
+    15. [Gotthard2] Veto streaming from detector
+        Command line: vetostream, API: getVetoStream, setVetoStream
+        Options: None, local link interface, 10 10GbE, Both
+        Default: None
+        10GbE (as before) will enable 2 udp interfaces in receiver.
+
+    16. [Gotthard2] Veto algorithm
+        Command line: vetoalg, API: getVetoAlgorithm/ setVetoAlgorithm
+        Set veto algorithm for each interface.
+        Options: hits, raw
+        
+    17. [Eiger][Gotthard2][Mythen3] Module ID
+        Command line: moduleid, API: getModuleId
+        Previous command (Eiger only): serialnumber, getSerialNumber
+        Unique id read from txt file on detector and streamed out in udp header.
+    
+    18. [Gotthard2]
+        Command line: dbitpipeline, API: getDBITPipeline/ setDBITPipeline 
+        Set pipeline to latch digital bits. Options: 0-7
+
+    19. [Eiger][Jungfrau] Round Robin commands
+        Command line, udp_dstlist, API: getDestinationUDPList/ 
+        setDestinationUDPList
+        Round robin commands at the moment does not configure the receiver.
+        Set multiple udp destinations in the detector to stream udp data packets 
+        to. Upto 32 destinations. Refer documentation for details.
+
+        Command line, udp_numdst, API: getNumberofUDPDestinations
+
+        [Jungfrau] Command line, udp_firstdst, API: getFirstUDPDestination/ 
+        setFirstUDPDestination
+    
+    20. Command Line Parsing 
+        Parsing of detector index and module index has been modified to 
+        integrate round robin index.
+        [detector index]-[module index]:[round robin index] [command]
+
+        It is backwards compatible.
+        For ease, one can also execute
+        sls_detector_put [module index] [command]
+
+    21. Clear Udp Destination
+        Command line, udp_cleardst, API: clearUDPDestinations
+        This is useful when changing receivers for a detector or for round robin
+        system.
+
+    22. Shared Memory Naming
+        Shared memory name has been changed to reflect a more appropriate naming 
+        scheme.
+
+    23. [Eiger][Mythen3] Blocking trigger 
+        Command line: blockingtrigger, API: sendSoftwareTrigger
+        Sends software trigger signal to detector and blocks till frames are
+        sent out for that trigger.
+
+    24. [Eiger] Data stream enable for ports
+        Command line: datastream, API: getDataStream/ setDataStream
+        Enable or disable each port. Default: enabled
+
+    Detector servers
     ----------------
 
-    1.  Bad Channels moved to a new register
+    1.  [Gotthard2] Bad Channels moved to a new register, default settings 
+        including clock frequency changed
+
+    2.  [Gotthard2] Updated config file in detector server
     
 
-    Jungfrau- many Features
+    Virtual servers
+    ----------------
 
-    
+    1.  Artifical pixel values increasing by every packet, instead of every pixel.
+
+    2.  All possible features updated.
+
+
+    Receiver
+    --------
+
+    1.  Frames caught in metadata
+        Frames caught by the master receiver is added to master file metadata.
+        Hdf5 and Binary version numbers changed to 6.3
+
+
+    Gui
+    ----
+
+    1. [Mythen3] counters added in settings tab
+
 
 2. Resolved Issues
 ==================
 
-    Gotthard2 Server
+    Detector Servers
     ----------------
 
-    1.  Tolerance in time parameters. 
+    1.  [Gotthard2] Tolerance in time parameters. 
         Eg. 220 ns was being set to 215 ns, instead of 222ns.
 
-
-
-    Jungfrau Server
-    ----------------
-
-    1.  Stopping in trigger mode and then switching to auto timing mode 
+    2.  [Jungfrau] Stopping in trigger mode and then switching to auto timing mode 
         blocks data streaming from detector. Workaround fix made in 
-        detector server to reset core until firmware release.
+        detector server to reset core until next firmware release.
+
+    3.  [Jungfrau][CTB][Moench][Gotthard][Gotthard2][Mythen3] Firmware Programming
+        Firmware programming incorporates more validations such as checksum of 
+        program. Always ensure client and server are of same release before 
+        programming firmware.
+
+    4.  [Eiger] Stop sends last frame
+        Stop acquisition will now also send out all complete frames in fifo.
+
+    5.  [Eiger] Bottom not rotated in quad mode. Fixed.
+
+    6.  [Mythen3] counter mask effect on vthreshold
+        Setting counter mask changes vth daac values (ie. disabling sets to 2800),
+        vthreshold only changes for enabled counters, setting vth overwrites
+        dac even if counter disabled and when counters enabled, remembers set 
+        values.
+    
+    7.  [Eiger] fast quad fix for loading trimbits
+    
+    Receiver
+    --------
+
+    1.  Disabled port or deactivated (half) modules will not create files.
 
 
-getAutoCompDisable->getAutoComparatorDisable
-filter->filterResistor
-setBottom->setFlipRows
-currentsource expects currentsrcparameters structure instread of bool
+- better control of what is built (PR)?
+- cmake package has hardcoded path to zeromq library
 
-g2: 
-updated config file indetector server
-vetoalg
-vetostream
-serialnumber (put)
-dbitpipeline
-readnlines->readnrows
-serialnumber->moduleid
-
-setting number of udp interfaces from 1 to 2, didnt get image in gui 
-
-virtual server plots increasing values for every packet.. not every pixel
 
 3. Firmware Requirements
 ========================
@@ -103,7 +255,7 @@ virtual server plots increasing values for every packet.. not every pixel
 
     Gotthard2
     =========
-    Compatible version : 27.05.2021 (v1.0)
+    Compatible version : 27.05.2021 (development)
 
     Moench
     ======
@@ -131,6 +283,7 @@ virtual server plots increasing values for every packet.. not every pixel
         https://slsdetectorgroup.github.io/devdoc/firmware.html
     and
         https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
 
 
 

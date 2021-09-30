@@ -2263,7 +2263,7 @@ class Detector(CppDetectorApi):
         [Jungfrau] Set filter capacitor. 
         Note
         ----
-        [Jungfrau] Options: 0-12. Default: 0. Advanced user command.
+        [Jungfrau] Options: 0-12. Default: 0. Advanced user command. Only for chipv1.1.
         """
         return self.getFilterCell()
 
@@ -2454,7 +2454,7 @@ class Detector(CppDetectorApi):
         Note
         ----
         Options:
-        (vetoAlgorithm): ALG_HITS, ALG_RAW
+        (vetoAlgorithm): ALG_HITS (default), ALG_RAW
         (streamingInterface): ETHERNET_10GB, LOW_LATENCY_LINK
         Example
         ----------

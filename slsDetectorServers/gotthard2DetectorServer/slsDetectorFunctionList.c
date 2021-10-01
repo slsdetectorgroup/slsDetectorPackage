@@ -288,11 +288,11 @@ u_int32_t getDetectorNumber() {
 }
 
 int getModuleId(int *ret, char *mess) {
-    return ((bus_r(MOD_ID_REG) & ~MOD_ID_MSK) >> MOD_ID_OFST);
+    return ((bus_r(MOD_ID_REG) & MOD_ID_MSK) >> MOD_ID_OFST);
 }
 
 void setModuleId(int modid) {
-    LOG(logINFOBLUE, ("Setting module id in fpga: %d\n", modid))
+    LOG(logINFOBLUE, ("Setting module id in fpga: 0x%x\n", modid))
     bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) & ~MOD_ID_MSK);
     bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) | ((modid << MOD_ID_OFST) & MOD_ID_MSK));
 }

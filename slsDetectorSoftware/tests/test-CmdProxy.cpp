@@ -2252,18 +2252,20 @@ TEST_CASE("udp_firstdst", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("udp_firstdst", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "udp_firstdst 10\n");
+            REQUIRE(oss.str() == "udp_firstdst 0\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("udp_firstdst", {}, -1, GET, oss);
             REQUIRE(oss.str() == "udp_firstdst 0\n");
         }
+        /*
         {
             std::ostringstream oss;
             proxy.Call("udp_firstdst", {"1"}, -1, PUT, oss);
             REQUIRE(oss.str() == "udp_firstdst 1\n");
         }
+        */
         REQUIRE_THROWS(proxy.Call("udp_firstdst", {"33"}, -1, PUT));
 
         for (int i = 0; i != det.size(); ++i) {
@@ -2291,7 +2293,9 @@ TEST_CASE("udp_srcmac", "[.cmd]") {
         REQUIRE(oss.str() == "udp_srcmac 00:50:c2:42:34:12\n");
     }
     for (int i = 0; i != det.size(); ++i) {
-        det.setSourceUDPMAC(prev_val[i], {i});
+        if (prev_val[i].str() != "00:00:00:00:00:00") {
+            det.setSourceUDPMAC(prev_val[i], {i});
+        }
     }
 }
 

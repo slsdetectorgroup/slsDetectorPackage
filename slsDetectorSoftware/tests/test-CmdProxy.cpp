@@ -2240,7 +2240,8 @@ TEST_CASE("udp_cleardst", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("udp_cleardst", {}, -1, GET));
-    REQUIRE_NOTHROW(proxy.Call("udp_cleardst", {}, -1, PUT));
+    /* dont clear all udp destinations */
+    /*REQUIRE_NOTHROW(proxy.Call("udp_cleardst", {}, -1, PUT));*/
 }
 
 TEST_CASE("udp_firstdst", "[.cmd]") {
@@ -2365,7 +2366,9 @@ TEST_CASE("udp_srcmac2", "[.cmd]") {
             REQUIRE(oss.str() == "udp_srcmac2 00:50:c2:42:34:12\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setSourceUDPMAC2(prev_val[i], {i});
+            if (prev_val[i].str() != "00:00:00:00:00:00") {
+                det.setSourceUDPMAC2(prev_val[i], {i});
+            }
         }
     } else {
         REQUIRE_THROWS(proxy.Call("udp_srcmac2", {}, -1, GET));

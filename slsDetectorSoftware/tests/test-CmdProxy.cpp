@@ -1754,29 +1754,29 @@ TEST_CASE("defaultdac", "[.cmd]") {
             }
         }
         if (det_type == defs::JUNGFRAU) {
-            std::vector<defs::dacIndex> daclist = {defs::VB_COMP, defs::VREF_DS,
+            std::vector<defs::dacIndex> daclist = {defs::VREF_PRECH, defs::VREF_DS,
                                                 defs::VREF_COMP};
             for (auto it : daclist) {
                 auto dacname = sls::ToString(it);
-                auto prev_val = det.getDefaultDac(it, defs::DYNAMICGAIN);
+                auto prev_val = det.getDefaultDac(it, defs::GAIN0);
                 {
                     std::ostringstream oss;
-                    proxy.Call("defaultdac", {dacname, "1000", "dynamicgain"}, -1,
+                    proxy.Call("defaultdac", {dacname, "1000", "gain0"}, -1,
                             PUT, oss);
                     REQUIRE(oss.str() ==
                             std::string("defaultdac ") + dacname +
-                                std::string(" dynamicgain 1000\n"));
+                                std::string(" gain0 1000\n"));
                 }
                 {
                     std::ostringstream oss;
-                    proxy.Call("defaultdac", {dacname, "dynamicgain"}, -1, GET,
+                    proxy.Call("defaultdac", {dacname, "gain0"}, -1, GET,
                                oss);
                     REQUIRE(oss.str() ==
                             std::string("defaultdac ") + dacname +
-                                std::string(" dynamicgain 1000\n"));
+                                std::string(" gain0 1000\n"));
                 }
                 for (int i = 0; i != det.size(); ++i) {
-                    det.setDefaultDac(it, prev_val[i], defs::DYNAMICGAIN, {i});
+                    det.setDefaultDac(it, prev_val[i], defs::GAIN0, {i});
                 }
             }
         }

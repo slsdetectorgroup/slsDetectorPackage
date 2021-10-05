@@ -6,6 +6,7 @@ pybind11_add_module(_slsdet
     src/network.cpp
     src/pattern.cpp
     src/scan.cpp
+    src/current.cpp
 )
 
 target_link_libraries(_slsdet PUBLIC 

@@ -1991,7 +1991,7 @@ class Detector(CppDetectorApi):
         return ut.reduce_time(self.getMeasuredSubFramePeriod())
 
     """
-    Jungfrau specific
+    ------------------<<<Jungfrau specific>>>-------------------------
     """
 
     @property
@@ -2211,6 +2211,24 @@ class Detector(CppDetectorApi):
     @gainmode.setter
     def gainmode(self, value):
         self.setGainMode(value)
+
+    @property
+    def currentsource(self):
+        """
+        [Gotthard2] 
+        currentsource [0|1]
+		Enable or disable current source. Default is disabled.
+
+        [Jungfrau]
+	    currentsource [0|1] [fix|nofix] [select source] [(only for chipv1.1)normal|low]
+		Disable or enable current source with some parameters. The select source is 0-63 for chipv1.0 and a 64 bit mask for chipv1.1. To disable, one needs only one argument '0'.
+
+        """
+        return element_if_equal(self.getCurrentSource())
+
+    @currentsource.setter
+    def currentsource(self, cs):
+        ut.set_using_dict(self.setCurrentSource, cs)
 
     """
     ---------------------------<<<Gotthard2 specific>>>---------------------------

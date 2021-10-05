@@ -287,7 +287,7 @@ int getModuleId(int *ret, char *mess) {
 }
 
 void setModuleId(int modid) {
-    LOG(logINFOBLUE, ("Setting module id in fpga: 0x%x\n", modid))
+    LOG(logINFOBLUE, ("Setting module id in fpga: %d\n", modid))
     bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) & ~MOD_ID_MSK);
     bus_w(MOD_ID_REG,
           bus_r(MOD_ID_REG) | ((modid << MOD_ID_OFST) & MOD_ID_MSK));

@@ -300,7 +300,7 @@ int isHardwareVersion2() {
 
 int getChipVersion() {
     // chip v1.1
-    if (bus_r(DAQ_REG | DAQ_CHIP11_VRSN_MSK)) {
+    if (bus_r(DAQ_REG) & DAQ_CHIP11_VRSN_MSK) {
         return 11;
     }
     // chip v1.0

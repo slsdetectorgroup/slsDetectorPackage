@@ -69,7 +69,6 @@ enum detFuncs {
     F_GET_ROI,
     F_LOCK_SERVER,
     F_GET_LAST_CLIENT_IP,
-    F_SET_PORT,
     F_ENABLE_TEN_GIGA,
     F_SET_ALL_TRIMBITS,
     F_SET_PATTERN_IO_CONTROL,
@@ -258,7 +257,6 @@ enum detFuncs {
     F_EXEC_RECEIVER_COMMAND,
     F_LOCK_RECEIVER,
     F_GET_LAST_RECEIVER_CLIENT_IP,
-    F_SET_RECEIVER_PORT,
     F_GET_RECEIVER_VERSION,
     F_RECEIVER_SET_ROI,
     F_RECEIVER_SET_NUM_FRAMES,
@@ -427,7 +425,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_ROI:							return "F_GET_ROI";
 	case F_LOCK_SERVER:						return "F_LOCK_SERVER";
 	case F_GET_LAST_CLIENT_IP:				return "F_GET_LAST_CLIENT_IP";
-	case F_SET_PORT:						return "F_SET_PORT";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
@@ -614,7 +611,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_EXEC_RECEIVER_COMMAND:			return "F_EXEC_RECEIVER_COMMAND";
 	case F_LOCK_RECEIVER: 					return "F_LOCK_RECEIVER";
 	case F_GET_LAST_RECEIVER_CLIENT_IP: 	return "F_GET_LAST_RECEIVER_CLIENT_IP";
-	case F_SET_RECEIVER_PORT: 				return "F_SET_RECEIVER_PORT";
 	case F_GET_RECEIVER_VERSION: 			return "F_GET_RECEIVER_VERSION";
 	case F_RECEIVER_SET_ROI: 				return "F_RECEIVER_SET_ROI";
 	case F_RECEIVER_SET_NUM_FRAMES:			return "F_RECEIVER_SET_NUM_FRAMES";

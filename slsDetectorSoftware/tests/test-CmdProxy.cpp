@@ -345,7 +345,7 @@ TEST_CASE("thresholdnotb", "[.cmd]") {
             std::string senergy = std::to_string(prev_energies[0]);
             std::ostringstream oss1, oss2;
             proxy.Call("thresholdnotb", {senergy, "standard"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "threshold [" + senergy + ", standard]\n");
+            REQUIRE(oss1.str() == "thresholdnotb [" + senergy + ", standard]\n");
             proxy.Call("threshold", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "threshold " + senergy + "\n");
             REQUIRE_THROWS(proxy.Call("thresholdnotb",

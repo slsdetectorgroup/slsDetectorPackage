@@ -2047,17 +2047,17 @@ int setAllTrimbits(int val) {
 }
 
 int getAllTrimbits() {
-    int value = *((detectorModules->chanregs));
     if (detectorModules) {
+        int value = (*((detectorModules->chanregs)));
         for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
             if (*((detectorModules->chanregs) + ichan) != value) {
-                value = -1;
-                break;
+                return -1;
             }
         }
+        LOG(logINFO, ("Value of all Trimbits: %d\n", value));
+        return value;
     }
-    LOG(logINFO, ("Value of all Trimbits: %d\n", value));
-    return value;
+    return -1;
 }
 
 int getBebFPGATemp() {

@@ -287,7 +287,7 @@ TEST_CASE("comp_disable_time", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU && det.getChipVersion().squash()*10 == 11) {
         auto prev_val = det.getComparatorDisableTime();
         {
             std::ostringstream oss;

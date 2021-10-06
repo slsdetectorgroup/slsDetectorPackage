@@ -184,6 +184,8 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
         Frames caught by the master receiver is added to master file metadata.
         Hdf5 and Binary version numbers changed to 6.3
 
+    2.  Removed Padding option for Deactivated half modules.
+
 
     Gui
     ----

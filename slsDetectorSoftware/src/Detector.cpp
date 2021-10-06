@@ -1430,13 +1430,6 @@ void Detector::setActive(const bool active, Positions pos) {
     pimpl->Parallel(&Module::setActivate, pos, active);
 }
 
-Result<bool> Detector::getRxPadDeactivatedMode(Positions pos) const {
-    return pimpl->Parallel(&Module::getDeactivatedRxrPaddingMode, pos);
-}
-
-void Detector::setRxPadDeactivatedMode(bool pad, Positions pos) {
-    pimpl->Parallel(&Module::setDeactivatedRxrPaddingMode, pos, pad);
-}
 
 Result<bool> Detector::getPartialReset(Positions pos) const {
     return pimpl->Parallel(&Module::getCounterBit, pos);

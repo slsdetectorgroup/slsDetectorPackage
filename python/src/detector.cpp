@@ -903,14 +903,6 @@ void init_det(py::module &m) {
              (void (Detector::*)(const bool, sls::Positions)) &
                  Detector::setActive,
              py::arg(), py::arg() = Positions{})
-        .def("getRxPadDeactivatedMode",
-             (Result<bool>(Detector::*)(sls::Positions) const) &
-                 Detector::getRxPadDeactivatedMode,
-             py::arg() = Positions{})
-        .def("setRxPadDeactivatedMode",
-             (void (Detector::*)(bool, sls::Positions)) &
-                 Detector::setRxPadDeactivatedMode,
-             py::arg(), py::arg() = Positions{})
         .def("getPartialReset",
              (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getPartialReset,

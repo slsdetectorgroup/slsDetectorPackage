@@ -215,9 +215,6 @@ class Implementation : private virtual slsDetectorDefs {
     /** [Eiger] If datastream is disabled, receiver will create dummy data if deactivated
      * padding for that port is enabled (as it will receive nothing from detector) */
     void setDetectorDataStream(const portPosition port, const bool enable);
-    bool getDeactivatedPadding() const;
-    /* [Eiger] */
-    void setDeactivatedPadding(const bool enable);
     int getReadNRows() const;
     /* [Eiger][Jungfrau] */
     void setReadNRows(const int value);
@@ -351,7 +348,6 @@ class Implementation : private virtual slsDetectorDefs {
     bool quadEnable{false};
     bool activated{true};
     std::array<bool, 2> detectorDataStream = {{true, true}};
-    bool deactivatedPaddingEnable{true};
     int readNRows{0};
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};

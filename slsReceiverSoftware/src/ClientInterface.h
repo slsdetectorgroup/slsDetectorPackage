@@ -129,8 +129,6 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_discard_policy(sls::ServerInterface &socket);
     int set_padding_enable(sls::ServerInterface &socket);
     int get_padding_enable(sls::ServerInterface &socket);
-    int set_deactivated_padding_enable(sls::ServerInterface &socket);
-    int get_deactivated_padding_enable(sls::ServerInterface &socket);
     int set_readout_mode(sls::ServerInterface &socket);
     int set_adc_mask(sls::ServerInterface &socket);
     int set_dbit_list(sls::ServerInterface &socket);

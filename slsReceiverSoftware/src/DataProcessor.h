@@ -26,8 +26,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
     DataProcessor(int index, detectorType detectorType, Fifo *fifo,
-                  bool *activated, bool *deactivatedPaddingEnable,
-                  bool *dataStreamEnable, uint32_t *streamingFrequency,
+                  bool *activated, bool *dataStreamEnable, uint32_t *streamingFrequency,
                   uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum,
                   bool *framePadding, std::vector<int> *ctbDbitList,
                   int *ctbDbitOffset, int *ctbAnalogDataBytes,
@@ -161,7 +160,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     detectorType detectorType_;
     bool *dataStreamEnable_;
     bool *activated_;
-    bool *deactivatedPaddingEnable_;
     /** if 0, sending random images with a timer */
     uint32_t *streamingFrequency_;
     uint32_t *streamingTimerInMs_;

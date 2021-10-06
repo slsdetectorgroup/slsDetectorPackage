@@ -1752,6 +1752,8 @@ void configureChip() {
     // only for chipv1.1
     if (getChipVersion() == 11) {
         LOG(logINFOBLUE, ("Configuring chip\n"));
+        // waiting 500 ms before configuring chip
+        usleep(500 * 1000);
         // write same register values back to configure chip
         bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG));
         // default values for current source
@@ -2204,6 +2206,10 @@ void setFilterCell(int iCell) {
 void disableCurrentSource() {
     LOG(logINFO, ("Disabling Current Source\n"));
     bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_ENBL_MSK);
+
+    // default values for current source
+    bus_w(CRRNT_SRC_COL_LSB_REG, BIT32_MASK);
+    bus_w(CRRNT_SRC_COL_MSB_REG, BIT32_MASK);
 }
 
 void enableCurrentSource(int fix, uint64_t select, int normal) {

@@ -167,9 +167,9 @@ void Implementation::setDetectorType(const detectorType d) {
                 i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                 &numberOfTotalFrames, &udpSocketBufferSize,
                 &actualUDPSocketBufferSize, &framesPerFile, &frameDiscardMode,
-                &activated, &detectorDataStream[i], &deactivatedPaddingEnable, &silentMode));
+                &activated, &detectorDataStream[i], &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                i, detType, fifo_ptr, &activated, &deactivatedPaddingEnable,
+                i, detType, fifo_ptr, &activated,
                 &dataStreamEnable, &streamingFrequency, &streamingTimerInMs,
                 &streamingStartFnum, &framePadding, &ctbDbitList,
                 &ctbDbitOffset, &ctbAnalogDataBytes, &hdf5Lib));
@@ -880,12 +880,11 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                     &numberOfTotalFrames, &udpSocketBufferSize,
                     &actualUDPSocketBufferSize, &framesPerFile,
-                    &frameDiscardMode, &activated, &detectorDataStream[i], &deactivatedPaddingEnable,
-                    &silentMode));
+                    &frameDiscardMode, &activated, &detectorDataStream[i], &silentMode));
                 listener[i]->SetGeneralData(generalData);
 
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                    i, detType, fifo_ptr, &activated, &deactivatedPaddingEnable,
+                    i, detType, fifo_ptr, &activated, 
                     &dataStreamEnable, &streamingFrequency, &streamingTimerInMs,
                     &streamingStartFnum, &framePadding, &ctbDbitList,
                     &ctbDbitOffset, &ctbAnalogDataBytes, &hdf5Lib));
@@ -1528,16 +1527,6 @@ void Implementation::setDetectorDataStream(const portPosition port,
     detectorDataStream[index] = enable;
     LOG(logINFO) << "Detector datastream (" << sls::ToString(port)
                  << " Port): " << sls::ToString(detectorDataStream[index]);
-}
-
-bool Implementation::getDeactivatedPadding() const {
-    return deactivatedPaddingEnable;
-}
-
-void Implementation::setDeactivatedPadding(bool enable) {
-    deactivatedPaddingEnable = enable;
-    LOG(logINFO) << "Deactivated Padding Enable: "
-                 << (deactivatedPaddingEnable ? "enabled" : "disabled");
 }
 
 int Implementation::getReadNRows() const { return readNRows; }

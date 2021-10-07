@@ -230,7 +230,6 @@ void function_table() {
     flist[F_GET_ROI] = &get_roi;
     flist[F_LOCK_SERVER] = &lock_server;
     flist[F_GET_LAST_CLIENT_IP] = &get_last_client_ip;
-    flist[F_SET_PORT] = &set_port;
     flist[F_ENABLE_TEN_GIGA] = &enable_ten_giga;
     flist[F_SET_ALL_TRIMBITS] = &set_all_trimbits;
     flist[F_SET_PATTERN_IO_CONTROL] = &set_pattern_io_control;
@@ -2878,43 +2877,6 @@ int get_last_client_ip(int file_des) {
     uint32_t retval = lastClientIP;
     retval = __builtin_bswap32(retval);
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
-}
-
-int set_port(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int p_number = -1;
-    uint32_t oldLastClientIP = 0;
-
-    if (receiveData(file_des, &p_number, sizeof(p_number), INT32) < 0)
-        return printSocketReadError();
-
-    // set only
-    int sd = -1;
-    if ((Server_VerifyLock() == OK)) {
-        // port number too low
-        if (p_number < 1024) {
-            ret = FAIL;
-            sprintf(mess, "%s port Number (%d) too low\n",
-                    (isControlServer ? "control" : "stop"), p_number);
-            LOG(logERROR, (mess));
-        } else {
-            LOG(logINFO, ("Setting %s port to %d\n",
-                          (isControlServer ? "control" : "stop"), p_number));
-            oldLastClientIP = lastClientIP;
-            sd = bindSocket(p_number);
-        }
-    }
-
-    Server_SendResult(file_des, INT32, &p_number, sizeof(p_number));
-    // delete old socket
-    if (ret != FAIL) {
-        closeConnection(file_des);
-        exitServer(sockfd);
-        sockfd = sd;
-        lastClientIP = oldLastClientIP;
-    }
-    return ret;
 }
 
 int enable_ten_giga(int file_des) {

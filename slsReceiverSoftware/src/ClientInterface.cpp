@@ -113,7 +113,6 @@ void ClientInterface::startTCPServer() {
 int ClientInterface::functionTable(){
 	flist[F_LOCK_RECEIVER]					=	&ClientInterface::lock_receiver;
 	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&ClientInterface::get_last_client_ip;
-	flist[F_SET_RECEIVER_PORT]				=	&ClientInterface::set_port;
 	flist[F_GET_RECEIVER_VERSION]			=	&ClientInterface::get_version;
 	flist[F_SETUP_RECEIVER]				    =	&ClientInterface::setup_receiver;
 	flist[F_RECEIVER_SET_ROI]				=	&ClientInterface::set_roi;
@@ -300,21 +299,6 @@ int ClientInterface::lock_receiver(Interface &socket) {
 
 int ClientInterface::get_last_client_ip(Interface &socket) {
     return socket.sendResult(server.getLastClient());
-}
-
-int ClientInterface::set_port(Interface &socket) {
-    auto p_number = socket.Receive<int>();
-    if (p_number < 1024)
-        throw RuntimeError("Port Number: " + std::to_string(p_number) +
-                           " is too low (<1024)");
-
-    LOG(logINFO) << "TCP port set to " << p_number << std::endl;
-    sls::ServerSocket new_server(p_number);
-    new_server.setLockedBy(server.getLockedBy());
-    new_server.setLastClient(server.getThisClient());
-    server = std::move(new_server);
-    socket.sendResult(p_number);
-    return OK;
 }
 
 int ClientInterface::get_version(Interface &socket) {

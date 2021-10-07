@@ -190,7 +190,6 @@ TEST_CASE("rx_tcpport", "[.cmd][.rx]") {
         proxy.Call("rx_tcpport", {}, i, GET, oss);
         REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
     }
-    REQUIRE_THROWS(proxy.Call("rx_tcpport", {"15"}, -1, PUT));
     port = 5754;
     proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
     for (int i = 0; i != det.size(); ++i) {

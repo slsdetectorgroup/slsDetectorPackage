@@ -1554,15 +1554,6 @@ void Module::setActivate(const bool enable) {
     }
 }
 
-bool Module::getDeactivatedRxrPaddingMode() const {
-    return sendToReceiver<int>(F_GET_RECEIVER_DEACTIVATED_PADDING);
-}
-
-void Module::setDeactivatedRxrPaddingMode(bool padding) {
-    sendToReceiver(F_SET_RECEIVER_DEACTIVATED_PADDING,
-                   static_cast<int>(padding), nullptr);
-}
-
 bool Module::getCounterBit() const {
     return (
         !static_cast<bool>(sendToDetector<int>(F_SET_COUNTER_BIT, GET_FLAG)));

@@ -27,8 +27,7 @@
 const std::string DataProcessor::typeName_ = "DataProcessor";
 
 DataProcessor::DataProcessor(int index, detectorType detectorType, Fifo *fifo,
-                             bool *activated, bool *deactivatedPaddingEnable,
-                             bool *dataStreamEnable,
+                             bool *activated, bool *dataStreamEnable,
                              uint32_t *streamingFrequency,
                              uint32_t *streamingTimerInMs,
                              uint32_t *streamingStartFnum, bool *framePadding,
@@ -36,7 +35,6 @@ DataProcessor::DataProcessor(int index, detectorType detectorType, Fifo *fifo,
                              int *ctbAnalogDataBytes, std::mutex *hdf5Lib)
     : ThreadObject(index, typeName_), fifo_(fifo), detectorType_(detectorType),
       dataStreamEnable_(dataStreamEnable), activated_(activated),
-      deactivatedPaddingEnable_(deactivatedPaddingEnable),
       streamingFrequency_(streamingFrequency),
       streamingTimerInMs_(streamingTimerInMs),
       streamingStartFnum_(streamingStartFnum), framePadding_(framePadding),
@@ -169,13 +167,8 @@ void DataProcessor::CreateFirstFiles(
                                       overWriteEnable, silentMode, attr);
     }
 
-    // deactivated with padding enabled, dont write file
-    if (!*activated_ && !*deactivatedPaddingEnable_) {
-        return;
-    }
-
-    // deactivated port, dont write file
-    if (!detectorDataStream) {
+    // deactivated (half module/ single port), dont write file
+    if ((!*activated_) || (!detectorDataStream)) {
         return;
     }
 
@@ -370,10 +363,6 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
 
     // frame padding
     if (*activated_ && *framePadding_ && nump < generalData_->packetsPerFrame)
-        PadMissingPackets(buf);
-
-    // deactivated and padding enabled
-    else if (!*activated_ && *deactivatedPaddingEnable_)
         PadMissingPackets(buf);
 
     // rearrange ctb digital bits (if ctbDbitlist is not empty)

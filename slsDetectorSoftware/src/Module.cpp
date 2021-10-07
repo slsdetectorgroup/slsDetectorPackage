@@ -1215,12 +1215,7 @@ int Module::getReceiverPort() const { return shm()->rxTCPPort; }
 
 int Module::setReceiverPort(int port_number) {
     if (port_number >= 0 && port_number != shm()->rxTCPPort) {
-        if (shm()->useReceiverFlag) {
-            shm()->rxTCPPort =
-                sendToReceiver<int>(F_SET_RECEIVER_PORT, port_number);
-        } else {
-            shm()->rxTCPPort = port_number;
-        }
+        shm()->rxTCPPort = port_number;
     }
     return shm()->rxTCPPort;
 }
@@ -2558,21 +2553,13 @@ void Module::setADCInvert(uint32_t value) {
 int Module::getControlPort() const { return shm()->controlPort; }
 
 void Module::setControlPort(int port_number) {
-    if (strlen(shm()->hostname) > 0) {
-        shm()->controlPort = sendToDetector<int>(F_SET_PORT, port_number);
-    } else {
-        shm()->controlPort = port_number;
-    }
+    shm()->controlPort = port_number;
 }
 
 int Module::getStopPort() const { return shm()->stopPort; }
 
 void Module::setStopPort(int port_number) {
-    if (strlen(shm()->hostname) > 0) {
-        shm()->stopPort = sendToDetectorStop<int>(F_SET_PORT, port_number);
-    } else {
-        shm()->stopPort = port_number;
-    }
+    shm()->stopPort = port_number;
 }
 
 bool Module::getLockDetector() const {

@@ -62,7 +62,6 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     int lock_receiver(sls::ServerInterface &socket);
     int get_last_client_ip(sls::ServerInterface &socket);
-    int set_port(sls::ServerInterface &socket);
     int get_version(sls::ServerInterface &socket);
     int setup_receiver(sls::ServerInterface &socket);
     void setDetectorType(detectorType arg);

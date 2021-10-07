@@ -3490,12 +3490,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
            << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }
-    if (moduleIndex == 0) {
-        LOG(logINFO) << "Copied to flash and checksum verified";
-    }
-
     LOG(logINFO) << "FPGA programmed successfully";
-    rebootController();
 }
 
 void Module::programFPGAviaNios(std::vector<char> buffer) {
@@ -3573,6 +3568,5 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
         throw RuntimeError(os.str());
     }
     LOG(logINFO) << "FPGA programmed successfully";
-    rebootController();
 }
 } // namespace sls

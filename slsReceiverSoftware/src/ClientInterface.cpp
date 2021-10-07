@@ -113,7 +113,6 @@ void ClientInterface::startTCPServer() {
 int ClientInterface::functionTable(){
 	flist[F_LOCK_RECEIVER]					=	&ClientInterface::lock_receiver;
 	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&ClientInterface::get_last_client_ip;
-	flist[F_SET_RECEIVER_PORT]				=	&ClientInterface::set_port;
 	flist[F_GET_RECEIVER_VERSION]			=	&ClientInterface::get_version;
 	flist[F_SETUP_RECEIVER]				    =	&ClientInterface::setup_receiver;
 	flist[F_RECEIVER_SET_ROI]				=	&ClientInterface::set_roi;
@@ -178,8 +177,6 @@ int ClientInterface::functionTable(){
     flist[F_GET_RECEIVER_DISCARD_POLICY]	=   &ClientInterface::get_discard_policy;
 	flist[F_SET_RECEIVER_PADDING]		    =   &ClientInterface::set_padding_enable;
 	flist[F_GET_RECEIVER_PADDING]		    =   &ClientInterface::get_padding_enable;
-	flist[F_SET_RECEIVER_DEACTIVATED_PADDING] = &ClientInterface::set_deactivated_padding_enable;
-	flist[F_GET_RECEIVER_DEACTIVATED_PADDING] = &ClientInterface::get_deactivated_padding_enable;
 	flist[F_RECEIVER_SET_READOUT_MODE] 	    = 	&ClientInterface::set_readout_mode;
 	flist[F_RECEIVER_SET_ADC_MASK]			=	&ClientInterface::set_adc_mask;
 	flist[F_SET_RECEIVER_DBIT_LIST]			=	&ClientInterface::set_dbit_list;
@@ -300,21 +297,6 @@ int ClientInterface::lock_receiver(Interface &socket) {
 
 int ClientInterface::get_last_client_ip(Interface &socket) {
     return socket.sendResult(server.getLastClient());
-}
-
-int ClientInterface::set_port(Interface &socket) {
-    auto p_number = socket.Receive<int>();
-    if (p_number < 1024)
-        throw RuntimeError("Port Number: " + std::to_string(p_number) +
-                           " is too low (<1024)");
-
-    LOG(logINFO) << "TCP port set to " << p_number << std::endl;
-    sls::ServerSocket new_server(p_number);
-    new_server.setLockedBy(server.getLockedBy());
-    new_server.setLastClient(server.getThisClient());
-    server = std::move(new_server);
-    socket.sendResult(p_number);
-    return OK;
 }
 
 int ClientInterface::get_version(Interface &socket) {
@@ -1272,29 +1254,6 @@ int ClientInterface::set_padding_enable(Interface &socket) {
 int ClientInterface::get_padding_enable(Interface &socket) {
     auto retval = static_cast<int>(impl()->getFramePaddingEnable());
     LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
-    return socket.sendResult(retval);
-}
-
-int ClientInterface::set_deactivated_padding_enable(Interface &socket) {
-    auto enable = socket.Receive<int>();
-    if (detType != EIGER) {
-        functionNotImplemented();
-    }
-    if (enable < 0) {
-        throw RuntimeError("Invalid Deactivated padding: " +
-                           std::to_string(enable));
-    }
-    verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting deactivated padding enable: " << enable;
-    impl()->setDeactivatedPadding(enable > 0);
-    return socket.Send(OK);
-}
-
-int ClientInterface::get_deactivated_padding_enable(Interface &socket) {
-    if (detType != EIGER)
-        functionNotImplemented();
-    auto retval = static_cast<int>(impl()->getDeactivatedPadding());
-    LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
     return socket.sendResult(retval);
 }
 

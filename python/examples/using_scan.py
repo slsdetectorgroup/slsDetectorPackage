@@ -15,5 +15,7 @@ sp.dacSettleTime_ns = int(1e9)
 d = Mythen3()
 d.setScan(sp)
 
+#or d.scan = sp
+
 
 

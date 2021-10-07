@@ -87,7 +87,6 @@ int set_roi(int);
 int get_roi(int);
 int lock_server(int);
 int get_last_client_ip(int);
-int set_port(int);
 int calibrate_pedestal(int);
 int enable_ten_giga(int);
 int validateAndSetAllTrimbits(int arg);

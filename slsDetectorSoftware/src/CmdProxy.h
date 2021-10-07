@@ -925,7 +925,7 @@ class CmdProxy {
         {"interruptsubframe", &CmdProxy::interruptsubframe},
         {"measuredperiod", &CmdProxy::measuredperiod},
         {"measuredsubperiod", &CmdProxy::measuredsubperiod},
-        {"activate", &CmdProxy::Activate},
+        {"activate", &CmdProxy::activate},
         {"partialreset", &CmdProxy::partialreset},
         {"pulse", &CmdProxy::PulsePixel},
         {"pulsenmove", &CmdProxy::PulsePixelAndMove},
@@ -1131,7 +1131,6 @@ class CmdProxy {
     std::string ZMQHWM(int action);
     /* Eiger Specific */
     std::string RateCorrection(int action);
-    std::string Activate(int action);
     std::string PulsePixel(int action);
     std::string PulsePixelAndMove(int action);
     std::string PulseChip(int action);
@@ -1856,6 +1855,11 @@ class CmdProxy {
     TIME_GET_COMMAND(measuredsubperiod, getMeasuredSubFramePeriod,
                      "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured sub "
                      "frame period between last sub frame and previous one.");
+
+
+    INTEGER_COMMAND_VEC_ID(
+        activate, getActive, setActive, StringTo<int>,
+        "[0, 1] \n\t[Eiger] 1 is default. 0 deactivates readout and does not send data.");
 
     INTEGER_COMMAND_VEC_ID(
         partialreset, getPartialReset, setPartialReset, StringTo<int>,

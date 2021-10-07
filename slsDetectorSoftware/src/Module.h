@@ -349,8 +349,6 @@ class Module : public virtual slsDetectorDefs {
     int64_t getMeasuredSubFramePeriod() const;
     bool getActivate() const;
     void setActivate(const bool enable);
-    bool getDeactivatedRxrPaddingMode() const;
-    void setDeactivatedRxrPaddingMode(bool padding);
     bool getCounterBit() const;
     void setCounterBit(bool cb);
     void pulsePixel(int n = 0, int x = 0, int y = 0);

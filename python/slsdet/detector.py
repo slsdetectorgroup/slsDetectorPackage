@@ -362,6 +362,21 @@ class Detector(CppDetectorApi):
         """
         return self.getNumberOfFramesFromStart()
 
+
+    @property
+    @element
+    def scan(self):
+        """
+        Pass in a scanParameters object 
+        see python/examples/use_scan.py
+
+        """
+        return self.getScan()
+
+    @scan.setter
+    def scan(self, s):
+        ut.set_using_dict(self.setScan, s)
+
     @property
     @element
     def powerchip(self):
@@ -2213,18 +2228,14 @@ class Detector(CppDetectorApi):
         self.setGainMode(value)
 
     @property
+    @element
     def currentsource(self):
         """
-        [Gotthard2] 
-        currentsource [0|1]
-		Enable or disable current source. Default is disabled.
-
-        [Jungfrau]
-	    currentsource [0|1] [fix|nofix] [select source] [(only for chipv1.1)normal|low]
-		Disable or enable current source with some parameters. The select source is 0-63 for chipv1.0 and a 64 bit mask for chipv1.1. To disable, one needs only one argument '0'.
+        Pass in a currentSrcParameters object
+        see python/examples/use_currentsource.py
 
         """
-        return element_if_equal(self.getCurrentSource())
+        return self.getCurrentSource()
 
     @currentsource.setter
     def currentsource(self, cs):

@@ -2131,6 +2131,7 @@ void Detector::setAdditionalJsonParameter(const std::string &key,
 void Detector::programFPGA(const std::string &fname, Positions pos) {
     std::vector<char> buffer = pimpl->readProgrammingFile(fname);
     pimpl->Parallel(&Module::programFPGA, pos, buffer);
+    rebootController(pos);
 }
 
 void Detector::resetFPGA(Positions pos) {
@@ -2153,7 +2154,6 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
                                        Positions pos) {
     pimpl->Parallel(&Module::copyDetectorServer, pos, sname, hostname);
     programFPGA(fname, pos);
-    rebootController(pos);
 }
 
 Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {

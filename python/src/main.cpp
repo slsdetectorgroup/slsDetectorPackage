@@ -21,6 +21,7 @@ void init_det(py::module &);
 void init_network(py::module &);
 void init_pattern(py::module &);
 void init_scan(py::module &);
+void init_source(py::module &);
 PYBIND11_MODULE(_slsdet, m) {
     m.doc() = R"pbdoc(
         C/C++ API
@@ -37,6 +38,7 @@ PYBIND11_MODULE(_slsdet, m) {
      init_network(m);
      init_pattern(m);
      init_scan(m);
+     init_source(m);
     //  init_experimental(m);
     
 

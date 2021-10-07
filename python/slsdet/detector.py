@@ -362,6 +362,21 @@ class Detector(CppDetectorApi):
         """
         return self.getNumberOfFramesFromStart()
 
+
+    @property
+    @element
+    def scan(self):
+        """
+        Pass in a scanParameters object 
+        see python/examples/use_scan.py
+
+        """
+        return self.getScan()
+
+    @scan.setter
+    def scan(self, s):
+        ut.set_using_dict(self.setScan, s)
+
     @property
     @element
     def powerchip(self):
@@ -1991,7 +2006,7 @@ class Detector(CppDetectorApi):
         return ut.reduce_time(self.getMeasuredSubFramePeriod())
 
     """
-    Jungfrau specific
+    ------------------<<<Jungfrau specific>>>-------------------------
     """
 
     @property
@@ -2211,6 +2226,20 @@ class Detector(CppDetectorApi):
     @gainmode.setter
     def gainmode(self, value):
         self.setGainMode(value)
+
+    @property
+    @element
+    def currentsource(self):
+        """
+        Pass in a currentSrcParameters object
+        see python/examples/use_currentsource.py
+
+        """
+        return self.getCurrentSource()
+
+    @currentsource.setter
+    def currentsource(self, cs):
+        ut.set_using_dict(self.setCurrentSource, cs)
 
     """
     ---------------------------<<<Gotthard2 specific>>>---------------------------

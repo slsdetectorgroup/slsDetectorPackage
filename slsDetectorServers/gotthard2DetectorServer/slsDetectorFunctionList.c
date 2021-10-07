@@ -2083,6 +2083,32 @@ int getVCOFrequency(enum CLKINDEX ind) {
     return ALTERA_PLL_C10_GetVCOFrequency(pllIndex);
 }
 
+int setReadoutSpeed(int val) {
+    switch (val)
+}
+
+int getReadoutSpeed(int* retval) {
+//TODO ASIC and ADIFreg need to check????
+// clkdiv 2, 3, 4, 5?
+    if (clkDivider[READOUT_C0] == SPEED_108_CLKDIV_0 &&
+     clkDivider[READOUT_C1] == SPEED_108_CLKDIV_1 && 
+     getPhase(READOUT_C0, 1) == SPEED_108_CLKPHASE_DEG_1) {
+        *retval = G_108MHZ;
+    }
+
+    else if (clkDivider[READOUT_C0] == SPEED_144_CLKDIV_0 &&
+     clkDivider[READOUT_C1] == SPEED_144_CLKDIV_1 && 
+     getPhase(READOUT_C0, 1) == SPEED_144_CLKPHASE_DEG_1) {
+        *retval = G_144MHZ;
+    }
+    
+    else {
+        *retval = -1;
+        return FAIL;
+    }
+    return OK;
+}
+
 int getMaxClockDivider() { return ALTERA_PLL_C10_GetMaxClockDivider(); }
 
 int setClockDivider(enum CLKINDEX ind, int val) {

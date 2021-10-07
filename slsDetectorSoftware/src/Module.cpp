@@ -600,6 +600,14 @@ void Module::setTimingMode(timingMode value) {
     }
 }
 
+slsDetectorDefs::speedLevel Module::getReadoutSpeed() const {
+    return sendToDetector<speedLevel>(F_GET_READOUT_SPEED);
+}
+
+void Module::setReadoutSpeed(speedLevel value) {
+    sendToDetector<int>(F_SET_READOUT_SPEED, value);
+}
+
 int Module::getClockDivider(int clkIndex) const {
     return sendToDetector<int>(F_GET_CLOCK_DIVIDER, clkIndex);
 }

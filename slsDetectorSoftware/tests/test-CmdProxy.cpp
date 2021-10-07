@@ -889,54 +889,84 @@ TEST_CASE("timinglist", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("timinglist", {}, -1, PUT));
 }
 
-TEST_CASE("speed", "[.cmd]") {
+TEST_CASE("readoutspeed", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getSpeed();
-        // full speed for jungfrau only works for new boards
-        /*
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2) {
+        auto prev_val = det.getReadoutSpeed();
+
+        // full speed for jungfrau only works for new boards (chipv1.1 is with new board [hw1.0 and chipv1.0 not tested here])
+        if ((det_type == defs::JUNGFRAU && det.getChipVersion().squash() * 10 == 11) || (det_type == defs::EIGER))
         {
             std::ostringstream oss1, oss2, oss3, oss4;
-            proxy.Call("speed", {"0"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "speed full_speed\n");
-            proxy.Call("speed", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "speed full_speed\n");
-            proxy.Call("speed", {"full_speed"}, -1, PUT, oss3);
-            REQUIRE(oss3.str() == "speed full_speed\n");
-            proxy.Call("speed", {}, -1, GET, oss4);
-            REQUIRE(oss4.str() == "speed full_speed\n");
+            proxy.Call("readoutspeed", {"0"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "readoutspeed full_speed\n");
+            proxy.Call("readoutspeed", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "readoutspeed full_speed\n");
+            proxy.Call("readoutspeed", {"full_speed"}, -1, PUT, oss3);
+            REQUIRE(oss3.str() == "readoutspeed full_speed\n");
+            proxy.Call("readoutspeed", {}, -1, GET, oss4);
+            REQUIRE(oss4.str() == "readoutspeed full_speed\n");
         }
-        */
-        {
-            std::ostringstream oss1, oss2, oss3, oss4;
-            proxy.Call("speed", {"1"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "speed half_speed\n");
-            proxy.Call("speed", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "speed half_speed\n");
-            proxy.Call("speed", {"half_speed"}, -1, PUT, oss3);
-            REQUIRE(oss3.str() == "speed half_speed\n");
-            proxy.Call("speed", {}, -1, GET, oss4);
-            REQUIRE(oss4.str() == "speed half_speed\n");
+        
+        if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
+            {
+                std::ostringstream oss1, oss2, oss3, oss4;
+                proxy.Call("readoutspeed", {"1"}, -1, PUT, oss1);
+                REQUIRE(oss1.str() == "readoutspeed half_speed\n");
+                proxy.Call("readoutspeed", {}, -1, GET, oss2);
+                REQUIRE(oss2.str() == "readoutspeed half_speed\n");
+                proxy.Call("readoutspeed", {"half_speed"}, -1, PUT, oss3);
+                REQUIRE(oss3.str() == "readoutspeed half_speed\n");
+                proxy.Call("readoutspeed", {}, -1, GET, oss4);
+                REQUIRE(oss4.str() == "readoutspeed half_speed\n");
+            }
+            {
+                std::ostringstream oss1, oss2, oss3, oss4;
+                proxy.Call("readoutspeed", {"2"}, -1, PUT, oss1);
+                REQUIRE(oss1.str() == "readoutspeed quarter_speed\n");
+                proxy.Call("readoutspeed", {}, -1, GET, oss2);
+                REQUIRE(oss2.str() == "readoutspeed quarter_speed\n");
+                proxy.Call("readoutspeed", {"quarter_speed"}, -1, PUT, oss3);
+                REQUIRE(oss3.str() == "readoutspeed quarter_speed\n");
+                proxy.Call("readoutspeed", {}, -1, GET, oss4);
+                REQUIRE(oss4.str() == "readoutspeed quarter_speed\n");
+            }
+            REQUIRE_THROWS(proxy.Call("readoutspeed", {"108"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("readoutspeed", {"144"}, -1, PUT));
         }
-        {
-            std::ostringstream oss1, oss2, oss3, oss4;
-            proxy.Call("speed", {"2"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "speed quarter_speed\n");
-            proxy.Call("speed", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "speed quarter_speed\n");
-            proxy.Call("speed", {"quarter_speed"}, -1, PUT, oss3);
-            REQUIRE(oss3.str() == "speed quarter_speed\n");
-            proxy.Call("speed", {}, -1, GET, oss4);
-            REQUIRE(oss4.str() == "speed quarter_speed\n");
+
+        if (det_type == defs::GOTTHARD2) {
+            {
+                std::ostringstream oss1, oss2, oss3, oss4;
+                proxy.Call("readoutspeed", {"108"}, -1, PUT, oss1);
+                REQUIRE(oss1.str() == "readoutspeed 108\n");
+                proxy.Call("readoutspeed", {}, -1, GET, oss2);
+                REQUIRE(oss2.str() == "readoutspeed 108\n");
+            }
+
+            {
+                std::ostringstream oss1, oss2, oss3, oss4;
+                proxy.Call("readoutspeed", {"144"}, -1, PUT, oss1);
+                REQUIRE(oss1.str() == "readoutspeed 144\n");
+                proxy.Call("readoutspeed", {}, -1, GET, oss2);
+                REQUIRE(oss2.str() == "readoutspeed 144\n");
+            } 
+            REQUIRE_THROWS(proxy.Call("readoutspeed", {"full_speed"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("readoutspeed", {"half_speed"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("readoutspeed", {"quarter_speed"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("readoutspeed", {"0"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("readoutspeed", {"1"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("readoutspeed", {"2"}, -1, PUT));
         }
+
         for (int i = 0; i != det.size(); ++i) {
-            det.setSpeed(prev_val[i], {i});
+            det.setReadoutSpeed(prev_val[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("speed", {"0"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("speed", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("readoutspeed", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("readoutspeed", {}, -1, GET));
     }
 }
 

@@ -457,7 +457,7 @@ void setupDetector() {
         return;
     }
 
-    setClockDivider(RUN_CLK, HALF_SPEED);
+    setReadoutSpeed(HALF_SPEED);
     cleanFifos();
     resetCore();
 
@@ -487,8 +487,6 @@ void setupDetector() {
         // not applicable for chipv1.1
         setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
     }
-    /*setClockDivider(RUN_CLK, HALF_SPEED); depends if all the previous stuff
-     * works*/
     setTiming(DEFAULT_TIMING_MODE);
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 
@@ -1823,11 +1821,7 @@ void configureASICTimer() {
                              ASIC_CTRL_DS_TMR_VAL);
 }
 
-int setClockDivider(enum CLKINDEX ind, int val) {
-    if (ind != RUN_CLK) {
-        LOG(logERROR, ("Unknown clock index %d to set speed\n", ind));
-        return FAIL;
-    }
+int setReadoutSpeed(int val) {
     // stop state machine if running
     if (runBusy()) {
         stopStateMachine();
@@ -1923,23 +1917,21 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     return OK;
 }
 
-int getClockDivider(enum CLKINDEX ind) {
-    if (ind != RUN_CLK) {
-        LOG(logERROR, ("Unknown clock index %d to get speed\n", ind));
-        return -1;
-    }
+int getReadoutSpeed(int* retval) {
     u_int32_t speed = bus_r(CONFIG_REG) & CONFIG_READOUT_SPEED_MSK;
     switch (speed) {
     case CONFIG_FULL_SPEED_40MHZ_VAL:
-        return FULL_SPEED;
+        *retval = FULL_SPEED;
     case CONFIG_HALF_SPEED_20MHZ_VAL:
-        return HALF_SPEED;
+        *retval = HALF_SPEED;
     case CONFIG_QUARTER_SPEED_10MHZ_VAL:
-        return QUARTER_SPEED;
+        retval = QUARTER_SPEED;
     default:
         LOG(logERROR, ("Unknown speed val: %d\n", speed));
-        return -1;
+        *retval == -1;
+        return FAIL;
     }
+    return OK;
 }
 
 int setPhase(enum CLKINDEX ind, int val, int degrees) {

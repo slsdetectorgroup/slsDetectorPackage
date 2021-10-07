@@ -591,7 +591,8 @@ class CmdProxy {
         /* acquisition parameters */
         {"cycles", "triggers"},
         {"cyclesl", "triggersl"},
-        {"clkdivider", "speed"},
+        {"clkdivider", "readoutspeed"},
+        {"speed", "readoutspeed"},
         {"vhighvoltage", "highvoltage"},
         {"digitest", "imagetest"},
         {"filter", "filterresistor"},
@@ -792,7 +793,7 @@ class CmdProxy {
         {"drlist", &CmdProxy::drlist},
         {"timing", &CmdProxy::timing},
         {"timinglist", &CmdProxy::timinglist},
-        {"speed", &CmdProxy::Speed},
+        {"speed", &CmdProxy::ReadoutSpeed},
         {"adcphase", &CmdProxy::Adcphase},
         {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
         {"dbitphase", &CmdProxy::Dbitphase},
@@ -1097,7 +1098,7 @@ class CmdProxy {
     std::string Acquire(int action);
     std::string Exptime(int action);
     std::string DynamicRange(int action);
-    std::string Speed(int action);
+    std::string ReadoutSpeed(int action);
     std::string Adcphase(int action);
     std::string Dbitphase(int action);
     std::string ClockFrequency(int action);

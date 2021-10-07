@@ -690,7 +690,7 @@ void setupDetector() {
     eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
     setParallelMode(DEFAULT_PARALLEL_MODE);
     setOverFlowMode(DEFAULT_READOUT_OVERFLOW32_MODE);
-    setClockDivider(RUN_CLK, DEFAULT_CLK_SPEED); // clk_devider,half speed
+    setReadoutSpeed(DEFAULT_CLK_SPEED); 
     setIODelay(DEFAULT_IO_DELAY);
     setTiming(DEFAULT_TIMING_MODE);
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
@@ -1712,11 +1712,7 @@ int enableTenGigabitEthernet(int val) {
 }
 
 /* eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter */
-int setClockDivider(enum CLKINDEX ind, int val) {
-    if (ind != RUN_CLK) {
-        LOG(logERROR, ("Unknown clock index: %d\n", ind));
-        return FAIL;
-    }
+int setReadoutSpeed(int val) {
     if (val >= 0) {
         LOG(logINFO, ("Setting Read out Speed: %d\n", val));
 #ifndef VIRTUAL
@@ -1732,12 +1728,9 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     return OK;
 }
 
-int getClockDivider(enum CLKINDEX ind) {
-    if (ind != RUN_CLK) {
-        LOG(logERROR, ("Unknown clock index: %d\n", ind));
-        return FAIL;
-    }
-    return eiger_readoutspeed;
+int getReadoutSpeed(int* retval) {
+    *retval = eiger_readoutspeed;
+    return OK;
 }
 
 int setIODelay(int val) {

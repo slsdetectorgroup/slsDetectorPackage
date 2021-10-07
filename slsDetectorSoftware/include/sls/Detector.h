@@ -300,16 +300,20 @@ class Detector {
     /** list of possible timing modes for this detector */
     std::vector<defs::timingMode> getTimingModeList() const;
 
-    /** [Eiger][Jungfrau] */
-    Result<defs::speedLevel> getSpeed(Positions pos = {}) const;
+    /** [Eiger][Jungfrau][Gotthard2] */
+    Result<defs::speedLevel> getReadoutSpeed(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau]
-     * Options: FULL_SPEED, HALF_SPEED, QUARTER_SPEED \n
-     * [Jungfrau] FULL_SPEED option only available from v2.0 boards and with
-     * setting number of interfaces to 2.  \n Also overwrites adcphase to
+    /** [Eiger][Jungfrau][Gotthard2]
+     * [Jungfrau] Options: FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED \n
+     * [Eiger] Options: FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED \n
+     * [Gotthard2] Options: G_108MHZ (Default), G_144MHZ \n
+     * [Jungfrau] FULL_SPEED option only available from v2.0 boards  \n Also overwrites adcphase to
      * recommended default.
      */
-    void setSpeed(defs::speedLevel value, Positions pos = {});
+    void setReadoutSpeed(defs::speedLevel value, Positions pos = {});
+
+    /** list of possible readoutspeed modes for this detector */
+    std::vector<defs::speedLevel> getReadoutSpeedList() const;
 
     /** [Jungfrau][CTB][Moench] */
     Result<int> getADCPhase(Positions pos = {}) const;

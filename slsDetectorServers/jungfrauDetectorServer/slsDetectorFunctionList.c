@@ -1764,8 +1764,9 @@ int powerChip(int on) {
 
 
                 LOG(logINFO, ("\tStarting acq (temp solution)\n"));
-                    bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_START_ACQ_MSK);
-                    bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_START_ACQ_MSK);
+		        cleanFifos();
+                bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_START_ACQ_MSK);
+                bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_START_ACQ_MSK);
                 
                 LOG(logINFO, ("\tStopping acq (temp solution)\n"));
                 bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STOP_ACQ_MSK);

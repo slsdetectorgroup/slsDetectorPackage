@@ -793,7 +793,7 @@ class CmdProxy {
         {"drlist", &CmdProxy::drlist},
         {"timing", &CmdProxy::timing},
         {"timinglist", &CmdProxy::timinglist},
-        {"speed", &CmdProxy::ReadoutSpeed},
+        {"readoutspeed", &CmdProxy::ReadoutSpeed},
         {"adcphase", &CmdProxy::Adcphase},
         {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
         {"dbitphase", &CmdProxy::Dbitphase},

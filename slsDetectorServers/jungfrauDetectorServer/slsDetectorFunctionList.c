@@ -1925,10 +1925,10 @@ int getReadoutSpeed(int* retval) {
     case CONFIG_HALF_SPEED_20MHZ_VAL:
         *retval = HALF_SPEED;
     case CONFIG_QUARTER_SPEED_10MHZ_VAL:
-        retval = QUARTER_SPEED;
+        *retval = QUARTER_SPEED;
     default:
         LOG(logERROR, ("Unknown speed val: %d\n", speed));
-        *retval == -1;
+        *retval = -1;
         return FAIL;
     }
     return OK;

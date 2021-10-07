@@ -637,25 +637,7 @@ std::string CmdProxy::ReadoutSpeed(int action) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            defs::speedLevel t;
-            try {
-                int ival = StringTo<int>(args[0]);
-                switch (ival) {
-                case 0:
-                    t = defs::FULL_SPEED;
-                    break;
-                case 1:
-                    t = defs::HALF_SPEED;
-                    break;
-                case 2:
-                    t = defs::QUARTER_SPEED;
-                    break;
-                default:
-                    throw sls::RuntimeError("Unknown speed " + args[0]);
-                }
-            } catch (...) {
-                t = sls::StringTo<defs::speedLevel>(args[0]);
-            }
+            defs::speedLevel t = sls::StringTo<defs::speedLevel>(args[0]);
             det->setReadoutSpeed(t, std::vector<int>{det_id});
             os << sls::ToString(t) << '\n'; // no args to convert 0,1,2 as well
         } else {

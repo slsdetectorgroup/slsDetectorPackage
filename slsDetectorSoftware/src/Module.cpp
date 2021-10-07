@@ -605,7 +605,7 @@ slsDetectorDefs::speedLevel Module::getReadoutSpeed() const {
 }
 
 void Module::setReadoutSpeed(speedLevel value) {
-    sendToDetector<int>(F_SET_READOUT_SPEED, value);
+    sendToDetector(F_SET_READOUT_SPEED, value, nullptr);
 }
 
 int Module::getClockDivider(int clkIndex) const {

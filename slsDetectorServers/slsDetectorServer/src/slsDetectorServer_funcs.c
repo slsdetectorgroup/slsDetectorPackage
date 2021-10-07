@@ -6021,9 +6021,10 @@ int set_clock_divider(int file_des) {
             modeNotImplemented("clock index (divider set)", args[0]);
         } 
 
+        enum CLKINDEX c = 0;
+        int val = args[1];
         if (ret == OK) {
-            enum CLKINDEX c = (enum CLKINDEX)args[0];
-            int val = args[1];
+            c = (enum CLKINDEX)args[0];
             // validate val range
             if (val < 2 || val > getMaxClockDivider()) {
                 char *clock_names[] = {CLK_NAMES};
@@ -9284,7 +9285,7 @@ int set_readout_speed(int file_des) {
 #endif   
         if (ret == OK) {
             switch (arg) {
-#if defined(EIGERD) || !defined(JUNGFRAUD)
+#if defined(EIGERD) || defined(JUNGFRAUD)
                 case FULL_SPEED:
                 case HALF_SPEED:
                 case QUARTER_SPEED:
@@ -9297,18 +9298,21 @@ int set_readout_speed(int file_des) {
                     modeNotImplemented("readout speed index", arg);
                     break;
             }
-            ret = setReadoutSpeed(arg);
-            if (ret == FAIL) {
-                sprintf(mess, "Could not set readout speed to %d.\n", arg);
-                LOG(logERROR, (mess));
-            } else {
-                ret = getReadoutSpeed(&retval);
-                LOG(logDEBUG1, ("retval readout speed: %d\n", retval));
+            if (ret == OK) {
+                ret = setReadoutSpeed(arg);
                 if (ret == FAIL) {
-                    strcpy(mess, "Could not get readout speed\n");
+                    sprintf(mess, "Could not set readout speed to %d.\n", arg);
                     LOG(logERROR, (mess));
+                } else {
+                    int retval = 0;
+                    ret = getReadoutSpeed(&retval);
+                    LOG(logDEBUG1, ("retval readout speed: %d\n", retval));
+                    if (ret == FAIL) {
+                        strcpy(mess, "Could not get readout speed\n");
+                        LOG(logERROR, (mess));
+                    }
+                    validate(&ret, mess, arg, retval, "set readout speed", DEC);
                 }
-                validate(&ret, mess, arg, retval, "set readout speed", DEC);
             }
         }
 

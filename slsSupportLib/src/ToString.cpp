@@ -707,9 +707,15 @@ template <> defs::detectorSettings StringTo(const std::string &s) {
 template <> defs::speedLevel StringTo(const std::string &s) {
     if (s == "full_speed")
         return defs::FULL_SPEED;
+    if (s == "0")
+        return defs::FULL_SPEED;
     if (s == "half_speed")
         return defs::HALF_SPEED;
+    if (s == "1")
+        return defs::HALF_SPEED;
     if (s == "quarter_speed")
+        return defs::QUARTER_SPEED;
+    if (s == "2")
         return defs::QUARTER_SPEED;
     if (s == "108")
         return defs::G_108MHZ;

@@ -506,6 +506,7 @@ void setupDetector() {
     setCurrentSource(DEFAULT_CURRENT_SOURCE);
     setVetoAlgorithm(DEFAULT_ALGORITHM, LOW_LATENCY_LINK);
     setVetoAlgorithm(DEFAULT_ALGORITHM, ETHERNET_10GB);
+    setReadoutSpeed(DEFAULT_READOUT_SPEED);
 }
 
 void setASICDefaults() {
@@ -2084,7 +2085,36 @@ int getVCOFrequency(enum CLKINDEX ind) {
 }
 
 int setReadoutSpeed(int val) {
-    switch (val)
+    switch (val) {
+        case G_108MHZ:
+            LOG(logINFOBLUE, ("Setting readout speed to 108 MHz\n"));
+            if (setClockDivider(READOUT_C0, SPEED_108_CLKDIV_0) == FAIL) {
+                return FAIL;
+            }
+            if (setClockDivider(READOUT_C1, SPEED_108_CLKDIV_1) == FAIL) {
+                return FAIL;
+            }         
+            if (setPhase(READOUT_C1, SPEED_108_CLKPHASE_DEG_1, 1) == FAIL) {
+                return FAIL;
+            }   
+            break;  
+        case G_144MHZ:
+            LOG(logINFOBLUE, ("Setting readout speed to 144 MHz\n"));
+            if (setClockDivider(READOUT_C0, SPEED_144_CLKDIV_0) == FAIL) {
+                return FAIL;
+            }
+            if (setClockDivider(READOUT_C1, SPEED_144_CLKDIV_1) == FAIL) {
+                return FAIL;
+            }         
+            if (setPhase(READOUT_C1, SPEED_144_CLKPHASE_DEG_1, 1) == FAIL) {
+                return FAIL;
+            }   
+            break; 
+        default:
+            LOG(logERROR, ("Unknown readout speed %d\n", val));
+            return FAIL;
+    }
+    return OK;
 }
 
 int getReadoutSpeed(int* retval) {
@@ -2092,13 +2122,13 @@ int getReadoutSpeed(int* retval) {
 // clkdiv 2, 3, 4, 5?
     if (clkDivider[READOUT_C0] == SPEED_108_CLKDIV_0 &&
      clkDivider[READOUT_C1] == SPEED_108_CLKDIV_1 && 
-     getPhase(READOUT_C0, 1) == SPEED_108_CLKPHASE_DEG_1) {
+     getPhase(READOUT_C1, 1) == SPEED_108_CLKPHASE_DEG_1) {
         *retval = G_108MHZ;
     }
 
     else if (clkDivider[READOUT_C0] == SPEED_144_CLKDIV_0 &&
      clkDivider[READOUT_C1] == SPEED_144_CLKDIV_1 && 
-     getPhase(READOUT_C0, 1) == SPEED_144_CLKPHASE_DEG_1) {
+     getPhase(READOUT_C1, 1) == SPEED_144_CLKPHASE_DEG_1) {
         *retval = G_144MHZ;
     }
     
@@ -2121,7 +2151,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     }
     char *clock_names[] = {CLK_NAMES};
 
-    LOG(logINFO, ("\tSetting %s clock (%d) divider from %d to %d\n",
+    LOG(logINFOBLUE, ("Setting %s clock (%d) divider from %d to %d\n",
                   clock_names[ind], ind, clkDivider[ind], val));
 
     // Remembering old phases in degrees

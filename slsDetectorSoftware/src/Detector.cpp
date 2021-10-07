@@ -417,7 +417,7 @@ Result<defs::speedLevel> Detector::getReadoutSpeed(Positions pos) const {
 }
 
 void Detector::setReadoutSpeed(defs::speedLevel value, Positions pos) {
-    pimpl->Parallel(&Module::getReadoutSpeed, pos, value);
+    pimpl->Parallel(&Module::setReadoutSpeed, pos, value);
 }
 
 

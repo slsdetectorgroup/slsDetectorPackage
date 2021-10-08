@@ -2086,7 +2086,7 @@ int getVCOFrequency(enum CLKINDEX ind) {
 
 int setReadoutSpeed(int val) {
     switch (val) {
-        case G_108MHZ:
+        case G2_108MHZ:
             LOG(logINFOBLUE, ("Setting readout speed to 108 MHz\n"));
             if (setClockDivider(READOUT_C0, SPEED_108_CLKDIV_0) == FAIL) {
                 return FAIL;
@@ -2098,7 +2098,7 @@ int setReadoutSpeed(int val) {
                 return FAIL;
             }   
             break;  
-        case G_144MHZ:
+        case G2_144MHZ:
             LOG(logINFOBLUE, ("Setting readout speed to 144 MHz\n"));
             if (setClockDivider(READOUT_C0, SPEED_144_CLKDIV_0) == FAIL) {
                 return FAIL;
@@ -2123,13 +2123,13 @@ int getReadoutSpeed(int* retval) {
     if (clkDivider[READOUT_C0] == SPEED_108_CLKDIV_0 &&
      clkDivider[READOUT_C1] == SPEED_108_CLKDIV_1 && 
      getPhase(READOUT_C1, 1) == SPEED_108_CLKPHASE_DEG_1) {
-        *retval = G_108MHZ;
+        *retval = G2_108MHZ;
     }
 
     else if (clkDivider[READOUT_C0] == SPEED_144_CLKDIV_0 &&
      clkDivider[READOUT_C1] == SPEED_144_CLKDIV_1 && 
      getPhase(READOUT_C1, 1) == SPEED_144_CLKPHASE_DEG_1) {
-        *retval = G_144MHZ;
+        *retval = G2_144MHZ;
     }
     
     else {

@@ -250,8 +250,8 @@ void init_enums(py::module &m) {
         .value("FULL_SPEED", slsDetectorDefs::speedLevel::FULL_SPEED)
         .value("HALF_SPEED", slsDetectorDefs::speedLevel::HALF_SPEED)
         .value("QUARTER_SPEED", slsDetectorDefs::speedLevel::QUARTER_SPEED)
-        .value("G_108MHZ", slsDetectorDefs::speedLevel::G_108MHZ)
-        .value("G_144MHZ", slsDetectorDefs::speedLevel::G_144MHZ)
+        .value("G2_108MHZ", slsDetectorDefs::speedLevel::G2_108MHZ)
+        .value("G2_144MHZ", slsDetectorDefs::speedLevel::G2_144MHZ)
         .export_values();
 
     py::enum_<slsDetectorDefs::burstMode>(Defs, "burstMode")

@@ -377,7 +377,7 @@ typedef struct {
     enum readoutMode { ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL };
 
     /** chip speed */
-    enum speedLevel { FULL_SPEED, HALF_SPEED, QUARTER_SPEED, G_108MHZ, G_144MHZ };
+    enum speedLevel { FULL_SPEED, HALF_SPEED, QUARTER_SPEED, G2_108MHZ, G2_144MHZ };
 
     /**
      * burst mode for gotthard2

@@ -429,8 +429,8 @@ std::vector<defs::speedLevel> Detector::getReadoutSpeedList() const {
                                              defs::HALF_SPEED,
                                              defs::QUARTER_SPEED};
     case defs::GOTTHARD2:
-        return std::vector<defs::speedLevel>{defs::G_108MHZ,
-                                             defs::G_144MHZ};
+        return std::vector<defs::speedLevel>{defs::G2_108MHZ,
+                                             defs::G2_144MHZ};
     default:
         throw RuntimeError("Readout speed not implemented for this detector");
     }

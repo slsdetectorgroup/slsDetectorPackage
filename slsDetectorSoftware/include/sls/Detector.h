@@ -306,8 +306,9 @@ class Detector {
     /** [Eiger][Jungfrau][Gotthard2]
      * [Jungfrau] Options: FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED \n
      * [Eiger] Options: FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED \n
-     * [Gotthard2] Options: G_108MHZ (Default), G_144MHZ \n
-     * [Jungfrau] FULL_SPEED option only available from v2.0 boards  \n Also overwrites adcphase to
+     * [Gotthard2] Options: G2_108MHZ (Default), G2_144MHZ \n
+     * [Jungfrau] FULL_SPEED option only available from v2.0 boards and is 
+     * recommended to set number of interfaces to 2. \n Also overwrites adcphase to
      * recommended default.
      */
     void setReadoutSpeed(defs::speedLevel value, Positions pos = {});

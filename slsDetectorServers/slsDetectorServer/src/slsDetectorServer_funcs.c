@@ -9290,8 +9290,8 @@ int set_readout_speed(int file_des) {
                 case HALF_SPEED:
                 case QUARTER_SPEED:
 #elif GOTTHARD2D
-                case G_108MHZ:
-                case G_144MHZ:
+                case G2_108MHZ:
+                case G2_144MHZ:
 #endif
                     break;
                 default:

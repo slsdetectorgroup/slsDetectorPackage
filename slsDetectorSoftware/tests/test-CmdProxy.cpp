@@ -970,6 +970,13 @@ TEST_CASE("readoutspeed", "[.cmd]") {
     }
 }
 
+TEST_CASE("readoutspeedlist", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("readoutspeedlist", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("readoutspeedlist", {}, -1, PUT));
+}
+
 TEST_CASE("adcphase", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

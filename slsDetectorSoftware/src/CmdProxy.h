@@ -794,6 +794,7 @@ class CmdProxy {
         {"timing", &CmdProxy::timing},
         {"timinglist", &CmdProxy::timinglist},
         {"readoutspeed", &CmdProxy::ReadoutSpeed},
+        {"readoutspeedlist", &CmdProxy::readoutspeedlist},
         {"adcphase", &CmdProxy::Adcphase},
         {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
         {"dbitphase", &CmdProxy::Dbitphase},
@@ -1328,6 +1329,10 @@ class CmdProxy {
 
     GET_COMMAND_NOID(timinglist, getTimingModeList,
                      "\n\tGets the list of timing modes for this detector.");
+
+    GET_COMMAND_NOID(readoutspeedlist, getReadoutSpeedList,
+                     "\n\tList of readout speed levels implemented for this detector.");
+
 
     GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift,
                 "\n\t[Jungfrau][CTB][Moench] Absolute maximum Phase shift of "

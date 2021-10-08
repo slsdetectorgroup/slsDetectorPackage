@@ -1650,7 +1650,10 @@ class Detector(CppDetectorApi):
         [Eiger][Jungfrau|Gotthard2] Readout speed of chip. Enum: speedLevel
         Note
         -----
-        [Jungfrau] FULL_SPEED option only available from v2.0 boards and with setting number of interfaces to 2.  \n
+        [Jungfrau] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
+        [Eiger] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
+        [Gottthard2] G2_108MHZ (Default), G2_144MHZ
+        [Jungfrau] FULL_SPEED option only available from v2.0 boards and is recommended to set number of interfaces to 2.  \n
         Also overwrites adcphase to recommended default.
         """
         return element_if_equal(self.getReadoutSpeed())

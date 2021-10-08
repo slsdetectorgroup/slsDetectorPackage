@@ -1,7 +1,7 @@
-SLS Detector Package 6.0.0 released on xx.10.2021 (Major Release)
-===================================================================
+SLS Detector Package 6.0.0-rc1 released on 08.10.2021 (Release Candidate 1)
+===========================================================================
 
-This document describes the differences between 6.0.0 and 5.2.0 releases.   
+This document describes the differences between v6.0.0-rc1 and v5.1.0.   
 
 
 

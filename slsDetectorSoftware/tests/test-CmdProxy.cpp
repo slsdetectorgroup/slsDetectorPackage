@@ -1772,6 +1772,9 @@ TEST_CASE("defaultdac", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("defaultdac", {"blabla"}, -1, PUT));
         auto daclist = det.getDacList();
         for (auto it : daclist) {
+            if (it == defs::VTHRESHOLD) {
+                continue;
+            }
             auto dacname = sls::ToString(it);
             auto prev_val = det.getDefaultDac(it);
             {
@@ -1915,6 +1918,9 @@ TEST_CASE("blockingtrigger", "[.cmd]") {
             std::ostringstream oss;
             proxy.Call("blockingtrigger", {}, -1, PUT, oss);
             REQUIRE(oss.str() == "blockingtrigger successful\n");
+        }
+        if (det.isVirtualDetectorServer().tsquash("inconsistent virtual detectors")) {
+            std::this_thread::sleep_for(std::chrono::seconds(2));
         }
         auto currentfnum =
             det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
@@ -2310,7 +2316,7 @@ TEST_CASE("udp_firstdst", "[.cmd]") {
             det.setFirstUDPDestination(prev_val[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("udp_numdst", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("udp_firstdst", {}, -1, GET));
     }
 }
 

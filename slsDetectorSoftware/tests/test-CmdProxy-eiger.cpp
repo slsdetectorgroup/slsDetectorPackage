@@ -488,23 +488,13 @@ TEST_CASE("activate", "[.cmd]") {
         }
         {
             std::ostringstream oss;
-            proxy.Call("activate", {"1", "nopadding"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "activate 1 nopadding\n");
+            proxy.Call("activate", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "activate 1\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("activate", {"0", "padding"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "activate 0 padding\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("activate", {"0", "nopadding"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "activate 0 nopadding\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("activate", {"1", "padding"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "activate 1 padding\n");
+            proxy.Call("activate", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "activate 0\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setActive(prev_val[i], {i});

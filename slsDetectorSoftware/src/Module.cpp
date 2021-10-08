@@ -576,11 +576,11 @@ void Module::setDynamicRange(int dr) {
         if (dr == 32) {
             LOG(logINFO) << "Setting Clock to Quarter Speed to cope with "
                             "Dynamic Range of 32";
-            setClockDivider(RUN_CLOCK, 2);
+            setReadoutSpeed(defs::QUARTER_SPEED);
         } else {
             LOG(logINFO) << "Setting Clock to Full Speed for Dynamic Range of "
                          << dr;
-            setClockDivider(RUN_CLOCK, 0);
+            setReadoutSpeed(defs::FULL_SPEED);
         }
         // EIGER only, update speed and rate correction when dr changes
         if (dr != prev_val) {

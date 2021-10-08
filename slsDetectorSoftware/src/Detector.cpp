@@ -833,10 +833,6 @@ Result<std::string> Detector::getScanErrorMessage(Positions pos) const {
 // Network Configuration (Detector<->Receiver)
 
 Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
-    if (getDetectorType().squash() != defs::JUNGFRAU) {
-        throw sls::RuntimeError(
-            "Cannot set number of udp interfaces for this detector.");
-    }
     // also called by vetostream (for gotthard2)
     return pimpl->getNumberofUDPInterfaces(pos);
 }

@@ -207,7 +207,8 @@ std::string CmdProxy::Acquire(int action) {
               "detector acquisition for number of frames set\n\t- monitors "
               "detector status from running to idle\n\t- stops the receiver "
               "listener (if enabled)\n\t- increments file index if file write "
-              "enabled\n\t- resets acquiring flag";
+              "enabled\n\t- resets acquiring flag"
+           << '\n';
     } else {
         if (det->empty()) {
             throw sls::RuntimeError(
@@ -964,9 +965,9 @@ std::string CmdProxy::CurrentSource(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[0|1]\n\t[Gotthard2] Enable or disable current source. Default "
-              "is disabled.\n[0|1] [fix|nofix] [select source] [(only for "
-              "chipv1.1)normal|low]\n\t[Jungfrau] Disable or enable current "
+        os << "\n\t[0|1]\n\t\t[Gotthard2] Enable or disable current source. Default "
+              "is disabled.\n\t[0|1] [fix|nofix] [select source] [(only for "
+              "chipv1.1)normal|low]\n\t\t[Jungfrau] Disable or enable current "
               "source with some parameters. The select source is 0-63 for "
               "chipv1.0 and a 64 bit mask for chipv1.1. To disable, one needs "
               "only one argument '0'."
@@ -1337,9 +1338,9 @@ std::string CmdProxy::Trigger(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "trigger") {
-            os << "[Eiger][Mythen3] Sends software trigger signal to detector";
+            os << "\n\t[Eiger][Mythen3] Sends software trigger signal to detector";
         } else if (cmd == "blockingtrigger") {
-            os << "[Eiger] Sends software trigger signal to detector and "
+            os << "\n\t[Eiger] Sends software trigger signal to detector and "
                   "blocks till "
                   "the frames are sent out for that trigger.";
         } else {
@@ -1423,9 +1424,9 @@ std::string CmdProxy::UDPDestinationList(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[entry=n_val] [ip=x.x.x.x] [(optional)ip2=x.x.x.x] "
-              "\n[mac=xx:xx:xx:xx:xx:xx] "
-              "[(optional)mac2=xx:xx:xx:xx:xx:xx]\n[port=value] "
+        os << "[ip=x.x.x.x] [(optional)ip2=x.x.x.x] "
+              "\n\t[mac=xx:xx:xx:xx:xx:xx] "
+              "[(optional)mac2=xx:xx:xx:xx:xx:xx]\n\t[port=value] "
               "[(optional)port2=value\n\tThe order of ip, mac and port does "
               "not matter. entry_value can be >0 only for Eiger and Jungfrau "
               "where round robin is implemented. If 'auto' used, then ip is "
@@ -1607,8 +1608,8 @@ std::string CmdProxy::ZMQHWM(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[n_limit] \n\tClient's zmq receive high water mark. Default is "
               "the zmq library's default (1000), can also be set here using "
-              "-1. \n This is a high number and can be set to 2 for gui "
-              "purposes. \n One must also set the receiver's send high water "
+              "-1. \n\tThis is a high number and can be set to 2 for gui "
+              "purposes. \n\tOne must also set the receiver's send high water "
               "mark to similar value. Final effect is sum of them.\n\t Setting "
               "it via command line is useful only before zmq enabled (before "
               "opening gui)."
@@ -1662,50 +1663,6 @@ std::string CmdProxy::RateCorrection(int action) {
             det->setRateCorrection(t, std::vector<int>{det_id});
             os << args.front() << "ns\n";
         }
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
-std::string CmdProxy::Activate(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "[0, 1] [(optional) padding|nopadding]\n\t[Eiger] 1 is default. "
-              "0 deactivates readout and does not send data. \n\tPadding will "
-              "pad data files for deactivates readouts."
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getActive(std::vector<int>{det_id});
-        auto p = det->getRxPadDeactivatedMode(std::vector<int>{det_id});
-        Result<std::string> pResult(p.size());
-        for (unsigned int i = 0; i < p.size(); ++i) {
-            pResult[i] = p[i] ? "padding" : "nopadding";
-        }
-        os << OutString(t) << ' ' << OutString(pResult) << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        if (args.empty() || args.size() > 2) {
-            WrongNumberOfParameters(2);
-        }
-        int t = StringTo<int>(args[0]);
-        det->setActive(t, std::vector<int>{det_id});
-        os << args[0];
-        if (args.size() == 2) {
-            bool p = true;
-            if (args[1] == "nopadding") {
-                p = false;
-            } else if (args[1] != "padding") {
-                throw sls::RuntimeError(
-                    "Unknown argument for deactivated padding.");
-            }
-            det->setRxPadDeactivatedMode(p, std::vector<int>{det_id});
-            os << ' ' << args[1];
-        }
-        os << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }

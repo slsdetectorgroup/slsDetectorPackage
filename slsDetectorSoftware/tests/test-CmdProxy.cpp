@@ -1754,29 +1754,29 @@ TEST_CASE("defaultdac", "[.cmd]") {
             }
         }
         if (det_type == defs::JUNGFRAU) {
-            std::vector<defs::dacIndex> daclist = {defs::VB_COMP, defs::VREF_DS,
+            std::vector<defs::dacIndex> daclist = {defs::VREF_PRECH, defs::VREF_DS,
                                                 defs::VREF_COMP};
             for (auto it : daclist) {
                 auto dacname = sls::ToString(it);
-                auto prev_val = det.getDefaultDac(it, defs::DYNAMICGAIN);
+                auto prev_val = det.getDefaultDac(it, defs::GAIN0);
                 {
                     std::ostringstream oss;
-                    proxy.Call("defaultdac", {dacname, "1000", "dynamicgain"}, -1,
+                    proxy.Call("defaultdac", {dacname, "1000", "gain0"}, -1,
                             PUT, oss);
                     REQUIRE(oss.str() ==
                             std::string("defaultdac ") + dacname +
-                                std::string(" dynamicgain 1000\n"));
+                                std::string(" gain0 1000\n"));
                 }
                 {
                     std::ostringstream oss;
-                    proxy.Call("defaultdac", {dacname, "dynamicgain"}, -1, GET,
+                    proxy.Call("defaultdac", {dacname, "gain0"}, -1, GET,
                                oss);
                     REQUIRE(oss.str() ==
                             std::string("defaultdac ") + dacname +
-                                std::string(" dynamicgain 1000\n"));
+                                std::string(" gain0 1000\n"));
                 }
                 for (int i = 0; i != det.size(); ++i) {
-                    det.setDefaultDac(it, prev_val[i], defs::DYNAMICGAIN, {i});
+                    det.setDefaultDac(it, prev_val[i], defs::GAIN0, {i});
                 }
             }
         }
@@ -2240,7 +2240,8 @@ TEST_CASE("udp_cleardst", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("udp_cleardst", {}, -1, GET));
-    REQUIRE_NOTHROW(proxy.Call("udp_cleardst", {}, -1, PUT));
+    /* dont clear all udp destinations */
+    /*REQUIRE_NOTHROW(proxy.Call("udp_cleardst", {}, -1, PUT));*/
 }
 
 TEST_CASE("udp_firstdst", "[.cmd]") {
@@ -2252,18 +2253,20 @@ TEST_CASE("udp_firstdst", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("udp_firstdst", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "udp_firstdst 10\n");
+            REQUIRE(oss.str() == "udp_firstdst 0\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("udp_firstdst", {}, -1, GET, oss);
             REQUIRE(oss.str() == "udp_firstdst 0\n");
         }
+        /*
         {
             std::ostringstream oss;
             proxy.Call("udp_firstdst", {"1"}, -1, PUT, oss);
             REQUIRE(oss.str() == "udp_firstdst 1\n");
         }
+        */
         REQUIRE_THROWS(proxy.Call("udp_firstdst", {"33"}, -1, PUT));
 
         for (int i = 0; i != det.size(); ++i) {
@@ -2291,7 +2294,9 @@ TEST_CASE("udp_srcmac", "[.cmd]") {
         REQUIRE(oss.str() == "udp_srcmac 00:50:c2:42:34:12\n");
     }
     for (int i = 0; i != det.size(); ++i) {
-        det.setSourceUDPMAC(prev_val[i], {i});
+        if (prev_val[i].str() != "00:00:00:00:00:00") {
+            det.setSourceUDPMAC(prev_val[i], {i});
+        }
     }
 }
 
@@ -2361,7 +2366,9 @@ TEST_CASE("udp_srcmac2", "[.cmd]") {
             REQUIRE(oss.str() == "udp_srcmac2 00:50:c2:42:34:12\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setSourceUDPMAC2(prev_val[i], {i});
+            if (prev_val[i].str() != "00:00:00:00:00:00") {
+                det.setSourceUDPMAC2(prev_val[i], {i});
+            }
         }
     } else {
         REQUIRE_THROWS(proxy.Call("udp_srcmac2", {}, -1, GET));

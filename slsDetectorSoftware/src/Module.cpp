@@ -1312,12 +1312,7 @@ int Module::getReceiverPort(const int rxIndex) const { return shm()->receivers[r
 
 int Module::setReceiverPort(int port_number, const int rxIndex) {
     if (port_number >= 0 && port_number != shm()->receivers[rxIndex].tcpPort) {
-        if (shm()->useReceiverFlag) {
-            shm()->receivers[rxIndex].tcpPort =
-                sendToReceiver<int>(rxIndex, F_SET_RECEIVER_PORT, port_number);
-        } else {
-            shm()->receivers[rxIndex].tcpPort = port_number;
-        }
+        shm()->receivers[rxIndex].tcpPort = port_number;
     }
     return shm()->receivers[rxIndex].tcpPort;
 }
@@ -1705,17 +1700,6 @@ void Module::setActivate(const bool enable) {
     const int rxIndex = -1;
         sendToReceiver(rxIndex,  F_RECEIVER_ACTIVATE, retval, nullptr);
     }
-}
-
-bool Module::getDeactivatedRxrPaddingMode() const {
-    const int rxIndex = 0;
-    return sendToReceiver<int>(rxIndex, F_GET_RECEIVER_DEACTIVATED_PADDING);
-}
-
-void Module::setDeactivatedRxrPaddingMode(bool padding) {
-    const int rxIndex = -1;
-    sendToReceiver(rxIndex,  F_SET_RECEIVER_DEACTIVATED_PADDING,
-                   static_cast<int>(padding), nullptr);
 }
 
 bool Module::getCounterBit() const {
@@ -2738,21 +2722,13 @@ void Module::setADCInvert(uint32_t value) {
 int Module::getControlPort() const { return shm()->controlPort; }
 
 void Module::setControlPort(int port_number) {
-    if (strlen(shm()->hostname) > 0) {
-        shm()->controlPort = sendToDetector<int>(F_SET_PORT, port_number);
-    } else {
-        shm()->controlPort = port_number;
-    }
+    shm()->controlPort = port_number;
 }
 
 int Module::getStopPort() const { return shm()->stopPort; }
 
 void Module::setStopPort(int port_number) {
-    if (strlen(shm()->hostname) > 0) {
-        shm()->stopPort = sendToDetectorStop<int>(F_SET_PORT, port_number);
-    } else {
-        shm()->stopPort = port_number;
-    }
+    shm()->stopPort = port_number;
 }
 
 bool Module::getLockDetector() const {
@@ -3712,12 +3688,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
            << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }
-    if (moduleIndex == 0) {
-        LOG(logINFO) << "Copied to flash and checksum verified";
-    }
-
     LOG(logINFO) << "FPGA programmed successfully";
-    rebootController();
 }
 
 void Module::programFPGAviaNios(std::vector<char> buffer) {
@@ -3795,6 +3766,5 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
         throw RuntimeError(os.str());
     }
     LOG(logINFO) << "FPGA programmed successfully";
-    rebootController();
 }
 } // namespace sls

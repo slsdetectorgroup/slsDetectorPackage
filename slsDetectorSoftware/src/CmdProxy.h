@@ -925,7 +925,7 @@ class CmdProxy {
         {"interruptsubframe", &CmdProxy::interruptsubframe},
         {"measuredperiod", &CmdProxy::measuredperiod},
         {"measuredsubperiod", &CmdProxy::measuredsubperiod},
-        {"activate", &CmdProxy::Activate},
+        {"activate", &CmdProxy::activate},
         {"partialreset", &CmdProxy::partialreset},
         {"pulse", &CmdProxy::PulsePixel},
         {"pulsenmove", &CmdProxy::PulsePixelAndMove},
@@ -1131,7 +1131,6 @@ class CmdProxy {
     std::string ZMQHWM(int action);
     /* Eiger Specific */
     std::string RateCorrection(int action);
-    std::string Activate(int action);
     std::string PulsePixel(int action);
     std::string PulsePixelAndMove(int action);
     std::string PulseChip(int action);
@@ -1206,7 +1205,7 @@ class CmdProxy {
                     "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench]"
                     "Serial number of detector.");
 
-    GET_COMMAND_HEX(
+    GET_COMMAND(
         moduleid, getModuleId, 
         "\n\t[Gotthard2][Eiger][Mythen3] 16 bit value (ideally unique) "
         "that is streamed out in the UDP header of the detector. Picked up from a file on the module.");
@@ -1381,9 +1380,9 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         readnrows, getReadNRows, setReadNRows, StringTo<int>,
-        "[1 - 256]\n\t[Eiger] Number of rows to readout per half module "
+        "\n\t[1-256]\n\t\t[Eiger] Number of rows to readout per half module "
         "starting from the centre. Options: 0 - 256. 256 is default. The "
-        "permissible values depend on dynamic range and 10Gbe enabled.\n[8-512 (multiple of 8)]\n\t[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.");
+        "permissible values depend on dynamic range and 10Gbe enabled.\n\t[8-512 (multiple of 8)]\n\t\t[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.");
 
     /** temperature */
     GET_COMMAND_NOID(
@@ -1856,6 +1855,11 @@ class CmdProxy {
     TIME_GET_COMMAND(measuredsubperiod, getMeasuredSubFramePeriod,
                      "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured sub "
                      "frame period between last sub frame and previous one.");
+
+
+    INTEGER_COMMAND_VEC_ID(
+        activate, getActive, setActive, StringTo<int>,
+        "[0, 1] \n\t[Eiger] 1 is default. 0 deactivates readout and does not send data.");
 
     INTEGER_COMMAND_VEC_ID(
         partialreset, getPartialReset, setPartialReset, StringTo<int>,

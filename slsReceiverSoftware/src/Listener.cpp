@@ -22,11 +22,11 @@ const std::string Listener::TypeName = "Listener";
 Listener::Listener(int ind, detectorType dtype, Fifo *f,
                    std::atomic<runStatus> *s, uint32_t *portno, std::string *e,
                    uint64_t *nf, int *us, int *as, uint32_t *fpf,
-                   frameDiscardPolicy *fdp, bool *act, bool* detds, bool *depaden, bool *sm)
+                   frameDiscardPolicy *fdp, bool *act, bool* detds, bool *sm)
     : ThreadObject(ind, TypeName), fifo(f), myDetectorType(dtype), status(s),
       udpPortNumber(portno), eth(e), numImages(nf), udpSocketBufferSize(us),
       actualUDPSocketBufferSize(as), framesPerFile(fpf), frameDiscardMode(fdp),
-      activated(act), detectorDataStream(detds), deactivatedPaddingEnable(depaden), silentMode(sm) {
+      activated(act), detectorDataStream(detds), silentMode(sm) {
     LOG(logDEBUG) << "Listener " << ind << " created";
 }
 
@@ -299,24 +299,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
     }
     // deactivated (eiger)
     if (!(*activated)) {
-        // no padding
-        if (!(*deactivatedPaddingEnable))
-            return 0;
-        // padding without setting bitmask (all missing packets padded in
-        // dataProcessor)
-        if (currentFrameIndex >= *numImages)
-            return 0;
-
-        //(eiger) first fnum starts at 1
-        if (!currentFrameIndex) {
-            ++currentFrameIndex;
-        }
-        new_header->detHeader.frameNumber = currentFrameIndex;
-        new_header->detHeader.row = row;
-        new_header->detHeader.column = column;
-        new_header->detHeader.detType = (uint8_t)generalData->myDetectorType;
-        new_header->detHeader.version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
-        return imageSize;
+        return 0;
     }
 
     // look for carry over

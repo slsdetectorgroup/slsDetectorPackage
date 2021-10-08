@@ -120,7 +120,7 @@ int getModuleIdInFile(int *ret, char *mess, char *fileName) {
         LOG(logERROR, ("%s\n\n", mess));
         return -1;
     }
-    LOG(logDEBUG1, ("Reading det id file %s\n", fileName));
+    LOG(logINFOBLUE, ("Reading det id file %s\n", fileName));
 
     // read line
     const size_t len = 256;
@@ -134,7 +134,7 @@ int getModuleIdInFile(int *ret, char *mess, char *fileName) {
     }
     // read id
     int retval = 0;
-    if (sscanf(line, "%x", &retval) != 1) {
+    if (sscanf(line, "%u", &retval) != 1) {
         *ret = FAIL;
         sprintf(mess,
                 "Could not scan det id from on-board server "
@@ -143,41 +143,8 @@ int getModuleIdInFile(int *ret, char *mess, char *fileName) {
         LOG(logERROR, ("%s\n\n", mess));
         return -1;
     }
-    LOG(logINFOBLUE, ("Module Id: 0x%x (File)\n", retval));
+    LOG(logINFOBLUE, ("Module Id: %d (File)\n", retval));
     return retval;
-}
-
-int setModuleIdInFile(char *mess, int arg, char *fileName) {
-    LOG(logINFOBLUE, ("Setting Module Id: 0x%x (File)\n", arg));
-
-    const int fileNameSize = 128;
-    char fname[fileNameSize];
-    if (getAbsPath(fname, fileNameSize, fileName) == FAIL) {
-        strcpy(mess, "Could not find detid file\n");
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-
-    // open id file
-    FILE *fd = fopen(fname, "r");
-    if (fd == NULL) {
-        strcpy(mess, "Could not find detid file\n");
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    LOG(logDEBUG1, ("Writing det id to file %s\n", fileName));
-
-    // write id
-    const size_t len = 256;
-    char line[len];
-    memset(line, 0, len);
-    sprintf(line, "%x", arg);
-    if (EOF == fputs(line, fd)) {
-        strcpy(mess, "Could not write to detid file\n");
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    return OK;
 }
 
 int verifyChecksumFromBuffer(char *mess, char *clientChecksum, char *buffer,

@@ -1108,12 +1108,6 @@ class Detector {
      * send data or communicated with FEB or BEB */
     void setActive(const bool active, Positions pos = {});
 
-    /** [Eiger] */
-    Result<bool> getRxPadDeactivatedMode(Positions pos = {}) const;
-
-    /** [Eiger] Pad deactivated modules in receiver. Enabled by default */
-    void setRxPadDeactivatedMode(bool pad, Positions pos = {});
-
     /** [Eiger] Advanced */
     Result<bool> getPartialReset(Positions pos = {}) const;
 

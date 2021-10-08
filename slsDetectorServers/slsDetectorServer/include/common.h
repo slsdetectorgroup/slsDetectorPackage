@@ -32,7 +32,6 @@ void validate64(int *ret, char *mess, int64_t arg, int64_t retval,
                 char *modename, enum numberMode nummode);
 
 int getModuleIdInFile(int *ret, char *mess, char *fileName);
-int setModuleIdInFile(char *mess, int arg, char *fileName);
 int verifyChecksumFromBuffer(char *mess, char *clientChecksum, char *buffer,
                              ssize_t bytes);
 int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname);

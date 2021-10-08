@@ -55,7 +55,7 @@ TEST_CASE("defaultpattern", "[.cmd]") {
         REQUIRE_NOTHROW(proxy.Call("defaultpattern", {}, -1, PUT));
     } else {
         REQUIRE_THROWS(proxy.Call("defaultpattern", {}, -1, GET));
-        REQUIRE_NOTHROW(proxy.Call("defaultpattern", {}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("defaultpattern", {}, -1, PUT));
     }
 }
 

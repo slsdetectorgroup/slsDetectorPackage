@@ -283,7 +283,7 @@ u_int32_t getDetectorNumber() {
 
 
 int getModuleId(int *ret, char *mess) {
-    return ((bus_r(MOD_ID_REG) & ~MOD_ID_MSK) >> MOD_ID_OFST);
+    return ((bus_r(MOD_ID_REG) & MOD_ID_MSK) >> MOD_ID_OFST);
 }
 
 void setModuleId(int modid) {

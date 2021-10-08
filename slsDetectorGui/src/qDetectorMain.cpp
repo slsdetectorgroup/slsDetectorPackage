@@ -469,7 +469,7 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
                            "Dhanya.Thattil@psi.ch <br>"
                            "Erik.Froejdh@psi.ch.<br><br><br>"
 
-                        "<br>slsDetectorGui Copyright (C) 2021 <br><br>"
+                        "<br>slsDetectorGui Copyright (C) 2021 Contributors to SLS Detector Package<br><br>"
 
                         "This program comes with ABSOLUTELY NO WARRANTY. "
                         "This is free software, and you are welcome to redistribute it "

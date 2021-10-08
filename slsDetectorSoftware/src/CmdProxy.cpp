@@ -624,10 +624,6 @@ std::string CmdProxy::ReadoutSpeed(int action) {
             throw sls::RuntimeError(
                 "ReadoutSpeed not implemented. Did you mean runclk?");
         }
-        if (type != defs::EIGER && type != defs::JUNGFRAU && type != defs::GOTTHARD2) {
-            throw sls::RuntimeError(
-                "ReadoutSpeed not implemented."); 
-        }
         if (action == defs::GET_ACTION) {
             if (!args.empty()) {
                 WrongNumberOfParameters(0);

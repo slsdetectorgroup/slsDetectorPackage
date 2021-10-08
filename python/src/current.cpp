@@ -15,10 +15,10 @@ void init_source(py::module &m) {
     py::class_<src> currentSrcParameters(m, "currentSrcParameters");
 
     currentSrcParameters.def(py::init());
-    currentSrcParameters.def_readwrite("enable_", &src::enable_);
-    currentSrcParameters.def_readwrite("fix_", &src::fix_);
-    currentSrcParameters.def_readwrite("normal_", &src::normal_);
-    currentSrcParameters.def_readwrite("select_", &src::select_);
+    currentSrcParameters.def_readwrite("enable", &src::enable);
+    currentSrcParameters.def_readwrite("fix", &src::fix);
+    currentSrcParameters.def_readwrite("normal", &src::normal);
+    currentSrcParameters.def_readwrite("select", &src::select);
     currentSrcParameters.def(pybind11::self == pybind11::self);
 
     currentSrcParameters.def("__repr__",

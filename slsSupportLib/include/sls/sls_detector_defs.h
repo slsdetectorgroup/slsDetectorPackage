@@ -462,36 +462,36 @@ typedef struct {
     } __attribute__((packed));
 
     struct currentSrcParameters {
-        int enable_;
-        int fix_;
-        int normal_;
-        uint64_t select_;
+        int enable;
+        int fix;
+        int normal;
+        uint64_t select;
 
         /** [Gotthard2][Jungfrau] disable */
         currentSrcParameters()
-            : enable_(0), fix_(-1), normal_(-1), select_(0) {}
+            : enable(0), fix(-1), normal(-1), select(0) {}
 
         /** [Gotthard2] enable or disable */
-        explicit currentSrcParameters(bool enable)
-            : enable_(static_cast<int>(enable)), fix_(-1), normal_(-1),
-              select_(0) {}
+        explicit currentSrcParameters(bool srcEnable)
+            : enable(static_cast<int>(srcEnable)), fix(-1), normal(-1),
+              select(0) {}
 
         /** [Jungfrau](chipv1.0) enable current src with fix or no fix,
          * select is 0 to 63 columns only */
-        currentSrcParameters(bool fix, uint64_t select)
-            : enable_(1), fix_(static_cast<int>(fix)), normal_(-1),
-              select_(select) {}
+        currentSrcParameters(bool fixCurrent, uint64_t selectCurrent)
+            : enable(1), fix(static_cast<int>(fixCurrent)), normal(-1),
+              select(selectCurrent) {}
 
         /** [Jungfrau](chipv1.1) enable current src, fix[fix|no fix],
          * select is a mask of 63 bits (muliple columns can be selected
          * simultaneously, normal [normal|low] */
-        currentSrcParameters(bool fix, uint64_t select, bool normal)
-            : enable_(1), fix_(static_cast<int>(fix)),
-              normal_(static_cast<int>(normal)), select_(select) {}
+        currentSrcParameters(bool fixCurrent, uint64_t selectCurrent, bool normalCurrent)
+            : enable(1), fix(static_cast<int>(fixCurrent)),
+              normal(static_cast<int>(normalCurrent)), select(selectCurrent) {}
 
         bool operator==(const currentSrcParameters &other) const {
-            return ((enable_ == other.enable_) && (fix_ == other.fix_) &&
-                    (normal_ == other.normal_) && (select_ == other.select_));
+            return ((enable == other.enable) && (fix == other.fix) &&
+                    (normal == other.normal) && (select == other.select));
         }
     } __attribute__((packed));
 

@@ -59,6 +59,14 @@
 #define DEFAULT_SYSTEM_C2  (5)  //(144444448) // sync_clk, 144 MHz
 #define DEFAULT_SYSTEM_C3  (5)  //(144444448) // str_clk, 144 MHz
 
+#define DEFAULT_READOUT_SPEED   (G2_108MHZ)
+#define SPEED_144_CLKDIV_0  (6)
+#define SPEED_144_CLKDIV_1  (6)
+#define SPEED_144_CLKPHASE_DEG_1  (122) // 125 not possible
+#define SPEED_108_CLKDIV_0  (8)
+#define SPEED_108_CLKDIV_1  (8)
+#define SPEED_108_CLKPHASE_DEG_1  (268) // 270 not possible
+
 /* Firmware Definitions */
 #define FIXED_PLL_FREQUENCY     (20000000)  // 20MHz
 #define INT_SYSTEM_C0_FREQUENCY (144000000) // 144 MHz

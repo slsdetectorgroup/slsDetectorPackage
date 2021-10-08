@@ -144,6 +144,8 @@ class Module : public virtual slsDetectorDefs {
     void setDynamicRange(int dr);
     timingMode getTimingMode() const;
     void setTimingMode(timingMode value);
+    speedLevel getReadoutSpeed() const;
+    void setReadoutSpeed(speedLevel value);
     int getClockDivider(int clkIndex) const;
     void setClockDivider(int clkIndex, int value);
     int getClockPhase(int clkIndex, bool inDegrees) const;

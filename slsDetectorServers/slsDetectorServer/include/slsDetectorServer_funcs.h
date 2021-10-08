@@ -273,3 +273,5 @@ int get_num_dest_list(int);
 int clear_all_udp_dst(int);
 int get_udp_first_dest(int);
 int set_udp_first_dest(int);
+int get_readout_speed(int);
+int set_readout_speed(int);

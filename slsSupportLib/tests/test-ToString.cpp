@@ -338,14 +338,14 @@ TEST_CASE("speedLevel to string"){
     REQUIRE(ToString(sls::defs::speedLevel::FULL_SPEED) == "full_speed");
     REQUIRE(ToString(sls::defs::speedLevel::HALF_SPEED) == "half_speed");
     REQUIRE(ToString(sls::defs::speedLevel::QUARTER_SPEED) == "quarter_speed");
-    REQUIRE(ToString(sls::defs::speedLevel::G_108MHZ) == "108");
-    REQUIRE(ToString(sls::defs::speedLevel::G_144MHZ) == "144");
+    REQUIRE(ToString(sls::defs::speedLevel::G2_108MHZ) == "108");
+    REQUIRE(ToString(sls::defs::speedLevel::G2_144MHZ) == "144");
 }
 
 TEST_CASE("string to speedLevel"){
     REQUIRE(StringTo<sls::defs::speedLevel>("full_speed") == sls::defs::speedLevel::FULL_SPEED);
     REQUIRE(StringTo<sls::defs::speedLevel>("half_speed") == sls::defs::speedLevel::HALF_SPEED);
     REQUIRE(StringTo<sls::defs::speedLevel>("quarter_speed") == sls::defs::speedLevel::QUARTER_SPEED);
-    REQUIRE(StringTo<sls::defs::speedLevel>("108") == sls::defs::speedLevel::G_108MHZ);
-    REQUIRE(StringTo<sls::defs::speedLevel>("144") == sls::defs::speedLevel::G_144MHZ);
+    REQUIRE(StringTo<sls::defs::speedLevel>("108") == sls::defs::speedLevel::G2_108MHZ);
+    REQUIRE(StringTo<sls::defs::speedLevel>("144") == sls::defs::speedLevel::G2_144MHZ);
 }

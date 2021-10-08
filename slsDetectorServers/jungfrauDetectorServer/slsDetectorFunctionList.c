@@ -1841,14 +1841,17 @@ int setReadoutSpeed(int val) {
             return FAIL;
         }
         LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
-        adcOfst = ADC_OFST_FULL_SPEED_VAL;
         if (getChipVersion() == 10) {
             sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED_CHIP10;
+            adcPhase = ADC_PHASE_FULL_SPEED_CHIP10;
+            dbitPhase = DBIT_PHASE_FULL_SPEED_CHIP10;
+            adcOfst = ADC_OFST_FULL_SPEED_VAL_CHIP10;
         } else {
-            sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED;
+            sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED_CHIP11;
+            adcPhase = ADC_PHASE_FULL_SPEED_CHIP11;
+            dbitPhase = DBIT_PHASE_FULL_SPEED_CHIP11;
+            adcOfst = ADC_OFST_FULL_SPEED_VAL_CHIP11;
         }
-        adcPhase = ADC_PHASE_FULL_SPEED;
-        dbitPhase = DBIT_PHASE_FULL_SPEED;
         config = CONFIG_FULL_SPEED_40MHZ_VAL;
         break;
 
@@ -1860,15 +1863,15 @@ int setReadoutSpeed(int val) {
             adcPhase = ADC_PHASE_HALF_SPEED_BOARD2;
             dbitPhase = DBIT_PHASE_HALF_SPEED_BOARD2;
         } else if (getChipVersion() == 10) {
-            adcOfst = ADC_OFST_HALF_SPEED_VAL;
+            adcOfst = ADC_OFST_HALF_SPEED_VAL_CHIP10;
             sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_CHIP10;
-            adcPhase = ADC_PHASE_HALF_SPEED;
-            dbitPhase = DBIT_PHASE_HALF_SPEED;
+            adcPhase = ADC_PHASE_HALF_SPEED_CHIP10;
+            dbitPhase = DBIT_PHASE_HALF_SPEED_CHIP10;
         } else {
-            adcOfst = ADC_OFST_HALF_SPEED_VAL;
-            sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED;
-            adcPhase = ADC_PHASE_HALF_SPEED;
-            dbitPhase = DBIT_PHASE_HALF_SPEED;
+            adcOfst = ADC_OFST_HALF_SPEED_VAL_CHIP11;
+            sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_CHIP11;
+            adcPhase = ADC_PHASE_HALF_SPEED_CHIP11;
+            dbitPhase = DBIT_PHASE_HALF_SPEED_CHIP11;
         }
         config = CONFIG_HALF_SPEED_20MHZ_VAL;
         break;
@@ -1881,15 +1884,15 @@ int setReadoutSpeed(int val) {
             adcPhase = ADC_PHASE_QUARTER_SPEED_BOARD2;
             dbitPhase = DBIT_PHASE_QUARTER_SPEED_BOARD2;
         } else if (getChipVersion() == 10) {
-            adcOfst = ADC_OFST_QUARTER_SPEED_VAL;
+            adcOfst = ADC_OFST_QUARTER_SPEED_VAL_CHIP10;
             sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_CHIP10;
-            adcPhase = ADC_PHASE_QUARTER_SPEED;
-            dbitPhase = DBIT_PHASE_QUARTER_SPEED;
+            adcPhase = ADC_PHASE_QUARTER_SPEED_CHIP10;
+            dbitPhase = DBIT_PHASE_QUARTER_SPEED_CHIP10;
         } else {
-            adcOfst = ADC_OFST_QUARTER_SPEED_VAL;
-            sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED;
-            adcPhase = ADC_PHASE_QUARTER_SPEED;
-            dbitPhase = DBIT_PHASE_QUARTER_SPEED;
+            adcOfst = ADC_OFST_QUARTER_SPEED_VAL_CHIP11;
+            sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_CHIP11;
+            adcPhase = ADC_PHASE_QUARTER_SPEED_CHIP11;
+            dbitPhase = DBIT_PHASE_QUARTER_SPEED_CHIP11;
         }
         config = CONFIG_QUARTER_SPEED_10MHZ_VAL;
         break;

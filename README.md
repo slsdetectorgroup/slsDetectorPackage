@@ -4,7 +4,11 @@ Please do not update to any xxxx.xx.xx.dev0 tags. They are not releases, but tag
 Use only releases with tags such as x.x.x or x.x.x-rcx.
 
 ### Documentation
-Detailed documentation on the latest release of 5.0.0 can be found in the [software wiki](https://slsdetectorgroup.github.io/devdoc/index.html) and on the [official site](https://www.psi.ch/en/detectors/software).
+#### 5.0.0 - Latest Release
+Detailed documentation on the latest release can be found in the [software wiki](https://slsdetectorgroup.github.io/devdoc/index.html) and on the [official site](https://www.psi.ch/en/detectors/software).
+
+#### Older Releases
+Documentation is found in the package.
 
 ### Binaries
 Binaries for the slsDetectorPackage are available through conda. 
@@ -45,7 +49,7 @@ These are mainly aimed at those not familiar with using ccmake and cmake.
 ```
     The binaries are generated in slsDetectorPackage/build/bin directory.
 
-    Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [n] [-h] [z] [-d <HDF5 directory>] [-l Install directory] [-k <CMake command>] [-j <Number of threads>]
+    Usage: ./cmk.sh [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [n] [-h] [z] [-d <HDF5 directory>] [-l Install directory] [-k <CMake command>] [-j <Number of threads>]
     -[no option]: only make
     -c: Clean
     -b: Builds/Rebuilds CMake files normal mode
@@ -65,6 +69,7 @@ These are mainly aimed at those not familiar with using ccmake and cmake.
     -m: Manuals
     -n: Manuals without compiling doxygen (only rst)
     -z: Moench zmq processor
+
     
     # get all options
     ./cmk.sh -?
@@ -90,3 +95,8 @@ To install binaries using CMake
     make -j12 #or whatever number of cores you are using to build
     make install
 ```
+
+
+### Support
+    dhanya.thattil@psi.ch
+    erik.frojdh@psi.ch

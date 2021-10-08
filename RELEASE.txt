@@ -160,6 +160,10 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
         Command line: datastream, API: getDataStream/ setDataStream
         Enable or disable each port. Default: enabled
 
+    25. Changing TCP ports
+        This will only affect shared memory and will not try to change the
+        current tcp port of the control/stop server in detector.
+
     Detector servers
     ----------------
 
@@ -184,6 +188,11 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
         Frames caught by the master receiver is added to master file metadata.
         Hdf5 and Binary version numbers changed to 6.3
 
+    2.  Removed Padding option for Deactivated half modules.
+
+    3.  Changing Receiver TCP ports
+        This will only affect shared memory and will not try to change the
+        current tcp port of the receiver.
 
     Gui
     ----

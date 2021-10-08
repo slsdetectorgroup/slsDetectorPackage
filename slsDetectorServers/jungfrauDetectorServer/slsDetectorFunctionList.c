@@ -470,6 +470,7 @@ void setupDetector() {
     initReadoutConfiguration();
 
     // Initialization of acquistion parameters
+    disableCurrentSource();
     setSettings(DEFAULT_SETTINGS);
     setGainMode(DEFAULT_GAINMODE);
 
@@ -499,7 +500,6 @@ void setupDetector() {
         setFilterResistor(DEFAULT_FILTER_RESISTOR);
         setFilterCell(DEFAULT_FILTER_CELL);
     }
-    disableCurrentSource();
     setReadNRows(MAX_ROWS_PER_READOUT);
 }
 
@@ -1106,10 +1106,8 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         setDAC(specialDacs[i], dacVals[i], 0);
     }
 
-    // if chip 1.1, and power chip on, configure chip
-    if (getChipVersion() == 11 && powerChip(-1)) {
-        configureChip();
-    }
+    // if chipv1.1 and powered on
+    configureChip();
 
     return getSettings();
 }
@@ -1726,8 +1724,8 @@ int powerChip(int on) {
             LOG(logINFOBLUE, ("Powering chip: on\n"));
             bus_w(CHIP_POWER_REG,
                   bus_r(CHIP_POWER_REG) | CHIP_POWER_ENABLE_MSK);
-            
-            configureChip();
+   
+            configureChip();           	
         } else {
             LOG(logINFOBLUE, ("Powering chip: off\n"));
             bus_w(CHIP_POWER_REG,
@@ -1749,16 +1747,26 @@ int isChipConfigured() {
 }
 
 void configureChip() {
-    // only for chipv1.1
-    if (getChipVersion() == 11) {
-        LOG(logINFOBLUE, ("Configuring chip\n"));
+    // only for chipv1.1 and chip is powered on
+    if (getChipVersion() == 11 && powerChip(-1)) {
+        LOG(logINFOBLUE, ("\tConfiguring chip\n"));
+        
+        // waiting 500 ms before configuring selection
+        usleep(500 * 1000);
+
+        // write same values to configure selection
+        // if (chip was powered off earlier)
+        LOG(logINFO, ("\tSetting default values for selection\n"))
+        bus_w(CRRNT_SRC_COL_LSB_REG, bus_r(CRRNT_SRC_COL_LSB_REG));
+        bus_w(CRRNT_SRC_COL_MSB_REG, bus_r(CRRNT_SRC_COL_MSB_REG));
+
         // waiting 500 ms before configuring chip
         usleep(500 * 1000);
+
         // write same register values back to configure chip
         bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG));
-        // default values for current source
-        bus_w(CRRNT_SRC_COL_LSB_REG, BIT32_MASK);
-        bus_w(CRRNT_SRC_COL_MSB_REG, BIT32_MASK);
+
+	    LOG(logINFOBLUE, ("\tChip configured\n"));
         chipConfigured = 1;
     }
 }
@@ -2205,11 +2213,18 @@ void setFilterCell(int iCell) {
 
 void disableCurrentSource() {
     LOG(logINFO, ("Disabling Current Source\n"));
-    bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_ENBL_MSK);
 
-    // default values for current source
-    bus_w(CRRNT_SRC_COL_LSB_REG, BIT32_MASK);
-    bus_w(CRRNT_SRC_COL_MSB_REG, BIT32_MASK);
+    // set default values for current source first
+    if (getChipVersion() == 11) {
+        LOG(logINFO, ("\tSetting default values for selection\n"))
+        bus_w(CRRNT_SRC_COL_LSB_REG, BIT32_MASK);
+        bus_w(CRRNT_SRC_COL_MSB_REG, BIT32_MASK);
+    }
+
+    bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_ENBL_MSK);
+    LOG(logINFO, ("\tCurrent Source disabled\n"));
+
+    configureChip();
 }
 
 void enableCurrentSource(int fix, uint64_t select, int normal) {
@@ -2222,15 +2237,17 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
              fix, (long long int)select, normal));
     }
     disableCurrentSource();
-    LOG(logINFO, ("\tSetting current source parameters\n"));
     // fix
     if (fix) {
+        LOG(logINFO, ("\tEnabling fix\n"));
         bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_CRRNT_SRC_CLMN_FIX_MSK);
     } else {
+        LOG(logINFO, ("\tDisabling fix\n"));
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_FIX_MSK);
     }
     if (getChipVersion() == 10) {
         // select
+        LOG(logINFO, ("\tSetting selection\n"))
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_SLCT_MSK);
         bus_w(DAQ_REG,
               bus_r(DAQ_REG) | ((select << DAQ_CRRNT_SRC_CLMN_SLCT_OFST) &
@@ -2238,12 +2255,15 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
 
     } else {
         // select
+        LOG(logINFO, ("\tSetting selection\n"))
         set64BitReg(select, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
         // normal
         if (normal) {
+            LOG(logINFO, ("\tEnabling normal\n"))
             bus_w(CONFIG_V11_REG,
                   bus_r(CONFIG_V11_REG) & ~CONFIG_V11_CRRNT_SRC_LOW_MSK);
         } else {
+            LOG(logINFO, ("\tEnabling low\n"))
             bus_w(CONFIG_V11_REG,
                   bus_r(CONFIG_V11_REG) | CONFIG_V11_CRRNT_SRC_LOW_MSK);
         }
@@ -2258,8 +2278,10 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
     // acquisition
 
     // enabling current source
-    LOG(logINFO, ("Enabling Current Source\n"));
+    LOG(logINFO, ("\tEnabling Current Source\n"));
     bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_CRRNT_SRC_ENBL_MSK);
+
+    configureChip();
 }
 
 int getCurrentSource() {

@@ -73,7 +73,7 @@ int deleteOldFile(char *mess) {
     if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
         strcpy(mess,
                 "Could not program fpga. (could not delete old file: ");
-        strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
+        strncat(mess, retvals, MAX_STR_LENGTH - strlen(mess) - 1);
         strcat(mess, "\n");
         LOG(logERROR, (mess));
         return FAIL;

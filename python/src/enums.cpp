@@ -250,6 +250,8 @@ void init_enums(py::module &m) {
         .value("FULL_SPEED", slsDetectorDefs::speedLevel::FULL_SPEED)
         .value("HALF_SPEED", slsDetectorDefs::speedLevel::HALF_SPEED)
         .value("QUARTER_SPEED", slsDetectorDefs::speedLevel::QUARTER_SPEED)
+        .value("G_108MHZ", slsDetectorDefs::speedLevel::G_108MHZ)
+        .value("G_144MHZ", slsDetectorDefs::speedLevel::G_144MHZ)
         .export_values();
 
     py::enum_<slsDetectorDefs::burstMode>(Defs, "burstMode")
@@ -269,8 +271,7 @@ void init_enums(py::module &m) {
                slsDetectorDefs::timingSourceType::TIMING_EXTERNAL)
         .export_values();
 
-    py::enum_<slsDetectorDefs::M3_GainCaps>(Defs, "M3_GainCaps",
-                                            py::arithmetic())
+    py::enum_<slsDetectorDefs::M3_GainCaps>(Defs, "M3_GainCaps")
         .value("M3_C10pre", slsDetectorDefs::M3_GainCaps::M3_C10pre)
         .value("M3_C15sh", slsDetectorDefs::M3_GainCaps::M3_C15sh)
         .value("M3_C30sh", slsDetectorDefs::M3_GainCaps::M3_C30sh)
@@ -287,10 +288,12 @@ void init_enums(py::module &m) {
         .export_values();
 
     py::enum_<slsDetectorDefs::streamingInterface>(Defs, "streamingInterface",
-                                                  py::arithmetic())
+                                                   py::arithmetic())
         .value("NONE", slsDetectorDefs::streamingInterface::NONE)
-        .value("LOW_LATENCY_LINK", slsDetectorDefs::streamingInterface::LOW_LATENCY_LINK)
-        .value("ETHERNET_10GB", slsDetectorDefs::streamingInterface::ETHERNET_10GB)
+        .value("LOW_LATENCY_LINK",
+               slsDetectorDefs::streamingInterface::LOW_LATENCY_LINK)
+        .value("ETHERNET_10GB",
+               slsDetectorDefs::streamingInterface::ETHERNET_10GB)
         .value("ALL", slsDetectorDefs::streamingInterface::ALL)
         .export_values()
         .def("__or__",

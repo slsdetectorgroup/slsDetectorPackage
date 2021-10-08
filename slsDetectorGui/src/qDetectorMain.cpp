@@ -439,33 +439,45 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
         LOG(logINFO) << "About Common GUI for Jungfrau, Eiger, Mythen3, "
                         "Gotthard, Gotthard2 and Moench detectors";
 
-        std::string guiVersion = std::to_string(APIGUI);
+        std::string guiVersion = sls::ToStringHex(APIGUI);
         std::string clientVersion = "unknown";
         try {
-            clientVersion = std::to_string(det->getClientVersion());
+            clientVersion = sls::ToStringHex(det->getClientVersion());
         }
         CATCH_DISPLAY("Could not get client version.",
                       "qDetectorMain::ExecuteHelp")
 
         qDefs::Message(qDefs::INFORMATION,
                        "<p style=\"font-family:verdana;\">"
-                       "SLS Detector GUI version:&nbsp;&nbsp;&nbsp;" +
+
+                       "<b>SLS Detector GUI version:&nbsp;&nbsp;&nbsp;" +
                            guiVersion +
-                           "<br>"
-                           "SLS Detector Client version:  " +
+                           "<br>SLS Detector Client version:  " +
                            clientVersion +
-                           "<br><br>"
+                           "</b><br><br>"
+
                            "Common GUI to control the SLS Detectors: "
                            "Jungfrau, Eiger, Mythen3, Gotthard, Gotthard2 and "
                            "Moench.<br><br>"
+
                            "It can be operated in parallel with the command "
-                           "line interface:<br>"
-                           "sls_detector_put,<br>sls_detector_get,<br>sls_"
-                           "detector_acquire and<br>sls_detector_help.<br><br>"
-                           "Please report bugs to: <br>"
-                           "Dhanya.Thattil@psi.ch, <br>"
-                           "Erik.Froejdh@psi.ch or  <br>"
-                           "Anna.Bergamaschi@psi.ch.<\\p>",
+                           "line interface: sls_detector_put, sls_detector_get, "
+                           "sls_detector_acquire and sls_detector_help.<br><br>"
+
+
+                           "Support:<br>"
+                           "Dhanya.Thattil@psi.ch <br>"
+                           "Erik.Froejdh@psi.ch.<br><br><br>"
+
+                        "<br>slsDetectorGui Copyright (C) 2021 <br><br>"
+
+                        "This program comes with ABSOLUTELY NO WARRANTY. "
+                        "This is free software, and you are welcome to redistribute it "
+                        "under certain conditions. Refer LICENSE and LICESNSE.lesser "
+                        "in root folder for more details."
+
+
+                           "<\\p>",
                        "qDetectorMain::ExecuteHelp");
     }
 }

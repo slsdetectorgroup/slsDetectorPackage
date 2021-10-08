@@ -973,8 +973,14 @@ TEST_CASE("readoutspeed", "[.cmd]") {
 TEST_CASE("readoutspeedlist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_NOTHROW(proxy.Call("readoutspeedlist", {}, -1, GET));
-    REQUIRE_THROWS(proxy.Call("readoutspeedlist", {}, -1, PUT));
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU || det_type == defs::EIGER)
+    {
+        REQUIRE_NOTHROW(proxy.Call("readoutspeedlist", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("readoutspeedlist", {}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("readoutspeedlist", {}, -1, GET));
+    }
 }
 
 TEST_CASE("adcphase", "[.cmd]") {

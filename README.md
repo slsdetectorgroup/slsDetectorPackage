@@ -4,10 +4,10 @@ Please do not update to any xxxx.xx.xx.dev0 tags. They are not releases, but tag
 Use only releases with tags such as x.x.x or x.x.x-rcx.
 
 ### Documentation
-#### 5.0.0 - Latest Release
+##### 5.0.0 - Latest Release
 Detailed documentation on the latest release can be found in the [software wiki](https://slsdetectorgroup.github.io/devdoc/index.html) and on the [official site](https://www.psi.ch/en/detectors/software).
 
-#### Older Releases
+##### Older Releases
 Documentation is found in the package.
 
 ### Binaries

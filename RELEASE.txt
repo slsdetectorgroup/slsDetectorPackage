@@ -259,7 +259,7 @@ This document describes the differences between v6.0.0-rc1 and v5.1.0.
     Jungfrau
     ========       
     Compatible version : 31.08.2021 (v1.2, PCB v1.0) 
-                       : 10.09.2021 (v2.2, PCB v2.0)
+                       : 08.10.2021 (v2.2, PCB v2.0)
 
     Gotthard
     ========   

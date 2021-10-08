@@ -254,7 +254,7 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
         
     Eiger
     =====  
-    Compatible version : 08.09.2020 (v27)
+    Compatible version : 08.10.2021 (v29)
     
     Jungfrau
     ========       

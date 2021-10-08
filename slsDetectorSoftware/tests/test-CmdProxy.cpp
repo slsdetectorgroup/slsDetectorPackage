@@ -345,7 +345,7 @@ TEST_CASE("thresholdnotb", "[.cmd]") {
             std::string senergy = std::to_string(prev_energies[0]);
             std::ostringstream oss1, oss2;
             proxy.Call("thresholdnotb", {senergy, "standard"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "threshold [" + senergy + ", standard]\n");
+            REQUIRE(oss1.str() == "thresholdnotb [" + senergy + ", standard]\n");
             proxy.Call("threshold", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "threshold " + senergy + "\n");
             REQUIRE_THROWS(proxy.Call("thresholdnotb",
@@ -973,8 +973,14 @@ TEST_CASE("readoutspeed", "[.cmd]") {
 TEST_CASE("readoutspeedlist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_NOTHROW(proxy.Call("readoutspeedlist", {}, -1, GET));
-    REQUIRE_THROWS(proxy.Call("readoutspeedlist", {}, -1, PUT));
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU || det_type == defs::EIGER)
+    {
+        REQUIRE_NOTHROW(proxy.Call("readoutspeedlist", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("readoutspeedlist", {}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("readoutspeedlist", {}, -1, GET));
+    }
 }
 
 TEST_CASE("adcphase", "[.cmd]") {
@@ -1575,17 +1581,17 @@ TEST_CASE("currentsource", "[.cmd]") {
             {
                 std::ostringstream oss;
                 proxy.Call("currentsource", {"1"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "currentsource 1\n");
+                REQUIRE(oss.str() == "currentsource [1]\n");
             }
             {
                 std::ostringstream oss;
                 proxy.Call("currentsource", {"0"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "currentsource 0\n");
+                REQUIRE(oss.str() == "currentsource [0]\n");
             }
             {
                 std::ostringstream oss;
                 proxy.Call("currentsource", {}, -1, GET, oss);
-                REQUIRE(oss.str() == "currentsource 0\n");
+                REQUIRE(oss.str() == "currentsource [disabled]\n");
             }
             REQUIRE_THROWS(
                 proxy.Call("currentsource", {"1", "fix", "42"}, -1, PUT));
@@ -1772,6 +1778,9 @@ TEST_CASE("defaultdac", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("defaultdac", {"blabla"}, -1, PUT));
         auto daclist = det.getDacList();
         for (auto it : daclist) {
+            if (it == defs::VTHRESHOLD) {
+                continue;
+            }
             auto dacname = sls::ToString(it);
             auto prev_val = det.getDefaultDac(it);
             {
@@ -1915,6 +1924,9 @@ TEST_CASE("blockingtrigger", "[.cmd]") {
             std::ostringstream oss;
             proxy.Call("blockingtrigger", {}, -1, PUT, oss);
             REQUIRE(oss.str() == "blockingtrigger successful\n");
+        }
+        if (det.isVirtualDetectorServer().tsquash("inconsistent virtual detectors")) {
+            std::this_thread::sleep_for(std::chrono::seconds(2));
         }
         auto currentfnum =
             det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
@@ -2310,7 +2322,7 @@ TEST_CASE("udp_firstdst", "[.cmd]") {
             det.setFirstUDPDestination(prev_val[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("udp_numdst", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("udp_firstdst", {}, -1, GET));
     }
 }
 

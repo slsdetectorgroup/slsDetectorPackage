@@ -9247,7 +9247,7 @@ int get_readout_speed(int file_des) {
     int retval = -1;
     LOG(logDEBUG1, ("Getting readout speed\n"));
 
-#if !defined(JUNGFRAUD) && !defined(EIGER) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(EIGERD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -9270,7 +9270,7 @@ int set_readout_speed(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting readout speed : %u\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(EIGER) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(EIGERD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set

@@ -272,7 +272,7 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
 
     Gotthard2
     =========
-    Compatible version : 27.05.2021 (development)
+    Compatible version : 27.05.2021 (v1.0)
 
     Moench
     ======

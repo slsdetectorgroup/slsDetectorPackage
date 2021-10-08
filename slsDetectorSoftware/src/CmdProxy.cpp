@@ -605,57 +605,37 @@ std::string CmdProxy::Exptime(int action) {
     return os.str();
 }
 
-std::string CmdProxy::Speed(int action) {
+std::string CmdProxy::ReadoutSpeed(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[0 or full_speed|1 or half_speed|2 or "
-              "quarter_speed]\n\t[Eiger][Jungfrau] Readout speed of "
-              "chip.\n\t[Jungfrau] FULL_SPEED option only available from v2.0 "
-              "boards and with setting number of interfaces to 2. Also "
-              "overwrites adcphase to recommended default. "
+        os << "\n\t[0 or full_speed|1 or half_speed|2 or "
+        "quarter_speed]\n\t\t[Eiger][Jungfrau] Readout "
+        "speed of chip.\n\t\t[Eiger] Default speed is full_speed."
+        "\n\t\t[Jungfrau] Default speed is half_speed. full_speed "
+        "option only available from v2.0 boards and is recommended to set "
+        "number of interfaces to 2. Also overwrites "
+        "adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] "
+        "Readout speed of chip in MHz. Default is 108."
            << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash();
         if (type == defs::CHIPTESTBOARD || type == defs::MOENCH) {
             throw sls::RuntimeError(
-                "Speed not implemented. Did you mean runclk?");
-        }
-        if (type != defs::EIGER && type != defs::JUNGFRAU) {
-            throw sls::RuntimeError(
-                "Speed not implemented."); // setspped one function problem. tbr
-                                           // after change
+                "ReadoutSpeed not implemented. Did you mean runclk?");
         }
         if (action == defs::GET_ACTION) {
             if (!args.empty()) {
                 WrongNumberOfParameters(0);
             }
-            auto t = det->getSpeed(std::vector<int>{det_id});
+            auto t = det->getReadoutSpeed(std::vector<int>{det_id});
             os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            defs::speedLevel t;
-            try {
-                int ival = StringTo<int>(args[0]);
-                switch (ival) {
-                case 0:
-                    t = defs::FULL_SPEED;
-                    break;
-                case 1:
-                    t = defs::HALF_SPEED;
-                    break;
-                case 2:
-                    t = defs::QUARTER_SPEED;
-                    break;
-                default:
-                    throw sls::RuntimeError("Unknown speed " + args[0]);
-                }
-            } catch (...) {
-                t = sls::StringTo<defs::speedLevel>(args[0]);
-            }
-            det->setSpeed(t, std::vector<int>{det_id});
+            defs::speedLevel t = sls::StringTo<defs::speedLevel>(args[0]);
+            det->setReadoutSpeed(t, std::vector<int>{det_id});
             os << sls::ToString(t) << '\n'; // no args to convert 0,1,2 as well
         } else {
             throw sls::RuntimeError("Unknown action");

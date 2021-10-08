@@ -164,6 +164,14 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
         This will only affect shared memory and will not try to change the
         current tcp port of the control/stop server in detector.
 
+    26. [Eiger][Jungfrau][Gotthard2] Speed 
+        Command line: readoutspeed, readoutspeedlist API: getReadoutSpeed/ setReadoutSpeed /
+        getReadoutSpeedList
+        Previous command: speed, setSpeed/ getSpeed
+        [Eiger][Jungfrau] same as before.
+        [Gotthard2] New command to set readout speed. Options: 108, 144 (in MHz)
+        
+
     Detector servers
     ----------------
 

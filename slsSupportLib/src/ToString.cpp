@@ -247,6 +247,10 @@ std::string ToString(const defs::speedLevel s) {
         return std::string("half_speed");
     case defs::QUARTER_SPEED:
         return std::string("quarter_speed");
+    case defs::G2_108MHZ:
+        return std::string("108");
+    case defs::G2_144MHZ:
+        return std::string("144");        
     default:
         return std::string("Unknown");
     }
@@ -703,10 +707,20 @@ template <> defs::detectorSettings StringTo(const std::string &s) {
 template <> defs::speedLevel StringTo(const std::string &s) {
     if (s == "full_speed")
         return defs::FULL_SPEED;
+    if (s == "0")
+        return defs::FULL_SPEED;
     if (s == "half_speed")
+        return defs::HALF_SPEED;
+    if (s == "1")
         return defs::HALF_SPEED;
     if (s == "quarter_speed")
         return defs::QUARTER_SPEED;
+    if (s == "2")
+        return defs::QUARTER_SPEED;
+    if (s == "108")
+        return defs::G2_108MHZ;
+    if (s == "144")
+        return defs::G2_144MHZ;
     throw sls::RuntimeError("Unknown speed " + s);
 }
 

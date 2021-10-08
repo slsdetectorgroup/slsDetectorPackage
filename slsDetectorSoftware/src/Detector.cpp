@@ -412,19 +412,30 @@ std::vector<defs::timingMode> Detector::getTimingModeList() const {
     }
 }
 
-Result<defs::speedLevel> Detector::getSpeed(Positions pos) const {
-    auto res = pimpl->Parallel(&Module::getClockDivider, pos, defs::RUN_CLOCK);
-    Result<defs::speedLevel> speedResult(res.size());
-    for (unsigned int i = 0; i < res.size(); ++i) {
-        speedResult[i] = static_cast<defs::speedLevel>(res[i]);
-    }
-    return speedResult;
+Result<defs::speedLevel> Detector::getReadoutSpeed(Positions pos) const {
+    return pimpl->Parallel(&Module::getReadoutSpeed, pos);
 }
 
-void Detector::setSpeed(defs::speedLevel value, Positions pos) {
-    pimpl->Parallel(&Module::setClockDivider, pos, defs::RUN_CLOCK,
-                    static_cast<int>(value));
+void Detector::setReadoutSpeed(defs::speedLevel value, Positions pos) {
+    pimpl->Parallel(&Module::setReadoutSpeed, pos, value);
 }
+
+
+std::vector<defs::speedLevel> Detector::getReadoutSpeedList() const {
+    switch (getDetectorType().squash()) {
+    case defs::EIGER:
+    case defs::JUNGFRAU:
+        return std::vector<defs::speedLevel>{defs::FULL_SPEED,
+                                             defs::HALF_SPEED,
+                                             defs::QUARTER_SPEED};
+    case defs::GOTTHARD2:
+        return std::vector<defs::speedLevel>{defs::G2_108MHZ,
+                                             defs::G2_144MHZ};
+    default:
+        throw RuntimeError("Readout speed not implemented for this detector");
+    }
+}
+
 
 Result<int> Detector::getADCPhase(Positions pos) const {
     return pimpl->Parallel(&Module::getClockPhase, pos, defs::ADC_CLOCK, false);

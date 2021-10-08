@@ -591,7 +591,8 @@ class CmdProxy {
         /* acquisition parameters */
         {"cycles", "triggers"},
         {"cyclesl", "triggersl"},
-        {"clkdivider", "speed"},
+        {"clkdivider", "readoutspeed"},
+        {"speed", "readoutspeed"},
         {"vhighvoltage", "highvoltage"},
         {"digitest", "imagetest"},
         {"filter", "filterresistor"},
@@ -792,7 +793,8 @@ class CmdProxy {
         {"drlist", &CmdProxy::drlist},
         {"timing", &CmdProxy::timing},
         {"timinglist", &CmdProxy::timinglist},
-        {"speed", &CmdProxy::Speed},
+        {"readoutspeed", &CmdProxy::ReadoutSpeed},
+        {"readoutspeedlist", &CmdProxy::readoutspeedlist},
         {"adcphase", &CmdProxy::Adcphase},
         {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
         {"dbitphase", &CmdProxy::Dbitphase},
@@ -1097,7 +1099,7 @@ class CmdProxy {
     std::string Acquire(int action);
     std::string Exptime(int action);
     std::string DynamicRange(int action);
-    std::string Speed(int action);
+    std::string ReadoutSpeed(int action);
     std::string Adcphase(int action);
     std::string Dbitphase(int action);
     std::string ClockFrequency(int action);
@@ -1327,6 +1329,10 @@ class CmdProxy {
 
     GET_COMMAND_NOID(timinglist, getTimingModeList,
                      "\n\tGets the list of timing modes for this detector.");
+
+    GET_COMMAND_NOID(readoutspeedlist, getReadoutSpeedList,
+                     "\n\tList of readout speed levels implemented for this detector.");
+
 
     GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift,
                 "\n\t[Jungfrau][CTB][Moench] Absolute maximum Phase shift of "

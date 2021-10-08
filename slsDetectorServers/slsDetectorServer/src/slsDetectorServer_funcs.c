@@ -410,7 +410,8 @@ void function_table() {
     flist[F_CLEAR_ALL_UDP_DEST] = &clear_all_udp_dst;
     flist[F_GET_UDP_FIRST_DEST] = &get_udp_first_dest;
     flist[F_SET_UDP_FIRST_DEST] = &set_udp_first_dest;
-
+    flist[F_GET_READOUT_SPEED] = &get_readout_speed;
+    flist[F_SET_READOUT_SPEED] = &set_readout_speed;
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -6010,46 +6011,22 @@ int set_clock_divider(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting clock (%d) divider: %u\n", args[0], args[1]));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D) &&         \
-    !defined(MYTHEN3D)
+#if !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        int ind = args[0];
-        int val = args[1];
-        enum CLKINDEX c = 0;
-        switch (ind) {
-            // specific clock index
-#if defined(EIGERD) || defined(JUNGFRAUD)
-        case RUN_CLOCK:
-            c = RUN_CLK;
-            break;
-#endif
-        default:
-            // any clock index
-#if defined(GOTTHARD2D) || defined(MYTHEN3D)
-            if (ind < NUM_CLOCKS) {
-                c = (enum CLKINDEX)ind;
-                break;
-            }
-#endif
-            modeNotImplemented("clock index (divider set)", ind);
-            break;
-        }
 
-        // validate val range
-        if (ret != FAIL) {
-#ifdef JUNGFRAUD
-            if (val == (int)FULL_SPEED && isHardwareVersion2()) {
-                ret = FAIL;
-                strcpy(mess,
-                       "Full speed not implemented for this board version.\n");
-                LOG(logERROR, (mess));
-            } else
-#endif
-#if defined(GOTTHARD2D) || defined(MYTHEN3D)
-                if (val < 2 || val > getMaxClockDivider()) {
+        if (args[0] >= NUM_CLOCKS) {
+            modeNotImplemented("clock index (divider set)", args[0]);
+        } 
+
+        enum CLKINDEX c = 0;
+        int val = args[1];
+        if (ret == OK) {
+            c = (enum CLKINDEX)args[0];
+            // validate val range
+            if (val < 2 || val > getMaxClockDivider()) {
                 char *clock_names[] = {CLK_NAMES};
                 ret = FAIL;
                 sprintf(mess,
@@ -6058,24 +6035,12 @@ int set_clock_divider(int file_des) {
                         clock_names[c], (int)c, val, getMaxClockDivider());
                 LOG(logERROR, (mess));
             }
-#else
-            if (val < (int)FULL_SPEED || val > (int)QUARTER_SPEED) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Cannot set speed to %d. Value should be in range "
-                        "[%d-%d]\n",
-                        val, (int)FULL_SPEED, (int)QUARTER_SPEED);
-                LOG(logERROR, (mess));
-            }
-#endif
         }
 
         if (ret != FAIL) {
-            char modeName[50] = "speed";
-#if defined(GOTTHARD2D) || defined(MYTHEN3D)
+            char modeName[50];
             char *clock_names[] = {CLK_NAMES};
             sprintf(modeName, "%s clock (%d) divider", clock_names[c], (int)c);
-#endif
             if (getClockDivider(c) == val) {
                 LOG(logINFO, ("Same %s: %d\n", modeName, val));
             } else {
@@ -6105,29 +6070,15 @@ int get_clock_divider(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting clock (%d) divider\n", arg));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D) &&         \
-    !defined(MYTHEN3D)
+#if !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
-    enum CLKINDEX c = 0;
-    switch (arg) {
-#if defined(EIGERD) || defined(JUNGFRAUD)
-    case RUN_CLOCK:
-        c = RUN_CLK;
-        break;
-#endif
-    default:
-#if defined(GOTTHARD2D) || defined(MYTHEN3D)
-        if (arg < NUM_CLOCKS) {
-            c = (enum CLKINDEX)arg;
-            break;
-        }
-#endif
-        modeNotImplemented("clock index (divider get)", arg);
-        break;
-    }
+        if (arg >= NUM_CLOCKS) {
+            modeNotImplemented("clock index (divider set)", arg);
+        } 
     if (ret == OK) {
+        enum CLKINDEX c = (enum CLKINDEX)arg;    
         retval = getClockDivider(c);
         char *clock_names[] = {CLK_NAMES};
         LOG(logDEBUG1, ("retval %s clock (%d) divider: %d\n", clock_names[c],
@@ -9284,6 +9235,87 @@ int set_udp_first_dest(int file_des) {
                 }
             }
         }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+
+int get_readout_speed(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+    LOG(logDEBUG1, ("Getting readout speed\n"));
+
+#if !defined(JUNGFRAUD) && !defined(EIGER) && !defined(GOTTHARD2D)
+    functionNotImplemented();
+#else
+    // get only
+    ret = getReadoutSpeed(&retval);
+    LOG(logDEBUG1, ("retval readout speed: %d\n", retval));
+    if (ret == FAIL) {
+        strcpy(mess, "Could not get readout speed\n");
+        LOG(logERROR, (mess));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_readout_speed(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting readout speed : %u\n", arg));
+
+#if !defined(JUNGFRAUD) && !defined(EIGER) && !defined(GOTTHARD2D)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+#ifdef JUNGFRAUD
+        if (arg == (int)FULL_SPEED && isHardwareVersion2()) {
+            ret = FAIL;
+            strcpy(mess,
+                    "Full speed not implemented for this board version (v1.0).\n");
+            LOG(logERROR, (mess));
+        } 
+#endif   
+        if (ret == OK) {
+            switch (arg) {
+#if defined(EIGERD) || defined(JUNGFRAUD)
+                case FULL_SPEED:
+                case HALF_SPEED:
+                case QUARTER_SPEED:
+#elif GOTTHARD2D
+                case G2_108MHZ:
+                case G2_144MHZ:
+#endif
+                    break;
+                default:
+                    modeNotImplemented("readout speed index", arg);
+                    break;
+            }
+            if (ret == OK) {
+                ret = setReadoutSpeed(arg);
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not set readout speed to %d.\n", arg);
+                    LOG(logERROR, (mess));
+                } else {
+                    int retval = 0;
+                    ret = getReadoutSpeed(&retval);
+                    LOG(logDEBUG1, ("retval readout speed: %d\n", retval));
+                    if (ret == FAIL) {
+                        strcpy(mess, "Could not get readout speed\n");
+                        LOG(logERROR, (mess));
+                    }
+                    validate(&ret, mess, arg, retval, "set readout speed", DEC);
+                }
+            }
+        }
+
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

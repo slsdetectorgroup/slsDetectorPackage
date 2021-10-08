@@ -1575,17 +1575,17 @@ TEST_CASE("currentsource", "[.cmd]") {
             {
                 std::ostringstream oss;
                 proxy.Call("currentsource", {"1"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "currentsource 1\n");
+                REQUIRE(oss.str() == "currentsource [1]\n");
             }
             {
                 std::ostringstream oss;
                 proxy.Call("currentsource", {"0"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "currentsource 0\n");
+                REQUIRE(oss.str() == "currentsource [0]\n");
             }
             {
                 std::ostringstream oss;
                 proxy.Call("currentsource", {}, -1, GET, oss);
-                REQUIRE(oss.str() == "currentsource 0\n");
+                REQUIRE(oss.str() == "currentsource [disabled]\n");
             }
             REQUIRE_THROWS(
                 proxy.Call("currentsource", {"1", "fix", "42"}, -1, PUT));

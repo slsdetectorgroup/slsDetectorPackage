@@ -7,6 +7,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 cmake_policy(SET CMP0074 NEW)
 include(cmake/project_version.cmake)
 
+#functions to add compiler flags
+include(cmake/SlsAddFlag.cmake)
+
 # Include additional modules that are used unconditionally
 include(GNUInstallDirs)
 
@@ -141,6 +144,9 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     endif()
 endif()
 
+
+
+sls_add_flag_if_available("-Wno-stringop-truncation" slsProjectCSettings)
 
 if(SLS_USE_SANITIZER)
     target_compile_options(slsProjectOptions INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)

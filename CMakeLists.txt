@@ -119,35 +119,26 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.2)
         message(FATAL_ERROR "Clang version must be at least 3.2!")
     endif()
-    target_compile_options(slsProjectWarnings INTERFACE -Wshadow) #Clag does not warn on constructor
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
             message(FATAL_ERROR "GCC version must be at least 4.8!")
     endif()
 
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5)
-            target_compile_options(slsProjectWarnings INTERFACE 
-                                             -Wno-missing-field-initializers)
-    endif()
-    
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.0)
-        target_compile_options(slsProjectWarnings INTERFACE 
-                                                -Wno-misleading-indentation # mostly in rapidjson remove using clang format
-                                                -Wduplicated-cond
-                                                -Wnull-dereference )
-
-    endif()
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
-        target_compile_options(slsProjectWarnings INTERFACE 
-                                                -Wno-class-memaccess )
-
-    endif()
+    # if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5)
+    #         target_compile_options(slsProjectWarnings INTERFACE 
+    #                                          -Wno-missing-field-initializers)
+    # endif()
 endif()
 
+sls_add_cxx_flag("-Wshadow" slsProjectWarnings)
+sls_add_cxx_flag("-Wnull-dereference" slsProjectWarnings)
+sls_add_cxx_flag("-Wduplicated-cond" slsProjectWarnings)
+sls_disable_cxx_warning("-Wclass-memaccess" slsProjectWarnings)
+# sls_disable_cxx_warning("-Wno-misleading-indentation" slsProjectWarnings)
 
 
-# sls_add_flag_if_available("-Wno-stringop-truncation" slsProjectCSettings)
-sls_disable_warning("-Wstringop-truncation" slsProjectCSettings)
+sls_disable_c_warning("-Wstringop-truncation" slsProjectCSettings)
+
 if(SLS_USE_SANITIZER)
     target_compile_options(slsProjectOptions INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)
     target_link_libraries(slsProjectOptions INTERFACE -fsanitize=address,undefined)

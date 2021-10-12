@@ -130,14 +130,13 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # endif()
 endif()
 
-sls_add_cxx_flag("-Wshadow" slsProjectWarnings)
+# sls_add_cxx_flag("-Wshadow" slsProjectWarnings)
 sls_add_cxx_flag("-Wnull-dereference" slsProjectWarnings)
 sls_add_cxx_flag("-Wduplicated-cond" slsProjectWarnings)
 sls_disable_cxx_warning("-Wclass-memaccess" slsProjectWarnings)
-# sls_disable_cxx_warning("-Wno-misleading-indentation" slsProjectWarnings)
-
-
+sls_disable_cxx_warning("-Wno-misleading-indentation" slsProjectWarnings)
 sls_disable_c_warning("-Wstringop-truncation" slsProjectCSettings)
+sls_disable_c_warning("-Wstrangedsaoijvaoe" slsProjectCSettings)
 
 if(SLS_USE_SANITIZER)
     target_compile_options(slsProjectOptions INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)

@@ -81,7 +81,7 @@ endif()
 #Add two fake libraries to manage options
 add_library(slsProjectOptions INTERFACE)
 add_library(slsProjectWarnings INTERFACE)
-target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
+target_compile_options(slsProjectOptions INTERFACE -std=gnu++11)
 target_compile_options(slsProjectWarnings INTERFACE 
                                             -Wall
                                             -Wextra
@@ -101,8 +101,8 @@ target_compile_options(slsProjectWarnings INTERFACE
 
 #Settings for C code
 add_library(slsProjectCSettings INTERFACE)
-target_compile_features(slsProjectCSettings INTERFACE c_std_99)
 target_compile_options(slsProjectCSettings INTERFACE 
+                                            -std=gnu99 #fixed
                                             -Wall
                                             -Wextra
                                             -Wno-unused-parameter

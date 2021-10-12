@@ -129,12 +129,13 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     endif()
 endif()
 
-#Add or disable warnings depending on if the compiler supports them 
-sls_add_cxx_flag("-Wnull-dereference" slsProjectWarnings)
-sls_add_cxx_flag("-Wduplicated-cond" slsProjectWarnings)
-sls_disable_cxx_warning("-Wclass-memaccess" slsProjectWarnings)
-sls_disable_c_warning("-Wstringop-truncation" slsProjectCSettings)
-sls_disable_c_warning("-Wstrangedsaoijvaoe" slsProjectCSettings)
+# Add or disable warnings depending on if the compiler supports them 
+# The function checks internally and sets HAS_warning-name
+sls_enable_cxx_warning("-Wnull-dereference")
+sls_enable_cxx_warning("-Wduplicated-cond")
+sls_disable_cxx_warning("-Wclass-memaccess")
+sls_disable_c_warning("-Wstringop-truncation")
+
 
 if(SLS_USE_SANITIZER)
     target_compile_options(slsProjectOptions INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer)

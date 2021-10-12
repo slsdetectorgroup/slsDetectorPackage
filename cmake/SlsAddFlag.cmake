@@ -2,7 +2,7 @@ include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
 
 
-function(sls_add_cxx_flag flag target)
+function(enable_cxx_warning flag target)
     string(REPLACE "-W" "HAS_" flag_name ${flag})
     check_cxx_compiler_flag(${flag} ${flag_name})
     if(${flag_name})
@@ -13,7 +13,7 @@ function(sls_add_cxx_flag flag target)
     endif()
 endfunction()
 
-function(sls_add_c_flag flag target)
+function(enable_c_warning flag target)
     string(REPLACE "-W" "HAS_" flag_name ${flag})
     check_c_compiler_flag(${flag} ${flag_name})
     if(${flag_name})
@@ -25,7 +25,7 @@ function(sls_add_c_flag flag target)
 endfunction()
 
 
-function(sls_disable_cxx_warning flag target)
+function(disable_cxx_warning flag target)
     string(REPLACE "-W" "HAS_" flag_name ${flag})
     check_cxx_compiler_flag(${flag} ${flag_name})
 
@@ -38,7 +38,7 @@ function(sls_disable_cxx_warning flag target)
     endif()
 endfunction()
 
-function(sls_disable_c_warning flag target)
+function(disable_c_warning flag target)
     string(REPLACE "-W" "HAS_" flag_name ${flag})
     check_c_compiler_flag(${flag} ${flag_name})
     if(${flag_name})
@@ -48,4 +48,17 @@ function(sls_disable_c_warning flag target)
     else()
         message("Warning: ${flag} not supported no need to disable")
     endif()
+endfunction()
+
+
+function(sls_disable_c_warning flag)
+    disable_c_warning(${flag} slsProjectCSettings)
+endfunction()
+
+function(sls_enable_cxx_warning flag)
+    enable_cxx_warning(${flag} slsProjectWarnings)
+endfunction()
+
+function(sls_disable_cxx_warning flag)
+    disable_cxx_warning(${flag} slsProjectWarnings)
 endfunction()

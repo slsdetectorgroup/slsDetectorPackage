@@ -4969,7 +4969,7 @@ int is_udp_configured() {
 }
 
 void configure_mac() {
-    if (!isControlServer) {
+    if (isControlServer) {
         if (is_udp_configured() == OK) {
             ret = configureMAC();
             if (ret != OK) {

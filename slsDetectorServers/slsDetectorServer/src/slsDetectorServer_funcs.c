@@ -4969,25 +4969,27 @@ int is_udp_configured() {
 }
 
 void configure_mac() {
-    if (is_udp_configured() == OK) {
-        ret = configureMAC();
-        if (ret != OK) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-            if (ret == -1) {
-                sprintf(mess, "Could not allocate RAM\n");
+    if (!isControlServer) {
+        if (is_udp_configured() == OK) {
+            ret = configureMAC();
+            if (ret != OK) {
+    #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+                if (ret == -1) {
+                    sprintf(mess, "Could not allocate RAM\n");
+                } else {
+                    sprintf(mess, "Could not configure mac because of incorrect "
+                                "udp 1G destination IP and port\n");
+                }
+    #else
+                sprintf(mess, "Configure Mac failed\n");
+    #endif
+                strcpy(configureMessage, mess);
+                LOG(logERROR, (mess));
             } else {
-                sprintf(mess, "Could not configure mac because of incorrect "
-                              "udp 1G destination IP and port\n");
+                LOG(logINFOGREEN, ("\tConfigure MAC successful\n"));
+                configured = OK;
+                return;
             }
-#else
-            sprintf(mess, "Configure Mac failed\n");
-#endif
-            strcpy(configureMessage, mess);
-            LOG(logERROR, (mess));
-        } else {
-            LOG(logINFOGREEN, ("\tConfigure MAC successful\n"));
-            configured = OK;
-            return;
         }
     }
     configured = FAIL;

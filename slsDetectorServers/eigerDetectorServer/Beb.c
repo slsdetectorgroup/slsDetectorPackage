@@ -8,7 +8,10 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+extern int isControlServer;
+
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
+
 
 struct LocalLinkInterface ll_beb_local, *ll_beb;
 
@@ -95,6 +98,9 @@ int Beb_SetUpUDPHeader(unsigned int header_number, int ten_gig,
                        uint64_t dst_mac, uint32_t dst_ip, uint16_t dst_port) {
 
     if (!Beb_activated)
+        return 1;
+
+    if (!isControlServer)
         return 1;
 
     u_int32_t bram_phy_addr;

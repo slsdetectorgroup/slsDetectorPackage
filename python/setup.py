@@ -25,6 +25,7 @@ ext_modules = [
     Pybind11Extension(
         '_slsdet',
         ['src/main.cpp',
+        'src/current.cpp',
         'src/enums.cpp',
         'src/detector.cpp',
         'src/network.cpp',

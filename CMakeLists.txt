@@ -82,7 +82,7 @@ endif()
 #Add two fake libraries to manage options
 add_library(slsProjectOptions INTERFACE)
 add_library(slsProjectWarnings INTERFACE)
-target_compile_features(slsProjectOptions INTERFACE std_cxx_11)
+target_compile_features(slsProjectOptions INTERFACE cxx_std_11)
 target_compile_options(slsProjectWarnings INTERFACE 
                                             -Wall
                                             -Wextra

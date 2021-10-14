@@ -98,6 +98,8 @@ if(SLS_BUILD_SHARED_LIBRARIES)
     target_link_libraries(slsSupportShared PUBLIC slsSupportObject)
 
     set_target_properties(slsSupportShared PROPERTIES
+        VERSION ${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}
+        SOVERSION ${PACKAGE_VERSION_MAJOR}
         LIBRARY_OUTPUT_NAME SlsSupport
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
         PUBLIC_HEADER "${PUBLICHEADERS}"

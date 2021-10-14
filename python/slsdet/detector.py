@@ -2218,6 +2218,7 @@ class Detector(CppDetectorApi):
     def gainmode(self):
         """
         [Jungfrau] Detector gain mode. Enum: gainMode
+        
         Note
         -----
         [Jungfrau] DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 \n

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #ifndef SINGLE_PHOTON_HIT_H
 #define SINGLE_PHOTON_HIT_H
 #include <stdio.h>

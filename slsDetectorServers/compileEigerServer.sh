@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 declare -a det=("eigerDetectorServer")
 
 declare -a deterror=("OK" "OK" "OK" "OK")

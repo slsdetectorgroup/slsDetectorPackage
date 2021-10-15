@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: LGPL-3.0-or-other
-// Copyright (C) 2021 Contributors to the SLS Detector Package
+// SPDX-License-Identifier: Apache-2.0
 /*
                                  Apache License
                            Version 2.0, January 2004

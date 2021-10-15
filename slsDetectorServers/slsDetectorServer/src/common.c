@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #define _GNU_SOURCE // needed for strptime to be at the top
 #include "common.h"
 #include "clogger.h"

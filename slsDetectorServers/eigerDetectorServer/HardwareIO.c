@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "HardwareIO.h"
 
 xfs_u8 HWIO_xfs_in8(xfs_u32 InAddress) {

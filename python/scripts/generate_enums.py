@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 """
 Code generator for enum bindings in the Python extension. 
 Reads the sls_detector_defs.h and enums_in.cpp then outputs 

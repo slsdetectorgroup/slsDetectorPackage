@@ -1,7 +1,7 @@
 #require 2 arguments, API_NAME API_DIR (relative to package)
 if [ $# -lt 2 ]; then
     echo "Wrong usage of updateVersion.sh. Requires atleast 2 arguments [API_NAME, API_DIR]"
-    return -1
+    return [-1]
 fi
 
 API_NAME=$1

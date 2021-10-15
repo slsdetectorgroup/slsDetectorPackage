@@ -2,25 +2,28 @@
 WD=$PWD
 LICENCE_NOTICE_FILE=$WD/notice_to_add_for_every_file
 
-
-if [ $# -lt 1 ]; then
-    echo "Wrong usage of updateLicenseNotice.sh. Requires atleast 1 argument [RELATIVE PATH]"
-    return -1
+if [ $# -lt 2 ]; then
+    echo "Wrong usage of updateLicenseNotice.sh. Requires atleast 1 argument [RELATIVE PATH] [.h/.cpp etc]"
+    return [-1]
 fi
 
 CURRENT=$WD/$1
+FILE_TYPE=$2
 
 if [ ! -d "$CURRENT" ]; then
   echo "This directory ${CURRENT} does not exist"
-  return -1
+  return [-1]
 fi
 
-cd CURRENT
+cd $CURRENT
 
-for file in $(find $CURRENT -name "*.h"); do
-  echo Processing $file
 
-  cat notice_to_add_for_every_file $file > $file.modified
+for file in $(find $CURRENT -name "*$FILE_TYPE"); do
+  prefix="/afs/psi.ch/project/sls_det_software/dhanya_softwareDevelopment/mySoft/slsDetectorPackage/"
+  p=${file#"$prefix"}
+  echo Processing $p
+
+  cat $LICENCE_NOTICE_FILE $file > $file.modified
 
   mv $file.modified $file
 

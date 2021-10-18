@@ -4210,7 +4210,7 @@ int copy_detector_server(int file_des) {
     if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
         return printSocketReadError();
 
-#ifdef EIGERD
+#if defined(EIGERD) || defined(VIRTUAL)
     functionNotImplemented();
 #else
 

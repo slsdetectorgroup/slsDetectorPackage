@@ -1,3 +1,11 @@
+Valid-License-Identifier: Apache-2.0
+SPDX-URL: https://spdx.org/licenses/Apache-2.0.html
+Usage-Guide:
+  To use this license in source code, put one of the following SPDX
+  tag/value pairs into a comment according to the placement
+  guidelines in the licensing rules documentation.
+    SPDX-License-Identifier: Apache-2.0
+License-Text:
 
                                  Apache License
                            Version 2.0, January 2004

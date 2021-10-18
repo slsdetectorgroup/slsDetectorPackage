@@ -473,10 +473,8 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
 
                         "<br>slsDetectorGui Copyright (C) 2021 Contributors to SLS Detector Package<br><br>"
 
-                        "This program comes with ABSOLUTELY NO WARRANTY. "
-                        "This is free software, and you are welcome to redistribute it "
-                        "under certain conditions. Refer LICENSE and LICESNSE.lesser "
-                        "in root folder for more details."
+                        "See COPYING in root folder for Licensing details:<br>"
+                        "LGPL-3.0-or-other"
 
 
                            "<\\p>",

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 cmake_minimum_required(VERSION 3.12)
 project(slsDetectorPackage)
 set(PROJECT_VERSION 6.0.0)

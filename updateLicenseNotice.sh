@@ -20,7 +20,7 @@ fi
 cd $CURRENT
 
 
-for file in $(find $CURRENT -name "*$FILE_TYPE" -not -path "*./build/*" -not -path "*./libs/*"); do
+for file in $(find $CURRENT -name "$FILE_TYPE" -not -path "*./build/*" -not -path "*./libs/*"); do
   prefix="/afs/psi.ch/project/sls_det_software/dhanya_softwareDevelopment/mySoft/slsDetectorPackage/"
   p=${file#"$prefix"}
   echo Processing $p

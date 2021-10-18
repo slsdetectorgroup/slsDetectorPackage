@@ -2197,17 +2197,21 @@ int getFilterCell() {
 }
 
 void setFilterCell(int iCell) {
-    uint32_t value = 0;
-    // sets the corresponding cell and the cells before it
-    if (iCell != 0) {
-        value = iCell;
-        if (value > 1) {
-            value += (value - 1);
-        }
+    if (iCell > MAX_FILTER_CELL_VAL) {
+        return;
     }
+
     uint32_t addr = CONFIG_V11_REG;
     bus_w(addr, bus_r(addr) &~ CONFIG_V11_FLTR_CLL_MSK);
-    bus_w(addr, bus_r(addr) | ((value << CONFIG_V11_FLTR_CLL_OFST) & CONFIG_V11_FLTR_CLL_MSK));
+
+    if (iCell > 0) {
+        // enables as many cells
+        uint32_t value = 0;
+        for (int i = 0; i != iCell; ++i) {
+            value |= (1 << i);
+        }
+        bus_w(addr, bus_r(addr) | ((value << CONFIG_V11_FLTR_CLL_OFST) & CONFIG_V11_FLTR_CLL_MSK));
+    }
     LOG(logINFO, ("Setting Filter Cell to %d [Reg:0x%x]\n", iCell, bus_r(addr)));
 }
 

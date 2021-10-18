@@ -25,7 +25,7 @@ NOTICE="SPDX-License-Identifier"
 #echo -e "Notice is \n$NOTICE"
 
 
-for file in $(find $CURRENT -name "*$FILE_TYPE" -not -path "*./build/*" -not -path "*./libs/*"); do
+for file in $(find $CURRENT -name "$FILE_TYPE" -not -path "*./build/*" -not -path "*./libs/*"); do
   #echo -e "\nProcessing $file"
   #echo "$file"
   firstline=$(head -n 1 $file)

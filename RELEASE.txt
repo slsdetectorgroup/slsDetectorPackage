@@ -1,7 +1,7 @@
-SLS Detector Package 6.0.0-rc1 released on 08.10.2021 (Release Candidate 1)
-===========================================================================
+SLS Detector Package 6.0.0 released on 21.10.2021
+==================================================
 
-This document describes the differences between v6.0.0-rc1 and v5.1.0.   
+This document describes the differences between v6.0.0 and v5.1.0.   
 
 
 
@@ -10,8 +10,9 @@ This document describes the differences between v6.0.0-rc1 and v5.1.0.
     1.  New or Changed Features
     2.  Resolved Issues
     3.  Known Issues
-    4.  Firmware Requirements
-    5.  Download, Documentation & Support
+    4.  Changes in Next Major Release
+    5.  Firmware Requirements
+    6.  Download, Documentation & Support
 
 
 
@@ -208,6 +209,8 @@ This document describes the differences between v6.0.0-rc1 and v5.1.0.
     1. [Mythen3] counters added in settings tab
 
 
+
+
 2. Resolved Issues
 ==================
 
@@ -245,11 +248,36 @@ This document describes the differences between v6.0.0-rc1 and v5.1.0.
     1.  Disabled port or deactivated (half) modules will not create files.
 
 
-- better control of what is built (PR)?
-- cmake package has hardcoded path to zeromq library
 
 
-3. Firmware Requirements
+3. Known Issues
+===============
+
+    Receiver
+    --------
+    1.  It does not handle readnrows or partial readout. Only the summary
+        is adjusted to print in red. However, it will still write complete
+        images with missing data padded. Roi will be implemented in future
+        that can be complimented with this feature to remove the additional
+        data in files.
+
+    2.  Round robin is not implemented in receiver side, ie. one cannot configure
+        more than 1 receiver at a time. This will/might be done in the future.
+
+
+
+
+4. Changes in Next Major Release
+================================
+
+    1.  Naming of Package
+        The package might be renamed and so might the binaries, libraries, 
+        namespace,include paths in the next major release (which is breaking API).  
+
+
+
+
+5. Firmware Requirements
 ========================
         
     Eiger
@@ -301,23 +329,6 @@ This document describes the differences between v6.0.0-rc1 and v5.1.0.
     and
         https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
 
-
-
-
-
-5. Known Issues
-===============
-
-    Receiver
-    --------
-    1.  It does not handle readnrows or partial readout. Only the summary
-        is adjusted to print in red. However, it will still write complete
-        images with missing data padded. Roi will be implemented in future
-        that can be complimented with this feature to remove the additional
-        data in files.
-
-    2.  Round robin is not implemented in receiver side, ie. one cannot configure
-        more than 1 receiver at a time. This will/might be done in the future.
 
 
 

@@ -133,9 +133,8 @@ int eraseFlash(char *mess) {
     char *format = "flash_erase %s 0 0";
     if (snprintf(cmd, MAX_STR_LENGTH, format, flashDriveName) >=
         MAX_STR_LENGTH) {
-        ret = FAIL;
-        sptrcpy(mess,
-                "Could not program fpga. Command to erase flash is too long\n");
+        strcpy(mess,
+               "Could not program fpga. Command to erase flash is too long\n");
         LOG(logERROR, (mess));
         return FAIL;
     }

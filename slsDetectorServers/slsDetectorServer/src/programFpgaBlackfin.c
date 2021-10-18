@@ -75,7 +75,7 @@ int deleteOldFile(char *mess) {
     char *format = "rm -fr %s";
     if (snprintf(cmd, MAX_STR_LENGTH, format, TEMP_PROG_FILE_NAME) >=
         MAX_STR_LENGTH) {
-        sptrcpy(
+        strcpy(
             mess,
             "Could not program fpga. Command to delete old file is too long\n");
         LOG(logERROR, (mess));
@@ -242,9 +242,8 @@ int eraseFlash(char *mess) {
     char *format = "flash_eraseall %s";
     if (snprintf(cmd, MAX_STR_LENGTH, format, flashDriveName) >=
         MAX_STR_LENGTH) {
-        ret = FAIL;
-        sptrcpy(mess,
-                "Could not program fpga. Command to erase flash is too long\n");
+        strcpy(mess,
+               "Could not program fpga. Command to erase flash is too long\n");
         LOG(logERROR, (mess));
         return FAIL;
     }

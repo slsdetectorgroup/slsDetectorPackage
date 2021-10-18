@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 /* ONLY THOSE ARE USED IN THIS SOFTWARE. If one of those is modified in xilinx
 compilation, this file should be replaced with updated values
 XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_RIGHT_BASEADDR

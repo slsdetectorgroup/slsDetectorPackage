@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/logger.h"
 #include <iostream>
 #include <chrono>
@@ -7,7 +9,8 @@ int main() {
     std::cout << "Compare output between old and new:\n";
     LOG(logINFO) << "Some info message";
     LOG(logERROR) << "This is an error";
-    LOG(logWARNING) << "While this is only a warning";
+    LOG(logWARNING) << "While this is only a warning";    prefix="/afs/psi.ch/project/sls_det_software/dhanya_softwareDevelopment/mySoft/slsDetectorPackage/"
+    p=${file#"$prefix"}
 
     //Logging level can be configure at runtime
     std::cout << "\n\n";

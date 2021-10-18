@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/file_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"

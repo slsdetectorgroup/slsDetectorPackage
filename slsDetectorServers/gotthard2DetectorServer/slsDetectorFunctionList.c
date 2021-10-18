@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "slsDetectorFunctionList.h"
 #include "ALTERA_PLL_CYCLONE10.h"
 #include "ASIC_Driver.h"

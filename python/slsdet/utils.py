@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 """
 Utility functions that are useful for testing and troubleshooting
 but not directly used in controlling the detector

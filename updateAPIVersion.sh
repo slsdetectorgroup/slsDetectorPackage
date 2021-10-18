@@ -1,7 +1,9 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 #require 2 arguments, API_NAME API_DIR (relative to package)
 if [ $# -lt 2 ]; then
     echo "Wrong usage of updateVersion.sh. Requires atleast 2 arguments [API_NAME, API_DIR]"
-    exit -1
+    return [-1]
 fi
 
 API_NAME=$1

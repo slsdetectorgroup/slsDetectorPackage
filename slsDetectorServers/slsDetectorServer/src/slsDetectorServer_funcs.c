@@ -6695,7 +6695,7 @@ int set_current_source(int file_des) {
     int fix = args[1];
     int normal = args[2];
 
-    LOG(logINFOBLUE, ("Setting current source [enable:%d, fix:%d, select:%lld, "
+    LOG(logDEBUG1, ("Setting current source [enable:%d, fix:%d, select:%lld, "
                       "normal:%d]\n",
                       enable, fix, (long long int)select, normal));
 

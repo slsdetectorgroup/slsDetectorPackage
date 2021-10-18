@@ -977,7 +977,7 @@ std::string CmdProxy::CurrentSource(int action) {
             }
             if (args.size() == 3) {
                 det->setCurrentSource(defs::currentSrcParameters(
-                    fix, StringTo<int64_t>(args[2])));
+                    fix, StringTo<uint64_t>(args[2])));
             } else if (args.size() == 4) {
                 bool normalCurrent = false;
                 if (args[3] == "normal") {
@@ -989,7 +989,7 @@ std::string CmdProxy::CurrentSource(int action) {
                                             ". Did you mean normal or low?");
                 }
                 det->setCurrentSource(defs::currentSrcParameters(
-                    fix, StringTo<int64_t>(args[2]), normalCurrent));
+                    fix, StringTo<uint64_t>(args[2]), normalCurrent));
             } else {
                 throw sls::RuntimeError(
                     "Invalid number of parareters for this command.");

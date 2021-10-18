@@ -1756,7 +1756,7 @@ void configureChip() {
 
         // write same values to configure selection
         // if (chip was powered off earlier)
-        LOG(logINFO, ("\tSetting default values for selection\n"))
+        LOG(logINFO, ("\tRewriting values for selection\n"))
         bus_w(CRRNT_SRC_COL_LSB_REG, bus_r(CRRNT_SRC_COL_LSB_REG));
         bus_w(CRRNT_SRC_COL_MSB_REG, bus_r(CRRNT_SRC_COL_MSB_REG));
 
@@ -2228,15 +2228,16 @@ void disableCurrentSource() {
 }
 
 void enableCurrentSource(int fix, uint64_t select, int normal) {
+    disableCurrentSource();
+
     if (getChipVersion() == 11) {
-        LOG(logINFO, ("Enabling current source [fix:%d, select:%lld]\n", fix,
-                      (long long int)select));
+        LOG(logINFO, ("Enabling current source [fix:%d, select:0x%lx]\n", fix,
+                      (long unsigned int)select));
     } else {
         LOG(logINFO,
-            ("Enabling current source [fix:%d, select:0x%llx, normal:%d]\n",
-             fix, (long long int)select, normal));
+            ("Enabling current source [fix:%d, select:%ld, normal:%d]\n",
+             fix, (long int)select, normal));
     }
-    disableCurrentSource();
     // fix
     if (fix) {
         LOG(logINFO, ("\tEnabling fix\n"));
@@ -2247,7 +2248,7 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
     }
     if (getChipVersion() == 10) {
         // select
-        LOG(logINFO, ("\tSetting selection\n"))
+        LOG(logINFO, ("\tSetting selection to %ld\n", (long int)select));
         bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_CRRNT_SRC_CLMN_SLCT_MSK);
         bus_w(DAQ_REG,
               bus_r(DAQ_REG) | ((select << DAQ_CRRNT_SRC_CLMN_SLCT_OFST) &
@@ -2255,7 +2256,7 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
 
     } else {
         // select
-        LOG(logINFO, ("\tSetting selection\n"))
+        LOG(logINFO, ("\tSetting selection to 0x%lx\n", (long unsigned int)select));
         set64BitReg(select, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
         // normal
         if (normal) {

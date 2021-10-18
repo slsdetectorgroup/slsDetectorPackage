@@ -7,34 +7,36 @@
 #define KERNEL_DATE_VRSN  "Wed May 20 13:58:38 CEST 2020"
 #define ID_FILE           "detid_gotthard2.txt"
 
+#define LINKED_SERVER_NAME "gotthard2DetectorServer"
+
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 
 /* Hardware Definitions */
-#define NCHAN                       (128)
-#define NCHIP                       (10)
-#define NDAC                        (16)
-#define NADC                        (32)
-#define ONCHIP_NDAC                 (7)
-#define DYNAMIC_RANGE               (16)
-#define HV_SOFT_MAX_VOLTAGE         (500)
-#define HV_HARD_MAX_VOLTAGE         (530)
-#define HV_DRIVER_FILE_NAME         ("/etc/devlinks/hvdac")
-#define DAC_DRIVER_FILE_NAME        ("/etc/devlinks/dac")
-#define ONCHIP_DAC_DRIVER_FILE_NAME ("/etc/devlinks/chipdac")
-#define TYPE_FILE_NAME              ("/etc/devlinks/type")
-#define CONFIG_FILE                 ("config_gotthard2.txt")
-#define DAC_MAX_MV                  (2048)
-#define ONCHIP_DAC_MAX_VAL          (0x3FF)
-#define ADU_MAX_VAL                 (0xFFF)
-#define ADU_MAX_BITS                (12)
-#define MAX_FRAMES_IN_BURST_MODE    (2720)
-#define TYPE_GOTTHARD2_MODULE_VAL   (536)
-#define TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL   (683)
-#define TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL    (704)
-#define TYPE_GOTTHARD2_MODULE_VAL   (536)
-#define TYPE_TOLERANCE              (5)
-#define TYPE_NO_MODULE_STARTING_VAL (800)
-#define INITIAL_STARTUP_WAIT        (1 * 1000 * 1000)
+#define NCHAN                                 (128)
+#define NCHIP                                 (10)
+#define NDAC                                  (16)
+#define NADC                                  (32)
+#define ONCHIP_NDAC                           (7)
+#define DYNAMIC_RANGE                         (16)
+#define HV_SOFT_MAX_VOLTAGE                   (500)
+#define HV_HARD_MAX_VOLTAGE                   (530)
+#define HV_DRIVER_FILE_NAME                   ("/etc/devlinks/hvdac")
+#define DAC_DRIVER_FILE_NAME                  ("/etc/devlinks/dac")
+#define ONCHIP_DAC_DRIVER_FILE_NAME           ("/etc/devlinks/chipdac")
+#define TYPE_FILE_NAME                        ("/etc/devlinks/type")
+#define CONFIG_FILE                           ("config_gotthard2.txt")
+#define DAC_MAX_MV                            (2048)
+#define ONCHIP_DAC_MAX_VAL                    (0x3FF)
+#define ADU_MAX_VAL                           (0xFFF)
+#define ADU_MAX_BITS                          (12)
+#define MAX_FRAMES_IN_BURST_MODE              (2720)
+#define TYPE_GOTTHARD2_MODULE_VAL             (536)
+#define TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL (683)
+#define TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL  (704)
+#define TYPE_GOTTHARD2_MODULE_VAL             (536)
+#define TYPE_TOLERANCE                        (5)
+#define TYPE_NO_MODULE_STARTING_VAL           (800)
+#define INITIAL_STARTUP_WAIT                  (1 * 1000 * 1000)
 
 /** Default Parameters */
 #define DEFAULT_BURST_MODE          (BURST_INTERNAL)
@@ -54,20 +56,20 @@
 #define DEFAULT_TIMING_SOURCE       (TIMING_INTERNAL)
 #define DEFAULT_ALGORITHM           (ALG_HITS)
 
-#define DEFAULT_READOUT_C0 (8) //(108333336) // rdo_clk, 144 MHz
-#define DEFAULT_READOUT_C1 (8) //(108333336) // rdo_x2_clk, 144 MHz
+#define DEFAULT_READOUT_C0 (8)  //(108333336) // rdo_clk, 144 MHz
+#define DEFAULT_READOUT_C1 (8)  //(108333336) // rdo_x2_clk, 144 MHz
 #define DEFAULT_SYSTEM_C0  (5)  //(144444448) // run_clk, 144 MHz
 #define DEFAULT_SYSTEM_C1  (10) //(72222224) // chip_clk, 72 MHz
 #define DEFAULT_SYSTEM_C2  (5)  //(144444448) // sync_clk, 144 MHz
 #define DEFAULT_SYSTEM_C3  (5)  //(144444448) // str_clk, 144 MHz
 
-#define DEFAULT_READOUT_SPEED   (G2_108MHZ)
-#define SPEED_144_CLKDIV_0  (6)
-#define SPEED_144_CLKDIV_1  (6)
-#define SPEED_144_CLKPHASE_DEG_1  (122) // 125 not possible
-#define SPEED_108_CLKDIV_0  (8)
-#define SPEED_108_CLKDIV_1  (8)
-#define SPEED_108_CLKPHASE_DEG_1  (268) // 270 not possible
+#define DEFAULT_READOUT_SPEED    (G2_108MHZ)
+#define SPEED_144_CLKDIV_0       (6)
+#define SPEED_144_CLKDIV_1       (6)
+#define SPEED_144_CLKPHASE_DEG_1 (122) // 125 not possible
+#define SPEED_108_CLKDIV_0       (8)
+#define SPEED_108_CLKDIV_1       (8)
+#define SPEED_108_CLKPHASE_DEG_1 (268) // 270 not possible
 
 /* Firmware Definitions */
 #define FIXED_PLL_FREQUENCY     (20000000)  // 20MHz
@@ -80,7 +82,7 @@
 #define DEFAULT_ASIC_DOUT_RDY_SRC (0x5)
 #define DEFAULT_ASIC_DOUT_RDY_DLY (0x3)
 
-#define VETO_DATA_SIZE          (160)
+#define VETO_DATA_SIZE (160)
 typedef struct {
     uint64_t frameNumber;
     uint64_t bunchId;
@@ -159,17 +161,17 @@ enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
 #define ASIC_ADC_MAX_VAL          (0x7F)
 #define ASIC_GLOBAL_SETT_MAX_BITS (6)
 
-#define ASIC_EXT_MEMCTRL_OFST (0)
-#define ASIC_EXT_MEMCTRL_MSK  (0x1 << ASIC_EXT_MEMCTRL_OFST)
-#define ASIC_EXT_TIMING_OFST  (1)
-#define ASIC_EXT_TIMING_MSK   (0x1 << ASIC_EXT_TIMING_OFST)
-#define ASIC_CONT_MODE_OFST   (2)
-#define ASIC_CONT_MODE_MSK    (0x1 << ASIC_CONT_MODE_OFST)
-#define ASIC_FILTER_OFST      (3)
-#define ASIC_FILTER_MSK       (0x3 << ASIC_FILTER_OFST)
+#define ASIC_EXT_MEMCTRL_OFST     (0)
+#define ASIC_EXT_MEMCTRL_MSK      (0x1 << ASIC_EXT_MEMCTRL_OFST)
+#define ASIC_EXT_TIMING_OFST      (1)
+#define ASIC_EXT_TIMING_MSK       (0x1 << ASIC_EXT_TIMING_OFST)
+#define ASIC_CONT_MODE_OFST       (2)
+#define ASIC_CONT_MODE_MSK        (0x1 << ASIC_CONT_MODE_OFST)
+#define ASIC_FILTER_OFST          (3)
+#define ASIC_FILTER_MSK           (0x3 << ASIC_FILTER_OFST)
 #define ASIC_FILTER_MAX_RES_VALUE (3)
-#define ASIC_CDS_GAIN_OFST    (5)
-#define ASIC_CDS_GAIN_MSK     (0x1 << ASIC_CDS_GAIN_OFST)
+#define ASIC_CDS_GAIN_OFST        (5)
+#define ASIC_CDS_GAIN_MSK         (0x1 << ASIC_CDS_GAIN_OFST)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

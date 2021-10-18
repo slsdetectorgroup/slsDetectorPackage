@@ -612,13 +612,14 @@ std::string CmdProxy::ReadoutSpeed(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "\n\t[0 or full_speed|1 or half_speed|2 or "
-        "quarter_speed]\n\t\t[Eiger][Jungfrau] Readout "
-        "speed of chip.\n\t\t[Eiger] Default speed is full_speed."
-        "\n\t\t[Jungfrau] Default speed is half_speed. full_speed "
-        "option only available from v2.0 boards and is recommended to set "
-        "number of interfaces to 2. Also overwrites "
-        "adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] "
-        "Readout speed of chip in MHz. Default is 108."
+              "quarter_speed]\n\t\t[Eiger][Jungfrau] Readout "
+              "speed of chip.\n\t\t[Eiger] Default speed is full_speed."
+              "\n\t\t[Jungfrau] Default speed is half_speed. full_speed "
+              "option only available from v2.0 boards and is recommended to "
+              "set "
+              "number of interfaces to 2. Also overwrites "
+              "adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] "
+              "Readout speed of chip in MHz. Default is 108."
            << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash();
@@ -947,7 +948,8 @@ std::string CmdProxy::CurrentSource(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\t[0|1]\n\t\t[Gotthard2] Enable or disable current source. Default "
+        os << "\n\t[0|1]\n\t\t[Gotthard2] Enable or disable current source. "
+              "Default "
               "is disabled.\n\t[0|1] [fix|nofix] [select source] [(only for "
               "chipv1.1)normal|low]\n\t\t[Jungfrau] Disable or enable current "
               "source with some parameters. The select source is 0-63 for "
@@ -1320,7 +1322,8 @@ std::string CmdProxy::Trigger(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "trigger") {
-            os << "\n\t[Eiger][Mythen3] Sends software trigger signal to detector";
+            os << "\n\t[Eiger][Mythen3] Sends software trigger signal to "
+                  "detector";
         } else if (cmd == "blockingtrigger") {
             os << "\n\t[Eiger] Sends software trigger signal to detector and "
                   "blocks till "
@@ -2032,7 +2035,8 @@ std::string CmdProxy::VetoStreaming(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[none|lll|10gbe|...]\n\t[Gotthard2] Enable or disable the 2 "
               "veto streaming interfaces available. Can include more than one "
-              "interface. \n\tDefault: none. lll (low latency link) is the default "
+              "interface. \n\tDefault: none. lll (low latency link) is the "
+              "default "
               "interface to work with. \n\t10GbE is for debugging and also "
               "enables second interface in receiver for listening to veto "
               "packets (writes a separate file if writing enabled). Also "
@@ -2839,10 +2843,11 @@ std::string CmdProxy::CopyDetectorServer(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[server_name] "
-              "[pc_host_name]\n\t[Jungfrau][Ctb][Moench][Mythen3][Gotthard2] "
-              "Copies detector server via tftp from pc. "
-              "\n\t[Jungfrau][Ctb][Moench]Also changes respawn server, which "
-              "is effective after a reboot."
+              "[pc_host_name]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3]["
+              "Gotthard2] Copies detector server via tftp from pc. Makes a "
+              "symbolic link witha shorter name (without "
+              "vx.x.x).\n\t[Jungfrau][Ctb][Moench]Also changes respawn server "
+              "to the link, which is effective after a reboot."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");

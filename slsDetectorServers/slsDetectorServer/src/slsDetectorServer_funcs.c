@@ -4230,8 +4230,8 @@ int copy_detector_server(int file_des) {
         if (snprintf(cmd, MAX_STR_LENGTH, format, hostname, sname) >=
             MAX_STR_LENGTH) {
             ret = FAIL;
-            sptrcpy(mess, "Could not copy detector server. Command to copy "
-                          "server too long\n");
+            strcpy(mess, "Could not copy detector server. Command to copy "
+                         "server too long\n");
             LOG(logERROR, (mess));
         } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
             ret = FAIL;
@@ -4247,8 +4247,8 @@ int copy_detector_server(int file_des) {
             if (snprintf(cmd, MAX_STR_LENGTH, "chmod 777 %s", sname) >=
                 MAX_STR_LENGTH) {
                 ret = FAIL;
-                sptrcpy(mess, "Could not copy detector server. Command to give "
-                              "permissions to server is too long\n");
+                strcpy(mess, "Could not copy detector server. Command to give "
+                             "permissions to server is too long\n");
                 LOG(logERROR, (mess));
             } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
                 ret = FAIL;
@@ -4304,8 +4304,8 @@ int copy_detector_server(int file_des) {
             if (snprintf(cmd, MAX_STR_LENGTH, format, sname) >=
                 MAX_STR_LENGTH) {
                 ret = FAIL;
-                sptrcpy(mess, "Could not copy detector server. Command "
-                              "to add new server for spawning is too long\n");
+                strcpy(mess, "Could not copy detector server. Command "
+                             "to add new server for spawning is too long\n");
                 LOG(logERROR, (mess));
             } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
                 ret = FAIL;

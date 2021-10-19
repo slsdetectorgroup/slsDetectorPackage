@@ -2260,8 +2260,17 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
 
     } else {
         // select
-        LOG(logINFO, ("\tSetting selection to 0x%lx\n", (long unsigned int)select));
-        set64BitReg(select, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+        // invert select first
+        uint64_t inverted = 0;
+        for (int i = 0; i !=64; ++i) {
+            // get each bit from LSB side
+            int bit = (select >> i) & 0x1;
+            // push the bit into MSB side
+            inverted |= (bit << (63 - i));
+        }
+        LOG(logINFO, ("\tSetting selection to 0x%lx (inverted from 0x%lx)\n", 
+        (long unsigned int) inverted, (long unsigned int)select));
+        set64BitReg(inverted, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
         // normal
         if (normal) {
             LOG(logINFO, ("\tEnabling normal\n"))

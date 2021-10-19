@@ -2871,7 +2871,7 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[server_name (in tftp folder)] [pc_host_name] [fname.pof (incl "
               "full path)]\n\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
-              "firmware, detector server, creates teh symbolic link and then "
+              "firmware, detector server, creates the symbolic link and then "
               "reboots detector controller. \n\t[Mythen3][Gotthard2] will "
               "require a script to start up the shorter named server link at "
               "start up. \n\tsname is name of detector server binary found on "

@@ -836,8 +836,8 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
             auto nports = client.Receive<int>();
             std::vector<uint64_t> retval(nports);
             client.Receive(retval);
-            LOG(logDEBUG1) << "Missing packets of Receiver" << moduleIndex << ": "
-                           << sls::ToString(retval);
+            LOG(logDEBUG1) << "Missing packets of Receiver" << moduleIndex
+                           << ": " << sls::ToString(retval);
             return retval;
         }
     }
@@ -2499,7 +2499,18 @@ void Module::copyDetectorServer(const std::string &fname,
     sls::strcpy_safe(args[1], hostname.c_str());
     LOG(logINFO) << "Sending detector server " << args[0] << " from host "
                  << args[1];
-    sendToDetector(F_COPY_DET_SERVER, args, nullptr);
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_COPY_DET_SERVER);
+    client.Send(args);
+    if (client.Receive<int>() == FAIL) {
+        std::cout << '\n';
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw RuntimeError(os.str());
+    }
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): detector server copied";
 }
 
 void Module::rebootController() {
@@ -2568,9 +2579,7 @@ void Module::setControlPort(int port_number) {
 
 int Module::getStopPort() const { return shm()->stopPort; }
 
-void Module::setStopPort(int port_number) {
-    shm()->stopPort = port_number;
-}
+void Module::setStopPort(int port_number) { shm()->stopPort = port_number; }
 
 bool Module::getLockDetector() const {
     return sendToDetector<int>(F_LOCK_SERVER, GET_FLAG);
@@ -3441,7 +3450,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         currentPointer += unitprogramsize;
     }
 
-    // checksum 
+    // checksum
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
@@ -3453,8 +3462,8 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
 
     // simulating erasing flash
     {
-        LOG(logINFO) << "(Simulating) Erasing Flash for module " << moduleIndex << " ("
-                    << shm()->hostname << ")";
+        LOG(logINFO) << "(Simulating) Erasing Flash for module " << moduleIndex
+                     << " (" << shm()->hostname << ")";
         printf("%d%%\r", 0);
         std::cout << std::flush;
         // erasing takes 65 seconds, printing here (otherwise need threads
@@ -3464,10 +3473,10 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         while (count > 0) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             --count;
-            printf(
-                "%d%%\r",
-                static_cast<int>(
-                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            printf("%d%%\r",
+                   static_cast<int>(
+                       (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) *
+                       100));
             std::cout << std::flush;
         }
         printf("\n");
@@ -3475,7 +3484,8 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
 
     // simulating writing to flash
     {
-        LOG(logINFO) << "(Simulating) Writing to Flash for module " << moduleIndex << " (" << shm()->hostname << ")";
+        LOG(logINFO) << "(Simulating) Writing to Flash for module "
+                     << moduleIndex << " (" << shm()->hostname << ")";
         printf("%d%%\r", 0);
         std::cout << std::flush;
         // writing takes 30 seconds, printing here (otherwise need threads
@@ -3485,10 +3495,10 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         while (count > 0) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             --count;
-            printf(
-                "%d%%\r",
-                static_cast<int>(
-                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            printf("%d%%\r",
+                   static_cast<int>(
+                       (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) *
+                       100));
             std::cout << std::flush;
         }
         printf("\n");
@@ -3531,8 +3541,8 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
 
     // simulating erasing flash
     {
-        LOG(logINFO) << "(Simulating) Erasing Flash for module " << moduleIndex << " ("
-                    << shm()->hostname << ")";
+        LOG(logINFO) << "(Simulating) Erasing Flash for module " << moduleIndex
+                     << " (" << shm()->hostname << ")";
         printf("%d%%\r", 0);
         std::cout << std::flush;
         // erasing takes 10 seconds, printing here (otherwise need threads
@@ -3542,10 +3552,10 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
         while (count > 0) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             --count;
-            printf(
-                "%d%%\r",
-                static_cast<int>(
-                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            printf("%d%%\r",
+                   static_cast<int>(
+                       (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) *
+                       100));
             std::cout << std::flush;
         }
         printf("\n");
@@ -3553,7 +3563,8 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
 
     // simulating writing to flash
     {
-        LOG(logINFO) << "(Simulating) Writing to Flash for module " << moduleIndex << " (" << shm()->hostname << ")";
+        LOG(logINFO) << "(Simulating) Writing to Flash for module "
+                     << moduleIndex << " (" << shm()->hostname << ")";
         printf("%d%%\r", 0);
         std::cout << std::flush;
         // writing takes 45 seconds, printing here (otherwise need threads
@@ -3563,10 +3574,10 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
         while (count > 0) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             --count;
-            printf(
-                "%d%%\r",
-                static_cast<int>(
-                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
+            printf("%d%%\r",
+                   static_cast<int>(
+                       (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) *
+                       100));
             std::cout << std::flush;
         }
         printf("\n");

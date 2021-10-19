@@ -4319,20 +4319,19 @@ int copy_detector_server(int file_des) {
         }
 #endif
 
-    // sync
-    if (ret == OK) {
-        strcpy(cmd, "sync");
-        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-            ret = FAIL;
-            snprintf(
-                mess, MAX_STR_LENGTH,
-                "Could not copy detector server (sync). %s\n",
-                retvals);
-            // LOG(logERROR, (mess)); already printed in executecommand
-        } else {
-            LOG(logINFO, ("\tsync\n"));
+        // sync
+        if (ret == OK) {
+            strcpy(cmd, "sync");
+            if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+                ret = FAIL;
+                snprintf(mess, MAX_STR_LENGTH,
+                         "Could not copy detector server (sync). %s\n",
+                         retvals);
+                // LOG(logERROR, (mess)); already printed in executecommand
+            } else {
+                LOG(logINFO, ("\tsync\n"));
+            }
         }
-    }
     }
 #endif
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
@@ -4960,7 +4959,7 @@ int set_detector_position(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
-        if (check_detector_idle("configure mac") == OK) {
+        if (!updateFlag && check_detector_idle("configure mac") == OK) {
             maxydet = args[0];
             detectorId = args[1];
             calculate_and_set_position();

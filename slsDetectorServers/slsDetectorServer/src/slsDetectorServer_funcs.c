@@ -4301,7 +4301,7 @@ int copy_detector_server(int file_des) {
         // add new link name to /etc/inittab
         if (ret == OK) {
             format = "echo 'ttyS0::respawn:/./%s' >> /etc/inittab";
-            if (snprintf(cmd, MAX_STR_LENGTH, format, sname) >=
+            if (snprintf(cmd, MAX_STR_LENGTH, format, LINKED_SERVER_NAME) >=
                 MAX_STR_LENGTH) {
                 ret = FAIL;
                 strcpy(mess, "Could not copy detector server. Command "

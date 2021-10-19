@@ -8966,12 +8966,12 @@ int get_dest_udp_list(int file_des) {
 #if !defined(EIGERD) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
-    if (arg > MAX_UDP_DESTINATION) {
+    if (arg >= MAX_UDP_DESTINATION) {
         ret = FAIL;
         sprintf(
             mess,
             "Could not set udp destination. Invalid entry. Options: 0 - %d\n",
-            MAX_UDP_DESTINATION);
+            MAX_UDP_DESTINATION - 1);
         LOG(logERROR, (mess));
     } else {
         retvals[0] = arg;
@@ -9041,12 +9041,12 @@ int set_dest_udp_list(int file_des) {
              "mac %s, mac2 %s]\n",
              entry, args[1], args[2], ip, ip2, mac, mac2));     
 
-        if (entry < 1 || entry > MAX_UDP_DESTINATION) {
+        if (entry < 1 || entry >= MAX_UDP_DESTINATION) {
             ret = FAIL;
             sprintf(
                 mess,
                 "Could not set udp destination. Invalid entry. Options: 1 - %d\n",
-                MAX_UDP_DESTINATION);
+                MAX_UDP_DESTINATION - 1);
             LOG(logERROR, (mess));
         } 
 #ifdef EIGERD
@@ -9117,7 +9117,7 @@ int set_dest_udp_list(int file_des) {
                 }
                 // find number of destinations
                 int numdest = 0;
-                for (int i = MAX_UDP_DESTINATION; i >= 0; --i) {
+                for (int i = MAX_UDP_DESTINATION - 1; i >= 0; --i) {
                     if (udpDetails[i].dstip != 0) {
                         numdest = i + 1;
                         break;

@@ -2261,16 +2261,18 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
     } else {
         // select
         // invert select first
+        uint64_t tmp = select;
         uint64_t inverted = 0;
-        for (int i = 0; i !=64; ++i) {
+        for (int i = 0; i != 64; ++i) {
             // get each bit from LSB side
-            int bit = (select >> i) & 0x1;
+            uint64_t bit = (tmp >> i) & 0x1;
             // push the bit into MSB side
             inverted |= (bit << (63 - i));
         }
         LOG(logINFO, ("\tSetting selection to 0x%lx (inverted from 0x%lx)\n", 
         (long unsigned int) inverted, (long unsigned int)select));
         set64BitReg(inverted, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+
         // normal
         if (normal) {
             LOG(logINFO, ("\tEnabling normal\n"))
@@ -2323,7 +2325,18 @@ uint64_t getSelectCurrentSource() {
         return ((bus_r(DAQ_REG) & DAQ_CRRNT_SRC_CLMN_SLCT_MSK) >>
                 DAQ_CRRNT_SRC_CLMN_SLCT_OFST);
     } else {
-        return get64BitReg(CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+        // invert the select
+        uint64_t retval = get64BitReg(CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+
+        uint64_t tmp = retval;
+        uint64_t inverted = 0;
+        for (int i = 0; i != 64; ++i) {
+            // get each bit from LSB side
+            uint64_t bit = (tmp >> i) & 0x1;
+            // push the bit into MSB side
+            inverted |= (bit << (63 - i));
+        }  
+        return inverted;     
     }
 }
 

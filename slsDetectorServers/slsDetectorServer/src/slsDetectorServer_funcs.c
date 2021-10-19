@@ -4959,6 +4959,8 @@ int set_detector_position(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
+        // if in update mode, there is no need to do this (also detector not set
+        // up)
         if (!updateFlag && check_detector_idle("configure mac") == OK) {
             maxydet = args[0];
             detectorId = args[1];

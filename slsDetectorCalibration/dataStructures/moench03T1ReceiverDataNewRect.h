@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #ifndef MOENCH03T1RECDATANEWRECT_H
 #define  MOENCH03T1RECDATANEWRECT_H
 #include "slsDetectorData.h"

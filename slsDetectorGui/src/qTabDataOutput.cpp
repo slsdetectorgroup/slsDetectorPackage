@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "qTabDataOutput.h"
 #include "qDefs.h"
 
@@ -369,27 +371,27 @@ void qTabDataOutput::SetRateCorrection() {
 }
 
 void qTabDataOutput::GetSpeed() {
-    LOG(logDEBUG) << "Getting Speed";
+    LOG(logDEBUG) << "Getting Readout Speed";
     disconnect(comboClkDivider, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetSpeed(int)));
     try {
-        auto retval =
-            det->getSpeed().tsquash("Speed is inconsistent for all detectors.");
+        auto retval = det->getReadoutSpeed().tsquash(
+            "Readout Speed is inconsistent for all detectors.");
         comboClkDivider->setCurrentIndex(static_cast<int>(retval));
     }
-    CATCH_DISPLAY("Could not get speed.", "qTabDataOutput::GetSpeed")
+    CATCH_DISPLAY("Could not get readout speed.", "qTabDataOutput::GetSpeed")
     connect(comboClkDivider, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetSpeed(int)));
 }
 
 void qTabDataOutput::SetSpeed(int speed) {
-    LOG(logINFO) << "Setting Speed to "
+    LOG(logINFO) << "Setting Readout Speed to "
                  << comboClkDivider->currentText().toAscii().data();
     try {
-        det->setSpeed(static_cast<slsDetectorDefs::speedLevel>(speed));
+        det->setReadoutSpeed(static_cast<slsDetectorDefs::speedLevel>(speed));
     }
-    CATCH_HANDLE("Could not set speed.", "qTabDataOutput::SetSpeed", this,
-                 &qTabDataOutput::GetSpeed)
+    CATCH_HANDLE("Could not set readout speed.", "qTabDataOutput::SetSpeed",
+                 this, &qTabDataOutput::GetSpeed)
 }
 
 void qTabDataOutput::GetParallel() {

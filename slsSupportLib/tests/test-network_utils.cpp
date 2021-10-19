@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 
 #include "catch.hpp"
 #include "sls/network_utils.h"
@@ -112,19 +114,16 @@ TEST_CASE("Copy construct a MacAddr") {
     CHECK(addr == addr2);
 }
 
-
-TEST_CASE("udp dst struct basic properties"){
+TEST_CASE("udp dst struct basic properties") {
     static_assert(sizeof(UdpDestination) == 36);
     UdpDestination dst{};
-    REQUIRE(dst.entry == 0); 
-    REQUIRE(dst.port == 0); 
-    REQUIRE(dst.port2 == 0); 
-    REQUIRE(dst.ip == 0); 
-    REQUIRE(dst.ip2 == 0); 
-    REQUIRE(dst.mac == 0); 
-    REQUIRE(dst.mac2 == 0); 
-
+    REQUIRE(dst.entry == 0);
+    REQUIRE(dst.port == 0);
+    REQUIRE(dst.port2 == 0);
+    REQUIRE(dst.ip == 0);
+    REQUIRE(dst.ip2 == 0);
+    REQUIRE(dst.mac == 0);
+    REQUIRE(dst.mac2 == 0);
 }
-
 
 // TODO!(Erik) Look up a real hostname and verify the IP

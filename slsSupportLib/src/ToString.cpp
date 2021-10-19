@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/ToString.h"
 #include "sls/network_utils.h"
 
@@ -116,25 +118,25 @@ std::ostream &operator<<(std::ostream &os,
 
 std::string ToString(const slsDetectorDefs::currentSrcParameters &r) {
     std::ostringstream oss;
-    if (r.fix_ < -1 || r.fix_ > 1 || r.normal_ < -1 || r.normal_ > 1) {
+    if (r.fix < -1 || r.fix > 1 || r.normal < -1 || r.normal > 1) {
         throw sls::RuntimeError(
             "Invalid current source parameters. Cannot print.");
     }
     oss << '[';
-    if (r.enable_) {
+    if (r.enable) {
         oss << "enabled";
         // [jungfrau]
-        if (r.fix_ != -1) {
-            oss << (r.fix_ == 1 ? ", fix" : ", nofix");
+        if (r.fix != -1) {
+            oss << (r.fix == 1 ? ", fix" : ", nofix");
         }
         // [jungfrau chip v1.1]
-        if (r.normal_ != -1) {
-            oss << ", " << ToStringHex(r.select_, 16);
-            oss << (r.normal_ == 1 ? ", normal" : ", low");
+        if (r.normal != -1) {
+            oss << ", " << ToStringHex(r.select, 16);
+            oss << (r.normal == 1 ? ", normal" : ", low");
         }
         // [jungfrau chip v1.0]
         else {
-            oss << ", " << r.select_;
+            oss << ", " << r.select;
         }
     } else {
         oss << "disabled";
@@ -247,6 +249,10 @@ std::string ToString(const defs::speedLevel s) {
         return std::string("half_speed");
     case defs::QUARTER_SPEED:
         return std::string("quarter_speed");
+    case defs::G2_108MHZ:
+        return std::string("108");
+    case defs::G2_144MHZ:
+        return std::string("144");
     default:
         return std::string("Unknown");
     }
@@ -703,10 +709,20 @@ template <> defs::detectorSettings StringTo(const std::string &s) {
 template <> defs::speedLevel StringTo(const std::string &s) {
     if (s == "full_speed")
         return defs::FULL_SPEED;
+    if (s == "0")
+        return defs::FULL_SPEED;
     if (s == "half_speed")
+        return defs::HALF_SPEED;
+    if (s == "1")
         return defs::HALF_SPEED;
     if (s == "quarter_speed")
         return defs::QUARTER_SPEED;
+    if (s == "2")
+        return defs::QUARTER_SPEED;
+    if (s == "108")
+        return defs::G2_108MHZ;
+    if (s == "144")
+        return defs::G2_144MHZ;
     throw sls::RuntimeError("Unknown speed " + s);
 }
 

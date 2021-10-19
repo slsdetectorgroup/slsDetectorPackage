@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "CmdProxy.h"
 #include "HelpDacs.h"
 #include "sls/TimeHelper.h"
@@ -605,57 +607,38 @@ std::string CmdProxy::Exptime(int action) {
     return os.str();
 }
 
-std::string CmdProxy::Speed(int action) {
+std::string CmdProxy::ReadoutSpeed(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[0 or full_speed|1 or half_speed|2 or "
-              "quarter_speed]\n\t[Eiger][Jungfrau] Readout speed of "
-              "chip.\n\t[Jungfrau] FULL_SPEED option only available from v2.0 "
-              "boards and with setting number of interfaces to 2. Also "
-              "overwrites adcphase to recommended default. "
+        os << "\n\t[0 or full_speed|1 or half_speed|2 or "
+              "quarter_speed]\n\t\t[Eiger][Jungfrau] Readout "
+              "speed of chip.\n\t\t[Eiger] Default speed is full_speed."
+              "\n\t\t[Jungfrau] Default speed is half_speed. full_speed "
+              "option only available from v2.0 boards and is recommended to "
+              "set "
+              "number of interfaces to 2. Also overwrites "
+              "adcphase to recommended default.\n\t [144|108]\n\t\t[Gotthard2] "
+              "Readout speed of chip in MHz. Default is 108."
            << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash();
         if (type == defs::CHIPTESTBOARD || type == defs::MOENCH) {
             throw sls::RuntimeError(
-                "Speed not implemented. Did you mean runclk?");
-        }
-        if (type != defs::EIGER && type != defs::JUNGFRAU) {
-            throw sls::RuntimeError(
-                "Speed not implemented."); // setspped one function problem. tbr
-                                           // after change
+                "ReadoutSpeed not implemented. Did you mean runclk?");
         }
         if (action == defs::GET_ACTION) {
             if (!args.empty()) {
                 WrongNumberOfParameters(0);
             }
-            auto t = det->getSpeed(std::vector<int>{det_id});
+            auto t = det->getReadoutSpeed(std::vector<int>{det_id});
             os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            defs::speedLevel t;
-            try {
-                int ival = StringTo<int>(args[0]);
-                switch (ival) {
-                case 0:
-                    t = defs::FULL_SPEED;
-                    break;
-                case 1:
-                    t = defs::HALF_SPEED;
-                    break;
-                case 2:
-                    t = defs::QUARTER_SPEED;
-                    break;
-                default:
-                    throw sls::RuntimeError("Unknown speed " + args[0]);
-                }
-            } catch (...) {
-                t = sls::StringTo<defs::speedLevel>(args[0]);
-            }
-            det->setSpeed(t, std::vector<int>{det_id});
+            defs::speedLevel t = sls::StringTo<defs::speedLevel>(args[0]);
+            det->setReadoutSpeed(t, std::vector<int>{det_id});
             os << sls::ToString(t) << '\n'; // no args to convert 0,1,2 as well
         } else {
             throw sls::RuntimeError("Unknown action");
@@ -965,7 +948,8 @@ std::string CmdProxy::CurrentSource(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\t[0|1]\n\t\t[Gotthard2] Enable or disable current source. Default "
+        os << "\n\t[0|1]\n\t\t[Gotthard2] Enable or disable current source. "
+              "Default "
               "is disabled.\n\t[0|1] [fix|nofix] [select source] [(only for "
               "chipv1.1)normal|low]\n\t\t[Jungfrau] Disable or enable current "
               "source with some parameters. The select source is 0-63 for "
@@ -995,7 +979,7 @@ std::string CmdProxy::CurrentSource(int action) {
             }
             if (args.size() == 3) {
                 det->setCurrentSource(defs::currentSrcParameters(
-                    fix, StringTo<int64_t>(args[2])));
+                    fix, StringTo<uint64_t>(args[2])));
             } else if (args.size() == 4) {
                 bool normalCurrent = false;
                 if (args[3] == "normal") {
@@ -1007,7 +991,7 @@ std::string CmdProxy::CurrentSource(int action) {
                                             ". Did you mean normal or low?");
                 }
                 det->setCurrentSource(defs::currentSrcParameters(
-                    fix, StringTo<int64_t>(args[2]), normalCurrent));
+                    fix, StringTo<uint64_t>(args[2]), normalCurrent));
             } else {
                 throw sls::RuntimeError(
                     "Invalid number of parareters for this command.");
@@ -1338,7 +1322,8 @@ std::string CmdProxy::Trigger(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "trigger") {
-            os << "\n\t[Eiger][Mythen3] Sends software trigger signal to detector";
+            os << "\n\t[Eiger][Mythen3] Sends software trigger signal to "
+                  "detector";
         } else if (cmd == "blockingtrigger") {
             os << "\n\t[Eiger] Sends software trigger signal to detector and "
                   "blocks till "
@@ -2050,7 +2035,8 @@ std::string CmdProxy::VetoStreaming(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[none|lll|10gbe|...]\n\t[Gotthard2] Enable or disable the 2 "
               "veto streaming interfaces available. Can include more than one "
-              "interface. \n\tDefault: none. lll (low latency link) is the default "
+              "interface. \n\tDefault: none. lll (low latency link) is the "
+              "default "
               "interface to work with. \n\t10GbE is for debugging and also "
               "enables second interface in receiver for listening to veto "
               "packets (writes a separate file if writing enabled). Also "
@@ -2833,10 +2819,11 @@ std::string CmdProxy::ProgramFpga(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname.pof | fname.rbf]\n\t[Jungfrau][Ctb][Moench] Programs "
-              "FPGA from pof file. Rebooting controller is recommended. "
-              "\n\t[Mythen3][Gotthard2] Programs FPGA from rbf file. Power "
-              "cycling the detector is recommended. "
+        os << "[fname.pof | fname.rbf (full path)]\n\t[Jungfrau][Ctb][Moench] "
+              "Programs FPGA from pof file (full path). Then, detector "
+              "controller is rebooted \n\t[Mythen3][Gotthard2] Programs FPGA "
+              "from rbf file (full path). Then, detector controller is "
+              "rebooted."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
@@ -2856,11 +2843,13 @@ std::string CmdProxy::CopyDetectorServer(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[server_name] "
-              "[pc_host_name]\n\t[Jungfrau][Ctb][Moench][Mythen3][Gotthard2] "
-              "Copies detector server via tftp from pc. "
-              "\n\t[Jungfrau][Ctb][Moench]Also changes respawn server, which "
-              "is effective after a reboot."
+        os << "[server_name (in tftp folder)] "
+              "[pc_host_name]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3]["
+              "Gotthard2] Copies detector server via tftp from pc. Ensure that "
+              "server is in the pc's tftp folder. Makes a symbolic link with a "
+              "shorter name (without vx.x.x). Then, detector reboots (except "
+              "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn server "
+              "to the link, which is effective after a reboot."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
@@ -2880,14 +2869,14 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[server_name] [pc_host_name] "
-              "[fname.pof]\n\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
-              "firmware, detector server and then reboots detector controller "
-              "blackfin. \n\t[Mythen3][Gotthard2] Will still have old server "
-              "starting up as the new server is not respawned \n\tsname is "
-              "name of detector server binary found on tftp folder of host pc "
-              "\n\thostname is name of pc to tftp from \n\tfname is "
-              "programming file name"
+        os << "[server_name (in tftp folder)] [pc_host_name] [fname.pof (incl "
+              "full path)]\n\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
+              "firmware, detector server, creates the symbolic link and then "
+              "reboots detector controller. \n\t[Mythen3][Gotthard2] will "
+              "require a script to start up the shorter named server link at "
+              "start up. \n\tsname is name of detector server binary found on "
+              "tftp folder of host pc \n\thostname is name of pc to tftp from "
+              "\n\tfname is programming file name"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");

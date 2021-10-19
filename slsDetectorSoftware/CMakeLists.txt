@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 set(SOURCES
     src/DetectorImpl.cpp 
     src/Module.cpp 
@@ -41,6 +43,8 @@ if(SLS_BUILD_SHARED_LIBRARIES)
     add_library(slsDetectorShared SHARED $<TARGET_OBJECTS:slsDetectorObject>)
     target_link_libraries(slsDetectorShared PUBLIC slsDetectorObject)
     set_target_properties(slsDetectorShared PROPERTIES
+        VERSION ${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}
+        SOVERSION ${PACKAGE_VERSION_MAJOR}
         LIBRARY_OUTPUT_NAME SlsDetector
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
         PUBLIC_HEADER "${PUBLICHEADERS}"

@@ -1,6 +1,10 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 #include "sls/sls_detector_defs.h"
 #include <stdlib.h>
+
+#define LINKED_SERVER_NAME "gotthardDetectorServer"
 
 /* Enums */
 enum ADCINDEX { TEMP_FPGA, TEMP_ADC };

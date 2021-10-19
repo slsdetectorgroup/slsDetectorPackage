@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include <pybind11/chrono.h>
 #include <pybind11/numpy.h>
 #include <pybind11/operators.h>
@@ -15,10 +17,10 @@ void init_source(py::module &m) {
     py::class_<src> currentSrcParameters(m, "currentSrcParameters");
 
     currentSrcParameters.def(py::init());
-    currentSrcParameters.def_readwrite("enable_", &src::enable_);
-    currentSrcParameters.def_readwrite("fix_", &src::fix_);
-    currentSrcParameters.def_readwrite("normal_", &src::normal_);
-    currentSrcParameters.def_readwrite("select_", &src::select_);
+    currentSrcParameters.def_readwrite("enable", &src::enable);
+    currentSrcParameters.def_readwrite("fix", &src::fix);
+    currentSrcParameters.def_readwrite("normal", &src::normal);
+    currentSrcParameters.def_readwrite("select", &src::select);
     currentSrcParameters.def(pybind11::self == pybind11::self);
 
     currentSrcParameters.def("__repr__",

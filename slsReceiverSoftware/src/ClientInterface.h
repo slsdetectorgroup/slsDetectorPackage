@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 #include "Implementation.h"
 #include "receiver_defs.h"
@@ -161,7 +163,6 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_streaming_hwm(sls::ServerInterface &socket);
     int set_all_threshold(sls::ServerInterface &socket);
     int set_detector_datastream(sls::ServerInterface &socket);
-
 
     Implementation *impl() {
         if (receiver != nullptr) {

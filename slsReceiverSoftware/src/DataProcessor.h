@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 /************************************************
  * @file DataProcessor.h
@@ -26,11 +28,11 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
     DataProcessor(int index, detectorType detectorType, Fifo *fifo,
-                  bool *activated, bool *dataStreamEnable, uint32_t *streamingFrequency,
-                  uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum,
-                  bool *framePadding, std::vector<int> *ctbDbitList,
-                  int *ctbDbitOffset, int *ctbAnalogDataBytes,
-                  std::mutex *hdf5Lib);
+                  bool *activated, bool *dataStreamEnable,
+                  uint32_t *streamingFrequency, uint32_t *streamingTimerInMs,
+                  uint32_t *streamingStartFnum, bool *framePadding,
+                  std::vector<int> *ctbDbitList, int *ctbDbitOffset,
+                  int *ctbAnalogDataBytes, std::mutex *hdf5Lib);
 
     ~DataProcessor() override;
 
@@ -59,10 +61,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                           const int numUnitsPerReadout,
                           const uint32_t udpPortNumber,
                           const uint32_t maxFramesPerFile,
-                          const uint64_t numImages,
-                          const uint32_t dynamicRange,
-                          const bool detectorDataStream
-                          );
+                          const uint64_t numImages, const uint32_t dynamicRange,
+                          const bool detectorDataStream);
 #ifdef HDF5C
     uint32_t GetFilesInAcquisition() const;
     void CreateVirtualFile(const std::string filePath,

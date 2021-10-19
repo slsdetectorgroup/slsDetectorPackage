@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 """
 Setup file for slsdet
 Build upon the pybind11 example found here: https://github.com/pybind/python_example
@@ -25,6 +27,7 @@ ext_modules = [
     Pybind11Extension(
         '_slsdet',
         ['src/main.cpp',
+        'src/current.cpp',
         'src/enums.cpp',
         'src/detector.cpp',
         'src/network.cpp',

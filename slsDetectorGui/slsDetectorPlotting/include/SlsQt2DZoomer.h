@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #ifndef SLSQT2DZOOMER_H
 #define SLSQT2DZOOMER_H
 #include "SlsQt2DHist.h"

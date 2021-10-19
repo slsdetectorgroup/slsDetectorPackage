@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/sls_detector_defs.h"
 #include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
 #ifdef GOTTHARDD
@@ -470,8 +472,8 @@ int autoCompDisable(int on);
 int setComparatorDisableTime(int64_t val);
 int64_t getComparatorDisableTime();
 void configureASICTimer();
-int setClockDivider(enum CLKINDEX ind, int val);
-int getClockDivider(enum CLKINDEX ind);
+int setReadoutSpeed(int val);
+int getReadoutSpeed(int *retval);
 int setPhase(enum CLKINDEX ind, int val, int degrees);
 int getPhase(enum CLKINDEX ind, int degrees);
 int getMaxPhase(enum CLKINDEX ind);
@@ -495,8 +497,8 @@ uint64_t getSelectCurrentSource();
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD
-int setClockDivider(enum CLKINDEX ind, int val);
-int getClockDivider(enum CLKINDEX ind);
+int setReadoutSpeed(int val);
+int getReadoutSpeed(int *retval);
 int setIODelay(int val);
 int setCounterBit(int val);
 int pulsePixel(int n, int x, int y);
@@ -548,6 +550,8 @@ int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
 // void       	setFrequency(enum CLKINDEX ind, int val);
 int getFrequency(enum CLKINDEX ind);
 int getVCOFrequency(enum CLKINDEX ind);
+int setReadoutSpeed(int val);
+int getReadoutSpeed(int *retval);
 int getMaxClockDivider();
 int setClockDivider(enum CLKINDEX ind, int val);
 int getClockDivider(enum CLKINDEX ind);

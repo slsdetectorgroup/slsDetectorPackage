@@ -1,9 +1,13 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 #include "sls/sls_detector_defs.h"
 
 #define REQRD_FRMWRE_VRSN (0x210910)
 #define KERNEL_DATE_VRSN  "Wed May 20 13:58:38 CEST 2020"
 #define ID_FILE           "detid_mythen3.txt"
+
+#define LINKED_SERVER_NAME "mythen3DetectorServer"
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 #include "clogger.h"
 #include "common.h"
@@ -273,3 +275,5 @@ int get_num_dest_list(int);
 int clear_all_udp_dst(int);
 int get_udp_first_dest(int);
 int set_udp_first_dest(int);
+int get_readout_speed(int);
+int set_readout_speed(int);

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 from _slsdet import CppDetectorApi
 from _slsdet import slsDetectorDefs
 from _slsdet import IpAddr, MacAddr
@@ -1645,20 +1647,22 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def speed(self):
+    def readoutspeed(self):
         """
-        [Eiger][Jungfrau] Readout speed of chip. Enum: speedLevel
+        [Eiger][Jungfrau|Gotthard2] Readout speed of chip. Enum: speedLevel
         Note
         -----
-        Options: FULL_SPEED, HALF_SPEED, QUARTER_SPEED \n
-        [Jungfrau] FULL_SPEED option only available from v2.0 boards and with setting number of interfaces to 2.  \n
+        [Jungfrau] FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED
+        [Eiger] FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED
+        [Gottthard2] G2_108MHZ (Default), G2_144MHZ
+        [Jungfrau] FULL_SPEED option only available from v2.0 boards and is recommended to set number of interfaces to 2.  \n
         Also overwrites adcphase to recommended default.
         """
-        return element_if_equal(self.getSpeed())
+        return element_if_equal(self.getReadoutSpeed())
 
-    @speed.setter
-    def speed(self, value):
-        ut.set_using_dict(self.setSpeed, value)
+    @readoutspeed.setter
+    def readoutspeed(self, value):
+        ut.set_using_dict(self.setReadoutSpeed, value)
 
     @property
     def rx_jsonpara(self):
@@ -2216,6 +2220,7 @@ class Detector(CppDetectorApi):
     def gainmode(self):
         """
         [Jungfrau] Detector gain mode. Enum: gainMode
+        
         Note
         -----
         [Jungfrau] DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 \n

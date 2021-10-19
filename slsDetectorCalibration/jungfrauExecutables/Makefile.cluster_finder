@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 #module add CBFlib/0.9.5
 INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures  -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ 
 

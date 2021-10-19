@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 
 #include "sls/string_utils.h"
 #include "sls/container_utils.h"
@@ -36,14 +38,14 @@ bool is_int(const std::string &s) {
                          }) == s.end();
 }
 
-bool replace_first(std::string *s, const std::string& substr, const std::string& repl){
+bool replace_first(std::string *s, const std::string &substr,
+                   const std::string &repl) {
     auto pos = s->find(substr);
-    if (pos != std::string::npos){
+    if (pos != std::string::npos) {
         s->replace(pos, substr.size(), repl);
         return true;
     }
     return false;
 }
-
 
 }; // namespace sls

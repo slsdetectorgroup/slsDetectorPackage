@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
 #include "sls/sls_detector_defs.h"
@@ -42,7 +44,7 @@
 #define MAX_CHUNKED_IMAGES (1)
 
 // parameters to calculate fifo depth
-#define SAMPLE_TIME_IN_NS          (100000000) // 100ms
+#define SAMPLE_TIME_IN_NS (100000000) // 100ms
 
 // to differentiate between gotthard and short gotthard
 #define GOTTHARD_PACKET_SIZE (1286)

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 /* WARINING This file is auto generated any edits might be overwritten without
  * warning */
 
@@ -254,14 +256,17 @@ void init_det(py::module &m) {
         .def("getTimingModeList",
              (std::vector<defs::timingMode>(Detector::*)() const) &
                  Detector::getTimingModeList)
-        .def("getSpeed",
+        .def("getReadoutSpeed",
              (Result<defs::speedLevel>(Detector::*)(sls::Positions) const) &
-                 Detector::getSpeed,
+                 Detector::getReadoutSpeed,
              py::arg() = Positions{})
-        .def("setSpeed",
+        .def("setReadoutSpeed",
              (void (Detector::*)(defs::speedLevel, sls::Positions)) &
-                 Detector::setSpeed,
+                 Detector::setReadoutSpeed,
              py::arg(), py::arg() = Positions{})
+        .def("getReadoutSpeedList",
+             (std::vector<defs::speedLevel>(Detector::*)() const) &
+                 Detector::getReadoutSpeedList)
         .def("getADCPhase",
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getADCPhase,

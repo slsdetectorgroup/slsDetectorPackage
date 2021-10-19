@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "DetectorImpl.h"
 #include "Module.h"
 #include "SharedMemory.h"
@@ -289,7 +291,9 @@ void DetectorImpl::updateDetectorSize() {
     const slsDetectorDefs::xy det_size = modules[0]->getNumberOfChannels();
 
     if (det_size.x == 0 || det_size.y == 0) {
-        throw sls::RuntimeError("Module size for x or y dimensions is 0. Unable to proceed in updating detector size. ");
+        throw sls::RuntimeError(
+            "Module size for x or y dimensions is 0. Unable to proceed in "
+            "updating detector size. ");
     }
 
     int maxx = shm()->numberOfChannels.x;
@@ -1092,13 +1096,13 @@ int DetectorImpl::acquire() {
         // start and read all
         try {
             if (detector_type == defs::MYTHEN3 && modules.size() > 1) {
-                //Multi module mythen
+                // Multi module mythen
                 std::vector<int> master;
                 std::vector<int> slaves;
                 auto is_master = Parallel(&Module::isMaster, {});
                 slaves.reserve(modules.size() - 1); // check this one!!
                 for (size_t i = 0; i < modules.size(); ++i) {
-                    if(is_master[i])
+                    if (is_master[i])
                         master.push_back(i);
                     else
                         slaves.push_back(i);
@@ -1106,7 +1110,7 @@ int DetectorImpl::acquire() {
                 Parallel(&Module::startAcquisition, slaves);
                 Parallel(&Module::startAndReadAll, master);
             } else {
-                //Normal acquire
+                // Normal acquire
                 Parallel(&Module::startAndReadAll, {});
             }
 
@@ -1358,7 +1362,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     LOG(logINFOBLUE) << "File has been converted to " << destfname;
 
     // loading dst file to memory
-   // FILE *fp = fopen("/tmp/SLS_DET_MCB.tzgmUT", "r");
+    // FILE *fp = fopen("/tmp/SLS_DET_MCB.tzgmUT", "r");
     FILE *fp = fopen(destfname, "r");
     if (fp == nullptr) {
         throw RuntimeError("Program FPGA: Could not open rawbin file");
@@ -1382,7 +1386,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             "Program FPGA: Could not close destination file after converting");
     }
 
-    //unlink(destfname); // delete temporary file
+    // unlink(destfname); // delete temporary file
     LOG(logDEBUG1) << "Successfully loaded the rawbin file to program memory";
     LOG(logDEBUG1) << "Read file into memory";
     return buffer;

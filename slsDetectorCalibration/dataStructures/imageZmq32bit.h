@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #ifndef IMAGEZMQ32BIT_H
 #define  IMAGEZMQ32BIT_H
 #include "slsDetectorData.h"

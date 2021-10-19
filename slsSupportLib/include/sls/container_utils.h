@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #ifndef CONTAINER_UTILS_H
 #define CONTAINER_UTILS_H
 
@@ -17,7 +19,7 @@ namespace sls {
 // already available as std::make_unique in C++14
 template <typename T, typename... Args>
 typename std::enable_if<!std::is_array<T>::value, std::unique_ptr<T>>::type
-make_unique(Args &&... args) {
+make_unique(Args &&...args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
 #include "sls/Detector.h"
@@ -591,7 +593,8 @@ class CmdProxy {
         /* acquisition parameters */
         {"cycles", "triggers"},
         {"cyclesl", "triggersl"},
-        {"clkdivider", "speed"},
+        {"clkdivider", "readoutspeed"},
+        {"speed", "readoutspeed"},
         {"vhighvoltage", "highvoltage"},
         {"digitest", "imagetest"},
         {"filter", "filterresistor"},
@@ -792,7 +795,8 @@ class CmdProxy {
         {"drlist", &CmdProxy::drlist},
         {"timing", &CmdProxy::timing},
         {"timinglist", &CmdProxy::timinglist},
-        {"speed", &CmdProxy::Speed},
+        {"readoutspeed", &CmdProxy::ReadoutSpeed},
+        {"readoutspeedlist", &CmdProxy::readoutspeedlist},
         {"adcphase", &CmdProxy::Adcphase},
         {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
         {"dbitphase", &CmdProxy::Dbitphase},
@@ -1097,7 +1101,7 @@ class CmdProxy {
     std::string Acquire(int action);
     std::string Exptime(int action);
     std::string DynamicRange(int action);
-    std::string Speed(int action);
+    std::string ReadoutSpeed(int action);
     std::string Adcphase(int action);
     std::string Dbitphase(int action);
     std::string ClockFrequency(int action);
@@ -1205,10 +1209,10 @@ class CmdProxy {
                     "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench]"
                     "Serial number of detector.");
 
-    GET_COMMAND(
-        moduleid, getModuleId, 
-        "\n\t[Gotthard2][Eiger][Mythen3] 16 bit value (ideally unique) "
-        "that is streamed out in the UDP header of the detector. Picked up from a file on the module.");
+    GET_COMMAND(moduleid, getModuleId,
+                "\n\t[Gotthard2][Eiger][Mythen3] 16 bit value (ideally unique) "
+                "that is streamed out in the UDP header of the detector. "
+                "Picked up from a file on the module.");
 
     GET_COMMAND(type, getDetectorType,
                 "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, "
@@ -1328,6 +1332,10 @@ class CmdProxy {
     GET_COMMAND_NOID(timinglist, getTimingModeList,
                      "\n\tGets the list of timing modes for this detector.");
 
+    GET_COMMAND_NOID(
+        readoutspeedlist, getReadoutSpeedList,
+        "\n\tList of readout speed levels implemented for this detector.");
+
     GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift,
                 "\n\t[Jungfrau][CTB][Moench] Absolute maximum Phase shift of "
                 "ADC clock.");
@@ -1349,7 +1357,8 @@ class CmdProxy {
         "the chip. \n\t[Moench] Default is 0. \n\t[Jungfrau] Default is 0. Get "
         "will return power status. Can be off if temperature event occured "
         "(temperature over temp_threshold with temp_control "
-        "enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] Default is 1. If module not "
+        "enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] "
+        "Default is 1. If module not "
         "connected or wrong module, powerchip will fail.");
 
     INTEGER_COMMAND_VEC_ID(
@@ -1382,7 +1391,10 @@ class CmdProxy {
         readnrows, getReadNRows, setReadNRows, StringTo<int>,
         "\n\t[1-256]\n\t\t[Eiger] Number of rows to readout per half module "
         "starting from the centre. Options: 0 - 256. 256 is default. The "
-        "permissible values depend on dynamic range and 10Gbe enabled.\n\t[8-512 (multiple of 8)]\n\t\t[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.");
+        "permissible values depend on dynamic range and 10Gbe "
+        "enabled.\n\t[8-512 (multiple of 8)]\n\t\t[Jungfrau] Number of rows "
+        "per module starting from the centre. Options: 8 - 512, must be "
+        "multiples of 8. Default is 512.");
 
     /** temperature */
     GET_COMMAND_NOID(
@@ -1537,10 +1549,11 @@ class CmdProxy {
         "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. "
         "Effective only when number of interfaces is 1. Default: 0 (outer)");
 
-    GET_COMMAND(udp_numdst, getNumberofUDPDestinations,
-                           "\n\t[Jungfrau][Eiger] One can enter upto 32 "
-                           "destinations that the detector will stream images "
-                           "out in a round robin fashion. This is get only command. Default: 1");
+    GET_COMMAND(
+        udp_numdst, getNumberofUDPDestinations,
+        "\n\t[Jungfrau][Eiger] One can enter upto 32 "
+        "destinations that the detector will stream images "
+        "out in a round robin fashion. This is get only command. Default: 1");
 
     EXECUTE_SET_COMMAND(udp_cleardst, clearUDPDestinations,
                         "\n\tClears udp destination details on the detector.");
@@ -1548,7 +1561,8 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         udp_firstdst, getFirstUDPDestination, setFirstUDPDestination,
         StringTo<int>,
-        "[0 - 31 (or number of udp destinations)]\n\t[Jungfrau] One can set which is the first "
+        "[0 - 31 (or number of udp destinations)]\n\t[Jungfrau] One can set "
+        "which is the first "
         "destination that the detector will stream images "
         "out from in a round robin fashion. The entry must not have been "
         "empty. Default: 0");
@@ -1856,10 +1870,9 @@ class CmdProxy {
                      "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured sub "
                      "frame period between last sub frame and previous one.");
 
-
-    INTEGER_COMMAND_VEC_ID(
-        activate, getActive, setActive, StringTo<int>,
-        "[0, 1] \n\t[Eiger] 1 is default. 0 deactivates readout and does not send data.");
+    INTEGER_COMMAND_VEC_ID(activate, getActive, setActive, StringTo<int>,
+                           "[0, 1] \n\t[Eiger] 1 is default. 0 deactivates "
+                           "readout and does not send data.");
 
     INTEGER_COMMAND_VEC_ID(
         partialreset, getPartialReset, setPartialReset, StringTo<int>,
@@ -1912,7 +1925,8 @@ class CmdProxy {
     INTEGER_COMMAND_SET_NOID_GET_ID(
         storagecells, getNumberOfAdditionalStorageCells,
         setNumberOfAdditionalStorageCells, StringTo<int>,
-        "[0-15]\n\t[Jungfrau] Only for chipv1.0. Number of additional storage cells. Default is "
+        "[0-15]\n\t[Jungfrau] Only for chipv1.0. Number of additional storage "
+        "cells. Default is "
         "0. For advanced users only. \n\tThe #images = #frames x #triggers x "
         "(#storagecells + 1).");
 
@@ -1920,13 +1934,15 @@ class CmdProxy {
         storagecell_start, getStorageCellStart, setStorageCellStart,
         StringTo<int>,
         "[0-max]\n\t[Jungfrau] Storage cell that stores the first acquisition "
-        "of the series. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1. For advanced users only.");
+        "of the series. max is 15 (default) for chipv1.0 and 3 (default) for "
+        "chipv1.1. For advanced users only.");
 
     TIME_COMMAND(
         storagecell_delay, getStorageCellDelay, setStorageCellDelay,
         "[duration (0-1638375 ns)] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] "
         "Additional time delay between 2 consecutive exposures in burst mode "
-        "(resolution of 25ns). Only applicable for chipv1.0. For advanced users only.");
+        "(resolution of 25ns). Only applicable for chipv1.0. For advanced "
+        "users only.");
 
     INTEGER_COMMAND_VEC_ID(
         gainmode, getGainMode, setGainMode,
@@ -1935,9 +1951,10 @@ class CmdProxy {
         "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, "
         "you can damage the detector!!!");
 
-    INTEGER_COMMAND_VEC_ID(
-        filtercell, getFilterCell, setFilterCell, sls::StringTo<int>,
-        "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for chipv1.1. Advanced user Command");
+    INTEGER_COMMAND_VEC_ID(filtercell, getFilterCell, setFilterCell,
+                           sls::StringTo<int>,
+                           "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for "
+                           "chipv1.1. Advanced user Command");
 
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft,

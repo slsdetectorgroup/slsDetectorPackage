@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/Detector.h"
 #include "sls/detectorData.h"
 
@@ -412,18 +414,25 @@ std::vector<defs::timingMode> Detector::getTimingModeList() const {
     }
 }
 
-Result<defs::speedLevel> Detector::getSpeed(Positions pos) const {
-    auto res = pimpl->Parallel(&Module::getClockDivider, pos, defs::RUN_CLOCK);
-    Result<defs::speedLevel> speedResult(res.size());
-    for (unsigned int i = 0; i < res.size(); ++i) {
-        speedResult[i] = static_cast<defs::speedLevel>(res[i]);
-    }
-    return speedResult;
+Result<defs::speedLevel> Detector::getReadoutSpeed(Positions pos) const {
+    return pimpl->Parallel(&Module::getReadoutSpeed, pos);
 }
 
-void Detector::setSpeed(defs::speedLevel value, Positions pos) {
-    pimpl->Parallel(&Module::setClockDivider, pos, defs::RUN_CLOCK,
-                    static_cast<int>(value));
+void Detector::setReadoutSpeed(defs::speedLevel value, Positions pos) {
+    pimpl->Parallel(&Module::setReadoutSpeed, pos, value);
+}
+
+std::vector<defs::speedLevel> Detector::getReadoutSpeedList() const {
+    switch (getDetectorType().squash()) {
+    case defs::EIGER:
+    case defs::JUNGFRAU:
+        return std::vector<defs::speedLevel>{defs::FULL_SPEED, defs::HALF_SPEED,
+                                             defs::QUARTER_SPEED};
+    case defs::GOTTHARD2:
+        return std::vector<defs::speedLevel>{defs::G2_108MHZ, defs::G2_144MHZ};
+    default:
+        throw RuntimeError("Readout speed not implemented for this detector");
+    }
 }
 
 Result<int> Detector::getADCPhase(Positions pos) const {
@@ -657,10 +666,6 @@ void Detector::setDefaultDac(defs::dacIndex index, int defaultValue,
     pimpl->setDefaultDac(index, defaultValue, sett, pos);
 }
 
-
-
-
-
 void Detector::resetToDefaultDacs(const bool hardReset, Positions pos) {
     pimpl->Parallel(&Module::resetToDefaultDacs, pos, hardReset);
 }
@@ -822,10 +827,6 @@ Result<std::string> Detector::getScanErrorMessage(Positions pos) const {
 // Network Configuration (Detector<->Receiver)
 
 Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
-    if (getDetectorType().squash() != defs::JUNGFRAU) {
-        throw sls::RuntimeError(
-            "Cannot set number of udp interfaces for this detector.");
-    }
     // also called by vetostream (for gotthard2)
     return pimpl->getNumberofUDPInterfaces(pos);
 }
@@ -1450,7 +1451,6 @@ void Detector::setActive(const bool active, Positions pos) {
     pimpl->Parallel(&Module::setActivate, pos, active);
 }
 
-
 Result<bool> Detector::getPartialReset(Positions pos) const {
     return pimpl->Parallel(&Module::getCounterBit, pos);
 }
@@ -1565,12 +1565,9 @@ void Detector::setStorageCellDelay(ns value, Positions pos) {
 std::vector<defs::gainMode> Detector::getGainModeList() const {
     switch (getDetectorType().squash()) {
     case defs::JUNGFRAU:
-        return std::vector<defs::gainMode>{defs::DYNAMIC,
-                                           defs::FORCE_SWITCH_G1,
-                                           defs::FORCE_SWITCH_G2,
-                                           defs::FIX_G1,
-                                           defs::FIX_G2,
-                                           defs::FIX_G0};
+        return std::vector<defs::gainMode>{
+            defs::DYNAMIC, defs::FORCE_SWITCH_G1, defs::FORCE_SWITCH_G2,
+            defs::FIX_G1,  defs::FIX_G2,          defs::FIX_G0};
         break;
     default:
         throw RuntimeError("Gain mode is not implemented for this detector.");
@@ -1717,19 +1714,22 @@ Result<defs::streamingInterface> Detector::getVetoStream(Positions pos) const {
     return res;
 }
 
-void Detector::setVetoStream(defs::streamingInterface interface, Positions pos) {
+void Detector::setVetoStream(defs::streamingInterface interface,
+                             Positions pos) {
     // 3gbe
-    bool LOW_LATENCY_LINK = ((interface & defs::streamingInterface::LOW_LATENCY_LINK) ==
-                 defs::streamingInterface::LOW_LATENCY_LINK);
+    bool LOW_LATENCY_LINK =
+        ((interface & defs::streamingInterface::LOW_LATENCY_LINK) ==
+         defs::streamingInterface::LOW_LATENCY_LINK);
     pimpl->Parallel(&Module::setVetoStream, pos, LOW_LATENCY_LINK);
 
     // 10gbe (debugging interface) opens 2nd udp interface in receiver
     int old_numinterfaces = pimpl->getNumberofUDPInterfaces(pos).tsquash(
         "retrieved inconsistent number of udp interfaces");
-    int numinterfaces = (((interface & defs::streamingInterface::ETHERNET_10GB) ==
-                         defs::streamingInterface::ETHERNET_10GB)
-                            ? 2
-                            : 1);
+    int numinterfaces =
+        (((interface & defs::streamingInterface::ETHERNET_10GB) ==
+          defs::streamingInterface::ETHERNET_10GB)
+             ? 2
+             : 1);
     if (numinterfaces != old_numinterfaces) {
         setNumberofUDPInterfaces_(numinterfaces, pos);
     }

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 
 INCDIR=   -I. -I../dataStructures ../tiffIO.cpp -I../ -I../interpolations/ -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ -I../../libs/rapidjson/
 LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff   -O3  -std=c++11 -Wall -L../../build/bin/ -lSlsSupport

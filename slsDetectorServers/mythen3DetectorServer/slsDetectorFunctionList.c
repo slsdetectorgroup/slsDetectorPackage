@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "slsDetectorFunctionList.h"
 #include "ALTERA_PLL_CYCLONE10.h"
 #include "DAC6571.h"
@@ -281,7 +283,6 @@ u_int32_t getDetectorNumber() {
     return bus_r(MCB_SERIAL_NO_REG);
 }
 
-
 int getModuleId(int *ret, char *mess) {
     return ((bus_r(MOD_ID_REG) & MOD_ID_MSK) >> MOD_ID_OFST);
 }
@@ -541,18 +542,18 @@ int resetToDefaultDacs(int hardReset) {
         for (int i = 0; i < NDAC; ++i) {
             defaultDacValues[i] = vals[i];
         }
-            const int vals_standard[] = SPECIAL_DEFAULT_STANDARD_DAC_VALS;
+        const int vals_standard[] = SPECIAL_DEFAULT_STANDARD_DAC_VALS;
         for (int i = 0; i < NSPECIALDACS; ++i) {
             defaultDacValue_standard[i] = vals_standard[i];
-        }    
+        }
         const int vals_fast[] = SPECIAL_DEFAULT_FAST_DAC_VALS;
         for (int i = 0; i < NSPECIALDACS; ++i) {
             defaultDacValue_fast[i] = vals_fast[i];
-        }  
-            const int vals_highgain[] = SPECIAL_DEFAULT_HIGHGAIN_DAC_VALS;
+        }
+        const int vals_highgain[] = SPECIAL_DEFAULT_HIGHGAIN_DAC_VALS;
         for (int i = 0; i < NSPECIALDACS; ++i) {
             defaultDacValue_highgain[i] = vals_highgain[i];
-        }  
+        }
     }
 
     // remember settings

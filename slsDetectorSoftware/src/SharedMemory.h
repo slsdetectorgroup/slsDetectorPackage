@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 /************************************************
  * @file SharedMemory.h
@@ -24,7 +26,7 @@
 
 #define SHM_DETECTOR_PREFIX "/slsDetectorPackage_detector_"
 #define SHM_MODULE_PREFIX   "_module_"
-#define SHM_ENV_NAME     "SLSDETNAME"
+#define SHM_ENV_NAME        "SLSDETNAME"
 
 #include <iostream>
 #include <string>

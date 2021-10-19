@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 """
 Automatically improt all enums from slsDetectorDefs and give an
 alias with their name in the enum module. All names from the enum

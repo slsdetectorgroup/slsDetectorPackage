@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 slsReceiver --rx_tcpport 1954 &
 slsReceiver --rx_tcpport 1955 &
 

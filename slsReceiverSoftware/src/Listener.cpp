@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 /************************************************
  * @file Listener.cpp
  * @short creates the listener thread that
@@ -22,7 +24,7 @@ const std::string Listener::TypeName = "Listener";
 Listener::Listener(int ind, detectorType dtype, Fifo *f,
                    std::atomic<runStatus> *s, uint32_t *portno, std::string *e,
                    uint64_t *nf, int *us, int *as, uint32_t *fpf,
-                   frameDiscardPolicy *fdp, bool *act, bool* detds, bool *sm)
+                   frameDiscardPolicy *fdp, bool *act, bool *detds, bool *sm)
     : ThreadObject(ind, TypeName), fifo(f), myDetectorType(dtype), status(s),
       udpPortNumber(portno), eth(e), numImages(nf), udpSocketBufferSize(us),
       actualUDPSocketBufferSize(as), framesPerFile(fpf), frameDiscardMode(fdp),
@@ -201,7 +203,8 @@ void Listener::ThreadExecution() {
                    << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
 
     // udpsocket doesnt exist
-    if (*activated && *detectorDataStream && !udpSocketAlive && !carryOverFlag) {
+    if (*activated && *detectorDataStream && !udpSocketAlive &&
+        !carryOverFlag) {
         // LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not
         // created or shut down earlier";
         (*((uint32_t *)buffer)) = 0;
@@ -210,7 +213,8 @@ void Listener::ThreadExecution() {
     }
 
     // get data
-    if ((*status != TRANSMITTING && (!(*activated) || !(*detectorDataStream) || udpSocketAlive)) ||
+    if ((*status != TRANSMITTING &&
+         (!(*activated) || !(*detectorDataStream) || udpSocketAlive)) ||
         carryOverFlag) {
         rc = ListenToAnImage(buffer);
     }

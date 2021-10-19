@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #define _GNU_SOURCE // needed for strptime to be at the top
 #include "common.h"
 #include "clogger.h"
@@ -6,7 +8,6 @@
 #include <libgen.h> // dirname
 #include <string.h>
 #include <unistd.h> // readlink
-
 
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue) {
@@ -243,7 +244,8 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
 
         // read only until a particular size (drive)
         if (fsize != 0 && totalBytesRead >= fsize) {
-            LOG(logINFO, ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
+            LOG(logINFO,
+                ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
             break;
         }
         bytes = fread(buf, 1, readUnitSize, fp);

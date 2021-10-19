@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 #include "receiver_defs.h"
 #include "sls/container_utils.h"
@@ -212,8 +214,10 @@ class Implementation : private virtual slsDetectorDefs {
      * padding is enabled (as it will receive nothing from detector) */
     void setActivate(const bool enable);
     bool getDetectorDataStream(const portPosition port) const;
-    /** [Eiger] If datastream is disabled, receiver will create dummy data if deactivated
-     * padding for that port is enabled (as it will receive nothing from detector) */
+    /** [Eiger] If datastream is disabled, receiver will create dummy data if
+     * deactivated
+     * padding for that port is enabled (as it will receive nothing from
+     * detector) */
     void setDetectorDataStream(const portPosition port, const bool enable);
     int getReadNRows() const;
     /* [Eiger][Jungfrau] */

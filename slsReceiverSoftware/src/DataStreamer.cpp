@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 /************************************************
  * @file DataStreamer.cpp
  * @short streams data from receiver via ZMQ
@@ -191,8 +193,8 @@ void DataStreamer::ProcessAnImage(char *buf) {
         }
         if (!zmqSocket->SendData(
                 buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
-                (uint32_t)(
-                    *((uint32_t *)buf)))) { // new size possibly from callback
+                (uint32_t)(*(
+                    (uint32_t *)buf)))) { // new size possibly from callback
             LOG(logERROR) << "Could not send zmq data for fnum " << fnum
                           << " and streamer " << index;
         }

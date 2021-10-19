@@ -1,0 +1,17 @@
+The SLS Detector Package is provided under:
+
+	SPDX-License-Identifier: LGPL-3.0-or-later
+
+Being under the terms of the GNU Lesser General Public License version 3 or later, 
+according with:
+
+	LICENSES/LGPL-3.0
+
+Source code under the Apache 2.0 License have the SPDX Identifier and are 
+according with:
+
+	LICENSES/ThirdParty/Apache-2.0
+
+All contributions to the SLS Detector Package are subject to this COPYING file.
+
+

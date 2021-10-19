@@ -1,7 +1,7 @@
-SLS Detector Package 6.0.0 released on xx.10.2021 (Major Release)
-===================================================================
+SLS Detector Package 6.0.0 released on 21.10.2021
+==================================================
 
-This document describes the differences between 6.0.0 and 5.2.0 releases.   
+This document describes the differences between v6.0.0 and v5.1.0.   
 
 
 
@@ -10,8 +10,9 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
     1.  New or Changed Features
     2.  Resolved Issues
     3.  Known Issues
-    4.  Firmware Requirements
-    5.  Download, Documentation & Support
+    4.  Changes in Next Major Release
+    5.  Firmware Requirements
+    6.  Download, Documentation & Support
 
 
 
@@ -21,51 +22,46 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
 
     Client 
     ------
+    1.  Shared libraries
+        They are versioned from this release on. 
 
-    1.  [Jungfrau] Chip version 
+    2.  [Jungfrau] Chip version 
         Features for chipv1.1 incorporated
         Command line: chipversion, API: getchipVersion 
         gets chip version (1.0 or 1.1)
         chipv1.1 requires config_jungfrau.txt on detector server.
     
-    2.  [Jungfrau] Chip configuration (only chipv1.1)
+    3.  [Jungfrau] Chip configuration (only chipv1.1)
         powering on the chip and changing settings will configure the chip.
         Hence, required before acquisition.
 
-    3.  [Jungfrau] Settings and Gain mode 
+    4.  [Jungfrau] Settings and Gain mode 
         Settings can be gain0 and highgain0. Gain mode can be dynamicgain, 
         forceswitchg1, forceswitchg2, fixg1, fixg2, fixg0. fixg0 must be 
         used with EXTRA caution as you can damage the detector.
         Changing settings also changes dac values of 3 dacs () and reconfigures
         chip (only v1.1)
 
-    4.  [Jungfrau] Storage cells (only chipv1.1)
+    5.  [Jungfrau] Storage cells (only chipv1.1)
         Additional number of storage cells not applicable for chipv1.1.
         Storage cell start is only allowed from 0 - 3 for chipv1.1 
         (0 - 15 for chipv1.0).
     
-    5.  [Gotthard2][Jungfrau] Filter Resistor 
+    6.  [Gotthard2][Jungfrau] Filter Resistor 
         Command line: filterresistor, API: getFilterResistor/ setFilterResistor
         Previous Command: filter, setFilter/ getFilter
         Set Filter resistor. Increasing values for increasing resistance.
         [Jungfrau] only for chipv1.1. Options: [0|1]. Default is 1.
         [Gotthard2] Options: [0|1|2|3]. Default is 0.
 
-    6.  [Jungfrau] Filter cell (only chipv1.1)
+    7.  [Jungfrau] Filter cell (only chipv1.1)
         Command line: filtercell, API: getFilterCell/ setFilterCell
         Set filter cell. Options: [0-12]. Advanced user command.
 
-    7.  [Jungfrau] Comparator disable time (only chipv1.1)
+    8.  [Jungfrau] Comparator disable time (only chipv1.1)
         Command line: comp_disable_time, API: getComparatorDisableTime/ 
         setComparatorDisableTime 
         One can customize the period to disable comparator.
-
-    8.  [Eiger][Jungfrau] Flip rows
-        Command line: fliprows, API: getFlipRows/ setFlipRows
-        Previous command: flippeddatax, setBottom/ getBottom
-        [Jungfrau] Flips rows in detector only for HW v2.0.
-        slsReceiver and slsDetectorGui will not flip them again.
-        [Eiger] same as before.
 
     9.  [Eiger][Jungfrau] Read n rows
         Command line: readnrows, API: getReadNRows/ setReadNRows
@@ -164,6 +160,20 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
         This will only affect shared memory and will not try to change the
         current tcp port of the control/stop server in detector.
 
+    26. [Eiger][Jungfrau][Gotthard2] Speed 
+        Command line: readoutspeed, readoutspeedlist API: getReadoutSpeed/ setReadoutSpeed /
+        getReadoutSpeedList
+        Previous command: speed, setSpeed/ getSpeed
+        [Eiger][Jungfrau] same as before.
+        [Gotthard2] New command to set readout speed. Options: 108, 144 (in MHz)
+        
+    27.  [Eiger][Jungfrau] Flip rows
+        Command line: fliprows, API: getFlipRows/ setFlipRows
+        Previous command: flippeddatax, setBottom/ getBottom
+        [Jungfrau] Flips rows in detector only for HW v2.0.
+        slsReceiver and slsDetectorGui will not flip them again.
+        [Eiger] same as before.
+
     Detector servers
     ----------------
 
@@ -200,6 +210,8 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
     1. [Mythen3] counters added in settings tab
 
 
+
+
 2. Resolved Issues
 ==================
 
@@ -230,6 +242,10 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
         values.
     
     7.  [Eiger] fast quad fix for loading trimbits
+
+    8.  [Eiger] Can also use copydetectorserver command.
+        [All] copydetectorserver command also creates a link to the binary compied
+        with a shorter name ([detector]DetectorServer only)
     
     Receiver
     --------
@@ -237,21 +253,46 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
     1.  Disabled port or deactivated (half) modules will not create files.
 
 
-- better control of what is built (PR)?
-- cmake package has hardcoded path to zeromq library
 
 
-3. Firmware Requirements
+3. Known Issues
+===============
+
+    Receiver
+    --------
+    1.  It does not handle readnrows or partial readout. Only the summary
+        is adjusted to print in red. However, it will still write complete
+        images with missing data padded. Roi will be implemented in future
+        that can be complimented with this feature to remove the additional
+        data in files.
+
+    2.  Round robin is not implemented in receiver side, ie. one cannot configure
+        more than 1 receiver at a time. This will/might be done in the future.
+
+
+
+
+4. Changes in Next Major Release
+================================
+
+    1.  Naming of Package
+        The package might be renamed and so might the binaries, libraries, 
+        namespace,include paths in the next major release (which is breaking API).  
+
+
+
+
+5. Firmware Requirements
 ========================
         
     Eiger
     =====  
-    Compatible version : 08.09.2020 (v27)
+    Compatible version : 08.10.2021 (v29)
     
     Jungfrau
     ========       
     Compatible version : 31.08.2021 (v1.2, PCB v1.0) 
-                       : 10.09.2021 (v2.2, PCB v2.0)
+                       : 08.10.2021 (v2.2, PCB v2.0)
 
     Gotthard
     ========   
@@ -264,7 +305,7 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
 
     Gotthard2
     =========
-    Compatible version : 27.05.2021 (development)
+    Compatible version : 27.05.2021 (v1.0)
 
     Moench
     ======
@@ -293,23 +334,6 @@ This document describes the differences between 6.0.0 and 5.2.0 releases.
     and
         https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
 
-
-
-
-
-5. Known Issues
-===============
-
-    Receiver
-    --------
-    1.  It does not handle readnrows or partial readout. Only the summary
-        is adjusted to print in red. However, it will still write complete
-        images with missing data padded. Roi will be implemented in future
-        that can be complimented with this feature to remove the additional
-        data in files.
-
-    2.  Round robin is not implemented in receiver side, ie. one cannot configure
-        more than 1 receiver at a time. This will/might be done in the future.
 
 
 

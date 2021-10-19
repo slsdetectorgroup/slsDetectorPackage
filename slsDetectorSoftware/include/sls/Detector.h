@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 #include "sls/Pattern.h"
 #include "sls/Result.h"
@@ -81,7 +83,8 @@ class Detector {
     /* [Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench] */
     Result<int64_t> getSerialNumber(Positions pos = {}) const;
 
-    /** [Eiger][Gotthard2][Mythen3] 6 bit value (ideally unique) that is streamed out in the UDP header of the detector.*/
+    /** [Eiger][Gotthard2][Mythen3] 6 bit value (ideally unique) that is
+     * streamed out in the UDP header of the detector.*/
     Result<int> getModuleId(Positions pos = {}) const;
 
     Result<int64_t> getReceiverVersion(Positions pos = {}) const;
@@ -300,16 +303,21 @@ class Detector {
     /** list of possible timing modes for this detector */
     std::vector<defs::timingMode> getTimingModeList() const;
 
-    /** [Eiger][Jungfrau] */
-    Result<defs::speedLevel> getSpeed(Positions pos = {}) const;
+    /** [Eiger][Jungfrau][Gotthard2] */
+    Result<defs::speedLevel> getReadoutSpeed(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau]
-     * Options: FULL_SPEED, HALF_SPEED, QUARTER_SPEED \n
-     * [Jungfrau] FULL_SPEED option only available from v2.0 boards and with
-     * setting number of interfaces to 2.  \n Also overwrites adcphase to
-     * recommended default.
+    /** [Eiger][Jungfrau][Gotthard2]
+     * [Jungfrau] Options: FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED \n
+     * [Eiger] Options: FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED \n
+     * [Gotthard2] Options: G2_108MHZ (Default), G2_144MHZ \n
+     * [Jungfrau] FULL_SPEED option only available from v2.0 boards and is
+     * recommended to set number of interfaces to 2. \n Also overwrites adcphase
+     * to recommended default.
      */
-    void setSpeed(defs::speedLevel value, Positions pos = {});
+    void setReadoutSpeed(defs::speedLevel value, Positions pos = {});
+
+    /** list of possible readoutspeed modes for this detector */
+    std::vector<defs::speedLevel> getReadoutSpeedList() const;
 
     /** [Jungfrau][CTB][Moench] */
     Result<int> getADCPhase(Positions pos = {}) const;
@@ -397,8 +405,9 @@ class Detector {
      * [Moench] Default is disabled. \n
      * [Jungfrau] Default is disabled. Get will return power status. Can be off
      * if temperature event occured (temperature over temp_threshold with
-     * temp_control enabled. Will configure chip (only chip v1.1)\n [Mythen3][Gotthard2] Default is 1. If module not
-     * connected or wrong module, powerchip will fail.
+     * temp_control enabled. Will configure chip (only chip v1.1)\n
+     * [Mythen3][Gotthard2] Default is 1. If module not connected or wrong
+     * module, powerchip will fail.
      */
     void setPowerChip(bool on, Positions pos = {});
 
@@ -511,7 +520,9 @@ class Detector {
 
     /** [Eiger] Number of rows to read out per half module
      * Options: 0 - 256. 256 is default. The permissible values depend on
-     * dynamic range and 10Gbe enabled. \n[Jungfrau] Number of rows per module starting from the centre. Options: 8 - 512, must be multiples of 8. Default is 512.
+     * dynamic range and 10Gbe enabled. \n[Jungfrau] Number of rows per module
+     * starting from the centre. Options: 8 - 512, must be multiples of 8.
+     * Default is 512.
      */
     void setReadNRows(const int lines, Positions pos = {});
 
@@ -1219,7 +1230,8 @@ class Detector {
     Result<int> getStorageCellStart(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced. Sets the storage cell storing the first acquisition
-     * of the series. Options: 0-max. max is 15 (default) for chipv1.0 and 3 (default) for chipv1.1.
+     * of the series. Options: 0-max. max is 15 (default) for chipv1.0 and 3
+     * (default) for chipv1.1.
      */
     void setStorageCellStart(int cell, Positions pos = {});
 
@@ -1228,7 +1240,7 @@ class Detector {
 
     /** [Jungfrau] Advanced \n Additional time delay between 2 consecutive
      * exposures in burst mode. \n Options: (0-1638375 ns (resolution of 25ns)\n
-     * Only applicable for chipv1.0. 
+     * Only applicable for chipv1.0.
      */
     void setStorageCellDelay(ns value, Positions pos = {});
 
@@ -1360,14 +1372,15 @@ class Detector {
     /** [Gotthard2] */
     Result<defs::streamingInterface> getVetoStream(Positions pos = {}) const;
 
-    /** [Gotthard2] Options: NONE (Default), LOW_LATENCY_LINK, ETHERNET_10GB (debugging), ALL
-     * Enable or disable the 2 veto streaming interfaces available. Can
-     * concatenate more than one interface. \nLOW_LATENCY_LINK is the default
-     * interface to work with. \nETHERNET_10GB is for debugging and also enables second
-     * interface in receiver for listening to veto packets (writes a separate
-     * file if writing enabled). Also restarts client and receiver zmq sockets
-     * if zmq streaming enabled.*/
-    void setVetoStream(const defs::streamingInterface value, Positions pos = {});
+    /** [Gotthard2] Options: NONE (Default), LOW_LATENCY_LINK, ETHERNET_10GB
+     * (debugging), ALL Enable or disable the 2 veto streaming interfaces
+     * available. Can concatenate more than one interface. \nLOW_LATENCY_LINK is
+     * the default interface to work with. \nETHERNET_10GB is for debugging and
+     * also enables second interface in receiver for listening to veto packets
+     * (writes a separate file if writing enabled). Also restarts client and
+     * receiver zmq sockets if zmq streaming enabled.*/
+    void setVetoStream(const defs::streamingInterface value,
+                       Positions pos = {});
 
     /** [Gotthard2] */
     Result<defs::vetoAlgorithm>
@@ -1539,7 +1552,7 @@ class Detector {
     /** [CTB] */
     void setDBITClock(int value_in_MHz, Positions pos = {});
 
-     /**
+    /**
      * [CTB] mV
      * Options: V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D, V_POWER_IO */
     Result<int> getMeasuredVoltage(defs::dacIndex index,
@@ -1723,21 +1736,24 @@ class Detector {
      *                                                *
      * ************************************************/
 
-    /**  Advanced user Function!
-     * [Jungfrau][CTB][Moench] fname is a pof file, rebooting the controller is
-     * recommended \n [Mythen3][Gotthard2] fname is an rbf file, power cycling
-     * the detector is recommended
+    /**  [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2]
+     * Advanced user Function!
+     * Program firmware from command line, after which detector controller is
+     * rebooted. [Jungfrau][CTB][Moench] fname is a pof file (full path) \n
+     * [Mythen3][Gotthard2] fname is an rbf file (full path)
      */
     void programFPGA(const std::string &fname, Positions pos = {});
 
     /** [Jungfrau][CTB][Moench]  Advanced user Function!  */
     void resetFPGA(Positions pos = {});
 
-    /** [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2]
+    /** [Jungfrau][Eiger][Gotthard][CTB][Moench][Mythen3][Gotthard2]
      * Advanced user Function! \n
-     * Copy detector server fname from tftp folder of hostname to detector \n
-     * [Jungfrau][Gotthard][CTB][Moench] Also changes respawn server, which is
-     * effective after a reboot.
+     * Copy detector server fname from tftp folder of hostname to detector. Also
+     * creates a symbolic link to a shorter name (without vx.x.x). Then the
+     * detector controller reboots (except eiger) \n
+     * [Jungfrau][Gotthard][CTB][Moench] Also changes respawn server (to the
+     * link), which is effective after a reboot.
      */
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname, Positions pos = {});
@@ -1748,11 +1764,11 @@ class Detector {
 
     /**
      * Advanced user Function!\n [Jungfrau][Gotthard][CTB][Moench] Updates the
-     * firmware, detector server and then reboots detector controller blackfin.
-     * \n [Mythen3][Gotthard2] Will still have old server starting up as the new
-     * server is not respawned \n sname is name of detector server binary found
-     * on tftp folder of host pc \n hostname is name of pc to tftp from \n fname
-     * is programming file name
+     * firmware, detector server, make a soft link and then reboots detector
+     * controller. \n [Mythen3][Gotthard2] Will require a script to start up the
+     * shorter named server link at start up \n sname is name of detector
+     * server binary found on tftp folder of host pc \n hostname is name of pc
+     * to tftp from \n fname is programming file name with full path to it
      */
     void updateFirmwareAndServer(const std::string &sname,
                                  const std::string &hostname,

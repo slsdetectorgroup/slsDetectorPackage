@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 /************************************************
  * @file sls_detector_defs.h
@@ -32,10 +34,10 @@
 #define MAX_RX_DBIT 64
 
 /** default ports */
-#define DEFAULT_PORTNO        1952
-#define DEFAULT_UDP_PORTNO    50001
-#define DEFAULT_ZMQ_CL_PORTNO 30001
-#define DEFAULT_ZMQ_RX_PORTNO 30001
+#define DEFAULT_PORTNO         1952
+#define DEFAULT_UDP_PORTNO     50001
+#define DEFAULT_ZMQ_CL_PORTNO  30001
+#define DEFAULT_ZMQ_RX_PORTNO  30001
 #define DEFAULT_UDP_SRC_PORTNO 32410
 #define DEFAULT_UDP_DST_PORTNO 50001
 
@@ -377,7 +379,13 @@ typedef struct {
     enum readoutMode { ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL };
 
     /** chip speed */
-    enum speedLevel { FULL_SPEED, HALF_SPEED, QUARTER_SPEED };
+    enum speedLevel {
+        FULL_SPEED,
+        HALF_SPEED,
+        QUARTER_SPEED,
+        G2_108MHZ,
+        G2_144MHZ
+    };
 
     /**
      * burst mode for gotthard2
@@ -410,7 +418,7 @@ typedef struct {
 #ifdef __cplusplus
     enum class streamingInterface {
 #else
-    enum streamingInterface {
+enum streamingInterface {
 #endif
         NONE = 0,
         LOW_LATENCY_LINK = 1 << 0,
@@ -462,36 +470,36 @@ typedef struct {
     } __attribute__((packed));
 
     struct currentSrcParameters {
-        int enable_;
-        int fix_;
-        int normal_;
-        uint64_t select_;
+        int enable;
+        int fix;
+        int normal;
+        uint64_t select;
 
         /** [Gotthard2][Jungfrau] disable */
-        currentSrcParameters()
-            : enable_(0), fix_(-1), normal_(-1), select_(0) {}
+        currentSrcParameters() : enable(0), fix(-1), normal(-1), select(0) {}
 
         /** [Gotthard2] enable or disable */
-        explicit currentSrcParameters(bool enable)
-            : enable_(static_cast<int>(enable)), fix_(-1), normal_(-1),
-              select_(0) {}
+        explicit currentSrcParameters(bool srcEnable)
+            : enable(static_cast<int>(srcEnable)), fix(-1), normal(-1),
+              select(0) {}
 
         /** [Jungfrau](chipv1.0) enable current src with fix or no fix,
          * select is 0 to 63 columns only */
-        currentSrcParameters(bool fix, uint64_t select)
-            : enable_(1), fix_(static_cast<int>(fix)), normal_(-1),
-              select_(select) {}
+        currentSrcParameters(bool fixCurrent, uint64_t selectCurrent)
+            : enable(1), fix(static_cast<int>(fixCurrent)), normal(-1),
+              select(selectCurrent) {}
 
         /** [Jungfrau](chipv1.1) enable current src, fix[fix|no fix],
          * select is a mask of 63 bits (muliple columns can be selected
          * simultaneously, normal [normal|low] */
-        currentSrcParameters(bool fix, uint64_t select, bool normal)
-            : enable_(1), fix_(static_cast<int>(fix)),
-              normal_(static_cast<int>(normal)), select_(select) {}
+        currentSrcParameters(bool fixCurrent, uint64_t selectCurrent,
+                             bool normalCurrent)
+            : enable(1), fix(static_cast<int>(fixCurrent)),
+              normal(static_cast<int>(normalCurrent)), select(selectCurrent) {}
 
         bool operator==(const currentSrcParameters &other) const {
-            return ((enable_ == other.enable_) && (fix_ == other.fix_) &&
-                    (normal_ == other.normal_) && (select_ == other.select_));
+            return ((enable == other.enable) && (fix == other.fix) &&
+                    (normal == other.normal) && (select == other.select));
         }
     } __attribute__((packed));
 
@@ -560,14 +568,14 @@ inline slsDetectorDefs::streamingInterface
 operator|(const slsDetectorDefs::streamingInterface &a,
           const slsDetectorDefs::streamingInterface &b) {
     return slsDetectorDefs::streamingInterface(static_cast<int32_t>(a) |
-                                              static_cast<int32_t>(b));
+                                               static_cast<int32_t>(b));
 };
 
 inline slsDetectorDefs::streamingInterface
 operator&(const slsDetectorDefs::streamingInterface &a,
           const slsDetectorDefs::streamingInterface &b) {
     return slsDetectorDefs::streamingInterface(static_cast<int32_t>(a) &
-                                              static_cast<int32_t>(b));
+                                               static_cast<int32_t>(b));
 };
 #endif
 
@@ -645,7 +653,7 @@ struct detParameters {
 #ifdef __cplusplus
 struct sls_detector_module {
 #else
-    typedef struct {
+typedef struct {
 #endif
     int serialnumber; /**< is the module serial number */
     int nchan;        /**< is the number of channels on the module*/
@@ -716,4 +724,3 @@ using Positions = const std::vector<int> &;
 using defs = slsDetectorDefs;
 } // namespace sls
 #endif
-

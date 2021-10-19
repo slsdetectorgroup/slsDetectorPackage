@@ -1,10 +1,12 @@
+# SPDX-License-Identifier: LGPL-3.0-or-other
+# Copyright (C) 2021 Contributors to the SLS Detector Package
 from slsdet import Detector, currentSrcParameters
 
 s = currentSrcParameters()
-s.enable_ = 1
-s.fix_= 1
-s.normal_ = 1
-s.select_ = 10
+s.enable = 1
+s.fix= 1
+s.normal = 1
+s.select = 10
 
 
 d = Detector()

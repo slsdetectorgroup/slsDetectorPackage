@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "slsDetectorFunctionList.h"
 #include "clogger.h"
 #include "sharedMemory.h"
@@ -1578,7 +1580,6 @@ int getADCPipeline() {
     return ((bus_r(ADC_OFFSET_REG) & ADC_OFFSET_ADC_PPLN_MSK) >>
             ADC_OFFSET_ADC_PPLN_OFST);
 }
-
 
 /* aquisition */
 

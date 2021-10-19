@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
 /**
@@ -68,7 +70,7 @@ template <class T, class Allocator = std::allocator<T>> class Result {
      * @tparam Args template paramter pack to forward
      */
     template <typename... Args>
-    Result(Args &&... args) : vec(std::forward<Args>(args)...) {}
+    Result(Args &&...args) : vec(std::forward<Args>(args)...) {}
 
     using value_type = typename std::vector<T>::value_type;
     using iterator = typename std::vector<T>::iterator;

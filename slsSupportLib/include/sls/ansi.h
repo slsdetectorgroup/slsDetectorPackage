@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #define RED      "\x1b[31m"
 #define GREEN    "\x1b[32m"
 #define YELLOW   "\x1b[33m"

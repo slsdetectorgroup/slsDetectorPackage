@@ -1,8 +1,9 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "catch.hpp"
 #include "sls/ClientSocket.h"
 #include "sls/ServerSocket.h"
 #include <chrono>
-#include <thread>
 #include <future>
 #include <iostream>
 #include <thread>

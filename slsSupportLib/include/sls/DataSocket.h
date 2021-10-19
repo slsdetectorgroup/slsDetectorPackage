@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
 #include "sls/TypeTraits.h"
@@ -51,7 +53,7 @@ class DataSocket {
     int Send(const std::string &s);
 
     // Variadic template to send all arguments
-    template <class... Args> int SendAll(Args &&... args) {
+    template <class... Args> int SendAll(Args &&...args) {
         auto l = std::initializer_list<int>{Send(args)...};
         auto sum = std::accumulate(begin(l), end(l), 0);
         return sum;
@@ -84,7 +86,7 @@ class DataSocket {
 
   private:
     int sockfd_ = -1;
-    int fnum_ {0};
+    int fnum_{0};
 };
 
 }; // namespace sls

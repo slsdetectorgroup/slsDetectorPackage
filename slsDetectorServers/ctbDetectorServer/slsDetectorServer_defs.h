@@ -1,9 +1,13 @@
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 #include "RegisterDefs.h"
 #include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API 0x181130
 #define REQRD_FRMWR_VRSN        0x201005
+
+#define LINKED_SERVER_NAME "ctbDetectorServer"
 
 #define CTRL_SRVR_INIT_TIME_US (2 * 1000 * 1000)
 

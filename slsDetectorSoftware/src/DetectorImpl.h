@@ -19,7 +19,7 @@ class detectorData;
 
 #define DETECTOR_SHMAPIVERSION 0x190809
 #define DETECTOR_SHMVERSION    0x201007
-#define SHORT_STRING_LENGTH 50
+#define SHORT_STRING_LENGTH    50
 
 #include <future>
 #include <numeric>

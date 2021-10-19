@@ -44,7 +44,8 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      */
     Listener(int ind, detectorType dtype, Fifo *f, std::atomic<runStatus> *s,
              uint32_t *portno, std::string *e, uint64_t *nf, int *us, int *as,
-             uint32_t *fpf, frameDiscardPolicy *fdp, bool *act, bool* detds, bool *sm);
+             uint32_t *fpf, frameDiscardPolicy *fdp, bool *act, bool *detds,
+             bool *sm);
 
     /**
      * Destructor
@@ -189,7 +190,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     bool *activated;
 
     /** detector data stream */
-    bool* detectorDataStream;
+    bool *detectorDataStream;
 
     /** Silent Mode */
     bool *silentMode;

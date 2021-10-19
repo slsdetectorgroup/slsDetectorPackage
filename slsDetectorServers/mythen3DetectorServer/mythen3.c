@@ -92,7 +92,7 @@ patternParameters *setChipStatusRegisterPattern(int csr) {
     for (int i = 0; i < 8; i++)
         pat->word[iaddr++] = patword;
     //#This version of the serializer pushes in the MSB first (compatible with
-    //the CSR bit numbering)
+    // the CSR bit numbering)
     for (int ib = nbits - 1; ib >= 0; ib--) {
         if (csr & (1 << ib))
             patword = setBit(SIGNAL_serialIN, patword);

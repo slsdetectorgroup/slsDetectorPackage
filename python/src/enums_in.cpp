@@ -6,8 +6,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "sls/sls_detector_defs.h"
 #include "sls/Pattern.h"
+#include "sls/sls_detector_defs.h"
 namespace py = pybind11;
 void init_enums(py::module &m) {
     py::class_<slsDetectorDefs> Defs(m, "slsDetectorDefs");

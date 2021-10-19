@@ -449,36 +449,35 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
         CATCH_DISPLAY("Could not get client version.",
                       "qDetectorMain::ExecuteHelp")
 
-        qDefs::Message(qDefs::INFORMATION,
-                       "<p style=\"font-family:verdana;\">"
+        qDefs::Message(
+            qDefs::INFORMATION,
+            "<p style=\"font-family:verdana;\">"
 
-                       "<b>SLS Detector GUI version:&nbsp;&nbsp;&nbsp;" +
-                           guiVersion +
-                           "<br>SLS Detector Client version:  " +
-                           clientVersion +
-                           "</b><br><br>"
+            "<b>SLS Detector GUI version:&nbsp;&nbsp;&nbsp;" +
+                guiVersion +
+                "<br>SLS Detector Client version:  " + clientVersion +
+                "</b><br><br>"
 
-                           "Common GUI to control the SLS Detectors: "
-                           "Jungfrau, Eiger, Mythen3, Gotthard, Gotthard2 and "
-                           "Moench.<br><br>"
+                "Common GUI to control the SLS Detectors: "
+                "Jungfrau, Eiger, Mythen3, Gotthard, Gotthard2 and "
+                "Moench.<br><br>"
 
-                           "It can be operated in parallel with the command "
-                           "line interface: sls_detector_put, sls_detector_get, "
-                           "sls_detector_acquire and sls_detector_help.<br><br>"
+                "It can be operated in parallel with the command "
+                "line interface: sls_detector_put, sls_detector_get, "
+                "sls_detector_acquire and sls_detector_help.<br><br>"
 
+                "Support:<br>"
+                "Dhanya.Thattil@psi.ch <br>"
+                "Erik.Froejdh@psi.ch.<br><br><br>"
 
-                           "Support:<br>"
-                           "Dhanya.Thattil@psi.ch <br>"
-                           "Erik.Froejdh@psi.ch.<br><br><br>"
+                "<br>slsDetectorGui Copyright (C) 2021 Contributors to SLS "
+                "Detector Package<br><br>"
 
-                        "<br>slsDetectorGui Copyright (C) 2021 Contributors to SLS Detector Package<br><br>"
+                "See COPYING in root folder for Licensing details:<br>"
+                "LGPL-3.0-or-other"
 
-                        "See COPYING in root folder for Licensing details:<br>"
-                        "LGPL-3.0-or-other"
-
-
-                           "<\\p>",
-                       "qDetectorMain::ExecuteHelp");
+                "<\\p>",
+            "qDetectorMain::ExecuteHelp");
     }
 }
 

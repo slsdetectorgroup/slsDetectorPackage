@@ -252,7 +252,7 @@ std::string ToString(const defs::speedLevel s) {
     case defs::G2_108MHZ:
         return std::string("108");
     case defs::G2_144MHZ:
-        return std::string("144");        
+        return std::string("144");
     default:
         return std::string("Unknown");
     }

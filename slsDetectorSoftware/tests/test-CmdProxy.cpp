@@ -347,7 +347,8 @@ TEST_CASE("thresholdnotb", "[.cmd]") {
             std::string senergy = std::to_string(prev_energies[0]);
             std::ostringstream oss1, oss2;
             proxy.Call("thresholdnotb", {senergy, "standard"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "thresholdnotb [" + senergy + ", standard]\n");
+            REQUIRE(oss1.str() ==
+                    "thresholdnotb [" + senergy + ", standard]\n");
             proxy.Call("threshold", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "threshold " + senergy + "\n");
             REQUIRE_THROWS(proxy.Call("thresholdnotb",
@@ -895,12 +896,15 @@ TEST_CASE("readoutspeed", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2) {
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+        det_type == defs::GOTTHARD2) {
         auto prev_val = det.getReadoutSpeed();
 
-        // full speed for jungfrau only works for new boards (chipv1.1 is with new board [hw1.0 and chipv1.0 not tested here])
-        if ((det_type == defs::JUNGFRAU && det.getChipVersion().squash() * 10 == 11) || (det_type == defs::EIGER))
-        {
+        // full speed for jungfrau only works for new boards (chipv1.1 is with
+        // new board [hw1.0 and chipv1.0 not tested here])
+        if ((det_type == defs::JUNGFRAU &&
+             det.getChipVersion().squash() * 10 == 11) ||
+            (det_type == defs::EIGER)) {
             std::ostringstream oss1, oss2, oss3, oss4;
             proxy.Call("readoutspeed", {"0"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "readoutspeed full_speed\n");
@@ -911,7 +915,7 @@ TEST_CASE("readoutspeed", "[.cmd]") {
             proxy.Call("readoutspeed", {}, -1, GET, oss4);
             REQUIRE(oss4.str() == "readoutspeed full_speed\n");
         }
-        
+
         if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
             {
                 std::ostringstream oss1, oss2, oss3, oss4;
@@ -954,10 +958,11 @@ TEST_CASE("readoutspeed", "[.cmd]") {
                 REQUIRE(oss1.str() == "readoutspeed 144\n");
                 proxy.Call("readoutspeed", {}, -1, GET, oss2);
                 REQUIRE(oss2.str() == "readoutspeed 144\n");
-            } 
+            }
             REQUIRE_THROWS(proxy.Call("readoutspeed", {"full_speed"}, -1, PUT));
             REQUIRE_THROWS(proxy.Call("readoutspeed", {"half_speed"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("readoutspeed", {"quarter_speed"}, -1, PUT));
+            REQUIRE_THROWS(
+                proxy.Call("readoutspeed", {"quarter_speed"}, -1, PUT));
             REQUIRE_THROWS(proxy.Call("readoutspeed", {"0"}, -1, PUT));
             REQUIRE_THROWS(proxy.Call("readoutspeed", {"1"}, -1, PUT));
             REQUIRE_THROWS(proxy.Call("readoutspeed", {"2"}, -1, PUT));
@@ -976,8 +981,8 @@ TEST_CASE("readoutspeedlist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU || det_type == defs::EIGER)
-    {
+    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU ||
+        det_type == defs::EIGER) {
         REQUIRE_NOTHROW(proxy.Call("readoutspeedlist", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("readoutspeedlist", {}, -1, PUT));
     } else {
@@ -1795,33 +1800,30 @@ TEST_CASE("defaultdac", "[.cmd]") {
                 std::ostringstream oss;
                 proxy.Call("defaultdac", {dacname}, -1, GET, oss);
                 REQUIRE(oss.str() == std::string("defaultdac ") + dacname +
-                                        std::string(" 1000\n"));
+                                         std::string(" 1000\n"));
             }
             for (int i = 0; i != det.size(); ++i) {
                 det.setDefaultDac(it, prev_val[i], {i});
             }
         }
         if (det_type == defs::JUNGFRAU) {
-            std::vector<defs::dacIndex> daclist = {defs::VREF_PRECH, defs::VREF_DS,
-                                                defs::VREF_COMP};
+            std::vector<defs::dacIndex> daclist = {
+                defs::VREF_PRECH, defs::VREF_DS, defs::VREF_COMP};
             for (auto it : daclist) {
                 auto dacname = sls::ToString(it);
                 auto prev_val = det.getDefaultDac(it, defs::GAIN0);
                 {
                     std::ostringstream oss;
                     proxy.Call("defaultdac", {dacname, "1000", "gain0"}, -1,
-                            PUT, oss);
-                    REQUIRE(oss.str() ==
-                            std::string("defaultdac ") + dacname +
-                                std::string(" gain0 1000\n"));
+                               PUT, oss);
+                    REQUIRE(oss.str() == std::string("defaultdac ") + dacname +
+                                             std::string(" gain0 1000\n"));
                 }
                 {
                     std::ostringstream oss;
-                    proxy.Call("defaultdac", {dacname, "gain0"}, -1, GET,
-                               oss);
-                    REQUIRE(oss.str() ==
-                            std::string("defaultdac ") + dacname +
-                                std::string(" gain0 1000\n"));
+                    proxy.Call("defaultdac", {dacname, "gain0"}, -1, GET, oss);
+                    REQUIRE(oss.str() == std::string("defaultdac ") + dacname +
+                                             std::string(" gain0 1000\n"));
                 }
                 for (int i = 0; i != det.size(); ++i) {
                     det.setDefaultDac(it, prev_val[i], defs::GAIN0, {i});
@@ -1829,7 +1831,7 @@ TEST_CASE("defaultdac", "[.cmd]") {
             }
         }
     } else {
-            REQUIRE_THROWS(proxy.Call("defaultdac", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("defaultdac", {}, -1, GET));
     }
 }
 
@@ -1927,7 +1929,8 @@ TEST_CASE("blockingtrigger", "[.cmd]") {
             proxy.Call("blockingtrigger", {}, -1, PUT, oss);
             REQUIRE(oss.str() == "blockingtrigger successful\n");
         }
-        if (det.isVirtualDetectorServer().tsquash("inconsistent virtual detectors")) {
+        if (det.isVirtualDetectorServer().tsquash(
+                "inconsistent virtual detectors")) {
             std::this_thread::sleep_for(std::chrono::seconds(2));
         }
         auto currentfnum =
@@ -2285,7 +2288,6 @@ TEST_CASE("udp_numdst", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("udp_numdst", {}, -1, GET));
     }
 }
-
 
 TEST_CASE("udp_cleardst", "[.cmd]") {
     Detector det;

@@ -9,7 +9,6 @@
 #include <string.h>
 #include <unistd.h> // readlink
 
-
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue) {
     LOG(logDEBUG1, (" Input Value: %d (Input:(%d - %d), Output:(%d - %d))\n",
@@ -245,7 +244,8 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
 
         // read only until a particular size (drive)
         if (fsize != 0 && totalBytesRead >= fsize) {
-            LOG(logINFO, ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
+            LOG(logINFO,
+                ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
             break;
         }
         bytes = fread(buf, 1, readUnitSize, fp);

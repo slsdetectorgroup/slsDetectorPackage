@@ -1143,7 +1143,8 @@ int Feb_Control_SoftwareTrigger(int block) {
                 // end of acquisition (cannot monitor readyForTrigger)
                 int status = Feb_Control_AcquisitionInProgress();
                 if (status == STATUS_ERROR) {
-                    LOG(logERROR, ("Status: ERROR reading DAQ status register\n"));
+                    LOG(logERROR,
+                        ("Status: ERROR reading DAQ status register\n"));
                     return 0;
                 } else if (status == STATUS_IDLE) {
                     break;
@@ -1158,8 +1159,10 @@ int Feb_Control_SoftwareTrigger(int block) {
             }
             LOG(logDEBUG2, ("Done waiting (wait for trigger)!\n"));
         }
-            LOG(logINFO, ("%s Software Trigger %s\n", (block ? "Blocking" : "Non blocking"), (block ? "Acquired" : "Sent")));
-            fflush(stdout);
+        LOG(logINFO,
+            ("%s Software Trigger %s\n", (block ? "Blocking" : "Non blocking"),
+             (block ? "Acquired" : "Sent")));
+        fflush(stdout);
     }
 
     return 1;

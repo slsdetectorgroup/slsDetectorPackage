@@ -30,8 +30,9 @@ void setupUDPCommParameters() {
     memset(udpDestinationIp, 0, sizeof(udpDestinationIp));
 }
 
-int getUdPSocketDescriptor(int iRxEntry, int index) { return udpSockfd[iRxEntry][index]; }
-
+int getUdPSocketDescriptor(int iRxEntry, int index) {
+    return udpSockfd[iRxEntry][index];
+}
 
 int setUDPDestinationDetails(int iRxEntry, int index, const char *ip,
                              unsigned short int port) {
@@ -62,16 +63,20 @@ int setUDPDestinationDetails(int iRxEntry, int index, const char *ip,
     int err = getaddrinfo(udpDestinationIp[iRxEntry][index], sport, &hints,
                           &udpServerAddrInfo[iRxEntry][index]);
     if (err != 0) {
-        LOG(logERROR, ("Failed to resolve remote socket address %s at port %d [entry:%d]. "
+        LOG(logERROR, ("Failed to resolve remote socket address %s at port %d "
+                       "[entry:%d]. "
                        "(Error code:%d, %s)\n",
-                       udpDestinationIp[iRxEntry][index], udpDestinationPort[iRxEntry][index], iRxEntry, err,
+                       udpDestinationIp[iRxEntry][index],
+                       udpDestinationPort[iRxEntry][index], iRxEntry, err,
                        gai_strerror(err)));
         return FAIL;
     }
     if (udpServerAddrInfo[iRxEntry][index] == NULL) {
-        LOG(logERROR, ("Failed to resolve remote socket address %s at port %d [entry:%d]."
-                       "(getaddrinfo returned NULL)\n",
-                       udpDestinationIp[iRxEntry][index], udpDestinationPort[iRxEntry][index], iRxEntry));
+        LOG(logERROR,
+            ("Failed to resolve remote socket address %s at port %d [entry:%d]."
+             "(getaddrinfo returned NULL)\n",
+             udpDestinationIp[iRxEntry][index],
+             udpDestinationPort[iRxEntry][index], iRxEntry));
         udpServerAddrInfo[iRxEntry][index] = 0;
         return FAIL;
     }
@@ -80,41 +85,51 @@ int setUDPDestinationDetails(int iRxEntry, int index, const char *ip,
 }
 
 int createUDPSocket(int index) {
-    
+
     for (int iRxEntry = 0; iRxEntry != numUdpDestinations; ++iRxEntry) {
 
-        LOG(logDEBUG2, ("Creating UDP Socket %d [entry:%d]\n", index, iRxEntry));
+        LOG(logDEBUG2,
+            ("Creating UDP Socket %d [entry:%d]\n", index, iRxEntry));
         if (!strlen(udpDestinationIp[iRxEntry][index])) {
-            LOG(logERROR, ("No destination UDP ip specified for socket %d  [entry:%d].\n", index, iRxEntry));
+            LOG(logERROR,
+                ("No destination UDP ip specified for socket %d  [entry:%d].\n",
+                 index, iRxEntry));
             return FAIL;
         }
 
         if (udpSockfd[iRxEntry][index] != -1) {
-            LOG(logERROR, ("Strange that Udp socket was still open [socket:%d, entry:%d]. Closing it to "
-                        "create a new one.\n", index, iRxEntry));
+            LOG(logERROR, ("Strange that Udp socket was still open [socket:%d, "
+                           "entry:%d]. Closing it to "
+                           "create a new one.\n",
+                           index, iRxEntry));
             close(udpSockfd[iRxEntry][index]);
             udpSockfd[iRxEntry][index] = -1;
         }
 
         // Creating socket file descriptor
-        udpSockfd[iRxEntry][index] = socket(udpServerAddrInfo[iRxEntry][index]->ai_family,
-                                udpServerAddrInfo[iRxEntry][index]->ai_socktype,
-                                udpServerAddrInfo[iRxEntry][index]->ai_protocol);
+        udpSockfd[iRxEntry][index] =
+            socket(udpServerAddrInfo[iRxEntry][index]->ai_family,
+                   udpServerAddrInfo[iRxEntry][index]->ai_socktype,
+                   udpServerAddrInfo[iRxEntry][index]->ai_protocol);
         if (udpSockfd[iRxEntry][index] == -1) {
-            LOG(logERROR, ("UDP socket at port %d failed [entry:%d]. (Error code:%d, %s)\n",
-                        udpDestinationPort[iRxEntry][index], iRxEntry, errno, gai_strerror(errno)));
+            LOG(logERROR, ("UDP socket at port %d failed [entry:%d]. (Error "
+                           "code:%d, %s)\n",
+                           udpDestinationPort[iRxEntry][index], iRxEntry, errno,
+                           gai_strerror(errno)));
             return FAIL;
         }
-        LOG(logINFO, ("Udp client socket created for server (entry:%d, port %d, ip:%s)\n",
-                    iRxEntry, udpDestinationPort[iRxEntry][index], udpDestinationIp[iRxEntry][index]));
+        LOG(logINFO, ("Udp client socket created for server (entry:%d, port "
+                      "%d, ip:%s)\n",
+                      iRxEntry, udpDestinationPort[iRxEntry][index],
+                      udpDestinationIp[iRxEntry][index]));
 
-        // Using connect expects that the receiver (udp server) exists to listen to
-        // these packets connecting allows to use "send/write" instead of "sendto",
-        // avoiding checking for server address for each packet using write without
-        // a connect will end in segv
-        LOG(logINFO, ("Udp client socket connected [%d, %d, %s]\n", iRxEntry, udpDestinationPort[iRxEntry][index],
-                    udpDestinationIp[iRxEntry][index]));
-
+        // Using connect expects that the receiver (udp server) exists to listen
+        // to these packets connecting allows to use "send/write" instead of
+        // "sendto", avoiding checking for server address for each packet using
+        // write without a connect will end in segv
+        LOG(logINFO, ("Udp client socket connected [%d, %d, %s]\n", iRxEntry,
+                      udpDestinationPort[iRxEntry][index],
+                      udpDestinationIp[iRxEntry][index]));
     }
     return OK;
 }
@@ -125,9 +140,9 @@ int sendUDPPacket(int iRxEntry, int index, const char *buf, int length) {
                    udpServerAddrInfo[iRxEntry][index]->ai_addrlen);
     // udp sends atomically, no need to handle partial data
     if (n == -1) {
-        LOG(logERROR,
-            ("Could not send udp packet for socket %d [entry:%d]. (Error code:%d, %s)\n",
-             index, iRxEntry, errno, gai_strerror(errno)));
+        LOG(logERROR, ("Could not send udp packet for socket %d [entry:%d]. "
+                       "(Error code:%d, %s)\n",
+                       index, iRxEntry, errno, gai_strerror(errno)));
     } else {
         LOG(logDEBUG2, ("%d bytes sent\n", n));
     }

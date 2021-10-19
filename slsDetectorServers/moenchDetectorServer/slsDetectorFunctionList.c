@@ -1581,7 +1581,6 @@ int getADCPipeline() {
             ADC_OFFSET_ADC_PPLN_OFST);
 }
 
-
 /* aquisition */
 
 int startStateMachine() {

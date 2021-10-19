@@ -516,11 +516,11 @@ int resetToDefaultDacs(int hardReset) {
         const int vals_G0[] = SPECIAL_DEFAULT_DYNAMIC_GAIN_VALS;
         for (int i = 0; i < NSPECIALDACS; ++i) {
             defaultDacValue_G0[i] = vals_G0[i];
-        }    
+        }
         const int vals_HG0[] = SPECIAL_DEFAULT_DYNAMICHG0_GAIN_VALS;
         for (int i = 0; i < NSPECIALDACS; ++i) {
             defaultDacValue_HG0[i] = vals_HG0[i];
-        }     
+        }
     }
 
     // remember settings
@@ -734,7 +734,9 @@ int readConfigFile() {
             // version 1.1 and HW 1.0 (version reg value = 2) is incompatible
             if (version == 11 && isHardwareVersion2()) {
                 strcpy(initErrorMessage,
-                        "Chip version 1.1 (from on-board config file) is incompatible with old board (v1.0). Please update board or correct on-board config file.\n");
+                       "Chip version 1.1 (from on-board config file) is "
+                       "incompatible with old board (v1.0). Please update "
+                       "board or correct on-board config file.\n");
                 break;
             }
 
@@ -1352,7 +1354,9 @@ int setNumberofDestinations(int value) {
     LOG(logINFO, ("Setting number of entries to %d\n", value));
     --value;
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK);
-    bus_w(CONTROL_REG, bus_r(CONTROL_REG) | ((value << CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST) & CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK));
+    bus_w(CONTROL_REG,
+          bus_r(CONTROL_REG) | ((value << CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST) &
+                                CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK));
     return OK;
 }
 
@@ -1391,7 +1395,7 @@ int getPrimaryInterface() {
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
                  uint64_t destmac, uint32_t destport, uint64_t sourcemac,
                  uint32_t sourceip, uint32_t sourceport) {
-    
+
     // start addr
     uint32_t addr = (type == INNER ? RXR_ENDPOINT_INNER_START_REG
                                    : RXR_ENDPOINT_OUTER_START_REG);
@@ -1506,27 +1510,30 @@ int configureMAC() {
         if (iRxEntry < numUdpDestinations) {
             LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
 
-            LOG(logINFO, ("\tOuter %s\n", (numInterfaces == 2)
-                                            ? "(Bottom)"
-                                            : (selInterface ? "Not Used" : "Used")));
+            LOG(logINFO,
+                ("\tOuter %s\n", (numInterfaces == 2)
+                                     ? "(Bottom)"
+                                     : (selInterface ? "Not Used" : "Used")));
             LOG(logINFO, ("\tSource IP   : %s\n"
-                        "\tSource MAC  : %s\n"
-                        "\tSource Port : %d\n"
-                        "\tDest IP     : %s\n"
-                        "\tDest MAC    : %s\n"
-                        "\tDest Port   : %d\n\n",
-                        src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+                          "\tSource MAC  : %s\n"
+                          "\tSource Port : %d\n"
+                          "\tDest IP     : %s\n"
+                          "\tDest MAC    : %s\n"
+                          "\tDest Port   : %d\n\n",
+                          src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
-            LOG(logINFO, ("\tInner %s\n", (numInterfaces == 2)
-                                            ? "(Top)"
-                                            : (selInterface ? "Used" : "Not Used")));
-            LOG(logINFO, ("\tSource IP2  : %s\n"
-                        "\tSource MAC2 : %s\n"
-                        "\tSource Port2: %d\n"
-                        "\tDest IP2    : %s\n"
-                        "\tDest MAC2   : %s\n"
-                        "\tDest Port2  : %d\n\n",
-                        src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
+            LOG(logINFO,
+                ("\tInner %s\n", (numInterfaces == 2)
+                                     ? "(Top)"
+                                     : (selInterface ? "Used" : "Not Used")));
+            LOG(logINFO,
+                ("\tSource IP2  : %s\n"
+                 "\tSource MAC2 : %s\n"
+                 "\tSource Port2: %d\n"
+                 "\tDest IP2    : %s\n"
+                 "\tDest MAC2   : %s\n"
+                 "\tDest Port2  : %d\n\n",
+                 src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
         }
 #ifdef VIRTUAL
         if (setUDPDestinationDetails(iRxEntry, 0, dst_ip, dstport) == FAIL) {
@@ -1548,18 +1555,18 @@ int configureMAC() {
             setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip,
                         srcport);
             // top
-            setupHeader(iRxEntry, INNER, dstip2, dstmac2, dstport2, srcmac2, srcip2,
-                        srcport2);
+            setupHeader(iRxEntry, INNER, dstip2, dstmac2, dstport2, srcmac2,
+                        srcip2, srcport2);
         }
         // single interface
         else {
             // default
             if (selInterface == 0) {
-                setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac, srcip,
-                            srcport);
+                setupHeader(iRxEntry, OUTER, dstip, dstmac, dstport, srcmac,
+                            srcip, srcport);
             } else {
-                setupHeader(iRxEntry, INNER, dstip, dstmac, dstport, srcmac, srcip,
-                            srcport2);
+                setupHeader(iRxEntry, INNER, dstip, dstmac, dstport, srcmac,
+                            srcip, srcport2);
             }
         }
     }
@@ -1652,16 +1659,17 @@ int setReadNRows(int value) {
         return FAIL;
     }
 
-    // regval is numpackets - 1 
+    // regval is numpackets - 1
     int regval = (value / READ_N_ROWS_MULTIPLE) - 1;
     uint32_t addr = READ_N_ROWS_REG;
     LOG(logINFO, ("Setting number of rows: %d (regval:%d)\n", value, regval));
-    bus_w(addr, bus_r(addr) &~READ_N_ROWS_NUM_ROWS_MSK);
-    bus_w(addr, bus_r(addr) | ((regval << READ_N_ROWS_NUM_ROWS_OFST) & READ_N_ROWS_NUM_ROWS_MSK));
+    bus_w(addr, bus_r(addr) & ~READ_N_ROWS_NUM_ROWS_MSK);
+    bus_w(addr, bus_r(addr) | ((regval << READ_N_ROWS_NUM_ROWS_OFST) &
+                               READ_N_ROWS_NUM_ROWS_MSK));
 
     if (value == MAX_ROWS_PER_READOUT) {
         LOG(logINFO, ("Disabling Partial Readout (#rows)\n"));
-        bus_w(addr, bus_r(addr) &~READ_N_ROWS_ENBL_MSK);
+        bus_w(addr, bus_r(addr) & ~READ_N_ROWS_ENBL_MSK);
     } else {
         LOG(logINFO, ("Enabling Partial Readout (#rows)\n"));
         bus_w(addr, bus_r(addr) | READ_N_ROWS_ENBL_MSK);
@@ -1671,14 +1679,15 @@ int setReadNRows(int value) {
 
 int getReadNRows() {
     int enable = (bus_r(READ_N_ROWS_REG) & READ_N_ROWS_ENBL_MSK);
-    int regval = ((bus_r(READ_N_ROWS_REG) & READ_N_ROWS_NUM_ROWS_MSK) >> READ_N_ROWS_NUM_ROWS_OFST);
- 
-    int maxRegval = (MAX_ROWS_PER_READOUT/ READ_N_ROWS_MULTIPLE) - 1;
+    int regval = ((bus_r(READ_N_ROWS_REG) & READ_N_ROWS_NUM_ROWS_MSK) >>
+                  READ_N_ROWS_NUM_ROWS_OFST);
+
+    int maxRegval = (MAX_ROWS_PER_READOUT / READ_N_ROWS_MULTIPLE) - 1;
     if ((regval == maxRegval && enable) || (regval != maxRegval && !enable)) {
         return -1;
     }
 
-    return (regval  + 1) * READ_N_ROWS_MULTIPLE;
+    return (regval + 1) * READ_N_ROWS_MULTIPLE;
 }
 
 void initReadoutConfiguration() {
@@ -1724,13 +1733,13 @@ int powerChip(int on) {
             LOG(logINFOBLUE, ("Powering chip: on\n"));
             bus_w(CHIP_POWER_REG,
                   bus_r(CHIP_POWER_REG) | CHIP_POWER_ENABLE_MSK);
-   
-            configureChip();           	
+
+            configureChip();
         } else {
             LOG(logINFOBLUE, ("Powering chip: off\n"));
             bus_w(CHIP_POWER_REG,
                   bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
-            
+
             chipConfigured = 0;
         }
     }
@@ -1742,15 +1751,13 @@ int powerChip(int on) {
             CHIP_POWER_STATUS_OFST);
 }
 
-int isChipConfigured() {
-    return chipConfigured;
-}
+int isChipConfigured() { return chipConfigured; }
 
 void configureChip() {
     // only for chipv1.1 and chip is powered on
     if (getChipVersion() == 11 && powerChip(-1)) {
         LOG(logINFOBLUE, ("\tConfiguring chip\n"));
-        
+
         // waiting 500 ms before configuring selection
         usleep(500 * 1000);
 
@@ -1766,11 +1773,10 @@ void configureChip() {
         // write same register values back to configure chip
         bus_w(CONFIG_V11_REG, bus_r(CONFIG_V11_REG));
 
-	    LOG(logINFOBLUE, ("\tChip configured\n"));
+        LOG(logINFOBLUE, ("\tChip configured\n"));
         chipConfigured = 1;
     }
 }
-
 
 int autoCompDisable(int on) {
     if (on != -1) {
@@ -1922,7 +1928,7 @@ int setReadoutSpeed(int val) {
     return OK;
 }
 
-int getReadoutSpeed(int* retval) {
+int getReadoutSpeed(int *retval) {
     u_int32_t speed = bus_r(CONFIG_REG) & CONFIG_READOUT_SPEED_MSK;
     switch (speed) {
     case CONFIG_FULL_SPEED_40MHZ_VAL:
@@ -2191,7 +2197,8 @@ int getFilterCell() {
 #else
     uint32_t addr = CONFIG_V11_STATUS_REG;
 #endif
-    uint32_t value = (bus_r(addr) & CONFIG_V11_FLTR_CLL_MSK) >> CONFIG_V11_FLTR_CLL_OFST;
+    uint32_t value =
+        (bus_r(addr) & CONFIG_V11_FLTR_CLL_MSK) >> CONFIG_V11_FLTR_CLL_OFST;
     // count number of bits = which icell
     return (__builtin_popcount(value));
 }
@@ -2202,7 +2209,7 @@ void setFilterCell(int iCell) {
     }
 
     uint32_t addr = CONFIG_V11_REG;
-    bus_w(addr, bus_r(addr) &~ CONFIG_V11_FLTR_CLL_MSK);
+    bus_w(addr, bus_r(addr) & ~CONFIG_V11_FLTR_CLL_MSK);
 
     if (iCell > 0) {
         // enables as many cells
@@ -2210,9 +2217,11 @@ void setFilterCell(int iCell) {
         for (int i = 0; i != iCell; ++i) {
             value |= (1 << i);
         }
-        bus_w(addr, bus_r(addr) | ((value << CONFIG_V11_FLTR_CLL_OFST) & CONFIG_V11_FLTR_CLL_MSK));
+        bus_w(addr, bus_r(addr) | ((value << CONFIG_V11_FLTR_CLL_OFST) &
+                                   CONFIG_V11_FLTR_CLL_MSK));
     }
-    LOG(logINFO, ("Setting Filter Cell to %d [Reg:0x%x]\n", iCell, bus_r(addr)));
+    LOG(logINFO,
+        ("Setting Filter Cell to %d [Reg:0x%x]\n", iCell, bus_r(addr)));
 }
 
 void disableCurrentSource() {
@@ -2239,8 +2248,8 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
                       (long unsigned int)select));
     } else {
         LOG(logINFO,
-            ("Enabling current source [fix:%d, select:%ld, normal:%d]\n",
-             fix, (long int)select, normal));
+            ("Enabling current source [fix:%d, select:%ld, normal:%d]\n", fix,
+             (long int)select, normal));
     }
     // fix
     if (fix) {
@@ -2269,8 +2278,8 @@ void enableCurrentSource(int fix, uint64_t select, int normal) {
             // push the bit into MSB side
             inverted |= (bit << (63 - i));
         }
-        LOG(logINFO, ("\tSetting selection to 0x%lx (inverted from 0x%lx)\n", 
-        (long unsigned int) inverted, (long unsigned int)select));
+        LOG(logINFO, ("\tSetting selection to 0x%lx (inverted from 0x%lx)\n",
+                      (long unsigned int)inverted, (long unsigned int)select));
         set64BitReg(inverted, CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
 
         // normal
@@ -2326,7 +2335,8 @@ uint64_t getSelectCurrentSource() {
                 DAQ_CRRNT_SRC_CLMN_SLCT_OFST);
     } else {
         // invert the select
-        uint64_t retval = get64BitReg(CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
+        uint64_t retval =
+            get64BitReg(CRRNT_SRC_COL_LSB_REG, CRRNT_SRC_COL_MSB_REG);
 
         uint64_t tmp = retval;
         uint64_t inverted = 0;
@@ -2335,8 +2345,8 @@ uint64_t getSelectCurrentSource() {
             uint64_t bit = (tmp >> i) & 0x1;
             // push the bit into MSB side
             inverted |= (bit << (63 - i));
-        }  
-        return inverted;     
+        }
+        return inverted;
     }
 }
 
@@ -2489,7 +2499,7 @@ void *start_timer(void *arg) {
             for (int i = 0; i != maxPacketsPerFrame; ++i) {
 
                 const int startval =
-                        (maxPacketsPerFrame / 2) - (packetsPerFrame / 2);
+                    (maxPacketsPerFrame / 2) - (packetsPerFrame / 2);
                 const int endval = startval + packetsPerFrame - 1;
                 int pnum = i;
 
@@ -2538,14 +2548,16 @@ void *start_timer(void *arg) {
                     memcpy(packetData2 + sizeof(sls_detector_header),
                            imageData + srcOffset2, dataSize);
                     srcOffset2 += dataSize;
-                    
+
                     if (i >= startval && i <= endval) {
                         sendUDPPacket(iRxEntry, 1, packetData2, packetsize);
-                        LOG(logDEBUG1, ("Sent packet: %d [interface 1]\n", pnum));
+                        LOG(logDEBUG1,
+                            ("Sent packet: %d [interface 1]\n", pnum));
                     }
                 }
             }
-            LOG(logINFO, ("Sent frame %d [#%ld] to E%d\n", iframes, frameNr + iframes, iRxEntry));
+            LOG(logINFO, ("Sent frame %d [#%ld] to E%d\n", iframes,
+                          frameNr + iframes, iRxEntry));
             clock_gettime(CLOCK_REALTIME, &end);
             int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
                               (end.tv_nsec - begin.tv_nsec));

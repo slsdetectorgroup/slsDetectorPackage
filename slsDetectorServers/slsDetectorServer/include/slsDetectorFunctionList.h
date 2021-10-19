@@ -473,7 +473,7 @@ int setComparatorDisableTime(int64_t val);
 int64_t getComparatorDisableTime();
 void configureASICTimer();
 int setReadoutSpeed(int val);
-int getReadoutSpeed(int* retval);
+int getReadoutSpeed(int *retval);
 int setPhase(enum CLKINDEX ind, int val, int degrees);
 int getPhase(enum CLKINDEX ind, int degrees);
 int getMaxPhase(enum CLKINDEX ind);
@@ -498,7 +498,7 @@ uint64_t getSelectCurrentSource();
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD
 int setReadoutSpeed(int val);
-int getReadoutSpeed(int* retval);
+int getReadoutSpeed(int *retval);
 int setIODelay(int val);
 int setCounterBit(int val);
 int pulsePixel(int n, int x, int y);
@@ -551,7 +551,7 @@ int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
 int getFrequency(enum CLKINDEX ind);
 int getVCOFrequency(enum CLKINDEX ind);
 int setReadoutSpeed(int val);
-int getReadoutSpeed(int* retval);
+int getReadoutSpeed(int *retval);
 int getMaxClockDivider();
 int setClockDivider(enum CLKINDEX ind, int val);
 int getClockDivider(enum CLKINDEX ind);

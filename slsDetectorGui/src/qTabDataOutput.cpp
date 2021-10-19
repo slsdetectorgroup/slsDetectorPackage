@@ -375,8 +375,8 @@ void qTabDataOutput::GetSpeed() {
     disconnect(comboClkDivider, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetSpeed(int)));
     try {
-        auto retval =
-            det->getReadoutSpeed().tsquash("Readout Speed is inconsistent for all detectors.");
+        auto retval = det->getReadoutSpeed().tsquash(
+            "Readout Speed is inconsistent for all detectors.");
         comboClkDivider->setCurrentIndex(static_cast<int>(retval));
     }
     CATCH_DISPLAY("Could not get readout speed.", "qTabDataOutput::GetSpeed")
@@ -390,8 +390,8 @@ void qTabDataOutput::SetSpeed(int speed) {
     try {
         det->setReadoutSpeed(static_cast<slsDetectorDefs::speedLevel>(speed));
     }
-    CATCH_HANDLE("Could not set readout speed.", "qTabDataOutput::SetSpeed", this,
-                 &qTabDataOutput::GetSpeed)
+    CATCH_HANDLE("Could not set readout speed.", "qTabDataOutput::SetSpeed",
+                 this, &qTabDataOutput::GetSpeed)
 }
 
 void qTabDataOutput::GetParallel() {

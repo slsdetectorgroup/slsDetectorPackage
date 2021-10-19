@@ -73,7 +73,7 @@ struct UdpDestination {
 
     constexpr bool operator==(const UdpDestination &other) const {
         return ((entry == other.entry) && (port == other.port) &&
-                (port2 == other.port2) && (ip== other.ip) &&
+                (port2 == other.port2) && (ip == other.ip) &&
                 (ip2 == other.ip2) && (mac == other.mac) &&
                 (mac2 == other.mac2));
     }

@@ -128,8 +128,8 @@ void qTabSettings::SetupDetectorSettings() {
                 item[(int)it]->setEnabled(true);
             }
         }
-                CATCH_DISPLAY(std::string("Could not setup settings"),
-                              "qTabSettings::SetupDetectorSettings")
+        CATCH_DISPLAY(std::string("Could not setup settings"),
+                      "qTabSettings::SetupDetectorSettings")
     }
 }
 

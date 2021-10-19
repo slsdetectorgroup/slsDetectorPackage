@@ -692,7 +692,7 @@ void setupDetector() {
     eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
     setParallelMode(DEFAULT_PARALLEL_MODE);
     setOverFlowMode(DEFAULT_READOUT_OVERFLOW32_MODE);
-    setReadoutSpeed(DEFAULT_CLK_SPEED); 
+    setReadoutSpeed(DEFAULT_CLK_SPEED);
     setIODelay(DEFAULT_IO_DELAY);
     setTiming(DEFAULT_TIMING_MODE);
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
@@ -1544,13 +1544,13 @@ int configureMAC() {
             LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
             LOG(logINFO,
                 ("\tSource IP   : %s\n"
-                "\tSource MAC  : %s\n"
-                "\tSource Port : %d\n"
-                "\tDest IP     : %s\n"
-                "\tDest MAC    : %s\n"
-                "\tDest Port   : %d\n"
-                "\tDest Port2  : %d\n",
-                src_ip, src_mac, srcport, dst_ip, dst_mac, dstport, dstport2));
+                 "\tSource MAC  : %s\n"
+                 "\tSource Port : %d\n"
+                 "\tDest IP     : %s\n"
+                 "\tDest MAC    : %s\n"
+                 "\tDest Port   : %d\n"
+                 "\tDest Port2  : %d\n",
+                 src_ip, src_mac, srcport, dst_ip, dst_mac, dstport, dstport2));
         }
 
 #ifdef VIRTUAL
@@ -1730,7 +1730,7 @@ int setReadoutSpeed(int val) {
     return OK;
 }
 
-int getReadoutSpeed(int* retval) {
+int getReadoutSpeed(int *retval) {
     *retval = eiger_readoutspeed;
     return OK;
 }
@@ -2311,14 +2311,11 @@ void *start_timer(void *arg) {
 
     int readNRows = getReadNRows();
     if (readNRows == -1) {
-        LOG(logERROR,
-            ("readNRows is -1. Assuming no readNRows.\n"));
+        LOG(logERROR, ("readNRows is -1. Assuming no readNRows.\n"));
         readNRows = MAX_ROWS_PER_READOUT;
     }
     const int maxRows = MAX_ROWS_PER_READOUT;
-    const int packetsPerFrame =
-        (maxPacketsPerFrame * readNRows) / maxRows;
-
+    const int packetsPerFrame = (maxPacketsPerFrame * readNRows) / maxRows;
 
     LOG(logDEBUG1,
         (" dr:%d\n bytesperpixel:%f\n tgenable:%d\n datasize:%d\n "
@@ -2358,19 +2355,16 @@ void *start_timer(void *arg) {
                 break;
             case 16:
                 *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
-                        eiger_virtual_test_mode ? 0xFFE
-                                                : (uint16_t)pixelVal;
+                    eiger_virtual_test_mode ? 0xFFE : (uint16_t)pixelVal;
                 break;
             case 32:
                 *((uint32_t *)(imageData + i * sizeof(uint32_t))) =
-                        eiger_virtual_test_mode ? 0xFFFFFE
-                                                : (uint32_t)pixelVal;
+                    eiger_virtual_test_mode ? 0xFFFFFE : (uint32_t)pixelVal;
                 break;
             default:
                 break;
             }
         }
-        
     }
 
     // Send data
@@ -2403,7 +2397,6 @@ void *start_timer(void *arg) {
                 // calculate for readNRows
                 const int startval = 0;
                 const int endval = startval + packetsPerFrame - 1;
-
 
                 // set header
                 char packetData[packetsize];
@@ -2466,18 +2459,21 @@ void *start_timer(void *arg) {
                         }
                     }
                 }
-                if (eiger_virtual_left_datastream && i >= startval && i <= endval) {
+                if (eiger_virtual_left_datastream && i >= startval &&
+                    i <= endval) {
                     usleep(eiger_virtual_transmission_delay_left);
                     sendUDPPacket(iRxEntry, 0, packetData, packetsize);
                     LOG(logDEBUG1, ("Sent left packet: %d\n", i));
                 }
-                if (eiger_virtual_right_datastream && i >= startval && i <= endval) {
+                if (eiger_virtual_right_datastream && i >= startval &&
+                    i <= endval) {
                     usleep(eiger_virtual_transmission_delay_right);
                     sendUDPPacket(iRxEntry, 1, packetData2, packetsize);
                     LOG(logDEBUG1, ("Sent right packet: %d\n", i));
                 }
             }
-            LOG(logINFO, ("Sent frame %d [#%ld] to E%d\n", iframes, frameNr + iframes, iRxEntry));
+            LOG(logINFO, ("Sent frame %d [#%ld] to E%d\n", iframes,
+                          frameNr + iframes, iRxEntry));
             clock_gettime(CLOCK_REALTIME, &end);
             int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
                               (end.tv_nsec - begin.tv_nsec));

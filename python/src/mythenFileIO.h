@@ -81,7 +81,7 @@ std::vector<uint64_t> ReadFile(const std::string &fname, int byte_offset = 8,
 }
 
 py::array_t<uint64_t> read_my302_file(const std::string &fname, int offset = 8,
-                                    int dr = 24) {
+                                      int dr = 24) {
     auto data = ExtractBits<17, 6>(ReadFile(fname, offset, dr));
     return py::array(data.size(), data.data());
 }

@@ -389,7 +389,7 @@ class Module : public virtual slsDetectorDefs {
     void setGainMode(const gainMode mode);
     int getFilterCell() const;
     void setFilterCell(int value);
-    
+
     /**************************************************
      *                                                *
      *    Gotthard Specific                           *

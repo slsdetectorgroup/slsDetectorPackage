@@ -422,22 +422,18 @@ void Detector::setReadoutSpeed(defs::speedLevel value, Positions pos) {
     pimpl->Parallel(&Module::setReadoutSpeed, pos, value);
 }
 
-
 std::vector<defs::speedLevel> Detector::getReadoutSpeedList() const {
     switch (getDetectorType().squash()) {
     case defs::EIGER:
     case defs::JUNGFRAU:
-        return std::vector<defs::speedLevel>{defs::FULL_SPEED,
-                                             defs::HALF_SPEED,
+        return std::vector<defs::speedLevel>{defs::FULL_SPEED, defs::HALF_SPEED,
                                              defs::QUARTER_SPEED};
     case defs::GOTTHARD2:
-        return std::vector<defs::speedLevel>{defs::G2_108MHZ,
-                                             defs::G2_144MHZ};
+        return std::vector<defs::speedLevel>{defs::G2_108MHZ, defs::G2_144MHZ};
     default:
         throw RuntimeError("Readout speed not implemented for this detector");
     }
 }
-
 
 Result<int> Detector::getADCPhase(Positions pos) const {
     return pimpl->Parallel(&Module::getClockPhase, pos, defs::ADC_CLOCK, false);
@@ -669,10 +665,6 @@ void Detector::setDefaultDac(defs::dacIndex index, int defaultValue,
     }
     pimpl->setDefaultDac(index, defaultValue, sett, pos);
 }
-
-
-
-
 
 void Detector::resetToDefaultDacs(const bool hardReset, Positions pos) {
     pimpl->Parallel(&Module::resetToDefaultDacs, pos, hardReset);
@@ -1439,7 +1431,6 @@ void Detector::setActive(const bool active, Positions pos) {
     pimpl->Parallel(&Module::setActivate, pos, active);
 }
 
-
 Result<bool> Detector::getPartialReset(Positions pos) const {
     return pimpl->Parallel(&Module::getCounterBit, pos);
 }
@@ -1554,12 +1545,9 @@ void Detector::setStorageCellDelay(ns value, Positions pos) {
 std::vector<defs::gainMode> Detector::getGainModeList() const {
     switch (getDetectorType().squash()) {
     case defs::JUNGFRAU:
-        return std::vector<defs::gainMode>{defs::DYNAMIC,
-                                           defs::FORCE_SWITCH_G1,
-                                           defs::FORCE_SWITCH_G2,
-                                           defs::FIX_G1,
-                                           defs::FIX_G2,
-                                           defs::FIX_G0};
+        return std::vector<defs::gainMode>{
+            defs::DYNAMIC, defs::FORCE_SWITCH_G1, defs::FORCE_SWITCH_G2,
+            defs::FIX_G1,  defs::FIX_G2,          defs::FIX_G0};
         break;
     default:
         throw RuntimeError("Gain mode is not implemented for this detector.");
@@ -1706,19 +1694,22 @@ Result<defs::streamingInterface> Detector::getVetoStream(Positions pos) const {
     return res;
 }
 
-void Detector::setVetoStream(defs::streamingInterface interface, Positions pos) {
+void Detector::setVetoStream(defs::streamingInterface interface,
+                             Positions pos) {
     // 3gbe
-    bool LOW_LATENCY_LINK = ((interface & defs::streamingInterface::LOW_LATENCY_LINK) ==
-                 defs::streamingInterface::LOW_LATENCY_LINK);
+    bool LOW_LATENCY_LINK =
+        ((interface & defs::streamingInterface::LOW_LATENCY_LINK) ==
+         defs::streamingInterface::LOW_LATENCY_LINK);
     pimpl->Parallel(&Module::setVetoStream, pos, LOW_LATENCY_LINK);
 
     // 10gbe (debugging interface) opens 2nd udp interface in receiver
     int old_numinterfaces = pimpl->getNumberofUDPInterfaces(pos).tsquash(
         "retrieved inconsistent number of udp interfaces");
-    int numinterfaces = (((interface & defs::streamingInterface::ETHERNET_10GB) ==
-                         defs::streamingInterface::ETHERNET_10GB)
-                            ? 2
-                            : 1);
+    int numinterfaces =
+        (((interface & defs::streamingInterface::ETHERNET_10GB) ==
+          defs::streamingInterface::ETHERNET_10GB)
+             ? 2
+             : 1);
     if (numinterfaces != old_numinterfaces) {
         setNumberofUDPInterfaces_(numinterfaces, pos);
     }

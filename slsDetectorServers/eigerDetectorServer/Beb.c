@@ -14,7 +14,6 @@ extern int isControlServer;
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
-
 struct LocalLinkInterface ll_beb_local, *ll_beb;
 
 struct udp_header_type udp_header;
@@ -46,7 +45,6 @@ int Beb_deactivated_transmission_delay_right = 0;
 int Beb_deactivated_left_datastream = 1;
 int Beb_deactivated_right_datastream = 1;
 int Beb_deactivated_num_destinations = 1;
-
 
 void Beb_Beb() {
     Beb_send_ndata = 0;
@@ -90,7 +88,9 @@ void Beb_Beb() {
 void Beb_ClearHeaderData(int ten_gig) {
     for (int i = 0; i < MAX_UDP_DESTINATION; ++i) {
         if (!Beb_SetUpUDPHeader(i, ten_gig, 0, 0, 0, 0, 0, 0)) {
-            LOG(logERROR, ("Could not clear header data for entry %d (tengiga:%d)\n", i, ten_gig));
+            LOG(logERROR,
+                ("Could not clear header data for entry %d (tengiga:%d)\n", i,
+                 ten_gig));
         }
     }
 }
@@ -112,7 +112,8 @@ int Beb_SetUpUDPHeader(unsigned int header_number, int ten_gig,
     else
         bram_phy_addr = 0xC6001000;
 
-    if (!Beb_SetHeaderData(src_mac, src_ip, src_port, dst_mac, dst_ip, dst_port))
+    if (!Beb_SetHeaderData(src_mac, src_ip, src_port, dst_mac, dst_ip,
+                           dst_port))
         return 0;
 
     int fd = Beb_open(&csp0base, bram_phy_addr);
@@ -493,7 +494,7 @@ int Beb_SetDataStream(enum portPosition port, int enable) {
                                        : XPAR_GPIO_RGHT_STRM_DSBL_MSK);
 
         u_int32_t value = Beb_Read32(csp0base, reg);
-        // disabling in firmware 
+        // disabling in firmware
         if (!enable)
             value |= mask;
         else
@@ -875,11 +876,12 @@ int Beb_StopAcquisition() {
     return 1;
 }
 
-int Beb_RequestNImages(int ten_gig, unsigned int nimages, int test_just_send_out_packets_no_wait) {
+int Beb_RequestNImages(int ten_gig, unsigned int nimages,
+                       int test_just_send_out_packets_no_wait) {
     if (!Beb_activated)
         return 1;
 
-     unsigned int maxnl = MAX_ROWS_PER_READOUT;
+    unsigned int maxnl = MAX_ROWS_PER_READOUT;
     unsigned int maxnp = (ten_gig ? 4 : 16) * Beb_bit_mode;
     unsigned int nl = Beb_readNRows;
     unsigned int npackets = (nl * maxnp) / maxnl;
@@ -899,8 +901,8 @@ int Beb_RequestNImages(int ten_gig, unsigned int nimages, int test_just_send_out
     LOG(logINFO, ("ten_gig:%d, npackets:%d, "
                   "Beb_bit_mode:%d, header_size:%d, nimages:%d, "
                   "test_just_send_out_packets_no_wait:%d\n",
-                  ten_gig, npackets, Beb_bit_mode,
-                  header_size, nimages, test_just_send_out_packets_no_wait));
+                  ten_gig, npackets, Beb_bit_mode, header_size, nimages,
+                  test_just_send_out_packets_no_wait));
 
     u_int32_t right_port_value = 0x2000;
     u_int32_t *csp0base = 0;

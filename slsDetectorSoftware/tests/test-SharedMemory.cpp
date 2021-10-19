@@ -21,8 +21,8 @@ TEST_CASE("Create SharedMemory read and write", "[detector]") {
 
     SharedMemory<Data> shm(shm_id, -1);
     shm.CreateSharedMemory();
-    CHECK(shm.GetName() ==
-          std::string("/slsDetectorPackage_detector_") + std::to_string(shm_id));
+    CHECK(shm.GetName() == std::string("/slsDetectorPackage_detector_") +
+                               std::to_string(shm_id));
 
     shm()->x = 3;
     shm()->y = 5.7;
@@ -92,8 +92,8 @@ TEST_CASE("Open two shared memories to the same place", "[detector]") {
 TEST_CASE("Move SharedMemory", "[detector]") {
 
     SharedMemory<Data> shm(shm_id, -1);
-    CHECK(shm.GetName() ==
-          std::string("/slsDetectorPackage_detector_") + std::to_string(shm_id));
+    CHECK(shm.GetName() == std::string("/slsDetectorPackage_detector_") +
+                               std::to_string(shm_id));
     shm.CreateSharedMemory();
     shm()->x = 9;
 
@@ -106,8 +106,8 @@ TEST_CASE("Move SharedMemory", "[detector]") {
     CHECK(shm() == nullptr);
     CHECK(shm.size() == 0);
 
-    CHECK(shm2.GetName() ==
-          std::string("/slsDetectorPackage_detector_") + std::to_string(shm_id));
+    CHECK(shm2.GetName() == std::string("/slsDetectorPackage_detector_") +
+                                std::to_string(shm_id));
     shm2.RemoveSharedMemory();
 }
 

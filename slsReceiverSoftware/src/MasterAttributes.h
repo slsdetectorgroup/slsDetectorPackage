@@ -436,7 +436,7 @@ class EigerMasterAttributes : public MasterAttributes {
             DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
             StrType strdatatype(PredType::C_S1, 256);
             Attribute attribute =
-            dataset.createAttribute("Unit", strdatatype, dataspaceAttr);
+                dataset.createAttribute("Unit", strdatatype, dataspaceAttr);
             sls::strcpy_safe(c, "eV");
             attribute.write(strdatatype, c);
         }
@@ -454,7 +454,7 @@ class EigerMasterAttributes : public MasterAttributes {
             DataSpace dataspace = DataSpace(H5S_SCALAR);
             StrType strdatatype(PredType::C_S1, 256);
             DataSet dataset =
-            group->createDataSet("Sub Period", strdatatype, dataspace);
+                group->createDataSet("Sub Period", strdatatype, dataspace);
             sls::strcpy_safe(c, sls::ToString(subPeriod));
             dataset.write(c, strdatatype);
         }
@@ -462,7 +462,7 @@ class EigerMasterAttributes : public MasterAttributes {
         {
             DataSpace dataspace = DataSpace(H5S_SCALAR);
             DataSet dataset =
-            group->createDataSet("Quad", PredType::NATIVE_INT, dataspace);
+                group->createDataSet("Quad", PredType::NATIVE_INT, dataspace);
             dataset.write(&quad, PredType::NATIVE_INT);
         }
         // readNRows

@@ -66,14 +66,7 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
         NUMSETTINGS
     };
 
-    enum {
-        DYNAMIC,
-        FORCE_SWITCH_G1,
-        FORCE_SWITCH_G2,
-        FIX_G1,
-        FIX_G2,
-        FIX_G0
-    };
+    enum { DYNAMIC, FORCE_SWITCH_G1, FORCE_SWITCH_G2, FIX_G1, FIX_G2, FIX_G0 };
     bool isVisibleFixG0{false};
 
     enum { DYNAMICRANGE_32, DYNAMICRANGE_16, DYNAMICRANGE_8, DYNAMICRANGE_4 };

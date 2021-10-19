@@ -171,10 +171,10 @@ void Implementation::setDetectorType(const detectorType d) {
                 &actualUDPSocketBufferSize, &framesPerFile, &frameDiscardMode,
                 &activated, &detectorDataStream[i], &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                i, detType, fifo_ptr, &activated,
-                &dataStreamEnable, &streamingFrequency, &streamingTimerInMs,
-                &streamingStartFnum, &framePadding, &ctbDbitList,
-                &ctbDbitOffset, &ctbAnalogDataBytes, &hdf5Lib));
+                i, detType, fifo_ptr, &activated, &dataStreamEnable,
+                &streamingFrequency, &streamingTimerInMs, &streamingStartFnum,
+                &framePadding, &ctbDbitList, &ctbDbitOffset,
+                &ctbAnalogDataBytes, &hdf5Lib));
         } catch (...) {
             listener.clear();
             dataProcessor.clear();
@@ -621,10 +621,10 @@ void Implementation::stopReceiver() {
         }
         if (!detectorDataStream[0]) {
             LOG(logINFORED) << "Deactivated Left Port";
-        } 
-            if (!detectorDataStream[1]) {
+        }
+        if (!detectorDataStream[1]) {
             LOG(logINFORED) << "Deactivated Right Port";
-        } 
+        }
         // callback
         if (acquisitionFinishedCallBack) {
             try {
@@ -810,8 +810,8 @@ void Implementation::SetupWriter() {
             dataProcessor[i]->CreateFirstFiles(
                 masterAttributes.get(), filePath, fileName, fileIndex,
                 overwriteEnable, silentMode, modulePos, numThreads,
-                udpPortNum[i], framesPerFile, numberOfTotalFrames,
-                dynamicRange, detectorDataStream[i]);
+                udpPortNum[i], framesPerFile, numberOfTotalFrames, dynamicRange,
+                detectorDataStream[i]);
         }
     } catch (const sls::RuntimeError &e) {
         shutDownUDPSockets();
@@ -882,12 +882,13 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                     &numberOfTotalFrames, &udpSocketBufferSize,
                     &actualUDPSocketBufferSize, &framesPerFile,
-                    &frameDiscardMode, &activated, &detectorDataStream[i], &silentMode));
+                    &frameDiscardMode, &activated, &detectorDataStream[i],
+                    &silentMode));
                 listener[i]->SetGeneralData(generalData);
 
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                    i, detType, fifo_ptr, &activated, 
-                    &dataStreamEnable, &streamingFrequency, &streamingTimerInMs,
+                    i, detType, fifo_ptr, &activated, &dataStreamEnable,
+                    &streamingFrequency, &streamingTimerInMs,
                     &streamingStartFnum, &framePadding, &ctbDbitList,
                     &ctbDbitOffset, &ctbAnalogDataBytes, &hdf5Lib));
                 dataProcessor[i]->SetGeneralData(generalData);

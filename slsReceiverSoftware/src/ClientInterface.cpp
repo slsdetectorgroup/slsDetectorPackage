@@ -1027,14 +1027,14 @@ int ClientInterface::set_flip_rows(Interface &socket) {
         throw RuntimeError("Could not set flip rows. Invalid argument: " +
                            std::to_string(arg));
     }
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting flip rows:" << arg;
-        impl()->setFlipRows(static_cast<bool>(arg));
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting flip rows:" << arg;
+    impl()->setFlipRows(static_cast<bool>(arg));
 
-        int retval = impl()->getFlipRows();
-        validate(arg, retval, std::string("set flip rows"), DEC);
-        LOG(logDEBUG1) << "Flip rows:" << retval;
-        return socket.sendResult(retval);
+    int retval = impl()->getFlipRows();
+    validate(arg, retval, std::string("set flip rows"), DEC);
+    LOG(logDEBUG1) << "Flip rows:" << retval;
+    return socket.sendResult(retval);
 }
 
 int ClientInterface::set_file_format(Interface &socket) {
@@ -1372,7 +1372,8 @@ int ClientInterface::set_read_n_rows(Interface &socket) {
     if (arg >= 0) {
         verifyIdle(socket);
         if (detType != EIGER && detType != JUNGFRAU) {
-            throw RuntimeError("Could not set number of rows. Not implemented for this detector");
+            throw RuntimeError("Could not set number of rows. Not implemented "
+                               "for this detector");
         }
         LOG(logDEBUG1) << "Setting number of rows:" << arg;
         impl()->setReadNRows(arg);
@@ -1699,4 +1700,3 @@ int ClientInterface::set_detector_datastream(Interface &socket) {
     impl()->setDetectorDataStream(port, enable);
     return socket.Send(OK);
 }
-

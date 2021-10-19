@@ -214,8 +214,10 @@ class Implementation : private virtual slsDetectorDefs {
      * padding is enabled (as it will receive nothing from detector) */
     void setActivate(const bool enable);
     bool getDetectorDataStream(const portPosition port) const;
-    /** [Eiger] If datastream is disabled, receiver will create dummy data if deactivated
-     * padding for that port is enabled (as it will receive nothing from detector) */
+    /** [Eiger] If datastream is disabled, receiver will create dummy data if
+     * deactivated
+     * padding for that port is enabled (as it will receive nothing from
+     * detector) */
     void setDetectorDataStream(const portPosition port, const bool enable);
     int getReadNRows() const;
     /* [Eiger][Jungfrau] */

@@ -149,18 +149,18 @@ SCENARIO("Parsing strings with -h or --help", "[support]") {
     }
 }
 
-TEST_CASE("Parse string with --help"){
+TEST_CASE("Parse string with --help") {
     CmdParser p;
     p.Parse("list --help");
-    REQUIRE(p.isHelp()==true);
-    REQUIRE(p.command()=="list");
+    REQUIRE(p.isHelp() == true);
+    REQUIRE(p.command() == "list");
 }
 
-TEST_CASE("Parse string with -h"){
+TEST_CASE("Parse string with -h") {
     CmdParser p;
     p.Parse("list -h");
-    REQUIRE(p.isHelp()==true);
-    REQUIRE(p.command()=="list");
+    REQUIRE(p.isHelp() == true);
+    REQUIRE(p.command() == "list");
 }
 
 TEST_CASE("Parsing consecutive strings resets not found det id") {
@@ -272,9 +272,7 @@ TEST_CASE("Double digit id", "[support]") {
     REQUIRE(p.arguments().empty());
 }
 
-
-
-TEST_CASE("Allows space between mod id and command"){
+TEST_CASE("Allows space between mod id and command") {
     CmdParser p;
     p.Parse("7: exptime 0.5");
     REQUIRE(p.detector_id() == 7);
@@ -283,7 +281,7 @@ TEST_CASE("Allows space between mod id and command"){
     REQUIRE(p.arguments()[0] == "0.5");
 }
 
-TEST_CASE("Allows space between mod id and command also without :"){
+TEST_CASE("Allows space between mod id and command also without :") {
     CmdParser p;
     p.Parse("1 exptime 0.5");
     REQUIRE(p.detector_id() == 1);
@@ -292,7 +290,7 @@ TEST_CASE("Allows space between mod id and command also without :"){
     REQUIRE(p.arguments()[0] == "0.5");
 }
 
-TEST_CASE("Allows space between mod id and command when detector id is used"){
+TEST_CASE("Allows space between mod id and command when detector id is used") {
     CmdParser p;
     p.Parse("1-5 exptime 0.5");
     REQUIRE(p.detector_id() == 5);
@@ -302,7 +300,7 @@ TEST_CASE("Allows space between mod id and command when detector id is used"){
     REQUIRE(p.arguments()[0] == "0.5");
 }
 
-TEST_CASE("Allows space between mod id and command with detector id and :"){
+TEST_CASE("Allows space between mod id and command with detector id and :") {
     CmdParser p;
     p.Parse("1-5: exptime 0.5");
     REQUIRE(p.detector_id() == 5);
@@ -312,7 +310,7 @@ TEST_CASE("Allows space between mod id and command with detector id and :"){
     REQUIRE(p.arguments()[0] == "0.5");
 }
 
-TEST_CASE("Parse receiver ID"){
+TEST_CASE("Parse receiver ID") {
     CmdParser p;
     p.Parse("2-5:3 flowcontrol10g 1");
     REQUIRE(p.detector_id() == 5);
@@ -320,84 +318,81 @@ TEST_CASE("Parse receiver ID"){
     REQUIRE(p.command() == "flowcontrol10g");
     REQUIRE(p.arguments().size() == 1);
     REQUIRE(p.arguments()[0] == "1");
-    REQUIRE(p.receiver_id()==3);
+    REQUIRE(p.receiver_id() == 3);
 }
 
-TEST_CASE("Parse receiver ID no det id"){
+TEST_CASE("Parse receiver ID no det id") {
     CmdParser p;
     p.Parse("5:95 flowcontrol10g");
     REQUIRE(p.detector_id() == 5);
     REQUIRE(p.multi_id() == 0);
     REQUIRE(p.command() == "flowcontrol10g");
     REQUIRE(p.arguments().size() == 0);
-    REQUIRE(p.receiver_id()==95);
+    REQUIRE(p.receiver_id() == 95);
 }
 
-
-
-TEST_CASE("Det id but no mod id"){
+TEST_CASE("Det id but no mod id") {
     CmdParser p;
     p.Parse("1-exptime");
-    REQUIRE(p.detector_id() == -1); //not there
+    REQUIRE(p.detector_id() == -1); // not there
     REQUIRE(p.multi_id() == 1);
     REQUIRE(p.command() == "exptime");
 }
 
-TEST_CASE("Det id but no mod id but with space after -"){
+TEST_CASE("Det id but no mod id but with space after -") {
     CmdParser p;
     p.Parse("1- exptime");
-    REQUIRE(p.detector_id() == -1); //not there
+    REQUIRE(p.detector_id() == -1); // not there
     REQUIRE(p.multi_id() == 1);
     REQUIRE(p.command() == "exptime");
 }
 
-TEST_CASE("Parse receiver ID no det id no mod"){
+TEST_CASE("Parse receiver ID no det id no mod") {
     CmdParser p;
     p.Parse(":95 flowcontrol10g");
-    REQUIRE(p.detector_id() == -1); //not there
+    REQUIRE(p.detector_id() == -1); // not there
     REQUIRE(p.multi_id() == 0);
     REQUIRE(p.command() == "flowcontrol10g");
     REQUIRE(p.arguments().size() == 0);
-    REQUIRE(p.receiver_id()==95);
+    REQUIRE(p.receiver_id() == 95);
 }
 
-TEST_CASE("Parse mod and receiver id"){
+TEST_CASE("Parse mod and receiver id") {
     CmdParser p;
     p.Parse("1:3 exptime");
-    REQUIRE(p.detector_id() == 1); 
-    REQUIRE(p.receiver_id()==3);
+    REQUIRE(p.detector_id() == 1);
+    REQUIRE(p.receiver_id() == 3);
     REQUIRE(p.command() == "exptime");
 }
 
-TEST_CASE("Det id but no no mod"){
+TEST_CASE("Det id but no no mod") {
     CmdParser p;
     p.Parse("2-:35 exptime");
-    REQUIRE(p.detector_id() == -1); 
-    REQUIRE(p.receiver_id()==35);
+    REQUIRE(p.detector_id() == -1);
+    REQUIRE(p.receiver_id() == 35);
     REQUIRE(p.multi_id() == 2);
     REQUIRE(p.command() == "exptime");
 }
 
-TEST_CASE("All stuff"){
+TEST_CASE("All stuff") {
     CmdParser p;
     p.Parse("3-4:2 exptime");
-    REQUIRE(p.detector_id() == 4); 
-    REQUIRE(p.receiver_id()==2);
+    REQUIRE(p.detector_id() == 4);
+    REQUIRE(p.receiver_id() == 2);
     REQUIRE(p.multi_id() == 3);
     REQUIRE(p.command() == "exptime");
 }
 
-TEST_CASE("Parse a command that has -h in it"){
+TEST_CASE("Parse a command that has -h in it") {
     CmdParser p;
     p.Parse("1-hostname somepc");
     REQUIRE(p.multi_id() == 1);
     REQUIRE(p.command() == "hostname");
     REQUIRE(p.arguments().size() == 1);
-    REQUIRE(p.arguments()[0]== "somepc");
-
+    REQUIRE(p.arguments()[0] == "somepc");
 }
 
-TEST_CASE("Parse a command in the form 0-1 command"){
+TEST_CASE("Parse a command in the form 0-1 command") {
     CmdParser p;
     p.Parse("3-5 exptime");
     REQUIRE(p.multi_id() == 3);
@@ -405,7 +400,7 @@ TEST_CASE("Parse a command in the form 0-1 command"){
     REQUIRE(p.command() == "exptime");
 }
 
-TEST_CASE("Parse a command in the form 0-1:command"){
+TEST_CASE("Parse a command in the form 0-1:command") {
     CmdParser p;
     p.Parse("3-5:exptime");
     REQUIRE(p.multi_id() == 3);

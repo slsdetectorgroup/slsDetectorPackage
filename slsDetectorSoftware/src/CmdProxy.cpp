@@ -2819,10 +2819,11 @@ std::string CmdProxy::ProgramFpga(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname.pof | fname.rbf]\n\t[Jungfrau][Ctb][Moench] Programs "
-              "FPGA from pof file. Rebooting controller is recommended. "
-              "\n\t[Mythen3][Gotthard2] Programs FPGA from rbf file. Power "
-              "cycling the detector is recommended. "
+        os << "[fname.pof | fname.rbf (full path)]\n\t[Jungfrau][Ctb][Moench] "
+              "Programs FPGA from pof file (full path). Then, detector "
+              "controller is rebooted \n\t[Mythen3][Gotthard2] Programs FPGA "
+              "from rbf file (full path). Then, detector controller is "
+              "rebooted."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
@@ -2842,11 +2843,12 @@ std::string CmdProxy::CopyDetectorServer(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[server_name] "
+        os << "[server_name (in tftp folder)] "
               "[pc_host_name]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3]["
-              "Gotthard2] Copies detector server via tftp from pc. Makes a "
-              "symbolic link witha shorter name (without "
-              "vx.x.x).\n\t[Jungfrau][Ctb][Moench]Also changes respawn server "
+              "Gotthard2] Copies detector server via tftp from pc. Ensure that "
+              "server is in the pc's tftp folder. Makes a symbolic link with a "
+              "shorter name (without vx.x.x). Then, detector reboots (except "
+              "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn server "
               "to the link, which is effective after a reboot."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2867,14 +2869,14 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[server_name] [pc_host_name] "
-              "[fname.pof]\n\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
-              "firmware, detector server and then reboots detector controller "
-              "blackfin. \n\t[Mythen3][Gotthard2] Will still have old server "
-              "starting up as the new server is not respawned \n\tsname is "
-              "name of detector server binary found on tftp folder of host pc "
-              "\n\thostname is name of pc to tftp from \n\tfname is "
-              "programming file name"
+        os << "[server_name (in tftp folder)] [pc_host_name] [fname.pof (incl "
+              "full path)]\n\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
+              "firmware, detector server, creates teh symbolic link and then "
+              "reboots detector controller. \n\t[Mythen3][Gotthard2] will "
+              "require a script to start up the shorter named server link at "
+              "start up. \n\tsname is name of detector server binary found on "
+              "tftp folder of host pc \n\thostname is name of pc to tftp from "
+              "\n\tfname is programming file name"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");

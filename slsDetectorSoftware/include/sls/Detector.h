@@ -1719,10 +1719,11 @@ class Detector {
      *                                                *
      * ************************************************/
 
-    /**  Advanced user Function!
-     * [Jungfrau][CTB][Moench] fname is a pof file, rebooting the controller is
-     * recommended \n [Mythen3][Gotthard2] fname is an rbf file, power cycling
-     * the detector is recommended
+    /**  [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2]
+     * Advanced user Function!
+     * Program firmware from command line, after which detector controller is
+     * rebooted. [Jungfrau][CTB][Moench] fname is a pof file (full path) \n
+     * [Mythen3][Gotthard2] fname is an rbf file (full path)
      */
     void programFPGA(const std::string &fname, Positions pos = {});
 
@@ -1732,7 +1733,8 @@ class Detector {
     /** [Jungfrau][Eiger][Gotthard][CTB][Moench][Mythen3][Gotthard2]
      * Advanced user Function! \n
      * Copy detector server fname from tftp folder of hostname to detector. Also
-     * creates a symbolic link to a shorter name (without vx.x.x) \n
+     * creates a symbolic link to a shorter name (without vx.x.x). Then the
+     * detector controller reboots (except eiger) \n
      * [Jungfrau][Gotthard][CTB][Moench] Also changes respawn server (to the
      * link), which is effective after a reboot.
      */
@@ -1745,11 +1747,11 @@ class Detector {
 
     /**
      * Advanced user Function!\n [Jungfrau][Gotthard][CTB][Moench] Updates the
-     * firmware, detector server and then reboots detector controller blackfin.
-     * \n [Mythen3][Gotthard2] Will still have old server starting up as the new
-     * server is not respawned \n sname is name of detector server binary found
-     * on tftp folder of host pc \n hostname is name of pc to tftp from \n fname
-     * is programming file name
+     * firmware, detector server, make a soft link and then reboots detector
+     * controller. \n [Mythen3][Gotthard2] Will require a script to start up the
+     * shorter namedf server link at start up \n sname is name of detector
+     * server binary found on tftp folder of host pc \n hostname is name of pc
+     * to tftp from \n fname is programming file name with full path to it
      */
     void updateFirmwareAndServer(const std::string &sname,
                                  const std::string &hostname,

@@ -2141,7 +2141,9 @@ void Detector::resetFPGA(Positions pos) {
 void Detector::copyDetectorServer(const std::string &fname,
                                   const std::string &hostname, Positions pos) {
     pimpl->Parallel(&Module::copyDetectorServer, pos, fname, hostname);
-    rebootController(pos);
+    if (getDetectorType().squash() != defs::EIGER) {
+        rebootController(pos);
+    }
 }
 
 void Detector::rebootController(Positions pos) {

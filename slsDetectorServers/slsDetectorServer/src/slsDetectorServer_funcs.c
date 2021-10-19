@@ -4294,7 +4294,7 @@ int copy_detector_server(int file_des) {
                     retvals);
                 // LOG(logERROR, (mess)); already printed in executecommand
             } else {
-                LOG(logINFO, ("\t/etc/inittab DetectoServer line deleted\n"));
+                LOG(logINFO, ("\tinittab: DetectoServer line deleted\n"));
             }
         }
 
@@ -4314,10 +4314,25 @@ int copy_detector_server(int file_des) {
                          retvals);
                 // LOG(logERROR, (mess)); already printed in executecommand
             } else {
-                LOG(logINFO, ("\tLinked server added for respawning\n"));
+                LOG(logINFO, ("\tinittab: updated for respawning\n"));
             }
         }
 #endif
+
+    // sync
+    if (ret == OK) {
+        strcpy(cmd, "sync");
+        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+            ret = FAIL;
+            snprintf(
+                mess, MAX_STR_LENGTH,
+                "Could not copy detector server (sync). %s\n",
+                retvals);
+            // LOG(logERROR, (mess)); already printed in executecommand
+        } else {
+            LOG(logINFO, ("\tsync\n"));
+        }
+    }
     }
 #endif
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));

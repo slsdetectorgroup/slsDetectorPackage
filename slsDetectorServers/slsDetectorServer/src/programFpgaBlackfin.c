@@ -7,8 +7,8 @@
 #include "slsDetectorServer_defs.h"
 
 #include <string.h>
-#include <unistd.h> // usleep
 #include <sys/sysinfo.h>
+#include <unistd.h> // usleep
 
 /* global variables */
 // clang-format off
@@ -18,7 +18,7 @@
 #define FLASH_BUFFER_MEMORY_SIZE (128 * 1024) // 500 KB
 // clang-format on
 
-#define  FLASH_DRIVE_NAME_SIZE   16
+#define FLASH_DRIVE_NAME_SIZE 16
 char flashDriveName[FLASH_DRIVE_NAME_SIZE] = {0};
 int gpioDefined = 0;
 
@@ -71,16 +71,25 @@ void resetFPGA() {
 int deleteOldFile(char *mess) {
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
-    sprintf(cmd, "rm -fr %s", TEMP_PROG_FILE_NAME);
-    if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
-        strcpy(mess,
-                "Could not program fpga. (could not delete old file: ");
-        strncat(mess, retvals, MAX_STR_LENGTH - strlen(mess) - 1);
-        strcat(mess, "\n");
+
+    char *format = "rm -fr %s";
+    if (snprintf(cmd, MAX_STR_LENGTH, format, TEMP_PROG_FILE_NAME) >=
+        MAX_STR_LENGTH) {
+        strcpy(
+            mess,
+            "Could not program fpga. Command to delete old file is too long\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tDeleted old programming file (%s)\n", TEMP_PROG_FILE_NAME));
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not program fpga. (could not delete old file: %s)\n",
+                 retvals);
+        // LOG(logERROR, (mess)); already printed in executecommand
+        return FAIL;
+    }
+    LOG(logINFO,
+        ("\tDeleted old programming file (%s)\n", TEMP_PROG_FILE_NAME));
     return OK;
 }
 
@@ -142,12 +151,11 @@ int copyToFlash(ssize_t fsize, char *clientChecksum, char *mess) {
         return FAIL;
     }
 
-/* ignoring this until a consistent way to read from bfin flash
-    if (verifyChecksumFromFlash(mess, clientChecksum, flashDriveName, fsize) ==
-        FAIL) {
-        return FAIL;
-    }
-*/
+    /* ignoring this until a consistent way to read from bfin flash
+        if (verifyChecksumFromFlash(mess, clientChecksum, flashDriveName, fsize)
+       == FAIL) { return FAIL;
+        }
+    */
     if (waitForFPGAtoTouchFlash(mess) == FAIL) {
         return FAIL;
     }
@@ -171,12 +179,13 @@ int getDrive(char *mess) {
 
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
+
     strcpy(cmd, CMD_GET_FLASH);
     if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-        strcpy(mess, "Could not program fpga. (could not get flash drive: ");
-        strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
-        strcat(mess, "\n");
-        LOG(logERROR, (mess));
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not program fpga. (could not get flash drive: %s)\n",
+                 retvals);
+        // LOG(logERROR, (mess)); already printed in executecommand
         return FAIL;
     }
 
@@ -230,15 +239,21 @@ int eraseFlash(char *mess) {
 #endif
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
-    sprintf(cmd, "flash_eraseall %s", flashDriveName);
-    if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
-        strcpy(mess, "Could not program fpga. (could not erase flash: ");
-        strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
-        strcat(mess, "\n");
+    char *format = "flash_eraseall %s";
+    if (snprintf(cmd, MAX_STR_LENGTH, format, flashDriveName) >=
+        MAX_STR_LENGTH) {
+        strcpy(mess,
+               "Could not program fpga. Command to erase flash is too long\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
-
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not program fpga. (could not erase flash: %s)\n",
+                 retvals);
+        // LOG(logERROR, (mess)); already printed in executecommand
+        return FAIL;
+    }
     LOG(logINFO, ("\tFlash erased\n"));
     return OK;
 }
@@ -246,8 +261,7 @@ int eraseFlash(char *mess) {
 int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
     LOG(logDEBUG1, ("writing to flash\n"));
 
-
-    char* buffer = malloc(FLASH_BUFFER_MEMORY_SIZE);
+    char *buffer = malloc(FLASH_BUFFER_MEMORY_SIZE);
     if (buffer == NULL) {
         fclose(flashfd);
         fclose(srcfd);
@@ -260,12 +274,13 @@ int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
 
     int oldProgress = 0;
     ssize_t totalBytes = 0;
-    ssize_t bytes = fread((void*)buffer, sizeof(char), FLASH_BUFFER_MEMORY_SIZE, srcfd);
+    ssize_t bytes =
+        fread((void *)buffer, sizeof(char), FLASH_BUFFER_MEMORY_SIZE, srcfd);
 
     while (bytes > 0) {
 
         ssize_t bytesWritten =
-            fwrite((void*)buffer, sizeof(char), bytes, flashfd);
+            fwrite((void *)buffer, sizeof(char), bytes, flashfd);
         totalBytes += bytesWritten;
 
         if (bytesWritten != bytes) {
@@ -289,9 +304,11 @@ int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
                 fflush(stdout);
                 oldProgress = progress;
             }
-        } else printf(".");
+        } else
+            printf(".");
 
-        bytes = fread((void*)buffer, sizeof(char), FLASH_BUFFER_MEMORY_SIZE, srcfd);
+        bytes = fread((void *)buffer, sizeof(char), FLASH_BUFFER_MEMORY_SIZE,
+                      srcfd);
     }
     if (fsize <= 0) {
         printf("\n");
@@ -302,15 +319,18 @@ int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
     LOG(logINFO, ("\tWrote %ld bytes to flash\n", totalBytes));
 
     if (totalBytes != fsize) {
-        sprintf(mess, "Could not program fpga. Incorrect bytes written to flash %lu [expected: %lu]\n", totalBytes, fsize);
+        sprintf(mess,
+                "Could not program fpga. Incorrect bytes written to flash %lu "
+                "[expected: %lu]\n",
+                totalBytes, fsize);
         LOG(logERROR, (mess));
-        return FAIL;        
+        return FAIL;
     }
     return OK;
 }
 
-int waitForFPGAtoTouchFlash(char* mess) {
-     // touch and program
+int waitForFPGAtoTouchFlash(char *mess) {
+    // touch and program
     FPGATouchFlash();
 
 #ifdef VIRTUAL
@@ -318,36 +338,41 @@ int waitForFPGAtoTouchFlash(char* mess) {
 #endif
     LOG(logINFO, ("\tWaiting for FPGA to program from flash\n"));
     int timeSpent = 0;
-    
+
     int result = 0;
     while (result == 0) {
         // time taken for fpga to pick up from flash
         usleep(1000);
         timeSpent += 1000;
         if (timeSpent >= MAX_TIME_FPGA_TOUCH_FLASH_US) {
-            sprintf(mess, "Could not program fpga. (exceeded max time allowed: %ds)\n",
-                    MAX_TIME_FPGA_TOUCH_FLASH_US/(1000 * 1000));
+            sprintf(
+                mess,
+                "Could not program fpga. (exceeded max time allowed: %ds)\n",
+                MAX_TIME_FPGA_TOUCH_FLASH_US / (1000 * 1000));
             LOG(logERROR, (mess));
             return FAIL;
         }
 
-        // read gpio status 
+        // read gpio status
         char retvals[MAX_STR_LENGTH] = {0};
-        if (FAIL == executeCommand(CMD_FPGA_PICKED_STATUS, retvals, logDEBUG1)) {
-            strcpy(mess,
-                   "Could not program fpga. (could not read gpio status: ");
-            strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
-            strcat(mess, "\n");
-            LOG(logERROR, (mess));
+        if (FAIL ==
+            executeCommand(CMD_FPGA_PICKED_STATUS, retvals, logDEBUG1)) {
+            snprintf(
+                mess, MAX_STR_LENGTH,
+                "Could not program fpga. (could not read gpio status: %s)\n",
+                retvals);
+            // LOG(logERROR, (mess)); already printed in executecommand
             return FAIL;
         }
 
         // convert to int
         if (sscanf(retvals, "%d\n", &result) != 1) {
-            sprintf(mess, "Could not program fpga. (could not scan int for gpio status: [%s])\n",
-                    retvals);
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not program fpga. (could not scan int for gpio "
+                     "status: [%s])\n",
+                     retvals);
             LOG(logERROR, (mess));
-            return FAIL;            
+            return FAIL;
         }
         LOG(logDEBUG1, ("gpi07 returned %d\n", result));
     }

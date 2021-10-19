@@ -4,6 +4,8 @@
 #include "sls/sls_detector_defs.h"
 #include <stdlib.h>
 
+#define LINKED_SERVER_NAME "gotthardDetectorServer"
+
 /* Enums */
 enum ADCINDEX { TEMP_FPGA, TEMP_ADC };
 enum DACINDEX {

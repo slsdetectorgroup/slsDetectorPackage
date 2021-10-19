@@ -11,9 +11,9 @@
 
 /* global variables */
 
-#define CMD_GET_FLASH    "awk \'$5== \"Application\" {print $1}\' /proc/mtd"
+#define CMD_GET_FLASH "awk \'$5== \"Application\" {print $1}\' /proc/mtd"
 
-#define  FLASH_DRIVE_NAME_SIZE   16
+#define FLASH_DRIVE_NAME_SIZE 16
 char flashDriveName[FLASH_DRIVE_NAME_SIZE] = {0};
 #define MICROCONTROLLER_FILE "/dev/ttyAL0"
 
@@ -51,7 +51,7 @@ int eraseAndWriteToFlash(char *mess, char *checksum, char *fpgasrc,
         return FAIL;
     }
 
-   if (eraseFlash(mess) == FAIL) {
+    if (eraseFlash(mess) == FAIL) {
         fclose(flashfd);
         return FAIL;
     }
@@ -88,10 +88,10 @@ int getDrive(char *mess) {
     char retvals[MAX_STR_LENGTH] = {0};
     strcpy(cmd, CMD_GET_FLASH);
     if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-        strcpy(mess, "Could not program fpga. (could not get flash drive: ");
-        strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
-        strcat(mess, "\n");
-        LOG(logERROR, (mess));
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not program fpga. (could not get flash drive: %s)\n",
+                 retvals);
+        // LOG(logERROR, (mess)); already printed in executecommand
         return FAIL;
     }
 
@@ -129,12 +129,20 @@ int eraseFlash(char *mess) {
 #endif
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
-    sprintf(cmd, "flash_erase %s 0 0", flashDriveName);
-    if (FAIL == executeCommand(cmd, retvals, logDEBUG1)) {
-        strcpy(mess, "Could not program fpga. (could not erase flash: ");
-        strncat(mess, retvals, sizeof(mess) - strlen(mess) - 1);
-        strcat(mess, "\n");
+
+    char *format = "flash_erase %s 0 0";
+    if (snprintf(cmd, MAX_STR_LENGTH, format, flashDriveName) >=
+        MAX_STR_LENGTH) {
+        strcpy(mess,
+               "Could not program fpga. Command to erase flash is too long\n");
         LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not program fpga. (could not erase flash: %s)\n",
+                 retvals);
+        // LOG(logERROR, (mess)); already printed in executecommand
         return FAIL;
     }
 
@@ -148,10 +156,10 @@ int writeToFlash(ssize_t fsize, FILE *flashfd, char *buffer, char *mess) {
     ssize_t bytesWritten = fwrite((void *)buffer, sizeof(char), fsize, flashfd);
     if (bytesWritten != fsize) {
         fclose(flashfd);
-        sprintf(
-            mess,
-            "Could not program fpga. Incorrect bytes written to flash  %lu [expected: %lu]\n",
-            (long int)bytesWritten, (long int)fsize);
+        sprintf(mess,
+                "Could not program fpga. Incorrect bytes written to flash  %lu "
+                "[expected: %lu]\n",
+                (long int)bytesWritten, (long int)fsize);
         LOG(logERROR, (mess));
         return FAIL;
     }

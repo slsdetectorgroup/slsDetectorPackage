@@ -242,6 +242,10 @@ This document describes the differences between v6.0.0 and v5.1.0.
         values.
     
     7.  [Eiger] fast quad fix for loading trimbits
+
+    8.  [Eiger] Can also use copydetectorserver command.
+        [All] copydetectorserver command also creates a link to the binary compied
+        with a shorter name ([detector]DetectorServer only)
     
     Receiver
     --------

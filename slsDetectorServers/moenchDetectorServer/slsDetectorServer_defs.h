@@ -7,6 +7,8 @@
 #define MIN_REQRD_VRSN_T_RD_API 0x180314
 #define REQRD_FRMWR_VRSN        0x201005
 
+#define LINKED_SERVER_NAME "moenchDetectorServer"
+
 #define CTRL_SRVR_INIT_TIME_US (2 * 1000 * 1000)
 
 /* Struct Definitions */

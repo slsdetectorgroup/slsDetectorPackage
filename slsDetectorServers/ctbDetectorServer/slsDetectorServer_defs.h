@@ -7,6 +7,8 @@
 #define MIN_REQRD_VRSN_T_RD_API 0x181130
 #define REQRD_FRMWR_VRSN        0x201005
 
+#define LINKED_SERVER_NAME "ctbDetectorServer"
+
 #define CTRL_SRVR_INIT_TIME_US (2 * 1000 * 1000)
 
 /* Struct Definitions */

@@ -1,8 +1,7 @@
+/* WARINING This file is auto generated any edits might be overwritten without warning */
+
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-/* WARINING This file is auto generated any edits might be overwritten without
- * warning */
-
 #include <pybind11/chrono.h>
 #include <pybind11/numpy.h>
 #include <pybind11/operators.h>
@@ -43,19 +42,15 @@ void init_enums(py::module &m) {
 
     py::enum_<slsDetectorDefs::frameDiscardPolicy>(Defs, "frameDiscardPolicy")
         .value("NO_DISCARD", slsDetectorDefs::frameDiscardPolicy::NO_DISCARD)
-        .value("DISCARD_EMPTY_FRAMES",
-               slsDetectorDefs::frameDiscardPolicy::DISCARD_EMPTY_FRAMES)
-        .value("DISCARD_PARTIAL_FRAMES",
-               slsDetectorDefs::frameDiscardPolicy::DISCARD_PARTIAL_FRAMES)
-        .value("NUM_DISCARD_POLICIES",
-               slsDetectorDefs::frameDiscardPolicy::NUM_DISCARD_POLICIES)
+        .value("DISCARD_EMPTY_FRAMES", slsDetectorDefs::frameDiscardPolicy::DISCARD_EMPTY_FRAMES)
+        .value("DISCARD_PARTIAL_FRAMES", slsDetectorDefs::frameDiscardPolicy::DISCARD_PARTIAL_FRAMES)
+        .value("NUM_DISCARD_POLICIES", slsDetectorDefs::frameDiscardPolicy::NUM_DISCARD_POLICIES)
         .export_values();
 
     py::enum_<slsDetectorDefs::fileFormat>(Defs, "fileFormat")
         .value("BINARY", slsDetectorDefs::fileFormat::BINARY)
         .value("HDF5", slsDetectorDefs::fileFormat::HDF5)
-        .value("NUM_FILE_FORMATS",
-               slsDetectorDefs::fileFormat::NUM_FILE_FORMATS)
+        .value("NUM_FILE_FORMATS", slsDetectorDefs::fileFormat::NUM_FILE_FORMATS)
         .export_values();
 
     py::enum_<slsDetectorDefs::dimension>(Defs, "dimension")
@@ -64,25 +59,19 @@ void init_enums(py::module &m) {
         .export_values();
 
     py::enum_<slsDetectorDefs::externalSignalFlag>(Defs, "externalSignalFlag")
-        .value("TRIGGER_IN_RISING_EDGE",
-               slsDetectorDefs::externalSignalFlag::TRIGGER_IN_RISING_EDGE)
-        .value("TRIGGER_IN_FALLING_EDGE",
-               slsDetectorDefs::externalSignalFlag::TRIGGER_IN_FALLING_EDGE)
-        .value("INVERSION_ON",
-               slsDetectorDefs::externalSignalFlag::INVERSION_ON)
-        .value("INVERSION_OFF",
-               slsDetectorDefs::externalSignalFlag::INVERSION_OFF)
+        .value("TRIGGER_IN_RISING_EDGE", slsDetectorDefs::externalSignalFlag::TRIGGER_IN_RISING_EDGE)
+        .value("TRIGGER_IN_FALLING_EDGE", slsDetectorDefs::externalSignalFlag::TRIGGER_IN_FALLING_EDGE)
+        .value("INVERSION_ON", slsDetectorDefs::externalSignalFlag::INVERSION_ON)
+        .value("INVERSION_OFF", slsDetectorDefs::externalSignalFlag::INVERSION_OFF)
         .export_values();
 
     py::enum_<slsDetectorDefs::timingMode>(Defs, "timingMode")
         .value("AUTO_TIMING", slsDetectorDefs::timingMode::AUTO_TIMING)
-        .value("TRIGGER_EXPOSURE",
-               slsDetectorDefs::timingMode::TRIGGER_EXPOSURE)
+        .value("TRIGGER_EXPOSURE", slsDetectorDefs::timingMode::TRIGGER_EXPOSURE)
         .value("GATED", slsDetectorDefs::timingMode::GATED)
         .value("BURST_TRIGGER", slsDetectorDefs::timingMode::BURST_TRIGGER)
         .value("TRIGGER_GATED", slsDetectorDefs::timingMode::TRIGGER_GATED)
-        .value("NUM_TIMING_MODES",
-               slsDetectorDefs::timingMode::NUM_TIMING_MODES)
+        .value("NUM_TIMING_MODES", slsDetectorDefs::timingMode::NUM_TIMING_MODES)
         .export_values();
 
     py::enum_<slsDetectorDefs::dacIndex>(Defs, "dacIndex")
@@ -170,16 +159,13 @@ void init_enums(py::module &m) {
         .value("HIGH_VOLTAGE", slsDetectorDefs::dacIndex::HIGH_VOLTAGE)
         .value("TEMPERATURE_ADC", slsDetectorDefs::dacIndex::TEMPERATURE_ADC)
         .value("TEMPERATURE_FPGA", slsDetectorDefs::dacIndex::TEMPERATURE_FPGA)
-        .value("TEMPERATURE_FPGAEXT",
-               slsDetectorDefs::dacIndex::TEMPERATURE_FPGAEXT)
+        .value("TEMPERATURE_FPGAEXT", slsDetectorDefs::dacIndex::TEMPERATURE_FPGAEXT)
         .value("TEMPERATURE_10GE", slsDetectorDefs::dacIndex::TEMPERATURE_10GE)
         .value("TEMPERATURE_DCDC", slsDetectorDefs::dacIndex::TEMPERATURE_DCDC)
         .value("TEMPERATURE_SODL", slsDetectorDefs::dacIndex::TEMPERATURE_SODL)
         .value("TEMPERATURE_SODR", slsDetectorDefs::dacIndex::TEMPERATURE_SODR)
-        .value("TEMPERATURE_FPGA2",
-               slsDetectorDefs::dacIndex::TEMPERATURE_FPGA2)
-        .value("TEMPERATURE_FPGA3",
-               slsDetectorDefs::dacIndex::TEMPERATURE_FPGA3)
+        .value("TEMPERATURE_FPGA2", slsDetectorDefs::dacIndex::TEMPERATURE_FPGA2)
+        .value("TEMPERATURE_FPGA3", slsDetectorDefs::dacIndex::TEMPERATURE_FPGA3)
         .value("TRIMBIT_SCAN", slsDetectorDefs::dacIndex::TRIMBIT_SCAN)
         .value("V_POWER_A", slsDetectorDefs::dacIndex::V_POWER_A)
         .value("V_POWER_B", slsDetectorDefs::dacIndex::V_POWER_B)
@@ -218,20 +204,15 @@ void init_enums(py::module &m) {
         .value("VERYLOWGAIN", slsDetectorDefs::detectorSettings::VERYLOWGAIN)
         .value("G1_HIGHGAIN", slsDetectorDefs::detectorSettings::G1_HIGHGAIN)
         .value("G1_LOWGAIN", slsDetectorDefs::detectorSettings::G1_LOWGAIN)
-        .value("G2_HIGHCAP_HIGHGAIN",
-               slsDetectorDefs::detectorSettings::G2_HIGHCAP_HIGHGAIN)
-        .value("G2_HIGHCAP_LOWGAIN",
-               slsDetectorDefs::detectorSettings::G2_HIGHCAP_LOWGAIN)
-        .value("G2_LOWCAP_HIGHGAIN",
-               slsDetectorDefs::detectorSettings::G2_LOWCAP_HIGHGAIN)
-        .value("G2_LOWCAP_LOWGAIN",
-               slsDetectorDefs::detectorSettings::G2_LOWCAP_LOWGAIN)
+        .value("G2_HIGHCAP_HIGHGAIN", slsDetectorDefs::detectorSettings::G2_HIGHCAP_HIGHGAIN)
+        .value("G2_HIGHCAP_LOWGAIN", slsDetectorDefs::detectorSettings::G2_HIGHCAP_LOWGAIN)
+        .value("G2_LOWCAP_HIGHGAIN", slsDetectorDefs::detectorSettings::G2_LOWCAP_HIGHGAIN)
+        .value("G2_LOWCAP_LOWGAIN", slsDetectorDefs::detectorSettings::G2_LOWCAP_LOWGAIN)
         .value("G4_HIGHGAIN", slsDetectorDefs::detectorSettings::G4_HIGHGAIN)
         .value("G4_LOWGAIN", slsDetectorDefs::detectorSettings::G4_LOWGAIN)
         .value("GAIN0", slsDetectorDefs::detectorSettings::GAIN0)
         .value("UNDEFINED", slsDetectorDefs::detectorSettings::UNDEFINED)
-        .value("UNINITIALIZED",
-               slsDetectorDefs::detectorSettings::UNINITIALIZED)
+        .value("UNINITIALIZED", slsDetectorDefs::detectorSettings::UNINITIALIZED)
         .export_values();
 
     py::enum_<slsDetectorDefs::clockIndex>(Defs, "clockIndex")
@@ -244,8 +225,7 @@ void init_enums(py::module &m) {
     py::enum_<slsDetectorDefs::readoutMode>(Defs, "readoutMode")
         .value("ANALOG_ONLY", slsDetectorDefs::readoutMode::ANALOG_ONLY)
         .value("DIGITAL_ONLY", slsDetectorDefs::readoutMode::DIGITAL_ONLY)
-        .value("ANALOG_AND_DIGITAL",
-               slsDetectorDefs::readoutMode::ANALOG_AND_DIGITAL)
+        .value("ANALOG_AND_DIGITAL", slsDetectorDefs::readoutMode::ANALOG_AND_DIGITAL)
         .export_values();
 
     py::enum_<slsDetectorDefs::speedLevel>(Defs, "speedLevel")
@@ -259,18 +239,14 @@ void init_enums(py::module &m) {
     py::enum_<slsDetectorDefs::burstMode>(Defs, "burstMode")
         .value("BURST_INTERNAL", slsDetectorDefs::burstMode::BURST_INTERNAL)
         .value("BURST_EXTERNAL", slsDetectorDefs::burstMode::BURST_EXTERNAL)
-        .value("CONTINUOUS_INTERNAL",
-               slsDetectorDefs::burstMode::CONTINUOUS_INTERNAL)
-        .value("CONTINUOUS_EXTERNAL",
-               slsDetectorDefs::burstMode::CONTINUOUS_EXTERNAL)
+        .value("CONTINUOUS_INTERNAL", slsDetectorDefs::burstMode::CONTINUOUS_INTERNAL)
+        .value("CONTINUOUS_EXTERNAL", slsDetectorDefs::burstMode::CONTINUOUS_EXTERNAL)
         .value("NUM_BURST_MODES", slsDetectorDefs::burstMode::NUM_BURST_MODES)
         .export_values();
 
     py::enum_<slsDetectorDefs::timingSourceType>(Defs, "timingSourceType")
-        .value("TIMING_INTERNAL",
-               slsDetectorDefs::timingSourceType::TIMING_INTERNAL)
-        .value("TIMING_EXTERNAL",
-               slsDetectorDefs::timingSourceType::TIMING_EXTERNAL)
+        .value("TIMING_INTERNAL", slsDetectorDefs::timingSourceType::TIMING_INTERNAL)
+        .value("TIMING_EXTERNAL", slsDetectorDefs::timingSourceType::TIMING_EXTERNAL)
         .export_values();
 
     py::enum_<slsDetectorDefs::M3_GainCaps>(Defs, "M3_GainCaps")
@@ -289,23 +265,14 @@ void init_enums(py::module &m) {
         .value("BOTTOM", slsDetectorDefs::portPosition::BOTTOM)
         .export_values();
 
-    py::enum_<slsDetectorDefs::streamingInterface>(Defs, "streamingInterface",
-                                                   py::arithmetic())
+    py::enum_<slsDetectorDefs::streamingInterface>(Defs, "streamingInterface", py::arithmetic())
         .value("NONE", slsDetectorDefs::streamingInterface::NONE)
-        .value("LOW_LATENCY_LINK",
-               slsDetectorDefs::streamingInterface::LOW_LATENCY_LINK)
-        .value("ETHERNET_10GB",
-               slsDetectorDefs::streamingInterface::ETHERNET_10GB)
+        .value("LOW_LATENCY_LINK", slsDetectorDefs::streamingInterface::LOW_LATENCY_LINK)
+        .value("ETHERNET_10GB", slsDetectorDefs::streamingInterface::ETHERNET_10GB)
         .value("ALL", slsDetectorDefs::streamingInterface::ALL)
         .export_values()
-        .def("__or__",
-             py::overload_cast<const slsDetectorDefs::streamingInterface &,
-                               const slsDetectorDefs::streamingInterface &>(
-                 &operator|))
-        .def("__and__",
-             py::overload_cast<const slsDetectorDefs::streamingInterface &,
-                               const slsDetectorDefs::streamingInterface &>(
-                 &operator&));
+        .def("__or__", py::overload_cast<const slsDetectorDefs::streamingInterface &, const slsDetectorDefs::streamingInterface &>(&operator|))
+        .def("__and__", py::overload_cast<const slsDetectorDefs::streamingInterface &, const slsDetectorDefs::streamingInterface &>(&operator&));
 
     py::enum_<slsDetectorDefs::vetoAlgorithm>(Defs, "vetoAlgorithm")
         .value("ALG_HITS", slsDetectorDefs::vetoAlgorithm::ALG_HITS)

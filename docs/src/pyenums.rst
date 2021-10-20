@@ -72,3 +72,18 @@ exposed to Python through pybind11.
 
 .. autoclass:: timingSourceType
     :undoc-members:
+
+.. autoclass:: M3_GainCaps
+    :undoc-members:    
+
+.. autoclass:: portPosition
+    :undoc-members:
+
+.. autoclass:: streamingInterface
+    :undoc-members:
+
+.. autoclass:: vetoAlgorithm
+    :undoc-members:
+
+.. autoclass:: gainMode
+    :undoc-members:

@@ -305,7 +305,7 @@ This document describes the differences between v6.0.0 and v5.1.0.
 
     Gotthard2
     =========
-    Compatible version : 27.05.2021 (v1.0)
+    Compatible version : 27.05.2021 (v0.1)
 
     Moench
     ======

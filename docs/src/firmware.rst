@@ -1,8 +1,6 @@
 Firmware Upgrade
 =================
 
-
-
 Eiger
 -------------
 
@@ -18,30 +16,9 @@ Upgrade
 ^^^^^^^^
 #. Tftp must be already installed on your pc to use the bcp script.
 
-#. Kill the on-board servers and copy new servers to the board. 
+#. Copy new servers to the board. See :ref:`how to upgrade detector servers<Detector Server Upgrade>` for more detals. A reboot should have started the new linked servers automatically. For Eiger, do not reboot yet as we need to program the firmware via bit files.
 
-    .. code-block:: bash
-
-        # Option 1: from detector console
-        # kill old server
-        ssh root@bebxxx
-        killall eigerDetectorServer
-
-        # copy new server
-        cd executables
-        scp user@pc:/path/eigerDetectorServerxxx .
-        chmod 777 eigerDetectorServerxxx
-        ln -sf eigerDetectorServerxxx eigerDetectorServer
-        sync
-
-        # Options 2: from client console for multiple modules
-        for i in bebxxx bebyyy;
-        do ssh root@$i killall eigerDetectorServer;
-        scp eigerDetectorServerxxx root@$i:~/executables/eigerDetectorServer;
-        ssh root@$i sync; done
-
-
-    * This is crucial when registers between firmwares change. Failure to do so will result in linux on boards to crash and boards can't be pinged anymore.
+    * This step is crucial when registers between firmwares change. Failure to do so will result in linux on boards to crash and boards can't be pinged anymore.
 
 #. Bring the board into programmable mode using either of the 2 ways. Both methods result in only the central LED blinking.
     
@@ -50,8 +27,13 @@ Upgrade
         Do a hard reset for each half module on back panel boards, between the LEDs, closer to each of the 1G ethernet connectors. Push until all LEDs start to blink.
     
     * Software:  
+
         .. code-block:: bash
 
+            # Option 1: if the old server is still running:
+            sls_detector_put execcommand "./boot_recovery"
+
+            # Option 2:
             ssh root@bebxxx
             cd executables
             ./boot_recovery
@@ -84,6 +66,18 @@ Upgrade
 
 #. Reboot the detector.
 
+    .. code-block:: bash
+
+        # reconfig febX is necessary only if you have flashed a new feb firmware
+        reconfig febl
+        reconfig febr
+        # will reboot controller
+        reconfig fw0
+
+.. note :: 
+
+    If not already there, you need to add scripts to automatically start detector server upon power on. See :ref:`Automatic start<Automatic start servers>` for more details.
+
 Jungfrau
 -------------
 
@@ -94,63 +88,13 @@ Download
 - `pof files <https://github.com/slsdetectorgroup/slsDetectorFirmware>`__
 
 
-Upgrade (from v4.x.x)
-^^^^^^^^^^^^^^^^^^^^^^
+Upgrade
+^^^^^^^^
 
-Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
+.. note :: 
 
-#. Tftp must be installed on pc.
+    These instructions are for upgrades from v5.0.0. For earlier versions, contact us.
 
-#. Update client package to the latest (5.x.x).
-
-#. Disable server respawning or kill old server
-    .. code-block:: bash
-
-        # Option 1: if respawning enabled
-        telnet bchipxxx
-        # edit /etc/inittab
-        # comment out line #ttyS0::respawn:/jungfrauDetectorServervxxx
-        reboot
-        # ensure servers did not start up after reboot
-        telnet bchipxxx
-        ps
-
-        #  Option 2: if respawning already disabled
-        telnet bchipxxx
-        killall jungfrauDetectorServerv*
-
-#. Copy new server and start in update mode
-    .. code-block:: bash
-
-        tftp pcxxx -r jungfrauDetectorServervxxx -g
-        chmod 777 jungfrauDetectorServervxxx
-        ./jungfrauDetectorServervxxx -u
-
-#. Program fpga from the client console
-    .. code-block:: bash
-
-        sls_detector_get free
-        # Crucial that the next command executes without any errors
-        sls_detector_put hostname bchipxxx
-        sls_detector_put programfpga xxx.pof
-
-#. After programming, kill 'update server' using Ctrl + C in server console.
-
-#. Enable server respawning if needed
-    .. code-block:: bash
-
-        telnet bchipxxx
-        # edit /etc/inittab
-        # uncomment out line #ttyS0::respawn:/jungfrauDetectorServervxxx
-        # ensure the line has the new server name
-        reboot
-        # ensure both servers are running using ps
-        jungfrauDetectorServervxxx
-        jungfrauDetectorServervxxx --stop-server 1953
-
-
-Upgrade (from v5.0.0)
-^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
 
@@ -160,9 +104,10 @@ Always ensure that the client and server software are of the same release.
 #. Program from console
     .. code-block:: bash
 
-        # copies server from tftp folder of pc, programs fpga,
-        # removes old server from respawn, sets up new server to respawn
-        # and reboots
+        # copies server from tftp folder of pc, links new server to jungfrauDetectorServer, 
+        # removes old server from respawn, sets up new lnked server to respawn
+        # programs fpga,
+        # reboots
         sls_detector_put update jungfrauDetectorServervxxx pcxxx xx.pof
 
         # Or only program firmware
@@ -170,8 +115,8 @@ Always ensure that the client and server software are of the same release.
 
 
 
-Gotthard
----------
+Gotthard I
+-----------
 
 Download 
 ^^^^^^^^^^^^^
@@ -206,12 +151,12 @@ Upgrade
 #. Reboot the detector.
 
 
-Mythen3
--------
+Mythen III
+-----------
 
 .. note :: 
 
-  As it is still in developement, the rbf files must be picked up from the SLS Detector Group.
+  As it is still in development, the rbf files must be picked up from the SLS Detector Group.
 
 Download 
 ^^^^^^^^^^^^^
@@ -221,53 +166,54 @@ Download
 - rbf files (in developement)
 
 
-Upgrade (from v5.0.0)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Upgrade
+^^^^^^^^
 
 Always ensure that the client and server software are of the same release.
 
 #. Program from console
     .. code-block:: bash
 
-        # copies server from tftp folder of pc, programs fpga,
-        # and reboots (new server not respawned currently)
+        # copies server from tftp folder of pc, links new server to jungfrauDetectorServer, 
+        # programs fpga,
+        # reboots
         sls_detector_put update mythen3DetectorServervxxx pcxxx xxx.rbf
 
         # Or only program firmware
         sls_detector_put programfpga xxx.rbf
 
-
-
-Gotthard2
--------------
-
 .. note :: 
 
-  As it is still in developement, the rbf files must be picked up from the SLS Detector Group.
+    If not already there, you need to add scripts to automatically start detector server upon power on. See :ref:`Automatic start<Automatic start servers>` for more details.
+
+Gotthard II
+-------------
 
 Download 
 ^^^^^^^^^^^^^
 - detector server corresponding to package in slsDetectorPackage/serverBin
 
-- rbf files (in development)
+- `rbf files <https://github.com/slsdetectorgroup/slsDetectorFirmware>`__
 
-
-Upgrade (from v5.0.0)
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Upgrade
+^^^^^^^^
 
 Always ensure that the client and server software are of the same release.
 
 #. Program from console
     .. code-block:: bash
 
-        # copies server from tftp folder of pc, programs fpga,
-        # and reboots (new server not respawned currently)
+        # copies server from tftp folder of pc, links new server to jungfrauDetectorServer, 
+        # programs fpga,
+        # reboots
         sls_detector_put update gotthard2DetectorServervxxx pcxxx xxx.rbf
 
         # Or only program firmware
         sls_detector_put programfpga xxx.rbf
 
+.. note :: 
 
+    If not already there, you need to add scripts to automatically start detector server upon power on. See :ref:`Automatic start<Automatic start servers>` for more details.
 
 Moench
 -------
@@ -279,8 +225,9 @@ Download
 - `pof files <https://github.com/slsdetectorgroup/slsDetectorFirmware>`__
 
 
-Upgrade (from v5.0.0)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Upgrade
+^^^^^^^^
 
 Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
 
@@ -289,9 +236,10 @@ Always ensure that the client and server software are of the same release.
 #. Program from console
     .. code-block:: bash
 
-        # copies server from tftp folder of pc, programs fpga,
-        # removes old server from respawn, sets up new server to respawn
-        # and reboots
+        # copies server from tftp folder of pc, links new server to jungfrauDetectorServer, 
+        # removes old server from respawn, sets up new lnked server to respawn
+        # programs fpga,
+        # reboots
         sls_detector_put update moenchDetectorServervxxx pcxxx xx.pof
 
         # Or only program firmware
@@ -307,8 +255,9 @@ Download
 - `pof files <https://github.com/slsdetectorgroup/slsDetectorFirmware>`__
 
 
-Upgrade (from v5.0.0)
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Upgrade
+^^^^^^^^
 
 Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
 
@@ -317,9 +266,10 @@ Always ensure that the client and server software are of the same release.
 #. Program from console
     .. code-block:: bash
 
-        # copies server from tftp folder of pc, programs fpga,
-        # removes old server from respawn, sets up new server to respawn
-        # and reboots
+        # copies server from tftp folder of pc, links new server to jungfrauDetectorServer, 
+        # removes old server from respawn, sets up new lnked server to respawn
+        # programs fpga,
+        # reboots
         sls_detector_put update ctbDetectorServervxxx pcxxx xx.pof
 
         # Or only program firmware

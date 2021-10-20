@@ -842,7 +842,14 @@ int selectStoragecellStart(int pos) {
         offset = CONFIG_V11_STATUS_STRG_CLL_OFST;
     }
 #endif
-    int retval = ((bus_r(addr) & mask) >> offset);
+    uint32_t regval = bus_r(addr);
+#ifndef VIRTUAL
+    // flip all contents of register //TODO FIRMWARE FIX
+    if (getChipVersion() == 11) {
+        regval ^= BIT32_MASK;
+    }
+#endif
+    uint32_t retval = ((regval & mask) >> offset);
     if (getChipVersion() == 11) {
         // get which bit
         int max = getMaxStoragecellStart();
@@ -2165,8 +2172,12 @@ int getFilterResistor() {
 #else
     uint32_t addr = CONFIG_V11_STATUS_REG;
 #endif
+    uint32_t regval = bus_r(addr);
+#ifndef VIRTUAL
+    regval ^= BIT32_MASK;
+#endif
     // 0 for lower value, 1 for higher value
-    if (bus_r(addr) & CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_MSK) {
+    if (regval & CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_MSK) {
         return 0;
     }
     return 1;
@@ -2197,10 +2208,14 @@ int getFilterCell() {
 #else
     uint32_t addr = CONFIG_V11_STATUS_REG;
 #endif
-    uint32_t value =
-        (bus_r(addr) & CONFIG_V11_FLTR_CLL_MSK) >> CONFIG_V11_FLTR_CLL_OFST;
+    uint32_t regval = bus_r(addr);
+#ifndef VIRTUAL
+    // flip all contents of register //TODO FIRMWARE FIX
+    regval ^= BIT32_MASK;
+#endif
+    uint32_t retval  = (regval & CONFIG_V11_FLTR_CLL_MSK) >> CONFIG_V11_FLTR_CLL_OFST;
     // count number of bits = which icell
-    return (__builtin_popcount(value));
+    return (__builtin_popcount(retval));
 }
 
 void setFilterCell(int iCell) {
@@ -2321,7 +2336,12 @@ int getFixCurrentSource() {
 
 int getNormalCurrentSource() {
     if (getChipVersion() == 11) {
-        int low = ((bus_r(CONFIG_V11_STATUS_REG) &
+         //TODO FIRMWARE FIX TOGGLING
+        int regval = bus_r(CONFIG_V11_STATUS_REG);
+#ifndef VIRTUAL
+        regval ^= BIT32_MASK;
+#endif
+        int low = ((regval &
                     CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK) >>
                    CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST);
         return (low == 0 ? 1 : 0);

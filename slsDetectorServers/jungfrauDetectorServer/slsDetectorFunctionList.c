@@ -2176,11 +2176,15 @@ int getFilterResistor() {
 #else
     uint32_t addr = CONFIG_V11_STATUS_REG;
 #endif
-    // 0 for lower value, 1 for higher value
-    if (bus_r(addr) & CONFIG_V11_STATUS_FLTR_RSSTR_HGHR_MSK) {
-        return 1;
+    uint32_t regval = bus_r(addr);
+#ifndef VIRTUAL
+    regval ^= BIT32_MASK;
+#endif
+    // return 0 for lower value, 1 for higher value
+    if (bus_r(addr) & CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_MSK) {
+        return 0;
     }
-    return 0;
+    return 1;
 }
 
 int setFilterResistor(int value) {
@@ -2188,14 +2192,14 @@ int setFilterResistor(int value) {
     if (value == 0) {
         LOG(logINFO, ("Setting Lower Filter Resistor\n"));
         bus_w(CONFIG_V11_REG,
-              bus_r(CONFIG_V11_REG) & ~CONFIG_V11_FLTR_RSSTR_HGHR_MSK);
+              bus_r(CONFIG_V11_REG) | CONFIG_V11_FLTR_RSSTR_SMLR_MSK);
         return OK;
     }
     // higher resistor
     else if (value == 1) {
         LOG(logINFO, ("Setting Higher Filter Resistor\n"));
         bus_w(CONFIG_V11_REG,
-              bus_r(CONFIG_V11_REG) | CONFIG_V11_FLTR_RSSTR_HGHR_MSK);
+              bus_r(CONFIG_V11_REG) & ~CONFIG_V11_FLTR_RSSTR_SMLR_MSK);
         return OK;
     }
     LOG(logERROR, ("Could not set Filter Resistor. Invalid value %d\n", value));

@@ -87,9 +87,9 @@ void CmdProxy::WrongNumberOfParameters(size_t expected) {
                            " expected no parameter/s but got " +
                            std::to_string(args.size()) + "\n");
     }
-    throw RuntimeError(
-        "Command " + cmd + " expected >=" + std::to_string(expected) +
-        " parameter/s but got " + std::to_string(args.size()) + "\n");
+    throw RuntimeError("Command " + cmd + " expected (or >=) " +
+                       std::to_string(expected) + " parameter/s but got " +
+                       std::to_string(args.size()) + "\n");
 }
 
 /************************************************

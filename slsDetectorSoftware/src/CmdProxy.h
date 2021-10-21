@@ -725,6 +725,8 @@ class CmdProxy {
         {"resmat", "partialreset"},
 
         /* Jungfrau Specific */
+        {"storagecells", "extrastoragecells"},
+
         /* Gotthard Specific */
         /* Gotthard2 Specific */
         /* Mythen3 Specific */
@@ -944,7 +946,7 @@ class CmdProxy {
         {"temp_event", &CmdProxy::TemperatureEvent},
         {"auto_comp_disable", &CmdProxy::auto_comp_disable},
         {"comp_disable_time", &CmdProxy::comp_disable_time},
-        {"storagecells", &CmdProxy::storagecells},
+        {"extrastoragecells", &CmdProxy::extrastoragecells},
         {"storagecell_start", &CmdProxy::storagecell_start},
         {"storagecell_delay", &CmdProxy::storagecell_delay},
         {"gainmode", &CmdProxy::gainmode},
@@ -1923,12 +1925,12 @@ class CmdProxy {
                  "only possible for chipv1.1.");
 
     INTEGER_COMMAND_SET_NOID_GET_ID(
-        storagecells, getNumberOfAdditionalStorageCells,
+        extrastoragecells, getNumberOfAdditionalStorageCells,
         setNumberOfAdditionalStorageCells, StringTo<int>,
         "[0-15]\n\t[Jungfrau] Only for chipv1.0. Number of additional storage "
         "cells. Default is "
         "0. For advanced users only. \n\tThe #images = #frames x #triggers x "
-        "(#storagecells + 1).");
+        "(#extrastoragecells + 1).");
 
     INTEGER_COMMAND_VEC_ID(
         storagecell_start, getStorageCellStart, setStorageCellStart,
@@ -1951,8 +1953,8 @@ class CmdProxy {
         "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, "
         "you can damage the detector!!!");
 
-    INTEGER_COMMAND_VEC_ID(filtercells, getFilterCell, setFilterCell,
-                           sls::StringTo<int>,
+    INTEGER_COMMAND_VEC_ID(filtercells, getNumberOfFilterCells,
+                           setNumberOfFilterCells, sls::StringTo<int>,
                            "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for "
                            "chipv1.1. Advanced user Command");
 

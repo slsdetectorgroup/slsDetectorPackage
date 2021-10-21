@@ -1072,13 +1072,13 @@ void init_det(py::module &m) {
              (void (Detector::*)(const defs::gainMode, sls::Positions)) &
                  Detector::setGainMode,
              py::arg(), py::arg() = Positions{})
-        .def("getFilterCell",
+        .def("getNumberOfFilterCells",
              (Result<int>(Detector::*)(sls::Positions) const) &
-                 Detector::getFilterCell,
+                 Detector::getNumberOfFilterCells,
              py::arg() = Positions{})
-        .def("setFilterCell",
+        .def("setNumberOfFilterCells",
              (void (Detector::*)(int, sls::Positions)) &
-                 Detector::setFilterCell,
+                 Detector::setNumberOfFilterCells,
              py::arg(), py::arg() = Positions{})
         .def("getROI",
              (Result<defs::ROI>(Detector::*)(sls::Positions) const) &

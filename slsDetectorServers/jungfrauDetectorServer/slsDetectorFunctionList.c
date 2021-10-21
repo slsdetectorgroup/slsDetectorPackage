@@ -498,7 +498,7 @@ void setupDetector() {
     setFlipRows(DEFAULT_FLIP_ROWS);
     if (getChipVersion() == 11) {
         setFilterResistor(DEFAULT_FILTER_RESISTOR);
-        setFilterCell(DEFAULT_FILTER_CELL);
+        setNumberOfFilterCells(DEFAULT_FILTER_CELL);
     }
     setReadNRows(MAX_ROWS_PER_READOUT);
 }
@@ -2206,7 +2206,7 @@ int setFilterResistor(int value) {
     return FAIL;
 }
 
-int getFilterCell() {
+int getNumberOfFilterCells() {
 #ifdef VIRTUAL
     uint32_t addr = CONFIG_V11_REG;
 #else
@@ -2223,7 +2223,7 @@ int getFilterCell() {
     return (__builtin_popcount(retval));
 }
 
-void setFilterCell(int iCell) {
+void setNumberOfFilterCells(int iCell) {
     if (iCell > MAX_FILTER_CELL_VAL) {
         return;
     }
@@ -2240,8 +2240,8 @@ void setFilterCell(int iCell) {
         bus_w(addr, bus_r(addr) | ((value << CONFIG_V11_FLTR_CLL_OFST) &
                                    CONFIG_V11_FLTR_CLL_MSK));
     }
-    LOG(logINFO,
-        ("Setting Filter Cell to %d [Reg:0x%x]\n", iCell, bus_r(addr)));
+    LOG(logINFO, ("Setting Number of Filter Cells to %d [Reg:0x%x]\n", iCell,
+                  bus_r(addr)));
 }
 
 void disableCurrentSource() {

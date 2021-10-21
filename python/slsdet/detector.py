@@ -2299,11 +2299,11 @@ class Detector(CppDetectorApi):
         ----
         [Jungfrau] Options: 0-12. Default: 0. Advanced user command. Only for chipv1.1.
         """
-        return self.getFilterCell()
+        return self.getNumberOfFilterCells()
 
     @filtercells.setter
     def filtercells(self, value):
-        ut.set_using_dict(self.setFilterCell, value)
+        ut.set_using_dict(self.setNumberOfFilterCells, value)
         
     @property
     def maxclkphaseshift(self):

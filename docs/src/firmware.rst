@@ -61,13 +61,14 @@ Upgrade
         #update front right fpga
         bcp download.bit bebxxx:/febr
 
-        #update kernel (only if required by the SLS Detector Group)
+        #update kernel (only if required by us)
         bcp download.bit bebxxx:/kernel
 
 #. Reboot the detector.
 
     .. code-block:: bash
 
+        # In the first terminal where we saw "Succeess"
         # reconfig febX is necessary only if you have flashed a new feb firmware
         reconfig febl
         reconfig febr
@@ -76,7 +77,7 @@ Upgrade
 
 .. note :: 
 
-    If not already there, you need to add scripts to automatically start detector server upon power on. See :ref:`Automatic start<Automatic start servers>` for more details.
+    If the detector servers did not start up automatically after reboot, you need to add scripts to do that. See :ref:`Automatic start<Automatic start servers>` for more details.
 
 Jungfrau
 -------------
@@ -101,7 +102,7 @@ Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you
 Always ensure that the client and server software are of the same release.
 
 
-#. Program from console
+Program from console
     .. code-block:: bash
 
         # copies server from tftp folder of pc, links new server to jungfrauDetectorServer, 
@@ -131,7 +132,7 @@ Upgrade
 ^^^^^^^^
 .. warning ::
     | Gotthard firmware cannot be upgraded remotely and requires the use of USB-Blaster.
-    | It is generally updated by the SLS Detector group.
+    | It is generally updated by us.
 
 #. Download `Altera Quartus software or Quartus programmer <https://fpgasoftware.intel.com/20.1/?edition=standard&platform=linux&product=qprogrammer#tabs-4>`__.
    
@@ -142,7 +143,7 @@ Upgrade
 
 #. Plug the end of your USB-Blaster with the adaptor provided to the connector 'AS config' on the Gotthard board.
 
-#. Click on 'Add file'. Select programming (pof) file provided by the SLS Detector group.
+#. Click on 'Add file'. Select programming (pof) file provided by us.
 
 #. Check "Program/Configure" and "Verify". Push the start button. Wait until the programming process is finished.
 
@@ -156,14 +157,14 @@ Mythen III
 
 .. note :: 
 
-  As it is still in development, the rbf files must be picked up from the SLS Detector Group.
+  As it is still in development, the rbf files must be picked up from us.
 
 Download 
 ^^^^^^^^^^^^^
 
 - detector server corresponding to package in slsDetectorPackage/serverBin
 
-- rbf files (in developement)
+- `rbf files <https://github.com/slsdetectorgroup/slsDetectorFirmware>`__
 
 
 Upgrade
@@ -171,10 +172,10 @@ Upgrade
 
 Always ensure that the client and server software are of the same release.
 
-#. Program from console
+Program from console
     .. code-block:: bash
 
-        # copies server from tftp folder of pc, links new server to jungfrauDetectorServer, 
+        # copies server from tftp folder of pc, links new server to mythen3DetectorServer, 
         # programs fpga,
         # reboots
         sls_detector_put update mythen3DetectorServervxxx pcxxx xxx.rbf
@@ -184,7 +185,7 @@ Always ensure that the client and server software are of the same release.
 
 .. note :: 
 
-    If not already there, you need to add scripts to automatically start detector server upon power on. See :ref:`Automatic start<Automatic start servers>` for more details.
+    If the detector servers did not start up automatically after reboot, you need to add scripts to do that. See :ref:`Automatic start<Automatic start servers>` for more details.
 
 Gotthard II
 -------------
@@ -200,10 +201,10 @@ Upgrade
 
 Always ensure that the client and server software are of the same release.
 
-#. Program from console
+Program from console
     .. code-block:: bash
 
-        # copies server from tftp folder of pc, links new server to jungfrauDetectorServer, 
+        # copies server from tftp folder of pc, links new server to gotthard2DetectorServer, 
         # programs fpga,
         # reboots
         sls_detector_put update gotthard2DetectorServervxxx pcxxx xxx.rbf
@@ -213,7 +214,7 @@ Always ensure that the client and server software are of the same release.
 
 .. note :: 
 
-    If not already there, you need to add scripts to automatically start detector server upon power on. See :ref:`Automatic start<Automatic start servers>` for more details.
+    If the detector servers did not start up automatically after reboot, you need to add scripts to do that. See :ref:`Automatic start<Automatic start servers>` for more details.
 
 Moench
 -------
@@ -233,10 +234,10 @@ Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you
 
 Always ensure that the client and server software are of the same release.
 
-#. Program from console
+Program from console
     .. code-block:: bash
 
-        # copies server from tftp folder of pc, links new server to jungfrauDetectorServer, 
+        # copies server from tftp folder of pc, links new server to moenchDetectorServer, 
         # removes old server from respawn, sets up new lnked server to respawn
         # programs fpga,
         # reboots
@@ -263,10 +264,10 @@ Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you
 
 Always ensure that the client and server software are of the same release.
 
-#. Program from console
+Program from console
     .. code-block:: bash
 
-        # copies server from tftp folder of pc, links new server to jungfrauDetectorServer, 
+        # copies server from tftp folder of pc, links new server to ctbDetectorServer, 
         # removes old server from respawn, sets up new lnked server to respawn
         # programs fpga,
         # reboots

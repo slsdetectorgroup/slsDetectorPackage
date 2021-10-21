@@ -28,7 +28,7 @@ Detector Server Upgrade
 
  .. note :: 
 
-    Eiger requires a manual reboot. Or killall the servers and restart the new linked one.
+    Eiger requires a manual reboot. Or killall the servers and restart the new linked one. If you are in the process of updating firmware, then don't reboot yet.
 
 
 Errors

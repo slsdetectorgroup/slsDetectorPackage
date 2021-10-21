@@ -23,13 +23,13 @@ This document describes the differences between v6.0.0 and v5.1.0.
     Client 
     ------
     1.  Shared libraries
-        They are versioned from this release on. 
+        They are versioned from this release on (6.0.0). 
 
     2.  [Jungfrau] Chip version 
         Features for chipv1.1 incorporated
         Command line: chipversion, API: getchipVersion 
         gets chip version (1.0 or 1.1)
-        chipv1.1 requires config_jungfrau.txt on detector server.
+        chipv1.1 requires config_jungfrau.txt on detector server and HW 2.0.
     
     3.  [Jungfrau] Chip configuration (only chipv1.1)
         powering on the chip and changing settings will configure the chip.
@@ -39,8 +39,8 @@ This document describes the differences between v6.0.0 and v5.1.0.
         Settings can be gain0 and highgain0. Gain mode can be dynamicgain, 
         forceswitchg1, forceswitchg2, fixg1, fixg2, fixg0. fixg0 must be 
         used with EXTRA caution as you can damage the detector.
-        Changing settings also changes dac values of 3 dacs () and reconfigures
-        chip (only v1.1)
+        Changing settings also changes dac values of 3 dacs 
+        (vref_prech, vref_ds and vref_comp) and reconfigures chip (only v1.1)
 
     5.  [Jungfrau] Storage cells (only chipv1.1)
         Additional number of storage cells not applicable for chipv1.1.
@@ -246,7 +246,7 @@ This document describes the differences between v6.0.0 and v5.1.0.
     7.  [Eiger] fast quad fix for loading trimbits
 
     8.  [Eiger] Can also use copydetectorserver command.
-        [All] copydetectorserver command also creates a link to the binary compied
+        [All] copydetectorserver command also creates a link to the binary copied
         with a shorter name ([detector]DetectorServer only)
     
     Receiver
@@ -265,7 +265,7 @@ This document describes the differences between v6.0.0 and v5.1.0.
     1.  It does not handle readnrows or partial readout. Only the summary
         is adjusted to print in red. However, it will still write complete
         images with missing data padded. Roi will be implemented in future
-        that can be complimented with this feature to remove the additional
+        that can be complemented with this feature to remove the additional
         data in files.
 
     2.  Round robin is not implemented in receiver side, ie. one cannot configure
@@ -303,7 +303,7 @@ This document describes the differences between v6.0.0 and v5.1.0.
 
     Mythen3
     =======
-    Compatible version : 10.09.2021 (development)
+    Compatible version : 10.09.2021 (v1.1)
 
     Gotthard2
     =========

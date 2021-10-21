@@ -61,7 +61,7 @@ This document describes the differences between v6.0.0 and v5.1.0.
         Set filter cell. Options: [0-12]. Advanced user command.
 
     8.  [Jungfrau] Comparator disable time (only chipv1.1)
-        Command line: comp_disable_time, API: getComparatorDisableTime/ 
+        Command line: compdisabletime, API: getComparatorDisableTime/ 
         setComparatorDisableTime 
         One can customize the period to disable comparator.
 
@@ -169,12 +169,16 @@ This document describes the differences between v6.0.0 and v5.1.0.
         [Eiger][Jungfrau] same as before.
         [Gotthard2] New command to set readout speed. Options: 108, 144 (in MHz)
         
-    27.  [Eiger][Jungfrau] Flip rows
+    27. [Eiger][Jungfrau] Flip rows
         Command line: fliprows, API: getFlipRows/ setFlipRows
         Previous command: flippeddatax, setBottom/ getBottom
         [Jungfrau] Flips rows in detector only for HW v2.0.
         slsReceiver and slsDetectorGui will not flip them again.
         [Eiger] same as before.
+
+    28. [Jungfrau]
+        Command line changes: autocompdisable, Previous command line: auto_comp_disable
+
 
     Detector servers
     ----------------

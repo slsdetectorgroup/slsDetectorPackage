@@ -255,7 +255,7 @@ TEST_CASE("temp_event", "[.cmd]") {
     }
 }
 
-TEST_CASE("auto_comp_disable", "[.cmd]") {
+TEST_CASE("autocompdisable", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -263,29 +263,29 @@ TEST_CASE("auto_comp_disable", "[.cmd]") {
         auto prev_val = det.getAutoComparatorDisable();
         {
             std::ostringstream oss;
-            proxy.Call("auto_comp_disable", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "auto_comp_disable 0\n");
+            proxy.Call("autocompdisable", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "autocompdisable 0\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("auto_comp_disable", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "auto_comp_disable 1\n");
+            proxy.Call("autocompdisable", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "autocompdisable 1\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("auto_comp_disable", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "auto_comp_disable 1\n");
+            proxy.Call("autocompdisable", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "autocompdisable 1\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setAutoComparatorDisable(prev_val[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("auto_comp_disable", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("auto_comp_disable", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("autocompdisable", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("autocompdisable", {"0"}, -1, PUT));
     }
 }
 
-TEST_CASE("comp_disable_time", "[.cmd]") {
+TEST_CASE("compdisabletime", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -294,25 +294,25 @@ TEST_CASE("comp_disable_time", "[.cmd]") {
         auto prev_val = det.getComparatorDisableTime();
         {
             std::ostringstream oss;
-            proxy.Call("comp_disable_time", {"125ns"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "comp_disable_time 125ns\n");
+            proxy.Call("compdisabletime", {"125ns"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "compdisabletime 125ns\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("comp_disable_time", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "comp_disable_time 125ns\n");
+            proxy.Call("compdisabletime", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "compdisabletime 125ns\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("comp_disable_time", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "comp_disable_time 0\n");
+            proxy.Call("compdisabletime", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "compdisabletime 0\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setComparatorDisableTime(prev_val[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("comp_disable_time", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("comp_disable_time", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("compdisabletime", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("compdisabletime", {"0"}, -1, PUT));
     }
 }
 

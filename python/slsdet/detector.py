@@ -170,6 +170,7 @@ class Detector(CppDetectorApi):
     def port(self):
         """
         Port number of the control server on detector for detector-client tcp interface. 
+
         Note
         ----
         Default is 1952. Normally unchanged. \n
@@ -185,6 +186,7 @@ class Detector(CppDetectorApi):
     @element
     def stopport(self):
         """Port number of the stop server on detector for detector-client tcp interface. 
+
         Note
         ----
         Default is 1953. Normally unchanged.
@@ -241,6 +243,7 @@ class Detector(CppDetectorApi):
     def rx_threads(self):
         """
         Get thread ids from the receiver in order of [parent, tcp, listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1]. 
+        
         Note
         -----
         If no streamer yet or there is no second interface, it gives 0 in its place. 
@@ -1566,6 +1569,7 @@ class Detector(CppDetectorApi):
     def acquire(self):
         """
         Run the configured measurement
+
         Note
         ----
         Blocking command, where control server is blocked and cannot accept other commands until acquisition is done. \n
@@ -2081,19 +2085,20 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def storagecells(self):
+    def extrastoragecells(self):
         """
         [Jungfrau] Number of additional storage cells. 
+
         Note
         ----
         Only for chip v1.0. For advanced users only. \n
         Options: 0 - 15. Default is 0.
-        The #images = #frames x #triggers x (#storagecells + 1)
+        The #images = #frames x #triggers x (#extrastoragecells + 1)
         """
         return self.getNumberOfAdditionalStorageCells()
 
-    @storagecells.setter
-    def storagecells(self, n_cells):
+    @extrastoragecells.setter
+    def extrastoragecells(self, n_cells):
         ut.set_using_dict(self.setNumberOfAdditionalStorageCells, n_cells)
 
     @property
@@ -2593,6 +2598,7 @@ class Detector(CppDetectorApi):
     @element
     def adcenable10g(self):
         """[Ctb][Moench] ADC Enable Mask for 10Gb mode for each 32 ADC channel. 
+
         Note
         -----
         If any of a consecutive 4 bits are enabled, the complete 4 bits are enabled."""

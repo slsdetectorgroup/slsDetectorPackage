@@ -30,6 +30,14 @@ class Detector {
     std::unique_ptr<DetectorImpl> pimpl;
 
   public:
+    /** @name Configuration */
+    ///@{
+    /**************************************************
+     *                                                *
+     *    Configuration                               *
+     *                                                *
+     * ************************************************/
+
     /**
      * @param shm_id detector shared memory id
      * Default value is 0. Can be set to more values for
@@ -38,13 +46,6 @@ class Detector {
      */
     Detector(int shm_id = 0);
     ~Detector();
-    /** @name Configuration */
-    ///@{
-    /**************************************************
-     *                                                *
-     *    Configuration                               *
-     *                                                *
-     * ************************************************/
 
     /** Free the shared memory of this detector and all modules
     belonging to it */
@@ -191,7 +192,7 @@ class Detector {
     void setFlipRows(bool value, Positions pos = {});
 
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
-    ///@{
+    ///@}
 
     /** @name Callbacks */
     ///@{
@@ -222,7 +223,7 @@ class Detector {
     void registerDataCallback(void (*func)(detectorData *, uint64_t, uint32_t,
                                            void *),
                               void *pArg);
-    ///@{
+    ///@}
 
     /** @name Acquisition Parameters */
     ///@{
@@ -526,7 +527,7 @@ class Detector {
      */
     void setReadNRows(const int lines, Positions pos = {});
 
-    ///@{
+    ///@}
 
     /** @name Acquisition */
     ///@{
@@ -613,7 +614,7 @@ class Detector {
     /** Gets Scan error message if scan ended in error for non blocking
      * acquisitions.*/
     Result<std::string> getScanErrorMessage(Positions pos = {}) const;
-    ///@{
+    ///@}
 
     /** @name Network Configuration (Detector<->Receiver) */
     ///@{
@@ -789,7 +790,7 @@ class Detector {
      * port
      */
     void setTransmissionDelayRight(int value, Positions pos = {});
-    ///@{
+    ///@}
 
     /** @name Receiver Configuration */
     ///@{
@@ -877,7 +878,7 @@ class Detector {
      * streamer yet or there is no second interface, it gives 0 in its place. */
     Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
     getRxThreadIds(Positions pos = {}) const;
-    ///@{
+    ///@}
 
     /** @name File */
     ///@{
@@ -933,7 +934,7 @@ class Detector {
     /** Default depends on detector type. \n 0 will set frames per file in an
      * acquisition to unlimited */
     void setFramesPerFile(int n, Positions pos = {});
-    ///@{
+    ///@}
 
     /** @name ZMQ Streaming Parameters (Receiver<->Client) */
     ///@{
@@ -1041,7 +1042,7 @@ class Detector {
      */
     void setRxZmqHwm(const int limit);
 
-    ///@{
+    ///@}
 
     /** @name Eiger Specific */
     ///@{
@@ -1140,7 +1141,7 @@ class Detector {
     void setDataStream(const defs::portPosition port, const bool enable,
                        Positions pos = {});
 
-    ///@{
+    ///@}
 
     /** @name Jungfrau Specific */
     ///@{
@@ -1246,7 +1247,7 @@ class Detector {
      */
     void setNumberOfFilterCells(int cell, Positions pos = {});
 
-    ///@{
+    ///@}
 
     /** @name Gotthard Specific */
     ///@{
@@ -1273,7 +1274,7 @@ class Detector {
 
     /** [Gotthard] */
     Result<ns> getExptimeLeft(Positions pos = {}) const;
-    ///@{
+    ///@}
 
     /** @name Gotthard2 Specific */
     ///@{
@@ -1390,7 +1391,7 @@ class Detector {
 
     /** [Gotthard2] */
     void setBadChannels(const std::string &fname, Positions pos = {});
-    ///@{
+    ///@}
 
     /** @name Mythen3 Specific */
     ///@{
@@ -1447,7 +1448,7 @@ class Detector {
 
     Result<int> getGainCaps(Positions pos = {});
 
-    ///@{
+    ///@}
 
     /** @name CTB / Moench Specific */
     ///@{
@@ -1506,7 +1507,7 @@ class Detector {
     /** [CTB][Moench] If any of a consecutive 4 bits are enabled, the "
         "complete 4 bits are enabled */
     void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
-    ///@{
+    ///@}
 
     /** @name CTB Specific */
     ///@{
@@ -1588,7 +1589,7 @@ class Detector {
 
     /** [CTB] Default is enabled. */
     void setLEDEnable(bool enable, Positions pos = {});
-    ///@{
+    ///@}
 
     /** @name Pattern */
     ///@{
@@ -1675,7 +1676,7 @@ class Detector {
 
     /** [Mythen3] */
     void startPattern(Positions pos = {});
-    ///@{
+    ///@}
 
     /** @name Moench specific */
     ///@{
@@ -1709,7 +1710,7 @@ class Detector {
     void setAdditionalJsonParameter(const std::string &key,
                                     const std::string &value,
                                     Positions pos = {});
-    ///@{
+    ///@}
 
     /** @name Advanced */
     ///@{
@@ -1806,7 +1807,7 @@ class Detector {
     /** [CTB][Moench][Jungfrau] Advanced user Function! \n
     [Jungfrau] Inversions on top of default mask */
     void setADCInvert(uint32_t value, Positions pos = {});
-    ///@{
+    ///@}
 
     /** @name Insignificant */
     ///@{
@@ -1858,7 +1859,7 @@ class Detector {
     std::string getUserDetails() const;
 
     Result<uint64_t> getRxCurrentFrameIndex(Positions pos = {}) const;
-    ///@{
+    ///@}
 
   private:
     std::vector<int> getPortNumbers(int start_port);

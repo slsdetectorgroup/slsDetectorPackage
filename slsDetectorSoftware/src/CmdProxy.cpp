@@ -82,8 +82,13 @@ std::map<std::string, std::string> CmdProxy::GetDepreciatedCommands() {
 }
 
 void CmdProxy::WrongNumberOfParameters(size_t expected) {
+    if (expected == 0) {
+        throw RuntimeError("Command " + cmd +
+                           " expected no parameter/s but got " +
+                           std::to_string(args.size()) + "\n");
+    }
     throw RuntimeError(
-        "Command " + cmd + " expected <=" + std::to_string(expected) +
+        "Command " + cmd + " expected >=" + std::to_string(expected) +
         " parameter/s but got " + std::to_string(args.size()) + "\n");
 }
 

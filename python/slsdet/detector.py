@@ -2292,7 +2292,7 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def filtercell(self):
+    def filtercells(self):
         """
         [Jungfrau] Set filter capacitor. 
         Note
@@ -2301,8 +2301,8 @@ class Detector(CppDetectorApi):
         """
         return self.getFilterCell()
 
-    @filtercell.setter
-    def filtercell(self, value):
+    @filtercells.setter
+    def filtercells(self, value):
         ut.set_using_dict(self.setFilterCell, value)
         
     @property

@@ -948,7 +948,7 @@ class CmdProxy {
         {"storagecell_start", &CmdProxy::storagecell_start},
         {"storagecell_delay", &CmdProxy::storagecell_delay},
         {"gainmode", &CmdProxy::gainmode},
-        {"filtercell", &CmdProxy::filtercell},
+        {"filtercells", &CmdProxy::filtercells},
 
         /* Gotthard Specific */
         {"roi", &CmdProxy::ROI},
@@ -1951,7 +1951,7 @@ class CmdProxy {
         "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, "
         "you can damage the detector!!!");
 
-    INTEGER_COMMAND_VEC_ID(filtercell, getFilterCell, setFilterCell,
+    INTEGER_COMMAND_VEC_ID(filtercells, getFilterCell, setFilterCell,
                            sls::StringTo<int>,
                            "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for "
                            "chipv1.1. Advanced user Command");

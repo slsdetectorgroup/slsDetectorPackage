@@ -452,6 +452,7 @@ Time before end of exposure when comparator is disabled */
 #define ASIC_CTRL_DS_TMR_OFST               (8)
 #define ASIC_CTRL_DS_TMR_MSK                (0x000000FF << ASIC_CTRL_DS_TMR_OFST)
 #define ASIC_CTRL_DS_TMR_VAL                ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
+#define ASIC_CTRL_DS_TMR_CHIP1_1_VAL        ((0xFF << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
 // tET = (ET + 1) * 25ns (increase timeout range between 2 consecutive storage
 // cells)
 #define ASIC_CTRL_EXPSRE_TMR_OFST           (16)

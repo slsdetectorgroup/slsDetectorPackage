@@ -1829,11 +1829,15 @@ int64_t getComparatorDisableTime() {
 }
 
 void configureASICTimer() {
-    LOG(logINFO, ("Configuring ASIC Timer\n"));
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) |
                              ASIC_CTRL_PRCHRG_TMR_VAL);
-    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) |
-                             ASIC_CTRL_DS_TMR_VAL);
+
+    uint32_t val = ASIC_CTRL_DS_TMR_VAL;
+    if (getChipVersion() == 11) {
+        val = ASIC_CTRL_DS_TMR_CHIP1_1_VAL;
+    }
+    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | val);
+    LOG(logINFO, ("Configured ASIC Timer [0x%x]\n", bus_r(ASIC_CTRL_REG)));
 }
 
 int setReadoutSpeed(int val) {
@@ -2213,7 +2217,8 @@ int getFilterCell() {
     // flip all contents of register //TODO FIRMWARE FIX
     regval ^= BIT32_MASK;
 #endif
-    uint32_t retval  = (regval & CONFIG_V11_FLTR_CLL_MSK) >> CONFIG_V11_FLTR_CLL_OFST;
+    uint32_t retval =
+        (regval & CONFIG_V11_FLTR_CLL_MSK) >> CONFIG_V11_FLTR_CLL_OFST;
     // count number of bits = which icell
     return (__builtin_popcount(retval));
 }
@@ -2336,13 +2341,12 @@ int getFixCurrentSource() {
 
 int getNormalCurrentSource() {
     if (getChipVersion() == 11) {
-         //TODO FIRMWARE FIX TOGGLING
+        // TODO FIRMWARE FIX TOGGLING
         int regval = bus_r(CONFIG_V11_STATUS_REG);
 #ifndef VIRTUAL
         regval ^= BIT32_MASK;
 #endif
-        int low = ((regval &
-                    CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK) >>
+        int low = ((regval & CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK) >>
                    CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST);
         return (low == 0 ? 1 : 0);
     }

@@ -7,7 +7,12 @@ Detector Server Upgrade
 
 
 #. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rcx)
+#. Program from console
+
+    .. note :: 
+
+        These instructions are for upgrades from v5.0.0. For earlier versions, contact us.
+
     .. code-block:: bash
 
         # copies new server from pc tftp folder, creates a soft link to xxxDetectorServerxxx

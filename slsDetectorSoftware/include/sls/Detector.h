@@ -1240,11 +1240,11 @@ class Detector {
     void setGainMode(const defs::gainMode mode, Positions pos = {});
 
     /** [Jungfrau] Advanced */
-    Result<int> getFilterCell(Positions pos = {}) const;
+    Result<int> getNumberOfFilterCells(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced Options[0-12], only for chip v1.1
      */
-    void setFilterCell(int cell, Positions pos = {});
+    void setNumberOfFilterCells(int cell, Positions pos = {});
 
     ///@{
 

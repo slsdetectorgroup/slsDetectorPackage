@@ -2292,18 +2292,18 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def filtercell(self):
+    def filtercells(self):
         """
         [Jungfrau] Set filter capacitor. 
         Note
         ----
         [Jungfrau] Options: 0-12. Default: 0. Advanced user command. Only for chipv1.1.
         """
-        return self.getFilterCell()
+        return self.getNumberOfFilterCells()
 
-    @filtercell.setter
-    def filtercell(self, value):
-        ut.set_using_dict(self.setFilterCell, value)
+    @filtercells.setter
+    def filtercells(self, value):
+        ut.set_using_dict(self.setNumberOfFilterCells, value)
         
     @property
     def maxclkphaseshift(self):

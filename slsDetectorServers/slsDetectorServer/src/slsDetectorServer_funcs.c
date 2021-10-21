@@ -399,8 +399,8 @@ void function_table() {
     flist[F_SET_COMP_DISABLE_TIME] = &set_comp_disable_time;
     flist[F_GET_FLIP_ROWS] = &get_flip_rows;
     flist[F_SET_FLIP_ROWS] = &set_flip_rows;
-    flist[F_GET_FILTER_CELL] = &get_filter_cell;
-    flist[F_SET_FILTER_CELL] = &set_filter_cell;
+    flist[F_GET_NUM_FILTER_CELLS] = &get_num_filter_cells;
+    flist[F_SET_NUM_FILTER_CELLS] = &set_num_filter_cells;
     flist[F_SET_ADC_PIPELINE] = &set_adc_pipeline;
     flist[F_GET_ADC_PIPELINE] = &get_adc_pipeline;
     flist[F_SET_DBIT_PIPELINE] = &set_dbit_pipeline;
@@ -8886,31 +8886,31 @@ int set_flip_rows(int file_des) {
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
-int get_filter_cell(int file_des) {
+int get_num_filter_cells(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-    LOG(logDEBUG1, ("Getting filter cell\n"));
+    LOG(logDEBUG1, ("Getting number of filter cellsn"));
 
 #ifndef JUNGFRAUD
     functionNotImplemented();
 #else
     // get only
-    retval = getFilterCell();
-    LOG(logDEBUG1, ("filter cell retval: %u\n", retval));
+    retval = getNumberOfFilterCells();
+    LOG(logDEBUG1, ("num filter cells retval: %u\n", retval));
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_filter_cell(int file_des) {
+int set_num_filter_cells(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int arg = -1;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logDEBUG1, ("Setting filter cell: %u\n", (int)arg));
+    LOG(logDEBUG1, ("Setting number of filter cells: %u\n", (int)arg));
 
 #ifndef JUNGFRAUD
     functionNotImplemented();
@@ -8921,7 +8921,8 @@ int set_filter_cell(int file_des) {
         if (arg < 0 || arg > MAX_FILTER_CELL_VAL) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not set filter cell. Invalid argument %d. Options: "
+                    "Could not set number of filter cells. Invalid argument "
+                    "%d. Options: "
                     "0 - %d\n",
                     arg, MAX_FILTER_CELL_VAL);
             LOG(logERROR, (mess));
@@ -8929,11 +8930,12 @@ int set_filter_cell(int file_des) {
         // only for chipv1.1
         else if (getChipVersion() == 10) {
             ret = FAIL;
-            strcpy(mess, "Could not set filter cell. Only available for "
-                         "chip version 1.1\n");
+            strcpy(mess,
+                   "Could not set number of filter cells. Only available for "
+                   "chip version 1.1\n");
             LOG(logERROR, (mess));
         } else {
-            setFilterCell(arg);
+            setNumberOfFilterCells(arg);
             // no validation as it might take time to update status register if
             // acquiring
         }

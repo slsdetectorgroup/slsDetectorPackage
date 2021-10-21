@@ -1562,12 +1562,12 @@ void Detector::setGainMode(const defs::gainMode mode, Positions pos) {
     pimpl->Parallel(&Module::setGainMode, pos, mode);
 }
 
-Result<int> Detector::getFilterCell(Positions pos) const {
-    return pimpl->Parallel(&Module::getFilterCell, pos);
+Result<int> Detector::getNumberOfFilterCells(Positions pos) const {
+    return pimpl->Parallel(&Module::getNumberOfFilterCells, pos);
 }
 
-void Detector::setFilterCell(int cell, Positions pos) {
-    pimpl->Parallel(&Module::setFilterCell, pos, cell);
+void Detector::setNumberOfFilterCells(int cell, Positions pos) {
+    pimpl->Parallel(&Module::setNumberOfFilterCells, pos, cell);
 }
 
 // Gotthard Specific

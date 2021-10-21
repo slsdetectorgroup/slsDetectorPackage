@@ -46,6 +46,8 @@ This document describes the differences between v6.0.0 and v5.1.0.
         Additional number of storage cells not applicable for chipv1.1.
         Storage cell start is only allowed from 0 - 3 for chipv1.1 
         (0 - 15 for chipv1.0).
+        Command line: extrastoragecells, Previous Command line: storagecells
+        API: remains the same.
     
     6.  [Gotthard2][Jungfrau] Filter Resistor 
         Command line: filterresistor, API: getFilterResistor/ setFilterResistor
@@ -55,7 +57,7 @@ This document describes the differences between v6.0.0 and v5.1.0.
         [Gotthard2] Options: [0|1|2|3]. Default is 0.
 
     7.  [Jungfrau] Filter cell (only chipv1.1)
-        Command line: filtercell, API: getFilterCell/ setFilterCell
+        Command line: filtercells, API: getNumberOfFilterCells/ setNumberOfFilterCells
         Set filter cell. Options: [0-12]. Advanced user command.
 
     8.  [Jungfrau] Comparator disable time (only chipv1.1)

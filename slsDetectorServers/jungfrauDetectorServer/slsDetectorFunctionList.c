@@ -2176,10 +2176,6 @@ int getFilterResistor() {
 #else
     uint32_t addr = CONFIG_V11_STATUS_REG;
 #endif
-    uint32_t regval = bus_r(addr);
-#ifndef VIRTUAL
-    regval ^= BIT32_MASK;
-#endif
     // return 0 for lower value, 1 for higher value
     if (bus_r(addr) & CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_MSK) {
         return 0;

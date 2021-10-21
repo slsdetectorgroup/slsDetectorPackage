@@ -2176,15 +2176,11 @@ int getFilterResistor() {
 #else
     uint32_t addr = CONFIG_V11_STATUS_REG;
 #endif
-    uint32_t regval = bus_r(addr);
-#ifndef VIRTUAL
-    regval ^= BIT32_MASK;
-#endif
     // 0 for lower value, 1 for higher value
-    if (regval & CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_MSK) {
-        return 0;
+    if (bus_r(addr) & CONFIG_V11_STATUS_FLTR_RSSTR_HGHR_MSK) {
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 int setFilterResistor(int value) {
@@ -2192,14 +2188,14 @@ int setFilterResistor(int value) {
     if (value == 0) {
         LOG(logINFO, ("Setting Lower Filter Resistor\n"));
         bus_w(CONFIG_V11_REG,
-              bus_r(CONFIG_V11_REG) | CONFIG_V11_FLTR_RSSTR_SMLR_MSK);
+              bus_r(CONFIG_V11_REG) & ~CONFIG_V11_FLTR_RSSTR_HGHR_MSK);
         return OK;
     }
     // higher resistor
     else if (value == 1) {
         LOG(logINFO, ("Setting Higher Filter Resistor\n"));
         bus_w(CONFIG_V11_REG,
-              bus_r(CONFIG_V11_REG) & ~CONFIG_V11_FLTR_RSSTR_SMLR_MSK);
+              bus_r(CONFIG_V11_REG) | CONFIG_V11_FLTR_RSSTR_HGHR_MSK);
         return OK;
     }
     LOG(logERROR, ("Could not set Filter Resistor. Invalid value %d\n", value));
@@ -2341,12 +2337,8 @@ int getFixCurrentSource() {
 
 int getNormalCurrentSource() {
     if (getChipVersion() == 11) {
-        // TODO FIRMWARE FIX TOGGLING
-        int regval = bus_r(CONFIG_V11_STATUS_REG);
-#ifndef VIRTUAL
-        regval ^= BIT32_MASK;
-#endif
-        int low = ((regval & CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK) >>
+        int low = ((bus_r(CONFIG_V11_STATUS_REG) &
+                    CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK) >>
                    CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST);
         return (low == 0 ? 1 : 0);
     }

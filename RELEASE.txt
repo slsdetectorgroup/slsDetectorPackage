@@ -20,6 +20,8 @@ This document describes the differences between v6.0.0 and v5.1.0.
 1. New or Changed Features
 ==========================
 
+    Added License. Read COPYING for more details.
+
     Client 
     ------
     1.  Shared libraries

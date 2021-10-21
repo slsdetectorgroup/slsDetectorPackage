@@ -2341,9 +2341,9 @@ int getFixCurrentSource() {
 
 int getNormalCurrentSource() {
     if (getChipVersion() == 11) {
-        int regval = ((bus_r(CONFIG_V11_STATUS_REG) &
-                       CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK) >>
-                      CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST);
+        int low = ((bus_r(CONFIG_V11_STATUS_REG) &
+                    CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK) >>
+                   CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST);
         return (low == 0 ? 1 : 0);
     }
     return -1;

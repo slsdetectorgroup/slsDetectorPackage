@@ -826,12 +826,10 @@ class Detector {
      * receiver property (not on detector). \n receiver is receiver hostname or
      * IP address, can include tcp port eg. hostname:port
      */
-    void setRxHostname(const std::string &receiver, Positions pos = {},
-                       const int rx_index = 0);
+    void setRxHostname(const std::string &receiver, Positions pos = {});
 
     /** multiple rx hostnames. Single element will set it for all */
-    void setRxHostname(const std::vector<std::string> &name,
-                       const int rx_index = 0);
+    void setRxHostname(const std::vector<std::string> &name);
 
     Result<int> getRxPort(Positions pos = {}, const int rx_index = 0) const;
 

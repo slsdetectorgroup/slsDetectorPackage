@@ -1569,9 +1569,14 @@ std::string CmdProxy::ReceiverHostname(int action) {
         else {
             // multiple receivers concatenated with +
             if (args[0].find('+') != std::string::npos) {
-                if (det_id != -1) {
+                // allowing multiple receivers at module level
+                /*if (det_id != -1) {
                     throw sls::RuntimeError(
                         "Cannot add multiple receivers at module level");
+                }*/
+                if (rx_id != -1) {
+                    throw sls::RuntimeError(
+                        "Cannot add multiple receivers at RR level");
                 }
                 auto t = sls::split(args[0], '+');
                 det->setRxHostname(t);

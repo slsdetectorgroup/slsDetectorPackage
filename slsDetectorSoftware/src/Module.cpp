@@ -1261,64 +1261,83 @@ std::string Module::getReceiverHostname(const int rxIndex) const {
     return std::string(shm()->receivers[rxIndex].hostname);
 }
 
-void Module::setReceiverHostname(const std::string &receiverIP,
-                                 const int rxIndex) {
+void Module::setReceiverHostname(const std::string &receiverIP) {
     LOG(logDEBUG1) << "Setting up Receiver with " << receiverIP;
 
-    if (receiverIP == "none") {
-        memset(shm()->receivers[rxIndex].hostname, 0, MAX_STR_LENGTH);
-        sls::strcpy_safe(shm()->receivers[rxIndex].hostname, "none");
-        shm()->useReceiverFlag = false;
+    if (getRunStatus() == RUNNING) {
+        throw RuntimeError(
+            "Cannot set rx hostname when detector is acquiring.");
     }
 
-    if (getRunStatus() == RUNNING) {
-        LOG(logWARNING) << "Acquisition already running, Stopping it.";
-        stopAcquisition();
+    if (receiverIP == "none") {
+        for (int i = 0; i != MAX_UDP_DESTINATION; ++i) {
+            memset(shm()->receivers[i].hostname, 0, MAX_STR_LENGTH);
+            sls::strcpy_safe(shm()->receivers[i].hostname, "none");
+        }
+        shm()->useReceiverFlag = false;
+        return;
+    }
+
+    std::vector<std::string> list;
+    // many rx hostames concatenated with + (RR)
+    if (receiverIP.find('+') != std::string::npos) {
+        auto t = sls::split(receiverIP, '+');
+        list.push_back(t);
+    } else {
+        list.push_back(receiverIP);
+    }
+
+    // clear all rxrs for current module
+    for (int i = 0; i != MAX_UDP_DESTINATION; ++i) {
+        memset(shm()->receivers[i].hostname, 0, MAX_STR_LENGTH);
+        sls::strcpy_safe(shm()->receivers[i].hostname, "none");
     }
 
     // start updating
-    std::string host = receiverIP;
-    auto res = sls::split(host, ':');
-    if (res.size() > 1) {
-        host = res[0];
-        shm()->receivers[rxIndex].tcpPort = std::stoi(res[1]);
+    for (int i = 0; i != list.size(); ++i) {
+        std::string host = receiverIP;
+        auto res = sls::split(host, ':');
+        if (res.size() > 1) {
+            host = res[0];
+            shm()->receivers[i].tcpPort = std::stoi(res[1]);
+        }
+        sls::strcpy_safe(shm()->receivers[i].hostname, host.c_str());
+        shm()->useReceiverFlag = true;
+        checkReceiverVersionCompatibility();
+
+        // populate parameters from detector
+        rxParameters retval;
+        sendToDetector(F_GET_RECEIVER_PARAMETERS, nullptr, retval);
+
+        // populate from shared memory
+        retval.detType = shm()->detType;
+        retval.numberOfModule.x = shm()->numberOfModule.x;
+        retval.numberOfModule.y = shm()->numberOfModule.y;
+        retval.moduleIndex = moduleIndex;
+        memset(retval.hostname, 0, sizeof(retval.hostname));
+        strcpy_safe(retval.hostname, shm()->hostname);
+
+        sls::MacAddr retvals[2];
+        sendToReceiver(i, F_SETUP_RECEIVER, retval, retvals);
+        // update Modules with dest mac
+        if (retval.udp_dstmac == 0 && retvals[0] != 0) {
+            LOG(logINFO) << "Setting destination udp mac of "
+                            "Module "
+                         << moduleIndex << " to " << retvals[0];
+            sendToDetector(F_SET_DEST_UDP_MAC, retvals[0], nullptr);
+        }
+        if (retval.udp_dstmac2 == 0 && retvals[1] != 0) {
+            LOG(logINFO) << "Setting destination udp mac2 of "
+                            "Module "
+                         << moduleIndex << " to " << retvals[1];
+            sendToDetector(F_SET_DEST_UDP_MAC2, retvals[1], nullptr);
+        }
+
+        shm()->numUDPInterfaces = retval.udpInterfaces;
+
+        // to use rx_hostname if empty and also update client zmqip
+        updateReceiverStreamingIP(i);
     }
-    sls::strcpy_safe(shm()->receivers[rxIndex].hostname, host.c_str());
-    shm()->useReceiverFlag = true;
-    checkReceiverVersionCompatibility();
-
-    // populate parameters from detector
-    rxParameters retval;
-    sendToDetector(F_GET_RECEIVER_PARAMETERS, nullptr, retval);
-
-    // populate from shared memory
-    retval.detType = shm()->detType;
-    retval.numberOfModule.x = shm()->numberOfModule.x;
-    retval.numberOfModule.y = shm()->numberOfModule.y;
-    retval.moduleIndex = moduleIndex;
-    memset(retval.hostname, 0, sizeof(retval.hostname));
-    strcpy_safe(retval.hostname, shm()->hostname);
-
-    sls::MacAddr retvals[2];
-    sendToReceiver(rxIndex, F_SETUP_RECEIVER, retval, retvals);
-    // update Modules with dest mac
-    if (retval.udp_dstmac == 0 && retvals[0] != 0) {
-        LOG(logINFO) << "Setting destination udp mac of "
-                        "Module "
-                     << moduleIndex << " to " << retvals[0];
-        sendToDetector(F_SET_DEST_UDP_MAC, retvals[0], nullptr);
-    }
-    if (retval.udp_dstmac2 == 0 && retvals[1] != 0) {
-        LOG(logINFO) << "Setting destination udp mac2 of "
-                        "Module "
-                     << moduleIndex << " to " << retvals[1];
-        sendToDetector(F_SET_DEST_UDP_MAC2, retvals[1], nullptr);
-    }
-
-    shm()->numUDPInterfaces = retval.udpInterfaces;
-
-    // to use rx_hostname if empty and also update client zmqip
-    updateReceiverStreamingIP(rxIndex);
 }
 
 int Module::getReceiverPort(const int rxIndex) const {

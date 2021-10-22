@@ -255,7 +255,7 @@ TEST_CASE("temp_event", "[.cmd]") {
     }
 }
 
-TEST_CASE("auto_comp_disable", "[.cmd]") {
+TEST_CASE("autocompdisable", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -263,29 +263,29 @@ TEST_CASE("auto_comp_disable", "[.cmd]") {
         auto prev_val = det.getAutoComparatorDisable();
         {
             std::ostringstream oss;
-            proxy.Call("auto_comp_disable", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "auto_comp_disable 0\n");
+            proxy.Call("autocompdisable", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "autocompdisable 0\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("auto_comp_disable", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "auto_comp_disable 1\n");
+            proxy.Call("autocompdisable", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "autocompdisable 1\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("auto_comp_disable", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "auto_comp_disable 1\n");
+            proxy.Call("autocompdisable", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "autocompdisable 1\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setAutoComparatorDisable(prev_val[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("auto_comp_disable", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("auto_comp_disable", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("autocompdisable", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("autocompdisable", {"0"}, -1, PUT));
     }
 }
 
-TEST_CASE("comp_disable_time", "[.cmd]") {
+TEST_CASE("compdisabletime", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -294,29 +294,29 @@ TEST_CASE("comp_disable_time", "[.cmd]") {
         auto prev_val = det.getComparatorDisableTime();
         {
             std::ostringstream oss;
-            proxy.Call("comp_disable_time", {"125ns"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "comp_disable_time 125ns\n");
+            proxy.Call("compdisabletime", {"125ns"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "compdisabletime 125ns\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("comp_disable_time", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "comp_disable_time 125ns\n");
+            proxy.Call("compdisabletime", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "compdisabletime 125ns\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("comp_disable_time", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "comp_disable_time 0\n");
+            proxy.Call("compdisabletime", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "compdisabletime 0\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setComparatorDisableTime(prev_val[i], {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("comp_disable_time", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("comp_disable_time", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("compdisabletime", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("compdisabletime", {"0"}, -1, PUT));
     }
 }
 
-TEST_CASE("storagecells", "[.cmd]") {
+TEST_CASE("extrastoragecells", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -327,35 +327,35 @@ TEST_CASE("storagecells", "[.cmd]") {
                 "inconsistent #additional storage cells to test");
             {
                 std::ostringstream oss;
-                proxy.Call("storagecells", {"1"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "storagecells 1\n");
+                proxy.Call("extrastoragecells", {"1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "extrastoragecells 1\n");
             }
             {
                 std::ostringstream oss;
-                proxy.Call("storagecells", {"15"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "storagecells 15\n");
+                proxy.Call("extrastoragecells", {"15"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "extrastoragecells 15\n");
             }
             {
                 std::ostringstream oss;
-                proxy.Call("storagecells", {"0"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "storagecells 0\n");
+                proxy.Call("extrastoragecells", {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "extrastoragecells 0\n");
             }
             {
                 std::ostringstream oss;
-                proxy.Call("storagecells", {}, -1, GET, oss);
-                REQUIRE(oss.str() == "storagecells 0\n");
+                proxy.Call("extrastoragecells", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "extrastoragecells 0\n");
             }
-            REQUIRE_THROWS(proxy.Call("storagecells", {"16"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("extrastoragecells", {"16"}, -1, PUT));
             det.setNumberOfAdditionalStorageCells(prev_val);
         }
         // chip version 1.1
         else {
             // cannot set number of addl. storage cells
-            REQUIRE_THROWS(proxy.Call("storagecells", {"1"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("extrastoragecells", {"1"}, -1, PUT));
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("storagecells", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("storagecells", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("extrastoragecells", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("extrastoragecells", {"0"}, -1, PUT));
     }
 }
 
@@ -494,47 +494,47 @@ TEST_CASE("gainmode", "[.cmd]") {
     }
 }
 
-TEST_CASE("filtercell", "[.cmd]") {
+TEST_CASE("filtercells", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU) {
         // chip version 1.1
         if (det.getChipVersion().squash() * 10 == 11) {
-            auto prev_val = det.getFilterCell();
+            auto prev_val = det.getNumberOfFilterCells();
             {
                 std::ostringstream oss;
-                proxy.Call("filtercell", {"1"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "filtercell 1\n");
+                proxy.Call("filtercells", {"1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "filtercells 1\n");
             }
             {
                 std::ostringstream oss;
-                proxy.Call("filtercell", {"12"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "filtercell 12\n");
+                proxy.Call("filtercells", {"12"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "filtercells 12\n");
             }
             {
                 std::ostringstream oss;
-                proxy.Call("filtercell", {"0"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "filtercell 0\n");
+                proxy.Call("filtercells", {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "filtercells 0\n");
             }
             {
                 std::ostringstream oss;
-                proxy.Call("filtercell", {}, -1, GET, oss);
-                REQUIRE(oss.str() == "filtercell 0\n");
+                proxy.Call("filtercells", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "filtercells 0\n");
             }
-            REQUIRE_THROWS(proxy.Call("filtercell", {"13"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("filtercells", {"13"}, -1, PUT));
             for (int i = 0; i != det.size(); ++i) {
-                det.setFilterCell(prev_val[i], {i});
+                det.setNumberOfFilterCells(prev_val[i], {i});
             }
         }
         // chip version 1.0
         else {
             // cannot set/get filter cell
-            REQUIRE_THROWS(proxy.Call("filtercell", {"1"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("filtercell", {}, -1, GET));
+            REQUIRE_THROWS(proxy.Call("filtercells", {"1"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("filtercells", {}, -1, GET));
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("filtercell", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("filtercell", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("filtercells", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("filtercells", {"0"}, -1, PUT));
     }
 }

@@ -725,6 +725,10 @@ class CmdProxy {
         {"resmat", "partialreset"},
 
         /* Jungfrau Specific */
+        {"storagecells", "extrastoragecells"},
+        {"auto_comp_disable", "autocompdisable"},
+        {"comp_disable_time", "compdisabletime"},
+
         /* Gotthard Specific */
         /* Gotthard2 Specific */
         /* Mythen3 Specific */
@@ -942,13 +946,13 @@ class CmdProxy {
         {"temp_threshold", &CmdProxy::temp_threshold},
         {"temp_control", &CmdProxy::temp_control},
         {"temp_event", &CmdProxy::TemperatureEvent},
-        {"auto_comp_disable", &CmdProxy::auto_comp_disable},
-        {"comp_disable_time", &CmdProxy::comp_disable_time},
-        {"storagecells", &CmdProxy::storagecells},
+        {"autocompdisable", &CmdProxy::autocompdisable},
+        {"compdisabletime", &CmdProxy::compdisabletime},
+        {"extrastoragecells", &CmdProxy::extrastoragecells},
         {"storagecell_start", &CmdProxy::storagecell_start},
         {"storagecell_delay", &CmdProxy::storagecell_delay},
         {"gainmode", &CmdProxy::gainmode},
-        {"filtercell", &CmdProxy::filtercell},
+        {"filtercells", &CmdProxy::filtercells},
 
         /* Gotthard Specific */
         {"roi", &CmdProxy::ROI},
@@ -1905,30 +1909,30 @@ class CmdProxy {
         "cleared.");
 
     INTEGER_COMMAND_VEC_ID(
-        auto_comp_disable, getAutoComparatorDisable, setAutoComparatorDisable,
+        autocompdisable, getAutoComparatorDisable, setAutoComparatorDisable,
         StringTo<int>,
         "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the "
         "on-chip gain switching is active during the entire exposure.This mode "
         "disables the on - chip gain switching comparator automatically after "
         "93.75% (only for chipv1.0) of exposure time (only for longer than "
         "100us). It is possible to set the duration for chipv1.1 using "
-        "comp_disable_time command.\n\tDefault is 0 or this mode "
+        "compdisabletime command.\n\tDefault is 0 or this mode "
         "disabled(comparator enabled throughout). 1 enables mode. 0 disables "
         "mode. ");
 
-    TIME_COMMAND(comp_disable_time, getComparatorDisableTime,
+    TIME_COMMAND(compdisabletime, getComparatorDisableTime,
                  setComparatorDisableTime,
                  "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time "
                  "before end of exposure when comparator is disabled. It is "
                  "only possible for chipv1.1.");
 
     INTEGER_COMMAND_SET_NOID_GET_ID(
-        storagecells, getNumberOfAdditionalStorageCells,
+        extrastoragecells, getNumberOfAdditionalStorageCells,
         setNumberOfAdditionalStorageCells, StringTo<int>,
         "[0-15]\n\t[Jungfrau] Only for chipv1.0. Number of additional storage "
         "cells. Default is "
         "0. For advanced users only. \n\tThe #images = #frames x #triggers x "
-        "(#storagecells + 1).");
+        "(#extrastoragecells + 1).");
 
     INTEGER_COMMAND_VEC_ID(
         storagecell_start, getStorageCellStart, setStorageCellStart,
@@ -1951,8 +1955,8 @@ class CmdProxy {
         "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, "
         "you can damage the detector!!!");
 
-    INTEGER_COMMAND_VEC_ID(filtercell, getFilterCell, setFilterCell,
-                           sls::StringTo<int>,
+    INTEGER_COMMAND_VEC_ID(filtercells, getNumberOfFilterCells,
+                           setNumberOfFilterCells, sls::StringTo<int>,
                            "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for "
                            "chipv1.1. Advanced user Command");
 

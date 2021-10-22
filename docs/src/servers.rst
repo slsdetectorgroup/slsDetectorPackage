@@ -36,6 +36,7 @@ Detector Servers include:
 When using a blocking acquire command (sls_detector_acquire or Detector::acquire), the control server is blocked until end of acquisition. However, stop server commands could be used in parallel.
 
 
+.. _Automatic start servers:
 Automatic start 
 ------------------
 

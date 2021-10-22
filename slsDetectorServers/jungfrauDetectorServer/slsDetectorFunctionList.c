@@ -498,7 +498,7 @@ void setupDetector() {
     setFlipRows(DEFAULT_FLIP_ROWS);
     if (getChipVersion() == 11) {
         setFilterResistor(DEFAULT_FILTER_RESISTOR);
-        setFilterCell(DEFAULT_FILTER_CELL);
+        setNumberOfFilterCells(DEFAULT_FILTER_CELL);
     }
     setReadNRows(MAX_ROWS_PER_READOUT);
 }
@@ -842,7 +842,14 @@ int selectStoragecellStart(int pos) {
         offset = CONFIG_V11_STATUS_STRG_CLL_OFST;
     }
 #endif
-    int retval = ((bus_r(addr) & mask) >> offset);
+    uint32_t regval = bus_r(addr);
+#ifndef VIRTUAL
+    // flip all contents of register //TODO FIRMWARE FIX
+    if (getChipVersion() == 11) {
+        regval ^= BIT32_MASK;
+    }
+#endif
+    uint32_t retval = ((regval & mask) >> offset);
     if (getChipVersion() == 11) {
         // get which bit
         int max = getMaxStoragecellStart();
@@ -1822,11 +1829,15 @@ int64_t getComparatorDisableTime() {
 }
 
 void configureASICTimer() {
-    LOG(logINFO, ("Configuring ASIC Timer\n"));
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) |
                              ASIC_CTRL_PRCHRG_TMR_VAL);
-    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) |
-                             ASIC_CTRL_DS_TMR_VAL);
+
+    uint32_t val = ASIC_CTRL_DS_TMR_VAL;
+    if (getChipVersion() == 11) {
+        val = ASIC_CTRL_DS_TMR_CHIP1_1_VAL;
+    }
+    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | val);
+    LOG(logINFO, ("Configured ASIC Timer [0x%x]\n", bus_r(ASIC_CTRL_REG)));
 }
 
 int setReadoutSpeed(int val) {
@@ -2165,7 +2176,7 @@ int getFilterResistor() {
 #else
     uint32_t addr = CONFIG_V11_STATUS_REG;
 #endif
-    // 0 for lower value, 1 for higher value
+    // return 0 for lower value, 1 for higher value
     if (bus_r(addr) & CONFIG_V11_STATUS_FLTR_RSSTR_SMLR_MSK) {
         return 0;
     }
@@ -2191,19 +2202,24 @@ int setFilterResistor(int value) {
     return FAIL;
 }
 
-int getFilterCell() {
+int getNumberOfFilterCells() {
 #ifdef VIRTUAL
     uint32_t addr = CONFIG_V11_REG;
 #else
     uint32_t addr = CONFIG_V11_STATUS_REG;
 #endif
-    uint32_t value =
-        (bus_r(addr) & CONFIG_V11_FLTR_CLL_MSK) >> CONFIG_V11_FLTR_CLL_OFST;
+    uint32_t regval = bus_r(addr);
+#ifndef VIRTUAL
+    // flip all contents of register //TODO FIRMWARE FIX
+    regval ^= BIT32_MASK;
+#endif
+    uint32_t retval =
+        (regval & CONFIG_V11_FLTR_CLL_MSK) >> CONFIG_V11_FLTR_CLL_OFST;
     // count number of bits = which icell
-    return (__builtin_popcount(value));
+    return (__builtin_popcount(retval));
 }
 
-void setFilterCell(int iCell) {
+void setNumberOfFilterCells(int iCell) {
     if (iCell > MAX_FILTER_CELL_VAL) {
         return;
     }
@@ -2220,8 +2236,8 @@ void setFilterCell(int iCell) {
         bus_w(addr, bus_r(addr) | ((value << CONFIG_V11_FLTR_CLL_OFST) &
                                    CONFIG_V11_FLTR_CLL_MSK));
     }
-    LOG(logINFO,
-        ("Setting Filter Cell to %d [Reg:0x%x]\n", iCell, bus_r(addr)));
+    LOG(logINFO, ("Setting Number of Filter Cells to %d [Reg:0x%x]\n", iCell,
+                  bus_r(addr)));
 }
 
 void disableCurrentSource() {

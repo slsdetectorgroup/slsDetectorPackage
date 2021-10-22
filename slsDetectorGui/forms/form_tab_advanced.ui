@@ -1201,7 +1201,7 @@ Exposure Time of a sub frame. Only for Eiger in 32 bit mode
           <bool>false</bool>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt;#&lt;span style=&quot; font-family:'Droid Sans Mono,monospace,monospace,Droid Sans Fallback'; font-size:14px; color:#ce9178;&quot;&gt;extrastoragecells#&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Number of  Storage cells:</string>
@@ -1402,7 +1402,7 @@ Default value is 0. A value less than the required minimum is ignored.
           </size>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt;#&lt;span style=&quot; font-family:'Droid Sans Mono,monospace,monospace,Droid Sans Fallback'; font-size:14px; color:#ce9178;&quot;&gt;extrastoragecells&lt;/span&gt;#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="statusTip">
           <string/>

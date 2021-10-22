@@ -1855,12 +1855,12 @@ void Module::setGainMode(const slsDetectorDefs::gainMode mode) {
     sendToDetector(F_SET_GAIN_MODE, mode, nullptr);
 }
 
-int Module::getFilterCell() const {
-    return sendToDetector<int>(F_GET_FILTER_CELL);
+int Module::getNumberOfFilterCells() const {
+    return sendToDetector<int>(F_GET_NUM_FILTER_CELLS);
 }
 
-void Module::setFilterCell(int value) {
-    sendToDetector(F_SET_FILTER_CELL, value, nullptr);
+void Module::setNumberOfFilterCells(int value) {
+    sendToDetector(F_SET_NUM_FILTER_CELLS, value, nullptr);
 }
 
 // Gotthard Specific

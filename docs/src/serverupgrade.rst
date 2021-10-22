@@ -1,114 +1,44 @@
+.. _Detector Server Upgrade:
 Detector Server Upgrade
 =======================
 
 
-
-Eiger
--------------
-
-
 **Location:** slsDetectorPackage/serverBin/ folder for every release.
 
-
-#. Kill old server and copy new server
-    .. code-block:: bash
-
-        # Option 1: from detector console
-        # kill old server
-        ssh root@bebxxx
-        killall eigerDetectorServer
-
-        # copy new server
-        cd executables
-        scp user@pc:/path/eigerDetectorServerxxx .
-        chmod 777 eigerDetectorServerxxx
-        ln -sf eigerDetectorServerxxx eigerDetectorServer
-        sync
-
-        # Options 2: from client console for multiple modules
-        for i in bebxxx bebyyy;
-        do ssh root@$i killall eigerDetectorServer;
-        scp eigerDetectorServerxxx root@$i:~/executables/eigerDetectorServer;
-        ssh root@$i sync; done
-
-
-#. Reboot the detector.
-
-
-Jungfrau
--------------
-
-**Location:** slsDetectorPackage/serverBin/ folder for every release.
 
 #. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rcx)
+#. Program from console
+
+    .. note :: 
+
+        These instructions are for upgrades from v5.0.0. For earlier versions, contact us.
+
     .. code-block:: bash
 
-        # copies new server from pc tftp folder, respawns and reboots
-        sls_detector_put copydetectorserver jungfrauDetectorServerxxx pcxxx
+        # copies new server from pc tftp folder, creates a soft link to xxxDetectorServerxxx
+        # [Jungfrau][CTB][Moench] also edits initttab to respawn server on reboot
+        # Then, the detector controller will reboot (except Eiger)
+        sls_detector_put copydetectorserver xxxDetectorServerxxx pcxxx
+
+#. Copy the detector server specific config files or any others required to the detector:
+
+   .. code-block:: bash
+
+        sls_detector_put execcommand "tftp pcxxx -r configxxx -g"
 
 
-Gotthard
----------
+.. note :: 
 
-**Location:** slsDetectorPackage/serverBin/ folder for every release.
+    For Mythen3, Gotthard2 and Eiger, you need to add scripts to automatically start detector server upon power on. See :ref:`Automatic start<Automatic start servers>` for more details.
 
-#. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rcx)
-    .. code-block:: bash
+ .. note :: 
 
-        # copies new server from pc tftp folder, respawns and reboots
-        sls_detector_put copydetectorserver gotthardDetectorServerxxx pcxxx
+    Eiger requires a manual reboot. Or killall the servers and restart the new linked one. If you are in the process of updating firmware, then don't reboot yet.
 
 
-
-Mythen3
--------
-
-**Location:** slsDetectorPackage/serverBin/ folder for every release.
-
-#. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rcx)
-    .. code-block:: bash
-
-        # copies new server from pc tftp folder and reboots (does not respawn)
-        sls_detector_put copydetectorserver mythen3DetectorServerxxx pcxxx
-
-
-Gotthard2
-----------
-
-**Location:** slsDetectorPackage/serverBin/ folder for every release.
-
-#. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rcx)
-    .. code-block:: bash
-
-        # copies new server from pc tftp folder and reboots (does not respawn)
-        sls_detector_put copydetectorserver gotthard2DetectorServerxxx pcxxx
-
-
-Moench
+Errors
 ------
 
-**Location:** slsDetectorPackage/serverBin/ folder for every release.
+#. tftp write error: There is no space left. Please delete some old binaries and try again.
 
-#. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rcx)
-    .. code-block:: bash
-
-        # copies new server from pc tftp folder, respawns and reboots
-        sls_detector_put copydetectorserver moenchDetectorServerxxx pcxxx
-
-
-Ctb
----
-
-**Location:** slsDetectorPackage/serverBin/ folder for every release.
-
-#. Install tftp and copy detector server binary to tftp folder
-#. Program from console (only from 5.0.0-rcx)
-    .. code-block:: bash
-
-        # copies new server from pc tftp folder, respawns and reboots
-        sls_detector_put copydetectorserver ctbDetectorServerxxx pcxxx
+#. text file busy: You are trying to copy the same server.

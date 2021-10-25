@@ -1077,24 +1077,35 @@ Result<std::string> Detector::getRxHostname(Positions pos,
 }
 
 // rr added using + at module level
-void Detector::setRxHostname(const std::string &receiver, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverHostname, pos, receiver);
+void Detector::setRxHostname(const std::string &receiver, Positions pos, const int rxIndex) {
+    pimpl->Parallel(&Module::setReceiverHostname, pos, receiver, rxIndex);
     updateRxRateCorrections();
 }
 
-void Detector::setRxHostname(const std::vector<std::string> &name) {
+void Detector::setRxHostname(const std::vector<std::string> &name, Positions pos) {  
     // set all to same rx_hostname
     if (name.size() == 1) {
-        pimpl->Parallel(&Module::setReceiverHostname, {}, name[0]);
+        pimpl->Parallel(&Module::setReceiverHostname, pos, name[0], 0);
     } else {
         /*if ((int)name.size() != size()) {
             throw RuntimeError(
                 "Receiver hostnames size " + std::to_string(name.size()) +
                 " does not match detector size " + std::to_string(size()));
         }*/
-        // set each rx_hostname
-        for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet]);
+        // multi module
+        if ((size() > 1) && (pos.empty() || pos[0] == -1)) {
+            for (int idet = 0; idet < size(); ++idet) {
+                pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet], 0);
+            }
+        } 
+        // setting rr for specific module
+        else {
+            if (pos.empty() || pos[0] == -1) {
+                pimpl->Parallel(&Module::setAllReceiverHostnames, {0}, name);
+            } else {
+                pimpl->Parallel(&Module::setAllReceiverHostnames, {pos}, name);
+            }
+
         }
     }
     updateRxRateCorrections();

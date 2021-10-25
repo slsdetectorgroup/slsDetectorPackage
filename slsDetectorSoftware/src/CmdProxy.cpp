@@ -1464,7 +1464,7 @@ std::string CmdProxy::UDPDestinationIP(int action) {
               "rx_hostname."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        auto t = det->getDestinationUDPIP(std::vector<int>{det_id});
+        auto t = det->getDestinationUDPIP(std::vector<int>{det_id}, rx_id);
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
@@ -1477,11 +1477,11 @@ std::string CmdProxy::UDPDestinationIP(int action) {
             auto val = getIpFromAuto();
             LOG(logINFO) << "Setting udp_dstip of detector " << det_id << " to "
                          << val;
-            det->setDestinationUDPIP(val, std::vector<int>{det_id});
+            det->setDestinationUDPIP(val, std::vector<int>{det_id}, rx_id);
             os << val << '\n';
         } else {
             auto val = IpAddr(args[0]);
-            det->setDestinationUDPIP(val, std::vector<int>{det_id});
+            det->setDestinationUDPIP(val, std::vector<int>{det_id}, rx_id);
             os << args.front() << '\n';
         }
     } else {
@@ -1500,7 +1500,7 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
               "\n\t[Gotthard2] veto debugging. "
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        auto t = det->getDestinationUDPIP2(std::vector<int>{det_id});
+        auto t = det->getDestinationUDPIP2(std::vector<int>{det_id}, rx_id);
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
@@ -1513,11 +1513,11 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
             auto val = getIpFromAuto();
             LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id
                          << " to " << val;
-            det->setDestinationUDPIP2(val, std::vector<int>{det_id});
+            det->setDestinationUDPIP2(val, std::vector<int>{det_id}, rx_id);
             os << val << '\n';
         } else {
             auto val = IpAddr(args[0]);
-            det->setDestinationUDPIP2(val, std::vector<int>{det_id});
+            det->setDestinationUDPIP2(val, std::vector<int>{det_id}, rx_id);
             os << args.front() << '\n';
         }
     } else {
@@ -1578,13 +1578,21 @@ std::string CmdProxy::ReceiverHostname(int action) {
                     throw sls::RuntimeError(
                         "Cannot add multiple receivers at RR level");
                 }
-                auto t = sls::split(args[0], '+');
-                det->setRxHostname(args[0]);
-                os << ToString(args[0]) << '\n';
+                // split it for each module
+                if (det->size() > 1 && det_id == -1) {
+                    auto t = sls::split(args[0], '+');
+                    det->setRxHostname(t);
+                    os << ToString(t) << '\n';
+                } 
+                // for specific module
+                else {
+                    det->setRxHostname(args[0], {det_id});
+                    os << ToString(args[0]) << '\n';
+                }
             }
             // single receiver
             else {
-                det->setRxHostname(args[0], std::vector<int>{det_id});
+                det->setRxHostname(args[0], std::vector<int>{det_id}, rx_id);
                 os << ToString(args) << '\n';
             }
         }

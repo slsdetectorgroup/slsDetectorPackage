@@ -185,6 +185,31 @@
         return os.str();                                                       \
     }
 
+#define INTEGER_COMMAND_VEC_ID_RX(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)          \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            if (!args.empty()) {                                               \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            auto t = det->GETFCN(std::vector<int>{det_id}, rx_id);                    \
+            os << OutString(t) << '\n';                                        \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            auto val = CONV(args[0]);                                          \
+            det->SETFCN(val, std::vector<int>{det_id}, rx_id);                        \
+            os << args.front() << '\n';                                        \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
 /** int or enum */
 #define INTEGER_COMMAND_VEC_ID_PUT_SINGLE_ID(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)      \
     std::string CMDNAME(const int action) {                                    \
@@ -467,6 +492,26 @@
 
 /** get only */
 #define GET_COMMAND(CMDNAME, GETFCN, HLPSTR)                                   \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            if (!args.empty()) {                                               \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            auto t = det->GETFCN(std::vector<int>{det_id});                    \
+            os << OutString(t) << '\n';                                        \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            throw sls::RuntimeError("Cannot put");                             \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+#define GET_COMMAND_RX(CMDNAME, GETFCN, HLPSTR)                                \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
         os << cmd << ' ';                                                      \
@@ -1621,14 +1666,14 @@ class CmdProxy {
                            "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the top "
                            "half or inner (source) udp interface. ");
 
-    INTEGER_COMMAND_VEC_ID(
+    INTEGER_COMMAND_VEC_ID_RX(
         udp_dstmac, getDestinationUDPMAC, setDestinationUDPMAC, MacAddr,
         "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp "
         "interface. Not mandatory to set as udp_dstip retrieves it from "
         "slsReceiver process, but must be set if you use a custom receiver "
         "(not slsReceiver).");
 
-    INTEGER_COMMAND_VEC_ID(
+    INTEGER_COMMAND_VEC_ID_RX(
         udp_dstmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
         "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) "
         "udp interface 2. Not mandatory to set as udp_dstip2 retrieves it from "
@@ -1666,7 +1711,7 @@ class CmdProxy {
         "valid. If not configured, it will throw with error message "
         "requesting missing udp information.");
 
-    GET_COMMAND(rx_printconfig, printRxConfiguration,
+    GET_COMMAND_RX(rx_printconfig, printRxConfiguration,
                 "\n\tPrints the receiver configuration.");
 
     INTEGER_COMMAND_VEC_ID(
@@ -1843,7 +1888,7 @@ class CmdProxy {
         "port). Multi command will automatically increment for individual "
         "modules.");
 
-    INTEGER_COMMAND_VEC_ID(
+    INTEGER_COMMAND_VEC_ID_RX(
         rx_zmqip, getRxZmqIP, setRxZmqIP, IpAddr,
         "[x.x.x.x]\n\tZmq Ip Address from which data is to be streamed out of "
         "the receiver. Also restarts receiver zmq streaming if enabled. "

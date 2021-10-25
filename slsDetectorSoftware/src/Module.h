@@ -272,7 +272,8 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
     bool getUseReceiverFlag() const;
     std::string getReceiverHostname(const int rxIndex) const;
-    void setReceiverHostname(const std::string &receiver);
+    void setAllReceiverHostnames(const std::vector<std::string> &receiver);
+    void setReceiverHostname(const std::string &receiver, const int rxIndex);
     int getReceiverPort(const int rxIndex) const;
     int setReceiverPort(int port_number, const int rxIndex);
     int getReceiverFifoDepth() const;

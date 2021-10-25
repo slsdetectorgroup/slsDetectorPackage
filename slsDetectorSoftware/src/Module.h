@@ -332,7 +332,7 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverStreamingStartingFrame(int fnum);
     int getReceiverStreamingPort() const;
     void setReceiverStreamingPort(int port);
-    sls::IpAddr getReceiverStreamingIP() const;
+    sls::IpAddr getReceiverStreamingIP(const int rxIndex) const;
     void setReceiverStreamingIP(const sls::IpAddr ip, const int rxIndex);
     int getClientStreamingPort() const;
     void setClientStreamingPort(int port);

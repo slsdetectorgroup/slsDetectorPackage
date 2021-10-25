@@ -825,10 +825,14 @@ class Detector {
      * Also updates receiver with detector parameters. \n Also resets any prior
      * receiver property (not on detector). \n receiver is receiver hostname or
      * IP address, can include tcp port eg. hostname:port
+     * 
+     * rxIndex of -1 is rewritten as 0 (for backwards compatibility)
      */
     void setRxHostname(const std::string &receiver, Positions pos = {}, const int rxIndex = 0);
 
-    /** single element assumes only one receiver per module. If multiple element and position for multi module, each element for each module */
+    /** - single element, assumes rxIndex is 0 (for backwards compatibility). 
+     * - muliple element with pos empty or -1, sets each element for each module (1:1 for backwards compatibility, rxIndex = 0)
+     * multiple element for specific position, each element for each RR rxr */
     void setRxHostname(const std::vector<std::string> &name, Positions pos);
 
     Result<int> getRxPort(Positions pos = {}, const int rx_index = 0) const;
@@ -1008,7 +1012,8 @@ class Detector {
      */
     void setRxZmqPort(int port, int module_id = -1);
 
-    Result<IpAddr> getRxZmqIP(Positions pos = {}) const;
+    Result<IpAddr> getRxZmqIP(Positions pos = {},
+                    const int rx_index = 0) const;
 
     /** Zmq Ip Address from which data is to be streamed out of the receiver. \n
      * Also restarts receiver zmq streaming if enabled. \n Default is from

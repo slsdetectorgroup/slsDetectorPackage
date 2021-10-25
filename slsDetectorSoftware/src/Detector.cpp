@@ -1078,35 +1078,30 @@ Result<std::string> Detector::getRxHostname(Positions pos,
 
 // rr added using + at module level
 void Detector::setRxHostname(const std::string &receiver, Positions pos, const int rxIndex) {
-    pimpl->Parallel(&Module::setReceiverHostname, pos, receiver, rxIndex);
+    // for backwards compatibility
+    if (rxIndex == -1) {
+        pimpl->Parallel(&Module::setReceiverHostname, pos, receiver, 0);
+    } else {
+        pimpl->Parallel(&Module::setReceiverHostname, pos, receiver, rxIndex);
+    }
     updateRxRateCorrections();
 }
 
 void Detector::setRxHostname(const std::vector<std::string> &name, Positions pos) {  
-    // set all to same rx_hostname
-    if (name.size() == 1) {
-        pimpl->Parallel(&Module::setReceiverHostname, pos, name[0], 0);
-    } else {
-        /*if ((int)name.size() != size()) {
+    // multi module (backwards compatibility: every element for every module)
+    if (name.size() > 1 && ((pos.empty() || pos[0] == -1))) {
+        if ((int)name.size() != size()) {
             throw RuntimeError(
                 "Receiver hostnames size " + std::to_string(name.size()) +
                 " does not match detector size " + std::to_string(size()));
-        }*/
-        // multi module
-        if ((size() > 1) && (pos.empty() || pos[0] == -1)) {
-            for (int idet = 0; idet < size(); ++idet) {
-                pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet], 0);
-            }
-        } 
-        // setting rr for specific module
-        else {
-            if (pos.empty() || pos[0] == -1) {
-                pimpl->Parallel(&Module::setAllReceiverHostnames, {0}, name);
-            } else {
-                pimpl->Parallel(&Module::setAllReceiverHostnames, {pos}, name);
-            }
-
         }
+        for (int idet = 0; idet < size(); ++idet) {
+            pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet], 0);
+        }
+    } 
+    // setting rr for specific module (backwards compaibility: single element is only for 0th RR)
+    else {
+        pimpl->Parallel(&Module::setAllReceiverHostnames, {pos}, name);
     }
     updateRxRateCorrections();
 }
@@ -1316,8 +1311,8 @@ void Detector::setRxZmqPort(int port, int module_id) {
     }
 }
 
-Result<IpAddr> Detector::getRxZmqIP(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverStreamingIP, pos);
+Result<IpAddr> Detector::getRxZmqIP(Positions pos, const int rx_index) const {
+    return pimpl->Parallel(&Module::getReceiverStreamingIP, pos, rx_index);
 }
 
 void Detector::setRxZmqIP(const IpAddr ip, Positions pos, const int rx_index) {

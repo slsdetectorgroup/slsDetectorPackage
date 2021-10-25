@@ -195,7 +195,7 @@
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
-            auto t = det->GETFCN(std::vector<int>{det_id}, rx_id);                    \
+            auto t = det->GETFCN(std::vector<int>{det_id}, rx_id);             \
             os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \

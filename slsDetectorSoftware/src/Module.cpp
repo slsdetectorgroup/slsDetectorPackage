@@ -1277,12 +1277,18 @@ void Module::setAllReceiverHostnames(const std::vector<std::string> &receiver) {
 }
 
 void Module::setReceiverHostname(const std::string &receiverIP, const int rxIndex) {
-    LOG(logDEBUG1) << "Setting up Receiver " << rxIndex << " with " << receiverIP;
-
+    if (rxIndex < 0 || rxIndex >= MAX_UDP_DESTINATION) {
+        throw RuntimeError(std::string("Invalid receiver Index") + std::to_string(rxIndex));
+    }
+    
     if (getRunStatus() == RUNNING) {
         throw RuntimeError(
             "Cannot set rx hostname when detector is acquiring.");
     }
+
+    LOG(logDEBUG1) << "Setting up Receiver " << rxIndex << " with " << receiverIP;
+
+
 
     // clear current receiver for current module
     memset(shm()->receivers[rxIndex].hostname, 0, MAX_STR_LENGTH);
@@ -1606,8 +1612,7 @@ void Module::setReceiverStreamingPort(int port) {
     sendToReceiver(rxIndex, F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
 }
 
-sls::IpAddr Module::getReceiverStreamingIP() const {
-    const int rxIndex = 0;
+sls::IpAddr Module::getReceiverStreamingIP(const int rxIndex) const {
     return sendToReceiver<sls::IpAddr>(rxIndex,
                                        F_GET_RECEIVER_STREAMING_SRC_IP);
 }
@@ -3423,7 +3428,7 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
 
 // TODO Will need to update to each round robin entry
 void Module::updateReceiverStreamingIP(const int rxIndex) {
-    auto ip = getReceiverStreamingIP();
+    auto ip = getReceiverStreamingIP(rxIndex);
     if (ip == 0) {
         // Hostname could be ip try to decode otherwise look up the hostname
         ip = sls::IpAddr{shm()->receivers[rxIndex].hostname};

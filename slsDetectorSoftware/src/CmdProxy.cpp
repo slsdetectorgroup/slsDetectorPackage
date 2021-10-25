@@ -1553,41 +1553,49 @@ std::string CmdProxy::ReceiverHostname(int action) {
         }
         // multiple arguments
         if (args.size() > 1) {
-            // multiple in mulitple
+            if (rx_id != -1) {
+                throw sls::RuntimeError(
+                "Cannot add multiple receivers at RR level");
+            }
+            // multiple arguments (multiple rxr each)// backwards compatibility
             if (args[0].find('+') != std::string::npos) {
-                throw sls::RuntimeError(
-                    "Cannot add multiple receivers at module level");
+                if (det_id != -1) {
+                    throw sls::RuntimeError(
+                    "Cannot add multiple receivers for multiple modules at module level");
+                }             
+                for (int i = 0; i < (int)args.size(); ++i) {
+                    auto t = sls::split(args[i], '+');
+                    det->setRxHostname(t, {i});
+                    os << ToString(t) << '\n';
+                }
             }
-            if (det_id != -1) {
-                throw sls::RuntimeError(
-                    "Cannot add multiple receivers at module level");
+            // multiple arguments (single rxr each) (for both: each module and RR)
+            else {
+                det->setRxHostname(args, {det_id});
+                os << ToString(args) << '\n';
             }
-            det->setRxHostname(args);
-            os << ToString(args) << '\n';
         }
         // single argument
         else {
             // multiple receivers concatenated with +
             if (args[0].find('+') != std::string::npos) {
-                // allowing multiple receivers at module level
-                /*if (det_id != -1) {
-                    throw sls::RuntimeError(
-                        "Cannot add multiple receivers at module level");
-                }*/
-                if (rx_id != -1) {
-                    throw sls::RuntimeError(
-                        "Cannot add multiple receivers at RR level");
+                auto t = sls::split(args[0], '+');
+                if (t.size() <= 0) {
+                    throw sls::RuntimeError("Invalid argument for rx_hostname");
                 }
-                // split it for each module
-                if (det->size() > 1 && det_id == -1) {
-                    auto t = sls::split(args[0], '+');
-                    det->setRxHostname(t);
-                    os << ToString(t) << '\n';
+                // single receiver
+                if (t.size() == 1) {
+                    det->setRxHostname(t[0], std::vector<int>{det_id});
+                    os << ToString(t[0]) << '\n';
                 } 
-                // for specific module
+                // multiple receivers
                 else {
-                    det->setRxHostname(args[0], {det_id});
-                    os << ToString(args[0]) << '\n';
+                    if (rx_id != -1) {
+                        throw sls::RuntimeError(
+                        "Cannot add multiple receivers at RR level");
+                    }
+                    det->setRxHostname(t, {det_id});
+                    os << ToString(t) << '\n';                    
                 }
             }
             // single receiver

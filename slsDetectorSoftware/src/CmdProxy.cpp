@@ -1444,7 +1444,7 @@ std::string CmdProxy::UDPDestinationList(int action) {
         }
         if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
             throw sls::RuntimeError(
-                "Invalid receiver index to set round robin entry.");
+                std::string("Invalid receiver index ") + std::to_string(rx_id) + std::string(" to set round robin entry."));
         }
         auto t = getUdpEntry();
         det->setDestinationUDPList(t, det_id);
@@ -1579,8 +1579,8 @@ std::string CmdProxy::ReceiverHostname(int action) {
                         "Cannot add multiple receivers at RR level");
                 }
                 auto t = sls::split(args[0], '+');
-                det->setRxHostname(t);
-                os << ToString(t) << '\n';
+                det->setRxHostname(args[0]);
+                os << ToString(args[0]) << '\n';
             }
             // single receiver
             else {

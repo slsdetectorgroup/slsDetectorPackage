@@ -87,7 +87,7 @@ void Detector::loadParameters(const std::vector<std::string> &parameters) {
     for (const auto &current_line : parameters) {
         parser.Parse(current_line);
         proxy.Call(parser.command(), parser.arguments(), parser.detector_id(),
-                   defs::PUT_ACTION);
+                   defs::PUT_ACTION, std::cout, parser.receiver_id());
     }
 }
 
@@ -1087,11 +1087,11 @@ void Detector::setRxHostname(const std::vector<std::string> &name) {
     if (name.size() == 1) {
         pimpl->Parallel(&Module::setReceiverHostname, {}, name[0]);
     } else {
-        if ((int)name.size() != size()) {
+        /*if ((int)name.size() != size()) {
             throw RuntimeError(
                 "Receiver hostnames size " + std::to_string(name.size()) +
                 " does not match detector size " + std::to_string(size()));
-        }
+        }*/
         // set each rx_hostname
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet]);

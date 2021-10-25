@@ -1281,8 +1281,7 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
     std::vector<std::string> list;
     // many rx hostames concatenated with + (RR)
     if (receiverIP.find('+') != std::string::npos) {
-        auto t = sls::split(receiverIP, '+');
-        list.push_back(t);
+        list = sls::split(receiverIP, '+');
     } else {
         list.push_back(receiverIP);
     }
@@ -1294,8 +1293,9 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
     }
 
     // start updating
-    for (int i = 0; i != list.size(); ++i) {
-        std::string host = receiverIP;
+    for (size_t i = 0; i != list.size(); ++i) {
+        LOG(logINFOBLUE) << i << ": " << list[i];
+        std::string host = list[i];
         auto res = sls::split(host, ':');
         if (res.size() > 1) {
             host = res[0];
@@ -1319,18 +1319,21 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
 
         sls::MacAddr retvals[2];
         sendToReceiver(i, F_SETUP_RECEIVER, retval, retvals);
-        // update Modules with dest mac
-        if (retval.udp_dstmac == 0 && retvals[0] != 0) {
-            LOG(logINFO) << "Setting destination udp mac of "
-                            "Module "
-                         << moduleIndex << " to " << retvals[0];
-            sendToDetector(F_SET_DEST_UDP_MAC, retvals[0], nullptr);
-        }
-        if (retval.udp_dstmac2 == 0 && retvals[1] != 0) {
-            LOG(logINFO) << "Setting destination udp mac2 of "
-                            "Module "
-                         << moduleIndex << " to " << retvals[1];
-            sendToDetector(F_SET_DEST_UDP_MAC2, retvals[1], nullptr);
+
+        if (i == 0) {
+            // update Modules with dest mac
+            if (retval.udp_dstmac == 0 && retvals[0] != 0) {
+                LOG(logINFO) << "Setting destination udp mac of "
+                                "Module "
+                            << moduleIndex << " to " << retvals[0];
+                sendToDetector(F_SET_DEST_UDP_MAC, retvals[0], nullptr);
+            }
+            if (retval.udp_dstmac2 == 0 && retvals[1] != 0) {
+                LOG(logINFO) << "Setting destination udp mac2 of "
+                                "Module "
+                            << moduleIndex << " to " << retvals[1];
+                sendToDetector(F_SET_DEST_UDP_MAC2, retvals[1], nullptr);
+            }
         }
 
         shm()->numUDPInterfaces = retval.udpInterfaces;

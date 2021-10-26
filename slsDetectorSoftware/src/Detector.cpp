@@ -1077,7 +1077,8 @@ Result<std::string> Detector::getRxHostname(Positions pos,
 }
 
 // rr added using + at module level
-void Detector::setRxHostname(const std::string &receiver, Positions pos, const int rxIndex) {
+void Detector::setRxHostname(const std::string &receiver, Positions pos,
+                             const int rxIndex) {
     // for backwards compatibility
     if (rxIndex == -1) {
         pimpl->Parallel(&Module::setReceiverHostname, pos, receiver, 0);
@@ -1087,7 +1088,8 @@ void Detector::setRxHostname(const std::string &receiver, Positions pos, const i
     updateRxRateCorrections();
 }
 
-void Detector::setRxHostname(const std::vector<std::string> &name, Positions pos) {  
+void Detector::setRxHostname(const std::vector<std::string> &name,
+                             Positions pos) {
     // multi module (backwards compatibility: every element for every module)
     if (name.size() > 1 && ((pos.empty() || pos[0] == -1))) {
         if ((int)name.size() != size()) {
@@ -1096,10 +1098,12 @@ void Detector::setRxHostname(const std::vector<std::string> &name, Positions pos
                 " does not match detector size " + std::to_string(size()));
         }
         for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet], 0);
+            pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet],
+                            0);
         }
-    } 
-    // setting rr for specific module (backwards compaibility: single element is only for 0th RR)
+    }
+    // setting rr for specific module (backwards compaibility: single element is
+    // only for 0th RR)
     else {
         pimpl->Parallel(&Module::setAllReceiverHostnames, {pos}, name);
     }

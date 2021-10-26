@@ -1015,9 +1015,14 @@ void Module::setFirstUDPDestination(const int value) {
 }
 
 sls::IpAddr Module::getDestinationUDPIP(const int rxIndex) const {
+    if (rxIndex < 0 || rxIndex >= MAX_UDP_DESTINATION) {
+        throw RuntimeError("Invalid receiver index");
+    }
+
     if (rxIndex == 0) {
         return sendToDetector<sls::IpAddr>(F_GET_DEST_UDP_IP);
     }
+
     auto t = getDestinationUDPList(rxIndex);
     return t.ip;
 }
@@ -1027,29 +1032,37 @@ void Module::setDestinationUDPIP(const IpAddr ip, const int rxIndex) {
         throw RuntimeError("Invalid destination udp ip address");
     }
 
-    if (rxIndex == 0) {
-        sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr);
-    } else {
-        auto t = getDestinationUDPList(rxIndex);
-        t.ip = ip;
-        setDestinationUDPList(t);
-    }
-    if (shm()->useReceiverFlag) {
-        sls::MacAddr retval(0LU);
-        sendToReceiver(rxIndex, F_SET_RECEIVER_UDP_IP, ip, retval);
-        LOG(logINFO) << "Setting destination udp mac of Module [" << moduleIndex
-                     << ", " << rxIndex << "] to " << retval;
-        if (rxIndex == 0) {
-            sendToDetector(F_SET_DEST_UDP_MAC, retval, nullptr);
+    std::vector<int> entries = getEntryList(rxIndex);
+    for (int iEntry = 0; iEntry != (int)entries.size(); ++iEntry) {
+        if (entries[iEntry] == 0) {
+            sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr);
         } else {
-            auto t = getDestinationUDPList(rxIndex);
-            t.mac = retval;
+            auto t = getDestinationUDPList(entries[iEntry]);
+            t.ip = ip;
             setDestinationUDPList(t);
+        }
+        if (shm()->useReceiverFlag) {
+            sls::MacAddr retval(0LU);
+            sendToReceiver(entries[iEntry], F_SET_RECEIVER_UDP_IP, ip, retval);
+            LOG(logINFO) << "Setting destination udp mac of Module ["
+                         << moduleIndex << ", " << entries[iEntry] << "] to "
+                         << retval;
+            if (entries[iEntry] == 0) {
+                sendToDetector(F_SET_DEST_UDP_MAC, retval, nullptr);
+            } else {
+                auto t = getDestinationUDPList(entries[iEntry]);
+                t.mac = retval;
+                setDestinationUDPList(t);
+            }
         }
     }
 }
 
 sls::IpAddr Module::getDestinationUDPIP2(const int rxIndex) const {
+    if (rxIndex < 0 || rxIndex >= MAX_UDP_DESTINATION) {
+        throw RuntimeError("Invalid receiver index");
+    }
+
     if (rxIndex == 0) {
         return sendToDetector<sls::IpAddr>(F_GET_DEST_UDP_IP2);
     }
@@ -1063,30 +1076,38 @@ void Module::setDestinationUDPIP2(const IpAddr ip, const int rxIndex) {
         throw RuntimeError("Invalid destination udp ip address2");
     }
 
-    if (rxIndex == 0) {
-        sendToDetector(F_SET_DEST_UDP_IP2, ip, nullptr);
-    } else {
-        auto t = getDestinationUDPList(rxIndex);
-        t.ip2 = ip;
-        setDestinationUDPList(t);
-    }
-
-    if (shm()->useReceiverFlag) {
-        sls::MacAddr retval(0LU);
-        sendToReceiver(rxIndex, F_SET_RECEIVER_UDP_IP2, ip, retval);
-        LOG(logINFO) << "Setting destination udp mac2 of Module " << moduleIndex
-                     << " to " << retval;
-        if (rxIndex == 0) {
-            sendToDetector(F_SET_DEST_UDP_MAC2, retval, nullptr);
+    std::vector<int> entries = getEntryList(rxIndex);
+    for (int iEntry = 0; iEntry != (int)entries.size(); ++iEntry) {
+        if (entries[iEntry] == 0) {
+            sendToDetector(F_SET_DEST_UDP_IP2, ip, nullptr);
         } else {
-            auto t = getDestinationUDPList(rxIndex);
-            t.mac2 = retval;
+            auto t = getDestinationUDPList(entries[iEntry]);
+            t.ip2 = ip;
             setDestinationUDPList(t);
+        }
+
+        if (shm()->useReceiverFlag) {
+            sls::MacAddr retval(0LU);
+            sendToReceiver(entries[iEntry], F_SET_RECEIVER_UDP_IP2, ip, retval);
+            LOG(logINFO) << "Setting destination udp mac2 of Module "
+                         << moduleIndex << ", " << entries[iEntry] << "] to "
+                         << retval;
+            if (entries[iEntry] == 0) {
+                sendToDetector(F_SET_DEST_UDP_MAC2, retval, nullptr);
+            } else {
+                auto t = getDestinationUDPList(entries[iEntry]);
+                t.mac2 = retval;
+                setDestinationUDPList(t);
+            }
         }
     }
 }
 
 sls::MacAddr Module::getDestinationUDPMAC(const int rxIndex) const {
+    if (rxIndex < 0 || rxIndex >= MAX_UDP_DESTINATION) {
+        throw RuntimeError("Invalid receiver index");
+    }
+
     if (rxIndex == 0) {
         return sendToDetector<sls::MacAddr>(F_GET_DEST_UDP_MAC);
     }
@@ -1098,16 +1119,23 @@ void Module::setDestinationUDPMAC(const MacAddr mac, const int rxIndex) {
     if (mac == 0) {
         throw RuntimeError("Invalid destination udp mac address");
     }
-    if (rxIndex == 0) {
-        sendToDetector(F_SET_DEST_UDP_MAC, mac, nullptr);
-    } else {
-        auto t = getDestinationUDPList(rxIndex);
-        t.mac = mac;
-        setDestinationUDPList(t);
+    std::vector<int> entries = getEntryList(rxIndex);
+    for (int iEntry = 0; iEntry != (int)entries.size(); ++iEntry) {
+        if (entries[iEntry] == 0) {
+            sendToDetector(F_SET_DEST_UDP_MAC, mac, nullptr);
+        } else {
+            auto t = getDestinationUDPList(entries[iEntry]);
+            t.mac = mac;
+            setDestinationUDPList(t);
+        }
     }
 }
 
 sls::MacAddr Module::getDestinationUDPMAC2(const int rxIndex) const {
+    if (rxIndex < 0 || rxIndex >= MAX_UDP_DESTINATION) {
+        throw RuntimeError("Invalid receiver index");
+    }
+
     if (rxIndex == 0) {
         return sendToDetector<sls::MacAddr>(F_GET_DEST_UDP_MAC2);
     }
@@ -1119,16 +1147,22 @@ void Module::setDestinationUDPMAC2(const MacAddr mac, const int rxIndex) {
     if (mac == 0) {
         throw RuntimeError("Invalid desinaion udp mac address2");
     }
-    if (rxIndex == 0) {
-        sendToDetector(F_SET_DEST_UDP_MAC2, mac, nullptr);
-    } else {
-        auto t = getDestinationUDPList(rxIndex);
-        t.mac2 = mac;
-        setDestinationUDPList(t);
+    std::vector<int> entries = getEntryList(rxIndex);
+    for (int iEntry = 0; iEntry != (int)entries.size(); ++iEntry) {
+        if (entries[iEntry] == 0) {
+            sendToDetector(F_SET_DEST_UDP_MAC2, mac, nullptr);
+        } else {
+            auto t = getDestinationUDPList(entries[iEntry]);
+            t.mac2 = mac;
+            setDestinationUDPList(t);
+        }
     }
 }
 
 int Module::getDestinationUDPPort(const int rxIndex) const {
+    if (rxIndex < 0 || rxIndex >= MAX_UDP_DESTINATION) {
+        throw RuntimeError("Invalid receiver index");
+    }
     if (rxIndex == 0) {
         return sendToDetector<int>(F_GET_DEST_UDP_PORT);
     }
@@ -1137,19 +1171,26 @@ int Module::getDestinationUDPPort(const int rxIndex) const {
 }
 
 void Module::setDestinationUDPPort(const int port, const int rxIndex) {
-    if (rxIndex == 0) {
-        sendToDetector(F_SET_DEST_UDP_PORT, port, nullptr);
-    } else {
-        auto t = getDestinationUDPList(rxIndex);
-        t.port = port;
-        setDestinationUDPList(t);
-    }
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(rxIndex, F_SET_RECEIVER_UDP_PORT, port, nullptr);
+    std::vector<int> entries = getEntryList(rxIndex);
+    for (int iEntry = 0; iEntry != (int)entries.size(); ++iEntry) {
+        if (entries[iEntry] == 0) {
+            sendToDetector(F_SET_DEST_UDP_PORT, port, nullptr);
+        } else {
+            auto t = getDestinationUDPList(entries[iEntry]);
+            t.port = port;
+            setDestinationUDPList(t);
+        }
+        if (shm()->useReceiverFlag) {
+            sendToReceiver(entries[iEntry], F_SET_RECEIVER_UDP_PORT, port,
+                           nullptr);
+        }
     }
 }
 
 int Module::getDestinationUDPPort2(const int rxIndex) const {
+    if (rxIndex < 0 || rxIndex >= MAX_UDP_DESTINATION) {
+        throw RuntimeError("Invalid receiver index");
+    }
     if (rxIndex == 0) {
         return sendToDetector<int>(F_GET_DEST_UDP_PORT2);
     }
@@ -1158,15 +1199,19 @@ int Module::getDestinationUDPPort2(const int rxIndex) const {
 }
 
 void Module::setDestinationUDPPort2(const int port, const int rxIndex) {
-    if (rxIndex == 0) {
-        sendToDetector(F_SET_DEST_UDP_PORT2, port, nullptr);
-    } else {
-        auto t = getDestinationUDPList(rxIndex);
-        t.port2 = port;
-        setDestinationUDPList(t);
-    }
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(rxIndex, F_SET_RECEIVER_UDP_PORT2, port, nullptr);
+    std::vector<int> entries = getEntryList(rxIndex);
+    for (int iEntry = 0; iEntry != (int)entries.size(); ++iEntry) {
+        if (entries[iEntry] == 0) {
+            sendToDetector(F_SET_DEST_UDP_PORT2, port, nullptr);
+        } else {
+            auto t = getDestinationUDPList(entries[iEntry]);
+            t.port2 = port;
+            setDestinationUDPList(t);
+        }
+        if (shm()->useReceiverFlag) {
+            sendToReceiver(entries[iEntry], F_SET_RECEIVER_UDP_PORT2, port,
+                           nullptr);
+        }
     }
 }
 
@@ -1178,30 +1223,33 @@ void Module::validateUDPConfiguration() {
 
 std::string Module::printReceiverConfiguration(const int rxIndex) {
     std::ostringstream os;
-    os << "\n\nModule " << moduleIndex << "\nReceiver [" << rxIndex
-       << "] Hostname:\t" << getReceiverHostname(rxIndex);
+    std::vector<int> entries = getEntryList(rxIndex);
+    for (int iEntry = 0; iEntry != (int)entries.size(); ++iEntry) {
+        os << "\n\nModule " << moduleIndex << "\nReceiver [" << entries[iEntry]
+           << "] Hostname:\t" << getReceiverHostname(entries[iEntry]);
 
-    if (shm()->detType == JUNGFRAU) {
-        os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfaces()
-           << "\nSelected Interface:\t" << getSelectedUDPInterface();
-    }
-    auto t = getDestinationUDPList(rxIndex);
+        if (shm()->detType == JUNGFRAU) {
+            os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfaces()
+               << "\nSelected Interface:\t" << getSelectedUDPInterface();
+        }
+        auto t = getDestinationUDPList(entries[iEntry]);
 
-    os << "\nSource UDP IP:\t" << getSourceUDPIP() << "\nSource UDP MAC:\t"
-       << getSourceUDPMAC() << "\nDestination UDP IP:\t" << t.ip
-       << "\nDestination UDP MAC:\t" << t.mac;
+        os << "\nSource UDP IP:\t" << getSourceUDPIP() << "\nSource UDP MAC:\t"
+           << getSourceUDPMAC() << "\nDestination UDP IP:\t" << t.ip
+           << "\nDestination UDP MAC:\t" << t.mac;
 
-    if (shm()->detType == JUNGFRAU) {
-        os << "\nSource UDP IP2:\t" << getSourceUDPIP2()
-           << "\nSource UDP MAC2:\t" << getSourceUDPMAC2()
-           << "\nDestination UDP IP2:\t" << t.ip2 << "\nDestination UDP MAC2:\t"
-           << t.mac2;
+        if (shm()->detType == JUNGFRAU) {
+            os << "\nSource UDP IP2:\t" << getSourceUDPIP2()
+               << "\nSource UDP MAC2:\t" << getSourceUDPMAC2()
+               << "\nDestination UDP IP2:\t" << t.ip2
+               << "\nDestination UDP MAC2:\t" << t.mac2;
+        }
+        os << "\nDestination UDP Port:\t" << t.port;
+        if (shm()->detType == JUNGFRAU || shm()->detType == EIGER) {
+            os << "\nDestination UDP Port2:\t" << t.port2;
+        }
+        os << "\n";
     }
-    os << "\nDestination UDP Port:\t" << t.port;
-    if (shm()->detType == JUNGFRAU || shm()->detType == EIGER) {
-        os << "\nDestination UDP Port2:\t" << t.port2;
-    }
-    os << "\n";
     return os.str();
 }
 
@@ -1267,7 +1315,9 @@ void Module::setAllReceiverHostnames(const std::vector<std::string> &receiver) {
     } else {
         if (receiver.size() >= MAX_UDP_DESTINATION) {
             std::ostringstream oss;
-            oss << "Receiver hostnames size " << receiver.size() << " exceeded max " << MAX_UDP_DESTINATION << " entries allowed.";
+            oss << "Receiver hostnames size " << receiver.size()
+                << " exceeded max " << MAX_UDP_DESTINATION
+                << " entries allowed.";
             throw RuntimeError(oss.str());
         }
         for (size_t irr = 0; irr < receiver.size(); ++irr) {
@@ -1276,19 +1326,20 @@ void Module::setAllReceiverHostnames(const std::vector<std::string> &receiver) {
     }
 }
 
-void Module::setReceiverHostname(const std::string &receiverIP, const int rxIndex) {
+void Module::setReceiverHostname(const std::string &receiverIP,
+                                 const int rxIndex) {
     if (rxIndex < 0 || rxIndex >= MAX_UDP_DESTINATION) {
-        throw RuntimeError(std::string("Invalid receiver Index") + std::to_string(rxIndex));
+        throw RuntimeError(std::string("Invalid receiver Index") +
+                           std::to_string(rxIndex));
     }
-    
+
     if (getRunStatus() == RUNNING) {
         throw RuntimeError(
             "Cannot set rx hostname when detector is acquiring.");
     }
 
-    LOG(logDEBUG1) << "Setting up Receiver " << rxIndex << " with " << receiverIP;
-
-
+    LOG(logDEBUG1) << "Setting up Receiver " << rxIndex << " with "
+                   << receiverIP;
 
     // clear current receiver for current module
     memset(shm()->receivers[rxIndex].hostname, 0, MAX_STR_LENGTH);
@@ -1338,13 +1389,13 @@ void Module::setReceiverHostname(const std::string &receiverIP, const int rxInde
         if (retval.udp_dstmac == 0 && retvals[0] != 0) {
             LOG(logINFO) << "Setting destination udp mac of "
                             "Module "
-                        << moduleIndex << " to " << retvals[0];
+                         << moduleIndex << " to " << retvals[0];
             sendToDetector(F_SET_DEST_UDP_MAC, retvals[0], nullptr);
         }
         if (retval.udp_dstmac2 == 0 && retvals[1] != 0) {
             LOG(logINFO) << "Setting destination udp mac2 of "
                             "Module "
-                        << moduleIndex << " to " << retvals[1];
+                         << moduleIndex << " to " << retvals[1];
             sendToDetector(F_SET_DEST_UDP_MAC2, retvals[1], nullptr);
         }
     }
@@ -1356,14 +1407,19 @@ void Module::setReceiverHostname(const std::string &receiverIP, const int rxInde
 }
 
 int Module::getReceiverPort(const int rxIndex) const {
+    if (rxIndex < 0 || rxIndex >= MAX_UDP_DESTINATION) {
+        throw RuntimeError("Invalid receiver index");
+    }
     return shm()->receivers[rxIndex].tcpPort;
 }
 
-int Module::setReceiverPort(int port_number, const int rxIndex) {
-    if (port_number >= 0 && port_number != shm()->receivers[rxIndex].tcpPort) {
-        shm()->receivers[rxIndex].tcpPort = port_number;
+void Module::setReceiverPort(int port_number, const int rxIndex) {
+    std::vector<int> entries = getEntryList(rxIndex);
+    for (int iEntry = 0; iEntry != (int)entries.size(); ++iEntry) {
+        if (port_number >= 0) {
+            shm()->receivers[entries[iEntry]].tcpPort = port_number;
+        }
     }
-    return shm()->receivers[rxIndex].tcpPort;
 }
 
 int Module::getReceiverFifoDepth() const {
@@ -1613,6 +1669,9 @@ void Module::setReceiverStreamingPort(int port) {
 }
 
 sls::IpAddr Module::getReceiverStreamingIP(const int rxIndex) const {
+    if (rxIndex < 0 || rxIndex >= MAX_UDP_DESTINATION) {
+        throw RuntimeError("Invalid receiver index");
+    }
     return sendToReceiver<sls::IpAddr>(rxIndex,
                                        F_GET_RECEIVER_STREAMING_SRC_IP);
 }
@@ -1625,7 +1684,11 @@ void Module::setReceiverStreamingIP(const sls::IpAddr ip, const int rxIndex) {
     if (shm()->zmqip == 0) {
         shm()->zmqip = ip;
     }
-    sendToReceiver(rxIndex, F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
+    std::vector<int> entries = getEntryList(rxIndex);
+    for (int iEntry = 0; iEntry != (int)entries.size(); ++iEntry) {
+        sendToReceiver(entries[iEntry], F_SET_RECEIVER_STREAMING_SRC_IP, ip,
+                       nullptr);
+    }
 }
 
 int Module::getClientStreamingPort() const { return shm()->zmqport; }
@@ -2975,13 +3038,14 @@ Ret Module::sendToDetector(int fnum, const Arg &args) {
     return static_cast<const Module &>(*this).sendToDetector<Ret>(fnum, args);
 }
 
-//---------------------------------------------------------- sendToDetectorStop
+//----------------------------------------------------------
+// sendToDetectorStop
 
 void Module::sendToDetectorStop(int fnum, const void *args, size_t args_size,
                                 void *retval, size_t retval_size) const {
-    // This is the only function that actually sends data to the detector stop
-    // the other versions use templates to deduce sizes and create
-    // the return type
+    // This is the only function that actually sends data to the detector
+    // stop the other versions use templates to deduce sizes and create the
+    // return type
     checkArgs(args, args_size, retval, retval_size);
     auto stop = DetectorSocket(shm()->hostname, shm()->stopPort);
     stop.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
@@ -3091,7 +3155,29 @@ Ret Module::sendToDetectorStop(int fnum, const Arg &args) {
                                                                       args);
 }
 
-//-------------------------------------------------------------- sendToReceiver
+//--------------------------------------------------------------
+// sendToReceiver
+
+std::vector<int> Module::getEntryList(const int rxIndex) const {
+    if (rxIndex >= MAX_UDP_DESTINATION) {
+        throw RuntimeError("Invalid destination index " +
+                           std::to_string(rxIndex));
+    }
+    std::vector<int> list;
+    int startReceiver = 0;
+    int endReceiver = MAX_UDP_DESTINATION;
+    if (rxIndex >= 0) {
+        startReceiver = rxIndex;
+        endReceiver = rxIndex + 1;
+    }
+    for (int i = startReceiver; i != endReceiver; ++i) {
+        if (!strcmp(shm()->receivers[i].hostname, "none")) {
+            continue;
+        }
+        list.push_back(i);
+    }
+    return list;
+}
 
 void Module::sendToReceiver(const int rxIndex, int fnum, const void *args,
                             size_t args_size, void *retval,
@@ -3106,32 +3192,24 @@ void Module::sendToReceiver(const int rxIndex, int fnum, const void *args,
         throw RuntimeError(oss.str());
     }
     checkArgs(args, args_size, retval, retval_size);
-    if (rxIndex >= MAX_UDP_DESTINATION) {
-        throw RuntimeError("Invalid destination index " +
-                           std::to_string(rxIndex));
-    }
-    int startReceiver = 0;
-    int endReceiver = MAX_UDP_DESTINATION;
-    if (rxIndex > 0) {
-        startReceiver = rxIndex;
-        endReceiver = rxIndex + 1;
-    }
-    for (int i = startReceiver; i != endReceiver; ++i) {
-        if (!strcmp(shm()->receivers[i].hostname, "none")) {
+    std::vector<int> entries = getEntryList(rxIndex);
+    for (int i = 0; i != (int)entries.size(); ++i) {
+        if (!strcmp(shm()->receivers[entries[i]].hostname, "none")) {
             continue;
         }
-        LOG(logDEBUG1) << "Receiver [" << shm()->receivers[i].hostname << ", "
-                       << shm()->receivers[i].tcpPort << ']';
+        LOG(logDEBUG1) << "Receiver [" << shm()->receivers[entries[i]].hostname
+                       << ", " << shm()->receivers[entries[i]].tcpPort << ']';
         try {
-            auto receiver = ReceiverSocket(shm()->receivers[i].hostname,
-                                           shm()->receivers[i].tcpPort);
+            auto receiver =
+                ReceiverSocket(shm()->receivers[entries[i]].hostname,
+                               shm()->receivers[entries[i]].tcpPort);
             receiver.sendCommandThenRead(fnum, args, args_size, retval,
                                          retval_size);
             receiver.close();
         } catch (ReceiverError &e) {
             std::ostringstream oss;
-            oss << e.what() << '[' << shm()->receivers[i].hostname << ", "
-                << shm()->receivers[i].tcpPort << ']';
+            oss << e.what() << '[' << shm()->receivers[entries[i]].hostname
+                << ", " << shm()->receivers[entries[i]].tcpPort << ']';
             throw ReceiverError(oss.str());
         }
     }
@@ -3345,8 +3423,8 @@ void Module::checkDetectorVersionCompatibility() {
         arg = APIGOTTHARD2;
         break;
     default:
-        throw NotImplementedError(
-            "Check version compatibility is not implemented for this detector");
+        throw NotImplementedError("Check version compatibility is not "
+                                  "implemented for this detector");
     }
     sendToDetector(F_CHECK_VERSION, arg, nullptr);
     sendToDetectorStop(F_CHECK_VERSION, arg, nullptr);
@@ -3451,8 +3529,8 @@ sls_detector_module Module::interpolateTrim(sls_detector_module *a,
                                             const int e2, bool trimbits) {
     // dacs specified only for eiger and mythen3
     if (shm()->detType != EIGER && shm()->detType != MYTHEN3) {
-        throw NotImplementedError(
-            "Interpolation of Trim values not implemented for this detector!");
+        throw NotImplementedError("Interpolation of Trim values not "
+                                  "implemented for this detector!");
     }
 
     sls_detector_module myMod{shm()->detType};

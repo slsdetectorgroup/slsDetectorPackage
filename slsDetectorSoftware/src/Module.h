@@ -275,7 +275,7 @@ class Module : public virtual slsDetectorDefs {
     void setAllReceiverHostnames(const std::vector<std::string> &receiver);
     void setReceiverHostname(const std::string &receiver, const int rxIndex);
     int getReceiverPort(const int rxIndex) const;
-    int setReceiverPort(int port_number, const int rxIndex);
+    void setReceiverPort(int port_number, const int rxIndex);
     int getReceiverFifoDepth() const;
     void setReceiverFifoDepth(int n_frames);
     bool getReceiverSilentMode() const;
@@ -667,6 +667,7 @@ class Module : public virtual slsDetectorDefs {
     Ret sendToDetectorStop(int fnum, const Arg &args) const;
 
     /** Send function parameters to receiver */
+    std::vector<int> getEntryList(const int rxIndex) const;
     void sendToReceiver(const int rxIndex, int fnum, const void *args,
                         size_t args_size, void *retval, size_t retval_size);
 

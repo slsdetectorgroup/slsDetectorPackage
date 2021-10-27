@@ -1163,17 +1163,17 @@ std::string Module::getReceiverHostname() const {
 }
 
 void Module::setReceiverHostname(const std::string &receiverIP) {
-    LOG(logDEBUG1) << "Setting up Receiver with " << receiverIP;
+    LOG(logDEBUG1) << "Setting up Receiver hostname with " << receiverIP;
+
+    if (getRunStatus() == RUNNING) {
+        throw RuntimeError("Cannot set receiver hostname. Acquisition already running. Stop it first.");
+    }
 
     if (receiverIP == "none") {
         memset(shm()->rxHostname, 0, MAX_STR_LENGTH);
         sls::strcpy_safe(shm()->rxHostname, "none");
         shm()->useReceiverFlag = false;
-    }
-
-    if (getRunStatus() == RUNNING) {
-        LOG(logWARNING) << "Acquisition already running, Stopping it.";
-        stopAcquisition();
+        return;
     }
 
     // start updating

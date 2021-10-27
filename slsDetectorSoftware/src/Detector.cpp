@@ -87,7 +87,7 @@ void Detector::loadParameters(const std::vector<std::string> &parameters) {
     for (const auto &current_line : parameters) {
         parser.Parse(current_line);
         proxy.Call(parser.command(), parser.arguments(), parser.detector_id(),
-                   defs::PUT_ACTION);
+                   defs::PUT_ACTION, std::cout, parser.receiver_id());
     }
 }
 

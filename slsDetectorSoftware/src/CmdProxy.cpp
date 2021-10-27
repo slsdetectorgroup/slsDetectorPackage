@@ -1430,8 +1430,7 @@ std::string CmdProxy::UDPDestinationList(int action) {
             throw sls::RuntimeError("udp_dstlist must be at module level.");
         }
         if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
-            throw sls::RuntimeError(
-                "Invalid receiver index to get round robin entry.");
+            throw sls::RuntimeError(std::string("Invalid receiver index ") + std::to_string(rx_id) + std::string(" to set round robin entry."));
         }
         auto t = det->getDestinationUDPList(rx_id, std::vector<int>{det_id});
         os << OutString(t) << '\n';

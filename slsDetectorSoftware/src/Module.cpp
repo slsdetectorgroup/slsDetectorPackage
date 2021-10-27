@@ -830,7 +830,7 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
         auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
         client.Send(F_GET_NUM_MISSING_PACKETS);
         if (client.Receive<int>() == FAIL) {
-            throw RuntimeError("Receiver " + std::to_string(moduleIndex) +
+            throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
                                " returned error: " + client.readErrorMessage());
         } else {
             auto nports = client.Receive<int>();
@@ -1522,7 +1522,7 @@ void Module::sendReceiverRateCorrections(const std::vector<int64_t> &t) {
     receiver.Send(static_cast<int>(t.size()));
     receiver.Send(t);
     if (receiver.Receive<int>() == FAIL) {
-        throw RuntimeError("Receiver " + std::to_string(moduleIndex) +
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
                            " returned error: " + receiver.readErrorMessage());
     }
 }
@@ -1778,7 +1778,7 @@ void Module::sendVetoPhoton(const int chipIndex,
     client.Send(gainIndices);
     client.Send(values);
     if (client.Receive<int>() == FAIL) {
-        throw RuntimeError("Detector " + std::to_string(moduleIndex) +
+        throw DetectorError("Detector " + std::to_string(moduleIndex) +
                            " returned error: " + client.readErrorMessage());
     }
 }
@@ -1790,13 +1790,13 @@ void Module::getVetoPhoton(const int chipIndex,
     client.Send(F_GET_VETO_PHOTON);
     client.Send(chipIndex);
     if (client.Receive<int>() == FAIL) {
-        throw RuntimeError("Detector " + std::to_string(moduleIndex) +
+        throw DetectorError("Detector " + std::to_string(moduleIndex) +
                            " returned error: " + client.readErrorMessage());
     }
 
     auto nch = client.Receive<int>();
     if (nch != shm()->nChan.x) {
-        throw RuntimeError("Could not get veto photon. Expected " +
+        throw DetectorError("Could not get veto photon. Expected " +
                            std::to_string(shm()->nChan.x) + " channels, got " +
                            std::to_string(nch));
     }
@@ -2025,7 +2025,7 @@ void Module::getBadChannels(const std::string &fname) const {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_GET_BAD_CHANNELS);
     if (client.Receive<int>() == FAIL) {
-        throw RuntimeError("Detector " + std::to_string(moduleIndex) +
+        throw DetectorError("Detector " + std::to_string(moduleIndex) +
                            " returned error: " + client.readErrorMessage());
     }
     // receive badchannels
@@ -2082,7 +2082,7 @@ void Module::setBadChannels(const std::string &fname) {
         client.Send(badchannels);
     }
     if (client.Receive<int>() == FAIL) {
-        throw RuntimeError("Detector " + std::to_string(moduleIndex) +
+        throw DetectorError("Detector " + std::to_string(moduleIndex) +
                            " returned error: " + client.readErrorMessage());
     }
 }
@@ -2396,7 +2396,7 @@ std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(F_GET_ADDITIONAL_JSON_HEADER);
     if (client.Receive<int>() == FAIL) {
-        throw RuntimeError("Receiver " + std::to_string(moduleIndex) +
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
                            " returned error: " + client.readErrorMessage());
     } else {
         auto size = client.Receive<int>();
@@ -2445,7 +2445,7 @@ void Module::setAdditionalJsonHeader(
         client.Send(&buff[0], buff.size());
 
     if (client.Receive<int>() == FAIL) {
-        throw RuntimeError("Receiver " + std::to_string(moduleIndex) +
+        throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
                            " returned error: " + client.readErrorMessage());
     }
 }
@@ -2507,7 +2507,7 @@ void Module::copyDetectorServer(const std::string &fname,
         std::ostringstream os;
         os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
-        throw RuntimeError(os.str());
+        throw DetectorError(os.str());
     }
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
                  << "): detector server copied";
@@ -3154,7 +3154,7 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
     client.Send(F_SET_MODULE);
     sendModule(&module, client);
     if (client.Receive<int>() == FAIL) {
-        throw RuntimeError("Detector " + std::to_string(moduleIndex) +
+        throw DetectorError("Module " + std::to_string(moduleIndex) +
                            " returned error: " + client.readErrorMessage());
     }
 }
@@ -3424,7 +3424,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         std::ostringstream os;
         os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
-        throw RuntimeError(os.str());
+        throw DetectorError(os.str());
     }
 
     // sending program in parts of 2mb each
@@ -3444,7 +3444,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
             std::ostringstream os;
             os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
                << " returned error: " << client.readErrorMessage();
-            throw RuntimeError(os.str());
+            throw DetectorError(os.str());
         }
         filesize -= unitprogramsize;
         currentPointer += unitprogramsize;
@@ -3455,7 +3455,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         std::ostringstream os;
         os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
-        throw RuntimeError(os.str());
+        throw DetectorError(os.str());
     }
     LOG(logINFO) << "Checksum verified for module " << moduleIndex << " ("
                  << shm()->hostname << ")";
@@ -3508,7 +3508,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         std::ostringstream os;
         os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
-        throw RuntimeError(os.str());
+        throw DetectorError(os.str());
     }
     LOG(logINFO) << "FPGA programmed successfully";
 }
@@ -3535,7 +3535,7 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
         std::ostringstream os;
         os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
-        throw RuntimeError(os.str());
+        throw DetectorError(os.str());
     }
     client.Send(buffer);
 
@@ -3586,7 +3586,7 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
         std::ostringstream os;
         os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
-        throw RuntimeError(os.str());
+        throw DetectorError(os.str());
     }
     LOG(logINFO) << "FPGA programmed successfully";
 }

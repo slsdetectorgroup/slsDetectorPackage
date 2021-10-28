@@ -32,9 +32,12 @@ void defineGPIOpins() {
         // define the gpio pins
         system("echo 7 > /sys/class/gpio/export");
         system("echo 9 > /sys/class/gpio/export");
+        // gpio 3 = not chip enable
+        system("echo 3 > /sys/class/gpio/export");
         // define their direction
         system("echo in  > /sys/class/gpio/gpio7/direction");
         system("echo out > /sys/class/gpio/gpio9/direction");
+        system("echo out > /sys/class/gpio/gpio3/direction");
         LOG(logINFO, ("gpio pins defined\n"));
         gpioDefined = 1;
     } else
@@ -47,6 +50,7 @@ void FPGAdontTouchFlash() {
 #endif
     // tell FPGA to not touch flash
     system("echo 0 > /sys/class/gpio/gpio9/value");
+    system("echo 1 > /sys/class/gpio/gpio3/value");
     // usleep(100*1000);
 }
 
@@ -56,6 +60,7 @@ void FPGATouchFlash() {
 #endif
     // tell FPGA to touch flash to program itself
     system("echo 1 > /sys/class/gpio/gpio9/value");
+    system("echo 0 > /sys/class/gpio/gpio3/value");
 }
 
 void resetFPGA() {

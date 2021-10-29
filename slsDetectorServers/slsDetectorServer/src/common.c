@@ -65,6 +65,22 @@ int getAbsPath(char *buf, size_t bufSize, char *fname) {
 }
 
 int GetTimeFromString(char *buf, time_t *result) {
+    // remove timezone as strptime cannot validate timezone despite
+    // documentation
+    const char *timezone = {"CEST"};
+    char *res = strstr(buf, timezone);
+    if (res != NULL) {
+        size_t cestPos = res - buf;
+        size_t pos = cestPos + strlen(timezone) + 1;
+        while (pos != strlen(buf)) {
+            buf[cestPos] = buf[pos];
+            ++cestPos;
+            ++pos;
+        }
+        buf[cestPos] = '\0';
+    }
+
+    // convert to time structure
     struct tm t;
     if (NULL == strptime(buf, "%a %b %d %H:%M:%S %Z %Y", &t)) {
         return FAIL;

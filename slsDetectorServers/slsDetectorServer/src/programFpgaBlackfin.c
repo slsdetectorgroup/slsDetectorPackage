@@ -25,7 +25,7 @@ int gpioDefined = 0;
 extern int executeCommand(char *command, char *result, enum TLogLevel level);
 
 int latestKernelVerified = -1;
-#define KERNEL_DATE_VRSN_3GPIO "Fri Oct 29 13:58:38 CEST 2021"
+#define KERNEL_DATE_VRSN_3GPIO "Fri Oct 29 07:04:21 2021"
 
 void defineGPIOpins() {
 #ifdef VIRTUAL

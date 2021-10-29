@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "programFpgaBlackfin.h"
+#include "blackfin.h"
 #include "clogger.h"
 #include "common.h"
 #include "sls/ansi.h"
@@ -24,21 +25,33 @@ int gpioDefined = 0;
 
 extern int executeCommand(char *command, char *result, enum TLogLevel level);
 
+int latestKernelVerified = -1;
+#define KERNEL_DATE_VRSN "Fri Oct 29 13:58:38 CEST 2021"
+
 void defineGPIOpins() {
 #ifdef VIRTUAL
     return;
 #endif
+    if (latestKernelVerified == -1) {
+        latestKernelVerified =
+            ((OK == blackfin_checkKernelVersion(KERNEL_DATE_VRSN)) ? 1 : 0);
+    }
     if (!gpioDefined) {
         // define the gpio pins
         system("echo 7 > /sys/class/gpio/export");
         system("echo 9 > /sys/class/gpio/export");
-        // gpio 3 = not chip enable
-        system("echo 3 > /sys/class/gpio/export");
+
         // define their direction
         system("echo in  > /sys/class/gpio/gpio7/direction");
         system("echo out > /sys/class/gpio/gpio9/direction");
-        system("echo out > /sys/class/gpio/gpio3/direction");
         LOG(logINFO, ("gpio pins defined\n"));
+
+        if (latestKernelVerified == 1) {
+            // gpio 3 = not chip enable
+            system("echo 3 > /sys/class/gpio/export");
+            system("echo out > /sys/class/gpio/gpio3/direction");
+            LOG(logINFO, ("gpio pin for !ChipEnable defined\n"));
+        }
         gpioDefined = 1;
     } else
         LOG(logDEBUG1, ("gpio pins already defined earlier\n"));

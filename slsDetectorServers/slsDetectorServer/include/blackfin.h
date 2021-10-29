@@ -105,3 +105,7 @@ uint32_t *Blackfin_getBaseAddress();
  * Map FPGA
  */
 int mapCSP0(void);
+
+/** check kernel version against expected version string (complain if too old)
+ * @returns OK or FAIL */
+int blackfin_checkKernelVersion(char *expectedVersion);

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "programFpgaBlackfin.h"
-#include "blackfin.h"
 #include "clogger.h"
 #include "common.h"
 #include "sls/ansi.h"
@@ -33,8 +32,13 @@ void defineGPIOpins() {
     return;
 #endif
     if (latestKernelVerified == -1) {
-        latestKernelVerified =
-            ((OK == blackfin_checkKernelVersion(KERNEL_DATE_VRSN)) ? 1 : 0);
+        if (FAIL == validateKernelVersion(KERNEL_DATE_VRSN)) {
+            latestKernelVerified = 0;
+            LOG(logWARNING, ("Kernel too old to use gpio 3 pins. Not the end "
+                             "of the world. Continuing with current kernel\n"));
+        } else {
+            latestKernelVerified = 1;
+        }
     }
     if (!gpioDefined) {
         // define the gpio pins

@@ -181,7 +181,7 @@ int checkKernelVersion() {
 #ifdef VIRTUAL
     return OK;
 #endif
-    return Nios_checkKernelVersion(KERNEL_DATE_VRSN);
+    return validateKernelVersion(KERNEL_DATE_VRSN);
 }
 
 int checkType() {

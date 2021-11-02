@@ -44,18 +44,16 @@ void defineGPIOpins() {
     if (!gpioDefined) {
         // define the gpio pins
         system("echo 7 > /sys/class/gpio/export");
-        system("echo 9 > /sys/class/gpio/export");
-
-        // define their direction
+        LOG(logINFO, ("\tgpio7: defined\n"));
         system("echo in  > /sys/class/gpio/gpio7/direction");
-        system("echo out > /sys/class/gpio/gpio9/direction");
-        LOG(logINFO, ("gpio pins defined\n"));
+        LOG(logINFO, ("\tgpio7: setting intput\n"));
+        system("echo 9 > /sys/class/gpio/export");
+        LOG(logINFO, ("\tgpio9: defined\n"));
 
         if (latestKernelVerified == 1) {
             // gpio 3 = not chip enable
             system("echo 3 > /sys/class/gpio/export");
-            system("echo out > /sys/class/gpio/gpio3/direction");
-            LOG(logINFO, ("gpio pin for !ChipEnable defined\n"));
+            LOG(logINFO, ("\tgpio3: defined\n"));
         }
         gpioDefined = 1;
     } else
@@ -66,9 +64,22 @@ void FPGAdontTouchFlash() {
 #ifdef VIRTUAL
     return;
 #endif
+    // define as output pins
+    system("echo out > /sys/class/gpio/gpio9/direction");
+    LOG(logINFO, ("\tgpio9: setting output\n"));
+    if (latestKernelVerified == 1) {
+        // gpio 3 = not chip enable
+        system("echo out > /sys/class/gpio/gpio3/direction");
+        LOG(logINFO, ("\tgpio3: setting output\n"));
+    }
+
     // tell FPGA to not touch flash
     system("echo 0 > /sys/class/gpio/gpio9/value");
-    system("echo 1 > /sys/class/gpio/gpio3/value");
+        LOG(logINFO, ("\tgpio9: fpga dont touch flash\n"));
+    if (latestKernelVerified == 1) {
+        system("echo 1 > /sys/class/gpio/gpio3/value");
+        LOG(logINFO, ("\tgpio3: fpga dont touch flash\n"));
+    }
     // usleep(100*1000);
 }
 
@@ -77,8 +88,12 @@ void FPGATouchFlash() {
     return;
 #endif
     // tell FPGA to touch flash to program itself
-    system("echo 1 > /sys/class/gpio/gpio9/value");
-    system("echo 0 > /sys/class/gpio/gpio3/value");
+    system("echo in  > /sys/class/gpio/gpio9/direction");
+    LOG(logINFO, ("\tgpio9: setting input\n"));
+    if (latestKernelVerified == 1) {
+        system("echo in  > /sys/class/gpio/gpio3/direction");
+        LOG(logINFO, ("\tgpio3: setting input\n"));
+    }
 }
 
 void resetFPGA() {
@@ -174,10 +189,9 @@ int copyToFlash(ssize_t fsize, char *clientChecksum, char *mess) {
         return FAIL;
     }
 
-    /* ignoring this until a consistent way to read from bfin flash
-        if (verifyChecksumFromFlash(mess, clientChecksum, flashDriveName, fsize)
-       == FAIL) { return FAIL;
-        }
+    /* ignoring this until flash fixed
+    if (verifyChecksumFromFlash(mess, clientChecksum, flashDriveName, fsize) == FAIL) {     return FAIL;
+    }
     */
     if (waitForFPGAtoTouchFlash(mess) == FAIL) {
         return FAIL;

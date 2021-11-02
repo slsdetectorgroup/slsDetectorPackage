@@ -65,9 +65,10 @@ int getAbsPath(char *buf, size_t bufSize, char *fname) {
     return OK;
 }
 
-int getTimeFromString(char *buf, time_t *result) {
+int getTimeFromString(char *buf, size_t len, time_t *result) {
     // remove timezone as strptime cannot validate timezone despite
-    // documentation
+    // documentation (for blackfin)
+    LOG(logDEBUG, ("buf for time %s\n", buf));
     const char *timezone = {"CEST"};
     char *res = strstr(buf, timezone);
     if (res != NULL) {
@@ -83,14 +84,18 @@ int getTimeFromString(char *buf, time_t *result) {
 
     // convert to time structure
     struct tm t;
-    if (NULL == strptime(buf, "%a %b %d %H:%M:%S %Z %Y", &t)) {
+    if (NULL == strptime(buf, "%a %b %d %H:%M:%S %Y", &t)) {
         return FAIL;
     }
+
+    // print time structure
+    LOG(logDEBUG, ("%d %d %d %d:%d:%d %d (day date month H:M:S year)\n", t.tm_wday, t.tm_mday, t.tm_mon, t.tm_year +1900, t.tm_hour, t.tm_min, t.tm_sec));
+
     *result = mktime(&t);
     return OK;
 }
 
-int validateKernelVersion(char *expectedVersion) {
+int validateKernelVersion(char *expectedVersion, size_t len) {
     // extract kernel date string
     struct utsname buf = {0};
     if (uname(&buf) == -1) {
@@ -110,14 +115,14 @@ int validateKernelVersion(char *expectedVersion) {
 
     // convert kernel date string into time
     time_t kernelDate;
-    if (getTimeFromString(output, &kernelDate) == FAIL) {
+    if (getTimeFromString(output, sizeof(output), &kernelDate) == FAIL) {
         LOG(logERROR, ("Could not parse retrieved kernel date, %s\n", output));
         return FAIL;
     }
 
     // convert expected date into time
     time_t expDate;
-    if (getTimeFromString(expectedVersion, &expDate) == FAIL) {
+    if (getTimeFromString(expectedVersion, len, &expDate) == FAIL) {
         LOG(logERROR,
             ("Could not parse expected kernel date, %s\n", expectedVersion));
         return FAIL;

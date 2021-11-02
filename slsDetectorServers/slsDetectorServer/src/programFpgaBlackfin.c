@@ -25,14 +25,16 @@ int gpioDefined = 0;
 extern int executeCommand(char *command, char *result, enum TLogLevel level);
 
 int latestKernelVerified = -1;
-#define KERNEL_DATE_VRSN_3GPIO "Fri Oct 29 07:04:21 2021"
+#define KERNEL_DATE_VRSN_3GPIO "Fri Oct 29 00:00:00 2021"
 
 void defineGPIOpins() {
 #ifdef VIRTUAL
     return;
 #endif
     if (latestKernelVerified == -1) {
-        if (FAIL == validateKernelVersion(KERNEL_DATE_VRSN_3GPIO)) {
+        char version[255]={0};
+        strcpy(version, KERNEL_DATE_VRSN_3GPIO);
+        if (FAIL == validateKernelVersion(version, sizeof(version))) {
             latestKernelVerified = 0;
             LOG(logWARNING,
                 ("Kernel too old to use gpio 3 pins. Not the end "

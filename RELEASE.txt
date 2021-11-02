@@ -28,6 +28,7 @@ This document describes the differences between vx.x.x and v6.0.0.
 
 - setting rx_hostname to none threw an exception. fixed.
 - rx id in config file was not taken into account. fixed.
+- programming firmware failure for blackfin, fixed but requires new kernel.
 
 3. Known Issues
 ===============

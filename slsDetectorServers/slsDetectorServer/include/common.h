@@ -26,9 +26,9 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
 
 int getAbsPath(char *buf, size_t bufSize, char *fname);
 
-int getTimeFromString(char *buf, size_t len, time_t *result);
+int getTimeFromString(char *buf, time_t *result);
 
-int validateKernelVersion(char *expectedVersion, size_t len);
+int validateKernelVersion(char *expectedVersion);
 
 void validate(int *ret, char *mess, int arg, int retval, char *modename,
               enum numberMode nummode);

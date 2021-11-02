@@ -65,7 +65,7 @@ int getAbsPath(char *buf, size_t bufSize, char *fname) {
     return OK;
 }
 
-int getTimeFromString(char *buf, size_t len, time_t *result) {
+int getTimeFromString(char *buf, time_t *result) {
     // remove timezone as strptime cannot validate timezone despite
     // documentation (for blackfin)
     LOG(logDEBUG, ("buf for time %s\n", buf));
@@ -95,7 +95,7 @@ int getTimeFromString(char *buf, size_t len, time_t *result) {
     return OK;
 }
 
-int validateKernelVersion(char *expectedVersion, size_t len) {
+int validateKernelVersion(char *expectedVersion) {
     // extract kernel date string
     struct utsname buf = {0};
     if (uname(&buf) == -1) {
@@ -115,14 +115,14 @@ int validateKernelVersion(char *expectedVersion, size_t len) {
 
     // convert kernel date string into time
     time_t kernelDate;
-    if (getTimeFromString(output, sizeof(output), &kernelDate) == FAIL) {
+    if (getTimeFromString(output, &kernelDate) == FAIL) {
         LOG(logERROR, ("Could not parse retrieved kernel date, %s\n", output));
         return FAIL;
     }
 
     // convert expected date into time
     time_t expDate;
-    if (getTimeFromString(expectedVersion, len, &expDate) == FAIL) {
+    if (getTimeFromString(expectedVersion, &expDate) == FAIL) {
         LOG(logERROR,
             ("Could not parse expected kernel date, %s\n", expectedVersion));
         return FAIL;

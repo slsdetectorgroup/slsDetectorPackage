@@ -188,9 +188,7 @@ int checkKernelVersion() {
 #ifdef VIRTUAL
     return OK;
 #endif
-    char version[255]={0};
-    strcpy(version, KERNEL_DATE_VRSN);
-    return validateKernelVersion(version, sizeof(version));
+    return validateKernelVersion(KERNEL_DATE_VRSN);
 }
 
 int checkType() {

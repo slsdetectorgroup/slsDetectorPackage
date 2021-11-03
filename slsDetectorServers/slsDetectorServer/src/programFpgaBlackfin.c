@@ -32,9 +32,7 @@ void defineGPIOpins() {
     return;
 #endif
     if (latestKernelVerified == -1) {
-        char version[255]={0};
-        strcpy(version, KERNEL_DATE_VRSN_3GPIO);
-        if (FAIL == validateKernelVersion(version, sizeof(version))) {
+        if (FAIL == validateKernelVersion(KERNEL_DATE_VRSN_3GPIO)) {
             latestKernelVerified = 0;
             LOG(logWARNING,
                 ("Kernel too old to use gpio 3 pins. Not the end "

@@ -81,6 +81,7 @@ int getTimeFromString(char *buf, time_t *result) {
         }
         buf[cestPos] = '\0';
     }
+    LOG(logDEBUG, ("buf after removing CEST %s\n", buf));
 
     // convert to time structure
     struct tm t;

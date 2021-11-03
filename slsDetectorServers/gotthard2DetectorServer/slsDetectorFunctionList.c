@@ -101,7 +101,7 @@ void basictests() {
     }
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
-        ((checkKernelVersion() == FAIL) || (checkType() == FAIL) ||
+        ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) || (checkType() == FAIL) ||
          (testFpga() == FAIL) || (testBus() == FAIL))) {
         sprintf(initErrorMessage,
                 "Could not pass basic tests of FPGA and bus. Dangerous to "
@@ -182,15 +182,6 @@ void basictests() {
     }
     LOG(logINFO, ("Compatibility - success\n"));
 #endif
-}
-
-int checkKernelVersion() {
-#ifdef VIRTUAL
-    return OK;
-#endif
-    char buf[255] = {0};
-    strcpy(buf, KERNEL_DATE_VRSN);
-    return validateKernelVersion(buf);
 }
 
 int checkType() {

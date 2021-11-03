@@ -60,9 +60,7 @@ typedef struct udpStruct_s {
 int isInitCheckDone();
 int getInitResult(char **mess);
 void basictests();
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
-int checkKernelVersion();
-#endif
+int getKernelVersion(char* retvals);
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) ||     \
     defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int checkType();

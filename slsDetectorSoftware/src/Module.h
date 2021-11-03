@@ -91,6 +91,7 @@ class Module : public virtual slsDetectorDefs {
 
     int64_t getFirmwareVersion() const;
     int64_t getDetectorServerVersion() const;
+    std::string getKernelVersion() const;
     int64_t getSerialNumber() const;
     int getModuleId() const;
     int64_t getReceiverSoftwareVersion() const;

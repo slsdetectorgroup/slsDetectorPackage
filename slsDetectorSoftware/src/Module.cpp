@@ -94,6 +94,12 @@ int64_t Module::getDetectorServerVersion() const {
     return sendToDetector<int64_t>(F_GET_SERVER_VERSION);
 }
 
+std::string Module::getKernelVersion() const {
+    char retval[MAX_STR_LENGTH]{};
+    sendToDetector(F_GET_KERNEL_VERSION, nullptr, retval);
+    return retval;
+}
+
 int64_t Module::getSerialNumber() const {
     return sendToDetector<int64_t>(F_GET_SERIAL_NUMBER);
 }

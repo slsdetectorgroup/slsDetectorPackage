@@ -28,6 +28,8 @@ int getAbsPath(char *buf, size_t bufSize, char *fname);
 
 int getTimeFromString(char *buf, time_t *result);
 
+int getKernelVersion(char* retvals);
+
 int validateKernelVersion(char *expectedVersion);
 
 void validate(int *ret, char *mess, int arg, int retval, char *modename,

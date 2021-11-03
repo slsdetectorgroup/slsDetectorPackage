@@ -66,26 +66,28 @@ int getAbsPath(char *buf, size_t bufSize, char *fname) {
 }
 
 int getTimeFromString(char *buf, time_t *result) {
+    char buffer[255] = {0};
+    strcpy(buffer, buf);
     // remove timezone as strptime cannot validate timezone despite
     // documentation (for blackfin)
-    LOG(logDEBUG, ("buf for time %s\n", buf));
+    LOG(logDEBUG, ("kernel v %s\n", buffer));
     const char *timezone = {"CEST"};
-    char *res = strstr(buf, timezone);
+    char *res = strstr(buffer, timezone);
     if (res != NULL) {
-        size_t cestPos = res - buf;
+        size_t cestPos = res - buffer;
         size_t pos = cestPos + strlen(timezone) + 1;
-        while (pos != strlen(buf)) {
-            buf[cestPos] = buf[pos];
+        while (pos != strlen(buffer)) {
+            buffer[cestPos] = buffer[pos];
             ++cestPos;
             ++pos;
         }
-        buf[cestPos] = '\0';
+        buffer[cestPos] = '\0';
     }
-    LOG(logDEBUG, ("buf after removing CEST %s\n", buf));
+    LOG(logDEBUG, ("kernel v after removing CEST %s\n", buffer));
 
     // convert to time structure
     struct tm t;
-    if (NULL == strptime(buf, "%a %b %d %H:%M:%S %Y", &t)) {
+    if (NULL == strptime(buffer, "%a %b %d %H:%M:%S %Y", &t)) {
         return FAIL;
     }
 

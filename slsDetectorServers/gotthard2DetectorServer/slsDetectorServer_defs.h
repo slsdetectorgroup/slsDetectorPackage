@@ -4,7 +4,7 @@
 #include "sls/sls_detector_defs.h"
 
 #define REQRD_FRMWRE_VRSN (0x210527)
-#define KERNEL_DATE_VRSN  "Wed May 20 13:58:38 CEST 2020"
+#define KERNEL_DATE_VRSN  "Mon May 10 18:00:21 CEST 2021"
 #define ID_FILE           "detid_gotthard2.txt"
 
 #define LINKED_SERVER_NAME "gotthard2DetectorServer"

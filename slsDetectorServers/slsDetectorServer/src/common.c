@@ -7,7 +7,8 @@
 
 #include <libgen.h> // dirname
 #include <string.h>
-#include <unistd.h> // readlink
+#include <sys/utsname.h> // uname
+#include <unistd.h>      // readlink
 
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue) {
@@ -64,12 +65,80 @@ int getAbsPath(char *buf, size_t bufSize, char *fname) {
     return OK;
 }
 
-int GetTimeFromString(char *buf, time_t *result) {
+int getTimeFromString(char *buf, time_t *result) {
+    // remove timezone as strptime cannot validate timezone despite
+    // documentation (for blackfin)
+    LOG(logDEBUG, ("buf for time %s\n", buf));
+    const char *timezone = {"CEST"};
+    char *res = strstr(buf, timezone);
+    if (res != NULL) {
+        size_t cestPos = res - buf;
+        size_t pos = cestPos + strlen(timezone) + 1;
+        while (pos != strlen(buf)) {
+            buf[cestPos] = buf[pos];
+            ++cestPos;
+            ++pos;
+        }
+        buf[cestPos] = '\0';
+    }
+    LOG(logDEBUG, ("buf after removing CEST %s\n", buf));
+
+    // convert to time structure
     struct tm t;
-    if (NULL == strptime(buf, "%a %b %d %H:%M:%S %Z %Y", &t)) {
+    if (NULL == strptime(buf, "%a %b %d %H:%M:%S %Y", &t)) {
         return FAIL;
     }
+
+    // print time structure
+    LOG(logDEBUG, ("%d %d %d %d:%d:%d %d (day date month H:M:S year)\n", t.tm_wday, t.tm_mday, t.tm_mon, t.tm_year +1900, t.tm_hour, t.tm_min, t.tm_sec));
+
     *result = mktime(&t);
+    return OK;
+}
+
+int validateKernelVersion(char *expectedVersion) {
+    // extract kernel date string
+    struct utsname buf = {0};
+    if (uname(&buf) == -1) {
+        LOG(logERROR, ("Could not get kernel version\n"));
+        return FAIL;
+    }
+
+    // remove first word (#version number)
+    const char *ptr = strchr(buf.version, ' ');
+    if (ptr == NULL) {
+        LOG(logERROR, ("Could not parse kernel version\n"));
+        return FAIL;
+    }
+    char output[255];
+    memset(output, 0, sizeof(output));
+    strcpy(output, buf.version + (ptr - buf.version + 1));
+
+    // convert kernel date string into time
+    time_t kernelDate;
+    if (getTimeFromString(output, &kernelDate) == FAIL) {
+        LOG(logERROR, ("Could not parse retrieved kernel date, %s\n", output));
+        return FAIL;
+    }
+
+    // convert expected date into time
+    time_t expDate;
+    if (getTimeFromString(expectedVersion, &expDate) == FAIL) {
+        LOG(logERROR,
+            ("Could not parse expected kernel date, %s\n", expectedVersion));
+        return FAIL;
+    }
+
+    // compare if kernel time is older than expected time
+    if (kernelDate < expDate) {
+        LOG(logERROR, ("Kernel Version Incompatible (too old)! Expected: [%s], "
+                       "Got [%s]\n",
+                       expectedVersion, output));
+        return FAIL;
+    }
+
+    LOG(logINFOBLUE, ("Kernel Version Compatible: %s [min.: %s]\n", output,
+                      expectedVersion));
     return OK;
 }
 

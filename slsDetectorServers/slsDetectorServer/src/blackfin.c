@@ -3,6 +3,7 @@
 #include "blackfin.h"
 #include "RegisterDefs.h"
 #include "clogger.h"
+#include "common.h"
 #include "sls/ansi.h"
 #include "sls/sls_detector_defs.h"
 

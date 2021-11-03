@@ -2492,7 +2492,7 @@ void Module::programFPGA(std::vector<char> buffer) {
         programFPGAviaNios(buffer);
         break;
     default:
-        throw RuntimeError("Program FPGA is not implemented for this detector");
+        throw RuntimeError("Programming FPGA via the package is not implemented for this detector");
     }
 }
 
@@ -2503,7 +2503,8 @@ void Module::copyDetectorServer(const std::string &fname,
     char args[2][MAX_STR_LENGTH]{};
     sls::strcpy_safe(args[0], fname.c_str());
     sls::strcpy_safe(args[1], hostname.c_str());
-    LOG(logINFO) << "Sending detector server " << args[0] << " from host "
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Sending detector server " << args[0] << " from host "
                  << args[1];
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_COPY_DET_SERVER);
@@ -2519,9 +2520,26 @@ void Module::copyDetectorServer(const std::string &fname,
                  << "): detector server copied";
 }
 
+void Module::updateKernel(std::vector<char> buffer) {
+    switch (shm()->detType) {
+    case JUNGFRAU:
+    case CHIPTESTBOARD:
+    case MOENCH:
+        updateKernelviaBlackfin(buffer);
+        break;
+    case MYTHEN3:
+    case GOTTHARD2:
+        updateKernelviaNios(buffer);
+        break;
+    default:
+        throw RuntimeError("Updating Kernel via the package is not implemented for this detector");
+    }
+}
+
 void Module::rebootController() {
     sendToDetector(F_REBOOT_CONTROLLER);
-    LOG(logINFO) << "Controller rebooted successfully!";
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Controller rebooted successfully!";
 }
 
 uint32_t Module::readRegister(uint32_t addr) const {
@@ -2599,11 +2617,25 @@ sls::IpAddr Module::getLastClientIP() const {
     return sendToDetector<sls::IpAddr>(F_GET_LAST_CLIENT_IP);
 }
 
-std::string Module::execCommand(const std::string &cmd) {
+std::string Module::executeCommand(const std::string &cmd) {
     char arg[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
     sls::strcpy_safe(arg, cmd.c_str());
-    sendToDetector(F_EXEC_COMMAND, arg, retval);
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Sending command " << cmd;
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_EXEC_COMMAND);
+    client.Send(arg);
+    if (client.Receive<int>() == FAIL) {
+        std::cout << '\n';
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw DetectorError(os.str());
+    }
+    client.Receive(retval);
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): command executed";
     return retval;
 }
 
@@ -3409,8 +3441,8 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 
 void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     // send program from memory to detector
-    LOG(logINFO) << "Sending programming binary (from pof) to module "
-                 << moduleIndex << " (" << shm()->hostname << ")";
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Sending programming binary (from pof)";
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_PROGRAM_FPGA);
     uint64_t filesize = buffer.size();
@@ -3516,12 +3548,13 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
            << " returned error: " << client.readErrorMessage();
         throw DetectorError(os.str());
     }
-    LOG(logINFO) << "FPGA programmed successfully";
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): FPGA programmed successfully";
 }
 
 void Module::programFPGAviaNios(std::vector<char> buffer) {
-    LOG(logINFO) << "Sending programming binary (from rbf) to Module "
-                 << moduleIndex << " (" << shm()->hostname << ")";
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Sending programming binary (from rbf)";
 
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_PROGRAM_FPGA);
@@ -3594,6 +3627,112 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
            << " returned error: " << client.readErrorMessage();
         throw DetectorError(os.str());
     }
-    LOG(logINFO) << "FPGA programmed successfully";
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): FPGA programmed successfully";
+}
+
+void Module::updateKernelviaBlackfin(std::vector<char> buffer) {
+    // send program from memory to detector
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Sending kernel image (.lzma)";
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_PROGRAM_KERNEL);
+    uint64_t filesize = buffer.size();
+    client.Send(filesize);
+
+    // checksum
+    std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
+    LOG(logDEBUG1) << "Checksum:" << checksum;
+    char cChecksum[MAX_STR_LENGTH];
+    memset(cChecksum, 0, MAX_STR_LENGTH);
+    strcpy(cChecksum, checksum.c_str());
+    client.Send(cChecksum);
+
+    //  opening file fail
+    if (client.Receive<int>() == FAIL) {
+        std::cout << '\n';
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw DetectorError(os.str());
+    }
+
+    // sending program in parts of 2mb each
+    uint64_t unitprogramsize = 0;
+    int currentPointer = 0;
+    while (filesize > 0) {
+        unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
+        if (unitprogramsize > filesize) {      // less than 2mb
+            unitprogramsize = filesize;
+        }
+        LOG(logDEBUG) << "unitprogramsize:" << unitprogramsize
+                      << "\t filesize:" << filesize;
+
+        client.Send(&buffer[currentPointer], unitprogramsize);
+        if (client.Receive<int>() == FAIL) {
+            std::cout << '\n';
+            std::ostringstream os;
+            os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+               << " returned error: " << client.readErrorMessage();
+            throw DetectorError(os.str());
+        }
+        filesize -= unitprogramsize;
+        currentPointer += unitprogramsize;
+    }
+
+    // checksum
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw DetectorError(os.str());
+    }
+    LOG(logINFO) << "Checksum verified for module " << moduleIndex << " ("
+                 << shm()->hostname << ")";
+
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw DetectorError(os.str());
+    }
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Kernel udpated successfully";
+}
+
+void Module::updateKernelviaNios(std::vector<char> buffer) {
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Sending kernel image (from rbf)";
+
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_PROGRAM_FPGA);
+    uint64_t filesize = buffer.size();
+    client.Send(filesize);
+
+    // checksum
+    std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
+    LOG(logDEBUG1) << "Checksum:" << checksum;
+    char cChecksum[MAX_STR_LENGTH];
+    memset(cChecksum, 0, MAX_STR_LENGTH);
+    strcpy(cChecksum, checksum.c_str());
+    client.Send(cChecksum);
+
+    // validate file size before sending program
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw DetectorError(os.str());
+    }
+    client.Send(buffer);
+
+    if (client.Receive<int>() == FAIL) {
+        std::ostringstream os;
+        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+           << " returned error: " << client.readErrorMessage();
+        throw DetectorError(os.str());
+    }
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Kernel updated successfully";
 }
 } // namespace sls

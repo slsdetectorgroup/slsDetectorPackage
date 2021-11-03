@@ -254,6 +254,7 @@ enum detFuncs {
     F_GET_READOUT_SPEED,
     F_SET_READOUT_SPEED,
     F_GET_KERNEL_VERSION,
+    F_COPY_KERNEL,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -610,6 +611,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_READOUT_SPEED:               return "F_GET_READOUT_SPEED";
     case F_SET_READOUT_SPEED:               return "F_SET_READOUT_SPEED";
     case F_GET_KERNEL_VERSION:              return "F_GET_KERNEL_VERSION";
+    case F_COPY_KERNEL:                     return "F_COPY_KERNEL";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

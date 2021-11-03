@@ -415,6 +415,8 @@ void function_table() {
     flist[F_GET_READOUT_SPEED] = &get_readout_speed;
     flist[F_SET_READOUT_SPEED] = &set_readout_speed;
     flist[F_GET_KERNEL_VERSION] = &get_kernel_version;
+    flist[F_COPY_KERNEL] = &copy_kernel;
+
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -9432,5 +9434,141 @@ int get_kernel_version(int file_des) {
     } else {
         LOG(logDEBUG1, ("kernel version: [%s]\n", retvals));
     }
+    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
+}
+
+
+int copy_kernel(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    char args[2][MAX_STR_LENGTH];
+    char retvals[MAX_STR_LENGTH] = {0};
+
+    memset(args, 0, sizeof(args));
+    memset(retvals, 0, sizeof(retvals));
+
+    if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
+        return printSocketReadError();
+
+#ifdef VIRTUAL
+    functionNotImplemented();
+#else
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        char *sname = args[0];
+        char *hostname = args[1];
+        LOG(logINFOBLUE, ("Copying kernel image %s from host %s\n", sname, hostname));
+        char cmd[MAX_STR_LENGTH] = {0};
+
+        // tftp server
+        char *format = "tftp %s -r %s -g";
+        if (snprintf(cmd, MAX_STR_LENGTH, format, hostname, sname) >=
+            MAX_STR_LENGTH) {
+            ret = FAIL;
+            strcpy(mess, "Could not copy detector server. Command to copy "
+                         "server too long\n");
+            LOG(logERROR, (mess));
+        } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+            ret = FAIL;
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not copy detector server (tftp). %s\n", retvals);
+            // LOG(logERROR, (mess)); already printed in executecommand
+        } else {
+            LOG(logINFO, ("\tServer copied\n"));
+        }
+
+        // give permissions
+        if (ret == OK) {
+            if (snprintf(cmd, MAX_STR_LENGTH, "chmod 777 %s", sname) >=
+                MAX_STR_LENGTH) {
+                ret = FAIL;
+                strcpy(mess, "Could not copy detector server. Command to give "
+                             "permissions to server is too long\n");
+                LOG(logERROR, (mess));
+            } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+                ret = FAIL;
+                snprintf(mess, MAX_STR_LENGTH,
+                         "Could not copy detector server (permissions). %s\n",
+                         retvals);
+                // LOG(logERROR, (mess)); already printed in executecommand
+            } else {
+                LOG(logINFO, ("\tPermissions modified\n"));
+            }
+        }
+
+        // symbolic link
+        if (ret == OK) {
+            if (snprintf(cmd, MAX_STR_LENGTH, "ln -sf %s %s", sname,
+                         LINKED_SERVER_NAME) >= MAX_STR_LENGTH) {
+                ret = FAIL;
+                strcpy(mess, "Could not copy detector server. Command to "
+                             "create symbolic link too long\n");
+                LOG(logERROR, (mess));
+            } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+                ret = FAIL;
+                snprintf(mess, MAX_STR_LENGTH,
+                         "Could not copy detector server (symbolic link). %s\n",
+                         retvals);
+                // LOG(logERROR, (mess)); already printed in executecommand
+            } else {
+                LOG(logINFO, ("\tSymbolic link created\n"));
+            }
+        }
+
+        // blackfin boards (respawn) (only kept for backwards compatibility)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
+    defined(GOTTHARDD)
+        // delete every line with DetectorServer in /etc/inittab
+        if (ret == OK) {
+            strcpy(cmd, "sed -i '/DetectorServer/d' /etc/inittab");
+            if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+                ret = FAIL;
+                snprintf(
+                    mess, MAX_STR_LENGTH,
+                    "Could not copy detector server (del respawning). %s\n",
+                    retvals);
+                // LOG(logERROR, (mess)); already printed in executecommand
+            } else {
+                LOG(logINFO, ("\tinittab: DetectoServer line deleted\n"));
+            }
+        }
+
+        // add new link name to /etc/inittab
+        if (ret == OK) {
+            format = "echo 'ttyS0::respawn:/./%s' >> /etc/inittab";
+            if (snprintf(cmd, MAX_STR_LENGTH, format, LINKED_SERVER_NAME) >=
+                MAX_STR_LENGTH) {
+                ret = FAIL;
+                strcpy(mess, "Could not copy detector server. Command "
+                             "to add new server for spawning is too long\n");
+                LOG(logERROR, (mess));
+            } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+                ret = FAIL;
+                snprintf(mess, MAX_STR_LENGTH,
+                         "Could not copy detector server (respawning). %s\n",
+                         retvals);
+                // LOG(logERROR, (mess)); already printed in executecommand
+            } else {
+                LOG(logINFO, ("\tinittab: updated for respawning\n"));
+            }
+        }
+#endif
+
+        // sync
+        if (ret == OK) {
+            strcpy(cmd, "sync");
+            if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+                ret = FAIL;
+                snprintf(mess, MAX_STR_LENGTH,
+                         "Could not copy detector server (sync). %s\n",
+                         retvals);
+                // LOG(logERROR, (mess)); already printed in executecommand
+            } else {
+                LOG(logINFO, ("\tsync\n"));
+            }
+        }
+    }
+#endif
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }

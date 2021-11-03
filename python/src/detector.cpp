@@ -1520,7 +1520,10 @@ void init_det(py::module &m) {
              (void (Detector::*)(const std::string &, const std::string &,
                                  sls::Positions)) &
                  Detector::copyDetectorServer,
-             py::arg(), py::arg(), py::arg() = Positions{})
+        .def("updateKernel",
+             (void (Detector::*)(const std::string &, sls::Positions)) &
+                 Detector::updateKernel,
+             py::arg(), py::arg() = Positions{})
         .def("rebootController",
              (void (Detector::*)(sls::Positions)) & Detector::rebootController,
              py::arg() = Positions{})

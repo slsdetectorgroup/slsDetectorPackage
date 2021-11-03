@@ -20,7 +20,7 @@ This document describes the differences between vx.x.x and v6.0.0.
 1. New or Changed Features
 ==========================
 - kernelversion
-
+- updatekernel
 
 
 2. Resolved Issues
@@ -30,6 +30,8 @@ This document describes the differences between vx.x.x and v6.0.0.
 - rx id in config file was not taken into account. fixed.
 - programming firmware failure for blackfin, fixed but requires new kernel.
 - nios kernel check updated (ensuring right kernel)
+- executecommand now says which module failed
+- programming firmware did not delete temporary file created. fixed.
 
 3. Known Issues
 ===============

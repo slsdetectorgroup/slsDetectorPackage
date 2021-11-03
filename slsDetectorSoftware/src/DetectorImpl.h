@@ -284,12 +284,21 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     /**
      * Convert raw file
-     * [Jungfrau][Ctb] from pof file
+     * [Jungfrau][Ctb][Moench] from pof file
      * [Mythen3][Gotthard2] from rbf file
      * @param fname name of pof/rbf file
      * @returns binary of the program
      */
     std::vector<char> readProgrammingFile(const std::string &fname);
+
+    /**
+     * Read file into memory
+     * [Jungfrau][Ctb][Moench] from lzma file
+     * [Mythen3][Gotthard2] from bin file
+     * @param fname name of file
+     * @returns binary of the program
+     */
+    std::vector<char> readKernelFile(const std::string &fname);
 
     sls::Result<int> getNumberofUDPInterfaces(Positions pos) const;
     void setNumberofUDPInterfaces(int n, Positions pos);

@@ -2853,7 +2853,7 @@ std::string CmdProxy::CopyDetectorServer(int action) {
               "[pc_host_name]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3]["
               "Gotthard2] Copies detector server via tftp from pc. Ensure that "
               "server is in the pc's tftp folder. Makes a symbolic link with a "
-              "shorter name (without vx.x.x). Then, detector reboots (except "
+              "shorter name (without vx.x.x). Then, detector controller reboots (except "
               "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn server "
               "to the link, which is effective after a reboot."
            << '\n';
@@ -2864,6 +2864,27 @@ std::string CmdProxy::CopyDetectorServer(int action) {
             WrongNumberOfParameters(2);
         }
         det->copyDetectorServer(args[0], args[1], std::vector<int>{det_id});
+        os << "successful\n";
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::UpdateKernel(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[kernel_name with full path]\n\t[Jungfrau][Ctb][Moench][Mythen3]["
+              "Gotthard2] Advanced Command!! You could damage the detector. Please use" "with caution.\n\tUpdates the kernel image. Then, detector controller " "reboots with new kernel."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("Cannot get");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->updateKernel(args[0], std::vector<int>{det_id});
         os << "successful\n";
     } else {
         throw sls::RuntimeError("Unknown action");

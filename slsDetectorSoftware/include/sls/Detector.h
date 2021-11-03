@@ -1744,6 +1744,14 @@ class Detector {
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname, Positions pos = {});
 
+    /** [Jungfrau][Ctb][Moench][Mythen3][Gotthard2] \n
+     * Advanced Command!! You could damage the detector. Please use with 
+     * caution.\nUpdates the kernel image. Then, detector controller reboots
+     *  with new kernel
+     */
+    void updateKernel(const std::string &fname, Positions pos = {});
+
+
     /** [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2] Advanced user
      * Function! */
     void rebootController(Positions pos = {});

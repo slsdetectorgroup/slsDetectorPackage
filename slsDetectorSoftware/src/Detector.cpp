@@ -2150,6 +2150,12 @@ void Detector::copyDetectorServer(const std::string &fname,
     }
 }
 
+void Detector::updateKernel(const std::string &fname, Positions pos) {
+    std::vector<char> buffer = pimpl->readKernelFile(fname);
+    pimpl->Parallel(&Module::updateKernel, pos, buffer);
+    rebootController(pos);
+}
+
 void Detector::rebootController(Positions pos) {
     pimpl->Parallel(&Module::rebootController, pos);
 }
@@ -2240,7 +2246,7 @@ Result<sls::IpAddr> Detector::getLastClientIP(Positions pos) const {
 
 Result<std::string> Detector::executeCommand(const std::string &value,
                                              Positions pos) {
-    return pimpl->Parallel(&Module::execCommand, pos, value);
+    return pimpl->Parallel(&Module::executeCommand, pos, value);
 }
 
 Result<int64_t> Detector::getNumberOfFramesFromStart(Positions pos) const {

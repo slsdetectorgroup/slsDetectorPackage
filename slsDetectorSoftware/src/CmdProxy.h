@@ -1059,6 +1059,7 @@ class CmdProxy {
         {"programfpga", &CmdProxy::ProgramFpga},
         {"resetfpga", &CmdProxy::resetfpga},
         {"copydetectorserver", &CmdProxy::CopyDetectorServer},
+        {"updatekernel", &CmdProxy::UpdateKernel},
         {"rebootcontroller", &CmdProxy::rebootcontroller},
         {"update", &CmdProxy::UpdateFirmwareAndDetectorServer},
         {"reg", &CmdProxy::Register},
@@ -1183,6 +1184,7 @@ class CmdProxy {
     /* Advanced */
     std::string ProgramFpga(int action);
     std::string CopyDetectorServer(int action);
+    std::string UpdateKernel(int action);
     std::string UpdateFirmwareAndDetectorServer(int action);
     std::string Register(int action);
     std::string AdcRegister(int action);

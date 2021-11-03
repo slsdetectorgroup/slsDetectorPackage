@@ -541,6 +541,7 @@ class Module : public virtual slsDetectorDefs {
     void resetFPGA();
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname);
+    void updateKernel(std::vector<char> buffer);
     void rebootController();
     uint32_t readRegister(uint32_t addr) const;
     uint32_t writeRegister(uint32_t addr, uint32_t val);
@@ -565,7 +566,7 @@ class Module : public virtual slsDetectorDefs {
     bool getLockDetector() const;
     void setLockDetector(bool lock);
     sls::IpAddr getLastClientIP() const;
-    std::string execCommand(const std::string &cmd);
+    std::string executeCommand(const std::string &cmd);
     int64_t getNumberOfFramesFromStart() const;
     int64_t getActualTime() const;
     int64_t getMeasurementTime() const;
@@ -748,6 +749,8 @@ class Module : public virtual slsDetectorDefs {
                                          bool trimbits = true);
     void programFPGAviaBlackfin(std::vector<char> buffer);
     void programFPGAviaNios(std::vector<char> buffer);
+    void updateKernelviaBlackfin(std::vector<char> buffer);
+    void updateKernelviaNios(std::vector<char> buffer);
 
     const int moduleIndex;
     mutable sls::SharedMemory<sharedModule> shm{0, 0};

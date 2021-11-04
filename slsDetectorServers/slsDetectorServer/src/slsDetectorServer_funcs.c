@@ -415,8 +415,7 @@ void function_table() {
     flist[F_GET_READOUT_SPEED] = &get_readout_speed;
     flist[F_SET_READOUT_SPEED] = &set_readout_speed;
     flist[F_GET_KERNEL_VERSION] = &get_kernel_version;
-    flist[F_COPY_KERNEL] = &copy_kernel;
-
+    flist[F_PROGRAM_KERNEL] = &program_kernel;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -3667,127 +3666,150 @@ int program_fpga(int file_des) {
             return printSocketReadError();
         LOG(logDEBUG1, ("checksum is: %s\n\n", checksum));
 
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
-        if (filesize > NIOS_MAX_APP_IMAGE_SIZE) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start programming FPGA. File size 0x%llx "
-                    "exceeds max size 0x%llx. Forgot Compression?\n",
-                    (long long unsigned int)filesize,
-                    (long long unsigned int)NIOS_MAX_APP_IMAGE_SIZE);
-            LOG(logERROR, (mess));
+        switch (myDetectorType) {
+        case MYTHEN3:
+        case GOTTHARD2:
+            program_fpga_via_nios(file_des, FPGA_PROGRAM, filesize, checksum);
+            break;
+        default:
+            program_fpga_via_blackfin(file_des, FPGA_PROGRAM, filesize,
+                                      checksum);
+            break;
         }
-        Server_SendResult(file_des, INT32, NULL, 0);
 
-        // receive program
         if (ret == OK) {
-            char *fpgasrc = malloc(filesize);
-            if (receiveData(file_des, fpgasrc, filesize, OTHER) < 0) {
-                free(fpgasrc);
-                return printSocketReadError();
-            }
-            ret = eraseAndWriteToFlash(mess, checksum, fpgasrc, filesize);
-            Server_SendResult(file_des, INT32, NULL, 0);
-            free(fpgasrc);
-        }
-        if (ret == FAIL) {
+            LOG(logINFOGREEN, ("Programming FPGA completed successfully\n"));
+        } else {
             LOG(logERROR, ("Program FPGA FAIL!\n"));
-            return FAIL;
         }
-
-#else // jungfrau, ctb, moench
-
-        // open file and allocate memory for part program
-        FILE *fd = NULL;
-        ret = preparetoCopyFPGAProgram(&fd, filesize, mess);
-        char *src = NULL;
-        if (ret == OK) {
-            src = malloc(MAX_FPGAPROGRAMSIZE);
-            if (src == NULL) {
-                fclose(fd);
-                struct sysinfo info;
-                sysinfo(&info);
-                sprintf(mess,
-                        "Could not allocate memory to get fpga program. Free "
-                        "space: %d MB\n",
-                        (int)(info.freeram / (1024 * 1024)));
-                LOG(logERROR, (mess));
-                ret = FAIL;
-            }
-        }
-        Server_SendResult(file_des, INT32, NULL, 0);
-        if (ret == FAIL) {
-            LOG(logERROR, ("Program FPGA FAIL1!\n"));
-            return FAIL;
-        }
-
-        // copying program part by part
-        uint64_t totalsize = filesize;
-        while (ret == OK && filesize) {
-            uint64_t unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
-            if (unitprogramsize > filesize)                 // less than 2mb
-                unitprogramsize = filesize;
-            LOG(logDEBUG1, ("unit size to receive is:%lld [filesize:%lld]\n",
-                            (long long unsigned int)unitprogramsize,
-                            (long long unsigned int)filesize));
-
-            // receive part of program
-            if (receiveData(file_des, src, unitprogramsize, OTHER) < 0) {
-                printSocketReadError();
-                break;
-            }
-
-            if (unitprogramsize - filesize == 0) {
-                // src[unitprogramsize] = '\0';
-                filesize -= unitprogramsize;
-                // unitprogramsize++;
-            } else
-                filesize -= unitprogramsize;
-
-            // copy program
-            if (fwrite((void *)src, sizeof(char), unitprogramsize, fd) !=
-                unitprogramsize) {
-                ret = FAIL;
-                sprintf(mess, "Could not copy program to /var/tmp (size:%ld)\n",
-                        (long int)unitprogramsize);
-                LOG(logERROR, (mess));
-            }
-            Server_SendResult(file_des, INT32, NULL, 0);
-            if (ret == FAIL) {
-                break;
-            }
-            // print progress
-            LOG(logINFO,
-                ("\t%d%%\r",
-                 (int)(((double)(totalsize - filesize) / totalsize) * 100)));
-            fflush(stdout);
-        }
-        free(src);
-        fclose(fd);
-
-        // checksum of copied program
-        if (ret == OK) {
-            ret = verifyChecksumFromFile(mess, checksum, TEMP_PROG_FILE_NAME);
-        }
-        Server_SendResult(file_des, INT32, NULL, 0);
-        if (ret == FAIL) {
-            LOG(logERROR, ("Program FPGA FAIL!\n"));
-            return FAIL;
-        }
-
-        // copy to flash
-        ret = copyToFlash(totalsize, checksum, mess);
-        Server_SendResult(file_des, INT32, NULL, 0);
-        if (ret == FAIL) {
-            LOG(logERROR, ("Program FPGA FAIL!\n"));
-            return FAIL;
-        }
-
-#endif // end of Blackfin programming
-        LOG(logINFOGREEN, ("Programming FPGA completed successfully\n"));
     }
 #endif
     return ret;
+}
+
+void program_fpga_via_blackfin(int file_des, enum PROGRAMINDEX index,
+                               uint64_t filesize, char *checksum) {
+    char messageType[SHORT_STR_LENGTH] = {0};
+    switch (index) {
+    case FPGA_PROGRAM:
+        strcpy(messageType, "fpga program");
+        break;
+    case KERNEL_PROGRAM:
+        strcpy(messageType, "kernel program");
+        break;
+    case SERVER_PROGRAM:
+        strcpy(messageType, "server program");
+        break;
+    default:
+        ret = FAIL;
+        sprintf(mess, "Unknown program index %d\n", index);
+        LOG(logERROR, (mess));
+        Server_SendResult(file_des, INT32, NULL, 0);
+        return;
+    }
+
+    // open file and allocate memory for part program
+    FILE *fd = NULL;
+    ret = preparetoCopyProgram(&fd, filesize, mess);
+    char *src = NULL;
+    if (ret == OK) {
+        src = malloc(MAX_BLACKFIN_PROGRAM_SIZE);
+        if (src == NULL) {
+            fclose(fd);
+            struct sysinfo info;
+            sysinfo(&info);
+            sprintf(mess,
+                    "Could not allocate memory to get %s. Free "
+                    "space: %d MB\n",
+                    messageType, (int)(info.freeram / (1024 * 1024)));
+            LOG(logERROR, (mess));
+            ret = FAIL;
+        }
+    }
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret == FAIL) {
+        return;
+    }
+
+    // copying program part by part
+    uint64_t totalsize = filesize;
+    while (ret == OK && filesize) {
+        uint64_t unitprogramsize = MAX_BLACKFIN_PROGRAM_SIZE;
+        if (unitprogramsize > filesize)
+            unitprogramsize = filesize;
+        LOG(logDEBUG1, ("unit size to receive is:%lld [filesize:%lld]\n",
+                        (long long unsigned int)unitprogramsize,
+                        (long long unsigned int)filesize));
+
+        // receive part of program
+        if (receiveData(file_des, src, unitprogramsize, OTHER) < 0) {
+            printSocketReadError();
+            break;
+        }
+        filesize -= unitprogramsize;
+
+        // copy program
+        if (fwrite((void *)src, sizeof(char), unitprogramsize, fd) !=
+            unitprogramsize) {
+            ret = FAIL;
+            sprintf(mess, "Could not copy program to /var/tmp (size:%ld)\n",
+                    (long int)unitprogramsize);
+            LOG(logERROR, (mess));
+        }
+        Server_SendResult(file_des, INT32, NULL, 0);
+        if (ret == FAIL) {
+            break;
+        }
+        // print progress
+        LOG(logINFO,
+            ("\t%d%%\r",
+             (int)(((double)(totalsize - filesize) / totalsize) * 100)));
+        fflush(stdout);
+    }
+    free(src);
+    fclose(fd);
+
+    // checksum of copied program
+    if (ret == OK) {
+        ret = verifyChecksumFromFile(mess, checksum, TEMP_PROG_FILE_NAME);
+    }
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret == FAIL) {
+        return;
+    }
+
+    // copy to flash
+    ret = copyToFlash(index, messageType, totalsize, checksum, mess);
+    Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int program_fpga_via_nios(int file_des, uint64_t filesize, char *checksum) {
+    // validate file size
+    if (filesize > NIOS_MAX_APP_IMAGE_SIZE) {
+        ret = FAIL;
+        sprintf(mess,
+                "Could not start programming FPGA. File size 0x%llx "
+                "exceeds max size 0x%llx. Forgot Compression?\n",
+                (long long unsigned int)filesize,
+                (long long unsigned int)NIOS_MAX_APP_IMAGE_SIZE);
+        LOG(logERROR, (mess));
+    }
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret == FAIL) {
+        return;
+    }
+
+    // receive program
+    char *src = malloc(filesize);
+    if (receiveData(file_des, src, filesize, OTHER) < 0) {
+        free(src);
+        ret = printSocketReadError();
+        return;
+    }
+    // erase and program
+    ret = eraseAndWriteToFlash(mess, checksum, src, filesize);
+    Server_SendResult(file_des, INT32, NULL, 0);
+    free(src);
 }
 
 int reset_fpga(int file_des) {
@@ -9428,8 +9450,8 @@ int get_kernel_version(int file_des) {
     // get only
     ret = getKernelVersion(retvals);
     if (ret == FAIL) {
-        snprintf(mess, MAX_STR_LENGTH,
-                     "Could not get kernel version. %s\n", retvals);
+        snprintf(mess, MAX_STR_LENGTH, "Could not get kernel version. %s\n",
+                 retvals);
         LOG(logERROR, (mess));
     } else {
         LOG(logDEBUG1, ("kernel version: [%s]\n", retvals));
@@ -9437,138 +9459,9 @@ int get_kernel_version(int file_des) {
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
-
-int copy_kernel(int file_des) {
+int program_kernel(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    char args[2][MAX_STR_LENGTH];
-    char retvals[MAX_STR_LENGTH] = {0};
 
-    memset(args, 0, sizeof(args));
-    memset(retvals, 0, sizeof(retvals));
-
-    if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
-        return printSocketReadError();
-
-#ifdef VIRTUAL
-    functionNotImplemented();
-#else
-
-    // only set
-    if (Server_VerifyLock() == OK) {
-        char *sname = args[0];
-        char *hostname = args[1];
-        LOG(logINFOBLUE, ("Copying kernel image %s from host %s\n", sname, hostname));
-        char cmd[MAX_STR_LENGTH] = {0};
-
-        // tftp server
-        char *format = "tftp %s -r %s -g";
-        if (snprintf(cmd, MAX_STR_LENGTH, format, hostname, sname) >=
-            MAX_STR_LENGTH) {
-            ret = FAIL;
-            strcpy(mess, "Could not copy detector server. Command to copy "
-                         "server too long\n");
-            LOG(logERROR, (mess));
-        } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-            ret = FAIL;
-            snprintf(mess, MAX_STR_LENGTH,
-                     "Could not copy detector server (tftp). %s\n", retvals);
-            // LOG(logERROR, (mess)); already printed in executecommand
-        } else {
-            LOG(logINFO, ("\tServer copied\n"));
-        }
-
-        // give permissions
-        if (ret == OK) {
-            if (snprintf(cmd, MAX_STR_LENGTH, "chmod 777 %s", sname) >=
-                MAX_STR_LENGTH) {
-                ret = FAIL;
-                strcpy(mess, "Could not copy detector server. Command to give "
-                             "permissions to server is too long\n");
-                LOG(logERROR, (mess));
-            } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-                ret = FAIL;
-                snprintf(mess, MAX_STR_LENGTH,
-                         "Could not copy detector server (permissions). %s\n",
-                         retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            } else {
-                LOG(logINFO, ("\tPermissions modified\n"));
-            }
-        }
-
-        // symbolic link
-        if (ret == OK) {
-            if (snprintf(cmd, MAX_STR_LENGTH, "ln -sf %s %s", sname,
-                         LINKED_SERVER_NAME) >= MAX_STR_LENGTH) {
-                ret = FAIL;
-                strcpy(mess, "Could not copy detector server. Command to "
-                             "create symbolic link too long\n");
-                LOG(logERROR, (mess));
-            } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-                ret = FAIL;
-                snprintf(mess, MAX_STR_LENGTH,
-                         "Could not copy detector server (symbolic link). %s\n",
-                         retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            } else {
-                LOG(logINFO, ("\tSymbolic link created\n"));
-            }
-        }
-
-        // blackfin boards (respawn) (only kept for backwards compatibility)
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
-    defined(GOTTHARDD)
-        // delete every line with DetectorServer in /etc/inittab
-        if (ret == OK) {
-            strcpy(cmd, "sed -i '/DetectorServer/d' /etc/inittab");
-            if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-                ret = FAIL;
-                snprintf(
-                    mess, MAX_STR_LENGTH,
-                    "Could not copy detector server (del respawning). %s\n",
-                    retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            } else {
-                LOG(logINFO, ("\tinittab: DetectoServer line deleted\n"));
-            }
-        }
-
-        // add new link name to /etc/inittab
-        if (ret == OK) {
-            format = "echo 'ttyS0::respawn:/./%s' >> /etc/inittab";
-            if (snprintf(cmd, MAX_STR_LENGTH, format, LINKED_SERVER_NAME) >=
-                MAX_STR_LENGTH) {
-                ret = FAIL;
-                strcpy(mess, "Could not copy detector server. Command "
-                             "to add new server for spawning is too long\n");
-                LOG(logERROR, (mess));
-            } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-                ret = FAIL;
-                snprintf(mess, MAX_STR_LENGTH,
-                         "Could not copy detector server (respawning). %s\n",
-                         retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            } else {
-                LOG(logINFO, ("\tinittab: updated for respawning\n"));
-            }
-        }
-#endif
-
-        // sync
-        if (ret == OK) {
-            strcpy(cmd, "sync");
-            if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-                ret = FAIL;
-                snprintf(mess, MAX_STR_LENGTH,
-                         "Could not copy detector server (sync). %s\n",
-                         retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            } else {
-                LOG(logINFO, ("\tsync\n"));
-            }
-        }
-    }
-#endif
-    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
+    return ret;
 }

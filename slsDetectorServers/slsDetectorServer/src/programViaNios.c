@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-#include "programFpgaNios.h"
+#include "programViaNios.h"
 #include "clogger.h"
 #include "common.h"
 #include "sls/ansi.h"

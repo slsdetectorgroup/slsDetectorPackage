@@ -1393,7 +1393,6 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
 
 std::vector<char> DetectorImpl::readKernelFile(const std::string &fname) {
     // validate type of file
-    bool isPof = false;
     switch (shm()->detType) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
@@ -1401,7 +1400,6 @@ std::vector<char> DetectorImpl::readKernelFile(const std::string &fname) {
         if (fname.find(".lzma") == std::string::npos) {
             throw RuntimeError("Kernel image file must be a lzma file.");
         }
-        isPof = true;
         break;
     case MYTHEN3:
     case GOTTHARD2:
@@ -1410,11 +1408,11 @@ std::vector<char> DetectorImpl::readKernelFile(const std::string &fname) {
         }
         break;
     default:
-        throw RuntimeError("Programming kernel image via the package is not implemented for this detector");
+        throw RuntimeError("Programming kernel image via the package is not "
+                           "implemented for this detector");
     }
 
-    LOG(logINFO)
-        << "Updating Kernel...";
+    LOG(logINFO) << "Updating Kernel...";
     LOG(logDEBUG1) << "Programming kernel image with file name:" << fname;
 
     // check if it exists
@@ -1425,9 +1423,7 @@ std::vector<char> DetectorImpl::readKernelFile(const std::string &fname) {
 
     FILE *fp = fopen(fname.c_str(), "rb");
     if (fp == nullptr) {
-        throw RuntimeError(
-            "Program kernel: Could not open file: " +
-            fname);
+        throw RuntimeError("Program kernel: Could not open file: " + fname);
     }
 
     // get file size to print progress
@@ -1446,8 +1442,7 @@ std::vector<char> DetectorImpl::readKernelFile(const std::string &fname) {
     }
 
     if (fclose(fp) != 0) {
-        throw RuntimeError(
-            "Program kernel: Could not close file");
+        throw RuntimeError("Program kernel: Could not close file");
     }
 
     LOG(logDEBUG1) << "Read file into memory";

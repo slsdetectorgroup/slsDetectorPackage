@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-#include "programFpgaBlackfin.h"
+#include "programViaBlackfin.h"
 #include "clogger.h"
 #include "common.h"
 #include "sls/ansi.h"
@@ -13,13 +13,26 @@
 /* global variables */
 // clang-format off
 #define MAX_TIME_FPGA_TOUCH_FLASH_US (10 * 1000 * 1000) // 10s
-#define CMD_GET_FLASH    "awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd"
+
+#define CMD_GPIO9_DEFINE_OUT "echo out > /sys/class/gpio/gpio9/direction"
+#define CMD_GPIO3_DEFINE_OUT "echo out > /sys/class/gpio/gpio3/direction"
+#define CMD_GPIO9_DEFINE_IN "echo in > /sys/class/gpio/gpio9/direction"
+#define CMD_GPIO3_DEFINE_IN "echo in > /sys/class/gpio/gpio3/direction"
+
+#define CMD_GPIO9_DONT_TOUCH_FLASH "echo 0 > /sys/class/gpio/gpio9/value"
+#define CMD_GPIO3_DONT_TOUCH_FLASH "echo 0 > /sys/class/gpio/gpio3/value"
+
+#define CMD_GET_FPGA_FLASH_DRIVE    "awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd"
+#define CMD_GET_KERNEL_FLASH_DRIVE    "awk \'$4== \"\\\"linux kernel(nor)\\\"\" {print $1}\' /proc/mtd"
+
 #define CMD_FPGA_PICKED_STATUS  "cat /sys/class/gpio/gpio7/value"
+
 #define FLASH_BUFFER_MEMORY_SIZE (128 * 1024) // 500 KB
 // clang-format on
 
 #define FLASH_DRIVE_NAME_SIZE 16
 char flashDriveName[FLASH_DRIVE_NAME_SIZE] = {0};
+char messageType[SHORT_STR_LENGTH] = {0};
 int gpioDefined = 0;
 
 extern int executeCommand(char *command, char *result, enum TLogLevel level);
@@ -60,80 +73,122 @@ void defineGPIOpins() {
         LOG(logDEBUG1, ("gpio pins already defined earlier\n"));
 }
 
-void FPGAdontTouchFlash() {
+int FPGAdontTouchFlash(char *mess) {
 #ifdef VIRTUAL
     return;
 #endif
     // define as output pins
-    system("echo out > /sys/class/gpio/gpio9/direction");
+    if (executeCommand(CMD_GPIO9_DEFINE_OUT, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not program fpga. (could not set gpio9 as output)\n");
+        // LOG(logERROR, (mess)); already printed in executecommand
+        return FAIL;
+    }
     LOG(logINFO, ("\tgpio9: setting output\n"));
+
     if (latestKernelVerified == 1) {
         // gpio 3 = not chip enable
-        system("echo out > /sys/class/gpio/gpio3/direction");
+        if (executeCommand(CMD_GPIO3_DEFINE_OUT, retvals, logDEBUG1) == FAIL) {
+            snprintf(
+                mess, MAX_STR_LENGTH,
+                "Could not program fpga. (could not set gpio3 as output)\n");
+            // LOG(logERROR, (mess)); already printed in executecommand
+            return FAIL;
+        }
         LOG(logINFO, ("\tgpio3: setting output\n"));
     }
 
-    // tell FPGA to not touch flash
-    system("echo 0 > /sys/class/gpio/gpio9/value");
-        LOG(logINFO, ("\tgpio9: fpga dont touch flash\n"));
+    // tell FPGA to not touch
+    if (executeCommand(CMD_GPIO9_DONT_TOUCH_FLASH, retvals, logDEBUG1) ==
+        FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not program fpga. (could not set gpio9 to not touch "
+                 "flash)\n");
+        // LOG(logERROR, (mess)); already printed in executecommand
+        return FAIL;
+    }
+    LOG(logINFO, ("\tgpio9: fpga dont touch flash\n"));
+
     if (latestKernelVerified == 1) {
-        system("echo 1 > /sys/class/gpio/gpio3/value");
+        if (executeCommand(CMD_GPIO3_DONT_TOUCH_FLASH, retvals, logDEBUG1) ==
+            FAIL) {
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not program fpga. (could not set gpio3 to not "
+                     "touch flash)\n");
+            // LOG(logERROR, (mess)); already printed in executecommand
+            return FAIL;
+        }
         LOG(logINFO, ("\tgpio3: fpga dont touch flash\n"));
     }
     // usleep(100*1000);
 }
 
-void FPGATouchFlash() {
+int FPGATouchFlash(char *mess) {
 #ifdef VIRTUAL
     return;
 #endif
     // tell FPGA to touch flash to program itself
-    system("echo in  > /sys/class/gpio/gpio9/direction");
+    if (executeCommand(CMD_GPIO9_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not program fpga. (could not set gpio9 as input)\n");
+        // LOG(logERROR, (mess)); already printed in executecommand
+        return FAIL;
+    }
     LOG(logINFO, ("\tgpio9: setting input\n"));
+
     if (latestKernelVerified == 1) {
-        system("echo in  > /sys/class/gpio/gpio3/direction");
+        if (executeCommand(CMD_GPIO3_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
+            snprintf(
+                mess, MAX_STR_LENGTH,
+                "Could not program fpga. (could not set gpio3 as input)\n");
+            // LOG(logERROR, (mess)); already printed in executecommand
+            return FAIL;
+        }
         LOG(logINFO, ("\tgpio3: setting input\n"));
     }
 }
 
-void resetFPGA() {
+int resetFPGA(char *mess) {
     LOG(logINFOBLUE, ("Reseting FPGA\n"));
 #ifdef VIRTUAL
     return;
 #endif
-    FPGAdontTouchFlash();
-    FPGATouchFlash();
+    if (FPGAdontTouchFlash(mess) == FAIL) {
+        return FAIL;
+    }
+    if (FPGATouchFlash(mess) == FAIL) {
+        return FAIL;
+    }
     usleep(CTRL_SRVR_INIT_TIME_US);
 }
 
-int deleteOldFile(char *mess) {
+int emptyTempFolder(char *mess) {
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
 
-    char *format = "rm -fr %s";
-    if (snprintf(cmd, MAX_STR_LENGTH, format, TEMP_PROG_FILE_NAME) >=
+    char *format = "rm -fr %s*";
+    if (snprintf(cmd, MAX_STR_LENGTH, format, TEMP_PROG_FOLDER_NAME) >=
         MAX_STR_LENGTH) {
-        strcpy(
-            mess,
-            "Could not program fpga. Command to delete old file is too long\n");
+        sprintf(mess,
+                "Could not update %s. Command to empty %s folder is too long\n",
+                messageType, TEMP_PROG_FOLDER_NAME);
         LOG(logERROR, (mess));
         return FAIL;
     }
     if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not program fpga. (could not delete old file: %s)\n",
-                 retvals);
+                 "Could not update %s. (could not empty %s folder: %s)\n",
+                 messageType, TEMP_PROG_FOLDER_NAME, retvals);
         // LOG(logERROR, (mess)); already printed in executecommand
         return FAIL;
     }
-    LOG(logINFO,
-        ("\tDeleted old programming file (%s)\n", TEMP_PROG_FILE_NAME));
+    LOG(logINFO, ("\tDeleted temp folder(%s)\n", TEMP_PROG_FOLDER_NAME));
     return OK;
 }
 
-int preparetoCopyFPGAProgram(FILE **fd, uint64_t fsize, char *mess) {
+int preparetoCopyProgram(FILE **fd, uint64_t fsize, char *mess) {
 
-    if (deleteOldFile(mess) == FAIL) {
+    if (emptyTempFolder(mess) == FAIL) {
         return FAIL;
     }
 
@@ -143,7 +198,7 @@ int preparetoCopyFPGAProgram(FILE **fd, uint64_t fsize, char *mess) {
         sysinfo(&info);
         if (fsize >= info.freeram) {
             sprintf(mess,
-                    "Could not program fpga. Not enough memory to copy "
+                    "Could not update program. Not enough memory to copy "
                     "program. [File size:%ldMB, free RAM: %ldMB]\n",
                     (long int)(fsize / (1024 * 1024)),
                     (long int)(info.freeram / (1024 * 1024)));
@@ -163,9 +218,13 @@ int preparetoCopyFPGAProgram(FILE **fd, uint64_t fsize, char *mess) {
     return OK;
 }
 
-int copyToFlash(ssize_t fsize, char *clientChecksum, char *mess) {
+int copyToFlash(enum PROGRAMINDEX index, char *mType, ssize_t fsize,
+                char *clientChecksum, char *mess) {
 
-    if (getDrive(mess) == FAIL) {
+    memset(messageType, 0, sizeof(messageType));
+    strcpy(messageType, mType);
+
+    if (getDrive(index, messageType, mess) == FAIL) {
         return FAIL;
     }
 
@@ -173,6 +232,12 @@ int copyToFlash(ssize_t fsize, char *clientChecksum, char *mess) {
     FILE *srcfd = NULL;
     if (openFileForFlash(&flashfd, &srcfd, mess) == FAIL) {
         return FAIL;
+    }
+
+    if (index == FPGA_PROGRAM) {
+        if (FPGAdontTouchFlash(char *mess) == FAIL) {
+            return FAIL;
+        }
     }
 
     if (eraseFlash(mess) == FAIL) {
@@ -185,24 +250,40 @@ int copyToFlash(ssize_t fsize, char *clientChecksum, char *mess) {
         return FAIL;
     }
 
-    if (deleteOldFile(mess) == FAIL) {
+    if (emptyTempFolder(mess) == FAIL) {
         return FAIL;
     }
 
-    /* ignoring this until flash fixed
-    if (verifyChecksumFromFlash(mess, clientChecksum, flashDriveName, fsize) == FAIL) {     return FAIL;
+    /* remove condition when flash fpga fixed */
+    if (index == KERNEL_PROGRAM) {
+        if (verifyChecksumFromFlash(mess, clientChecksum, flashDriveName,
+                                    fsize) == FAIL) {
+            return FAIL;
+        }
     }
-    */
-    if (waitForFPGAtoTouchFlash(mess) == FAIL) {
-        return FAIL;
+
+    if (index == FPGA_PROGRAM) {
+        if (waitForFPGAtoTouchFlash(mess) == FAIL) {
+            return FAIL;
+        }
+    }
+
+    // kernel
+    else {
+        if (executeCommand("sync", retvals, logDEBUG1) == FAIL) {
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not update %s. (could not sync)\n", messageType);
+            // LOG(logERROR, (mess)); already printed in executecommand
+            return FAIL;
+        }
     }
 
     return OK;
 }
 
-int getDrive(char *mess) {
+int getDrive(enum PROGRAMINDEX index, char *mess) {
 #ifdef VIRTUAL
-    strcpy(flashDriveName, "/tmp/SLS_mtd3");
+    strcpy(flashDriveName, "/tmp/SLS_tmpDrive");
     return OK;
 #endif
     LOG(logDEBUG1, ("Finding flash drive...\n"));
@@ -217,18 +298,25 @@ int getDrive(char *mess) {
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
 
-    strcpy(cmd, CMD_GET_FLASH);
+    if (index == FPGA_PROGRAM) {
+        strcpy(cmd, CMD_GET_FPGA_FLASH_DRIVE);
+    } else {
+        strcpy(cmd, CMD_GET_KERNEL_FLASH_DRIVE);
+    }
     if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not program fpga. (could not get flash drive: %s)\n",
-                 retvals);
+                 "Could not update %s. (could not get flash drive: %s)\n",
+                 messageType, retvals);
         // LOG(logERROR, (mess)); already printed in executecommand
         return FAIL;
     }
 
     char *pch = strtok(retvals, ":");
     if (pch == NULL) {
-        strcpy(mess, "Could not get mtd drive to flash (strtok fail).\n");
+        strcpy(mess,
+               "Could not update %s. Could not get mtd drive to flash (strtok "
+               "fail).\n",
+               messageType);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -241,15 +329,14 @@ int getDrive(char *mess) {
 }
 
 int openFileForFlash(FILE **flashfd, FILE **srcfd, char *mess) {
-    FPGAdontTouchFlash();
-
     // open src file
     *srcfd = fopen(TEMP_PROG_FILE_NAME, "r");
     if (*srcfd == NULL) {
-        sprintf(mess,
-                "Could not flash. Unable to open temp program file %s in read "
-                "mode\n",
-                TEMP_PROG_FILE_NAME);
+        sprintf(
+            mess,
+            "Could not update %s. Unable to open temp program file %s in read "
+            "mode\n",
+            messageType, TEMP_PROG_FILE_NAME);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -259,8 +346,10 @@ int openFileForFlash(FILE **flashfd, FILE **srcfd, char *mess) {
     *flashfd = fopen(flashDriveName, "w");
     if (*flashfd == NULL) {
         fclose(*srcfd);
-        sprintf(mess, "Unable to open flash drive %s in write mode\n",
-                flashDriveName);
+        sprintf(mess,
+                "Could not update %s. Unable to open flash drive %s in write "
+                "mode\n",
+                messageType, flashDriveName);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -279,15 +368,16 @@ int eraseFlash(char *mess) {
     char *format = "flash_eraseall %s";
     if (snprintf(cmd, MAX_STR_LENGTH, format, flashDriveName) >=
         MAX_STR_LENGTH) {
-        strcpy(mess,
-               "Could not program fpga. Command to erase flash is too long\n");
+        sprintf(mess,
+                "Could not update %s. Command to erase flash is too long\n",
+                messageType);
         LOG(logERROR, (mess));
         return FAIL;
     }
     if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not program fpga. (could not erase flash: %s)\n",
-                 retvals);
+                 "Could not update %s. (could not erase flash: %s)\n",
+                 messageType, retvals);
         // LOG(logERROR, (mess)); already printed in executecommand
         return FAIL;
     }
@@ -302,8 +392,10 @@ int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
     if (buffer == NULL) {
         fclose(flashfd);
         fclose(srcfd);
-        strcpy(mess, "Could not program fpga. Memory allocation to write to "
-                     "flash failed.\n");
+        sprintf(mess,
+                "Could not update %s. Memory allocation to write to "
+                "flash failed.\n",
+                messageType);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -325,9 +417,10 @@ int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
             fclose(flashfd);
             fclose(srcfd);
             sprintf(mess,
-                    "Could not write to flash (bytes written:%ld, expected: "
+                    "Could not update %s. Could not write to flash (bytes "
+                    "written:%ld, expected: "
                     "%ld, total written:%ld)\n",
-                    (long int)bytesWritten, (long int)bytes,
+                    messageType, (long int)bytesWritten, (long int)bytes,
                     (long int)totalBytes);
             LOG(logERROR, (mess));
             return FAIL;
@@ -357,9 +450,9 @@ int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
 
     if (totalBytes != fsize) {
         sprintf(mess,
-                "Could not program fpga. Incorrect bytes written to flash %lu "
+                "Could not update %s. Incorrect bytes written to flash %lu "
                 "[expected: %lu]\n",
-                totalBytes, fsize);
+                messageType, totalBytes, fsize);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -368,7 +461,9 @@ int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
 
 int waitForFPGAtoTouchFlash(char *mess) {
     // touch and program
-    FPGATouchFlash();
+    if (FPGATouchFlash(mess) == FAIL) {
+        return FAIL;
+    }
 
 #ifdef VIRTUAL
     return OK;

@@ -836,8 +836,9 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
         auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
         client.Send(F_GET_NUM_MISSING_PACKETS);
         if (client.Receive<int>() == FAIL) {
-            throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                               " returned error: " + client.readErrorMessage());
+            throw ReceiverError(
+                "Receiver " + std::to_string(moduleIndex) +
+                " returned error: " + client.readErrorMessage());
         } else {
             auto nports = client.Receive<int>();
             std::vector<uint64_t> retval(nports);
@@ -1172,7 +1173,8 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
     LOG(logDEBUG1) << "Setting up Receiver hostname with " << receiverIP;
 
     if (getRunStatus() == RUNNING) {
-        throw RuntimeError("Cannot set receiver hostname. Acquisition already running. Stop it first.");
+        throw RuntimeError("Cannot set receiver hostname. Acquisition already "
+                           "running. Stop it first.");
     }
 
     if (receiverIP == "none") {
@@ -1529,7 +1531,7 @@ void Module::sendReceiverRateCorrections(const std::vector<int64_t> &t) {
     receiver.Send(t);
     if (receiver.Receive<int>() == FAIL) {
         throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                           " returned error: " + receiver.readErrorMessage());
+                            " returned error: " + receiver.readErrorMessage());
     }
 }
 
@@ -1785,7 +1787,7 @@ void Module::sendVetoPhoton(const int chipIndex,
     client.Send(values);
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                           " returned error: " + client.readErrorMessage());
+                            " returned error: " + client.readErrorMessage());
     }
 }
 
@@ -1797,14 +1799,14 @@ void Module::getVetoPhoton(const int chipIndex,
     client.Send(chipIndex);
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                           " returned error: " + client.readErrorMessage());
+                            " returned error: " + client.readErrorMessage());
     }
 
     auto nch = client.Receive<int>();
     if (nch != shm()->nChan.x) {
         throw DetectorError("Could not get veto photon. Expected " +
-                           std::to_string(shm()->nChan.x) + " channels, got " +
-                           std::to_string(nch));
+                            std::to_string(shm()->nChan.x) + " channels, got " +
+                            std::to_string(nch));
     }
     std::vector<int> gainIndices(nch);
     std::vector<int> values(nch);
@@ -2032,7 +2034,7 @@ void Module::getBadChannels(const std::string &fname) const {
     client.Send(F_GET_BAD_CHANNELS);
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                           " returned error: " + client.readErrorMessage());
+                            " returned error: " + client.readErrorMessage());
     }
     // receive badchannels
     auto nch = client.Receive<int>();
@@ -2089,7 +2091,7 @@ void Module::setBadChannels(const std::string &fname) {
     }
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                           " returned error: " + client.readErrorMessage());
+                            " returned error: " + client.readErrorMessage());
     }
 }
 
@@ -2403,7 +2405,7 @@ std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
     client.Send(F_GET_ADDITIONAL_JSON_HEADER);
     if (client.Receive<int>() == FAIL) {
         throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                           " returned error: " + client.readErrorMessage());
+                            " returned error: " + client.readErrorMessage());
     } else {
         auto size = client.Receive<int>();
         std::string buff(size, '\0');
@@ -2452,7 +2454,7 @@ void Module::setAdditionalJsonHeader(
 
     if (client.Receive<int>() == FAIL) {
         throw ReceiverError("Receiver " + std::to_string(moduleIndex) +
-                           " returned error: " + client.readErrorMessage());
+                            " returned error: " + client.readErrorMessage());
     }
 }
 
@@ -2492,7 +2494,8 @@ void Module::programFPGA(std::vector<char> buffer) {
         programFPGAviaNios(buffer);
         break;
     default:
-        throw RuntimeError("Programming FPGA via the package is not implemented for this detector");
+        throw RuntimeError("Programming FPGA via the package is not "
+                           "implemented for this detector");
     }
 }
 
@@ -2532,7 +2535,8 @@ void Module::updateKernel(std::vector<char> buffer) {
         updateKernelviaNios(buffer);
         break;
     default:
-        throw RuntimeError("Updating Kernel via the package is not implemented for this detector");
+        throw RuntimeError("Updating Kernel via the package is not implemented "
+                           "for this detector");
     }
 }
 
@@ -3193,7 +3197,7 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
     sendModule(&module, client);
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Module " + std::to_string(moduleIndex) +
-                           " returned error: " + client.readErrorMessage());
+                            " returned error: " + client.readErrorMessage());
     }
 }
 
@@ -3465,12 +3469,12 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         throw DetectorError(os.str());
     }
 
-    // sending program in parts of 2mb each
+    // sending program in parts
     uint64_t unitprogramsize = 0;
     int currentPointer = 0;
     while (filesize > 0) {
-        unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
-        if (unitprogramsize > filesize) {      // less than 2mb
+        unitprogramsize = MAX_BLACKFIN_PROGRAM_SIZE;
+        if (unitprogramsize > filesize) {
             unitprogramsize = filesize;
         }
         LOG(logDEBUG) << "unitprogramsize:" << unitprogramsize
@@ -3657,12 +3661,12 @@ void Module::updateKernelviaBlackfin(std::vector<char> buffer) {
         throw DetectorError(os.str());
     }
 
-    // sending program in parts of 2mb each
+    // sending program in parts
     uint64_t unitprogramsize = 0;
     int currentPointer = 0;
     while (filesize > 0) {
-        unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
-        if (unitprogramsize > filesize) {      // less than 2mb
+        unitprogramsize = MAX_BLACKFIN_PROGRAM_SIZE;
+        if (unitprogramsize > filesize) {
             unitprogramsize = filesize;
         }
         LOG(logDEBUG) << "unitprogramsize:" << unitprogramsize

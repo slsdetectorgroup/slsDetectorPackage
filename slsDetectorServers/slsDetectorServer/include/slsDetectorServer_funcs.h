@@ -8,6 +8,8 @@
 #define GOODBYE (-200)
 #define REBOOT  (-400)
 
+enum PROGRAMINDEX {FPGA_PROGRAM, KERNEL_PROGRAM, SERVER_PROGRAM}
+
 // initialization functions
 int printSocketReadError();
 void init_detector();
@@ -119,6 +121,10 @@ int get_transmission_delay_left(int);
 int set_transmission_delay_right(int);
 int get_transmission_delay_right(int);
 int program_fpga(int);
+void program_fpga_via_blackfin(int file_des, enum PROGRAMINDEX index,
+                               uint64_t filesize, char *checksum);
+void program_fpga_via_nios(int file_des, enum PROGRAMINDEX index,
+                           uint64_t filesize, char *checksum);
 int reset_fpga(int);
 int power_chip(int);
 int set_activate(int);
@@ -278,4 +284,4 @@ int set_udp_first_dest(int);
 int get_readout_speed(int);
 int set_readout_speed(int);
 int get_kernel_version(int);
-int copy_kernel(int);
+int program_kernel(int);

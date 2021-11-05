@@ -16,8 +16,10 @@ from parse import remove_comments
 allow_bitwise_op = ["M3_GainCaps"]
 allow_bitwise_op = ["streamingInterface"]
 
-op_key = {"operator|": "__or__", 
-          "operator&" : "__and__"}
+# op_key = {"operator|": "__or__", 
+#           "operator&" : "__and__"}
+op_key = {"operator|": "|", 
+          "operator&" : "&"}
 
 def single_line_enum(line):
     sub = line[line.find('{')+1:line.find('}')]
@@ -92,8 +94,7 @@ def generate_enum_string(enums):
 
         #Here add the operators 
         for op in operators:
-            data.append(f"\n\t.def(\"{op_key[op]}\", py::overload_cast< const slsDetectorDefs::streamingInterface&,  const slsDetectorDefs::streamingInterface&>(&{op}))")
-
+            data.append(f"\n\t.def(py::self {op_key[op]} slsDetectorDefs::{key}())")
 
         data.append(';\n\n')
     return ''.join(data)

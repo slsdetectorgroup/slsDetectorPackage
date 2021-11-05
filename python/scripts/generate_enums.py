@@ -16,8 +16,6 @@ from parse import remove_comments
 allow_bitwise_op = ["M3_GainCaps"]
 allow_bitwise_op = ["streamingInterface"]
 
-# op_key = {"operator|": "__or__", 
-#           "operator&" : "__and__"}
 op_key = {"operator|": "|", 
           "operator&" : "&"}
 

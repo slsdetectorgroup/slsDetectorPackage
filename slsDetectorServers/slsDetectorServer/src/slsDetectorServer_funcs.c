@@ -3825,9 +3825,17 @@ int reset_fpga(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (isControlServer) {
             basictests(); // mapping of control server at least
-            initControlServer();
-        } else
+            if (initError == OK) {
+                initControlServer();
+            }
+        } else {
             initStopServer(); // remapping of stop server
+        }
+        if (initError == FAIL) {
+            ret = FAIL;
+            strcpy(mess, initErrorMessage);
+            // LOG(ERROR (mess));already printed
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

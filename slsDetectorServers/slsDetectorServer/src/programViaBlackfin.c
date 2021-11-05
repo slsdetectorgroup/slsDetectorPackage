@@ -14,18 +14,22 @@
 // clang-format off
 #define MAX_TIME_FPGA_TOUCH_FLASH_US (10 * 1000 * 1000) // 10s
 
+#define CMD_GPIO7_DEFINE "echo 7 > /sys/class/gpio/export"
+#define CMD_GPIO9_DEFINE "echo 9 > /sys/class/gpio/export"
+#define CMD_GPIO3_DEFINE "echo 3 > /sys/class/gpio/export"
+
 #define CMD_GPIO9_DEFINE_OUT "echo out > /sys/class/gpio/gpio9/direction"
 #define CMD_GPIO3_DEFINE_OUT "echo out > /sys/class/gpio/gpio3/direction"
+#define CMD_GPIO7_DEFINE_IN "echo in > /sys/class/gpio/gpio7/direction"
 #define CMD_GPIO9_DEFINE_IN "echo in > /sys/class/gpio/gpio9/direction"
 #define CMD_GPIO3_DEFINE_IN "echo in > /sys/class/gpio/gpio3/direction"
 
 #define CMD_GPIO9_DONT_TOUCH_FLASH "echo 0 > /sys/class/gpio/gpio9/value"
 #define CMD_GPIO3_DONT_TOUCH_FLASH "echo 0 > /sys/class/gpio/gpio3/value"
+#define CMD_FPGA_PICKED_STATUS  "cat /sys/class/gpio/gpio7/value"
 
 #define CMD_GET_FPGA_FLASH_DRIVE    "awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd"
 #define CMD_GET_KERNEL_FLASH_DRIVE    "awk \'$4== \"\\\"linux kernel(nor)\\\"\" {print $1}\' /proc/mtd"
-
-#define CMD_FPGA_PICKED_STATUS  "cat /sys/class/gpio/gpio7/value"
 
 #define FLASH_BUFFER_MEMORY_SIZE (128 * 1024) // 500 KB
 // clang-format on
@@ -40,82 +44,106 @@ extern int executeCommand(char *command, char *result, enum TLogLevel level);
 int latestKernelVerified = -1;
 #define KERNEL_DATE_VRSN_3GPIO "Fri Oct 29 00:00:00 2021"
 
-void defineGPIOpins() {
+int defineGPIOpins(char *mess) {
 #ifdef VIRTUAL
-    return;
+    return OK;
 #endif
+    // only latest kernel can use gpio3 pins
     if (latestKernelVerified == -1) {
         if (FAIL == validateKernelVersion(KERNEL_DATE_VRSN_3GPIO)) {
             latestKernelVerified = 0;
             LOG(logWARNING,
-                ("Kernel too old to use gpio 3 pins. Not the end "
-                 "of the world. Continuing with current kernel.\n"));
+                ("Kernel too old to use gpio 3 pins. Update kernel to "
+                 "guarantee error-free fpga programming. \n\tNot the end "
+                 "of the world. Continuing with current kernel...\n"));
         } else {
             latestKernelVerified = 1;
         }
     }
-    if (!gpioDefined) {
-        // define the gpio pins
-        system("echo 7 > /sys/class/gpio/export");
-        LOG(logINFO, ("\tgpio7: defined\n"));
-        system("echo in  > /sys/class/gpio/gpio7/direction");
-        LOG(logINFO, ("\tgpio7: setting intput\n"));
-        system("echo 9 > /sys/class/gpio/export");
-        LOG(logINFO, ("\tgpio9: defined\n"));
 
-        if (latestKernelVerified == 1) {
-            // gpio 3 = not chip enable
-            system("echo 3 > /sys/class/gpio/export");
-            LOG(logINFO, ("\tgpio3: defined\n"));
-        }
-        gpioDefined = 1;
-    } else
+    if (gpioDefined) {
         LOG(logDEBUG1, ("gpio pins already defined earlier\n"));
+        return OK;
+    }
+
+    char retvals[MAX_STR_LENGTH] = {0};
+    // define gpio7
+    if (executeCommand(CMD_GPIO7_DEFINE, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not define gpio7 pins for fpga (%s)\n", retvals);
+        return FAIL;
+    }
+    LOG(logINFO, ("\tgpio7: defined\n"));
+
+    // define gpio7 direction
+    if (executeCommand(CMD_GPIO7_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not set gpio7 as input for fpga (%s)\n", retvals);
+        return FAIL;
+    }
+    LOG(logINFO, ("\tgpio7: setting intput\n"));
+
+    // define gpio9
+    if (executeCommand(CMD_GPIO9_DEFINE, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not define gpio9 pins for fpga (%s)\n", retvals);
+        return FAIL;
+    }
+    LOG(logINFO, ("\tgpio9: defined\n"));
+
+    // define gpio3 (not chip enable)
+    if (latestKernelVerified == 1) {
+        if (executeCommand(CMD_GPIO3_DEFINE, retvals, logDEBUG1) == FAIL) {
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not define gpio3 pins for fpga (%s)\n", retvals);
+            return FAIL;
+        }
+        LOG(logINFO, ("\tgpio3: defined\n"));
+    }
+
+    gpioDefined = 1;
+    return OK;
 }
 
 int FPGAdontTouchFlash(char *mess) {
 #ifdef VIRTUAL
-    return;
+    return OK;
 #endif
-    // define as output pins
+    // define gpio9 as output
     if (executeCommand(CMD_GPIO9_DEFINE_OUT, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not program fpga. (could not set gpio9 as output)\n");
-        // LOG(logERROR, (mess)); already printed in executecommand
+                 "Could not set gpio9 as output for fpga (%s)\n", retvals);
         return FAIL;
     }
     LOG(logINFO, ("\tgpio9: setting output\n"));
 
+    // define gpio3 as output
     if (latestKernelVerified == 1) {
-        // gpio 3 = not chip enable
         if (executeCommand(CMD_GPIO3_DEFINE_OUT, retvals, logDEBUG1) == FAIL) {
-            snprintf(
-                mess, MAX_STR_LENGTH,
-                "Could not program fpga. (could not set gpio3 as output)\n");
-            // LOG(logERROR, (mess)); already printed in executecommand
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not set gpio3 as output for fpga (%s)\n", retvals);
             return FAIL;
         }
         LOG(logINFO, ("\tgpio3: setting output\n"));
     }
 
-    // tell FPGA to not touch
+    // tell FPGA to not: gpio9
     if (executeCommand(CMD_GPIO9_DONT_TOUCH_FLASH, retvals, logDEBUG1) ==
         FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not program fpga. (could not set gpio9 to not touch "
-                 "flash)\n");
-        // LOG(logERROR, (mess)); already printed in executecommand
+                 "Could not set gpio9 to not touch flash for fpga (%s)\n",
+                 retvals);
         return FAIL;
     }
     LOG(logINFO, ("\tgpio9: fpga dont touch flash\n"));
 
+    // tell FPGA to not: gpio3
     if (latestKernelVerified == 1) {
         if (executeCommand(CMD_GPIO3_DONT_TOUCH_FLASH, retvals, logDEBUG1) ==
             FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not program fpga. (could not set gpio3 to not "
-                     "touch flash)\n");
-            // LOG(logERROR, (mess)); already printed in executecommand
+                     "Could not set gpio3 to not touch flash for fpga (%s)\n",
+                     retvals);
             return FAIL;
         }
         LOG(logINFO, ("\tgpio3: fpga dont touch flash\n"));
@@ -125,23 +153,20 @@ int FPGAdontTouchFlash(char *mess) {
 
 int FPGATouchFlash(char *mess) {
 #ifdef VIRTUAL
-    return;
+    return OK;
 #endif
     // tell FPGA to touch flash to program itself
     if (executeCommand(CMD_GPIO9_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not program fpga. (could not set gpio9 as input)\n");
-        // LOG(logERROR, (mess)); already printed in executecommand
+                 "Could not set gpio9 as input for fpga (%s)\n", retvals);
         return FAIL;
     }
     LOG(logINFO, ("\tgpio9: setting input\n"));
 
     if (latestKernelVerified == 1) {
         if (executeCommand(CMD_GPIO3_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
-            snprintf(
-                mess, MAX_STR_LENGTH,
-                "Could not program fpga. (could not set gpio3 as input)\n");
-            // LOG(logERROR, (mess)); already printed in executecommand
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not set gpio3 as input for fpga (%s)\n", retvals);
             return FAIL;
         }
         LOG(logINFO, ("\tgpio3: setting input\n"));
@@ -151,7 +176,7 @@ int FPGATouchFlash(char *mess) {
 int resetFPGA(char *mess) {
     LOG(logINFOBLUE, ("Reseting FPGA\n"));
 #ifdef VIRTUAL
-    return;
+    return OK;
 #endif
     if (FPGAdontTouchFlash(mess) == FAIL) {
         return FAIL;
@@ -166,9 +191,9 @@ int emptyTempFolder(char *mess) {
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
 
-    char *format = "rm -fr %s*";
-    if (snprintf(cmd, MAX_STR_LENGTH, format, TEMP_PROG_FOLDER_NAME) >=
-        MAX_STR_LENGTH) {
+    char *format = "rm -fr %s";
+    if (snprintf(cmd, MAX_STR_LENGTH, format,
+                 TEMP_PROG_FOLDER_NAME_ALL_FILES) >= MAX_STR_LENGTH) {
         sprintf(mess,
                 "Could not update %s. Command to empty %s folder is too long\n",
                 messageType, TEMP_PROG_FOLDER_NAME);
@@ -182,7 +207,7 @@ int emptyTempFolder(char *mess) {
         // LOG(logERROR, (mess)); already printed in executecommand
         return FAIL;
     }
-    LOG(logINFO, ("\tDeleted temp folder(%s)\n", TEMP_PROG_FOLDER_NAME));
+    LOG(logINFO, ("\tEmptied temp folder(%s)\n", TEMP_PROG_FOLDER_NAME));
     return OK;
 }
 

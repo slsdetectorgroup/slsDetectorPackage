@@ -6,13 +6,14 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-#define TEMP_PROG_FOLDER_NAME "/var/tmp/"
-#define TEMP_PROG_FILE_NAME   TEMP_PROG_FOLDER_NAME "tmp.rawbin"
+#define TEMP_PROG_FOLDER_NAME           "/var/tmp/"
+#define TEMP_PROG_FOLDER_NAME_ALL_FILES "/var/tmp/*"
+#define TEMP_PROG_FILE_NAME             TEMP_PROG_FOLDER_NAME "tmp.rawbin"
 
-void defineGPIOpins();
-int FPGAdontTouchFlash();
-int FPGATouchFlash();
-int resetFPGA();
+int defineGPIOpins(char *mess);
+int FPGAdontTouchFlash(char *mess);
+int FPGATouchFlash(char *mess);
+int resetFPGA(char *mess);
 
 int emptyTempFolder(char *mess);
 /**

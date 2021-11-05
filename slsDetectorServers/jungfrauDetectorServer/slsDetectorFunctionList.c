@@ -74,8 +74,14 @@ void basictests() {
     }
     return;
 #else
-    defineGPIOpins();
-    resetFPGA();
+    initError = defineGPIOpins(initErrorMessage);
+    if (initError == FAIL) {
+        return;
+    }
+    initError = resetFPGA(initErrorMessage);
+    if (initError == FAIL) {
+        return;
+    }
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Dangerous to continue.\n");

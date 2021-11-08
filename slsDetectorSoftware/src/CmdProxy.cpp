@@ -285,12 +285,14 @@ std::string CmdProxy::Versions(int action) {
             os << "\nFirmware Version: " << OutStringHex(t);
         }
         os << "\nDetector Server Version: "
-           << OutStringHex(det->getDetectorServerVersion(std::vector<int>{det_id}));
+           << OutStringHex(
+                  det->getDetectorServerVersion(std::vector<int>{det_id}));
         os << "\nDetector Server Version: "
            << OutString(det->getKernelVersion({std::vector<int>{det_id}}));
         if (det->getUseReceiverFlag().squash(true)) {
             os << "\nReceiver Version: "
-               << OutStringHex(det->getReceiverVersion(std::vector<int>{det_id}));
+               << OutStringHex(
+                      det->getReceiverVersion(std::vector<int>{det_id}));
         }
         os << std::dec << '\n';
     } else if (action == defs::PUT_ACTION) {
@@ -1432,7 +1434,9 @@ std::string CmdProxy::UDPDestinationList(int action) {
             throw sls::RuntimeError("udp_dstlist must be at module level.");
         }
         if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
-            throw sls::RuntimeError(std::string("Invalid receiver index ") + std::to_string(rx_id) + std::string(" to set round robin entry."));
+            throw sls::RuntimeError(std::string("Invalid receiver index ") +
+                                    std::to_string(rx_id) +
+                                    std::string(" to set round robin entry."));
         }
         auto t = det->getDestinationUDPList(rx_id, std::vector<int>{det_id});
         os << OutString(t) << '\n';
@@ -2851,9 +2855,10 @@ std::string CmdProxy::CopyDetectorServer(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[server_name (in tftp folder)] "
               "[pc_host_name]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3]["
-              "Gotthard2] Copies detector server via tftp from pc. Ensure that "
+              "Gotthard2] Copies detector server via TFTP from pc. Ensure that "
               "server is in the pc's tftp folder. Makes a symbolic link with a "
-              "shorter name (without vx.x.x). Then, detector controller reboots (except "
+              "shorter name (without vx.x.x). Then, detector controller "
+              "reboots (except "
               "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn server "
               "to the link, which is effective after a reboot."
            << '\n';
@@ -2871,12 +2876,43 @@ std::string CmdProxy::CopyDetectorServer(int action) {
     return os.str();
 }
 
+std::string CmdProxy::UpdateDetectorServer(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[server_name  with full "
+              "path]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3]["
+              "Gotthard2] Copies detector server via TCP (without tftp). Makes "
+              "a symbolic link with a shorter name (without vx.x.x). Then, "
+              "detector controller reboots (except "
+              "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn server "
+              "to the link, which is effective after a reboot."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("Cannot get");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->updateDetectorServer(args[0], std::vector<int>{det_id});
+        os << "successful\n";
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::UpdateKernel(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[kernel_name with full path]\n\t[Jungfrau][Ctb][Moench][Mythen3]["
-              "Gotthard2] Advanced Command!! You could damage the detector. Please use" "with caution.\n\tUpdates the kernel image. Then, detector controller " "reboots with new kernel."
+        os << "[kernel_name with full "
+              "path]\n\t[Jungfrau][Ctb][Moench][Mythen3]["
+              "Gotthard2] Advanced Command!! You could damage the detector. "
+              "Please use"
+              "with caution.\n\tUpdates the kernel image. Then, detector "
+              "controller "
+              "reboots with new kernel."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");

@@ -2487,14 +2487,14 @@ void Module::programFPGA(std::vector<char> buffer) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
     case MOENCH:
-        programFPGAviaBlackfin(buffer);
+        sendProgram(true, buffer, F_PROGRAM_FPGA, "Update Firmware");
         break;
     case MYTHEN3:
     case GOTTHARD2:
-        programFPGAviaNios(buffer);
+        sendProgram(false, buffer, F_PROGRAM_FPGA, "Update Firmware");
         break;
     default:
-        throw RuntimeError("Programming FPGA via the package is not "
+        throw RuntimeError("Updating Firmware via the package is not "
                            "implemented for this detector");
     }
 }
@@ -2523,16 +2523,35 @@ void Module::copyDetectorServer(const std::string &fname,
                  << "): detector server copied";
 }
 
+void Module::updateDetectorServer(std::vector<char> buffer) {
+    switch (shm()->detType) {
+    case JUNGFRAU:
+    case CHIPTESTBOARD:
+    case MOENCH:
+        sendProgram(true, buffer, F_UPDATE_DETECTOR_SERVER,
+                    "Update Detector Server (no tftp)");
+        break;
+    case MYTHEN3:
+    case GOTTHARD2:
+        sendProgram(false, buffer, F_UPDATE_DETECTOR_SERVER,
+                    "Update Detector Server (no tftp)");
+        break;
+    default:
+        throw RuntimeError("Updating Kernel via the package is not implemented "
+                           "for this detector");
+    }
+}
+
 void Module::updateKernel(std::vector<char> buffer) {
     switch (shm()->detType) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
     case MOENCH:
-        updateKernelviaBlackfin(buffer);
+        sendProgram(true, buffer, F_UPDATE_KERNEL, "Update Kernel");
         break;
     case MYTHEN3:
     case GOTTHARD2:
-        updateKernelviaNios(buffer);
+        sendProgram(false, buffer, F_UPDATE_KERNEL, "Update Kernel");
         break;
     default:
         throw RuntimeError("Updating Kernel via the package is not implemented "
@@ -3443,16 +3462,19 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
     return myMod;
 }
 
-void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
-    // send program from memory to detector
+void Module::sendProgram(bool blackfin, std::vector<char> buffer,
+                         const int functionEnum,
+                         const std::string &functionType) {
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): Sending programming binary (from pof)";
+                 << "): Sending " << functionType;
+
+    // send fnum and filesize
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_PROGRAM_FPGA);
+    client.Send(functionEnum);
     uint64_t filesize = buffer.size();
     client.Send(filesize);
 
-    // checksum
+    // send checksum
     std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
     LOG(logDEBUG1) << "Checksum:" << checksum;
     char cChecksum[MAX_STR_LENGTH];
@@ -3460,39 +3482,42 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     strcpy(cChecksum, checksum.c_str());
     client.Send(cChecksum);
 
-    //  opening file fail
+    // validate memory allocation etc in detector
     if (client.Receive<int>() == FAIL) {
-        std::cout << '\n';
         std::ostringstream os;
         os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
            << " returned error: " << client.readErrorMessage();
         throw DetectorError(os.str());
     }
 
-    // sending program in parts
-    uint64_t unitprogramsize = 0;
-    int currentPointer = 0;
-    while (filesize > 0) {
-        unitprogramsize = MAX_BLACKFIN_PROGRAM_SIZE;
-        if (unitprogramsize > filesize) {
-            unitprogramsize = filesize;
-        }
-        LOG(logDEBUG) << "unitprogramsize:" << unitprogramsize
-                      << "\t filesize:" << filesize;
+    // send program
+    if (blackfin) {
+        uint64_t unitprogramsize = 0;
+        int currentPointer = 0;
+        while (filesize > 0) {
+            unitprogramsize = MAX_BLACKFIN_PROGRAM_SIZE;
+            if (unitprogramsize > filesize) {
+                unitprogramsize = filesize;
+            }
+            LOG(logDEBUG) << "unitprogramsize:" << unitprogramsize
+                          << "\t filesize:" << filesize;
 
-        client.Send(&buffer[currentPointer], unitprogramsize);
-        if (client.Receive<int>() == FAIL) {
-            std::cout << '\n';
-            std::ostringstream os;
-            os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-               << " returned error: " << client.readErrorMessage();
-            throw DetectorError(os.str());
+            client.Send(&buffer[currentPointer], unitprogramsize);
+            if (client.Receive<int>() == FAIL) {
+                std::cout << '\n';
+                std::ostringstream os;
+                os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
+                   << " returned error: " << client.readErrorMessage();
+                throw DetectorError(os.str());
+            }
+            filesize -= unitprogramsize;
+            currentPointer += unitprogramsize;
         }
-        filesize -= unitprogramsize;
-        currentPointer += unitprogramsize;
+    } else {
+        client.Send(buffer);
     }
 
-    // checksum
+    // tmp checksum verified in detector
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
@@ -3502,50 +3527,22 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     LOG(logINFO) << "Checksum verified for module " << moduleIndex << " ("
                  << shm()->hostname << ")";
 
-    // simulating erasing flash
-    {
-        LOG(logINFO) << "(Simulating) Erasing Flash for module " << moduleIndex
-                     << " (" << shm()->hostname << ")";
-        printf("%d%%\r", 0);
-        std::cout << std::flush;
-        // erasing takes 65 seconds, printing here (otherwise need threads
-        // in server-unnecessary)
-        const int ERASE_TIME = 65;
-        int count = ERASE_TIME + 1;
-        while (count > 0) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            --count;
-            printf("%d%%\r",
-                   static_cast<int>(
-                       (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) *
-                       100));
-            std::cout << std::flush;
+    // simulating erasing and writing to
+    if (functionEnum == F_PROGRAM_FPGA) {
+        if (blackfin) {
+            simulatingActivityinDetector("Erasing Flash",
+                                         BLACKFIN_ERASE_FLASH_TIME);
+            simulatingActivityinDetector("Writing to Flash",
+                                         BLACKFIN_WRITE_TO_FLASH_TIME);
+        } else {
+            simulatingActivityinDetector("Erasing Flash",
+                                         NIOS_ERASE_FLASH_TIME);
+            simulatingActivityinDetector("Writing to Flash",
+                                         NIOS_WRITE_TO_FLASH_TIME);
         }
-        printf("\n");
     }
 
-    // simulating writing to flash
-    {
-        LOG(logINFO) << "(Simulating) Writing to Flash for module "
-                     << moduleIndex << " (" << shm()->hostname << ")";
-        printf("%d%%\r", 0);
-        std::cout << std::flush;
-        // writing takes 30 seconds, printing here (otherwise need threads
-        // in server-unnecessary)
-        const int ERASE_TIME = 30;
-        int count = ERASE_TIME + 1;
-        while (count > 0) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            --count;
-            printf("%d%%\r",
-                   static_cast<int>(
-                       (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) *
-                       100));
-            std::cout << std::flush;
-        }
-        printf("\n");
-    }
-
+    // update verified
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
@@ -3553,190 +3550,26 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         throw DetectorError(os.str());
     }
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): FPGA programmed successfully";
+                 << "): " << functionType << " udpated successfully";
 }
 
-void Module::programFPGAviaNios(std::vector<char> buffer) {
-    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): Sending programming binary (from rbf)";
-
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_PROGRAM_FPGA);
-    uint64_t filesize = buffer.size();
-    client.Send(filesize);
-
-    // checksum
-    std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
-    LOG(logDEBUG1) << "Checksum:" << checksum;
-    char cChecksum[MAX_STR_LENGTH];
-    memset(cChecksum, 0, MAX_STR_LENGTH);
-    strcpy(cChecksum, checksum.c_str());
-    client.Send(cChecksum);
-
-    // validate file size before sending program
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-    client.Send(buffer);
-
-    // simulating erasing flash
-    {
-        LOG(logINFO) << "(Simulating) Erasing Flash for module " << moduleIndex
-                     << " (" << shm()->hostname << ")";
-        printf("%d%%\r", 0);
+void Module::simulatingActivityinDetector(const std::string &functionType,
+                                          const int timeRequired) {
+    LOG(logINFO) << "(Simulating) " << functionType << " for module "
+                 << moduleIndex << " (" << shm()->hostname << ")";
+    printf("%d%%\r", 0);
+    std::cout << std::flush;
+    const int ERASE_TIME = timeRequired;
+    int count = ERASE_TIME + 1;
+    while (count > 0) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        --count;
+        printf(
+            "%d%%\r",
+            static_cast<int>(
+                (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) * 100));
         std::cout << std::flush;
-        // erasing takes 10 seconds, printing here (otherwise need threads
-        // in server-unnecessary)
-        const int ERASE_TIME = 10;
-        int count = ERASE_TIME + 1;
-        while (count > 0) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            --count;
-            printf("%d%%\r",
-                   static_cast<int>(
-                       (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) *
-                       100));
-            std::cout << std::flush;
-        }
-        printf("\n");
     }
-
-    // simulating writing to flash
-    {
-        LOG(logINFO) << "(Simulating) Writing to Flash for module "
-                     << moduleIndex << " (" << shm()->hostname << ")";
-        printf("%d%%\r", 0);
-        std::cout << std::flush;
-        // writing takes 45 seconds, printing here (otherwise need threads
-        // in server-unnecessary)
-        const int ERASE_TIME = 45;
-        int count = ERASE_TIME + 1;
-        while (count > 0) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            --count;
-            printf("%d%%\r",
-                   static_cast<int>(
-                       (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) *
-                       100));
-            std::cout << std::flush;
-        }
-        printf("\n");
-    }
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): FPGA programmed successfully";
-}
-
-void Module::updateKernelviaBlackfin(std::vector<char> buffer) {
-    // send program from memory to detector
-    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): Sending kernel image (.lzma)";
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_PROGRAM_KERNEL);
-    uint64_t filesize = buffer.size();
-    client.Send(filesize);
-
-    // checksum
-    std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
-    LOG(logDEBUG1) << "Checksum:" << checksum;
-    char cChecksum[MAX_STR_LENGTH];
-    memset(cChecksum, 0, MAX_STR_LENGTH);
-    strcpy(cChecksum, checksum.c_str());
-    client.Send(cChecksum);
-
-    //  opening file fail
-    if (client.Receive<int>() == FAIL) {
-        std::cout << '\n';
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-
-    // sending program in parts
-    uint64_t unitprogramsize = 0;
-    int currentPointer = 0;
-    while (filesize > 0) {
-        unitprogramsize = MAX_BLACKFIN_PROGRAM_SIZE;
-        if (unitprogramsize > filesize) {
-            unitprogramsize = filesize;
-        }
-        LOG(logDEBUG) << "unitprogramsize:" << unitprogramsize
-                      << "\t filesize:" << filesize;
-
-        client.Send(&buffer[currentPointer], unitprogramsize);
-        if (client.Receive<int>() == FAIL) {
-            std::cout << '\n';
-            std::ostringstream os;
-            os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-               << " returned error: " << client.readErrorMessage();
-            throw DetectorError(os.str());
-        }
-        filesize -= unitprogramsize;
-        currentPointer += unitprogramsize;
-    }
-
-    // checksum
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-    LOG(logINFO) << "Checksum verified for module " << moduleIndex << " ("
-                 << shm()->hostname << ")";
-
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): Kernel udpated successfully";
-}
-
-void Module::updateKernelviaNios(std::vector<char> buffer) {
-    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): Sending kernel image (from rbf)";
-
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_PROGRAM_FPGA);
-    uint64_t filesize = buffer.size();
-    client.Send(filesize);
-
-    // checksum
-    std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
-    LOG(logDEBUG1) << "Checksum:" << checksum;
-    char cChecksum[MAX_STR_LENGTH];
-    memset(cChecksum, 0, MAX_STR_LENGTH);
-    strcpy(cChecksum, checksum.c_str());
-    client.Send(cChecksum);
-
-    // validate file size before sending program
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-    client.Send(buffer);
-
-    if (client.Receive<int>() == FAIL) {
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): Kernel updated successfully";
+    printf("\n");
 }
 } // namespace sls

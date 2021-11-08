@@ -3778,12 +3778,12 @@ void program_fpga_via_blackfin(int file_des, enum PROGRAMINDEX index,
         return;
     }
 
-    // copy to flash
+    // erase and copy to flash
     ret = copyToFlash(index, messageType, totalsize, checksum, mess);
     Server_SendResult(file_des, INT32, NULL, 0);
 }
 
-int program_fpga_via_nios(int file_des, uint64_t filesize, char *checksum) {
+void program_fpga_via_nios(int file_des, uint64_t filesize, char *checksum) {
     // validate file size
     if (filesize > NIOS_MAX_APP_IMAGE_SIZE) {
         ret = FAIL;
@@ -3794,18 +3794,43 @@ int program_fpga_via_nios(int file_des, uint64_t filesize, char *checksum) {
                 (long long unsigned int)NIOS_MAX_APP_IMAGE_SIZE);
         LOG(logERROR, (mess));
     }
+    // memory allocation
+    char *src = NULL;
+    if (ret == OK) {
+        src = malloc(filesize);
+        if (src == NULL) {
+            fclose(fd);
+            struct sysinfo info;
+            sysinfo(&info);
+            sprintf(mess,
+                    "Could not allocate memory to get %s. Free "
+                    "space: %d MB\n",
+                    messageType, (int)(info.freeram / (1024 * 1024)));
+            LOG(logERROR, (mess));
+            ret = FAIL;
+        }
+    }
     Server_SendResult(file_des, INT32, NULL, 0);
     if (ret == FAIL) {
         return;
     }
 
     // receive program
-    char *src = malloc(filesize);
     if (receiveData(file_des, src, filesize, OTHER) < 0) {
         free(src);
         ret = printSocketReadError();
         return;
     }
+
+    // checksum of copied program
+    if (ret == OK) {
+        ret = verifyChecksumFromBuffer(mess, checksum, src, fsize);
+    }
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret == FAIL) {
+        return;
+    }
+
     // erase and program
     ret = eraseAndWriteToFlash(mess, checksum, src, filesize);
     Server_SendResult(file_des, INT32, NULL, 0);

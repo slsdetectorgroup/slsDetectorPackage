@@ -541,6 +541,7 @@ class Module : public virtual slsDetectorDefs {
     void resetFPGA();
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname);
+    void updateDetectorServer(std::vector<char> buffer);
     void updateKernel(std::vector<char> buffer);
     void rebootController();
     uint32_t readRegister(uint32_t addr) const;
@@ -747,13 +748,17 @@ class Module : public virtual slsDetectorDefs {
     std::string getTrimbitFilename(detectorSettings settings, int e_eV);
     sls_detector_module readSettingsFile(const std::string &fname,
                                          bool trimbits = true);
-    void programFPGAviaBlackfin(std::vector<char> buffer);
-    void programFPGAviaNios(std::vector<char> buffer);
-    void updateKernelviaBlackfin(std::vector<char> buffer);
-    void updateKernelviaNios(std::vector<char> buffer);
+    void sendProgram(bool blackfin, std::vector<char> buffer,
+                     const int functionEnum, const std::string &functionType);
+    void simulatingActivityinDetector(const std::string &functionType,
+                                      const int timeRequired);
 
     const int moduleIndex;
     mutable sls::SharedMemory<sharedModule> shm{0, 0};
+    static const int BLACKFIN_ERASE_FLASH_TIME = 65;
+    static const int BLACKFIN_WRITE_TO_FLASH_TIME = 30;
+    static const int NIOS_ERASE_FLASH_TIME = 10;
+    static const int NIOS_WRITE_TO_FLASH_TIME = 45;
 };
 
 } // namespace sls

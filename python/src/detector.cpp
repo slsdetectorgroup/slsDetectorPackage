@@ -1520,6 +1520,9 @@ void init_det(py::module &m) {
              (void (Detector::*)(const std::string &, const std::string &,
                                  sls::Positions)) &
                  Detector::copyDetectorServer,
+        .def("updateDetectorServer",
+             (void (Detector::*)(const std::string &, sls::Positions)) &
+                 Detector::updateDetectorServer,
         .def("updateKernel",
              (void (Detector::*)(const std::string &, sls::Positions)) &
                  Detector::updateKernel,

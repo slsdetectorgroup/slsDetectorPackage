@@ -1744,13 +1744,20 @@ class Detector {
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname, Positions pos = {});
 
+    /** [Jungfrau][Eiger][Ctb][Moench][Mythen3][Gotthard2] Copies detector
+     * server via TCP (without tftp).\nMakes a symbolic link with a shorter
+     * name (without vx.x.x).\nThen, detector controller reboots (except
+     * Eiger).\n[Jungfrau][Ctb][Moench]Also changes respawn server to the
+     * link, which is effective after a reboot.
+     */
+    void updateDetectorServer(const std::string &fname, Positions pos = {});
+
     /** [Jungfrau][Ctb][Moench][Mythen3][Gotthard2] \n
-     * Advanced Command!! You could damage the detector. Please use with 
+     * Advanced Command!! You could damage the detector. Please use with
      * caution.\nUpdates the kernel image. Then, detector controller reboots
      *  with new kernel
      */
     void updateKernel(const std::string &fname, Positions pos = {});
-
 
     /** [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2] Advanced user
      * Function! */

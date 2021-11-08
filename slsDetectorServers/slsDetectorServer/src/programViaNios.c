@@ -38,10 +38,6 @@ void rebootControllerAndFPGA() {
 int eraseAndWriteToFlash(char *mess, char *checksum, char *fpgasrc,
                          uint64_t fsize) {
 
-    if (verifyChecksumFromBuffer(mess, checksum, fpgasrc, fsize) == FAIL) {
-        return FAIL;
-    }
-
     if (getDrive(mess) == FAIL) {
         return FAIL;
     }

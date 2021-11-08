@@ -9,6 +9,7 @@
 #include "Module.h"
 #include "sls/Pattern.h"
 #include "sls/container_utils.h"
+#include "sls/file_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/versionAPI.h"
@@ -2133,6 +2134,7 @@ void Detector::setAdditionalJsonParameter(const std::string &key,
 // Advanced
 
 void Detector::programFPGA(const std::string &fname, Positions pos) {
+    LOG(logINFO) << "Updating Firmware...";
     std::vector<char> buffer = pimpl->readProgrammingFile(fname);
     pimpl->Parallel(&Module::programFPGA, pos, buffer);
     rebootController(pos);
@@ -2144,14 +2146,25 @@ void Detector::resetFPGA(Positions pos) {
 
 void Detector::copyDetectorServer(const std::string &fname,
                                   const std::string &hostname, Positions pos) {
+    LOG(logINFO) << "Updating Detector Server (via tftp)...";
     pimpl->Parallel(&Module::copyDetectorServer, pos, fname, hostname);
     if (getDetectorType().squash() != defs::EIGER) {
         rebootController(pos);
     }
 }
 
+void Detector::updateDetectorServer(const std::string &fname, Positions pos) {
+    LOG(logINFO) << "Updating Detector Server...";
+    std::vector<char> buffer = readBinaryFile(fname, "Update Detector Server");
+    pimpl->Parallel(&Module::updateDetectorServer, pos, buffer);
+    if (getDetectorType().squash() != defs::EIGER) {
+        rebootController(pos);
+    }
+}
+
 void Detector::updateKernel(const std::string &fname, Positions pos) {
-    std::vector<char> buffer = pimpl->readKernelFile(fname);
+    LOG(logINFO) << "Updating Kernel...";
+    std::vector<char> buffer = readBinaryFile(fname, "Update Kernel");
     pimpl->Parallel(&Module::updateKernel, pos, buffer);
     rebootController(pos);
 }
@@ -2164,6 +2177,7 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
                                        const std::string &hostname,
                                        const std::string &fname,
                                        Positions pos) {
+    LOG(logINFO) << "Updating Firmware and Detector Server...";
     pimpl->Parallel(&Module::copyDetectorServer, pos, sname, hostname);
     programFPGA(fname, pos);
 }

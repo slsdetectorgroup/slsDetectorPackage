@@ -53,6 +53,48 @@ int readDataFile(std::string fname, short int *data, int nch) {
     return iline;
 }
 
+std::vector<char> readBinaryFile(const std::string &fname,
+                                 const std::string &errorPrefix) {
+    // check if it exists
+    struct stat st;
+    if (stat(fname.c_str(), &st) != 0) {
+        throw sls::RuntimeError(errorPrefix +
+                                std::string(": file does not exist"));
+    }
+
+    FILE *fp = fopen(fname.c_str(), "rb");
+    if (fp == nullptr) {
+        throw sls::RuntimeError(errorPrefix +
+                                std::string(": Could not open file: ") + fname);
+    }
+
+    // get file size to print progress
+    if (fseek(fp, 0, SEEK_END) != 0) {
+        throw sls::RuntimeError(errorPrefix +
+                                std::string(": Seek error in src file"));
+    }
+    size_t filesize = ftell(fp);
+    if (filesize <= 0) {
+        throw sls::RuntimeError(errorPrefix +
+                                std::string(": Could not get length of file"));
+    }
+    rewind(fp);
+
+    std::vector<char> buffer(filesize, 0);
+    if (fread(buffer.data(), sizeof(char), filesize, fp) != filesize) {
+        throw sls::RuntimeError(errorPrefix +
+                                std::string(": Could not read file"));
+    }
+
+    if (fclose(fp) != 0) {
+        throw sls::RuntimeError(errorPrefix +
+                                std::string(": Could not close file"));
+    }
+
+    LOG(logDEBUG1) << "Read file into memory";
+    return buffer;
+}
+
 int writeDataFile(std::ofstream &outfile, int nch, short int *data,
                   int offset) {
     if (data == nullptr)

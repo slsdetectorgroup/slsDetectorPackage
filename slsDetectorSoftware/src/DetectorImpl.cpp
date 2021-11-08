@@ -12,6 +12,7 @@
 
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
+#include "sls/file_utils.h"
 #include "sls/network_utils.h"
 #include "sls/string_utils.h"
 
@@ -1361,91 +1362,10 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     }
     LOG(logINFOBLUE) << "File has been converted to " << destfname;
 
-    // loading dst file to memory
-    // FILE *fp = fopen("/tmp/SLS_DET_MCB.tzgmUT", "r");
-    FILE *fp = fopen(destfname, "r");
-    if (fp == nullptr) {
-        throw RuntimeError("Program FPGA: Could not open rawbin file");
-    }
-    if (fseek(fp, 0, SEEK_END) != 0) {
-        throw RuntimeError("Program FPGA: Seek error in rawbin file");
-    }
-    size_t filesize = ftell(fp);
-    if (filesize <= 0) {
-        throw RuntimeError("Program FPGA: Could not get length of rawbin file");
-    }
-    rewind(fp);
-
-    std::vector<char> buffer(filesize, 0);
-    if (fread(buffer.data(), sizeof(char), filesize, fp) != filesize) {
-        throw RuntimeError("Program FPGA: Could not read rawbin file");
-    }
-
-    if (fclose(fp) != 0) {
-        throw RuntimeError(
-            "Program FPGA: Could not close destination file after converting");
-    }
-
-    unlink(destfname); // delete temporary file
-    LOG(logDEBUG1) << "Read file into memory";
-    return buffer;
-}
-
-std::vector<char> DetectorImpl::readKernelFile(const std::string &fname) {
-    // validate type of file
-    switch (shm()->detType) {
-    case JUNGFRAU:
-    case CHIPTESTBOARD:
-    case MOENCH:
-        if (fname.find(".lzma") == std::string::npos) {
-            throw RuntimeError("Kernel image file must be a lzma file.");
-        }
-        break;
-    case MYTHEN3:
-    case GOTTHARD2:
-        if (fname.find(".bin") == std::string::npos) {
-            throw RuntimeError("Kernel image file must be an bin file.");
-        }
-        break;
-    default:
-        throw RuntimeError("Programming kernel image via the package is not "
-                           "implemented for this detector");
-    }
-
-    LOG(logINFO) << "Updating Kernel...";
-    LOG(logDEBUG1) << "Programming kernel image with file name:" << fname;
-
-    // check if it exists
-    struct stat st;
-    if (stat(fname.c_str(), &st) != 0) {
-        throw RuntimeError("Program kernel: file does not exist");
-    }
-
-    FILE *fp = fopen(fname.c_str(), "rb");
-    if (fp == nullptr) {
-        throw RuntimeError("Program kernel: Could not open file: " + fname);
-    }
-
-    // get file size to print progress
-    if (fseek(fp, 0, SEEK_END) != 0) {
-        throw RuntimeError("Program kernel: Seek error in src file");
-    }
-    size_t filesize = ftell(fp);
-    if (filesize <= 0) {
-        throw RuntimeError("Program kernel: Could not get length of file");
-    }
-    rewind(fp);
-
-    std::vector<char> buffer(filesize, 0);
-    if (fread(buffer.data(), sizeof(char), filesize, fp) != filesize) {
-        throw RuntimeError("Program kernel: Could not read file");
-    }
-
-    if (fclose(fp) != 0) {
-        throw RuntimeError("Program kernel: Could not close file");
-    }
-
-    LOG(logDEBUG1) << "Read file into memory";
+    // load converted file to memory
+    std::vector<char> buffer = readBinaryFile(destfname, "Program FPGA");
+    // delete temporary
+    unlink(destfname);
     return buffer;
 }
 

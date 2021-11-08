@@ -415,7 +415,8 @@ void function_table() {
     flist[F_GET_READOUT_SPEED] = &get_readout_speed;
     flist[F_SET_READOUT_SPEED] = &set_readout_speed;
     flist[F_GET_KERNEL_VERSION] = &get_kernel_version;
-    flist[F_PROGRAM_KERNEL] = &program_kernel;
+    flist[F_UPDATE_KERNEL] = &update_kernel;
+    flist[F_UPDATE_DETECTOR_SERVER] = &update_detector_server;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -3648,193 +3649,9 @@ int program_fpga(int file_des) {
         n = receiveData(file_des, mess, MAX_STR_LENGTH, OTHER);
     functionNotImplemented();
 #else
-    // only set
-    if (Server_VerifyLock() == OK) {
-
-        LOG(logINFOBLUE, ("Programming FPGA...\n"));
-
-        // filesize
-        uint64_t filesize = 0;
-        if (receiveData(file_des, &filesize, sizeof(filesize), INT64) < 0)
-            return printSocketReadError();
-        LOG(logDEBUG1, ("Program size is: %lld\n", (long long int)filesize));
-
-        // checksum
-        char checksum[MAX_STR_LENGTH];
-        memset(checksum, 0, MAX_STR_LENGTH);
-        if (receiveData(file_des, checksum, MAX_STR_LENGTH, OTHER) < 0)
-            return printSocketReadError();
-        LOG(logDEBUG1, ("checksum is: %s\n\n", checksum));
-
-        switch (myDetectorType) {
-        case MYTHEN3:
-        case GOTTHARD2:
-            program_fpga_via_nios(file_des, FPGA_PROGRAM, filesize, checksum);
-            break;
-        default:
-            program_fpga_via_blackfin(file_des, FPGA_PROGRAM, filesize,
-                                      checksum);
-            break;
-        }
-
-        if (ret == OK) {
-            LOG(logINFOGREEN, ("Programming FPGA completed successfully\n"));
-        } else {
-            LOG(logERROR, ("Program FPGA FAIL!\n"));
-        }
-    }
+    receive_program(file_des, PROGRAM_FPGA);
 #endif
     return ret;
-}
-
-void program_fpga_via_blackfin(int file_des, enum PROGRAMINDEX index,
-                               uint64_t filesize, char *checksum) {
-    char messageType[SHORT_STR_LENGTH] = {0};
-    switch (index) {
-    case FPGA_PROGRAM:
-        strcpy(messageType, "fpga program");
-        break;
-    case KERNEL_PROGRAM:
-        strcpy(messageType, "kernel program");
-        break;
-    case SERVER_PROGRAM:
-        strcpy(messageType, "server program");
-        break;
-    default:
-        ret = FAIL;
-        sprintf(mess, "Unknown program index %d\n", index);
-        LOG(logERROR, (mess));
-        Server_SendResult(file_des, INT32, NULL, 0);
-        return;
-    }
-
-    // open file and allocate memory for part program
-    FILE *fd = NULL;
-    ret = preparetoCopyProgram(&fd, filesize, mess);
-    char *src = NULL;
-    if (ret == OK) {
-        src = malloc(MAX_BLACKFIN_PROGRAM_SIZE);
-        if (src == NULL) {
-            fclose(fd);
-            struct sysinfo info;
-            sysinfo(&info);
-            sprintf(mess,
-                    "Could not allocate memory to get %s. Free "
-                    "space: %d MB\n",
-                    messageType, (int)(info.freeram / (1024 * 1024)));
-            LOG(logERROR, (mess));
-            ret = FAIL;
-        }
-    }
-    Server_SendResult(file_des, INT32, NULL, 0);
-    if (ret == FAIL) {
-        return;
-    }
-
-    // copying program part by part
-    uint64_t totalsize = filesize;
-    while (ret == OK && filesize) {
-        uint64_t unitprogramsize = MAX_BLACKFIN_PROGRAM_SIZE;
-        if (unitprogramsize > filesize)
-            unitprogramsize = filesize;
-        LOG(logDEBUG1, ("unit size to receive is:%lld [filesize:%lld]\n",
-                        (long long unsigned int)unitprogramsize,
-                        (long long unsigned int)filesize));
-
-        // receive part of program
-        if (receiveData(file_des, src, unitprogramsize, OTHER) < 0) {
-            printSocketReadError();
-            break;
-        }
-        filesize -= unitprogramsize;
-
-        // copy program
-        if (fwrite((void *)src, sizeof(char), unitprogramsize, fd) !=
-            unitprogramsize) {
-            ret = FAIL;
-            sprintf(mess, "Could not copy program to /var/tmp (size:%ld)\n",
-                    (long int)unitprogramsize);
-            LOG(logERROR, (mess));
-        }
-        Server_SendResult(file_des, INT32, NULL, 0);
-        if (ret == FAIL) {
-            break;
-        }
-        // print progress
-        LOG(logINFO,
-            ("\t%d%%\r",
-             (int)(((double)(totalsize - filesize) / totalsize) * 100)));
-        fflush(stdout);
-    }
-    free(src);
-    fclose(fd);
-
-    // checksum of copied program
-    if (ret == OK) {
-        ret = verifyChecksumFromFile(mess, checksum, TEMP_PROG_FILE_NAME);
-    }
-    Server_SendResult(file_des, INT32, NULL, 0);
-    if (ret == FAIL) {
-        return;
-    }
-
-    // erase and copy to flash
-    ret = copyToFlash(index, messageType, totalsize, checksum, mess);
-    Server_SendResult(file_des, INT32, NULL, 0);
-}
-
-void program_fpga_via_nios(int file_des, uint64_t filesize, char *checksum) {
-    // validate file size
-    if (filesize > NIOS_MAX_APP_IMAGE_SIZE) {
-        ret = FAIL;
-        sprintf(mess,
-                "Could not start programming FPGA. File size 0x%llx "
-                "exceeds max size 0x%llx. Forgot Compression?\n",
-                (long long unsigned int)filesize,
-                (long long unsigned int)NIOS_MAX_APP_IMAGE_SIZE);
-        LOG(logERROR, (mess));
-    }
-    // memory allocation
-    char *src = NULL;
-    if (ret == OK) {
-        src = malloc(filesize);
-        if (src == NULL) {
-            fclose(fd);
-            struct sysinfo info;
-            sysinfo(&info);
-            sprintf(mess,
-                    "Could not allocate memory to get %s. Free "
-                    "space: %d MB\n",
-                    messageType, (int)(info.freeram / (1024 * 1024)));
-            LOG(logERROR, (mess));
-            ret = FAIL;
-        }
-    }
-    Server_SendResult(file_des, INT32, NULL, 0);
-    if (ret == FAIL) {
-        return;
-    }
-
-    // receive program
-    if (receiveData(file_des, src, filesize, OTHER) < 0) {
-        free(src);
-        ret = printSocketReadError();
-        return;
-    }
-
-    // checksum of copied program
-    if (ret == OK) {
-        ret = verifyChecksumFromBuffer(mess, checksum, src, fsize);
-    }
-    Server_SendResult(file_des, INT32, NULL, 0);
-    if (ret == FAIL) {
-        return;
-    }
-
-    // erase and program
-    ret = eraseAndWriteToFlash(mess, checksum, src, filesize);
-    Server_SendResult(file_des, INT32, NULL, 0);
-    free(src);
 }
 
 int reset_fpga(int file_des) {
@@ -3850,16 +3667,24 @@ int reset_fpga(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (isControlServer) {
             basictests(); // mapping of control server at least
-            if (initError == OK) {
+            char *message = NULL;
+            if (getInitResult(&message) == FAIL) {
+                ret = FAIL;
+                strcpy(mess, message);
+                LOG(logERROR, (mess));
+            } else {
                 initControlServer();
             }
         } else {
             initStopServer(); // remapping of stop server
         }
-        if (initError == FAIL) {
-            ret = FAIL;
-            strcpy(mess, initErrorMessage);
-            // LOG(ERROR (mess));already printed
+        if (ret == OK) {
+            char *message = NULL;
+            if (getInitResult(&message) == FAIL) {
+                ret = FAIL;
+                strcpy(mess, message);
+                LOG(logERROR, (mess));
+            }
         }
     }
 #endif
@@ -9492,9 +9317,261 @@ int get_kernel_version(int file_des) {
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
-int program_kernel(int file_des) {
+int update_kernel(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
+    !defined(GOTTHARDD)
+    // to receive any arguments
+    int n = 1;
+    while (n > 0)
+        n = receiveData(file_des, mess, MAX_STR_LENGTH, OTHER);
+    functionNotImplemented();
+#else
+    receive_program(file_des, PROGRAM_FPGA);
+#endif
+    return ret;
+}
+
+int update_detector_server(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    return receive_program(file_des, PROGRAM_SERVER);
+}
+
+int receive_program(int file_des, enum PROGRAM_INDEX index) {
+    // only set
+    if (Server_VerifyLock() == OK) {
+        char functionType[SHORT_STR_LENGTH] = {0};
+        switch (index) {
+        case PROGRAM_FPGA:
+            strcpy(functionType, "Update Firmware");
+            break;
+        case PROGRAM_KERNEL:
+            strcpy(functionType, "Update Kernel");
+            break;
+        case PROGRAM_SERVER:
+            strcpy(functionType, "Update Server");
+            break;
+        }
+        LOG(logINFOBLUE, ("%s ...\n", functionType));
+
+        // filesize
+        uint64_t filesize = 0;
+        if (receiveData(file_des, &filesize, sizeof(filesize), INT64) < 0)
+            return printSocketReadError();
+        LOG(logDEBUG1, ("Program size is: %lld\n", (long long int)filesize));
+
+        // client checksum
+        char checksum[MAX_STR_LENGTH];
+        memset(checksum, 0, MAX_STR_LENGTH);
+        if (receiveData(file_des, checksum, MAX_STR_LENGTH, OTHER) < 0)
+            return printSocketReadError();
+        LOG(logDEBUG1, ("checksum is: %s\n\n", checksum));
+
+#if defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(EIGERD)
+        receive_program_default(file_des, index, functionType, filesize,
+                                checksum);
+#else
+        receive_program_via_blackfin(file_des, index, functionType, filesize,
+                                     checksum);
+#endif
+
+        if (ret == OK) {
+            LOG(logINFOGREEN, ("%s completed successfully\n", functionType));
+        } else {
+            LOG(logERROR, ("%s FAIL!\n", functionType));
+        }
+    }
 
     return ret;
+}
+
+void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
+                                  char *functionType, uint64_t filesize,
+                                  char *checksum) {
+
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
+    !defined(GOTTHARDD)
+    ret = FAIL;
+    sprintf(mess,
+            "Could not %s. program via blackfin not implmented for this "
+            "detector.\n",
+            functionType);
+    LOG(logERROR, (mess));
+#else
+    // open file and allocate memory for part program
+    FILE *fd = NULL;
+    ret = preparetoCopyProgram(mess, functionType, &fd, filesize);
+    char *src = NULL;
+    if (ret == OK) {
+        src = malloc(MAX_BLACKFIN_PROGRAM_SIZE);
+        if (src == NULL) {
+            fclose(fd);
+            struct sysinfo info;
+            sysinfo(&info);
+            sprintf(mess,
+                    "Could not %s. Memory allocation failure. Free "
+                    "space: %d MB\n",
+                    functionType, (int)(info.freeram / (1024 * 1024)));
+            LOG(logERROR, (mess));
+            ret = FAIL;
+        }
+    }
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret == FAIL) {
+        return;
+    }
+
+    // copying program part by part
+    uint64_t totalsize = filesize;
+    while (ret == OK && filesize) {
+        uint64_t unitprogramsize = MAX_BLACKFIN_PROGRAM_SIZE;
+        if (unitprogramsize > filesize)
+            unitprogramsize = filesize;
+        LOG(logDEBUG1, ("unit size to receive is:%lld [filesize:%lld]\n",
+                        (long long unsigned int)unitprogramsize,
+                        (long long unsigned int)filesize));
+
+        // receive part of program
+        if (receiveData(file_des, src, unitprogramsize, OTHER) < 0) {
+            printSocketReadError();
+            break;
+        }
+        filesize -= unitprogramsize;
+
+        // copy program
+        if (fwrite((void *)src, sizeof(char), unitprogramsize, fd) !=
+            unitprogramsize) {
+            ret = FAIL;
+            sprintf(
+                mess,
+                "Could not %s. Could not copy program to /var/tmp (size:%ld)\n",
+                functionType, (long int)unitprogramsize);
+            LOG(logERROR, (mess));
+        }
+        Server_SendResult(file_des, INT32, NULL, 0);
+        if (ret == FAIL) {
+            break;
+        }
+        // print progress
+        LOG(logINFO,
+            ("\t%d%%\r",
+             (int)(((double)(totalsize - filesize) / totalsize) * 100)));
+        fflush(stdout);
+    }
+    free(src);
+    fclose(fd);
+
+    // checksum of copied program
+    if (ret == OK) {
+        ret = verifyChecksumFromFile(mess, functionType, checksum,
+                                     TEMP_PROG_FILE_NAME);
+    }
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret == FAIL) {
+        return;
+    }
+
+    // appropriate functions
+    switch (index) {
+    case PROGRAM_FPGA:
+    case PROGRAM_KERNEL:
+        ret =
+            eraseAndWriteToFlash(mess, index, functionType, checksum, filesize);
+        break;
+    case PROGRAM_SERVER:
+        break;
+    default:
+        modeNotImplemented("Program index", (int)index);
+        break;
+    }
+
+    // erase and copy to flash
+    Server_SendResult(file_des, INT32, NULL, 0);
+#endif
+}
+
+void receive_program_default(int file_des, enum PROGRAM_INDEX index,
+                             char *functionType, uint64_t filesize,
+                             char *checksum) {
+#if !defined(GOTTHARD2D) && !defined(MYTHEN3D) && !defined(EIGERD)
+    ret = FAIL;
+    sprintf(mess,
+            "Could not %s. program via blackfin not implmented for this "
+            "detector.\n",
+            functionType);
+    LOG(logERROR, (mess))
+#else
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
+    // validate file size
+    if (filesize > NIOS_MAX_APP_IMAGE_SIZE) {
+        ret = FAIL;
+        sprintf(mess,
+                "Could not %s. File size 0x%llx "
+                "exceeds max size 0x%llx. Forgot Compression?\n",
+                functionType, (long long unsigned int)filesize,
+                (long long unsigned int)NIOS_MAX_APP_IMAGE_SIZE);
+        LOG(logERROR, (mess));
+    }
+#endif
+
+    // memory allocation
+    char *src = NULL;
+    if (ret == OK) {
+        src = malloc(filesize);
+        if (src == NULL) {
+            struct sysinfo info;
+            sysinfo(&info);
+            sprintf(mess,
+                    "Could not %s. Memory allocation failure. Free "
+                    "space: %d MB\n",
+                    functionType, (int)(info.freeram / (1024 * 1024)));
+            LOG(logERROR, (mess));
+            ret = FAIL;
+        }
+    }
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret == FAIL) {
+        return;
+    }
+
+    // receive program
+    if (receiveData(file_des, src, filesize, OTHER) < 0) {
+        free(src);
+        ret = printSocketReadError();
+        return;
+    }
+
+    // checksum of copied program
+    if (ret == OK) {
+        ret = verifyChecksumFromBuffer(mess, functionType, checksum, src,
+                                       filesize);
+    }
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret == FAIL) {
+        return;
+    }
+
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
+    // appropriate functions
+    switch (index) {
+    case PROGRAM_FPGA:
+    case PROGRAM_KERNEL:
+        ret = eraseAndWriteToFlash(mess, index, functionType, checksum, src,
+                                   filesize);
+        break;
+    case PROGRAM_SERVER:
+        break;
+    default:
+        modeNotImplemented("Program index", (int)index);
+        break;
+    }
+#endif
+    // send result
+    Server_SendResult(file_des, INT32, NULL, 0);
+
+    // free resources
+    free(src);
+#endif
 }

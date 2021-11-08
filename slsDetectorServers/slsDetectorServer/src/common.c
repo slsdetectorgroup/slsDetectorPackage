@@ -92,19 +92,21 @@ int getTimeFromString(char *buf, time_t *result) {
     }
 
     // print time structure
-    LOG(logDEBUG, ("%d %d %d %d:%d:%d %d (day date month H:M:S year)\n", t.tm_wday, t.tm_mday, t.tm_mon, t.tm_year +1900, t.tm_hour, t.tm_min, t.tm_sec));
+    LOG(logDEBUG,
+        ("%d %d %d %d:%d:%d %d (day date month H:M:S year)\n", t.tm_wday,
+         t.tm_mday, t.tm_mon, t.tm_year + 1900, t.tm_hour, t.tm_min, t.tm_sec));
 
     *result = mktime(&t);
     return OK;
 }
 
-int getKernelVersion(char* retvals) {
+int getKernelVersion(char *retvals) {
     struct utsname buf = {0};
     if (uname(&buf) == -1) {
         strcpy(retvals, "Failed to get utsname structure from uname\n");
         LOG(logERROR, (retvals));
         return FAIL;
-    }   
+    }
     strcpy(retvals, buf.version);
     LOG(logINFOBLUE, ("Kernel Version: %s\n", retvals));
     return OK;
@@ -135,7 +137,8 @@ int validateKernelVersion(char *expectedVersion) {
     // convert kernel date string into time
     time_t kernelDate;
     if (getTimeFromString(currentVersion, &kernelDate) == FAIL) {
-        LOG(logERROR, ("Could not parse retrieved kernel date, %s\n", currentVersion));
+        LOG(logERROR,
+            ("Could not parse retrieved kernel date, %s\n", currentVersion));
         return FAIL;
     }
 
@@ -155,8 +158,8 @@ int validateKernelVersion(char *expectedVersion) {
         return FAIL;
     }
 
-    LOG(logINFOBLUE, ("Kernel Version Compatible: %s [min.: %s]\n", currentVersion,
-                      expectedVersion));
+    LOG(logINFOBLUE, ("Kernel Version Compatible: %s [min.: %s]\n",
+                      currentVersion, expectedVersion));
     return OK;
 }
 
@@ -235,30 +238,39 @@ int getModuleIdInFile(int *ret, char *mess, char *fileName) {
     return retval;
 }
 
-int verifyChecksumFromBuffer(char *mess, char *clientChecksum, char *buffer,
+int verifyChecksumFromBuffer(char *mess, char *functionType,
+                             char *clientChecksum, char *buffer,
                              ssize_t bytes) {
     LOG(logINFO, ("\tVerifying Checksum...\n"));
     MD5_CTX c;
     if (!MD5_Init_SLS(&c)) {
-        strcpy(mess, "Unable to calculate checksum (MD5_Init_SLS)\n");
+        sprintf(mess,
+                "Could not %s. Unable to calculate checksum (MD5_Init_SLS)\n",
+                functionType);
         LOG(logERROR, (mess));
         return FAIL;
     }
     if (!MD5_Update_SLS(&c, buffer, bytes)) {
-        strcpy(mess, "Unable to calculate checksum (MD5_Update_SLS)\n");
+        sprintf(mess,
+                "Could not %s. Unable to calculate checksum (MD5_Update_SLS)\n",
+                functionType);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    return verifyChecksum(mess, clientChecksum, &c, "copied program");
+    return verifyChecksum(mess, functionType, clientChecksum, &c,
+                          "copied program");
 }
 
-int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
+int verifyChecksumFromFile(char *mess, char *functionType, char *clientChecksum,
+                           char *fname) {
     LOG(logINFO, ("\tVerifying Checksum...\n"));
 
     FILE *fp = fopen(fname, "r");
     if (fp == NULL) {
-        sprintf(mess, "Unable to open %s in read mode to get checksum\n",
-                fname);
+        sprintf(
+            mess,
+            "Could not %s. Unable to open %s in read mode to get checksum\n",
+            functionType, fname);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -266,7 +278,9 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
     MD5_CTX c;
     if (!MD5_Init_SLS(&c)) {
         fclose(fp);
-        strcpy(mess, "Unable to calculate checksum (MD5_Init_SLS)\n");
+        sprintf(mess,
+                "Could not %s. Unable to calculate checksum (MD5_Init_SLS)\n",
+                functionType);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -277,7 +291,10 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
     while (bytes > 0) {
         if (!MD5_Update_SLS(&c, buf, bytes)) {
             fclose(fp);
-            strcpy(mess, "Unable to calculate checksum (MD5_Update_SLS)\n");
+            sprintf(
+                mess,
+                "Could not %s. Unable to calculate checksum (MD5_Update_SLS)\n",
+                functionType);
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -286,17 +303,20 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
     }
     LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));
     fclose(fp);
-    return verifyChecksum(mess, clientChecksum, &c, "copied program");
+    return verifyChecksum(mess, functionType, clientChecksum, &c,
+                          "copied program");
 }
 
-int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
-                            ssize_t fsize) {
+int verifyChecksumFromFlash(char *mess, char *functionType,
+                            char *clientChecksum, char *fname, ssize_t fsize) {
     LOG(logINFO, ("\tVerifying FlashChecksum...\n"));
 
     FILE *fp = fopen(fname, "r");
     if (fp == NULL) {
-        sprintf(mess, "Unable to open %s in read mode to get checksum\n",
-                fname);
+        sprintf(
+            mess,
+            "Could not %s. Unable to open %s in read mode to get checksum\n",
+            functionType, fname);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -304,7 +324,9 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
     MD5_CTX c;
     if (!MD5_Init_SLS(&c)) {
         fclose(fp);
-        strcpy(mess, "Unable to calculate checksum (MD5_Init_SLS)\n");
+        sprintf(mess,
+                "Could not %s. Unable to calculate checksum (MD5_Init_SLS)\n",
+                functionType);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -324,7 +346,10 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
 
         if (!MD5_Update_SLS(&c, buf, bytes)) {
             fclose(fp);
-            strcpy(mess, "Unable to calculate checksum (MD5_Update_SLS)\n");
+            sprintf(
+                mess,
+                "Could not %s. Unable to calculate checksum (MD5_Update_SLS)\n",
+                functionType);
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -340,17 +365,20 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
     }
     LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));
     fclose(fp);
-    int ret = verifyChecksum(mess, clientChecksum, &c, "flash");
+    int ret = verifyChecksum(mess, functionType, clientChecksum, &c, "flash");
     if (ret == OK) {
-        LOG(logINFO, ("Checksum in Flash verified\n"));
+        LOG(logINFO, ("\tChecksum in Flash verified\n"));
     }
     return ret;
 }
 
-int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c, char *msg) {
+int verifyChecksum(char *mess, char *functionType, char *clientChecksum,
+                   MD5_CTX *c, char *msg) {
     unsigned char out[MD5_DIGEST_LENGTH];
     if (!MD5_Final_SLS(out, c)) {
-        strcpy(mess, "Unable to calculate checksum (MD5_Final_SLS)\n");
+        sprintf(mess,
+                "Could not %s. Unable to calculate checksum (MD5_Final_SLS)\n",
+                functionType);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -370,9 +398,9 @@ int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c, char *msg) {
     // compare checksum
     if (strcmp(clientChecksum, checksum)) {
         sprintf(mess,
-                "Checksum of %s does not match. Client "
+                "Could not %s. Checksum of %s does not match. Client "
                 "checksum:%s, copied checksum:%s\n",
-                msg, clientChecksum, checksum);
+                functionType, msg, clientChecksum, checksum);
         LOG(logERROR, (mess));
         return FAIL;
     }

@@ -13,7 +13,8 @@
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 #include "programViaNios.h"
-#elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||     \
+    defined(GOTTHARDD)
 #include "programViaBlackfin.h"
 #endif
 
@@ -60,7 +61,6 @@ typedef struct udpStruct_s {
 int isInitCheckDone();
 int getInitResult(char **mess);
 void basictests();
-int getKernelVersion(char *retvals);
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) ||     \
     defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int checkType();

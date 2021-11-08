@@ -6,6 +6,8 @@
 
 #define LINKED_SERVER_NAME "gotthardDetectorServer"
 
+#define CTRL_SRVR_INIT_TIME_US (300 * 1000)
+
 /* Enums */
 enum ADCINDEX { TEMP_FPGA, TEMP_ADC };
 enum DACINDEX {

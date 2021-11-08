@@ -29,13 +29,19 @@
 #define CMD_FPGA_PICKED_STATUS  "cat /sys/class/gpio/gpio7/value"
 
 #define CMD_GET_FPGA_FLASH_DRIVE    "awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd"
-#define CMD_GET_KERNEL_FLASH_DRIVE    "awk \'$4== \"\\\"linux kernel(nor)\\\"\" {print $1}\' /proc/mtd"
+#define CMD_GET_KERNEL_FLASH_DRIVE    "awk \'$4== \"\\\"linux\\\"\" {print $1}\' /proc/mtd"
 
 #define FLASH_BUFFER_MEMORY_SIZE (128 * 1024) // 500 KB
 // clang-format on
 
 #define FLASH_DRIVE_NAME_SIZE 16
+
+#ifdef VIRTUAL
+char flashDriveName[FLASH_DRIVE_NAME_SIZE] = "/tmp/SLS_mtd3";
+#else
 char flashDriveName[FLASH_DRIVE_NAME_SIZE] = {0};
+#endif
+
 char messageType[SHORT_STR_LENGTH] = {0};
 int gpioDefined = 0;
 
@@ -109,6 +115,7 @@ int FPGAdontTouchFlash(char *mess) {
 #ifdef VIRTUAL
     return OK;
 #endif
+    char retvals[MAX_STR_LENGTH] = {0};
     // define gpio9 as output
     if (executeCommand(CMD_GPIO9_DEFINE_OUT, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
@@ -155,6 +162,7 @@ int FPGATouchFlash(char *mess) {
 #ifdef VIRTUAL
     return OK;
 #endif
+    char retvals[MAX_STR_LENGTH] = {0};
     // tell FPGA to touch flash to program itself
     if (executeCommand(CMD_GPIO9_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
@@ -211,7 +219,8 @@ int emptyTempFolder(char *mess) {
     return OK;
 }
 
-int preparetoCopyProgram(FILE **fd, uint64_t fsize, char *mess) {
+int preparetoCopyProgram(char *mess, char *functionType, FILE **fd,
+                         uint64_t fsize) {
 
     if (emptyTempFolder(mess) == FAIL) {
         return FAIL;
@@ -223,9 +232,9 @@ int preparetoCopyProgram(FILE **fd, uint64_t fsize, char *mess) {
         sysinfo(&info);
         if (fsize >= info.freeram) {
             sprintf(mess,
-                    "Could not update program. Not enough memory to copy "
+                    "Could not %s. Not enough memory to copy "
                     "program. [File size:%ldMB, free RAM: %ldMB]\n",
-                    (long int)(fsize / (1024 * 1024)),
+                    functionType, (long int)(fsize / (1024 * 1024)),
                     (long int)(info.freeram / (1024 * 1024)));
             LOG(logERROR, (mess));
             return FAIL;
@@ -235,7 +244,8 @@ int preparetoCopyProgram(FILE **fd, uint64_t fsize, char *mess) {
     // open file to copy program
     *fd = fopen(TEMP_PROG_FILE_NAME, "w");
     if (*fd == NULL) {
-        sprintf(mess, "Unable to open %s in write mode\n", TEMP_PROG_FILE_NAME);
+        sprintf(mess, "Could not %s. Unable to open %s in write mode\n",
+                functionType, TEMP_PROG_FILE_NAME);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -243,24 +253,25 @@ int preparetoCopyProgram(FILE **fd, uint64_t fsize, char *mess) {
     return OK;
 }
 
-int copyToFlash(enum PROGRAMINDEX index, char *mType, ssize_t fsize,
-                char *clientChecksum, char *mess) {
+int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
+                         char *functionType, char *clientChecksum,
+                         ssize_t fsize) {
 
     memset(messageType, 0, sizeof(messageType));
-    strcpy(messageType, mType);
+    strcpy(messageType, functionType);
 
-    if (getDrive(index, messageType, mess) == FAIL) {
+    if (getDrive(mess, index) == FAIL) {
         return FAIL;
     }
 
     FILE *flashfd = NULL;
     FILE *srcfd = NULL;
-    if (openFileForFlash(&flashfd, &srcfd, mess) == FAIL) {
+    if (openFileForFlash(mess, &flashfd, &srcfd) == FAIL) {
         return FAIL;
     }
 
-    if (index == FPGA_PROGRAM) {
-        if (FPGAdontTouchFlash(char *mess) == FAIL) {
+    if (index == PROGRAM_FPGA) {
+        if (FPGAdontTouchFlash(mess) == FAIL) {
             return FAIL;
         }
     }
@@ -271,7 +282,7 @@ int copyToFlash(enum PROGRAMINDEX index, char *mType, ssize_t fsize,
         return FAIL;
     }
 
-    if (writeToFlash(fsize, flashfd, srcfd, mess) == FAIL) {
+    if (writeToFlash(mess, fsize, flashfd, srcfd) == FAIL) {
         return FAIL;
     }
 
@@ -280,14 +291,14 @@ int copyToFlash(enum PROGRAMINDEX index, char *mType, ssize_t fsize,
     }
 
     /* remove condition when flash fpga fixed */
-    if (index == KERNEL_PROGRAM) {
-        if (verifyChecksumFromFlash(mess, clientChecksum, flashDriveName,
-                                    fsize) == FAIL) {
+    if (index == PROGRAM_KERNEL) {
+        if (verifyChecksumFromFlash(mess, messageType, clientChecksum,
+                                    flashDriveName, fsize) == FAIL) {
             return FAIL;
         }
     }
 
-    if (index == FPGA_PROGRAM) {
+    if (index == PROGRAM_FPGA) {
         if (waitForFPGAtoTouchFlash(mess) == FAIL) {
             return FAIL;
         }
@@ -295,6 +306,7 @@ int copyToFlash(enum PROGRAMINDEX index, char *mType, ssize_t fsize,
 
     // kernel
     else {
+        char retvals[MAX_STR_LENGTH] = {0};
         if (executeCommand("sync", retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
                      "Could not update %s. (could not sync)\n", messageType);
@@ -306,9 +318,8 @@ int copyToFlash(enum PROGRAMINDEX index, char *mType, ssize_t fsize,
     return OK;
 }
 
-int getDrive(enum PROGRAMINDEX index, char *mess) {
+int getDrive(char *mess, enum PROGRAM_INDEX index) {
 #ifdef VIRTUAL
-    strcpy(flashDriveName, "/tmp/SLS_tmpDrive");
     return OK;
 #endif
     LOG(logDEBUG1, ("Finding flash drive...\n"));
@@ -323,45 +334,43 @@ int getDrive(enum PROGRAMINDEX index, char *mess) {
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
 
-    if (index == FPGA_PROGRAM) {
+    if (index == PROGRAM_FPGA) {
         strcpy(cmd, CMD_GET_FPGA_FLASH_DRIVE);
     } else {
         strcpy(cmd, CMD_GET_KERNEL_FLASH_DRIVE);
     }
     if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not update %s. (could not get flash drive: %s)\n",
-                 messageType, retvals);
+                 "Could not %s. (could not get flash drive: %s)\n", messageType,
+                 retvals);
         // LOG(logERROR, (mess)); already printed in executecommand
         return FAIL;
     }
 
     char *pch = strtok(retvals, ":");
     if (pch == NULL) {
-        strcpy(mess,
-               "Could not update %s. Could not get mtd drive to flash (strtok "
-               "fail).\n",
-               messageType);
+        sprintf(mess,
+                "Could not %s. Could not get mtd drive to flash (strtok "
+                "fail).\n",
+                messageType);
         LOG(logERROR, (mess));
         return FAIL;
     }
 
     memset(flashDriveName, 0, sizeof(flashDriveName));
-    strcpy(flashDriveName, "/dev/");
-    strcat(flashDriveName, pch);
+    sprintf(flashDriveName, "/dev/%s", pch);
     LOG(logINFO, ("\tFlash drive found: %s\n", flashDriveName));
     return OK;
 }
 
-int openFileForFlash(FILE **flashfd, FILE **srcfd, char *mess) {
+int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd) {
     // open src file
     *srcfd = fopen(TEMP_PROG_FILE_NAME, "r");
     if (*srcfd == NULL) {
-        sprintf(
-            mess,
-            "Could not update %s. Unable to open temp program file %s in read "
-            "mode\n",
-            messageType, TEMP_PROG_FILE_NAME);
+        sprintf(mess,
+                "Could not %s. Unable to open temp program file %s in read "
+                "mode\n",
+                messageType, TEMP_PROG_FILE_NAME);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -372,7 +381,7 @@ int openFileForFlash(FILE **flashfd, FILE **srcfd, char *mess) {
     if (*flashfd == NULL) {
         fclose(*srcfd);
         sprintf(mess,
-                "Could not update %s. Unable to open flash drive %s in write "
+                "Could not %s. Unable to open flash drive %s in write "
                 "mode\n",
                 messageType, flashDriveName);
         LOG(logERROR, (mess));
@@ -393,8 +402,7 @@ int eraseFlash(char *mess) {
     char *format = "flash_eraseall %s";
     if (snprintf(cmd, MAX_STR_LENGTH, format, flashDriveName) >=
         MAX_STR_LENGTH) {
-        sprintf(mess,
-                "Could not update %s. Command to erase flash is too long\n",
+        sprintf(mess, "Could not %s. Command to erase flash is too long\n",
                 messageType);
         LOG(logERROR, (mess));
         return FAIL;
@@ -410,7 +418,7 @@ int eraseFlash(char *mess) {
     return OK;
 }
 
-int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
+int writeToFlash(char *mess, ssize_t fsize, FILE *flashfd, FILE *srcfd) {
     LOG(logDEBUG1, ("writing to flash\n"));
 
     char *buffer = malloc(FLASH_BUFFER_MEMORY_SIZE);
@@ -418,7 +426,7 @@ int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
         fclose(flashfd);
         fclose(srcfd);
         sprintf(mess,
-                "Could not update %s. Memory allocation to write to "
+                "Could not %s. Memory allocation to write to "
                 "flash failed.\n",
                 messageType);
         LOG(logERROR, (mess));
@@ -442,7 +450,7 @@ int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
             fclose(flashfd);
             fclose(srcfd);
             sprintf(mess,
-                    "Could not update %s. Could not write to flash (bytes "
+                    "Could not %s. Could not write to flash (bytes "
                     "written:%ld, expected: "
                     "%ld, total written:%ld)\n",
                     messageType, (long int)bytesWritten, (long int)bytes,
@@ -475,7 +483,7 @@ int writeToFlash(ssize_t fsize, FILE *flashfd, FILE *srcfd, char *mess) {
 
     if (totalBytes != fsize) {
         sprintf(mess,
-                "Could not update %s. Incorrect bytes written to flash %lu "
+                "Could not %s. Incorrect bytes written to flash %lu "
                 "[expected: %lu]\n",
                 messageType, totalBytes, fsize);
         LOG(logERROR, (mess));

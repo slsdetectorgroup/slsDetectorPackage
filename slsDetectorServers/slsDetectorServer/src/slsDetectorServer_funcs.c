@@ -414,6 +414,8 @@ void function_table() {
     flist[F_SET_UDP_FIRST_DEST] = &set_udp_first_dest;
     flist[F_GET_READOUT_SPEED] = &get_readout_speed;
     flist[F_SET_READOUT_SPEED] = &set_readout_speed;
+    flist[F_GET_KERNEL_VERSION] = &get_kernel_version;
+
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -9411,4 +9413,24 @@ int set_readout_speed(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_kernel_version(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    char retvals[MAX_STR_LENGTH];
+    memset(retvals, 0, MAX_STR_LENGTH);
+
+    LOG(logDEBUG1, ("Getting kernel version\n"));
+
+    // get only
+    ret = getKernelVersion(retvals);
+    if (ret == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                     "Could not get kernel version. %s\n", retvals);
+        LOG(logERROR, (mess));
+    } else {
+        LOG(logDEBUG1, ("kernel version: [%s]\n", retvals));
+    }
+    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }

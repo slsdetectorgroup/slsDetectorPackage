@@ -67,6 +67,10 @@ void init_det(py::module &m) {
              (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getDetectorServerVersion,
              py::arg() = Positions{})
+        .def("getKernelVersion",
+             (Result<std::string>(Detector::*)(sls::Positions) const) &
+                 Detector::getKernelVersion,
+             py::arg() = Positions{})
         .def("getSerialNumber",
              (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getSerialNumber,

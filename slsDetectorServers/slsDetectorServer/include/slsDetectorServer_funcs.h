@@ -277,3 +277,4 @@ int get_udp_first_dest(int);
 int set_udp_first_dest(int);
 int get_readout_speed(int);
 int set_readout_speed(int);
+int get_kernel_version(int);

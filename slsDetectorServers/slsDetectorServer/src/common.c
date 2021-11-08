@@ -66,26 +66,28 @@ int getAbsPath(char *buf, size_t bufSize, char *fname) {
 }
 
 int getTimeFromString(char *buf, time_t *result) {
+    char buffer[255] = {0};
+    strcpy(buffer, buf);
     // remove timezone as strptime cannot validate timezone despite
     // documentation (for blackfin)
-    LOG(logDEBUG, ("buf for time %s\n", buf));
+    LOG(logDEBUG, ("kernel v %s\n", buffer));
     const char *timezone = {"CEST"};
-    char *res = strstr(buf, timezone);
+    char *res = strstr(buffer, timezone);
     if (res != NULL) {
-        size_t cestPos = res - buf;
+        size_t cestPos = res - buffer;
         size_t pos = cestPos + strlen(timezone) + 1;
-        while (pos != strlen(buf)) {
-            buf[cestPos] = buf[pos];
+        while (pos != strlen(buffer)) {
+            buffer[cestPos] = buffer[pos];
             ++cestPos;
             ++pos;
         }
-        buf[cestPos] = '\0';
+        buffer[cestPos] = '\0';
     }
-    LOG(logDEBUG, ("buf after removing CEST %s\n", buf));
+    LOG(logDEBUG, ("kernel v after removing CEST %s\n", buffer));
 
     // convert to time structure
     struct tm t;
-    if (NULL == strptime(buf, "%a %b %d %H:%M:%S %Y", &t)) {
+    if (NULL == strptime(buffer, "%a %b %d %H:%M:%S %Y", &t)) {
         return FAIL;
     }
 
@@ -96,28 +98,44 @@ int getTimeFromString(char *buf, time_t *result) {
     return OK;
 }
 
-int validateKernelVersion(char *expectedVersion) {
-    // extract kernel date string
+int getKernelVersion(char* retvals) {
     struct utsname buf = {0};
     if (uname(&buf) == -1) {
-        LOG(logERROR, ("Could not get kernel version\n"));
+        strcpy(retvals, "Failed to get utsname structure from uname\n");
+        LOG(logERROR, (retvals));
+        return FAIL;
+    }   
+    strcpy(retvals, buf.version);
+    LOG(logINFOBLUE, ("Kernel Version: %s\n", retvals));
+    return OK;
+}
+
+int validateKernelVersion(char *expectedVersion) {
+    // extract kernel date string
+    char version[255] = {0};
+    if (getKernelVersion(version) == FAIL) {
+        LOG(logERROR, ("Could not validate kernel version\n"));
         return FAIL;
     }
+    LOG(logDEBUG, ("utsname.version:%s\n", version));
 
+    char currentVersion[255] = {0};
+#ifdef VIRTUAL
+    strcpy(currentVersion, expectedVersion);
+#else
     // remove first word (#version number)
-    const char *ptr = strchr(buf.version, ' ');
+    const char *ptr = strchr(version, ' ');
     if (ptr == NULL) {
         LOG(logERROR, ("Could not parse kernel version\n"));
         return FAIL;
     }
-    char output[255];
-    memset(output, 0, sizeof(output));
-    strcpy(output, buf.version + (ptr - buf.version + 1));
+    strcpy(currentVersion, version + (ptr - version + 1));
+#endif
 
     // convert kernel date string into time
     time_t kernelDate;
-    if (getTimeFromString(output, &kernelDate) == FAIL) {
-        LOG(logERROR, ("Could not parse retrieved kernel date, %s\n", output));
+    if (getTimeFromString(currentVersion, &kernelDate) == FAIL) {
+        LOG(logERROR, ("Could not parse retrieved kernel date, %s\n", currentVersion));
         return FAIL;
     }
 
@@ -133,11 +151,11 @@ int validateKernelVersion(char *expectedVersion) {
     if (kernelDate < expDate) {
         LOG(logERROR, ("Kernel Version Incompatible (too old)! Expected: [%s], "
                        "Got [%s]\n",
-                       expectedVersion, output));
+                       expectedVersion, currentVersion));
         return FAIL;
     }
 
-    LOG(logINFOBLUE, ("Kernel Version Compatible: %s [min.: %s]\n", output,
+    LOG(logINFOBLUE, ("Kernel Version Compatible: %s [min.: %s]\n", currentVersion,
                       expectedVersion));
     return OK;
 }

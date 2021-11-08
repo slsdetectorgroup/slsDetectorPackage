@@ -275,7 +275,7 @@ std::string CmdProxy::Versions(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        auto t = det->getFirmwareVersion();
+        auto t = det->getFirmwareVersion(std::vector<int>{det_id});
         os << "\nDetector Type: " << OutString(det->getDetectorType())
            << "\nPackage Version: " << det->getPackageVersion() << std::hex
            << "\nClient Version: 0x" << det->getClientVersion();
@@ -285,10 +285,12 @@ std::string CmdProxy::Versions(int action) {
             os << "\nFirmware Version: " << OutStringHex(t);
         }
         os << "\nDetector Server Version: "
-           << OutStringHex(det->getDetectorServerVersion());
+           << OutStringHex(det->getDetectorServerVersion(std::vector<int>{det_id}));
+        os << "\nDetector Server Version: "
+           << OutString(det->getKernelVersion({std::vector<int>{det_id}}));
         if (det->getUseReceiverFlag().squash(true)) {
             os << "\nReceiver Version: "
-               << OutStringHex(det->getReceiverVersion());
+               << OutStringHex(det->getReceiverVersion(std::vector<int>{det_id}));
         }
         os << std::dec << '\n';
     } else if (action == defs::PUT_ACTION) {

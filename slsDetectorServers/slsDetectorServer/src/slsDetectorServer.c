@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
         memset(portCmd, 0, 256);
         sprintf(portCmd, "-p%d", portno);
         for (int i = 0; i < argc; ++i) {
-            LOG(logINFOBLUE, ("i:%d argv[i]:%s\n", i, argv[i]));
+            LOG(logDEBUG, ("i:%d argv[i]:%s\n", i, argv[i]));
             // remove port argument (--port) and [value]
             if (!strcasecmp(argv[i], "--port")) {
                 ++i;

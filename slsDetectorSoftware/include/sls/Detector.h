@@ -81,6 +81,8 @@ class Detector {
 
     Result<int64_t> getDetectorServerVersion(Positions pos = {}) const;
 
+    Result<std::string> getKernelVersion(Positions pos = {}) const;
+
     /* [Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench] */
     Result<int64_t> getSerialNumber(Positions pos = {}) const;
 

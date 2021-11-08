@@ -767,6 +767,7 @@ class CmdProxy {
         {"clientversion", &CmdProxy::ClientVersion},
         {"firmwareversion", &CmdProxy::FirmwareVersion},
         {"detectorserverversion", &CmdProxy::detectorserverversion},
+        {"kernelversion", &CmdProxy::kernelversion},
         {"rx_version", &CmdProxy::rx_version},
         {"serialnumber", &CmdProxy::serialnumber},
         {"moduleid", &CmdProxy::moduleid},
@@ -1205,6 +1206,10 @@ class CmdProxy {
     GET_COMMAND_HEX(
         detectorserverversion, getDetectorServerVersion,
         "\n\tOn-board detector server software version in format [0xYYMMDD].");
+
+    GET_COMMAND(
+        kernelversion, getKernelVersion,
+        "\n\tGet kernel version on the detector including time and date.");
 
     GET_COMMAND_HEX(rx_version, getReceiverVersion,
                     "\n\tReceiver version in format [0xYYMMDD].");

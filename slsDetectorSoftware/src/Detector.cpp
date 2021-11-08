@@ -117,6 +117,10 @@ Result<int64_t> Detector::getDetectorServerVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getDetectorServerVersion, pos);
 }
 
+Result<std::string> Detector::getKernelVersion(Positions pos) const {
+    return pimpl->Parallel(&Module::getKernelVersion, pos);
+}
+
 Result<int64_t> Detector::getSerialNumber(Positions pos) const {
     return pimpl->Parallel(&Module::getSerialNumber, pos);
 }

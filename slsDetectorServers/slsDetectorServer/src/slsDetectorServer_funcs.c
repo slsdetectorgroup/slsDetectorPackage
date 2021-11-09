@@ -9366,7 +9366,7 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
         memset(checksum, 0, MAX_STR_LENGTH);
         if (receiveData(file_des, checksum, MAX_STR_LENGTH, OTHER) < 0)
             return printSocketReadError();
-        LOG(logINFO, ("\tChecksum: %s\n\n", checksum));
+        LOG(logINFO, ("\tChecksum: %s\n", checksum));
 
 #if defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(EIGERD)
         receive_program_default(file_des, index, functionType, filesize,

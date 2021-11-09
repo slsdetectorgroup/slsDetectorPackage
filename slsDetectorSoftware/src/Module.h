@@ -757,8 +757,10 @@ class Module : public virtual slsDetectorDefs {
     mutable sls::SharedMemory<sharedModule> shm{0, 0};
     static const int BLACKFIN_ERASE_FLASH_TIME = 65;
     static const int BLACKFIN_WRITE_TO_FLASH_TIME = 30;
-    static const int NIOS_ERASE_FLASH_TIME = 10;
-    static const int NIOS_WRITE_TO_FLASH_TIME = 45;
+    static const int NIOS_ERASE_FLASH_TIME_FPGA = 10;
+    static const int NIOS_WRITE_TO_FLASH_TIME_FPGA = 45;
+    static const int NIOS_ERASE_FLASH_TIME_FPGA = 9;
+    static const int NIOS_WRITE_TO_FLASH_TIME_FPGA = 39;
 };
 
 } // namespace sls

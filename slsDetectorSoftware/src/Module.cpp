@@ -3528,17 +3528,24 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
                  << shm()->hostname << ")";
 
     // simulating erasing and writing to
-    if (functionEnum == F_PROGRAM_FPGA) {
-        if (blackfin) {
+    if (blackfin) {
+        if (functionEnum == F_PROGRAM_FPGA) {
             simulatingActivityinDetector("Erasing Flash",
                                          BLACKFIN_ERASE_FLASH_TIME);
             simulatingActivityinDetector("Writing to Flash",
                                          BLACKFIN_WRITE_TO_FLASH_TIME);
-        } else {
+        }
+    } else {
+        if (functionEnum == F_PROGRAM_FPGA) {
             simulatingActivityinDetector("Erasing Flash",
-                                         NIOS_ERASE_FLASH_TIME);
+                                         NIOS_ERASE_FLASH_TIME_FPGA);
             simulatingActivityinDetector("Writing to Flash",
-                                         NIOS_WRITE_TO_FLASH_TIME);
+                                         NIOS_WRITE_TO_FLASH_TIME_FPGA);
+        } else if (functionEnum == F_UPDATE_KERNEL) {
+            simulatingActivityinDetector("Erasing Flash",
+                                         NIOS_ERASE_FLASH_TIME_KERNEL);
+            simulatingActivityinDetector("Writing to Flash",
+                                         NIOS_WRITE_TO_FLASH_TIME_KERNEL);
         }
     }
 

@@ -164,6 +164,7 @@ int FPGAdontTouchFlash(char *mess) {
         LOG(logINFO, ("\tgpio3: fpga dont touch flash\n"));
     }
     // usleep(100*1000);
+    return OK;
 }
 
 int FPGATouchFlash(char *mess) {
@@ -189,6 +190,7 @@ int FPGATouchFlash(char *mess) {
         }
         LOG(logINFO, ("\tgpio3: setting input\n"));
     }
+    return OK;
 }
 
 int resetFPGA(char *mess) {
@@ -203,6 +205,7 @@ int resetFPGA(char *mess) {
         return FAIL;
     }
     usleep(CTRL_SRVR_INIT_TIME_US);
+    return OK;
 }
 
 int emptyTempFolder(char *mess) {

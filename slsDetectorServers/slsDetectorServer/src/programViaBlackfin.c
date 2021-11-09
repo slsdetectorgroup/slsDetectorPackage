@@ -313,11 +313,13 @@ int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
         return FAIL;
     }
 
-    /* remove condition when flash fpga and flash kernel fixed */
-    /*if (verifyChecksumFromFlash(mess, messageType, clientChecksum,
-                                flashDriveName, fsize) == FAIL) {
-        return FAIL;
-    }*/
+    /* remove condition when flash fpga fixed */
+    if (index == PROGRAM_KERNEL) {
+        if (verifyChecksumFromFlash(mess, messageType, clientChecksum,
+                                    flashDriveName, fsize) == FAIL) {
+            return FAIL;
+        }
+    }
 
     if (index == PROGRAM_FPGA) {
         if (waitForFPGAtoTouchFlash(mess) == FAIL) {

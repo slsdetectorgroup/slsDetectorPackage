@@ -360,6 +360,10 @@ int verifyChecksumFromFlash(char *mess, char *functionType,
                 ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
             break;
         }
+        // for less than 128 bytes
+        if ((readUnitSize + totalBytesRead) > fsize) {
+            readUnitSize = fsize - totalBytesRead;
+        }
         bytes = fread(buf, 1, readUnitSize, fp);
         totalBytesRead += bytes;
     }

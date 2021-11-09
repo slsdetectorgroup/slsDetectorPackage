@@ -95,10 +95,7 @@ void init_detector() {
     lockStatus = 0;
     if (isControlServer) {
         basictests();
-        char *message = NULL;
-        if (getInitResult(&message) == OK) {
-            initControlServer();
-        }
+        initControlServer();
     } else {
         initStopServer();
     }

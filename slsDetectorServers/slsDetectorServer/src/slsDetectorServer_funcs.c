@@ -474,7 +474,7 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
     if (strlen(result)) {
         if (success) {
             success = FAIL;
-            LOG(logERROR, ("%s\n", result));
+            LOG(logERROR, ("Executing cmd[%s]:%s\n", cmdresult));
         } else {
             LOG(level, ("Result:\n[%s]\n", result));
         }
@@ -9360,14 +9360,14 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
         uint64_t filesize = 0;
         if (receiveData(file_des, &filesize, sizeof(filesize), INT64) < 0)
             return printSocketReadError();
-        LOG(logDEBUG1, ("Program size is: %lld\n", (long long int)filesize));
+        LOG(logINFO, ("\tProgram size: %lld\n", (long long int)filesize));
 
         // client checksum
         char checksum[MAX_STR_LENGTH];
         memset(checksum, 0, MAX_STR_LENGTH);
         if (receiveData(file_des, checksum, MAX_STR_LENGTH, OTHER) < 0)
             return printSocketReadError();
-        LOG(logDEBUG1, ("checksum is: %s\n\n", checksum));
+        LOG(logINFO, ("\tChecksum: %s\n\n", checksum));
 
 #if defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(EIGERD)
         receive_program_default(file_des, index, functionType, filesize,
@@ -9477,8 +9477,8 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
     switch (index) {
     case PROGRAM_FPGA:
     case PROGRAM_KERNEL:
-        ret =
-            eraseAndWriteToFlash(mess, index, functionType, checksum, filesize);
+        ret = eraseAndWriteToFlash(mess, index, functionType, checksum,
+                                   totalsize);
         break;
     case PROGRAM_SERVER:
         break;

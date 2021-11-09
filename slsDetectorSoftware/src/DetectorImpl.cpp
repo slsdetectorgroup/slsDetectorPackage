@@ -1262,8 +1262,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         throw RuntimeError("programfpga not implemented for this detector");
     }
 
-    LOG(logINFO)
-        << "Updating Firmware. This can take awhile. Please be patient...";
+    LOG(logINFO) << "This can take awhile. Please be patient.";
     LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
 
     // check if it exists

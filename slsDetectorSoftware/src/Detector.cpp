@@ -2166,7 +2166,7 @@ void Detector::updateKernel(const std::string &fname, Positions pos) {
     LOG(logINFO) << "Updating Kernel...";
     std::vector<char> buffer = readBinaryFile(fname, "Update Kernel");
     pimpl->Parallel(&Module::updateKernel, pos, buffer);
-    rebootController(pos);
+    //rebootController(pos);
 }
 
 void Detector::rebootController(Positions pos) {

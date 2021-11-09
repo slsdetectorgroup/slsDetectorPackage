@@ -353,7 +353,6 @@ int verifyChecksumFromFlash(char *mess, char *functionType,
             LOG(logERROR, (mess));
             return FAIL;
         }
-
         // read only until a particular size (drive)
         if (fsize != 0 && totalBytesRead >= fsize) {
             LOG(logINFO,
@@ -361,10 +360,11 @@ int verifyChecksumFromFlash(char *mess, char *functionType,
             break;
         }
         // for less than 128 bytes
+        ssize_t bytesToRead = readUnitSize;
         if ((readUnitSize + totalBytesRead) > fsize) {
-            readUnitSize = fsize - totalBytesRead;
+            bytesToRead = fsize - totalBytesRead;
         }
-        bytes = fread(buf, 1, readUnitSize, fp);
+        bytes = fread(buf, 1, bytesToRead, fp);
         totalBytesRead += bytes;
     }
     LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));

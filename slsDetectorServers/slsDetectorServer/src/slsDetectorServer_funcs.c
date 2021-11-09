@@ -474,7 +474,7 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
     if (strlen(result)) {
         if (success) {
             success = FAIL;
-            LOG(logERROR, ("Executing cmd[%s]:%s\n", cmdresult));
+            LOG(logERROR, ("Executing cmd[%s]:%s\n", cmd, result));
         } else {
             LOG(level, ("Result:\n[%s]\n", result));
         }

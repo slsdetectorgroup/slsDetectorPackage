@@ -92,14 +92,16 @@ void init_detector() {
 #ifdef EIGERD
     udpDetails[0].dstport2 = DEFAULT_UDP_DST_PORTNO + 1;
 #endif
-
+    lockStatus = 0;
     if (isControlServer) {
         basictests();
-        initControlServer();
-    } else
+        char *message = NULL;
+        if (getInitResult(&message) == OK) {
+            initControlServer();
+        }
+    } else {
         initStopServer();
-    strcpy(mess, "dummy message");
-    lockStatus = 0;
+    }
 }
 
 int decode_function(int file_des) {

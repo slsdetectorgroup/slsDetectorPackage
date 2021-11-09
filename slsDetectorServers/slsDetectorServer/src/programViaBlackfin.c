@@ -33,7 +33,7 @@
 #define CMD_FPGA_PICKED_STATUS  "cat /sys/class/gpio/gpio7/value"
 
 #define CMD_GET_FPGA_FLASH_DRIVE    "awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd"
-#define CMD_GET_KERNEL_FLASH_DRIVE  "awk \'$4== \"\\\"linux kernel(nor)\\\"\" {print $1}\' /proc/mtd"
+#define CMD_GET_KERNEL_FLASH_DRIVE  "awk \'$4== \"\\\"linux\" {print $1}\' /proc/mtd"
 
 #define FLASH_BUFFER_MEMORY_SIZE (128 * 1024) // 500 KB
 // clang-format on

@@ -200,6 +200,7 @@ int writeToFlash(char *mess, ssize_t fsize, FILE *flashfd, char *buffer) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tWritten to Flash\n"));
+    fclose(flashfd);
+    LOG(logINFO, ("\tWrote %ld bytes to flash\n", bytesWritten));
     return OK;
 }

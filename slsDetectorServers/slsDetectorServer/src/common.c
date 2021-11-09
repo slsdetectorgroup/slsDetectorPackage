@@ -369,11 +369,7 @@ int verifyChecksumFromFlash(char *mess, char *functionType,
     }
     LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));
     fclose(fp);
-    int ret = verifyChecksum(mess, functionType, clientChecksum, &c, "flash");
-    if (ret == OK) {
-        LOG(logINFO, ("\tChecksum in Flash verified\n"));
-    }
-    return ret;
+    return verifyChecksum(mess, functionType, clientChecksum, &c, "flash");
 }
 
 int verifyChecksum(char *mess, char *functionType, char *clientChecksum,
@@ -408,6 +404,6 @@ int verifyChecksum(char *mess, char *functionType, char *clientChecksum,
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tChecksum verified\n"));
+    LOG(logINFO, ("\tChecksum of %s verified\n", msg));
     return OK;
 }

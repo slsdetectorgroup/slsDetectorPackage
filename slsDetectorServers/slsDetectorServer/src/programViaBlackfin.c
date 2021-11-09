@@ -18,6 +18,10 @@
 #define CMD_GPIO9_DEFINE "echo 9 > /sys/class/gpio/export"
 #define CMD_GPIO3_DEFINE "echo 3 > /sys/class/gpio/export"
 
+#define CMD_GPIO7_EXIST "/sys/class/gpio/gpio7"
+#define CMD_GPIO9_EXIST "/sys/class/gpio/gpio9"
+#define CMD_GPIO3_EXIST "/sys/class/gpio/gpio3"
+
 #define CMD_GPIO9_DEFINE_OUT "echo out > /sys/class/gpio/gpio9/direction"
 #define CMD_GPIO3_DEFINE_OUT "echo out > /sys/class/gpio/gpio3/direction"
 #define CMD_GPIO7_DEFINE_IN "echo in > /sys/class/gpio/gpio7/direction"
@@ -43,7 +47,6 @@ char flashDriveName[FLASH_DRIVE_NAME_SIZE] = {0};
 #endif
 
 char messageType[SHORT_STR_LENGTH] = {0};
-int gpioDefined = 0;
 
 extern int executeCommand(char *command, char *result, enum TLogLevel level);
 
@@ -67,20 +70,19 @@ int defineGPIOpins(char *mess) {
         }
     }
 
-    if (gpioDefined) {
-        LOG(logDEBUG1, ("gpio pins already defined earlier\n"));
-        return OK;
-    }
-
     char retvals[MAX_STR_LENGTH] = {0};
     // define gpio7
-    if (executeCommand(CMD_GPIO7_DEFINE, retvals, logDEBUG1) == FAIL) {
-        snprintf(mess, MAX_STR_LENGTH,
-                 "Could not define gpio7 pins for fpga (%s)\n", retvals);
-        LOG(logERROR, (mess));
-        return FAIL;
+    if (access(CMD_GPIO7_EXIST, F_OK) != 0) {
+        if (executeCommand(CMD_GPIO7_DEFINE, retvals, logDEBUG1) == FAIL) {
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not define gpio7 pins for fpga (%s)\n", retvals);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        LOG(logINFO, ("\tgpio7: defined\n"));
+    } else {
+        LOG(logINFO, ("\tgpio7: already defined\n"));
     }
-    LOG(logINFO, ("\tgpio7: defined\n"));
 
     // define gpio7 direction
     if (executeCommand(CMD_GPIO7_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
@@ -92,26 +94,34 @@ int defineGPIOpins(char *mess) {
     LOG(logINFO, ("\tgpio7: setting intput\n"));
 
     // define gpio9
-    if (executeCommand(CMD_GPIO9_DEFINE, retvals, logDEBUG1) == FAIL) {
-        snprintf(mess, MAX_STR_LENGTH,
-                 "Could not define gpio9 pins for fpga (%s)\n", retvals);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    LOG(logINFO, ("\tgpio9: defined\n"));
-
-    // define gpio3 (not chip enable)
-    if (latestKernelVerified == 1) {
-        if (executeCommand(CMD_GPIO3_DEFINE, retvals, logDEBUG1) == FAIL) {
+    if (access(CMD_GPIO9_EXIST, F_OK) != 0) {
+        if (executeCommand(CMD_GPIO9_DEFINE, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not define gpio3 pins for fpga (%s)\n", retvals);
+                     "Could not define gpio9 pins for fpga (%s)\n", retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }
-        LOG(logINFO, ("\tgpio3: defined\n"));
+        LOG(logINFO, ("\tgpio9: defined\n"));
+    } else {
+        LOG(logINFO, ("\tgpio9: already defined\n"));
     }
 
-    gpioDefined = 1;
+    // define gpio3 (not chip enable)
+    if (latestKernelVerified == 1) {
+        if (access(CMD_GPIO3_EXIST, F_OK) != 0) {
+            if (executeCommand(CMD_GPIO3_DEFINE, retvals, logDEBUG1) == FAIL) {
+                snprintf(mess, MAX_STR_LENGTH,
+                         "Could not define gpio3 pins for fpga (%s)\n",
+                         retvals);
+                LOG(logERROR, (mess));
+                return FAIL;
+            }
+            LOG(logINFO, ("\tgpio3: defined\n"));
+        } else {
+            LOG(logINFO, ("\tgpio3: already defined\n"));
+        }
+    }
+
     return OK;
 }
 

@@ -9304,8 +9304,7 @@ int get_kernel_version(int file_des) {
 int update_kernel(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
-    !defined(GOTTHARDD)
+#ifdef EIGERD
     functionNotImplemented();
     return Server_SendResult(file_des, INT32, NULL, 0);
 #else

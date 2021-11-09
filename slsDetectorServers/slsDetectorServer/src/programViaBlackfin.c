@@ -77,6 +77,7 @@ int defineGPIOpins(char *mess) {
     if (executeCommand(CMD_GPIO7_DEFINE, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not define gpio7 pins for fpga (%s)\n", retvals);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("\tgpio7: defined\n"));
@@ -85,6 +86,7 @@ int defineGPIOpins(char *mess) {
     if (executeCommand(CMD_GPIO7_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not set gpio7 as input for fpga (%s)\n", retvals);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("\tgpio7: setting intput\n"));
@@ -93,6 +95,7 @@ int defineGPIOpins(char *mess) {
     if (executeCommand(CMD_GPIO9_DEFINE, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not define gpio9 pins for fpga (%s)\n", retvals);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("\tgpio9: defined\n"));
@@ -102,6 +105,7 @@ int defineGPIOpins(char *mess) {
         if (executeCommand(CMD_GPIO3_DEFINE, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
                      "Could not define gpio3 pins for fpga (%s)\n", retvals);
+            LOG(logERROR, (mess));
             return FAIL;
         }
         LOG(logINFO, ("\tgpio3: defined\n"));
@@ -120,6 +124,7 @@ int FPGAdontTouchFlash(char *mess) {
     if (executeCommand(CMD_GPIO9_DEFINE_OUT, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not set gpio9 as output for fpga (%s)\n", retvals);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("\tgpio9: setting output\n"));
@@ -129,6 +134,7 @@ int FPGAdontTouchFlash(char *mess) {
         if (executeCommand(CMD_GPIO3_DEFINE_OUT, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
                      "Could not set gpio3 as output for fpga (%s)\n", retvals);
+            LOG(logERROR, (mess));
             return FAIL;
         }
         LOG(logINFO, ("\tgpio3: setting output\n"));
@@ -140,6 +146,7 @@ int FPGAdontTouchFlash(char *mess) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not set gpio9 to not touch flash for fpga (%s)\n",
                  retvals);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("\tgpio9: fpga dont touch flash\n"));
@@ -151,6 +158,7 @@ int FPGAdontTouchFlash(char *mess) {
             snprintf(mess, MAX_STR_LENGTH,
                      "Could not set gpio3 to not touch flash for fpga (%s)\n",
                      retvals);
+            LOG(logERROR, (mess));
             return FAIL;
         }
         LOG(logINFO, ("\tgpio3: fpga dont touch flash\n"));
@@ -167,6 +175,7 @@ int FPGATouchFlash(char *mess) {
     if (executeCommand(CMD_GPIO9_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not set gpio9 as input for fpga (%s)\n", retvals);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("\tgpio9: setting input\n"));
@@ -175,6 +184,7 @@ int FPGATouchFlash(char *mess) {
         if (executeCommand(CMD_GPIO3_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
                      "Could not set gpio3 as input for fpga (%s)\n", retvals);
+            LOG(logERROR, (mess));
             return FAIL;
         }
         LOG(logINFO, ("\tgpio3: setting input\n"));
@@ -212,7 +222,7 @@ int emptyTempFolder(char *mess) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not update %s. (could not empty %s folder: %s)\n",
                  messageType, TEMP_PROG_FOLDER_NAME, retvals);
-        // LOG(logERROR, (mess)); already printed in executecommand
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("\tEmptied temp folder(%s)\n", TEMP_PROG_FOLDER_NAME));
@@ -310,7 +320,7 @@ int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
         if (executeCommand("sync", retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
                      "Could not update %s. (could not sync)\n", messageType);
-            // LOG(logERROR, (mess)); already printed in executecommand
+            LOG(logERROR, (mess));
             return FAIL;
         }
     }
@@ -343,7 +353,7 @@ int getDrive(char *mess, enum PROGRAM_INDEX index) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not %s. (could not get flash drive: %s)\n", messageType,
                  retvals);
-        // LOG(logERROR, (mess)); already printed in executecommand
+        LOG(logERROR, (mess));
         return FAIL;
     }
 
@@ -411,7 +421,7 @@ int eraseFlash(char *mess) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not update %s. (could not erase flash: %s)\n",
                  messageType, retvals);
-        // LOG(logERROR, (mess)); already printed in executecommand
+        LOG(logERROR, (mess));
         return FAIL;
     }
     LOG(logINFO, ("\tFlash erased\n"));

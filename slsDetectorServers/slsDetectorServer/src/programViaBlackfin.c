@@ -33,7 +33,7 @@
 #define CMD_FPGA_PICKED_STATUS  "cat /sys/class/gpio/gpio7/value"
 
 #define CMD_GET_FPGA_FLASH_DRIVE    "awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd"
-#define CMD_GET_KERNEL_FLASH_DRIVE    "awk \'$4== \"\\\"linux\\\"\" {print $1}\' /proc/mtd"
+#define CMD_GET_KERNEL_FLASH_DRIVE  "awk \'$4== \"\\\"linux kernel(nor)\\\"\" {print $1}\' /proc/mtd"
 
 #define FLASH_BUFFER_MEMORY_SIZE (128 * 1024) // 500 KB
 // clang-format on
@@ -313,13 +313,11 @@ int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
         return FAIL;
     }
 
-    /* remove condition when flash fpga fixed */
-    if (index == PROGRAM_KERNEL) {
-        if (verifyChecksumFromFlash(mess, messageType, clientChecksum,
-                                    flashDriveName, fsize) == FAIL) {
-            return FAIL;
-        }
-    }
+    /* remove condition when flash fpga and flash kernel fixed */
+    /*if (verifyChecksumFromFlash(mess, messageType, clientChecksum,
+                                flashDriveName, fsize) == FAIL) {
+        return FAIL;
+    }*/
 
     if (index == PROGRAM_FPGA) {
         if (waitForFPGAtoTouchFlash(mess) == FAIL) {
@@ -367,6 +365,13 @@ int getDrive(char *mess, enum PROGRAM_INDEX index) {
                  "Could not %s. (could not get flash drive: %s)\n", messageType,
                  retvals);
         LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    if (strlen(retvals) == 0) {
+        LOG(logERROR, ("Could not %s. Could not get mtd drive, script returned "
+                       "empty string\n",
+                       messageType));
         return FAIL;
     }
 

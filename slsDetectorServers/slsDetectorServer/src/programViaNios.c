@@ -13,8 +13,8 @@
 
 #define CMD_GET_FPGA_FLASH_DRIVE                                               \
     "awk \'$5== \"Application\" {print $1}\' /proc/mtd"
-#define CMD_GET_KERNEL_FLASH_DRIVE "awk \'$5== \"Linux\" {print $1}\' /proc/mtd"
-
+#define CMD_GET_KERNEL_FLASH_DRIVE                                             \
+    "awk \'$5== \"Linux\" && $9 != \"Backup\\\"\" {print $1}\' /proc/mtd"
 #define FLASH_DRIVE_NAME_SIZE 16
 
 #ifdef VIRTUAL
@@ -118,6 +118,13 @@ int getDrive(char *mess, enum PROGRAM_INDEX index) {
                  "Could not %s. (could not get flash drive: %s)\n", messageType,
                  retvals);
         // LOG(logERROR, (mess)); already printed in executecommand
+        return FAIL;
+    }
+
+    if (strlen(retvals) == 0) {
+        LOG(logERROR, ("Could not %s. Could not get mtd drive, script returned "
+                       "empty string\n",
+                       messageType));
         return FAIL;
     }
 

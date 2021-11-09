@@ -9328,7 +9328,7 @@ int update_kernel(int file_des) {
         n = receiveData(file_des, mess, MAX_STR_LENGTH, OTHER);
     functionNotImplemented();
 #else
-    receive_program(file_des, PROGRAM_FPGA);
+    receive_program(file_des, PROGRAM_KERNEL);
 #endif
     return ret;
 }

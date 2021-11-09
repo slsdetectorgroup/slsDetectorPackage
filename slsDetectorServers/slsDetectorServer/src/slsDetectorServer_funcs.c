@@ -432,7 +432,9 @@ void function_table() {
 
 void functionNotImplemented() {
     ret = FAIL;
-    sprintf(mess, "Function (%s) is not implemented for this detector\n",
+    sprintf(mess,
+            "Function (%s) is not implemented for this detector. Please do not "
+            "proceed.\n",
             getFunctionNameFromEnum((enum detFuncs)fnum));
     LOG(logERROR, (mess));
 }
@@ -484,17 +486,8 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
 }
 
 int M_nofunc(int file_des) {
-    ret = FAIL;
     memset(mess, 0, sizeof(mess));
-
-    // to receive any arguments
-    int n = 1;
-    while (n > 0)
-        n = receiveData(file_des, mess, MAX_STR_LENGTH, OTHER);
-
-    sprintf(mess, "Unrecognized Function enum %d. Please do not proceed.\n",
-            fnum);
-    LOG(logERROR, (mess));
+    functionNotImplemented();
     return Server_SendResult(file_des, OTHER, NULL, 0);
 }
 
@@ -1562,15 +1555,8 @@ int set_module(int file_des) {
         }
     }
 
-    // receive all arguments
-    if (ret == FAIL) {
-        int n = 1;
-        while (n > 0)
-            n = receiveData(file_des, mess, MAX_STR_LENGTH, OTHER);
-    }
-
     // only set
-    else if (Server_VerifyLock() == OK) {
+    if (ret == OK && Server_VerifyLock() == OK) {
         // check index
 
 // setsettings
@@ -3642,11 +3628,8 @@ int program_fpga(int file_des) {
     memset(mess, 0, sizeof(mess));
 
 #if defined(EIGERD) || defined(GOTTHARDD)
-    // to receive any arguments
-    int n = 1;
-    while (n > 0)
-        n = receiveData(file_des, mess, MAX_STR_LENGTH, OTHER);
     functionNotImplemented();
+    return Server_SendResult(file_des, INT32, NULL, 0);
 #else
     receive_program(file_des, PROGRAM_FPGA);
 #endif
@@ -9321,11 +9304,8 @@ int update_kernel(int file_des) {
     memset(mess, 0, sizeof(mess));
 #if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARDD)
-    // to receive any arguments
-    int n = 1;
-    while (n > 0)
-        n = receiveData(file_des, mess, MAX_STR_LENGTH, OTHER);
     functionNotImplemented();
+    return Server_SendResult(file_des, INT32, NULL, 0);
 #else
     receive_program(file_des, PROGRAM_KERNEL);
 #endif

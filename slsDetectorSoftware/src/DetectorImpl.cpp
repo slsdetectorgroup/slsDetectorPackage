@@ -1359,7 +1359,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     if (close(dst) != 0) {
         throw RuntimeError("Program FPGA: Could not close destination file");
     }
-    LOG(logINFOBLUE) << "File has been converted to " << destfname;
+    LOG(logINFO) << "File has been converted to " << destfname;
 
     // load converted file to memory
     std::vector<char> buffer = readBinaryFile(destfname, "Program FPGA");

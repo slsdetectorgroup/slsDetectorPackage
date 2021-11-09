@@ -760,7 +760,7 @@ class Module : public virtual slsDetectorDefs {
     static const int NIOS_ERASE_FLASH_TIME_FPGA = 10;
     static const int NIOS_WRITE_TO_FLASH_TIME_FPGA = 45;
     static const int NIOS_ERASE_FLASH_TIME_KERNEL = 9;
-    static const int NIOS_WRITE_TO_FLASH_TIME_KERNEL = 39;
+    static const int NIOS_WRITE_TO_FLASH_TIME_KERNEL = 40;
 };
 
 } // namespace sls

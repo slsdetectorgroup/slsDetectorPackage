@@ -49,4 +49,4 @@ int verifyChecksum(char *mess, char *functionType, char *clientChecksum,
                    MD5_CTX *c, char *msg);
 int setupDetectorServer(char *mess, char *sname);
 
-int writeBinaryFile(char* mess, char* fname, char* buffer, uint64_t filesize);
+int writeBinaryFile(char* mess, char* fname, char* buffer, const uint64_t filesize);

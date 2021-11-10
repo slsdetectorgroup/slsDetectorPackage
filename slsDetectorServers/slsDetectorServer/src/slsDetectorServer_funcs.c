@@ -9381,7 +9381,7 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                    totalsize);
         break;
     case PROGRAM_SERVER:
-        ret = writeBinaryFile(mess, serverName, src, filesize);
+        ret = writeBinaryFile(mess, serverName, src, totalsize);
         if (ret == OK) {
             ret = setupDetectorServer(mess, serverName);
         }

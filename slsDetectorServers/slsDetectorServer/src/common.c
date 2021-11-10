@@ -495,7 +495,9 @@ int setupDetectorServer(char *mess, char *sname) {
     return OK;
 }
 
-int writeBinaryFile(char* mess, char* fname, char* buffer, uint64_t filesize) {
+int writeBinaryFile(char* mess, char* fname, char* buffer, const uint64_t filesize) {
+    LOG(logINFO, ("\tWriting Detector Server Binary...\n"));
+
     FILE *fp = fopen(fname, "wb");
     if (fp == NULL) {
         sprintf(mess, "Could not copy detector server. (opening file to write(%s). Maybe it is being used? Try another server name?\n", fname);
@@ -503,11 +505,34 @@ int writeBinaryFile(char* mess, char* fname, char* buffer, uint64_t filesize) {
         return FAIL;
     }
 
-    size_t bytesWritten = fwrite(buffer, 1, filesize, fp);
-    if (bytesWritten != (size_t)filesize) {
-        sprintf(mess, "Could not copy detector server. Expected to write %lu bytes, wrote %lu bytes). \n", (long unsigned int)filesize, (long unsigned int)bytesWritten);
-        LOG(logERROR, (mess));
-        return FAIL;
+    size_t bytesWritten = 0;
+    size_t unitSize = 128;
+    int oldProgress = 0;
+
+    while (bytesWritten < filesize) {
+        // print progress
+        int progress = (int)(((double)(bytesWritten) / filesize) * 100);
+        if (oldProgress != progress) {
+            printf("%d%%\r", progress);
+            fflush(stdout);
+            oldProgress = progress;
+        }
+
+        // for less than 128 bytes
+        ssize_t writeSize = unitSize;
+        if ((unitSize + bytesWritten) > filesize) {
+            writeSize = filesize - bytesWritten;
+        }
+        size_t bytes = fwrite(buffer, 1, writeSize, fp);
+
+        // write
+        if (bytes != (size_t)writeSize) {
+            sprintf(mess, "Could not copy detector server. Expected to write %lu bytes, wrote %lu bytes). No space left? \n", (long unsigned int)filesize, (long unsigned int)bytesWritten);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        bytesWritten += bytes;
+        LOG(logDEBUG1, ("bytesWritten:%lu filesize:%lu\n", bytesWritten, filesize));
     }
     if (fclose(fp) != 0) {
         sprintf(mess, "Could not copy detector server. (closing file pointer)\n");

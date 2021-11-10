@@ -2534,6 +2534,7 @@ void Module::updateDetectorServer(std::vector<char> buffer,
         break;
     case MYTHEN3:
     case GOTTHARD2:
+    case EIGER:
         sendProgram(false, buffer, F_UPDATE_DETECTOR_SERVER,
                     "Update Detector Server (no tftp)", serverName);
         break;

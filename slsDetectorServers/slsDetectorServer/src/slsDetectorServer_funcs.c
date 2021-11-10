@@ -9381,7 +9381,10 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                    totalsize);
         break;
     case PROGRAM_SERVER:
-        ret = setupDetectorServer(mess, serverName);
+        ret = writeBinaryFile(mess, serverName, src, filesize);
+        if (ret == OK) {
+            ret = setupDetectorServer(mess, serverName);
+        }
         break;
     default:
         modeNotImplemented("Program index", (int)index);
@@ -9454,22 +9457,27 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
         return;
     }
 
-#if defined(GOTTHARD2D) || defined(MYTHEN3D)
     // appropriate functions
     switch (index) {
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
     case PROGRAM_FPGA:
     case PROGRAM_KERNEL:
         ret = eraseAndWriteToFlash(mess, index, functionType, checksum, src,
                                    filesize);
         break;
+#endif
+#if defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(EIGERD)
     case PROGRAM_SERVER:
-        ret = setupDetectorServer(mess, serverName);
+        ret = writeBinaryFile(mess, serverName, src, filesize);
+        if (ret == OK) {
+            ret = setupDetectorServer(mess, serverName);
+        }
         break;
+#endif
     default:
         modeNotImplemented("Program index", (int)index);
         break;
     }
-#endif
     // send result
     Server_SendResult(file_des, INT32, NULL, 0);
 

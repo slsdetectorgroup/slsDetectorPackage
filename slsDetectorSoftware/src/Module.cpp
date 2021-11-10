@@ -2538,7 +2538,7 @@ void Module::updateDetectorServer(std::vector<char> buffer,
                     "Update Detector Server (no tftp)", serverName);
         break;
     default:
-        throw RuntimeError("Updating Kernel via the package is not implemented "
+        throw RuntimeError("Updating DetectorServer via the package is not implemented "
                            "for this detector");
     }
 }

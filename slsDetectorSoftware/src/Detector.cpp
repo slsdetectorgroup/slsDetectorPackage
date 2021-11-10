@@ -2156,19 +2156,17 @@ void Detector::copyDetectorServer(const std::string &fname,
 void Detector::updateDetectorServer(const std::string &fname, Positions pos) {
     LOG(logINFO) << "Updating Detector Server...";
 
-    const std::string &serverName std::vector<char> buffer =
+    std::vector<char> buffer =
         readBinaryFile(fname, "Update Detector Server");
 
-    // get file name
+    // get only the file name
     std::string filename(fname);
-    std::size_t pos = fname.rfind('/');
-    if (pos != std::string::npos) {
-        filename = filePath.substr(pos + 1, filePath.size() - 1);
+    std::size_t slashPos = fname.rfind('/');
+    if (slashPos != std::string::npos) {
+        filename = fname.substr(slashPos + 1, fname.size() - 1);
     }
-    LOG(logINFOBLUE) << "filename:" << filename;
-    exit(-1);
-    std::filesystem::path(fname).filename();
-    pimpl->Parallel(&Module::updateDetectorServer, pos, buffer);
+
+    pimpl->Parallel(&Module::updateDetectorServer, pos, buffer, filename);
     if (getDetectorType().squash() != defs::EIGER) {
         rebootController(pos);
     }
@@ -2192,6 +2190,16 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
     LOG(logINFO) << "Updating Firmware and Detector Server...";
     pimpl->Parallel(&Module::copyDetectorServer, pos, sname, hostname);
     programFPGA(fname, pos);
+    rebootController(pos);
+}
+
+void Detector::updateFirmwareAndServer(const std::string &sname,
+                                       const std::string &fname,
+                                       Positions pos) {
+    LOG(logINFO) << "Updating Firmware and Detector Server (no tftp)...";
+    updateDetectorServer(sname, pos);
+    programFPGA(fname, pos);
+    rebootController(pos);
 }
 
 Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {

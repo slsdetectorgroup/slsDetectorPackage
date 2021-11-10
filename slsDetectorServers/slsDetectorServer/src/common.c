@@ -4,11 +4,14 @@
 #include "common.h"
 #include "clogger.h"
 #include "sls/sls_detector_defs.h"
+#include "slsDetectorServer_defs.h"
 
 #include <libgen.h> // dirname
 #include <string.h>
 #include <sys/utsname.h> // uname
 #include <unistd.h>      // readlink
+
+extern int executeCommand(char *command, char *result, enum TLogLevel level);
 
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue) {
@@ -101,7 +104,8 @@ int getTimeFromString(char *buf, time_t *result) {
 }
 
 int getKernelVersion(char *retvals) {
-    struct utsname buf = {0};
+    struct utsname buf;
+    memset(&buf, 0, sizeof(buf));
     if (uname(&buf) == -1) {
         strcpy(retvals, "Failed to get utsname structure from uname\n");
         LOG(logERROR, (retvals));
@@ -461,7 +465,7 @@ int setupDetectorServer(char *mess, char *sname) {
     LOG(logINFO, ("\tinittab: DetectoServer line deleted\n"));
 
     // add new link name to /etc/inittab
-    format = "echo 'ttyS0::respawn:/./%s' >> /etc/inittab";
+    char* format = "echo 'ttyS0::respawn:/./%s' >> /etc/inittab";
     if (snprintf(cmd, MAX_STR_LENGTH, format, LINKED_SERVER_NAME) >=
         MAX_STR_LENGTH) {
         strcpy(mess, "Could not copy detector server. Command "
@@ -488,4 +492,5 @@ int setupDetectorServer(char *mess, char *sname) {
         return FAIL;
     }
     LOG(logINFO, ("\tsync\n"));
+    return OK;
 }

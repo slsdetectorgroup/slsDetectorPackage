@@ -2853,6 +2853,7 @@ std::string CmdProxy::CopyDetectorServer(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
+        LOG(logWARNING) << "Deprecated! Replaced by updatedetectorserver that requires no tftp.\n";
         os << "[server_name (in tftp folder)] "
               "[pc_host_name]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3]["
               "Gotthard2] Copies detector server via TFTP from pc. Ensure that "

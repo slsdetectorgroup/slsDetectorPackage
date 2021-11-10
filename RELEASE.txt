@@ -21,6 +21,8 @@ This document describes the differences between vx.x.x and v6.0.0.
 ==========================
 - kernelversion
 - updatekernel
+- updatedetectorserver
+- update (without pcname)
 
 
 2. Resolved Issues

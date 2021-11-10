@@ -2520,7 +2520,7 @@ void Module::copyDetectorServer(const std::string &fname,
         throw DetectorError(os.str());
     }
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): detector server copied";
+                 << "): Detector server copied";
 }
 
 void Module::updateDetectorServer(std::vector<char> buffer,

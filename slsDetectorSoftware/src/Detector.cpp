@@ -2190,7 +2190,7 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
     LOG(logINFO) << "Updating Firmware and Detector Server (no tftp)...";
     LOG(logINFO) << "Updating Detector Server (no tftp)...";
     std::vector<char> buffer = readBinaryFile(fname, "Update Detector Server");
-    std::string filename = sls::getFileNameFromFilePath(fname);
+    std::string filename = sls::getFileNameFromFilePath(sname);
     pimpl->Parallel(&Module::updateDetectorServer, pos, buffer, filename);
     programFPGA(fname, pos);
 }

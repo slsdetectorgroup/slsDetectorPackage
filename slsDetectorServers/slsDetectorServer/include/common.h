@@ -47,3 +47,4 @@ int verifyChecksumFromFlash(char *mess, char *functionType,
                             char *clientChecksum, char *fname, ssize_t fsize);
 int verifyChecksum(char *mess, char *functionType, char *clientChecksum,
                    MD5_CTX *c, char *msg);
+int setupDetectorServer(char *mess, char *sname);

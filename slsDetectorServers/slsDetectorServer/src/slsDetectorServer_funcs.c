@@ -4110,95 +4110,8 @@ int copy_detector_server(int file_des) {
             LOG(logINFO, ("\tServer copied\n"));
         }
 
-        // give permissions
         if (ret == OK) {
-            if (snprintf(cmd, MAX_STR_LENGTH, "chmod 777 %s", sname) >=
-                MAX_STR_LENGTH) {
-                ret = FAIL;
-                strcpy(mess, "Could not copy detector server. Command to give "
-                             "permissions to server is too long\n");
-                LOG(logERROR, (mess));
-            } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-                ret = FAIL;
-                snprintf(mess, MAX_STR_LENGTH,
-                         "Could not copy detector server (permissions). %s\n",
-                         retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            } else {
-                LOG(logINFO, ("\tPermissions modified\n"));
-            }
-        }
-
-        // symbolic link
-        if (ret == OK) {
-            if (snprintf(cmd, MAX_STR_LENGTH, "ln -sf %s %s", sname,
-                         LINKED_SERVER_NAME) >= MAX_STR_LENGTH) {
-                ret = FAIL;
-                strcpy(mess, "Could not copy detector server. Command to "
-                             "create symbolic link too long\n");
-                LOG(logERROR, (mess));
-            } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-                ret = FAIL;
-                snprintf(mess, MAX_STR_LENGTH,
-                         "Could not copy detector server (symbolic link). %s\n",
-                         retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            } else {
-                LOG(logINFO, ("\tSymbolic link created\n"));
-            }
-        }
-
-        // blackfin boards (respawn) (only kept for backwards compatibility)
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
-    defined(GOTTHARDD)
-        // delete every line with DetectorServer in /etc/inittab
-        if (ret == OK) {
-            strcpy(cmd, "sed -i '/DetectorServer/d' /etc/inittab");
-            if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-                ret = FAIL;
-                snprintf(
-                    mess, MAX_STR_LENGTH,
-                    "Could not copy detector server (del respawning). %s\n",
-                    retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            } else {
-                LOG(logINFO, ("\tinittab: DetectoServer line deleted\n"));
-            }
-        }
-
-        // add new link name to /etc/inittab
-        if (ret == OK) {
-            format = "echo 'ttyS0::respawn:/./%s' >> /etc/inittab";
-            if (snprintf(cmd, MAX_STR_LENGTH, format, LINKED_SERVER_NAME) >=
-                MAX_STR_LENGTH) {
-                ret = FAIL;
-                strcpy(mess, "Could not copy detector server. Command "
-                             "to add new server for spawning is too long\n");
-                LOG(logERROR, (mess));
-            } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-                ret = FAIL;
-                snprintf(mess, MAX_STR_LENGTH,
-                         "Could not copy detector server (respawning). %s\n",
-                         retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            } else {
-                LOG(logINFO, ("\tinittab: updated for respawning\n"));
-            }
-        }
-#endif
-
-        // sync
-        if (ret == OK) {
-            strcpy(cmd, "sync");
-            if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-                ret = FAIL;
-                snprintf(mess, MAX_STR_LENGTH,
-                         "Could not copy detector server (sync). %s\n",
-                         retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            } else {
-                LOG(logINFO, ("\tsync\n"));
-            }
+            ret = setupDetectorServer(mess, sname);
         }
     }
 #endif
@@ -9343,18 +9256,25 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
         LOG(logINFO, ("\tProgram size: %lld\n", (long long int)filesize));
 
         // client checksum
-        char checksum[MAX_STR_LENGTH];
-        memset(checksum, 0, MAX_STR_LENGTH);
+        char checksum[MAX_STR_LENGTH] = {0};
         if (receiveData(file_des, checksum, MAX_STR_LENGTH, OTHER) < 0)
             return printSocketReadError();
         LOG(logINFO, ("\tChecksum: %s\n", checksum));
 
+        // server name
+        char serverName[MAX_STR_LENGTH] = {0};
+        if (index == PROGRAM_SERVER) {
+            if (receiveData(file_des, serverName, MAX_STR_LENGTH, OTHER) < 0)
+                return printSocketReadError();
+            LOG(logINFO, ("\tServer Name: %s\n", serverName));
+        }
+
 #if defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(EIGERD)
         receive_program_default(file_des, index, functionType, filesize,
-                                checksum);
+                                checksum, serverName);
 #else
         receive_program_via_blackfin(file_des, index, functionType, filesize,
-                                     checksum);
+                                     checksum, serverName);
 #endif
 
         if (ret == OK) {
@@ -9369,7 +9289,7 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
 
 void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                   char *functionType, uint64_t filesize,
-                                  char *checksum) {
+                                  char *checksum, char* serverName) {
 
 #if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARDD)
@@ -9461,6 +9381,7 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                    totalsize);
         break;
     case PROGRAM_SERVER:
+        ret = setupDetectorServer(mess, serverName);
         break;
     default:
         modeNotImplemented("Program index", (int)index);
@@ -9474,7 +9395,7 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
 
 void receive_program_default(int file_des, enum PROGRAM_INDEX index,
                              char *functionType, uint64_t filesize,
-                             char *checksum) {
+                             char *checksum, char* serverName) {
 #if !defined(GOTTHARD2D) && !defined(MYTHEN3D) && !defined(EIGERD)
     ret = FAIL;
     sprintf(mess,
@@ -9542,6 +9463,7 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
                                    filesize);
         break;
     case PROGRAM_SERVER:
+        ret = setupDetectorServer(mess, serverName);
         break;
     default:
         modeNotImplemented("Program index", (int)index);

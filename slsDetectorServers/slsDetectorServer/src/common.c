@@ -407,3 +407,85 @@ int verifyChecksum(char *mess, char *functionType, char *clientChecksum,
     LOG(logINFO, ("\tChecksum of %s verified\n", msg));
     return OK;
 }
+
+int setupDetectorServer(char *mess, char *sname) {
+    char cmd[MAX_STR_LENGTH] = {0};
+    char retvals[MAX_STR_LENGTH] = {0};
+
+    // give permissions
+    if (snprintf(cmd, MAX_STR_LENGTH, "chmod 777 %s", sname) >=
+        MAX_STR_LENGTH) {
+        strcpy(mess, "Could not copy detector server. Command to give "
+                     "permissions to server is too long\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not copy detector server (permissions). %s\n", retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tPermissions modified\n"));
+
+    // symbolic link
+    if (snprintf(cmd, MAX_STR_LENGTH, "ln -sf %s %s", sname,
+                 LINKED_SERVER_NAME) >= MAX_STR_LENGTH) {
+        strcpy(mess, "Could not copy detector server. Command to "
+                     "create symbolic link too long\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not copy detector server (symbolic link). %s\n",
+                 retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tSymbolic link created\n"));
+
+    // blackfin boards (respawn) (only kept for backwards compatibility)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
+    defined(GOTTHARDD)
+    // delete every line with DetectorServer in /etc/inittab
+    strcpy(cmd, "sed -i '/DetectorServer/d' /etc/inittab");
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not copy detector server (del respawning). %s\n",
+                 retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tinittab: DetectoServer line deleted\n"));
+
+    // add new link name to /etc/inittab
+    format = "echo 'ttyS0::respawn:/./%s' >> /etc/inittab";
+    if (snprintf(cmd, MAX_STR_LENGTH, format, LINKED_SERVER_NAME) >=
+        MAX_STR_LENGTH) {
+        strcpy(mess, "Could not copy detector server. Command "
+                     "to add new server for spawning is too long\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not copy detector server (respawning). %s\n", retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tinittab: updated for respawning\n"));
+
+#endif
+
+    // sync
+    strcpy(cmd, "sync");
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not copy detector server (sync). %s\n", retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tsync\n"));
+}

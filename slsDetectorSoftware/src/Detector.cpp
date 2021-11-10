@@ -2155,7 +2155,19 @@ void Detector::copyDetectorServer(const std::string &fname,
 
 void Detector::updateDetectorServer(const std::string &fname, Positions pos) {
     LOG(logINFO) << "Updating Detector Server...";
-    std::vector<char> buffer = readBinaryFile(fname, "Update Detector Server");
+
+    const std::string &serverName std::vector<char> buffer =
+        readBinaryFile(fname, "Update Detector Server");
+
+    // get file name
+    std::string filename(fname);
+    std::size_t pos = fname.rfind('/');
+    if (pos != std::string::npos) {
+        filename = filePath.substr(pos + 1, filePath.size() - 1);
+    }
+    LOG(logINFOBLUE) << "filename:" << filename;
+    exit(-1);
+    std::filesystem::path(fname).filename();
     pimpl->Parallel(&Module::updateDetectorServer, pos, buffer);
     if (getDetectorType().squash() != defs::EIGER) {
         rebootController(pos);

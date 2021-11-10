@@ -2523,18 +2523,19 @@ void Module::copyDetectorServer(const std::string &fname,
                  << "): detector server copied";
 }
 
-void Module::updateDetectorServer(std::vector<char> buffer) {
+void Module::updateDetectorServer(std::vector<char> buffer,
+                                  const std::string &serverName) {
     switch (shm()->detType) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
     case MOENCH:
         sendProgram(true, buffer, F_UPDATE_DETECTOR_SERVER,
-                    "Update Detector Server (no tftp)");
+                    "Update Detector Server (no tftp)", serverName);
         break;
     case MYTHEN3:
     case GOTTHARD2:
         sendProgram(false, buffer, F_UPDATE_DETECTOR_SERVER,
-                    "Update Detector Server (no tftp)");
+                    "Update Detector Server (no tftp)", serverName);
         break;
     default:
         throw RuntimeError("Updating Kernel via the package is not implemented "
@@ -3464,7 +3465,8 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 
 void Module::sendProgram(bool blackfin, std::vector<char> buffer,
                          const int functionEnum,
-                         const std::string &functionType) {
+                         const std::string &functionType,
+                         const std::string &serverName) {
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
                  << "): Sending " << functionType;
 
@@ -3477,10 +3479,14 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
     // send checksum
     std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
     LOG(logDEBUG1) << "Checksum:" << checksum;
-    char cChecksum[MAX_STR_LENGTH];
-    memset(cChecksum, 0, MAX_STR_LENGTH);
+    char cChecksum[MAX_STR_LENGTH] = {0};
     strcpy(cChecksum, checksum.c_str());
     client.Send(cChecksum);
+
+    // send server name
+    char sname[MAX_STR_LENGTH] = {0};
+    strcpy(sname, serverName.c_str());
+    client.Send(sname);
 
     // validate memory allocation etc in detector
     if (client.Receive<int>() == FAIL) {

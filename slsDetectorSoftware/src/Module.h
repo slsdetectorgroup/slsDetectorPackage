@@ -541,7 +541,8 @@ class Module : public virtual slsDetectorDefs {
     void resetFPGA();
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname);
-    void updateDetectorServer(std::vector<char> buffer);
+    void updateDetectorServer(std::vector<char> buffer,
+                              const std::string &serverName);
     void updateKernel(std::vector<char> buffer);
     void rebootController();
     uint32_t readRegister(uint32_t addr) const;
@@ -749,7 +750,8 @@ class Module : public virtual slsDetectorDefs {
     sls_detector_module readSettingsFile(const std::string &fname,
                                          bool trimbits = true);
     void sendProgram(bool blackfin, std::vector<char> buffer,
-                     const int functionEnum, const std::string &functionType);
+                     const int functionEnum, const std::string &functionType,
+                     const std::string &serverName = nullptr);
     void simulatingActivityinDetector(const std::string &functionType,
                                       const int timeRequired);
 

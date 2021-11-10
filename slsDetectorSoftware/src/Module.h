@@ -751,7 +751,7 @@ class Module : public virtual slsDetectorDefs {
                                          bool trimbits = true);
     void sendProgram(bool blackfin, std::vector<char> buffer,
                      const int functionEnum, const std::string &functionType,
-                     const std::string &serverName = nullptr);
+                     const std::string serverName = "");
     void simulatingActivityinDetector(const std::string &functionType,
                                       const int timeRequired);
 

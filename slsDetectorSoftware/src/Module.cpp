@@ -3466,7 +3466,7 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 void Module::sendProgram(bool blackfin, std::vector<char> buffer,
                          const int functionEnum,
                          const std::string &functionType,
-                         const std::string &serverName) {
+                         const std::string serverName) {
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
                  << "): Sending " << functionType;
 
@@ -3484,9 +3484,11 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
     client.Send(cChecksum);
 
     // send server name
-    char sname[MAX_STR_LENGTH] = {0};
-    strcpy(sname, serverName.c_str());
-    client.Send(sname);
+    if (functionEnum == F_UPDATE_DETECTOR_SERVER) {
+        char sname[MAX_STR_LENGTH] = {0};
+        strcpy(sname, serverName.c_str());
+        client.Send(sname);
+    }
 
     // validate memory allocation etc in detector
     if (client.Receive<int>() == FAIL) {

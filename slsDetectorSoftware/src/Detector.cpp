@@ -2190,7 +2190,6 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
     LOG(logINFO) << "Updating Firmware and Detector Server...";
     pimpl->Parallel(&Module::copyDetectorServer, pos, sname, hostname);
     programFPGA(fname, pos);
-    rebootController(pos);
 }
 
 void Detector::updateFirmwareAndServer(const std::string &sname,
@@ -2199,7 +2198,6 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
     LOG(logINFO) << "Updating Firmware and Detector Server (no tftp)...";
     updateDetectorServer(sname, pos);
     programFPGA(fname, pos);
-    rebootController(pos);
 }
 
 Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {

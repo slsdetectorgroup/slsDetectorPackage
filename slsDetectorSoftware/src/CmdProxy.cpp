@@ -2933,26 +2933,37 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[server_name (in tftp folder)] [pc_host_name] [fname.pof (incl "
-              "full path)]\n\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
+        os << "\n\tDeprecated!! Replaced without using tftp (as shown next)[server_name"
+              " (in tftp folder)] [pc_host_name] [fname.pof (incl full path)]";
+        os << "\n\t[server_name (incl fullpath)] [fname.pof (incl full path)] "
+                "This does not use tftp."
+              "\n\t\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
               "firmware, detector server, creates the symbolic link and then "
               "reboots detector controller. \n\t[Mythen3][Gotthard2] will "
               "require a script to start up the shorter named server link at "
-              "start up. \n\tsname is name of detector server binary found on "
-              "tftp folder of host pc \n\thostname is name of pc to tftp from "
-              "\n\tfname is programming file name"
+              "start up. \n\t\tsname is full path name of detector server binary"
+              "\n\t\tfname is full path of programming file"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 3) {
-            WrongNumberOfParameters(3);
+        if (args.size() != 3 && args.size() != 2) {
+            WrongNumberOfParameters(2);
         }
-        if (args[2].find(".pof") == std::string::npos) {
-            throw sls::RuntimeError("Programming file must be a pof file.");
+
+        int fpos = args.size() - 1;
+        if (args[fpos].find(".pof") == std::string::npos && args[fpos].find(".rbf") == std::string::npos) {
+            throw sls::RuntimeError("Programming file must be a pof/rbf file.");
         }
-        det->updateFirmwareAndServer(args[0], args[1], args[2],
+
+        if (args.size() == 3) {
+            LOG(logWARNING) << "Deprecated! Recommend to use same command without tftp (no pc name) and using full path to the server binary";
+            det->updateFirmwareAndServer(args[0], args[1], args[2],
+                                     std::vector<int>{det_id}); 
+        } else {
+            det->updateFirmwareAndServer(args[0], args[1],
                                      std::vector<int>{det_id});
+        }
         os << "successful\n";
     } else {
         throw sls::RuntimeError("Unknown action");

@@ -8,6 +8,9 @@
 #include <fstream>
 #include <string>
 
+namespace sls {
+
+
 /**
  * @param data array of data values
  * @param nch number of channels
@@ -21,6 +24,7 @@ int readDataFile(std::ifstream &infile, short int *data, int nch,
  * @param nch number of channels
  */
 int readDataFile(std::string fname, short int *data, int nch);
+
 
 std::vector<char> readBinaryFile(const std::string &fname,
                                  const std::string &errorPrefix);
@@ -42,6 +46,8 @@ int writeDataFile(std::string fname, int nch, short int *data);
 // mkdir -p path implemented by recursive calls
 void mkdir_p(const std::string &path, std::string dir = "");
 
-namespace sls {
 int getFileSize(std::ifstream &ifs);
+ssize_t getFileSize(FILE* fd, const std::string &prependErrorString);
+
+std::string getFileNameFromFilePath(const std::string &fpath);
 }

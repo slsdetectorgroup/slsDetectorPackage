@@ -1280,14 +1280,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     }
 
     // get srcSize to print progress
-    if (fseek(src, 0, SEEK_END) != 0) {
-        throw RuntimeError("Program FPGA: Seek error in src file");
-    }
-    size_t srcSize = ftell(src);
-    if (srcSize <= 0) {
-        throw RuntimeError("Program FPGA: Could not get length of source file");
-    }
-    rewind(src);
+    ssize_t srcSize = sls::getFileSize(src, "Program FPGA");
 
     // create temp destination file
     char destfname[] = "/tmp/SLS_DET_MCB.XXXXXX";

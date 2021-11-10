@@ -11,6 +11,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+namespace sls {
+
 int readDataFile(std::ifstream &infile, short int *data, int nch, int offset) {
     int ichan, iline = 0;
     short int idata;
@@ -59,36 +61,27 @@ std::vector<char> readBinaryFile(const std::string &fname,
     struct stat st;
     if (stat(fname.c_str(), &st) != 0) {
         throw sls::RuntimeError(errorPrefix +
-                                std::string(": file does not exist"));
+                                std::string(" (file does not exist)"));
     }
 
     FILE *fp = fopen(fname.c_str(), "rb");
     if (fp == nullptr) {
         throw sls::RuntimeError(errorPrefix +
-                                std::string(": Could not open file: ") + fname);
+                                std::string(" (Could not open file: ") + fname + std::string(")"));
     }
 
     // get file size to print progress
-    if (fseek(fp, 0, SEEK_END) != 0) {
-        throw sls::RuntimeError(errorPrefix +
-                                std::string(": Seek error in src file"));
-    }
-    size_t filesize = ftell(fp);
-    if (filesize <= 0) {
-        throw sls::RuntimeError(errorPrefix +
-                                std::string(": Could not get length of file"));
-    }
-    rewind(fp);
+    ssize_t filesize = sls::getFileSize(fp, errorPrefix);
 
     std::vector<char> buffer(filesize, 0);
-    if (fread(buffer.data(), sizeof(char), filesize, fp) != filesize) {
+    if ((ssize_t)fread(buffer.data(), sizeof(char), filesize, fp) != filesize) {
         throw sls::RuntimeError(errorPrefix +
-                                std::string(": Could not read file"));
+                                std::string(" (Could not read file)"));
     }
 
     if (fclose(fp) != 0) {
         throw sls::RuntimeError(errorPrefix +
-                                std::string(": Could not close file"));
+                                std::string(" (Could not close file)"));
     }
 
     LOG(logDEBUG1) << "Read file into memory";
@@ -138,7 +131,6 @@ void mkdir_p(const std::string &path, std::string dir) {
         mkdir_p(path.substr(i + 1), dir);
 }
 
-namespace sls {
 int getFileSize(std::ifstream &ifs) {
     auto current_pos = ifs.tellg();
     ifs.seekg(0, std::ios::end);
@@ -146,4 +138,27 @@ int getFileSize(std::ifstream &ifs) {
     ifs.seekg(current_pos);
     return file_size;
 }
+
+std::string getFileNameFromFilePath(const std::string &fpath) {
+    std::string fname(fpath);
+    std::size_t slashPos = fpath.rfind('/');
+    if (slashPos != std::string::npos) {
+        fname = fpath.substr(slashPos + 1, fpath.size() - 1);
+    }
+    return fname;
+}
+
+ssize_t getFileSize(FILE* fd, const std::string &prependErrorString) {
+    if (fseek(fd, 0, SEEK_END) != 0) {
+        throw RuntimeError(prependErrorString + std::string(" (Seek error in src file)"));
+    }
+    size_t fileSize = ftell(fd);
+    if (fileSize <= 0) {
+        throw RuntimeError(prependErrorString + std::string(" (Could not get length of source file)"));
+    }
+    rewind(fd);
+    return fileSize;
+}
+
+
 } // namespace sls

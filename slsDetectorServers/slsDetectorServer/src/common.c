@@ -498,14 +498,14 @@ int setupDetectorServer(char *mess, char *sname) {
 int writeBinaryFile(char* mess, char* fname, char* buffer, uint64_t filesize) {
     FILE *fp = fopen(fname, "wb");
     if (fp == NULL) {
-        sprintf(mess, "Could not copy detector server. (writing to file)\n");
+        sprintf(mess, "Could not copy detector server. (opening file to write(%s). Maybe it is being used? Try another server name?\n", fname);
         LOG(logERROR, (mess));
         return FAIL;
     }
 
     size_t bytesWritten = fwrite(buffer, 1, filesize, fp);
     if (bytesWritten != (size_t)filesize) {
-        sprintf(mess, "Could not copy detector server. Expected to write %lu bytes, wrote %lu bytes)\n", (long unsigned int)filesize, (long unsigned int)bytesWritten);
+        sprintf(mess, "Could not copy detector server. Expected to write %lu bytes, wrote %lu bytes). \n", (long unsigned int)filesize, (long unsigned int)bytesWritten);
         LOG(logERROR, (mess));
         return FAIL;
     }

@@ -9,16 +9,16 @@ set(SOURCES
     src/Pattern.cpp
 )
 
-add_library(slsDetectorObject OBJECT
+add_library(slsDetectorStatic OBJECT
     ${SOURCES}
 )
 
-target_include_directories(slsDetectorObject PUBLIC
+target_include_directories(slsDetectorStatic PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(slsDetectorObject 
+target_link_libraries(slsDetectorStatic 
     PUBLIC
         slsProjectOptions
         slsSupportStatic
@@ -28,7 +28,7 @@ target_link_libraries(slsDetectorObject
         slsProjectWarnings
 )
 
-set(DETECTOR_LIBRARY_TARGETS slsDetectorObject)
+set(DETECTOR_LIBRARY_TARGETS slsDetectorStatic)
 
 
 set(PUBLICHEADERS
@@ -39,29 +39,29 @@ set(PUBLICHEADERS
 )
 
 #Shared library
-if(SLS_BUILD_SHARED_LIBRARIES)
-    add_library(slsDetectorShared SHARED $<TARGET_OBJECTS:slsDetectorObject>)
-    target_link_libraries(slsDetectorShared PUBLIC slsDetectorObject)
-    set_target_properties(slsDetectorShared PROPERTIES
-        VERSION ${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}
-        SOVERSION ${PACKAGE_VERSION_MAJOR}
-        LIBRARY_OUTPUT_NAME SlsDetector
-        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-        PUBLIC_HEADER "${PUBLICHEADERS}"
-    )
-    list(APPEND DETECTOR_LIBRARY_TARGETS slsDetectorShared)
-endif(SLS_BUILD_SHARED_LIBRARIES)
+# if(SLS_BUILD_SHARED_LIBRARIES)
+#     add_library(slsDetectorShared SHARED $<TARGET_OBJECTS:slsDetectorObject>)
+#     target_link_libraries(slsDetectorShared PUBLIC slsDetectorObject)
+#     set_target_properties(slsDetectorShared PROPERTIES
+#         VERSION ${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}
+#         SOVERSION ${PACKAGE_VERSION_MAJOR}
+#         LIBRARY_OUTPUT_NAME SlsDetector
+#         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+#         PUBLIC_HEADER "${PUBLICHEADERS}"
+#     )
+#     list(APPEND DETECTOR_LIBRARY_TARGETS slsDetectorShared)
+# endif(SLS_BUILD_SHARED_LIBRARIES)
 
 #Static library
-add_library(slsDetectorStatic STATIC $<TARGET_OBJECTS:slsDetectorObject>)
-target_link_libraries(slsDetectorStatic PUBLIC slsDetectorObject)
+# add_library(slsDetectorStatic STATIC $<TARGET_OBJECTS:slsDetectorObject>)
+# target_link_libraries(slsDetectorStatic PUBLIC slsDetectorObject)
 
 set_target_properties(slsDetectorStatic PROPERTIES
     ARCHIVE_OUTPUT_NAME SlsDetectorStatic
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
-list(APPEND DETECTOR_LIBRARY_TARGETS slsDetectorStatic)
+# list(APPEND DETECTOR_LIBRARY_TARGETS slsDetectorStatic)
 
     
 

@@ -66,18 +66,18 @@ target_include_directories(md5sls
 
 
 # Create an object library to avoid building the library twice
-add_library(slsSupportObject OBJECT
+add_library(slsSupportStatic STATIC
     ${SOURCES}
     ${HEADERS}
 )
 
-target_include_directories(slsSupportObject 
+target_include_directories(slsSupportStatic 
   PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(slsSupportObject 
+target_link_libraries(slsSupportStatic 
   PUBLIC
     slsProjectOptions 
     # libzmq
@@ -92,33 +92,33 @@ if (SLS_USE_TESTS)
 endif(SLS_USE_TESTS)
 
 #List of targets to support adding removing targets as config
-set(SUPPORT_LIBRARY_TARGETS slsSupportObject)
+set(SUPPORT_LIBRARY_TARGETS slsSupportStatic)
 
 # Add shared library version of the support lib
-if(SLS_BUILD_SHARED_LIBRARIES)
-    add_library(slsSupportShared SHARED $<TARGET_OBJECTS:slsSupportObject>)
-    target_link_libraries(slsSupportShared PUBLIC slsSupportObject)
+# if(SLS_BUILD_SHARED_LIBRARIES)
+#     add_library(slsSupportShared SHARED $<TARGET_OBJECTS:slsSupportObject>)
+#     target_link_libraries(slsSupportShared PUBLIC slsSupportObject)
 
-    set_target_properties(slsSupportShared PROPERTIES
-        VERSION ${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}
-        SOVERSION ${PACKAGE_VERSION_MAJOR}
-        LIBRARY_OUTPUT_NAME SlsSupport
-        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-        PUBLIC_HEADER "${PUBLICHEADERS}"
-    )
-    list(APPEND SUPPORT_LIBRARY_TARGETS slsSupportShared)
-endif(SLS_BUILD_SHARED_LIBRARIES)
+#     set_target_properties(slsSupportShared PROPERTIES
+#         VERSION ${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}
+#         SOVERSION ${PACKAGE_VERSION_MAJOR}
+#         LIBRARY_OUTPUT_NAME SlsSupport
+#         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+#         PUBLIC_HEADER "${PUBLICHEADERS}"
+#     )
+#     list(APPEND SUPPORT_LIBRARY_TARGETS slsSupportShared)
+# endif(SLS_BUILD_SHARED_LIBRARIES)
 
 # Add static version of the support lib
-add_library(slsSupportStatic STATIC $<TARGET_OBJECTS:slsSupportObject>)
-target_link_libraries(slsSupportStatic PUBLIC slsSupportObject)
+# add_library(slsSupportStatic STATIC $<TARGET_OBJECTS:slsSupportObject>)
+# target_link_libraries(slsSupportStatic PUBLIC slsSupportObject)
 
 set_target_properties(slsSupportStatic PROPERTIES
     ARCHIVE_OUTPUT_NAME SlsSupportStatic
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
-list(APPEND SUPPORT_LIBRARY_TARGETS slsSupportStatic)
+# list(APPEND SUPPORT_LIBRARY_TARGETS slsSupportStatic)
 
 if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET ${SUPPORT_LIBRARY_TARGETS} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)

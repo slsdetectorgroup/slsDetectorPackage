@@ -245,7 +245,7 @@ int getModuleIdInFile(int *ret, char *mess, char *fileName) {
 int verifyChecksumFromBuffer(char *mess, char *functionType,
                              char *clientChecksum, char *buffer,
                              ssize_t bytes) {
-    LOG(logINFO, ("\tVerifying Checksum...\n"));
+    LOG(logINFO, ("\tVerifying Checksum from memory...\n"));
     MD5_CTX c;
     if (!MD5_Init_SLS(&c)) {
         sprintf(mess,
@@ -267,7 +267,7 @@ int verifyChecksumFromBuffer(char *mess, char *functionType,
 
 int verifyChecksumFromFile(char *mess, char *functionType, char *clientChecksum,
                            char *fname) {
-    LOG(logINFO, ("\tVerifying Checksum...\n"));
+    LOG(logINFO, ("\tVerifying Checksum of file...\n"));
 
     FILE *fp = fopen(fname, "r");
     if (fp == NULL) {
@@ -313,7 +313,7 @@ int verifyChecksumFromFile(char *mess, char *functionType, char *clientChecksum,
 
 int verifyChecksumFromFlash(char *mess, char *functionType,
                             char *clientChecksum, char *fname, ssize_t fsize) {
-    LOG(logINFO, ("\tVerifying FlashChecksum...\n"));
+    LOG(logINFO, ("\tVerifying Checksum from flash...\n"));
 
     FILE *fp = fopen(fname, "r");
     if (fp == NULL) {
@@ -465,7 +465,7 @@ int setupDetectorServer(char *mess, char *sname) {
     LOG(logINFO, ("\tinittab: DetectoServer line deleted\n"));
 
     // add new link name to /etc/inittab
-    char* format = "echo 'ttyS0::respawn:/./%s' >> /etc/inittab";
+    char *format = "echo 'ttyS0::respawn:/./%s' >> /etc/inittab";
     if (snprintf(cmd, MAX_STR_LENGTH, format, LINKED_SERVER_NAME) >=
         MAX_STR_LENGTH) {
         strcpy(mess, "Could not copy detector server. Command "
@@ -495,12 +495,16 @@ int setupDetectorServer(char *mess, char *sname) {
     return OK;
 }
 
-int writeBinaryFile(char* mess, char* fname, char* buffer, const uint64_t filesize) {
+int writeBinaryFile(char *mess, char *fname, char *buffer,
+                    const uint64_t filesize) {
     LOG(logINFO, ("\tWriting Detector Server Binary...\n"));
 
     FILE *fp = fopen(fname, "wb");
     if (fp == NULL) {
-        sprintf(mess, "Could not copy detector server. (opening file to write(%s). Maybe it is being used? Try another server name?\n", fname);
+        sprintf(mess,
+                "Could not copy detector server. (opening file to write(%s). "
+                "Maybe it is being used? Try another server name?\n",
+                fname);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -527,18 +531,25 @@ int writeBinaryFile(char* mess, char* fname, char* buffer, const uint64_t filesi
 
         // write
         if (bytes != (size_t)writeSize) {
-            sprintf(mess, "Could not copy detector server. Expected to write %lu bytes, wrote %lu bytes). No space left? \n", (long unsigned int)filesize, (long unsigned int)bytesWritten);
+            sprintf(mess,
+                    "Could not copy detector server. Expected to write %lu "
+                    "bytes, wrote %lu bytes). No space left? \n",
+                    (long unsigned int)filesize,
+                    (long unsigned int)bytesWritten);
             LOG(logERROR, (mess));
             return FAIL;
         }
         bytesWritten += bytes;
-        LOG(logDEBUG1, ("bytesWritten:%lu filesize:%lu\n", bytesWritten, filesize));
+        LOG(logDEBUG1,
+            ("bytesWritten:%lu filesize:%lu\n", bytesWritten, filesize));
     }
     if (fclose(fp) != 0) {
-        sprintf(mess, "Could not copy detector server. (closing file pointer)\n");
+        sprintf(mess,
+                "Could not copy detector server. (closing file pointer)\n");
         LOG(logERROR, (mess));
-        return FAIL;        
+        return FAIL;
     }
-    LOG(logINFO, ("\tWritten server binary to %s (%lu bytes)\n", fname, (long unsigned int)bytesWritten));
+    LOG(logINFO, ("\tWritten server binary to %s (%lu bytes)\n", fname,
+                  (long unsigned int)bytesWritten));
     return OK;
 }

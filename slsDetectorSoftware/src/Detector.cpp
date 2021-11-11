@@ -2159,7 +2159,7 @@ void Detector::updateDetectorServer(const std::string &fname, Positions pos) {
     std::string filename = sls::getFileNameFromFilePath(fname);
     pimpl->Parallel(&Module::updateDetectorServer, pos, buffer, filename);
     if (getDetectorType().squash() != defs::EIGER) {
-        ; // rebootController(pos);
+        rebootController(pos);
     }
 }
 

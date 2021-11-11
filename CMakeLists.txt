@@ -6,7 +6,7 @@ set(PROJECT_VERSION 6.0.0)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
-cmake_policy(SET CMP0074 NEW)
+# cmake_policy(SET CMP0074 NEW)
 include(cmake/project_version.cmake)
 
 #functions to add compiler flags

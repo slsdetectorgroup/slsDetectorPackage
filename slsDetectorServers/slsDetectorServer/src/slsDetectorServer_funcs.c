@@ -9473,16 +9473,20 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
                               "update detector server");
         // extra step to write to temp and move to real file as
         // fopen will give text busy if opening same name as process name
-        if (ret == OK) {
-            ret = moveBinaryFile(mess, serverName, TEMP_PROG_FILE_NAME,
+        char dest[MAX_STR_LENGTH] = {0};
+        sprintf(dest, "%s%s",
+                (myDetectorType == EIGER ? "/home/root/executables/" : ""),
+                serverName)
+
+            if (ret == OK) {
+            ret = moveBinaryFile(mess, dest, TEMP_PROG_FILE_NAME,
                                  "update detector server");
         }
         if (ret == OK) {
-            ret = verifyChecksumFromFile(mess, functionType, checksum,
-                                         serverName);
+            ret = verifyChecksumFromFile(mess, functionType, checksum, dest);
         }
         if (ret == OK) {
-            ret = setupDetectorServer(mess, serverName);
+            ret = setupDetectorServer(mess, dest);
         }
         break;
 #endif

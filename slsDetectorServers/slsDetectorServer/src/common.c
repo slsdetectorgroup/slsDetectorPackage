@@ -543,7 +543,6 @@ int writeBinaryFile(char *mess, char *fname, char *buffer,
         LOG(logDEBUG1,
             ("bytesWritten:%lu filesize:%lu\n", bytesWritten, filesize));
     }
-    printf("\n");
     if (fclose(fp) != 0) {
         sprintf(mess, "Could not %s. (closing file pointer)\n", errorPrefix);
         LOG(logERROR, (mess));

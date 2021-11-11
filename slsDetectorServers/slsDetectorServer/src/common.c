@@ -527,7 +527,7 @@ int writeBinaryFile(char *mess, char *fname, char *buffer,
         if ((unitSize + bytesWritten) > filesize) {
             writeSize = filesize - bytesWritten;
         }
-        size_t bytes = fwrite((buffer + bytesWritten, 1, writeSize, fp);
+        size_t bytes = fwrite((char *)buffer + bytesWritten, 1, writeSize, fp);
 
         // write
         if (bytes != (size_t)writeSize) {

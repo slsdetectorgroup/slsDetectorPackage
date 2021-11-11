@@ -9476,9 +9476,9 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
         char dest[MAX_STR_LENGTH] = {0};
         sprintf(dest, "%s%s",
                 (myDetectorType == EIGER ? "/home/root/executables/" : ""),
-                serverName)
+                serverName);
 
-            if (ret == OK) {
+        if (ret == OK) {
             ret = moveBinaryFile(mess, dest, TEMP_PROG_FILE_NAME,
                                  "update detector server");
         }

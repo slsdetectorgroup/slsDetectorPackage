@@ -9472,7 +9472,7 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
 #endif
 #if defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(EIGERD)
     case PROGRAM_SERVER:
-        ret = writeBinaryFile(mess, serverName, src, totalsize);
+        ret = writeBinaryFile(mess, serverName, src, filesize);
         if (ret == OK) {
             ret = verifyChecksumFromFile(mess, functionType, checksum,
                                          serverName);

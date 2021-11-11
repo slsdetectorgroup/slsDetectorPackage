@@ -576,6 +576,9 @@ int waitForFPGAtoTouchFlash(char *mess) {
 }
 
 int moveBinaryFile(char *mess, char *serverName) {
+    char cmd[MAX_STR_LENGTH] = {0};
+    char retvals[MAX_STR_LENGTH] = {0};
+
     char *format = "mv %s %s";
     if (snprintf(cmd, MAX_STR_LENGTH, format, TEMP_PROG_FILE_NAME,
                  serverName) >= MAX_STR_LENGTH) {

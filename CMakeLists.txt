@@ -138,6 +138,7 @@ sls_enable_cxx_warning("-Wduplicated-cond")
 sls_disable_cxx_warning("-Wclass-memaccess")
 sls_disable_c_warning("-Wstringop-truncation")
 sls_disable_c_warning("-Wformat-nonliteral")
+sls_disable_c_warning("-Wformat-truncation")
 
 
 if(SLS_USE_SANITIZER)

@@ -133,11 +133,11 @@ endif()
 
 # Add or disable warnings depending on if the compiler supports them 
 # The function checks internally and sets HAS_warning-name
-sls_enable_cxx_warning("-Wnull-dereference")
-sls_enable_cxx_warning("-Wduplicated-cond")
-sls_disable_cxx_warning("-Wclass-memaccess")
-sls_disable_c_warning("-Wstringop-truncation")
-sls_disable_c_warning("-Wformat-nonliteral")
+# sls_enable_cxx_warning("-Wnull-dereference")
+# sls_enable_cxx_warning("-Wduplicated-cond")
+# sls_disable_cxx_warning("-Wclass-memaccess")
+# sls_disable_c_warning("-Wstringop-truncation")
+# sls_disable_c_warning("-Wformat-nonliteral")
 
 
 if(SLS_USE_SANITIZER)

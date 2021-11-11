@@ -496,15 +496,15 @@ int setupDetectorServer(char *mess, char *sname) {
 }
 
 int writeBinaryFile(char *mess, char *fname, char *buffer,
-                    const uint64_t filesize) {
+                    const uint64_t filesize, char *errorPrefix) {
     LOG(logINFO, ("\tWriting Detector Server Binary...\n"));
 
     FILE *fp = fopen(fname, "wb");
     if (fp == NULL) {
         sprintf(mess,
-                "Could not copy detector server. (opening file to write(%s). "
-                "Maybe it is being used? Try another server name?\n",
-                fname);
+                "Could not %s. (opening file to write(%s). "
+                "Maybe it is being used? Try another name?\n",
+                errorPrefix, fname);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -532,9 +532,9 @@ int writeBinaryFile(char *mess, char *fname, char *buffer,
         // write
         if (bytes != (size_t)writeSize) {
             sprintf(mess,
-                    "Could not copy detector server. Expected to write %lu "
+                    "Could not %s. Expected to write %lu "
                     "bytes, wrote %lu bytes). No space left? \n",
-                    (long unsigned int)filesize,
+                    errorPrefix, (long unsigned int)filesize,
                     (long unsigned int)bytesWritten);
             LOG(logERROR, (mess));
             return FAIL;
@@ -545,12 +545,35 @@ int writeBinaryFile(char *mess, char *fname, char *buffer,
     }
     printf("\n");
     if (fclose(fp) != 0) {
-        sprintf(mess,
-                "Could not copy detector server. (closing file pointer)\n");
+        sprintf(mess, "Could not %s. (closing file pointer)\n", errorPrefix);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tWritten server binary to %s (%lu bytes)\n", fname,
+    LOG(logINFO, ("\tWritten binary to %s (%lu bytes)\n", fname,
                   (long unsigned int)bytesWritten));
+    return OK;
+}
+
+int moveBinaryFile(char *mess, char *dest, char *src, char *errorPrefix) {
+    char cmd[MAX_STR_LENGTH] = {0};
+    char retvals[MAX_STR_LENGTH] = {0};
+
+    // one can move into the current process binary (will not interfere in
+    // kernel mode)
+
+    char *format = "mv %s %s";
+    if (snprintf(cmd, MAX_STR_LENGTH, format, src, dest) >= MAX_STR_LENGTH) {
+        sprintf(mess, "Could not %s. Command to move binary is too long\n",
+                errorPrefix);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH, "Could not %s. (moving). %s\n",
+                 errorPrefix, retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tMoved file from %s to %s\n", src, dest));
     return OK;
 }

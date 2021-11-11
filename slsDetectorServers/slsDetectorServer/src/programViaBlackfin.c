@@ -574,26 +574,3 @@ int waitForFPGAtoTouchFlash(char *mess) {
     LOG(logINFO, ("\tFPGA has picked up the program from flash\n"));
     return OK;
 }
-
-int moveBinaryFile(char *mess, char *serverName) {
-    char cmd[MAX_STR_LENGTH] = {0};
-    char retvals[MAX_STR_LENGTH] = {0};
-
-    char *format = "mv %s %s";
-    if (snprintf(cmd, MAX_STR_LENGTH, format, TEMP_PROG_FILE_NAME,
-                 serverName) >= MAX_STR_LENGTH) {
-        strcpy(mess, "Could not copy detector server. Command "
-                     "to move server binary is too long\n");
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-        snprintf(mess, MAX_STR_LENGTH,
-                 "Could not copy detector server (moving). %s\n", retvals);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    LOG(logINFO, ("\tmoved from temp folder to main with proper name (%s)\n",
-                  serverName));
-    return OK;
-}

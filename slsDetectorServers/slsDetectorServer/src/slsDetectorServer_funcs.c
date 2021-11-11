@@ -9381,7 +9381,8 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                    totalsize);
         break;
     case PROGRAM_SERVER:
-        ret = moveBinaryFile(mess, serverName);
+        ret = moveBinaryFile(mess, serverName, TEMP_PROG_FILE_NAME,
+                             "update detector server");
         if (ret == OK) {
             ret = setupDetectorServer(mess, serverName);
         }
@@ -9468,7 +9469,14 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
 #endif
 #if defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(EIGERD)
     case PROGRAM_SERVER:
-        ret = writeBinaryFile(mess, serverName, src, filesize);
+        ret = writeBinaryFile(mess, TEMP_PROG_FILE_NAME, src, filesize,
+                              "update detector server");
+        // extra step to write to temp and move to real file as
+        // fopen will give text busy if opening same name as process name
+        if (ret == OK) {
+            ret = moveBinaryFile(mess, serverName, TEMP_PROG_FILE_NAME,
+                                 "update detector server");
+        }
         if (ret == OK) {
             ret = verifyChecksumFromFile(mess, functionType, checksum,
                                          serverName);

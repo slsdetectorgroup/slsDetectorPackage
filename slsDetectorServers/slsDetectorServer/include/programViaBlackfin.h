@@ -8,10 +8,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-#define TEMP_PROG_FOLDER_NAME           "/var/tmp/"
-#define TEMP_PROG_FOLDER_NAME_ALL_FILES "/var/tmp/*"
-#define TEMP_PROG_FILE_NAME             TEMP_PROG_FOLDER_NAME "tmp.rawbin"
-
 int defineGPIOpins(char *mess);
 int FPGAdontTouchFlash(char *mess);
 int FPGATouchFlash(char *mess);
@@ -37,4 +33,3 @@ int writeToFlash(char *mess, ssize_t fsize, FILE *flashfd, FILE *srcfd);
 /** Notify fpga to pick up firmware from flash and wait for status confirmation
  */
 int waitForFPGAtoTouchFlash(char *mess);
-int moveBinaryFile(char *mess, char *serverName);

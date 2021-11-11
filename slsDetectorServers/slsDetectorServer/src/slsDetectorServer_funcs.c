@@ -9289,7 +9289,7 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
 
 void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                   char *functionType, uint64_t filesize,
-                                  char *checksum, char* serverName) {
+                                  char *checksum, char *serverName) {
 
 #if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARDD)
@@ -9383,6 +9383,10 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
     case PROGRAM_SERVER:
         ret = writeBinaryFile(mess, serverName, src, totalsize);
         if (ret == OK) {
+            ret = verifyChecksumFromFile(mess, functionType, checksum,
+                                         serverName);
+        }
+        if (ret == OK) {
             ret = setupDetectorServer(mess, serverName);
         }
         break;
@@ -9398,7 +9402,7 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
 
 void receive_program_default(int file_des, enum PROGRAM_INDEX index,
                              char *functionType, uint64_t filesize,
-                             char *checksum, char* serverName) {
+                             char *checksum, char *serverName) {
 #if !defined(GOTTHARD2D) && !defined(MYTHEN3D) && !defined(EIGERD)
     ret = FAIL;
     sprintf(mess,

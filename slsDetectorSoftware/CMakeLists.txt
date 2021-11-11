@@ -9,7 +9,7 @@ set(SOURCES
     src/Pattern.cpp
 )
 
-add_library(slsDetectorStatic OBJECT
+add_library(slsDetectorStatic STATIC
     ${SOURCES}
 )
 

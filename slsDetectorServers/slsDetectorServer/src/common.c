@@ -527,7 +527,7 @@ int writeBinaryFile(char *mess, char *fname, char *buffer,
         if ((unitSize + bytesWritten) > filesize) {
             writeSize = filesize - bytesWritten;
         }
-        size_t bytes = fwrite(buffer, 1, writeSize, fp);
+        size_t bytes = fwrite((buffer + bytesWritten, 1, writeSize, fp);
 
         // write
         if (bytes != (size_t)writeSize) {
@@ -543,6 +543,7 @@ int writeBinaryFile(char *mess, char *fname, char *buffer,
         LOG(logDEBUG1,
             ("bytesWritten:%lu filesize:%lu\n", bytesWritten, filesize));
     }
+    printf("\n");
     if (fclose(fp) != 0) {
         sprintf(mess,
                 "Could not copy detector server. (closing file pointer)\n");

@@ -9,6 +9,7 @@
 #define REBOOT  (-400)
 
 // initialization functions
+int updateModeAllowedFunction(int file_des);
 int printSocketReadError();
 void init_detector();
 int decode_function(int);

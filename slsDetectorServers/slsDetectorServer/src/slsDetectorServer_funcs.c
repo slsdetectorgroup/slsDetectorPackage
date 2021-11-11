@@ -77,6 +77,40 @@ char scanErrMessage[MAX_STR_LENGTH] = "";
 
 /* initialization functions */
 
+int updateModeAllowedFunction(int file_des) {
+    unsigned int listsize = 17;
+    enum detFuncs list[] = {F_EXEC_COMMAND,
+                            F_GET_DETECTOR_TYPE,
+                            F_GET_FIRMWARE_VERSION,
+                            F_GET_SERVER_VERSION,
+                            F_GET_SERIAL_NUMBER,
+                            F_WRITE_REGISTER,
+                            F_READ_REGISTER,
+                            F_LOCK_SERVER,
+                            F_GET_LAST_CLIENT_IP,
+                            F_PROGRAM_FPGA,
+                            F_RESET_FPGA,
+                            F_CHECK_VERSION,
+                            F_COPY_DET_SERVER,
+                            F_REBOOT_CONTROLLER,
+                            F_GET_KERNEL_VERSION,
+                            F_UPDATE_KERNEL,
+                            F_UPDATE_DETECTOR_SERVER};
+    for (unsigned int i = 0; i < listsize; ++i) {
+        if (fnum == list[i]) {
+            return OK;
+        }
+    }
+    ret = FAIL;
+    sprintf(mess,
+            "Funcion (%s) cannot be executed in update mode. Please disable "
+            "update mode to continue.\n",
+            getFunctionNameFromEnum((enum detFuncs)fnum));
+    LOG(logERROR, (mess));
+    Server_SendResult(file_des, INT32, NULL, 0);
+    return FAIL;
+}
+
 int printSocketReadError() {
     LOG(logERROR, ("Error reading from socket. Possible socket crash.\n"));
     return FAIL;
@@ -117,6 +151,13 @@ int decode_function(int file_des) {
         LOG(logERROR, ("Unknown function enum %d\n", fnum));
         ret = (M_nofunc)(file_des);
     } else {
+
+        // udpate mode restricted functions, send error (without waitin for
+        // arguments)
+        if (updateFlag && updateModeAllowedFunction(file_des) == FAIL) {
+            return FAIL;
+        }
+
         LOG(logDEBUG1, (" calling function fnum=%d, (%s)\n", fnum,
                         getFunctionNameFromEnum((enum detFuncs)fnum)));
         ret = (*flist[fnum])(file_des);
@@ -445,6 +486,9 @@ void modeNotImplemented(char *modename, int mode) {
 }
 
 int executeCommand(char *command, char *result, enum TLogLevel level) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
     const size_t tempsize = 256;
     char temp[tempsize];
     memset(temp, 0, tempsize);
@@ -469,18 +513,20 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
         memset(temp, 0, tempsize);
     }
     result[MAX_STR_LENGTH - 1] = '\0';
-    int success = pclose(sysFile);
-    if (strlen(result)) {
-        if (success) {
-            success = FAIL;
-            LOG(logERROR, ("Executing cmd[%s]:%s\n", cmd, result));
-        } else {
-            LOG(level, ("Result:\n[%s]\n", result));
-        }
-    } else {
-        LOG(level, ("No result\n"));
+    if (strlen(result) == 0) {
+        strcpy(result, "No result");
     }
-    return success;
+
+    int retval = OK;
+    int success = pclose(sysFile);
+    if (success) {
+        retval = FAIL;
+        LOG(logERROR, ("Executing cmd[%s]:%s\n", cmd, result));
+    } else {
+        LOG(level, ("Result:\n[%s]\n", result));
+    }
+
+    return retval;
 }
 
 int M_nofunc(int file_des) {

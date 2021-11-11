@@ -37,3 +37,4 @@ int writeToFlash(char *mess, ssize_t fsize, FILE *flashfd, FILE *srcfd);
 /** Notify fpga to pick up firmware from flash and wait for status confirmation
  */
 int waitForFPGAtoTouchFlash(char *mess);
+int moveBinaryFile(char *mess, char *serverName);

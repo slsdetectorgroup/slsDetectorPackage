@@ -219,6 +219,9 @@ int resetFPGA(char *mess) {
 }
 
 int emptyTempFolder(char *mess) {
+#ifdef VIRTUAL
+    return OK;
+#else
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
 
@@ -240,6 +243,7 @@ int emptyTempFolder(char *mess) {
     }
     LOG(logINFO, ("\tEmptied temp folder(%s)\n", TEMP_PROG_FOLDER_NAME));
     return OK;
+#endif
 }
 
 int preparetoCopyProgram(char *mess, char *functionType, FILE **fd,

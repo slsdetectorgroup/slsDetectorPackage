@@ -434,8 +434,13 @@ int setupDetectorServer(char *mess, char *sname) {
     LOG(logINFO, ("\tPermissions modified\n"));
 
     // symbolic link
-    if (snprintf(cmd, MAX_STR_LENGTH, "ln -sf %s %s", sname,
-                 LINKED_SERVER_NAME) >= MAX_STR_LENGTH) {
+    char linkname[MAX_STR_LENGTH] = {0};
+    strcpy(linkname, LINKED_SERVER_NAME);
+#ifdef VIRTUAL
+    sprintf(linkname, "%s%s", TEMP_PROG_FOLDER_NAME, LINKED_SERVER_NAME);
+#endif
+    if (snprintf(cmd, MAX_STR_LENGTH, "ln -sf %s %s", sname, linkname) >=
+        MAX_STR_LENGTH) {
         strcpy(mess, "Could not copy detector server. Command to "
                      "create symbolic link too long\n");
         LOG(logERROR, (mess));
@@ -451,6 +456,7 @@ int setupDetectorServer(char *mess, char *sname) {
     LOG(logINFO, ("\tSymbolic link created\n"));
 
     // blackfin boards (respawn) (only kept for backwards compatibility)
+#ifndef VIRTUAL
 #if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
     defined(GOTTHARDD)
     // delete every line with DetectorServer in /etc/inittab
@@ -481,6 +487,7 @@ int setupDetectorServer(char *mess, char *sname) {
     }
     LOG(logINFO, ("\tinittab: updated for respawning\n"));
 
+#endif
 #endif
 
     // sync
@@ -567,6 +574,7 @@ int moveBinaryFile(char *mess, char *dest, char *src, char *errorPrefix) {
         LOG(logERROR, (mess));
         return FAIL;
     }
+
     if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH, "Could not %s. (moving). %s\n",
                  errorPrefix, retvals);

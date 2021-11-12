@@ -8,9 +8,14 @@
 #include <sys/types.h>
 #include <time.h>
 
+#ifdef VIRTUAL
+#define TEMP_PROG_FOLDER_NAME "/tmp/"
+#else
 #define TEMP_PROG_FOLDER_NAME           "/var/tmp/"
 #define TEMP_PROG_FOLDER_NAME_ALL_FILES "/var/tmp/*"
-#define TEMP_PROG_FILE_NAME             TEMP_PROG_FOLDER_NAME "tmp.rawbin"
+#endif
+
+#define TEMP_PROG_FILE_NAME TEMP_PROG_FOLDER_NAME "tmp.rawbin"
 
 enum numberMode { DEC, HEX };
 enum PROGRAM_INDEX { PROGRAM_FPGA, PROGRAM_KERNEL, PROGRAM_SERVER };

@@ -97,7 +97,7 @@ int updateModeAllowedFunction(int file_des) {
                             F_UPDATE_KERNEL,
                             F_UPDATE_DETECTOR_SERVER};
     for (unsigned int i = 0; i < listsize; ++i) {
-        if (fnum == list[i]) {
+        if ((unsigned int)fnum == list[i]) {
             return OK;
         }
     }
@@ -9312,6 +9312,14 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
         if (index == PROGRAM_SERVER) {
             if (receiveData(file_des, serverName, MAX_STR_LENGTH, OTHER) < 0)
                 return printSocketReadError();
+#ifdef VIRTUAL
+            // writing to a temp folder
+            {
+                char temp[MAX_STR_LENGTH] = {0};
+                sprintf(temp, "%s%s", TEMP_PROG_FOLDER_NAME, serverName);
+                strcpy(serverName, temp);
+            }
+#endif
             LOG(logINFO, ("\tServer Name: %s\n", serverName));
         }
 

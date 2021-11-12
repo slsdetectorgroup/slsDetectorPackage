@@ -95,7 +95,9 @@ int updateModeAllowedFunction(int file_des) {
                             F_REBOOT_CONTROLLER,
                             F_GET_KERNEL_VERSION,
                             F_UPDATE_KERNEL,
-                            F_UPDATE_DETECTOR_SERVER};
+                            F_UPDATE_DETECTOR_SERVER,
+                            F_GET_UPDATE_MODE,
+                            F_SET_UPDATE_MODE};
     for (unsigned int i = 0; i < listsize; ++i) {
         if ((unsigned int)fnum == list[i]) {
             return OK;
@@ -457,6 +459,8 @@ void function_table() {
     flist[F_GET_KERNEL_VERSION] = &get_kernel_version;
     flist[F_UPDATE_KERNEL] = &update_kernel;
     flist[F_UPDATE_DETECTOR_SERVER] = &update_detector_server;
+    flist[F_GET_UPDATE_MODE] = &get_update_mode;
+    flist[F_SET_UPDATE_MODE] = &set_update_mode;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -9312,24 +9316,36 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
         if (index == PROGRAM_SERVER) {
             if (receiveData(file_des, serverName, MAX_STR_LENGTH, OTHER) < 0)
                 return printSocketReadError();
-#ifdef VIRTUAL
-            // writing to a temp folder
-            {
-                char temp[MAX_STR_LENGTH] = {0};
-                sprintf(temp, "%s%s", TEMP_PROG_FOLDER_NAME, serverName);
-                strcpy(serverName, temp);
-            }
-#endif
             LOG(logINFO, ("\tServer Name: %s\n", serverName));
         }
 
+        // in same folder as current process (will also work for virtual then
+        // with write permissions)
+        {
+            const int fileNameSize = 128;
+            char fname[fileNameSize];
+            if (getAbsPath(fname, fileNameSize, serverName) == FAIL) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not %s. Could not get abs path of current "
+                        "process\n",
+                        functionType);
+                LOG(logERROR, (mess));
+                Server_SendResult(file_des, INT32, NULL, 0);
+            } else {
+                strcpy(serverName, fname);
+            }
+        }
+
+        if (ret == OK) {
 #if defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(EIGERD)
-        receive_program_default(file_des, index, functionType, filesize,
-                                checksum, serverName);
+            receive_program_default(file_des, index, functionType, filesize,
+                                    checksum, serverName);
 #else
-        receive_program_via_blackfin(file_des, index, functionType, filesize,
-                                     checksum, serverName);
+            receive_program_via_blackfin(file_des, index, functionType,
+                                         filesize, checksum, serverName);
 #endif
+        }
 
         if (ret == OK) {
             LOG(logINFOGREEN, ("%s completed successfully\n", functionType));
@@ -9527,20 +9543,16 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
                               "update detector server");
         // extra step to write to temp and move to real file as
         // fopen will give text busy if opening same name as process name
-        char dest[MAX_STR_LENGTH] = {0};
-        sprintf(dest, "%s%s",
-                (myDetectorType == EIGER ? "/home/root/executables/" : ""),
-                serverName);
-
         if (ret == OK) {
-            ret = moveBinaryFile(mess, dest, TEMP_PROG_FILE_NAME,
+            ret = moveBinaryFile(mess, serverName, TEMP_PROG_FILE_NAME,
                                  "update detector server");
         }
         if (ret == OK) {
-            ret = verifyChecksumFromFile(mess, functionType, checksum, dest);
+            ret = verifyChecksumFromFile(mess, functionType, checksum,
+                                         serverName);
         }
         if (ret == OK) {
-            ret = setupDetectorServer(mess, dest);
+            ret = setupDetectorServer(mess, serverName);
         }
         break;
 #endif
@@ -9554,4 +9566,42 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
     // free resources
     free(src);
 #endif
+}
+
+int get_update_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+    LOG(logDEBUG1, ("Getting update mode\n"));
+
+    retval = updateFlag;
+    LOG(logDEBUG1, ("update mode retval: %d\n", retval));
+
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_update_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting update mode to \n", arg));
+
+    switch (arg) {
+    case 0:
+        ret = deleteFile(mess, UPDATE_FILE, "unset update mode");
+        break;
+    case 1:
+        ret = createEmptyFile(mess, UPDATE_FILE, "set update mode");
+        break;
+    default:
+        ret = FAIL;
+        sprintf(mess, "Could not set updatemode. Options: 0 or 1\n");
+        LOG(logERROR, (mess));
+        break;
+    }
+
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

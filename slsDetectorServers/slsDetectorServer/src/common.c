@@ -434,11 +434,17 @@ int setupDetectorServer(char *mess, char *sname) {
     LOG(logINFO, ("\tPermissions modified\n"));
 
     // symbolic link
-    char linkname[MAX_STR_LENGTH] = {0};
-    strcpy(linkname, LINKED_SERVER_NAME);
-#ifdef VIRTUAL
-    sprintf(linkname, "%s%s", TEMP_PROG_FOLDER_NAME, LINKED_SERVER_NAME);
-#endif
+    const int fileNameSize = 128;
+    char linkname[fileNameSize];
+    if (getAbsPath(linkname, fileNameSize, LINKED_SERVER_NAME) == FAIL) {
+        sprintf(
+            mess,
+            "Could not copy detector server. Could not get abs path of current "
+            "process\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
     if (snprintf(cmd, MAX_STR_LENGTH, "ln -sf %s %s", sname, linkname) >=
         MAX_STR_LENGTH) {
         strcpy(mess, "Could not copy detector server. Command to "
@@ -472,8 +478,7 @@ int setupDetectorServer(char *mess, char *sname) {
 
     // add new link name to /etc/inittab
     char *format = "echo 'ttyS0::respawn:/./%s' >> /etc/inittab";
-    if (snprintf(cmd, MAX_STR_LENGTH, format, LINKED_SERVER_NAME) >=
-        MAX_STR_LENGTH) {
+    if (snprintf(cmd, MAX_STR_LENGTH, format, linkname) >= MAX_STR_LENGTH) {
         strcpy(mess, "Could not copy detector server. Command "
                      "to add new server for spawning is too long\n");
         LOG(logERROR, (mess));
@@ -506,12 +511,23 @@ int writeBinaryFile(char *mess, char *fname, char *buffer,
                     const uint64_t filesize, char *errorPrefix) {
     LOG(logINFO, ("\tWriting Detector Server Binary...\n"));
 
-    FILE *fp = fopen(fname, "wb");
+    const int fileNameSize = 128;
+    char fullname[fileNameSize];
+    if (getAbsPath(fullname, fileNameSize, fname) == FAIL) {
+        sprintf(mess,
+                "Could not %s. Could not get abs path of current "
+                "process\n",
+                errorPrefix);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    FILE *fp = fopen(fullname, "wb");
     if (fp == NULL) {
         sprintf(mess,
                 "Could not %s. (opening file to write(%s). "
                 "Maybe it is being used? Try another name?\n",
-                errorPrefix, fname);
+                errorPrefix, fullname);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -555,12 +571,13 @@ int writeBinaryFile(char *mess, char *fname, char *buffer,
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tWritten binary to %s (%lu bytes)\n", fname,
+    LOG(logINFO, ("\tWritten binary to %s (%lu bytes)\n", fullname,
                   (long unsigned int)bytesWritten));
     return OK;
 }
 
 int moveBinaryFile(char *mess, char *dest, char *src, char *errorPrefix) {
+
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
 
@@ -582,5 +599,78 @@ int moveBinaryFile(char *mess, char *dest, char *src, char *errorPrefix) {
         return FAIL;
     }
     LOG(logINFO, ("\tMoved file from %s to %s\n", src, dest));
+    return OK;
+}
+
+int createEmptyFile(char *mess, char *fname, char *errorPrefix) {
+    const int fileNameSize = 128;
+    char fullname[fileNameSize];
+    if (getAbsPath(fullname, fileNameSize, fname) == FAIL) {
+        sprintf(mess,
+                "Could not %s. Could not get abs path of current "
+                "process\n",
+                errorPrefix);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    char cmd[MAX_STR_LENGTH] = {0};
+    char retvals[MAX_STR_LENGTH] = {0};
+
+    char *format = "touch %s";
+    if (snprintf(cmd, MAX_STR_LENGTH, format, fullname) >= MAX_STR_LENGTH) {
+        sprintf(mess, "Could not %s. Command to create is too long\n",
+                errorPrefix);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not %s. (creating empty file %s): %s\n", errorPrefix,
+                 fullname, retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tEmpty file created: %s (%s)\n", fullname, errorPrefix));
+    return OK;
+}
+
+int deleteFile(char *mess, char *fname, char *errorPrefix) {
+    const int fileNameSize = 128;
+    char fullname[fileNameSize];
+    if (getAbsPath(fullname, fileNameSize, fname) == FAIL) {
+        sprintf(mess,
+                "Could not %s. Could not get abs path of current "
+                "process\n",
+                errorPrefix);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    if (access(fullname, F_OK) == 0) {
+        char cmd[MAX_STR_LENGTH] = {0};
+        char retvals[MAX_STR_LENGTH] = {0};
+        char *format = "rm %s";
+
+        if (snprintf(cmd, MAX_STR_LENGTH, format, fullname) >= MAX_STR_LENGTH) {
+            sprintf(mess, "Could not %s. Command to delete is too long\n",
+                    errorPrefix);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+
+        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not %s. (deleting file %s). %s\n", errorPrefix,
+                     fullname, retvals);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        LOG(logINFO, ("\tDeleted file: %s (%s)\n", fullname, errorPrefix));
+    } else {
+        LOG(logINFO,
+            ("\tFile does not exist anyway: %s (%s)\n", fullname, errorPrefix));
+    }
     return OK;
 }

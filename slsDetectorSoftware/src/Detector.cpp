@@ -2195,6 +2195,15 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
     programFPGA(fname, pos);
 }
 
+Result<bool> Detector::getUpdateMode(Positions pos) {
+    return pimpl->Parallel(&Module::getUpdateMode, pos);
+}
+
+void Detector::setUpdateMode(const bool updatemode, Positions pos) {
+    pimpl->Parallel(&Module::setUpdateMode, pos, updatemode);
+    rebootController(pos);
+}
+
 Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {
     return pimpl->Parallel(&Module::readRegister, pos, addr);
 }

@@ -288,3 +288,5 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
 void receive_program_default(int file_des, enum PROGRAM_INDEX index,
                              char *functionType, uint64_t filesize,
                              char *checksum, char *serverName);
+int get_update_mode(int);
+int set_update_mode(int);

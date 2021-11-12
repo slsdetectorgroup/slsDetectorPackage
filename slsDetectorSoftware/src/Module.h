@@ -545,6 +545,8 @@ class Module : public virtual slsDetectorDefs {
                               const std::string &serverName);
     void updateKernel(std::vector<char> buffer);
     void rebootController();
+    bool getUpdateMode();
+    void setUpdateMode(const bool updatemode);
     uint32_t readRegister(uint32_t addr) const;
     uint32_t writeRegister(uint32_t addr, uint32_t val);
     void setBit(uint32_t addr, int n);

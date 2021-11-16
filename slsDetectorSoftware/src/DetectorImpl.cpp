@@ -338,7 +338,9 @@ void DetectorImpl::updateDetectorSize() {
                   << shm()->numberOfChannels.y;
 
     for (auto &module : modules) {
-        module->updateNumberOfModule(shm()->numberOfModule);
+        if (module->getUpdateMode() == 0) {
+            module->updateNumberOfModule(shm()->numberOfModule);
+        }
     }
 }
 

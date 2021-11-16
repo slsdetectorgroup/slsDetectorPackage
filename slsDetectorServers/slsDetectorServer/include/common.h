@@ -8,13 +8,12 @@
 #include <sys/types.h>
 #include <time.h>
 
+#define UPDATE_FILE "update.txt"
 #ifdef VIRTUAL
 #define TEMP_PROG_FOLDER_NAME "/tmp/"
-#define UPDATE_FILE           "/tmp/slsdet_udpate"
 #else
 #define TEMP_PROG_FOLDER_NAME           "/var/tmp/"
 #define TEMP_PROG_FOLDER_NAME_ALL_FILES "/var/tmp/*"
-#define UPDATE_FILE                     "udpate.txt"
 #endif
 
 #define TEMP_PROG_FILE_NAME TEMP_PROG_FOLDER_NAME "tmp.rawbin"

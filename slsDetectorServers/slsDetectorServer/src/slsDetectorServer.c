@@ -49,18 +49,6 @@ int main(int argc, char *argv[]) {
     checkModuleFlag = 1;
     int version = 0;
 
-    // update flag if update file exists (command line arg overwrites)
-    const int fileNameSize = 128;
-    char fname[fileNameSize];
-    if (getAbsPath(fname, fileNameSize, UPDATE_FILE) == FAIL) {
-        LOG(logERROR, ("Could not get abs path to check if update file exists. "
-                       "Will try current folder instead.\n"));
-        strcpy(fname, UPDATE_FILE);
-    }
-    if (access(fname, F_OK) == 0) {
-        updateFlag = 1;
-    }
-
     // help message
     char helpMessage[MAX_STR_LENGTH];
     memset(helpMessage, 0, MAX_STR_LENGTH);
@@ -163,7 +151,7 @@ int main(int argc, char *argv[]) {
             break;
 
         case 'u':
-            LOG(logINFO, ("Detected update mode\n"));
+            LOG(logINFO, ("Detected update mode from command line\n"));
             updateFlag = 1;
             break;
 
@@ -197,6 +185,24 @@ int main(int argc, char *argv[]) {
 
         if (sharedMemory_create(portno) == FAIL) {
             return -1;
+        }
+
+        if (updateFlag == 0) {
+            // update flag if update file exists (command line arg overwrites)
+            const int fileNameSize = 128;
+            char fname[fileNameSize];
+            if (getAbsPath(fname, fileNameSize, UPDATE_FILE) == FAIL) {
+                LOG(logERROR,
+                    ("Could not get abs path to check if update file exists. "
+                     "Will try current folder instead.\n"));
+                strcpy(fname, UPDATE_FILE);
+            }
+            if (access(fname, F_OK) == 0) {
+                updateFlag = 1;
+                LOG(logINFOBLUE, ("File Found: Update Mode enabled\n"));
+            } else {
+                LOG(logINFOBLUE, ("File not Found: Update Mode diabled\n"));
+            }
         }
 #ifdef STOP_SERVER
         // start stop server process

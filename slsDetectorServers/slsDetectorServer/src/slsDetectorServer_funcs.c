@@ -78,7 +78,7 @@ char scanErrMessage[MAX_STR_LENGTH] = "";
 /* initialization functions */
 
 int updateModeAllowedFunction(int file_des) {
-    unsigned int listsize = 17;
+    unsigned int listsize = 19;
     enum detFuncs list[] = {F_EXEC_COMMAND,
                             F_GET_DETECTOR_TYPE,
                             F_GET_FIRMWARE_VERSION,

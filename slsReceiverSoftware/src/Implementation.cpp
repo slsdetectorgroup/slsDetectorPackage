@@ -355,7 +355,7 @@ std::string Implementation::getFilePath() const { return filePath; }
 
 void Implementation::setFilePath(const std::string &c) {
     if (!c.empty()) {
-        mkdir_p(c); // throws if it can't create
+        sls::mkdir_p(c); // throws if it can't create
         filePath = c;
     }
     LOG(logINFO) << "File path: " << filePath;

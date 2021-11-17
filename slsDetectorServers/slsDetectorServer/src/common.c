@@ -4,11 +4,14 @@
 #include "common.h"
 #include "clogger.h"
 #include "sls/sls_detector_defs.h"
+#include "slsDetectorServer_defs.h"
 
 #include <libgen.h> // dirname
 #include <string.h>
 #include <sys/utsname.h> // uname
 #include <unistd.h>      // readlink
+
+extern int executeCommand(char *command, char *result, enum TLogLevel level);
 
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue) {
@@ -92,19 +95,22 @@ int getTimeFromString(char *buf, time_t *result) {
     }
 
     // print time structure
-    LOG(logDEBUG, ("%d %d %d %d:%d:%d %d (day date month H:M:S year)\n", t.tm_wday, t.tm_mday, t.tm_mon, t.tm_year +1900, t.tm_hour, t.tm_min, t.tm_sec));
+    LOG(logDEBUG,
+        ("%d %d %d %d:%d:%d %d (day date month H:M:S year)\n", t.tm_wday,
+         t.tm_mday, t.tm_mon, t.tm_year + 1900, t.tm_hour, t.tm_min, t.tm_sec));
 
     *result = mktime(&t);
     return OK;
 }
 
-int getKernelVersion(char* retvals) {
-    struct utsname buf = {0};
+int getKernelVersion(char *retvals) {
+    struct utsname buf;
+    memset(&buf, 0, sizeof(buf));
     if (uname(&buf) == -1) {
         strcpy(retvals, "Failed to get utsname structure from uname\n");
         LOG(logERROR, (retvals));
         return FAIL;
-    }   
+    }
     strcpy(retvals, buf.version);
     LOG(logINFOBLUE, ("Kernel Version: %s\n", retvals));
     return OK;
@@ -135,7 +141,8 @@ int validateKernelVersion(char *expectedVersion) {
     // convert kernel date string into time
     time_t kernelDate;
     if (getTimeFromString(currentVersion, &kernelDate) == FAIL) {
-        LOG(logERROR, ("Could not parse retrieved kernel date, %s\n", currentVersion));
+        LOG(logERROR,
+            ("Could not parse retrieved kernel date, %s\n", currentVersion));
         return FAIL;
     }
 
@@ -155,8 +162,8 @@ int validateKernelVersion(char *expectedVersion) {
         return FAIL;
     }
 
-    LOG(logINFOBLUE, ("Kernel Version Compatible: %s [min.: %s]\n", currentVersion,
-                      expectedVersion));
+    LOG(logINFOBLUE, ("Kernel Version Compatible: %s [min.: %s]\n",
+                      currentVersion, expectedVersion));
     return OK;
 }
 
@@ -235,30 +242,39 @@ int getModuleIdInFile(int *ret, char *mess, char *fileName) {
     return retval;
 }
 
-int verifyChecksumFromBuffer(char *mess, char *clientChecksum, char *buffer,
+int verifyChecksumFromBuffer(char *mess, char *functionType,
+                             char *clientChecksum, char *buffer,
                              ssize_t bytes) {
-    LOG(logINFO, ("\tVerifying Checksum...\n"));
+    LOG(logINFO, ("\tVerifying Checksum from memory...\n"));
     MD5_CTX c;
     if (!MD5_Init_SLS(&c)) {
-        strcpy(mess, "Unable to calculate checksum (MD5_Init_SLS)\n");
+        sprintf(mess,
+                "Could not %s. Unable to calculate checksum (MD5_Init_SLS)\n",
+                functionType);
         LOG(logERROR, (mess));
         return FAIL;
     }
     if (!MD5_Update_SLS(&c, buffer, bytes)) {
-        strcpy(mess, "Unable to calculate checksum (MD5_Update_SLS)\n");
+        sprintf(mess,
+                "Could not %s. Unable to calculate checksum (MD5_Update_SLS)\n",
+                functionType);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    return verifyChecksum(mess, clientChecksum, &c, "copied program");
+    return verifyChecksum(mess, functionType, clientChecksum, &c,
+                          "copied program (buffer)");
 }
 
-int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
-    LOG(logINFO, ("\tVerifying Checksum...\n"));
+int verifyChecksumFromFile(char *mess, char *functionType, char *clientChecksum,
+                           char *fname) {
+    LOG(logINFO, ("\tVerifying Checksum of file...\n"));
 
     FILE *fp = fopen(fname, "r");
     if (fp == NULL) {
-        sprintf(mess, "Unable to open %s in read mode to get checksum\n",
-                fname);
+        sprintf(
+            mess,
+            "Could not %s. Unable to open %s in read mode to get checksum\n",
+            functionType, fname);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -266,7 +282,9 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
     MD5_CTX c;
     if (!MD5_Init_SLS(&c)) {
         fclose(fp);
-        strcpy(mess, "Unable to calculate checksum (MD5_Init_SLS)\n");
+        sprintf(mess,
+                "Could not %s. Unable to calculate checksum (MD5_Init_SLS)\n",
+                functionType);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -277,7 +295,10 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
     while (bytes > 0) {
         if (!MD5_Update_SLS(&c, buf, bytes)) {
             fclose(fp);
-            strcpy(mess, "Unable to calculate checksum (MD5_Update_SLS)\n");
+            sprintf(
+                mess,
+                "Could not %s. Unable to calculate checksum (MD5_Update_SLS)\n",
+                functionType);
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -286,17 +307,20 @@ int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname) {
     }
     LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));
     fclose(fp);
-    return verifyChecksum(mess, clientChecksum, &c, "copied program");
+    return verifyChecksum(mess, functionType, clientChecksum, &c,
+                          "copied program (file)");
 }
 
-int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
-                            ssize_t fsize) {
-    LOG(logINFO, ("\tVerifying FlashChecksum...\n"));
+int verifyChecksumFromFlash(char *mess, char *functionType,
+                            char *clientChecksum, char *fname, ssize_t fsize) {
+    LOG(logINFO, ("\tVerifying Checksum from flash...\n"));
 
     FILE *fp = fopen(fname, "r");
     if (fp == NULL) {
-        sprintf(mess, "Unable to open %s in read mode to get checksum\n",
-                fname);
+        sprintf(
+            mess,
+            "Could not %s. Unable to open %s in read mode to get checksum\n",
+            functionType, fname);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -304,7 +328,9 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
     MD5_CTX c;
     if (!MD5_Init_SLS(&c)) {
         fclose(fp);
-        strcpy(mess, "Unable to calculate checksum (MD5_Init_SLS)\n");
+        sprintf(mess,
+                "Could not %s. Unable to calculate checksum (MD5_Init_SLS)\n",
+                functionType);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -324,33 +350,39 @@ int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
 
         if (!MD5_Update_SLS(&c, buf, bytes)) {
             fclose(fp);
-            strcpy(mess, "Unable to calculate checksum (MD5_Update_SLS)\n");
+            sprintf(
+                mess,
+                "Could not %s. Unable to calculate checksum (MD5_Update_SLS)\n",
+                functionType);
             LOG(logERROR, (mess));
             return FAIL;
         }
-
         // read only until a particular size (drive)
         if (fsize != 0 && totalBytesRead >= fsize) {
             LOG(logINFO,
                 ("\tReached %lu bytes. Not reading more\n", totalBytesRead));
             break;
         }
-        bytes = fread(buf, 1, readUnitSize, fp);
+        // for less than 128 bytes
+        ssize_t bytesToRead = readUnitSize;
+        if ((readUnitSize + totalBytesRead) > fsize) {
+            bytesToRead = fsize - totalBytesRead;
+        }
+        bytes = fread(buf, 1, bytesToRead, fp);
         totalBytesRead += bytes;
     }
     LOG(logINFO, ("\tRead %lu bytes to calculate checksum\n", totalBytesRead));
     fclose(fp);
-    int ret = verifyChecksum(mess, clientChecksum, &c, "flash");
-    if (ret == OK) {
-        LOG(logINFO, ("Checksum in Flash verified\n"));
-    }
-    return ret;
+    return verifyChecksum(mess, functionType, clientChecksum, &c, "flash");
 }
 
-int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c, char *msg) {
+int verifyChecksum(char *mess, char *functionType, char *clientChecksum,
+                   MD5_CTX *c, char *msg) {
     unsigned char out[MD5_DIGEST_LENGTH];
     if (!MD5_Final_SLS(out, c)) {
-        strcpy(mess, "Unable to calculate checksum (MD5_Final_SLS)\n");
+        sprintf(mess,
+                "Could not %s. Unable to calculate checksum (MD5_Final_SLS)\n",
+                functionType);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -370,12 +402,177 @@ int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c, char *msg) {
     // compare checksum
     if (strcmp(clientChecksum, checksum)) {
         sprintf(mess,
-                "Checksum of %s does not match. Client "
+                "Could not %s. Checksum of %s does not match. Client "
                 "checksum:%s, copied checksum:%s\n",
-                msg, clientChecksum, checksum);
+                functionType, msg, clientChecksum, checksum);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tChecksum verified\n"));
+    LOG(logINFO, ("\tChecksum of %s verified\n", msg));
+    return OK;
+}
+
+int setupDetectorServer(char *mess, char *sname) {
+    char cmd[MAX_STR_LENGTH] = {0};
+    char retvals[MAX_STR_LENGTH] = {0};
+
+    // give permissions
+    if (snprintf(cmd, MAX_STR_LENGTH, "chmod 777 %s", sname) >=
+        MAX_STR_LENGTH) {
+        strcpy(mess, "Could not copy detector server. Command to give "
+                     "permissions to server is too long\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not copy detector server (permissions). %s\n", retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tPermissions modified\n"));
+
+    // symbolic link
+    if (snprintf(cmd, MAX_STR_LENGTH, "ln -sf %s %s", sname,
+                 LINKED_SERVER_NAME) >= MAX_STR_LENGTH) {
+        strcpy(mess, "Could not copy detector server. Command to "
+                     "create symbolic link too long\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not copy detector server (symbolic link). %s\n",
+                 retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tSymbolic link created\n"));
+
+    // blackfin boards (respawn) (only kept for backwards compatibility)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
+    defined(GOTTHARDD)
+    // delete every line with DetectorServer in /etc/inittab
+    strcpy(cmd, "sed -i '/DetectorServer/d' /etc/inittab");
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not copy detector server (del respawning). %s\n",
+                 retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tinittab: DetectoServer line deleted\n"));
+
+    // add new link name to /etc/inittab
+    if (snprintf(cmd, MAX_STR_LENGTH,
+                 "echo 'ttyS0::respawn:/./%s' >> /etc/inittab",
+                 LINKED_SERVER_NAME) >= MAX_STR_LENGTH) {
+        strcpy(mess, "Could not copy detector server. Command "
+                     "to add new server for spawning is too long\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not copy detector server (respawning). %s\n", retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tinittab: updated for respawning\n"));
+
+#endif
+
+    // sync
+    strcpy(cmd, "sync");
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not copy detector server (sync). %s\n", retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tsync\n"));
+    return OK;
+}
+
+int writeBinaryFile(char *mess, char *fname, char *buffer,
+                    const uint64_t filesize, char *errorPrefix) {
+    LOG(logINFO, ("\tWriting Detector Server Binary...\n"));
+
+    FILE *fp = fopen(fname, "wb");
+    if (fp == NULL) {
+        sprintf(mess,
+                "Could not %s. (opening file to write(%s). "
+                "Maybe it is being used? Try another name?\n",
+                errorPrefix, fname);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    size_t bytesWritten = 0;
+    size_t unitSize = 128;
+    int oldProgress = 0;
+
+    while (bytesWritten < filesize) {
+        // print progress
+        int progress = (int)(((double)(bytesWritten) / filesize) * 100);
+        if (oldProgress != progress) {
+            printf("%d%%\r", progress);
+            fflush(stdout);
+            oldProgress = progress;
+        }
+
+        // for less than 128 bytes
+        ssize_t writeSize = unitSize;
+        if ((unitSize + bytesWritten) > filesize) {
+            writeSize = filesize - bytesWritten;
+        }
+        size_t bytes = fwrite((char *)buffer + bytesWritten, 1, writeSize, fp);
+
+        // write
+        if (bytes != (size_t)writeSize) {
+            sprintf(mess,
+                    "Could not %s. Expected to write %lu "
+                    "bytes, wrote %lu bytes). No space left? \n",
+                    errorPrefix, (long unsigned int)filesize,
+                    (long unsigned int)bytesWritten);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        bytesWritten += bytes;
+        LOG(logDEBUG1,
+            ("bytesWritten:%lu filesize:%lu\n", bytesWritten, filesize));
+    }
+    if (fclose(fp) != 0) {
+        sprintf(mess, "Could not %s. (closing file pointer)\n", errorPrefix);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tWritten binary to %s (%lu bytes)\n", fname,
+                  (long unsigned int)bytesWritten));
+    return OK;
+}
+
+int moveBinaryFile(char *mess, char *dest, char *src, char *errorPrefix) {
+    char cmd[MAX_STR_LENGTH] = {0};
+    char retvals[MAX_STR_LENGTH] = {0};
+
+    // one can move into the current process binary (will not interfere in
+    // kernel mode)
+
+    if (snprintf(cmd, MAX_STR_LENGTH, "mv %s %s", src, dest) >=
+        MAX_STR_LENGTH) {
+        sprintf(mess, "Could not %s. Command to move binary is too long\n",
+                errorPrefix);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH, "Could not %s. (moving). %s\n",
+                 errorPrefix, retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tMoved file from %s to %s\n", src, dest));
     return OK;
 }

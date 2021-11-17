@@ -1733,7 +1733,8 @@ class Detector {
     /** [Jungfrau][CTB][Moench]  Advanced user Function!  */
     void resetFPGA(Positions pos = {});
 
-    /** [Jungfrau][Eiger][Gotthard][CTB][Moench][Mythen3][Gotthard2]
+    /** [[deprecated ("Replaced by updateDetectorServer, which does not require tftp")]]
+     * [Jungfrau][Eiger][Gotthard][CTB][Moench][Mythen3][Gotthard2]
      * Advanced user Function! \n
      * Copy detector server fname from tftp folder of hostname to detector. Also
      * creates a symbolic link to a shorter name (without vx.x.x). Then the
@@ -1744,11 +1745,26 @@ class Detector {
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname, Positions pos = {});
 
+    /** [Jungfrau][Eiger][Ctb][Moench][Mythen3][Gotthard2] Copies detector
+     * server via TCP (without tftp).\nMakes a symbolic link with a shorter
+     * name (without vx.x.x).\nThen, detector controller reboots (except
+     * Eiger).\n[Jungfrau][Ctb][Moench]Also changes respawn server to the
+     * link, which is effective after a reboot.
+     */
+    void updateDetectorServer(const std::string &fname, Positions pos = {});
+
+    /** [Jungfrau][Ctb][Moench][Mythen3][Gotthard2] \n
+     * Advanced Command!! You could damage the detector. Please use with
+     * caution.\nUpdates the kernel image. Then, detector controller reboots
+     *  with new kernel
+     */
+    void updateKernel(const std::string &fname, Positions pos = {});
+
     /** [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2] Advanced user
      * Function! */
     void rebootController(Positions pos = {});
 
-    /**
+    /** [[deprecated ("Replaced by overloaded updateDetectorServer, which does not require tftp and has one less argument")]]
      * Advanced user Function!\n [Jungfrau][Gotthard][CTB][Moench] Updates the
      * firmware, detector server, make a soft link and then reboots detector
      * controller. \n [Mythen3][Gotthard2] Will require a script to start up the
@@ -1758,6 +1774,16 @@ class Detector {
      */
     void updateFirmwareAndServer(const std::string &sname,
                                  const std::string &hostname,
+                                 const std::string &fname, Positions pos = {});
+
+    /**
+     * Advanced user Function!\n [Jungfrau][Gotthard][CTB][Moench] Updates the
+     * firmware, detector server, make a soft link and then reboots detector
+     * controller. \n [Mythen3][Gotthard2] Will require a script to start up the
+     * shorter named server link at start up \n sname is full path name of detector
+     * server  \n fname is programming file name with full path to it
+     */
+    void updateFirmwareAndServer(const std::string &sname,
                                  const std::string &fname, Positions pos = {});
 
     /** Advanced user Function! \n

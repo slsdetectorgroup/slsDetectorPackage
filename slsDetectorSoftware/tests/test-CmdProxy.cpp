@@ -2708,6 +2708,25 @@ TEST_CASE("copydetectorserver", "[.cmd]") {
     }
 }
 
+TEST_CASE("updatekernel", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
+        // TODO: send real server?
+        // std::ostringstream oss;
+        // proxy.Call("updatekernel",{"juImage_detector.lzma",
+        // "pc13784"}, -1, PUT, oss);
+        // REQUIRE(oss.str() == "updatekernel successful\n");
+        REQUIRE_THROWS(proxy.Call("updatekernel", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("updatekernel", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("updatekernel", {}, -1, PUT));
+    }
+}
+
 TEST_CASE("rebootcontroller", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

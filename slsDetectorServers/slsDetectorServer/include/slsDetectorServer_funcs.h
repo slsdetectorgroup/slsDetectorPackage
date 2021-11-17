@@ -278,3 +278,12 @@ int set_udp_first_dest(int);
 int get_readout_speed(int);
 int set_readout_speed(int);
 int get_kernel_version(int);
+int update_kernel(int);
+int update_detector_server(int);
+int receive_program(int file_des, enum PROGRAM_INDEX index);
+void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
+                                  char *functionType, uint64_t filesize,
+                                  char *checksum, char *serverName);
+void receive_program_default(int file_des, enum PROGRAM_INDEX index,
+                             char *functionType, uint64_t filesize,
+                             char *checksum, char *serverName);

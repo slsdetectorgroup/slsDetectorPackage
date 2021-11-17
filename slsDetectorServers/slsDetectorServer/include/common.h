@@ -8,7 +8,12 @@
 #include <sys/types.h>
 #include <time.h>
 
+#define TEMP_PROG_FOLDER_NAME           "/var/tmp/"
+#define TEMP_PROG_FOLDER_NAME_ALL_FILES "/var/tmp/*"
+#define TEMP_PROG_FILE_NAME             TEMP_PROG_FOLDER_NAME "tmp.rawbin"
+
 enum numberMode { DEC, HEX };
+enum PROGRAM_INDEX { PROGRAM_FPGA, PROGRAM_KERNEL, PROGRAM_SERVER };
 
 /**
  * Convert a value from a range to a different range (eg voltage to dac or vice
@@ -28,7 +33,7 @@ int getAbsPath(char *buf, size_t bufSize, char *fname);
 
 int getTimeFromString(char *buf, time_t *result);
 
-int getKernelVersion(char* retvals);
+int getKernelVersion(char *retvals);
 
 int validateKernelVersion(char *expectedVersion);
 
@@ -38,9 +43,17 @@ void validate64(int *ret, char *mess, int64_t arg, int64_t retval,
                 char *modename, enum numberMode nummode);
 
 int getModuleIdInFile(int *ret, char *mess, char *fileName);
-int verifyChecksumFromBuffer(char *mess, char *clientChecksum, char *buffer,
-                             ssize_t bytes);
-int verifyChecksumFromFile(char *mess, char *clientChecksum, char *fname);
-int verifyChecksumFromFlash(char *mess, char *clientChecksum, char *fname,
-                            ssize_t fsize);
-int verifyChecksum(char *mess, char *clientChecksum, MD5_CTX *c, char *msg);
+int verifyChecksumFromBuffer(char *mess, char *functionType,
+                             char *clientChecksum, char *buffer, ssize_t bytes);
+int verifyChecksumFromFile(char *mess, char *functionType, char *clientChecksum,
+                           char *fname);
+int verifyChecksumFromFlash(char *mess, char *functionType,
+                            char *clientChecksum, char *fname, ssize_t fsize);
+int verifyChecksum(char *mess, char *functionType, char *clientChecksum,
+                   MD5_CTX *c, char *msg);
+int setupDetectorServer(char *mess, char *sname);
+
+int writeBinaryFile(char *mess, char *fname, char *buffer,
+                    const uint64_t filesize, char *errorPrefix);
+
+int moveBinaryFile(char *mess, char *dest, char *src, char *errorPrefix);

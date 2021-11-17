@@ -12,6 +12,7 @@
 
 #include "sls/ToString.h"
 #include "sls/container_utils.h"
+#include "sls/file_utils.h"
 #include "sls/network_utils.h"
 #include "sls/string_utils.h"
 
@@ -1261,8 +1262,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         throw RuntimeError("programfpga not implemented for this detector");
     }
 
-    LOG(logINFO)
-        << "Updating Firmware. This can take awhile. Please be patient...";
+    LOG(logINFO) << "This can take awhile. Please be patient.";
     LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
 
     // check if it exists
@@ -1280,14 +1280,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     }
 
     // get srcSize to print progress
-    if (fseek(src, 0, SEEK_END) != 0) {
-        throw RuntimeError("Program FPGA: Seek error in src file");
-    }
-    size_t srcSize = ftell(src);
-    if (srcSize <= 0) {
-        throw RuntimeError("Program FPGA: Could not get length of source file");
-    }
-    rewind(src);
+    ssize_t srcSize = sls::getFileSize(src, "Program FPGA");
 
     // create temp destination file
     char destfname[] = "/tmp/SLS_DET_MCB.XXXXXX";
@@ -1359,36 +1352,12 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     if (close(dst) != 0) {
         throw RuntimeError("Program FPGA: Could not close destination file");
     }
-    LOG(logINFOBLUE) << "File has been converted to " << destfname;
+    LOG(logINFO) << "File has been converted to " << destfname;
 
-    // loading dst file to memory
-    // FILE *fp = fopen("/tmp/SLS_DET_MCB.tzgmUT", "r");
-    FILE *fp = fopen(destfname, "r");
-    if (fp == nullptr) {
-        throw RuntimeError("Program FPGA: Could not open rawbin file");
-    }
-    if (fseek(fp, 0, SEEK_END) != 0) {
-        throw RuntimeError("Program FPGA: Seek error in rawbin file");
-    }
-    size_t filesize = ftell(fp);
-    if (filesize <= 0) {
-        throw RuntimeError("Program FPGA: Could not get length of rawbin file");
-    }
-    rewind(fp);
-
-    std::vector<char> buffer(filesize, 0);
-    if (fread(buffer.data(), sizeof(char), filesize, fp) != filesize) {
-        throw RuntimeError("Program FPGA: Could not read rawbin file");
-    }
-
-    if (fclose(fp) != 0) {
-        throw RuntimeError(
-            "Program FPGA: Could not close destination file after converting");
-    }
-
-    // unlink(destfname); // delete temporary file
-    LOG(logDEBUG1) << "Successfully loaded the rawbin file to program memory";
-    LOG(logDEBUG1) << "Read file into memory";
+    // load converted file to memory
+    std::vector<char> buffer = readBinaryFile(destfname, "Program FPGA");
+    // delete temporary
+    unlink(destfname);
     return buffer;
 }
 

@@ -3,7 +3,7 @@
 #pragma once
 #include "sls/sls_detector_defs.h"
 
-#define LINKED_SERVER_NAME "eigerDetectorServer"
+#define LINKED_SERVER_NAME "/home/root/executables/eigerDetectorServer"
 
 #define REQUIRED_FIRMWARE_VERSION (29)
 // virtual ones renamed for consistency

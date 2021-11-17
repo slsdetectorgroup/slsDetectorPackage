@@ -11,6 +11,7 @@ add_executable(gotthardDetectorServer_virtual
     ../slsDetectorServer/src/LTC2620.c         
     ../slsDetectorServer/src/common.c
     ../slsDetectorServer/src/commonServerFunctions.c    
+    ../slsDetectorServer/src/programViaBlackfin.c
     ../slsDetectorServer/src/communication_funcs_UDP.c    
     ../slsDetectorServer/src/sharedMemory.c
     ../../slsSupportLib/src/md5.c

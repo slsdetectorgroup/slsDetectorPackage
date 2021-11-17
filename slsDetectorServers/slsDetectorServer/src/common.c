@@ -465,9 +465,9 @@ int setupDetectorServer(char *mess, char *sname) {
     LOG(logINFO, ("\tinittab: DetectoServer line deleted\n"));
 
     // add new link name to /etc/inittab
-    char *format = "echo 'ttyS0::respawn:/./%s' >> /etc/inittab";
-    if (snprintf(cmd, MAX_STR_LENGTH, format, LINKED_SERVER_NAME) >=
-        MAX_STR_LENGTH) {
+    if (snprintf(cmd, MAX_STR_LENGTH,
+                 "echo 'ttyS0::respawn:/./%s' >> /etc/inittab",
+                 LINKED_SERVER_NAME) >= MAX_STR_LENGTH) {
         strcpy(mess, "Could not copy detector server. Command "
                      "to add new server for spawning is too long\n");
         LOG(logERROR, (mess));
@@ -560,8 +560,8 @@ int moveBinaryFile(char *mess, char *dest, char *src, char *errorPrefix) {
     // one can move into the current process binary (will not interfere in
     // kernel mode)
 
-    char *format = "mv %s %s";
-    if (snprintf(cmd, MAX_STR_LENGTH, format, src, dest) >= MAX_STR_LENGTH) {
+    if (snprintf(cmd, MAX_STR_LENGTH, "mv %s %s", src, dest) >=
+        MAX_STR_LENGTH) {
         sprintf(mess, "Could not %s. Command to move binary is too long\n",
                 errorPrefix);
         LOG(logERROR, (mess));

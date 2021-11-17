@@ -222,8 +222,7 @@ int emptyTempFolder(char *mess) {
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
 
-    char *format = "rm -fr %s";
-    if (snprintf(cmd, MAX_STR_LENGTH, format,
+    if (snprintf(cmd, MAX_STR_LENGTH, "rm -fr %s",
                  TEMP_PROG_FOLDER_NAME_ALL_FILES) >= MAX_STR_LENGTH) {
         sprintf(mess,
                 "Could not update %s. Command to empty %s folder is too long\n",
@@ -429,8 +428,7 @@ int eraseFlash(char *mess) {
 #endif
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
-    char *format = "flash_eraseall %s";
-    if (snprintf(cmd, MAX_STR_LENGTH, format, flashDriveName) >=
+    if (snprintf(cmd, MAX_STR_LENGTH, "flash_eraseall %s", flashDriveName) >=
         MAX_STR_LENGTH) {
         sprintf(mess, "Could not %s. Command to erase flash is too long\n",
                 messageType);

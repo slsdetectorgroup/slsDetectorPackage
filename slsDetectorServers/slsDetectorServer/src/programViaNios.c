@@ -167,8 +167,7 @@ int eraseFlash(char *mess) {
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
 
-    char *format = "flash_erase %s 0 0";
-    if (snprintf(cmd, MAX_STR_LENGTH, format, flashDriveName) >=
+    if (snprintf(cmd, MAX_STR_LENGTH, "flash_erase %s 0 0", flashDriveName) >=
         MAX_STR_LENGTH) {
         sprintf(mess, "Could not %s. Command to erase flash is too long\n",
                 messageType);

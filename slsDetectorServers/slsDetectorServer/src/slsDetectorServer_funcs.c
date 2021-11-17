@@ -4144,9 +4144,8 @@ int copy_detector_server(int file_des) {
         char cmd[MAX_STR_LENGTH] = {0};
 
         // tftp server
-        char *format = "tftp %s -r %s -g";
-        if (snprintf(cmd, MAX_STR_LENGTH, format, hostname, sname) >=
-            MAX_STR_LENGTH) {
+        if (snprintf(cmd, MAX_STR_LENGTH, "tftp %s -r %s -g", hostname,
+                     sname) >= MAX_STR_LENGTH) {
             ret = FAIL;
             strcpy(mess, "Could not copy detector server. Command to copy "
                          "server too long\n");
@@ -9255,8 +9254,11 @@ int get_kernel_version(int file_des) {
     // get only
     ret = getKernelVersion(retvals);
     if (ret == FAIL) {
-        snprintf(mess, MAX_STR_LENGTH, "Could not get kernel version. %s\n",
-                 retvals);
+        if (snprintf(mess, MAX_STR_LENGTH, "Could not get kernel version. %s\n",
+                 retvals) >= MAX_STR_LENGTH) {
+            ret = FAIL;
+            strcpy(mess, "Could not get kernel version. Reason too long to copy\n");
+        } 
         LOG(logERROR, (mess));
     } else {
         LOG(logDEBUG1, ("kernel version: [%s]\n", retvals));

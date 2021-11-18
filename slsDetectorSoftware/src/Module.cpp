@@ -3575,7 +3575,7 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
         throw DetectorError(os.str());
     }
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): " << functionType << " udpated successfully";
+                 << "): " << functionType << " successful";
 }
 
 void Module::simulatingActivityinDetector(const std::string &functionType,

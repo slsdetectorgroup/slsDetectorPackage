@@ -2201,7 +2201,9 @@ Result<bool> Detector::getUpdateMode(Positions pos) {
 
 void Detector::setUpdateMode(const bool updatemode, Positions pos) {
     pimpl->Parallel(&Module::setUpdateMode, pos, updatemode);
-    rebootController(pos);
+    if (getDetectorType().squash() != defs::EIGER) {
+        rebootController(pos);
+    }
 }
 
 Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {

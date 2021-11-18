@@ -512,23 +512,12 @@ int writeBinaryFile(char *mess, char *fname, char *buffer,
                     const uint64_t filesize, char *errorPrefix) {
     LOG(logINFO, ("\tWriting Detector Server Binary...\n"));
 
-    const int fileNameSize = 128;
-    char fullname[fileNameSize];
-    if (getAbsPath(fullname, fileNameSize, fname) == FAIL) {
-        sprintf(mess,
-                "Could not %s. Could not get abs path of current "
-                "process\n",
-                errorPrefix);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-
-    FILE *fp = fopen(fullname, "wb");
+    FILE *fp = fopen(fname, "wb");
     if (fp == NULL) {
         sprintf(mess,
                 "Could not %s. (opening file to write(%s). "
                 "Maybe it is being used? Try another name?\n",
-                errorPrefix, fullname);
+                errorPrefix, fname);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -572,7 +561,7 @@ int writeBinaryFile(char *mess, char *fname, char *buffer,
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tWritten binary to %s (%lu bytes)\n", fullname,
+    LOG(logINFO, ("\tWritten binary to %s (%lu bytes)\n", fname,
                   (long unsigned int)bytesWritten));
     return OK;
 }

@@ -1063,6 +1063,7 @@ class CmdProxy {
         {"updatekernel", &CmdProxy::UpdateKernel},
         {"rebootcontroller", &CmdProxy::rebootcontroller},
         {"update", &CmdProxy::UpdateFirmwareAndDetectorServer},
+        {"updatemode", &CmdProxy::updatemode},
         {"reg", &CmdProxy::Register},
         {"adcreg", &CmdProxy::AdcRegister},
         {"setbit", &CmdProxy::BitOperations},
@@ -2183,6 +2184,12 @@ class CmdProxy {
     EXECUTE_SET_COMMAND(rebootcontroller, rebootController,
                         "\n\t[Jungfrau][Ctb][Moench][Gotthard][Mythen3]["
                         "Gotthard2] Reboot controller of detector.");
+
+    INTEGER_COMMAND_VEC_ID(
+        updatemode, getUpdateMode, setUpdateMode, StringTo<int>,
+        "[0|1]\n\tRestart the detector server in update mode or not. This is "
+        "useful when server-firmware compatibility is at its worst and server "
+        "cannot start up normally");
 
     EXECUTE_SET_COMMAND(
         firmwaretest, executeFirmwareTest,

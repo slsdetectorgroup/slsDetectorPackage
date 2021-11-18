@@ -2539,8 +2539,9 @@ void Module::updateDetectorServer(std::vector<char> buffer,
                     "Update Detector Server (no tftp)", serverName);
         break;
     default:
-        throw RuntimeError("Updating DetectorServer via the package is not implemented "
-                           "for this detector");
+        throw RuntimeError(
+            "Updating DetectorServer via the package is not implemented "
+            "for this detector");
     }
 }
 
@@ -2565,6 +2566,14 @@ void Module::rebootController() {
     sendToDetector(F_REBOOT_CONTROLLER);
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
                  << "): Controller rebooted successfully!";
+}
+
+bool Module::getUpdateMode() { return sendToDetector<int>(F_GET_UPDATE_MODE); }
+
+void Module::setUpdateMode(const bool updatemode) {
+    sendToDetector(F_SET_UPDATE_MODE, static_cast<int>(updatemode), nullptr);
+    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
+                 << "): Update Mode set to " << updatemode << "!";
 }
 
 uint32_t Module::readRegister(uint32_t addr) const {
@@ -3566,7 +3575,7 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
         throw DetectorError(os.str());
     }
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): " << functionType << " udpated successfully";
+                 << "): " << functionType << " successful";
 }
 
 void Module::simulatingActivityinDetector(const std::string &functionType,

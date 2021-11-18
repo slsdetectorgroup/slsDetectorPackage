@@ -8,9 +8,15 @@
 #include <sys/types.h>
 #include <time.h>
 
+#define UPDATE_FILE "update.txt"
+#ifdef VIRTUAL
+#define TEMP_PROG_FOLDER_NAME "/tmp/"
+#else
 #define TEMP_PROG_FOLDER_NAME           "/var/tmp/"
 #define TEMP_PROG_FOLDER_NAME_ALL_FILES "/var/tmp/*"
-#define TEMP_PROG_FILE_NAME             TEMP_PROG_FOLDER_NAME "tmp.rawbin"
+#endif
+
+#define TEMP_PROG_FILE_NAME TEMP_PROG_FOLDER_NAME "tmp.rawbin"
 
 enum numberMode { DEC, HEX };
 enum PROGRAM_INDEX { PROGRAM_FPGA, PROGRAM_KERNEL, PROGRAM_SERVER };
@@ -57,3 +63,6 @@ int writeBinaryFile(char *mess, char *fname, char *buffer,
                     const uint64_t filesize, char *errorPrefix);
 
 int moveBinaryFile(char *mess, char *dest, char *src, char *errorPrefix);
+
+int createEmptyFile(char *mess, char *fname, char *errorPrefix);
+int deleteFile(char *mess, char *fname, char *errorPrefix);

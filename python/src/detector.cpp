@@ -1520,11 +1520,11 @@ void init_det(py::module &m) {
              (void (Detector::*)(const std::string &, const std::string &,
                                  sls::Positions)) &
                  Detector::copyDetectorServer,
-             py::arg(), py::arg(), py::arg() = Positions{})    
+             py::arg(), py::arg(), py::arg() = Positions{})
         .def("updateDetectorServer",
              (void (Detector::*)(const std::string &, sls::Positions)) &
                  Detector::updateDetectorServer,
-             py::arg(), py::arg() = Positions{})    
+             py::arg(), py::arg() = Positions{})
         .def("updateKernel",
              (void (Detector::*)(const std::string &, sls::Positions)) &
                  Detector::updateKernel,
@@ -1542,6 +1542,14 @@ void init_det(py::module &m) {
                                  sls::Positions)) &
                  Detector::updateFirmwareAndServer,
              py::arg(), py::arg(), py::arg() = Positions{})
+        .def("getUpdateMode",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getUpdateMode,
+             py::arg() = Positions{})
+        .def("setUpdateMode",
+             (void (Detector::*)(bool, sls::Positions)) &
+                 Detector::setUpdateMode,
+             py::arg(), py::arg() = Positions{})
         .def("readRegister",
              (Result<uint32_t>(Detector::*)(uint32_t, sls::Positions) const) &
                  Detector::readRegister,

@@ -77,6 +77,42 @@ char scanErrMessage[MAX_STR_LENGTH] = "";
 
 /* initialization functions */
 
+int updateModeAllowedFunction(int file_des) {
+    unsigned int listsize = 19;
+    enum detFuncs list[] = {F_EXEC_COMMAND,
+                            F_GET_DETECTOR_TYPE,
+                            F_GET_FIRMWARE_VERSION,
+                            F_GET_SERVER_VERSION,
+                            F_GET_SERIAL_NUMBER,
+                            F_WRITE_REGISTER,
+                            F_READ_REGISTER,
+                            F_LOCK_SERVER,
+                            F_GET_LAST_CLIENT_IP,
+                            F_PROGRAM_FPGA,
+                            F_RESET_FPGA,
+                            F_CHECK_VERSION,
+                            F_COPY_DET_SERVER,
+                            F_REBOOT_CONTROLLER,
+                            F_GET_KERNEL_VERSION,
+                            F_UPDATE_KERNEL,
+                            F_UPDATE_DETECTOR_SERVER,
+                            F_GET_UPDATE_MODE,
+                            F_SET_UPDATE_MODE};
+    for (unsigned int i = 0; i < listsize; ++i) {
+        if ((unsigned int)fnum == list[i]) {
+            return OK;
+        }
+    }
+    ret = FAIL;
+    sprintf(mess,
+            "Funcion (%s) cannot be executed in update mode. Please disable "
+            "update mode to continue.\n",
+            getFunctionNameFromEnum((enum detFuncs)fnum));
+    LOG(logERROR, (mess));
+    Server_SendResult(file_des, INT32, NULL, 0);
+    return FAIL;
+}
+
 int printSocketReadError() {
     LOG(logERROR, ("Error reading from socket. Possible socket crash.\n"));
     return FAIL;
@@ -117,6 +153,13 @@ int decode_function(int file_des) {
         LOG(logERROR, ("Unknown function enum %d\n", fnum));
         ret = (M_nofunc)(file_des);
     } else {
+
+        // udpate mode restricted functions, send error (without waitin for
+        // arguments)
+        if (updateFlag && updateModeAllowedFunction(file_des) == FAIL) {
+            return FAIL;
+        }
+
         LOG(logDEBUG1, (" calling function fnum=%d, (%s)\n", fnum,
                         getFunctionNameFromEnum((enum detFuncs)fnum)));
         ret = (*flist[fnum])(file_des);
@@ -416,6 +459,8 @@ void function_table() {
     flist[F_GET_KERNEL_VERSION] = &get_kernel_version;
     flist[F_UPDATE_KERNEL] = &update_kernel;
     flist[F_UPDATE_DETECTOR_SERVER] = &update_detector_server;
+    flist[F_GET_UPDATE_MODE] = &get_update_mode;
+    flist[F_SET_UPDATE_MODE] = &set_update_mode;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -445,6 +490,9 @@ void modeNotImplemented(char *modename, int mode) {
 }
 
 int executeCommand(char *command, char *result, enum TLogLevel level) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
     const size_t tempsize = 256;
     char temp[tempsize];
     memset(temp, 0, tempsize);
@@ -469,18 +517,20 @@ int executeCommand(char *command, char *result, enum TLogLevel level) {
         memset(temp, 0, tempsize);
     }
     result[MAX_STR_LENGTH - 1] = '\0';
-    int success = pclose(sysFile);
-    if (strlen(result)) {
-        if (success) {
-            success = FAIL;
-            LOG(logERROR, ("Executing cmd[%s]:%s\n", cmd, result));
-        } else {
-            LOG(level, ("Result:\n[%s]\n", result));
-        }
-    } else {
-        LOG(level, ("No result\n"));
+    if (strlen(result) == 0) {
+        strcpy(result, "No result");
     }
-    return success;
+
+    int retval = OK;
+    int success = pclose(sysFile);
+    if (success) {
+        retval = FAIL;
+        LOG(logERROR, ("Executing cmd[%s]:%s\n", cmd, result));
+    } else {
+        LOG(level, ("Result:\n[%s]\n", result));
+    }
+
+    return retval;
 }
 
 int M_nofunc(int file_des) {
@@ -9271,13 +9321,33 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
             LOG(logINFO, ("\tServer Name: %s\n", serverName));
         }
 
+        // in same folder as current process (will also work for virtual then
+        // with write permissions)
+        {
+            const int fileNameSize = 128;
+            char fname[fileNameSize];
+            if (getAbsPath(fname, fileNameSize, serverName) == FAIL) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not %s. Could not get abs path of current "
+                        "process\n",
+                        functionType);
+                LOG(logERROR, (mess));
+                Server_SendResult(file_des, INT32, NULL, 0);
+            } else {
+                strcpy(serverName, fname);
+            }
+        }
+
+        if (ret == OK) {
 #if defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(EIGERD)
-        receive_program_default(file_des, index, functionType, filesize,
-                                checksum, serverName);
+            receive_program_default(file_des, index, functionType, filesize,
+                                    checksum, serverName);
 #else
-        receive_program_via_blackfin(file_des, index, functionType, filesize,
-                                     checksum, serverName);
+            receive_program_via_blackfin(file_des, index, functionType,
+                                         filesize, checksum, serverName);
 #endif
+        }
 
         if (ret == OK) {
             LOG(logINFOGREEN, ("%s completed successfully\n", functionType));
@@ -9475,20 +9545,16 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
                               "update detector server");
         // extra step to write to temp and move to real file as
         // fopen will give text busy if opening same name as process name
-        char dest[MAX_STR_LENGTH] = {0};
-        sprintf(dest, "%s%s",
-                (myDetectorType == EIGER ? "/home/root/executables/" : ""),
-                serverName);
-
         if (ret == OK) {
-            ret = moveBinaryFile(mess, dest, TEMP_PROG_FILE_NAME,
+            ret = moveBinaryFile(mess, serverName, TEMP_PROG_FILE_NAME,
                                  "update detector server");
         }
         if (ret == OK) {
-            ret = verifyChecksumFromFile(mess, functionType, checksum, dest);
+            ret = verifyChecksumFromFile(mess, functionType, checksum,
+                                         serverName);
         }
         if (ret == OK) {
-            ret = setupDetectorServer(mess, dest);
+            ret = setupDetectorServer(mess, serverName);
         }
         break;
 #endif
@@ -9502,4 +9568,42 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
     // free resources
     free(src);
 #endif
+}
+
+int get_update_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+    LOG(logDEBUG1, ("Getting update mode\n"));
+
+    retval = updateFlag;
+    LOG(logDEBUG1, ("update mode retval: %d\n", retval));
+
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_update_mode(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting update mode to \n", arg));
+
+    switch (arg) {
+    case 0:
+        ret = deleteFile(mess, UPDATE_FILE, "unset update mode");
+        break;
+    case 1:
+        ret = createEmptyFile(mess, UPDATE_FILE, "set update mode");
+        break;
+    default:
+        ret = FAIL;
+        sprintf(mess, "Could not set updatemode. Options: 0 or 1\n");
+        LOG(logERROR, (mess));
+        break;
+    }
+
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

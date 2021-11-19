@@ -2912,7 +2912,7 @@ std::string CmdProxy::UpdateKernel(int action) {
               "path]\n\t[Jungfrau][Ctb][Moench][Mythen3]["
               "Gotthard2] Advanced Command!! You could damage the detector. "
               "Please use"
-              "with caution.\n\tUpdates the kernel image. Then, detector "
+              " with caution.\n\tUpdates the kernel image. Then, detector "
               "controller "
               "reboots with new kernel."
            << '\n';

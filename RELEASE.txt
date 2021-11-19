@@ -19,21 +19,65 @@ This document describes the differences between vx.x.x and v6.0.0.
 
 1. New or Changed Features
 ==========================
-- kernelversion
-- updatekernel
-- updatedetectorserver
-- update (without pcname)
+
+    API
+    ---
+
+    1.  Kernel version
+        Commandline: kernelversion, API: getKernelVersion
+
+    2.  [Jungfrau][Mythen3][Gotthard2][Gotthard][Moench][Ctb]
+        Update Kernel
+        Commandline: updatekernel, API: updatekernel
+        You could damage the detector. Please use with caution.
+
+    3.  Update Detector Server (no tftp)
+        Commandline: updatedetectorserver, API: updateDetectorServer
+        Updates the detector server without using tftp. It also creates a 
+        symbolic link to a shorter name and reboots. The API using tftp
+        (copydetectorserver) is deprecated.
+
+    4.  Update Firmware and Server (no tftp)
+        Commandline: update (fewer arguments), API: updateFirmwareAndServer 
+        (overloaded) Same as before, except the server is transferred to the 
+        detector without tftp. The previous API and command (fewer arguments) 
+        using tftp is deprecated.
 
 
 2. Resolved Issues
 ==================
 
-- setting rx_hostname to none threw an exception. fixed.
-- rx id in config file was not taken into account. fixed.
-- programming firmware failure for blackfin, fixed but requires new kernel.
-- nios kernel check updated (ensuring right kernel)
-- executecommand now says which module failed
-- programming firmware did not delete temporary file created. fixed.
+    Detector Server
+    ---------------
+    
+    1.  [Jungfrau][Moench][Ctb] Programming Firmware Failures 
+        Firmware programming via software failures are fixed using a new kernel 
+        and corresponding changes in server software. Software works with both 
+        old and new kernels.
+
+    2.  [Gotthard2][Mythen3]  
+        Verifies kernel version at server start up.
+
+
+    Client
+    ------
+
+    1.  Receiver Id in the commands in config files were ignored. Fixed.
+
+    2.  Execute command now also mentions which module failed.
+
+    3.  [Jungfrau][Moench][Ctb] 
+        Programming firmware procedure did not delete temporary file created in 
+        6.0.0. Fixed.
+
+
+    Receiver
+    --------
+
+    1.  Setting receiver hostname to "none" threw an exception. Fixed.
+
+
+
 
 3. Known Issues
 ===============

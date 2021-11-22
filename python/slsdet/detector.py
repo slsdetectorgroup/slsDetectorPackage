@@ -2515,6 +2515,7 @@ class Detector(CppDetectorApi):
         -----
         
         :getter: always returns in seconds. To get in datetime.delta, use getBurstPeriod
+        :setter: Not Implemented
 
         Example
         -----------

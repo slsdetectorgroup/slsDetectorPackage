@@ -1,7 +1,7 @@
-SLS Detector Package x.x.x released on xx.xx.2021
+SLS Detector Package 6.0.1 released on 23.11.2021
 ==================================================
 
-This document describes the differences between vx.x.x and v6.0.0.   
+This document describes the differences between v6.0.1 and v6.0.0.   
 
 
 
@@ -9,10 +9,9 @@ This document describes the differences between vx.x.x and v6.0.0.
     --------
     1.  New or Changed Features
     2.  Resolved Issues
-    3.  Known Issues
-    4.  Changes in Next Major Release
-    5.  Firmware Requirements
-    6.  Download, Documentation & Support
+    3.  Firmware Requirements
+    4.  Kernel Requirements
+    5.  Download, Documentation & Support
 
 
 
@@ -42,6 +41,16 @@ This document describes the differences between vx.x.x and v6.0.0.
         (overloaded) Same as before, except the server is transferred to the 
         detector without tftp. The previous API and command (fewer arguments) 
         using tftp is deprecated.
+
+    5.  Update mode in Detector server
+        Commandline: udpatemode, API set/getUpdateMode
+        One can set detector server to update mode (especially if server and 
+        firmware are incompatible that the server cannot start up without errors).
+        This mode will limit access to a few operations only needed to update the 
+        detector. Setting it will create an empty file (udpate.txt) and resetting
+        it will delete the empty file. Ofcourse, command line "--update" will 
+        overwrite any file detection and start server in update mode.
+
 
 
 2. Resolved Issues
@@ -78,13 +87,7 @@ This document describes the differences between vx.x.x and v6.0.0.
 
 
 
-
-3. Known Issues
-===============
-
-
-
-5. Firmware Requirements
+3. Firmware Requirements
 ========================
         
     Eiger
@@ -119,7 +122,6 @@ This document describes the differences between vx.x.x and v6.0.0.
 
     Detector Upgrade
     ================
-
     The following can be upgraded remotely:
     Eiger      via bit files
     Jungfrau   via command <.pof>
@@ -138,8 +140,31 @@ This document describes the differences between vx.x.x and v6.0.0.
 
 
 
+4. Kernel Requirements
+======================
 
-6. Download, Documentation & Support
+    Blackfin 
+    ========
+    Latest version: Fri Oct 29 00:00:00 2021
+
+    Nios
+    ====
+    Compatible version: Mon May 10 18:00:21 CEST 2021
+
+    Kernel Upgrade
+    ==============
+    Eiger   via bit files
+    Others  via command
+
+    Commands: udpatekernel, kernelversion
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+        https://slsdetectorgroup.github.io/devdoc/pydetector.html
+
+
+
+5. Download, Documentation & Support
 ====================================
 
     Download

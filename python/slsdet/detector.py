@@ -3437,10 +3437,10 @@ class Detector(CppDetectorApi):
         [Gotthard2][Mythen3] Frequency of clock in Hz. 
         
         Note
-        -----
+        ----
         
         :setter: Not implemented. Use clkdiv to set frequency
-        
+
         Example
         -------
         >>> d.clkfreq[0]

@@ -607,8 +607,7 @@ int createEmptyFile(char *mess, char *fname, char *errorPrefix) {
     char cmd[MAX_STR_LENGTH] = {0};
     char retvals[MAX_STR_LENGTH] = {0};
 
-    char *format = "touch %s";
-    if (snprintf(cmd, MAX_STR_LENGTH, format, fullname) >= MAX_STR_LENGTH) {
+    if (snprintf(cmd, MAX_STR_LENGTH, "touch %s", fullname) >= MAX_STR_LENGTH) {
         sprintf(mess, "Could not %s. Command to create is too long\n",
                 errorPrefix);
         LOG(logERROR, (mess));
@@ -641,9 +640,9 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
     if (access(fullname, F_OK) == 0) {
         char cmd[MAX_STR_LENGTH] = {0};
         char retvals[MAX_STR_LENGTH] = {0};
-        char *format = "rm %s";
 
-        if (snprintf(cmd, MAX_STR_LENGTH, format, fullname) >= MAX_STR_LENGTH) {
+        if (snprintf(cmd, MAX_STR_LENGTH, "rm %s", fullname) >=
+            MAX_STR_LENGTH) {
             sprintf(mess, "Could not %s. Command to delete is too long\n",
                     errorPrefix);
             LOG(logERROR, (mess));

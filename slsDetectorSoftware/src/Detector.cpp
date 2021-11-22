@@ -2195,7 +2195,7 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
     programFPGA(fname, pos);
 }
 
-Result<bool> Detector::getUpdateMode(Positions pos) {
+Result<bool> Detector::getUpdateMode(Positions pos) const {
     return pimpl->Parallel(&Module::getUpdateMode, pos);
 }
 

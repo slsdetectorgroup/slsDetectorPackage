@@ -2568,7 +2568,9 @@ void Module::rebootController() {
                  << "): Controller rebooted successfully!";
 }
 
-bool Module::getUpdateMode() { return sendToDetector<int>(F_GET_UPDATE_MODE); }
+bool Module::getUpdateMode() const {
+    return sendToDetector<int>(F_GET_UPDATE_MODE);
+}
 
 void Module::setUpdateMode(const bool updatemode) {
     sendToDetector(F_SET_UPDATE_MODE, static_cast<int>(updatemode), nullptr);

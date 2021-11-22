@@ -1787,7 +1787,7 @@ class Detector {
     void updateFirmwareAndServer(const std::string &sname,
                                  const std::string &fname, Positions pos = {});
 
-    Result<bool> getUpdateMode(Positions pos = {});
+    Result<bool> getUpdateMode(Positions pos = {}) const;
 
     /** Restarts detector server in update mode. This is useful when
      * server-firmware compatibility is at its worst and server cannot start up

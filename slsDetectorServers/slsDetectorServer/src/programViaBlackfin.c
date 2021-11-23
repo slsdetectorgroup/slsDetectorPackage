@@ -256,6 +256,12 @@ int allowKernelUpdate(char *mess) {
 #endif
     char retvals[MAX_STR_LENGTH] = {0};
     if (executeCommand(CMD_GET_AMD_FLASH, retvals, logDEBUG1) == FAIL) {
+        // no amd found
+        if (strstr(retvals, "No result") != NULL) {
+            LOG(logINFO, ("\tNot Amd Flash\n"));
+            return OK;
+        }
+        // could not figure out if amd
         snprintf(
             mess, MAX_STR_LENGTH,
             "Could not update %s. (Could not figure out if Amd flash: %s)\n",
@@ -263,23 +269,17 @@ int allowKernelUpdate(char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    // amd flash found
-    if (strlen(retvals) > 1) {
-        LOG(logINFO, ("\tAmd Flash found\n"));
-        // only current kernel works with amd flash
-        if (validateKernelVersion(KERNEL_DATE_VRSN_3GPIO) == FAIL) {
-            getKernelVersion(retvals);
-            snprintf(mess, MAX_STR_LENGTH,
-                     "Could not update %s. Kernel version %s is too old to "
-                     "update the Amd flash\n",
-                     messageType, retvals);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-    } else {
-        LOG(logINFO, ("\tNot Amd Flash\n"));
+    // amd, only current kernel works with amd flash
+    if (validateKernelVersion(KERNEL_DATE_VRSN_3GPIO) == FAIL) {
+        getKernelVersion(retvals);
+        snprintf(mess, MAX_STR_LENGTH,
+                 "Could not update %s. Kernel version %s is too old to "
+                 "update the Amd flash\n",
+                 messageType, retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
-    LOG(logINFO, ("\tKernel and flash ok for updating kernel\n"));
+    LOG(logINFO, ("\tAmd flash with compatible kernel version\n"));
     return OK;
 }
 

@@ -248,7 +248,7 @@ int emptyTempFolder(char *mess) {
 #endif
 }
 
-int allowKernelUpdate(char *mess) {
+int allowKernelUpdate(char *mess, char *functionType) {
     LOG(logINFO, ("\tVerifying kernel update allowed...\n"));
 
 #ifdef VIRTUAL
@@ -265,7 +265,7 @@ int allowKernelUpdate(char *mess) {
         snprintf(
             mess, MAX_STR_LENGTH,
             "Could not update %s. (Could not figure out if Amd flash: %s)\n",
-            messageType, retvals);
+            functionType, retvals);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -275,7 +275,7 @@ int allowKernelUpdate(char *mess) {
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not update %s. Kernel version %s is too old to "
                  "update the Amd flash\n",
-                 messageType, retvals);
+                 functionType, retvals);
         LOG(logERROR, (mess));
         return FAIL;
     }

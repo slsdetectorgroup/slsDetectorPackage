@@ -9374,7 +9374,7 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
     LOG(logERROR, (mess));
 #else
     // check kernel update is allowed  (Non Amd OR AMD + current kernel)
-    ret = allowKernelUpdate(mess);
+    ret = allowKernelUpdate(mess, functionType);
     if (ret == FAIL) {
         Server_SendResult(file_des, INT32, NULL, 0);
         return;

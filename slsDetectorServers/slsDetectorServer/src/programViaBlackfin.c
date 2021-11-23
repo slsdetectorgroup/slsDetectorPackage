@@ -10,6 +10,7 @@
 #include <sys/sysinfo.h>
 #include <unistd.h> // usleep
 
+#define BLACKFIN_DEFINED
 /* global variables */
 // clang-format off
 #define MAX_TIME_FPGA_TOUCH_FLASH_US (10 * 1000 * 1000) // 10s
@@ -248,8 +249,8 @@ int emptyTempFolder(char *mess) {
 #endif
 }
 
-int allowKernelUpdate(char *mess, char *functionType) {
-    LOG(logINFO, ("\tVerifying kernel update allowed...\n"));
+int allowUpdate(char *mess, char *functionType) {
+    LOG(logINFO, ("\tVerifying %s allowed...\n", functionType));
 
 #ifdef VIRTUAL
     return OK;

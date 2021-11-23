@@ -4143,20 +4143,28 @@ int copy_detector_server(int file_des) {
         LOG(logINFOBLUE, ("Copying server %s from host %s\n", sname, hostname));
         char cmd[MAX_STR_LENGTH] = {0};
 
+#if BLACKFIN_DEFINED
+        // check update is allowed  (Non Amd OR AMD + current kernel)
+        ret = allowUpdate(mess, "copy detector server");
+#endif
+
         // tftp server
-        if (snprintf(cmd, MAX_STR_LENGTH, "tftp %s -r %s -g", hostname,
-                     sname) >= MAX_STR_LENGTH) {
-            ret = FAIL;
-            strcpy(mess, "Could not copy detector server. Command to copy "
-                         "server too long\n");
-            LOG(logERROR, (mess));
-        } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-            ret = FAIL;
-            snprintf(mess, MAX_STR_LENGTH,
-                     "Could not copy detector server (tftp). %s\n", retvals);
-            // LOG(logERROR, (mess)); already printed in executecommand
-        } else {
-            LOG(logINFO, ("\tServer copied\n"));
+        if (ret == OK) {
+            if (snprintf(cmd, MAX_STR_LENGTH, "tftp %s -r %s -g", hostname,
+                         sname) >= MAX_STR_LENGTH) {
+                ret = FAIL;
+                strcpy(mess, "Could not copy detector server. Command to copy "
+                             "server too long\n");
+                LOG(logERROR, (mess));
+            } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+                ret = FAIL;
+                snprintf(mess, MAX_STR_LENGTH,
+                         "Could not copy detector server (tftp). %s\n",
+                         retvals);
+                // LOG(logERROR, (mess)); already printed in executecommand
+            } else {
+                LOG(logINFO, ("\tServer copied\n"));
+            }
         }
 
         if (ret == OK) {
@@ -9373,8 +9381,8 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
             functionType);
     LOG(logERROR, (mess));
 #else
-    // check kernel update is allowed  (Non Amd OR AMD + current kernel)
-    ret = allowKernelUpdate(mess, functionType);
+    // check update is allowed  (Non Amd OR AMD + current kernel)
+    ret = allowUpdate(mess, functionType);
     if (ret == FAIL) {
         Server_SendResult(file_des, INT32, NULL, 0);
         return;
@@ -9599,18 +9607,25 @@ int set_update_mode(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting update mode to \n", arg));
 
-    switch (arg) {
-    case 0:
-        ret = deleteFile(mess, UPDATE_FILE, "unset update mode");
-        break;
-    case 1:
-        ret = createEmptyFile(mess, UPDATE_FILE, "set update mode");
-        break;
-    default:
-        ret = FAIL;
-        sprintf(mess, "Could not set updatemode. Options: 0 or 1\n");
-        LOG(logERROR, (mess));
-        break;
+#if BLACKFIN_DEFINED
+    // check update is allowed  (Non Amd OR AMD + current kernel)
+    ret = allowUpdate(mess, "copy detector server");
+#endif
+
+    if (ret == OK) {
+        switch (arg) {
+        case 0:
+            ret = deleteFile(mess, UPDATE_FILE, "unset update mode");
+            break;
+        case 1:
+            ret = createEmptyFile(mess, UPDATE_FILE, "set update mode");
+            break;
+        default:
+            ret = FAIL;
+            sprintf(mess, "Could not set updatemode. Options: 0 or 1\n");
+            LOG(logERROR, (mess));
+            break;
+        }
     }
 
     return Server_SendResult(file_des, INT32, NULL, 0);

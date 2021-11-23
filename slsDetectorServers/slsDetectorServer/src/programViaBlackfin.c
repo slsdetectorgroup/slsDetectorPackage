@@ -35,6 +35,9 @@
 #define CMD_GET_FPGA_FLASH_DRIVE    "awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd"
 #define CMD_GET_KERNEL_FLASH_DRIVE  "awk \'$4== \"\\\"linux\" {print $1}\' /proc/mtd"
 
+
+#define CMD_GET_AMD_FLASH  "dmesg | grep Amd"
+
 #define FLASH_BUFFER_MEMORY_SIZE (128 * 1024) // 500 KB
 // clang-format on
 
@@ -243,6 +246,41 @@ int emptyTempFolder(char *mess) {
     LOG(logINFO, ("\tEmptied temp folder(%s)\n", TEMP_PROG_FOLDER_NAME));
     return OK;
 #endif
+}
+
+int allowKernelUpdate(char *mess) {
+    LOG(logINFO, ("\tVerifying kernel update allowed...\n"));
+
+#ifdef VIRTUAL
+    return OK;
+#endif
+    char retvals[MAX_STR_LENGTH] = {0};
+    if (executeCommand(CMD_GET_AMD_FLASH, retvals, logDEBUG1) == FAIL) {
+        snprintf(
+            mess, MAX_STR_LENGTH,
+            "Could not update %s. (Could not figure out if Amd flash: %s)\n",
+            messageType, retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // amd flash found
+    if (strlen(retvals) > 1) {
+        LOG(logINFO, ("\tAmd Flash found\n"));
+        // only current kernel works with amd flash
+        if (validateKernelVersion(KERNEL_DATE_VRSN_3GPIO) == FAIL) {
+            getKernelVersion(retvals);
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not update %s. Kernel version %s is too old to "
+                     "update the Amd flash\n",
+                     messageType, retvals);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+    } else {
+        LOG(logINFO, ("\tNot Amd Flash\n"));
+    }
+    LOG(logINFO, ("\tKernel and flash ok for updating kernel\n"));
+    return OK;
 }
 
 int preparetoCopyProgram(char *mess, char *functionType, FILE **fd,

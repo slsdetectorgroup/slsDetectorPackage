@@ -9255,10 +9255,11 @@ int get_kernel_version(int file_des) {
     ret = getKernelVersion(retvals);
     if (ret == FAIL) {
         if (snprintf(mess, MAX_STR_LENGTH, "Could not get kernel version. %s\n",
-                 retvals) >= MAX_STR_LENGTH) {
+                     retvals) >= MAX_STR_LENGTH) {
             ret = FAIL;
-            strcpy(mess, "Could not get kernel version. Reason too long to copy\n");
-        } 
+            strcpy(mess,
+                   "Could not get kernel version. Reason too long to copy\n");
+        }
         LOG(logERROR, (mess));
     } else {
         LOG(logDEBUG1, ("kernel version: [%s]\n", retvals));
@@ -9372,6 +9373,13 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
             functionType);
     LOG(logERROR, (mess));
 #else
+    // check kernel update is allowed  (Non Amd OR AMD + current kernel)
+    ret = allowKernelUpdate(mess);
+    if (ret == FAIL) {
+        Server_SendResult(file_des, INT32, NULL, 0);
+        return;
+    }
+
     // open file and allocate memory for part program
     FILE *fd = NULL;
     ret = preparetoCopyProgram(mess, functionType, &fd, filesize);

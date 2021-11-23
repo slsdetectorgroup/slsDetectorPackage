@@ -403,7 +403,8 @@ int verifyChecksum(char *mess, char *functionType, char *clientChecksum,
     if (strcmp(clientChecksum, checksum)) {
         sprintf(mess,
                 "Could not %s. Checksum of %s does not match. Client "
-                "checksum:%s, copied checksum:%s\n",
+                "checksum:%s, copied checksum:%. Please try again before "
+                "rebooting.\n",
                 functionType, msg, clientChecksum, checksum);
         LOG(logERROR, (mess));
         return FAIL;

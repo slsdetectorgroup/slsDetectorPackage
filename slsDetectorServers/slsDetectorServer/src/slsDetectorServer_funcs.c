@@ -9381,11 +9381,14 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
             functionType);
     LOG(logERROR, (mess));
 #else
-    // check update is allowed  (Non Amd OR AMD + current kernel)
-    ret = allowUpdate(mess, functionType);
-    if (ret == FAIL) {
-        Server_SendResult(file_des, INT32, NULL, 0);
-        return;
+    // only when writing to kernel flash or root directory
+    if (index != PROGRAM_FPGA) {
+        // check update is allowed  (Non Amd OR AMD + current kernel)
+        ret = allowUpdate(mess, functionType);
+        if (ret == FAIL) {
+            Server_SendResult(file_des, INT32, NULL, 0);
+            return;
+        }
     }
 
     // open file and allocate memory for part program

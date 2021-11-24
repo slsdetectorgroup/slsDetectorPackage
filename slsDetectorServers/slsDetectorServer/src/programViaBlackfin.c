@@ -275,7 +275,7 @@ int allowUpdate(char *mess, char *functionType) {
         getKernelVersion(retvals);
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not update %s. Kernel version %s is too old to "
-                 "update the Amd flash\n",
+                 "update the Amd flash. Most likely you will need to resuce this blackfin or get another one. Please contact us.\n",
                  functionType, retvals);
         LOG(logERROR, (mess));
         return FAIL;

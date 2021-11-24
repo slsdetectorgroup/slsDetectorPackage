@@ -81,7 +81,7 @@ endif()
 #Enable LTO if available
 include(CheckIPOSupported)
 check_ipo_supported(RESULT SLS_LTO_AVAILABLE)
-if if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
+if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     message(STATUS "Building with link time optimization")
 else()
     message(STATUS "Building without link time optimization")

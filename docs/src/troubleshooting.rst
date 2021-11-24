@@ -247,6 +247,19 @@ Possible causes could be the following:
     * For Jungfrau, refer to :ref:`Jungfrau Power Supply Troubleshooting<Jungfrau Troubleshooting Power Supply>`.
 
 
+Cannot ping module (Nios)
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you executed "reboot" command on the board, you cannot ping it anymore unless you power cycle. To reboot the controller, please use the software command ("rebootcontroller"), which talks to the microcontroller.
+
+Gotthard2
+---------
+
+Cannot get data without a module attached
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You cannot get data without a module attached as a specific pin is floating. Attach module to get data.
+
 
 Gotthard
 ----------

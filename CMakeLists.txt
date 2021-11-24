@@ -70,7 +70,11 @@ find_package(ClangFormat)
 #Enable LTO if available
 include(CheckIPOSupported)
 check_ipo_supported(RESULT SLS_LTO_AVAILABLE)
-message(STATUS "SLS_LTO_AVAILABLE:" ${SLS_LTO_AVAILABLE})
+if (SLS_LTO_AVAILABLE)
+    message(STATUS "Building with link time optimization")
+else()
+    message(STATUS "Link time optimization is not available")
+endif()
 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

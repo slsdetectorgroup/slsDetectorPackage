@@ -19,8 +19,8 @@ This document describes the differences between v6.0.1 and v6.0.0.
 1. New or Changed Features
 ==========================
 
-    API
-    ---
+    Client
+    ------
 
     1.  Kernel version
         Commandline: kernelversion, API: getKernelVersion
@@ -50,6 +50,14 @@ This document describes the differences between v6.0.1 and v6.0.0.
         detector. Setting it will create an empty file (udpate.txt) and resetting
         it will delete the empty file. Ofcourse, command line "--update" will 
         overwrite any file detection and start server in update mode.
+
+    
+    Detector Server
+    ---------------
+
+    1.  [Gotthard2] speed
+        Ensuring dbitpipeline is default when changing speed. This has an effect
+        only if dbitpipeline was changed in between.
 
 
 

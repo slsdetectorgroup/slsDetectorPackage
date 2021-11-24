@@ -67,6 +67,9 @@ This document describes the differences between v6.0.1 and v6.0.0.
     2.  [Gotthard2][Mythen3]  
         Verifies kernel version at server start up.
 
+    3.  [Jungfrau]
+        Verifies HW2.0 before trying to set read n rows or flip rows.
+
 
     Client
     ------
@@ -84,6 +87,11 @@ This document describes the differences between v6.0.1 and v6.0.0.
     --------
 
     1.  Setting receiver hostname to "none" threw an exception. Fixed.
+
+    2.  [Jungfrau]
+        Since the server verifies HW2.0 for number of rows before trying to set it, 
+        the receiver now does not show incorrect missing packets stemming from this 
+        issue.
 
 
 

@@ -4663,6 +4663,13 @@ int set_read_n_rows(int file_des) {
                         "of %d\n",
                         arg, READ_N_ROWS_MULTIPLE);
                 LOG(logERROR, (mess));
+            }         
+            // only for HW 2.0 (version = 3)
+            else if (isHardwareVersion2()) {
+                ret = FAIL;
+                strcpy(mess, "Could not set number of rows. Only available for "
+                            "Hardware Board version 2.0.\n");
+                LOG(logERROR, (mess));
             } else
 #endif
             {
@@ -4702,7 +4709,7 @@ int get_read_n_rows(int file_des) {
     retval = getReadNRows();
     if (retval == -1) {
         ret = FAIL;
-        sprintf(mess, "Could not get numbr of rows. \n");
+        sprintf(mess, "Could not get number of rows. \n");
         LOG(logERROR, (mess));
     } else {
         LOG(logDEBUG1, ("number of rows retval: %u\n", retval));

@@ -501,12 +501,14 @@ void setupDetector() {
     // temp threshold and reset event
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
     setTemperatureEvent(0);
-    setFlipRows(DEFAULT_FLIP_ROWS);
     if (getChipVersion() == 11) {
         setFilterResistor(DEFAULT_FILTER_RESISTOR);
         setNumberOfFilterCells(DEFAULT_FILTER_CELL);
     }
-    setReadNRows(MAX_ROWS_PER_READOUT);
+    if (!isHardwareVersion2()) {
+        setFlipRows(DEFAULT_FLIP_ROWS);
+        setReadNRows(MAX_ROWS_PER_READOUT);
+    }
 }
 
 int resetToDefaultDacs(int hardReset) {
@@ -1671,6 +1673,11 @@ int setReadNRows(int value) {
         LOG(logERROR, ("Invalid number of rows %d\n", value));
         return FAIL;
     }
+    if (isHardwareVersion2()) {
+        LOG(logERROR, ("Could not set number of rows. Only available for "
+                    "Hardware Board version 2.0.\n"));
+        return FAIL;
+    }
 
     // regval is numpackets - 1
     int regval = (value / READ_N_ROWS_MULTIPLE) - 1;
@@ -1679,7 +1686,6 @@ int setReadNRows(int value) {
     bus_w(addr, bus_r(addr) & ~READ_N_ROWS_NUM_ROWS_MSK);
     bus_w(addr, bus_r(addr) | ((regval << READ_N_ROWS_NUM_ROWS_OFST) &
                                READ_N_ROWS_NUM_ROWS_MSK));
-
     if (value == MAX_ROWS_PER_READOUT) {
         LOG(logINFO, ("Disabling Partial Readout (#rows)\n"));
         bus_w(addr, bus_r(addr) & ~READ_N_ROWS_ENBL_MSK);
@@ -1691,6 +1697,10 @@ int setReadNRows(int value) {
 }
 
 int getReadNRows() {
+    // cannot set it in old board
+    if (isHardwareVersion2()) {
+        return MAX_ROWS_PER_READOUT;
+    }
     int enable = (bus_r(READ_N_ROWS_REG) & READ_N_ROWS_ENBL_MSK);
     int regval = ((bus_r(READ_N_ROWS_REG) & READ_N_ROWS_NUM_ROWS_MSK) >>
                   READ_N_ROWS_NUM_ROWS_OFST);
@@ -2163,6 +2173,11 @@ int getFlipRows() {
 }
 
 void setFlipRows(int arg) {
+    if (isHardwareVersion2()) {
+        LOG(logERROR, ("Could not set flip rows. Only available for "
+                "Hardware Board version 2.0.\n"));
+        return;
+    }
     if (arg >= 0) {
         if (arg == 0) {
             LOG(logINFO, ("Switching off bottom row flipping\n"));

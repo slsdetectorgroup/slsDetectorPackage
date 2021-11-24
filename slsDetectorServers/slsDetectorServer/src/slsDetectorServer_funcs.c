@@ -4143,7 +4143,7 @@ int copy_detector_server(int file_des) {
         LOG(logINFOBLUE, ("Copying server %s from host %s\n", sname, hostname));
         char cmd[MAX_STR_LENGTH] = {0};
 
-#if BLACKFIN_DEFINED
+#ifdef BLACKFIN_DEFINED
         // check update is allowed  (Non Amd OR AMD + current kernel)
         ret = allowUpdate(mess, "copy detector server");
 #endif
@@ -9610,9 +9610,9 @@ int set_update_mode(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting update mode to \n", arg));
 
-#if BLACKFIN_DEFINED
+#ifdef BLACKFIN_DEFINED
     // check update is allowed  (Non Amd OR AMD + current kernel)
-    ret = allowUpdate(mess, "copy detector server");
+    ret = allowUpdate(mess, "set/unset update mode");
 #endif
 
     if (ret == OK) {

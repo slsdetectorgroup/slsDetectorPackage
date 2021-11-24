@@ -67,14 +67,7 @@ set(ClangFormat_EXCLUDE_PATTERNS    "build/"
                                     ${CMAKE_BINARY_DIR})
 find_package(ClangFormat)
 
-#Enable LTO if available
-include(CheckIPOSupported)
-check_ipo_supported(RESULT SLS_LTO_AVAILABLE)
-if (SLS_LTO_AVAILABLE)
-    message(STATUS "Building with link time optimization")
-else()
-    message(STATUS "Link time optimization is not available")
-endif()
+
 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -82,6 +75,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "No build type selected, default to Release")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default Release)" FORCE)
+endif()
+
+
+#Enable LTO if available
+include(CheckIPOSupported)
+check_ipo_supported(RESULT SLS_LTO_AVAILABLE)
+if if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
+    message(STATUS "Building with link time optimization")
+else()
+    message(STATUS "Building without link time optimization")
 endif()
 
 

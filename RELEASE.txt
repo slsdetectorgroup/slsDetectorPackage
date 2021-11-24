@@ -69,6 +69,7 @@ This document describes the differences between v6.0.1 and v6.0.0.
 
     3.  [Jungfrau]
         Verifies HW2.0 before trying to set read n rows or flip rows.
+        Has no effect when not using slsReceiver.
 
 
     Client

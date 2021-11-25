@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 
+#define BLACKFIN_DEFINED
+
 int defineGPIOpins(char *mess);
 int FPGAdontTouchFlash(char *mess);
 int FPGATouchFlash(char *mess);

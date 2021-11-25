@@ -1,4 +1,4 @@
-SLS Detector Package 6.0.1 released on 23.11.2021
+SLS Detector Package 6.0.1 released on 24.11.2021
 ==================================================
 
 This document describes the differences between v6.0.1 and v6.0.0.   
@@ -19,8 +19,8 @@ This document describes the differences between v6.0.1 and v6.0.0.
 1. New or Changed Features
 ==========================
 
-    API
-    ---
+    Client
+    ------
 
     1.  Kernel version
         Commandline: kernelversion, API: getKernelVersion
@@ -51,6 +51,14 @@ This document describes the differences between v6.0.1 and v6.0.0.
         it will delete the empty file. Ofcourse, command line "--update" will 
         overwrite any file detection and start server in update mode.
 
+    
+    Detector Server
+    ---------------
+
+    1.  [Gotthard2] speed
+        Ensuring dbitpipeline is default when changing speed. This has an effect
+        only if dbitpipeline was changed in between.
+
 
 
 2. Resolved Issues
@@ -66,6 +74,10 @@ This document describes the differences between v6.0.1 and v6.0.0.
 
     2.  [Gotthard2][Mythen3]  
         Verifies kernel version at server start up.
+
+    3.  [Jungfrau]
+        Verifies HW2.0 before trying to set read n rows or flip rows.
+        Has no effect when not using slsReceiver.
 
 
     Client
@@ -84,6 +96,11 @@ This document describes the differences between v6.0.1 and v6.0.0.
     --------
 
     1.  Setting receiver hostname to "none" threw an exception. Fixed.
+
+    2.  [Jungfrau]
+        Since the server verifies HW2.0 for number of rows before trying to set it, 
+        the receiver now does not show incorrect missing packets stemming from this 
+        issue.
 
 
 

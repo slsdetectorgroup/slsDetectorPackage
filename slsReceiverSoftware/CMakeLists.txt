@@ -104,7 +104,7 @@ if (SLS_USE_RECEIVER_BINARIES)
     set_target_properties(slsReceiver PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
-    if(SLS_LTO_AVAILABLE)
+    if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
         set_property(TARGET slsReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
 
@@ -124,7 +124,7 @@ if (SLS_USE_RECEIVER_BINARIES)
     set_target_properties(slsMultiReceiver PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
-    if(SLS_LTO_AVAILABLE)
+    if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
         set_property(TARGET slsMultiReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
 

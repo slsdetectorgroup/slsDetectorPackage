@@ -67,9 +67,11 @@
 #define SPEED_144_CLKDIV_0       (6)
 #define SPEED_144_CLKDIV_1       (6)
 #define SPEED_144_CLKPHASE_DEG_1 (122) // 125 not possible
+#define SPEED_144_DBIT_PIPELINE (1) 
 #define SPEED_108_CLKDIV_0       (8)
 #define SPEED_108_CLKDIV_1       (8)
 #define SPEED_108_CLKPHASE_DEG_1 (268) // 270 not possible
+#define SPEED_108_DBIT_PIPELINE (1) 
 
 /* Firmware Definitions */
 #define FIXED_PLL_FREQUENCY     (20000000)  // 20MHz

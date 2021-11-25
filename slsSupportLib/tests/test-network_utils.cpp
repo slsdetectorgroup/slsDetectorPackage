@@ -115,7 +115,7 @@ TEST_CASE("Copy construct a MacAddr") {
 }
 
 TEST_CASE("udp dst struct basic properties") {
-    static_assert(sizeof(UdpDestination) == 36);
+    static_assert(sizeof(UdpDestination) == 36, "udpDestination struct size does not match");
     UdpDestination dst{};
     REQUIRE(dst.entry == 0);
     REQUIRE(dst.port == 0);

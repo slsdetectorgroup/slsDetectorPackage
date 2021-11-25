@@ -4143,7 +4143,7 @@ int copy_detector_server(int file_des) {
         LOG(logINFOBLUE, ("Copying server %s from host %s\n", sname, hostname));
         char cmd[MAX_STR_LENGTH] = {0};
 
-#if BLACKFIN_DEFINED
+#ifdef BLACKFIN_DEFINED
         // check update is allowed  (Non Amd OR AMD + current kernel)
         ret = allowUpdate(mess, "copy detector server");
 #endif
@@ -4663,6 +4663,13 @@ int set_read_n_rows(int file_des) {
                         "of %d\n",
                         arg, READ_N_ROWS_MULTIPLE);
                 LOG(logERROR, (mess));
+            }         
+            // only for HW 2.0 (version = 3)
+            else if (isHardwareVersion2()) {
+                ret = FAIL;
+                strcpy(mess, "Could not set number of rows. Only available for "
+                            "Hardware Board version 2.0.\n");
+                LOG(logERROR, (mess));
             } else
 #endif
             {
@@ -4702,7 +4709,7 @@ int get_read_n_rows(int file_des) {
     retval = getReadNRows();
     if (retval == -1) {
         ret = FAIL;
-        sprintf(mess, "Could not get numbr of rows. \n");
+        sprintf(mess, "Could not get number of rows. \n");
         LOG(logERROR, (mess));
     } else {
         LOG(logDEBUG1, ("number of rows retval: %u\n", retval));
@@ -9389,11 +9396,14 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
             functionType);
     LOG(logERROR, (mess));
 #else
-    // check update is allowed  (Non Amd OR AMD + current kernel)
-    ret = allowUpdate(mess, functionType);
-    if (ret == FAIL) {
-        Server_SendResult(file_des, INT32, NULL, 0);
-        return;
+    // only when writing to kernel flash or root directory
+    if (index != PROGRAM_FPGA) {
+        // check update is allowed  (Non Amd OR AMD + current kernel)
+        ret = allowUpdate(mess, functionType);
+        if (ret == FAIL) {
+            Server_SendResult(file_des, INT32, NULL, 0);
+            return;
+        }
     }
 
     // open file and allocate memory for part program
@@ -9615,9 +9625,9 @@ int set_update_mode(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting update mode to \n", arg));
 
-#if BLACKFIN_DEFINED
+#ifdef BLACKFIN_DEFINED
     // check update is allowed  (Non Amd OR AMD + current kernel)
-    ret = allowUpdate(mess, "copy detector server");
+    ret = allowUpdate(mess, "set/unset update mode");
 #endif
 
     if (ret == OK) {

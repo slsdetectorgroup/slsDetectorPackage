@@ -39,7 +39,7 @@ foreach(exe ${MOENCH_EXECUTABLES})
     set_target_properties(${exe}  PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
-    if(SLS_LTO_AVAILABLE)
+    if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
         set_property(TARGET ${exe} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
 

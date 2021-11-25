@@ -1557,32 +1557,47 @@ TEST_CASE("readnrows", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getReadNRows();
-        {
-            std::ostringstream oss;
-            proxy.Call("readnrows", {"256"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "readnrows 256\n");
+        bool jungfrauhw2 = false;
+        if (det_type == defs::JUNGFRAU &&
+            !(det.getSerialNumber().tsquash(
+                  "inconsistent serial number to test") &
+              0x20000)) {
+            jungfrauhw2 = true;
         }
-        {
-            std::ostringstream oss;
-            proxy.Call("readnrows", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "readnrows 256\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("readnrows", {"16"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "readnrows 16\n");
-        }
-        if (det_type == defs::JUNGFRAU) {
-            REQUIRE_THROWS(proxy.Call("readnrows", {"7"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("readnrows", {"20"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("readnrows", {"44"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("readnrows", {"513"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("readnrows", {"1"}, -1, PUT));
-        }
-        REQUIRE_THROWS(proxy.Call("readnrows", {"0"}, -1, PUT));
-        for (int i = 0; i != det.size(); ++i) {
-            det.setReadNRows(prev_val[i], {i});
+        if (jungfrauhw2) {
+            {
+                std::ostringstream oss;
+                proxy.Call("readnrows", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "readnrows 512\n");
+            }
+        } else {
+            auto prev_val = det.getReadNRows();
+            {
+                std::ostringstream oss;
+                proxy.Call("readnrows", {"256"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "readnrows 256\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("readnrows", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "readnrows 256\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("readnrows", {"16"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "readnrows 16\n");
+            }
+            if (det_type == defs::JUNGFRAU) {
+                REQUIRE_THROWS(proxy.Call("readnrows", {"7"}, -1, PUT));
+                REQUIRE_THROWS(proxy.Call("readnrows", {"20"}, -1, PUT));
+                REQUIRE_THROWS(proxy.Call("readnrows", {"44"}, -1, PUT));
+                REQUIRE_THROWS(proxy.Call("readnrows", {"513"}, -1, PUT));
+                REQUIRE_THROWS(proxy.Call("readnrows", {"1"}, -1, PUT));
+            }
+            REQUIRE_THROWS(proxy.Call("readnrows", {"0"}, -1, PUT));
+            for (int i = 0; i != det.size(); ++i) {
+                det.setReadNRows(prev_val[i], {i});
+            }
         }
     } else {
         REQUIRE_THROWS(proxy.Call("readnrows", {}, -1, GET));

@@ -4705,7 +4705,6 @@ int get_read_n_rows(int file_des) {
 #if !defined(EIGERD) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
-    // get only
     retval = getReadNRows();
     if (retval == -1) {
         ret = FAIL;
@@ -8685,7 +8684,7 @@ int get_flip_rows(int file_des) {
     // only for HW 2.0 (version = 3)
     if (isHardwareVersion2()) {
         ret = FAIL;
-        strcpy(mess, "Could not set flip rows. Only available for "
+        strcpy(mess, "Could not get flip rows. Only available for "
                      "Hardware Board version 2.0.\n");
         LOG(logERROR, (mess));
     } else {

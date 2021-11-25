@@ -261,86 +261,6 @@ TEST_CASE("settings", "[.cmd]") {
     }
 }
 
-TEST_CASE("thresholdnotb", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        auto prev_threshold = det.getThresholdEnergy();
-        auto prev_energies =
-            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
-        if (!prev_energies.empty()) {
-            std::string senergy = std::to_string(prev_energies[0]);
-            std::ostringstream oss1, oss2;
-            proxy.Call("thresholdnotb", {senergy, "standard"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() ==
-                    "thresholdnotb [" + senergy + ", standard]\n");
-            proxy.Call("threshold", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "threshold " + senergy + "\n");
-            REQUIRE_THROWS(proxy.Call("thresholdnotb",
-                                      {senergy, senergy, senergy, "standard"},
-                                      -1, PUT));
-            REQUIRE_THROWS(
-                proxy.Call("thresholdnotb", {senergy, "undefined"}, -1, PUT));
-            det.setTrimEnergies(prev_energies);
-            for (int i = 0; i != det.size(); ++i) {
-                if (prev_threshold[i] >= 0) {
-                    det.setThresholdEnergy(prev_threshold[i], defs::STANDARD,
-                                           false, {i});
-                }
-            }
-        }
-        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
-    } else if (det_type == defs::MYTHEN3) {
-        auto prev_threshold = det.getAllThresholdEnergy();
-        auto prev_settings =
-            det.getSettings().tsquash("inconsistent settings to test");
-        auto prev_energies =
-            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
-        if (!prev_energies.empty()) {
-            std::string senergy = std::to_string(prev_energies[0]);
-            std::ostringstream oss1, oss2;
-            proxy.Call("thresholdnotb", {senergy, "standard"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() ==
-                    "thresholdnotb [" + senergy + ", standard]\n");
-            proxy.Call("threshold", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "threshold [" + senergy + ", " + senergy +
-                                      ", " + senergy + "]\n");
-            std::string senergy2 = std::to_string(prev_energies[1]);
-            std::string senergy3 = std::to_string(prev_energies[2]);
-            std::ostringstream oss3, oss4;
-            proxy.Call("thresholdnotb",
-                       {senergy, senergy2, senergy3, "standard"}, -1, PUT,
-                       oss3);
-            REQUIRE(oss3.str() == "thresholdnotb [" + senergy + ", " +
-                                      senergy2 + ", " + senergy3 +
-                                      ", standard]\n");
-            proxy.Call("threshold", {}, -1, GET, oss4);
-            REQUIRE(oss4.str() == "threshold [" + senergy + ", " + senergy2 +
-                                      ", " + senergy3 + "]\n");
-
-            REQUIRE_THROWS(proxy.Call("thresholdnotb",
-                                      {senergy, senergy, "standard"}, -1, PUT));
-            REQUIRE_THROWS(
-                proxy.Call("thresholdnotb", {senergy, "undefined"}, -1, PUT));
-            REQUIRE_NOTHROW(proxy.Call("thresholdnotb", {senergy}, -1, PUT));
-            REQUIRE_NOTHROW(proxy.Call("thresholdnotb",
-                                       {senergy, senergy2, senergy3}, -1, PUT));
-            det.setTrimEnergies(prev_energies);
-            for (int i = 0; i != det.size(); ++i) {
-                if (prev_threshold[i][0] >= 0) {
-                    det.setThresholdEnergy(prev_threshold[i], prev_settings,
-                                           true, {i});
-                }
-            }
-        }
-        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
-    } else {
-        REQUIRE_THROWS(proxy.Call("thresholdnotb", {}, -1, GET));
-    }
-}
-
 TEST_CASE("threshold", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -418,6 +338,86 @@ TEST_CASE("threshold", "[.cmd]") {
         REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
     } else {
         REQUIRE_THROWS(proxy.Call("threshold", {}, -1, GET));
+    }
+}
+
+TEST_CASE("thresholdnotb", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_threshold = det.getThresholdEnergy();
+        auto prev_energies =
+            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
+        if (!prev_energies.empty()) {
+            std::string senergy = std::to_string(prev_energies[0]);
+            std::ostringstream oss1, oss2;
+            proxy.Call("thresholdnotb", {senergy, "standard"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() ==
+                    "thresholdnotb [" + senergy + ", standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "threshold " + senergy + "\n");
+            REQUIRE_THROWS(proxy.Call("thresholdnotb",
+                                      {senergy, senergy, senergy, "standard"},
+                                      -1, PUT));
+            REQUIRE_THROWS(
+                proxy.Call("thresholdnotb", {senergy, "undefined"}, -1, PUT));
+            det.setTrimEnergies(prev_energies);
+            for (int i = 0; i != det.size(); ++i) {
+                if (prev_threshold[i] >= 0) {
+                    det.setThresholdEnergy(prev_threshold[i], defs::STANDARD,
+                                           false, {i});
+                }
+            }
+        }
+        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
+    } else if (det_type == defs::MYTHEN3) {
+        auto prev_threshold = det.getAllThresholdEnergy();
+        auto prev_settings =
+            det.getSettings().tsquash("inconsistent settings to test");
+        auto prev_energies =
+            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
+        if (!prev_energies.empty()) {
+            std::string senergy = std::to_string(prev_energies[0]);
+            std::ostringstream oss1, oss2;
+            proxy.Call("thresholdnotb", {senergy, "standard"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() ==
+                    "thresholdnotb [" + senergy + ", standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "threshold [" + senergy + ", " + senergy +
+                                      ", " + senergy + "]\n");
+            std::string senergy2 = std::to_string(prev_energies[1]);
+            std::string senergy3 = std::to_string(prev_energies[2]);
+            std::ostringstream oss3, oss4;
+            proxy.Call("thresholdnotb",
+                       {senergy, senergy2, senergy3, "standard"}, -1, PUT,
+                       oss3);
+            REQUIRE(oss3.str() == "thresholdnotb [" + senergy + ", " +
+                                      senergy2 + ", " + senergy3 +
+                                      ", standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss4);
+            REQUIRE(oss4.str() == "threshold [" + senergy + ", " + senergy2 +
+                                      ", " + senergy3 + "]\n");
+
+            REQUIRE_THROWS(proxy.Call("thresholdnotb",
+                                      {senergy, senergy, "standard"}, -1, PUT));
+            REQUIRE_THROWS(
+                proxy.Call("thresholdnotb", {senergy, "undefined"}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("thresholdnotb", {senergy}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("thresholdnotb",
+                                       {senergy, senergy2, senergy3}, -1, PUT));
+            det.setTrimEnergies(prev_energies);
+            for (int i = 0; i != det.size(); ++i) {
+                if (prev_threshold[i][0] >= 0) {
+                    det.setThresholdEnergy(prev_threshold[i], prev_settings,
+                                           true, {i});
+                }
+            }
+        }
+        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("thresholdnotb", {}, -1, GET));
     }
 }
 
@@ -543,7 +543,7 @@ TEST_CASE("fliprows", "[.cmd]") {
     bool jungfrauhw2 = false;
     if (det_type == defs::JUNGFRAU &&
         ((det.getSerialNumber().tsquash("inconsistent serial number to test") &
-         0x30000) == 0x30000)) {
+          0x30000) == 0x30000)) {
         jungfrauhw2 = true;
     }
     if (det_type == defs::EIGER || jungfrauhw2) {
@@ -1560,8 +1560,8 @@ TEST_CASE("readnrows", "[.cmd]") {
         bool jungfrauhw2 = false;
         if (det_type == defs::JUNGFRAU &&
             ((det.getSerialNumber().tsquash(
-                 "inconsistent serial number to test") &
-             0x30000) == 0x30000)) {
+                  "inconsistent serial number to test") &
+              0x30000) == 0x30000)) {
             jungfrauhw2 = true;
         }
         if (!jungfrauhw2) {

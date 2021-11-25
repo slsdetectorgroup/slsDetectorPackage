@@ -8735,8 +8735,16 @@ int get_num_filter_cells(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    retval = getNumberOfFilterCells();
-    LOG(logDEBUG1, ("num filter cells retval: %u\n", retval));
+    // only for chipv1.1
+    if (getChipVersion() == 10) {
+        ret = FAIL;
+        strcpy(mess, "Could not get number of filter cells. Only available for "
+                     "chip version 1.1\n");
+        LOG(logERROR, (mess));
+    } else {
+        retval = getNumberOfFilterCells();
+        LOG(logDEBUG1, ("num filter cells retval: %u\n", retval));
+    }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

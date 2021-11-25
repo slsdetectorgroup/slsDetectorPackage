@@ -1564,7 +1564,7 @@ TEST_CASE("readnrows", "[.cmd]") {
               0x20000)) {
             jungfrauhw2 = true;
         }
-        if (jungfrauhw2) {
+        if (!jungfrauhw2) {
             {
                 std::ostringstream oss;
                 proxy.Call("readnrows", {}, -1, GET, oss);

@@ -542,8 +542,8 @@ TEST_CASE("fliprows", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     bool jungfrauhw2 = false;
     if (det_type == defs::JUNGFRAU &&
-        !((det.getSerialNumber().tsquash("inconsistent serial number to test") &
-          0x20000) == 0x2000)) {
+        (det.getSerialNumber().tsquash("inconsistent serial number to test") &
+         0x30000)) {
         jungfrauhw2 = true;
     }
     if (det_type == defs::EIGER || jungfrauhw2) {
@@ -1559,9 +1559,9 @@ TEST_CASE("readnrows", "[.cmd]") {
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
         bool jungfrauhw2 = false;
         if (det_type == defs::JUNGFRAU &&
-            !(det.getSerialNumber().tsquash(
-                  "inconsistent serial number to test") &
-              0x20000)) {
+            (det.getSerialNumber().tsquash(
+                 "inconsistent serial number to test") &
+             0x30000)) {
             jungfrauhw2 = true;
         }
         if (!jungfrauhw2) {

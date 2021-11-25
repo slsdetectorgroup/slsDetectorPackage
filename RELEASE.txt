@@ -79,6 +79,11 @@ This document describes the differences between v6.0.1 and v6.0.0.
         Verifies HW2.0 before trying to set read n rows or flip rows.
         Has no effect when not using slsReceiver.
 
+    4.  [Eiger]
+        Thresholdnotb command loads threshold energy without trimbits, but had 
+        a bug in the server that was setting nchip to 0 and further trimval or 
+        trim commands would no work reliably. This is fixed now.
+
 
     Client
     ------

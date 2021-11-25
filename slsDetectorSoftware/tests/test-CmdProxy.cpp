@@ -540,7 +540,11 @@ TEST_CASE("fliprows", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
+    bool jungfrauhw2 = false;
+    if (det_type == defs::JUNGFRAU && det.getSerialNumber() & 0x20000) {
+        jungfrauhw2 = true;
+    }
+    if (det_type == defs::EIGER || jungfrauhw2) {
         auto previous = det.getFlipRows();
         auto previous_numudp = det.getNumberofUDPInterfaces();
         if (det_type == defs::JUNGFRAU) {

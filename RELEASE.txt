@@ -1,4 +1,4 @@
-SLS Detector Package 6.0.1 released on 24.11.2021
+SLS Detector Package 6.0.1 released on 25.11.2021
 ==================================================
 
 This document describes the differences between v6.0.1 and v6.0.0.   
@@ -168,6 +168,9 @@ This document describes the differences between v6.0.1 and v6.0.0.
     Blackfin 
     ========
     Latest version: Fri Oct 29 00:00:00 2021
+    
+    Older ones will work, but might have issues with programming firmware via
+    the package.
 
     Nios
     ====

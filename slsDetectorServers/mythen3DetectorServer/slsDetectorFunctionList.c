@@ -96,8 +96,9 @@ void basictests() {
     }
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
-        ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) || (checkType() == FAIL) ||
-         (testFpga() == FAIL) || (testBus() == FAIL))) {
+        ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) ||
+         (checkType() == FAIL) || (testFpga() == FAIL) ||
+         (testBus() == FAIL))) {
         strcpy(initErrorMessage, "Could not pass basic tests of FPGA and bus. "
                                  "Dangerous to continue.\n");
         LOG(logERROR, ("%s\n\n", initErrorMessage));
@@ -2487,9 +2488,6 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
     LOG(logDEBUG1, ("DACs: src %d, dest %d\n", srcMod->ndac, destMod->ndac));
     LOG(logDEBUG1, ("Chans: src %d, dest %d\n", srcMod->nchan, destMod->nchan));
-    destMod->ndac = srcMod->ndac;
-    destMod->nchip = srcMod->nchip;
-    destMod->nchan = srcMod->nchan;
     if (srcMod->reg >= 0)
         destMod->reg = srcMod->reg;
     /*
@@ -2505,7 +2503,7 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
     LOG(logDEBUG1, ("Copying register %x (%x)\n", destMod->reg, srcMod->reg));
 
-    if (destMod->nchan != 0) {
+    if (destMod->nchan != 0 && srcMod->nchan != 0) {
         for (int ichan = 0; ichan < (srcMod->nchan); ichan++) {
             *((destMod->chanregs) + ichan) = *((srcMod->chanregs) + ichan);
         }

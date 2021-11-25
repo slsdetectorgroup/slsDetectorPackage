@@ -1564,7 +1564,7 @@ TEST_CASE("readnrows", "[.cmd]") {
               0x30000) == 0x30000)) {
             jungfrauhw2 = true;
         }
-        if (!jungfrauhw2) {
+        if (det_type == defs::JUNGFRAU && !jungfrauhw2) {
             {
                 std::ostringstream oss;
                 proxy.Call("readnrows", {}, -1, GET, oss);

@@ -4663,12 +4663,12 @@ int set_read_n_rows(int file_des) {
                         "of %d\n",
                         arg, READ_N_ROWS_MULTIPLE);
                 LOG(logERROR, (mess));
-            }         
+            }
             // only for HW 2.0 (version = 3)
             else if (isHardwareVersion2()) {
                 ret = FAIL;
                 strcpy(mess, "Could not set number of rows. Only available for "
-                            "Hardware Board version 2.0.\n");
+                             "Hardware Board version 2.0.\n");
                 LOG(logERROR, (mess));
             } else
 #endif
@@ -8682,8 +8682,16 @@ int get_flip_rows(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    retval = getFlipRows();
-    LOG(logDEBUG1, ("flip rows retval: %u\n", retval));
+    // only for HW 2.0 (version = 3)
+    if (isHardwareVersion2()) {
+        ret = FAIL;
+        strcpy(mess, "Could not set flip rows. Only available for "
+                     "Hardware Board version 2.0.\n");
+        LOG(logERROR, (mess));
+    } else {
+        retval = getFlipRows();
+        LOG(logDEBUG1, ("flip rows retval: %u\n", retval));
+    }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }

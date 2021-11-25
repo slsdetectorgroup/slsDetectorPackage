@@ -261,86 +261,6 @@ TEST_CASE("settings", "[.cmd]") {
     }
 }
 
-TEST_CASE("threshold", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        auto prev_threshold = det.getThresholdEnergy();
-        auto prev_energies =
-            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
-        if (!prev_energies.empty()) {
-            std::string senergy = std::to_string(prev_energies[0]);
-            std::ostringstream oss1, oss2;
-            proxy.Call("threshold", {senergy, "standard"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "threshold [" + senergy + ", standard]\n");
-            proxy.Call("threshold", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "threshold " + senergy + "\n");
-
-            REQUIRE_THROWS(proxy.Call(
-                "threshold", {senergy, senergy, senergy, "standard"}, -1, PUT));
-            REQUIRE_THROWS(
-                proxy.Call("threshold", {senergy, "undefined"}, -1, PUT));
-
-            det.setTrimEnergies(prev_energies);
-            for (int i = 0; i != det.size(); ++i) {
-                if (prev_threshold[i] >= 0) {
-                    det.setThresholdEnergy(prev_threshold[i], defs::STANDARD,
-                                           true, {i});
-                }
-            }
-        }
-        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
-    } else if (det_type == defs::MYTHEN3) {
-        auto prev_threshold = det.getAllThresholdEnergy();
-        auto prev_settings =
-            det.getSettings().tsquash("inconsistent settings to test");
-        auto prev_energies =
-            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
-        if (!prev_energies.empty()) {
-            std::string senergy = std::to_string(prev_energies[0]);
-            std::ostringstream oss1, oss2;
-            proxy.Call("threshold", {senergy, "standard"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "threshold [" + senergy + ", standard]\n");
-            proxy.Call("threshold", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "threshold [" + senergy + ", " + senergy +
-                                      ", " + senergy + "]\n");
-            std::string senergy2 = std::to_string(prev_energies[1]);
-            std::string senergy3 = std::to_string(prev_energies[2]);
-            std::ostringstream oss3, oss4;
-            proxy.Call("threshold", {senergy, senergy2, senergy3, "standard"},
-                       -1, PUT, oss3);
-            REQUIRE(oss3.str() == "threshold [" + senergy + ", " + senergy2 +
-                                      ", " + senergy3 + ", standard]\n");
-            proxy.Call("threshold", {}, -1, GET, oss4);
-            REQUIRE(oss4.str() == "threshold [" + senergy + ", " + senergy2 +
-                                      ", " + senergy3 + "]\n");
-
-            REQUIRE_THROWS(proxy.Call("threshold",
-                                      {senergy, senergy, "standard"}, -1, PUT));
-            REQUIRE_THROWS(
-                proxy.Call("threshold", {senergy, "undefined"}, -1, PUT));
-            REQUIRE_NOTHROW(proxy.Call("threshold", {senergy}, -1, PUT));
-            REQUIRE_NOTHROW(proxy.Call("threshold",
-                                       {senergy, senergy2, senergy3}, -1, PUT));
-            det.setTrimEnergies(prev_energies);
-            for (int i = 0; i != det.size(); ++i) {
-                if (prev_threshold[i][0] >= 0) {
-                    std::cout
-                        << "prev cvalues:" << sls::ToString(prev_threshold[i])
-                        << std::endl;
-                    det.setThresholdEnergy(prev_threshold[i], prev_settings,
-                                           true, {i});
-                }
-            }
-        }
-        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
-    } else {
-        REQUIRE_THROWS(proxy.Call("threshold", {}, -1, GET));
-    }
-}
-
 TEST_CASE("thresholdnotb", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -418,6 +338,86 @@ TEST_CASE("thresholdnotb", "[.cmd]") {
         REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
     } else {
         REQUIRE_THROWS(proxy.Call("thresholdnotb", {}, -1, GET));
+    }
+}
+
+TEST_CASE("threshold", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_threshold = det.getThresholdEnergy();
+        auto prev_energies =
+            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
+        if (!prev_energies.empty()) {
+            std::string senergy = std::to_string(prev_energies[0]);
+            std::ostringstream oss1, oss2;
+            proxy.Call("threshold", {senergy, "standard"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "threshold [" + senergy + ", standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "threshold " + senergy + "\n");
+
+            REQUIRE_THROWS(proxy.Call(
+                "threshold", {senergy, senergy, senergy, "standard"}, -1, PUT));
+            REQUIRE_THROWS(
+                proxy.Call("threshold", {senergy, "undefined"}, -1, PUT));
+
+            det.setTrimEnergies(prev_energies);
+            for (int i = 0; i != det.size(); ++i) {
+                if (prev_threshold[i] >= 0) {
+                    det.setThresholdEnergy(prev_threshold[i], defs::STANDARD,
+                                           true, {i});
+                }
+            }
+        }
+        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
+    } else if (det_type == defs::MYTHEN3) {
+        auto prev_threshold = det.getAllThresholdEnergy();
+        auto prev_settings =
+            det.getSettings().tsquash("inconsistent settings to test");
+        auto prev_energies =
+            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
+        if (!prev_energies.empty()) {
+            std::string senergy = std::to_string(prev_energies[0]);
+            std::ostringstream oss1, oss2;
+            proxy.Call("threshold", {senergy, "standard"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "threshold [" + senergy + ", standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "threshold [" + senergy + ", " + senergy +
+                                      ", " + senergy + "]\n");
+            std::string senergy2 = std::to_string(prev_energies[1]);
+            std::string senergy3 = std::to_string(prev_energies[2]);
+            std::ostringstream oss3, oss4;
+            proxy.Call("threshold", {senergy, senergy2, senergy3, "standard"},
+                       -1, PUT, oss3);
+            REQUIRE(oss3.str() == "threshold [" + senergy + ", " + senergy2 +
+                                      ", " + senergy3 + ", standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss4);
+            REQUIRE(oss4.str() == "threshold [" + senergy + ", " + senergy2 +
+                                      ", " + senergy3 + "]\n");
+
+            REQUIRE_THROWS(proxy.Call("threshold",
+                                      {senergy, senergy, "standard"}, -1, PUT));
+            REQUIRE_THROWS(
+                proxy.Call("threshold", {senergy, "undefined"}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("threshold", {senergy}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("threshold",
+                                       {senergy, senergy2, senergy3}, -1, PUT));
+            det.setTrimEnergies(prev_energies);
+            for (int i = 0; i != det.size(); ++i) {
+                if (prev_threshold[i][0] >= 0) {
+                    std::cout
+                        << "prev cvalues:" << sls::ToString(prev_threshold[i])
+                        << std::endl;
+                    det.setThresholdEnergy(prev_threshold[i], prev_settings,
+                                           true, {i});
+                }
+            }
+        }
+        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("threshold", {}, -1, GET));
     }
 }
 

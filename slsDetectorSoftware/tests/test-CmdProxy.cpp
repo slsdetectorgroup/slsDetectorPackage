@@ -542,8 +542,8 @@ TEST_CASE("fliprows", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     bool jungfrauhw2 = false;
     if (det_type == defs::JUNGFRAU &&
-        det.getSerialNumber().tsquash("inconsistent serial number to test") &
-            0x20000) {
+        !(det.getSerialNumber().tsquash("inconsistent serial number to test") &
+          0x20000)) {
         jungfrauhw2 = true;
     }
     if (det_type == defs::EIGER || jungfrauhw2) {

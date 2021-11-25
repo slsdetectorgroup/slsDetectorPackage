@@ -2005,8 +2005,6 @@ TEST_CASE("stop", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("stop", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
     std::chrono::nanoseconds prev_val;
-    bool virtualDet =
-        det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -2037,11 +2035,8 @@ TEST_CASE("stop", "[.cmd]") {
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
-        if (!virtualDet && det_type == defs::JUNGFRAU) {
-            REQUIRE(oss.str() == "status stopped\n");
-        } else {
-            REQUIRE(oss.str() == "status idle\n");
-        }
+        REQUIRE(((oss.str() == "status stopped\n") ||
+                 (oss.str() == "status idle\n")));
     }
     det.setExptime(-1, prev_val);
     det.setPeriod(prev_period);
@@ -2053,8 +2048,6 @@ TEST_CASE("status", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     std::chrono::nanoseconds prev_val;
-    bool virtualDet =
-        det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -2081,11 +2074,8 @@ TEST_CASE("status", "[.cmd]") {
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
-        if (!virtualDet && det_type == defs::JUNGFRAU) {
-            REQUIRE(oss.str() == "status stopped\n");
-        } else {
-            REQUIRE(oss.str() == "status idle\n");
-        }
+        REQUIRE(((oss.str() == "status stopped\n") ||
+                 (oss.str() == "status idle\n")));
     }
     det.setExptime(-1, prev_val);
     det.setPeriod(prev_period);

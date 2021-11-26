@@ -12,7 +12,7 @@ add_executable(gotthard2DetectorServer_virtual
     ../slsDetectorServer/src/LTC2620_Driver.c
     ../slsDetectorServer/src/ALTERA_PLL_CYCLONE10.c    
     ../slsDetectorServer/src/ASIC_Driver.c
-    ../slsDetectorServer/src/programFpgaNios.c
+    ../slsDetectorServer/src/programViaNios.c
     ../slsDetectorServer/src/sharedMemory.c
     ../../slsSupportLib/src/md5.c
 )

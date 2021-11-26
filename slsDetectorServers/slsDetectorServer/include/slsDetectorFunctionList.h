@@ -12,9 +12,10 @@
 #endif
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
-#include "programFpgaNios.h"
-#elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
-#include "programFpgaBlackfin.h"
+#include "programViaNios.h"
+#elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||     \
+    defined(GOTTHARDD)
+#include "programViaBlackfin.h"
 #endif
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
@@ -60,9 +61,6 @@ typedef struct udpStruct_s {
 int isInitCheckDone();
 int getInitResult(char **mess);
 void basictests();
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
-int checkKernelVersion();
-#endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) ||     \
     defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int checkType();

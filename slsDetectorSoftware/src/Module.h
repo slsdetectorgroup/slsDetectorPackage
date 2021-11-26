@@ -99,6 +99,7 @@ class Module : public virtual slsDetectorDefs {
 
     int64_t getFirmwareVersion() const;
     int64_t getDetectorServerVersion() const;
+    std::string getKernelVersion() const;
     int64_t getSerialNumber() const;
     int getModuleId() const;
     int64_t getReceiverSoftwareVersion() const;
@@ -549,7 +550,12 @@ class Module : public virtual slsDetectorDefs {
     void resetFPGA();
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname);
+    void updateDetectorServer(std::vector<char> buffer,
+                              const std::string &serverName);
+    void updateKernel(std::vector<char> buffer);
     void rebootController();
+    bool getUpdateMode() const;
+    void setUpdateMode(const bool updatemode);
     uint32_t readRegister(uint32_t addr) const;
     uint32_t writeRegister(uint32_t addr, uint32_t val);
     void setBit(uint32_t addr, int n);
@@ -573,7 +579,7 @@ class Module : public virtual slsDetectorDefs {
     bool getLockDetector() const;
     void setLockDetector(bool lock);
     sls::IpAddr getLastClientIP() const;
-    std::string execCommand(const std::string &cmd);
+    std::string executeCommand(const std::string &cmd);
     int64_t getNumberOfFramesFromStart() const;
     int64_t getActualTime() const;
     int64_t getMeasurementTime() const;
@@ -763,11 +769,20 @@ class Module : public virtual slsDetectorDefs {
     std::string getTrimbitFilename(detectorSettings settings, int e_eV);
     sls_detector_module readSettingsFile(const std::string &fname,
                                          bool trimbits = true);
-    void programFPGAviaBlackfin(std::vector<char> buffer);
-    void programFPGAviaNios(std::vector<char> buffer);
+    void sendProgram(bool blackfin, std::vector<char> buffer,
+                     const int functionEnum, const std::string &functionType,
+                     const std::string serverName = "");
+    void simulatingActivityinDetector(const std::string &functionType,
+                                      const int timeRequired);
 
     const int moduleIndex;
     mutable sls::SharedMemory<sharedModule> shm{0, 0};
+    static const int BLACKFIN_ERASE_FLASH_TIME = 65;
+    static const int BLACKFIN_WRITE_TO_FLASH_TIME = 30;
+    static const int NIOS_ERASE_FLASH_TIME_FPGA = 10;
+    static const int NIOS_WRITE_TO_FLASH_TIME_FPGA = 45;
+    static const int NIOS_ERASE_FLASH_TIME_KERNEL = 9;
+    static const int NIOS_WRITE_TO_FLASH_TIME_KERNEL = 40;
 };
 
 } // namespace sls

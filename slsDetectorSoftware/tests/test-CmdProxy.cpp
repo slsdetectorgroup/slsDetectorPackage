@@ -103,6 +103,13 @@ TEST_CASE("detectorserverversion", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("detectorserverversion", {"0"}, -1, PUT));
 }
 
+TEST_CASE("kernelversion", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("kernelversion", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("kernelversion", {"0"}, -1, PUT));
+}
+
 TEST_CASE("serialnumber", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -533,7 +540,13 @@ TEST_CASE("fliprows", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
+    bool jungfrauhw2 = false;
+    if (det_type == defs::JUNGFRAU &&
+        ((det.getSerialNumber().tsquash("inconsistent serial number to test") &
+          0x30000) == 0x30000)) {
+        jungfrauhw2 = true;
+    }
+    if (det_type == defs::EIGER || jungfrauhw2) {
         auto previous = det.getFlipRows();
         auto previous_numudp = det.getNumberofUDPInterfaces();
         if (det_type == defs::JUNGFRAU) {
@@ -1544,32 +1557,47 @@ TEST_CASE("readnrows", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getReadNRows();
-        {
-            std::ostringstream oss;
-            proxy.Call("readnrows", {"256"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "readnrows 256\n");
+        bool jungfrauhw2 = false;
+        if (det_type == defs::JUNGFRAU &&
+            ((det.getSerialNumber().tsquash(
+                  "inconsistent serial number to test") &
+              0x30000) == 0x30000)) {
+            jungfrauhw2 = true;
         }
-        {
-            std::ostringstream oss;
-            proxy.Call("readnrows", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "readnrows 256\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("readnrows", {"16"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "readnrows 16\n");
-        }
-        if (det_type == defs::JUNGFRAU) {
-            REQUIRE_THROWS(proxy.Call("readnrows", {"7"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("readnrows", {"20"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("readnrows", {"44"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("readnrows", {"513"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("readnrows", {"1"}, -1, PUT));
-        }
-        REQUIRE_THROWS(proxy.Call("readnrows", {"0"}, -1, PUT));
-        for (int i = 0; i != det.size(); ++i) {
-            det.setReadNRows(prev_val[i], {i});
+        if (det_type == defs::JUNGFRAU && !jungfrauhw2) {
+            {
+                std::ostringstream oss;
+                proxy.Call("readnrows", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "readnrows 512\n");
+            }
+        } else {
+            auto prev_val = det.getReadNRows();
+            {
+                std::ostringstream oss;
+                proxy.Call("readnrows", {"256"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "readnrows 256\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("readnrows", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "readnrows 256\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("readnrows", {"16"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "readnrows 16\n");
+            }
+            if (det_type == defs::JUNGFRAU) {
+                REQUIRE_THROWS(proxy.Call("readnrows", {"7"}, -1, PUT));
+                REQUIRE_THROWS(proxy.Call("readnrows", {"20"}, -1, PUT));
+                REQUIRE_THROWS(proxy.Call("readnrows", {"44"}, -1, PUT));
+                REQUIRE_THROWS(proxy.Call("readnrows", {"513"}, -1, PUT));
+                REQUIRE_THROWS(proxy.Call("readnrows", {"1"}, -1, PUT));
+            }
+            REQUIRE_THROWS(proxy.Call("readnrows", {"0"}, -1, PUT));
+            for (int i = 0; i != det.size(); ++i) {
+                det.setReadNRows(prev_val[i], {i});
+            }
         }
     } else {
         REQUIRE_THROWS(proxy.Call("readnrows", {}, -1, GET));
@@ -1998,8 +2026,6 @@ TEST_CASE("stop", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("stop", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
     std::chrono::nanoseconds prev_val;
-    bool virtualDet =
-        det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -2030,11 +2056,8 @@ TEST_CASE("stop", "[.cmd]") {
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
-        if (!virtualDet && det_type == defs::JUNGFRAU) {
-            REQUIRE(oss.str() == "status stopped\n");
-        } else {
-            REQUIRE(oss.str() == "status idle\n");
-        }
+        REQUIRE(((oss.str() == "status stopped\n") ||
+                 (oss.str() == "status idle\n")));
     }
     det.setExptime(-1, prev_val);
     det.setPeriod(prev_period);
@@ -2046,8 +2069,6 @@ TEST_CASE("status", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     std::chrono::nanoseconds prev_val;
-    bool virtualDet =
-        det.isVirtualDetectorServer().tsquash("inconsistent virtual servers");
     if (det_type != defs::MYTHEN3) {
         prev_val = det.getExptime().tsquash("inconsistent exptime to test");
     } else {
@@ -2074,11 +2095,8 @@ TEST_CASE("status", "[.cmd]") {
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
-        if (!virtualDet && det_type == defs::JUNGFRAU) {
-            REQUIRE(oss.str() == "status stopped\n");
-        } else {
-            REQUIRE(oss.str() == "status idle\n");
-        }
+        REQUIRE(((oss.str() == "status stopped\n") ||
+                 (oss.str() == "status idle\n")));
     }
     det.setExptime(-1, prev_val);
     det.setPeriod(prev_period);
@@ -2698,6 +2716,25 @@ TEST_CASE("copydetectorserver", "[.cmd]") {
     } else {
         REQUIRE_THROWS(proxy.Call("copydetectorserver", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("copydetectorserver", {}, -1, PUT));
+    }
+}
+
+TEST_CASE("updatekernel", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
+        // TODO: send real server?
+        // std::ostringstream oss;
+        // proxy.Call("updatekernel",{"juImage_detector.lzma",
+        // "pc13784"}, -1, PUT, oss);
+        // REQUIRE(oss.str() == "updatekernel successful\n");
+        REQUIRE_THROWS(proxy.Call("updatekernel", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("updatekernel", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("updatekernel", {}, -1, PUT));
     }
 }
 

@@ -2,6 +2,8 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
+#include "common.h"
+
 #include <stdint.h>
 #include <stdio.h>
 
@@ -13,9 +15,10 @@ void NotifyServerStartSuccess();
 /** reset fpga and controller(only implemented for >= v1.1 boards) */
 void rebootControllerAndFPGA();
 
-int eraseAndWriteToFlash(char *mess, char *checksum, char *fpgasrc,
+int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
+                         char *functionType, char *checksum, char *fpgasrc,
                          uint64_t fsize);
-int getDrive(char *mess);
-int openFileForFlash(FILE **flashfd, char *mess);
+int getDrive(char *mess, enum PROGRAM_INDEX index);
+int openFileForFlash(char *mess, FILE **flashfd);
 int eraseFlash(char *mess);
-int writeToFlash(ssize_t fsize, FILE *flashfd, char *buffer, char *mess);
+int writeToFlash(char *mess, ssize_t fsize, FILE *flashfd, char *buffer);

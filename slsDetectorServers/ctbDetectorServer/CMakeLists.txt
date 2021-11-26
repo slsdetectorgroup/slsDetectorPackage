@@ -17,7 +17,7 @@ add_executable(ctbDetectorServer_virtual
     ../slsDetectorServer/src/INA226.c
     ../slsDetectorServer/src/LTC2620.c
     ../slsDetectorServer/src/MAX1932.c
-    ../slsDetectorServer/src/programFpgaBlackfin.c
+    ../slsDetectorServer/src/programViaBlackfin.c
     ../slsDetectorServer/src/sharedMemory.c
     ../slsDetectorServer/src/loadPattern.c
     ../../slsSupportLib/src/md5.c

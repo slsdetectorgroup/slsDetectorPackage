@@ -284,7 +284,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     /**
      * Convert raw file
-     * [Jungfrau][Ctb] from pof file
+     * [Jungfrau][Ctb][Moench] from pof file
      * [Mythen3][Gotthard2] from rbf file
      * @param fname name of pof/rbf file
      * @returns binary of the program

@@ -101,7 +101,7 @@ void basictests() {
     }
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
-        ((checkKernelVersion() == FAIL) || (checkType() == FAIL) ||
+        ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) || (checkType() == FAIL) ||
          (testFpga() == FAIL) || (testBus() == FAIL))) {
         sprintf(initErrorMessage,
                 "Could not pass basic tests of FPGA and bus. Dangerous to "
@@ -182,13 +182,6 @@ void basictests() {
     }
     LOG(logINFO, ("Compatibility - success\n"));
 #endif
-}
-
-int checkKernelVersion() {
-#ifdef VIRTUAL
-    return OK;
-#endif
-    return Nios_checkKernelVersion(KERNEL_DATE_VRSN);
 }
 
 int checkType() {
@@ -2090,24 +2083,40 @@ int setReadoutSpeed(int val) {
     case G2_108MHZ:
         LOG(logINFOBLUE, ("Setting readout speed to 108 MHz\n"));
         if (setClockDivider(READOUT_C0, SPEED_108_CLKDIV_0) == FAIL) {
+            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to set readout clk 0 to %d\n", SPEED_108_CLKDIV_0));
             return FAIL;
         }
         if (setClockDivider(READOUT_C1, SPEED_108_CLKDIV_1) == FAIL) {
+            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to set readout clk 1 to %d\n", SPEED_108_CLKDIV_1));
             return FAIL;
         }
         if (setPhase(READOUT_C1, SPEED_108_CLKPHASE_DEG_1, 1) == FAIL) {
+            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to set clk phase 1 %d deg\n", SPEED_108_CLKPHASE_DEG_1));
+            return FAIL;
+        }
+        setDBITPipeline(SPEED_144_DBIT_PIPELINE);
+        if (getDBITPipeline() != SPEED_144_DBIT_PIPELINE) {
+            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to set dbitpipeline to %d \n", SPEED_144_DBIT_PIPELINE));
             return FAIL;
         }
         break;
     case G2_144MHZ:
         LOG(logINFOBLUE, ("Setting readout speed to 144 MHz\n"));
         if (setClockDivider(READOUT_C0, SPEED_144_CLKDIV_0) == FAIL) {
+            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to set readout clk 0 to %d\n", SPEED_144_CLKDIV_0));
             return FAIL;
         }
         if (setClockDivider(READOUT_C1, SPEED_144_CLKDIV_1) == FAIL) {
+            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to set readout clk 1 to %d\n", SPEED_144_CLKDIV_1));
             return FAIL;
         }
         if (setPhase(READOUT_C1, SPEED_144_CLKPHASE_DEG_1, 1) == FAIL) {
+            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to set clk phase 1 %d deg\n", SPEED_144_CLKPHASE_DEG_1));
+            return FAIL;
+        }
+        setDBITPipeline(SPEED_144_DBIT_PIPELINE);
+        if (getDBITPipeline() != SPEED_144_DBIT_PIPELINE) {
+            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to set dbitpipeline to %d \n", SPEED_144_DBIT_PIPELINE));
             return FAIL;
         }
         break;

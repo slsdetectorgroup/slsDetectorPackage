@@ -305,43 +305,53 @@ Firmware Troubleshooting with blackfin
 
 5. If one can't list it, read the next section to try to get the blackfin to list it.
 
-How to get back mtd3 drive remotely (copying new kernel)
+How to get back mtd3 drive remotely (udpating kernel)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    You have 2 alternatives to update the kernel.
 
-  .. code-block:: bash
-    
-    # step 1: get the kernel image (uImage.lzma) from slsdetectorgroup
-    # and copy it to pc's tftp folder
+    1. Commands via software (>= v6.0.0)
 
-    # step 2: connect to the board
-    telnet bchipxxx
+        .. code-block:: bash
 
-    #step 3: go to directory for space
-    cd /var/tmp/
+            sls_detector_put updatekernel /home/...path-to-kernel-image
 
-    # step 3: copy kernel to board
-    tftp pcxxx -r uImage.lzma -g
 
-    # step 4: verify kernel copied properly
-    ls -lrt
+    2. or command line 
     
-    # step 5: erase flash
-    flash_eraseall /dev/mtd1
-    
-    # step 6: copy new image to kernel drive
-    cat uImage.lzma > /dev/mtd1
-    
-    # step 7:
-    sync
-    
-    # step 8:
-    reboot
-    
-    # step 9: verification
-    telnet bchipxxx
-    uname -a # verify kernel date
-    more /proc/mtd # verify mtd3 is listed
-    
+        .. code-block:: bash
+            
+            # step 1: get the kernel image (uImage.lzma) from slsdetectorgroup
+            # and copy it to pc's tftp folder
+
+            # step 2: connect to the board
+            telnet bchipxxx
+
+            #step 3: go to directory for space
+            cd /var/tmp/
+
+            # step 3: copy kernel to board
+            tftp pcxxx -r uImage.lzma -g
+
+            # step 4: verify kernel copied properly
+            ls -lrt
+            
+            # step 5: erase flash
+            flash_eraseall /dev/mtd1
+            
+            # step 6: copy new image to kernel drive
+            cat uImage.lzma > /dev/mtd1
+            
+            # step 7:
+            sync
+            
+            # step 8:
+            reboot
+            
+            # step 9: verification
+            telnet bchipxxx
+            uname -a # verify kernel date
+            more /proc/mtd # verify mtd3 is listed
+            
 
 Last Resort using USB Blaster
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

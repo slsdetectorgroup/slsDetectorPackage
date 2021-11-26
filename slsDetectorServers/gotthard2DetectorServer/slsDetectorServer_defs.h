@@ -4,7 +4,7 @@
 #include "sls/sls_detector_defs.h"
 
 #define REQRD_FRMWRE_VRSN (0x210527)
-#define KERNEL_DATE_VRSN  "Wed May 20 13:58:38 CEST 2020"
+#define KERNEL_DATE_VRSN  "Mon May 10 18:00:21 CEST 2021"
 #define ID_FILE           "detid_gotthard2.txt"
 
 #define LINKED_SERVER_NAME "gotthard2DetectorServer"
@@ -67,9 +67,11 @@
 #define SPEED_144_CLKDIV_0       (6)
 #define SPEED_144_CLKDIV_1       (6)
 #define SPEED_144_CLKPHASE_DEG_1 (122) // 125 not possible
+#define SPEED_144_DBIT_PIPELINE (1) 
 #define SPEED_108_CLKDIV_0       (8)
 #define SPEED_108_CLKDIV_1       (8)
 #define SPEED_108_CLKPHASE_DEG_1 (268) // 270 not possible
+#define SPEED_108_DBIT_PIPELINE (1) 
 
 /* Firmware Definitions */
 #define FIXED_PLL_FREQUENCY     (20000000)  // 20MHz

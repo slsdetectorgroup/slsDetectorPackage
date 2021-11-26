@@ -2,7 +2,7 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 cmake_minimum_required(VERSION 3.12)
 project(slsDetectorPackage)
-set(PROJECT_VERSION 6.0.0)
+set(PROJECT_VERSION 6.1.0)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
@@ -67,10 +67,7 @@ set(ClangFormat_EXCLUDE_PATTERNS    "build/"
                                     ${CMAKE_BINARY_DIR})
 find_package(ClangFormat)
 
-#Enable LTO if available
-include(CheckIPOSupported)
-check_ipo_supported(RESULT SLS_LTO_AVAILABLE)
-message(STATUS "SLS_LTO_AVAILABLE:" ${SLS_LTO_AVAILABLE})
+
 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -78,6 +75,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "No build type selected, default to Release")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (default Release)" FORCE)
+endif()
+
+
+#Enable LTO if available
+include(CheckIPOSupported)
+check_ipo_supported(RESULT SLS_LTO_AVAILABLE)
+if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
+    message(STATUS "Building with link time optimization")
+else()
+    message(STATUS "Building without link time optimization")
 endif()
 
 
@@ -137,7 +144,6 @@ sls_enable_cxx_warning("-Wnull-dereference")
 sls_enable_cxx_warning("-Wduplicated-cond")
 sls_disable_cxx_warning("-Wclass-memaccess")
 sls_disable_c_warning("-Wstringop-truncation")
-sls_disable_c_warning("-Wformat-nonliteral")
 
 
 if(SLS_USE_SANITIZER)

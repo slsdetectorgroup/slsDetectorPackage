@@ -225,6 +225,19 @@ class Detector(CppDetectorApi):
         return ut.lhex(self.getDetectorServerVersion())
 
     @property
+    @element
+    def kernelversion(self):
+        """
+        Kernel version on the detector including time and date
+        
+        Example
+        -------
+        >>> d.kernelversion
+        '#37 PREEMPT Thu Oct 13 14:51:04 CEST 2016'
+        """
+        return self.getKernelVersion()
+
+    @property
     def clientversion(self):
         """Client software version in format [YYMMDD]
         
@@ -1656,6 +1669,7 @@ class Detector(CppDetectorApi):
                 'client': self.clientversion,
                 'firmware': self.firmwareversion,
                 'detectorserver': self.detectorserverversion,
+                'kernel': self.kernelversion,
                 'receiver': self.rx_version}
 
     @property
@@ -2501,6 +2515,7 @@ class Detector(CppDetectorApi):
         -----
         
         :getter: always returns in seconds. To get in datetime.delta, use getBurstPeriod
+        :setter: Not Implemented
 
         Example
         -----------
@@ -3422,10 +3437,10 @@ class Detector(CppDetectorApi):
         [Gotthard2][Mythen3] Frequency of clock in Hz. 
         
         Note
-        -----
+        ----
         
         :setter: Not implemented. Use clkdiv to set frequency
-        
+
         Example
         -------
         >>> d.clkfreq[0]

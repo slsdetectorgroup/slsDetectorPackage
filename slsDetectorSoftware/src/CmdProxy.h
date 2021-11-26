@@ -837,6 +837,7 @@ class CmdProxy {
         {"clientversion", &CmdProxy::ClientVersion},
         {"firmwareversion", &CmdProxy::FirmwareVersion},
         {"detectorserverversion", &CmdProxy::detectorserverversion},
+        {"kernelversion", &CmdProxy::kernelversion},
         {"rx_version", &CmdProxy::rx_version},
         {"serialnumber", &CmdProxy::serialnumber},
         {"moduleid", &CmdProxy::moduleid},
@@ -1128,8 +1129,11 @@ class CmdProxy {
         {"programfpga", &CmdProxy::ProgramFpga},
         {"resetfpga", &CmdProxy::resetfpga},
         {"copydetectorserver", &CmdProxy::CopyDetectorServer},
+        {"updatedetectorserver", &CmdProxy::UpdateDetectorServer},
+        {"updatekernel", &CmdProxy::UpdateKernel},
         {"rebootcontroller", &CmdProxy::rebootcontroller},
         {"update", &CmdProxy::UpdateFirmwareAndDetectorServer},
+        {"updatemode", &CmdProxy::updatemode},
         {"reg", &CmdProxy::Register},
         {"adcreg", &CmdProxy::AdcRegister},
         {"setbit", &CmdProxy::BitOperations},
@@ -1252,6 +1256,8 @@ class CmdProxy {
     /* Advanced */
     std::string ProgramFpga(int action);
     std::string CopyDetectorServer(int action);
+    std::string UpdateDetectorServer(int action);
+    std::string UpdateKernel(int action);
     std::string UpdateFirmwareAndDetectorServer(int action);
     std::string Register(int action);
     std::string AdcRegister(int action);
@@ -1275,6 +1281,10 @@ class CmdProxy {
     GET_COMMAND_HEX(
         detectorserverversion, getDetectorServerVersion,
         "\n\tOn-board detector server software version in format [0xYYMMDD].");
+
+    GET_COMMAND(
+        kernelversion, getKernelVersion,
+        "\n\tGet kernel version on the detector including time and date.");
 
     GET_COMMAND_HEX(rx_version, getReceiverVersion,
                     "\n\tReceiver version in format [0xYYMMDD].");
@@ -2244,6 +2254,12 @@ class CmdProxy {
     EXECUTE_SET_COMMAND(rebootcontroller, rebootController,
                         "\n\t[Jungfrau][Ctb][Moench][Gotthard][Mythen3]["
                         "Gotthard2] Reboot controller of detector.");
+
+    INTEGER_COMMAND_VEC_ID(
+        updatemode, getUpdateMode, setUpdateMode, StringTo<int>,
+        "[0|1]\n\tRestart the detector server in update mode or not. This is "
+        "useful when server-firmware compatibility is at its worst and server "
+        "cannot start up normally");
 
     EXECUTE_SET_COMMAND(
         firmwaretest, executeFirmwareTest,

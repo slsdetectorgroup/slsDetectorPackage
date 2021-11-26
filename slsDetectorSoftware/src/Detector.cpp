@@ -9,6 +9,7 @@
 #include "Module.h"
 #include "sls/Pattern.h"
 #include "sls/container_utils.h"
+#include "sls/file_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/versionAPI.h"
@@ -115,6 +116,10 @@ Result<int64_t> Detector::getFirmwareVersion(Positions pos) const {
 
 Result<int64_t> Detector::getDetectorServerVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getDetectorServerVersion, pos);
+}
+
+Result<std::string> Detector::getKernelVersion(Positions pos) const {
+    return pimpl->Parallel(&Module::getKernelVersion, pos);
 }
 
 Result<int64_t> Detector::getSerialNumber(Positions pos) const {
@@ -2157,6 +2162,7 @@ void Detector::setAdditionalJsonParameter(const std::string &key,
 // Advanced
 
 void Detector::programFPGA(const std::string &fname, Positions pos) {
+    LOG(logINFO) << "Updating Firmware...";
     std::vector<char> buffer = pimpl->readProgrammingFile(fname);
     pimpl->Parallel(&Module::programFPGA, pos, buffer);
     rebootController(pos);
@@ -2168,10 +2174,28 @@ void Detector::resetFPGA(Positions pos) {
 
 void Detector::copyDetectorServer(const std::string &fname,
                                   const std::string &hostname, Positions pos) {
+    LOG(logINFO) << "Updating Detector Server (via tftp)...";
     pimpl->Parallel(&Module::copyDetectorServer, pos, fname, hostname);
     if (getDetectorType().squash() != defs::EIGER) {
         rebootController(pos);
     }
+}
+
+void Detector::updateDetectorServer(const std::string &fname, Positions pos) {
+    LOG(logINFO) << "Updating Detector Server (no tftp)...";
+    std::vector<char> buffer = readBinaryFile(fname, "Update Detector Server");
+    std::string filename = sls::getFileNameFromFilePath(fname);
+    pimpl->Parallel(&Module::updateDetectorServer, pos, buffer, filename);
+    if (getDetectorType().squash() != defs::EIGER) {
+        rebootController(pos);
+    }
+}
+
+void Detector::updateKernel(const std::string &fname, Positions pos) {
+    LOG(logINFO) << "Updating Kernel...";
+    std::vector<char> buffer = sls::readBinaryFile(fname, "Update Kernel");
+    pimpl->Parallel(&Module::updateKernel, pos, buffer);
+    rebootController(pos);
 }
 
 void Detector::rebootController(Positions pos) {
@@ -2182,8 +2206,32 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
                                        const std::string &hostname,
                                        const std::string &fname,
                                        Positions pos) {
+    LOG(logINFO) << "Updating Firmware and Detector Server (with tftp)...";
+    LOG(logINFO) << "Updating Detector Server (via tftp)...";
     pimpl->Parallel(&Module::copyDetectorServer, pos, sname, hostname);
     programFPGA(fname, pos);
+}
+
+void Detector::updateFirmwareAndServer(const std::string &sname,
+                                       const std::string &fname,
+                                       Positions pos) {
+    LOG(logINFO) << "Updating Firmware and Detector Server (no tftp)...";
+    LOG(logINFO) << "Updating Detector Server (no tftp)...";
+    std::vector<char> buffer = readBinaryFile(sname, "Update Detector Server");
+    std::string filename = sls::getFileNameFromFilePath(sname);
+    pimpl->Parallel(&Module::updateDetectorServer, pos, buffer, filename);
+    programFPGA(fname, pos);
+}
+
+Result<bool> Detector::getUpdateMode(Positions pos) const {
+    return pimpl->Parallel(&Module::getUpdateMode, pos);
+}
+
+void Detector::setUpdateMode(const bool updatemode, Positions pos) {
+    pimpl->Parallel(&Module::setUpdateMode, pos, updatemode);
+    if (getDetectorType().squash() != defs::EIGER) {
+        rebootController(pos);
+    }
 }
 
 Result<uint32_t> Detector::readRegister(uint32_t addr, Positions pos) const {
@@ -2264,7 +2312,7 @@ Result<sls::IpAddr> Detector::getLastClientIP(Positions pos) const {
 
 Result<std::string> Detector::executeCommand(const std::string &value,
                                              Positions pos) {
-    return pimpl->Parallel(&Module::execCommand, pos, value);
+    return pimpl->Parallel(&Module::executeCommand, pos, value);
 }
 
 Result<int64_t> Detector::getNumberOfFramesFromStart(Positions pos) const {

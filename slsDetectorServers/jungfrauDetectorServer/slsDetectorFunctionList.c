@@ -2646,6 +2646,7 @@ int stopStateMachine() {
 
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
 
+    usleep(100 * 1000);
     resetCore();
     return OK;
 }

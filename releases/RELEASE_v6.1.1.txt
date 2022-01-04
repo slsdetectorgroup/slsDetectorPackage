@@ -1,0 +1,184 @@
+SLS Detector Package Minor Release 6.1.1 released on 04.01.2022
+===============================================================
+
+This document describes the differences between v6.1.1 and v6.1.0.   
+
+
+
+    CONTENTS
+    --------
+    1.  Resolved Issues
+    2.  Firmware Requirements
+    3.  Kernel Requirements
+    4.  Download, Documentation & Support
+
+
+
+1. Resolved Issues
+==================
+
+    Detector Server
+    ---------------
+    
+    1.  [Jungfrau] Cannot start 
+        Under some circumstances and not always reproducible, the detector 
+        cannot start once it has stopped. Fixed by adding a delay between the 
+        stop pulse and the resetting core to give sufficient time to readout and 
+        stream out the ongoing frame.        
+
+
+
+2. Firmware Requirements
+========================
+        
+    Note: No change to 6.1.0.
+
+
+    Eiger
+    =====  
+    Compatible version : 08.10.2021 (v29)
+    
+    Jungfrau
+    ========       
+    Compatible version : 31.08.2021 (v1.2, PCB v1.0) 
+                       : 08.10.2021 (v2.2, PCB v2.0)
+
+    Gotthard
+    ========   
+    Compatible version : 08.02.2018 (50um and 25um Master)
+                       : 09.02.2018 (25 um Slave) 
+
+    Mythen3
+    =======
+    Compatible version : 10.09.2021 (v1.1)
+
+    Gotthard2
+    =========
+    Compatible version : 27.05.2021 (v0.1)
+
+    Moench
+    ======
+    Compatible version : 05.10.2020 (v1.0)
+
+    Ctb
+    ===
+    Compatible version : 05.10.2020 (v1.0)
+
+    Detector Upgrade
+    ================
+    The following can be upgraded remotely:
+    Eiger      via bit files
+    Jungfrau   via command <.pof>
+    Mythen3    via command <.rbf>
+    Gotthard2  via command <.rbf> 
+    Moench     via command <.pof>
+    Ctb        via command <.pof>
+
+    The following cannot be upgraded remotely:
+    Gotthard   
+
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+    and
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+
+
+3. Kernel Requirements
+======================
+
+    Note: No change to 6.1.0.
+
+
+    Blackfin 
+    ========
+    Latest version: Fri Oct 29 00:00:00 2021
+    
+    Older ones will work, but might have issues with programming firmware via
+    the package.
+
+    Nios
+    ====
+    Compatible version: Mon May 10 18:00:21 CEST 2021
+
+    Kernel Upgrade
+    ==============
+    Eiger   via bit files
+    Others  via command
+
+    Commands: udpatekernel, kernelversion
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+        https://slsdetectorgroup.github.io/devdoc/pydetector.html
+
+
+
+4. Download, Documentation & Support
+====================================
+
+    Download
+    --------
+    
+    The Source Code:
+         https://github.com/slsdetectorgroup/slsDetectorPackage
+            
+    Documentation
+    -------------
+    
+    Installation:
+        https://slsdetectorgroup.github.io/devdoc/installation.html#
+        
+    Firmware Upgrade:
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+    Detector Server upgrade:
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+    Detector Simulators:
+        https://slsdetectorgroup.github.io/devdoc/virtualserver.html
+
+    Consuming slsDetectorPackage:
+        https://slsdetectorgroup.github.io/devdoc/consuming.html
+        
+    API Examples:
+        https://github.com/slsdetectorgroup/api-examples
+
+    Command Line Documentation:
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+
+    Quick Start Guide:
+        https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
+        
+    C++ API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+       
+    C++ API Example:
+        https://slsdetectorgroup.github.io/devdoc/examples.html#
+        
+    Python API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/pygettingstarted.html
+
+    Python API Example:
+        https://slsdetectorgroup.github.io/devdoc/pyexamples.html
+
+    Receivers (including custom receiver):
+        https://slsdetectorgroup.github.io/devdoc/receivers.html
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html
+
+    TroubleShooting:
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html
+        
+    Further Documentation:
+        https://www.psi.ch/en/detectors/documentation
+        
+    Info on Releases:
+        https://www.psi.ch/en/detectors/software
+
+
+    Support
+    -------
+
+        dhanya.thattil@psi.ch
+        erik.frojdh@psi.ch
+

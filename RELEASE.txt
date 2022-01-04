@@ -19,94 +19,10 @@ This document describes the differences between v6.1.0 and v6.0.0.
 1. New or Changed Features
 ==========================
 
-    Client
-    ------
-
-    1.  Kernel version
-        Commandline: kernelversion, API: getKernelVersion
-
-    2.  [Jungfrau][Mythen3][Gotthard2][Gotthard][Moench][Ctb]
-        Update Kernel
-        Commandline: updatekernel, API: updatekernel
-        You could damage the detector. Please use with caution.
-
-    3.  Update Detector Server (no tftp)
-        Commandline: updatedetectorserver, API: updateDetectorServer
-        Updates the detector server without using tftp. It also creates a 
-        symbolic link to a shorter name and reboots. The API using tftp
-        (copydetectorserver) is deprecated.
-
-    4.  Update Firmware and Server (no tftp)
-        Commandline: update (fewer arguments), API: updateFirmwareAndServer 
-        (overloaded) Same as before, except the server is transferred to the 
-        detector without tftp. The previous API and command (fewer arguments) 
-        using tftp is deprecated.
-
-    5.  Update mode in Detector server
-        Commandline: udpatemode, API set/getUpdateMode
-        One can set detector server to update mode (especially if server and 
-        firmware are incompatible that the server cannot start up without errors).
-        This mode will limit access to a few operations only needed to update the 
-        detector. Setting it will create an empty file (udpate.txt) and resetting
-        it will delete the empty file. Ofcourse, command line "--update" will 
-        overwrite any file detection and start server in update mode.
-
-    
-    Detector Server
-    ---------------
-
-    1.  [Gotthard2] speed
-        Ensuring dbitpipeline is default when changing speed. This has an effect
-        only if dbitpipeline was changed in between.
-
 
 
 2. Resolved Issues
 ==================
-
-    Detector Server
-    ---------------
-    
-    1.  [Jungfrau][Moench][Ctb] Programming Firmware Failures 
-        Firmware programming via software failures are fixed using a new kernel 
-        and corresponding changes in server software. Software works with both 
-        old and new kernels.
-
-    2.  [Gotthard2][Mythen3]  
-        Verifies kernel version at server start up.
-
-    3.  [Jungfrau]
-        Verifies HW2.0 before trying to set read n rows or flip rows.
-        Has no effect when not using slsReceiver.
-
-    4.  [Eiger]
-        Thresholdnotb command loads threshold energy without trimbits, but had 
-        a bug in the server that was setting nchip to 0 and further trimval or 
-        trim commands would no work reliably. This is fixed now.
-
-
-    Client
-    ------
-
-    1.  Receiver Id in the commands in config files were ignored. Fixed.
-
-    2.  Execute command now also mentions which module failed.
-
-    3.  [Jungfrau][Moench][Ctb] 
-        Programming firmware procedure did not delete temporary file created in 
-        6.0.0. Fixed.
-
-
-    Receiver
-    --------
-
-    1.  Setting receiver hostname to "none" threw an exception. Fixed.
-
-    2.  [Jungfrau]
-        Since the server verifies HW2.0 for number of rows before trying to set it, 
-        the receiver now does not show incorrect missing packets stemming from this 
-        issue.
-
 
 
 3. Firmware Requirements

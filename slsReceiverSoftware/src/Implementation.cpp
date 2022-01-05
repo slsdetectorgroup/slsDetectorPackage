@@ -174,7 +174,7 @@ void Implementation::setDetectorType(const detectorType d) {
                 i, detType, fifo_ptr, &activated, &dataStreamEnable,
                 &streamingFrequency, &streamingTimerInMs, &streamingStartFnum,
                 &framePadding, &ctbDbitList, &ctbDbitOffset,
-                &ctbAnalogDataBytes, &hdf5Lib));
+                &ctbAnalogDataBytes));
         } catch (...) {
             listener.clear();
             dataProcessor.clear();
@@ -237,7 +237,7 @@ void Implementation::setModulePositionId(const int id) {
 
     for (const auto &it : dataProcessor)
         it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                            fileFormatType, modulePos);
+                            fileFormatType, modulePos, &hdf5Lib);
     assert(numMods[1] != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
@@ -345,7 +345,7 @@ void Implementation::setFileFormat(const fileFormat f) {
         }
         for (const auto &it : dataProcessor)
             it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos);
+                                fileFormatType, modulePos, &hdf5Lib);
     }
 
     LOG(logINFO) << "File Format: " << sls::ToString(fileFormatType);
@@ -382,7 +382,7 @@ void Implementation::setFileWriteEnable(const bool b) {
         fileWriteEnable = b;
         for (const auto &it : dataProcessor)
             it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos);
+                                fileFormatType, modulePos, &hdf5Lib);
     }
     LOG(logINFO) << "File Write Enable: "
                  << (fileWriteEnable ? "enabled" : "disabled");
@@ -397,7 +397,7 @@ void Implementation::setMasterFileWriteEnable(const bool b) {
         masterFileWriteEnable = b;
         for (const auto &it : dataProcessor)
             it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos);
+                                fileFormatType, modulePos, &hdf5Lib);
     }
     LOG(logINFO) << "Master File Write Enable: "
                  << (masterFileWriteEnable ? "enabled" : "disabled");
@@ -566,7 +566,7 @@ void Implementation::stopReceiver() {
                 dataProcessor[0]->CreateVirtualFile(
                     filePath, fileName, fileIndex, overwriteEnable, silentMode,
                     modulePos, numThreads, framesPerFile, numberOfTotalFrames,
-                    dynamicRange, numMods[X], numMods[Y]);
+                    dynamicRange, numMods[X], numMods[Y], &hdf5Lib);
             }
             // link file in master
             dataProcessor[0]->LinkDataInMasterFile(silentMode);
@@ -895,7 +895,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     i, detType, fifo_ptr, &activated, &dataStreamEnable,
                     &streamingFrequency, &streamingTimerInMs,
                     &streamingStartFnum, &framePadding, &ctbDbitList,
-                    &ctbDbitOffset, &ctbAnalogDataBytes, &hdf5Lib));
+                    &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
             } catch (...) {
                 listener.clear();

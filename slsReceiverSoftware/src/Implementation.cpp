@@ -595,18 +595,24 @@ void Implementation::stopReceiver() {
     LOG(logINFO) << "Status: " << sls::ToString(status);
 
     { // statistics
-        std::vector<uint64_t> mp = getNumMissingPackets();
+        auto tmp = getNumMissingPackets();
+        // convert to signed missing packets (to get excess)
+        std::vector<int64_t> mp;
+        for (auto val : tmp) {
+            mp.push_back(static_cast<int64_t>(val));
+        }
+        // print summary
         uint64_t tot = 0;
         for (int i = 0; i < numThreads; i++) {
             int nf = dataProcessor[i]->GetNumCompleteFramesCaught();
             tot += nf;
-            std::string mpMessage = std::to_string((int64_t)mp[i]);
-            if ((int64_t)mp[i] < 0) {
+            std::string mpMessage = std::to_string(mp[i]);
+            if (mp[i] < 0) {
                 mpMessage =
                     std::to_string(abs(mp[i])) + std::string(" (Extra)");
             }
 
-            TLogLevel lev = (((int64_t)mp[i]) > 0) ? logINFORED : logINFOGREEN;
+            TLogLevel lev = ((mp[i]) > 0) ? logINFORED : logINFOGREEN;
             LOG(lev) <<
                 // udp port number could be the second if selected interface is
                 // 2 for jungfrau

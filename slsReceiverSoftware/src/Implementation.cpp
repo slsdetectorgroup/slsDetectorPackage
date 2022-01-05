@@ -167,9 +167,9 @@ void Implementation::setDetectorType(const detectorType d) {
             auto fifo_ptr = fifo[i].get();
             listener.push_back(sls::make_unique<Listener>(
                 i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
-                &numberOfTotalFrames, &udpSocketBufferSize,
-                &actualUDPSocketBufferSize, &framesPerFile, &frameDiscardMode,
-                &activated, &detectorDataStream[i], &silentMode));
+                &udpSocketBufferSize, &actualUDPSocketBufferSize,
+                &framesPerFile, &frameDiscardMode, &activated,
+                &detectorDataStream[i], &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, detType, fifo_ptr, &activated, &dataStreamEnable,
                 &streamingFrequency, &streamingTimerInMs, &streamingStartFnum,
@@ -880,10 +880,9 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 auto fifo_ptr = fifo[i].get();
                 listener.push_back(sls::make_unique<Listener>(
                     i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
-                    &numberOfTotalFrames, &udpSocketBufferSize,
-                    &actualUDPSocketBufferSize, &framesPerFile,
-                    &frameDiscardMode, &activated, &detectorDataStream[i],
-                    &silentMode));
+                    &udpSocketBufferSize, &actualUDPSocketBufferSize,
+                    &framesPerFile, &frameDiscardMode, &activated,
+                    &detectorDataStream[i], &silentMode));
                 listener[i]->SetGeneralData(generalData);
 
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(

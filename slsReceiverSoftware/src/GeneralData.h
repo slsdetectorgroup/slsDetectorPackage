@@ -38,7 +38,7 @@ class GeneralData {
     /** Header size of data saved into fifo buffer at a time*/
     uint32_t fifoBufferHeaderSize{0};
     uint32_t defaultFifoDepth{0};
-    uint32_t threadsPerReceiver{1};
+    uint32_t numUDPInterfaces{1};
     uint32_t headerPacketSize{0};
     /** Streaming (for ROI - mainly short Gotthard)  */
     uint32_t nPixelsXComplete{0};
@@ -54,9 +54,26 @@ class GeneralData {
     uint32_t vetoImageSize{0};
     uint32_t vetoHsize{0};
     uint32_t maxRowsPerReadout{0};
+    uint32_t dynamicRange{16};
+    bool tengigaEnable{false};
+    uint32_t nAnalogSamples{0};
+    uint32_t nDigitalSamples{0};
+    readoutMode readoutType{ANALOG_ONLY};
+    uint32_t adcEnableMaskOneGiga{BIT32_MASK};
+    uint32_t adcEnableMaskTenGiga{BIT32_MASK};
+    slsDetectorDefs::ROI roi{};
 
     GeneralData(){};
     virtual ~GeneralData(){};
+
+    // Returns the pixel depth in byte, 4 bits being 0.5 byte
+    float GetPixelDepth() { return float(dynamicRange) / 8; }
+
+    void ThrowGenericError(std::string msg) {
+        throw sls::RuntimeError(
+            msg + std::string("SetROI is a generic function that should be "
+                              "overloaded by a derived class"));
+    }
 
     /**
      * Get Header Infomation (frame number, packet number)
@@ -78,94 +95,65 @@ class GeneralData {
         bunchId = -1;
     }
 
-    /**
-     * Set ROI
-     * @param i ROI
-     */
     virtual void SetROI(slsDetectorDefs::ROI i) {
-        LOG(logERROR) << "SetROI is a generic function that should be "
-                         "overloaded by a derived class";
+        ThrowGenericError("SetROI");
     };
 
-    /**
-     * Get Adc configured
-     * @param index thread index for debugging purposes
-     * @param i
-     * @returns adc configured
-     */
+    /**@returns adc configured */
     virtual int GetAdcConfigured(int index, slsDetectorDefs::ROI i) const {
-        LOG(logERROR) << "GetAdcConfigured is a generic function that should "
-                         "be overloaded by a derived class";
+        ThrowGenericError("GetAdcConfigured");
         return 0;
     };
 
-    /**
-     * Setting dynamic range changes member variables
-     * @param dr dynamic range
-     * @param tgEnable true if 10GbE is enabled, else false
-     */
-    virtual void SetDynamicRange(int dr, bool tgEnable) {
-        LOG(logERROR) << "SetDynamicRange is a generic function that should be "
-                         "overloaded by a derived class";
+    virtual void SetDynamicRange(int dr) {
+        ThrowGenericError("SetDynamicRange");
     };
 
-    /**
-     * Setting ten giga enable changes member variables
-     * @param tgEnable true if 10GbE is enabled, else false
-     * @param dr dynamic range
-     */
-    virtual void SetTenGigaEnable(bool tgEnable, int dr) {
-        LOG(logERROR) << "SetTenGigaEnable is a generic function that should "
-                         "be overloaded by a derived class";
+    virtual void SetTenGigaEnable(bool tgEnable) {
+        ThrowGenericError("SetTenGigaEnable");
     };
 
-    /**
-     * Set odd starting packet (gotthard)
-     * @param index thread index for debugging purposes
-     * @param packetData pointer to data
-     * @returns true or false for odd starting packet number
-     */
     virtual bool SetOddStartingPacket(int index, char *packetData) {
-        LOG(logERROR) << "SetOddStartingPacket is a generic function that "
-                         "should be overloaded by a derived class";
+        ThrowGenericError("SetOddStartingPacket");
         return false;
     };
 
-    /**
-     * Set databytes (ctb, moench)
-     * @param a adc enable mask
-     * @param as analog number of samples
-     * @param ds digital number of samples
-     * @param t tengiga enable
-     * @param f readout flags
-     * @returns analog data bytes
-     */
-    virtual int setImageSize(uint32_t a, uint32_t as, uint32_t ds, bool t,
-                             slsDetectorDefs::readoutMode f) {
-        LOG(logERROR) << "setImageSize is a generic function that should be "
-                         "overloaded by a derived class";
+    virtual void SetNumberofInterfaces(const int n) {
+        ThrowGenericError("SetNumberofInterfaces");
+    };
+
+    virtual void SetNumberofCounters(const int n) {
+        ThrowGenericError("SetNumberofCounters");
+    };
+
+    virtual int GetNumberOfAnalogDatabytes() {
+        ThrowGenericError("GetNumberOfAnalogDatabytes");
         return 0;
     };
 
-    /**
-     * set number of interfaces (jungfrau)
-     * @param n number of interfaces
-     */
-    virtual void SetNumberofInterfaces(const int n) {
-        LOG(logERROR) << "SetNumberofInterfaces is a generic function that "
-                         "should be overloaded by a derived class";
-    }
+    virtual void SetNumberOfAnalogSamples(int n) {
+        ThrowGenericError("SetNumberOfAnalogSamples");
+    };
 
-    /**
-     * set number of counters (mythen3)
-     * @param n number of counters
-     * @param dr dynamic range
-     * @param tgEnable ten giga enable
-     */
-    virtual void SetNumberofCounters(const int n, const int dr, bool tgEnable) {
-        LOG(logERROR) << "SetNumberofCounters is a generic function that "
-                         "should be overloaded by a derived class";
-    }
+    virtual void SetNumberOfDigitalSamples(int n) {
+        ThrowGenericError("SetNumberOfDigitalSamples");
+    };
+
+    virtual void SetOneGigaAdcEnableMask(int n) {
+        ThrowGenericError("SetOneGigaAdcEnableMask");
+    };
+
+    virtual void SetTenGigaAdcEnableMask(int n) {
+        ThrowGenericError("SetTenGigaAdcEnableMask");
+    };
+
+    virtual void SetReadoutMode(slsDetectorDefs::readoutMode r) {
+        ThrowGenericError("SetReadoutMode");
+    };
+
+    virtual void SetTenGigaEnable(bool tg) {
+        ThrowGenericError("SetTenGigaEnable");
+    };
 };
 
 class GotthardData : public GeneralData {
@@ -175,23 +163,15 @@ class GotthardData : public GeneralData {
     const int nChipsPerAdc = 2;
 
   public:
-    /** Constructor */
     GotthardData() {
         myDetectorType = slsDetectorDefs::GOTTHARD;
-        nPixelsX = 1280;
         nPixelsY = 1;
-        headerSizeinPacket = 4;
-        dataSize = 1280;
-        packetSize = GOTTHARD_PACKET_SIZE;
-        packetsPerFrame = 2;
-        imageSize = dataSize * packetsPerFrame;
-        frameIndexMask = 0xFFFFFFFE;
-        frameIndexOffset = 1;
-        packetIndexMask = 1;
+        headerSizeinPacket = 6;
         maxFramesPerFile = MAX_FRAMES_PER_FILE;
         fifoBufferHeaderSize =
             FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
         defaultFifoDepth = 50000;
+        UpdateImageSize();
     };
 
     /**
@@ -219,56 +199,7 @@ class GotthardData : public GeneralData {
         bunchId = -1;
     }
 
-    /**
-     * Set ROI
-     * @param i ROI
-     */
-    void SetROI(slsDetectorDefs::ROI i) {
-        // all adcs
-        if (i.xmin == -1) {
-            nPixelsX = 1280;
-            dataSize = 1280;
-            packetSize = GOTTHARD_PACKET_SIZE;
-            packetsPerFrame = 2;
-            imageSize = dataSize * packetsPerFrame;
-            frameIndexMask = 0xFFFFFFFE;
-            frameIndexOffset = 1;
-            packetIndexMask = 1;
-            maxFramesPerFile = MAX_FRAMES_PER_FILE;
-            fifoBufferHeaderSize = FIFO_HEADER_NUMBYTES +
-                                   sizeof(slsDetectorDefs::sls_receiver_header);
-            defaultFifoDepth = 50000;
-            nPixelsXComplete = 0;
-            nPixelsYComplete = 0;
-            imageSizeComplete = 0;
-        }
-
-        // single adc
-        else {
-            nPixelsX = 256;
-            dataSize = 512;
-            packetSize = 518;
-            packetsPerFrame = 1;
-            imageSize = dataSize * packetsPerFrame;
-            frameIndexMask = 0xFFFFFFFF;
-            frameIndexOffset = 0;
-            packetIndexMask = 0;
-            maxFramesPerFile = SHORT_MAX_FRAMES_PER_FILE;
-            fifoBufferHeaderSize = FIFO_HEADER_NUMBYTES +
-                                   sizeof(slsDetectorDefs::sls_receiver_header);
-            defaultFifoDepth = 75000;
-            nPixelsXComplete = 1280;
-            nPixelsYComplete = 1;
-            imageSizeComplete = 1280 * 2;
-        }
-    };
-
-    /**
-     * Get Adc configured
-     * @param index thread index for debugging purposes
-     * @param i ROI
-     * @returns adc configured
-     */
+    /** @returns adc configured */
     int GetAdcConfigured(int index, slsDetectorDefs::ROI i) const {
         int adc = -1;
         // single adc
@@ -320,99 +251,114 @@ class GotthardData : public GeneralData {
         }
         return oddStartingPacket;
     };
+
+    void SetROI(slsDetectorDefs::ROI i) {
+        roi = i;
+        UpdateImageSize();
+    };
+
+  private:
+    void UpdateImageSize() {
+
+        // all adcs
+        if (roi.xmin == -1) {
+            nPixelsX = 1280;
+            dataSize = 1280;
+            packetsPerFrame = 2;
+            frameIndexMask = 0xFFFFFFFE;
+            frameIndexOffset = 1;
+            packetIndexMask = 1;
+            maxFramesPerFile = MAX_FRAMES_PER_FILE;
+            nPixelsXComplete = 0;
+            nPixelsYComplete = 0;
+            imageSizeComplete = 0;
+            defaultFifoDepth = 50000;
+        } else {
+            nPixelsX = 256;
+            dataSize = 512;
+            packetsPerFrame = 1;
+            frameIndexMask = 0xFFFFFFFF;
+            frameIndexOffset = 0;
+            packetIndexMask = 0;
+            maxFramesPerFile = SHORT_MAX_FRAMES_PER_FILE;
+            nPixelsXComplete = 1280;
+            nPixelsYComplete = 1;
+            imageSizeComplete = 1280 * 2;
+            defaultFifoDepth = 75000;
+        }
+        imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        packetSize = headerSizeinPacket + dataSize;
+        packetsPerFrame = imageSize / dataSize;
+    };
 };
 
 class EigerData : public GeneralData {
 
   public:
-    /** Constructor */
     EigerData() {
         myDetectorType = slsDetectorDefs::EIGER;
-        nPixelsX = (256 * 2);
-        nPixelsY = 256;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
-        dataSize = 1024;
-        packetSize = headerSizeinPacket + dataSize;
-        packetsPerFrame = 256;
-        imageSize = dataSize * packetsPerFrame;
         maxFramesPerFile = EIGER_MAX_FRAMES_PER_FILE;
         fifoBufferHeaderSize =
             FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-        defaultFifoDepth = 1000;
-        threadsPerReceiver = 2;
+        numUDPInterfaces = 2;
         headerPacketSize = 40;
         standardheader = true;
         maxRowsPerReadout = 256;
+        UpdateImageSize();
     };
 
-    /**
-     * Setting dynamic range changes member variables
-     * @param dr dynamic range
-     * @param tgEnable true if 10GbE is enabled, else false
-     */
-    void SetDynamicRange(int dr, bool tgEnable) {
-        packetsPerFrame = (tgEnable ? 4 : 16) * dr;
-        imageSize = dataSize * packetsPerFrame;
-        defaultFifoDepth = (dr == 32 ? 100 : 1000);
+    void SetDynamicRange(int dr) {
+        dynamicRange = dr;
+        UpdateImageSize();
     }
 
-    /**
-     * Setting ten giga enable changes member variables
-     * @param tgEnable true if 10GbE is enabled, else false
-     * @param dr dynamic range
-     */
-    void SetTenGigaEnable(bool tgEnable, int dr) {
-        dataSize = (tgEnable ? 4096 : 1024);
+    void SetTenGigaEnable(bool tgEnable) {
+        tengigaEnable = tgEnable;
+        UpdateImageSize();
+    };
+
+  private:
+    void UpdateImageSize() {
+        nPixelsX = (256 * 4) / numUDPInterfaces;
+        nPixelsY = 256;
+        dataSize = (tengigaEnable ? 4096 : 1024);
         packetSize = headerSizeinPacket + dataSize;
-        packetsPerFrame = (tgEnable ? 4 : 16) * dr;
-        imageSize = dataSize * packetsPerFrame;
+        imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        packetsPerFrame = imageSize / dataSize;
+        defaultFifoDepth = (dynamicRange == 32 ? 100 : 1000);
     };
 };
 
 class JungfrauData : public GeneralData {
 
   public:
-    /** Constructor */
     JungfrauData() {
         myDetectorType = slsDetectorDefs::JUNGFRAU;
-        nPixelsX = (256 * 4);
-        nPixelsY = 512;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         dataSize = 8192;
         packetSize = headerSizeinPacket + dataSize;
-        packetsPerFrame = 128;
-        imageSize = dataSize * packetsPerFrame;
         maxFramesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
         fifoBufferHeaderSize =
             FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
         defaultFifoDepth = 2500;
         standardheader = true;
-        defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
         maxRowsPerReadout = 512;
+        UpdateImageSize();
     };
 
-    /**
-     * set number of interfaces (jungfrau)
-     * @param n number of interfaces
-     */
     void SetNumberofInterfaces(const int n) {
-        // 2 interfaces
-        if (n == 2) {
-            nPixelsY = 256;
-            packetsPerFrame = 64;
-            imageSize = dataSize * packetsPerFrame;
-            threadsPerReceiver = 2;
-            defaultUdpSocketBufferSize = (500 * 1024 * 1024);
+        numUDPInterfaces = n;
+        UpdateImageSize();
+    };
 
-        }
-        // 1 interface
-        else {
-            nPixelsY = 512;
-            packetsPerFrame = 128;
-            imageSize = dataSize * packetsPerFrame;
-            threadsPerReceiver = 1;
-            defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
-        }
+  private:
+    void UpdateImageSize() {
+        nPixelsX = (256 * 4);
+        nPixelsY = (256 * 2) / numUDPInterfaces;
+        imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        packetsPerFrame = imageSize / dataSize;
+        defaultUdpSocketBufferSize = (1000 * 1024 * 1024) / numUDPInterfaces;
     };
 };
 
@@ -422,39 +368,44 @@ class Mythen3Data : public GeneralData {
     const int NCHAN = 1280;
 
   public:
-    /** Constructor */
     Mythen3Data() {
         myDetectorType = slsDetectorDefs::MYTHEN3;
         ncounters = 3;
-        nPixelsX = (NCHAN * ncounters); // max 1280 channels x 3 counters
         nPixelsY = 1;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
-        dataSize = 7680;
-        packetSize = headerSizeinPacket + dataSize;
-        packetsPerFrame = 2;
-        imageSize = dataSize * packetsPerFrame;
         maxFramesPerFile = MYTHEN3_MAX_FRAMES_PER_FILE;
         fifoBufferHeaderSize =
             FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
         defaultFifoDepth = 50000;
         standardheader = true;
         defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
+        UpdateImageSize();
     };
 
-    /**
-     * set number of counters (mythen3)
-     * @param n number of counters
-     * @param dr dynamic range
-     * @param tgEnable ten giga enable
-     */
-    virtual void SetNumberofCounters(const int n, const int dr, bool tgEnable) {
+    void SetDynamicRange(int dr) {
+        dynamicRange = dr;
+        UpdateImageSize();
+    };
+
+    void SetTenGigaEnable(bool tg) {
+        tengigaEnable = tg;
+        UpdateImageSize();
+    };
+
+    virtual void SetNumberofCounters(const int n) {
         ncounters = n;
-        nPixelsX = NCHAN * ncounters;
+        UpdateImageSize();
+    };
+
+  private:
+    void UpdateImageSize() {
+        nPixelsX = (NCHAN * ncounters); // max 1280 channels x 3 counters
         LOG(logINFO) << "nPixelsX: " << nPixelsX;
-        imageSize = nPixelsX * nPixelsY * ((double)dr / 8.00);
+        imageSize = nPixelsX * nPixelsY * GetPixelDepth();
+
         // 10g
-        if (tgEnable) {
-            if (dr == 32 && n > 1) {
+        if (tengigaEnable) {
+            if (dynamicRange == 32 && ncounters > 1) {
                 packetsPerFrame = 2;
             } else {
                 packetsPerFrame = 1;
@@ -463,7 +414,7 @@ class Mythen3Data : public GeneralData {
         }
         // 1g
         else {
-            if (n == 3) {
+            if (ncounters == 3) {
                 dataSize = 768;
             } else {
                 dataSize = 1280;
@@ -479,41 +430,26 @@ class Mythen3Data : public GeneralData {
 
 class Gotthard2Data : public GeneralData {
   public:
-    /** Constructor */
     Gotthard2Data() {
         myDetectorType = slsDetectorDefs::GOTTHARD2;
         nPixelsX = 128 * 10;
         nPixelsY = 1;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         dataSize = 2560; // 1280 channels * 2 bytes
-        packetSize = headerSizeinPacket + dataSize;
         packetsPerFrame = 1;
-        imageSize = dataSize * packetsPerFrame;
         maxFramesPerFile = GOTTHARD2_MAX_FRAMES_PER_FILE;
         fifoBufferHeaderSize =
             FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
         defaultFifoDepth = 50000;
         standardheader = true;
-        defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
         vetoDataSize = 160;
-        vetoImageSize = vetoDataSize * packetsPerFrame;
         vetoHsize = 16;
-        vetoPacketSize = vetoHsize + vetoDataSize;
+        UpdateImageSize();
     };
 
-    /**
-     * set number of interfaces
-     * @param n number of interfaces
-     */
     void SetNumberofInterfaces(const int n) {
-        // 2 interfaces (+veto)
-        if (n == 2) {
-            threadsPerReceiver = 2;
-        }
-        // 1 interface (data only)
-        else {
-            threadsPerReceiver = 1;
-        }
+        numUDPInterfaces = n;
+        UpdateImageSize();
     };
 
     /**
@@ -532,14 +468,23 @@ class Gotthard2Data : public GeneralData {
         bunchId = *reinterpret_cast<uint64_t *>(packetData + 8);
         packetNumber = 0;
     };
+
+  private:
+    void UpdateImageSize() {
+        packetSize = headerSizeinPacket + dataSize;
+        imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
+        packetsPerFrame = imageSize / dataSize;
+        vetoPacketSize = vetoHsize + vetoDataSize;
+        vetoImageSize = vetoDataSize * packetsPerFrame;
+        defaultUdpSocketBufferSize = (1000 * 1024 * 1024) / numUDPInterfaces;
+    };
 };
 
 class ChipTestBoardData : public GeneralData {
   private:
-    /** Number of digital channels */
     const int NCHAN_DIGITAL = 64;
-    /** Number of bytes per analog channel */
     const int NUM_BYTES_PER_ANALOG_CHANNEL = 2;
+    int nAnalogBytes = 0;
 
   public:
     /** Constructor */
@@ -548,118 +493,136 @@ class ChipTestBoardData : public GeneralData {
         nPixelsX = 36; // total number of channels
         nPixelsY = 1;  // number of samples
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
-        dataSize = UDP_PACKET_DATA_BYTES;
-        packetSize = headerSizeinPacket + dataSize;
-        // packetsPerFrame 	= 1;
-        imageSize = nPixelsX * nPixelsY * 2;
         frameIndexMask = 0xFFFFFF; // 10g
         frameIndexOffset = 8;      // 10g
         packetIndexMask = 0xFF;    // 10g
-        packetsPerFrame =
-            ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
         maxFramesPerFile = CTB_MAX_FRAMES_PER_FILE;
         fifoBufferHeaderSize =
             FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
         defaultFifoDepth = 2500;
         standardheader = true;
+        UpdateImageSize();
     };
 
-    /**
-     * Set databytes
-     * @param a adc enable mask
-     * @param as analog number of samples
-     * @param ds digital number of samples
-     * @param t tengiga enable
-     * @param f readout flags
-     * @returns analog data bytes
-     */
-    int setImageSize(uint32_t a, uint32_t as, uint32_t ds, bool t,
-                     slsDetectorDefs::readoutMode f) {
-        int nachans = 0, ndchans = 0;
-        int adatabytes = 0, ddatabytes = 0;
+  public:
+    int GetNumberOfAnalogDatabytes() { return nAnalogBytes; };
+
+    void SetNumberOfAnalogSamples(int n) {
+        nAnalogSamples = n;
+        UpdateImageSize();
+    };
+
+    void SetNumberOfDigitalSamples(int n) {
+        nDigitalSamples = n;
+        UpdateImageSize();
+    };
+
+    void SetOneGigaAdcEnableMask(int n) {
+        adcEnableMaskOneGiga = n;
+        UpdateImageSize();
+    };
+
+    void SetTenGigaAdcEnableMask(int n) {
+        adcEnableMaskTenGiga = n;
+        UpdateImageSize();
+    };
+
+    void SetReadoutMode(slsDetectorDefs::readoutMode r) {
+        readoutType = r;
+        UpdateImageSize();
+    };
+
+    void SetTenGigaEnable(bool tg) {
+        tengigaEnable = tg;
+        UpdateImageSize();
+    };
+
+  private:
+    void UpdateImageSize() {
+        nAnalogBytes = 0;
+        int nDigitalBytes = 0;
+        int nAnalogChans = 0, nDigitalChans = 0;
 
         // analog channels (normal, analog/digital readout)
-        if (f == slsDetectorDefs::ANALOG_ONLY ||
-            f == slsDetectorDefs::ANALOG_AND_DIGITAL) {
-            nachans = __builtin_popcount(a);
+        if (readoutType == slsDetectorDefs::ANALOG_ONLY ||
+            readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL) {
+            uint32_t adcEnableMask =
+                (tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga);
+            nAnalogChans = __builtin_popcount(adcEnableMask);
 
-            adatabytes = nachans * NUM_BYTES_PER_ANALOG_CHANNEL * as;
-            LOG(logDEBUG1) << " Number of Analog Channels:" << nachans
-                           << " Databytes: " << adatabytes;
+            nAnalogBytes =
+                nAnalogChans * NUM_BYTES_PER_ANALOG_CHANNEL * nAnalogSamples;
+            LOG(logDEBUG1) << " Number of Analog Channels:" << nAnalogChans
+                           << " Databytes: " << nAnalogBytes;
         }
         // digital channels
-        if (f == slsDetectorDefs::DIGITAL_ONLY ||
-            f == slsDetectorDefs::ANALOG_AND_DIGITAL) {
-            ndchans = NCHAN_DIGITAL;
-            ddatabytes = (sizeof(uint64_t) * ds);
-            LOG(logDEBUG1) << "Number of Digital Channels:" << ndchans
-                           << " Databytes: " << ddatabytes;
+        if (readoutType == slsDetectorDefs::DIGITAL_ONLY ||
+            readoutType == slsDetectorDefs::ANALOG_AND_DIGITAL) {
+            nDigitalChans = NCHAN_DIGITAL;
+            nDigitalBytes = (sizeof(uint64_t) * nDigitalSamples);
+            LOG(logDEBUG1) << "Number of Digital Channels:" << nDigitalChans
+                           << " Databytes: " << nDigitalBytes;
         }
-        LOG(logDEBUG1) << "Total Number of Channels:" << nachans + ndchans
-                       << " Databytes: " << adatabytes + ddatabytes;
 
-        nPixelsX = nachans + ndchans;
+        nPixelsX = nAnalogChans + nDigitalChans;
         nPixelsY = 1;
+        LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX
+                       << " Databytes: " << nAnalogBytes + nDigitalBytes;
 
-        // 10G
-        if (t) {
-            dataSize = 8144;
-        }
-        // 1g udp (via fifo readout)
-        else {
-            dataSize = UDP_PACKET_DATA_BYTES;
-        }
-
+        dataSize = tengigaEnable ? 8144 : UDP_PACKET_DATA_BYTES;
         packetSize = headerSizeinPacket + dataSize;
         imageSize = adatabytes + ddatabytes;
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
-
-        return adatabytes;
-    }
+    };
 };
 
 class MoenchData : public GeneralData {
 
   private:
-    /** Number of bytes per analog channel */
     const int NUM_BYTES_PER_ANALOG_CHANNEL = 2;
 
   public:
-    /** Constructor */
     MoenchData() {
         myDetectorType = slsDetectorDefs::MOENCH;
-        nPixelsX = 32; // total number of channels
-        nPixelsY = 1;  // number of samples
+        nPixelsY = 1; // number of samples
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
-        dataSize = UDP_PACKET_DATA_BYTES;
-        packetSize = headerSizeinPacket + dataSize;
-        // packetsPerFrame 		= 1;
-        imageSize = nPixelsX * nPixelsY * 2;
-        packetsPerFrame =
-            ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
         frameIndexMask = 0xFFFFFF;
         maxFramesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
         fifoBufferHeaderSize =
             FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
         defaultFifoDepth = 2500;
         standardheader = true;
+        UpdateImageSize();
     };
 
-    /**
-     * Set databytes
-     * @param a adc enable mask
-     * @param as analog number of samples
-     * @param ds digital number of samples
-     * @param t tengiga enable
-     * @param f readout flags
-     * @returns analog data bytes
-     */
-    int setImageSize(uint32_t a, uint32_t as, uint32_t ds, bool t,
-                     slsDetectorDefs::readoutMode f) {
+    void SetNumberOfAnalogSamples(int n) {
+        nAnalogSamples = n;
+        UpdateImageSize();
+    };
+
+    void SetOneGigaAdcEnableMask(int n) {
+        adcEnableMaskOneGiga = n;
+        UpdateImageSize();
+    };
+
+    void SetTenGigaAdcEnableMask(int n) {
+        adcEnableMaskTenGiga = n;
+        UpdateImageSize();
+    };
+
+    void SetTenGigaEnable(bool tg) {
+        tengigaEnable = tg;
+        UpdateImageSize();
+    };
+
+  private:
+    void UpdateImageSize() {
+        uint32_t adcEnableMask =
+            (tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga);
 
         // count number of channels in x, each adc has 25 channels each
-        int nchanTop = __builtin_popcount(a & 0xF0F0F0F0) * 25;
-        int nchanBot = __builtin_popcount(a & 0x0F0F0F0F) * 25;
+        int nchanTop = __builtin_popcount(adcEnableMask & 0xF0F0F0F0) * 25;
+        int nchanBot = __builtin_popcount(adcEnableMask & 0x0F0F0F0F) * 25;
         nPixelsX = nchanTop > 0 ? nchanTop : nchanBot;
 
         // if both top and bottom adcs enabled, rows = 2
@@ -667,25 +630,15 @@ class MoenchData : public GeneralData {
         if (nchanTop > 0 && nchanBot > 0) {
             nrows = 2;
         }
-        nPixelsY = as / 25 * nrows;
+        nPixelsY = nAnalogSamples / 25 * nrows;
         LOG(logINFO) << "Number of Pixels: [" << nPixelsX << ", " << nPixelsY
                      << "]";
 
-        // 10G
-        if (t) {
-            dataSize = 8144;
-        }
-        // 1g udp (via fifo readout)
-        else {
-            dataSize = UDP_PACKET_DATA_BYTES;
-        }
-
-        imageSize = nPixelsX * nPixelsY * NUM_BYTES_PER_ANALOG_CHANNEL;
+        dataSize = tengigaEnable ? 8144 : UDP_PACKET_DATA_BYTES;
         packetSize = headerSizeinPacket + dataSize;
+        imageSize = nPixelsX * nPixelsY * NUM_BYTES_PER_ANALOG_CHANNEL;
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
 
         LOG(logDEBUG) << "Databytes: " << imageSize;
-
-        return imageSize;
-    }
+    };
 };

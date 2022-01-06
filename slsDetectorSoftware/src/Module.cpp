@@ -3114,8 +3114,8 @@ void Module::initializeModuleStructure(detectorType type) {
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
     shm()->useReceiverFlag = false;
-    shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
-                     (moduleIndex * ((shm()->detType == EIGER) ? 2 : 1));
+    shm()->zmqport =
+        DEFAULT_ZMQ_CL_PORTNO + moduleIndex * shm()->numUDPInterfaces;
     shm()->zmqip = IpAddr{};
     shm()->numUDPInterfaces = 1;
     shm()->stoppedFlag = false;

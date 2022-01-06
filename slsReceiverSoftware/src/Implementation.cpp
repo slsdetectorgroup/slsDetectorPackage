@@ -64,7 +64,7 @@ void Implementation::SetThreadPriorities() {
 
 void Implementation::SetupFifoStructure() {
     fifo.clear();
-    for (int i = 0; i < numThreads; ++i) {
+    for (int i = 0; i < numUDPInterfaces; ++i) {
         uint32_t datasize = generalData->imageSize;
         // veto data size
         if (detType == GOTTHARD2 && i != 0) {
@@ -97,7 +97,7 @@ void Implementation::SetupFifoStructure() {
                             (double)(1024 * 1024)
                      << " MB";
     }
-    LOG(logINFO) << numThreads << " Fifo structure(s) reconstructed";
+    LOG(logINFO) << numUDPInterfaces << " Fifo structure(s) reconstructed";
 }
 
 /**************************************************
@@ -152,7 +152,7 @@ void Implementation::setDetectorType(const detectorType d) {
     default:
         break;
     }
-    numThreads = generalData->threadsPerReceiver;
+    numUDPInterfaces = generalData->numUDPInterfaces;
     fifoDepth = generalData->defaultFifoDepth;
     udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
     framesPerFile = generalData->maxFramesPerFile;
@@ -161,7 +161,7 @@ void Implementation::setDetectorType(const detectorType d) {
     SetupFifoStructure();
 
     // create threads
-    for (int i = 0; i < numThreads; ++i) {
+    for (int i = 0; i < numUDPInterfaces; ++i) {
 
         try {
             auto fifo_ptr = fifo[i].get();
@@ -170,6 +170,10 @@ void Implementation::setDetectorType(const detectorType d) {
                 &udpSocketBufferSize, &actualUDPSocketBufferSize,
                 &framesPerFile, &frameDiscardMode, &activated,
                 &detectorDataStream[i], &silentMode));
+            int ctbAnalogDataBytes = 0;
+            if (myDetectorType == CHIPTESTBOARD) {
+                ctbAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
+            }
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, detType, fifo_ptr, &activated, &dataStreamEnable,
                 &streamingFrequency, &streamingTimerInMs, &streamingStartFnum,
@@ -308,7 +312,7 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
     } else {
         retval[id++] = 0;
     }
-    if (numThreads == 2) {
+    if (numUDPInterfaces == 2) {
         retval[id++] = listener[1]->GetThreadId();
         retval[id++] = dataProcessor[1]->GetThreadId();
         if (dataStreamEnable) {
@@ -474,8 +478,8 @@ double Implementation::getProgress() const {
 }
 
 std::vector<uint64_t> Implementation::getNumMissingPackets() const {
-    std::vector<uint64_t> mp(numThreads);
-    for (int i = 0; i < numThreads; i++) {
+    std::vector<uint64_t> mp(numUDPInterfaces);
+    for (int i = 0; i < numUDPInterfaces; i++) {
         int np = generalData->packetsPerFrame;
         uint64_t totnp = np;
         // ReadNRows
@@ -565,8 +569,9 @@ void Implementation::stopReceiver() {
                 (numMods[X] * numMods[Y]) > 1) {
                 dataProcessor[0]->CreateVirtualFile(
                     filePath, fileName, fileIndex, overwriteEnable, silentMode,
-                    modulePos, numThreads, framesPerFile, numberOfTotalFrames,
-                    dynamicRange, numMods[X], numMods[Y], &hdf5Lib);
+                    modulePos, numUDPInterfaces, framesPerFile,
+                    numberOfTotalFrames, dynamicRange, numMods[X], numMods[Y],
+                    &hdf5Lib);
             }
             // link file in master
             dataProcessor[0]->LinkDataInMasterFile(silentMode);
@@ -603,7 +608,7 @@ void Implementation::stopReceiver() {
         }
         // print summary
         uint64_t tot = 0;
-        for (int i = 0; i < numThreads; i++) {
+        for (int i = 0; i < numUDPInterfaces; i++) {
             int nf = dataProcessor[i]->GetNumCompleteFramesCaught();
             tot += nf;
             std::string mpMessage = std::to_string(mp[i]);
@@ -634,7 +639,7 @@ void Implementation::stopReceiver() {
         // callback
         if (acquisitionFinishedCallBack) {
             try {
-                acquisitionFinishedCallBack((tot / numThreads),
+                acquisitionFinishedCallBack((tot / numUDPInterfaces),
                                             pAcquisitionFinished);
             } catch (const std::exception &e) {
                 // change status
@@ -815,7 +820,7 @@ void Implementation::SetupWriter() {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             dataProcessor[i]->CreateFirstFiles(
                 masterAttributes.get(), filePath, fileName, fileIndex,
-                overwriteEnable, silentMode, modulePos, numThreads,
+                overwriteEnable, silentMode, modulePos, numUDPInterfaces,
                 udpPortNum[i], framesPerFile, numberOfTotalFrames, dynamicRange,
                 detectorDataStream[i]);
         }
@@ -873,14 +878,13 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
 
         // set local variables
         generalData->SetNumberofInterfaces(n);
-        numThreads = generalData->threadsPerReceiver;
         udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
 
         // fifo
         SetupFifoStructure();
 
         // create threads
-        for (int i = 0; i < numThreads; ++i) {
+        for (int i = 0; i < numUDPInterfaces; ++i) {
             // listener and dataprocessor threads
             try {
                 auto fifo_ptr = fifo[i].get();
@@ -891,6 +895,11 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     &detectorDataStream[i], &silentMode));
                 listener[i]->SetGeneralData(generalData);
 
+                int ctbAnalogDataBytes = 0;
+                if (myDetectorType == CHIPTESTBOARD) {
+                    ctbAnalogDataBytes =
+                        generalData->GetNumberOfAnalogDatabytes();
+                }
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
                     i, detType, fifo_ptr, &activated, &dataStreamEnable,
                     &streamingFrequency, &streamingTimerInMs,
@@ -919,7 +928,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         (int *)nm, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
-                        &numThreads, streamingPort, streamingSrcIP,
+                        &numUDPInterfaces, streamingPort, streamingSrcIP,
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
@@ -1034,7 +1043,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
         dataStreamer.clear();
 
         if (enable) {
-            for (int i = 0; i < numThreads; ++i) {
+            for (int i = 0; i < numUDPInterfaces; ++i) {
                 try {
                     bool flip = flipRows;
                     int nm[2] = {numMods[0], numMods[1]};
@@ -1048,7 +1057,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         (int *)nm, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
-                        &numThreads, streamingPort, streamingSrcIP,
+                        &numUDPInterfaces, streamingPort, streamingSrcIP,
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
@@ -1353,11 +1362,7 @@ void Implementation::setNumberofAnalogSamples(const uint32_t i) {
     if (numberOfAnalogSamples != i) {
         numberOfAnalogSamples = i;
 
-        ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
-            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
-            readoutType);
-
+        generalData->SetNumberOfAnalogSamples(i);
         SetupFifoStructure();
     }
     LOG(logINFO) << "Number of Analog Samples: " << numberOfAnalogSamples;
@@ -1372,11 +1377,7 @@ void Implementation::setNumberofDigitalSamples(const uint32_t i) {
     if (numberOfDigitalSamples != i) {
         numberOfDigitalSamples = i;
 
-        ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
-            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
-            readoutType);
-
+        generalData->SetNumberOfDigitalSamples(i);
         SetupFifoStructure();
     }
     LOG(logINFO) << "Number of Digital Samples: " << numberOfDigitalSamples;
@@ -1394,8 +1395,7 @@ void Implementation::setCounterMask(const uint32_t i) {
                                     ". Expected 1-3.");
         }
         counterMask = i;
-        generalData->SetNumberofCounters(ncounters, dynamicRange,
-                                         tengigaEnable);
+        generalData->SetNumberofCounters(ncounters);
         SetupFifoStructure();
     }
     LOG(logINFO) << "Counter mask: " << sls::ToStringHex(counterMask);
@@ -1410,14 +1410,7 @@ void Implementation::setDynamicRange(const uint32_t i) {
         dynamicRange = i;
 
         if (detType == EIGER || detType == MYTHEN3) {
-
-            if (detType == EIGER) {
-                generalData->SetDynamicRange(i, tengigaEnable);
-            } else {
-                int ncounters = __builtin_popcount(counterMask);
-                generalData->SetNumberofCounters(ncounters, i, tengigaEnable);
-            }
-
+            generalData->SetDynamicRange(i);
             fifoDepth = generalData->defaultFifoDepth;
             SetupFifoStructure();
         }
@@ -1447,25 +1440,8 @@ bool Implementation::getTenGigaEnable() const { return tengigaEnable; }
 void Implementation::setTenGigaEnable(const bool b) {
     if (tengigaEnable != b) {
         tengigaEnable = b;
-        int ncounters = __builtin_popcount(counterMask);
-        // side effects
-        switch (detType) {
-        case EIGER:
-            generalData->SetTenGigaEnable(b, dynamicRange);
-            break;
-        case MYTHEN3:
-            generalData->SetNumberofCounters(ncounters, dynamicRange, b);
-            break;
-        case MOENCH:
-        case CHIPTESTBOARD:
-            ctbAnalogDataBytes = generalData->setImageSize(
-                tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
-                numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
-                readoutType);
-            break;
-        default:
-            break;
-        }
+
+        generalData->SetTenGigaEnable(b);
         SetupFifoStructure();
     }
     LOG(logINFO) << "Ten Giga: " << (tengigaEnable ? "enabled" : "disabled");
@@ -1568,11 +1544,7 @@ void Implementation::setReadoutMode(const readoutMode f) {
     if (readoutType != f) {
         readoutType = f;
 
-        // side effects
-        ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
-            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
-            readoutType);
+        generalData->SetReadoutMode(f);
         SetupFifoStructure();
     }
     LOG(logINFO) << "Readout Mode: " << sls::ToString(f);
@@ -1586,11 +1558,8 @@ uint32_t Implementation::getADCEnableMask() const {
 void Implementation::setADCEnableMask(uint32_t mask) {
     if (adcEnableMaskOneGiga != mask) {
         adcEnableMaskOneGiga = mask;
-        ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
-            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
-            readoutType);
 
+        generalData->SetOneGigaAdcEnableMask(mask);
         SetupFifoStructure();
     }
     LOG(logINFO) << "ADC Enable Mask for 1Gb mode: 0x" << std::hex
@@ -1606,11 +1575,7 @@ void Implementation::setTenGigaADCEnableMask(uint32_t mask) {
     if (adcEnableMaskTenGiga != mask) {
         adcEnableMaskTenGiga = mask;
 
-        ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
-            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
-            readoutType);
-
+        generalData->SetTenGigaAdcEnableMask(mask);
         SetupFifoStructure();
     }
     LOG(logINFO) << "ADC Enable Mask for 10Gb mode: 0x" << std::hex

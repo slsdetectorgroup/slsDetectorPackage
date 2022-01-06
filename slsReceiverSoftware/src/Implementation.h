@@ -278,7 +278,6 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
 
     // config parameters
-    int numThreads{1};
     detectorType detType{GENERIC};
     int numMods[MAX_DIMENSIONS] = {0, 0};
     int modulePos{0};
@@ -361,7 +360,6 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t adcEnableMaskTenGiga{BIT32_MASK};
     std::vector<int> ctbDbitList;
     int ctbDbitOffset{0};
-    int ctbAnalogDataBytes{0};
 
     // callbacks
     int (*startAcquisitionCallBack)(std::string, std::string, uint64_t,

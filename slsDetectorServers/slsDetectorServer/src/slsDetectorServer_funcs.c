@@ -4727,13 +4727,12 @@ void calculate_and_set_position() {
     }
 
     // calculating new position
-    int numInterfaces = getNumberofUDPInterfaces();
     int modulePorts[2] = {1, 1};
     // position does change for eiger and jungfrau (2 interfaces)
 #if defined(EIGERD)
-    modulePorts[1] = numInterfaces; // horz
+    modulePorts[1] = getNumberofUDPInterfaces(); // horz
 #elif defined(JUNGFRAUD)
-    modulePorts[0] = numInterfaces; // vert
+    modulePorts[0] = getNumberofUDPInterfaces(); // vert
 #endif
     int maxy = maxydet * modulePorts[0];
     int pos[2] = {0, 0};

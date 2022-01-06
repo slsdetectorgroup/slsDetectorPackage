@@ -23,10 +23,10 @@ const std::string Listener::TypeName = "Listener";
 
 Listener::Listener(int ind, detectorType dtype, Fifo *f,
                    std::atomic<runStatus> *s, uint32_t *portno, std::string *e,
-                   uint64_t *nf, int *us, int *as, uint32_t *fpf,
-                   frameDiscardPolicy *fdp, bool *act, bool *detds, bool *sm)
+                   int *us, int *as, uint32_t *fpf, frameDiscardPolicy *fdp,
+                   bool *act, bool *detds, bool *sm)
     : ThreadObject(ind, TypeName), fifo(f), myDetectorType(dtype), status(s),
-      udpPortNumber(portno), eth(e), numImages(nf), udpSocketBufferSize(us),
+      udpPortNumber(portno), eth(e), udpSocketBufferSize(us),
       actualUDPSocketBufferSize(as), framesPerFile(fpf), frameDiscardMode(fdp),
       activated(act), detectorDataStream(detds), silentMode(sm) {
     LOG(logDEBUG) << "Listener " << ind << " created";
@@ -40,8 +40,8 @@ uint64_t Listener::GetLastFrameIndexCaught() const {
     return lastCaughtFrameIndex;
 }
 
-uint64_t Listener::GetNumMissingPacket(bool stoppedFlag,
-                                       uint64_t numPackets) const {
+int64_t Listener::GetNumMissingPacket(bool stoppedFlag,
+                                      uint64_t numPackets) const {
     if (!stoppedFlag) {
         return (numPackets - numPacketsCaught);
     }

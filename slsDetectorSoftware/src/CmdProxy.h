@@ -859,7 +859,7 @@ class CmdProxy {
         {"rx_status", &CmdProxy::ReceiverStatus},
         {"status", &CmdProxy::DetectorStatus},
         {"rx_framescaught", &CmdProxy::rx_framescaught},
-        {"rx_missingpackets", &CmdProxy::rx_missingpackets},
+        {"rx_missingpackets", &CmdProxy::RxMissingPackets},
         {"nextframenumber", &CmdProxy::nextframenumber},
         {"trigger", &CmdProxy::Trigger},
         {"scan", &CmdProxy::Scan},
@@ -1128,6 +1128,7 @@ class CmdProxy {
     /* acquisition */
     std::string ReceiverStatus(int action);
     std::string DetectorStatus(int action);
+    std::string RxMissingPackets(int action);
     std::string Scan(int action);
     std::string Trigger(int action);
     /* Network Configuration (Detector<->Receiver) */

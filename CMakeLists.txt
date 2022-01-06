@@ -208,6 +208,9 @@ if (NOT TARGET libzmq)
   endif()
 endif()
 
+get_target_property(VAR libzmq INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "zmq: ${VAR}")
+
 if (SLS_USE_TESTS)
     enable_testing()
     add_subdirectory(tests)

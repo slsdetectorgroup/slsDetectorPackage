@@ -167,14 +167,14 @@ void Implementation::setDetectorType(const detectorType d) {
             auto fifo_ptr = fifo[i].get();
             listener.push_back(sls::make_unique<Listener>(
                 i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
-                &numberOfTotalFrames, &udpSocketBufferSize,
-                &actualUDPSocketBufferSize, &framesPerFile, &frameDiscardMode,
-                &activated, &detectorDataStream[i], &silentMode));
+                &udpSocketBufferSize, &actualUDPSocketBufferSize,
+                &framesPerFile, &frameDiscardMode, &activated,
+                &detectorDataStream[i], &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, detType, fifo_ptr, &activated, &dataStreamEnable,
                 &streamingFrequency, &streamingTimerInMs, &streamingStartFnum,
                 &framePadding, &ctbDbitList, &ctbDbitOffset,
-                &ctbAnalogDataBytes, &hdf5Lib));
+                &ctbAnalogDataBytes));
         } catch (...) {
             listener.clear();
             dataProcessor.clear();
@@ -237,7 +237,7 @@ void Implementation::setModulePositionId(const int id) {
 
     for (const auto &it : dataProcessor)
         it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                            fileFormatType, modulePos);
+                            fileFormatType, modulePos, &hdf5Lib);
     assert(numMods[1] != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
@@ -345,7 +345,7 @@ void Implementation::setFileFormat(const fileFormat f) {
         }
         for (const auto &it : dataProcessor)
             it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos);
+                                fileFormatType, modulePos, &hdf5Lib);
     }
 
     LOG(logINFO) << "File Format: " << sls::ToString(fileFormatType);
@@ -382,7 +382,7 @@ void Implementation::setFileWriteEnable(const bool b) {
         fileWriteEnable = b;
         for (const auto &it : dataProcessor)
             it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos);
+                                fileFormatType, modulePos, &hdf5Lib);
     }
     LOG(logINFO) << "File Write Enable: "
                  << (fileWriteEnable ? "enabled" : "disabled");
@@ -397,7 +397,7 @@ void Implementation::setMasterFileWriteEnable(const bool b) {
         masterFileWriteEnable = b;
         for (const auto &it : dataProcessor)
             it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos);
+                                fileFormatType, modulePos, &hdf5Lib);
     }
     LOG(logINFO) << "Master File Write Enable: "
                  << (masterFileWriteEnable ? "enabled" : "disabled");
@@ -473,9 +473,9 @@ double Implementation::getProgress() const {
             ((double)(currentFrameIndex + 1) / (double)numberOfTotalFrames));
 }
 
-std::vector<uint64_t> Implementation::getNumMissingPackets() const {
-    std::vector<uint64_t> mp(numThreads);
-    for (int i = 0; i < numThreads; i++) {
+std::vector<int64_t> Implementation::getNumMissingPackets() const {
+    std::vector<int64_t> mp(numThreads);
+    for (int i = 0; i < numThreads; ++i) {
         int np = generalData->packetsPerFrame;
         uint64_t totnp = np;
         // ReadNRows
@@ -566,7 +566,7 @@ void Implementation::stopReceiver() {
                 dataProcessor[0]->CreateVirtualFile(
                     filePath, fileName, fileIndex, overwriteEnable, silentMode,
                     modulePos, numThreads, framesPerFile, numberOfTotalFrames,
-                    dynamicRange, numMods[X], numMods[Y]);
+                    dynamicRange, numMods[X], numMods[Y], &hdf5Lib);
             }
             // link file in master
             dataProcessor[0]->LinkDataInMasterFile(silentMode);
@@ -595,18 +595,19 @@ void Implementation::stopReceiver() {
     LOG(logINFO) << "Status: " << sls::ToString(status);
 
     { // statistics
-        std::vector<uint64_t> mp = getNumMissingPackets();
+        auto mp = getNumMissingPackets();
+        // print summary
         uint64_t tot = 0;
         for (int i = 0; i < numThreads; i++) {
             int nf = dataProcessor[i]->GetNumCompleteFramesCaught();
             tot += nf;
-            std::string mpMessage = std::to_string((int64_t)mp[i]);
-            if ((int64_t)mp[i] < 0) {
+            std::string mpMessage = std::to_string(mp[i]);
+            if (mp[i] < 0) {
                 mpMessage =
-                    std::to_string(abs(mp[i])) + std::string(" (Extra)");
+                    std::to_string(std::abs(mp[i])) + std::string(" (Extra)");
             }
 
-            TLogLevel lev = (((int64_t)mp[i]) > 0) ? logINFORED : logINFOGREEN;
+            TLogLevel lev = ((mp[i]) > 0) ? logINFORED : logINFOGREEN;
             LOG(lev) <<
                 // udp port number could be the second if selected interface is
                 // 2 for jungfrau
@@ -880,17 +881,16 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 auto fifo_ptr = fifo[i].get();
                 listener.push_back(sls::make_unique<Listener>(
                     i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
-                    &numberOfTotalFrames, &udpSocketBufferSize,
-                    &actualUDPSocketBufferSize, &framesPerFile,
-                    &frameDiscardMode, &activated, &detectorDataStream[i],
-                    &silentMode));
+                    &udpSocketBufferSize, &actualUDPSocketBufferSize,
+                    &framesPerFile, &frameDiscardMode, &activated,
+                    &detectorDataStream[i], &silentMode));
                 listener[i]->SetGeneralData(generalData);
 
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
                     i, detType, fifo_ptr, &activated, &dataStreamEnable,
                     &streamingFrequency, &streamingTimerInMs,
                     &streamingStartFnum, &framePadding, &ctbDbitList,
-                    &ctbDbitOffset, &ctbAnalogDataBytes, &hdf5Lib));
+                    &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
             } catch (...) {
                 listener.clear();

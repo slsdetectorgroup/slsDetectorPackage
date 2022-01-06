@@ -32,7 +32,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                   uint32_t *streamingFrequency, uint32_t *streamingTimerInMs,
                   uint32_t *streamingStartFnum, bool *framePadding,
                   std::vector<int> *ctbDbitList, int *ctbDbitOffset,
-                  int *ctbAnalogDataBytes, std::mutex *hdf5Lib);
+                  int *ctbAnalogDataBytes);
 
     ~DataProcessor() override;
 
@@ -52,7 +52,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void DeleteFiles();
     void SetupFileWriter(const bool filewriteEnable,
                          const bool masterFilewriteEnable,
-                         const fileFormat fileFormatType, const int modulePos);
+                         const fileFormat fileFormatType, const int modulePos,
+                         std::mutex *hdf5Lib);
 
     void CreateFirstFiles(MasterAttributes *attr, const std::string filePath,
                           const std::string fileNamePrefix,
@@ -73,7 +74,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                            const uint32_t maxFramesPerFile,
                            const uint64_t numImages,
                            const uint32_t dynamicRange, const int numModX,
-                           const int numModY);
+                           const int numModY, std::mutex *hdf5Lib);
     void LinkDataInMasterFile(const bool silentMode);
 #endif
     void UpdateMasterFile(bool silentMode);
@@ -188,7 +189,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     File *dataFile_{nullptr};
     File *masterFile_{nullptr};
-    std::mutex *hdf5Lib_;
 #ifdef HDF5C
     File *virtualFile_{nullptr};
 #endif

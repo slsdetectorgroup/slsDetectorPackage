@@ -19,6 +19,7 @@ This document describes the differences between v6.1.0 and v6.0.0.
 1. New or Changed Features
 ==========================
 
+- Fixed minor warnings (will fix commandline print of excess packets for missing packets)
 
 
 2. Resolved Issues

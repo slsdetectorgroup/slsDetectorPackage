@@ -1299,6 +1299,8 @@ int getExtSignal(int signalIndex) {
 
 /* configure mac */
 
+int getNumberofUDPInterfaces() { return 1; }
+
 void calcChecksum(mac_conf *mac, int sourceip, int destip) {
     mac->ip.ip_ver = 0x4;
     mac->ip.ip_ihl = 0x5;

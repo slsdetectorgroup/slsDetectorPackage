@@ -1492,6 +1492,8 @@ enum timingMode getTiming() {
 
 /* configure mac */
 
+int getNumberofUDPInterfaces() { return 1; }
+
 void calcChecksum(udp_header *udp) {
     int count = IP_HEADER_SIZE;
     long int sum = 0;

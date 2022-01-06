@@ -387,8 +387,8 @@ void calcChecksum(mac_conf *mac, int sourceip, int destip);
 #endif
 #if defined(JUNGFRAUD) || defined(GOTTHARD2D)
 void setNumberofUDPInterfaces(int val);
-int getNumberofUDPInterfaces();
 #endif
+int getNumberofUDPInterfaces();
 
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int getNumberofDestinations(int *retval);

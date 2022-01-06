@@ -1500,6 +1500,7 @@ enum timingMode getTiming() {
 }
 
 /* configure mac */
+int getNumberofUDPInterfaces() { return 2; }
 
 int getNumberofDestinations(int *retval) {
 #ifdef VIRTUAL

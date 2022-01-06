@@ -1719,6 +1719,8 @@ int getExtSignal(int signalIndex) {
     }
 }
 
+int getNumberofUDPInterfaces() { return 1; }
+
 int configureMAC() {
 
     uint32_t srcip = udpDetails[0].srcip;

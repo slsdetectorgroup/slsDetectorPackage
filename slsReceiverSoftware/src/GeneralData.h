@@ -561,14 +561,13 @@ class ChipTestBoardData : public GeneralData {
         }
 
         nPixelsX = nAnalogChans + nDigitalChans;
-        nPixelsY = 1;
-        LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX
-                       << " Databytes: " << nAnalogBytes + nDigitalBytes;
-
         dataSize = tengigaEnable ? 8144 : UDP_PACKET_DATA_BYTES;
         packetSize = headerSizeinPacket + dataSize;
         imageSize = nAnalogBytes + nDigitalBytes;
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
+
+        LOG(logDEBUG1) << "Total Number of Channels:" << nPixelsX
+                       << " Databytes: " << imageSize;
     };
 };
 
@@ -580,7 +579,6 @@ class MoenchData : public GeneralData {
   public:
     MoenchData() {
         myDetectorType = slsDetectorDefs::MOENCH;
-        nPixelsY = 1; // number of samples
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         frameIndexMask = 0xFFFFFF;
         maxFramesPerFile = MOENCH_MAX_FRAMES_PER_FILE;

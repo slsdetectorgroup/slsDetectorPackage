@@ -545,9 +545,8 @@ void DetectorImpl::readFrameFromReceiver() {
                         nPixelsX = zHeader.npixelsx;
                         nPixelsY = zHeader.npixelsy;
                         // module shape
-                        nX = zHeader.ndetx *
-                             module_ports[1]; // TODO: check if module_ports[1]
-                                              // needed
+                        nX = zHeader.ndetx; // * module_ports[1]; // TODO: check
+                                            // if module_ports[1] needed
                         nY = zHeader.ndety * module_ports[0];
                         nDetPixelsX = nX * nPixelsX;
                         nDetPixelsY = nY * nPixelsY;

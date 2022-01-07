@@ -58,7 +58,7 @@ class GeneralData {
     bool tengigaEnable{false};
     uint32_t nAnalogSamples{0};
     uint32_t nDigitalSamples{0};
-    readoutMode readoutType{ANALOG_ONLY};
+    slsDetectorDefs::readoutMode readoutType{slsDetectorDefs::ANALOG_ONLY};
     uint32_t adcEnableMaskOneGiga{BIT32_MASK};
     uint32_t adcEnableMaskTenGiga{BIT32_MASK};
     slsDetectorDefs::ROI roi{};
@@ -69,7 +69,7 @@ class GeneralData {
     // Returns the pixel depth in byte, 4 bits being 0.5 byte
     float GetPixelDepth() { return float(dynamicRange) / 8; }
 
-    void ThrowGenericError(std::string msg) {
+    void ThrowGenericError(std::string msg) const {
         throw sls::RuntimeError(
             msg + std::string("SetROI is a generic function that should be "
                               "overloaded by a derived class"));
@@ -149,10 +149,6 @@ class GeneralData {
 
     virtual void SetReadoutMode(slsDetectorDefs::readoutMode r) {
         ThrowGenericError("SetReadoutMode");
-    };
-
-    virtual void SetTenGigaEnable(bool tg) {
-        ThrowGenericError("SetTenGigaEnable");
     };
 };
 
@@ -571,7 +567,7 @@ class ChipTestBoardData : public GeneralData {
 
         dataSize = tengigaEnable ? 8144 : UDP_PACKET_DATA_BYTES;
         packetSize = headerSizeinPacket + dataSize;
-        imageSize = adatabytes + ddatabytes;
+        imageSize = nAnalogBytes + nDigitalBytes;
         packetsPerFrame = ceil((double)imageSize / (double)dataSize);
     };
 };

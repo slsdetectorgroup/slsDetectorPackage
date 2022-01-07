@@ -171,7 +171,7 @@ void Implementation::setDetectorType(const detectorType d) {
                 &framesPerFile, &frameDiscardMode, &activated,
                 &detectorDataStream[i], &silentMode));
             int ctbAnalogDataBytes = 0;
-            if (myDetectorType == CHIPTESTBOARD) {
+            if (detType == CHIPTESTBOARD) {
                 ctbAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
             }
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
@@ -896,7 +896,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 listener[i]->SetGeneralData(generalData);
 
                 int ctbAnalogDataBytes = 0;
-                if (myDetectorType == CHIPTESTBOARD) {
+                if (detType == CHIPTESTBOARD) {
                     ctbAnalogDataBytes =
                         generalData->GetNumberOfAnalogDatabytes();
                 }

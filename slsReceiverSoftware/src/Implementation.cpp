@@ -198,26 +198,30 @@ void Implementation::setDetectorType(const detectorType d) {
     LOG(logDEBUG) << " Detector type set to " << sls::ToString(d);
 }
 
-int *Implementation::getDetectorSize() const { return (int *)numMods; }
+PortGeometry Implementation::getDetectorSize() const { return numModules; }
+
+PortGeometry Implementation::GetPortGeometry() {
+    portGeometry = {{1, 1}};
+    if (detType == EIGER)
+        portGeometry[X] = numUDPInterfaces;
+    else // (jungfrau and gotthard2)
+        portGeometry[Y] = numUDPInterfaces;
+    return portGeometry;
+}
 
 void Implementation::setDetectorSize(const int *size) {
+    PortGeometry portGeometry = GetPortGeometry();
+
     std::string log_message = "Detector Size (ports): (";
     for (int i = 0; i < MAX_DIMENSIONS; ++i) {
-        // x dir (colums) each udp port
-        if (detType == EIGER && i == X)
-            numMods[i] = size[i] * 2;
-        // y dir (rows) each udp port
-        else if (numUDPInterfaces == 2 && i == Y)
-            numMods[i] = size[i] * 2;
-        else
-            numMods[i] = size[i];
-        log_message += std::to_string(numMods[i]);
+        numModules = portGeometry[i] * size[i];
+        log_message += std::to_string(numModules[i]);
         if (i < MAX_DIMENSIONS - 1)
             log_message += ", ";
     }
     log_message += ")";
 
-    int nm[2] = {numMods[0], numMods[1]};
+    int nm[2] = {numModules[X], numModules[Y]};
     if (quadEnable) {
         nm[0] = 1;
         nm[1] = 2;
@@ -236,19 +240,18 @@ void Implementation::setModulePositionId(const int id) {
     LOG(logINFO) << "Module Position Id:" << modulePos;
 
     // update zmq port
-    streamingPort =
-        DEFAULT_ZMQ_RX_PORTNO + (modulePos * (detType == EIGER ? 2 : 1));
+    PortGeometry portGeometry = GetPortGeometry();
+    streamingPort = DEFAULT_ZMQ_RX_PORTNO + modulePos * portGeometry[X];
 
     for (const auto &it : dataProcessor)
         it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
                             fileFormatType, modulePos, &hdf5Lib);
-    assert(numMods[1] != 0);
+    assert(numModules[Y] != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
-        row =
-            (modulePos % numMods[1]) * ((numUDPInterfaces == 2) ? 2 : 1); // row
-        col = (modulePos / numMods[1]) * ((detType == EIGER) ? 2 : 1) +
-              i; // col for horiz. udp ports
+        row = (modulePos % numMods[Y]) * portGeometry[Y];
+        col = (modulePos / numMods[Y]) * portGeometry[X] + i;
+
         listener[i]->SetHardCodedPosition(row, col);
     }
 }
@@ -566,12 +569,12 @@ void Implementation::stopReceiver() {
         if (modulePos == 0) {
             // more than 1 file, create virtual file
             if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
-                (numMods[X] * numMods[Y]) > 1) {
+                (numModules[X] * numModules[Y]) > 1) {
                 dataProcessor[0]->CreateVirtualFile(
                     filePath, fileName, fileIndex, overwriteEnable, silentMode,
                     modulePos, numUDPInterfaces, framesPerFile,
-                    numberOfTotalFrames, dynamicRange, numMods[X], numMods[Y],
-                    &hdf5Lib);
+                    numberOfTotalFrames, dynamicRange, numModules[X],
+                    numModules[Y], &hdf5Lib);
             }
             // link file in master
             dataProcessor[0]->LinkDataInMasterFile(silentMode);
@@ -859,16 +862,19 @@ int Implementation::getNumberofUDPInterfaces() const {
     return numUDPInterfaces;
 }
 
+// not Eiger
 void Implementation::setNumberofUDPInterfaces(const int n) {
+    if (detType == EIGER) {
+        throw sls::RuntimeError(
+            "Cannot set number of UDP interfaces for Eiger");
+    }
 
     if (numUDPInterfaces != n) {
 
-        // reduce number of detectors in y dir (rows) if it had 2 interfaces
-        // before
-        if (numUDPInterfaces == 2)
-            numMods[Y] /= 2;
-
-        numUDPInterfaces = n;
+        // reduce number of detectors to size with 1 interface
+        PortGeometry portGeometry = GetPortGeometry();
+        numModules[X] /= portGeometry[X];
+        numModules[Y] /= portGeometry[Y];
 
         // clear all threads and fifos
         listener.clear();
@@ -878,9 +884,10 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
 
         // set local variables
         generalData->SetNumberofInterfaces(n);
-        udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
+        numUDPInterfaces = n;
 
         // fifo
+        udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
         SetupFifoStructure();
 
         // create threads
@@ -917,7 +924,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             if (dataStreamEnable) {
                 try {
                     bool flip = flipRows;
-                    int nm[2] = {numMods[0], numMods[1]};
+                    int nm[2] = {numModules[X], numModules[Y]};
                     if (quadEnable) {
                         flip = (i == 1 ? true : false);
                         nm[0] = 1;
@@ -948,7 +955,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         SetThreadPriorities();
 
         // update (from 1 to 2 interface) & also for printout
-        setDetectorSize(numMods);
+        setDetectorSize(numModules);
         // update row and column in dataprocessor
         setModulePositionId(modulePos);
 
@@ -1008,7 +1015,8 @@ void Implementation::setUDPSocketBufferSize(const int s) {
     // testing default setup at startup, argument is 0 to use default values
     int size = (s == 0) ? udpSocketBufferSize : s;
     size_t listSize = listener.size();
-    if (detType == JUNGFRAU && (int)listSize != numUDPInterfaces) {
+    if ((detType == JUNGFRAU || detytype == GOTTHARD2) &&
+        (int)listSize != numUDPInterfaces) {
         throw sls::RuntimeError(
             "Number of Interfaces " + std::to_string(numUDPInterfaces) +
             " do not match listener size " + std::to_string(listSize));
@@ -1046,7 +1054,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
             for (int i = 0; i < numUDPInterfaces; ++i) {
                 try {
                     bool flip = flipRows;
-                    int nm[2] = {numMods[0], numMods[1]};
+                    int nm[2] = {numModules[X], numModules[Y]};
                     if (quadEnable) {
                         flip = (i == 1 ? true : false);
                         nm[0] = 1;
@@ -1476,7 +1484,7 @@ void Implementation::setQuad(const bool b) {
 
         if (!quadEnable) {
             for (const auto &it : dataStreamer) {
-                it->SetNumberofModules(numMods);
+                it->SetNumberofModules(numModules);
                 it->SetFlipRows(flipRows);
             }
         } else {

@@ -166,7 +166,6 @@ class GotthardData : public GeneralData {
         maxFramesPerFile = MAX_FRAMES_PER_FILE;
         fifoBufferHeaderSize =
             FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-        defaultFifoDepth = 50000;
         UpdateImageSize();
     };
 
@@ -375,6 +374,8 @@ class Mythen3Data : public GeneralData {
         defaultFifoDepth = 50000;
         standardheader = true;
         defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
+        dynamicRange = 32;
+        tengigaEnable = true;
         UpdateImageSize();
     };
 
@@ -432,7 +433,6 @@ class Gotthard2Data : public GeneralData {
         nPixelsY = 1;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         dataSize = 2560; // 1280 channels * 2 bytes
-        packetsPerFrame = 1;
         maxFramesPerFile = GOTTHARD2_MAX_FRAMES_PER_FILE;
         fifoBufferHeaderSize =
             FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
@@ -486,8 +486,7 @@ class ChipTestBoardData : public GeneralData {
     /** Constructor */
     ChipTestBoardData() {
         myDetectorType = slsDetectorDefs::CHIPTESTBOARD;
-        nPixelsX = 36; // total number of channels
-        nPixelsY = 1;  // number of samples
+        nPixelsY = 1; // number of samples
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         frameIndexMask = 0xFFFFFF; // 10g
         frameIndexOffset = 8;      // 10g

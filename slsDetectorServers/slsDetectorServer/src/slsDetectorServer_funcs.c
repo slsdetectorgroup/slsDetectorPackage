@@ -4857,6 +4857,7 @@ int is_udp_configured() {
             LOG(logWARNING, ("%s", configureMessage));
             return FAIL;
         }
+#if defined(JUNGFRAUD) || defined(GOTTHARD2D)
         if (getNumberofUDPInterfaces() == 2) {
             if (udpDetails[i].srcip2 == 0) {
                 sprintf(configureMessage,
@@ -4883,6 +4884,7 @@ int is_udp_configured() {
                 return FAIL;
             }
         }
+#endif
     }
     return OK;
 }
@@ -9028,7 +9030,10 @@ int set_dest_udp_list(int file_des) {
                 }
 
                 // if still 0, set defaults
-                int twoInterfaces = getNumberofUDPInterfaces() == 2 ? 1 : 0;
+                int twoInterfaces = 0;
+#if defined(JUNGFRAUD) || defined(GOTTHARD2D)
+                twoInterfaces = getNumberofUDPInterfaces() == 2 ? 1 : 0;
+#endif
                 udpDetails[entry].srcport = DEFAULT_UDP_SRC_PORTNO;
                 if (udpDetails[entry].dstport == 0) {
                     udpDetails[entry].dstport =

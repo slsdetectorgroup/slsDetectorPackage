@@ -201,7 +201,7 @@ void Implementation::setDetectorType(const detectorType d) {
 PortGeometry Implementation::getDetectorSize() const { return numModules; }
 
 PortGeometry Implementation::GetPortGeometry() {
-    portGeometry = {{1, 1}};
+    PortGeometry portGeometry = {{1, 1}};
     if (detType == EIGER)
         portGeometry[X] = numUDPInterfaces;
     else // (jungfrau and gotthard2)
@@ -214,7 +214,7 @@ void Implementation::setDetectorSize(const int *size) {
 
     std::string log_message = "Detector Size (ports): (";
     for (int i = 0; i < MAX_DIMENSIONS; ++i) {
-        numModules = portGeometry[i] * size[i];
+        numModules[i] = portGeometry[i] * size[i];
         log_message += std::to_string(numModules[i]);
         if (i < MAX_DIMENSIONS - 1)
             log_message += ", ";
@@ -249,8 +249,8 @@ void Implementation::setModulePositionId(const int id) {
     assert(numModules[Y] != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
-        row = (modulePos % numMods[Y]) * portGeometry[Y];
-        col = (modulePos / numMods[Y]) * portGeometry[X] + i;
+        row = (modulePos % numModules[Y]) * portGeometry[Y];
+        col = (modulePos / numModules[Y]) * portGeometry[X] + i;
 
         listener[i]->SetHardCodedPosition(row, col);
     }
@@ -955,7 +955,8 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         SetThreadPriorities();
 
         // update (from 1 to 2 interface) & also for printout
-        setDetectorSize(numModules);
+        int nm[2] = {numModules[X], numModules[Y]};
+        setDetectorSize(nm);
         // update row and column in dataprocessor
         setModulePositionId(modulePos);
 
@@ -1015,7 +1016,7 @@ void Implementation::setUDPSocketBufferSize(const int s) {
     // testing default setup at startup, argument is 0 to use default values
     int size = (s == 0) ? udpSocketBufferSize : s;
     size_t listSize = listener.size();
-    if ((detType == JUNGFRAU || detytype == GOTTHARD2) &&
+    if ((detType == JUNGFRAU || detType == GOTTHARD2) &&
         (int)listSize != numUDPInterfaces) {
         throw sls::RuntimeError(
             "Number of Interfaces " + std::to_string(numUDPInterfaces) +
@@ -1483,8 +1484,9 @@ void Implementation::setQuad(const bool b) {
         quadEnable = b;
 
         if (!quadEnable) {
+            int nm[2] = {numModules[X], numModules[Y]};
             for (const auto &it : dataStreamer) {
-                it->SetNumberofModules(numModules);
+                it->SetNumberofModules(nm);
                 it->SetFlipRows(flipRows);
             }
         } else {

@@ -35,7 +35,7 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
 
     void setDetectorType(const detectorType d);
-    PortGeometry *getDetectorSize() const;
+    PortGeometry getDetectorSize() const;
     void setDetectorSize(const int *size);
     int getModulePositionId() const;
     void setModulePositionId(const int id);

@@ -42,6 +42,7 @@ char initErrorMessage[MAX_STR_LENGTH];
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
 int64_t virtual_currentFrameNumber = 2;
+int virtual_moduleid = 0;
 #endif
 
 enum detectorSettings thisSettings = UNINITIALIZED;
@@ -448,6 +449,9 @@ void setupDetector() {
 
     // set module id in register
     int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+#ifdef VIRTUAL
+    virtual_moduleid = modid;
+#endif
     if (initError == FAIL) {
         return;
     }
@@ -2282,7 +2286,7 @@ void *start_timer(void *arg) {
             header->version = SLS_DETECTOR_HEADER_VERSION - 1;
             header->frameNumber = virtual_currentFrameNumber;
             header->packetNumber = i;
-            header->modId = 0;
+            header->modId = virtual_moduleid;
             header->row = detPos[X];
             header->column = detPos[Y];
 

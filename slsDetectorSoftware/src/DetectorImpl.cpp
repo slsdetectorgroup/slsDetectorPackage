@@ -245,6 +245,15 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
         addModule(hostname);
     }
     updateDetectorSize();
+
+    // update zmq port (especially for eiger)
+    int numInterfaces = modules[0]->getNumberofUDPInterfaces();
+    if (numInterfaces == 2) {
+        for (size_t i = 0; i < modules.size(); ++i) {
+            modules[i]->setClientStreamingPort(DEFAULT_ZMQ_CL_PORTNO +
+                                               i * numInterfaces);
+        }
+    }
 }
 
 void DetectorImpl::addModule(const std::string &hostname) {
@@ -284,8 +293,6 @@ void DetectorImpl::addModule(const std::string &hostname) {
                          .tsquash("Inconsistent detector types.");
     // for moench and ctb
     modules[pos]->updateNumberOfChannels();
-
-    modules[pos]->getNumberofUDPInterfaces();
 }
 
 void DetectorImpl::updateDetectorSize() {
@@ -545,8 +552,9 @@ void DetectorImpl::readFrameFromReceiver() {
                         nPixelsX = zHeader.npixelsx;
                         nPixelsY = zHeader.npixelsy;
                         // module shape
-                        nX = zHeader.ndetx; // * module_ports[1]; // TODO: check
-                                            // if module_ports[1] needed
+                        nX =
+                            zHeader.ndetx; // not multiplied by module_ports[1],
+                                           // already done in receiver
                         nY = zHeader.ndety * module_ports[0];
                         nDetPixelsX = nX * nPixelsX;
                         nDetPixelsY = nY * nPixelsY;

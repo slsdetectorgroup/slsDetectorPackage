@@ -4,6 +4,46 @@
 #define  MOENCH04ZMQ10GBDATA_H
 #include "slsDetectorData.h"
 
+#ifndef SLS_DETECTOR_HEADER
+#define SLS_DETECTOR_HEADER
+
+//#define VERSION_V2
+    /**
+        @short  structure for a Detector Packet or Image Header
+        @li frameNumber is the frame number
+        @li expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
+        @li packetNumber is the packet number
+        @li bunchId is the bunch id from beamline
+        @li timestamp is the time stamp with 10 MHz clock
+        @li modId is the unique module id (unique even for left, right, top, bottom)
+        @li xCoord is the x coordinate in the complete detector system
+        @li yCoord is the y coordinate in the complete detector system
+        @li zCoord is the z coordinate in the complete detector system
+        @li debug is for debugging purposes
+        @li roundRNumber is the round robin set number
+        @li detType is the detector type see :: detectorType
+        @li version is the version number of this structure format
+    */
+    typedef struct {
+        uint64_t frameNumber;    /**< is the frame number */
+        uint32_t expLength;        /**< is the subframe number (32 bit eiger) or real time exposure time in 100ns (others) */
+        uint32_t packetNumber;    /**< is the packet number */
+        uint64_t bunchId;        /**< is the bunch id from beamline */
+        uint64_t timestamp;        /**< is the time stamp with 10 MHz clock */
+        uint16_t modId;            /**< is the unique module id (unique even for left, right, top, bottom) */
+        uint16_t xCoord;        /**< is the x coordinate in the complete detector system */
+        uint16_t yCoord;        /**< is the y coordinate in the complete detector system */
+        uint16_t zCoord;        /**< is the z coordinate in the complete detector system */
+        uint32_t debug;            /**< is for debugging purposes */
+        uint16_t roundRNumber;    /**< is the round robin set number */
+        uint8_t detType;        /**< is the detector type see :: detectorType */
+        uint8_t version;        /**< is the version number of this structure format */
+      uint64_t packetCaught[8];        /**< is the version number of this structure format */
+
+    } sls_detector_header;
+#endif
+
+
 
 
 
@@ -17,7 +57,7 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
   int sc_height;
   const int aSamples;
   const int dSamples;
-
+  int off;
 
  public:
 
@@ -31,8 +71,16 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 
   */
   //moench04CtbZmq10GbData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, nas*2*32+nds*8), aSamples(nas), dSamples(nds), nadc(32), sc_width(25), sc_height(200) {
+#ifndef RAWDATA
  moench04CtbZmq10GbData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, (nas > 0) && (nds>0) ? max(nas,nds)*(32*2+8) : nas*32*2+nds*8), nadc(32), sc_width(25), sc_height(200), aSamples(nas), dSamples(nds) {
-
+      int off=0;
+#endif
+#ifdef RAWDATA
+  moench04CtbZmq10GbData(int nas=5000, int nds=0): slsDetectorData<uint16_t>(400, 400, sizeof(sls_detector_header)+((nas > 0) && (nds>0) ? max(nas,nds)*(32*2+8) : nas*32*2+nds*8)), nadc(32), sc_width(25), sc_height(200), aSamples(nas), dSamples(nds) {
+      int off=sizeof(sls_detector_header);
+      cout << "hh" << dataSize << endl;
+      cout << sizeof(sls_detector_header)+ ((nas > 0) && (nds>0) ? max(nas,nds)*(32*2+8) : nas*32*2+nds*8) << endl;
+#endif
     /* int ds; */
     /* if (nas && nds) */
     /*   if (nds>nas) */
@@ -93,10 +141,10 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 	      row=200+i/sc_width;
 	    }
 	    if (nds>0)
-	      dataMap[row][col]=((nadc+4)*i+iadc)*2;//+16*(ip+1);
+	      dataMap[row][col]=((nadc+4)*i+iadc)*2+off;//+16*(ip+1);
 	    else
-	      dataMap[row][col]=(nadc*i+iadc)*2;//+16*(ip+1);
-	    if (dataMap[row][col]<0 || dataMap[row][col]>=aSamples*2*32)
+	      dataMap[row][col]=(nadc*i+iadc)*2+off;//+16*(ip+1);
+	    if (dataMap[row][col]<0 || dataMap[row][col]>=aSamples*2*32+off)
 	      cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
 	  }
 	}
@@ -184,9 +232,24 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 /* }; */
 
 
+#ifdef RAWDATA
+  int getFrameNumber(char *buff){return ((sls_detector_header*)buff)->frameNumber;};//*((int*)(buff+5))&0xffffff;};   
+
+  /**
+
+     Returns the packet number for the given dataset. purely virtual func
+     \param buff pointer to the dataset
+     \returns packet number number
+
+
+
+  */
+  int getPacketNumber(char *buff){return ((sls_detector_header*)buff)->packetNumber;}//((*(((int*)(buff+4))))&0xff)+1;};   
+#endif
+#ifndef RAWDATA
 
   int getFrameNumber(char *buff){return iframe;};//((sls_detector_header*)buff)->frameNumber;};//*((int*)(buff+5))&0xffffff;};   
-
+#endif
   /**
 
      Returns the packet number for the given dataset. purely virtual func
@@ -239,7 +302,6 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 /*       return NULL; */
 /*     }; */
 
-
   virtual char *readNextFrame(ifstream &filebin) {
     int ff=-1, np=-1;
     return readNextFrame(filebin, ff, np);
@@ -256,6 +318,8 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 	  if (d==NULL) {delete [] data; data=NULL;}
 	  return data;
   }
+
+#ifndef RAWDATA
 
 
 
@@ -285,6 +349,42 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
   };
 
 
+#endif
+
+
+#ifdef RAWDATA
+
+
+
+
+  virtual char *readNextFrame(ifstream &filebin, int& ff, int &np, char *data) {
+	  char *retval=0;
+	  int  nd;
+	  int fnum = -1;
+	  np=0;
+	  int  pn;
+	  
+	  //  cout << dataSize << endl;
+	  if (ff>=0)
+	    fnum=ff;
+
+	  if (filebin.is_open()) {
+	    if (filebin.read(data, dataSize) ){
+	      ff=getFrameNumber(data);
+	      np=getPacketNumber(data);
+	      return data;
+	    }
+	  }
+	    return NULL;
+	    
+	    
+	  
+  };
+
+
+
+#endif
+
 
   /**
 
@@ -301,9 +401,6 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
     return data;
 
   }
-
-
-
   //int getPacketNumber(int x, int y) {return dataMap[y][x]/packetSize;};
 
 };

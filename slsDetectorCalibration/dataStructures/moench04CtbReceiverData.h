@@ -99,7 +99,7 @@ class moench04CtbReceiverData : public slsDetectorData<uint16_t> {
 	      row=200+i/sc_width;
 	    }
 	    dataMap[row][col]=sizeof(sls_detector_header)+(nadc*i+iadc)*2;//+16*(ip+1);
-	    if (dataMap[row][col]<0 || dataMap[row][col]>=aSamples*2*32)
+	    if (dataMap[row][col]<0 || dataMap[row][col]>=aSamples*2*32+sizeof(sls_detector_header))
 	      cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
 	  }
 	}

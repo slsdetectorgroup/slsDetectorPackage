@@ -69,14 +69,14 @@ void setoutput(int bit) {
   mask=mask<<bit;
   iopat |= mask;
 }
-
+/*
 void setclk(int bit) {
   uint64_t mask=1;
   mask=mask<<bit;
   iopat |= mask;
   clkpat |= mask;
 }
-
+*/
 void clearbit(int bit){
   uint64_t mask=1;
   mask=mask<<bit;
@@ -157,7 +157,7 @@ main(void) {
 #include INFILE
 
   fprintf(fd,"patioctrl 0x%016llx\n",iopat);
-  fprintf(fd,"patclkctrl 0x%016llx\n",clkpat);
+  //fprintf(fd,"patclkctrl 0x%016llx\n",clkpat);
   fprintf(fd,"patlimits 0x%04x 0x%04x\n",start, stop);
 
   for (iloop=0; iloop<MAXLOOPS; iloop++) {

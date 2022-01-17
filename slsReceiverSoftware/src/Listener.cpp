@@ -40,8 +40,8 @@ uint64_t Listener::GetLastFrameIndexCaught() const {
     return lastCaughtFrameIndex;
 }
 
-uint64_t Listener::GetNumMissingPacket(bool stoppedFlag,
-                                       uint64_t numPackets) const {
+int64_t Listener::GetNumMissingPacket(bool stoppedFlag,
+                                      uint64_t numPackets) const {
     if (!stoppedFlag) {
         return (numPackets - numPacketsCaught);
     }

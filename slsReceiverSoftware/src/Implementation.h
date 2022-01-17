@@ -85,7 +85,7 @@ class Implementation : private virtual slsDetectorDefs {
     uint64_t getFramesCaught() const;
     uint64_t getAcquisitionIndex() const;
     double getProgress() const;
-    std::vector<uint64_t> getNumMissingPackets() const;
+    std::vector<int64_t> getNumMissingPackets() const;
     void setScan(slsDetectorDefs::scanParameters s);
     void startReceiver();
     void setStoppedFlag(bool stopped);

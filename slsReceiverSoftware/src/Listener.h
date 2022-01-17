@@ -63,8 +63,8 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      */
     uint64_t GetLastFrameIndexCaught() const;
 
-    /** Get  number of missing packets */
-    uint64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) const;
+    /** Get  number of missing packets, returns negative values in case to extra packet */
+    int64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) const;
 
     /**
      * Set Fifo pointer to the one given

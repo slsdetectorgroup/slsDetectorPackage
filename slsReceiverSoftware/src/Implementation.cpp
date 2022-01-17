@@ -480,9 +480,9 @@ double Implementation::getProgress() const {
             ((double)(currentFrameIndex + 1) / (double)numberOfTotalFrames));
 }
 
-std::vector<uint64_t> Implementation::getNumMissingPackets() const {
-    std::vector<uint64_t> mp(numUDPInterfaces);
-    for (int i = 0; i < numUDPInterfaces; i++) {
+std::vector<int64_t> Implementation::getNumMissingPackets() const {
+    std::vector<int64_t> mp(numUDPInterfaces);
+    for (int i = 0; i < numUDPInterfaces; ++i) {
         int np = generalData->packetsPerFrame;
         uint64_t totnp = np;
         // ReadNRows
@@ -603,12 +603,7 @@ void Implementation::stopReceiver() {
     LOG(logINFO) << "Status: " << sls::ToString(status);
 
     { // statistics
-        auto tmp = getNumMissingPackets();
-        // convert to signed missing packets (to get excess)
-        std::vector<int64_t> mp;
-        for (auto val : tmp) {
-            mp.push_back(static_cast<int64_t>(val));
-        }
+        auto mp = getNumMissingPackets();
         // print summary
         uint64_t tot = 0;
         for (int i = 0; i < numUDPInterfaces; i++) {
@@ -617,7 +612,7 @@ void Implementation::stopReceiver() {
             std::string mpMessage = std::to_string(mp[i]);
             if (mp[i] < 0) {
                 mpMessage =
-                    std::to_string(abs(mp[i])) + std::string(" (Extra)");
+                    std::to_string(std::abs(mp[i])) + std::string(" (Extra)");
             }
 
             TLogLevel lev = ((mp[i]) > 0) ? logINFORED : logINFOGREEN;

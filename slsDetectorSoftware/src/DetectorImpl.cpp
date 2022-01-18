@@ -466,16 +466,6 @@ void DetectorImpl::readFrameFromReceiver() {
     // to flip image
     bool eiger = false;
 
-    // cannot pick up udp interfaces from zmq
-    int numInterfaces =
-        Parallel(&Module::getNumberofUDPInterfacesFromShm, {}).squash(1);
-    int module_ports[2] = {1, 1};
-    // gotthard2 second interface is veto debugging
-    if (shm()->detType == EIGER)
-        module_ports[1] = numInterfaces; // horz
-    else if (shm()->detType == JUNGFRAU)
-        module_ports[0] = numInterfaces; // vert
-
     std::vector<bool> runningList(zmqSocket.size());
     std::vector<bool> connectList(zmqSocket.size());
     numZmqRunning = 0;
@@ -551,11 +541,9 @@ void DetectorImpl::readFrameFromReceiver() {
                         // shape
                         nPixelsX = zHeader.npixelsx;
                         nPixelsY = zHeader.npixelsy;
-                        // module shape
-                        nX =
-                            zHeader.ndetx; // not multiplied by module_ports[1],
-                                           // already done in receiver
-                        nY = zHeader.ndety * module_ports[0];
+                        // module shape (port)
+                        nX = zHeader.ndetx;
+                        nY = zHeader.ndety;
                         nDetPixelsX = nX * nPixelsX;
                         nDetPixelsY = nY * nPixelsY;
                         // det type

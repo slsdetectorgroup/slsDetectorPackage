@@ -37,7 +37,8 @@ class slsInterpolation
     hint=new int[nSubPixelsX*nx*nSubPixelsY*ny];
 
 };
-  
+  virtual ~slsInterpolation(){ delete [] hint;}
+
  slsInterpolation(slsInterpolation *orig){
    nPixelsX=orig->nPixelsX;
    nPixelsY=orig->nPixelsY;

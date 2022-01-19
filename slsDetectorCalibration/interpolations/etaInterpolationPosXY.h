@@ -40,10 +40,10 @@ class etaInterpolationPosXY : public virtual etaInterpolationBase{
    if (tot_eta<=0) {ok=0; return;};
 
 
-   double hx[nbetaX]; //profile x
-   double hy[nbetaY]; //profile y
-   double hix[nbetaX]; //integral of projection x
-   double hiy[nbetaY]; //integral of projection y
+   double *hx=new double[nbetaX]; //profile x
+   double *hy=new double[nbetaY]; //profile y
+   double *hix=new double[nbetaX]; //integral of projection x
+   double *hiy=new double[nbetaY]; //integral of projection y
    //  int ii=0;
    double etax, etay;
    for (int ib=0; ib<nbetaX; ib++) {
@@ -166,7 +166,12 @@ class etaInterpolationPosXY : public virtual etaInterpolationBase{
 
 #ifdef SAVE_ALL
    debugSaveAll();
-#endif	  
+#endif	
+   delete [] hx;
+   delete [] hy;
+   delete [] hix;
+   delete [] hiy;
+  
   return ;
   }
 

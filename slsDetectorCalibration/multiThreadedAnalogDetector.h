@@ -125,8 +125,20 @@ public:
      return fifoFree->pop(ptr);
    }
 
-   virtual int isBusy() {if (fifoData->isEmpty() && busy==0) return 0; return 1;}
+   // virtual int isBusy() {if (fifoData->isEmpty() && busy==0) return 0; return 1;}
    
+   virtual int isBusy() {
+     if (busy==0) {
+       usleep(100);
+       if (busy==0) {
+	 if (fifoData->isEmpty()) { 
+	   usleep(100);
+	   return 0; 
+	 }
+       }
+     } 
+     return 1;
+   }
    //protected:
    /** Implement this method in your subclass with the code you want your thread to run. */
    //virtual void InternalThreadEntry() = 0;
@@ -254,10 +266,15 @@ protected:
      //  busy=1;
      while (!stop) {
        if (fifoData->isEmpty()) {
-	 busy=0;
 	 usleep(100);
-       } else {
+	 if (fifoData->isEmpty()) {
+	   busy=0;
+	 } else
+	   busy=1;
+       } else
 	 busy=1;
+	 
+       if (busy==1) {
 	 fifoData->pop(data); //blocking!
 	 det->processData(data);
 	 fifoFree->push(data); 
@@ -298,7 +315,7 @@ public:
     cout << "Ithread is " << ithread << endl;
   }
   
-  ~multiThreadedAnalogDetector() { 
+  virtual ~multiThreadedAnalogDetector() { 
     StopThreads();
     for (int i=0; i<nThreads; i++) 
       delete dets[i]; 

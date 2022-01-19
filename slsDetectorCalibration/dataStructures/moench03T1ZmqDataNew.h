@@ -55,7 +55,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
     int iadc;
     int ix, iy;
     
-     int npackets=40;
+    //int npackets=40;
     int i;
     int adc4(0);
   

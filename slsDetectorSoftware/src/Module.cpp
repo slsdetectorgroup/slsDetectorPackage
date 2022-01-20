@@ -690,7 +690,22 @@ void Module::setImageTestMode(const int value) {
 }
 
 int Module::getADC(dacIndex index) const {
-    return sendToDetectorStop<int>(F_GET_ADC, index);
+    switch (index) {
+    case TEMPERATURE_ADC:
+    case TEMPERATURE_FPGA:
+    case TEMPERATURE_FPGAEXT:
+    case TEMPERATURE_10GE:
+    case TEMPERATURE_DCDC:
+    case TEMPERATURE_SODL:
+    case TEMPERATURE_SODR:
+    case TEMPERATURE_FPGA2:
+    case TEMPERATURE_FPGA3:
+        // only the temperatures go to the control server
+        return sendToDetectorStop<int>(F_GET_ADC, index);
+
+    default:
+        return sendToDetector<int>(F_GET_ADC, index);
+    }
 }
 
 int Module::getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex) const {

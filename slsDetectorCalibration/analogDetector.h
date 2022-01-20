@@ -32,11 +32,11 @@ using namespace std;
 /** 
 enum to define the flags of the data set, which are needed to seect the type of processing it should undergo: frame, pedestal, flat
 */
- enum frameMode { eFrame, ePedestal, eFlat };
+enum frameMode { eFrame, ePedestal, eFlat, eRaw };
 /** 
 enum to define the detector mode
 */
- enum detectorMode { eAnalog, ePhotonCounting, eInterpolating };
+enum detectorMode { eAnalog, ePhotonCounting, eInterpolating };
 #endif
 
 
@@ -1034,7 +1034,7 @@ template <class dataType> class analogDetector {
       \returns converted number of photons. If no threshold is set, returns gain converted pedestal subtracted data.
     */
 
-   virtual  int getNPhotons(char *data, int ix, int iy=0) {
+   int convertToPhotons(char *data, int ix, int iy=0) {
      int nph=0;
      double v;
      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
@@ -1068,20 +1068,35 @@ template <class dataType> class analogDetector {
       \param nph pointer where the photons should added. If NULL,the internal image is used
       \returns pointer to array containing the number of photons
    */
-     int *getNPhotons(char *data,  int *nph=NULL) {
+     virtual int *getNPhotons(char *data,  int *nph=NULL) {
        
        //double val;
        if (nph==NULL)
 	 nph=image;
        
        newFrame(data);
-
+       /* cout << fMode << endl; */
+       
+       /* switch(fMode) { */
+       /* case eRaw: */
+       /* 	  cout << "raw" << endl; */
+       /* 	 break; */
+       /* default: */
+       /* 	 cout << "analog" << endl; */
+       /* } */
        //calcGhost(data);
        addToCommonMode(data);
        for (iy=ymin; iy<ymax; ++iy) {
-	 for (ix=xmin; ix<xmax; ++ix) {
-	   if (det->isGood(ix,iy))
-	     nph[iy*nx+ix]+=getNPhotons(data, ix, iy);
+	 for (ix=xmin; ix<xmax; ++ix) {  
+	   switch(fMode) {
+	   case eRaw:
+	     //cout << "raw" << endl;
+	     nph[iy*nx+ix]=det->getChannel(data,ix,iy);
+	     break;
+	   default:
+	     if (det->isGood(ix,iy))
+	       nph[iy*nx+ix]+=convertToPhotons(data, ix, iy);
+	   }
 	 }
        }
        return nph;
@@ -1164,7 +1179,7 @@ template <class dataType> class analogDetector {
 	for (ix=xmi; ix<xma; ++ix)
 	  if (det->isGood(ix,iy)) {
 	    if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
-	      val+=getNPhotons(data, ix, iy);
+	      val+=convertToPhotons(data, ix, iy);
 	  }
       
       return val;
@@ -1187,9 +1202,9 @@ template <class dataType> class analogDetector {
 	addToPedestal(data,1);
 	break;
       default:
-	//	cout << "analog " << endl;
+	//cout << "analog frame" << endl;
 	//subtractPedestal(data);
-	getNPhotons(data);
+	analogDetector<dataType>::getNPhotons(data);
       }
     };
 

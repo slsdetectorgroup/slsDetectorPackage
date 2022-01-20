@@ -68,8 +68,9 @@ int main(int argc, char *argv[]) {
   int etabins=1000, etabinsy=1000;//nsubpix*2*100;
   double etamin=-1, etamax=2;
   int nSubPixelsX=2;
-  //	int emin, emax;
+  int emin, emax;
   int nSubPixelsY=2;
+  
 	// help
   if (argc < 3 ) {
     cprintf(RED, "Help: ./trial [receive socket ip] [receive starting port number] [send_socket ip] [send starting port number] [nthreads] [nsubpix] [gainmap]  [etafile]\n");
@@ -159,7 +160,7 @@ int main(int argc, char *argv[]) {
   //int multisize=size;
   //int dataSize=size;
 
-  char dummybuff[size];
+  char *dummybuff=new char[size];
   
 
   moench03CommonMode *cm=NULL;
@@ -355,7 +356,7 @@ int main(int argc, char *argv[]) {
 
 	//	int resetFlat=0;
 	//int resetPed=0;
-	//	int nsubPixels=1;
+	//int nsubPixels=1;
 	//int isPedestal=0;
 	//int isFlat=0;
 	int newFrame=1;
@@ -393,7 +394,7 @@ int main(int argc, char *argv[]) {
 	       cout << "Measurement lasted " << (end-begin).count()*0.000001 << " ms" << endl;
 
 	    while (mt->isBusy()) {;}//wait until all data are processed from the queues
-	    
+	    usleep(100);
 	    if (of) {
 	      mt->setFilePointer(NULL);
 	      fclose(of);
@@ -626,40 +627,8 @@ int main(int argc, char *argv[]) {
 
 	      //strcpy(fname,filename.c_str());
 	      fname=filename;
-	      // cprintf(BLUE, "Header Info:\n"
-	      // 	      "size: %u\n"
-	      // 	      "multisize: %u\n"
-	      // 	      "dynamicRange: %u\n"
-	      // 	      "nPixelsX: %u\n"
-	      // 	      "nPixelsY: %u\n"
-	      // 	      "currentFileName: %s\n"
-	      // 	      "currentAcquisitionIndex: %lu\n"
-	      // 	      "currentFrameIndex: %lu\n"
-	      // 	      "currentFileIndex: %lu\n"
-	      // 	      "currentSubFrameIndex: %u\n"
-	      // 	      "xCoordX: %u\n"
-	      // 	      "yCoordY: %u\n"
-	      // 	      "zCoordZ: %u\n"
-	      // 	      "flippedDataX: %u\n"
-	      // 	      "packetNumber: %u\n"
-	      // 	      "bunchId: %u\n"
-	      // 	      "timestamp: %u\n"
-	      // 	      "modId: %u\n"
-	      // 	      "debug: %u\n"
-	      // 	      "roundRNumber: %u\n"
-	      // 	      "detType: %u\n"
-	      // 	      "version: %u\n",
-	      // 	      size, multisize, dynamicRange, nPixelsX, nPixelsY,
-	      // 	      filename.c_str(), acqIndex,
-	      // 	      frameIndex, fileindex, subFrameIndex,
-	      // 	      xCoord, yCoord,zCoord,
-	      // 	      flippedDataX, packetNumber, bunchId, timestamp, modId, debug, roundRNumber, detType, version);
-	      
 	      addJsonHeader=zHeader.addJsonHeader;
 
-	      /* Analog detector commands */
-	      //isPedestal=0;
-	      //isFlat=0;
 	      rms=0;
 	      fMode=eFrame;
 	      frameMode_s="frame";
@@ -682,6 +651,11 @@ int main(int argc, char *argv[]) {
 		    fMode=ePedestal;
 		    //isPedestal=1;
 		    rms=1;
+		  } else if (frameMode_s == "raw"){
+		    //mt->newDataSet(); //resets pedestal  
+		    // cprintf(MAGENTA, "Resetting pedestal\n");
+		    fMode=eRaw;
+		    //isPedestal=1;
 		  }
 #ifdef INTERP 
 		  else if (frameMode_s == "flatfield") {
@@ -695,7 +669,6 @@ int main(int argc, char *argv[]) {
 		   }
 		  //#endif
 		  else {
-		    fMode=eFrame;
 		    //isPedestal=0;
 		    //isFlat=0;
 		    fMode=eFrame;
@@ -710,14 +683,8 @@ int main(int argc, char *argv[]) {
 	      cprintf(MAGENTA, "Threshold: "); 
 	      if (addJsonHeader.find("threshold")!= addJsonHeader.end()) {
 		istringstream(addJsonHeader.at("threshold")) >>threshold;
-		//		threshold=atoi(addJsonHeader.at("threshold").c_str());//doc["frameMode"].GetString();
 	      }
-	      //if (doc.HasMember("threshold")) {	
-	      //if (doc["threshold"].IsInt()) {
-	      //  threshold=doc["threshold"].GetInt();
 	      mt->setThreshold(threshold);
-	      //	}
-	      // }	
 	      cprintf(MAGENTA, "%d\n", threshold);
 
 	      xmin=0;
@@ -728,24 +695,6 @@ int main(int argc, char *argv[]) {
 	      
 	      if (addJsonHeader.find("roi")!= addJsonHeader.end()) {
 		istringstream(addJsonHeader.at("roi")) >> xmin >> xmax >> ymin >> ymax ;
-		//  if (doc.HasMember("roi")) {
-		//if (doc["roi"].IsArray()) {
-		// if (doc["roi"].Size() > 0 )
-		//  if (doc["roi"][0].IsInt())
-		   //    xmin=doc["roi"][0].GetInt();
-		  
-		//   if (doc["roi"].Size() > 1 )
-		//     if (doc["roi"][1].IsInt())
-		//       xmax=doc["roi"][1].GetInt();
-
-		//   if (doc["roi"].Size() > 2 )
-		//     if (doc["roi"][2].IsInt())
-		//       ymin=doc["roi"][2].GetInt();
-		  
-		//   if (doc["roi"].Size() > 3 )
-		//     if (doc["roi"][3].IsInt())
-		//       ymax=doc["roi"][3].GetInt();
-		// }
 	      }
 
 	      cprintf(MAGENTA, "%d %d %d %d\n", xmin, xmax, ymin, ymax);
@@ -754,17 +703,10 @@ int main(int argc, char *argv[]) {
 		istringstream(addJsonHeader.at("dynamicRange")) >> dr ;
 		dr=32;
 	      }
-	      // if (doc.HasMember("dynamicRange")) {
-	      // 	dr=doc["dynamicRange"].GetUint();
-	      // 	dr=32;
-	      // }
-
 	      dMode=eAnalog;
 	      detectorMode_s="analog";
 	      cprintf(MAGENTA, "Detector mode: ");	  
 		if (addJsonHeader.find("detectorMode")!= addJsonHeader.end()) {;
-		  //if (doc.HasMember("detectorMode")) {
-		  //if (doc["detectorMode"].IsString()) {
 		  detectorMode_s=addJsonHeader.at("detectorMode");//=doc["detectorMode"].GetString();
 #ifdef INTERP
 		    if (detectorMode_s == "interpolating"){
@@ -783,98 +725,69 @@ int main(int argc, char *argv[]) {
 		      mt->setInterpolation(NULL);
 #endif
 		    }
-		    // }
+		    // } 
+		    if (fMode==eRaw) {
+		      detectorMode_s = "analog";
+		      dMode=eAnalog;
 		  
+		    }
 	      }
 
 	      mt->setDetectorMode(dMode);
 	      cprintf(MAGENTA, "%s\n" , detectorMode_s.c_str());
 
-	      // cout << "done " << endl;
+	      cout << "done " << endl;
 
-	      // /* Single Photon Detector commands */
-	      // nSigma=5;
-	      // if (doc.HasMember("nSigma")) {
-	      // 	if (doc["nSigma"].IsInt())
-	      // 	  nSigma=doc["nSigma"].GetInt();
-	      // 	mt->setNSigma(nSigma);
-	      // }
+	      /* Single Photon Detector commands */
+	      nSigma=5;
 	      
-	      // emin=-1;
-	      // emax=-1;
-	      // if (doc.HasMember("energyRange")) {
-	      // 	if (doc["energyRange"].IsArray()) {
-	      // 	  if (doc["energyRange"].Size() > 0 )
-	      // 	    if (doc["energyRange"][0].IsInt())
-	      // 	      emin=doc["energyRange"][0].GetInt();
-		  
-	      // 	  if (doc["energyRange"].Size() > 1 )
-	      // 	    if (doc["energyRange"][1].IsInt())
-	      // 	      emax=doc["energyRange"][1].GetUint();
-	      // 	}
-	      // }
-	      // if (doc.HasMember("eMin")) {
-	      // 	if (doc["eMin"][1].IsInt())
-	      // 	  emin=doc["eMin"].GetInt();
-	      // }
-	      // if (doc.HasMember("eMax")) {
-	      // 	if (doc["eMax"][1].IsInt())
-	      // 	  emin=doc["eMax"].GetInt();
-	      // }
-	      // mt->setEnergyRange(emin,emax);
+	      if (addJsonHeader.find("nSigma")!= addJsonHeader.end()) {;
+		istringstream(addJsonHeader.at("nSigma")) >> nSigma ;
+	      	mt->setNSigma(nSigma);
+	      }
 	      
-	      // /* interpolating detector commands */
-
-	      // if (doc.HasMember("nSubPixels")) {
-	      // 	if (doc["nSubPixels"].IsUint())
-	      // 	nSubPixels=doc["nSubPixels"].GetUint();
+	      emin=-1;
+	      emax=-1;  
+	      if (addJsonHeader.find("energyRange")!= addJsonHeader.end()) {
+		istringstream(addJsonHeader.at("energyRange")) >> emin >> emax  ;
+	      }
+	      if (addJsonHeader.find("eMin")!= addJsonHeader.end()) {
+		istringstream(addJsonHeader.at("eMin")) >> emin ;
+	      }
+		
+	      if (addJsonHeader.find("eMax")!= addJsonHeader.end()) {
+		istringstream(addJsonHeader.at("eMax")) >> emax ;
+	      }
+		
+	      mt->setEnergyRange(emin,emax);
+	      
+	      /* interpolating detector commands */
+	      //must set subpixels X and Y separately
+	      // if (addJsonHeader.find("nSubPixels")!= addJsonHeader.end()) {
+	      // 	istringstream(addJsonHeader.at("nSubPixels")) >> nSubPixels ;
 	      // 	mt->setNSubPixels(nSubPixels);
 	      // }
-	      
-	      // threshold=0;
-	      // cprintf(MAGENTA, "Subframes: ");
-	      // subframes=0;
-	      // //isubframe=0;
-	      // insubframe=0;
-	      // subnorm=1;
-	      // f0=0;
-	      // nnsubframe=0;
-	      // if (doc.HasMember("subframes")) {	
-	      // 	if (doc["subframes"].IsInt()) {
-	      // 	  subframes=doc["subframes"].GetInt();
-	      // 	}
-	      // }	
-	      // cprintf(MAGENTA, "%ld\n", subframes);
+		
+	      threshold=0;
+	      cprintf(MAGENTA, "Subframes: ");
+	       subframes=0;
+	      //isubframe=0;
+	      insubframe=0;
+	      subnorm=1;
+	      f0=0;
+	      nnsubframe=0;
+	      if (addJsonHeader.find("subframes")!= addJsonHeader.end()) {
+		istringstream(addJsonHeader.at("subframes")) >> subframes ;
+	      }
+		
+	      cprintf(MAGENTA, "%ld\n", subframes);
 
 	      
 	      newFrame=0;
-	      /* zmqsocket->CloseHeaderMessage();*/
 	    }
 #endif
 
-	    // cout << "file" << endl;
-	    //  cout << "data " << endl;
-	  if (of==NULL) {
-#ifdef WRITE_QUAD
-	    sprintf(ofname,"%s_%ld.clust2",filename.c_str(),fileindex);
-#endif
-#ifndef WRITE_QUAD
-	    sprintf(ofname,"%s_%ld.clust",filename.c_str(),fileindex);
-#endif
-	    of=fopen(ofname,"w");
-	    if (of) {
-	      mt->setFilePointer(of);
-	    }else {
-	      cout << "Could not open "<< ofname << " for writing " << endl;
-	      mt->setFilePointer(NULL);
-	    }
-	  }
 
-	  
-
-	  // cout << "data" << endl;
-	  // get data
-	  // acqIndex = doc["acqIndex"].GetUint64();
 
 	  frameIndex       = zHeader.frameIndex;////doc["fIndex"].GetUint64();
 
@@ -891,11 +804,45 @@ int main(int argc, char *argv[]) {
 	    memcpy(buff,&frameIndex,sizeof(int));
 	    //length = 
 	    zmqsocket->ReceiveData(0, buff+sizeof(int), size);
+
+
+
+
+
+	    if (fMode!=ePedestal ||  dMode!=eAnalog) {
+	      if (of==NULL) {
+#ifdef WRITE_QUAD
+		sprintf(ofname,"%s_%ld.clust2",filename.c_str(),fileindex);
+#endif
+#ifndef WRITE_QUAD
+		sprintf(ofname,"%s_%ld.clust",filename.c_str(),fileindex);
+#endif
+		of=fopen(ofname,"w");
+		if (of) {
+		  mt->setFilePointer(of);
+		}else {
+		  cout << "Could not open "<< ofname << " for writing " << endl;
+		  mt->setFilePointer(NULL);
+		}
+	      }
+	    }
+
+	  
+
+
+
+
+
 	    mt->pushData(buff);
 	    mt->nextThread();
 	    mt->popFree(buff);
 	    insubframe++;
 	    nsubframes=frameIndex+1-f0;
+	    // cout << "insubframe " << insubframe << endl;
+	    // cout << "nsubframes " << nsubframes << endl;
+	    // cout << "f0 " << f0 << endl;
+	    // cout << "frameIndex " << frameIndex << endl;
+	    
 	  } else {
 	    cprintf(RED, "Incomplete frame: received only %d packet\n", packetNumber);
 	    //length = 
@@ -905,9 +852,13 @@ int main(int argc, char *argv[]) {
 
 
 
-	  if (subframes>0 && insubframe>=subframes && fMode==eFrame) {
+	  if (subframes>0 && insubframe>=subframes && (fMode==eFrame ||fMode==eRaw)  ) {
 	    while (mt->isBusy()) {;}//wait until all data are processed from the queues
+	    usleep(100);
+
 	    detimage=mt->getImage(nnx,nny,nnsx, nnsy);
+
+
 	    cprintf(MAGENTA,"Get image!\n");
 	    dout= new int32_t[nnx*nny];
 	    doutf= new float[nnx*nny];
@@ -932,9 +883,37 @@ int main(int argc, char *argv[]) {
 
 	    
 	    //   zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 1,1,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,&additionalJsonHeader);
-	    zHeader.data = true;
-	    zmqsocket2->SendHeader(0,zHeader);
-	    zmqsocket2->SendData((char*)dout,nnx*nny*dr/8);
+	    
+
+
+	      //  zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 1,1,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,&additionalJsonHeader);   
+	      
+	      outHeader.data=true;
+	      outHeader.dynamicRange=dr;
+	      outHeader.fileIndex=fileindex;
+	      outHeader.ndetx=1;
+	      outHeader.ndety=1;
+	      outHeader.npixelsx=nnx;
+	      outHeader.npixelsy=nny;
+	      outHeader.imageSize=nnx*nny*dr/8;
+	      outHeader.acqIndex=acqIndex;
+	      outHeader.frameIndex=frameIndex;
+	      outHeader.fname=fname;
+	      outHeader.frameNumber=acqIndex;
+	      outHeader.expLength=expLength;
+	      outHeader.packetNumber=packetNumber;
+	      outHeader.bunchId=bunchId;
+	      outHeader.timestamp=timestamp;
+	      outHeader.modId=modId;
+	      outHeader.row=xCoord;
+	      outHeader.column=yCoord;
+	      outHeader.debug=debug;
+	      outHeader.roundRNumber=roundRNumber;
+	      outHeader.detType=detType;
+	      outHeader.version=version;
+	      
+	      zmqsocket2->SendHeader(0,outHeader);
+	      zmqsocket2->SendData((char*)dout,nnx*nny*dr/8);
 	    cprintf(GREEN, "Sent subdata\n");
 		
 
@@ -950,18 +929,6 @@ int main(int argc, char *argv[]) {
 	    
 	  }
 
-		 
-
-
-
-
-
-
-	
-	      
-
-
-	  
 	  
 	  iframe++;
 

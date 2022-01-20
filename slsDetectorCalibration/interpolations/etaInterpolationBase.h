@@ -302,7 +302,11 @@ float *gethhx()
     double diff=0, d;
     //double bsize=1./nSubPixels;
     int nbad=0;
-    double p_tot_x[nSubPixelsX], p_tot_y[nSubPixelsY], p_tot[nSubPixelsX*nSubPixelsY];
+    double *p_tot_x=new double[nSubPixelsX];
+    double *p_tot_y=new double[nSubPixelsY];
+    double *p_tot= new double[nSubPixelsX*nSubPixelsY];
+
+
     double maxdiff=0, mindiff=avg*nSubPixelsX*nSubPixelsY;
    
     int ipx, ipy;
@@ -362,6 +366,10 @@ float *gethhx()
 
 
     //   cout << "Bad pixels: " << 100.*(float)nbad/((float)(nSubPixels*nSubPixels)) << " %" << endl;
+    delete [] p_tot_x;
+    delete [] p_tot_y;
+    delete [] p_tot;
+    
     return sqrt(diff);
   }
   

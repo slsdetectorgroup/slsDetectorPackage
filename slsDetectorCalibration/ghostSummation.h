@@ -30,7 +30,7 @@ template <class dataType> class ghostSummation {
     ghost=new double[nx*ny];
     
   }
-  ~ghostSummation() {delete [] ghost;};
+  virtual ~ghostSummation() {delete [] ghost;};
 
   virtual ghostSummation *Clone() {
     return new ghostSummation(this);

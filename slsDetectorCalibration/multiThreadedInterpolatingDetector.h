@@ -17,7 +17,7 @@ class multiThreadedInterpolatingDetector : public multiThreadedCountingDetector
 {
 public:
  multiThreadedInterpolatingDetector(interpolatingDetector *d, int n, int fs=1000) : multiThreadedCountingDetector(d,n,fs) { };
-
+  //virtual ~multiThreadedInterpolatingDetector() {multiThreadedCountingDetector::~multiThreadedCountingDetector();};
   virtual void prepareInterpolation(int &ok){
     /* getFlatField(); //sum up all etas */
     /* setFlatField(); //set etas to all detectors */

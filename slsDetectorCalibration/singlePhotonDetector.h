@@ -189,14 +189,13 @@ public analogDetector<uint16_t> {
     */
     
     virtual int *getNPhotons(char *data,  int *nph=NULL) {
-
+      // cout << "spc frame" << endl;
       nphFrame=0;
       double val;
       if (nph==NULL)
 	nph=image;
       //nph=new int[nx*ny];
       
-      double rest[ny][nx];
       //int cy=(clusterSizeY+1)/2; //quad size
       //int cs=(clusterSize+1)/2; //quad size
       
@@ -226,6 +225,7 @@ public analogDetector<uint16_t> {
 	return nph;
       }	else {
 	if (thr>0) {
+	  double *rest=new double[ny*nx];
 	  newFrame(data);
 	  if (cmSub) {
 	    cout << "add to common mode?"<< endl;
@@ -236,14 +236,14 @@ public analogDetector<uint16_t> {
 	      if (det->isGood(ix,iy)) {
 		val=subtractPedestal(data,ix,iy, cm);
 		
-		nn=analogDetector<uint16_t>::getNPhotons(data,ix,iy);//val/thr;//
+		nn=analogDetector<uint16_t>::convertToPhotons(data,ix,iy);//val/thr;//
 		if (nn>0) {
 		  nph[ix+nx*iy]+=nn;
-		  rest[iy][ix]=(val-nn*thr);//?+0.5*thr
+		  rest[iy*nx+ix]=(val-nn*thr);//?+0.5*thr
 		  nphFrame+=nn;
 		  nphTot+=nn;
 		} else 
-		  rest[iy][ix]=val;
+		  rest[iy*nx+ix]=val;
 		
 	      }
 	    }
@@ -262,7 +262,7 @@ public analogDetector<uint16_t> {
 	      tot=0;
 	      quadTot=0;
 	      
-	      if (rest[iy][ix]>0.25*thr) {
+	      if (rest[iy*nx+ix]>0.25*thr) {
 		eventMask[iy][ix]=NEIGHBOUR;
 		for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
 		  for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
@@ -270,7 +270,7 @@ public analogDetector<uint16_t> {
 		      //clusters->set_data(rest[iy+ir][ix+ic], ic, ir);
 		    
 		      
-		      v=rest[iy+ir][ix+ic];//clusters->get_data(ic,ir);
+		      v=rest[(iy+ir)*nx+ix+ic];//clusters->get_data(ic,ir);
 		      tot+=v;
 		      
 		      if (ir<=0 && ic<=0)
@@ -290,7 +290,7 @@ public analogDetector<uint16_t> {
 		    }
 		  }
 		
-		if (rest[iy][ix]>=max) { 
+		if (rest[iy*nx+ix]>=max) { 
 		  if (bl>=br && bl>=tl && bl>=tr) {
 		    quad=BOTTOM_LEFT;
 		    quadTot=bl;
@@ -327,7 +327,7 @@ public analogDetector<uint16_t> {
 		  if (tot>tthr1 || quadTot>tthr2 || max>tthr) {
 		    eventMask[iy][ix]=PHOTON;
 		    nph[ix+nx*iy]++;
-		    rest[iy][ix]-=thr;
+		    rest[iy*nx+ix]-=thr;
 		    nphFrame++;
 		    nphTot++;
 		    
@@ -338,6 +338,7 @@ public analogDetector<uint16_t> {
 	  }
 		}
 	}
+	  delete [] rest;
 	} else return getClusters(data, nph);
       }
       return NULL;
@@ -372,7 +373,6 @@ int *getClusters(char *data,  int *ph=NULL) {
   //quadrant quad;
   double rms;
   //if (cmSub) cm=1;
-      double val[ny][nx];
   if (ph==NULL)
     ph=image;
   
@@ -388,6 +388,8 @@ int *getClusters(char *data,  int *ph=NULL) {
     addToCommonMode(data);
     cm=1;
   }
+
+  double *val=new double[ny*nx];
 
   for (iy=ymin; iy<ymax; ++iy) {
     for (ix=xmin; ix<xmax; ++ix) {
@@ -416,8 +418,8 @@ int *getClusters(char *data,  int *ph=NULL) {
 	  for (ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
 	    
 	    if ((iy+ir)>=iy && (iy+ir)<ny && (ix+ic)>=ix && (ix+ic)<nx) {
-	      val[iy+ir][ix+ic]=subtractPedestal(data,ix+ic,iy+ir, cm);
-	      v=&(val[iy+ir][ix+ic]);
+	      val[(iy+ir)*nx+ix+ic]=subtractPedestal(data,ix+ic,iy+ir, cm);
+	      v=&(val[(iy+ir)*nx+ix+ic]);
 	      tot+=*v;
 	      if (ir<=0 && ic<=0)
 		bl+=*v;
@@ -438,14 +440,14 @@ int *getClusters(char *data,  int *ph=NULL) {
 	}
 	/* if (ix==50 && iy==50) */
 	/*   cout << id << " " << ix << " " << iy << " " << det->getValue(data,ix,iy)<< " "  << val[iy][ix] << " " << getPedestal(ix,iy) << " " << rms << endl;  */
-	if (val[iy][ix]<-nSigma*rms){
+	if (val[iy*nx+ix]<-nSigma*rms){
 	  ee=NEGATIVE_PEDESTAL;
 	  continue;    
 	} 
 	if (max>nSigma*rms){
 	  //	  cout << "ph1 " << max << " " << nSigma*rms << endl;
 	  ee=PHOTON;
-	  if (val[iy][ix]<max)
+	  if (val[iy*nx+ix]<max)
 	    continue;
 	}
 	else if (tot>c3*nSigma*rms) {
@@ -478,7 +480,7 @@ int *getClusters(char *data,  int *ph=NULL) {
 #ifndef WRITE_QUAD
 	}
 #endif
-	if (ee==PHOTON && val[iy][ix]==max) {
+	if (ee==PHOTON && val[iy*nx+ix]==max) {
 	  ee=PHOTON_MAX;
 	  // cout << "**" <<id<< " " << iframe << " "  << nDark << " "   << ix << " " << iy << " " << rms << " " << max << " " << quadTot << " " << tot << endl;
       	  (clusters+nph)->tot=tot;
@@ -493,7 +495,7 @@ int *getClusters(char *data,  int *ph=NULL) {
 	  for (ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
 	    for (ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
 	      if ((iy+ir)>=0  && (iy+ir)<ny &&  (ix+ic)>=0 && (ix+ic)<nx) 
-		(clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
+		(clusters+nph)->set_data(val[(iy+ir)*nx+ix+ic],ic,ir);
 	    }
       }
       good=1;
@@ -519,6 +521,7 @@ int *getClusters(char *data,  int *ph=NULL) {
   //cout << nphFrame << endl;
   //cout <<id << " **********************************"<< iframe << " " << det->getFrameNumber(data) << " " << nphFrame << endl;
   writeClusters(det->getFrameNumber(data));
+  delete [] val;
   return  image;
   
 };
@@ -652,7 +655,7 @@ int *getClusters(char *data,  int *ph=NULL) {
 	  analogDetector<uint16_t>::processData(data,val);
 	  break;
 	default:
-	  //	 cout <<"spc " << endl;
+	  //cout <<"spc " << endl;
 	  getNPhotons(data,val);
 	}
       }

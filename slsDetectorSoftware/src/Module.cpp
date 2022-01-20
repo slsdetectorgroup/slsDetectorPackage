@@ -700,7 +700,8 @@ int Module::getADC(dacIndex index) const {
     case TEMPERATURE_SODR:
     case TEMPERATURE_FPGA2:
     case TEMPERATURE_FPGA3:
-        // only the temperatures go to the control server
+        // only the temperatures go to the control server, others need
+        // configuration of adc in control server
         return sendToDetectorStop<int>(F_GET_ADC, index);
 
     default:

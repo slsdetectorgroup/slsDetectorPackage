@@ -447,18 +447,18 @@ uint64_t Implementation::getFramesCaught() const {
     return min;
 }
 
-uint64_t Implementation::getAcquisitionIndex() const {
-    uint64_t min = -1;
+uint64_t Implementation::getCurrentFrameIndex() const {
+    uint64_t max = 0;
     uint32_t flagsum = 0;
 
-    for (const auto &it : dataProcessor) {
+    for (const auto &it : listener) {
         flagsum += it->GetStartedFlag();
-        min = std::min(min, it->GetCurrentFrameIndex());
+        max = std::max(max, it->GetCurrentFrameIndex());
     }
     // no data processed
-    if (flagsum != dataProcessor.size())
+    if (flagsum != listener.size())
         return 0;
-    return min;
+    return max;
 }
 
 double Implementation::getProgress() const {

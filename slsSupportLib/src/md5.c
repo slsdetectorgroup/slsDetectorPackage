@@ -34,36 +34,42 @@
 namespace sls {
 #endif
 
-/** 
- * Modification 2021 Paul Scherrer Institut 
+/**
+ * Modification 2021 Paul Scherrer Institut
  * Macros exported from md5_local.h
  */
-#define F(b,c,d)        ((((c) ^ (d)) & (b)) ^ (d))
-#define G(b,c,d)        ((((b) ^ (c)) & (d)) ^ (c))
-#define H(b,c,d)        ((b) ^ (c) ^ (d))
-#define I(b,c,d)        (((~(d)) | (b)) ^ (c))
+#define F(b, c, d) ((((c) ^ (d)) & (b)) ^ (d))
+#define G(b, c, d) ((((b) ^ (c)) & (d)) ^ (c))
+#define H(b, c, d) ((b) ^ (c) ^ (d))
+#define I(b, c, d) (((~(d)) | (b)) ^ (c))
 
-#define R0(a,b,c,d,k,s,t) { \
-        a+=((k)+(t)+F((b),(c),(d))); \
-        a=ROTATE(a,s); \
-        a+=b; };
+#define R0(a, b, c, d, k, s, t)                                                \
+    {                                                                          \
+        a += ((k) + (t) + F((b), (c), (d)));                                   \
+        a = ROTATE(a, s);                                                      \
+        a += b;                                                                \
+    };
 
-#define R1(a,b,c,d,k,s,t) { \
-        a+=((k)+(t)+G((b),(c),(d))); \
-        a=ROTATE(a,s); \
-        a+=b; };
+#define R1(a, b, c, d, k, s, t)                                                \
+    {                                                                          \
+        a += ((k) + (t) + G((b), (c), (d)));                                   \
+        a = ROTATE(a, s);                                                      \
+        a += b;                                                                \
+    };
 
-#define R2(a,b,c,d,k,s,t) { \
-        a+=((k)+(t)+H((b),(c),(d))); \
-        a=ROTATE(a,s); \
-        a+=b; };
+#define R2(a, b, c, d, k, s, t)                                                \
+    {                                                                          \
+        a += ((k) + (t) + H((b), (c), (d)));                                   \
+        a = ROTATE(a, s);                                                      \
+        a += b;                                                                \
+    };
 
-#define R3(a,b,c,d,k,s,t) { \
-        a+=((k)+(t)+I((b),(c),(d))); \
-        a=ROTATE(a,s); \
-        a+=b; };
-
-
+#define R3(a, b, c, d, k, s, t)                                                \
+    {                                                                          \
+        a += ((k) + (t) + I((b), (c), (d)));                                   \
+        a = ROTATE(a, s);                                                      \
+        a += b;                                                                \
+    };
 
 /*
  * Implemented from RFC1321 The MD5 Message-Digest Algorithm
@@ -74,8 +80,7 @@ namespace sls {
 #define INIT_DATA_C (unsigned long)0x98badcfeL
 #define INIT_DATA_D (unsigned long)0x10325476L
 
-int MD5_Init_SLS(MD5_CTX *c)
-{
+int MD5_Init_SLS(MD5_CTX *c) {
     memset(c, 0, sizeof(*c));
     c->A = INIT_DATA_A;
     c->B = INIT_DATA_B;
@@ -84,14 +89,13 @@ int MD5_Init_SLS(MD5_CTX *c)
     return 1;
 }
 
-void md5_block_data_order(MD5_CTX *c, const void *data_, size_t num)
-{
+void md5_block_data_order(MD5_CTX *c, const void *data_, size_t num) {
     const unsigned char *data = data_;
     register unsigned MD32_REG_T A, B, C, D, l;
     /* See comment in crypto/sha/sha_local.h for details. */
-    unsigned MD32_REG_T XX0, XX1, XX2, XX3, XX4, XX5, XX6, XX7,
-        XX8, XX9, XX10, XX11, XX12, XX13, XX14, XX15;
-#  define X(i)   XX##i
+    unsigned MD32_REG_T XX0, XX1, XX2, XX3, XX4, XX5, XX6, XX7, XX8, XX9, XX10,
+        XX11, XX12, XX13, XX14, XX15;
+#define X(i) XX##i
 
     A = c->A;
     B = c->B;
@@ -207,12 +211,11 @@ void md5_block_data_order(MD5_CTX *c, const void *data_, size_t num)
     }
 }
 
-/** 
- * Modification 2021 Paul Scherrer Institut 
- * from md32_common.h 
+/**
+ * Modification 2021 Paul Scherrer Institut
+ * from md32_common.h
  */
-int HASH_UPDATE(HASH_CTX *c, const void *data_, size_t len)
-{
+int HASH_UPDATE(HASH_CTX *c, const void *data_, size_t len) {
     const unsigned char *data = data_;
     unsigned char *p;
     HASH_LONG l;
@@ -221,11 +224,11 @@ int HASH_UPDATE(HASH_CTX *c, const void *data_, size_t len)
     if (len == 0)
         return 1;
 
-    l = (c->Nl + (((HASH_LONG) len) << 3)) & 0xffffffffUL;
-    if (l < c->Nl)              /* overflow */
+    l = (c->Nl + (((HASH_LONG)len) << 3)) & 0xffffffffUL;
+    if (l < c->Nl) /* overflow */
         c->Nh++;
-    c->Nh += (HASH_LONG) (len >> 29); /* might cause compiler warning on
-                                       * 16-bit */
+    c->Nh += (HASH_LONG)(len >> 29); /* might cause compiler warning on
+                                      * 16-bit */
     c->Nl = l;
 
     n = c->num;
@@ -269,16 +272,15 @@ int HASH_UPDATE(HASH_CTX *c, const void *data_, size_t len)
     return 1;
 }
 
-/** 
- * Modification 2021 Paul Scherrer Institut 
- * from md32_common.h 
+/**
+ * Modification 2021 Paul Scherrer Institut
+ * from md32_common.h
  */
-int HASH_FINAL(unsigned char *md, HASH_CTX *c)
-{
+int HASH_FINAL(unsigned char *md, HASH_CTX *c) {
     unsigned char *p = (unsigned char *)c->data;
     size_t n = c->num;
 
-    p[n] = 0x80;                /* there is always room for one */
+    p[n] = 0x80; /* there is always room for one */
     n++;
 
     if (n > (HASH_CBLOCK - 8)) {
@@ -289,7 +291,7 @@ int HASH_FINAL(unsigned char *md, HASH_CTX *c)
     memset(p + n, 0, HASH_CBLOCK - 8 - n);
 
     p += HASH_CBLOCK - 8;
-#if   defined(DATA_ORDER_IS_BIG_ENDIAN)
+#if defined(DATA_ORDER_IS_BIG_ENDIAN)
     (void)HOST_l2c(c->Nh, p);
     (void)HOST_l2c(c->Nl, p);
 #elif defined(DATA_ORDER_IS_LITTLE_ENDIAN)
@@ -300,7 +302,7 @@ int HASH_FINAL(unsigned char *md, HASH_CTX *c)
     HASH_BLOCK_DATA_ORDER(c, p, 1);
     c->num = 0;
     // OPENSSL_cleanse(p, HASH_CBLOCK);
-    //Erik: Since we don't do encryption secure cleaning is not needed
+    // Erik: Since we don't do encryption secure cleaning is not needed
     memset(p, 0, HASH_CBLOCK);
 
     HASH_MAKE_STRING(c, md);

@@ -587,8 +587,8 @@ public:
     
     int nx, ny;
     dets[0]->getDetectorSize(nx,ny);
-    uint32 nnx;
-    uint32 nny;
+    uint32_t nnx;
+    uint32_t nny;
     float *gm=ReadFromTiff(imgname, nnx, nny);
     if (ped) delete [] ped;
     if (nnx>(uint)nx) nx=nnx;

@@ -45,16 +45,16 @@ void *WriteToTiff(float * imgData, const char * imgname, int nrow, int ncol){
   return NULL;
 };
 
-float *ReadFromTiff( const char * imgname, uint32 &nrow, uint32 &ncol){
+float *ReadFromTiff( const char * imgname, uint32_t &nrow, uint32_t &ncol){
   // unsigned char * buff=NULL;
 
   TIFF * tif = TIFFOpen(imgname,"r");
   if (tif){
-        uint32 bps;
-	uint32 sampleperpixel=1;
+        uint32_t bps;
+	uint32_t sampleperpixel=1;
   //tsize_t linebytes;
 
- uint32 imagelength;
+ uint32_t imagelength;
 
     TIFFGetField(tif,TIFFTAG_IMAGEWIDTH,&ncol);
     TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &nrow);
@@ -65,7 +65,7 @@ float *ReadFromTiff( const char * imgname, uint32 &nrow, uint32 &ncol){
     float * imgData=new float[ncol*nrow];
     //linebytes = sampleperpixel*ncol;
     //  TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, ncol*sampleperpixel));
-    for(uint32 irow=0; irow<nrow; irow++){
+    for(uint32_t irow=0; irow<nrow; irow++){
       //tiffreadscanline(tif, buf, row);
       TIFFReadScanline(tif,&imgData[irow*ncol],irow);
     }

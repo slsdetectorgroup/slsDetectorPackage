@@ -33,6 +33,6 @@
 
 void *WriteToTiff(float * imgData, const char * imgname, int nrow, int ncol);
 
-float *ReadFromTiff( const char * imgname, uint32 &nrow, uint32 &ncol);
+float *ReadFromTiff( const char * imgname, uint32_t &nrow, uint32_t &ncol);
 
 #endif

@@ -7,7 +7,7 @@
 #include "sls/tiffIO.h"
 
 void *WriteToTiff(float *imgData, const char *imgname, int nrow, int ncol) {
-    int sampleperpixel = 1;
+    constexpr uint32_t sampleperpixel = 1;
     TIFF *tif = TIFFOpen(imgname, "w");
     if (tif) {
         TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, ncol);
@@ -36,8 +36,8 @@ void *WriteToTiff(float *imgData, const char *imgname, int nrow, int ncol) {
 float *ReadFromTiff(const char *imgname, uint32_t &nrow, uint32_t &ncol) {
     TIFF *tif = TIFFOpen(imgname, "r");
     if (tif) {
+        constexpr uint32_t sampleperpixel = 1;
         uint32_t bps;
-        uint32_t sampleperpixel = 1;
         uint32_t imagelength;
 
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &ncol);

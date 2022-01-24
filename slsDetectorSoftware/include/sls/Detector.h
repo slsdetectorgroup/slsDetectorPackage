@@ -1667,15 +1667,15 @@ class Detector {
     /** [CTB][Moench][Mythen3] */
     Result<uint64_t> getPatternMask(Positions pos = {});
 
-    /** [CTB][Moench][Mythen3] Sets the mask applied to every pattern to the
-     * selected bits */
+    /** [CTB][Moench][Mythen3] Selects the bits that will have a pattern mask
+     * applied to the selected patmask for every pattern. */
     void setPatternMask(uint64_t mask, Positions pos = {});
 
     /** [CTB][Moench][Mythen3]  */
     Result<uint64_t> getPatternBitMask(Positions pos = {}) const;
 
-    /** [CTB][Moench][Mythen3] Selects the bits that will have a pattern mask
-     * applied to the selected patmask for every pattern. */
+    /** [CTB][Moench][Mythen3] Sets the mask applied to every pattern to the
+     * selected bits */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
 
     /** [Mythen3] */

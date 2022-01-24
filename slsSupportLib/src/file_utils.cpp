@@ -67,7 +67,8 @@ std::vector<char> readBinaryFile(const std::string &fname,
     FILE *fp = fopen(fname.c_str(), "rb");
     if (fp == nullptr) {
         throw sls::RuntimeError(errorPrefix +
-                                std::string(" (Could not open file: ") + fname + std::string(")"));
+                                std::string(" (Could not open file: ") + fname +
+                                std::string(")"));
     }
 
     // get file size to print progress
@@ -148,17 +149,19 @@ std::string getFileNameFromFilePath(const std::string &fpath) {
     return fname;
 }
 
-ssize_t getFileSize(FILE* fd, const std::string &prependErrorString) {
+ssize_t getFileSize(FILE *fd, const std::string &prependErrorString) {
     if (fseek(fd, 0, SEEK_END) != 0) {
-        throw RuntimeError(prependErrorString + std::string(" (Seek error in src file)"));
+        throw RuntimeError(prependErrorString +
+                           std::string(" (Seek error in src file)"));
     }
     size_t fileSize = ftell(fd);
     if (fileSize <= 0) {
-        throw RuntimeError(prependErrorString + std::string(" (Could not get length of source file)"));
+        throw RuntimeError(
+            prependErrorString +
+            std::string(" (Could not get length of source file)"));
     }
     rewind(fd);
     return fileSize;
 }
-
 
 } // namespace sls

@@ -952,42 +952,42 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     switch (sett) {
     case G1_HIGHGAIN:
         LOG(logINFO, ("Set settings - G1_HIGHGAIN\n"));
-        setPatternMask(G1_HIGHGAIN_PATMASK);
+        setPatternBitMask(G1_HIGHGAIN_PATSETBIT);
         break;
     case G1_LOWGAIN:
         LOG(logINFO, ("Set settings - G1_LOWGAIN\n"));
-        setPatternMask(G1_LOWGAIN_PATMASK);
+        setPatternBitMask(G1_LOWGAIN_PATSETBIT);
         break;
     case G2_HIGHCAP_HIGHGAIN:
         LOG(logINFO, ("Set settings - G2_HIGHCAP_HIGHGAIN\n"));
-        setPatternMask(G2_HIGHCAP_HIGHGAIN_PATMASK);
+        setPatternBitMask(G2_HIGHCAP_HIGHGAIN_PATSETBIT);
         break;
     case G2_HIGHCAP_LOWGAIN:
         LOG(logINFO, ("Set settings - G2_HIGHCAP_LOWGAIN\n"));
-        setPatternMask(G2_HIGHCAP_LOWGAIN_PATMASK);
+        setPatternBitMask(G2_HIGHCAP_LOWGAIN_PATSETBIT);
         break;
     case G2_LOWCAP_HIGHGAIN:
         LOG(logINFO, ("Set settings - G2_LOWCAP_HIGHGAIN\n"));
-        setPatternMask(G2_LOWCAP_HIGHGAIN_PATMASK);
+        setPatternBitMask(G2_LOWCAP_HIGHGAIN_PATSETBIT);
         break;
     case G2_LOWCAP_LOWGAIN:
         LOG(logINFO, ("Set settings - G2_LOWCAP_LOWGAIN\n"));
-        setPatternMask(G2_LOWCAP_LOWGAIN_PATMASK);
+        setPatternBitMask(G2_LOWCAP_LOWGAIN_PATSETBIT);
         break;
     case G4_HIGHGAIN:
         LOG(logINFO, ("Set settings - G4_HIGHGAIN\n"));
-        setPatternMask(G4_HIGHGAIN_PATMASK);
+        setPatternBitMask(G4_HIGHGAIN_PATSETBIT);
         break;
     case G4_LOWGAIN:
         LOG(logINFO, ("Set settings - G4_LOWGAIN\n"));
-        setPatternMask(G4_LOWGAIN_PATMASK);
+        setPatternBitMask(G4_LOWGAIN_PATSETBIT);
         break;
     default:
         LOG(logERROR,
             ("This settings is not defined for this detector %d\n", (int)sett));
         return -1;
     }
-    setPatternBitMask(DEFAULT_PATSETBIT);
+    setPatternMask(DEFAULT_PATMASK);
     thisSettings = sett;
 
     return getSettings();
@@ -995,44 +995,44 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
 
 enum detectorSettings getSettings() {
 
-    uint64_t patsetbit = getPatternBitMask();
-    if (patsetbit != DEFAULT_PATSETBIT) {
+    uint64_t patmask = getPatternMask();
+    if (patmask != DEFAULT_PATMASK) {
         LOG(logERROR,
-            ("Patsetbit is 0x%llx, and not 0x%llx. Undefined Settings!\n",
-             patsetbit, DEFAULT_PATSETBIT));
+            ("Patmask is 0x%llx, and not 0x%llx. Undefined Settings!\n",
+             patmask, DEFAULT_PATMASK));
         thisSettings = UNDEFINED;
         return thisSettings;
     }
 
-    uint64_t patsetmask = getPatternMask();
-    switch (patsetmask) {
-    case G1_HIGHGAIN_PATMASK:
+    uint64_t patsetbit = getPatternBitMask();
+    switch (patsetbit) {
+    case G1_HIGHGAIN_PATSETBIT:
         thisSettings = G1_HIGHGAIN;
         break;
-    case G1_LOWGAIN_PATMASK:
+    case G1_LOWGAIN_PATSETBIT:
         thisSettings = G1_LOWGAIN;
         break;
-    case G2_HIGHCAP_HIGHGAIN_PATMASK:
+    case G2_HIGHCAP_HIGHGAIN_PATSETBIT:
         thisSettings = G2_HIGHCAP_HIGHGAIN;
         break;
-    case G2_HIGHCAP_LOWGAIN_PATMASK:
+    case G2_HIGHCAP_LOWGAIN_PATSETBIT:
         thisSettings = G2_HIGHCAP_LOWGAIN;
         break;
-    case G2_LOWCAP_HIGHGAIN_PATMASK:
+    case G2_LOWCAP_HIGHGAIN_PATSETBIT:
         thisSettings = G2_LOWCAP_HIGHGAIN;
         break;
-    case G2_LOWCAP_LOWGAIN_PATMASK:
+    case G2_LOWCAP_LOWGAIN_PATSETBIT:
         thisSettings = G2_LOWCAP_LOWGAIN;
         break;
-    case G4_HIGHGAIN_PATMASK:
+    case G4_HIGHGAIN_PATSETBIT:
         thisSettings = G4_HIGHGAIN;
         break;
-    case G4_LOWGAIN_PATMASK:
+    case G4_LOWGAIN_PATSETBIT:
         thisSettings = G4_LOWGAIN;
         break;
     default:
         LOG(logERROR,
-            ("Patsetmask is 0x%llx. Undefined Settings!\n", patsetmask));
+            ("Patsetbit is 0x%llx. Undefined Settings!\n", patsetbit));
         thisSettings = UNDEFINED;
         break;
     }

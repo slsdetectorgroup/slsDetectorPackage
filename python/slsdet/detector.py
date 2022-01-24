@@ -3019,7 +3019,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patsetbit(self):
-        """[Ctb][Moench][Mythen3] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern.
+        """[Ctb][Moench][Mythen3] Sets the mask applied to every pattern to the selected bits. 
         
         Example
         --------
@@ -3036,7 +3036,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patmask(self):
-        """[Ctb][Moench][Mythen3] Sets the mask applied to every pattern to the selected bits. 
+        """[Ctb][Moench][Mythen3] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern.
         
         Example
         --------

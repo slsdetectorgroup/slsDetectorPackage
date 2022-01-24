@@ -21,8 +21,6 @@ class slsDetectorDefs;
 #include <vector>
 using ns = std::chrono::nanoseconds;
 
-typedef std::array<int, MAX_DIMENSIONS> PortGeometry;
-
 class Implementation : private virtual slsDetectorDefs {
   public:
     explicit Implementation(const detectorType d);
@@ -35,8 +33,8 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
 
     void setDetectorType(const detectorType d);
-    PortGeometry getDetectorSize() const;
-    void setDetectorSize(const int *size);
+    xy getDetectorSize() const;
+    void setDetectorSize(const xy size);
     int getModulePositionId() const;
     void setModulePositionId(const int id);
     std::string getDetectorHostname() const;
@@ -268,7 +266,7 @@ class Implementation : private virtual slsDetectorDefs {
     void SetThreadPriorities();
     void SetupFifoStructure();
 
-    PortGeometry GetPortGeometry();
+    xy GetPortGeometry();
     void ResetParametersforNewAcquisition();
     void CreateUDPSockets();
     void SetupWriter();
@@ -282,7 +280,7 @@ class Implementation : private virtual slsDetectorDefs {
 
     // config parameters
     detectorType detType{GENERIC};
-    PortGeometry numModules = {{1, 1}};
+    xy numModules{1, 1};
     int modulePos{0};
     std::string detHostname;
     bool silentMode{false};

@@ -33,12 +33,12 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param r roi
      * @param fi pointer to file index
      * @param fr flip rows
-     * @param nm pointer to number of modules in each dimension
+     * @param nm number of modules in each dimension
      * @param qe pointer to quad Enable
      * @param tot pointer to total number of frames
      */
     DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi, bool fr,
-                 int *nm, bool *qe, uint64_t *tot);
+                 xy nm, bool *qe, uint64_t *tot);
 
     /**
      * Destructor
@@ -65,9 +65,9 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
     /**
      * Set number of detectors
-     * @param nm number of modules in both dimensions
+     * @param nm number of modules/ports  in both dimensions
      */
-    void SetNumberofModules(int *nm);
+    void SetNumberofModules(xy nm);
 
     /**
      * Set Flipped rows
@@ -196,7 +196,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     char *completeBuffer{nullptr};
 
     /** Number of Modules in X and Y dimension */
-    int numMods[2];
+    xy numMods{1, 1};
 
     /** Quad Enable */
     bool *quadEnable;

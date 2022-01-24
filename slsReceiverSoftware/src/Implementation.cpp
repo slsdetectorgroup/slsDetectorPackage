@@ -198,39 +198,35 @@ void Implementation::setDetectorType(const detectorType d) {
     LOG(logDEBUG) << " Detector type set to " << sls::ToString(d);
 }
 
-PortGeometry Implementation::getDetectorSize() const { return numModules; }
+slsDetectorDefs::xy Implementation::getDetectorSize() const {
+    return numModules;
+}
 
-PortGeometry Implementation::GetPortGeometry() {
-    PortGeometry portGeometry = {{1, 1}};
+slsDetectorDefs::xy Implementation::GetPortGeometry() {
+    xy portGeometry{1, 1};
     if (detType == EIGER)
-        portGeometry[X] = numUDPInterfaces;
+        portGeometry.x = numUDPInterfaces;
     else // (jungfrau and gotthard2)
-        portGeometry[Y] = numUDPInterfaces;
+        portGeometry.y = numUDPInterfaces;
     return portGeometry;
 }
 
-void Implementation::setDetectorSize(const int *size) {
-    PortGeometry portGeometry = GetPortGeometry();
+void Implementation::setDetectorSize(const slsDetectorDefs::xy size) {
+    xy portGeometry = GetPortGeometry();
 
     std::string log_message = "Detector Size (ports): (";
-    for (int i = 0; i < MAX_DIMENSIONS; ++i) {
-        numModules[i] = portGeometry[i] * size[i];
-        log_message += std::to_string(numModules[i]);
-        if (i < MAX_DIMENSIONS - 1)
-            log_message += ", ";
-    }
-    log_message += ")";
-
-    int nm[2] = {numModules[X], numModules[Y]};
+    numModules.x = portGeometry.x * size.x;
+    numModules.y = portGeometry.y * size.y;
+    xy nm{numModules.x, numModules.y};
     if (quadEnable) {
-        nm[0] = 1;
-        nm[1] = 2;
+        nm.x = 1;
+        nm.y = 2;
     }
     for (const auto &it : dataStreamer) {
         it->SetNumberofModules(nm);
     }
 
-    LOG(logINFO) << log_message;
+    LOG(logINFO) << "Detector Size (ports): " << sls::ToString(numModules);
 }
 
 int Implementation::getModulePositionId() const { return modulePos; }
@@ -240,17 +236,17 @@ void Implementation::setModulePositionId(const int id) {
     LOG(logINFO) << "Module Position Id:" << modulePos;
 
     // update zmq port
-    PortGeometry portGeometry = GetPortGeometry();
-    streamingPort = DEFAULT_ZMQ_RX_PORTNO + modulePos * portGeometry[X];
+    xy portGeometry = GetPortGeometry();
+    streamingPort = DEFAULT_ZMQ_RX_PORTNO + modulePos * portGeometry.x;
 
     for (const auto &it : dataProcessor)
         it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
                             fileFormatType, modulePos, &hdf5Lib);
-    assert(numModules[Y] != 0);
+    assert(numModules.y != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
-        row = (modulePos % numModules[Y]) * portGeometry[Y];
-        col = (modulePos / numModules[Y]) * portGeometry[X] + i;
+        row = (modulePos % numModules.y) * portGeometry.y;
+        col = (modulePos / numModules.y) * portGeometry.x + i;
 
         listener[i]->SetHardCodedPosition(row, col);
     }
@@ -569,12 +565,12 @@ void Implementation::stopReceiver() {
         if (modulePos == 0) {
             // more than 1 file, create virtual file
             if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
-                (numModules[X] * numModules[Y]) > 1) {
+                (numModules.x * numModules.y) > 1) {
                 dataProcessor[0]->CreateVirtualFile(
                     filePath, fileName, fileIndex, overwriteEnable, silentMode,
                     modulePos, numUDPInterfaces, framesPerFile,
-                    numberOfTotalFrames, dynamicRange, numModules[X],
-                    numModules[Y], &hdf5Lib);
+                    numberOfTotalFrames, dynamicRange, numModules.x,
+                    numModules.y, &hdf5Lib);
             }
             // link file in master
             dataProcessor[0]->LinkDataInMasterFile(silentMode);
@@ -867,9 +863,9 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
     if (numUDPInterfaces != n) {
 
         // reduce number of detectors to size with 1 interface
-        PortGeometry portGeometry = GetPortGeometry();
-        numModules[X] /= portGeometry[X];
-        numModules[Y] /= portGeometry[Y];
+        xy portGeometry = GetPortGeometry();
+        numModules.x /= portGeometry.x;
+        numModules.y /= portGeometry.y;
 
         // clear all threads and fifos
         listener.clear();
@@ -919,15 +915,15 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             if (dataStreamEnable) {
                 try {
                     bool flip = flipRows;
-                    int nm[2] = {numModules[X], numModules[Y]};
+                    xy nm{numModules.x, numModules.y};
                     if (quadEnable) {
                         flip = (i == 1 ? true : false);
-                        nm[0] = 1;
-                        nm[1] = 2;
+                        nm.x = 1;
+                        nm.y = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, flip,
-                        (int *)nm, &quadEnable, &numberOfTotalFrames));
+                        nm, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numUDPInterfaces, streamingPort, streamingSrcIP,
@@ -950,8 +946,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         SetThreadPriorities();
 
         // update (from 1 to 2 interface) & also for printout
-        int nm[2] = {numModules[X], numModules[Y]};
-        setDetectorSize(nm);
+        setDetectorSize(numModules);
         // update row and column in dataprocessor
         setModulePositionId(modulePos);
 
@@ -1050,15 +1045,15 @@ void Implementation::setDataStreamEnable(const bool enable) {
             for (int i = 0; i < numUDPInterfaces; ++i) {
                 try {
                     bool flip = flipRows;
-                    int nm[2] = {numModules[X], numModules[Y]};
+                    xy nm{numModules.x, numModules.y};
                     if (quadEnable) {
                         flip = (i == 1 ? true : false);
-                        nm[0] = 1;
-                        nm[1] = 2;
+                        nm.x = 1;
+                        nm.y = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, flip,
-                        (int *)nm, &quadEnable, &numberOfTotalFrames));
+                        nm, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numUDPInterfaces, streamingPort, streamingSrcIP,
@@ -1479,15 +1474,15 @@ void Implementation::setQuad(const bool b) {
         quadEnable = b;
 
         if (!quadEnable) {
-            int nm[2] = {numModules[X], numModules[Y]};
+            xy nm{numModules.x, numModules.y};
             for (const auto &it : dataStreamer) {
                 it->SetNumberofModules(nm);
                 it->SetFlipRows(flipRows);
             }
         } else {
-            int size[2] = {1, 2};
+            xy nm{1, 2};
             for (const auto &it : dataStreamer) {
-                it->SetNumberofModules(size);
+                it->SetNumberofModules(nm);
             }
             if (dataStreamer.size() == 2) {
                 dataStreamer[0]->SetFlipRows(false);

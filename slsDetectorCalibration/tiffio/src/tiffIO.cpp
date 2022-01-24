@@ -37,13 +37,11 @@ float *ReadFromTiff(const char *imgname, uint32_t &nrow, uint32_t &ncol) {
     TIFF *tif = TIFFOpen(imgname, "r");
     if (tif) {
         constexpr uint32_t sampleperpixel = 1;
-        uint32_t bps;
         uint32_t imagelength;
 
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &ncol);
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &nrow);
         TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, sampleperpixel);
-        TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, &bps);
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
 
         float *imgData = new float[ncol * nrow];

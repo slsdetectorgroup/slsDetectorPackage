@@ -72,6 +72,7 @@ foreach(exe ${MOENCH_EXECUTABLES})
 
         PRIVATE
         slsProjectWarnings
+        slsProjectOptions
     )
 
 

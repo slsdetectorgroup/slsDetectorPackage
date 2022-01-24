@@ -5,61 +5,64 @@
 
 #include "MovingStat.h"
 
-class pedestalSubtraction  {
-  /** @short class defining the pedestal subtraction based on an approximated moving average */
- public:
-  /** constructor 
-      \param nn number of samples to calculate the moving average (defaults to 1000)
-  */
-  pedestalSubtraction (int nn=1000) : stat(nn) {};
-  /* void setPointers(double *me, double *va) {mean=me; var=va; stat.setPointers(mean, var);}; */
-    /** virtual destructorr 
+class pedestalSubtraction {
+    /** @short class defining the pedestal subtraction based on an approximated
+     * moving average */
+  public:
+    /** constructor
+        \param nn number of samples to calculate the moving average (defaults to
+       1000)
+    */
+    pedestalSubtraction(int nn = 1000) : stat(nn){};
+    /* void setPointers(double *me, double *va) {mean=me; var=va;
+     * stat.setPointers(mean, var);}; */
+    /** virtual destructorr
      */
-    virtual ~pedestalSubtraction() {};
-    
+    virtual ~pedestalSubtraction(){};
+
     /** clears the moving average */
-    virtual void Clear() {stat.Clear();}
-    
-    /** adds the element to the moving average 
-	\param val value to be added
-    */
-    virtual void addToPedestal(double val){stat.Calc(val);};
+    virtual void Clear() { stat.Clear(); }
 
-  /** returns the average value of the pedestal
-      \returns mean of the moving average
+    /** adds the element to the moving average
+        \param val value to be added
     */
-    virtual double getPedestal(){return stat.Mean();};
+    virtual void addToPedestal(double val) { stat.Calc(val); };
 
-  /** returns the standard deviation of the moving average
-      \returns standard deviation of the moving average
-    */
-    virtual double getPedestalRMS(){return stat.StandardDeviation();};
+    /** returns the average value of the pedestal
+        \returns mean of the moving average
+      */
+    virtual double getPedestal() { return stat.Mean(); };
 
-  /**sets/gets the number of samples for the moving average
-      \param i number of elements for the moving average. If -1 (default) or negative, gets.
-      \returns actual number of samples for the moving average
-    */
-    virtual int SetNPedestals(int i=-1) {return stat.SetN(i);};
+    /** returns the standard deviation of the moving average
+        \returns standard deviation of the moving average
+      */
+    virtual double getPedestalRMS() { return stat.StandardDeviation(); };
 
-  /**sets/gets the number of samples for the moving average
-      \returns actual number of samples for the moving average
-    */
-    virtual int GetNPedestals() {return stat.GetN();};
-    
+    /**sets/gets the number of samples for the moving average
+        \param i number of elements for the moving average. If -1 (default) or
+       negative, gets. \returns actual number of samples for the moving average
+      */
+    virtual int SetNPedestals(int i = -1) { return stat.SetN(i); };
+
+    /**sets/gets the number of samples for the moving average
+        \returns actual number of samples for the moving average
+      */
+    virtual int GetNPedestals() { return stat.GetN(); };
+
     /** sets the moving average */
-    virtual void setPedestal(double val, double rms=0, int m=-1) {stat.Set(val, rms, m);}
+    virtual void setPedestal(double val, double rms = 0, int m = -1) {
+        stat.Set(val, rms, m);
+    }
 
-  
     /** sets the moving average */
-    virtual void setPedestalRMS(double rms) {stat.SetRMS(rms);}
+    virtual void setPedestalRMS(double rms) { stat.SetRMS(rms); }
 
     /**sets/gets the number of samples for the moving average
       \returns actual number of samples for the moving average
     */
-    virtual int getNumpedestals() {return stat.NumDataValues();};
+    virtual int getNumpedestals() { return stat.NumDataValues(); };
 
- private:
+  private:
     MovingStat stat; /**< approximated moving average struct */
-
 };
 #endif

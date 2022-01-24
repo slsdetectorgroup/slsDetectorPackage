@@ -6,16 +6,18 @@
 #include "commonModeSubtractionNew.h"
 
 class moenchCommonMode : public commonModeSubtraction {
-  /** @short class to calculate the common mode noise for moench02 i.e. on 4 supercolumns separately */
- public:
-  /** constructor -  initalizes a commonModeSubtraction with 4 different regions of interest 
-      \param nn number of samples for the moving average
-  */
+    /** @short class to calculate the common mode noise for moench02 i.e. on 4
+     * supercolumns separately */
+  public:
+    /** constructor -  initalizes a commonModeSubtraction with 4 different
+       regions of interest \param nn number of samples for the moving average
+    */
 
-  moenchCommonMode(int nn=0) : commonModeSubtraction(0){} ;
-    
+    moenchCommonMode(int nn = 0) : commonModeSubtraction(0){};
 
-    /* /\** add value to common mode as a function of the pixel value, subdividing the region of interest in the 4 supercolumns of 40 columns each; */
+    /* /\** add value to common mode as a function of the pixel value,
+     * subdividing the region of interest in the 4 supercolumns of 40 columns
+     * each; */
     /* 	\param val value to add to the common mode */
     /* 	\param ix pixel coordinate in the x direction */
     /* 	\param iy pixel coordinate in the y direction */
@@ -28,7 +30,9 @@ class moenchCommonMode : public commonModeSubtraction {
     /* 	nCm[isc]++; */
     /*   } */
     /* }; */
-    /*  /\**returns common mode value as a function of the pixel value, subdividing the region of interest in the 4 supercolumns of 40 columns each; */
+    /*  /\**returns common mode value as a function of the pixel value,
+     * subdividing the region of interest in the 4 supercolumns of 40 columns
+     * each; */
     /* 	\param ix pixel coordinate in the x direction */
     /* 	\param iy pixel coordinate in the y direction */
     /* 	\returns common mode value */
@@ -41,8 +45,6 @@ class moenchCommonMode : public commonModeSubtraction {
     /*   } */
     /*   return 0; */
     /* }; */
-
 };
-
 
 #endif

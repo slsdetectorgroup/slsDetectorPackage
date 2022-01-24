@@ -21,6 +21,7 @@ This document describes the differences between v6.1.0 and v6.0.0.
 
 - Fixed minor warnings (will fix commandline print of excess packets for missing packets)
 - ctb slow adcs and any other adcs (other than temp) goes to the control Server
+- fixed patsetbit and patsetmask for moench
 
 
 

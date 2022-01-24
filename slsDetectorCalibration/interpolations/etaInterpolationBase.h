@@ -274,10 +274,10 @@ float *gethhx()
   for (int ii=0; ii<nbetaX*nbetaY; ii++) {
     ibx=nSubPixelsX*hhx[ii];
     iby=nSubPixelsY*hhy[ii];
-    if (ftest[ibx+iby*nSubPixelsX]<tot_eta*0.5) {
+    if (ftest[ibx+iby*nSubPixelsX]<tot_eta*0.5f) {
       etah[ii]=1;
       nbad++;
-    } else if(ftest[ibx+iby*nSubPixelsX]>tot_eta*2.){
+    } else if(ftest[ibx+iby*nSubPixelsX]>tot_eta*2.f){
       etah[ii]=2;
       nbad++;
     } else

@@ -3,7 +3,7 @@
 #ifndef ETA_INTERPOLATION_RANDOMBINS_H
 #define ETA_INTERPOLATION_RANDOMBINS_H
 
-#include "tiffIO.h"
+#include "sls/tiffIO.h"
 //#include "etaInterpolationBase.h"
 #include "etaInterpolationPosXY.h"
 #include <algorithm>

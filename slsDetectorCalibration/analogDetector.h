@@ -10,7 +10,7 @@
 #include "pedestalSubtraction.h"
 #include "slsDetectorData.h"
 #include "slsInterpolation.h"
-#include "tiffIO.h"
+#include "sls/tiffIO.h"
 #include <pthread.h>
 
 #ifdef ROOTSPECTRUM

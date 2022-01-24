@@ -5,7 +5,7 @@
 
 #include <cstdlib>
 #ifndef MY_TIFF_IO_H
-#include "tiffIO.h"
+#include "sls/tiffIO.h"
 #endif
 
 #ifndef DEF_QUAD

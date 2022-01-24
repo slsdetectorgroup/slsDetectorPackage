@@ -25,7 +25,7 @@
 #endif
 #include "moench03CommonMode.h"
 #include "moench03GhostSummation.h"
-#include "tiffIO.h"
+#include "sls/tiffIO.h"
 #include <fstream>
 #include <iomanip>
 #include <sstream>

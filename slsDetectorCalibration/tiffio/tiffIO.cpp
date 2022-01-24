@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <tiffio.h>
-#include "tiffIO.h"
+#include "sls/tiffIO.h"
 
 void *WriteToTiff(float *imgData, const char *imgname, int nrow, int ncol) {
     int sampleperpixel = 1;

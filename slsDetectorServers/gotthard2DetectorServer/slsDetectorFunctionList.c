@@ -41,6 +41,7 @@ char initErrorMessage[MAX_STR_LENGTH];
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
 int64_t virtual_currentFrameNumber = 2;
+int virtual_moduleid = 0;
 #endif
 
 enum detectorSettings thisSettings = UNINITIALIZED;
@@ -101,8 +102,9 @@ void basictests() {
     }
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
-        ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) || (checkType() == FAIL) ||
-         (testFpga() == FAIL) || (testBus() == FAIL))) {
+        ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) ||
+         (checkType() == FAIL) || (testFpga() == FAIL) ||
+         (testBus() == FAIL))) {
         sprintf(initErrorMessage,
                 "Could not pass basic tests of FPGA and bus. Dangerous to "
                 "continue. (Firmware version:0x%llx) \n",
@@ -480,6 +482,9 @@ void setupDetector() {
 
     // set module id in register
     int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+#ifdef VIRTUAL
+    virtual_moduleid = modid;
+#endif
     if (initError == FAIL) {
         return;
     }
@@ -2083,40 +2088,56 @@ int setReadoutSpeed(int val) {
     case G2_108MHZ:
         LOG(logINFOBLUE, ("Setting readout speed to 108 MHz\n"));
         if (setClockDivider(READOUT_C0, SPEED_108_CLKDIV_0) == FAIL) {
-            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to set readout clk 0 to %d\n", SPEED_108_CLKDIV_0));
+            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to "
+                           "set readout clk 0 to %d\n",
+                           SPEED_108_CLKDIV_0));
             return FAIL;
         }
         if (setClockDivider(READOUT_C1, SPEED_108_CLKDIV_1) == FAIL) {
-            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to set readout clk 1 to %d\n", SPEED_108_CLKDIV_1));
+            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to "
+                           "set readout clk 1 to %d\n",
+                           SPEED_108_CLKDIV_1));
             return FAIL;
         }
         if (setPhase(READOUT_C1, SPEED_108_CLKPHASE_DEG_1, 1) == FAIL) {
-            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to set clk phase 1 %d deg\n", SPEED_108_CLKPHASE_DEG_1));
+            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to "
+                           "set clk phase 1 %d deg\n",
+                           SPEED_108_CLKPHASE_DEG_1));
             return FAIL;
         }
         setDBITPipeline(SPEED_144_DBIT_PIPELINE);
         if (getDBITPipeline() != SPEED_144_DBIT_PIPELINE) {
-            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to set dbitpipeline to %d \n", SPEED_144_DBIT_PIPELINE));
+            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to "
+                           "set dbitpipeline to %d \n",
+                           SPEED_144_DBIT_PIPELINE));
             return FAIL;
         }
         break;
     case G2_144MHZ:
         LOG(logINFOBLUE, ("Setting readout speed to 144 MHz\n"));
         if (setClockDivider(READOUT_C0, SPEED_144_CLKDIV_0) == FAIL) {
-            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to set readout clk 0 to %d\n", SPEED_144_CLKDIV_0));
+            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to "
+                           "set readout clk 0 to %d\n",
+                           SPEED_144_CLKDIV_0));
             return FAIL;
         }
         if (setClockDivider(READOUT_C1, SPEED_144_CLKDIV_1) == FAIL) {
-            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to set readout clk 1 to %d\n", SPEED_144_CLKDIV_1));
+            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to "
+                           "set readout clk 1 to %d\n",
+                           SPEED_144_CLKDIV_1));
             return FAIL;
         }
         if (setPhase(READOUT_C1, SPEED_144_CLKPHASE_DEG_1, 1) == FAIL) {
-            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to set clk phase 1 %d deg\n", SPEED_144_CLKPHASE_DEG_1));
+            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to "
+                           "set clk phase 1 %d deg\n",
+                           SPEED_144_CLKPHASE_DEG_1));
             return FAIL;
         }
         setDBITPipeline(SPEED_144_DBIT_PIPELINE);
         if (getDBITPipeline() != SPEED_144_DBIT_PIPELINE) {
-            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to set dbitpipeline to %d \n", SPEED_144_DBIT_PIPELINE));
+            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to "
+                           "set dbitpipeline to %d \n",
+                           SPEED_144_DBIT_PIPELINE));
             return FAIL;
         }
         break;
@@ -3005,7 +3026,7 @@ void *start_timer(void *arg) {
             header->version = SLS_DETECTOR_HEADER_VERSION - 1;
             header->frameNumber = virtual_currentFrameNumber;
             header->packetNumber = 0;
-            header->modId = 0;
+            header->modId = virtual_moduleid;
             header->row = detPos[X];
             header->column = detPos[Y];
             // fill data

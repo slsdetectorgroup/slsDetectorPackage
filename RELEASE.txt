@@ -21,6 +21,9 @@ This document describes the differences between v6.1.0 and v6.0.0.
 
 - Fixed minor warnings (will fix commandline print of excess packets for missing packets)
 - ctb slow adcs and any other adcs (other than temp) goes to the control Server
+- number of udp interfaces is 2 for Eiger (CHANGE IN API??)
+- added module id for virtual servers into the udp header
+- refactoring (rxr)
 - fixed patsetbit and patsetmask for moench
 - changed default vref of adc9257 to 2V for moench (from 1.33V)
 

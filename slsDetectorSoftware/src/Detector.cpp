@@ -2306,20 +2306,8 @@ Result<uint64_t> Detector::getRxCurrentFrameIndex(Positions pos) const {
 }
 
 std::vector<int> Detector::getPortNumbers(int start_port) {
-    int num_sockets_per_detector = 1;
-    switch (getDetectorType().squash()) {
-    case defs::EIGER:
-        num_sockets_per_detector *= 2;
-        break;
-    case defs::JUNGFRAU:
-    case defs::GOTTHARD2:
-        if (pimpl->getNumberofUDPInterfaces({}).squash() == 2) {
-            num_sockets_per_detector *= 2;
-        }
-        break;
-    default:
-        break;
-    }
+    int num_sockets_per_detector = pimpl->getNumberofUDPInterfaces({}).tsquash(
+        "Number of UDP Interfaces is not consistent among modules");
     std::vector<int> res;
     res.reserve(size());
     for (int idet = 0; idet < size(); ++idet) {

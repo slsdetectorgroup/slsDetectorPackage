@@ -33,8 +33,8 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
 
     void setDetectorType(const detectorType d);
-    int *getDetectorSize() const;
-    void setDetectorSize(const int *size);
+    xy getDetectorSize() const;
+    void setDetectorSize(const xy size);
     int getModulePositionId() const;
     void setModulePositionId(const int id);
     std::string getDetectorHostname() const;
@@ -266,6 +266,7 @@ class Implementation : private virtual slsDetectorDefs {
     void SetThreadPriorities();
     void SetupFifoStructure();
 
+    xy GetPortGeometry();
     void ResetParametersforNewAcquisition();
     void CreateUDPSockets();
     void SetupWriter();
@@ -278,9 +279,8 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
 
     // config parameters
-    int numThreads{1};
     detectorType detType{GENERIC};
-    int numMods[MAX_DIMENSIONS] = {0, 0};
+    xy numModules{1, 1};
     int modulePos{0};
     std::string detHostname;
     bool silentMode{false};
@@ -361,7 +361,6 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t adcEnableMaskTenGiga{BIT32_MASK};
     std::vector<int> ctbDbitList;
     int ctbDbitOffset{0};
-    int ctbAnalogDataBytes{0};
 
     // callbacks
     int (*startAcquisitionCallBack)(std::string, std::string, uint64_t,

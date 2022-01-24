@@ -88,6 +88,7 @@ int eiger_virtual_read_n_rows = 256;
 int eiger_virtual_interrupt_subframe = 0;
 int eiger_virtual_left_datastream = 1;
 int eiger_virtual_right_datastream = 1;
+int eiger_virtual_module_id = 0;
 #endif
 int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
 
@@ -304,10 +305,9 @@ u_int32_t getDetectorIP() {
 void initControlServer() {
     LOG(logINFOBLUE, ("Configuring Control server\n"));
     if (!updateFlag && initError == OK) {
-#ifndef VIRTUAL
         int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
-#else
-        getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+#ifdef VIRTUAL
+        eiger_virtual_module_id = modid;
 #endif
         if (initError == FAIL) {
             return;
@@ -1500,6 +1500,7 @@ enum timingMode getTiming() {
 }
 
 /* configure mac */
+int getNumberofUDPInterfaces() { return 2; }
 
 int getNumberofDestinations(int *retval) {
 #ifdef VIRTUAL
@@ -2407,6 +2408,7 @@ void *start_timer(void *arg) {
                 header->version = SLS_DETECTOR_HEADER_VERSION;
                 header->frameNumber = frameNr + iframes;
                 header->packetNumber = i;
+                header->modId = eiger_virtual_module_id;
                 header->row = row;
                 header->column = colLeft;
 
@@ -2417,6 +2419,7 @@ void *start_timer(void *arg) {
                 header->version = SLS_DETECTOR_HEADER_VERSION;
                 header->frameNumber = frameNr + iframes;
                 header->packetNumber = i;
+                header->modId = eiger_virtual_module_id;
                 header->row = row;
                 header->column = colRight;
                 if (eiger_virtual_quad_mode) {

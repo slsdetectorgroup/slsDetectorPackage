@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
     cout << "threshold is " << thr << endl;
  cout << "Nframes is " << nframes << endl;
  
- uint32 nnx, nny;
+ uint32_t nnx, nny;
  double *gmap;
 
   // if (gainfname) {

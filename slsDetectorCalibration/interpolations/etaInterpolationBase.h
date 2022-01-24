@@ -145,8 +145,8 @@ class etaInterpolationBase : public slsInterpolation {
     
     etastepX=(etamax-etamin)/nbetaX;
     etastepY=(etamax-etamin)/nbetaY;
-    uint32 nnx;
-    uint32 nny;
+    uint32_t nnx;
+    uint32_t nny;
     float *gm=ReadFromTiff(imgname, nnx, nny);
     /* if (nnx!=nny) { */
     /*   cout << "different number of bins in x " << nnx << "  and y " << nny<< " !"<< endl; */

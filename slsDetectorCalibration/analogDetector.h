@@ -249,7 +249,7 @@ template <class dataType> class analogDetector {
      \returns pointer to current gain map is file reading succeeded, NULL is file reading didn't work.
   */
   double *readGainMap(const char * imgname) {
-    uint32 nnx, nny;
+    uint32_t nnx, nny;
     float *gm=ReadFromTiff( imgname, nny, nnx);
     if (gm) {
       if (gmap) delete [] gmap; 
@@ -688,7 +688,7 @@ template <class dataType> class analogDetector {
        \returns 0 if file reading didn't succed, otherwise 1
     */
   int readPedestals(const char * imgname) {
-    uint32 nnx, nny;
+    uint32_t nnx, nny;
     float *gm=ReadFromTiff( imgname, nny, nnx);
     if (nnx>nx) nnx=nx;
     if (nny>ny) nny=ny;
@@ -713,7 +713,7 @@ template <class dataType> class analogDetector {
        \returns 0 if file reading didn't succed, otherwise 1
     */
   int readImage(const char * imgname) {
-    uint32 nnx, nny;
+    uint32_t nnx, nny;
     float *gm=ReadFromTiff( imgname, nny, nnx);
     if (nnx>nx) nnx=nx;
     if (nny>ny) nny=ny;
@@ -764,7 +764,7 @@ template <class dataType> class analogDetector {
     */
 
   int readPedestalRMS(const char * imgname) {
-    uint32 nnx, nny;
+    uint32_t nnx, nny;
     float *gm=ReadFromTiff( imgname, nny, nnx);
     if (nnx>nx) nnx=nx;
     if (nny>ny) nny=ny;

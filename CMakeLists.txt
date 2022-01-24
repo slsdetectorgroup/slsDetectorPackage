@@ -275,6 +275,7 @@ if(SLS_BUILD_DOCS)
 endif(SLS_BUILD_DOCS)
 
 if(SLS_USE_MOENCH)
+    add_subdirectory(slsDetectorCalibration/tiffio)
     add_subdirectory(slsDetectorCalibration/moenchExecutables)
 endif(SLS_USE_MOENCH)
 

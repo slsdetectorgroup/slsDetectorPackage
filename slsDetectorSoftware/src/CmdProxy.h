@@ -2164,14 +2164,14 @@ class CmdProxy {
 
     INTEGER_COMMAND_HEX_WIDTH16(
         patmask, getPatternMask, setPatternMask, StringTo<uint64_t>,
-        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] Sets the mask applied to "
-        "every pattern to the selected bits.");
-
-    INTEGER_COMMAND_HEX_WIDTH16(
-        patsetbit, getPatternBitMask, setPatternBitMask, StringTo<uint64_t>,
         "[64 bit mask]\n\t[Ctb][Moench][Mythen3] Selects the bits that will "
         "have a pattern mask applied to the selected patmask for every "
         "pattern.");
+
+    INTEGER_COMMAND_HEX_WIDTH16(
+        patsetbit, getPatternBitMask, setPatternBitMask, StringTo<uint64_t>,
+        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] Sets the mask applied to "
+        "every pattern to the selected bits.");
 
     EXECUTE_SET_COMMAND(patternstart, startPattern,
                         "\n\t[Mythen3] Starts Pattern");

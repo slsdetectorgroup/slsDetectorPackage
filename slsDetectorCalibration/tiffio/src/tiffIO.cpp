@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 
-
+#include "sls/tiffIO.h"
 #include <iostream>
 #include <tiffio.h>
-#include "sls/tiffIO.h"
 
 void *WriteToTiff(float *imgData, const char *imgname, int nrow, int ncol) {
     constexpr uint32_t sampleperpixel = 1;
@@ -18,40 +17,32 @@ void *WriteToTiff(float *imgData, const char *imgname, int nrow, int ncol) {
         TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
         TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
         TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
-
-        // linebytes = sampleperpixel*ncol;
         TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP,
                      TIFFDefaultStripSize(tif, ncol * sampleperpixel));
+
         for (int irow = 0; irow < nrow; irow++) {
             TIFFWriteScanline(tif, &imgData[irow * ncol], irow, 0);
         }
-
         TIFFClose(tif);
-    } else
+    } else {
         std::cout << "could not open file " << imgname << " for writing\n";
-
+    }
     return nullptr;
-};
+}
 
 float *ReadFromTiff(const char *imgname, uint32_t &nrow, uint32_t &ncol) {
     TIFF *tif = TIFFOpen(imgname, "r");
     if (tif) {
-        constexpr uint32_t sampleperpixel = 1;
-        uint32_t imagelength;
-
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &ncol);
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &nrow);
-        TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, sampleperpixel);
-        TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
-
         float *imgData = new float[ncol * nrow];
         for (uint32_t irow = 0; irow < nrow; ++irow) {
             TIFFReadScanline(tif, &imgData[irow * ncol], irow);
         }
-
         TIFFClose(tif);
         return imgData;
-    } else
+    } else {
         std::cout << "could not open file " << imgname << " for reading\n";
-    return nullptr;
-};
+        return nullptr;
+    }
+}

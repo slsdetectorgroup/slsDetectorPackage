@@ -8,3 +8,7 @@ target_link_libraries(tiffio
         slsProjectWarnings
         slsProjectOptions
 )
+
+if(SLS_USE_TESTS)
+    add_subdirectory(tests)
+endif()

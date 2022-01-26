@@ -462,13 +462,12 @@ double Implementation::getProgress() const {
     uint64_t currentFrameIndex = -1;
     uint32_t flagsum = 0;
 
-    for (const auto &it : dataProcessor) {
+    for (const auto &it : listener) {
         flagsum += it->GetStartedFlag();
-        currentFrameIndex =
-            std::min(currentFrameIndex, it->GetProcessedIndex());
+        currentFrameIndex = std::max(currentFrameIndex, it->GetListenedIndex());
     }
     // no data processed
-    if (flagsum != dataProcessor.size()) {
+    if (flagsum != listener.size()) {
         currentFrameIndex = -1;
     }
 

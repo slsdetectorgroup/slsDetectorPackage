@@ -57,6 +57,10 @@ bool Listener::GetStartedFlag() { return startedFlag; }
 
 uint64_t Listener::GetCurrentFrameIndex() { return currentFrameIndex; }
 
+uint64_t Listener::GetListenedIndex() {
+    return currentFrameIndex_ - firstIndex_;
+}
+
 void Listener::SetFifo(Fifo *f) { fifo = f; }
 
 void Listener::ResetParametersforNewAcquisition() {

@@ -70,6 +70,8 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     bool GetStartedFlag();
 
     uint64_t GetCurrentFrameIndex();
+    /** (-1 if no frames have been caught) */
+    uint64_t GetListenedIndex();
 
     /**
      * Set Fifo pointer to the one given

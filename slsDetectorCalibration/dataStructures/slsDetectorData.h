@@ -4,10 +4,7 @@
 #define SLSDETECTORDATA_H
 
 #include <fstream>
-#include <inttypes.h>
 #include <iostream>
-
-using namespace std;
 
 template <class dataType> class slsDetectorData {
 
@@ -369,7 +366,7 @@ template <class dataType> class slsDetectorData {
       is incomplete
 
     */
-    virtual char *readNextFrame(ifstream &filebin) = 0;
+    virtual char *readNextFrame(std::ifstream &filebin) = 0;
 };
 
 #endif

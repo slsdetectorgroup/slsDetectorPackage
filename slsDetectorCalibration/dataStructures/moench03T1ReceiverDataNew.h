@@ -107,8 +107,8 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 #endif
                         if (dataMap[row][col] < 0 ||
                             dataMap[row][col] >= nSamples * 2 * 32)
-                            cout << "Error: pointer " << dataMap[row][col]
-                                 << " out of range " << endl;
+                            std::cout << "Error: pointer " << dataMap[row][col]
+                                 << " out of range " << std::endl;
                     }
                 }
             }
@@ -298,17 +298,17 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
     /*       return NULL; */
     /*     }; */
 
-    virtual char *readNextFrame(ifstream &filebin) {
+    virtual char *readNextFrame(std::ifstream &filebin) {
         int ff = -1, np = -1;
         return readNextFrame(filebin, ff, np);
     };
 
-    virtual char *readNextFrame(ifstream &filebin, int &ff) {
+    virtual char *readNextFrame(std::ifstream &filebin, int &ff) {
         int np = -1;
         return readNextFrame(filebin, ff, np);
     };
 
-    virtual char *readNextFrame(ifstream &filebin, int &ff, int &np) {
+    virtual char *readNextFrame(std::ifstream &filebin, int &ff, int &np) {
         char *data = new char[dataSize];
         char *d = readNextFrame(filebin, ff, np, data);
         if (d == NULL) {
@@ -318,7 +318,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
         return data;
     }
 
-    virtual char *readNextFrame(ifstream &filebin, int &ff, int &np,
+    virtual char *readNextFrame(std::ifstream &filebin, int &ff, int &np,
                                 char *data) {
         char *retval = 0;
         int nd;

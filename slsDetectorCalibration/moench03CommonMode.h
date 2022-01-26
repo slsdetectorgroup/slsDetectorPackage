@@ -20,7 +20,7 @@ class commonModeSubtractionColumn : public commonModeSubtraction {
                 mean2[iroi] += val * val;
                 nCm[iroi]++;
                 if (nCm[iroi] > rows)
-                    cout << "Too many pixels added " << nCm[iroi] << endl;
+                    std::cout << "Too many pixels added " << nCm[iroi] << std::endl;
                 /* if (ix==10 && iy<20) */
                 /*   cout << " ** "<<val << " " << mean[iroi] << " " <<
                  * nCm[iroi] << " " << getCommonMode(ix, iy) << endl; */

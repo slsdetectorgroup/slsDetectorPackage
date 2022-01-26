@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 //#define WRITE_QUAD
-#define DEVELOPER
+//#define DEVELOPER
 #undef CORR
-#undef MOENCH04
+//#undef MOENCH04
 
 #define C_GHOST 0.0004
 
@@ -11,18 +11,18 @@
 
 #include "sls/ZmqSocket.h"
 #include "sls/sls_detector_defs.h"
-#ifndef RECT
 #ifndef MOENCH04
+//#ifndef RECT
 #include "moench03T1ZmqDataNew.h"
+//#endif
+//#ifdef RECT
+//#include "moench03T1ZmqDataNewRect.h"
+//#endif
 #endif
 #ifdef MOENCH04
 #include "moench04CtbZmq10GbData.h"
 #endif
 
-#endif
-#ifdef RECT
-#include "moench03T1ZmqDataNewRect.h"
-#endif
 #include "moench03CommonMode.h"
 #include "moench03GhostSummation.h"
 #include "sls/tiffIO.h"
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
     int send_something = 0;
 
     int maxSize = npx * npy * 2; // 32*2*8192;//5000;//atoi(argv[3]);
-    int size = maxSize;          // 32*2*5000;
+    int size = maxSize+sizeof(int);          // 32*2*5000;
     // int multisize=size;
     // int dataSize=size;
 
@@ -305,10 +305,10 @@ int main(int argc, char *argv[]) {
     // header variables
     uint64_t acqIndex = -1;
     uint64_t frameIndex = -1;
-#ifdef MOENCH_BRANCH
-    uint32_t subFrameIndex = -1;
-    int *flippedData = 0;
-#endif
+// #ifdef MOENCH_BRANCH
+//     uint32_t subFrameIndex = -1;
+//     int *flippedData = 0;
+// #endif
 
     uint64_t subframes = 0;
     // uint64_t  isubframe=0;

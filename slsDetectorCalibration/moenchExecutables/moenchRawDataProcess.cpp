@@ -2,43 +2,33 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 //#include "sls/ansi.h"
 #include <iostream>
-#define CORR
+#undef CORR
 
 #define C_GHOST 0.0004
 
 #define CM_ROWS 50
 
-//#define VERSION_V1
+#define RAWDATA
 
-//#include "moench03T1ZmqData.h"
-#ifdef NEWRECEIVER
+#ifndef MOENCH04
 #ifndef RECT
 #include "moench03T1ReceiverDataNew.h"
+#endif
 #endif
 
 #ifdef RECT
 #include "moench03T1ReceiverDataNewRect.h"
 #endif
 
+
+#ifdef MOENCH04
+#include "moench04CtbZmq10GbData.h"
 #endif
 
-#ifdef CSAXS_FP
-#include "moench03T1ReceiverData.h"
-#endif
-#ifdef OLDDATA
-#include "moench03Ctb10GbT1Data.h"
-#endif
-
-// #include "interpolatingDetector.h"
-//#include "etaInterpolationPosXY.h"
-// #include "linearInterpolation.h"
-// #include "noInterpolation.h"
 #include "multiThreadedCountingDetector.h"
-//#include "multiThreadedAnalogDetector.h"
 #include "moench03CommonMode.h"
 #include "moench03GhostSummation.h"
 #include "singlePhotonDetector.h"
-//#include "interpolatingDetector.h"
 
 #include <fstream>
 #include <map>
@@ -52,7 +42,7 @@ int main(int argc, char *argv[]) {
 
     if (argc < 4) {
         cout << "Usage is " << argv[0]
-             << "indir outdir fname [runmin] [runmax] [pedfile] [threshold] "
+             << "indir outdir fname(no extension) [runmin] [runmax] [pedfile (raw or tiff)] [threshold] "
                 "[nframes] [xmin xmax ymin ymax] [gainmap]"
              << endl;
         cout << "threshold <0 means analog; threshold=0 means cluster finder; "
@@ -64,55 +54,39 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int p = 10000;
     int fifosize = 1000;
     int nthreads = 10;
-    int nsubpix = 25;
-    int etabins = nsubpix * 10;
-    double etamin = -1, etamax = 2;
     int csize = 3;
-    int save = 1;
     int nsigma = 5;
     int nped = 10000;
-    int ndark = 100;
-    int ok;
-    int iprog = 0;
 
     int cf = 0;
 
-#ifdef NEWRECEIVER
 #ifdef RECT
-    cout << "Should be rectangular!" << endl;
+    cout << "Should be rectangular but now it will crash! No data structure defined!" << endl;
 #endif
+#ifndef MOENCH04
     moench03T1ReceiverDataNew *decoder = new moench03T1ReceiverDataNew();
-    cout << "RECEIVER DATA WITH ONE HEADER!" << endl;
+    cout << "MOENCH03!" << endl;
 #endif
 
-#ifdef CSAXS_FP
-    moench03T1ReceiverData *decoder = new moench03T1ReceiverData();
-    cout << "RECEIVER DATA WITH ALL HEADERS!" << endl;
+#ifdef MOENCH04
+    moench04CtbZmq10GbData *decoder = new moench04CtbZmq10GbData();
+    cout << "MOENCH04!" << endl;
 #endif
 
-#ifdef OLDDATA
-    moench03Ctb10GbT1Data *decoder = new moench03Ctb10GbT1Data();
-    cout << "OLD RECEIVER DATA!" << endl;
-#endif
 
     int nx = 400, ny = 400;
 
     decoder->getDetectorSize(nx, ny);
-
+#ifdef CORR
     int ncol_cm = CM_ROWS;
     double xt_ghost = C_GHOST;
+#endif
     moench03CommonMode *cm = NULL;
     moench03GhostSummation *gs;
     double *gainmap = NULL;
-    float *gm;
-
-    int size = 327680; ////atoi(argv[3]);
-
-    int *image;
-    // int* image =new int[327680/sizeof(int)];
+    //float *gm;
 
     int ff, np;
     // cout << " data size is " << dsize;
@@ -169,7 +143,6 @@ int main(int argc, char *argv[]) {
     char fname[10000];
     char imgfname[10000];
     char cfname[10000];
-    char fn[10000];
 
     std::time_t end_time;
 
@@ -186,19 +159,6 @@ int main(int argc, char *argv[]) {
     cout << "Nframes is " << nframes << endl;
 
     uint32_t nnx, nny;
-    double *gmap;
-
-    // if (gainfname) {
-    //   gm=ReadFromTiff(gainfname, nny, nnx);
-    //   if (gm && nnx==nx && nny==ny) {
-    //     gmap=new double[nx*ny];
-    //     for (int i=0; i<nx*ny; i++) {
-    // 	gmap[i]=gm[i];
-    //     }
-    //     delete gm;
-    //   } else
-    //     cout << "Could not open gain map " << gainfname << endl;
-    // }
 
 #ifdef CORR
     cout << "Applying common mode  " << ncol_cm << endl;
@@ -220,21 +180,15 @@ int main(int argc, char *argv[]) {
     } else
         thr = 0.15 * thr;
     filter->newDataSet();
-    int dsize = decoder->getDataSize();
+    //int dsize = decoder->getDataSize();
 
-    char data[dsize];
-
-    //#ifndef ANALOG
     if (thr > 0) {
         cout << "threshold is " << thr << endl;
-        //#ifndef ANALOG
         filter->setThreshold(thr);
-        //#endif
         cf = 0;
 
     } else
         cf = 1;
-    //#endif
 
     filter->setROI(xmin, xmax, ymin, ymax);
     std::time(&end_time);
@@ -269,7 +223,7 @@ int main(int argc, char *argv[]) {
 
     int ifr = 0;
 
-    double ped[nx * ny], *ped1;
+    double *ped=new double[nx * ny];//, *ped1;
 
     if (pedfile) {
 
@@ -277,10 +231,10 @@ int main(int argc, char *argv[]) {
         sprintf(imgfname, "%s/pedestals.tiff", outdir);
 
         if (string(pedfile).find(".tif") == std::string::npos) {
-            sprintf(fname, "%s.raw", pedfile);
+            sprintf(fname, "%s", pedfile);
             cout << fname << endl;
             std::time(&end_time);
-            cout << "aaa" << std::ctime(&end_time) << endl;
+            //cout << "aaa" << std::ctime(&end_time) << endl;
 
             mt->setFrameMode(ePedestal);
             // sprintf(fn,fformat,irun);
@@ -310,18 +264,12 @@ int main(int argc, char *argv[]) {
                      << " for reading " << endl;
         } else {
             float *pp = ReadFromTiff(pedfile, nny, nnx);
-            if (pp && nnx == nx && nny == ny) {
+            if (pp && (int)nnx == nx && (int)nny == ny) {
                 for (int i = 0; i < nx * ny; i++) {
                     ped[i] = pp[i];
                 }
                 delete[] pp;
                 mt->setPedestal(ped);
-                // ped1=mt->getPedestal();
-
-                // for (int i=0; i<nx*ny; i++) {
-
-                //   cout << ped[i]<<"/"<<ped1[i] << " " ;
-                // }
                 cout << "Pedestal set from tiff file " << pedfile << endl;
             } else {
                 cout << "Could not open pedestal tiff file " << pedfile
@@ -342,11 +290,11 @@ int main(int argc, char *argv[]) {
         cout << "DATA ";
         // sprintf(fn,fformat,irun);
         sprintf(ffname, "%s/%s.raw", indir, fformat);
-        sprintf(fname, ffname, irun);
+        sprintf(fname, (const char*)ffname, irun);
         sprintf(ffname, "%s/%s.tiff", outdir, fformat);
-        sprintf(imgfname, ffname, irun);
+        sprintf(imgfname, (const char*)ffname, irun);
         sprintf(ffname, "%s/%s.clust", outdir, fformat);
-        sprintf(cfname, ffname, irun);
+        sprintf(cfname, (const char*)ffname, irun);
         cout << fname << " ";
         cout << imgfname << endl;
         std::time(&end_time);
@@ -375,13 +323,10 @@ int main(int argc, char *argv[]) {
             ifr = 0;
             while (decoder->readNextFrame(filebin, ff, np, buff)) {
                 if (np == 40) {
-                    //	cout << "*"<<ifr++<<"*"<<ff<< endl;
-                    //	cout << ff << " " << np << endl;
                     //         //push
                     mt->pushData(buff);
                     // 	//         //pop
                     mt->nextThread();
-                    // // 		//	cout << " " << (void*)buff;
                     mt->popFree(buff);
 
                     ifr++;
@@ -389,15 +334,9 @@ int main(int argc, char *argv[]) {
                         cout << ifr << " " << ff << endl;
                     if (nframes > 0) {
                         if (ifr % nframes == 0) {
-                            // The name has an additional "_fXXXXX" at the end,
-                            // where "XXXXX" is the initial frame number of the
-                            // image (0,1000,2000...)
-
                             sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat,
                                     ifile);
-                            sprintf(imgfname, ffname, irun);
-                            // cout << "Writing tiff to " << imgfname << " " <<
-                            // thr1 << endl;
+                            sprintf(imgfname, (const char*)ffname, irun);
                             mt->writeImage(imgfname, thr1);
                             mt->clearImage();
                             ifile++;
@@ -409,18 +348,16 @@ int main(int argc, char *argv[]) {
             }
             cout << "--" << endl;
             filebin.close();
-            //      //close file
-            //     //join threads
             while (mt->isBusy()) {
                 ;
             }
             if (nframes >= 0) {
                 if (nframes > 0) {
                     sprintf(ffname, "%s/%s_f%05d.tiff", outdir, fformat, ifile);
-                    sprintf(imgfname, ffname, irun);
+                    sprintf(imgfname, (const char*)ffname, irun);
                 } else {
                     sprintf(ffname, "%s/%s.tiff", outdir, fformat);
-                    sprintf(imgfname, ffname, irun);
+                    sprintf(imgfname, (const char*)ffname, irun);
                 }
                 cout << "Writing tiff to " << imgfname << " " << thr1 << endl;
                 mt->writeImage(imgfname, thr1);

@@ -31,14 +31,14 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
         moench04CtbZmq10GbData(int nas = 5000, int nds = 0)
             : slsDetectorData<uint16_t>(400, 400,
 #ifdef RAWDATA
-                                        sizeof(sls_receiver_data) +
+                                        sizeof(slsDetectorDefs::sls_receiver_header) +
 #endif
                                             ((nas > 0) && (nds > 0)
                                                  ? max(nas, nds) * (32 * 2 + 8)
                                                  : nas * 32 * 2 + nds * 8)),
       nadc(32), sc_width(25), sc_height(200), aSamples(nas), dSamples(nds) {
 #ifdef RAWDATA
-      off=sizeof(sls_receiver_data);
+      off=sizeof(slsDetectorDefs::sls_receiver_header);
 #endif
 #ifndef RAWDATA
 #ifndef CTB
@@ -49,6 +49,7 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 #endif
 #endif
 
+      cout << "off is " << off << endl;
 	  
 	  if (off>0)
 	    cout << "M04 RAW DATA NEW " << endl;
@@ -158,12 +159,10 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 
         int getFrameNumber(char *buff) {
 #ifdef RAWDATA
-            return ((sls_receiver_data *)buff)->frameNumber;
+	  return ((slsDetectorDefs::sls_receiver_header *)buff)->detHeader.frameNumber;
 #endif
-#ifndef RAWDATA
-	    return (int)*buff;
-#endif
-        }; //*((int*)(buff+5))&0xffffff;};
+	    return (int)(*buff);
+        }; 
 
         /**
 
@@ -176,11 +175,9 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
         */
         int getPacketNumber(char *buff) {
 #ifdef RAWDATA
-            return ((sls_receiver_data *)buff)->packetNumber;
+	  return ((slsDetectorDefs::sls_receiver_header *)buff)->detHeader.packetNumber;
 #endif
-#ifndef RAWDATA
 	    return 0;
-#endif
 	    
         }
 
@@ -232,11 +229,10 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 #endif
 
 #ifdef RAWDATA
-            char *retval = 0;
-            int nd;
+            //int nd;
             int fnum = -1;
             np = 0;
-            int pn;
+            //int pn;
 
             //  cout << dataSize << endl;
             if (ff >= 0)

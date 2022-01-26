@@ -6,9 +6,14 @@
 set(MOENCH_EXECUTABLES)
 
 #Moench ZMQ
-add_executable(moenchZmqProcess moenchZmqProcess.cpp)
-target_compile_definitions(moenchZmqProcess PRIVATE NEWZMQ INTERP)
-list(APPEND MOENCH_EXECUTABLES moenchZmqProcess)
+add_executable(moench03ZmqProcess moenchZmqProcess.cpp)
+target_compile_definitions(moench03ZmqProcess PRIVATE NEWZMQ INTERP)
+list(APPEND MOENCH_EXECUTABLES moench03ZmqProcess)
+
+#Moench HighZ ZMQ
+add_executable(moenchHighZZmqProcess moenchZmqProcess.cpp)
+target_compile_definitions(moenchHighZZmqProcess PRIVATE NEWZMQ INTERP HIGHZ)
+list(APPEND MOENCH_EXECUTABLES moenchHighZZmqProcess)
 
 #Moench04 ZMQ
 add_executable(moench04ZmqProcess moenchZmqProcess.cpp)
@@ -17,41 +22,31 @@ list(APPEND MOENCH_EXECUTABLES moench04ZmqProcess)
 
 
 #OFFLINE Processing? 
-add_executable(moenchClusterFinder moench03ClusterFinder.cpp)
-target_compile_definitions(moenchClusterFinder PRIVATE SAVE_ALL  NEWRECEIVER)
-list(APPEND MOENCH_EXECUTABLES moenchClusterFinder)
+add_executable(moench03RawDataProcess moenchRawDataProcess.cpp)
+target_compile_definitions(moench03RawDataProcess PRIVATE)
+list(APPEND MOENCH_EXECUTABLES moench03RawDataProcess)
 
-add_executable(moenchClusterFinderHighZ moench03ClusterFinder.cpp)
-target_compile_definitions(moenchClusterFinderHighZ PRIVATE SAVE_ALL  NEWRECEIVER HIGHZ)
-list(APPEND MOENCH_EXECUTABLES moenchClusterFinderHighZ)
+add_executable(moenchHighZRawDataProcess moenchRawDataProcess.cpp)
+target_compile_definitions(moenchHighZRawDataProcess PRIVATE  HIGHZ)
+list(APPEND MOENCH_EXECUTABLES moenchHighZRawDataProcess)
 
-add_executable(moenchMakeEta moench03Interpolation.cpp)
-target_compile_definitions(moenchMakeEta PRIVATE FF)
-list(APPEND MOENCH_EXECUTABLES moenchMakeEta)
+add_executable(moench04RawDataProcess moenchRawDataProcess.cpp)
+target_compile_definitions(moench04RawDataProcess PRIVATE  MOENCH04)
+list(APPEND MOENCH_EXECUTABLES moench04RawDataProcess)
 
-add_executable(moenchInterpolation moench03Interpolation.cpp)
+#interpolation stuff
+
+add_executable(moench03MakeEta moench03Interpolation.cpp)
+target_compile_definitions(moench03MakeEta PRIVATE FF)
+list(APPEND MOENCH_EXECUTABLES moench03MakeEta)
+
+add_executable(moench03Interpolation moench03Interpolation.cpp)
 #no compile defs
-list(APPEND MOENCH_EXECUTABLES moenchInterpolation)
+list(APPEND MOENCH_EXECUTABLES moench03Interpolation)
 
-add_executable(moenchNoInterpolation moench03NoInterpolation.cpp)
+add_executable(moench03NoInterpolation moench03NoInterpolation.cpp)
 #no compile defs
-list(APPEND MOENCH_EXECUTABLES moenchNoInterpolation)
-
-add_executable(moenchPhotonCounter moenchPhotonCounter.cpp)
-target_compile_definitions(moenchPhotonCounter PRIVATE NEWRECEIVER)
-list(APPEND MOENCH_EXECUTABLES moenchPhotonCounter)
-
-add_executable(moenchAnalog moenchPhotonCounter.cpp)
-target_compile_definitions(moenchAnalog PRIVATE NEWRECEIVER ANALOG)
-list(APPEND MOENCH_EXECUTABLES moenchAnalog)
-
-add_executable(moenchPhotonCounterHighZ moenchPhotonCounter.cpp)
-target_compile_definitions(moenchPhotonCounterHighZ PRIVATE NEWRECEIVER HIGHZ)
-list(APPEND MOENCH_EXECUTABLES moenchPhotonCounterHighZ)
-
-add_executable(moenchAnalogHighZ moenchPhotonCounter.cpp)
-target_compile_definitions(moenchAnalogHighZ PRIVATE NEWRECEIVER ANALOG HIGHZ)
-list(APPEND MOENCH_EXECUTABLES moenchAnalogHighZ)
+list(APPEND MOENCH_EXECUTABLES moench03NoInterpolation)
 
 
 foreach(exe ${MOENCH_EXECUTABLES})
@@ -61,6 +56,7 @@ foreach(exe ${MOENCH_EXECUTABLES})
         ../dataStructures 
         ../interpolations
         ../../slsReceiverSoftware/include/
+	../../slsSupportLib/include/
     )
 
     target_link_libraries(${exe} 
@@ -84,8 +80,6 @@ foreach(exe ${MOENCH_EXECUTABLES})
     endif()
 
     
-
-
 endforeach(exe ${MOENCH_EXECUTABLES})
 
 install(TARGETS ${MOENCH_EXECUTABLES} DESTINATION bin)

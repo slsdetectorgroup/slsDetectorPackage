@@ -120,7 +120,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
                 ghost[iy][ix] = 0.;
 
         int ipacket;
-        int ibyte;
+        uint ibyte;
         int ii = 0;
         for (ibyte = 0; ibyte < sizeof(sls_detector_header) / 2; ibyte++) {
             xmap[ibyte] = -1;
@@ -320,15 +320,11 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 
     virtual char *readNextFrame(std::ifstream &filebin, int &ff, int &np,
                                 char *data) {
-        char *retval = 0;
-        int nd;
-        int fnum = -1;
+        
         np = 0;
-        int pn;
 
         //  cout << dataSize << endl;
-        if (ff >= 0)
-            fnum = ff;
+       
 
         if (filebin.is_open()) {
             if (filebin.read(data, dataSize)) {

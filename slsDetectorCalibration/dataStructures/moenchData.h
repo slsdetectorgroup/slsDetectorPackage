@@ -36,10 +36,14 @@ class moenchData : public slsDetectorData<uint16_t> {
       
       
       adc_nr=new int[nadc];
-      ibit=new int[nadc];
+      if (ibit_in)
+	ibit=new int[nadc];
+      else
+	ibit=NULL;
       for (iadc=0; iadc<nadc; iadc++) {
 	adc_nr[iadc]=adc_nr_in[iadc];
-	ibit[iadc]=ibit_in[iadc];
+	if (ibit)
+	  ibit[iadc]=ibit_in[iadc];
       }
 
 	  
@@ -80,6 +84,33 @@ class moenchData : public slsDetectorData<uint16_t> {
    
 
         virtual int getGain(char *data, int x, int y) {
+            // int aoff=aSamples*2*32;
+
+	  if (ibit) {
+            int irow;
+            int isc = x / sc_width;
+            int icol = x % sc_width;
+            if (y < 200)
+                irow = sc_height - 1 - y;
+            else {
+                irow = y - sc_height;
+                isc++;
+            }
+            int isample = irow * sc_width + icol;
+
+            uint64_t sample;
+            char *ptr;
+            if (isc < 0 || isc >= 32)
+                return 0;
+            if (ibit[isc] < 0 || ibit[isc] >= 64)
+                return 0;
+            if (dSamples > isample) {
+                ptr = data + 32 * (isample + 1) + 8 * isample;
+                sample = *((uint64_t *)ptr);
+                if (sample & (1 << ibit[isc]))
+		  return 1;
+            } 
+	  }
 	  return 0;
         }
 
@@ -91,13 +122,7 @@ class moenchData : public slsDetectorData<uint16_t> {
 
      */
 
-        /* class jfrau_packet_header_t { */
-        /*  public: */
-        /* 	unsigned char reserved[4]; */
-        /* 	unsigned char packetNumber[1]; */
-        /* 	unsigned char frameNumber[3]; */
-        /* 	unsigned char bunchid[8]; */
-        /* }; */
+     
 
         int getFrameNumber(char *buff) {
 	  return (int* buff)[0];

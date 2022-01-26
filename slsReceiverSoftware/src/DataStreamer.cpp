@@ -17,11 +17,12 @@
 const std::string DataStreamer::TypeName = "DataStreamer";
 
 DataStreamer::DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi,
-                           bool fr, int *nm, bool *qe, uint64_t *tot)
+                           bool fr, slsDetectorDefs::xy nm, bool *qe,
+                           uint64_t *tot)
     : ThreadObject(ind, TypeName), fifo(f), dynamicRange(dr), roi(r),
       fileIndex(fi), flipRows(fr), quadEnable(qe), totalNumFrames(tot) {
-    numMods[0] = nm[0];
-    numMods[1] = nm[1];
+    numMods.x = nm.x;
+    numMods.y = nm.y;
 
     LOG(logDEBUG) << "DataStreamer " << ind << " created";
 }
@@ -62,9 +63,9 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum, char *buf) {
 
 void DataStreamer::SetGeneralData(GeneralData *g) { generalData = g; }
 
-void DataStreamer::SetNumberofModules(int *nm) {
-    numMods[0] = nm[0];
-    numMods[1] = nm[1];
+void DataStreamer::SetNumberofModules(xy nm) {
+    numMods.x = nm.x;
+    numMods.y = nm.y;
 }
 
 void DataStreamer::SetFlipRows(bool fd) { flipRows = fd; }
@@ -219,8 +220,8 @@ int DataStreamer::SendHeader(sls_receiver_header *rheader, uint32_t size,
 
     zHeader.dynamicRange = *dynamicRange;
     zHeader.fileIndex = *fileIndex;
-    zHeader.ndetx = numMods[0];
-    zHeader.ndety = numMods[1];
+    zHeader.ndetx = numMods.x;
+    zHeader.ndety = numMods.y;
     zHeader.npixelsx = nx;
     zHeader.npixelsy = ny;
     zHeader.imageSize = size;

@@ -317,10 +317,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
 
     // basic setup
     setDetectorType(arg.detType);
-    {
-        int msize[2] = {arg.numberOfModule.x, arg.numberOfModule.y};
-        impl()->setDetectorSize(msize);
-    }
+    impl()->setDetectorSize(arg.numberOfModule);
     impl()->setModulePositionId(arg.moduleIndex);
     impl()->setDetectorHostname(arg.hostname);
 

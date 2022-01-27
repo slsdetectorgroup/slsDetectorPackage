@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-#ifndef MOENCH04ZMQ10GBDATA_H
-#define MOENCH04ZMQ10GBDATA_H
+#ifndef MOENCHDATA_H
+#define MOENCHDATA_H
 #include "slsDetectorData.h"
 #include "sls/sls_detector_defs.h"
 
 using namespace std;
-class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
+class moenchData : public slsDetectorData<uint16_t> {
 
   private:
     int iframe;
@@ -16,6 +16,8 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
     const int aSamples;
     const int dSamples;
     int off;
+    int *adc_nr;
+    int *ibit;
 
   public:
     /**
@@ -24,53 +26,31 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
        1286 large etc.) \param c crosstalk parameter for the output buffer
 
     */
-    // moench04CtbZmq10GbData(int nas=5000, int nds=0):
-    // slsDetectorData<uint16_t>(400, 400, nas*2*32+nds*8), aSamples(nas),
-    // dSamples(nds), nadc(32), sc_width(25), sc_height(200) {
+  
  
-        moench04CtbZmq10GbData(int nas = 5000, int nds = 0)
-            : slsDetectorData<uint16_t>(400, 400,
-#ifdef RAWDATA
-                                        sizeof(slsDetectorDefs::sls_receiver_header) +
-#endif
-                                            ((nas > 0) && (nds > 0)
-                                                 ? max(nas, nds) * (32 * 2 + 8)
-                                                 : nas * 32 * 2 + nds * 8)),
-      nadc(32), sc_width(25), sc_height(200), aSamples(nas), dSamples(nds) {
-#ifdef RAWDATA
-      off=sizeof(slsDetectorDefs::sls_receiver_header);
-#endif
-#ifndef RAWDATA
-#ifndef CTB
-      off=sizeof(int);
-#endif
-#ifdef CTB
-      off=0;
-#endif
-#endif
+ moenchData(int off, int nadc_i, int *adc_nr_in, int *ibit_in, int nas = 5000, int nds = 0, int nx_i=400, int ny_i=400)
+   : nadc(nadc_i), slsDetectorData<uint16_t>(nx_i, ny_i,off+((nas > 0) && (nds > 0)
+                                                 ? max(nas, nds) * (nadc_i * 2 + 8)
+                                                 : nas * nadc_i * 2 + nds * 8)),
+       sc_width(25), sc_height(200), aSamples(nas), dSamples(nds) {
+      
+      
+      adc_nr=new int[nadc];
+      if (ibit_in)
+	ibit=new int[nadc];
+      else
+	ibit=NULL;
+      for (iadc=0; iadc<nadc; iadc++) {
+	adc_nr[iadc]=adc_nr_in[iadc];
+	if (ibit)
+	  ibit[iadc]=ibit_in[iadc];
+      }
 
-      cout << "off is " << off << endl;
 	  
-	  if (off>0)
-	    cout << "M04 RAW DATA NEW " << endl;
-	  else
-	    cout << "M04 ZMQ DATA NEW " << endl;
-	    
-            int adc_nr[32] = {9,  8,  11, 10, 13, 12, 15, 14, 1,  0,  3,
-                              2,  5,  4,  7,  6,  23, 22, 21, 20, 19, 18,
-                              17, 16, 31, 30, 29, 28, 27, 26, 25, 24};
-
-           
 
             int row, col;
-
-            // int isample;
             int iadc;
-            // int ix, iy;
-
-            // int npackets=40;
             int i;
-            // int adc4(0);
 
             for (int is = 0; is < aSamples; is++) {
 
@@ -99,15 +79,14 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
                     }
                 }
             }
-
-
             iframe = 0;
-            //  cout << "data struct created" << endl;
       }
    
 
-        int getGain(char *data, int x, int y) {
+        virtual int getGain(char *data, int x, int y) {
             // int aoff=aSamples*2*32;
+
+	  if (ibit) {
             int irow;
             int isc = x / sc_width;
             int icol = x % sc_width;
@@ -117,9 +96,6 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
                 irow = y - sc_height;
                 isc++;
             }
-            int ibit[32] = {-1, -1, -1, -1, -1, -1, 1,  3,  5,  7,  -1,
-                            -1, -1, -1, -1, -1, 62, 60, 58, 56, 54, 52,
-                            50, 48, 63, 61, 59, 57, 55, 53, 51, 49};
             int isample = irow * sc_width + icol;
 
             uint64_t sample;
@@ -131,14 +107,11 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
             if (dSamples > isample) {
                 ptr = data + 32 * (isample + 1) + 8 * isample;
                 sample = *((uint64_t *)ptr);
-                // cout << isc << " " << ibit[isc] << " " << isample << hex <<
-                // sample << dec << endl;
                 if (sample & (1 << ibit[isc]))
-                    return 1;
-                else
-                    return 0;
-            } else
-                return 0;
+		  return 1;
+            } 
+	  }
+	  return 0;
         }
 
         /**
@@ -149,19 +122,10 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 
      */
 
-        /* class jfrau_packet_header_t { */
-        /*  public: */
-        /* 	unsigned char reserved[4]; */
-        /* 	unsigned char packetNumber[1]; */
-        /* 	unsigned char frameNumber[3]; */
-        /* 	unsigned char bunchid[8]; */
-        /* }; */
+     
 
         int getFrameNumber(char *buff) {
-#ifdef RAWDATA
-	  return ((slsDetectorDefs::sls_receiver_header *)buff)->detHeader.frameNumber;
-#endif
-	    return (int)(*buff);
+	  return (int* buff)[0];
         }; 
 
         /**
@@ -174,9 +138,6 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 
         */
         int getPacketNumber(char *buff) {
-#ifdef RAWDATA
-	  return ((slsDetectorDefs::sls_receiver_header *)buff)->detHeader.packetNumber;
-#endif
 	    return 0;
 	    
         }
@@ -206,37 +167,16 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 
         virtual char *readNextFrame(ifstream & filebin, int &ff, int &np,
                                     char *data) {
-            // char *retval=0;
-#ifndef RAWDATA   
-
-            // int  nd;
-            // int fnum = -1;
-            np = 0;
-            // int  pn;
-
-            //  cout << dataSize << endl;
-            if (ff >= 0)
-                // fnum=ff;
-
-                if (filebin.is_open()) {
-                    if (filebin.read(data, dataSize)) {
-                        ff = getFrameNumber(data);
-                        //     np=getPacketNumber(data);
-                        return data;
-                    }
-                }
-            return NULL;
-#endif
-
-#ifdef RAWDATA
-            //int nd;
+          
+            char *retval = 0;
+            int nd;
             int fnum = -1;
             np = 0;
-            //int pn;
+            int pn;
 
             //  cout << dataSize << endl;
-            if (ff >= 0)
-                fnum = ff;
+            //if (ff >= 0)
+            //    fnum = ff;
 
             if (filebin.is_open()) {
                 if (filebin.read(data, dataSize)) {
@@ -246,8 +186,6 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
                 }
             }
             return NULL;
-
-#endif
         };
 
         /**
@@ -269,7 +207,9 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
                 ndata = dataSize;
             return data;
         }
-        // int getPacketNumber(int x, int y) {return dataMap[y][x]/packetSize;};
+
+
+
     };
 
 #endif

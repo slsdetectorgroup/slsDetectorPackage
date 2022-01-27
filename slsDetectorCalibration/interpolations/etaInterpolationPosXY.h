@@ -3,7 +3,7 @@
 #ifndef ETA_INTERPOLATION_POSXY_H
 #define ETA_INTERPOLATION_POSXY_H
 
-//#include "tiffIO.h"
+//#include "sls/tiffIO.h"
 #include "eta2InterpolationBase.h"
 #include "eta3InterpolationBase.h"
 #include "etaInterpolationBase.h"

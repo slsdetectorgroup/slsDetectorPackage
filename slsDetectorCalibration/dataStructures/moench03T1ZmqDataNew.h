@@ -29,7 +29,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
     moench03T1ZmqDataNew(int ns = 5000, int oo = 2 * 2)
         : slsDetectorData<uint16_t>(400, 400, ns * 32 * 2 + oo), nSamples(ns),
           offset(oo), xtalk(0.00021) {
-        cout << "M0.3" << endl;
+        std::cout << "M0.3" << std::endl;
         int nadc = 32;
         int sc_width = 25;
         int sc_height = 200;
@@ -70,8 +70,8 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
                     dataMap[row][col] =
                         (nadc * i + iadc) * 2 + offset; //+16*(ip+1);
                     if (dataMap[row][col] < 0 || dataMap[row][col] >= dataSize)
-                        cout << "Error: pointer " << dataMap[row][col]
-                             << " out of range " << endl;
+                        std::cout << "Error: pointer " << dataMap[row][col]
+                             << " out of range " << std::endl;
                 }
             }
         }
@@ -260,17 +260,17 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
     /*       return NULL; */
     /*     }; */
 
-    virtual char *readNextFrame(ifstream &filebin) {
+    virtual char *readNextFrame(std::ifstream &filebin) {
         int ff = -1, np = -1;
         return readNextFrame(filebin, ff, np);
     };
 
-    virtual char *readNextFrame(ifstream &filebin, int &ff) {
+    virtual char *readNextFrame(std::ifstream &filebin, int &ff) {
         int np = -1;
         return readNextFrame(filebin, ff, np);
     };
 
-    virtual char *readNextFrame(ifstream &filebin, int &ff, int &np) {
+    virtual char *readNextFrame(std::ifstream &filebin, int &ff, int &np) {
         char *data = new char[32 * 2 * nSamples];
         char *d = readNextFrame(filebin, ff, np, data);
         if (d == NULL) {
@@ -280,7 +280,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
         return data;
     }
 
-    virtual char *readNextFrame(ifstream &filebin, int &ff, int &np,
+    virtual char *readNextFrame(std::ifstream &filebin, int &ff, int &np,
                                 char *data) {
         // char *retval=0;
         //	  int  nd;

@@ -10,12 +10,12 @@ set(SLS_TEST_SOURCES
 )
 
 add_executable(testclient src/testclient.cpp)
-target_link_libraries(testclient slsSupportShared)
+target_link_libraries(testclient slsSupportStatic)
 set_target_properties(testclient PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_executable(testserver src/testserver.cpp)
-target_link_libraries(testserver slsSupportShared)
+target_link_libraries(testserver slsSupportStatic)
 set_target_properties(testserver PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     
@@ -38,10 +38,14 @@ endif (SLS_USE_DETECTOR)
 
 if (SLS_USE_RECEIVER)
     target_link_libraries(tests PUBLIC
-        slsReceiverShared
+        slsReceiverStatic
     )
 endif (SLS_USE_RECEIVER)
-
+if (SLS_USE_MOENCH)
+    target_link_libraries(tests PUBLIC
+        tiffio
+    )
+endif()
 
 if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET tests PROPERTY INTERPROCEDURAL_OPTIMIZATION True)

@@ -4411,7 +4411,7 @@ int set_next_frame_number(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting next frame number to %llu\n", arg));
+    LOG(logDEBUG1, ("Setting next frame number to %llu\n", arg));
 
 #if (!defined(EIGERD)) && (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) &&      \
     (!defined(CHIPTESTBOARDD))

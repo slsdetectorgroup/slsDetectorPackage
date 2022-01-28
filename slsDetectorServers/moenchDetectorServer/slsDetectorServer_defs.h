@@ -78,18 +78,19 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define NCHANS_PER_ADC      (25)
 
 /** Default Parameters */
-#define DEFAULT_PATTERN_FILE ("DefaultPattern_moench.txt")
-#define DEFAULT_DATA_BYTES   (NCHIP * NCHAN * NUM_BITS_PER_PIXEL)
-#define DEFAULT_NUM_SAMPLES  (5000)
-#define DEFAULT_EXPTIME      (0)
-#define DEFAULT_NUM_FRAMES   (1)
-#define DEFAULT_NUM_CYCLES   (1)
-#define DEFAULT_PERIOD       (1 * 1000 * 1000) // ns
-#define DEFAULT_DELAY        (0)
-#define DEFAULT_HIGH_VOLTAGE (0)
-#define DEFAULT_VLIMIT       (-100)
-#define DEFAULT_TIMING_MODE  (AUTO_TIMING)
-#define DEFAULT_TX_UDP_PORT  (0x7e9a)
+#define DEFAULT_PATTERN_FILE          ("DefaultPattern_moench.txt")
+#define DEFAULT_STARTING_FRAME_NUMBER (1)
+#define DEFAULT_DATA_BYTES            (NCHIP * NCHAN * NUM_BITS_PER_PIXEL)
+#define DEFAULT_NUM_SAMPLES           (5000)
+#define DEFAULT_EXPTIME               (0)
+#define DEFAULT_NUM_FRAMES            (1)
+#define DEFAULT_NUM_CYCLES            (1)
+#define DEFAULT_PERIOD                (1 * 1000 * 1000) // ns
+#define DEFAULT_DELAY                 (0)
+#define DEFAULT_HIGH_VOLTAGE          (0)
+#define DEFAULT_VLIMIT                (-100)
+#define DEFAULT_TIMING_MODE           (AUTO_TIMING)
+#define DEFAULT_TX_UDP_PORT           (0x7e9a)
 
 #define DEFAULT_RUN_CLK_AT_STARTUP  (200) // 40
 #define DEFAULT_ADC_CLK_AT_STARTUP  (40)  // 20
@@ -103,6 +104,8 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 
 #define DEFAULT_PIPELINE (15)
 #define DEFAULT_SETTINGS (G4_HIGHGAIN)
+
+#define UDP_HEADER_MAX_FRAME_VALUE (0xFFFFFFFFFFFF)
 
 // settings
 #define DEFAULT_PATMASK               (0x00000C800000800AULL)

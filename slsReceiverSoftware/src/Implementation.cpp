@@ -459,7 +459,7 @@ uint64_t Implementation::getCurrentFrameIndex() const {
 
 double Implementation::getProgress() const {
     // get minimum of processed frame indices
-    uint64_t currentFrameIndex = -1;
+    uint64_t currentFrameIndex = 0;
     uint32_t flagsum = 0;
 
     for (const auto &it : listener) {

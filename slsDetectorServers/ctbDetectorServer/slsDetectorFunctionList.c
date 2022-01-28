@@ -903,6 +903,10 @@ int setNextFrameNumber(uint64_t value) {
         ("Setting next frame number: %llu\n", (long long unsigned int)value));
     setU64BitReg(value, NEXT_FRAME_NUMB_LOCAL_LSB_REG,
                  NEXT_FRAME_NUMB_LOCAL_MSB_REG);
+#ifndef VIRTUAL
+    // for 1g udp interface
+    setUDPFrameNumber(value);
+#endif
     return OK;
 }
 

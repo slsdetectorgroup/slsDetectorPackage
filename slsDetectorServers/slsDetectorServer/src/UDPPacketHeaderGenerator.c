@@ -34,7 +34,8 @@ uint32_t getUDPPacketNumber() { return udpPacketNumber; }
 uint64_t getUDPFrameNumber() { return udpFrameNumber; }
 void setUDPFrameNumber(uint64_t fnum) {
     LOG(logINFO, ("Setting next frame number also for 1g to %lld\n", fnum));
-    udpFrameNumber = fnum;
+    // this gets incremented before setting it
+    udpFrameNumber = fnum - 1;
 }
 
 void createUDPPacketHeader(char *buffer, uint16_t id) {

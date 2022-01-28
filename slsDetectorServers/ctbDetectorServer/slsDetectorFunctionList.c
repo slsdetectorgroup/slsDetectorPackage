@@ -580,6 +580,7 @@ void setupDetector() {
         LOG(logERROR, ("%s\n\n", initErrorMessage));
         initError = FAIL;
     }
+    setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 }
 
 int updateDatabytesandAllocateRAM() {

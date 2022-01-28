@@ -1,19 +1,53 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 
-find_package(TIFF REQUIRED)
+
+
+set(MOENCH_EXECUTABLES)
 
 #Moench ZMQ
-add_executable(moenchZmqProcess moenchZmqProcess.cpp ../tiffIO.cpp)
-target_compile_definitions(moenchZmqProcess PRIVATE NEWZMQ INTERP)
+add_executable(moench03ZmqProcess moenchZmqProcess.cpp)
+target_compile_definitions(moench03ZmqProcess PRIVATE NEWZMQ INTERP)
+list(APPEND MOENCH_EXECUTABLES moench03ZmqProcess)
+
+#Moench HighZ ZMQ
+add_executable(moenchHighZZmqProcess moenchZmqProcess.cpp)
+target_compile_definitions(moenchHighZZmqProcess PRIVATE NEWZMQ INTERP HIGHZ)
+list(APPEND MOENCH_EXECUTABLES moenchHighZZmqProcess)
 
 #Moench04 ZMQ
-add_executable(moench04ZmqProcess moenchZmqProcess.cpp ../tiffIO.cpp)
+add_executable(moench04ZmqProcess moenchZmqProcess.cpp)
 target_compile_definitions(moench04ZmqProcess PRIVATE NEWZMQ INTERP MOENCH04)
+list(APPEND MOENCH_EXECUTABLES moench04ZmqProcess)
 
 
-#Both executables should have the same includes and output dirs
-set(MOENCH_EXECUTABLES "moenchZmqProcess" "moench04ZmqProcess")
+#OFFLINE Processing? 
+add_executable(moench03RawDataProcess moenchRawDataProcess.cpp)
+target_compile_definitions(moench03RawDataProcess PRIVATE)
+list(APPEND MOENCH_EXECUTABLES moench03RawDataProcess)
+
+add_executable(moenchHighZRawDataProcess moenchRawDataProcess.cpp)
+target_compile_definitions(moenchHighZRawDataProcess PRIVATE  HIGHZ)
+list(APPEND MOENCH_EXECUTABLES moenchHighZRawDataProcess)
+
+add_executable(moench04RawDataProcess moenchRawDataProcess.cpp)
+target_compile_definitions(moench04RawDataProcess PRIVATE  MOENCH04)
+list(APPEND MOENCH_EXECUTABLES moench04RawDataProcess)
+
+#interpolation stuff
+
+add_executable(moench03MakeEta moench03Interpolation.cpp)
+target_compile_definitions(moench03MakeEta PRIVATE FF)
+list(APPEND MOENCH_EXECUTABLES moench03MakeEta)
+
+add_executable(moench03Interpolation moench03Interpolation.cpp)
+#no compile defs
+list(APPEND MOENCH_EXECUTABLES moench03Interpolation)
+
+add_executable(moench03NoInterpolation moench03NoInterpolation.cpp)
+#no compile defs
+list(APPEND MOENCH_EXECUTABLES moench03NoInterpolation)
+
 
 foreach(exe ${MOENCH_EXECUTABLES})
     #TODO! At a later stage clean up include dirs and have a proper lib
@@ -22,6 +56,7 @@ foreach(exe ${MOENCH_EXECUTABLES})
         ../dataStructures 
         ../interpolations
         ../../slsReceiverSoftware/include/
+	../../slsSupportLib/include/
     )
 
     target_link_libraries(${exe} 
@@ -29,10 +64,11 @@ foreach(exe ${MOENCH_EXECUTABLES})
         slsSupportStatic
         ${ZeroMQ_LIBRARIES} 
         pthread 
-        TIFF::TIFF
+        tiffio
 
         PRIVATE
         slsProjectWarnings
+        slsProjectOptions
     )
 
 
@@ -44,8 +80,6 @@ foreach(exe ${MOENCH_EXECUTABLES})
     endif()
 
     
-
-
 endforeach(exe ${MOENCH_EXECUTABLES})
 
 install(TARGETS ${MOENCH_EXECUTABLES} DESTINATION bin)

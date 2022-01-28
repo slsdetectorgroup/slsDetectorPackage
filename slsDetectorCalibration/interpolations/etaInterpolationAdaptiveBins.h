@@ -3,7 +3,7 @@
 #ifndef ETA_INTERPOLATION_ADAPTIVEBINS_H
 #define ETA_INTERPOLATION_ADAPTIVEBINS_H
 
-#include "tiffIO.h"
+#include "sls/tiffIO.h"
 #include <cmath>
 //#include "etaInterpolationBase.h"
 #include "etaInterpolationPosXY.h"

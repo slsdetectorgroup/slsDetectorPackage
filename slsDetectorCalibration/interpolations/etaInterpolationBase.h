@@ -10,7 +10,7 @@
 #include <TTree.h>
 #endif
 #include "slsInterpolation.h"
-#include "tiffIO.h"
+#include "sls/tiffIO.h"
 #include <cmath>
 
 class etaInterpolationBase : public slsInterpolation {

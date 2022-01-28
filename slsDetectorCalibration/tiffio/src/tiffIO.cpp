@@ -1,26 +1,12 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-#ifndef MY_TIFF_IO_H
-#include "tiffIO.h"
-#endif
+
+#include "sls/tiffIO.h"
 #include <iostream>
-using namespace std;
-// #undef cbf_failnez
-// #define cbf_failnez(x)
-//   {
-//   int err;
-//   err = (x);
-//   if (err) {
-//   fprintf(stderr,"\nCBFlib fatal error %x \n",err);
-//   exit(-1);
-//   }
-//   }
+#include <tiffio.h>
 
 void *WriteToTiff(float *imgData, const char *imgname, int nrow, int ncol) {
-    int sampleperpixel = 1;
-    // unsigned char * buff=NULL;
-    // tsize_t linebytes;
-    // cout << "--" <<endl;
+    constexpr uint32_t sampleperpixel = 1;
     TIFF *tif = TIFFOpen(imgname, "w");
     if (tif) {
         TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, ncol);
@@ -31,50 +17,32 @@ void *WriteToTiff(float *imgData, const char *imgname, int nrow, int ncol) {
         TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
         TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
         TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
-
-        // linebytes = sampleperpixel*ncol;
         TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP,
                      TIFFDefaultStripSize(tif, ncol * sampleperpixel));
+
         for (int irow = 0; irow < nrow; irow++) {
             TIFFWriteScanline(tif, &imgData[irow * ncol], irow, 0);
         }
-
         TIFFClose(tif);
-    } else
-        cout << "could not open file " << imgname << " for writing " << endl;
-
-    return NULL;
-};
+    } else {
+        std::cout << "could not open file " << imgname << " for writing\n";
+    }
+    return nullptr;
+}
 
 float *ReadFromTiff(const char *imgname, uint32_t &nrow, uint32_t &ncol) {
-    // unsigned char * buff=NULL;
-
     TIFF *tif = TIFFOpen(imgname, "r");
     if (tif) {
-        uint32_t bps;
-        uint32_t sampleperpixel = 1;
-        // tsize_t linebytes;
-
-        uint32_t imagelength;
-
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &ncol);
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &nrow);
-        TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, sampleperpixel);
-        TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, &bps);
-        TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
-
         float *imgData = new float[ncol * nrow];
-        // linebytes = sampleperpixel*ncol;
-        //   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif,
-        //   ncol*sampleperpixel));
-        for (uint32_t irow = 0; irow < nrow; irow++) {
-            // tiffreadscanline(tif, buf, row);
+        for (uint32_t irow = 0; irow < nrow; ++irow) {
             TIFFReadScanline(tif, &imgData[irow * ncol], irow);
         }
-
         TIFFClose(tif);
         return imgData;
-    } else
-        cout << "could not open file " << imgname << " for reading " << endl;
-    return NULL;
-};
+    } else {
+        std::cout << "could not open file " << imgname << " for reading\n";
+        return nullptr;
+    }
+}

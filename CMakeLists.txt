@@ -56,6 +56,18 @@ option(SLS_TUNE_LOCAL "tune to local machine" OFF)
 option(SLS_DEVEL_HEADERS "install headers for devel" OFF)
 option(SLS_USE_MOENCH "compile zmq and post processing for Moench" OFF)
 
+#Convenience option to switch off defaults when building Moench binaries only
+option(SLS_BUILD_ONLY_MOENCH "compile only Moench" OFF)
+if(SLS_BUILD_ONLY_MOENCH)
+    message(STATUS "Build MOENCH binaries only!")
+    set(SLS_BUILD_SHARED_LIBRARIES OFF CACHE BOOL "Disabled for MOENCH_ONLY" FORCE)
+    set(SLS_USE_TEXTCLIENT OFF CACHE BOOL "Disabled for MOENCH_ONLY" FORCE)
+    set(SLS_USE_DETECTOR OFF CACHE BOOL "Disabled for MOENCH_ONLY" FORCE)
+    set(SLS_USE_RECEIVER OFF CACHE BOOL "Disabled for MOENCH_ONLY" FORCE)
+    set(SLS_USE_RECEIVER_BINARIES OFF CACHE BOOL "Disabled for MOENCH_ONLY" FORCE)
+    set(SLS_USE_MOENCH ON CACHE BOOL "Enable" FORCE)
+endif()
+
 
 set(ClangFormat_EXCLUDE_PATTERNS    "build/" 
                                     "libs/" 
@@ -263,6 +275,7 @@ if(SLS_BUILD_DOCS)
 endif(SLS_BUILD_DOCS)
 
 if(SLS_USE_MOENCH)
+    add_subdirectory(slsDetectorCalibration/tiffio)
     add_subdirectory(slsDetectorCalibration/moenchExecutables)
 endif(SLS_USE_MOENCH)
 

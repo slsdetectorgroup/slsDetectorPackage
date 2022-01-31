@@ -43,7 +43,6 @@ char initErrorMessage[MAX_STR_LENGTH];
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
-int64_t virtual_currentFrameNumber = 2;
 #endif
 
 // 1g readout
@@ -569,6 +568,7 @@ void setupDetector() {
     setFrequency(ADC_CLK, DEFAULT_ADC_CLK);
     setFrequency(DBIT_CLK, DEFAULT_DBIT_CLK);
     setPhase(ADC_CLK, DEFAULT_ADC_PHASE_DEG, 1);
+    setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 }
 
 int updateDatabytesandAllocateRAM() {
@@ -800,6 +800,24 @@ uint32_t getADCInvertRegister() {
 }
 
 /* parameters - timer */
+int setNextFrameNumber(uint64_t value) {
+    LOG(logINFO,
+        ("Setting next frame number: %llu\n", (long long unsigned int)value));
+    setU64BitReg(value, NEXT_FRAME_NUMB_LOCAL_LSB_REG,
+                 NEXT_FRAME_NUMB_LOCAL_MSB_REG);
+#ifndef VIRTUAL
+    // for 1g udp interface
+    setUDPFrameNumber(value);
+#endif
+    return OK;
+}
+
+int getNextFrameNumber(uint64_t *retval) {
+    *retval = getU64BitReg(NEXT_FRAME_NUMB_LOCAL_LSB_REG,
+                           NEXT_FRAME_NUMB_LOCAL_MSB_REG);
+    return OK;
+}
+
 void setNumFrames(int64_t val) {
     if (val > 0) {
         LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
@@ -1664,11 +1682,14 @@ void *start_timer(void *arg) {
     }
 
     // Send data
+    uint64_t frameNr = 0;
+    getNextFrameNumber(&frameNr);
     // loop over number of frames
-    for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
+    for (int iframes = 0; iframes != numFrames; ++iframes) {
 
         // check if manual stop
         if (sharedMemory_getStop() == 1) {
+            setNextFrameNumber(frameNr + iframes + 1);
             break;
         }
 
@@ -1686,7 +1707,7 @@ void *start_timer(void *arg) {
             sls_detector_header *header = (sls_detector_header *)(packetData);
             header->detType = (uint16_t)myDetectorType;
             header->version = SLS_DETECTOR_HEADER_VERSION - 1;
-            header->frameNumber = virtual_currentFrameNumber;
+            header->frameNumber = frameNr + iframes;
             header->packetNumber = i;
             header->modId = 0;
             header->row = detPos[X];
@@ -1699,19 +1720,18 @@ void *start_timer(void *arg) {
 
             sendUDPPacket(0, 0, packetData, packetSize);
         }
-        LOG(logINFO, ("Sent frame: %d [%lld]\n", frameNr,
-                      (long long unsigned int)virtual_currentFrameNumber));
+        LOG(logINFO, ("Sent frame: %d [%lld]\n", iframes, frameNr + iframes));
         clock_gettime(CLOCK_REALTIME, &end);
         int64_t timeNs =
             ((end.tv_sec - begin.tv_sec) * 1E9 + (end.tv_nsec - begin.tv_nsec));
 
         // sleep for (period - exptime)
-        if (frameNr < numFrames) { // if there is a next frame
+        if (iframes < numFrames) { // if there is a next frame
             if (periodNs > timeNs) {
                 usleep((periodNs - timeNs) / 1000);
             }
         }
-        ++virtual_currentFrameNumber;
+        setNextFrameNumber(frameNr + numFrames);
     }
 
     closeUDPSocket(0);

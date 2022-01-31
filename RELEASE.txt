@@ -26,6 +26,7 @@ This document describes the differences between v6.1.0 and v6.0.0.
 - refactoring (rxr)
 - fixed patsetbit and patsetmask for moench
 - changed default vref of adc9257 to 2V for moench (from 1.33V)
+- moench and ctb - can set the starting frame number of next acquisition
 - mythen server kernel check incompatible (cet timezone)
 
 

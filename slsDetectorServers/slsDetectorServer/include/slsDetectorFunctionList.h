@@ -213,7 +213,8 @@ int getReadoutMode();
 int selectStoragecellStart(int pos);
 int getMaxStoragecellStart();
 #endif
-#if defined(JUNGFRAUD) || defined(EIGERD)
+#if defined(JUNGFRAUD) || defined(EIGERD) || defined(MOENCHD) ||               \
+    defined(CHIPTESTBOARDD)
 int setNextFrameNumber(uint64_t value);
 int getNextFrameNumber(uint64_t *value);
 #endif

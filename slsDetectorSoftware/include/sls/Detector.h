@@ -594,11 +594,11 @@ class Detector {
     Result<std::vector<uint64_t>>
     getNumMissingPackets(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau] */
+    /** [Eiger][Jungfrau][Moench][CTB] */
     Result<uint64_t> getNextFrameNumber(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau] Stopping acquisition might result in different frame
-     * numbers for different modules.*/
+    /** [Eiger][Jungfrau][Moench][CTB] Stopping acquisition might result in
+     * different frame numbers for different modules.*/
     void setNextFrameNumber(uint64_t value, Positions pos = {});
 
     /** [Eiger][Mythen3] Sends an internal software trigger to the detector

@@ -1537,11 +1537,12 @@ class CmdProxy {
     GET_COMMAND(rx_missingpackets, getNumMissingPackets,
                 "\n\tNumber of missing packets for each port in receiver.");
 
-    INTEGER_COMMAND_VEC_ID(nextframenumber, getNextFrameNumber,
-                           setNextFrameNumber, StringTo<uint64_t>,
-                           "[n_value]\n\t[Eiger][Jungfrau] Next frame number. "
-                           "Stopping acquisition might result in "
-                           "different frame numbers for different modules.");
+    INTEGER_COMMAND_VEC_ID(
+        nextframenumber, getNextFrameNumber, setNextFrameNumber,
+        StringTo<uint64_t>,
+        "[n_value]\n\t[Eiger][Jungfrau][Moench][CTB] Next frame number. "
+        "Stopping acquisition might result in different frame numbers for "
+        "different modules.");
 
     GET_COMMAND(scanerrmsg, getScanErrorMessage,
                 "\n\tGets Scan error message if scan ended in error for non "

@@ -53,6 +53,12 @@ int64_t Listener::GetNumMissingPacket(bool stoppedFlag,
            numPacketsCaught;
 }
 
+bool Listener::GetStartedFlag() { return startedFlag; }
+
+uint64_t Listener::GetCurrentFrameIndex() { return currentFrameIndex; }
+
+uint64_t Listener::GetListenedIndex() { return currentFrameIndex - firstIndex; }
+
 void Listener::SetFifo(Fifo *f) { fifo = f; }
 
 void Listener::ResetParametersforNewAcquisition() {
@@ -232,16 +238,11 @@ void Listener::ThreadExecution() {
 
     // discarding image
     else if (rc < 0) {
-        LOG(logDEBUG) << index << " discarding fnum:" << currentFrameIndex;
         fifo->FreeAddress(buffer);
-        currentFrameIndex++;
         return;
     }
 
     (*((uint32_t *)buffer)) = rc;
-    (*((uint64_t *)(buffer + FIFO_HEADER_NUMBYTES))) =
-        currentFrameIndex; // for those returning earlier
-    currentFrameIndex++;
 
     // push into fifo
     fifo->PushAddress(buffer);
@@ -334,10 +335,17 @@ uint32_t Listener::ListenToAnImage(char *buf) {
             }
             switch (*frameDiscardMode) {
             case DISCARD_EMPTY_FRAMES:
-                if (!numpackets)
+                if (!numpackets) {
+                    LOG(logDEBUG)
+                        << index << " Skipped fnum:" << currentFrameIndex;
+                    currentFrameIndex = fnum;
                     return -1;
+                }
                 break;
             case DISCARD_PARTIAL_FRAMES:
+                LOG(logDEBUG)
+                    << index << " discarding fnum:" << currentFrameIndex;
+                currentFrameIndex = fnum;
                 return -1;
             default:
                 break;
@@ -347,6 +355,8 @@ uint32_t Listener::ListenToAnImage(char *buf) {
                 new_header->detHeader.row = row;
                 new_header->detHeader.column = column;
             }
+            new_header->detHeader.frameNumber = currentFrameIndex;
+            ++currentFrameIndex;
             return imageSize;
         }
 
@@ -423,10 +433,16 @@ uint32_t Listener::ListenToAnImage(char *buf) {
 
             switch (*frameDiscardMode) {
             case DISCARD_EMPTY_FRAMES:
-                if (!numpackets)
+                if (!numpackets) {
                     return -1;
+                }
                 break;
             case DISCARD_PARTIAL_FRAMES:
+                // empty packet now, but not empty image (EOA)
+                if (numpackets) {
+                    LOG(logDEBUG)
+                        << index << " discarding fnum:" << currentFrameIndex;
+                }
                 return -1;
             default:
                 break;
@@ -437,7 +453,8 @@ uint32_t Listener::ListenToAnImage(char *buf) {
                 new_header->detHeader.row = row;
                 new_header->detHeader.column = column;
             }
-            return imageSize; // empty packet now, but not empty image
+            new_header->detHeader.frameNumber = currentFrameIndex;
+            return imageSize; // empty packet now, but not empty image (EOA)
         }
 
         // update parameters
@@ -502,10 +519,17 @@ uint32_t Listener::ListenToAnImage(char *buf) {
 
             switch (*frameDiscardMode) {
             case DISCARD_EMPTY_FRAMES:
-                if (!numpackets)
+                if (!numpackets) {
+                    LOG(logDEBUG)
+                        << index << " Skipped fnum:" << currentFrameIndex;
+                    currentFrameIndex = fnum;
                     return -1;
+                }
                 break;
             case DISCARD_PARTIAL_FRAMES:
+                LOG(logDEBUG)
+                    << index << " discarding fnum:" << currentFrameIndex;
+                currentFrameIndex = fnum;
                 return -1;
             default:
                 break;
@@ -516,6 +540,8 @@ uint32_t Listener::ListenToAnImage(char *buf) {
                 new_header->detHeader.row = row;
                 new_header->detHeader.column = column;
             }
+            new_header->detHeader.frameNumber = currentFrameIndex;
+            ++currentFrameIndex;
             return imageSize;
         }
 
@@ -577,6 +603,8 @@ uint32_t Listener::ListenToAnImage(char *buf) {
 
     // complete image
     new_header->detHeader.packetNumber = numpackets; // number of packets caught
+    new_header->detHeader.frameNumber = currentFrameIndex;
+    ++currentFrameIndex;
     return imageSize;
 }
 

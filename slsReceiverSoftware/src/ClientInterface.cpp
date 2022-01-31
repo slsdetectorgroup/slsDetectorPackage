@@ -841,7 +841,7 @@ int ClientInterface::get_file_index(Interface &socket) {
 }
 
 int ClientInterface::get_frame_index(Interface &socket) {
-    uint64_t retval = impl()->getAcquisitionIndex();
+    uint64_t retval = impl()->getCurrentFrameIndex();
     LOG(logDEBUG1) << "frame index:" << retval;
     return socket.sendResult(retval);
 }

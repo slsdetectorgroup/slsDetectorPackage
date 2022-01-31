@@ -2107,7 +2107,8 @@ TEST_CASE("nextframenumber", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD) {
         auto prev_sfnum = det.getNextFrameNumber();
         REQUIRE_THROWS(proxy.Call("nextframenumber", {"0"}, -1, PUT));
         {

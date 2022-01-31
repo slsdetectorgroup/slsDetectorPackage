@@ -216,11 +216,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
     // not present in base class
     virtual char *readNextFrame(std::ifstream &filebin, int &ff, int &np,
                                 char *data) {
-
         np = 0;
-
-        //  cout << dataSize << endl;
-
         if (filebin.is_open()) {
             if (filebin.read(data, dataSize)) {
                 ff = getFrameNumber(data);
@@ -228,8 +224,8 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
                 return data;
             }
         }
-        return NULL;
-    };
+        return nullptr;
+    }
 
     /**
 

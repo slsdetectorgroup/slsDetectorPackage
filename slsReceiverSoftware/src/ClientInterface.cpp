@@ -210,7 +210,8 @@ int ClientInterface::functionTable(){
     flist[F_SET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::set_streaming_hwm;
     flist[F_RECEIVER_SET_ALL_THRESHOLD]     =   &ClientInterface::set_all_threshold;
     flist[F_RECEIVER_SET_DATASTREAM]        =   &ClientInterface::set_detector_datastream;
-    
+    flist[F_GET_RECEIVER_ARPING]            =   &ClientInterface::get_arping;
+    flist[F_SET_RECEIVER_ARPING]            =   &ClientInterface::set_arping;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -1695,5 +1696,22 @@ int ClientInterface::set_detector_datastream(Interface &socket) {
         functionNotImplemented();
     verifyIdle(socket);
     impl()->setDetectorDataStream(port, enable);
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_arping(Interface &socket) {
+    auto retval = static_cast<int>(impl()->getArping());
+    LOG(logDEBUG1) << "arping thread status:" << retval;
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::set_arping(Interface &socket) {
+    auto value = socket.Receive<int>();
+    if (value < 0) {
+        throw RuntimeError("Invalid arping value: " + std::to_string(value));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Starting/ Killing arping thread:" << value;
+    impl()->setArping(value);
     return socket.Send(OK);
 }

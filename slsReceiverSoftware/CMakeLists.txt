@@ -12,6 +12,7 @@ set(SOURCES
     src/DataProcessor.cpp
     src/DataStreamer.cpp
     src/Fifo.cpp
+    src/ThreadArping.cpp
 )
 
 set(PUBLICHEADERS

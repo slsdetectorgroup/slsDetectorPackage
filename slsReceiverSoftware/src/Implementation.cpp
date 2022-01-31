@@ -7,6 +7,7 @@
 #include "GeneralData.h"
 #include "Listener.h"
 #include "MasterAttributes.h"
+#include "ThreadArping.h"
 #include "sls/ToString.h"
 #include "sls/ZmqSocket.h" //just for the zmq port define
 #include "sls/file_utils.h"
@@ -107,6 +108,10 @@ void Implementation::SetupFifoStructure() {
  * ************************************************/
 
 void Implementation::setDetectorType(const detectorType d) {
+
+    // object to create threads to arping
+    threadArping = sls::make_unique<ThreadArping>();
+
     detType = d;
     switch (detType) {
     case GOTTHARD:
@@ -321,6 +326,20 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
         }
     }
     return retval;
+}
+
+bool Implementation::getArping() const { return threadArping->IsRunning(); }
+
+void Implementation::setArping(const bool i) {
+    if (i != threadArping->IsRunning()) {
+        if (!i) {
+            threadArping->StopRunning();
+        } else {
+            threadArping->ClearIpsAndInterfaces();
+            threadArping->AddIpsAndInterfaces(eth[0], "10.0.0.1");
+            threadArping->StartRunning();
+        }
+    }
 }
 
 /**************************************************

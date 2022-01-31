@@ -283,6 +283,8 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverLock(bool lock);
     sls::IpAddr getReceiverLastClientIP() const;
     std::array<pid_t, NUM_RX_THREAD_IDS> getReceiverThreadIds() const;
+    bool getRxArping() const;
+    void setRxArping(bool enable);
 
     /**************************************************
      *                                                *

@@ -11,6 +11,7 @@ class DataProcessor;
 class DataStreamer;
 class Fifo;
 class slsDetectorDefs;
+class ThreadArping;
 
 #include <atomic>
 #include <chrono>
@@ -49,6 +50,8 @@ class Implementation : private virtual slsDetectorDefs {
     void setFramePaddingEnable(const bool i);
     void setThreadIds(const pid_t parentTid, const pid_t tcpTid);
     std::array<pid_t, NUM_RX_THREAD_IDS> getThreadIds() const;
+    bool getArping() const;
+    void setArping(const bool i);
 
     /**************************************************
      *                                                 *
@@ -379,6 +382,7 @@ class Implementation : private virtual slsDetectorDefs {
     std::vector<std::unique_ptr<DataProcessor>> dataProcessor;
     std::vector<std::unique_ptr<DataStreamer>> dataStreamer;
     std::vector<std::unique_ptr<Fifo>> fifo;
+    std::unique_ptr<ThreadArping> threadArping;
 
     std::mutex hdf5Lib;
 };

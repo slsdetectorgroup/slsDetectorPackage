@@ -882,6 +882,13 @@ class Detector {
      * streamer yet or there is no second interface, it gives 0 in its place. */
     Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
     getRxThreadIds(Positions pos = {}) const;
+
+    Result<bool> getRxArping(Positions pos = {}) const;
+
+    /** Starts a thread in slsReceiver to ping the interface it is listening.
+     * Useful in 10G mode. */
+    void setRxArping(bool value, Positions pos = {});
+
     ///@}
 
     /** @name File */

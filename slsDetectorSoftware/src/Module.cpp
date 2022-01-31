@@ -1318,6 +1318,14 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Module::getReceiverThreadIds() const {
         F_GET_RECEIVER_THREAD_IDS);
 }
 
+bool Module::getRxArping() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_ARPING);
+}
+
+void Module::setRxArping(bool enable) {
+    sendToReceiver(F_SET_RECEIVER_ARPING, static_cast<int>(enable), nullptr);
+}
+
 // File
 slsDetectorDefs::fileFormat Module::getFileFormat() const {
     return sendToReceiver<fileFormat>(F_GET_RECEIVER_FILE_FORMAT);

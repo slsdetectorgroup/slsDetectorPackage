@@ -51,47 +51,15 @@ template <class dataType> class slsDetectorData {
     virtual void getPixel(int ip, int &x, int &y);
     virtual dataType **getData(char *ptr, int dsize = -1);
     virtual double **getImage(char *ptr, int dsize = -1);
-        virtual dataType getChannel(char *data, int ix, int iy = 0);
-
+    virtual dataType getChannel(char *data, int ix, int iy = 0);
     virtual int getGain(char *data, int ix, int iy = 0) { return 0; };
-
-    /**
-       Returns the value of the selected channel for the given dataset. Virtual
-       function, can be overloaded. \param data pointer to the dataset
-       (including headers etc) \param ix pixel number in the x direction \param
-       iy pixel number in the y direction \returns data for the selected
-       channel, with inversion if required or -1 if its a missing packet
-
-    */
-
-    virtual int getChannelwithMissingPackets(char *data, int ix, int iy) {
-        return 0;
-    };
-
-    /**
-       Returns the value of the selected channel for the given dataset as
-       double. \param data pointer to the dataset (including headers etc) \param
-       ix pixel number in the x direction \param iy pixel number in the y
-       direction \returns data for the selected channel, with inversion if
-       required as double
-
-    */
     virtual double getValue(char *data, int ix, int iy = 0) {
-        /* cout << " x "<< ix << " y"<< iy << " val " << getChannel(data, ix,
-         * iy)<< endl;*/
         return (double)getChannel(data, ix, iy);
     };
 
-    /**
-       Returns the frame number for the given dataset. Purely virtual func.
-       \param buff pointer to the dataset
-       \returns frame number
-
-    */
     virtual int getFrameNumber(char *buff) = 0;
     
     /**
-
        Loops over a memory slot until a complete frame is found (i.e. all
        packets 0 to nPackets, same frame number). purely virtual func \param
        data pointer to the memory to be analyzed \param ndata reference to the
@@ -104,16 +72,15 @@ template <class dataType> class slsDetectorData {
     */
     virtual char *findNextFrame(char *data, int &ndata, int dsize) = 0;
 
-    /**
-
-      Loops over a file stream until a complete frame is found (i.e. all packets
-      0 to nPackets, same frame number). Can be overloaded for different kind of
-      detectors! \param filebin input file stream (binary) \returns pointer to
-      the begin of the last good frame, NULL if no frame is found or last frame
-      is incomplete
-
-    */
+    //Returns a pointer to the next complete frame, if none found nullptr
+    //data needs to be deallocated by caller
     virtual char *readNextFrame(std::ifstream &filebin) = 0;
+
+
+
+
+
+    //END Virtual functions
 
     /**
        defines the data map (as offset) - no error checking if datasize and

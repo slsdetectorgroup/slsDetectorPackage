@@ -4411,9 +4411,10 @@ int set_next_frame_number(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting next frame number to %llu\n", arg));
+    LOG(logDEBUG1, ("Setting next frame number to %llu\n", arg));
 
-#if (!defined(EIGERD)) && (!defined(JUNGFRAUD))
+#if (!defined(EIGERD)) && (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) &&      \
+    (!defined(CHIPTESTBOARDD))
     functionNotImplemented();
 #else
     // only set
@@ -4423,7 +4424,7 @@ int set_next_frame_number(int file_des) {
             sprintf(mess, "Could not set next frame number. Cannot be 0.\n");
             LOG(logERROR, (mess));
         }
-#ifdef EIGERD
+#if (defined(EIGERD)) || (defined(MOENCHD)) || (defined(CHIPTESTBOARDD))
         else if (arg > UDP_HEADER_MAX_FRAME_VALUE) {
             ret = FAIL;
 #ifdef VIRTUAL
@@ -4443,16 +4444,18 @@ int set_next_frame_number(int file_des) {
         else {
             ret = setNextFrameNumber(arg);
             if (ret == FAIL) {
-                sprintf(mess, "Could not set next frame number. Failed to "
-                              "map address.\n");
+                sprintf(
+                    mess, "Could not set next frame number. %s\n",
+                    (myDetectorType == EIGER ? "Failed to map address" : ""));
                 LOG(logERROR, (mess));
             }
             if (ret == OK) {
                 uint64_t retval = 0;
                 ret = getNextFrameNumber(&retval);
                 if (ret == FAIL) {
-                    sprintf(mess, "Could not get next frame number. Failed "
-                                  "to map address.\n");
+                    sprintf(mess, "Could not set next frame number. %s\n",
+                            (myDetectorType == EIGER ? "Failed to map address"
+                                                     : ""));
                     LOG(logERROR, (mess));
                 } else if (ret == -2) {
                     sprintf(mess, "Inconsistent next frame number from "
@@ -4489,14 +4492,15 @@ int get_next_frame_number(int file_des) {
 
     LOG(logDEBUG1, ("Getting next frame number \n"));
 
-#if (!defined(EIGERD)) && (!defined(JUNGFRAUD))
+#if (!defined(EIGERD)) && (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) &&      \
+    (!defined(CHIPTESTBOARDD))
     functionNotImplemented();
 #else
     // get
     ret = getNextFrameNumber(&retval);
     if (ret == FAIL) {
-        sprintf(mess, "Could not get next frame number. Failed to map "
-                      "address.\n");
+        sprintf(mess, "Could not set next frame number. %s\n",
+                (myDetectorType == EIGER ? "Failed to map address" : ""));
         LOG(logERROR, (mess));
     } else if (ret == -2) {
         sprintf(mess, "Inconsistent next frame number from left and right "

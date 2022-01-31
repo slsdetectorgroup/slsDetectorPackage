@@ -74,7 +74,8 @@ int getTimeFromString(char *buf, time_t *result) {
     // remove timezone as strptime cannot validate timezone despite
     // documentation (for blackfin)
     LOG(logDEBUG, ("kernel v %s\n", buffer));
-    char *timezone = {"CEST"};
+    char timezone[8] = {0};
+    strcpy(timezone, "CEST");
     char *res = strstr(buffer, timezone);
     // remove CET as well
     if (res == NULL) {

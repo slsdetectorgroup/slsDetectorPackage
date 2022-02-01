@@ -1399,6 +1399,11 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
     if (detType == EIGER) {
         impl()->setEthernetInterface2(eth);
     }
+
+    // update locally to use for arping
+    udpips.clear();
+    udpips.push_back(arg.str());
+
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
     if (retval == 0) {
@@ -1430,6 +1435,9 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
                       << ". Got " << eth;
     }
     impl()->setEthernetInterface2(eth);
+
+    // update locally to use for arping
+    udpips.push_back(arg.str());
 
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
@@ -1712,6 +1720,6 @@ int ClientInterface::set_arping(Interface &socket) {
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Starting/ Killing arping thread:" << value;
-    impl()->setArping(value);
+    impl()->setArping(value, udpips);
     return socket.Send(OK);
 }

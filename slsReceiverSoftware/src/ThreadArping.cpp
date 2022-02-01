@@ -11,6 +11,8 @@ ThreadArping::ThreadArping() {}
 
 ThreadArping::~ThreadArping() { StopRunning(); }
 
+pid_t ThreadArping::GetThreadId() const { return threadId; }
+
 bool ThreadArping::IsRunning() const { return runningFlag; }
 
 void ThreadArping::StartRunning() {
@@ -33,9 +35,8 @@ void ThreadArping::StartRunning() {
 
 void ThreadArping::StopRunning() {
     pthread_cancel(threadObject);
-    LOG(logINFOBLUE) << "Killing [ Arping Thread, Tid: " << threadId << "]";
-}
-runningFlag = false;
+    LOG(logINFOBLUE) << "Killing [ Arping Thread, Tid: " << threadId << " ]";
+    runningFlag = false;
 }
 
 void ThreadArping::ClearIpsAndInterfaces() { arpInterfaceIp.clear(); }
@@ -47,14 +48,48 @@ void ThreadArping::AddIpsAndInterfaces(std::string interface, std::string ip) {
 void ThreadArping::RunningThread() {
 
     threadId = syscall(SYS_gettid);
-    LOG(logINFOBLUE) << "Created [ Arping Thread, Tid: " << threadId << "]";
+    {
+        std::ostringstream os;
+        os << "Created [ Arping Thread, Tid: " << threadId << " ] for ";
+        for (auto ethip : arpInterfaceIp) {
+            os << "\n\t[ " << ethip.first << ", " << ethip.second << " ]";
+        }
+        LOG(logINFOBLUE) << os.str();
+    }
+
+    // create the commands to ping necessary interfaces
+    std::vector<std::string> commands;
+    for (auto ethip : arpInterfaceIp) {
+        std::ostringstream os;
+        os << "arping -c 1 -U -I " << ethip.first << " " << ethip.second;
+        // to read error messages
+        os << " 2>&1";
+        std::string cmd = os.str();
+        commands.push_back(cmd);
+    }
 
     while (IsRunning()) {
-        LOG(logINFOBLUE) << "Going to sleep";
+
+        // arping
+        for (auto cmd : commands) {
+            LOG(logDEBUG) << "Executing Arping Command: " << cmd;
+
+            // execute command and check for errors
+            FILE *sysFile = popen(cmd.c_str(), "r");
+            char output[MAX_STR_LENGTH] = {0};
+            fgets(output, sizeof(output), sysFile);
+            output[sizeof(output) - 1] = '\0';
+            if (pclose(sysFile)) {
+                LOG(logERROR) << "Executing cmd[" << cmd
+                              << "]\n\tError Message : " << output;
+            } else {
+                LOG(logDEBUG) << output;
+            }
+        }
 
         // wait for 60s
         usleep(60 * 1000 * 1000);
     }
 
-    LOG(logINFOBLUE) << "Exiting [ Arping Thread, Tid: " << threadId << "]";
+    LOG(logINFOBLUE) << "Exiting [ Arping Thread, Tid: " << threadId << " ]";
 }

@@ -22,11 +22,13 @@ class ThreadArping : private virtual slsDetectorDefs {
 
     pthread_t threadObject;
     std::vector<std::pair<std::string, std::string>> arpInterfaceIp;
-    pid_t threadIds;
+    std::vector<std::string> commands;
+    pid_t threadId;
 
   public:
     ThreadArping();
     virtual ~ThreadArping();
+    pid_t GetThreadId() const;
     bool IsRunning() const;
     void StartRunning();
     void StopRunning();
@@ -39,5 +41,5 @@ class ThreadArping : private virtual slsDetectorDefs {
      * RunningMask is satisfied Then it exits the thread on its own if
      * killThread is true
      */
-    void RunningThread(std::string interface, std::string ip);
+    void RunningThread();
 };

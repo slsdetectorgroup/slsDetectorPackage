@@ -330,13 +330,21 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
 
 bool Implementation::getArping() const { return threadArping->IsRunning(); }
 
-void Implementation::setArping(const bool i) {
+pid_t Implementation::getArpingThreadId() const {
+    return threadArping->GetThreadId();
+}
+
+void Implementation::setArping(const bool i,
+                               const std::vector<std::string> ips) {
     if (i != threadArping->IsRunning()) {
         if (!i) {
             threadArping->StopRunning();
         } else {
             threadArping->ClearIpsAndInterfaces();
-            threadArping->AddIpsAndInterfaces(eth[0], "10.0.0.1");
+            threadArping->AddIpsAndInterfaces(eth[0], ips[0]);
+            if (numUDPInterfaces == 2) {
+                threadArping->AddIpsAndInterfaces(eth[1], ips[1]);
+            }
             threadArping->StartRunning();
         }
     }

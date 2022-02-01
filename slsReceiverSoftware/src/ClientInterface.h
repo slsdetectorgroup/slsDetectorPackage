@@ -192,4 +192,5 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     pid_t parentThreadId{0};
     pid_t tcpThreadId{0};
+    std::vector<std::string> udpips;
 };

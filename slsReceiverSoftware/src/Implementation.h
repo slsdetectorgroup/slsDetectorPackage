@@ -51,7 +51,8 @@ class Implementation : private virtual slsDetectorDefs {
     void setThreadIds(const pid_t parentTid, const pid_t tcpTid);
     std::array<pid_t, NUM_RX_THREAD_IDS> getThreadIds() const;
     bool getArping() const;
-    void setArping(const bool i);
+    pid_t getArpingThreadId() const;
+    void setArping(const bool i, const std::vector<std::string> ips);
 
     /**************************************************
      *                                                 *

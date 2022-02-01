@@ -480,9 +480,6 @@ void setupDetector() {
     setInitialExtSignals();
     // 10G UDP
     enableTenGigabitEthernet(1);
-#ifdef VIRTUAL
-    enableTenGigabitEthernet(0);
-#endif
     getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
     if (initError == FAIL) {
         return;

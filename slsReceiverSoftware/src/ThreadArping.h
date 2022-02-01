@@ -10,7 +10,6 @@ listening to.
 #include "sls/sls_detector_defs.h"
 
 #include <atomic>
-#include <mutex>
 #include <string>
 #include <thread>
 #include <utility> // pair, make_pair
@@ -21,10 +20,9 @@ class ThreadArping : private virtual slsDetectorDefs {
     std::atomic<bool> killThread{false};
     std::atomic<bool> runningFlag{false};
 
-    std::vector<pthread_t> threads;
+    pthread_t threadObject;
     std::vector<std::pair<std::string, std::string>> arpInterfaceIp;
-    std::vector<pid_t> threadIds;
-    std::mutex mutexIds;
+    pid_t threadIds;
 
   public:
     ThreadArping();
@@ -41,5 +39,5 @@ class ThreadArping : private virtual slsDetectorDefs {
      * RunningMask is satisfied Then it exits the thread on its own if
      * killThread is true
      */
-    void RunningThread(int index, std::string interface, std::string ip);
+    void RunningThread(std::string interface, std::string ip);
 };

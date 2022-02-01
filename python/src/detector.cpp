@@ -768,6 +768,13 @@ void init_det(py::module &m) {
              (Result<std::array<pid_t, 8>>(Detector::*)(sls::Positions) const) &
                  Detector::getRxThreadIds,
              py::arg() = Positions{})
+        .def("getRxArping",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getRxArping,
+             py::arg() = Positions{})
+        .def("setRxArping",
+             (void (Detector::*)(bool, sls::Positions)) & Detector::setRxArping,
+             py::arg(), py::arg() = Positions{})
         .def("getFileFormat",
              (Result<defs::fileFormat>(Detector::*)(sls::Positions) const) &
                  Detector::getFileFormat,

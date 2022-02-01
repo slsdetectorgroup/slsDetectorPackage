@@ -325,6 +325,9 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
             retval[id++] = 0;
         }
     }
+    if (threadArping->IsRunning()) {
+        retval[NUM_RX_THREAD_IDS - 1] = threadArping->GetThreadId();
+    }
     return retval;
 }
 

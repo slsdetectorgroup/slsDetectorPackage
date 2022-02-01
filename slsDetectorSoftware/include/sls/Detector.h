@@ -878,15 +878,16 @@ class Detector {
     Result<sls::IpAddr> getRxLastClientIP(Positions pos = {}) const;
 
     /** Get thread ids from the receiver in order of [parent, tcp, listener 0,
-     * processor 0, streamer 0, listener 1, processor 1, streamer 1]. If no
-     * streamer yet or there is no second interface, it gives 0 in its place. */
+     * processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. If
+     * no streamer yet or there is no second interface, it gives 0 in its place.
+     */
     Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
     getRxThreadIds(Positions pos = {}) const;
 
     Result<bool> getRxArping(Positions pos = {}) const;
 
-    /** Starts a thread in slsReceiver to ping the interface it is listening.
-     * Useful in 10G mode. */
+    /** Starts a thread in slsReceiver to ping the interface it is listening
+     * every minute. Useful in 10G mode. */
     void setRxArping(bool value, Positions pos = {});
 
     ///@}

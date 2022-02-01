@@ -175,29 +175,31 @@ class slsInterpolation {
         return hint;
     };
 
-    virtual int addToFlatField(double *cluster, double &etax, double &etay) = 0;
-    virtual int addToFlatField(int *cluster, double &etax, double &etay) = 0;
+    //virtual int addToFlatField(double *cluster, double &etax, double &etay) = 0;
+    //virtual int addToFlatField(int *cluster, double &etax, double &etay) = 0;
     virtual int addToFlatField(double totquad, int quad, int *cl, double &etax,
                                double &etay) = 0;
-    virtual int addToFlatField(double totquad, int quad, double *cluster,
-                               double &etax, double &etay) = 0;
-    virtual int addToFlatField(double etax, double etay) = 0;
+    //virtual int addToFlatField(double totquad, int quad, double *cluster,
+    //                           double &etax, double &etay) = 0;
+    virtual int addToFlatFieldDistribution(double etax, double etay) = 0;
 
-    virtual int *getFlatField() { return NULL; };
-    virtual int *setFlatField(int *h, int nb = -1, double emin = -1,
+    virtual int *getFlatFieldDistribution() { return NULL; };
+    virtual int *setFlatField(int *h, int nbx = -1, int nby = -1, 
+			      double emin = -1,
                               double emax = -1) {
         return NULL;
     };
     virtual void *writeFlatField(const char *imgname) { return NULL; };
-    virtual void *readFlatField(const char *imgname, int nb = -1,
-                                double emin = 1, double emax = 0) {
+    virtual void *readFlatField(const char *imgname,
+				double emin = 1, double emax = 0) {
         return NULL;
     };
-    virtual int *getFlatField(int &nb, double &emin, double &emax) {
-        nb = 0;
+    virtual int *getFlatField(int &nbx, int &nby, double &emin, double &emax) {
+        nbx = 0;
+	nby=0;
         emin = 0;
         emax = 0;
-        return getFlatField();
+        return getFlatFieldDistribution();
     };
 
     virtual void resetFlatField() = 0;

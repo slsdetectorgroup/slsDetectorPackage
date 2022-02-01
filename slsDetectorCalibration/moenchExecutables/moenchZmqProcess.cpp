@@ -502,13 +502,13 @@ int main(int argc, char *argv[]) {
                     }
 #ifdef INTERP
                     else if (fMode == eFlat) {
-                        int nb;
+		      int nbx, nby;
                         double emi = 0, ema = 1;
-                        int *ff = mt->getFlatField(nb, emi, ema);
-                        nnx = nb;
-                        nny = nb;
-                        dout = new int32_t[nb * nb];
-                        for (int ix = 0; ix < nb * nb; ix++) {
+                        int *ff = mt->getFlatField(nbx, nby, emi, ema);
+                        nnx = nbx;
+                        nny = nby;
+                        dout = new int32_t[nbx * nby];
+                        for (int ix = 0; ix < nbx * nby; ix++) {
                             dout[ix] = ff[ix];
                         }
                     }

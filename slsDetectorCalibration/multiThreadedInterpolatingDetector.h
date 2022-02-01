@@ -25,10 +25,10 @@ class multiThreadedInterpolatingDetector
         //  }
     }
 
-    virtual int *getFlatField() { return (dets[0])->getFlatField(); }
+    virtual int *getFlatFieldDistribution() { return (dets[0])->getFlatFieldDistribution(); }
 
-    virtual int *getFlatField(int &nb, double emi, double ema) {
-        return (dets[0])->getFlatField(nb, emi, ema);
+    virtual int *getFlatField(int &nbx, int &nby, double &emi, double &ema) {
+      return (dets[0])->getFlatField(nbx, nby, emi, ema);
     }
 
     virtual int *setFlatField(int *h = NULL, int nb = -1, double emin = 1,
@@ -40,9 +40,9 @@ class multiThreadedInterpolatingDetector
         return dets[0]->writeFlatField(imgname);
     };
 
-    void *readFlatField(const char *imgname, int nb = -1, double emin = 1,
+    void *readFlatField(const char *imgname, double emin = 1,
                         double emax = 0) {
-        return (dets[0])->readFlatField(imgname, nb, emin, emax);
+        return (dets[0])->readFlatField(imgname, emin, emax);
     };
 
     /* virtual int setNSubPixels(int ns)  { return

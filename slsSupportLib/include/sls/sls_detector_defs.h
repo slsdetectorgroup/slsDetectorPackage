@@ -576,6 +576,21 @@ operator&(const slsDetectorDefs::streamingInterface &a,
     return slsDetectorDefs::streamingInterface(static_cast<int32_t>(a) &
                                                static_cast<int32_t>(b));
 };
+
+inline slsDetectorDefs::M3_GainCaps
+operator|(const slsDetectorDefs::M3_GainCaps &a,
+          const slsDetectorDefs::M3_GainCaps &b) {
+    return slsDetectorDefs::M3_GainCaps(static_cast<int32_t>(a) |
+                                        static_cast<int32_t>(b));
+};
+
+inline slsDetectorDefs::M3_GainCaps
+operator&(const slsDetectorDefs::M3_GainCaps &a,
+          const slsDetectorDefs::M3_GainCaps &b) {
+    return slsDetectorDefs::M3_GainCaps(static_cast<int32_t>(a) &
+                                        static_cast<int32_t>(b));
+};
+
 #endif
 
 #ifdef __cplusplus

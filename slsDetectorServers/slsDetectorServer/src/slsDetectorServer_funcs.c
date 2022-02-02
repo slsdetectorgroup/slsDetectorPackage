@@ -2932,7 +2932,7 @@ int enable_ten_giga(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFOBLUE, ("Setting 10GbE: %d\n", arg));
+    LOG(logDEBUG, ("Setting 10GbE: %d\n", arg));
 
 #if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(GOTTHARD2D)
     functionNotImplemented();
@@ -8316,7 +8316,7 @@ int set_datastream(int file_des) {
             ret = FAIL;
             sprintf(mess,
                     "Could not %s. Disabling is only enabled in 10g mode.\n",
-                    enable);
+                    msg);
             LOG(logERROR, (mess));
         } else {
             ret = setDataStream(port, enable);

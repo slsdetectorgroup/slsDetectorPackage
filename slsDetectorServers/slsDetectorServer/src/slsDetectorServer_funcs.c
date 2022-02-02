@@ -8312,6 +8312,12 @@ int set_datastream(int file_des) {
             ret = FAIL;
             sprintf(mess, "Could not %s. Invalid enable %d. \n", msg, enable);
             LOG(logERROR, (mess));
+        } else if (enableTenGigabitEthernet(GET_FLAG) == 0) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not %s. Disabling is only enabled in 10g mode.\n",
+                    enable);
+            LOG(logERROR, (mess));
         } else {
             ret = setDataStream(port, enable);
             if (ret == FAIL) {

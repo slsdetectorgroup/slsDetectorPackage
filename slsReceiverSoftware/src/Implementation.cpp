@@ -640,25 +640,25 @@ void Implementation::stopReceiver() {
                     std::to_string(std::abs(mp[i])) + std::string(" (Extra)");
             }
 
+            std::string summary;
+            if (!activated) {
+                summary = "\n\tDeactivated Receiver";
+            } else if (!detectorDataStream[i]) {
+                summary = (i == 0 ? "\n\tDeactivated Left Port"
+                                  : "\n\tDeactivated Right Port");
+            } else {
+                std::ostringstream os;
+                os << "\n\tMissing Packets\t\t: " << mpMessage
+                   << "\n\tComplete Frames\t\t: " << nf
+                   << "\n\tLast Frame Caught\t: "
+                   << listener[i]->GetLastFrameIndexCaught();
+                summary = os.str();
+            }
+
             TLogLevel lev = ((mp[i]) > 0) ? logINFORED : logINFOGREEN;
-            LOG(lev) <<
-                // udp port number could be the second if selected interface is
-                // 2 for jungfrau
-                "Summary of Port " << udpPortNum[i]
-                     << "\n\tMissing Packets\t\t: " << mpMessage
-                     << "\n\tComplete Frames\t\t: " << nf
-                     << "\n\tLast Frame Caught\t: "
-                     << listener[i]->GetLastFrameIndexCaught();
+            LOG(lev) << "Summary of Port " << udpPortNum[i] << summary;
         }
-        if (!activated) {
-            LOG(logINFORED) << "Deactivated Receiver";
-        }
-        if (!detectorDataStream[0]) {
-            LOG(logINFORED) << "Deactivated Left Port";
-        }
-        if (!detectorDataStream[1]) {
-            LOG(logINFORED) << "Deactivated Right Port";
-        }
+
         // callback
         if (acquisitionFinishedCallBack) {
             try {

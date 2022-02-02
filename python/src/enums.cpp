@@ -281,9 +281,7 @@ void init_enums(py::module &m) {
         .value("M3_C50sh", slsDetectorDefs::M3_GainCaps::M3_C50sh)
         .value("M3_C225ACsh", slsDetectorDefs::M3_GainCaps::M3_C225ACsh)
         .value("M3_C15pre", slsDetectorDefs::M3_GainCaps::M3_C15pre)
-        .export_values()
-        .def(py::self | slsDetectorDefs::M3_GainCaps())
-        .def(py::self & slsDetectorDefs::M3_GainCaps());
+        .export_values();
 
     py::enum_<slsDetectorDefs::portPosition>(Defs, "portPosition")
         .value("LEFT", slsDetectorDefs::portPosition::LEFT)

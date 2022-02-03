@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "Implementation.h"
+#include "Arping.h"
 #include "DataProcessor.h"
 #include "DataStreamer.h"
 #include "Fifo.h"
 #include "GeneralData.h"
 #include "Listener.h"
 #include "MasterAttributes.h"
-#include "ThreadArping.h"
 #include "sls/ToString.h"
 #include "sls/ZmqSocket.h" //just for the zmq port define
 #include "sls/file_utils.h"
@@ -109,8 +109,8 @@ void Implementation::SetupFifoStructure() {
 
 void Implementation::setDetectorType(const detectorType d) {
 
-    // object to create threads to arping
-    threadArping = sls::make_unique<ThreadArping>();
+    // object to create thread for arping
+    arping = sls::make_unique<Arping>();
 
     detType = d;
     switch (detType) {
@@ -325,30 +325,28 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
             retval[id++] = 0;
         }
     }
-    if (threadArping->IsRunning()) {
-        retval[NUM_RX_THREAD_IDS - 1] = threadArping->GetThreadId();
-    }
+    retval[NUM_RX_THREAD_IDS - 1] = arping->GetThreadId();
     return retval;
 }
 
-bool Implementation::getArping() const { return threadArping->IsRunning(); }
+bool Implementation::getArping() const { return arping->IsRunning(); }
 
 pid_t Implementation::getArpingThreadId() const {
-    return threadArping->GetThreadId();
+    return arping->GetThreadId();
 }
 
 void Implementation::setArping(const bool i,
                                const std::vector<std::string> ips) {
-    if (i != threadArping->IsRunning()) {
+    if (i != arping->IsRunning()) {
         if (!i) {
-            threadArping->StopRunning();
+            arping->StopThread();
         } else {
-            threadArping->ClearIpsAndInterfaces();
-            threadArping->AddInterfacesAndIps(eth[0], ips[0]);
+            arping->ClearIpsAndInterfaces();
+            arping->AddInterfacesAndIps(eth[0], ips[0]);
             if (numUDPInterfaces == 2 && detType != EIGER) {
-                threadArping->AddInterfacesAndIps(eth[1], ips[1]);
+                arping->AddInterfacesAndIps(eth[1], ips[1]);
             }
-            threadArping->StartRunning();
+            arping->StartThread();
         }
     }
 }

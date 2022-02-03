@@ -21,16 +21,6 @@ class ThreadObject : private virtual slsDetectorDefs {
   protected:
     const int index{0};
 
-  protected:
-    std::atomic<bool> killThread{false};
-
-  private:
-    std::atomic<bool> runningFlag{false};
-    std::thread threadObject;
-    sem_t semaphore;
-    const std::string type;
-    pid_t threadId{0};
-
   public:
     ThreadObject(int threadIndex, std::string threadType);
     virtual ~ThreadObject();
@@ -49,4 +39,11 @@ class ThreadObject : private virtual slsDetectorDefs {
      * Then it exits the thread on its own if killThread is true
      */
     void RunningThread();
+
+    std::atomic<bool> killThread{false};
+    std::atomic<bool> runningFlag{false};
+    std::thread threadObject;
+    sem_t semaphore;
+    const std::string type;
+    pid_t threadId{0};
 };

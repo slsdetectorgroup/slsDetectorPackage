@@ -3,61 +3,98 @@
 
 #include "Arping.h"
 
-#include <iostream>
+#include <chrono>
+#include <sys/syscall.h>
+#include <unistd.h>
 
-const std::string Arping::ThreadType = "Arping";
+void Arping::ClearIpsAndInterfaces() { commands.clear(); }
 
-Arping::Arping(nt ind) : ThreadObject(ind, ThreadType) {}
-
-Arping::~Arping() = default;
-
-void Arping::ClearIpsAndInterfaces() {
-    arpInterfaceIp.clear();
-    commands.clear();
-}
-
-void Arping::AddInterfacesAndIps(std::string interface, std::string ip) {
+void Arping::AddInterfacesAndIps(const std::string &interface,
+                                 const std::string &ip) {
     // create commands to arping
     std::ostringstream os;
     os << "arping -c 1 -U -I " << interface << " " << ip;
     // to read error messages
     os << " 2>&1";
     std::string cmd = os.str();
-    arpingCommands.push_back(cmd);
+    commands.push_back(cmd);
+}
+
+pid_t Arping::GetThreadId() const { return threadId; }
+
+bool Arping::IsRunning() const { return runningFlag; }
+
+void Arping::StartThread() {
+    TestCommands();
+    try {
+        t = std::thread(&Arping::ThreadExecution, this);
+    } catch (...) {
+        throw sls::RuntimeError("Could not start arping thread");
+    }
+    runningFlag = true;
+}
+
+void Arping::StopThread() {
+    runningFlag = false;
+    t.join();
 }
 
 void Arping::ThreadExecution() {
-    // arping
+    threadId = syscall(SYS_gettid);
+    LOG(logINFOBLUE) << "Created [ Arping Thread, Tid: " << threadId << "]";
 
-    // wait for 60s
-    usleep(60 * 1000 * 1000);
+    while (runningFlag) {
+        std::string error = ExecuteCommands();
+        // just print (was already tested at thread start)
+        if (!error.empty()) {
+            LOG(logERROR) << error;
+        }
+
+        // wait for 60s as long as thread not killed
+        int nsecs = 0;
+        while (runningFlag && nsecs != 60) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            ++nsecs;
+        }
+    }
+
+    LOG(logINFOBLUE) << "Exiting [ Arping Thread, Tid: " << threadId << " ]";
+    threadId = 0;
 }
 
-LOG(logINFOBLUE) << "Exiting [ Arping Thread, Tid: " << threadId << " ]";
+void Arping::TestCommands() {
+    std::string error = ExecuteCommands();
+    if (!error.empty()) {
+        throw sls::RuntimeError(error);
+    }
 }
 
-void Arping::ExecuteCommands() {
+std::string Arping::ExecuteCommands() {
     for (auto cmd : commands) {
         LOG(logDEBUG) << "Executing Arping Command: " << cmd;
 
         // execute command
         FILE *sysFile = popen(cmd.c_str(), "r");
         if (sysFile == NULL) {
-            LOG(logERROR) << "Executing cmd [" cmd << " ] Fail:"
-                          << "\n\t Popen fail";
-            continue;
+            std::ostringstream os;
+            os << "Could not Arping [" << cmd << " ] : Popen fail";
+            return os.str();
         }
 
-        // check for errors
+        // copy output
         char output[MAX_STR_LENGTH] = {0};
         fgets(output, sizeof(output), sysFile);
         output[sizeof(output) - 1] = '\0';
 
+        // check exit status of command
         if (pclose(sysFile)) {
-            LOG(logERROR) << "Executing cmd[" << cmd
-                          << "]\n\tError Message : " << output;
+            std::ostringstream os;
+            os << "Could not arping[" << cmd << "] : " << output;
+            return os.str();
         } else {
             LOG(logDEBUG) << output;
         }
     }
+
+    return std::string();
 }

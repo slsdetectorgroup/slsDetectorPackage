@@ -6,24 +6,30 @@
 is listening to.
  */
 
-#include "ThreadObject.h"
+#include "sls/logger.h"
+#include "sls/sls_detector_defs.h"
 
-class Arping : private virtual slsDetectorDefs, public ThreadObject {
+#include <atomic>
+#include <thread>
+
+class Arping : private virtual slsDetectorDefs {
 
   public:
-    Arping(int ind);
-    ~Arping();
     void ClearIpsAndInterfaces();
-    void AddInterfacesAndIps(std::string interface, std::string ip);
+    void AddInterfacesAndIps(const std::string &interface,
+                             const std::string &ip);
+    pid_t GetThreadId() const;
+    bool IsRunning() const;
+    void StartThread();
+    void StopThread();
 
   private:
-    /**
-     * Thread Execution for Arping Class
-     * Arping interfaces and wait 60 seconds
-     */
-    void ThreadExecution() override;
-    void ExecuteCommands();
+    void TestCommands();
+    std::string ExecuteCommands();
+    void ThreadExecution();
 
-    static const std::string ThreadType;
-    std::vector<std::string> arpingCommands;
+    std::vector<std::string> commands;
+    std::atomic<bool> runningFlag{false};
+    std::thread t;
+    pid_t threadId{0};
 };

@@ -47,7 +47,6 @@ int main(int argc, char *argv[]) {
 #endif
     int iarg = 4;
     char infname[10000];
-    char fname[10000];
     char outfname[10000];
 #ifndef FF
     iarg = 4;
@@ -74,18 +73,17 @@ int main(int argc, char *argv[]) {
     int etabins = 1000; // nsubpix*2*100;
     double etamin = -1, etamax = 2;
     // double etamin=-0.1, etamax=1.1;
-    double eta3min = -2, eta3max = 2;
-    int quad;
+    //   double eta3min = -2, eta3max = 2;
     double sum, totquad;
     double sDum[2][2];
-    double etax, etay, int_x, int_y;
-    double eta3x, eta3y, int3_x, int3_y, noint_x, noint_y;
-    int ok;
-    int f0 = -1;
+    double etax, etay;
+    // double eta3x, eta3y, int3_x, int3_y, noint_x, noint_y;
+   
     int ix, iy, isx, isy;
     int nframes = 0, lastframe = -1;
-    double d_x, d_y, res = 5, xx, yy;
-    int nph = 0, badph = 0, totph = 0;
+    //double d_x, d_y, res = 5, xx, yy;
+    int nph = 0, totph = 0;
+    //badph = 0, 
     FILE *f = NULL;
 
 #ifdef DOUBLE_SPH
@@ -96,7 +94,8 @@ int main(int argc, char *argv[]) {
     single_photon_hit cl(3, 3);
 #endif
 
-    int nSubPixels = nsubpix;
+    //int f0 = -1;
+    //  int nSubPixels = nsubpix;
 #ifndef NOINTERPOLATION
     eta2InterpolationPosXY *interp =
         new eta2InterpolationPosXY(NC, NR, nsubpix, etabins, etamin, etamax);
@@ -109,7 +108,12 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifndef FF
+    int quad; 
 #ifndef NOINTERPOLATION
+    char fname[10000];
+    int ok;
+    double int_x, int_y;
+    int *img;
     cout << "read ff " << argv[2] << endl;
     sprintf(fname, "%s", argv[2]);
     interp->readFlatField(fname);
@@ -121,7 +125,6 @@ int main(int argc, char *argv[]) {
     cout << "Will write eta file " << argv[2] << endl;
 #endif
 
-    int *img;
     float *totimg = new float[NC * NR * nsubpix * nsubpix];
     for (ix = 0; ix < NC; ix++) {
         for (iy = 0; iy < NR; iy++) {
@@ -149,7 +152,7 @@ int main(int argc, char *argv[]) {
         if (f) {
             cout << infname << endl;
             nframes = 0;
-            f0 = -1;
+            //f0 = -1;
 
             while (cl.read(f)) {
                 totph++;
@@ -157,14 +160,21 @@ int main(int argc, char *argv[]) {
                     lastframe = cl.iframe;
                     // cout << cl.iframe << endl;
                     // f0=cl.iframe;
-                    if (nframes == 0)
-                        f0 = lastframe;
+                    // if (nframes == 0)
+                    //     f0 = lastframe;
                     nframes++;
                 }
                 // quad=interp->calcQuad(cl.get_cluster(), sum, totquad, sDum);
+#ifndef FF
                 quad = interp->calcEta(cl.get_cluster(), etax, etay, sum,
                                        totquad, sDum);
-                if (sum > cmin && totquad / sum > 0.8 && totquad / sum < 1.2 &&
+#endif
+#ifdef FF
+                interp->calcEta(cl.get_cluster(), etax, etay, sum,
+                                       totquad, sDum);
+#endif
+
+      if (sum > cmin && totquad / sum > 0.8 && totquad / sum < 1.2 &&
                     sum < cmax) {
                     nph++;
                     //  if (sum>200 && sum<580) {
@@ -199,7 +209,7 @@ int main(int argc, char *argv[]) {
                     // 	    if (cl.x>50)
                     // #endif
                     // 	    if (etax!=0 && etay!=0 && etax!=1 && etay!=1)
-                    interp->addToFlatField(etax, etay);
+                    interp->addToFlatFieldDistribution(etax, etay);
                     //  if (etax==0 || etay==0) cout << cl.x << " " << cl.y <<
                     //  endl;
 
@@ -242,9 +252,9 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
-            cout << "Read " << nframes << " frames (first frame: " << f0
-                 << " last frame: " << lastframe << " delta:" << lastframe - f0
-                 << ") nph=" << nph << endl;
+            // cout << "Read " << nframes << " frames (first frame: " << f0
+            //      << " last frame: " << lastframe << " delta:" << lastframe - f0
+            //      << ") nph=" << nph << endl;
             interp->clearInterpolatedImage();
 #endif
 

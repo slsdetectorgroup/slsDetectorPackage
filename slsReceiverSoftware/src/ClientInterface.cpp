@@ -1401,8 +1401,7 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
     }
 
     // update locally to use for arping
-    udpips.clear();
-    udpips.push_back(arg.str());
+    udpips[0] = arg.str();
 
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
@@ -1437,7 +1436,7 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
     impl()->setEthernetInterface2(eth);
 
     // update locally to use for arping
-    udpips.push_back(arg.str());
+    udpips[1] = arg.str();
 
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);

@@ -11,7 +11,7 @@ class DataProcessor;
 class DataStreamer;
 class Fifo;
 class slsDetectorDefs;
-class ThreadArping;
+class Arping;
 
 #include <atomic>
 #include <chrono>
@@ -383,7 +383,7 @@ class Implementation : private virtual slsDetectorDefs {
     std::vector<std::unique_ptr<DataProcessor>> dataProcessor;
     std::vector<std::unique_ptr<DataStreamer>> dataStreamer;
     std::vector<std::unique_ptr<Fifo>> fifo;
-    std::unique_ptr<ThreadArping> threadArping;
+    std::unique_ptr<Arping> arping;
 
     std::mutex hdf5Lib;
 };

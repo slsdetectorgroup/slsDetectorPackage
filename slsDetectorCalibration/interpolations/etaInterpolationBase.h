@@ -128,7 +128,7 @@ class etaInterpolationBase : public slsInterpolation {
         return NULL;
     };
 
-    int readFlatField(const char *imgname, double emin = 1, double emax = 0) {
+    void *readFlatField(const char *imgname, double emin = 1, double emax = 0) {
         if (emax >= 1)
             etamax = emax;
         if (emin <= 0)
@@ -169,9 +169,9 @@ class etaInterpolationBase : public slsInterpolation {
                 }
             }
             delete[] gm;
-            return 1;
+            return heta;
         }
-        return 0;
+        return NULL;
     };
 
     float *gethhx() {
@@ -183,12 +183,17 @@ class etaInterpolationBase : public slsInterpolation {
         // hhy->Scale((double)nSubPixels);
         return hhy;
     };
-    virtual int addToFlatField(double etax, double etay) {
+    virtual int addToFlatFieldDistribution(double etax, double etay) {
+#ifdef MYROOT1
+        heta->Fill(etax, etay);
+#endif
+#ifndef MYROOT1
         int ex, ey;
         ex = (etax - etamin) / etastepX;
         ey = (etay - etamin) / etastepY;
         if (ey < nbetaY && ex < nbetaX && ex >= 0 && ey >= 0)
             heta[ey * nbetaX + ex]++;
+#endif
         return 0;
     };
 

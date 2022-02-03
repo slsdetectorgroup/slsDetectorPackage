@@ -238,96 +238,96 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
 
         //     cout <<"******"<< etax << " " << etay << endl;
 
-        return addToFlatField(etax, etay);
+        return addToFlatFieldDistribution(etax, etay);
     }
 
-    virtual int addToFlatField(double totquad, int quad, double *cl,
-                               double &etax, double &etay) {
-        double cc[2][2];
-        int xoff = 0, yoff = 0;
+    /* virtual int addToFlatField(double totquad, int quad, double *cl, */
+    /*                            double &etax, double &etay) { */
+    /*     double cc[2][2]; */
+    /*     int xoff = 0, yoff = 0; */
 
-        switch (quad) {
-        case BOTTOM_LEFT:
-            xoff = 0;
-            yoff = 0;
-            break;
-        case BOTTOM_RIGHT:
-            xoff = 1;
-            yoff = 0;
-            break;
-        case TOP_LEFT:
-            xoff = 0;
-            yoff = 1;
-            break;
-        case TOP_RIGHT:
-            xoff = 1;
-            yoff = 1;
-            break;
-        default:;
-        }
-        cc[0][0] = cl[xoff + 3 * yoff];
-        cc[1][0] = cl[(yoff + 1) * 3 + xoff];
-        cc[0][1] = cl[yoff * 3 + xoff + 1];
-        cc[1][1] = cl[(yoff + 1) * 3 + xoff + 1];
+    /*     switch (quad) { */
+    /*     case BOTTOM_LEFT: */
+    /*         xoff = 0; */
+    /*         yoff = 0; */
+    /*         break; */
+    /*     case BOTTOM_RIGHT: */
+    /*         xoff = 1; */
+    /*         yoff = 0; */
+    /*         break; */
+    /*     case TOP_LEFT: */
+    /*         xoff = 0; */
+    /*         yoff = 1; */
+    /*         break; */
+    /*     case TOP_RIGHT: */
+    /*         xoff = 1; */
+    /*         yoff = 1; */
+    /*         break; */
+    /*     default:; */
+    /*     } */
+    /*     cc[0][0] = cl[xoff + 3 * yoff]; */
+    /*     cc[1][0] = cl[(yoff + 1) * 3 + xoff]; */
+    /*     cc[0][1] = cl[yoff * 3 + xoff + 1]; */
+    /*     cc[1][1] = cl[(yoff + 1) * 3 + xoff + 1]; */
 
-        /* cout << cl[0] << " " << cl[1] << " " << cl[2] << endl;   */
-        /* cout << cl[3] << " " << cl[4] << " " << cl[5] << endl;   */
-        /* cout << cl[6] << " " << cl[7] << " " << cl[8] << endl;   */
-        /* cout <<"******"<<totquad << " " << quad << endl;  */
-        /* cout << cc[0][0]<< " " << cc[0][1] << endl;  */
-        /* cout << cc[1][0]<< " " << cc[1][1] << endl;  */
-        // calcMyEta(totquad,quad,cl,etax, etay);
-        calcEta(totquad, cc, etax, etay);
+    /*     /\* cout << cl[0] << " " << cl[1] << " " << cl[2] << endl;   *\/ */
+    /*     /\* cout << cl[3] << " " << cl[4] << " " << cl[5] << endl;   *\/ */
+    /*     /\* cout << cl[6] << " " << cl[7] << " " << cl[8] << endl;   *\/ */
+    /*     /\* cout <<"******"<<totquad << " " << quad << endl;  *\/ */
+    /*     /\* cout << cc[0][0]<< " " << cc[0][1] << endl;  *\/ */
+    /*     /\* cout << cc[1][0]<< " " << cc[1][1] << endl;  *\/ */
+    /*     // calcMyEta(totquad,quad,cl,etax, etay); */
+    /*     calcEta(totquad, cc, etax, etay); */
 
-        //     cout <<"******"<< etax << " " << etay << endl;
+    /*     //     cout <<"******"<< etax << " " << etay << endl; */
 
-        return addToFlatField(etax, etay);
-    }
+    /*     return addToFlatFieldDistribution(etax, etay); */
+    /* } */
 
     //////////////////////////////////////////////////////////////////////////////////////
-    virtual int addToFlatField(double *cluster, double &etax, double &etay) {
-        double sDum[2][2];
-        double tot, totquad;
-        // int corner;
-        // corner=
-        calcQuad(cluster, tot, totquad, sDum);
+    /* virtual int addToFlatField(double *cluster, double &etax, double &etay) { */
+    /*     double sDum[2][2]; */
+    /*     double tot, totquad; */
+    /*     // int corner; */
+    /*     // corner= */
+    /*     calcQuad(cluster, tot, totquad, sDum); */
 
-        // double xpos_eta,ypos_eta;
-        // double dX,dY;
+    /*     // double xpos_eta,ypos_eta; */
+    /*     // double dX,dY; */
 
-        calcEta(totquad, sDum, etax, etay);
+    /*     calcEta(totquad, sDum, etax, etay); */
 
-        return addToFlatField(etax, etay);
-    };
+    /*     return addToFlatField(etax, etay); */
+    /* }; */
 
-    virtual int addToFlatField(int *cluster, double &etax, double &etay) {
-        double sDum[2][2];
-        double tot, totquad;
-        // int corner;
-        // corner=
-        calcQuad(cluster, tot, totquad, sDum);
+    /* virtual int addToFlatField(int *cluster, double &etax, double &etay) { */
+    /*     double sDum[2][2]; */
+    /*     double tot, totquad; */
+    /*     // int corner; */
+    /*     // corner= */
+    /*     calcQuad(cluster, tot, totquad, sDum); */
 
-        // double xpos_eta,ypos_eta;
-        // double dX,dY;
+    /*     // double xpos_eta,ypos_eta; */
+    /*     // double dX,dY; */
 
-        calcEta(totquad, sDum, etax, etay);
+    /*     calcEta(totquad, sDum, etax, etay); */
 
-        return addToFlatField(etax, etay);
-    };
+    /*     return addToFlatField(etax, etay); */
+    /* }; */
 
-    virtual int addToFlatField(double etax, double etay) {
-#ifdef MYROOT1
-        heta->Fill(etax, etay);
-#endif
-#ifndef MYROOT1
-        int ex, ey;
-        ex = (etax - etamin) / etastepX;
-        ey = (etay - etamin) / etastepY;
-        if (ey < nbetaY && ex < nbetaX && ex >= 0 && ey >= 0)
-            heta[ey * nbetaX + ex]++;
-#endif
-        return 0;
-    };
+/*     virtual int addToFlatFieldDistribution(double etax, double etay) { */
+/* #ifdef MYROOT1 */
+/*         heta->Fill(etax, etay); */
+/* #endif */
+/* #ifndef MYROOT1 */
+/*         int ex, ey; */
+/*         ex = (etax - etamin) / etastepX; */
+/*         ey = (etay - etamin) / etastepY; */
+/*         if (ey < nbetaY && ex < nbetaX && ex >= 0 && ey >= 0) */
+/*             heta[ey * nbetaX + ex]++; */
+/* #endif */
+/*         return 0; */
+/*     }; */
 
     virtual int *getInterpolatedImage() {
         int ipx, ipy;

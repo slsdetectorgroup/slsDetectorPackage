@@ -182,10 +182,10 @@ class threadedAnalogDetector {
             interp->prepareInterpolation(ok);
     }
 
-    virtual int *getFlatField() {
+    virtual int *getFlatFieldDistribution() {
         slsInterpolation *interp = (det)->getInterpolation();
         if (interp)
-            return interp->getFlatField();
+            return interp->getFlatFieldDistribution();
         else
             return NULL;
     }
@@ -208,19 +208,19 @@ class threadedAnalogDetector {
         return NULL;
     }
 
-    void *readFlatField(const char *imgname, int nb = -1, double emin = 1,
+    void *readFlatField(const char *imgname,  double emin = 1,
                         double emax = 0) {
         slsInterpolation *interp = (det)->getInterpolation();
         if (interp)
-            return interp->readFlatField(imgname, nb, emin, emax);
+            return interp->readFlatField(imgname, emin, emax);
         return NULL;
     }
 
-    virtual int *getFlatField(int &nb, double emi, double ema) {
+    virtual int *getFlatField(int &nbx, int &nby, double &emi, double &ema) {
         slsInterpolation *interp = (det)->getInterpolation();
         int *ff = NULL;
         if (interp) {
-            ff = interp->getFlatField(nb, emi, ema);
+	  ff = interp->getFlatField(nbx, nby, emi, ema);
         }
         return ff;
     }

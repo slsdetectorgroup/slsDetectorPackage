@@ -149,7 +149,7 @@ class interpolatingDetector : public singlePhotonDetector {
     {
         nph = addFrame(data, val, 1);
         if (interp)
-            return interp->getFlatField();
+            return interp->getFlatFieldDistribution();
         else
             return NULL;
     };

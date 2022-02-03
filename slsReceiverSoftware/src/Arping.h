@@ -6,8 +6,8 @@
 is listening to.
  */
 
+#include "receiver_defs.h"
 #include "sls/logger.h"
-#include "sls/sls_detector_defs.h"
 
 #include <atomic>
 #include <thread>
@@ -15,8 +15,7 @@ is listening to.
 class Arping : private virtual slsDetectorDefs {
 
   public:
-    void ClearIpsAndInterfaces();
-    void AddInterfacesAndIps(const std::string &interface,
+    void SetInterfacesAndIps(const int index, const std::string &interface,
                              const std::string &ip);
     pid_t GetThreadId() const;
     bool IsRunning() const;
@@ -28,7 +27,8 @@ class Arping : private virtual slsDetectorDefs {
     std::string ExecuteCommands();
     void ThreadExecution();
 
-    std::vector<std::string> commands;
+    std::vector<std::string> commands =
+        std::vector<std::string>(MAX_NUMBER_OF_LISTENING_THREADS);
     std::atomic<bool> runningFlag{false};
     std::thread t;
     pid_t threadId{0};

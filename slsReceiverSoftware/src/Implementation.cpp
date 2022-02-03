@@ -341,10 +341,13 @@ void Implementation::setArping(const bool i,
         if (!i) {
             arping->StopThread();
         } else {
-            arping->ClearIpsAndInterfaces();
-            arping->AddInterfacesAndIps(eth[0], ips[0]);
-            if (numUDPInterfaces == 2 && detType != EIGER) {
-                arping->AddInterfacesAndIps(eth[1], ips[1]);
+            // setup interface
+            for (int i = 0; i != numUDPInterfaces; ++i) {
+                // ignore eiger with 2 interfaces (only udp port)
+                if (i == 1 && (numUDPInterfaces == 1 || detType == EIGER)) {
+                    break;
+                }
+                arping->SetInterfacesAndIps(i, eth[i], ips[i]);
             }
             arping->StartThread();
         }

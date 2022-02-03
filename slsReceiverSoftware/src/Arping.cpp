@@ -7,17 +7,21 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
-void Arping::ClearIpsAndInterfaces() { commands.clear(); }
-
-void Arping::AddInterfacesAndIps(const std::string &interface,
+void Arping::SetInterfacesAndIps(const int index, const std::string &interface,
                                  const std::string &ip) {
+
+    if (interface.empty() || ip.empty()) {
+        throw sls::RuntimeError("Could not arping. Interface name and ip not "
+                                "set up for interface " +
+                                std::to_string(index));
+    }
     // create commands to arping
     std::ostringstream os;
     os << "arping -c 1 -U -I " << interface << " " << ip;
     // to read error messages
     os << " 2>&1";
     std::string cmd = os.str();
-    commands.push_back(cmd);
+    commands[index] = cmd;
 }
 
 pid_t Arping::GetThreadId() const { return threadId; }
@@ -41,7 +45,7 @@ void Arping::StopThread() {
 
 void Arping::ThreadExecution() {
     threadId = syscall(SYS_gettid);
-    LOG(logINFOBLUE) << "Created [ Arping Thread, Tid: " << threadId << "]";
+    LOG(logINFOBLUE) << "Created [ Arping Thread, Tid: " << threadId << " ]";
 
     while (runningFlag) {
         std::string error = ExecuteCommands();
@@ -63,6 +67,12 @@ void Arping::ThreadExecution() {
 }
 
 void Arping::TestCommands() {
+    // atleast one interface must be set up
+    if (commands[0].empty()) {
+        throw sls::RuntimeError(
+            "Could not arping. Interface not set up in apring thread");
+    }
+    // test if arping commands throw an error
     std::string error = ExecuteCommands();
     if (!error.empty()) {
         throw sls::RuntimeError(error);
@@ -71,6 +81,11 @@ void Arping::TestCommands() {
 
 std::string Arping::ExecuteCommands() {
     for (auto cmd : commands) {
+
+        // empty if 2nd interface not enabled
+        if (cmd.empty())
+            continue;
+
         LOG(logDEBUG) << "Executing Arping Command: " << cmd;
 
         // execute command

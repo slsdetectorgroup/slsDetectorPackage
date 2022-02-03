@@ -563,6 +563,8 @@ enum streamingInterface {
 
 #ifdef __cplusplus
 };
+
+//operators needed in ToString
 inline slsDetectorDefs::streamingInterface
 operator|(const slsDetectorDefs::streamingInterface &a,
           const slsDetectorDefs::streamingInterface &b) {
@@ -576,6 +578,9 @@ operator&(const slsDetectorDefs::streamingInterface &a,
     return slsDetectorDefs::streamingInterface(static_cast<int32_t>(a) &
                                                static_cast<int32_t>(b));
 };
+
+
+
 #endif
 
 #ifdef __cplusplus

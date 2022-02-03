@@ -55,9 +55,11 @@ int64_t Listener::GetNumMissingPacket(bool stoppedFlag,
 
 bool Listener::GetStartedFlag() { return startedFlag; }
 
-uint64_t Listener::GetCurrentFrameIndex() { return currentFrameIndex; }
+uint64_t Listener::GetCurrentFrameIndex() { return lastCaughtFrameIndex; }
 
-uint64_t Listener::GetListenedIndex() { return currentFrameIndex - firstIndex; }
+uint64_t Listener::GetListenedIndex() {
+    return lastCaughtFrameIndex - firstIndex;
+}
 
 void Listener::SetFifo(Fifo *f) { fifo = f; }
 
@@ -88,6 +90,7 @@ void Listener::ResetParametersforNewAcquisition() {
 void Listener::RecordFirstIndex(uint64_t fnum) {
     // listen to this fnum, later +1
     currentFrameIndex = fnum;
+    lastCaughtFrameIndex = fnum;
 
     startedFlag = true;
     firstIndex = fnum;

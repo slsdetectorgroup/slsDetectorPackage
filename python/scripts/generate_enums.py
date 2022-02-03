@@ -13,8 +13,8 @@ import subprocess
 
 from parse import remove_comments
 
-allow_bitwise_op = ["M3_GainCaps"]
-allow_bitwise_op = ["streamingInterface"]
+
+allow_bitwise_op = ["streamingInterface", "M3_GainCaps"]
 
 op_key = {"operator|": "|", 
           "operator&" : "&"}

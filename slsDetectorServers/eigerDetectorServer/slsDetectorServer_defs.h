@@ -43,7 +43,7 @@ enum DACINDEX {
 #define DAC_NAMES                                                              \
     "VSvP", "Vtrim", "Vrpreamp", "Vrshaper", "VSvN", "Vtgstv", "Vcmp_ll",      \
         "Vcmp_lr", "Vcal", "Vcmp_rl", "rxb_rb", "rxb_lb", "Vcmp_rr", "Vcp",    \
-        "Vcn", "Vishaper"
+        "Vcn", "Vishaper", "Vthreshold"
 #define DEFAULT_DAC_VALS                                                       \
     {                                                                          \
         0,    /* VSvP		*/                                                      \

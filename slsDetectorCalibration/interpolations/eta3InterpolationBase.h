@@ -205,44 +205,44 @@ class eta3InterpolationBase : public virtual etaInterpolationBase {
                                double &etay) {
 
         calcEta3(cl, etax, etay, totquad);
-        return addToFlatField(etax, etay);
+        return addToFlatFieldDistribution(etax, etay);
     }
 
-    virtual int addToFlatField(double totquad, int quad, double *cl,
-                               double &etax, double &etay) {
+    /* virtual int addToFlatField(double totquad, int quad, double *cl, */
+    /*                            double &etax, double &etay) { */
 
-        calcEta3(cl, etax, etay, totquad);
-        return addToFlatField(etax, etay);
-    }
+    /*     calcEta3(cl, etax, etay, totquad); */
+    /*     return addToFlatField(etax, etay); */
+    /* } */
 
     //////////////////////////////////////////////////////////////////////////////////////
-    virtual int addToFlatField(double *cluster, double &etax, double &etay) {
-        double totquad;
-        calcEta3(cluster, etax, etay, totquad);
-        return addToFlatField(etax, etay);
-    };
+    /* virtual int addToFlatField(double *cluster, double &etax, double &etay) { */
+    /*     double totquad; */
+    /*     calcEta3(cluster, etax, etay, totquad); */
+    /*     return addToFlatField(etax, etay); */
+    /* }; */
 
-    virtual int addToFlatField(int *cluster, double &etax, double &etay) {
+    /* virtual int addToFlatField(int *cluster, double &etax, double &etay) { */
 
-        double totquad;
+    /*     double totquad; */
 
-        calcEta3(cluster, etax, etay, totquad);
-        return addToFlatField(etax, etay);
-    };
+    /*     calcEta3(cluster, etax, etay, totquad); */
+    /*     return addToFlatField(etax, etay); */
+    /* }; */
 
-    virtual int addToFlatField(double etax, double etay) {
-#ifdef MYROOT1
-        heta->Fill(etax, etay);
-#endif
-#ifndef MYROOT1
-        int ex, ey;
-        ex = (etax - etamin) / etastepX;
-        ey = (etay - etamin) / etastepY;
-        if (ey < nbetaY && ex < nbetaX && ex >= 0 && ey >= 0)
-            heta[ey * nbetaX + ex]++;
-#endif
-        return 0;
-    };
+/*     virtual int addToFlatField(double etax, double etay) { */
+/* #ifdef MYROOT1 */
+/*         heta->Fill(etax, etay); */
+/* #endif */
+/* #ifndef MYROOT1 */
+/*         int ex, ey; */
+/*         ex = (etax - etamin) / etastepX; */
+/*         ey = (etay - etamin) / etastepY; */
+/*         if (ey < nbetaY && ex < nbetaX && ex >= 0 && ey >= 0) */
+/*             heta[ey * nbetaX + ex]++; */
+/* #endif */
+/*         return 0; */
+/*     }; */
 
     /*  protected: */
 

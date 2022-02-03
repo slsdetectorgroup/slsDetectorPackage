@@ -30,6 +30,8 @@ This document describes the differences between v6.1.0 and v6.0.0.
 - mythen server kernel check incompatible (cet timezone)
 - rx_arping
 - rx_threadsids max is now 9 (breaking api)
+- m3 server crash (vthrehsold)
+
 
 
 2. Resolved Issues

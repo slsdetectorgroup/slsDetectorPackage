@@ -78,20 +78,20 @@ class noInterpolation : public slsInterpolation {
     };
 
     //////////////////////////////////////////////////////////////////////////////////////
-    virtual int addToFlatField(double *cluster, double &etax, double &etay) {
-        return 0;
-    };
+    /* virtual int addToFlatField(double *cluster, double &etax, double &etay) { */
+    /*     return 0; */
+    /* }; */
 
-    virtual int addToFlatField(int *cluster, double &etax, double &etay) {
-        return 0;
-    };
+    /* virtual int addToFlatField(int *cluster, double &etax, double &etay) { */
+    /*     return 0; */
+    /* }; */
 
-    virtual int addToFlatField(double etax, double etay) { return 0; };
+    virtual int addToFlatFieldDistribution(double etax, double etay) { return 0; };
 
-    virtual int addToFlatField(double totquad, int quad, double *cl,
-                               double &etax, double &etay) {
-        return 0;
-    };
+    /* virtual int addToFlatField(double totquad, int quad, double *cl, */
+    /*                            double &etax, double &etay) { */
+    /*     return 0; */
+    /* }; */
 
     virtual int addToFlatField(double totquad, int quad, int *cl, double &etax,
                                double &etay) {

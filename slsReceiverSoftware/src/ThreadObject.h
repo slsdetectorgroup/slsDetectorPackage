@@ -21,8 +21,10 @@ class ThreadObject : private virtual slsDetectorDefs {
   protected:
     const int index{0};
 
-  private:
+  protected:
     std::atomic<bool> killThread{false};
+
+  private:
     std::atomic<bool> runningFlag{false};
     std::thread threadObject;
     sem_t semaphore;

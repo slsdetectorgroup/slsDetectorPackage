@@ -271,7 +271,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def rx_arping(self):
-        """Starts a thread in slsReceiver to ping the interface it is listening every minute. Useful in 10G mode. """
+        """Starts a thread in slsReceiver to arping the interface it is listening every minute. Useful in 10G mode. """
         return self.getRxArping()
 
     @rx_arping.setter

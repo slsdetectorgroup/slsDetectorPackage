@@ -1745,10 +1745,10 @@ class CmdProxy {
                 "processor 1, streamer 1, arping]. If no streamer yet or there "
                 "is no second interface, it gives 0 in its place.");
 
-    INTEGER_COMMAND_VEC_ID(
-        rx_arping, getRxArping, setRxArping, StringTo<int>,
-        "[0, 1]\n\tStarts a thread in slsReceiver to ping the interface it is "
-        "listening to every minute. Useful in 10G mode.");
+    INTEGER_COMMAND_VEC_ID(rx_arping, getRxArping, setRxArping, StringTo<int>,
+                           "[0, 1]\n\tStarts a thread in slsReceiver to arping "
+                           "the interface it is "
+                           "listening to every minute. Useful in 10G mode.");
 
     /* File */
 

@@ -886,7 +886,7 @@ class Detector {
 
     Result<bool> getRxArping(Positions pos = {}) const;
 
-    /** Starts a thread in slsReceiver to ping the interface it is listening
+    /** Starts a thread in slsReceiver to arping the interface it is listening
      * every minute. Useful in 10G mode. */
     void setRxArping(bool value, Positions pos = {});
 

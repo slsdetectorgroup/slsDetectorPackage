@@ -344,9 +344,9 @@ void Implementation::setArping(const bool i,
             threadArping->StopRunning();
         } else {
             threadArping->ClearIpsAndInterfaces();
-            threadArping->AddIpsAndInterfaces(eth[0], ips[0]);
+            threadArping->AddInterfacesAndIps(eth[0], ips[0]);
             if (numUDPInterfaces == 2 && detType != EIGER) {
-                threadArping->AddIpsAndInterfaces(eth[1], ips[1]);
+                threadArping->AddInterfacesAndIps(eth[1], ips[1]);
             }
             threadArping->StartRunning();
         }

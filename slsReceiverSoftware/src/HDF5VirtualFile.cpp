@@ -5,8 +5,8 @@
 
 #include <iomanip>
 
-HDF5VirtualFile::HDF5VirtualFile(std::mutex *hdf5Lib)
-    : File(HDF5), hdf5Lib_(hdf5Lib) {}
+HDF5VirtualFile::HDF5VirtualFile(std::mutex *hdf5Lib, bool g25)
+    : File(HDF5), hdf5Lib_(hdf5Lib), gotthard25um(g25) {}
 
 HDF5VirtualFile::~HDF5VirtualFile() { CloseFile(); }
 

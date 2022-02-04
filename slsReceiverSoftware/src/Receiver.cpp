@@ -14,7 +14,6 @@
 #include <map>
 #include <sstream>
 #include <string>
-#include <sys/syscall.h>
 #include <unistd.h>
 
 namespace sls {
@@ -68,8 +67,7 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
         case 'v':
             std::cout << "SLS Receiver Version: " << GITBRANCH << " (0x"
                       << std::hex << APIRECEIVER << ")" << std::endl;
-            LOG(logINFOBLUE)
-                << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
+            LOG(logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
             exit(EXIT_SUCCESS);
 
         case 'h':

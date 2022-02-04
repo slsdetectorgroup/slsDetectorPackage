@@ -163,6 +163,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_streaming_hwm(sls::ServerInterface &socket);
     int set_all_threshold(sls::ServerInterface &socket);
     int set_detector_datastream(sls::ServerInterface &socket);
+    int get_arping(sls::ServerInterface &socket);
+    int set_arping(sls::ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {
@@ -190,4 +192,6 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     pid_t parentThreadId{0};
     pid_t tcpThreadId{0};
+    std::vector<std::string> udpips =
+        std::vector<std::string>(MAX_NUMBER_OF_LISTENING_THREADS);
 };

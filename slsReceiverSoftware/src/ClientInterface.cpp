@@ -19,7 +19,6 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include <sys/syscall.h>
 #include <unistd.h>
 #include <vector>
 
@@ -41,7 +40,7 @@ ClientInterface::ClientInterface(int portNumber)
       portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2),
       server(portNumber) {
     functionTable();
-    parentThreadId = syscall(SYS_gettid);
+    parentThreadId = gettid();
     tcpThread =
         sls::make_unique<std::thread>(&ClientInterface::startTCPServer, this);
 }
@@ -76,7 +75,7 @@ void ClientInterface::registerCallBackRawDataModifyReady(
 }
 
 void ClientInterface::startTCPServer() {
-    tcpThreadId = syscall(SYS_gettid);
+    tcpThreadId = gettid();
     LOG(logINFOBLUE) << "Created [ TCP server Tid: " << tcpThreadId << "]";
     LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber
                  << '\n';
@@ -210,7 +209,8 @@ int ClientInterface::functionTable(){
     flist[F_SET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::set_streaming_hwm;
     flist[F_RECEIVER_SET_ALL_THRESHOLD]     =   &ClientInterface::set_all_threshold;
     flist[F_RECEIVER_SET_DATASTREAM]        =   &ClientInterface::set_detector_datastream;
-    
+    flist[F_GET_RECEIVER_ARPING]            =   &ClientInterface::get_arping;
+    flist[F_SET_RECEIVER_ARPING]            =   &ClientInterface::set_arping;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -1398,6 +1398,10 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
     if (detType == EIGER) {
         impl()->setEthernetInterface2(eth);
     }
+
+    // update locally to use for arping
+    udpips[0] = arg.str();
+
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
     if (retval == 0) {
@@ -1429,6 +1433,9 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
                       << ". Got " << eth;
     }
     impl()->setEthernetInterface2(eth);
+
+    // update locally to use for arping
+    udpips[1] = arg.str();
 
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
@@ -1695,5 +1702,22 @@ int ClientInterface::set_detector_datastream(Interface &socket) {
         functionNotImplemented();
     verifyIdle(socket);
     impl()->setDetectorDataStream(port, enable);
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_arping(Interface &socket) {
+    auto retval = static_cast<int>(impl()->getArping());
+    LOG(logDEBUG1) << "arping thread status:" << retval;
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::set_arping(Interface &socket) {
+    auto value = socket.Receive<int>();
+    if (value < 0) {
+        throw RuntimeError("Invalid arping value: " + std::to_string(value));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Starting/ Killing arping thread:" << value;
+    impl()->setArping(value, udpips);
     return socket.Send(OK);
 }

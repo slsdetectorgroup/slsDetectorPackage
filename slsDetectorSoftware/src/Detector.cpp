@@ -1170,6 +1170,14 @@ Detector::getRxThreadIds(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverThreadIds, pos);
 }
 
+Result<bool> Detector::getRxArping(Positions pos) const {
+    return pimpl->Parallel(&Module::getRxArping, pos);
+}
+
+void Detector::setRxArping(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setRxArping, pos, value);
+}
+
 // File
 
 Result<defs::fileFormat> Detector::getFileFormat(Positions pos) const {

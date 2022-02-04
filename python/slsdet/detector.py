@@ -258,7 +258,7 @@ class Detector(CppDetectorApi):
     @element
     def rx_threads(self):
         """
-        Get thread ids from the receiver in order of [parent, tcp, listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1]. 
+        Get thread ids from the receiver in order of [parent, tcp, listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. 
         
         Note
         -----
@@ -267,6 +267,17 @@ class Detector(CppDetectorApi):
         :setter: Not Implemented
         """
         return self.getRxThreadIds()
+
+    @property
+    @element
+    def rx_arping(self):
+        """Starts a thread in slsReceiver to arping the interface it is listening every minute. Useful in 10G mode. """
+        return self.getRxArping()
+
+    @rx_arping.setter
+    def rx_arping(self, value):
+        ut.set_using_dict(self.setRxArping, value)
+
 
     @property
     @element

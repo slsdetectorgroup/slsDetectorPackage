@@ -73,7 +73,7 @@
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 500
 
-#define NUM_RX_THREAD_IDS 8
+#define NUM_RX_THREAD_IDS 9
 
 #ifdef __cplusplus
 class slsDetectorDefs {

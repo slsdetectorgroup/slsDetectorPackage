@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
+#include "Arping.h"
 #include "receiver_defs.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
@@ -49,6 +50,9 @@ class Implementation : private virtual slsDetectorDefs {
     void setFramePaddingEnable(const bool i);
     void setThreadIds(const pid_t parentTid, const pid_t tcpTid);
     std::array<pid_t, NUM_RX_THREAD_IDS> getThreadIds() const;
+    bool getArping() const;
+    pid_t getArpingThreadId() const;
+    void setArping(const bool i, const std::vector<std::string> ips);
 
     /**************************************************
      *                                                 *
@@ -379,6 +383,7 @@ class Implementation : private virtual slsDetectorDefs {
     std::vector<std::unique_ptr<DataProcessor>> dataProcessor;
     std::vector<std::unique_ptr<DataStreamer>> dataStreamer;
     std::vector<std::unique_ptr<Fifo>> fifo;
+    Arping arping;
 
     std::mutex hdf5Lib;
 };

@@ -107,6 +107,7 @@ void Implementation::SetupFifoStructure() {
  * ************************************************/
 
 void Implementation::setDetectorType(const detectorType d) {
+
     detType = d;
     switch (detType) {
     case GOTTHARD:
@@ -320,7 +321,31 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
             retval[id++] = 0;
         }
     }
+    retval[NUM_RX_THREAD_IDS - 1] = arping.GetThreadId();
     return retval;
+}
+
+bool Implementation::getArping() const { return arping.IsRunning(); }
+
+pid_t Implementation::getArpingThreadId() const { return arping.GetThreadId(); }
+
+void Implementation::setArping(const bool i,
+                               const std::vector<std::string> ips) {
+    if (i != arping.IsRunning()) {
+        if (!i) {
+            arping.StopThread();
+        } else {
+            // setup interface
+            for (int i = 0; i != numUDPInterfaces; ++i) {
+                // ignore eiger with 2 interfaces (only udp port)
+                if (i == 1 && (numUDPInterfaces == 1 || detType == EIGER)) {
+                    break;
+                }
+                arping.SetInterfacesAndIps(i, eth[i], ips[i]);
+            }
+            arping.StartThread();
+        }
+    }
 }
 
 /**************************************************

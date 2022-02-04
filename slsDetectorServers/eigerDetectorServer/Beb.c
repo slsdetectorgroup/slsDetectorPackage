@@ -492,6 +492,11 @@ int Beb_SetDataStream(enum portPosition port, int enable) {
         u_int32_t reg = XPAR_GPIO_P15_STREAMING_REG;
         u_int32_t mask = (port == LEFT ? XPAR_GPIO_LFT_STRM_DSBL_MSK
                                        : XPAR_GPIO_RGHT_STRM_DSBL_MSK);
+        // invert left/right if bottom
+        if (!Beb_top) {
+            mask = (port == LEFT ? XPAR_GPIO_RGHT_STRM_DSBL_MSK
+                                 : XPAR_GPIO_LFT_STRM_DSBL_MSK);
+        }
 
         u_int32_t value = Beb_Read32(csp0base, reg);
         // disabling in firmware
@@ -529,6 +534,11 @@ int Beb_GetDataStream(enum portPosition port, int *retval) {
         u_int32_t reg = XPAR_GPIO_P15_STREAMING_REG;
         u_int32_t mask = (port == LEFT ? XPAR_GPIO_LFT_STRM_DSBL_MSK
                                        : XPAR_GPIO_RGHT_STRM_DSBL_MSK);
+        // invert left/right if bottom
+        if (!Beb_top) {
+            mask = (port == LEFT ? XPAR_GPIO_RGHT_STRM_DSBL_MSK
+                                 : XPAR_GPIO_LFT_STRM_DSBL_MSK);
+        }
 
         u_int32_t value = Beb_Read32(csp0base, reg);
         // disabling in firmware
@@ -682,6 +692,10 @@ int Beb_GetTransmissionDelayLeft() {
         return Beb_deactivated_transmission_delay_left;
     }
     u_int32_t offset = TXM_DELAY_LEFT_OFFSET;
+    // invert left/right if bottom
+    if (!Beb_top) {
+        offset = TXM_DELAY_RIGHT_OFFSET;
+    }
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd <= 0) {
@@ -706,6 +720,10 @@ int Beb_SetTransmissionDelayLeft(int value) {
         return 1;
     }
     u_int32_t offset = TXM_DELAY_LEFT_OFFSET;
+    // invert left/right if bottom
+    if (!Beb_top) {
+        offset = TXM_DELAY_RIGHT_OFFSET;
+    }
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd <= 0) {
@@ -726,6 +744,10 @@ int Beb_GetTransmissionDelayRight() {
     }
 
     u_int32_t offset = TXM_DELAY_RIGHT_OFFSET;
+    // invert left/right if bottom
+    if (!Beb_top) {
+        offset = TXM_DELAY_LEFT_OFFSET;
+    }
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd <= 0) {
@@ -750,6 +772,10 @@ int Beb_SetTransmissionDelayRight(int value) {
         return 1;
     }
     u_int32_t offset = TXM_DELAY_RIGHT_OFFSET;
+    // invert left/right if bottom
+    if (!Beb_top) {
+        offset = TXM_DELAY_LEFT_OFFSET;
+    }
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd <= 0) {

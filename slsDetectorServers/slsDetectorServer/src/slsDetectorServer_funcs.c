@@ -2932,7 +2932,7 @@ int enable_ten_giga(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFOBLUE, ("Setting 10GbE: %d\n", arg));
+    LOG(logDEBUG, ("Setting 10GbE: %d\n", arg));
 
 #if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(GOTTHARD2D)
     functionNotImplemented();
@@ -8266,6 +8266,9 @@ int get_datastream(int file_des) {
                 "Only left and right allowed\n",
                 arg);
         LOG(logERROR, (mess));
+    } else if (enableTenGigabitEthernet(GET_FLAG) == 0) {
+        retval = 1;
+        LOG(logINFO, ("Datastream always enabled for 1g\n"));
     } else {
         ret = getDataStream(arg, &retval);
         LOG(logDEBUG1, ("datastream (%s) retval: %u\n",
@@ -8312,6 +8315,14 @@ int set_datastream(int file_des) {
             ret = FAIL;
             sprintf(mess, "Could not %s. Invalid enable %d. \n", msg, enable);
             LOG(logERROR, (mess));
+        } else if (enableTenGigabitEthernet(GET_FLAG) == 0 && enable == 0) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not %s. Disabling is only enabled in 10g mode.\n",
+                    msg);
+            LOG(logERROR, (mess));
+        } else if (enableTenGigabitEthernet(GET_FLAG) == 0 && enable == 1) {
+            LOG(logINFO, ("Datastream always enabled for 1g\n"));
         } else {
             ret = setDataStream(port, enable);
             if (ret == FAIL) {

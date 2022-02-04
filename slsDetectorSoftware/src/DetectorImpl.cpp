@@ -281,6 +281,13 @@ void DetectorImpl::addModule(const std::string &hostname) {
 
     // get type by connecting
     detectorType type = Module::getTypeFromDetector(host, port);
+
+    // gotthard cannot have more than 2 modules (50um=1, 25um=2
+    if ((type == GOTTHARD || type == GOTTHARD2) && modules.size() > 2) {
+        freeSharedMemory();
+        throw sls::RuntimeError("Gotthard cannot have more than 2 modules");
+    }
+
     auto pos = modules.size();
     modules.emplace_back(
         sls::make_unique<Module>(type, detectorIndex, pos, false));

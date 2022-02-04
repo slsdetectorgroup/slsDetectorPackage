@@ -8,7 +8,6 @@
 #include "ThreadObject.h"
 #include "sls/container_utils.h"
 #include <iostream>
-#include <sys/syscall.h>
 #include <unistd.h>
 
 ThreadObject::ThreadObject(int threadIndex, std::string threadType)
@@ -39,7 +38,7 @@ void ThreadObject::StartRunning() { runningFlag = true; }
 void ThreadObject::StopRunning() { runningFlag = false; }
 
 void ThreadObject::RunningThread() {
-    threadId = syscall(SYS_gettid);
+    threadId = gettid();
     LOG(logINFOBLUE) << "Created [ " << type << "Thread " << index
                      << ", Tid: " << threadId << "]";
     while (!killThread) {

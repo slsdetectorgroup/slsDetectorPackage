@@ -19,7 +19,6 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include <sys/syscall.h>
 #include <unistd.h>
 #include <vector>
 
@@ -41,7 +40,7 @@ ClientInterface::ClientInterface(int portNumber)
       portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2),
       server(portNumber) {
     functionTable();
-    parentThreadId = syscall(SYS_gettid);
+    parentThreadId = gettid();
     tcpThread =
         sls::make_unique<std::thread>(&ClientInterface::startTCPServer, this);
 }
@@ -76,7 +75,7 @@ void ClientInterface::registerCallBackRawDataModifyReady(
 }
 
 void ClientInterface::startTCPServer() {
-    tcpThreadId = syscall(SYS_gettid);
+    tcpThreadId = gettid();
     LOG(logINFOBLUE) << "Created [ TCP server Tid: " << tcpThreadId << "]";
     LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber
                  << '\n';

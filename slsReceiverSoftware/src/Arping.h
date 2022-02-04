@@ -12,7 +12,7 @@ is listening to.
 #include <atomic>
 #include <thread>
 
-class Arping : private virtual slsDetectorDefs {
+class Arping {
 
   public:
     void SetInterfacesAndIps(const int index, const std::string &interface,
@@ -31,5 +31,5 @@ class Arping : private virtual slsDetectorDefs {
         std::vector<std::string>(MAX_NUMBER_OF_LISTENING_THREADS);
     std::atomic<bool> runningFlag{false};
     std::thread t;
-    pid_t threadId{0};
+    std::atomic<pid_t> threadId{0};
 };

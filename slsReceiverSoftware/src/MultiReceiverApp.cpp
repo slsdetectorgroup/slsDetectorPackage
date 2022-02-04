@@ -11,7 +11,6 @@
 #include <cstring>
 #include <iostream>
 #include <semaphore.h>
-#include <sys/syscall.h>
 #include <sys/wait.h> //wait
 #include <unistd.h>
 
@@ -172,8 +171,7 @@ int main(int argc, char *argv[]) {
                         (!sscanf(argv[3], "%d", &withCallback))))
         printHelp();
 
-    cprintf(BLUE, "Parent Process Created [ Tid: %ld ]\n",
-            (long)syscall(SYS_gettid));
+    cprintf(BLUE, "Parent Process Created [ Tid: %ld ]\n", (long)gettid());
     cprintf(RESET, "Number of Receivers: %d\n", numReceivers);
     cprintf(RESET, "Start TCP Port: %d\n", startTCPPort);
     cprintf(RESET, "Callback Enable: %d\n", withCallback);
@@ -215,16 +213,14 @@ int main(int argc, char *argv[]) {
 
         /**	- if child process */
         else if (pid == 0) {
-            cprintf(BLUE, "Child process %d [ Tid: %ld ]\n", i,
-                    (long)syscall(SYS_gettid));
+            cprintf(BLUE, "Child process %d [ Tid: %ld ]\n", i, (long)gettid());
 
             std::unique_ptr<sls::Receiver> receiver = nullptr;
             try {
                 receiver = sls::make_unique<sls::Receiver>(startTCPPort + i);
             } catch (...) {
                 LOG(logINFOBLUE)
-                    << "Exiting Child Process [ Tid: " << syscall(SYS_gettid)
-                    << " ]";
+                    << "Exiting Child Process [ Tid: " << gettid() << " ]";
                 throw;
             }
             /**	- register callbacks. remember to set file write enable to 0
@@ -254,7 +250,7 @@ int main(int argc, char *argv[]) {
             sem_wait(&semaphore);
             sem_destroy(&semaphore);
             cprintf(BLUE, "Exiting Child Process [ Tid: %ld ]\n",
-                    (long)syscall(SYS_gettid));
+                    (long)gettid());
             exit(EXIT_SUCCESS);
             break;
         }

@@ -4,7 +4,6 @@
 #include "Arping.h"
 
 #include <chrono>
-#include <sys/syscall.h>
 #include <unistd.h>
 
 void Arping::SetInterfacesAndIps(const int index, const std::string &interface,
@@ -44,7 +43,7 @@ void Arping::StopThread() {
 }
 
 void Arping::ThreadExecution() {
-    threadId = syscall(SYS_gettid);
+    threadId = gettid();
     LOG(logINFOBLUE) << "Created [ Arping Thread, Tid: " << threadId << " ]";
 
     while (runningFlag) {

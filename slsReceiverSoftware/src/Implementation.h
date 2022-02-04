@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
+#include "Arping.h"
 #include "receiver_defs.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
@@ -11,7 +12,6 @@ class DataProcessor;
 class DataStreamer;
 class Fifo;
 class slsDetectorDefs;
-class Arping;
 
 #include <atomic>
 #include <chrono>
@@ -383,7 +383,7 @@ class Implementation : private virtual slsDetectorDefs {
     std::vector<std::unique_ptr<DataProcessor>> dataProcessor;
     std::vector<std::unique_ptr<DataStreamer>> dataStreamer;
     std::vector<std::unique_ptr<Fifo>> fifo;
-    std::unique_ptr<Arping> arping;
+    Arping arping;
 
     std::mutex hdf5Lib;
 };

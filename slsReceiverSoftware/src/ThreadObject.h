@@ -45,5 +45,5 @@ class ThreadObject : private virtual slsDetectorDefs {
     std::thread threadObject;
     sem_t semaphore;
     const std::string type;
-    pid_t threadId{0};
+    std::atomic<pid_t> threadId{0};
 };

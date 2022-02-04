@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "Implementation.h"
-#include "Arping.h"
 #include "DataProcessor.h"
 #include "DataStreamer.h"
 #include "Fifo.h"
@@ -108,9 +107,6 @@ void Implementation::SetupFifoStructure() {
  * ************************************************/
 
 void Implementation::setDetectorType(const detectorType d) {
-
-    // object to create thread for arping
-    arping = sls::make_unique<Arping>();
 
     detType = d;
     switch (detType) {
@@ -325,21 +321,19 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
             retval[id++] = 0;
         }
     }
-    retval[NUM_RX_THREAD_IDS - 1] = arping->GetThreadId();
+    retval[NUM_RX_THREAD_IDS - 1] = arping.GetThreadId();
     return retval;
 }
 
-bool Implementation::getArping() const { return arping->IsRunning(); }
+bool Implementation::getArping() const { return arping.IsRunning(); }
 
-pid_t Implementation::getArpingThreadId() const {
-    return arping->GetThreadId();
-}
+pid_t Implementation::getArpingThreadId() const { return arping.GetThreadId(); }
 
 void Implementation::setArping(const bool i,
                                const std::vector<std::string> ips) {
-    if (i != arping->IsRunning()) {
+    if (i != arping.IsRunning()) {
         if (!i) {
-            arping->StopThread();
+            arping.StopThread();
         } else {
             // setup interface
             for (int i = 0; i != numUDPInterfaces; ++i) {
@@ -347,9 +341,9 @@ void Implementation::setArping(const bool i,
                 if (i == 1 && (numUDPInterfaces == 1 || detType == EIGER)) {
                     break;
                 }
-                arping->SetInterfacesAndIps(i, eth[i], ips[i]);
+                arping.SetInterfacesAndIps(i, eth[i], ips[i]);
             }
-            arping->StartThread();
+            arping.StartThread();
         }
     }
 }

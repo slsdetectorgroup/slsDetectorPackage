@@ -91,8 +91,10 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void Update2dPlot();
     void Update1dXYRange();
     void Update2dXYRange();
+    void rearrangeGotthard25data(double *data);
 
     static const int NUM_PEDESTAL_FRAMES = 20;
+    static const int NUM_GOTTHARD25_CHANS = 2560;
     sls::Detector *det;
     slsDetectorDefs::detectorType detType;
 
@@ -164,4 +166,5 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     uint32_t pixelMask{0};
     uint32_t gainMask{0};
     int gainOffset{0};
+    bool gotthard25;
 };

@@ -80,6 +80,10 @@ void qDrawPlot::SetupWidgetWindow() {
         fileSaveName = "Image";
     }
 
+    gotthard25 = ((detType == slsDetectorDefs::GOTTHARD2 ||
+                   detType == slsDetectorDefs::GOTTHARD) &&
+                  det->size() == 2);
+
     SetupPlots();
     SetDataCallBack(true);
     det->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack),
@@ -807,6 +811,11 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
         isGainDataExtracted = false;
     }
 
+    // gotthard25um rearranging
+    if (gotthard25) {
+        rearrangeGotthard25data(rawData);
+    }
+
     // title and frame index titles
     plotTitle =
         plotTitlePrefix + QString(data->fileName.c_str()).section('/', -1);
@@ -1128,6 +1137,19 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size,
         }
         break;
     }
+}
+
+void qDrawPlot::rearrangeGotthard25data(double *data) {
+    const int nChans = NUM_GOTTHARD25_CHANS;
+    double temp[nChans] = {0.0};
+    int nChansMod = nChans / 2;
+    for (int i = 0; i != nChansMod; ++i) {
+        // master module (interleave from front)
+        temp[i * 2] = data[i];
+        // slave module (reverse interleave)
+        temp[(nChansMod - 1 - i) * 2 + 1] = data[nChansMod + i];
+    }
+    memcpy(data, temp, nChans * sizeof(double));
 }
 
 void qDrawPlot::UpdatePlot() {

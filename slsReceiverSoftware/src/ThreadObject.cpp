@@ -10,6 +10,12 @@
 #include <iostream>
 #include <unistd.h>
 
+// gettid added in glibc 2.30
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+#endif
+
 ThreadObject::ThreadObject(int threadIndex, std::string threadType)
     : index(threadIndex), type(threadType) {
     LOG(logDEBUG) << type << " thread created: " << index;

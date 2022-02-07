@@ -14,6 +14,12 @@
 #include <sys/wait.h> //wait
 #include <unistd.h>
 
+// gettid added in glibc 2.30
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+#endif
+
 /** Define Colors to print data call back in different colors for different
  * recievers */
 #define PRINT_IN_COLOR(c, f, ...)                                              \

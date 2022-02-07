@@ -213,8 +213,9 @@ void DataProcessor::CreateVirtualFile(
     if (virtualFile_) {
         delete virtualFile_;
     }
-    gotthard25um = ((detectorType_ == GOTTHARD || detectorType_ == GOTTHARD2) &&
-                    (numModX * numModY) == 2);
+    bool gotthard25um =
+        ((detectorType_ == GOTTHARD || detectorType_ == GOTTHARD2) &&
+         (numModX * numModY) == 2);
     virtualFile_ = new HDF5VirtualFile(hdf5Lib, gotthard25um);
 
     uint64_t numImagesProcessed = GetProcessedIndex() + 1;

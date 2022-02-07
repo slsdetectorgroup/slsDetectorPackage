@@ -103,19 +103,35 @@ void HDF5VirtualFile::CreateVirtualFile(
                 ((numImagesCaught - framesSaved) > maxFramesPerFile)
                     ? maxFramesPerFile
                     : (numImagesCaught - framesSaved);
+            // starting location
             hsize_t start[3] = {framesSaved, 0, 0};
-            hsize_t count[3] = {nDimx, nDimy, nDimz};
+            // number of elements separating each block
+            hsize_t stride[3] = {1, 1, 1};
+            // number of blocks
+            hsize_t count[3] = {1, 1, 1};
+            // block size
+            hsize_t block[3] = {nDimx, nDimy, nDimz};
+
+            // starting location
             hsize_t startPara[2] = {framesSaved, 0};
-            hsize_t countPara[2] = {nDimx, 1};
-            // loop through readouts
+            // number of elements separating each block
+            hsize_t stridePara[3] = {1, 1};
+            // number of blocks
+            hsize_t countPara[2] = {1, 1};
+            // block size
+            hsize_t blockPara[3] = {nDimx, 1};
+
+            // loop through readouts (image)
             for (unsigned int i = 0; i < numModY * numModZ; ++i) {
 
                 // setect data hyperslabs
-                vdsDataSpace.selectHyperslab(H5S_SELECT_SET, count, start);
+                vdsDataSpace.selectHyperslab(H5S_SELECT_SET, count, start,
+                                             stride, block);
 
                 // select parameter hyperslabs
                 vdsDataSpacePara.selectHyperslab(H5S_SELECT_SET, countPara,
-                                                 startPara);
+                                                 startPara, stridePara,
+                                                 blockPara);
 
                 // source file name
                 std::ostringstream os;

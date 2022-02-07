@@ -2105,6 +2105,9 @@ int setDataStream(enum portPosition port, int enable) {
         LOG(logERROR, ("Invalid setDataStream enable argument: %d\n", enable));
         return FAIL;
     }
+    LOG(logINFO,
+        ("%s 10GbE %s datastream\n", (enable ? "Enabling" : "Disabling"),
+         (port == LEFT ? "left" : "right")));
 #ifdef VIRTUAL
     if (port == LEFT) {
         eiger_virtual_left_datastream = enable;

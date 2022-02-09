@@ -1021,6 +1021,10 @@ void Module::setDestinationUDPIP(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address");
     }
+    if (ip.str() == LOCALHOST_IP) {
+        throw RuntimeError("Invalid destination udp ip. Change rx_hostname "
+                           "from localhost or change udp_dstip from auto?");
+    }
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr);
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0LU);
@@ -1040,7 +1044,10 @@ void Module::setDestinationUDPIP2(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address2");
     }
-
+    if (ip.str() == LOCALHOST_IP) {
+        throw RuntimeError("Invalid destination udp ip. Change rx_hostname "
+                           "from localhost or change udp_dstip from auto?");
+    }
     sendToDetector(F_SET_DEST_UDP_IP2, ip, nullptr);
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0LU);
@@ -3330,9 +3337,9 @@ sls_detector_module Module::interpolateTrim(sls_detector_module *a,
             dacs_to_copy.end(),
             {E_SVP, E_SVN, E_VTGSTV, E_RXB_RB, E_RXB_LB, E_VCN, E_VIS});
         // interpolate vrf, vcmp, vcp
-        dacs_to_interpolate.insert(
-            dacs_to_interpolate.end(),
-            {E_VTR, E_VRF, E_VCMP_LL, E_VCMP_LR, E_VCMP_RL, E_VCMP_RR, E_VCP, E_VRS});
+        dacs_to_interpolate.insert(dacs_to_interpolate.end(),
+                                   {E_VTR, E_VRF, E_VCMP_LL, E_VCMP_LR,
+                                    E_VCMP_RL, E_VCMP_RR, E_VCP, E_VRS});
     } else {
         dacs_to_copy.insert(dacs_to_copy.end(),
                             {M_VCASSH, M_VRSHAPER, M_VRSHAPER_N, M_VIPRE_OUT,

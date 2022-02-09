@@ -215,7 +215,7 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
         myMod.tau =
             linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
         // m3, reg is used for gaincaps
-        if (shm->detType == Mythen3) {
+        if (shm()->detType == MYTHEN3) {
             if (myMod1.reg != myMod2.reg) {
                 throw RuntimeError(
                     "setThresholdEnergyAndSettings: gaincaps do not "
@@ -225,7 +225,7 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
         }
     }
     // m3, reg is used for gaincaps
-    if (shm->detType != Mythen3) {
+    if (shm()->detType != MYTHEN3) {
         myMod.reg = isettings;
     }
 
@@ -328,7 +328,7 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
             if (myMod1.reg != myMod2.reg) {
                 throw RuntimeError("setAllThresholdEnergy: gaincaps do not "
                                    "match between files for energy (eV) " +
-                                   to_string(energy[i]));
+                                   std::to_string(energy[i]));
             }
             myMods[i].reg = myMod1.reg;
         }

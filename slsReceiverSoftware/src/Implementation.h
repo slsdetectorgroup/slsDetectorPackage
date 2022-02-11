@@ -356,6 +356,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool quadEnable{false};
     bool activated{true};
     std::array<bool, 2> detectorDataStream = {{true, true}};
+    std::array<bool, 2> detectorDataStream10GbE = {{true, true}};
     int readNRows{0};
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};

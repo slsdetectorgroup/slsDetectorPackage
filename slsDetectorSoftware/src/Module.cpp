@@ -214,9 +214,21 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
         myMod.iodelay = myMod1.iodelay;
         myMod.tau =
             linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
+        // m3, reg is used for gaincaps
+        if (shm()->detType == MYTHEN3) {
+            if (myMod1.reg != myMod2.reg) {
+                throw RuntimeError(
+                    "setThresholdEnergyAndSettings: gaincaps do not "
+                    "match between files");
+            }
+            myMod.reg = myMod1.reg;
+        }
+    }
+    // m3, reg is used for gaincaps
+    if (shm()->detType != MYTHEN3) {
+        myMod.reg = isettings;
     }
 
-    myMod.reg = isettings;
     myMod.eV[0] = e_eV;
     setModule(myMod, trimbits);
     if (getSettings() != isettings) {
@@ -231,6 +243,7 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
 
 void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
                                    detectorSettings isettings, bool trimbits) {
+    // only mythen3
     if (shm()->trimEnergies.empty()) {
         throw RuntimeError(
             "Trim energies have not been defined for this module yet!");
@@ -311,6 +324,13 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
 
             myMods[i] = interpolateTrim(&myMod1, &myMod2, energy[i], trim1,
                                         trim2, trimbits);
+            // gaincaps
+            if (myMod1.reg != myMod2.reg) {
+                throw RuntimeError("setAllThresholdEnergy: gaincaps do not "
+                                   "match between files for energy (eV) " +
+                                   std::to_string(energy[i]));
+            }
+            myMods[i].reg = myMod1.reg;
         }
     }
 
@@ -356,6 +376,11 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
         // replace correct trim values (interleaved)
         for (int i = 0; i < myMod.nchan; ++i) {
             myMod.chanregs[i] = myMods[i % 3].chanregs[i];
+        }
+        // gain caps
+        if (myMods[0].reg != myMods[1].reg || myMods[1].reg != myMods[2].reg) {
+            throw RuntimeError("setAllThresholdEnergy: gaincaps do not "
+                               "match between files for all energies");
         }
     }
 

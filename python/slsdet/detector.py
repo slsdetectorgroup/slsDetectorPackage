@@ -1924,7 +1924,7 @@ class Detector(CppDetectorApi):
     def datastream(self):
         """
         datastream [left|right] [0, 1]
-	    [Eiger] Enables or disables data streaming from left or/and right side of detector. 1 (enabled) by default.
+	    [Eiger] Enables or disables data streaming from left or/and right side of detector for 10GbE mode. 1 (enabled) by default.
         """
         result = {}
         for port in [defs.LEFT, defs.RIGHT]:

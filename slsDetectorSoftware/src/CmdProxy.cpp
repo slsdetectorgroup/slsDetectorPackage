@@ -1804,7 +1804,9 @@ std::string CmdProxy::DataStream(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[left|right] [0, 1]\n\t[Eiger] Enables or disables data "
-              "streaming from left or/and right side of detector. 1 (enabled) "
+              "streaming from left or/and right side of detector for 10 GbE "
+              "mode. "
+              "1 (enabled) "
               "by default."
            << '\n';
     } else if (action == defs::GET_ACTION) {

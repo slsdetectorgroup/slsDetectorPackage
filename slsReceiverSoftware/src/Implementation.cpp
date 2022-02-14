@@ -1466,6 +1466,21 @@ void Implementation::setTenGigaEnable(const bool b) {
 
         generalData->SetTenGigaEnable(b);
         SetupFifoStructure();
+
+        // datastream can be disabled/enabled only for Eiger 10GbE
+        if (detType == EIGER) {
+            if (!b) {
+                detectorDataStream[LEFT] = 1;
+                detectorDataStream[RIGHT] = 1;
+            } else {
+                detectorDataStream[LEFT] = detectorDataStream10GbE[LEFT];
+                detectorDataStream[RIGHT] = detectorDataStream10GbE[RIGHT];
+            }
+            LOG(logINFO) << "Detector datastream updated [Left: "
+                         << sls::ToString(detectorDataStream[LEFT])
+                         << ", Right: "
+                         << sls::ToString(detectorDataStream[RIGHT]) << "]";
+        }
     }
     LOG(logINFO) << "Ten Giga: " << (tengigaEnable ? "enabled" : "disabled");
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
@@ -1532,9 +1547,9 @@ bool Implementation::getDetectorDataStream(const portPosition port) const {
 void Implementation::setDetectorDataStream(const portPosition port,
                                            const bool enable) {
     int index = (port == LEFT ? 0 : 1);
-    detectorDataStream[index] = enable;
-    LOG(logINFO) << "Detector datastream (" << sls::ToString(port)
-                 << " Port): " << sls::ToString(detectorDataStream[index]);
+    detectorDataStream10GbE[index] = enable;
+    LOG(logINFO) << "Detector 10GbE datastream (" << sls::ToString(port)
+                 << " Port): " << sls::ToString(detectorDataStream10GbE[index]);
 }
 
 int Implementation::getReadNRows() const { return readNRows; }

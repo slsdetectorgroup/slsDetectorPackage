@@ -33,6 +33,7 @@ This document describes the differences between v6.1.0 and v6.0.0.
 - fixed datastream disabling for eiger. Its only available in 10g mode.
 - m3 server crash (vthrehsold)
 - allow vtrim to be interpolated for Eiger settings
+- m3 setThresholdEnergy and setAllThresholdEnergy was overwriting gaincaps with settings enum
 
 
 2. Resolved Issues

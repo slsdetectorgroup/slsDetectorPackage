@@ -3,6 +3,7 @@
 
 
 find_package(ROOT CONFIG REQUIRED  COMPONENTS Core Gui)
+find_package(TIFF REQUIRED)
 
 target_include_directories(ROOT::Core INTERFACE "${ROOT_INCLUDE_DIRS}")
 add_library(ROOT::Flags_CXX IMPORTED INTERFACE)
@@ -33,6 +34,7 @@ add_executable(ctbGui
     ctbAdcs.cpp
     ctbPattern.cpp
     ctbAcquisition.cpp
+    ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/tiffio/src/tiffIO.cpp
 )
 
 
@@ -41,6 +43,7 @@ target_include_directories(ctbGui PRIVATE
     ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/dataStructures
     ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/interpolations
     ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/
+    ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/tiffio/include/
 )
 
 # Headders needed for ROOT dictionary generation
@@ -77,6 +80,7 @@ set_target_properties(
 target_link_libraries(ctbGui PUBLIC 
     slsDetectorShared
     ctbRootLib
+    ${TIFF_LIBRARIES}
 )
 
 set_target_properties(ctbGui PROPERTIES

@@ -1388,10 +1388,6 @@ int ClientInterface::set_read_n_rows(Interface &socket) {
 }
 
 sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
-    if (arg.str() == LOCALHOST_IP) {
-        throw RuntimeError("Invalid destination udp ip. Change rx_hostname "
-                           "from localhost or change udp_dstip from auto?");
-    }
     LOG(logINFO) << "Received UDP IP: " << arg;
     // getting eth
     std::string eth = sls::IpToInterfaceName(arg.str());
@@ -1414,7 +1410,7 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
 
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
-    if (retval == 0) {
+    if (retval == 0 && arg.str() != LOCALHOST_IP) {
         throw RuntimeError("Failed to get udp mac adddress to listen to (eth:" +
                            eth + ", ip:" + arg.str() + ")\n");
     }
@@ -1430,10 +1426,6 @@ int ClientInterface::set_udp_ip(Interface &socket) {
 }
 
 sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
-    if (arg.str() == LOCALHOST_IP) {
-        throw RuntimeError("Invalid destination udp ip. Change rx_hostname "
-                           "from localhost or change udp_dstip from auto?");
-    }
     LOG(logINFO) << "Received UDP IP2: " << arg;
     // getting eth
     std::string eth = sls::IpToInterfaceName(arg.str());
@@ -1453,7 +1445,7 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
 
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
-    if (retval == 0) {
+    if (retval == 0 && arg.str() != LOCALHOST_IP) {
         throw RuntimeError(
             "Failed to get udp mac adddress2 to listen to (eth:" + eth +
             ", ip:" + arg.str() + ")\n");

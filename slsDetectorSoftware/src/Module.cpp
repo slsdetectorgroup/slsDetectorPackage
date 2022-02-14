@@ -1046,7 +1046,7 @@ void Module::setDestinationUDPIP(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address");
     }
-    if (ip.str() == LOCALHOST_IP) {
+    if (ip.str() == LOCALHOST_IP && !isVirtualDetectorServer()) {
         throw RuntimeError("Invalid destination udp ip. Change rx_hostname "
                            "from localhost or change udp_dstip from auto?");
     }
@@ -1069,8 +1069,8 @@ void Module::setDestinationUDPIP2(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address2");
     }
-    if (ip.str() == LOCALHOST_IP) {
-        throw RuntimeError("Invalid destination udp ip. Change rx_hostname "
+    if (ip.str() == LOCALHOST_IP && !isVirtualDetectorServer()) {
+        throw RuntimeError("Invalid destination udp ip2. Change rx_hostname "
                            "from localhost or change udp_dstip from auto?");
     }
     sendToDetector(F_SET_DEST_UDP_IP2, ip, nullptr);

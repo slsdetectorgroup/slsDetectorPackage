@@ -1675,7 +1675,7 @@ int setReadNRows(int value) {
     }
     if (isHardwareVersion2()) {
         LOG(logERROR, ("Could not set number of rows. Only available for "
-                    "Hardware Board version 2.0.\n"));
+                       "Hardware Board version 2.0.\n"));
         return FAIL;
     }
 
@@ -2175,7 +2175,7 @@ int getFlipRows() {
 void setFlipRows(int arg) {
     if (isHardwareVersion2()) {
         LOG(logERROR, ("Could not set flip rows. Only available for "
-                "Hardware Board version 2.0.\n"));
+                       "Hardware Board version 2.0.\n"));
         return;
     }
     if (arg >= 0) {

@@ -1410,7 +1410,7 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
 
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
-    if (retval == 0) {
+    if (retval == 0 && arg.str() != LOCALHOST_IP) {
         throw RuntimeError("Failed to get udp mac adddress to listen to (eth:" +
                            eth + ", ip:" + arg.str() + ")\n");
     }
@@ -1445,7 +1445,7 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
 
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
-    if (retval == 0) {
+    if (retval == 0 && arg.str() != LOCALHOST_IP) {
         throw RuntimeError(
             "Failed to get udp mac adddress2 to listen to (eth:" + eth +
             ", ip:" + arg.str() + ")\n");

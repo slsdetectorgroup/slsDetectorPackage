@@ -65,6 +65,8 @@
 #define DEFAULT_DET_MAC2 "00:aa:bb:cc:dd:ff"
 #define DEFAULT_DET_IP2  "129.129.202.46"
 
+#define LOCALHOST_IP "127.0.0.1"
+
 /** default maximum string length */
 #define MAX_STR_LENGTH   1000
 #define SHORT_STR_LENGTH 20
@@ -564,7 +566,7 @@ enum streamingInterface {
 #ifdef __cplusplus
 };
 
-//operators needed in ToString
+// operators needed in ToString
 inline slsDetectorDefs::streamingInterface
 operator|(const slsDetectorDefs::streamingInterface &a,
           const slsDetectorDefs::streamingInterface &b) {
@@ -578,8 +580,6 @@ operator&(const slsDetectorDefs::streamingInterface &a,
     return slsDetectorDefs::streamingInterface(static_cast<int32_t>(a) &
                                                static_cast<int32_t>(b));
 };
-
-
 
 #endif
 

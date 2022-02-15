@@ -34,6 +34,12 @@ This document describes the differences between v6.1.0 and v6.0.0.
 - m3 server crash (vthrehsold)
 - allow vtrim to be interpolated for Eiger settings
 - m3 setThresholdEnergy and setAllThresholdEnergy was overwriting gaincaps with settings enum
+- can set localhost with virtual server with minimum configuration: (hostname localhost, rx_hostname localhost, udp_dstip auto)
+- increases the progress according to listened index. (not processed index)
+- current frame index points to listened frame index (not processed index)
+- when in discard partial frames or empty mode, the frame number doesnt increase by 1, it increases to that number (so its faster)
+- file write disabled by default
+
 
 
 2. Resolved Issues

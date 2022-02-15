@@ -299,7 +299,7 @@ class Implementation : private virtual slsDetectorDefs {
     std::string filePath{"/"};
     std::string fileName{"run"};
     uint64_t fileIndex{0};
-    bool fileWriteEnable{true};
+    bool fileWriteEnable{false};
     bool masterFileWriteEnable{true};
     bool overwriteEnable{true};
     uint32_t framesPerFile{0};

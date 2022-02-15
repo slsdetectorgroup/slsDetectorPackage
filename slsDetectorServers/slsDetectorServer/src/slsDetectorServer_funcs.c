@@ -4855,12 +4855,14 @@ int is_udp_configured() {
             LOG(logWARNING, ("%s", configureMessage));
             return FAIL;
         }
+#ifndef VIRTUAL
         if (udpDetails[i].dstmac == 0) {
             sprintf(configureMessage,
                     "udp destination mac not configured [entry:%d]\n", i);
             LOG(logWARNING, ("%s", configureMessage));
             return FAIL;
         }
+#endif
 #if defined(JUNGFRAUD) || defined(GOTTHARD2D)
         if (getNumberofUDPInterfaces() == 2) {
             if (udpDetails[i].srcip2 == 0) {
@@ -4881,12 +4883,14 @@ int is_udp_configured() {
                 LOG(logWARNING, ("%s", configureMessage));
                 return FAIL;
             }
+#ifndef VIRTUAL
             if (udpDetails[i].dstmac2 == 0) {
                 sprintf(configureMessage,
                         "udp destination mac2 not configured [entry:%d]\n", i);
                 LOG(logWARNING, ("%s", configureMessage));
                 return FAIL;
             }
+#endif
         }
 #endif
     }

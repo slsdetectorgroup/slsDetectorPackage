@@ -37,6 +37,8 @@ const enum detectorType myDetectorType = GOTTHARD2;
 const enum detectorType myDetectorType = GENERIC;
 #endif
 
+#define LOCALHOSTIP_INT 2130706433
+
 // Global variables from communication_funcs
 extern int lockStatus;
 extern uint32_t lastClientIP;
@@ -119,10 +121,11 @@ int printSocketReadError() {
 }
 
 void init_detector() {
+    memset(udpDetails, 0, sizeof(udpDetails));
 #ifdef VIRTUAL
     LOG(logINFO, ("This is a VIRTUAL detector\n"));
+    udpDetails[0].srcip = LOCALHOSTIP_INT;
 #endif
-    memset(udpDetails, 0, sizeof(udpDetails));
     udpDetails[0].srcport = DEFAULT_UDP_SRC_PORTNO;
     udpDetails[0].dstport = DEFAULT_UDP_DST_PORTNO;
 #ifdef EIGERD

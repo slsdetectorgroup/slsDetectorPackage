@@ -387,7 +387,7 @@ void Detector::setDynamicRange(int value) {
 std::vector<int> Detector::getDynamicRangeList() const {
     switch (getDetectorType().squash()) {
     case defs::EIGER:
-        return std::vector<int>{4, 8, 16, 32};
+        return std::vector<int>{4, 8, 12, 16, 32};
     case defs::MYTHEN3:
         return std::vector<int>{8, 16, 32};
     default:

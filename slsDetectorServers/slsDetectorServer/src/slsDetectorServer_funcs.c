@@ -2811,6 +2811,9 @@ int set_dynamic_range(int file_des) {
 #endif
 #if defined(EIGERD) || defined(MYTHEN3D)
         case 8:
+#ifdef EIGERD
+        case 12:
+#endif
         case 16:
         case 32:
 #endif

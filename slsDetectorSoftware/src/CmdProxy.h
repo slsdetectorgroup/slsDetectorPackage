@@ -1109,7 +1109,6 @@ class CmdProxy {
     /* acquisition parameters */
     std::string Acquire(int action);
     std::string Exptime(int action);
-    std::string DynamicRange(int action);
     std::string ReadoutSpeed(int action);
     std::string Adcphase(int action);
     std::string Dbitphase(int action);
@@ -1328,7 +1327,7 @@ class CmdProxy {
         dr, getDynamicRange, setDynamicRange, StringTo<int>,
         "[value]\n\tDynamic Range or number of bits per "
         "pixel in detector.\n\t"
-        "[Eiger] Options: 4, 8, 16, 32. If set to 32, also sets "
+        "[Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets "
         "clkdivider to 2, else to 0.\n\t"
         "[Mythen3] Options: 8, 16, 32\n\t"
         "[Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16");

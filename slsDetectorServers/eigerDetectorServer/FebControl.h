@@ -63,7 +63,7 @@ int Feb_Control_SendSoftwareTrigger();
 int Feb_Control_SoftwareTrigger(int block);
 
 // parameters
-int Feb_Control_SetDynamicRange(unsigned int four_eight_sixteen_or_thirtytwo);
+int Feb_Control_SetDynamicRange(unsigned int dr);
 unsigned int Feb_Control_GetDynamicRange();
 int Feb_Control_SetReadoutSpeed(unsigned int readout_speed);
 int Feb_Control_SetReadoutMode(unsigned int readout_mode);

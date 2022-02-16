@@ -1169,37 +1169,36 @@ int Feb_Control_SoftwareTrigger(int block) {
 }
 
 // parameters
-int Feb_Control_SetDynamicRange(unsigned int four_eight_sixteen_or_thirtytwo) {
+int Feb_Control_SetDynamicRange(unsigned int dr) {
     static unsigned int everything_but_bit_mode = DAQ_STATIC_BIT_PROGRAM |
                                                   DAQ_STATIC_BIT_CHIP_TEST |
                                                   DAQ_STATIC_BIT_ROTEST;
-    if (four_eight_sixteen_or_thirtytwo == 4) {
+    if (dr == 4) {
         Feb_Control_staticBits =
             DAQ_STATIC_BIT_M4 |
             (Feb_Control_staticBits &
              everything_but_bit_mode); // leave test bits in currernt state
         Feb_Control_subFrameMode &= ~DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING;
-    } else if (four_eight_sixteen_or_thirtytwo == 8) {
+    } else if (dr == 8) {
         Feb_Control_staticBits = DAQ_STATIC_BIT_M8 | (Feb_Control_staticBits &
                                                       everything_but_bit_mode);
         Feb_Control_subFrameMode &= ~DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING;
-    } else if (four_eight_sixteen_or_thirtytwo == 16) {
+    } else if (dr == 16 || dr == 12) {
         Feb_Control_staticBits = DAQ_STATIC_BIT_M12 | (Feb_Control_staticBits &
                                                        everything_but_bit_mode);
         Feb_Control_subFrameMode &= ~DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING;
-    } else if (four_eight_sixteen_or_thirtytwo == 32) {
+    } else if (dr == 32) {
         Feb_Control_staticBits = DAQ_STATIC_BIT_M12 | (Feb_Control_staticBits &
                                                        everything_but_bit_mode);
         Feb_Control_subFrameMode |= DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING;
     } else {
-        LOG(logERROR, ("dynamic range (%d) not valid, not setting bit mode.\n",
-                       four_eight_sixteen_or_thirtytwo));
+        LOG(logERROR,
+            ("dynamic range (%d) not valid, not setting bit mode.\n", dr));
         LOG(logINFO, ("Set dynamic range int must equal 4,8 16, or 32.\n"));
         return 0;
     }
 
-    LOG(logINFO,
-        ("Dynamic range set to %d\n", four_eight_sixteen_or_thirtytwo));
+    LOG(logINFO, ("Dynamic range set to %d\n", dr));
     return 1;
 }
 

@@ -4861,6 +4861,7 @@ int is_udp_configured() {
             LOG(logWARNING, ("%s", configureMessage));
             return FAIL;
         }
+        // virtual: no check (can be eth name: lo, ip: 127.0.0.1)
 #ifndef VIRTUAL
         if (udpDetails[i].dstmac == 0) {
             sprintf(configureMessage,

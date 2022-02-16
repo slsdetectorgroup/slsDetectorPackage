@@ -112,6 +112,7 @@ void HDF5DataFile::CreateFirstHDF5DataFile(
     udpPortNumber_ = udpPortNumber;
 
     switch (dynamicRange_) {
+    case 12:
     case 16:
         dataType_ = PredType::STD_U16LE;
         break;

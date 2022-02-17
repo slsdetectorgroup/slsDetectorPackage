@@ -823,8 +823,9 @@ int readRegister(uint32_t offset, uint32_t *retval) {
 int setDynamicRange(int dr) {
     // setting dr
     if (dr > 0) {
-        LOG(logDEBUG1, ("Setting dynamic range: %d\n", dr));
-#ifndef VIRTUAL
+#ifdef VIRTUAL
+        LOG(logINFO, ("Setting dynamic range: %d\n", dr));
+#else
         sharedMemory_lockLocalLink();
         if (Feb_Control_SetDynamicRange(dr)) {
             if (!Beb_SetUpTransferParameters(dr)) {
@@ -2321,7 +2322,7 @@ void *start_timer(void *arg) {
     const int maxRows = MAX_ROWS_PER_READOUT;
     const int packetsPerFrame = (maxPacketsPerFrame * readNRows) / maxRows;
 
-    LOG(logDEBUG1,
+    LOG(logDEBUG,
         (" dr:%d\n bytesperpixel:%f\n tgenable:%d\n datasize:%d\n "
          "packetsize:%d\n maxnumpackes:%d\n npixelsx:%d\n databytes:%d\n",
          dr, bytesPerPixel, tgEnable, datasize, packetsize, maxPacketsPerFrame,
@@ -2334,15 +2335,18 @@ void *start_timer(void *arg) {
         int npixels = NCHAN * NCHIP;
         const int pixelsPerPacket = (double)datasize / bytesPerPixel;
         int pixelVal = 0;
-        if (dr == 4) {
+        if (dr == 4 || dr == 12) {
             npixels /= 2;
         }
         LOG(logDEBUG1,
-            ("pixels:%d pixelsperpacket:%d\n", npixels, pixelsPerPacket));
+            ("npixels:%d pixelsperpacket:%d\n", npixels, pixelsPerPacket));
         for (int i = 0; i < npixels; ++i) {
+            // not used by 12 bit mode
             if (i > 0 && i % pixelsPerPacket == 0) {
                 ++pixelVal;
             }
+
+            uint8_t temp_12 = 0;
             switch (dr) {
             case 4:
                 *((uint8_t *)(imageData + i)) =
@@ -2356,6 +2360,31 @@ void *start_timer(void *arg) {
             case 8:
                 *((uint8_t *)(imageData + i)) =
                     eiger_virtual_test_mode ? 0xFE : (uint8_t)pixelVal;
+                break;
+            case 12:
+                // first 12 bit pixel
+                // first 8 byte
+                *((uint8_t *)(imageData + (i * 3) * sizeof(uint8_t))) =
+                    eiger_virtual_test_mode ? 0xFE : (uint8_t)(i & 0xFF);
+
+                // second 8 byte (first nibble)
+                *((uint8_t *)(imageData + (i * 3 + 1) * sizeof(uint8_t))) =
+                    eiger_virtual_test_mode ? 0xF : (uint8_t)((i >> 8) & 0xF);
+                temp_12 =
+                    *((uint8_t *)(imageData + (i * 3 + 1) * sizeof(uint8_t)));
+
+                // second 12bit pixel
+                ++i;
+
+                // second 8 byte (second nibble)
+                *((uint8_t *)(imageData + (i * 3 + 1) * sizeof(uint8_t))) =
+                    eiger_virtual_test_mode ? 0xE
+                                            : temp_12 | ((uint8_t)(i & 0xF));
+
+                // third byte
+                *((uint8_t *)(imageData + (i * 3 + 2) * sizeof(uint8_t))) =
+                    eiger_virtual_test_mode ? 0xFF : (uint8_t)((i >> 4) & 0xFF);
+
                 break;
             case 16:
                 *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
@@ -2433,9 +2462,27 @@ void *start_timer(void *arg) {
                 // fill data
                 int dstOffset = sizeof(sls_detector_header);
                 int dstOffset2 = sizeof(sls_detector_header);
-                {
-                    for (int psize = 0; psize < datasize; psize += npixelsx) {
+                if (dr == 12) {
+                    // multiple of 768,1024,4096
+                    int copysize = 256;
+                    for (int psize = 0; psize < datasize; psize += copysize) {
+                        memcpy(packetData + dstOffset, imageData + srcOffset,
+                               copysize);
+                        memcpy(packetData2 + dstOffset2, imageData + srcOffset2,
+                               copysize);
+                        srcOffset += copysize;
+                        srcOffset2 += copysize;
+                        dstOffset += copysize;
+                        dstOffset2 += copysize;
 
+                        // reached 1 row (quarter module)
+                        if ((srcOffset % npixelsx) == 0) {
+                            srcOffset += npixelsx;
+                            srcOffset2 += npixelsx;
+                        }
+                    }
+                } else {
+                    for (int psize = 0; psize < datasize; psize += npixelsx) {
                         if (dr == 32 && tgEnable == 0) {
                             memcpy(packetData + dstOffset,
                                    imageData + srcOffset, npixelsx / 2);

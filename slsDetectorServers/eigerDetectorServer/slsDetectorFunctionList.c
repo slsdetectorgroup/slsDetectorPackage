@@ -2347,18 +2347,19 @@ void *start_timer(void *arg) {
         int npixels = NCHAN * NCHIP;
         const int pixelsPerPacket = (double)datasize / bytesPerPixel;
         int pixelVal = 0;
-        if (dr == 4 || dr == 12) {
+        if (dr == 4) {
             npixels /= 2;
         }
         LOG(logDEBUG1,
             ("npixels:%d pixelsperpacket:%d\n", npixels, pixelsPerPacket));
+        uint8_t *source = (uint8_t *)imageData;
         for (int i = 0; i < npixels; ++i) {
-            // not used by 12 bit mode
             if (i > 0 && i % pixelsPerPacket == 0) {
                 ++pixelVal;
             }
 
-            uint8_t temp_12 = 0;
+            uint8_t temp = 0;
+
             switch (dr) {
             case 4:
                 *((uint8_t *)(imageData + i)) =
@@ -2376,26 +2377,29 @@ void *start_timer(void *arg) {
             case 12:
                 // first 12 bit pixel
                 // first 8 byte
-                *((uint8_t *)(imageData + (i * 3) * sizeof(uint8_t))) =
-                    eiger_virtual_test_mode ? 0xFE : (uint8_t)(i & 0xFF);
+                *source =
+                    eiger_virtual_test_mode ? 0xFE : (uint8_t)(pixelVal & 0xFF);
+                ++source;
 
                 // second 8 byte (first nibble)
-                *((uint8_t *)(imageData + (i * 3 + 1) * sizeof(uint8_t))) =
-                    eiger_virtual_test_mode ? 0xF : (uint8_t)((i >> 8) & 0xF);
-                temp_12 =
-                    *((uint8_t *)(imageData + (i * 3 + 1) * sizeof(uint8_t)));
+                temp = eiger_virtual_test_mode
+                           ? 0xF
+                           : (uint8_t)((pixelVal >> 8) & 0xF);
 
                 // second 12bit pixel
                 ++i;
 
                 // second 8 byte (second nibble)
-                *((uint8_t *)(imageData + (i * 3 + 1) * sizeof(uint8_t))) =
-                    eiger_virtual_test_mode ? 0xE
-                                            : temp_12 | ((uint8_t)(i & 0xF));
+                *source = eiger_virtual_test_mode
+                              ? 0xE
+                              : temp | ((uint8_t)(pixelVal & 0xF) << 4);
+                ++source;
 
                 // third byte
-                *((uint8_t *)(imageData + (i * 3 + 2) * sizeof(uint8_t))) =
-                    eiger_virtual_test_mode ? 0xFF : (uint8_t)((i >> 4) & 0xFF);
+                *source = eiger_virtual_test_mode
+                              ? 0xFF
+                              : (uint8_t)((pixelVal >> 4) & 0xFF);
+                ++source;
 
                 break;
             case 16:

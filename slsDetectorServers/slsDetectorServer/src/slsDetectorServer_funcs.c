@@ -2830,7 +2830,7 @@ int set_dynamic_range(int file_des) {
             }
 
             // get
-            if (ret == OK {
+            if (ret == OK) {
                 ret = getDynamicRange(&retval);
                 if (ret == FAIL) {
                     strcpy(mess, "Could not get dynamic range\n");

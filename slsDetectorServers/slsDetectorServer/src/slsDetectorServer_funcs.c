@@ -2821,14 +2821,20 @@ int set_dynamic_range(int file_des) {
     defined(MOENCHD) || defined(GOTTHARD2D)
         case 16:
 #endif
-            retval = setDynamicRange(dr);
-            LOG(logDEBUG1, ("Dynamic range: %d\n", retval));
-            if (retval == -1) {
-                ret = FAIL;
-                sprintf(mess, "Could not get dynamic range.\n");
+            ret = setDynamicRange(dr);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set dynamic range to %d\n", dr);
                 LOG(logERROR, (mess));
+            } else {
+                ret = getDynamicRange(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get dynamic range\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    LOG(logDEBUG1, ("Dynamic range: %d\n", retval));
+                    validate(&ret, mess, dr, retval, "set dynamic range", DEC);
+                }
             }
-            validate(&ret, mess, dr, retval, "set dynamic range", DEC);
             break;
         default:
             modeNotImplemented("Dynamic range", dr);
@@ -4649,21 +4655,28 @@ int set_read_n_rows(int file_des) {
             LOG(logERROR, (mess));
         } else {
 #ifdef EIGERD
-            int dr = setDynamicRange(GET_FLAG);
-            int isTenGiga = enableTenGigabitEthernet(GET_FLAG);
-            unsigned int maxnl = MAX_ROWS_PER_READOUT;
-            unsigned int maxnp = (isTenGiga ? 4 : 16) * dr;
-            if ((arg * maxnp) % maxnl) {
-                ret = FAIL;
-                sprintf(mess,
+            int dr = 0;
+            ret = getDynamicRange(&dr);
+            if (ret == FAIL) {
+                strcpy(mess,
+                       "Could not read n rows (failed to get dynamic range)\n");
+                LOG(logERROR, (mess));
+            } else {
+                int isTenGiga = enableTenGigabitEthernet(GET_FLAG);
+                unsigned int maxnl = MAX_ROWS_PER_READOUT;
+                unsigned int maxnp = (isTenGiga ? 4 : 16) * dr;
+                if ((arg * maxnp) % maxnl) {
+                    ret = FAIL;
+                    sprintf(
+                        mess,
                         "Could not set number of rows to %d. For %d bit "
                         "mode and 10 giga %s, (%d (num "
                         "rows) x %d (max num packets for this mode)) must be "
                         "divisible by %d\n",
                         arg, dr, isTenGiga ? "enabled" : "disabled", arg, maxnp,
                         maxnl);
-                LOG(logERROR, (mess));
-            } else
+                    LOG(logERROR, (mess));
+                } else
 #elif JUNGFRAUD
             if ((check_detector_idle("set number of rows") == OK) &&
                 (arg % READ_N_ROWS_MULTIPLE != 0)) {
@@ -4682,20 +4695,22 @@ int set_read_n_rows(int file_des) {
                 LOG(logERROR, (mess));
             } else
 #endif
-            {
-                if (setReadNRows(arg) == FAIL) {
-                    ret = FAIL;
-                    sprintf(mess, "Could not set number of rows to %d.\n", arg);
-                    LOG(logERROR, (mess));
-                } else {
-                    int retval = getReadNRows();
-                    if (arg != retval) {
+                {
+                    if (setReadNRows(arg) == FAIL) {
                         ret = FAIL;
-                        sprintf(mess,
-                                "Could not set number of rows. Set %d, but "
-                                "read %d\n",
-                                retval, arg);
+                        sprintf(mess, "Could not set number of rows to %d.\n",
+                                arg);
                         LOG(logERROR, (mess));
+                    } else {
+                        int retval = getReadNRows();
+                        if (arg != retval) {
+                            ret = FAIL;
+                            sprintf(mess,
+                                    "Could not set number of rows. Set %d, but "
+                                    "read %d\n",
+                                    retval, arg);
+                            LOG(logERROR, (mess));
+                        }
                     }
                 }
             }
@@ -7111,7 +7126,10 @@ int get_receiver_parameters(int file_des) {
     }
 
     // dynamic range
-    i32 = setDynamicRange(GET_FLAG);
+    ret = getDynamicRange(&i32);
+    if (ret == FAIL) {
+        i32 = 0;
+    }
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
         return printSocketReadError();

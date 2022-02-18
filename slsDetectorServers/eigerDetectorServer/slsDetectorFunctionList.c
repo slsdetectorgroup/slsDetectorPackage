@@ -821,30 +821,38 @@ int readRegister(uint32_t offset, uint32_t *retval) {
 /* set parameters -  dr, roi */
 
 int setDynamicRange(int dr) {
-    // setting dr
-    if (dr > 0) {
-#ifdef VIRTUAL
-        LOG(logINFO, ("Setting dynamic range: %d\n", dr));
-#else
-        sharedMemory_lockLocalLink();
-        if (Feb_Control_SetDynamicRange(dr)) {
-            if (!Beb_SetUpTransferParameters(dr)) {
-                LOG(logERROR, ("Could not set bit mode in the back end\n"));
-                sharedMemory_unlockLocalLink();
-                return eiger_dynamicrange;
-            }
-        }
-        sharedMemory_unlockLocalLink();
-#endif
-        eiger_dynamicrange = dr;
+    if (dr <= 0) {
+        return FAIL;
     }
-    // getting dr
-#ifndef VIRTUAL
+#ifdef VIRTUAL
+    LOG(logINFO, ("Setting dynamic range: %d\n", dr));
+#else
     sharedMemory_lockLocalLink();
-    eiger_dynamicrange = Feb_Control_GetDynamicRange();
+    if (Feb_Control_SetDynamicRange(dr)) {
+        if (!Beb_SetUpTransferParameters(dr)) {
+            LOG(logERROR, ("Could not set bit mode in the back end\n"));
+            sharedMemory_unlockLocalLink();
+            return eiger_dynamicrange;
+        }
+    }
     sharedMemory_unlockLocalLink();
 #endif
-    return eiger_dynamicrange;
+    eiger_dynamicrange = dr;
+    return OK;
+}
+
+int getDynamicRange(int *retval) {
+#ifdef VIRTUAL
+    *retval = eiger_dynamicrange;
+#else
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_GetDynamicRange(&eiger_dynamicrange)) {
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
+#endif
+    return OK;
 }
 
 /* parameters - readout */
@@ -1159,6 +1167,7 @@ int setModule(sls_detector_module myMod, char *mess) {
 
         // if quad, set M8 and PROGRAM manually
         if (!Feb_Control_SetChipSignalsToTrimQuad(1)) {
+            sharedMemory_unlockLocalLink();
             return FAIL;
         }
 
@@ -1171,6 +1180,7 @@ int setModule(sls_detector_module myMod, char *mess) {
 
             // if quad, reset M8 and PROGRAM manually
             if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
+                sharedMemory_unlockLocalLink();
                 return FAIL;
             }
 
@@ -1180,6 +1190,7 @@ int setModule(sls_detector_module myMod, char *mess) {
 
         // if quad, reset M8 and PROGRAM manually
         if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
+            sharedMemory_unlockLocalLink();
             return FAIL;
         }
 
@@ -1924,7 +1935,8 @@ int setRateCorrection(
     else if (custom_tau_in_nsec == -1)
         custom_tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
 
-    int dr = Feb_Control_GetDynamicRange();
+    int dr = eiger_dynamicrange;
+
     // get period = subexptime if 32bit , else period = exptime if 16 bit
     int64_t actual_period =
         Feb_Control_GetSubFrameExposureTime(); // already in nsec
@@ -2780,9 +2792,9 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
 int calculateDataBytes() {
     if (send_to_ten_gig)
-        return setDynamicRange(-1) * ONE_GIGA_CONSTANT * TEN_GIGA_BUFFER_SIZE;
+        return eiger_dynamicrange * ONE_GIGA_CONSTANT * TEN_GIGA_BUFFER_SIZE;
     else
-        return setDynamicRange(-1) * TEN_GIGA_CONSTANT * ONE_GIGA_BUFFER_SIZE;
+        return eiger_dynamicrange * TEN_GIGA_CONSTANT * ONE_GIGA_BUFFER_SIZE;
 }
 
 int getTotalNumberOfChannels() {

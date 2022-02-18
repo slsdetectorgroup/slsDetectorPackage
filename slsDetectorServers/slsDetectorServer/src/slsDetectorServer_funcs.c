@@ -4657,26 +4657,25 @@ int set_read_n_rows(int file_des) {
 #ifdef EIGERD
             int dr = 0;
             ret = getDynamicRange(&dr);
+            int isTenGiga = enableTenGigabitEthernet(GET_FLAG);
+            unsigned int maxnl = MAX_ROWS_PER_READOUT;
+            unsigned int maxnp = (isTenGiga ? 4 : 16) * dr;
+            // get dr fail
             if (ret == FAIL) {
                 strcpy(mess,
                        "Could not read n rows (failed to get dynamic range)\n");
                 LOG(logERROR, (mess));
-            } else {
-                int isTenGiga = enableTenGigabitEthernet(GET_FLAG);
-                unsigned int maxnl = MAX_ROWS_PER_READOUT;
-                unsigned int maxnp = (isTenGiga ? 4 : 16) * dr;
-                if ((arg * maxnp) % maxnl) {
-                    ret = FAIL;
-                    sprintf(
-                        mess,
+            } else if ((arg * maxnp) % maxnl) {
+                ret = FAIL;
+                sprintf(mess,
                         "Could not set number of rows to %d. For %d bit "
                         "mode and 10 giga %s, (%d (num "
                         "rows) x %d (max num packets for this mode)) must be "
                         "divisible by %d\n",
                         arg, dr, isTenGiga ? "enabled" : "disabled", arg, maxnp,
                         maxnl);
-                    LOG(logERROR, (mess));
-                } else
+                LOG(logERROR, (mess));
+            } else
 #elif JUNGFRAUD
             if ((check_detector_idle("set number of rows") == OK) &&
                 (arg % READ_N_ROWS_MULTIPLE != 0)) {
@@ -4695,22 +4694,20 @@ int set_read_n_rows(int file_des) {
                 LOG(logERROR, (mess));
             } else
 #endif
-                {
-                    if (setReadNRows(arg) == FAIL) {
+            {
+                if (setReadNRows(arg) == FAIL) {
+                    ret = FAIL;
+                    sprintf(mess, "Could not set number of rows to %d.\n", arg);
+                    LOG(logERROR, (mess));
+                } else {
+                    int retval = getReadNRows();
+                    if (arg != retval) {
                         ret = FAIL;
-                        sprintf(mess, "Could not set number of rows to %d.\n",
-                                arg);
+                        sprintf(mess,
+                                "Could not set number of rows. Set %d, but "
+                                "read %d\n",
+                                retval, arg);
                         LOG(logERROR, (mess));
-                    } else {
-                        int retval = getReadNRows();
-                        if (arg != retval) {
-                            ret = FAIL;
-                            sprintf(mess,
-                                    "Could not set number of rows. Set %d, but "
-                                    "read %d\n",
-                                    retval, arg);
-                            LOG(logERROR, (mess));
-                        }
                     }
                 }
             }

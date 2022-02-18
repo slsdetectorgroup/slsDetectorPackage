@@ -754,6 +754,7 @@ int setDynamicRange(int dr) {
     bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_DYNAMIC_RANGE_MSK);
     bus_w(CONFIG_REG, bus_r(CONFIG_REG) | regval);
     updatePacketizing();
+    return OK;
 }
 
 int getDynamicRange(int *retval) {

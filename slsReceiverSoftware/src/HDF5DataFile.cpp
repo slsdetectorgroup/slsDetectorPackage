@@ -251,11 +251,11 @@ void HDF5DataFile::WriteToFile(char *buffer, const int buffersize,
 
 void HDF5DataFile::Convert12to16Bit(uint16_t *dst, uint8_t *src) {
     for (int i = 0; i < EIGER_NUM_PIXELS; ++i) {
-        *dst = (*src++ & 0xFF);
-        *dst++ |= ((*src & 0xF) << 8);
+        *dst = (uint16_t)(*src++ & 0xFF);
+        *dst++ |= (uint16_t)((*src & 0xF) << 8u);
         ++i;
-        *dst = ((*src++ & 0xF0) >> 4);
-        *dst++ |= ((*src++ & 0xFF) << 4);
+        *dst = (uint16_t)((*src++ & 0xF0) >> 4u);
+        *dst++ |= (uint16_t)((*src++ & 0xFF) << 4u);
     }
 }
 

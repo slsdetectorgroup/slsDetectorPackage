@@ -2352,13 +2352,11 @@ void *start_timer(void *arg) {
         }
         LOG(logDEBUG1,
             ("npixels:%d pixelsperpacket:%d\n", npixels, pixelsPerPacket));
-        uint8_t *source = (uint8_t *)imageData;
+        uint8_t *src = (uint8_t *)imageData;
         for (int i = 0; i < npixels; ++i) {
             if (i > 0 && i % pixelsPerPacket == 0) {
                 ++pixelVal;
             }
-
-            uint8_t temp = 0;
 
             switch (dr) {
             case 4:
@@ -2375,29 +2373,28 @@ void *start_timer(void *arg) {
                     eiger_virtual_test_mode ? 0xFE : (uint8_t)pixelVal;
                 break;
             case 12:
-                // first 12 bit pixel
-                // first 8 byte
-                *source = eiger_virtual_test_mode ? 0xFE : (uint8_t)(i & 0xFF);
-                ++source;
-
-                // second 8 byte (first nibble)
-                temp =
-                    eiger_virtual_test_mode ? 0xF : (uint8_t)((i >> 8) & 0xF);
-
-                // second 12bit pixel
-                ++i;
-
-                // second 8 byte (second nibble)
-                *source = eiger_virtual_test_mode
-                              ? 0xE
-                              : temp | ((uint8_t)(i & 0xF) << 4);
-                ++source;
-
-                // third byte
-                *source =
-                    eiger_virtual_test_mode ? 0xFF : (uint8_t)((i >> 4) & 0xFF);
-                ++source;
-
+                if (eiger_virtual_test_mode) {
+                    // first 12 bit pixel
+                    // first 8 byte
+                    *src++ = 0xFE;
+                    // second 12bit pixel
+                    ++i;
+                    // second 8 byte
+                    *src++ = 0xEF;
+                    // third byte
+                    *src++ = 0xFF;
+                } else {
+                    // first 12 bit pixel
+                    // first 8 byte
+                    *src++ = (uint8_t)(i & 0xFF);
+                    // second 8 byte (first nibble)
+                    *src = (uint8_t)((i++ >> 8u) & 0xF);
+                    // second 12bit pixel
+                    // second 8 byte (second nibble)
+                    *src++ |= ((uint8_t)(i & 0xF) << 4u);
+                    // third byte
+                    *src++ = (uint8_t)((i >> 4u) & 0xFF);
+                }
                 break;
             case 16:
                 *((uint16_t *)(imageData + i * sizeof(uint16_t))) =

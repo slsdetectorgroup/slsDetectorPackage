@@ -261,6 +261,7 @@ void HDF5DataFile::Convert12to16Bit(uint16_t *dst, uint8_t *src) {
 
 void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
                                  char *buffer) {
+    // expand 12 bit to 16 bits
     char *revBuffer = buffer;
     if (dynamicRange_ == 12) {
         revBuffer = (char *)malloc(EIGER_16_BIT_IMAGE_SIZE);
@@ -270,7 +271,6 @@ void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
                                     std::to_string(index_));
         }
         Convert12to16Bit((uint16_t *)revBuffer, (uint8_t *)buffer);
-        free(revBuffer);
     }
 
     std::lock_guard<std::mutex> lock(*hdf5Lib_);
@@ -291,7 +291,13 @@ void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
         DataSpace memspace(2, dims2);
         dataSet_->write(revBuffer, dataType_, memspace, *dataSpace_);
         memspace.close();
+        if (dynamicRange_ == 12) {
+            free(revBuffer);
+        }
     } catch (const Exception &error) {
+        if (dynamicRange_ == 12) {
+            free(revBuffer);
+        }
         LOG(logERROR) << "Could not write to file in object " << index_;
         error.printErrorStack();
         throw sls::RuntimeError("Could not write to file in object " +

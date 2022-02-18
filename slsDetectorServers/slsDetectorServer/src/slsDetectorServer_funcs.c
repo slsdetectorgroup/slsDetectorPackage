@@ -2821,11 +2821,16 @@ int set_dynamic_range(int file_des) {
     defined(MOENCHD) || defined(GOTTHARD2D)
         case 16:
 #endif
-            ret = setDynamicRange(dr);
-            if (ret == FAIL) {
-                sprintf(mess, "Could not set dynamic range to %d\n", dr);
-                LOG(logERROR, (mess));
-            } else {
+            if (dr >= 0) {
+                ret = setDynamicRange(dr);
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not set dynamic range to %d\n", dr);
+                    LOG(logERROR, (mess));
+                }
+            }
+
+            // get
+            if (ret == OK {
                 ret = getDynamicRange(&retval);
                 if (ret == FAIL) {
                     strcpy(mess, "Could not get dynamic range\n");

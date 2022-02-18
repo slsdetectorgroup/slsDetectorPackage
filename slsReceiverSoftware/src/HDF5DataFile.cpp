@@ -249,8 +249,30 @@ void HDF5DataFile::WriteToFile(char *buffer, const int buffersize,
     WriteParameterDatasets(currentFrameNumber, (sls_receiver_header *)(buffer));
 }
 
+void HDF5DataFile::Convert12to16Bit(uint16_t *dst, uint8_t *src) {
+    for (int i = 0; i < EIGER_NUM_PIXELS; ++i) {
+        *dst = (*src++ & 0xFF);
+        *dst++ |= ((*src & 0xF) << 8);
+        ++i;
+        *dst = ((*src++ & 0xF0) >> 4);
+        *dst++ |= ((*src++ & 0xFF) << 4);
+    }
+}
+
 void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
                                  char *buffer) {
+    char *revBuffer = buffer;
+    if (dynamicRange_ == 12) {
+        revBuffer = (char *)malloc(EIGER_16_BIT_IMAGE_SIZE);
+        if (revBuffer == nullptr) {
+            throw sls::RuntimeError("Could not allocate memory for 12 bit to "
+                                    "16 bit conversion in object " +
+                                    std::to_string(index_));
+        }
+        Convert12to16Bit((uint16_t *)revBuffer, (uint8_t *)buffer);
+        free(revBuffer);
+    }
+
     std::lock_guard<std::mutex> lock(*hdf5Lib_);
 
     uint64_t nDimx =
@@ -267,7 +289,7 @@ void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
 
         dataSpace_->selectHyperslab(H5S_SELECT_SET, count, start);
         DataSpace memspace(2, dims2);
-        dataSet_->write(buffer, dataType_, memspace, *dataSpace_);
+        dataSet_->write(revBuffer, dataType_, memspace, *dataSpace_);
         memspace.close();
     } catch (const Exception &error) {
         LOG(logERROR) << "Could not write to file in object " << index_;

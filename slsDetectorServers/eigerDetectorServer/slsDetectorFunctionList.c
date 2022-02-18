@@ -2377,14 +2377,12 @@ void *start_timer(void *arg) {
             case 12:
                 // first 12 bit pixel
                 // first 8 byte
-                *source =
-                    eiger_virtual_test_mode ? 0xFE : (uint8_t)(pixelVal & 0xFF);
+                *source = eiger_virtual_test_mode ? 0xFE : (uint8_t)(i & 0xFF);
                 ++source;
 
                 // second 8 byte (first nibble)
-                temp = eiger_virtual_test_mode
-                           ? 0xF
-                           : (uint8_t)((pixelVal >> 8) & 0xF);
+                temp =
+                    eiger_virtual_test_mode ? 0xF : (uint8_t)((i >> 8) & 0xF);
 
                 // second 12bit pixel
                 ++i;
@@ -2392,13 +2390,12 @@ void *start_timer(void *arg) {
                 // second 8 byte (second nibble)
                 *source = eiger_virtual_test_mode
                               ? 0xE
-                              : temp | ((uint8_t)(pixelVal & 0xF) << 4);
+                              : temp | ((uint8_t)(i & 0xF) << 4);
                 ++source;
 
                 // third byte
-                *source = eiger_virtual_test_mode
-                              ? 0xFF
-                              : (uint8_t)((pixelVal >> 4) & 0xFF);
+                *source =
+                    eiger_virtual_test_mode ? 0xFF : (uint8_t)((i >> 4) & 0xFF);
                 ++source;
 
                 break;

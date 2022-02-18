@@ -846,7 +846,7 @@ int getDynamicRange(int *retval) {
     *retval = eiger_dynamicrange;
 #else
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_GetDynamicRange(&retval)) {
+    if (!Feb_Control_GetDynamicRange(retval)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }

@@ -1,7 +1,7 @@
-SLS Detector Package Minor Release 6.1.0 released on 25.11.2021
+SLS Detector Package Minor Release 7.0.0 released on 25.11.2021
 ===============================================================
 
-This document describes the differences between v6.1.0 and v6.0.0.   
+This document describes the differences between v7.0.0 and v6.x.x   
 
 
 
@@ -39,7 +39,7 @@ This document describes the differences between v6.1.0 and v6.0.0.
 - current frame index points to listened frame index (not processed index)
 - when in discard partial frames or empty mode, the frame number doesnt increase by 1, it increases to that number (so its faster)
 - file write disabled by default
-
+- start non blocking acquisition at modular level
 
 
 2. Resolved Issues

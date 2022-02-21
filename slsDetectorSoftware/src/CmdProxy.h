@@ -1515,7 +1515,7 @@ class CmdProxy {
         "\n\tStops receiver listener for detector data packets and closes "
         "current data file (if file write enabled).");
 
-    EXECUTE_SET_COMMAND_NOID(
+    EXECUTE_SET_COMMAND(
         start, startDetector,
         "\n\tStarts detector acquisition. Status changes to RUNNING or WAITING "
         "and automatically returns to idle at the end of acquisition. If the "

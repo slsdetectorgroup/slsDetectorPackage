@@ -756,22 +756,24 @@ void Detector::startReceiver() { pimpl->Parallel(&Module::startReceiver, {}); }
 
 void Detector::stopReceiver() { pimpl->Parallel(&Module::stopReceiver, {}); }
 
-void Detector::startDetector() {
-    auto detector_type = getDetectorType().squash();
+void Detector::startDetector(Positions pos) {
+    auto detector_type = getDetectorType(pos).squash();
     if (detector_type == defs::MYTHEN3 && size() > 1) {
-        auto is_master = getMaster();
-        int masterPosition = 0;
-        std::vector<int> slaves;
-        for (int i = 0; i < size(); ++i) {
-            if (is_master[i])
+        std::vector<int> slaves(pos);
+        auto is_master = getMaster(pos);
+        int masterPosition = -1;
+        for (unsigned int i = 0; i < is_master.size(); ++i) {
+            if (is_master[i]) {
                 masterPosition = i;
-            else
-                slaves.push_back(i);
+                slaves.erase(pos.begin() + i);
+            }
         }
-        pimpl->Parallel(&Module::startAcquisition, slaves);
-        pimpl->Parallel(&Module::startAcquisition, {masterPosition});
+        pimpl->Parallel(&Module::startAcquisition, pos);
+        if (masterPosition != -1) {
+            pimpl->Parallel(&Module::startAcquisition, {masterPosition});
+        }
     } else {
-        pimpl->Parallel(&Module::startAcquisition, {});
+        pimpl->Parallel(&Module::startAcquisition, pos);
     }
 }
 

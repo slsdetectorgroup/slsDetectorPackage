@@ -470,7 +470,9 @@ void init_det(py::module &m) {
              (void (Detector::*)()) & Detector::clearAcquiringFlag)
         .def("startReceiver", (void (Detector::*)()) & Detector::startReceiver)
         .def("stopReceiver", (void (Detector::*)()) & Detector::stopReceiver)
-        .def("startDetector", (void (Detector::*)()) & Detector::startDetector)
+        .def("startDetector",
+             (void (Detector::*)(sls::Positions)) & Detector::startDetector,
+             py::arg() = Positions{})
         .def("startDetectorReadout",
              (void (Detector::*)()) & Detector::startDetectorReadout)
         .def("stopDetector",

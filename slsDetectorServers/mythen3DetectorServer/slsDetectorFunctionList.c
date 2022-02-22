@@ -1545,9 +1545,11 @@ int setHighVoltage(int val) {
 
 /* parameters - timing */
 
-int isMaster() {
-    return !((bus_r(SYSTEM_STATUS_REG) & SYSTEM_STATUS_SLV_BRD_DTCT_MSK) >>
-             SYSTEM_STATUS_SLV_BRD_DTCT_OFST);
+int isMaster(int *retval) {
+    int slave = ((bus_r(SYSTEM_STATUS_REG) & SYSTEM_STATUS_SLV_BRD_DTCT_MSK) >>
+                 SYSTEM_STATUS_SLV_BRD_DTCT_OFST);
+    *retval = (slave == 0 ? 1 : 0);
+    return OK;
 }
 
 void setTiming(enum timingMode arg) {

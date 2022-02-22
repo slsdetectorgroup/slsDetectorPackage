@@ -110,7 +110,11 @@ u_int32_t getBoardRevision();
 void initControlServer();
 void initStopServer();
 #ifdef EIGERD
-void getModuleConfiguration();
+int updateModuleConfiguration();
+int getModuleConfiguration(int *m, int *t, int *n);
+#ifdef VIRTUAL
+void setVirtualDefaultModuleConfigurations();
+#endif
 #endif
 
 // set up detector
@@ -362,9 +366,13 @@ int getADC(enum ADCINDEX ind);
 int setHighVoltage(int val);
 
 // parameters - timing, extsig
-#if defined(MYTHEN3D) || defined(EIGERD) || defined(GOTTHARDD)
-int isMaster();
+#ifdef EIGERD
+int setMaster(int m);
 #endif
+#if defined(MYTHEN3D) || defined(EIGERD) || defined(GOTTHARDD)
+int isMaster(int *retval);
+#endif
+
 #ifdef GOTTHARD2D
 void updatingRegisters();
 #endif

@@ -784,6 +784,7 @@ class CmdProxy {
         {"trimen", &CmdProxy::TrimEnergies},
         {"gappixels", &CmdProxy::GapPixels},
         {"fliprows", &CmdProxy::fliprows},
+        {"master", &CmdProxy::master},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::Acquire},

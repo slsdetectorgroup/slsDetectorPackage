@@ -1490,9 +1490,8 @@ int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right) {
     return 1;
 }
 
-void Feb_Control_SetMasterVariable(int val) { Feb_Control_master = val; }
-
 int Feb_Control_SetMaster(enum MASTERINDEX ind) {
+
     uint32_t offset = DAQ_REG_HRDWRE;
     unsigned int addr[2] = {Feb_Control_leftAddress, Feb_Control_rightAddress};
     char *master_names[] = {MASTER_NAMES};
@@ -1529,7 +1528,27 @@ int Feb_Control_SetMaster(enum MASTERINDEX ind) {
     LOG(logINFOBLUE, ("%s Master flag to %s Feb\n",
                       (ind == MASTER_HARDWARE ? "Resetting" : "Overwriting"),
                       master_names[ind]));
+
     return 1;
+}
+
+void Feb_Control_SetMasterEffects(int master) {
+    int prevMaster = Feb_Control_master;
+
+    Feb_Control_master = master;
+    // change in master for 9m
+    if (prevMaster != Feb_Control_master && !Feb_Control_normal) {
+        if (prevMaster) {
+            Feb_Control_CloseSerialCommunication();
+        }
+        if (Feb_Control_master) {
+            if (!Feb_Control_OpenSerialCommunication()) {
+                LOG(logERROR, ("Could not intitalize feb control serial "
+                               "communication\n"));
+                return FAIL;
+            }
+        }
+    }
 }
 
 int Feb_Control_SetQuad(int val) {

@@ -298,6 +298,17 @@ void Detector::setFlipRows(bool value, Positions pos) {
     pimpl->Parallel(&Module::setFlipRows, pos, value);
 }
 
+Result<bool> Detector::getMaster(Positions pos) const {
+    return pimpl->Parallel(&Module::isMaster, pos);
+}
+
+void Detector::setMaster(bool master, int pos) {
+    if (pos == -1)) {
+        throw RuntimeError("Master can be set only to a single module");
+    }
+    pimpl->Parallel(&Module::setMaster, {pos}, value);
+}
+
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
     return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
 }
@@ -1806,10 +1817,6 @@ void Detector::setGateDelay(int gateIndex, ns t, Positions pos) {
 Result<std::array<ns, 3>>
 Detector::getGateDelayForAllGates(Positions pos) const {
     return pimpl->Parallel(&Module::getGateDelayForAllGates, pos);
-}
-
-Result<bool> Detector::getMaster(Positions pos) const {
-    return pimpl->Parallel(&Module::isMaster, pos);
 }
 
 Result<int> Detector::getChipStatusRegister(Positions pos) const {

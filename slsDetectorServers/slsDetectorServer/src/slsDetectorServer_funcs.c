@@ -464,6 +464,7 @@ void function_table() {
     flist[F_UPDATE_DETECTOR_SERVER] = &update_detector_server;
     flist[F_GET_UPDATE_MODE] = &get_update_mode;
     flist[F_SET_UPDATE_MODE] = &set_update_mode;
+    flist[F_SET_MASTER]] = &set_master;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8192,9 +8193,53 @@ int get_master(int file_des) {
 #if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARDD)
     functionNotImplemented();
 #else
-    retval = isMaster();
+    ret = isMaster(&retval);
+    if (ret == FAIL) {
+        strcpy(mess, "Could not get master\n");
+        LOG(logERROR, (mess));
+    }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_master(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting master: %u\n", (int)arg));
+
+#ifndef EIGERD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if ((check_detector_idle("set master") == OK) &&
+            (arg != 0 && arg != 1)) {
+            ret = FAIL;
+            sprintf(mess, "Could not set master. Invalid argument %d.\n", arg);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setMaster(arg);
+            if (ret == FAIL) {
+                strcpy("Could not set master\n");
+                LOG(logERROR, (mess));
+            } else {
+                ret = isMaster(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get master\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    LOG(logDEBUG1, ("master retval: %u\n", retval));
+                    validate(&ret, mess, arg, retval, "set master", DEC);
+                }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_csr(int file_des) {

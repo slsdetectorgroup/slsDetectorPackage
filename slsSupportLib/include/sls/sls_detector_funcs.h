@@ -258,6 +258,7 @@ enum detFuncs {
     F_UPDATE_DETECTOR_SERVER,
     F_GET_UPDATE_MODE,
     F_SET_UPDATE_MODE,
+    F_SET_MASTER,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -619,6 +620,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_UPDATE_DETECTOR_SERVER:          return "F_UPDATE_DETECTOR_SERVER";
     case F_GET_UPDATE_MODE:                 return "F_GET_UPDATE_MODE";
     case F_SET_UPDATE_MODE:                 return "F_SET_UPDATE_MODE";
+    case F_SET_MASTER:                      return "F_SET_MASTER";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

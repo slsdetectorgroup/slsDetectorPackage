@@ -1532,7 +1532,7 @@ int Feb_Control_SetMaster(enum MASTERINDEX ind) {
     return 1;
 }
 
-void Feb_Control_SetMasterEffects(int master) {
+int Feb_Control_SetMasterEffects(int master) {
     int prevMaster = Feb_Control_master;
 
     Feb_Control_master = master;

@@ -80,7 +80,6 @@ char scanErrMessage[MAX_STR_LENGTH] = "";
 /* initialization functions */
 
 int updateModeAllowedFunction(int file_des) {
-    unsigned int listsize = 19;
     enum detFuncs list[] = {F_EXEC_COMMAND,
                             F_GET_DETECTOR_TYPE,
                             F_GET_FIRMWARE_VERSION,
@@ -99,7 +98,12 @@ int updateModeAllowedFunction(int file_des) {
                             F_UPDATE_KERNEL,
                             F_UPDATE_DETECTOR_SERVER,
                             F_GET_UPDATE_MODE,
-                            F_SET_UPDATE_MODE};
+                            F_SET_UPDATE_MODE,
+                            F_GET_NUM_CHANNELS,
+                            F_GET_NUM_INTERFACES,
+                            F_ACTIVATE};
+    unsigned int listsize = 22;
+
     for (unsigned int i = 0; i < listsize; ++i) {
         if ((unsigned int)fnum == list[i]) {
             return OK;

@@ -63,8 +63,8 @@ int Feb_Control_SendSoftwareTrigger();
 int Feb_Control_SoftwareTrigger(int block);
 
 // parameters
-int Feb_Control_SetDynamicRange(unsigned int dr);
-int Feb_Control_GetDynamicRange(unsigned int *retval);
+int Feb_Control_SetDynamicRange(int dr);
+int Feb_Control_GetDynamicRange(int *retval);
 int Feb_Control_Disable16bitConversion(int disable);
 int Feb_Control_Get16bitConversionDisabled();
 int Feb_Control_SetReadoutSpeed(unsigned int readout_speed);

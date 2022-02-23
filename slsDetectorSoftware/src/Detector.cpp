@@ -765,7 +765,7 @@ void Detector::startDetector(Positions pos) {
         for (unsigned int i = 0; i < is_master.size(); ++i) {
             if (is_master[i]) {
                 masterPosition = i;
-                slaves.erase(pos.begin() + i);
+                slaves.erase(slaves.begin() + i);
             }
         }
         pimpl->Parallel(&Module::startAcquisition, pos);

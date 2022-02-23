@@ -40,6 +40,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - when in discard partial frames or empty mode, the frame number doesnt increase by 1, it increases to that number (so its faster)
 - file write disabled by default
 - start non blocking acquisition at modular level
+- missingpackets signed (negative => extra packets)
 
 
 2. Resolved Issues

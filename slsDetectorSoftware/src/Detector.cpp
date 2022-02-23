@@ -797,7 +797,7 @@ Result<int64_t> Detector::getFramesCaught(Positions pos) const {
     return pimpl->Parallel(&Module::getFramesCaughtByReceiver, pos);
 }
 
-Result<std::vector<uint64_t>>
+Result<std::vector<int64_t>>
 Detector::getNumMissingPackets(Positions pos) const {
     return pimpl->Parallel(&Module::getNumMissingPackets, pos);
 }

@@ -588,11 +588,9 @@ class Detector {
 
     Result<int64_t> getFramesCaught(Positions pos = {}) const;
 
-    /** Gets the number of missing packets for each port in receiver.
-     * Troubleshoot: If they are large numbers, convert it to signed to get
-     * number of access packets received */
-    Result<std::vector<uint64_t>>
-    getNumMissingPackets(Positions pos = {}) const;
+    /** Gets the number of missing packets for each port in receiver. Negative
+     * number denotes extra packets. */
+    Result<std::vector<int64_t>> getNumMissingPackets(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau][Moench][CTB] */
     Result<uint64_t> getNextFrameNumber(Positions pos = {}) const;

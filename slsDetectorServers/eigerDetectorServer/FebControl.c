@@ -995,7 +995,7 @@ int Feb_Control_PrintAcquisitionSetup() {
     time_t rawtime;
     time(&rawtime);
     struct tm *timeinfo = localtime(&rawtime);
-    unsigned int dr = 0;
+    int dr = 0;
     if (!Feb_Control_GetDynamicRange(&dr)) {
         LOG(logERROR, ("Could not print acquisition set up\n"));
         return 0;
@@ -1178,7 +1178,7 @@ int Feb_Control_SoftwareTrigger(int block) {
 }
 
 // parameters
-int Feb_Control_SetDynamicRange(unsigned int dr) {
+int Feb_Control_SetDynamicRange(int dr) {
     static unsigned int everything_but_bit_mode = DAQ_STATIC_BIT_PROGRAM |
                                                   DAQ_STATIC_BIT_CHIP_TEST |
                                                   DAQ_STATIC_BIT_ROTEST;
@@ -1221,7 +1221,7 @@ int Feb_Control_SetDynamicRange(unsigned int dr) {
     return 1;
 }
 
-int Feb_Control_GetDynamicRange(unsigned int *retval) {
+int Feb_Control_GetDynamicRange(int *retval) {
     if (Feb_Control_subFrameMode & DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING) {
         *retval = 32;
     } else if (DAQ_STATIC_BIT_M4 & Feb_Control_staticBits) {
@@ -1905,7 +1905,7 @@ int64_t Feb_Control_Get_RateTable_Period_in_nsec() {
 
 int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
     // period = exptime if 16bit, period = subexptime if 32 bit
-    unsigned int dr = 0;
+    int dr = 0;
     if (!Feb_Control_GetDynamicRange(&dr)) {
         LOG(logERROR, ("Could not set rate correction tau\n"));
         return 0;

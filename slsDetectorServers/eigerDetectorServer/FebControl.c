@@ -995,7 +995,7 @@ int Feb_Control_PrintAcquisitionSetup() {
     time_t rawtime;
     time(&rawtime);
     struct tm *timeinfo = localtime(&rawtime);
-    int dr = 0;
+    unsigned int dr = 0;
     if (!Feb_Control_GetDynamicRange(&dr)) {
         LOG(logERROR, ("Could not print acquisition set up\n"));
         return 0;
@@ -1905,7 +1905,7 @@ int64_t Feb_Control_Get_RateTable_Period_in_nsec() {
 
 int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
     // period = exptime if 16bit, period = subexptime if 32 bit
-    int dr = 0;
+    unsigned int dr = 0;
     if (!Feb_Control_GetDynamicRange(&dr)) {
         LOG(logERROR, ("Could not set rate correction tau\n"));
         return 0;

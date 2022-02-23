@@ -1673,7 +1673,7 @@ int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
 
     for (int iloop = 0; iloop < 2; ++iloop) {
         if (run[iloop]) {
-            LOG(logINFO,
+            LOG(logDEBUG1,
                 ("Writing 0x%x to %s 0x%x\n", data, side[iloop], actualOffset));
             if (!Feb_Interface_WriteRegister(addr[iloop], actualOffset, data, 0,
                                              0)) {
@@ -1729,8 +1729,8 @@ int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
                                side[iloop], actualOffset));
                 return 0;
             }
-            LOG(logINFO, ("Read 0x%x from %s 0x%x\n", value[iloop], side[iloop],
-                          actualOffset));
+            LOG(logDEBUG1, ("Read 0x%x from %s 0x%x\n", value[iloop],
+                            side[iloop], actualOffset));
             *retval = value[iloop];
             // if not the other (left, not right OR right, not left), return the
             // value

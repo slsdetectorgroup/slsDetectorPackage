@@ -67,7 +67,13 @@ int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
 int vLimit = 0;
 enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
+
+// getNumberofchannels return 0 for y in --update mode (virtual servers)
+#ifdef VIRTUAL
+int nSamples = DEFAULT_NUM_SAMPLES;
+#else
 int nSamples = 1;
+#endif
 int detPos[2] = {0, 0};
 
 int isInitCheckDone() { return initCheckDone; }

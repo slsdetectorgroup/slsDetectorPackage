@@ -1911,7 +1911,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def rx_missingpackets(self):
-        """Gets the number of missing packets for each port in receiver."""
+        """Gets the number of missing packets for each port in receiver. Negative number denotes extra packets. """
         return self.getNumMissingPackets()
 
     """

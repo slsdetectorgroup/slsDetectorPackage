@@ -490,11 +490,10 @@ void init_det(py::module &m) {
              (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getFramesCaught,
              py::arg() = Positions{})
-        .def(
-            "getNumMissingPackets",
-            (Result<std::vector<uint64_t>>(Detector::*)(sls::Positions) const) &
-                Detector::getNumMissingPackets,
-            py::arg() = Positions{})
+        .def("getNumMissingPackets",
+             (Result<std::vector<int64_t>>(Detector::*)(sls::Positions) const) &
+                 Detector::getNumMissingPackets,
+             py::arg() = Positions{})
         .def("getNextFrameNumber",
              (Result<uint64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getNextFrameNumber,

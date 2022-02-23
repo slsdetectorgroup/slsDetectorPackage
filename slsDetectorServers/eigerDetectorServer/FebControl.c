@@ -1272,7 +1272,7 @@ int Feb_Control_Get16bitConversionDisabled(int *ret) {
         LOG(logERROR, ("Could not get 16 bit expansion (bit mode)\n"));
         return 0;
     }
-    if (regval | DAQ_REG_HRDWRE_DSBL_16BIT_MSK) {
+    if (regval & DAQ_REG_HRDWRE_DSBL_16BIT_MSK) {
         *ret = 1;
     } else {
         *ret = 0;

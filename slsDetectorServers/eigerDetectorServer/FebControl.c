@@ -1228,17 +1228,17 @@ int Feb_Control_GetDynamicRange(unsigned int *retval) {
         *retval = 4;
     } else if (DAQ_STATIC_BIT_M8 & Feb_Control_staticBits) {
         *retval = 8;
-    }
-
-    int disable16 = 0;
-    if (!Feb_Control_Get16bitConversionDisabled(&disable16)) {
-        LOG(logERROR, ("Could not get dynamic range (12 or 16 bit)\n"));
-        return 0;
-    }
-    if (disable16) {
-        *retval = 12;
     } else {
-        *retval = 16;
+        int disable16 = 0;
+        if (!Feb_Control_Get16bitConversionDisabled(&disable16)) {
+            LOG(logERROR, ("Could not get dynamic range (12 or 16 bit)\n"));
+            return 0;
+        }
+        if (disable16) {
+            *retval = 12;
+        } else {
+            *retval = 16;
+        }
     }
 
     return 1;

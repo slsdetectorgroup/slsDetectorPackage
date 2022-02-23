@@ -196,7 +196,7 @@ class Detector {
     /** [Eiger][Mythen3][Gotthard1] via stop server **/
     Result<bool> getMaster(Positions pos = {}) const;
 
-    /** [Eiger] Set master */
+    /** [Eiger] Set half module to master and the others to slaves */
     void setMaster(bool value, int pos);
 
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;

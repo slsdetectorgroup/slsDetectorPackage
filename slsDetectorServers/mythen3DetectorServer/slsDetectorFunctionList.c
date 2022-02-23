@@ -1554,7 +1554,9 @@ int isMaster(int *retval) {
 
 void setTiming(enum timingMode arg) {
 
-    if (!isMaster() && arg == AUTO_TIMING)
+    int master = 0;
+    isMaster(&master);
+    if (master && arg == AUTO_TIMING)
         arg = TRIGGER_EXPOSURE;
 
     uint32_t addr = CONFIG_REG;

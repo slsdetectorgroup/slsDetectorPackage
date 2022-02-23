@@ -1282,6 +1282,12 @@ class CmdProxy {
         "interfaces must be set to 2. slsReceiver and slsDetectorGui "
         "does not handle.");
 
+    INTEGER_COMMAND_VEC_ID_GET(
+        master, getMaster, setMaster, StringTo<int>,
+        "[0, 1]\n\t[Eiger] Sets half module to master and "
+        "others to slaves.\n\t\t [Gotthard][Mythen3][Eiger] "
+        "Gets if the current module/ half module is master.");
+
     /* acquisition parameters */
 
     INTEGER_COMMAND_SET_NOID_GET_ID(

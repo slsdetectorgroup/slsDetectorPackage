@@ -468,7 +468,7 @@ void function_table() {
     flist[F_UPDATE_DETECTOR_SERVER] = &update_detector_server;
     flist[F_GET_UPDATE_MODE] = &get_update_mode;
     flist[F_SET_UPDATE_MODE] = &set_update_mode;
-    flist[F_SET_MASTER]] = &set_master;
+    flist[F_SET_MASTER] = &set_master;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8228,9 +8228,10 @@ int set_master(int file_des) {
         } else {
             ret = setMaster(arg);
             if (ret == FAIL) {
-                strcpy("Could not set master\n");
+                strcpy(mess, "Could not set master\n");
                 LOG(logERROR, (mess));
             } else {
+                int retval = 0;
                 ret = isMaster(&retval);
                 if (ret == FAIL) {
                     strcpy(mess, "Could not get master\n");

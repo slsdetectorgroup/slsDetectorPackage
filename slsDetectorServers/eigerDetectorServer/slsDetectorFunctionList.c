@@ -400,6 +400,7 @@ void setVirtualDefaultModuleConfigurations() {
 #else
     normal = 1;
 #endif
+#endif
 }
 
 int updateModuleConfiguration() {
@@ -420,7 +421,7 @@ int getModuleConfiguration(int *m, int *t, int *n) {
 #ifdef VIRTUAL
     *m = master;
     *t = top;
-    *n = nomal;
+    *n = normal;
 #else
     if (Beb_GetModuleConfiguration(&m, &t, &n) == FAIL) {
         initError = FAIL;
@@ -553,13 +554,13 @@ int readConfigFile() {
                         line);
                 break;
             }
-            if (m != 0 && m != 1)) {
-                    sprintf(initErrorMessage,
-                            "Invalid master argument from on-board server "
-                            "config file. Line:[%s].\n",
-                            line);
-                    break;
-                }
+            if (m != 0 && m != 1) {
+                sprintf(initErrorMessage,
+                        "Invalid master argument from on-board server "
+                        "config file. Line:[%s].\n",
+                        line);
+                break;
+            }
             if (setMaster(m) == FAIL) {
                 sprintf(initErrorMessage,
                         "Could not set master from config file. Line:[%s].\n",

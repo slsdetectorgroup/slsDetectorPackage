@@ -173,6 +173,12 @@ void init_det(py::module &m) {
         .def("setFlipRows",
              (void (Detector::*)(bool, sls::Positions)) & Detector::setFlipRows,
              py::arg(), py::arg() = Positions{})
+        .def("getMaster",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getMaster,
+             py::arg() = Positions{})
+        .def("setMaster", (void (Detector::*)(bool, int)) & Detector::setMaster,
+             py::arg(), py::arg() = -1)
         .def("isVirtualDetectorServer",
              (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::isVirtualDetectorServer,

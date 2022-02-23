@@ -28,6 +28,7 @@ extern int updateFlag;
 extern int checkModuleFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern const enum detectorType myDetectorType;
+extern int ignoreConfigFileFlag;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
@@ -69,6 +70,7 @@ int64_t burstPeriodReg = 0;
 int filterResistor = 0;
 int cdsGain = 0;
 int detPos[2] = {};
+int master = 1;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -598,6 +600,10 @@ int readConfigFile() {
 
     if (initError == FAIL) {
         return initError;
+    }
+
+    if (ignoreConfigFileFlag) {
+        return OK;
     }
 
     // require a sleep before and after the rst dac signal
@@ -1442,6 +1448,11 @@ int setHighVoltage(int val) {
 
 /* parameters - timing */
 
+int isMaster(int *retval) {
+    *retval = master;
+    return OK;
+}
+
 void updatingRegisters() {
     LOG(logINFO, ("\tUpdating registers\n"));
     // burst
@@ -1921,9 +1932,16 @@ int checkDetectorType() {
         return -2;
     }
 
-    if ((abs(type - TYPE_GOTTHARD2_MODULE_VAL) > TYPE_TOLERANCE) &&
-        (abs(type - TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL) > TYPE_TOLERANCE) &&
-        (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL) > TYPE_TOLERANCE)) {
+    if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL) <= TYPE_TOLERANCE) {
+        LOG(logINFOBLUE, ("MASTER 25um Module\n"));
+    } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL) <=
+               TYPE_TOLERANCE) {
+        master = 0;
+        LOG(logINFOBLUE, ("SLAVE 25um Module\n"));
+    } else if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) <= TYPE_TOLERANCE) {
+        master = 0;
+        LOG(logINFOBLUE, ("50um Module\n"));
+    } else {
         LOG(logERROR,
             ("Wrong Module attached! Expected %d, %d or %d for Gotthard2, got "
              "%d\n",

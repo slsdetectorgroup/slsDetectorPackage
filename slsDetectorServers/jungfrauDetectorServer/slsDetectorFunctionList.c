@@ -28,6 +28,7 @@ extern int updateFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern int numUdpDestinations;
 extern const enum detectorType myDetectorType;
+extern int ignoreConfigFileFlag;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
@@ -641,6 +642,10 @@ int readConfigFile() {
 
     if (initError == FAIL) {
         return initError;
+    }
+
+    if (ignoreConfigFileFlag) {
+        return OK;
     }
 
     const int fileNameSize = 128;

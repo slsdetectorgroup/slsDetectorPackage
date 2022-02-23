@@ -54,6 +54,7 @@ int sockfd = 0;
 int debugflag = 0;
 int updateFlag = 0;
 int checkModuleFlag = 1;
+int ignoreConfigFileFlag = 0;
 
 udpStruct udpDetails[MAX_UDP_DESTINATION];
 int numUdpDestinations = 1;
@@ -8194,7 +8195,8 @@ int get_master(int file_des) {
 
     LOG(logDEBUG1, ("Getting master\n"));
 
-#if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARDD)
+#if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARDD) &&           \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     ret = isMaster(&retval);

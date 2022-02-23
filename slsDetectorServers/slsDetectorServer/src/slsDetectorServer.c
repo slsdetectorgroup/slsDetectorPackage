@@ -26,6 +26,7 @@ extern int sockfd;
 extern int debugflag;
 extern int updateFlag;
 extern int checkModuleFlag;
+extern int ignoreConfigFileFlag;
 
 // Global variables from slsDetectorFunctionList
 #ifdef GOTTHARDD
@@ -48,6 +49,7 @@ int main(int argc, char *argv[]) {
     updateFlag = 0;
     checkModuleFlag = 1;
     int version = 0;
+    ignoreConfigFileFlag = 0;
 
     // help message
     char helpMessage[MAX_STR_LENGTH];
@@ -58,15 +60,18 @@ int main(int argc, char *argv[]) {
         "Possible arguments are:\n"
         "\t-v, --version            : Software version\n"
         "\t-p, --port <port>        : TCP communication port with client. \n"
-        "\t-g, --nomodule           : [Mythen3][Gotthard2] Generic or No "
-        "Module mode. Skips detector type checks. \n"
+        "\t-g, --nomodule           : [Mythen3][Gotthard2] \n"
+        "\t                           Generic or No Module mode. Skips "
+        "detector type checks. \n"
         "\t-f, --phaseshift <value> : [Gotthard] only. Sets phase shift. \n"
         "\t-d, --devel              : Developer mode. Skips firmware checks. \n"
         "\t-u, --update             : Update mode. Skips firmware checks and "
         "initial detector setup. \n"
+        "\t-i, --ignore-config      : "
+        "[Virtual][Eiger][Jungfrau][Gotthard][Gotthard2] \n"
+        "\t                           Ignore config file. \n"
         "\t-s, --stopserver         : Stop server. Do not use as it is created "
-        "by "
-        "control server \n\n",
+        "by control server \n\n",
         argv[0]);
 
     // parse command line for config
@@ -80,6 +85,7 @@ int main(int argc, char *argv[]) {
         {"nomodule", no_argument, NULL, 'g'}, // generic
         {"devel", no_argument, NULL, 'd'},
         {"update", no_argument, NULL, 'u'},
+        {"ignore-config", no_argument, NULL, 'i'},
         {"stopserver", no_argument, NULL, 's'},
         {NULL, 0, NULL, 0}};
 
@@ -89,7 +95,7 @@ int main(int argc, char *argv[]) {
     int c = 0;
 
     while (c != -1) {
-        c = getopt_long(argc, argv, "hvp:f:gdus", long_options, &option_index);
+        c = getopt_long(argc, argv, "hvp:f:gduis", long_options, &option_index);
 
         // Detect the end of the options
         if (c == -1)
@@ -158,6 +164,17 @@ int main(int argc, char *argv[]) {
         case 's':
             LOG(logINFO, ("Detected stop server\n"));
             isControlServer = 0;
+            break;
+
+        case 'i':
+#if defined(EIGERD) || defined(GOTTHARDD) || defined(GOTTHARD2D) ||            \
+    defined(JUNGFRAU)
+            LOG(logINFO, ("Ignoring config file\n"));
+            ignoreConfigFileFlag = 1;
+#else
+            LOG(logERROR, ("No server config files for this detector\n"));
+            exit(EXIT_FAILURE);
+#endif
             break;
 
         case 'h':

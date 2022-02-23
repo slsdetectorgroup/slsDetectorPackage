@@ -26,6 +26,7 @@ extern int updateFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern int numUdpDestinations;
 extern const enum detectorType myDetectorType;
+extern int ignoreConfigFileFlag;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
@@ -381,20 +382,9 @@ void initStopServer() {
     }
 }
 
-void setVirtualDefaultModuleConfigurations() {
+void checkVirtual9MFlag() {
+    LOG(logINFORED, ("updating virtual\n"));
 #ifdef VIRTUAL
-#ifdef VIRTUAL_MASTER
-    master = 1;
-    top = 1;
-#else
-    master = 0;
-#ifdef VIRTUAL_TOP
-    top = 1;
-#else
-    top = 0;
-#endif
-#endif
-
 #ifdef VIRTUAL_9M
     normal = 0;
 #else
@@ -404,13 +394,17 @@ void setVirtualDefaultModuleConfigurations() {
 }
 
 int updateModuleConfiguration() {
-#ifdef VIRTUAL
-    setVirtualDefaultModuleConfigurations();
-#else
     if (getModuleConfiguration(&master, &top, &normal) == FAIL) {
         return FAIL;
     }
+#ifdef VIRTUAL
+    checkVirtual9MFlag();
 #endif
+    if (isControlServer) {
+        LOG(logINFOBLUE,
+            ("Module: %s %s %s\n", (top ? "TOP" : "BOTTOM"),
+             (master ? "MASTER" : "SLAVE"), (normal ? "NORMAL" : "SPECIAL")));
+    }
     return OK;
 }
 
@@ -430,21 +424,17 @@ int getModuleConfiguration(int *m, int *t, int *n) {
         return FAIL;
     }
 #endif
-    if (isControlServer) {
-        LOG(logINFOBLUE,
-            ("Module: %s %s %s\n", (*t ? "TOP" : "BOTTOM"),
-             (*m ? "MASTER" : "SLAVE"), (*n ? "NORMAL" : "SPECIAL")));
-    }
     return OK;
 }
 
 int readConfigFile() {
-
     if (initError == FAIL) {
         return initError;
     }
-    master = -1;
-    top = -1;
+
+    if (ignoreConfigFileFlag) {
+        return OK;
+    }
 
     const int fileNameSize = 128;
     char fname[fileNameSize];
@@ -1472,6 +1462,7 @@ int setHighVoltage(int val) {
 /* parameters - timing, extsig */
 
 int setMaster(int m) {
+    LOG(logINFO, ("Setting up as %s\n", (m == 1 ? "Master" : "Slave")));
 #ifdef VIRTUAL
     master = m;
 #else

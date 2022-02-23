@@ -113,7 +113,7 @@ void initStopServer();
 int updateModuleConfiguration();
 int getModuleConfiguration(int *m, int *t, int *n);
 #ifdef VIRTUAL
-void setVirtualDefaultModuleConfigurations();
+void checkVirtual9MFlag();
 #endif
 #endif
 
@@ -369,7 +369,8 @@ int setHighVoltage(int val);
 #ifdef EIGERD
 int setMaster(int m);
 #endif
-#if defined(MYTHEN3D) || defined(EIGERD) || defined(GOTTHARDD)
+#if defined(MYTHEN3D) || defined(EIGERD) || defined(GOTTHARDD) ||              \
+    defined(GOTTHARD2D)
 int isMaster(int *retval);
 #endif
 

@@ -25,6 +25,7 @@ extern int debugflag;
 extern int updateFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern const enum detectorType myDetectorType;
+extern int ignoreConfigFileFlag;
 
 // Variables that will be exported
 int phaseShift = DEFAULT_PHASE_SHIFT;
@@ -624,6 +625,11 @@ void setGbitReadout() {
 }
 
 int readConfigFile() {
+
+    if (ignoreConfigFileFlag) {
+        return OK;
+    }
+
     const int fileNameSize = 128;
     char fname[fileNameSize];
     if (getAbsPath(fname, fileNameSize, CONFIG_FILE) == FAIL) {

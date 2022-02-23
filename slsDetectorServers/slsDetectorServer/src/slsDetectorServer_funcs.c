@@ -80,28 +80,32 @@ char scanErrMessage[MAX_STR_LENGTH] = "";
 /* initialization functions */
 
 int updateModeAllowedFunction(int file_des) {
-    unsigned int listsize = 19;
-    enum detFuncs list[] = {F_EXEC_COMMAND,
-                            F_GET_DETECTOR_TYPE,
-                            F_GET_FIRMWARE_VERSION,
-                            F_GET_SERVER_VERSION,
-                            F_GET_SERIAL_NUMBER,
-                            F_WRITE_REGISTER,
-                            F_READ_REGISTER,
-                            F_LOCK_SERVER,
-                            F_GET_LAST_CLIENT_IP,
-                            F_PROGRAM_FPGA,
-                            F_RESET_FPGA,
-                            F_CHECK_VERSION,
-                            F_COPY_DET_SERVER,
-                            F_REBOOT_CONTROLLER,
-                            F_GET_KERNEL_VERSION,
-                            F_UPDATE_KERNEL,
-                            F_UPDATE_DETECTOR_SERVER,
-                            F_GET_UPDATE_MODE,
-                            F_SET_UPDATE_MODE};
-    for (unsigned int i = 0; i < listsize; ++i) {
-        if ((unsigned int)fnum == list[i]) {
+    enum detFuncs allowedFuncs[] = {F_EXEC_COMMAND,
+                                    F_GET_DETECTOR_TYPE,
+                                    F_GET_FIRMWARE_VERSION,
+                                    F_GET_SERVER_VERSION,
+                                    F_GET_SERIAL_NUMBER,
+                                    F_WRITE_REGISTER,
+                                    F_READ_REGISTER,
+                                    F_LOCK_SERVER,
+                                    F_GET_LAST_CLIENT_IP,
+                                    F_PROGRAM_FPGA,
+                                    F_RESET_FPGA,
+                                    F_CHECK_VERSION,
+                                    F_COPY_DET_SERVER,
+                                    F_REBOOT_CONTROLLER,
+                                    F_GET_KERNEL_VERSION,
+                                    F_UPDATE_KERNEL,
+                                    F_UPDATE_DETECTOR_SERVER,
+                                    F_GET_UPDATE_MODE,
+                                    F_SET_UPDATE_MODE,
+                                    F_GET_NUM_CHANNELS,
+                                    F_GET_NUM_INTERFACES,
+                                    F_ACTIVATE};
+    size_t allowedFuncsSize = sizeof(allowedFuncs) / sizeof(enum detFuncs);
+
+    for (unsigned int i = 0; i < allowedFuncsSize; ++i) {
+        if ((unsigned int)fnum == allowedFuncs[i]) {
             return OK;
         }
     }

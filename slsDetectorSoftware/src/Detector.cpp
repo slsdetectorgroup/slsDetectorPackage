@@ -776,7 +776,7 @@ void Detector::startDetector(Positions pos) {
         for (unsigned int i = 0; i < is_master.size(); ++i) {
             if (is_master[i]) {
                 masterPosition = i;
-                slaves.erase(pos.begin() + i);
+                slaves.erase(slaves.begin() + i);
             }
         }
         pimpl->Parallel(&Module::startAcquisition, pos);
@@ -808,7 +808,7 @@ Result<int64_t> Detector::getFramesCaught(Positions pos) const {
     return pimpl->Parallel(&Module::getFramesCaughtByReceiver, pos);
 }
 
-Result<std::vector<uint64_t>>
+Result<std::vector<int64_t>>
 Detector::getNumMissingPackets(Positions pos) const {
     return pimpl->Parallel(&Module::getNumMissingPackets, pos);
 }

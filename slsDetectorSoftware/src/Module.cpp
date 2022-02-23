@@ -876,7 +876,7 @@ int64_t Module::getFramesCaughtByReceiver() const {
     return sendToReceiver<int64_t>(F_GET_RECEIVER_FRAMES_CAUGHT);
 }
 
-std::vector<uint64_t> Module::getNumMissingPackets() const {
+std::vector<int64_t> Module::getNumMissingPackets() const {
     // TODO!(Erik) Refactor
     LOG(logDEBUG1) << "Getting num missing packets";
     if (shm()->useReceiverFlag) {
@@ -888,7 +888,7 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
                 " returned error: " + client.readErrorMessage());
         } else {
             auto nports = client.Receive<int>();
-            std::vector<uint64_t> retval(nports);
+            std::vector<int64_t> retval(nports);
             client.Receive(retval);
             LOG(logDEBUG1) << "Missing packets of Receiver" << moduleIndex
                            << ": " << sls::ToString(retval);

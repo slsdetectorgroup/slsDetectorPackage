@@ -41,6 +41,8 @@ This document describes the differences between v7.0.0 and v6.x.x
 - file write disabled by default
 - start non blocking acquisition at modular level
 - connect master commands to api (allow set master for eiger)
+- hostname cmd failed when connecting to servers in update mode (ctb, moench, jungfrau, eiger)
+- missingpackets signed (negative => extra packets)
 
 
 2. Resolved Issues

@@ -793,13 +793,18 @@ Result<defs::runStatus> Detector::getReceiverStatus(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverStatus, pos);
 }
 
-Result<int64_t> Detector::getFramesCaught(Positions pos) const {
+Result<std::vector<int64_t>> Detector::getFramesCaught(Positions pos) const {
     return pimpl->Parallel(&Module::getFramesCaughtByReceiver, pos);
 }
 
 Result<std::vector<int64_t>>
 Detector::getNumMissingPackets(Positions pos) const {
     return pimpl->Parallel(&Module::getNumMissingPackets, pos);
+}
+
+Result<std::vector<int64_t>>
+Detector::getRxCurrentFrameIndex(Positions pos) const {
+    return pimpl->Parallel(&Module::getReceiverCurrentFrameIndex, pos);
 }
 
 Result<uint64_t> Detector::getNextFrameNumber(Positions pos) const {
@@ -2310,10 +2315,6 @@ Result<ns> Detector::getMeasurementTime(Positions pos) const {
 }
 
 std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
-
-Result<uint64_t> Detector::getRxCurrentFrameIndex(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverCurrentFrameIndex, pos);
-}
 
 std::vector<int> Detector::getPortNumbers(int start_port) {
     int num_sockets_per_detector = pimpl->getNumberofUDPInterfaces({}).tsquash(

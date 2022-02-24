@@ -586,11 +586,16 @@ class Detector {
     /** Options: IDLE, TRANSMITTING, RUNNING */
     Result<defs::runStatus> getReceiverStatus(Positions pos = {}) const;
 
-    Result<int64_t> getFramesCaught(Positions pos = {}) const;
+    /** Gets the number of frames caught for each port in receiver. */
+    Result<std::vector<int64_t>> getFramesCaught(Positions pos = {}) const;
 
     /** Gets the number of missing packets for each port in receiver. Negative
      * number denotes extra packets. */
     Result<std::vector<int64_t>> getNumMissingPackets(Positions pos = {}) const;
+
+    /** Gets frame index for each port in receiver. */
+    Result<std::vector<int64_t>>
+    getRxCurrentFrameIndex(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau][Moench][CTB] */
     Result<uint64_t> getNextFrameNumber(Positions pos = {}) const;
@@ -1902,7 +1907,6 @@ class Detector {
      */
     std::string getUserDetails() const;
 
-    Result<uint64_t> getRxCurrentFrameIndex(Positions pos = {}) const;
     ///@}
 
   private:

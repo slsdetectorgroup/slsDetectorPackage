@@ -1286,19 +1286,6 @@ std::string CmdProxy::RxMissingPackets(int action) {
             WrongNumberOfParameters(0);
         }
         auto mp = det->getNumMissingPackets(std::vector<int>{det_id});
-        /*
-        auto tmp = det->getNumMissingPackets(std::vector<int>{det_id});
-        // convert to signed missing packets (to get excess)
-        Result<std::vector<int64_t>> mp(tmp.size());
-        for (unsigned int i = 0; i < mp.size(); ++i) {
-            mp[i] = static_cast<int64_t>(tmp[i]);
-        }
-        OR
-        Result<std::vector<int64_t>> tmp;
-        for (auto val : tmp) {
-            mp.push_back(static_cast<int64_t>(val));
-        }
-        */
         os << OutString(mp) << '\n';
     } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("Cannot put");

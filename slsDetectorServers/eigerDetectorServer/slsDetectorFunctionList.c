@@ -2285,15 +2285,17 @@ void *start_timer(void *arg) {
     }
 
     int skipData = 0;
+    int tgEnable = send_to_ten_gig;
     if (!eiger_virtual_activate ||
-        (!eiger_virtual_left_datastream && !eiger_virtual_right_datastream)) {
+        (tgEnable &&
+         (!eiger_virtual_left_datastream && !eiger_virtual_right_datastream))) {
         skipData = 1;
         LOG(logWARNING, ("Not sending Left and Right datastream\n"));
     }
-    if (!eiger_virtual_left_datastream) {
+    if (tgEnable && !eiger_virtual_left_datastream) {
         LOG(logWARNING, ("Not sending Left datastream\n"));
     }
-    if (!eiger_virtual_right_datastream) {
+    if (tgEnable && !eiger_virtual_right_datastream) {
         LOG(logWARNING, ("Not sending Right datastream\n"));
     }
 
@@ -2303,7 +2305,6 @@ void *start_timer(void *arg) {
 
     int dr = eiger_dynamicrange;
     double bytesPerPixel = (double)dr / 8.00;
-    int tgEnable = send_to_ten_gig;
     int datasize = (tgEnable ? 4096 : 1024);
     int packetsize = datasize + sizeof(sls_detector_header);
     int maxPacketsPerFrame = (tgEnable ? 4 : 16) * dr;
@@ -2465,14 +2466,16 @@ void *start_timer(void *arg) {
                         }
                     }
                 }
-                if (eiger_virtual_left_datastream && i >= startval &&
-                    i <= endval) {
+                if ((!tgEnable ||
+                     (tgEnable && eiger_virtual_left_datastream)) &&
+                    i >= startval && i <= endval) {
                     usleep(eiger_virtual_transmission_delay_left);
                     sendUDPPacket(iRxEntry, 0, packetData, packetsize);
                     LOG(logDEBUG1, ("Sent left packet: %d\n", i));
                 }
-                if (eiger_virtual_right_datastream && i >= startval &&
-                    i <= endval) {
+                if ((!tgEnable ||
+                     (tgEnable && eiger_virtual_right_datastream)) &&
+                    i >= startval && i <= endval) {
                     usleep(eiger_virtual_transmission_delay_right);
                     sendUDPPacket(iRxEntry, 1, packetData2, packetsize);
                     LOG(logDEBUG1, ("Sent right packet: %d\n", i));

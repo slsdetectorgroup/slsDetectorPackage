@@ -453,51 +453,51 @@ void Implementation::setFramesPerFile(const uint32_t i) {
  * ************************************************/
 slsDetectorDefs::runStatus Implementation::getStatus() const { return status; }
 
-uint64_t Implementation::getFramesCaught() const {
-    uint64_t min = -1;
-    uint32_t flagsum = 0;
-
-    for (const auto &it : dataProcessor) {
-        flagsum += it->GetStartedFlag();
-        min = std::min(min, it->GetNumCompleteFramesCaught());
+std::vector<int64_t> Implementation::getFramesCaught() const {
+    std::vector<int64_t> numFramesCaught(numUDPInterfaces);
+    int index = 0;
+    for (const auto &it : listener) {
+        if (it->GetStartedFlag()) {
+            numFramesCaught[index] = it->GetNumCompleteFramesCaught();
+        }
+        ++index;
     }
-    // no data processed
-    if (flagsum != dataProcessor.size())
-        return 0;
-
-    return min;
+    return numFramesCaught;
 }
 
-uint64_t Implementation::getCurrentFrameIndex() const {
-    uint64_t max = 0;
-    uint32_t flagsum = 0;
-
+std::vector<int64_t> Implementation::getCurrentFrameIndex() const {
+    std::vector<int64_t> frameIndex(numUDPInterfaces);
+    int index = 0;
     for (const auto &it : listener) {
-        flagsum += it->GetStartedFlag();
-        max = std::max(max, it->GetCurrentFrameIndex());
+        if (it->GetStartedFlag()) {
+            frameIndex[index] = it->GetCurrentFrameIndex();
+        }
+        ++index;
     }
-    // no data processed
-    if (flagsum != listener.size())
-        return 0;
-    return max;
+    return frameIndex;
 }
 
 double Implementation::getProgress() const {
-    // get minimum of processed frame indices
-    uint64_t currentFrameIndex = 0;
-    uint32_t flagsum = 0;
+    if (!activated || (!detectorDataStream[0] && !detectorDataStream[1])) {
+        return 100.00;
+    }
 
+    // if disabled, considering only 1 port
+    double totalFrames = (double)(numberOfTotalFrames * listener.size());
+    if (!detectorDataStream[0] || !detectorDataStream[1]) {
+        totalFrames /= 2;
+    }
+
+    double progress = 0;
+    int index = 0;
     for (const auto &it : listener) {
-        flagsum += it->GetStartedFlag();
-        currentFrameIndex = std::max(currentFrameIndex, it->GetListenedIndex());
+        if (detectorDataStream[index] && it->GetStartedFlag()) {
+            progress += (it->GetListenedIndex() + 1) / totalFrames;
+        }
+        ++index;
     }
-    // no data processed
-    if (flagsum != listener.size()) {
-        currentFrameIndex = -1;
-    }
-
-    return (100.00 *
-            ((double)(currentFrameIndex + 1) / (double)numberOfTotalFrames));
+    progress *= 100;
+    return progress;
 }
 
 std::vector<int64_t> Implementation::getNumMissingPackets() const {
@@ -627,7 +627,7 @@ void Implementation::stopReceiver() {
         // print summary
         uint64_t tot = 0;
         for (int i = 0; i < numUDPInterfaces; i++) {
-            int nf = dataProcessor[i]->GetNumCompleteFramesCaught();
+            int nf = listener[i]->GetNumCompleteFramesCaught();
             tot += nf;
             std::string mpMessage = std::to_string(mp[i]);
             if (mp[i] < 0) {

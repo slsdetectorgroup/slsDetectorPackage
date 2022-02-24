@@ -99,7 +99,11 @@ TEST_CASE("rx_framescaught", "[.cmd][.rx]") {
     {
         std::ostringstream oss;
         proxy.Call("rx_framescaught", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "rx_framescaught 0\n");
+        if (det.getNumberofUDPInterfaces() == 1) {
+            REQUIRE(oss.str() == "rx_framescaught [0]\n");
+        } else {
+            REQUIRE(oss.str() == "rx_framescaught [0, 0]\n");
+        }
     }
 
     // Currently disabled may activate if we have a stable env
@@ -136,6 +140,19 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
         std::string s = (oss.str()).erase(0, strlen("rx_missingpackets ["));
         REQUIRE(std::stoi(s) == 0);
     }
+}
+
+TEST_CASE("rx_frameindex", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    proxy.Call("rx_frameindex", {}, -1, GET);
+
+    // This is a get only command
+    REQUIRE_THROWS(proxy.Call("rx_frameindex", {"2"}, -1, PUT));
+    std::ostringstream oss;
+    proxy.Call("rx_frameindex", {}, 0, GET, oss);
+    std::string s = (oss.str()).erase(0, strlen("rx_frameindex "));
+    REQUIRE(std::stoi(s) >= 0);
 }
 
 /* Network Configuration (Detector<->Receiver) */
@@ -884,16 +901,3 @@ TEST_CASE("rx_jsonpara", "[.cmd][.rx]") {
 }
 
 /* Insignificant */
-
-TEST_CASE("rx_frameindex", "[.cmd][.rx]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    proxy.Call("rx_frameindex", {}, -1, GET);
-
-    // This is a get only command
-    REQUIRE_THROWS(proxy.Call("rx_frameindex", {"2"}, -1, PUT));
-    std::ostringstream oss;
-    proxy.Call("rx_frameindex", {}, 0, GET, oss);
-    std::string s = (oss.str()).erase(0, strlen("rx_frameindex "));
-    REQUIRE(std::stoi(s) >= 0);
-}

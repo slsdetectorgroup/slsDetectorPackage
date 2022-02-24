@@ -42,6 +42,10 @@ This document describes the differences between v7.0.0 and v6.x.x
 - start non blocking acquisition at modular level
 - hostname cmd failed when connecting to servers in update mode (ctb, moench, jungfrau, eiger)
 - missingpackets signed (negative => extra packets)
+- framescaught and frameindex now returns a vector for each port
+- progress looks at activated or enabled ports, so progress does not stagnate
+- (eiger) disable datastreaming also for virtual servers only for 10g
+- missing packets also takes care of disabled ports
 
 
 2. Resolved Issues

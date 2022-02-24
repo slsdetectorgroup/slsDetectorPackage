@@ -860,6 +860,7 @@ class CmdProxy {
         {"status", &CmdProxy::DetectorStatus},
         {"rx_framescaught", &CmdProxy::rx_framescaught},
         {"rx_missingpackets", &CmdProxy::RxMissingPackets},
+        {"rx_frameindex", &CmdProxy::rx_frameindex},
         {"nextframenumber", &CmdProxy::nextframenumber},
         {"trigger", &CmdProxy::Trigger},
         {"scan", &CmdProxy::Scan},
@@ -1084,8 +1085,7 @@ class CmdProxy {
         {"framecounter", &CmdProxy::framecounter},
         {"runtime", &CmdProxy::runtime},
         {"frametime", &CmdProxy::frametime},
-        {"user", &CmdProxy::UserDetails},
-        {"rx_frameindex", &CmdProxy::rx_frameindex}
+        {"user", &CmdProxy::UserDetails}
 
     };
 
@@ -1533,11 +1533,11 @@ class CmdProxy {
                         "to IDLE or STOPPED. Goes to stop server.");
 
     GET_COMMAND(rx_framescaught, getFramesCaught,
-                "\n\tNumber of frames caught by receiver.");
+                "\n\tNumber of frames caught by each port in receiver.");
 
-    GET_COMMAND(rx_missingpackets, getNumMissingPackets,
-                "\n\tNumber of missing packets for each port in receiver. "
-                "Negative number denotes extra packets.");
+    GET_COMMAND(
+        rx_frameindex, getRxCurrentFrameIndex,
+        "\n\tCurrent frame index received in receiver during acquisition.");
 
     INTEGER_COMMAND_VEC_ID(
         nextframenumber, getNextFrameNumber, setNextFrameNumber,
@@ -2251,10 +2251,6 @@ class CmdProxy {
                      "ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench]["
                      "CTB] Timestamp at a frame start."
                      "\n\t[Gotthard2] not in burst and auto mode.");
-
-    GET_COMMAND(
-        rx_frameindex, getRxCurrentFrameIndex,
-        "\n\tCurrent frame index received in receiver during acquisition.");
 };
 
 } // namespace sls

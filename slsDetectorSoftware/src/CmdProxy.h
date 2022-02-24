@@ -1539,9 +1539,9 @@ class CmdProxy {
                 "\n\tNumber of missing packets for each port in receiver. If "
                 "negative, they are packets in excess. ");
 
-    GET_COMMAND(
-        rx_frameindex, getRxCurrentFrameIndex,
-        "\n\tCurrent frame index received in receiver during acquisition.");
+    GET_COMMAND(rx_frameindex, getRxCurrentFrameIndex,
+                "\n\tCurrent frame index received for each port in receiver "
+                "during acquisition.");
 
     INTEGER_COMMAND_VEC_ID(
         nextframenumber, getNextFrameNumber, setNextFrameNumber,

@@ -1550,6 +1550,15 @@ void Implementation::setDetectorDataStream(const portPosition port,
     detectorDataStream10GbE[index] = enable;
     LOG(logINFO) << "Detector 10GbE datastream (" << sls::ToString(port)
                  << " Port): " << sls::ToString(detectorDataStream10GbE[index]);
+    // update datastream for 10g
+    if (tengigaEnable) {
+        detectorDataStream[LEFT] = detectorDataStream10GbE[LEFT];
+        detectorDataStream[RIGHT] = detectorDataStream10GbE[RIGHT];
+        LOG(logINFO) << "Detector datastream updated [Left: "
+                     << sls::ToString(detectorDataStream[LEFT])
+                     << ", Right: " << sls::ToString(detectorDataStream[RIGHT])
+                     << "]";
+    }
 }
 
 int Implementation::getReadNRows() const { return readNRows; }

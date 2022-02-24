@@ -1476,10 +1476,10 @@ void Implementation::setTenGigaEnable(const bool b) {
                 detectorDataStream[LEFT] = detectorDataStream10GbE[LEFT];
                 detectorDataStream[RIGHT] = detectorDataStream10GbE[RIGHT];
             }
-            LOG(logINFO) << "Detector datastream updated [Left: "
-                         << sls::ToString(detectorDataStream[LEFT])
-                         << ", Right: "
-                         << sls::ToString(detectorDataStream[RIGHT]) << "]";
+            LOG(logDEBUG) << "Detector datastream updated [Left: "
+                          << sls::ToString(detectorDataStream[LEFT])
+                          << ", Right: "
+                          << sls::ToString(detectorDataStream[RIGHT]) << "]";
         }
     }
     LOG(logINFO) << "Ten Giga: " << (tengigaEnable ? "enabled" : "disabled");
@@ -1552,12 +1552,10 @@ void Implementation::setDetectorDataStream(const portPosition port,
                  << " Port): " << sls::ToString(detectorDataStream10GbE[index]);
     // update datastream for 10g
     if (tengigaEnable) {
-        detectorDataStream[LEFT] = detectorDataStream10GbE[LEFT];
-        detectorDataStream[RIGHT] = detectorDataStream10GbE[RIGHT];
-        LOG(logINFO) << "Detector datastream updated [Left: "
-                     << sls::ToString(detectorDataStream[LEFT])
-                     << ", Right: " << sls::ToString(detectorDataStream[RIGHT])
-                     << "]";
+        detectorDataStream[index] = detectorDataStream10GbE[index];
+        LOG(logDEBUG) << "Detector datastream updated ["
+                      << (index == 0 ? "Left" : "Right")
+                      << "] : " << sls::ToString(detectorDataStream[index]);
     }
 }
 

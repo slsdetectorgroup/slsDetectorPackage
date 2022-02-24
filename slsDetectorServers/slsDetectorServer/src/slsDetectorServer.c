@@ -32,6 +32,13 @@ extern int ignoreConfigFileFlag;
 #ifdef GOTTHARDD
 extern int phaseShift;
 #endif
+#if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
+    defined(MYTHEN3D)
+extern int masterCommandLine;
+#endif
+#ifdef EIGERD
+extern int topCommandLine;
+#endif
 
 void error(char *msg) { perror(msg); }
 
@@ -50,6 +57,13 @@ int main(int argc, char *argv[]) {
     checkModuleFlag = 1;
     int version = 0;
     ignoreConfigFileFlag = 0;
+#if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
+    defined(MYTHEN3D)
+    masterCommandLine = -1;
+#endif
+#ifdef EIGERD
+    topCommandLine = -1;
+#endif
 
     // help message
     char helpMessage[MAX_STR_LENGTH];
@@ -70,6 +84,11 @@ int main(int argc, char *argv[]) {
         "\t-i, --ignore-config      : "
         "[Virtual][Eiger][Jungfrau][Gotthard][Gotthard2] \n"
         "\t                           Ignore config file. \n"
+        "\t-m, --master <master>    : [Eiger][Mythen3][Gotthard][Gotthard2] \n"
+        "\t                           Set Master to 0 or 1. Precedence over "
+        "config file. \n"
+        "\t-t, --top <top>          : [Eiger] Set Top to 0 or 1. Precedence "
+        "over config file. \n"
         "\t-s, --stopserver         : Stop server. Do not use as it is created "
         "by control server \n\n",
         argv[0]);
@@ -86,6 +105,8 @@ int main(int argc, char *argv[]) {
         {"devel", no_argument, NULL, 'd'},
         {"update", no_argument, NULL, 'u'},
         {"ignore-config", no_argument, NULL, 'i'},
+        {"master", required_argument, NULL, 'm'},
+        {"top", required_argument, NULL, 't'},
         {"stopserver", no_argument, NULL, 's'},
         {NULL, 0, NULL, 0}};
 
@@ -173,6 +194,41 @@ int main(int argc, char *argv[]) {
             ignoreConfigFileFlag = 1;
 #else
             LOG(logERROR, ("No server config files for this detector\n"));
+            exit(EXIT_FAILURE);
+#endif
+            break;
+
+        case 'm':
+#if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
+    defined(MYTHEN3D)
+            if (sscanf(optarg, "%d", &masterCommandLine) != 1) {
+                LOG(logERROR, ("Cannot scan master argument\n%s", helpMessage));
+                exit(EXIT_FAILURE);
+            }
+            if (masterCommandLine == 0) {
+                LOG(logINFO, ("Detector Slave mode\n"));
+            } else {
+                LOG(logINFO, ("Detector Master mode\n"));
+            }
+#else
+            LOG(logERROR, ("No master implemented for this detector server\n"));
+            exit(EXIT_FAILURE);
+#endif
+            break;
+
+        case 't':
+#ifdef EIGERD
+            if (sscanf(optarg, "%d", &topCommandLine) != 1) {
+                LOG(logERROR, ("Cannot scan top argument\n%s", helpMessage));
+                exit(EXIT_FAILURE);
+            }
+            if (topCommandLine == 0) {
+                LOG(logINFO, ("Detector Top mode\n"));
+            } else {
+                LOG(logINFO, ("Detector Bottom mode\n"));
+            }
+#else
+            LOG(logERROR, ("No top implemented for this detector server\n"));
             exit(EXIT_FAILURE);
 #endif
             break;

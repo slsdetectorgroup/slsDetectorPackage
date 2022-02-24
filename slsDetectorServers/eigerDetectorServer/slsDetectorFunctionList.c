@@ -33,6 +33,10 @@ extern int isControlServer;
 extern void getMacAddressinString(char *cmac, int size, uint64_t mac);
 extern void getIpAddressinString(char *cip, uint32_t ip);
 
+// Variables that will be exported
+int masterCommandLine = -1;
+int topCommandLine = -1;
+
 int initError = OK;
 int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
@@ -368,6 +372,7 @@ void initStopServer() {
         return;
     }
 #else
+    // control server read config file and already set up master/top
     sharedMemory_lockLocalLink();
     Feb_Interface_FebInterface();
     Feb_Control_FebControl();
@@ -432,6 +437,11 @@ int readConfigFile() {
         return initError;
     }
 
+#ifndef VIRTUAL
+    // if not found in config file, they will be reset to hardware settings
+    top = -1;
+    master = -1;
+#endif
     if (ignoreConfigFileFlag) {
         return OK;
     }
@@ -577,8 +587,10 @@ int readConfigFile() {
         LOG(logINFO, ("Successfully read config file\n"));
     }
 
+#ifndef VIRTUAL
     // reset to hardware settings if not in config file (if overwritten)
     resetToHardwareSettings();
+#endif
 
     return initError;
 }
@@ -590,6 +602,7 @@ void resetToHardwareSettings() {
     }
     // top not set in config file
     if (top == -1) {
+        LOG(logINFO, ("Resetting Top to hardware settings\n"));
         if (!Beb_SetTop(TOP_HARDWARE)) {
             initError = FAIL;
             strcpy(initErrorMessage,
@@ -619,6 +632,7 @@ void resetToHardwareSettings() {
     }
     // master not set in config file
     if (master == -1) {
+        LOG(logINFO, ("Resetting Master to hardware settings\n"));
         if (!Beb_SetMaster(MASTER_HARDWARE)) {
             initError = FAIL;
             strcpy(initErrorMessage,
@@ -648,6 +662,8 @@ void resetToHardwareSettings() {
     }
 #endif
 }
+
+int checkCommandLineConfiguration() {}
 
 /* set up detector */
 
@@ -1462,7 +1478,7 @@ int setHighVoltage(int val) {
 /* parameters - timing, extsig */
 
 int setMaster(int m) {
-    LOG(logINFO, ("Setting up as %s\n", (m == 1 ? "Master" : "Slave")));
+    LOG(logINFOBLUE, ("Setting up as %s\n", (m == 1 ? "Master" : "Slave")));
 #ifdef VIRTUAL
     master = m;
 #else

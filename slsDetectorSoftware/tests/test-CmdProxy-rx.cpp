@@ -93,13 +93,15 @@ TEST_CASE("rx_framescaught", "[.cmd][.rx]") {
     CmdProxy proxy(&det);
 
     // This ensures 0 caught frames
+    auto prev_val = det.getFileWrite();
     det.setFileWrite(false); // avoid writing or error on file creation
     det.startReceiver();
     det.stopReceiver();
     {
         std::ostringstream oss;
         proxy.Call("rx_framescaught", {}, -1, GET, oss);
-        if (det.getNumberofUDPInterfaces() == 1) {
+        if (det.getNumberofUDPInterfaces().tsquash(
+                "inconsistent number of interfaces") == 1) {
             REQUIRE(oss.str() == "rx_framescaught [0]\n");
         } else {
             REQUIRE(oss.str() == "rx_framescaught [0, 0]\n");
@@ -115,10 +117,15 @@ TEST_CASE("rx_framescaught", "[.cmd][.rx]") {
     //     proxy.Call("rx_framescaught", {}, -1, GET, oss);
     //     REQUIRE(oss.str() == "rx_framescaught 1\n");
     // }
+
+    for (int i = 0; i != det.size(); ++i) {
+        det.setFileWrite(prev_val[i], {i});
+    }
 }
 
 TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
     Detector det;
+    auto prev_val = det.getFileWrite();
     det.setFileWrite(false); // avoid writing or error on file creation
     CmdProxy proxy(&det);
     {
@@ -127,8 +134,12 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
         det.stopReceiver();
         std::ostringstream oss;
         proxy.Call("rx_missingpackets", {}, -1, GET, oss);
-        std::string s = (oss.str()).erase(0, strlen("rx_missingpackets ["));
-        REQUIRE(std::stoi(s) > 0);
+        if (det.getNumberofUDPInterfaces().tsquash(
+                "inconsistent number of interfaces") == 1) {
+            REQUIRE(oss.str() != "rx_missingpackets [0]\n");
+        } else {
+            REQUIRE(oss.str() != "rx_missingpackets [0, 0]\n");
+        }
     }
     {
         // 0 missing packets (takes into account that acquisition is stopped)
@@ -137,8 +148,15 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
         det.stopReceiver();
         std::ostringstream oss;
         proxy.Call("rx_missingpackets", {}, -1, GET, oss);
-        std::string s = (oss.str()).erase(0, strlen("rx_missingpackets ["));
-        REQUIRE(std::stoi(s) == 0);
+        if (det.getNumberofUDPInterfaces().tsquash(
+                "inconsistent number of interfaces") == 1) {
+            REQUIRE(oss.str() == "rx_missingpackets [0]\n");
+        } else {
+            REQUIRE(oss.str() == "rx_missingpackets [0, 0]\n");
+        }
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setFileWrite(prev_val[i], {i});
     }
 }
 
@@ -149,10 +167,6 @@ TEST_CASE("rx_frameindex", "[.cmd][.rx]") {
 
     // This is a get only command
     REQUIRE_THROWS(proxy.Call("rx_frameindex", {"2"}, -1, PUT));
-    std::ostringstream oss;
-    proxy.Call("rx_frameindex", {}, 0, GET, oss);
-    std::string s = (oss.str()).erase(0, strlen("rx_frameindex "));
-    REQUIRE(std::stoi(s) >= 0);
 }
 
 /* Network Configuration (Detector<->Receiver) */

@@ -1274,27 +1274,6 @@ std::string CmdProxy::DetectorStatus(int action) {
     return os.str();
 }
 
-std::string CmdProxy::RxMissingPackets(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "Number of missing packets for each port in receiver. If "
-              "negative, they are packets in excess. "
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto mp = det->getNumMissingPackets(std::vector<int>{det_id});
-        os << OutString(mp) << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("Cannot put");
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
 std::string CmdProxy::Scan(int action) {
     std::ostringstream os;
     os << cmd << ' ';

@@ -3979,29 +3979,26 @@ int check_version(int file_des) {
         return printSocketReadError();
 
     // check software- firmware compatibility and basic tests
-    if (isControlServer) {
-        LOG(logDEBUG1, ("Checking software-firmware compatibility and basic "
-                        "test result\n"));
+    LOG(logDEBUG1, ("Checking software-firmware compatibility and basic "
+                    "test result\n"));
 
-        // check if firmware check is done
+    // check if firmware check is done
+    if (!isInitCheckDone()) {
+        usleep(3 * 1000 * 1000);
         if (!isInitCheckDone()) {
-            usleep(3 * 1000 * 1000);
-            if (!isInitCheckDone()) {
-                ret = FAIL;
-                strcpy(mess, "Firmware Software Compatibility Check (Server "
-                             "Initialization) "
-                             "still not done done in server. Unexpected.\n");
-                LOG(logERROR, (mess));
-            }
+            ret = FAIL;
+            strcpy(mess, "Server Initialization still not done done in server. Unexpected.\n");
+            LOG(logERROR, (mess));
         }
-        // check firmware check result
-        if (ret == OK) {
-            char *firmware_message = NULL;
-            if (getInitResult(&firmware_message) == FAIL) {
-                ret = FAIL;
-                strcpy(mess, firmware_message);
-                LOG(logERROR, (mess));
-            }
+    }
+
+    // check firmware check result
+    if (ret == OK) {
+        char *firmware_message = NULL;
+        if (getInitResult(&firmware_message) == FAIL) {
+            ret = FAIL;
+            strcpy(mess, firmware_message);
+            LOG(logERROR, (mess));
         }
     }
 
@@ -8228,7 +8225,7 @@ int set_master(int file_des) {
             sprintf(mess, "Could not set master. Invalid argument %d.\n", arg);
             LOG(logERROR, (mess));
         } else {
-            ret = setMaster(arg);
+            ret = setMaster(arg == 1 ? OW_MASTER : OW_SLAVE);
             if (ret == FAIL) {
                 strcpy(mess, "Could not set master\n");
                 LOG(logERROR, (mess));

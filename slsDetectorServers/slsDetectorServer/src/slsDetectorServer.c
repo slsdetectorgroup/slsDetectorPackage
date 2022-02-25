@@ -199,7 +199,11 @@ int main(int argc, char *argv[]) {
             break;
 
         case 'm':
-#if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
+#if (defined(MYTHEN3D) || defined(GOTTHARD2D)) && !defined(VIRTUAL)
+            LOG(logERROR, ("Cannot set master via the detector server for this "
+                           "detector\n"));
+            exit(EXIT_FAILURE);
+#elif defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||          \
     defined(MYTHEN3D)
             if (sscanf(optarg, "%d", &masterCommandLine) != 1) {
                 LOG(logERROR, ("Cannot scan master argument\n%s", helpMessage));

@@ -18,7 +18,7 @@
 const unsigned int Feb_Control_leftAddress = 0x100;
 const unsigned int Feb_Control_rightAddress = 0x200;
 
-int Feb_Control_master = 0;
+int Feb_Control_master = -1;
 int Feb_Control_normal = 0;
 int Feb_Control_activated = 1;
 
@@ -50,17 +50,16 @@ double ratemax = -1;
 // setup
 void Feb_Control_activate(int activate) { Feb_Control_activated = activate; }
 
-void Feb_Control_FebControl() {
-    Feb_Control_staticBits = Feb_Control_acquireNReadoutMode =
-        Feb_Control_triggerMode = Feb_Control_externalEnableMode =
-            Feb_Control_subFrameMode = 0;
+int Feb_Control_FebControl(int normal) {
+    Feb_Control_staticBits = 0;
+    Feb_Control_acquireNReadoutMode = 0;
+    Feb_Control_triggerMode = 0;
+    Feb_Control_externalEnableMode = 0;
+    Feb_Control_subFrameMode = 0;
     Feb_Control_trimbit_size = 263680;
     Feb_Control_last_downloaded_trimbits =
         malloc(Feb_Control_trimbit_size * sizeof(int));
-}
 
-int Feb_Control_Init(int master, int normal) {
-    Feb_Control_master = master;
     Feb_Control_normal = normal;
     Feb_Interface_SetAddress(Feb_Control_rightAddress, Feb_Control_leftAddress);
     if (Feb_Control_activated) {
@@ -1532,12 +1531,13 @@ int Feb_Control_SetMaster(enum MASTERINDEX ind) {
     return 1;
 }
 
-int Feb_Control_SetMasterEffects(int master) {
+int Feb_Control_SetMasterEffects(int master, int controlServer) {
     int prevMaster = Feb_Control_master;
 
     Feb_Control_master = master;
     // change in master for 9m
-    if (prevMaster != Feb_Control_master && !Feb_Control_normal) {
+    if (controlServer && prevMaster != Feb_Control_master &&
+        !Feb_Control_normal) {
         if (prevMaster) {
             Feb_Control_CloseSerialCommunication();
         }

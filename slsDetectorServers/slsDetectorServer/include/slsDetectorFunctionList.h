@@ -97,6 +97,9 @@ u_int32_t getDetectorNumber();
 #if defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D)
 int getModuleId(int *ret, char *mess);
 #endif
+#if defined(EIGERD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+int updateModuleId();
+#endif
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
 void setModuleId(int modid);
 #endif
@@ -140,6 +143,10 @@ void setADIFDefaults();
 #endif
 #if defined(GOTTHARD2D) || defined(EIGERD) || defined(JUNGFRAUD)
 int readConfigFile();
+#endif
+#if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
+    defined(MYTHEN3D)
+int checkCommandLineConfiguration();
 #endif
 #ifdef EIGERD
 void resetToHardwareSettings();
@@ -367,7 +374,9 @@ int setHighVoltage(int val);
 
 // parameters - timing, extsig
 #ifdef EIGERD
-int setMaster(int m);
+int setMaster(enum MASTERINDEX m);
+int setTop(int t);
+int isTop(int *retval);
 #endif
 #if defined(MYTHEN3D) || defined(EIGERD) || defined(GOTTHARDD) ||              \
     defined(GOTTHARD2D)

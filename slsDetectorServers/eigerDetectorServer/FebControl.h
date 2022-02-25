@@ -7,8 +7,7 @@
 
 // setup
 void Feb_Control_activate(int activate);
-void Feb_Control_FebControl();
-int Feb_Control_Init(int master, int normal);
+int Feb_Control_FebControl(int normal);
 int Feb_Control_OpenSerialCommunication();
 void Feb_Control_CloseSerialCommunication();
 int Feb_Control_CheckSetup();
@@ -87,7 +86,7 @@ int Feb_Control_SetInterruptSubframe(int val);
 int Feb_Control_GetInterruptSubframe();
 int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right);
 int Feb_Control_SetMaster(enum MASTERINDEX ind);
-int Feb_Control_SetMasterEffects(int master);
+int Feb_Control_SetMasterEffects(int master, int controlServer);
 int Feb_Control_SetQuad(int val);
 int Feb_Control_SetChipSignalsToTrimQuad(int enable);
 int Feb_Control_SetReadNRows(int value);

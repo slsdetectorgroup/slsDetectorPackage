@@ -785,8 +785,12 @@ int checkCommandLineConfiguration() {
 }
 
 void setMasterSlaveConfiguration() {
-    LOG(logINFO, ("Reading Master Slave Configuration\n"));
+    // not the first time its being read
+    if (!detectorFirstServer) {
+        return;
+    }
 
+    LOG(logINFO, ("Reading Master Slave Configuration\n"));
     // master configuration
     if (master) {
         // master default delay set, so reset delay

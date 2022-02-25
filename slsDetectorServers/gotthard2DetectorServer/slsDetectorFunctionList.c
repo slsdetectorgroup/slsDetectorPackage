@@ -502,14 +502,14 @@ void setupDetector() {
     setPhase(READOUT_C1, DEFAULT_CLK1_PHASE_DEG, 1);
     setDBITPipeline(DEFAULT_DBIT_PIPELINE);
 
-    // master for virtual
-    if (checkCommandLineConfiguration() == FAIL)
-        return;
-
     // also sets default dac and on chip dac values
     if (readConfigFile() == FAIL) {
         return;
     }
+
+    // master for virtual
+    if (checkCommandLineConfiguration() == FAIL)
+        return;
 
     if (updateModuleId() == FAIL) {
         return;
@@ -1972,12 +1972,13 @@ int checkDetectorType() {
 
     if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL) <= TYPE_TOLERANCE) {
         LOG(logINFOBLUE, ("MASTER 25um Module\n"));
+        master = 1;
     } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL) <=
                TYPE_TOLERANCE) {
         master = 0;
         LOG(logINFOBLUE, ("SLAVE 25um Module\n"));
     } else if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) <= TYPE_TOLERANCE) {
-        master = 0;
+        master = -1;
         LOG(logINFOBLUE, ("50um Module\n"));
     } else {
         LOG(logERROR,

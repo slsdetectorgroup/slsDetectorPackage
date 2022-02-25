@@ -82,11 +82,11 @@ int main(int argc, char *argv[]) {
         "\t-u, --update             : Update mode. Skips firmware checks and "
         "initial detector setup. \n"
         "\t-i, --ignore-config      : "
-        "[Virtual][Eiger][Jungfrau][Gotthard][Gotthard2] \n"
+        "[Eiger][Jungfrau][Gotthard][Gotthard2] \n"
         "\t                           Ignore config file. \n"
         "\t-m, --master <master>    : [Eiger][Mythen3][Gotthard][Gotthard2] \n"
         "\t                           Set Master to 0 or 1. Precedence over "
-        "config file. \n"
+        "config file. Only for virtual servers except Eiger. \n"
         "\t-t, --top <top>          : [Eiger] Set Top to 0 or 1. Precedence "
         "over config file. \n"
         "\t-s, --stopserver         : Stop server. Do not use as it is created "
@@ -116,7 +116,8 @@ int main(int argc, char *argv[]) {
     int c = 0;
 
     while (c != -1) {
-        c = getopt_long(argc, argv, "hvp:f:gduis", long_options, &option_index);
+        c = getopt_long(argc, argv, "hvp:f:gduim:t:s", long_options,
+                        &option_index);
 
         // Detect the end of the options
         if (c == -1)
@@ -199,7 +200,8 @@ int main(int argc, char *argv[]) {
             break;
 
         case 'm':
-#if (defined(MYTHEN3D) || defined(GOTTHARD2D)) && !defined(VIRTUAL)
+#if (defined(MYTHEN3D) || defined(GOTTHARDD) || defined(GOTTHARD2D)) &&        \
+    !defined(VIRTUAL)
             LOG(logERROR, ("Cannot set master via the detector server for this "
                            "detector\n"));
             exit(EXIT_FAILURE);
@@ -209,10 +211,10 @@ int main(int argc, char *argv[]) {
                 LOG(logERROR, ("Cannot scan master argument\n%s", helpMessage));
                 exit(EXIT_FAILURE);
             }
-            if (masterCommandLine == 0) {
-                LOG(logINFO, ("Detector Slave mode\n"));
-            } else {
+            if (masterCommandLine == 1) {
                 LOG(logINFO, ("Detector Master mode\n"));
+            } else {
+                LOG(logINFO, ("Detector Slave mode\n"));
             }
 #else
             LOG(logERROR, ("No master implemented for this detector server\n"));
@@ -226,7 +228,7 @@ int main(int argc, char *argv[]) {
                 LOG(logERROR, ("Cannot scan top argument\n%s", helpMessage));
                 exit(EXIT_FAILURE);
             }
-            if (topCommandLine == 0) {
+            if (topCommandLine == 1) {
                 LOG(logINFO, ("Detector Top mode\n"));
             } else {
                 LOG(logINFO, ("Detector Bottom mode\n"));

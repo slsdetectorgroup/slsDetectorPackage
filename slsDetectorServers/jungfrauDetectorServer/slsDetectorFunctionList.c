@@ -404,6 +404,10 @@ void initStopServer() {
             initCheckDone = 1;
             return;
         }
+        if (readConfigFile() == FAIL) {
+            initCheckDone = 1;
+            return;
+        }
 #ifdef VIRTUAL
         sharedMemory_setStop(0);
         // temp threshold and reset event (read by stop server)

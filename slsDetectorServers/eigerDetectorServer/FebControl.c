@@ -1549,6 +1549,7 @@ int Feb_Control_SetMasterEffects(int master, int controlServer) {
             }
         }
     }
+    return OK;
 }
 
 int Feb_Control_SetQuad(int val) {

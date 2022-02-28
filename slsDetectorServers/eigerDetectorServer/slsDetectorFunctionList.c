@@ -336,13 +336,21 @@ void initControlServer() {
         Feb_Interface_FebInterface();
         if (!Feb_Control_FebControl(normal)) {
             initError = FAIL;
-            sprintf(initErrorMessage, "Could not intitalize feb control\n");
+            sprintf(initErrorMessage, "Could not intitalize eiger detector sever: feb control\n");
             LOG(logERROR, (initErrorMessage));
             initCheckDone = 1;
             sharedMemory_unlockLocalLink();
             return;
         }
-        Feb_Control_SetMasterEffects(master, isControlServer);
+        if (Feb_Control_SetMasterEffects(master, isControlServer) == FAIL) {
+            initError = FAIL;
+            sprintf(initErrorMessage, "Could not intitalize HV for eiger detector server: feb control serial "
+                               "communication\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            sharedMemory_unlockLocalLink();
+            return;            
+        }
         sharedMemory_unlockLocalLink();
         LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
         Beb_SetTopVariable(top);
@@ -389,7 +397,15 @@ void initStopServer() {
             sharedMemory_unlockLocalLink();
             return;
         }
-        Feb_Control_SetMasterEffects(master, isControlServer);
+        if (Feb_Control_SetMasterEffects(master, isControlServer) == FAIL) {
+            initError = FAIL;
+            sprintf(initErrorMessage, "Could not intitalize HV for eiger detector server: feb control serial "
+                               "communication\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            sharedMemory_unlockLocalLink();
+            return;            
+        }
         sharedMemory_unlockLocalLink();
         LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
         Beb_SetTopVariable(top);

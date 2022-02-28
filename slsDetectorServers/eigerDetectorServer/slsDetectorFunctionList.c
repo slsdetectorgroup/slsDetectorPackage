@@ -457,10 +457,10 @@ int getModuleConfiguration(int *m, int *t, int *n) {
     *t = top;
     *n = normal;
 #else
-    if (Beb_GetModuleConfiguration(&m, &t, &n) == FAIL) {
+    if (Beb_GetModuleConfiguration(m, t, n) == FAIL) {
         initError = FAIL;
         strcpy(initErrorMessage, ("Could not get module configuration\n"));
-        LOG(logERROR, (mess));
+        LOG(logERROR, (initErrorMessage));
         return FAIL;
     }
 #endif
@@ -1512,7 +1512,7 @@ int setMaster(enum MASTERINDEX m) {
     sharedMemory_unlockLocalLink();
 
     // get and update master variable
-    if (isMaster(master) == FAIL) {
+    if (isMaster(&master) == FAIL) {
         return FAIL;
     }
 
@@ -1563,14 +1563,14 @@ int setTop(enum TOPINDEX  t) {
     }
 
     sharedMemory_lockLocalLink();
-    if (!Feb_Control_SetTop(t)) {
+    if (!Feb_Control_SetTop(t, 1, 1)) {
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
     sharedMemory_unlockLocalLink();
 
     // get and update top variable
-    if (isTop(top) == FAIL) {
+    if (isTop(&top) == FAIL) {
         return FAIL;
     }
 

@@ -472,14 +472,15 @@ int readConfigFile() {
         return initError;
     }
 
+    if (ignoreConfigFileFlag) {
+        return OK;
+    }
+
 #ifndef VIRTUAL
     // if not found in config file, they will be reset to hardware settings
     top = -1;
     master = -1;
 #endif
-    if (ignoreConfigFileFlag) {
-        return OK;
-    }
 
     const int fileNameSize = 128;
     char fname[fileNameSize];

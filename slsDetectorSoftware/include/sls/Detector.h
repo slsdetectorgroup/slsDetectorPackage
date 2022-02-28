@@ -1157,6 +1157,12 @@ class Detector {
     void setDataStream(const defs::portPosition port, const bool enable,
                        Positions pos = {});
 
+    /** [Eiger] Advanced */
+    Result<bool> getTop(Positions pos = {}) const;
+
+    /** [Eiger] Advanced. Default is hardware default */
+    void setTop(bool value, Positions pos = {});
+
     ///@}
 
     /** @name Jungfrau Specific */

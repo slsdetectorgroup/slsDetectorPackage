@@ -1011,6 +1011,14 @@ void init_det(py::module &m) {
                                  sls::Positions)) &
                  Detector::setDataStream,
              py::arg(), py::arg(), py::arg() = Positions{})
+        .def("getTop",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getTop,
+             py::arg() = Positions{})
+        .def("setTop",
+             (void (Detector::*)(bool, sls::Positions)) &
+                 Detector::setTop,
+             py::arg(), py::arg() = Positions{})
         .def("getChipVersion",
              (Result<double>(Detector::*)(sls::Positions) const) &
                  Detector::getChipVersion,

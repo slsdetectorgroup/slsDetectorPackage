@@ -1476,6 +1476,19 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def master(self):
+        """
+        [Eiger] Sets half module to master and others to slaves.\n
+        [Gotthard][Gotthard2][Mythen3][Eiger] Gets if the current module/ half module is master.
+        """
+        return self.getMaster()
+
+    @master.setter
+    def master(self, value):
+        ut.set_using_dict(self.setMaster, value)
+
+    @property
+    @element
     def lock(self):
         """Lock detector to one client IP, 1 locks, 0 unlocks. Default is unlocked."""
         return self.getDetectorLock()
@@ -2125,6 +2138,21 @@ class Detector(CppDetectorApi):
         :setter: Not implemented
         """
         return ut.reduce_time(self.getMeasuredSubFramePeriod())
+
+    @property
+    @element
+    def top(self):
+        """[Eiger] Sets half module to top (1), else bottom.
+        
+        Note
+        -----
+        Advanced Function!
+        """
+        return self.getTop()
+
+    @top.setter
+    def top(self, value):
+        ut.set_using_dict(self.setTop, value)
 
     """
     ------------------<<<Jungfrau specific>>>-------------------------

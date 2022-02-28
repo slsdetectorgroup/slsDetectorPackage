@@ -943,6 +943,7 @@ class CmdProxy {
         {"pulsechip", &CmdProxy::PulseChip},
         {"quad", &CmdProxy::Quad},
         {"datastream", &CmdProxy::DataStream},
+        {"top", &CmdProxy::top},
 
         /* Jungfrau Specific */
         {"chipversion", &CmdProxy::chipversion},
@@ -1907,6 +1908,11 @@ class CmdProxy {
         "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at "
         "start of acquisition. 0 complete reset, 1 partial reset. Default is "
         "complete reset. Advanced function!");
+
+    INTEGER_COMMAND_VEC_ID(
+        top, getTop, setTop, StringTo<int>,
+        "[0, 1]\n\t[Eiger] Sets half module to top (1), else bottom.");
+
 
     /* Jungfrau Specific */
 

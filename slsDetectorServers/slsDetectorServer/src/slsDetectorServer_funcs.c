@@ -470,6 +470,8 @@ void function_table() {
     flist[F_GET_UPDATE_MODE] = &get_update_mode;
     flist[F_SET_UPDATE_MODE] = &set_update_mode;
     flist[F_SET_MASTER] = &set_master;
+    flist[F_GET_TOP] = &get_top;
+    flist[F_SET_TOP] = &set_top;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -9718,5 +9720,67 @@ int set_update_mode(int file_des) {
         }
     }
 
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_top(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+    LOG(logDEBUG1, ("Getting top\n"));
+
+#ifndef EIGERD
+    functionNotImplemented();
+#else
+    // get only
+    ret = isTop(&retval);
+    if (ret == FAIL) {
+        strcpy(mess, "Could not get Top\n");
+        LOG(logERROR, (mess));
+    } else {
+        LOG(logDEBUG1, ("retval top: %d\n", retval));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_top(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting top : %u\n", arg));
+
+#ifndef EIGERD
+    functionNotImplemented();
+#else
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg != 0 && arg != 1) {
+            ret = FAIL;
+            sprintf(mess, "Could not set top mode. Invalid value: %d. Must be 0 or 1\n", arg);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setTop(arg == 1 ? OW_TOP : OW_BOTTOM);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set %s\n", (arg == 1 ? "Top" : "Bottom"));
+                LOG(logERROR, (mess));
+            } else {            
+                int retval = -1;
+                ret = isTop(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get Top mode\n");
+                    LOG(logERROR, (mess));
+                } else {                
+                    LOG(logDEBUG1, ("retval top: %d\n", retval));
+                    validate(&ret, mess, arg, retval, "set top mode", DEC);
+                }
+            }
+        }
+    }
+#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }

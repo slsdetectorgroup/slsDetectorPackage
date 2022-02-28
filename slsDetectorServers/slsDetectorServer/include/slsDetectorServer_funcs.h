@@ -291,3 +291,5 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
                              char *checksum, char *serverName);
 int get_update_mode(int);
 int set_update_mode(int);
+int get_top(int);
+int set_top(int);

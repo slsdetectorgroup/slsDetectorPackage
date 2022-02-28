@@ -369,6 +369,8 @@ class Module : public virtual slsDetectorDefs {
     void setQuad(const bool enable);
     bool getDataStream(const portPosition port) const;
     void setDataStream(const portPosition port, const bool enable);
+    bool getTop() const;
+    void setTop(bool value);
 
     /**************************************************
      *                                                *

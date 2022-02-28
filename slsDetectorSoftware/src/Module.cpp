@@ -1679,6 +1679,15 @@ void Module::setDataStream(const portPosition port, const bool enable) {
     }
 }
 
+bool Module::getTop() const {
+    return (
+        !static_cast<bool>(sendToDetector<int>(F_GET_TOP)));
+}
+
+void Module::setTop(bool value) {
+    sendToDetector<int>(F_SET_TOP, static_cast<int>(value));
+}
+
 // Jungfrau Specific
 double Module::getChipVersion() const {
     return (sendToDetector<int>(F_GET_CHIP_VERSION)) / 10.00;

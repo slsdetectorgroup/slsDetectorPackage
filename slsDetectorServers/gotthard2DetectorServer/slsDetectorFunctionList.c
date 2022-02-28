@@ -388,6 +388,7 @@ void initStopServer() {
         }
 #ifdef VIRTUAL
         sharedMemory_setStop(0);
+        // not reading config file (nothing of interest to stop server)
         if (checkCommandLineConfiguration() == FAIL) {
             initCheckDone = 1;
             return;

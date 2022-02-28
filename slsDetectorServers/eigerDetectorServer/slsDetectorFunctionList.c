@@ -1519,6 +1519,7 @@ int setMaster(enum MASTERINDEX m) {
     // feb variable and hv comms (9m)
     sharedMemory_lockLocalLink();
     if (Feb_Control_SetMasterEffects(master, isControlServer) == FAIL) {
+        sharedMemory_unlockLocalLink();
         return FAIL;
     }
     sharedMemory_unlockLocalLink();
@@ -1541,7 +1542,7 @@ int isMaster(int *retval) {
     return OK;
 }
 
-int setTop(int t) {
+int setTop(enum TOPINDEX  t) {
     char *top_names[] = {TOP_NAMES};
     LOG(logINFOBLUE, ("Setting up as %s\n", top_names[t]));
 #ifdef VIRTUAL

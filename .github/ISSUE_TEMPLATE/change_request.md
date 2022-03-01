@@ -3,8 +3,10 @@ name: Change Request
 about: Suggest a change to an existing feature
 title: New Change Request
 labels: action - Change, priority - Unclassified, status - Pending
-template: change_request.md
+assignees: ''
+
 ---
+
 <!-- Preview changes before submitting -->
 <!-- Please fill out everything with an *, as this report will be discarded otherwise -->
 <!-- This is a comment, the syntax is a bit different from c++ or bash -->

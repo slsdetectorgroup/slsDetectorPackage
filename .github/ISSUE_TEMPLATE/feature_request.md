@@ -3,8 +3,10 @@ name: Feature Request
 about: Suggest a feature, documentation or submit a question
 title: New Feature Request
 labels: action - Enhancement, priority - Unclassified, status - Pending
-template: feature_request.md
+assignees: ''
+
 ---
+
 <!-- Preview changes before submitting -->
 <!-- Please fill out everything with an *, as this report will be discarded otherwise -->
 <!-- This is a comment, the syntax is a bit different from c++ or bash -->

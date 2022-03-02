@@ -2369,7 +2369,7 @@ void *start_timer(void *arg) {
                 *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
                 *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
                 *((uint8_t *)(imageData + (i++))) = (uint8_t)0xF9;
-                i += (1024 - 14);
+                i = npixels;
 #else
                 *((uint8_t *)(imageData + i)) =
                     eiger_virtual_test_mode ? 0xFE : (uint8_t)pixelVal;
@@ -2486,13 +2486,15 @@ void *start_timer(void *arg) {
                 if (eiger_virtual_left_datastream && i >= startval &&
                     i <= endval) {
                     usleep(eiger_virtual_transmission_delay_left);
-                    sendUDPPacket(iRxEntry, 0, packetData, 14 + 48);
+                    sendUDPPacket(iRxEntry, 0, packetData,
+                                  14 * (tgEnable ? 4 : 1) + 48);
                     LOG(logDEBUG1, ("Sent left packet: %d\n", i));
                 }
                 if (eiger_virtual_right_datastream && i >= startval &&
                     i <= endval) {
                     usleep(eiger_virtual_transmission_delay_right);
-                    sendUDPPacket(iRxEntry, 1, packetData2, 14 + 48);
+                    sendUDPPacket(iRxEntry, 1, packetData2,
+                                  14 * (tgEnable ? 4 : 1) + 48);
                     LOG(logDEBUG1, ("Sent right packet: %d\n", i));
                 }
             }

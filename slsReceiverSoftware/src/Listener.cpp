@@ -516,7 +516,8 @@ uint32_t Listener::ListenToAnImage(char *buf) {
 
         // decompress before copying to carry over packet
 #ifdef DECOMPRESS
-        DecompressPacket(listeningPacket.get() + hsize, rc, dsize, pnum);
+        DecompressPacket(listeningPacket.get() + hsize, rc - hsize, dsize,
+                         pnum);
 #endif
 
         // future packet	by looking at image number  (all other
@@ -642,14 +643,14 @@ void Listener::DecompressPacket(char *buffer, int numBytes, int datasize,
                                 int pnum) {
 #ifdef DECOMPRESS
 
-    // std::unique_ptr<char[]> temp = sls::make_unique<char[]>(datasize);
-    char *temp = (char *)malloc(sizeof(char) * datasize);
-    if (temp == NULL) {
+    std::unique_ptr<char[]> temp = sls::make_unique<char[]>(datasize);
+    // char *temp = (char *)malloc(sizeof(char) * datasize);
+    if (temp == nullptr) {
         LOG(logERROR) << "Could not malloc " << datasize
                       << "bytes. Not decompressing!";
         return;
     }
-    memset(temp, 0, datasize);
+    memset(temp.get(), 0, datasize);
     uint8_t *dst = (uint8_t *)(&temp[0]);
     uint8_t *src = (uint8_t *)buffer;
 
@@ -662,20 +663,36 @@ void Listener::DecompressPacket(char *buffer, int numBytes, int datasize,
      }*/
 
     int ibyte = 0;
+    int dstByte = 0;
     //  while (src != (uint8_t *)(buffer + numBytes)) {
     while (ibyte != numBytes) {
+        if (dstByte >= datasize) {
+            LOG(logERROR) << index
+                          << ": Writing beyond datasize allocated. Ignoring "
+                             "Decompression for packet "
+                          << pnum;
+            break;
+        }
         uint8_t byteRead = src[ibyte++];
         if (byteRead != 0xFF)
-            *dst++ = byteRead;
+            dst[dstByte++] = byteRead;
         else {
             do {
                 byteRead = src[ibyte++];
-                for (int i = 0; i != byteRead; ++i)
-                    *dst++ = (uint8_t)0x0;
+                for (int i = 0; i != byteRead; ++i) {
+                    if (dstByte >= datasize) {
+                        LOG(logERROR) << index
+                                      << ": Writing beyond datasize allocated. "
+                                         "Ignoring Decompression for packet "
+                                      << pnum;
+                        break;
+                    }
+                    dst[dstByte++] = (uint8_t)0x0;
+                }
             } while (byteRead == 0xFF);
         }
     }
-    memcpy(buffer, temp, datasize);
+    memcpy(buffer, temp.get(), datasize);
 
     // debug print
     /* if (pnum == 0 && index == 0) {
@@ -684,7 +701,7 @@ void Listener::DecompressPacket(char *buffer, int numBytes, int datasize,
          }
      }*/
 
-    free(temp);
+    // free(temp);
 
 #endif
 }

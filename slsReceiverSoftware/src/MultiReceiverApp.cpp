@@ -158,7 +158,9 @@ void GetData(char *metadata, char *datapointer, uint32_t &revDatasize,
  *  	- Default Start TCP port is 1954
  */
 int main(int argc, char *argv[]) {
-
+#ifdef DECOMPRESS
+    LOG(logINFORED) << "decompression mode";
+#endif
     /**	- set default values */
     int numReceivers = 1;
     int startTCPPort = 1954;

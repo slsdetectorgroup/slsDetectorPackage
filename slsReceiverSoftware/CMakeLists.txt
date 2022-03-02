@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
+
 set(SOURCES
     src/Implementation.cpp
     src/ClientInterface.cpp
@@ -43,6 +44,10 @@ target_include_directories(slsReceiverObject PUBLIC
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
+target_compile_definitions(slsReceiverObject 
+    PUBLIC DECOMPRESS
+)
+
 target_link_libraries(slsReceiverObject 
   PUBLIC
     slsProjectOptions
@@ -67,6 +72,7 @@ set(RECEIVER_LIBRARY_TARGETS slsReceiverObject)
 #Shared library
 if(SLS_BUILD_SHARED_LIBRARIES)
     add_library(slsReceiverShared SHARED $<TARGET_OBJECTS:slsReceiverObject>)
+    target_compile_definitions(slsReceiverShared PUBLIC DECOMPRESS)    
     target_link_libraries(slsReceiverShared PUBLIC slsReceiverObject)
     set_target_properties(slsReceiverShared PROPERTIES
         VERSION ${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}
@@ -80,7 +86,8 @@ endif(SLS_BUILD_SHARED_LIBRARIES)
 
 #Static library 
 add_library(slsReceiverStatic STATIC $<TARGET_OBJECTS:slsReceiverObject>)
-target_link_libraries(slsReceiverStatic PUBLIC slsReceiverObject)
+    target_compile_definitions(slsReceiverStatic PUBLIC DECOMPRESS)    
+    target_link_libraries(slsReceiverStatic PUBLIC slsReceiverObject)
 set_target_properties(slsReceiverStatic PROPERTIES
     ARCHIVE_OUTPUT_NAME SlsReceiverStatic
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -109,6 +116,8 @@ if (SLS_USE_RECEIVER_BINARIES)
         set_property(TARGET slsReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
 
+    target_compile_definitions(slsReceiver PUBLIC DECOMPRESS)    
+
     target_link_libraries(slsReceiver PUBLIC
     PUBLIC
         slsReceiverStatic
@@ -129,6 +138,7 @@ if (SLS_USE_RECEIVER_BINARIES)
         set_property(TARGET slsMultiReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
 
+    target_compile_definitions(slsMultiReceiver PUBLIC DECOMPRESS)    
     target_link_libraries(slsMultiReceiver 
     PUBLIC
         slsReceiverStatic

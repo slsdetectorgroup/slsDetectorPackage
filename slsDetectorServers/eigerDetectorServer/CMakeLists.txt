@@ -28,6 +28,7 @@ target_compile_definitions(eigerDetectorServerMaster_virtual
     PUBLIC EIGERD PCCOMPILE STOP_SERVER
     PUBLIC VIRTUAL #VIRTUAL_9M
     PUBLIC VIRTUAL_MASTER
+    PUBLIC DECOMPRESS
 )
 
 target_link_libraries(eigerDetectorServerMaster_virtual

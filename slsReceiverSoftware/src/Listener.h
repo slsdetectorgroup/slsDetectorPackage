@@ -151,6 +151,8 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      */
     void PrintFifoStatistics();
 
+    void DecompressPacket(char *buf, int numBytes, int datasize, int pnum);
+
     /** type of thread */
     static const std::string TypeName;
 

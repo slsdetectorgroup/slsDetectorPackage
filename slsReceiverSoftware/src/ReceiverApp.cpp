@@ -22,6 +22,9 @@ void sigInterruptHandler(int p) { sem_post(&semaphore); }
 
 int main(int argc, char *argv[]) {
 
+#ifdef DECOMPRESS
+    LOG(logINFORED) << "decompression mode";
+#endif
     sem_init(&semaphore, 1, 0);
 
     LOG(logINFOBLUE) << "Created [ Tid: " << gettid() << " ]";

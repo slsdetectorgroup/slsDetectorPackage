@@ -514,6 +514,11 @@ uint32_t Listener::ListenToAnImage(char *buf) {
             return 0; // bad packet
         }
 
+        // decompress before copying to carry over packet
+#ifdef DECOMPRESS
+        DecompressPacket(listeningPacket.get() + hsize, rc, dsize, pnum);
+#endif
+
         // future packet	by looking at image number  (all other
         // detectors)
         if (fnum != currentFrameIndex) {
@@ -631,4 +636,43 @@ void Listener::PrintFifoStatistics() {
                << "  Used_Fifo_Max_Level:" << fifo->GetMaxLevelForFifoBound()
                << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree()
                << " \tCurrent_Frame#:" << currentFrameIndex;
+}
+
+void Listener::DecompressPacket(char *buffer, int numBytes, int datasize,
+                                int pnum) {
+#ifdef DECOMPRESS
+    std::unique_ptr<char[]> temp = sls::make_unique<char[]>(datasize);
+    uint8_t *dst = (uint8_t *)temp.get();
+    uint8_t *src = (uint8_t *)buffer;
+
+    // debug print
+    /* if (pnum == 0 && index == 0) {
+         LOG(logINFOBLUE) << "decompression mode ";
+         for (unsigned int i = 0; i < 10; ++i) {
+             printf("[%d]%d:0x%02x\n", index, i, (uint8_t)buffer[i]);
+         }
+     }*/
+
+    for (int ibyte = 0; ibyte != numBytes; ++ibyte) {
+        int byteRead = *src++;
+        if (byteRead != 0xFF)
+            *dst++ = (uint8_t)byteRead;
+        else {
+            do {
+                byteRead = *src++;
+                for (int i = 0; i != byteRead; ++i)
+                    *dst++ = (uint8_t)0x0;
+            } while (byteRead == 0xFF);
+        }
+    }
+    memcpy(buffer, temp.get(), datasize);
+
+    // debug print
+    /* if (pnum == 0 && index == 0) {
+         for (unsigned int i = 0; i < 10; ++i) {
+             printf("[%d]%d:0x%02x\n", index, i, (uint8_t)buffer[i]);
+         }
+     }*/
+
+#endif
 }

@@ -641,8 +641,16 @@ void Listener::PrintFifoStatistics() {
 void Listener::DecompressPacket(char *buffer, int numBytes, int datasize,
                                 int pnum) {
 #ifdef DECOMPRESS
-    std::unique_ptr<char[]> temp = sls::make_unique<char[]>(datasize);
-    uint8_t *dst = (uint8_t *)temp.get();
+
+    // std::unique_ptr<char[]> temp = sls::make_unique<char[]>(datasize);
+    char *temp = (char *)malloc(sizeof(char) * datasize);
+    if (temp == NULL) {
+        LOG(logERROR) << "Could not malloc " << datasize
+                      << "bytes. Not decompressing!";
+        return;
+    }
+    memset(temp, 0, datasize);
+    uint8_t *dst = (uint8_t *)(&temp[0]);
     uint8_t *src = (uint8_t *)buffer;
 
     // debug print
@@ -653,19 +661,21 @@ void Listener::DecompressPacket(char *buffer, int numBytes, int datasize,
          }
      }*/
 
-    for (int ibyte = 0; ibyte != numBytes; ++ibyte) {
-        int byteRead = *src++;
+    int ibyte = 0;
+    //  while (src != (uint8_t *)(buffer + numBytes)) {
+    while (ibyte != numBytes) {
+        uint8_t byteRead = src[ibyte++];
         if (byteRead != 0xFF)
-            *dst++ = (uint8_t)byteRead;
+            *dst++ = byteRead;
         else {
             do {
-                byteRead = *src++;
+                byteRead = src[ibyte++];
                 for (int i = 0; i != byteRead; ++i)
                     *dst++ = (uint8_t)0x0;
             } while (byteRead == 0xFF);
         }
     }
-    memcpy(buffer, temp.get(), datasize);
+    memcpy(buffer, temp, datasize);
 
     // debug print
     /* if (pnum == 0 && index == 0) {
@@ -673,6 +683,8 @@ void Listener::DecompressPacket(char *buffer, int numBytes, int datasize,
              printf("[%d]%d:0x%02x\n", index, i, (uint8_t)buffer[i]);
          }
      }*/
+
+    free(temp);
 
 #endif
 }

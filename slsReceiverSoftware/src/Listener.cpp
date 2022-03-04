@@ -674,9 +674,9 @@ void Listener::DecompressPacket(char *buffer, int numBytes, int datasize,
             break;
         }
         uint8_t byteRead = src[ibyte++];
-        if (byteRead != 0xFF)
+        if (byteRead != 0xFF) {
             dst[dstByte++] = byteRead;
-        else {
+        } else {
             do {
                 byteRead = src[ibyte++];
                 for (int i = 0; i != byteRead; ++i) {
@@ -692,6 +692,13 @@ void Listener::DecompressPacket(char *buffer, int numBytes, int datasize,
             } while (byteRead == 0xFF);
         }
     }
+
+    if (dstByte != datasize) {
+        LOG(logERROR) << index << ": Insufficient number of bytes "
+                      << dstByte - 1 << " for packet " << pnum << ". Expected "
+                      << datasize;
+    }
+
     memcpy(buffer, temp.get(), datasize);
 
     // debug print

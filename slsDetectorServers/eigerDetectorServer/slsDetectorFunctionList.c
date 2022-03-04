@@ -2343,6 +2343,11 @@ void *start_timer(void *arg) {
             if (i > 0 && i % pixelsPerPacket == 0) {
                 ++pixelVal;
             }
+#ifdef DECOMPRESS
+            int repeat = 1;
+            if (tgEnable)
+                repeat = 4;
+#endif
             switch (dr) {
             case 4:
                 *((uint8_t *)(imageData + i)) =
@@ -2355,20 +2360,27 @@ void *start_timer(void *arg) {
                 break;
             case 8:
 #ifdef DECOMPRESS
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0x57;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0x2;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0xb4;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0x3;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0x7;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0x2;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
-                *((uint8_t *)(imageData + (i++))) = (uint8_t)0xF9;
+                for (int p = 0; p != packetsPerFrame; ++p) {
+                    for (int ports = 0; ports != 2; ++ports) {
+                        i = 2 * datasize * p + ports * 512; // 2 ports
+                        for (int r = 0; r != repeat; ++r) {
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0x57;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0x2;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xb4;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0x3;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0x7;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0x2;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xF9;
+                        }
+                    }
+                }
                 i = npixels;
 #else
                 *((uint8_t *)(imageData + i)) =

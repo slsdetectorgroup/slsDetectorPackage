@@ -1286,7 +1286,7 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID_GET(
         master, getMaster, setMaster, StringTo<int>,
         "[0, 1]\n\t[Eiger] Sets half module to master and "
-        "others to slaves.\n\t\t [Gotthard][Gotthard2][Mythen3][Eiger] "
+        "others to slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger] "
         "Gets if the current module/ half module is master.");
 
     /* acquisition parameters */
@@ -1912,7 +1912,6 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         top, getTop, setTop, StringTo<int>,
         "[0, 1]\n\t[Eiger] Sets half module to top (1), else bottom.");
-
 
     /* Jungfrau Specific */
 

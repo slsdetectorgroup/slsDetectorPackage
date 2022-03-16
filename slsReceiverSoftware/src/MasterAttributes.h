@@ -22,6 +22,7 @@ class MasterAttributes {
     // (before acquisition)
     slsDetectorDefs::detectorType detType{slsDetectorDefs::GENERIC};
     slsDetectorDefs::timingMode timingMode{slsDetectorDefs::AUTO_TIMING};
+    slsDetectorDefs::xy geometry{};
     uint32_t imageSize{0};
     slsDetectorDefs::xy nPixels{};
     uint32_t maxFramesPerFile{0};

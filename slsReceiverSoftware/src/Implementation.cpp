@@ -784,6 +784,12 @@ void Implementation::SetupWriter() {
         }
         masterAttributes->detType = detType;
         masterAttributes->timingMode = timingMode;
+        xy nm{numModules.x, numModules.y};
+        if (quadEnable) {
+            nm.x = 1;
+            nm.y = 2;
+        }
+        masterAttributes->geometry = xy(nm.x, nm.y);
         masterAttributes->imageSize = generalData->imageSize;
         masterAttributes->nPixels =
             xy(generalData->nPixelsX, generalData->nPixelsY);

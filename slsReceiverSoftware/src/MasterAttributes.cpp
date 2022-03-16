@@ -15,6 +15,7 @@ std::string MasterAttributes::GetBinaryMasterAttributes() {
         << "TimeStamp                  : " << ctime(&t) << '\n'
         << "Detector Type              : " << sls::ToString(detType) << '\n'
         << "Timing Mode                : " << sls::ToString(timingMode) << '\n'
+        << "Geometry                   : " << sls::ToString(geometry) << '\n'
         << "Image Size                 : " << imageSize << " bytes" << '\n'
         << "Pixels                     : " << sls::ToString(nPixels) << '\n'
         << "Max Frames Per File        : " << maxFramesPerFile << '\n'
@@ -118,6 +119,21 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
             sls::strcpy_safe(c, sls::ToString(timingMode));
             dataset.write(c, strdatatype);
         }
+        //TODO: make this into an array?
+        // geometry x
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "Geometry in x axis", PredType::NATIVE_INT, dataspace);
+            dataset.write(&geometry.x, PredType::NATIVE_INT);
+        }
+        // geometry y
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "Geometry in y axis", PredType::NATIVE_INT, dataspace);
+            dataset.write(&geometry.y, PredType::NATIVE_INT);
+        }
         // Image Size
         {
             DataSpace dataspace = DataSpace(H5S_SCALAR);
@@ -132,14 +148,14 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
             attribute.write(strdatatype, c);
         }
         //TODO: make this into an array?
-        // x
+        // npixels x
         {
             DataSpace dataspace = DataSpace(H5S_SCALAR);
             DataSet dataset = group->createDataSet(
                 "Number of pixels in x axis", PredType::NATIVE_INT, dataspace);
             dataset.write(&nPixels.x, PredType::NATIVE_INT);
         }
-        // y
+        // npixels y
         {
             DataSpace dataspace = DataSpace(H5S_SCALAR);
             DataSet dataset = group->createDataSet(

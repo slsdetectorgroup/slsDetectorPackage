@@ -1518,8 +1518,15 @@ int setMaster(enum MASTERINDEX m) {
         sharedMemory_unlockLocalLink();
     }
 
-    // get and update master variable
+    // get and update master variable (cannot get from m, could be hardware)
     if (isMaster(&master) == FAIL) {
+        return FAIL;
+    }
+    // verify for master and slave (not hardware)
+    if ((m == OW_MASTER && master == 0) || (m == OW_SLAVE && master == 1)) {
+        LOG(logERROR,
+            ("could not set master/slave. Master value retrieved %d\n",
+             master));
         return FAIL;
     }
 
@@ -1537,12 +1544,6 @@ int setMaster(enum MASTERINDEX m) {
 int isMaster(int *retval) {
     int m = -1, t = -1, n = -1;
     if (getModuleConfiguration(&m, &t, &n) == FAIL) {
-        return FAIL;
-    }
-    if (m != master) {
-        LOG(logERROR,
-            ("master value retrieved %d and local value %d do not match\n",
-             master, m));
         return FAIL;
     }
     *retval = m;
@@ -1576,8 +1577,14 @@ int setTop(enum TOPINDEX t) {
     }
     sharedMemory_unlockLocalLink();
 
-    // get and update top variable
+    // get and update top variable(cannot get from t, could be hardware)
     if (isTop(&top) == FAIL) {
+        return FAIL;
+    }
+    // verify for master and slave (not hardware)
+    if ((t == OW_TOP && top == 0) || (t == OW_BOTTOM && top == 1)) {
+        LOG(logERROR,
+            ("could not set top/bottom. Top value retrieved %d\n", top));
         return FAIL;
     }
 
@@ -1591,12 +1598,7 @@ int isTop(int *retval) {
     if (getModuleConfiguration(&m, &t, &n) == FAIL) {
         return FAIL;
     }
-    if (t != top) {
-        LOG(logERROR,
-            ("top value retrieved %d and local value %d do not match\n", top,
-             t));
-        return FAIL;
-    }
+
     *retval = t;
     return OK;
 }

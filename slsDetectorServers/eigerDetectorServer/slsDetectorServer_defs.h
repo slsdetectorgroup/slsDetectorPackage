@@ -81,9 +81,9 @@ enum NETWORKINDEX { TXN_LEFT, TXN_RIGHT, TXN_FRAME, FLOWCTRL_10G };
 enum ROINDEX { E_PARALLEL, E_NON_PARALLEL };
 enum CLKINDEX { RUN_CLK, NUM_CLOCKS };
 enum TOPINDEX { TOP_HARDWARE, OW_TOP, OW_BOTTOM };
-#define TOP_NAMES "hardware_top_bottom", "top", "bottom"
+#define TOP_NAMES "hardware", "top", "bottom"
 enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
-#define MASTER_NAMES "hardware_master_slave", "master", "slave"
+#define MASTER_NAMES "hardware", "master", "slave"
 
 #define CLK_NAMES "run"
 

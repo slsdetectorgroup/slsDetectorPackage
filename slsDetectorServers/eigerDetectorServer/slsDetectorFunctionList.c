@@ -432,7 +432,6 @@ void checkVirtual9MFlag() {
 #else
     normal = 1;
 #endif
-    LOG(logINFOBLUE, ("%s\n", (normal ? "NORMAL" : "9M")));
 #endif
 }
 
@@ -1490,7 +1489,7 @@ int setHighVoltage(int val) {
 
 int setMaster(enum MASTERINDEX m) {
     char *master_names[] = {MASTER_NAMES};
-    LOG(logINFOBLUE, ("Setting up as %s\n", master_names[m]));
+    LOG(logINFOBLUE, ("Setting up Master flag as %s\n", master_names[m]));
 #ifdef VIRTUAL
     switch (m) {
     case OW_MASTER:
@@ -1552,7 +1551,7 @@ int isMaster(int *retval) {
 
 int setTop(enum TOPINDEX t) {
     char *top_names[] = {TOP_NAMES};
-    LOG(logINFOBLUE, ("Setting up as %s\n", top_names[t]));
+    LOG(logINFOBLUE, ("Setting up Top flag as %s\n", top_names[t]));
 #ifdef VIRTUAL
     switch (t) {
     case OW_TOP:

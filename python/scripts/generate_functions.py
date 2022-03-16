@@ -11,9 +11,17 @@ manually
 from clang import cindex
 import subprocess
 import argparse
+import sys
 
+from parse import system_include_paths, clang_format_version
 
-from parse import system_include_paths
+required_version = 13
+RED = '\033[91m'
+ENDC = '\033[0m'
+if (ver := clang_format_version()) != required_version:
+    print(f'{RED}Clang format version {required_version} required, detected: {ver}. Bye!{ENDC}')
+    sys.exit(1)
+
 
 default_build_path = "/home/l_frojdh/sls/build/"
 fpath = "../../slsDetectorSoftware/src/Detector.cpp"
@@ -66,7 +74,7 @@ def get_arguments_with_default(node):
     args = []
     for arg in node.get_arguments():
         tokens = [t.spelling for t in arg.get_tokens()]
-        print(tokens)
+        # print(tokens)
         if '=' in tokens:
             if arg.type.spelling == "sls::Positions": #TODO! automate
                 args.append("py::arg() = Positions{}")
@@ -111,18 +119,10 @@ def visit(node):
                     lines.append(
                         f'.def("{child.spelling}",{fs} &Detector::{child.spelling}{args})'
                     )
+                    print(f'&Detector::{child.spelling}{args})')
                     cn.append(child)
     for child in node.get_children():
         visit(child)
-
-        # .def("setRxHostname",
-        #      (void (Detector::*)(const std::string &, Positions)) &
-        #          Detector::setRxHostname,
-        #      py::arg(), py::arg() = Positions{})
-        # .def("setRxHostname",
-        #      (void (Detector::*)(const std::vector<std::string> &)) &
-        #          Detector::setRxHostname,
-        #      py::arg())
 
 
 visit(tu.cursor)

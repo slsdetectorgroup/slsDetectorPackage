@@ -336,7 +336,8 @@ void initControlServer() {
         Feb_Interface_FebInterface();
         if (!Feb_Control_FebControl(normal)) {
             initError = FAIL;
-            sprintf(initErrorMessage, "Could not intitalize eiger detector sever: feb control\n");
+            sprintf(initErrorMessage,
+                    "Could not intitalize eiger detector sever: feb control\n");
             LOG(logERROR, (initErrorMessage));
             initCheckDone = 1;
             sharedMemory_unlockLocalLink();
@@ -344,12 +345,13 @@ void initControlServer() {
         }
         if (Feb_Control_SetMasterEffects(master, isControlServer) == FAIL) {
             initError = FAIL;
-            sprintf(initErrorMessage, "Could not intitalize HV for eiger detector server: feb control serial "
-                               "communication\n");
+            sprintf(initErrorMessage, "Could not intitalize HV for eiger "
+                                      "detector server: feb control serial "
+                                      "communication\n");
             LOG(logERROR, (initErrorMessage));
             initCheckDone = 1;
             sharedMemory_unlockLocalLink();
-            return;            
+            return;
         }
         sharedMemory_unlockLocalLink();
         LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
@@ -399,12 +401,13 @@ void initStopServer() {
         }
         if (Feb_Control_SetMasterEffects(master, isControlServer) == FAIL) {
             initError = FAIL;
-            sprintf(initErrorMessage, "Could not intitalize HV for eiger detector server: feb control serial "
-                               "communication\n");
+            sprintf(initErrorMessage, "Could not intitalize HV for eiger "
+                                      "detector server: feb control serial "
+                                      "communication\n");
             LOG(logERROR, (initErrorMessage));
             initCheckDone = 1;
             sharedMemory_unlockLocalLink();
-            return;            
+            return;
         }
         sharedMemory_unlockLocalLink();
         LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
@@ -423,13 +426,13 @@ void initStopServer() {
 }
 
 void checkVirtual9MFlag() {
-    LOG(logINFORED, ("updating virtual\n"));
 #ifdef VIRTUAL
 #ifdef VIRTUAL_9M
     normal = 0;
 #else
     normal = 1;
 #endif
+    LOG(logINFOBLUE, ("%s\n", (normal ? "NORMAL" : "9M")));
 #endif
 }
 
@@ -464,6 +467,8 @@ int getModuleConfiguration(int *m, int *t, int *n) {
         return FAIL;
     }
 #endif
+    LOG(logDEBUG,
+        ("module config read: master:%d top:%d normal:%d\n", *m, *t, *n));
     return OK;
 }
 
@@ -473,6 +478,7 @@ int readConfigFile() {
     }
 
     if (ignoreConfigFileFlag) {
+        LOG(logWARNING, ("Ignoring Config file\n"));
         return OK;
     }
 
@@ -638,9 +644,6 @@ void resetToHardwareSettings() {
 }
 
 int checkCommandLineConfiguration() {
-    int masterCommandLine = -1;
-    int topCommandLine = -1;
-
     if (masterCommandLine != -1) {
         LOG(logINFO, ("Setting %s from Command Line\n",
                       (masterCommandLine == 1 ? "Master" : "Slave")));
@@ -1501,16 +1504,19 @@ int setMaster(enum MASTERINDEX m) {
         break;
     }
 #else
-    if (!Beb_SetMaster(m)) {
-        return FAIL;
-    }
+    // need to set it only once via the control server
+    if (isControlServer) {
+        if (!Beb_SetMaster(m)) {
+            return FAIL;
+        }
 
-    sharedMemory_lockLocalLink();
-    if (!Feb_Control_SetMaster(m)) {
+        sharedMemory_lockLocalLink();
+        if (!Feb_Control_SetMaster(m)) {
+            sharedMemory_unlockLocalLink();
+            return FAIL;
+        }
         sharedMemory_unlockLocalLink();
-        return FAIL;
     }
-    sharedMemory_unlockLocalLink();
 
     // get and update master variable
     if (isMaster(&master) == FAIL) {
@@ -1543,7 +1549,7 @@ int isMaster(int *retval) {
     return OK;
 }
 
-int setTop(enum TOPINDEX  t) {
+int setTop(enum TOPINDEX t) {
     char *top_names[] = {TOP_NAMES};
     LOG(logINFOBLUE, ("Setting up as %s\n", top_names[t]));
 #ifdef VIRTUAL

@@ -513,6 +513,7 @@ bool Module::isMaster() const { return sendToDetectorStop<int>(F_GET_MASTER); }
 
 void Module::setMaster(const bool master) {
     sendToDetector(F_SET_MASTER, static_cast<int>(master), nullptr);
+    sendToDetectorStop(F_SET_MASTER, static_cast<int>(master), nullptr);
 }
 
 bool Module::isVirtualDetectorServer() const {
@@ -1680,12 +1681,11 @@ void Module::setDataStream(const portPosition port, const bool enable) {
 }
 
 bool Module::getTop() const {
-    return (
-        !static_cast<bool>(sendToDetector<int>(F_GET_TOP)));
+    return (static_cast<bool>(sendToDetector<int>(F_GET_TOP)));
 }
 
 void Module::setTop(bool value) {
-    sendToDetector<int>(F_SET_TOP, static_cast<int>(value));
+    sendToDetector(F_SET_TOP, static_cast<int>(value), nullptr);
 }
 
 // Jungfrau Specific

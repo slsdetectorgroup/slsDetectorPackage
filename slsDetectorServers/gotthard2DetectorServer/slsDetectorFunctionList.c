@@ -627,6 +627,7 @@ int readConfigFile() {
     }
 
     if (ignoreConfigFileFlag) {
+        LOG(logWARNING, ("Ignoring Config file\n"));
         return OK;
     }
 

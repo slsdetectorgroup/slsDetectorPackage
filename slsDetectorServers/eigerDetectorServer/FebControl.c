@@ -931,7 +931,10 @@ unsigned int Feb_Control_ConvertTimeToRegister(float time_in_sec) {
 
 int Feb_Control_PrepareForAcquisition() {
     LOG(logINFOBLUE, ("Preparing for Acquisition\n"));
-    Feb_Control_PrintAcquisitionSetup();
+    if (!Feb_Control_PrintAcquisitionSetup()) {
+        LOG(logERROR, ("Could not prepare acquisition\n"));
+        return 0;
+    }
 
     if (Feb_Control_Reset() == STATUS_ERROR) {
         LOG(logERROR, ("Trouble reseting daq or data stream\n"));
@@ -988,20 +991,26 @@ int Feb_Control_PrepareForAcquisition() {
     return 1;
 }
 
-void Feb_Control_PrintAcquisitionSetup() {
+int Feb_Control_PrintAcquisitionSetup() {
     time_t rawtime;
     time(&rawtime);
     struct tm *timeinfo = localtime(&rawtime);
-    LOG(logINFO,
-        ("Starting an exposure: (%s)"
-         "\t Dynamic range nbits: %d\n"
-         "\t Trigger mode: 0x%x\n"
-         "\t Number of exposures: %d\n"
-         "\t Exsposure time (if used): %f seconds.\n"
-         "\t Exsposure period (if used): %f seconds.\n\n",
-         asctime(timeinfo), Feb_Control_GetDynamicRange(),
-         Feb_Control_triggerMode, Feb_Control_GetNExposures(),
-         Feb_Control_exposure_time_in_sec, Feb_Control_exposure_period_in_sec));
+    int dr = 0;
+    if (!Feb_Control_GetDynamicRange(&dr)) {
+        LOG(logERROR, ("Could not print acquisition set up\n"));
+        return 0;
+    }
+    LOG(logINFO, ("Starting an exposure: (%s)"
+                  "\t Dynamic range nbits: %d\n"
+                  "\t Trigger mode: 0x%x\n"
+                  "\t Number of exposures: %d\n"
+                  "\t Exsposure time (if used): %f seconds.\n"
+                  "\t Exsposure period (if used): %f seconds.\n\n",
+                  asctime(timeinfo), dr, Feb_Control_triggerMode,
+                  Feb_Control_GetNExposures(), Feb_Control_exposure_time_in_sec,
+                  Feb_Control_exposure_period_in_sec));
+
+    return 1;
 }
 
 int Feb_Control_StartAcquisition() {
@@ -1169,49 +1178,106 @@ int Feb_Control_SoftwareTrigger(int block) {
 }
 
 // parameters
-int Feb_Control_SetDynamicRange(unsigned int four_eight_sixteen_or_thirtytwo) {
+int Feb_Control_SetDynamicRange(int dr) {
     static unsigned int everything_but_bit_mode = DAQ_STATIC_BIT_PROGRAM |
                                                   DAQ_STATIC_BIT_CHIP_TEST |
                                                   DAQ_STATIC_BIT_ROTEST;
-    if (four_eight_sixteen_or_thirtytwo == 4) {
+    switch (dr) {
+    case 4:
         Feb_Control_staticBits =
             DAQ_STATIC_BIT_M4 |
             (Feb_Control_staticBits &
              everything_but_bit_mode); // leave test bits in currernt state
         Feb_Control_subFrameMode &= ~DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING;
-    } else if (four_eight_sixteen_or_thirtytwo == 8) {
+        break;
+    case 8:
         Feb_Control_staticBits = DAQ_STATIC_BIT_M8 | (Feb_Control_staticBits &
                                                       everything_but_bit_mode);
         Feb_Control_subFrameMode &= ~DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING;
-    } else if (four_eight_sixteen_or_thirtytwo == 16) {
+        break;
+    case 12:
+    case 16:
         Feb_Control_staticBits = DAQ_STATIC_BIT_M12 | (Feb_Control_staticBits &
                                                        everything_but_bit_mode);
         Feb_Control_subFrameMode &= ~DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING;
-    } else if (four_eight_sixteen_or_thirtytwo == 32) {
+
+        // disable 16 bit conversion if 12 bit mode  (enable if 16 bit)
+        if (!Feb_Control_Disable16bitConversion(dr == 12))
+            return 0;
+        break;
+    case 32:
         Feb_Control_staticBits = DAQ_STATIC_BIT_M12 | (Feb_Control_staticBits &
                                                        everything_but_bit_mode);
         Feb_Control_subFrameMode |= DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING;
-    } else {
-        LOG(logERROR, ("dynamic range (%d) not valid, not setting bit mode.\n",
-                       four_eight_sixteen_or_thirtytwo));
+        break;
+    default:
+        LOG(logERROR,
+            ("dynamic range (%d) not valid, not setting bit mode.\n", dr));
         LOG(logINFO, ("Set dynamic range int must equal 4,8 16, or 32.\n"));
         return 0;
     }
 
-    LOG(logINFO,
-        ("Dynamic range set to %d\n", four_eight_sixteen_or_thirtytwo));
+    LOG(logINFO, ("Dynamic range set to %d\n", dr));
     return 1;
 }
 
-unsigned int Feb_Control_GetDynamicRange() {
-    if (Feb_Control_subFrameMode & DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING)
-        return 32;
-    else if (DAQ_STATIC_BIT_M4 & Feb_Control_staticBits)
-        return 4;
-    else if (DAQ_STATIC_BIT_M8 & Feb_Control_staticBits)
-        return 8;
+int Feb_Control_GetDynamicRange(int *retval) {
+    if (Feb_Control_subFrameMode & DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING) {
+        *retval = 32;
+    } else if (DAQ_STATIC_BIT_M4 & Feb_Control_staticBits) {
+        *retval = 4;
+    } else if (DAQ_STATIC_BIT_M8 & Feb_Control_staticBits) {
+        *retval = 8;
+    } else {
+        int disable16 = 0;
+        if (!Feb_Control_Get16bitConversionDisabled(&disable16)) {
+            LOG(logERROR, ("Could not get dynamic range (12 or 16 bit)\n"));
+            return 0;
+        }
+        if (disable16) {
+            *retval = 12;
+        } else {
+            *retval = 16;
+        }
+    }
 
-    return 16;
+    return 1;
+}
+
+int Feb_Control_Disable16bitConversion(int disable) {
+    LOG(logINFO, ("%s 16 bit expansion\n", disable ? "Disabling" : "Enabling"));
+    unsigned int regval = 0;
+    if (!Feb_Control_ReadRegister(DAQ_REG_HRDWRE, &regval)) {
+        LOG(logERROR, ("Could not %s 16 bit expansion (bit mode)\n",
+                       (disable ? "disable" : "enable")));
+        return 0;
+    }
+    if (disable) {
+        regval |= DAQ_REG_HRDWRE_DSBL_16BIT_MSK;
+    } else {
+        regval &= ~DAQ_REG_HRDWRE_DSBL_16BIT_MSK;
+    }
+
+    if (!Feb_Control_WriteRegister(DAQ_REG_HRDWRE, regval)) {
+        LOG(logERROR, ("Could not %s 16 bit expansion (bit mode)\n",
+                       (disable ? "disable" : "enable")));
+        return 0;
+    }
+    return 1;
+}
+
+int Feb_Control_Get16bitConversionDisabled(int *ret) {
+    unsigned int regval = 0;
+    if (!Feb_Control_ReadRegister(DAQ_REG_HRDWRE, &regval)) {
+        LOG(logERROR, ("Could not get 16 bit expansion (bit mode)\n"));
+        return 0;
+    }
+    if (regval & DAQ_REG_HRDWRE_DSBL_16BIT_MSK) {
+        *ret = 1;
+    } else {
+        *ret = 0;
+    }
+    return 1;
 }
 
 int Feb_Control_SetReadoutSpeed(unsigned int readout_speed) {
@@ -1554,7 +1620,10 @@ int Feb_Control_SetChipSignalsToTrimQuad(int enable) {
             regval &= ~(DAQ_REG_HRDWRE_PROGRAM_MSK | DAQ_REG_HRDWRE_M8_MSK);
         }
 
-        return Feb_Control_WriteRegister(DAQ_REG_HRDWRE, regval);
+        if (!Feb_Control_WriteRegister(DAQ_REG_HRDWRE, regval)) {
+            LOG(logERROR, ("Could not set chip signals to trim quad\n"));
+            return 0;
+        }
     }
     return 1;
 }
@@ -1604,12 +1673,24 @@ int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
 
     for (int iloop = 0; iloop < 2; ++iloop) {
         if (run[iloop]) {
-            LOG(logINFO,
+            LOG(logDEBUG1,
                 ("Writing 0x%x to %s 0x%x\n", data, side[iloop], actualOffset));
             if (!Feb_Interface_WriteRegister(addr[iloop], actualOffset, data, 0,
                                              0)) {
                 LOG(logERROR, ("Could not write 0x%x to %s addr 0x%x\n", data,
                                side[iloop], actualOffset));
+                return 0;
+            }
+            uint32_t regVal = 0;
+            if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset,
+                                            &regVal)) {
+                LOG(logERROR, ("Could not read %s register\n", addr[iloop]));
+                return 0;
+            }
+            if (regVal != data) {
+                LOG(logERROR,
+                    ("Could not write %s register. Write 0x%x, read 0x%x\n",
+                     addr[iloop], data, regVal));
                 return 0;
             }
         }
@@ -1648,8 +1729,8 @@ int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
                                side[iloop], actualOffset));
                 return 0;
             }
-            LOG(logINFO, ("Read 0x%x from %s 0x%x\n", value[iloop], side[iloop],
-                          actualOffset));
+            LOG(logDEBUG1, ("Read 0x%x from %s 0x%x\n", value[iloop],
+                            side[iloop], actualOffset));
             *retval = value[iloop];
             // if not the other (left, not right OR right, not left), return the
             // value
@@ -1824,7 +1905,11 @@ int64_t Feb_Control_Get_RateTable_Period_in_nsec() {
 
 int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
     // period = exptime if 16bit, period = subexptime if 32 bit
-    int dr = Feb_Control_GetDynamicRange();
+    int dr = 0;
+    if (!Feb_Control_GetDynamicRange(&dr)) {
+        LOG(logERROR, ("Could not set rate correction tau\n"));
+        return 0;
+    }
     double period_in_sec =
         (double)(Feb_Control_GetSubFrameExposureTime()) / (double)1e9;
     if (dr == 16)

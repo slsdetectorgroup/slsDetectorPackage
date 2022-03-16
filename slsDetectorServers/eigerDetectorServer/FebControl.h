@@ -55,7 +55,7 @@ int Feb_Control_ResetChipPartially();
 int Feb_Control_SendBitModeToBebServer();
 unsigned int Feb_Control_ConvertTimeToRegister(float time_in_sec);
 int Feb_Control_PrepareForAcquisition();
-void Feb_Control_PrintAcquisitionSetup();
+int Feb_Control_PrintAcquisitionSetup();
 int Feb_Control_StartAcquisition();
 int Feb_Control_StopAcquisition();
 int Feb_Control_IsReadyForTrigger(int *readyForTrigger);
@@ -63,8 +63,10 @@ int Feb_Control_SendSoftwareTrigger();
 int Feb_Control_SoftwareTrigger(int block);
 
 // parameters
-int Feb_Control_SetDynamicRange(unsigned int four_eight_sixteen_or_thirtytwo);
-unsigned int Feb_Control_GetDynamicRange();
+int Feb_Control_SetDynamicRange(int dr);
+int Feb_Control_GetDynamicRange(int *retval);
+int Feb_Control_Disable16bitConversion(int disable);
+int Feb_Control_Get16bitConversionDisabled();
 int Feb_Control_SetReadoutSpeed(unsigned int readout_speed);
 int Feb_Control_SetReadoutMode(unsigned int readout_mode);
 int Feb_Control_SetTriggerMode(unsigned int trigger_mode);

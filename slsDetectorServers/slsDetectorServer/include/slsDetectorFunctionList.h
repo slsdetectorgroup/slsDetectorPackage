@@ -173,6 +173,7 @@ void setMasterSlaveConfiguration();
 
 // parameters - dr, roi
 int setDynamicRange(int dr);
+int getDynamicRange(int *retval);
 #ifdef GOTTHARDD
 int setROI(ROI arg);
 ROI getROI();

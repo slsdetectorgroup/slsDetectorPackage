@@ -706,7 +706,16 @@ void resetPeripheral() {
 
 /* set parameters -  dr, adcenablemask */
 
-int setDynamicRange(int dr) { return DYNAMIC_RANGE; }
+int setDynamicRange(int dr) {
+    if (dr == 16)
+        return OK;
+    return FAIL;
+}
+
+int getDynamicRange(int *retval) {
+    *retval = DYNAMIC_RANGE;
+    return OK;
+}
 
 int setADCEnableMask(uint32_t mask) {
     if (mask == 0u) {

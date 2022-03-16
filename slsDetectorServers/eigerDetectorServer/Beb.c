@@ -862,11 +862,17 @@ void Beb_ResetFrameNumber() {
 }
 
 int Beb_SetUpTransferParameters(short the_bit_mode) {
-    if (the_bit_mode != 4 && the_bit_mode != 8 && the_bit_mode != 16 &&
-        the_bit_mode != 32)
+    switch (the_bit_mode) {
+    case 4:
+    case 8:
+    case 12:
+    case 16:
+    case 32:
+        Beb_bit_mode = the_bit_mode;
+        return 1;
+    default:
         return 0;
-    Beb_bit_mode = the_bit_mode;
-    return 1;
+    }
 }
 
 int Beb_StopAcquisition() {

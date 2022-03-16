@@ -720,8 +720,13 @@ void setADIFDefaults() {
 int checkCommandLineConfiguration() {
     if (masterCommandLine != -1) {
 #ifdef VIRTUAL
-        bus_w(SYSTEM_STATUS_REG,
-              bus_r(SYSTEM_STATUS_REG) & ~SYSTEM_STATUS_SLV_BRD_DTCT_MSK);
+        if (masterCommandLine == 1) {
+            bus_w(SYSTEM_STATUS_REG,
+                  bus_r(SYSTEM_STATUS_REG) & ~SYSTEM_STATUS_SLV_BRD_DTCT_MSK);
+        } else {
+            bus_w(SYSTEM_STATUS_REG,
+                  bus_r(SYSTEM_STATUS_REG) | SYSTEM_STATUS_SLV_BRD_DTCT_MSK);
+        }
 #else
         initError = FAIL;
         strcpy(initErrorMessage,

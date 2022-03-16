@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
 
         case 'i':
 #if defined(EIGERD) || defined(GOTTHARDD) || defined(GOTTHARD2D) ||            \
-    defined(JUNGFRAU)
+    defined(JUNGFRAUD)
             LOG(logINFO, ("Ignoring config file\n"));
             ignoreConfigFileFlag = 1;
 #else

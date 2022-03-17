@@ -31,7 +31,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - rx_arping
 - rx_threadsids max is now 9 (breaking api)
 - fixed datastream disabling for eiger. Its only available in 10g mode.
-- m3 server crash (vthrehsold)
+- m3 server crash (vthrehsold dac names were not provided)
 - allow vtrim to be interpolated for Eiger settings
 - m3 setThresholdEnergy and setAllThresholdEnergy was overwriting gaincaps with settings enum
 - can set localhost with virtual server with minimum configuration: (hostname localhost, rx_hostname localhost, udp_dstip auto)
@@ -41,6 +41,10 @@ This document describes the differences between v7.0.0 and v6.x.x
 - file write disabled by default
 - eiger 12 bit mode
 - start non blocking acquisition at modular level
+- connect master commands to api (allow set master for eiger)
+--ignore-config command line
+- command line argument 'master' mainly for virtual servers (also master/top for real eiger), only one virtual server for eiger, use command lines for master/top
+- stop servers also check for errors at startup( in case it was running with an older version)
 - hostname cmd failed when connecting to servers in update mode (ctb, moench, jungfrau, eiger)
 - missingpackets signed (negative => extra packets)
 

@@ -18,7 +18,7 @@
 const unsigned int Feb_Control_leftAddress = 0x100;
 const unsigned int Feb_Control_rightAddress = 0x200;
 
-int Feb_Control_master = 0;
+int Feb_Control_master = -1;
 int Feb_Control_normal = 0;
 int Feb_Control_activated = 1;
 
@@ -50,17 +50,16 @@ double ratemax = -1;
 // setup
 void Feb_Control_activate(int activate) { Feb_Control_activated = activate; }
 
-void Feb_Control_FebControl() {
-    Feb_Control_staticBits = Feb_Control_acquireNReadoutMode =
-        Feb_Control_triggerMode = Feb_Control_externalEnableMode =
-            Feb_Control_subFrameMode = 0;
+int Feb_Control_FebControl(int normal) {
+    Feb_Control_staticBits = 0;
+    Feb_Control_acquireNReadoutMode = 0;
+    Feb_Control_triggerMode = 0;
+    Feb_Control_externalEnableMode = 0;
+    Feb_Control_subFrameMode = 0;
     Feb_Control_trimbit_size = 263680;
     Feb_Control_last_downloaded_trimbits =
         malloc(Feb_Control_trimbit_size * sizeof(int));
-}
 
-int Feb_Control_Init(int master, int normal) {
-    Feb_Control_master = master;
     Feb_Control_normal = normal;
     Feb_Interface_SetAddress(Feb_Control_rightAddress, Feb_Control_leftAddress);
     if (Feb_Control_activated) {
@@ -1556,9 +1555,8 @@ int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right) {
     return 1;
 }
 
-void Feb_Control_SetMasterVariable(int val) { Feb_Control_master = val; }
-
 int Feb_Control_SetMaster(enum MASTERINDEX ind) {
+
     uint32_t offset = DAQ_REG_HRDWRE;
     unsigned int addr[2] = {Feb_Control_leftAddress, Feb_Control_rightAddress};
     char *master_names[] = {MASTER_NAMES};
@@ -1595,7 +1593,29 @@ int Feb_Control_SetMaster(enum MASTERINDEX ind) {
     LOG(logINFOBLUE, ("%s Master flag to %s Feb\n",
                       (ind == MASTER_HARDWARE ? "Resetting" : "Overwriting"),
                       master_names[ind]));
+
     return 1;
+}
+
+int Feb_Control_SetMasterEffects(int master, int controlServer) {
+    int prevMaster = Feb_Control_master;
+
+    Feb_Control_master = master;
+    // change in master for 9m
+    if (controlServer && prevMaster != Feb_Control_master &&
+        !Feb_Control_normal) {
+        if (prevMaster) {
+            Feb_Control_CloseSerialCommunication();
+        }
+        if (Feb_Control_master) {
+            if (!Feb_Control_OpenSerialCommunication()) {
+                LOG(logERROR, ("Could not intitalize feb control serial "
+                               "communication\n"));
+                return FAIL;
+            }
+        }
+    }
+    return OK;
 }
 
 int Feb_Control_SetQuad(int val) {

@@ -193,6 +193,12 @@ class Detector {
      */
     void setFlipRows(bool value, Positions pos = {});
 
+    /** [Eiger][Mythen3][Gotthard1] via stop server **/
+    Result<bool> getMaster(Positions pos = {}) const;
+
+    /** [Eiger] Set half module to master and the others to slaves */
+    void setMaster(bool value, int pos);
+
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@}
 
@@ -1151,6 +1157,12 @@ class Detector {
     void setDataStream(const defs::portPosition port, const bool enable,
                        Positions pos = {});
 
+    /** [Eiger] Advanced */
+    Result<bool> getTop(Positions pos = {}) const;
+
+    /** [Eiger] Advanced. Default is hardware default */
+    void setTop(bool value, Positions pos = {});
+
     ///@}
 
     /** @name Jungfrau Specific */
@@ -1447,9 +1459,6 @@ class Detector {
     /** [Mythen3] gate delay for all gates in auto or trigger timing mode
      * (internal gating). Gate index: 0-2, -1 for all */
     Result<std::array<ns, 3>> getGateDelayForAllGates(Positions pos = {}) const;
-
-    /** [Eiger][Mythen3][Gotthard1] via stop server **/
-    Result<bool> getMaster(Positions pos = {}) const;
 
     // TODO! check if we really want to expose this !!!!!
     Result<int> getChipStatusRegister(Positions pos = {}) const;

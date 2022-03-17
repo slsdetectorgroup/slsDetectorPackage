@@ -54,6 +54,7 @@ int sockfd = 0;
 int debugflag = 0;
 int updateFlag = 0;
 int checkModuleFlag = 1;
+int ignoreConfigFileFlag = 0;
 
 udpStruct udpDetails[MAX_UDP_DESTINATION];
 int numUdpDestinations = 1;
@@ -468,6 +469,9 @@ void function_table() {
     flist[F_UPDATE_DETECTOR_SERVER] = &update_detector_server;
     flist[F_GET_UPDATE_MODE] = &get_update_mode;
     flist[F_SET_UPDATE_MODE] = &set_update_mode;
+    flist[F_SET_MASTER] = &set_master;
+    flist[F_GET_TOP] = &get_top;
+    flist[F_SET_TOP] = &set_top;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -3991,29 +3995,26 @@ int check_version(int file_des) {
         return printSocketReadError();
 
     // check software- firmware compatibility and basic tests
-    if (isControlServer) {
-        LOG(logDEBUG1, ("Checking software-firmware compatibility and basic "
-                        "test result\n"));
+    LOG(logDEBUG1, ("Checking software-firmware compatibility and basic "
+                    "test result\n"));
 
-        // check if firmware check is done
+    // check if firmware check is done
+    if (!isInitCheckDone()) {
+        usleep(3 * 1000 * 1000);
         if (!isInitCheckDone()) {
-            usleep(3 * 1000 * 1000);
-            if (!isInitCheckDone()) {
-                ret = FAIL;
-                strcpy(mess, "Firmware Software Compatibility Check (Server "
-                             "Initialization) "
-                             "still not done done in server. Unexpected.\n");
-                LOG(logERROR, (mess));
-            }
+            ret = FAIL;
+            strcpy(mess, "Server Initialization still not done done in server. Unexpected.\n");
+            LOG(logERROR, (mess));
         }
-        // check firmware check result
-        if (ret == OK) {
-            char *firmware_message = NULL;
-            if (getInitResult(&firmware_message) == FAIL) {
-                ret = FAIL;
-                strcpy(mess, firmware_message);
-                LOG(logERROR, (mess));
-            }
+    }
+
+    // check firmware check result
+    if (ret == OK) {
+        char *firmware_message = NULL;
+        if (getInitResult(&firmware_message) == FAIL) {
+            ret = FAIL;
+            strcpy(mess, firmware_message);
+            LOG(logERROR, (mess));
         }
     }
 
@@ -8217,12 +8218,58 @@ int get_master(int file_des) {
 
     LOG(logDEBUG1, ("Getting master\n"));
 
-#if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARDD)
+#if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARDD) &&           \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
-    retval = isMaster();
+    ret = isMaster(&retval);
+    if (ret == FAIL) {
+        strcpy(mess, "Could not get master\n");
+        LOG(logERROR, (mess));
+    }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_master(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting master: %u\n", (int)arg));
+
+#ifndef EIGERD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if ((check_detector_idle("set master") == OK) &&
+            (arg != 0 && arg != 1)) {
+            ret = FAIL;
+            sprintf(mess, "Could not set master. Invalid argument %d.\n", arg);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setMaster(arg == 1 ? OW_MASTER : OW_SLAVE);
+            if (ret == FAIL) {
+                strcpy(mess, "Could not set master\n");
+                LOG(logERROR, (mess));
+            } else {
+                int retval = 0;
+                ret = isMaster(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get master\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    LOG(logDEBUG1, ("master retval: %u\n", retval));
+                    validate(&ret, mess, arg, retval, "set master", DEC);
+                }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_csr(int file_des) {
@@ -9697,5 +9744,67 @@ int set_update_mode(int file_des) {
         }
     }
 
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_top(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+    LOG(logDEBUG1, ("Getting top\n"));
+
+#ifndef EIGERD
+    functionNotImplemented();
+#else
+    // get only
+    ret = isTop(&retval);
+    if (ret == FAIL) {
+        strcpy(mess, "Could not get Top\n");
+        LOG(logERROR, (mess));
+    } else {
+        LOG(logDEBUG1, ("retval top: %d\n", retval));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_top(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting top : %u\n", arg));
+
+#ifndef EIGERD
+    functionNotImplemented();
+#else
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg != 0 && arg != 1) {
+            ret = FAIL;
+            sprintf(mess, "Could not set top mode. Invalid value: %d. Must be 0 or 1\n", arg);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setTop(arg == 1 ? OW_TOP : OW_BOTTOM);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set %s\n", (arg == 1 ? "Top" : "Bottom"));
+                LOG(logERROR, (mess));
+            } else {            
+                int retval = -1;
+                ret = isTop(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get Top mode\n");
+                    LOG(logERROR, (mess));
+                } else {                
+                    LOG(logDEBUG1, ("retval top: %d\n", retval));
+                    validate(&ret, mess, arg, retval, "set top mode", DEC);
+                }
+            }
+        }
+    }
+#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }

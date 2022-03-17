@@ -28,6 +28,7 @@ extern int updateFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern int numUdpDestinations;
 extern const enum detectorType myDetectorType;
+extern int ignoreConfigFileFlag;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
@@ -392,19 +393,29 @@ void initControlServer() {
 }
 
 void initStopServer() {
-
-    usleep(CTRL_SRVR_INIT_TIME_US);
-    if (mapCSP0() == FAIL) {
-        LOG(logERROR,
-            ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
-        exit(EXIT_FAILURE);
-    }
+    if (!updateFlag && initError == OK) {
+        usleep(CTRL_SRVR_INIT_TIME_US);
+        LOG(logINFOBLUE, ("Configuring Stop server\n"));
+        if (mapCSP0() == FAIL) {
+            initError = FAIL;
+            strcpy(initErrorMessage,
+                   "Stop Server: Map Fail. Dangerous to continue. Goodbye!\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            return;
+        }
+        if (readConfigFile() == FAIL) {
+            initCheckDone = 1;
+            return;
+        }
 #ifdef VIRTUAL
-    sharedMemory_setStop(0);
-    // temp threshold and reset event (read by stop server)
-    setThresholdTemperature(DEFAULT_TMP_THRSHLD);
-    setTemperatureEvent(0);
+        sharedMemory_setStop(0);
+        // temp threshold and reset event (read by stop server)
+        setThresholdTemperature(DEFAULT_TMP_THRSHLD);
+        setTemperatureEvent(0);
 #endif
+    }
+    initCheckDone = 1;
 }
 
 /* set up detector */
@@ -641,6 +652,11 @@ int readConfigFile() {
 
     if (initError == FAIL) {
         return initError;
+    }
+
+    if (ignoreConfigFileFlag) {
+        LOG(logWARNING, ("Ignoring Config file\n"));
+        return OK;
     }
 
     const int fileNameSize = 128;

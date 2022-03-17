@@ -298,6 +298,23 @@ void Detector::setFlipRows(bool value, Positions pos) {
     pimpl->Parallel(&Module::setFlipRows, pos, value);
 }
 
+Result<bool> Detector::getMaster(Positions pos) const {
+    return pimpl->Parallel(&Module::isMaster, pos);
+}
+
+void Detector::setMaster(bool master, int pos) {
+    // multi mod, set slaves first
+    if (master && size() > 1) {
+        if (pos == -1) {
+            throw RuntimeError("Master can be set only to a single module");
+        }
+        pimpl->Parallel(&Module::setMaster, {}, false);
+        pimpl->Parallel(&Module::setMaster, {pos}, master);
+    } else {
+        pimpl->Parallel(&Module::setMaster, {pos}, master);
+    }
+}
+
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
     return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
 }
@@ -1488,6 +1505,14 @@ void Detector::setDataStream(const defs::portPosition port, const bool enable,
     pimpl->Parallel(&Module::setDataStream, pos, port, enable);
 }
 
+Result<bool> Detector::getTop(Positions pos) const {
+    return pimpl->Parallel(&Module::getTop, pos);
+}
+
+void Detector::setTop(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setTop, pos, value);
+}
+
 // Jungfrau Specific
 Result<double> Detector::getChipVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getChipVersion, pos);
@@ -1806,10 +1831,6 @@ void Detector::setGateDelay(int gateIndex, ns t, Positions pos) {
 Result<std::array<ns, 3>>
 Detector::getGateDelayForAllGates(Positions pos) const {
     return pimpl->Parallel(&Module::getGateDelayForAllGates, pos);
-}
-
-Result<bool> Detector::getMaster(Positions pos) const {
-    return pimpl->Parallel(&Module::isMaster, pos);
 }
 
 Result<int> Detector::getChipStatusRegister(Positions pos) const {

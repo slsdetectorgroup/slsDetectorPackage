@@ -784,6 +784,7 @@ class CmdProxy {
         {"trimen", &CmdProxy::TrimEnergies},
         {"gappixels", &CmdProxy::GapPixels},
         {"fliprows", &CmdProxy::fliprows},
+        {"master", &CmdProxy::master},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::Acquire},
@@ -942,6 +943,7 @@ class CmdProxy {
         {"pulsechip", &CmdProxy::PulseChip},
         {"quad", &CmdProxy::Quad},
         {"datastream", &CmdProxy::DataStream},
+        {"top", &CmdProxy::top},
 
         /* Jungfrau Specific */
         {"chipversion", &CmdProxy::chipversion},
@@ -1279,6 +1281,12 @@ class CmdProxy {
         "rows in the detector itself. For bottom module and number of "
         "interfaces must be set to 2. slsReceiver and slsDetectorGui "
         "does not handle.");
+
+    INTEGER_COMMAND_VEC_ID_GET(
+        master, getMaster, setMaster, StringTo<int>,
+        "[0, 1]\n\t[Eiger] Sets half module to master and "
+        "others to slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger] "
+        "Gets if the current module/ half module is master.");
 
     /* acquisition parameters */
 
@@ -1899,6 +1907,10 @@ class CmdProxy {
         "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at "
         "start of acquisition. 0 complete reset, 1 partial reset. Default is "
         "complete reset. Advanced function!");
+
+    INTEGER_COMMAND_VEC_ID(
+        top, getTop, setTop, StringTo<int>,
+        "[0, 1]\n\t[Eiger] Sets half module to top (1), else bottom.");
 
     /* Jungfrau Specific */
 

@@ -94,7 +94,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void rearrangeGotthard25data(double *data);
 
     static const int NUM_PEDESTAL_FRAMES = 20;
-    static const int NUM_GOTTHARD25_CHANS = 2560;
+    static const int NUM_GOTTHARD25_CHANS = 1280;
     sls::Detector *det;
     slsDetectorDefs::detectorType detType;
 

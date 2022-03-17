@@ -1156,15 +1156,14 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size,
 
 void qDrawPlot::rearrangeGotthard25data(double *data) {
     const int nChans = NUM_GOTTHARD25_CHANS;
-    double temp[nChans] = {0.0};
-    int nChansMod = nChans / 2;
-    for (int i = 0; i != nChansMod; ++i) {
-        // master module (interleave from front)
+    double temp[nChans * 2] = {0.0};
+    for (int i = 0; i != nChans; ++i) {
+        // master module
         temp[i * 2] = data[i];
-        // slave module (reverse interleave)
-        temp[(nChansMod - 1 - i) * 2 + 1] = data[nChansMod + i];
+        // slave module
+        temp[i * 2 + 1] = data[nChans + i];
     }
-    memcpy(data, temp, nChans * sizeof(double));
+    memcpy(data, temp, nChans * 2 * sizeof(double));
 }
 
 void qDrawPlot::UpdatePlot() {

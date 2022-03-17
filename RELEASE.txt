@@ -48,6 +48,8 @@ This document describes the differences between v7.0.0 and v6.x.x
 - hostname cmd failed when connecting to servers in update mode (ctb, moench, jungfrau, eiger)
 - missingpackets signed (negative => extra packets)
 - added geometry to metadata
+- 10g eiger nextframenumber get fixed.
+- stop, able to set nextframenumber to a consistent (max + 1) for all modules if different (eiger/ctb/jungfrau/moench)
 
 
 2. Resolved Issues

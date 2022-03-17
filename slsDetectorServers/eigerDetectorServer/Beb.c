@@ -1259,20 +1259,20 @@ int Beb_GetNextFrameNumber(uint64_t *retval, int tengigaEnable) {
 
     else {
         uint64_t left10g =
-            Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_1G_LEFT_MSB_OFST);
-        temp = Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_1G_LEFT_LSB_OFST);
+            Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_10G_LEFT_MSB_OFST);
+        temp = Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_10G_LEFT_LSB_OFST);
         left10g = ((left10g << 32) | temp) >> 16;
         ++left10g; // increment for firmware
 
         uint64_t right10g =
-            Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_1G_LEFT_MSB_OFST);
-        temp = Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_1G_LEFT_LSB_OFST);
+            Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_10G_LEFT_MSB_OFST);
+        temp = Beb_Read32(csp0base, UDP_HEADER_GET_FNUM_10G_LEFT_LSB_OFST);
         right10g = ((right10g << 32) | temp) >> 16;
         Beb_close(fd, csp0base);
         ++right10g; // increment for firmware
 
         if (left10g != right10g) {
-            LOG(logERROR, ("Retrieved inconsistent frame numbers from `0g left "
+            LOG(logERROR, ("Retrieved inconsistent frame numbers from 10g left "
                            "%llu and right %llu\n",
                            (long long int)left10g, (long long int)right10g));
             *retval = (left10g > right10g)

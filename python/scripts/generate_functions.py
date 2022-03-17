@@ -15,7 +15,7 @@ import sys
 
 from parse import system_include_paths, clang_format_version
 
-required_version = 13
+required_version = 12
 RED = '\033[91m'
 ENDC = '\033[0m'
 if (ver := clang_format_version()) != required_version:

@@ -35,6 +35,7 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
 
   private:
     void CreateFile();
+    void Convert12to16Bit(uint16_t *dst, uint8_t *src);
     void WriteDataFile(const uint64_t currentFrameNumber, char *buffer);
     void WriteParameterDatasets(const uint64_t currentFrameNumber,
                                 sls_receiver_header *rheader);
@@ -72,4 +73,7 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
     int detIndex_{0};
     int numUnitsPerReadout_{0};
     uint32_t udpPortNumber_{0};
+
+    static const int EIGER_NUM_PIXELS{256 * 2 * 256};
+    static const int EIGER_16_BIT_IMAGE_SIZE{EIGER_NUM_PIXELS * 2};
 };

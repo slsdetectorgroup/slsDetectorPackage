@@ -287,7 +287,7 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        [Eiger] Options: 4, 8, 16, 32. If set to 32, also sets clkdivider to 2 (quarter speed), else to 0 (full speed)\n
+        [Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2 (quarter speed), else to 0 (full speed)\n
         [Mythen3] Options: 8, 16, 32 \n
         [Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16
         """

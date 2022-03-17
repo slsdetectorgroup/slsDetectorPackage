@@ -290,7 +290,7 @@ class Detector {
     Result<int> getDynamicRange(Positions pos = {}) const;
 
     /**
-     * [Eiger] Options: 4, 8, 16, 32. If i is 32, also sets clkdivider to 2,
+     * [Eiger] Options: 4, 8, 12, 16, 32. If i is 32, also sets clkdivider to 2,
      * else sets clkdivider to 1 \n [Mythen3] Options: 8, 16, 32 \n
      * [Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16
      */

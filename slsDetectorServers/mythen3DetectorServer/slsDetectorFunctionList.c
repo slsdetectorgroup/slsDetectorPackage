@@ -767,46 +767,54 @@ void resetPeripheral() {
 /* set parameters -  dr, roi */
 
 int setDynamicRange(int dr) {
-    if (dr > 0) {
-        uint32_t regval = 0;
-        switch (dr) {
-        /*case 1: TODO:Not implemented in firmware yet
-            regval = CONFIG_DYNAMIC_RANGE_1_VAL;
-            break;*/
-        case 8:
-            regval = CONFIG_DYNAMIC_RANGE_8_VAL;
-            break;
-        case 16:
-            regval = CONFIG_DYNAMIC_RANGE_16_VAL;
-            break;
-        case 32:
-            regval = CONFIG_DYNAMIC_RANGE_24_VAL;
-            break;
-        default:
-            LOG(logERROR, ("Invalid dynamic range %d\n", dr));
-            return -1;
-        }
-        // set it
-        bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_DYNAMIC_RANGE_MSK);
-        bus_w(CONFIG_REG, bus_r(CONFIG_REG) | regval);
-        updatePacketizing();
+    if (dr <= 0) {
+        return FAIL;
     }
+    uint32_t regval = 0;
+    switch (dr) {
+    /*case 1: TODO:Not implemented in firmware yet
+        regval = CONFIG_DYNAMIC_RANGE_1_VAL;
+        break;*/
+    case 8:
+        regval = CONFIG_DYNAMIC_RANGE_8_VAL;
+        break;
+    case 16:
+        regval = CONFIG_DYNAMIC_RANGE_16_VAL;
+        break;
+    case 32:
+        regval = CONFIG_DYNAMIC_RANGE_24_VAL;
+        break;
+    default:
+        LOG(logERROR, ("Invalid dynamic range %d\n", dr));
+        return -1;
+    }
+    // set it
+    bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_DYNAMIC_RANGE_MSK);
+    bus_w(CONFIG_REG, bus_r(CONFIG_REG) | regval);
+    updatePacketizing();
+    return OK;
+}
 
+int getDynamicRange(int *retval) {
     uint32_t regval = bus_r(CONFIG_REG) & CONFIG_DYNAMIC_RANGE_MSK;
     switch (regval) {
     /*case CONFIG_DYNAMIC_RANGE_1_VAL: TODO:Not implemented in firmware yet
         return 1;*/
     case CONFIG_DYNAMIC_RANGE_8_VAL:
-        return 8;
+        *retval = 8;
+        break;
     case CONFIG_DYNAMIC_RANGE_16_VAL:
-        return 16;
+        *retval = 16;
+        break;
     case CONFIG_DYNAMIC_RANGE_24_VAL:
-        return 32;
+        *retval = 32;
+        break;
     default:
         LOG(logERROR, ("Invalid dynamic range %d read back\n",
                        regval >> CONFIG_DYNAMIC_RANGE_OFST));
-        return -1;
+        return FAIL;
     }
+    return OK;
 }
 
 /* set parameters -  readout */
@@ -1129,7 +1137,8 @@ void updatePacketizing() {
 
     // 10g
     if (tgEnable) {
-        const int dr = setDynamicRange(-1);
+        int dr = 0;
+        getDynamicRange(&dr);
         packetsPerFrame = 1;
         if (dr == 32 && ncounters > 1) {
             packetsPerFrame = 2;
@@ -2244,7 +2253,8 @@ void *start_timer(void *arg) {
 
     const int imageSize = calculateDataBytes();
     const int tgEnable = enableTenGigabitEthernet(-1);
-    const int dr = setDynamicRange(-1);
+    int dr = 0;
+    getDynamicRange(&dr);
     int ncounters = __builtin_popcount(getCounterMask());
     int dataSize = 0;
     int packetsPerFrame = 0;
@@ -2565,7 +2575,8 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
 int calculateDataBytes() {
     int numCounters = __builtin_popcount(getCounterMask());
-    int dr = setDynamicRange(-1);
+    int dr = 0;
+    getDynamicRange(&dr);
     return (NCHAN_1_COUNTER * NCHIP * numCounters * ((double)dr / 8.00));
 }
 

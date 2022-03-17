@@ -60,13 +60,19 @@ void qTabSettings::SetupWidgetWindow() {
         QStandardItemModel *model =
             qobject_cast<QStandardItemModel *>(comboDynamicRange->model());
         if (model) {
-            QModelIndex index;
             QStandardItem *item;
-            index =
-                model->index(DYNAMICRANGE_4, comboDynamicRange->modelColumn(),
-                             comboDynamicRange->rootModelIndex());
-            item = model->itemFromIndex(index);
-            item->setEnabled(false);
+            int dr = DYNAMICRANGE_4;
+            for (int i = 0; i != 2; ++i) {
+                // disable dr 4
+                QModelIndex index =
+                    model->index(dr, comboDynamicRange->modelColumn(),
+                                 comboDynamicRange->rootModelIndex());
+                item = model->itemFromIndex(index);
+                item->setEnabled(false);
+
+                // disable dr 12
+                dr = DYNAMICRANGE_12;
+            }
         }
     } else if (detType == slsDetectorDefs::EIGER) {
         lblDynamicRange->setEnabled(true);
@@ -305,6 +311,9 @@ void qTabSettings::GetDynamicRange() {
         case 16:
             comboDynamicRange->setCurrentIndex(DYNAMICRANGE_16);
             break;
+        case 12:
+            comboDynamicRange->setCurrentIndex(DYNAMICRANGE_12);
+            break;
         case 8:
             comboDynamicRange->setCurrentIndex(DYNAMICRANGE_8);
             break;
@@ -332,6 +341,9 @@ void qTabSettings::SetDynamicRange(int index) {
             break;
         case DYNAMICRANGE_16:
             det->setDynamicRange(16);
+            break;
+        case DYNAMICRANGE_12:
+            det->setDynamicRange(12);
             break;
         case DYNAMICRANGE_8:
             det->setDynamicRange(8);

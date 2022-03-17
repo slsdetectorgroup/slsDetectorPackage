@@ -2819,6 +2819,9 @@ int set_dynamic_range(int file_des) {
 #endif
 #if defined(EIGERD) || defined(MYTHEN3D)
         case 8:
+#ifdef EIGERD
+        case 12:
+#endif
         case 16:
         case 32:
 #endif
@@ -2826,14 +2829,25 @@ int set_dynamic_range(int file_des) {
     defined(MOENCHD) || defined(GOTTHARD2D)
         case 16:
 #endif
-            retval = setDynamicRange(dr);
-            LOG(logDEBUG1, ("Dynamic range: %d\n", retval));
-            if (retval == -1) {
-                ret = FAIL;
-                sprintf(mess, "Could not get dynamic range.\n");
-                LOG(logERROR, (mess));
+            if (dr >= 0) {
+                ret = setDynamicRange(dr);
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not set dynamic range to %d\n", dr);
+                    LOG(logERROR, (mess));
+                }
             }
-            validate(&ret, mess, dr, retval, "set dynamic range", DEC);
+
+            // get
+            if (ret == OK) {
+                ret = getDynamicRange(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get dynamic range\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    LOG(logDEBUG1, ("Dynamic range: %d\n", retval));
+                    validate(&ret, mess, dr, retval, "set dynamic range", DEC);
+                }
+            }
             break;
         default:
             modeNotImplemented("Dynamic range", dr);
@@ -4651,11 +4665,17 @@ int set_read_n_rows(int file_des) {
             LOG(logERROR, (mess));
         } else {
 #ifdef EIGERD
-            int dr = setDynamicRange(GET_FLAG);
+            int dr = 0;
+            ret = getDynamicRange(&dr);
             int isTenGiga = enableTenGigabitEthernet(GET_FLAG);
             unsigned int maxnl = MAX_ROWS_PER_READOUT;
             unsigned int maxnp = (isTenGiga ? 4 : 16) * dr;
-            if ((arg * maxnp) % maxnl) {
+            // get dr fail
+            if (ret == FAIL) {
+                strcpy(mess,
+                       "Could not read n rows (failed to get dynamic range)\n");
+                LOG(logERROR, (mess));
+            } else if ((arg * maxnp) % maxnl) {
                 ret = FAIL;
                 sprintf(mess,
                         "Could not set number of rows to %d. For %d bit "
@@ -4863,6 +4883,7 @@ int is_udp_configured() {
             LOG(logWARNING, ("%s", configureMessage));
             return FAIL;
         }
+        // virtual: no check (can be eth name: lo, ip: 127.0.0.1)
 #ifndef VIRTUAL
         if (udpDetails[i].dstmac == 0) {
             sprintf(configureMessage,
@@ -7112,7 +7133,10 @@ int get_receiver_parameters(int file_des) {
     }
 
     // dynamic range
-    i32 = setDynamicRange(GET_FLAG);
+    ret = getDynamicRange(&i32);
+    if (ret == FAIL) {
+        i32 = 0;
+    }
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
         return printSocketReadError();

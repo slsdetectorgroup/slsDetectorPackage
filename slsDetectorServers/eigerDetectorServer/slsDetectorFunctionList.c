@@ -858,29 +858,38 @@ int readRegister(uint32_t offset, uint32_t *retval) {
 /* set parameters -  dr, roi */
 
 int setDynamicRange(int dr) {
-    // setting dr
-    if (dr > 0) {
-        LOG(logDEBUG1, ("Setting dynamic range: %d\n", dr));
-#ifndef VIRTUAL
-        sharedMemory_lockLocalLink();
-        if (Feb_Control_SetDynamicRange(dr)) {
-            if (!Beb_SetUpTransferParameters(dr)) {
-                LOG(logERROR, ("Could not set bit mode in the back end\n"));
-                sharedMemory_unlockLocalLink();
-                return eiger_dynamicrange;
-            }
-        }
-        sharedMemory_unlockLocalLink();
-#endif
-        eiger_dynamicrange = dr;
+    if (dr <= 0) {
+        return FAIL;
     }
-    // getting dr
-#ifndef VIRTUAL
+#ifdef VIRTUAL
+    LOG(logINFO, ("Setting dynamic range: %d\n", dr));
+#else
     sharedMemory_lockLocalLink();
-    eiger_dynamicrange = Feb_Control_GetDynamicRange();
+    if (Feb_Control_SetDynamicRange(dr)) {
+        if (!Beb_SetUpTransferParameters(dr)) {
+            LOG(logERROR, ("Could not set bit mode in the back end\n"));
+            sharedMemory_unlockLocalLink();
+            return eiger_dynamicrange;
+        }
+    }
     sharedMemory_unlockLocalLink();
 #endif
-    return eiger_dynamicrange;
+    eiger_dynamicrange = dr;
+    return OK;
+}
+
+int getDynamicRange(int *retval) {
+#ifdef VIRTUAL
+    *retval = eiger_dynamicrange;
+#else
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_GetDynamicRange(retval)) {
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
+#endif
+    return OK;
 }
 
 /* parameters - readout */
@@ -1195,6 +1204,7 @@ int setModule(sls_detector_module myMod, char *mess) {
 
         // if quad, set M8 and PROGRAM manually
         if (!Feb_Control_SetChipSignalsToTrimQuad(1)) {
+            sharedMemory_unlockLocalLink();
             return FAIL;
         }
 
@@ -1207,6 +1217,7 @@ int setModule(sls_detector_module myMod, char *mess) {
 
             // if quad, reset M8 and PROGRAM manually
             if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
+                sharedMemory_unlockLocalLink();
                 return FAIL;
             }
 
@@ -1216,6 +1227,7 @@ int setModule(sls_detector_module myMod, char *mess) {
 
         // if quad, reset M8 and PROGRAM manually
         if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
+            sharedMemory_unlockLocalLink();
             return FAIL;
         }
 
@@ -2073,7 +2085,8 @@ int setRateCorrection(
     else if (custom_tau_in_nsec == -1)
         custom_tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
 
-    int dr = Feb_Control_GetDynamicRange();
+    int dr = eiger_dynamicrange;
+
     // get period = subexptime if 32bit , else period = exptime if 16 bit
     int64_t actual_period =
         Feb_Control_GetSubFrameExposureTime(); // already in nsec
@@ -2471,7 +2484,7 @@ void *start_timer(void *arg) {
     const int maxRows = MAX_ROWS_PER_READOUT;
     const int packetsPerFrame = (maxPacketsPerFrame * readNRows) / maxRows;
 
-    LOG(logDEBUG1,
+    LOG(logDEBUG,
         (" dr:%d\n bytesperpixel:%f\n tgenable:%d\n datasize:%d\n "
          "packetsize:%d\n maxnumpackes:%d\n npixelsx:%d\n databytes:%d\n",
          dr, bytesPerPixel, tgEnable, datasize, packetsize, maxPacketsPerFrame,
@@ -2488,11 +2501,13 @@ void *start_timer(void *arg) {
             npixels /= 2;
         }
         LOG(logDEBUG1,
-            ("pixels:%d pixelsperpacket:%d\n", npixels, pixelsPerPacket));
+            ("npixels:%d pixelsperpacket:%d\n", npixels, pixelsPerPacket));
+        uint8_t *src = (uint8_t *)imageData;
         for (int i = 0; i < npixels; ++i) {
             if (i > 0 && i % pixelsPerPacket == 0) {
                 ++pixelVal;
             }
+
             switch (dr) {
             case 4:
                 *((uint8_t *)(imageData + i)) =
@@ -2506,6 +2521,30 @@ void *start_timer(void *arg) {
             case 8:
                 *((uint8_t *)(imageData + i)) =
                     eiger_virtual_test_mode ? 0xFE : (uint8_t)pixelVal;
+                break;
+            case 12:
+                if (eiger_virtual_test_mode) {
+                    // first 12 bit pixel
+                    // first 8 byte
+                    *src++ = 0xFE;
+                    // second 12bit pixel
+                    ++i;
+                    // second 8 byte
+                    *src++ = 0xEF;
+                    // third byte
+                    *src++ = 0xFF;
+                } else {
+                    // first 12 bit pixel
+                    // first 8 byte
+                    *src++ = (uint8_t)(i & 0xFF);
+                    // second 8 byte (first nibble)
+                    *src = (uint8_t)((i++ >> 8u) & 0xF);
+                    // second 12bit pixel
+                    // second 8 byte (second nibble)
+                    *src++ |= ((uint8_t)(i & 0xF) << 4u);
+                    // third byte
+                    *src++ = (uint8_t)((i >> 4u) & 0xFF);
+                }
                 break;
             case 16:
                 *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
@@ -2583,9 +2622,27 @@ void *start_timer(void *arg) {
                 // fill data
                 int dstOffset = sizeof(sls_detector_header);
                 int dstOffset2 = sizeof(sls_detector_header);
-                {
-                    for (int psize = 0; psize < datasize; psize += npixelsx) {
+                if (dr == 12) {
+                    // multiple of 768,1024,4096
+                    int copysize = 256;
+                    for (int psize = 0; psize < datasize; psize += copysize) {
+                        memcpy(packetData + dstOffset, imageData + srcOffset,
+                               copysize);
+                        memcpy(packetData2 + dstOffset2, imageData + srcOffset2,
+                               copysize);
+                        srcOffset += copysize;
+                        srcOffset2 += copysize;
+                        dstOffset += copysize;
+                        dstOffset2 += copysize;
 
+                        // reached 1 row (quarter module)
+                        if ((srcOffset % npixelsx) == 0) {
+                            srcOffset += npixelsx;
+                            srcOffset2 += npixelsx;
+                        }
+                    }
+                } else {
+                    for (int psize = 0; psize < datasize; psize += npixelsx) {
                         if (dr == 32 && tgEnable == 0) {
                             memcpy(packetData + dstOffset,
                                    imageData + srcOffset, npixelsx / 2);
@@ -2883,9 +2940,9 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
 int calculateDataBytes() {
     if (send_to_ten_gig)
-        return setDynamicRange(-1) * ONE_GIGA_CONSTANT * TEN_GIGA_BUFFER_SIZE;
+        return eiger_dynamicrange * ONE_GIGA_CONSTANT * TEN_GIGA_BUFFER_SIZE;
     else
-        return setDynamicRange(-1) * TEN_GIGA_CONSTANT * ONE_GIGA_BUFFER_SIZE;
+        return eiger_dynamicrange * TEN_GIGA_CONSTANT * ONE_GIGA_BUFFER_SIZE;
 }
 
 int getTotalNumberOfChannels() {

@@ -800,6 +800,25 @@ void Detector::startDetectorReadout() {
 
 void Detector::stopDetector(Positions pos) {
     pimpl->Parallel(&Module::stopAcquisition, pos);
+
+    // validate consistent frame numbers
+    switch (getDetectorType().squash()) {
+    case defs::EIGER:
+    case defs::JUNGFRAU:
+    case defs::MOENCH:
+    case defs::CHIPTESTBOARD: {
+        auto res = getNextFrameNumber(pos);
+        if (!res.equal()) {
+            uint64_t maxVal = 0;
+            for (auto it : res) {
+                maxVal = std::max(maxVal, it);
+            }
+            setNextFrameNumber(maxVal + 1);
+        }
+    } break;
+    default:
+        break;
+    }
 }
 
 Result<defs::runStatus> Detector::getDetectorStatus(Positions pos) const {
@@ -1588,7 +1607,6 @@ std::vector<defs::gainMode> Detector::getGainModeList() const {
         return std::vector<defs::gainMode>{
             defs::DYNAMIC, defs::FORCE_SWITCH_G1, defs::FORCE_SWITCH_G2,
             defs::FIX_G1,  defs::FIX_G2,          defs::FIX_G0};
-        break;
     default:
         throw RuntimeError("Gain mode is not implemented for this detector.");
     }

@@ -130,7 +130,7 @@ void HDF5VirtualFile::CreateVirtualFile(
             // loop through readouts (image)
             for (unsigned int i = 0; i < numModY * numModZ; ++i) {
 
-                // interleaving for g2
+                // interleaving for g2 (start is 0 and 1)
                 if (gotthard25um) {
                     start[2] = i;
                 }

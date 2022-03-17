@@ -177,7 +177,7 @@ void Beb_AdjustIPChecksum(struct udp_header_type *ip) {
     ip->ip_header_checksum[1] = ip_checksum & 0xff;
 }
 
-void Beb_GetModuleConfiguration(int *master, int *top, int *normal) {
+int Beb_GetModuleConfiguration(int *master, int *top, int *normal) {
     *top = 0;
     *master = 0;
     // mapping new memory to read master top module configuration
@@ -187,6 +187,7 @@ void Beb_GetModuleConfiguration(int *master, int *top, int *normal) {
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd < 0) {
         LOG(logERROR, ("Module Configuration FAIL\n"));
+        return FAIL;
     } else {
         // read data
         ret = Beb_Read32(csp0base, BEB_CONFIG_RD_OFST);
@@ -202,6 +203,7 @@ void Beb_GetModuleConfiguration(int *master, int *top, int *normal) {
         // close file pointer
         Beb_close(fd, csp0base);
     }
+    return OK;
 }
 
 int Beb_IsTransmitting(int *retval, int tengiga, int waitForDelay) {
@@ -862,11 +864,17 @@ void Beb_ResetFrameNumber() {
 }
 
 int Beb_SetUpTransferParameters(short the_bit_mode) {
-    if (the_bit_mode != 4 && the_bit_mode != 8 && the_bit_mode != 16 &&
-        the_bit_mode != 32)
+    switch (the_bit_mode) {
+    case 4:
+    case 8:
+    case 12:
+    case 16:
+    case 32:
+        Beb_bit_mode = the_bit_mode;
+        return 1;
+    default:
         return 0;
-    Beb_bit_mode = the_bit_mode;
-    return 1;
+    }
 }
 
 int Beb_StopAcquisition() {

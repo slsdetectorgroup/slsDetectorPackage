@@ -784,6 +784,7 @@ class CmdProxy {
         {"trimen", &CmdProxy::TrimEnergies},
         {"gappixels", &CmdProxy::GapPixels},
         {"fliprows", &CmdProxy::fliprows},
+        {"master", &CmdProxy::master},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::Acquire},
@@ -942,6 +943,7 @@ class CmdProxy {
         {"pulsechip", &CmdProxy::PulseChip},
         {"quad", &CmdProxy::Quad},
         {"datastream", &CmdProxy::DataStream},
+        {"top", &CmdProxy::top},
 
         /* Jungfrau Specific */
         {"chipversion", &CmdProxy::chipversion},
@@ -1109,7 +1111,6 @@ class CmdProxy {
     /* acquisition parameters */
     std::string Acquire(int action);
     std::string Exptime(int action);
-    std::string DynamicRange(int action);
     std::string ReadoutSpeed(int action);
     std::string Adcphase(int action);
     std::string Dbitphase(int action);
@@ -1281,6 +1282,12 @@ class CmdProxy {
         "interfaces must be set to 2. slsReceiver and slsDetectorGui "
         "does not handle.");
 
+    INTEGER_COMMAND_VEC_ID_GET(
+        master, getMaster, setMaster, StringTo<int>,
+        "[0, 1]\n\t[Eiger] Sets half module to master and "
+        "others to slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger] "
+        "Gets if the current module/ half module is master.");
+
     /* acquisition parameters */
 
     INTEGER_COMMAND_SET_NOID_GET_ID(
@@ -1328,7 +1335,7 @@ class CmdProxy {
         dr, getDynamicRange, setDynamicRange, StringTo<int>,
         "[value]\n\tDynamic Range or number of bits per "
         "pixel in detector.\n\t"
-        "[Eiger] Options: 4, 8, 16, 32. If set to 32, also sets "
+        "[Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets "
         "clkdivider to 2, else to 0.\n\t"
         "[Mythen3] Options: 8, 16, 32\n\t"
         "[Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16");
@@ -1900,6 +1907,10 @@ class CmdProxy {
         "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at "
         "start of acquisition. 0 complete reset, 1 partial reset. Default is "
         "complete reset. Advanced function!");
+
+    INTEGER_COMMAND_VEC_ID(
+        top, getTop, setTop, StringTo<int>,
+        "[0, 1]\n\t[Eiger] Sets half module to top (1), else bottom.");
 
     /* Jungfrau Specific */
 

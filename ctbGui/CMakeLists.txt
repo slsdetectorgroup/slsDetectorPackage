@@ -34,7 +34,7 @@ add_executable(ctbGui
     ctbAdcs.cpp
     ctbPattern.cpp
     ctbAcquisition.cpp
-    ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/tiffIO.cpp
+    ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/tiffio/src/tiffIO.cpp
 )
 
 
@@ -43,6 +43,7 @@ target_include_directories(ctbGui PRIVATE
     ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/dataStructures
     ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/interpolations
     ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/
+    ${CMAKE_SOURCE_DIR}/slsDetectorCalibration/tiffio/include/
 )
 
 # Headders needed for ROOT dictionary generation

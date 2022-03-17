@@ -1073,6 +1073,8 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size,
     // mythen3 / gotthard2 debugging
     int discardBits = numDiscardBits;
 
+    uint16_t temp = 0;
+    uint8_t *src = (uint8_t *)source;
     switch (dr) {
 
     case 4:
@@ -1089,6 +1091,19 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size,
         for (ichan = 0; ichan < databytes; ++ichan) {
             dest[ichan] = *((u_int8_t *)source);
             ++source;
+        }
+        break;
+
+    case 12:
+        for (ichan = 0; ichan < size; ++ichan) {
+            temp = (*src++ & 0xFF);
+            temp |= ((*src & 0xF) << 8u);
+            dest[ichan] = (double)temp;
+            ++ichan;
+
+            temp = ((*src++ & 0xF0) >> 4u);
+            temp |= ((*src++ & 0xFF) << 4u);
+            dest[ichan] = (double)temp;
         }
         break;
 

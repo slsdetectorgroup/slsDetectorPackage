@@ -13,6 +13,7 @@ set(SOURCES
     src/DataStreamer.cpp
     src/Fifo.cpp
     src/Arping.cpp
+    src/MasterAttributes.cpp
 )
 
 set(PUBLICHEADERS

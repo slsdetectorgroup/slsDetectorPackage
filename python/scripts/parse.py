@@ -5,6 +5,12 @@ import subprocess
 from subprocess import PIPE
 import os
 
+def clang_format_version():
+    p = subprocess.run(['clang-format', '--version'], capture_output = True)
+    ver = p.stdout.decode().split()[2]
+    major = int(ver.split('.')[0])
+    return major
+
 
 def remove_comments(text):
     def replacer(match):

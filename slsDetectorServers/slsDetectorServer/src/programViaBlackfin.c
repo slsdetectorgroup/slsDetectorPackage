@@ -274,7 +274,8 @@ int allowUpdate(char *mess, char *functionType) {
         getKernelVersion(retvals);
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not update %s. Kernel version %s is too old to "
-                 "update the Amd flash/ root directory. Most likely, blackfin needs rescue or replacement. Please contact us.\n",
+                 "update the Amd flash/ root directory. Most likely, blackfin "
+                 "needs rescue or replacement. Please contact us.\n",
                  functionType, retvals);
         LOG(logERROR, (mess));
         return FAIL;
@@ -446,6 +447,30 @@ int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd) {
         return FAIL;
     }
     LOG(logDEBUG1, ("Temp file ready for reading\n"));
+
+#ifndef VIRTUAL
+    // check if its a normal file or special file
+    structure stat buf;
+    if (stat(flashDriveName, &buf) == -1) {
+        sprintf(mess,
+                "Could not %s. Unable to validate if flash drive found is a "
+                "special file\n",
+                messageType);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // non zero = block special file
+    if (!S_ISBLK(buf.st_mode)) {
+        sprintf(mess,
+                "Could not %s. The flash drive found is a normal file. To "
+                "delete this file, create the flash drive and proceed with "
+                "programming, re-run the programming command with parameter "
+                "'--force-delete-normal-file'\n",
+                messageType);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+#endif
 
     // open flash drive for writing
     *flashfd = fopen(flashDriveName, "w");

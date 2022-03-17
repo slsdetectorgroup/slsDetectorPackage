@@ -104,8 +104,10 @@ void HDF5VirtualFile::CreateVirtualFile(
                     ? maxFramesPerFile
                     : (numImagesCaught - framesSaved);
 
+            // starting location
+            hsize_t start[3] = {framesSaved, 0, 0};
             // number of elements separating each block
-            hsize_t stride[3] = {1, 1, 2};
+            hsize_t stride[3] = {1, 1, 1};
             // number of blocks
             hsize_t count[3] = {nDimx, nDimy, nDimz};
             // block size
@@ -120,11 +122,18 @@ void HDF5VirtualFile::CreateVirtualFile(
             // block size
             hsize_t blockPara[3] = {nDimx, 1};
 
+            // interleaving for g2
+            if (gotthard25um) {
+                stride[2] = 2;
+            }
+
             // loop through readouts (image)
             for (unsigned int i = 0; i < numModY * numModZ; ++i) {
 
-                // starting location
-                hsize_t start[3] = {framesSaved, 0, i};
+                // interleaving for g2
+                if (gotthard25um) {
+                    start[2] = i;
+                }
 
                 // setect data hyperslabs
                 vdsDataSpace.selectHyperslab(H5S_SELECT_SET, count, start,
@@ -183,10 +192,13 @@ void HDF5VirtualFile::CreateVirtualFile(
 
                 // H5Sclose(srcDataspace);
                 // H5Sclose(srcDataspace_para);
-                start[2] += nDimz;
-                if (start[2] >= (numModZ * nDimz)) {
-                    start[2] = 0;
-                    start[1] += nDimy;
+
+                if (!gotthard25um) {
+                    start[2] += nDimz;
+                    if (start[2] >= (numModZ * nDimz)) {
+                        start[2] = 0;
+                        start[1] += nDimy;
+                    }
                 }
                 startPara[1]++;
             }

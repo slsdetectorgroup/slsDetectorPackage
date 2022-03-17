@@ -716,6 +716,7 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
             break;
         */
         case 4:
+        case 12:
             if (detType == EIGER) {
                 exists = true;
             }

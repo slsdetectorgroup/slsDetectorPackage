@@ -99,6 +99,11 @@
      </item>
      <item>
       <property name="text">
+       <string>4095</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>255</string>
       </property>
      </item>

@@ -120,6 +120,9 @@ class Module : public virtual slsDetectorDefs {
     int setTrimEn(const std::vector<int> &energies = {});
     bool getFlipRows() const;
     void setFlipRows(bool value);
+    bool isMaster() const;
+    void setMaster(const bool master);
+
     bool isVirtualDetectorServer() const;
 
     /**************************************************
@@ -184,6 +187,7 @@ class Module : public virtual slsDetectorDefs {
     void setDBITPipeline(int value);
     int getReadNRows() const;
     void setReadNRows(const int value);
+
     /**************************************************
      *                                                *
      *    Acquisition                                 *
@@ -366,6 +370,8 @@ class Module : public virtual slsDetectorDefs {
     void setQuad(const bool enable);
     bool getDataStream(const portPosition port) const;
     void setDataStream(const portPosition port, const bool enable);
+    bool getTop() const;
+    void setTop(bool value);
 
     /**************************************************
      *                                                *
@@ -457,7 +463,6 @@ class Module : public virtual slsDetectorDefs {
     int64_t getGateDelay(int gateIndex) const;
     void setGateDelay(int gateIndex, int64_t value);
     std::array<time::ns, 3> getGateDelayForAllGates() const;
-    bool isMaster() const;
     int getChipStatusRegister() const;
     void setGainCaps(int caps);
     int getGainCaps();

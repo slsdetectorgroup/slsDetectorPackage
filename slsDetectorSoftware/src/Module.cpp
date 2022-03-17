@@ -509,6 +509,13 @@ void Module::setFlipRows(bool value) {
     }
 }
 
+bool Module::isMaster() const { return sendToDetectorStop<int>(F_GET_MASTER); }
+
+void Module::setMaster(const bool master) {
+    sendToDetector(F_SET_MASTER, static_cast<int>(master), nullptr);
+    sendToDetectorStop(F_SET_MASTER, static_cast<int>(master), nullptr);
+}
+
 bool Module::isVirtualDetectorServer() const {
     return sendToDetector<int>(F_IS_VIRTUAL);
 }
@@ -1713,6 +1720,14 @@ void Module::setDataStream(const portPosition port, const bool enable) {
     }
 }
 
+bool Module::getTop() const {
+    return (static_cast<bool>(sendToDetector<int>(F_GET_TOP)));
+}
+
+void Module::setTop(bool value) {
+    sendToDetector(F_SET_TOP, static_cast<int>(value), nullptr);
+}
+
 // Jungfrau Specific
 double Module::getChipVersion() const {
     return (sendToDetector<int>(F_GET_CHIP_VERSION)) / 10.00;
@@ -2236,8 +2251,6 @@ void Module::setGateDelay(int gateIndex, int64_t value) {
 std::array<time::ns, 3> Module::getGateDelayForAllGates() const {
     return sendToDetector<std::array<time::ns, 3>>(F_GET_GATE_DELAY_ALL_GATES);
 }
-
-bool Module::isMaster() const { return sendToDetectorStop<int>(F_GET_MASTER); }
 
 int Module::getChipStatusRegister() const {
     return sendToDetector<int>(F_GET_CSR);

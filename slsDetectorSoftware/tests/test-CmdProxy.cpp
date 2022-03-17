@@ -570,6 +570,46 @@ TEST_CASE("fliprows", "[.cmd]") {
     }
 }
 
+TEST_CASE("master", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2) {
+        REQUIRE_NOTHROW(proxy.Call("master", {}, -1, GET));
+        if (det_type == defs::EIGER) {
+            // get previous master
+            int prevMaster = 0;
+            {
+                auto previous = det.getMaster();
+                for (int i = 0; i != det.size(); ++i) {
+                    if (previous[i] == 1) {
+                        prevMaster = i;
+                        break;
+                    }
+                }
+            }
+            {
+                std::ostringstream oss1;
+                proxy.Call("master", {"0"}, 0, PUT, oss3);
+                REQUIRE(oss3.str() == "master 0\n");
+            }
+            {
+                std::ostringstream oss1;
+                proxy.Call("master", {"1"}, 0, PUT, oss3);
+                REQUIRE(oss3.str() == "master 1\n");
+            }
+            REQUIRE_THROWS(proxy.Call("master", {"1"}, -1, PUT));
+            // set all to slaves, and then master
+            for (int i = 0; i != det.size(); ++i) {
+                det.setMaster(0, {i});
+            }
+            det.setMaster(1, prevMaster);
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("master", {}, -1, GET));
+    }
+}
+
 /* acquisition parameters */
 
 // acquire: not testing

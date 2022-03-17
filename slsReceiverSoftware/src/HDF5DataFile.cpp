@@ -112,6 +112,7 @@ void HDF5DataFile::CreateFirstHDF5DataFile(
     udpPortNumber_ = udpPortNumber;
 
     switch (dynamicRange_) {
+    case 12:
     case 16:
         dataType_ = PredType::STD_U16LE;
         break;
@@ -248,8 +249,30 @@ void HDF5DataFile::WriteToFile(char *buffer, const int buffersize,
     WriteParameterDatasets(currentFrameNumber, (sls_receiver_header *)(buffer));
 }
 
+void HDF5DataFile::Convert12to16Bit(uint16_t *dst, uint8_t *src) {
+    for (int i = 0; i < EIGER_NUM_PIXELS; ++i) {
+        *dst = (uint16_t)(*src++ & 0xFF);
+        *dst++ |= (uint16_t)((*src & 0xF) << 8u);
+        ++i;
+        *dst = (uint16_t)((*src++ & 0xF0) >> 4u);
+        *dst++ |= (uint16_t)((*src++ & 0xFF) << 4u);
+    }
+}
+
 void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
                                  char *buffer) {
+    // expand 12 bit to 16 bits
+    char *revBuffer = buffer;
+    if (dynamicRange_ == 12) {
+        revBuffer = (char *)malloc(EIGER_16_BIT_IMAGE_SIZE);
+        if (revBuffer == nullptr) {
+            throw sls::RuntimeError("Could not allocate memory for 12 bit to "
+                                    "16 bit conversion in object " +
+                                    std::to_string(index_));
+        }
+        Convert12to16Bit((uint16_t *)revBuffer, (uint8_t *)buffer);
+    }
+
     std::lock_guard<std::mutex> lock(*hdf5Lib_);
 
     uint64_t nDimx =
@@ -266,9 +289,15 @@ void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
 
         dataSpace_->selectHyperslab(H5S_SELECT_SET, count, start);
         DataSpace memspace(2, dims2);
-        dataSet_->write(buffer, dataType_, memspace, *dataSpace_);
+        dataSet_->write(revBuffer, dataType_, memspace, *dataSpace_);
         memspace.close();
+        if (dynamicRange_ == 12) {
+            free(revBuffer);
+        }
     } catch (const Exception &error) {
+        if (dynamicRange_ == 12) {
+            free(revBuffer);
+        }
         LOG(logERROR) << "Could not write to file in object " << index_;
         error.printErrorStack();
         throw sls::RuntimeError("Could not write to file in object " +

@@ -630,3 +630,31 @@ TEST_CASE("datastream", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("datastream", {"left", "1"}, -1, PUT));
     }
 }
+
+TEST_CASE("top", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_val = det.getTop();
+        int numModulesTested = 1;
+        if (det.size() > 1) {
+            numModulesTested = 2;
+        }
+        for (int i = 0; i != numModulesTested; ++i) {
+            std::ostringstream oss1, oss2, oss3;
+            proxy.Call("top", {"1"}, i, PUT, oss1);
+            REQUIRE(oss1.str() == "top 1\n");
+            proxy.Call("top", {}, i, GET, oss2);
+            REQUIRE(oss2.str() == "top 1\n");
+            proxy.Call("top", {"0"}, i, PUT, oss3);
+            REQUIRE(oss3.str() == "top 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTop(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("top", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("top", {"1"}, -1, PUT));
+    }
+}

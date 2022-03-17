@@ -28,6 +28,7 @@ extern int updateFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern int numUdpDestinations;
 extern const enum detectorType myDetectorType;
+extern int ignoreConfigFileFlag;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
@@ -392,19 +393,29 @@ void initControlServer() {
 }
 
 void initStopServer() {
-
-    usleep(CTRL_SRVR_INIT_TIME_US);
-    if (mapCSP0() == FAIL) {
-        LOG(logERROR,
-            ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
-        exit(EXIT_FAILURE);
-    }
+    if (!updateFlag && initError == OK) {
+        usleep(CTRL_SRVR_INIT_TIME_US);
+        LOG(logINFOBLUE, ("Configuring Stop server\n"));
+        if (mapCSP0() == FAIL) {
+            initError = FAIL;
+            strcpy(initErrorMessage,
+                   "Stop Server: Map Fail. Dangerous to continue. Goodbye!\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            return;
+        }
+        if (readConfigFile() == FAIL) {
+            initCheckDone = 1;
+            return;
+        }
 #ifdef VIRTUAL
-    sharedMemory_setStop(0);
-    // temp threshold and reset event (read by stop server)
-    setThresholdTemperature(DEFAULT_TMP_THRSHLD);
-    setTemperatureEvent(0);
+        sharedMemory_setStop(0);
+        // temp threshold and reset event (read by stop server)
+        setThresholdTemperature(DEFAULT_TMP_THRSHLD);
+        setTemperatureEvent(0);
 #endif
+    }
+    initCheckDone = 1;
 }
 
 /* set up detector */
@@ -643,6 +654,11 @@ int readConfigFile() {
         return initError;
     }
 
+    if (ignoreConfigFileFlag) {
+        LOG(logWARNING, ("Ignoring Config file\n"));
+        return OK;
+    }
+
     const int fileNameSize = 128;
     char fname[fileNameSize];
     if (getAbsPath(fname, fileNameSize, CONFIG_FILE) == FAIL) {
@@ -796,7 +812,16 @@ void resetPeripheral() {
 
 /* set parameters -  dr, roi */
 
-int setDynamicRange(int dr) { return DYNAMIC_RANGE; }
+int setDynamicRange(int dr) {
+    if (dr == 16)
+        return OK;
+    return FAIL;
+}
+
+int getDynamicRange(int *retval) {
+    *retval = DYNAMIC_RANGE;
+    return OK;
+}
 
 void setADCInvertRegister(uint32_t val) {
     LOG(logINFO, ("Setting ADC Port Invert Reg to 0x%x\n", val));
@@ -1675,7 +1700,7 @@ int setReadNRows(int value) {
     }
     if (isHardwareVersion2()) {
         LOG(logERROR, ("Could not set number of rows. Only available for "
-                    "Hardware Board version 2.0.\n"));
+                       "Hardware Board version 2.0.\n"));
         return FAIL;
     }
 
@@ -2175,7 +2200,7 @@ int getFlipRows() {
 void setFlipRows(int arg) {
     if (isHardwareVersion2()) {
         LOG(logERROR, ("Could not set flip rows. Only available for "
-                "Hardware Board version 2.0.\n"));
+                       "Hardware Board version 2.0.\n"));
         return;
     }
     if (arg >= 0) {

@@ -509,6 +509,13 @@ void Module::setFlipRows(bool value) {
     }
 }
 
+bool Module::isMaster() const { return sendToDetectorStop<int>(F_GET_MASTER); }
+
+void Module::setMaster(const bool master) {
+    sendToDetector(F_SET_MASTER, static_cast<int>(master), nullptr);
+    sendToDetectorStop(F_SET_MASTER, static_cast<int>(master), nullptr);
+}
+
 bool Module::isVirtualDetectorServer() const {
     return sendToDetector<int>(F_IS_VIRTUAL);
 }
@@ -870,7 +877,7 @@ int64_t Module::getFramesCaughtByReceiver() const {
     return sendToReceiver<int64_t>(F_GET_RECEIVER_FRAMES_CAUGHT);
 }
 
-std::vector<uint64_t> Module::getNumMissingPackets() const {
+std::vector<int64_t> Module::getNumMissingPackets() const {
     // TODO!(Erik) Refactor
     LOG(logDEBUG1) << "Getting num missing packets";
     if (shm()->useReceiverFlag) {
@@ -882,7 +889,7 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
                 " returned error: " + client.readErrorMessage());
         } else {
             auto nports = client.Receive<int>();
-            std::vector<uint64_t> retval(nports);
+            std::vector<int64_t> retval(nports);
             client.Receive(retval);
             LOG(logDEBUG1) << "Missing packets of Receiver" << moduleIndex
                            << ": " << sls::ToString(retval);
@@ -1046,6 +1053,10 @@ void Module::setDestinationUDPIP(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address");
     }
+    if (ip.str() == LOCALHOST_IP && !isVirtualDetectorServer()) {
+        throw RuntimeError("Invalid destination udp ip. Change rx_hostname "
+                           "from localhost or change udp_dstip from auto?");
+    }
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr);
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0LU);
@@ -1065,7 +1076,10 @@ void Module::setDestinationUDPIP2(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address2");
     }
-
+    if (ip.str() == LOCALHOST_IP && !isVirtualDetectorServer()) {
+        throw RuntimeError("Invalid destination udp ip2. Change rx_hostname "
+                           "from localhost or change udp_dstip from auto?");
+    }
     sendToDetector(F_SET_DEST_UDP_IP2, ip, nullptr);
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0LU);
@@ -1666,6 +1680,14 @@ void Module::setDataStream(const portPosition port, const bool enable) {
     }
 }
 
+bool Module::getTop() const {
+    return (static_cast<bool>(sendToDetector<int>(F_GET_TOP)));
+}
+
+void Module::setTop(bool value) {
+    sendToDetector(F_SET_TOP, static_cast<int>(value), nullptr);
+}
+
 // Jungfrau Specific
 double Module::getChipVersion() const {
     return (sendToDetector<int>(F_GET_CHIP_VERSION)) / 10.00;
@@ -2189,8 +2211,6 @@ void Module::setGateDelay(int gateIndex, int64_t value) {
 std::array<time::ns, 3> Module::getGateDelayForAllGates() const {
     return sendToDetector<std::array<time::ns, 3>>(F_GET_GATE_DELAY_ALL_GATES);
 }
-
-bool Module::isMaster() const { return sendToDetectorStop<int>(F_GET_MASTER); }
 
 int Module::getChipStatusRegister() const {
     return sendToDetector<int>(F_GET_CSR);

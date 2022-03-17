@@ -1,8 +1,8 @@
-// SPDX-License-Identifier: LGPL-3.0-or-other
-// Copyright (C) 2021 Contributors to the SLS Detector Package
 /* WARINING This file is auto generated any edits might be overwritten without
  * warning */
 
+// SPDX-License-Identifier: LGPL-3.0-or-other
+// Copyright (C) 2021 Contributors to the SLS Detector Package
 #include <pybind11/chrono.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -173,6 +173,12 @@ void init_det(py::module &m) {
         .def("setFlipRows",
              (void (Detector::*)(bool, sls::Positions)) & Detector::setFlipRows,
              py::arg(), py::arg() = Positions{})
+        .def("getMaster",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getMaster,
+             py::arg() = Positions{})
+        .def("setMaster", (void (Detector::*)(bool, int)) & Detector::setMaster,
+             py::arg(), py::arg())
         .def("isVirtualDetectorServer",
              (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::isVirtualDetectorServer,
@@ -470,7 +476,9 @@ void init_det(py::module &m) {
              (void (Detector::*)()) & Detector::clearAcquiringFlag)
         .def("startReceiver", (void (Detector::*)()) & Detector::startReceiver)
         .def("stopReceiver", (void (Detector::*)()) & Detector::stopReceiver)
-        .def("startDetector", (void (Detector::*)()) & Detector::startDetector)
+        .def("startDetector",
+             (void (Detector::*)(sls::Positions)) & Detector::startDetector,
+             py::arg() = Positions{})
         .def("startDetectorReadout",
              (void (Detector::*)()) & Detector::startDetectorReadout)
         .def("stopDetector",
@@ -488,11 +496,10 @@ void init_det(py::module &m) {
              (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getFramesCaught,
              py::arg() = Positions{})
-        .def(
-            "getNumMissingPackets",
-            (Result<std::vector<uint64_t>>(Detector::*)(sls::Positions) const) &
-                Detector::getNumMissingPackets,
-            py::arg() = Positions{})
+        .def("getNumMissingPackets",
+             (Result<std::vector<int64_t>>(Detector::*)(sls::Positions) const) &
+                 Detector::getNumMissingPackets,
+             py::arg() = Positions{})
         .def("getNextFrameNumber",
              (Result<uint64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getNextFrameNumber,
@@ -765,7 +772,7 @@ void init_det(py::module &m) {
                  Detector::getRxLastClientIP,
              py::arg() = Positions{})
         .def("getRxThreadIds",
-             (Result<std::array<pid_t, 8>>(Detector::*)(sls::Positions) const) &
+             (Result<std::array<pid_t, 9>>(Detector::*)(sls::Positions) const) &
                  Detector::getRxThreadIds,
              py::arg() = Positions{})
         .def("getRxArping",
@@ -1004,6 +1011,13 @@ void init_det(py::module &m) {
                                  sls::Positions)) &
                  Detector::setDataStream,
              py::arg(), py::arg(), py::arg() = Positions{})
+        .def("getTop",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getTop,
+             py::arg() = Positions{})
+        .def("setTop",
+             (void (Detector::*)(bool, sls::Positions)) & Detector::setTop,
+             py::arg(), py::arg() = Positions{})
         .def("getChipVersion",
              (Result<double>(Detector::*)(sls::Positions) const) &
                  Detector::getChipVersion,
@@ -1261,10 +1275,6 @@ void init_det(py::module &m) {
         .def("getGateDelayForAllGates",
              (Result<std::array<ns, 3>>(Detector::*)(sls::Positions) const) &
                  Detector::getGateDelayForAllGates,
-             py::arg() = Positions{})
-        .def("getMaster",
-             (Result<bool>(Detector::*)(sls::Positions) const) &
-                 Detector::getMaster,
              py::arg() = Positions{})
         .def("getChipStatusRegister",
              (Result<int>(Detector::*)(sls::Positions) const) &
@@ -1554,7 +1564,7 @@ void init_det(py::module &m) {
                  Detector::getUpdateMode,
              py::arg() = Positions{})
         .def("setUpdateMode",
-             (void (Detector::*)(bool, sls::Positions)) &
+             (void (Detector::*)(const bool, sls::Positions)) &
                  Detector::setUpdateMode,
              py::arg(), py::arg() = Positions{})
         .def("readRegister",

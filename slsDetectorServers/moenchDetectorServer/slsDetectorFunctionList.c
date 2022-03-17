@@ -67,7 +67,13 @@ int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
 int vLimit = 0;
 enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
+
+// getNumberofchannels return 0 for y in --update mode (virtual servers)
+#ifdef VIRTUAL
+int nSamples = DEFAULT_NUM_SAMPLES;
+#else
 int nSamples = 1;
+#endif
 int detPos[2] = {0, 0};
 
 int isInitCheckDone() { return initCheckDone; }
@@ -430,16 +436,22 @@ void initControlServer() {
 }
 
 void initStopServer() {
-
-    usleep(CTRL_SRVR_INIT_TIME_US);
-    if (mapCSP0() == FAIL) {
-        LOG(logERROR,
-            ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
-        exit(EXIT_FAILURE);
-    }
+    if (!updateFlag && initError == OK) {
+        usleep(CTRL_SRVR_INIT_TIME_US);
+        LOG(logINFOBLUE, ("Configuring Stop server\n"));
+        if (mapCSP0() == FAIL) {
+            initError = FAIL;
+            strcpy(initErrorMessage,
+                   "Stop Server: Map Fail. Dangerous to continue. Goodbye!\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            return;
+        }
 #ifdef VIRTUAL
-    sharedMemory_setStop(0);
+        sharedMemory_setStop(0);
 #endif
+    }
+    initCheckDone = 1;
 }
 
 /* set up detector */
@@ -700,7 +712,16 @@ void resetPeripheral() {
 
 /* set parameters -  dr, adcenablemask */
 
-int setDynamicRange(int dr) { return DYNAMIC_RANGE; }
+int setDynamicRange(int dr) {
+    if (dr == 16)
+        return OK;
+    return FAIL;
+}
+
+int getDynamicRange(int *retval) {
+    *retval = DYNAMIC_RANGE;
+    return OK;
+}
 
 int setADCEnableMask(uint32_t mask) {
     if (mask == 0u) {

@@ -570,6 +570,46 @@ TEST_CASE("fliprows", "[.cmd]") {
     }
 }
 
+TEST_CASE("master", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2) {
+        REQUIRE_NOTHROW(proxy.Call("master", {}, -1, GET));
+        if (det_type == defs::EIGER) {
+            // get previous master
+            int prevMaster = 0;
+            {
+                auto previous = det.getMaster();
+                for (int i = 0; i != det.size(); ++i) {
+                    if (previous[i] == 1) {
+                        prevMaster = i;
+                        break;
+                    }
+                }
+            }
+            {
+                std::ostringstream oss1;
+                proxy.Call("master", {"0"}, 0, PUT, oss3);
+                REQUIRE(oss3.str() == "master 0\n");
+            }
+            {
+                std::ostringstream oss1;
+                proxy.Call("master", {"1"}, 0, PUT, oss3);
+                REQUIRE(oss3.str() == "master 1\n");
+            }
+            REQUIRE_THROWS(proxy.Call("master", {"1"}, -1, PUT));
+            // set all to slaves, and then master
+            for (int i = 0; i != det.size(); ++i) {
+                det.setMaster(0, {i});
+            }
+            det.setMaster(1, prevMaster);
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("master", {}, -1, GET));
+    }
+}
+
 /* acquisition parameters */
 
 // acquire: not testing
@@ -2126,6 +2166,41 @@ TEST_CASE("nextframenumber", "[.cmd]") {
             proxy.Call("nextframenumber", {"1"}, -1, PUT, oss);
             REQUIRE(oss.str() == "nextframenumber 1\n");
         }
+
+        auto prev_timing =
+            det.getTimingMode().tsquash("inconsistent timing mode in test");
+        auto prev_frames =
+            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+        auto prev_exptime =
+            det.getExptime().tsquash("inconsistent exptime in test");
+        auto prev_period =
+            det.getPeriod().tsquash("inconsistent period in test");
+        det.setTimingMode(defs::AUTO_TIMING);
+        det.setNumberOfFrames(1);
+        det.setExptime(std::chrono::microseconds(200));
+        det.setPeriod(std::chrono::milliseconds(1));
+        det.startDetector();
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        auto currentfnum =
+            det.getNextFrameNumber().tsquash("inconsistent frame nr in test");
+        REQUIRE(currentfnum == 2);
+        if (det_type == defs::EIGER) {
+            auto prev_tengiga =
+                det.getTenGiga().tsquash("inconsistent ten giga enable");
+            det.setTenGiga(true);
+            det.setNextFrameNumber(1);
+            det.startDetector();
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            auto currentfnum = det.getNextFrameNumber().tsquash(
+                "inconsistent frame nr in test");
+            REQUIRE(currentfnum == 2);
+            det.setTenGiga(prev_tengiga);
+        }
+
+        det.setTimingMode(prev_timing);
+        det.setNumberOfFrames(prev_frames);
+        det.setExptime(prev_exptime);
+        det.setPeriod(prev_period);
         for (int i = 0; i != det.size(); ++i) {
             det.setNextFrameNumber(prev_sfnum[i], {i});
         }

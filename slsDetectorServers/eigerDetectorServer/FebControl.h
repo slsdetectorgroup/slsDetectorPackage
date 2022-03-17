@@ -7,8 +7,7 @@
 
 // setup
 void Feb_Control_activate(int activate);
-void Feb_Control_FebControl();
-int Feb_Control_Init(int master, int normal);
+int Feb_Control_FebControl(int normal);
 int Feb_Control_OpenSerialCommunication();
 void Feb_Control_CloseSerialCommunication();
 int Feb_Control_CheckSetup();
@@ -55,7 +54,7 @@ int Feb_Control_ResetChipPartially();
 int Feb_Control_SendBitModeToBebServer();
 unsigned int Feb_Control_ConvertTimeToRegister(float time_in_sec);
 int Feb_Control_PrepareForAcquisition();
-void Feb_Control_PrintAcquisitionSetup();
+int Feb_Control_PrintAcquisitionSetup();
 int Feb_Control_StartAcquisition();
 int Feb_Control_StopAcquisition();
 int Feb_Control_IsReadyForTrigger(int *readyForTrigger);
@@ -63,8 +62,10 @@ int Feb_Control_SendSoftwareTrigger();
 int Feb_Control_SoftwareTrigger(int block);
 
 // parameters
-int Feb_Control_SetDynamicRange(unsigned int four_eight_sixteen_or_thirtytwo);
-unsigned int Feb_Control_GetDynamicRange();
+int Feb_Control_SetDynamicRange(int dr);
+int Feb_Control_GetDynamicRange(int *retval);
+int Feb_Control_Disable16bitConversion(int disable);
+int Feb_Control_Get16bitConversionDisabled();
 int Feb_Control_SetReadoutSpeed(unsigned int readout_speed);
 int Feb_Control_SetReadoutMode(unsigned int readout_mode);
 int Feb_Control_SetTriggerMode(unsigned int trigger_mode);
@@ -86,8 +87,8 @@ int Feb_Control_Get_Counter_Bit();
 int Feb_Control_SetInterruptSubframe(int val);
 int Feb_Control_GetInterruptSubframe();
 int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right);
-void Feb_Control_SetMasterVariable(int val);
 int Feb_Control_SetMaster(enum MASTERINDEX ind);
+int Feb_Control_SetMasterEffects(int master, int controlServer);
 int Feb_Control_SetQuad(int val);
 int Feb_Control_SetChipSignalsToTrimQuad(int enable);
 int Feb_Control_SetReadNRows(int value);

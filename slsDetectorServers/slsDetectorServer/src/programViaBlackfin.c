@@ -7,6 +7,7 @@
 #include "slsDetectorServer_defs.h"
 
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/sysinfo.h>
 #include <unistd.h> // usleep
 
@@ -450,7 +451,7 @@ int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd) {
 
 #ifndef VIRTUAL
     // check if its a normal file or special file
-    structure stat buf;
+    struct stat buf;
     if (stat(flashDriveName, &buf) == -1) {
         sprintf(mess,
                 "Could not %s. Unable to validate if flash drive found is a "

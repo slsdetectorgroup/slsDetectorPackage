@@ -66,9 +66,9 @@ int main(int argc, char *argv[]) {
 #endif
 
     // help message
+    int helpMessageSize = 1200;
+    char helpMessage[helpMessageSize];
     {
-        int helpMessageSize = 1200;
-        char helpMessage[helpMessageSize];
         memset(helpMessage, 0, helpMessageSize);
         int len = sprintf(
             helpMessage, helpMessageSize,

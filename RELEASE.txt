@@ -51,6 +51,10 @@ This document describes the differences between v7.0.0 and v6.x.x
 - progress looks at activated or enabled ports, so progress does not stagnate
 - (eiger) disable datastreaming also for virtual servers only for 10g
 - missing packets also takes care of disabled ports
+- added geometry to metadata
+- 10g eiger nextframenumber get fixed.
+- stop, able to set nextframenumber to a consistent (max + 1) for all modules if different (eiger/ctb/jungfrau/moench)
+
 
 
 2. Resolved Issues

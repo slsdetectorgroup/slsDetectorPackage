@@ -66,32 +66,47 @@ int main(int argc, char *argv[]) {
 #endif
 
     // help message
-    char helpMessage[MAX_STR_LENGTH];
-    memset(helpMessage, 0, MAX_STR_LENGTH);
-    sprintf(
-        helpMessage,
-        "Usage: %s [arguments]\n"
-        "Possible arguments are:\n"
-        "\t-v, --version            : Software version\n"
-        "\t-p, --port <port>        : TCP communication port with client. \n"
-        "\t-g, --nomodule           : [Mythen3][Gotthard2] \n"
-        "\t                           Generic or No Module mode. Skips "
-        "detector type checks. \n"
-        "\t-f, --phaseshift <value> : [Gotthard] only. Sets phase shift. \n"
-        "\t-d, --devel              : Developer mode. Skips firmware checks. \n"
-        "\t-u, --update             : Update mode. Skips firmware checks and "
-        "initial detector setup. \n"
-        "\t-i, --ignore-config      : "
-        "[Eiger][Jungfrau][Gotthard][Gotthard2] \n"
-        "\t                           Ignore config file. \n"
-        "\t-m, --master <master>    : [Eiger][Mythen3][Gotthard][Gotthard2] \n"
-        "\t                           Set Master to 0 or 1. Precedence over "
-        "config file. Only for virtual servers except Eiger. \n"
-        "\t-t, --top <top>          : [Eiger] Set Top to 0 or 1. Precedence "
-        "over config file. \n"
-        "\t-s, --stopserver         : Stop server. Do not use as it is created "
-        "by control server \n\n",
-        argv[0]);
+    {
+        int helpMessageSize = 1200;
+        char helpMessage[helpMessageSize];
+        memset(helpMessage, 0, helpMessageSize);
+        int len = sprintf(
+            helpMessage, helpMessageSize,
+            "Usage: %s [arguments]\n"
+            "Possible arguments are:\n"
+            "\t-v, --version            : Software version\n"
+            "\t-p, --port <port>        : TCP communication port with client. "
+            "\n"
+            "\t-g, --nomodule           : [Mythen3][Gotthard2] \n"
+            "\t                           Generic or No Module mode. Skips "
+            "detector type checks. \n"
+            "\t-f, --phaseshift <value> : [Gotthard] only. Sets phase shift. \n"
+            "\t-d, --devel              : Developer mode. Skips firmware "
+            "checks. \n"
+            "\t-u, --update             : Update mode. Skips firmware checks "
+            "and "
+            "initial detector setup. \n"
+            "\t-i, --ignore-config      : "
+            "[Eiger][Jungfrau][Gotthard][Gotthard2] \n"
+            "\t                           Ignore config file. \n"
+            "\t-m, --master <master>    : "
+            "[Eiger][Mythen3][Gotthard][Gotthard2] \n"
+            "\t                           Set Master to 0 or 1. Precedence "
+            "over "
+            "config file. Only for virtual servers except Eiger. \n"
+            "\t-t, --top <top>          : [Eiger] Set Top to 0 or 1. "
+            "Precedence "
+            "over config file. \n"
+            "\t-s, --stopserver         : Stop server. Do not use as it is "
+            "created "
+            "by control server \n\n",
+            argv[0]);
+        if (len >= helpMessageSize) {
+            LOG(logERROR, ("Help for Server command line arguments size %d "
+                           "exceed capacity of %d characters\n",
+                           len, helpMessageSize));
+        }
+    }
 
     // parse command line for config
     static struct option long_options[] = {

@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     char helpMessage[helpMessageSize];
     {
         memset(helpMessage, 0, helpMessageSize);
-        int len = sprintf(
+        int len = snprintf(
             helpMessage, helpMessageSize,
             "Usage: %s [arguments]\n"
             "Possible arguments are:\n"

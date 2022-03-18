@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     // help message
-    int helpMessageSize = 1200;
+    const size_t helpMessageSize = 1200;
     char helpMessage[helpMessageSize];
     {
         memset(helpMessage, 0, helpMessageSize);

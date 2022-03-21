@@ -461,7 +461,7 @@ int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd) {
         return FAIL;
     }
     // non zero = block special file
-    if (!S_ISBLK(buf.st_mode)) {
+    if (S_ISBLK(buf.st_mode)) {
         sprintf(mess,
                 "Could not %s. The flash drive found is a normal file. To "
                 "delete this file, create the flash drive and proceed with "

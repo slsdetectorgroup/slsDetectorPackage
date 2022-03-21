@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
             "created "
             "by control server \n\n",
             argv[0]);
-        if (len >= helpMessageSize) {
+        if (len >= (int)helpMessageSize) {
             LOG(logERROR, ("Help for Server command line arguments size %d "
                            "exceed capacity of %d characters\n",
                            len, helpMessageSize));

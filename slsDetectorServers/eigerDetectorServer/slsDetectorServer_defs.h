@@ -5,7 +5,7 @@
 
 #define LINKED_SERVER_NAME "eigerDetectorServer"
 
-#define REQUIRED_FIRMWARE_VERSION (29)
+#define REQUIRED_FIRMWARE_VERSION (30)
 // virtual ones renamed for consistency
 // real ones keep previous name for compatibility (already in production)
 #ifdef VIRTUAL
@@ -43,7 +43,7 @@ enum DACINDEX {
 #define DAC_NAMES                                                              \
     "VSvP", "Vtrim", "Vrpreamp", "Vrshaper", "VSvN", "Vtgstv", "Vcmp_ll",      \
         "Vcmp_lr", "Vcal", "Vcmp_rl", "rxb_rb", "rxb_lb", "Vcmp_rr", "Vcp",    \
-        "Vcn", "Vishaper"
+        "Vcn", "Vishaper", "Vthreshold"
 #define DEFAULT_DAC_VALS                                                       \
     {                                                                          \
         0,    /* VSvP		*/                                                      \

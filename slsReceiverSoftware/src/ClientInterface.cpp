@@ -19,7 +19,6 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include <sys/syscall.h>
 #include <unistd.h>
 #include <vector>
 
@@ -27,6 +26,12 @@ using ns = std::chrono::nanoseconds;
 using sls::RuntimeError;
 using sls::SocketError;
 using Interface = sls::ServerInterface;
+
+// gettid added in glibc 2.30
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+#endif
 
 ClientInterface::~ClientInterface() {
     killTcpThread = true;
@@ -41,7 +46,7 @@ ClientInterface::ClientInterface(int portNumber)
       portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2),
       server(portNumber) {
     functionTable();
-    parentThreadId = syscall(SYS_gettid);
+    parentThreadId = gettid();
     tcpThread =
         sls::make_unique<std::thread>(&ClientInterface::startTCPServer, this);
 }
@@ -76,7 +81,7 @@ void ClientInterface::registerCallBackRawDataModifyReady(
 }
 
 void ClientInterface::startTCPServer() {
-    tcpThreadId = syscall(SYS_gettid);
+    tcpThreadId = gettid();
     LOG(logINFOBLUE) << "Created [ TCP server Tid: " << tcpThreadId << "]";
     LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber
                  << '\n';
@@ -210,7 +215,8 @@ int ClientInterface::functionTable(){
     flist[F_SET_RECEIVER_STREAMING_HWM]     =   &ClientInterface::set_streaming_hwm;
     flist[F_RECEIVER_SET_ALL_THRESHOLD]     =   &ClientInterface::set_all_threshold;
     flist[F_RECEIVER_SET_DATASTREAM]        =   &ClientInterface::set_detector_datastream;
-    
+    flist[F_GET_RECEIVER_ARPING]            =   &ClientInterface::get_arping;
+    flist[F_SET_RECEIVER_ARPING]            =   &ClientInterface::set_arping;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -317,10 +323,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
 
     // basic setup
     setDetectorType(arg.detType);
-    {
-        int msize[2] = {arg.numberOfModule.x, arg.numberOfModule.y};
-        impl()->setDetectorSize(msize);
-    }
+    impl()->setDetectorSize(arg.numberOfModule);
     impl()->setModulePositionId(arg.moduleIndex);
     impl()->setDetectorHostname(arg.hostname);
 
@@ -713,6 +716,7 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
             break;
         */
         case 4:
+        case 12:
             if (detType == EIGER) {
                 exists = true;
             }
@@ -844,7 +848,7 @@ int ClientInterface::get_file_index(Interface &socket) {
 }
 
 int ClientInterface::get_frame_index(Interface &socket) {
-    uint64_t retval = impl()->getAcquisitionIndex();
+    uint64_t retval = impl()->getCurrentFrameIndex();
     LOG(logDEBUG1) << "frame index:" << retval;
     return socket.sendResult(retval);
 }
@@ -1401,9 +1405,13 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
     if (detType == EIGER) {
         impl()->setEthernetInterface2(eth);
     }
+
+    // update locally to use for arping
+    udpips[0] = arg.str();
+
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
-    if (retval == 0) {
+    if (retval == 0 && arg.str() != LOCALHOST_IP) {
         throw RuntimeError("Failed to get udp mac adddress to listen to (eth:" +
                            eth + ", ip:" + arg.str() + ")\n");
     }
@@ -1433,9 +1441,12 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
     }
     impl()->setEthernetInterface2(eth);
 
+    // update locally to use for arping
+    udpips[1] = arg.str();
+
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
-    if (retval == 0) {
+    if (retval == 0 && arg.str() != LOCALHOST_IP) {
         throw RuntimeError(
             "Failed to get udp mac adddress2 to listen to (eth:" + eth +
             ", ip:" + arg.str() + ")\n");
@@ -1698,5 +1709,22 @@ int ClientInterface::set_detector_datastream(Interface &socket) {
         functionNotImplemented();
     verifyIdle(socket);
     impl()->setDetectorDataStream(port, enable);
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_arping(Interface &socket) {
+    auto retval = static_cast<int>(impl()->getArping());
+    LOG(logDEBUG1) << "arping thread status:" << retval;
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::set_arping(Interface &socket) {
+    auto value = socket.Receive<int>();
+    if (value < 0) {
+        throw RuntimeError("Invalid arping value: " + std::to_string(value));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Starting/ Killing arping thread:" << value;
+    impl()->setArping(value, udpips);
     return socket.Send(OK);
 }

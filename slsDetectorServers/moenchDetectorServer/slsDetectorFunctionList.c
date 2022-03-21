@@ -43,7 +43,6 @@ char initErrorMessage[MAX_STR_LENGTH];
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
-int64_t virtual_currentFrameNumber = 2;
 #endif
 
 // 1g readout
@@ -68,7 +67,13 @@ int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
 int vLimit = 0;
 enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
+
+// getNumberofchannels return 0 for y in --update mode (virtual servers)
+#ifdef VIRTUAL
+int nSamples = DEFAULT_NUM_SAMPLES;
+#else
 int nSamples = 1;
+#endif
 int detPos[2] = {0, 0};
 
 int isInitCheckDone() { return initCheckDone; }
@@ -431,16 +436,22 @@ void initControlServer() {
 }
 
 void initStopServer() {
-
-    usleep(CTRL_SRVR_INIT_TIME_US);
-    if (mapCSP0() == FAIL) {
-        LOG(logERROR,
-            ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
-        exit(EXIT_FAILURE);
-    }
+    if (!updateFlag && initError == OK) {
+        usleep(CTRL_SRVR_INIT_TIME_US);
+        LOG(logINFOBLUE, ("Configuring Stop server\n"));
+        if (mapCSP0() == FAIL) {
+            initError = FAIL;
+            strcpy(initErrorMessage,
+                   "Stop Server: Map Fail. Dangerous to continue. Goodbye!\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            return;
+        }
 #ifdef VIRTUAL
-    sharedMemory_setStop(0);
+        sharedMemory_setStop(0);
 #endif
+    }
+    initCheckDone = 1;
 }
 
 /* set up detector */
@@ -569,6 +580,7 @@ void setupDetector() {
     setFrequency(ADC_CLK, DEFAULT_ADC_CLK);
     setFrequency(DBIT_CLK, DEFAULT_DBIT_CLK);
     setPhase(ADC_CLK, DEFAULT_ADC_PHASE_DEG, 1);
+    setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 }
 
 int updateDatabytesandAllocateRAM() {
@@ -700,7 +712,16 @@ void resetPeripheral() {
 
 /* set parameters -  dr, adcenablemask */
 
-int setDynamicRange(int dr) { return DYNAMIC_RANGE; }
+int setDynamicRange(int dr) {
+    if (dr == 16)
+        return OK;
+    return FAIL;
+}
+
+int getDynamicRange(int *retval) {
+    *retval = DYNAMIC_RANGE;
+    return OK;
+}
 
 int setADCEnableMask(uint32_t mask) {
     if (mask == 0u) {
@@ -800,6 +821,24 @@ uint32_t getADCInvertRegister() {
 }
 
 /* parameters - timer */
+int setNextFrameNumber(uint64_t value) {
+    LOG(logINFO,
+        ("Setting next frame number: %llu\n", (long long unsigned int)value));
+    setU64BitReg(value, NEXT_FRAME_NUMB_LOCAL_LSB_REG,
+                 NEXT_FRAME_NUMB_LOCAL_MSB_REG);
+#ifndef VIRTUAL
+    // for 1g udp interface
+    setUDPFrameNumber(value);
+#endif
+    return OK;
+}
+
+int getNextFrameNumber(uint64_t *retval) {
+    *retval = getU64BitReg(NEXT_FRAME_NUMB_LOCAL_LSB_REG,
+                           NEXT_FRAME_NUMB_LOCAL_MSB_REG);
+    return OK;
+}
+
 void setNumFrames(int64_t val) {
     if (val > 0) {
         LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
@@ -952,42 +991,42 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     switch (sett) {
     case G1_HIGHGAIN:
         LOG(logINFO, ("Set settings - G1_HIGHGAIN\n"));
-        setPatternMask(G1_HIGHGAIN_PATMASK);
+        setPatternBitMask(G1_HIGHGAIN_PATSETBIT);
         break;
     case G1_LOWGAIN:
         LOG(logINFO, ("Set settings - G1_LOWGAIN\n"));
-        setPatternMask(G1_LOWGAIN_PATMASK);
+        setPatternBitMask(G1_LOWGAIN_PATSETBIT);
         break;
     case G2_HIGHCAP_HIGHGAIN:
         LOG(logINFO, ("Set settings - G2_HIGHCAP_HIGHGAIN\n"));
-        setPatternMask(G2_HIGHCAP_HIGHGAIN_PATMASK);
+        setPatternBitMask(G2_HIGHCAP_HIGHGAIN_PATSETBIT);
         break;
     case G2_HIGHCAP_LOWGAIN:
         LOG(logINFO, ("Set settings - G2_HIGHCAP_LOWGAIN\n"));
-        setPatternMask(G2_HIGHCAP_LOWGAIN_PATMASK);
+        setPatternBitMask(G2_HIGHCAP_LOWGAIN_PATSETBIT);
         break;
     case G2_LOWCAP_HIGHGAIN:
         LOG(logINFO, ("Set settings - G2_LOWCAP_HIGHGAIN\n"));
-        setPatternMask(G2_LOWCAP_HIGHGAIN_PATMASK);
+        setPatternBitMask(G2_LOWCAP_HIGHGAIN_PATSETBIT);
         break;
     case G2_LOWCAP_LOWGAIN:
         LOG(logINFO, ("Set settings - G2_LOWCAP_LOWGAIN\n"));
-        setPatternMask(G2_LOWCAP_LOWGAIN_PATMASK);
+        setPatternBitMask(G2_LOWCAP_LOWGAIN_PATSETBIT);
         break;
     case G4_HIGHGAIN:
         LOG(logINFO, ("Set settings - G4_HIGHGAIN\n"));
-        setPatternMask(G4_HIGHGAIN_PATMASK);
+        setPatternBitMask(G4_HIGHGAIN_PATSETBIT);
         break;
     case G4_LOWGAIN:
         LOG(logINFO, ("Set settings - G4_LOWGAIN\n"));
-        setPatternMask(G4_LOWGAIN_PATMASK);
+        setPatternBitMask(G4_LOWGAIN_PATSETBIT);
         break;
     default:
         LOG(logERROR,
             ("This settings is not defined for this detector %d\n", (int)sett));
         return -1;
     }
-    setPatternBitMask(DEFAULT_PATSETBIT);
+    setPatternMask(DEFAULT_PATMASK);
     thisSettings = sett;
 
     return getSettings();
@@ -995,44 +1034,44 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
 
 enum detectorSettings getSettings() {
 
-    uint64_t patsetbit = getPatternBitMask();
-    if (patsetbit != DEFAULT_PATSETBIT) {
+    uint64_t patmask = getPatternMask();
+    if (patmask != DEFAULT_PATMASK) {
         LOG(logERROR,
-            ("Patsetbit is 0x%llx, and not 0x%llx. Undefined Settings!\n",
-             patsetbit, DEFAULT_PATSETBIT));
+            ("Patmask is 0x%llx, and not 0x%llx. Undefined Settings!\n",
+             patmask, DEFAULT_PATMASK));
         thisSettings = UNDEFINED;
         return thisSettings;
     }
 
-    uint64_t patsetmask = getPatternMask();
-    switch (patsetmask) {
-    case G1_HIGHGAIN_PATMASK:
+    uint64_t patsetbit = getPatternBitMask();
+    switch (patsetbit) {
+    case G1_HIGHGAIN_PATSETBIT:
         thisSettings = G1_HIGHGAIN;
         break;
-    case G1_LOWGAIN_PATMASK:
+    case G1_LOWGAIN_PATSETBIT:
         thisSettings = G1_LOWGAIN;
         break;
-    case G2_HIGHCAP_HIGHGAIN_PATMASK:
+    case G2_HIGHCAP_HIGHGAIN_PATSETBIT:
         thisSettings = G2_HIGHCAP_HIGHGAIN;
         break;
-    case G2_HIGHCAP_LOWGAIN_PATMASK:
+    case G2_HIGHCAP_LOWGAIN_PATSETBIT:
         thisSettings = G2_HIGHCAP_LOWGAIN;
         break;
-    case G2_LOWCAP_HIGHGAIN_PATMASK:
+    case G2_LOWCAP_HIGHGAIN_PATSETBIT:
         thisSettings = G2_LOWCAP_HIGHGAIN;
         break;
-    case G2_LOWCAP_LOWGAIN_PATMASK:
+    case G2_LOWCAP_LOWGAIN_PATSETBIT:
         thisSettings = G2_LOWCAP_LOWGAIN;
         break;
-    case G4_HIGHGAIN_PATMASK:
+    case G4_HIGHGAIN_PATSETBIT:
         thisSettings = G4_HIGHGAIN;
         break;
-    case G4_LOWGAIN_PATMASK:
+    case G4_LOWGAIN_PATSETBIT:
         thisSettings = G4_LOWGAIN;
         break;
     default:
         LOG(logERROR,
-            ("Patsetmask is 0x%llx. Undefined Settings!\n", patsetmask));
+            ("Patsetbit is 0x%llx. Undefined Settings!\n", patsetbit));
         thisSettings = UNDEFINED;
         break;
     }
@@ -1156,6 +1195,8 @@ enum timingMode getTiming() {
 }
 
 /* configure mac */
+
+int getNumberofUDPInterfaces() { return 1; }
 
 void calcChecksum(udp_header *udp) {
     int count = IP_HEADER_SIZE;
@@ -1662,11 +1703,14 @@ void *start_timer(void *arg) {
     }
 
     // Send data
+    uint64_t frameNr = 0;
+    getNextFrameNumber(&frameNr);
     // loop over number of frames
-    for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
+    for (int iframes = 0; iframes != numFrames; ++iframes) {
 
         // check if manual stop
         if (sharedMemory_getStop() == 1) {
+            setNextFrameNumber(frameNr + iframes + 1);
             break;
         }
 
@@ -1684,7 +1728,7 @@ void *start_timer(void *arg) {
             sls_detector_header *header = (sls_detector_header *)(packetData);
             header->detType = (uint16_t)myDetectorType;
             header->version = SLS_DETECTOR_HEADER_VERSION - 1;
-            header->frameNumber = virtual_currentFrameNumber;
+            header->frameNumber = frameNr + iframes;
             header->packetNumber = i;
             header->modId = 0;
             header->row = detPos[X];
@@ -1697,19 +1741,18 @@ void *start_timer(void *arg) {
 
             sendUDPPacket(0, 0, packetData, packetSize);
         }
-        LOG(logINFO, ("Sent frame: %d [%lld]\n", frameNr,
-                      (long long unsigned int)virtual_currentFrameNumber));
+        LOG(logINFO, ("Sent frame: %d [%lld]\n", iframes, frameNr + iframes));
         clock_gettime(CLOCK_REALTIME, &end);
         int64_t timeNs =
             ((end.tv_sec - begin.tv_sec) * 1E9 + (end.tv_nsec - begin.tv_nsec));
 
         // sleep for (period - exptime)
-        if (frameNr < numFrames) { // if there is a next frame
+        if (iframes < numFrames) { // if there is a next frame
             if (periodNs > timeNs) {
                 usleep((periodNs - timeNs) / 1000);
             }
         }
-        ++virtual_currentFrameNumber;
+        setNextFrameNumber(frameNr + numFrames);
     }
 
     closeUDPSocket(0);

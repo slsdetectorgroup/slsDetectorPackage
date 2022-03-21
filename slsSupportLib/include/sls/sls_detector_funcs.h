@@ -258,6 +258,9 @@ enum detFuncs {
     F_UPDATE_DETECTOR_SERVER,
     F_GET_UPDATE_MODE,
     F_SET_UPDATE_MODE,
+    F_SET_MASTER,
+    F_GET_TOP,
+    F_SET_TOP,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -361,6 +364,8 @@ enum detFuncs {
     F_SET_RECEIVER_STREAMING_HWM,
     F_RECEIVER_SET_ALL_THRESHOLD,
     F_RECEIVER_SET_DATASTREAM,
+    F_GET_RECEIVER_ARPING,
+    F_SET_RECEIVER_ARPING,
 
     NUM_REC_FUNCTIONS
 };
@@ -617,6 +622,9 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_UPDATE_DETECTOR_SERVER:          return "F_UPDATE_DETECTOR_SERVER";
     case F_GET_UPDATE_MODE:                 return "F_GET_UPDATE_MODE";
     case F_SET_UPDATE_MODE:                 return "F_SET_UPDATE_MODE";
+    case F_SET_MASTER:                      return "F_SET_MASTER";
+    case F_GET_TOP:                         return "F_GET_TOP";
+    case F_SET_TOP:                         return "F_SET_TOP";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
@@ -720,6 +728,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_RECEIVER_STREAMING_HWM:      return "F_SET_RECEIVER_STREAMING_HWM";
     case F_RECEIVER_SET_ALL_THRESHOLD:      return "F_RECEIVER_SET_ALL_THRESHOLD";
     case F_RECEIVER_SET_DATASTREAM:         return "F_RECEIVER_SET_DATASTREAM";
+    case F_GET_RECEIVER_ARPING:             return "F_GET_RECEIVER_ARPING";
+    case F_SET_RECEIVER_ARPING:             return "F_SET_RECEIVER_ARPING";
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

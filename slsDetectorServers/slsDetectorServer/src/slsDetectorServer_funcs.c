@@ -37,6 +37,8 @@ const enum detectorType myDetectorType = GOTTHARD2;
 const enum detectorType myDetectorType = GENERIC;
 #endif
 
+#define LOCALHOSTIP_INT 2130706433
+
 // Global variables from communication_funcs
 extern int lockStatus;
 extern uint32_t lastClientIP;
@@ -52,6 +54,7 @@ int sockfd = 0;
 int debugflag = 0;
 int updateFlag = 0;
 int checkModuleFlag = 1;
+int ignoreConfigFileFlag = 0;
 
 udpStruct udpDetails[MAX_UDP_DESTINATION];
 int numUdpDestinations = 1;
@@ -78,28 +81,32 @@ char scanErrMessage[MAX_STR_LENGTH] = "";
 /* initialization functions */
 
 int updateModeAllowedFunction(int file_des) {
-    unsigned int listsize = 19;
-    enum detFuncs list[] = {F_EXEC_COMMAND,
-                            F_GET_DETECTOR_TYPE,
-                            F_GET_FIRMWARE_VERSION,
-                            F_GET_SERVER_VERSION,
-                            F_GET_SERIAL_NUMBER,
-                            F_WRITE_REGISTER,
-                            F_READ_REGISTER,
-                            F_LOCK_SERVER,
-                            F_GET_LAST_CLIENT_IP,
-                            F_PROGRAM_FPGA,
-                            F_RESET_FPGA,
-                            F_CHECK_VERSION,
-                            F_COPY_DET_SERVER,
-                            F_REBOOT_CONTROLLER,
-                            F_GET_KERNEL_VERSION,
-                            F_UPDATE_KERNEL,
-                            F_UPDATE_DETECTOR_SERVER,
-                            F_GET_UPDATE_MODE,
-                            F_SET_UPDATE_MODE};
-    for (unsigned int i = 0; i < listsize; ++i) {
-        if ((unsigned int)fnum == list[i]) {
+    enum detFuncs allowedFuncs[] = {F_EXEC_COMMAND,
+                                    F_GET_DETECTOR_TYPE,
+                                    F_GET_FIRMWARE_VERSION,
+                                    F_GET_SERVER_VERSION,
+                                    F_GET_SERIAL_NUMBER,
+                                    F_WRITE_REGISTER,
+                                    F_READ_REGISTER,
+                                    F_LOCK_SERVER,
+                                    F_GET_LAST_CLIENT_IP,
+                                    F_PROGRAM_FPGA,
+                                    F_RESET_FPGA,
+                                    F_CHECK_VERSION,
+                                    F_COPY_DET_SERVER,
+                                    F_REBOOT_CONTROLLER,
+                                    F_GET_KERNEL_VERSION,
+                                    F_UPDATE_KERNEL,
+                                    F_UPDATE_DETECTOR_SERVER,
+                                    F_GET_UPDATE_MODE,
+                                    F_SET_UPDATE_MODE,
+                                    F_GET_NUM_CHANNELS,
+                                    F_GET_NUM_INTERFACES,
+                                    F_ACTIVATE};
+    size_t allowedFuncsSize = sizeof(allowedFuncs) / sizeof(enum detFuncs);
+
+    for (unsigned int i = 0; i < allowedFuncsSize; ++i) {
+        if ((unsigned int)fnum == allowedFuncs[i]) {
             return OK;
         }
     }
@@ -119,10 +126,11 @@ int printSocketReadError() {
 }
 
 void init_detector() {
+    memset(udpDetails, 0, sizeof(udpDetails));
 #ifdef VIRTUAL
     LOG(logINFO, ("This is a VIRTUAL detector\n"));
+    udpDetails[0].srcip = LOCALHOSTIP_INT;
 #endif
-    memset(udpDetails, 0, sizeof(udpDetails));
     udpDetails[0].srcport = DEFAULT_UDP_SRC_PORTNO;
     udpDetails[0].dstport = DEFAULT_UDP_DST_PORTNO;
 #ifdef EIGERD
@@ -461,6 +469,9 @@ void function_table() {
     flist[F_UPDATE_DETECTOR_SERVER] = &update_detector_server;
     flist[F_GET_UPDATE_MODE] = &get_update_mode;
     flist[F_SET_UPDATE_MODE] = &set_update_mode;
+    flist[F_SET_MASTER] = &set_master;
+    flist[F_GET_TOP] = &get_top;
+    flist[F_SET_TOP] = &set_top;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -2808,6 +2819,9 @@ int set_dynamic_range(int file_des) {
 #endif
 #if defined(EIGERD) || defined(MYTHEN3D)
         case 8:
+#ifdef EIGERD
+        case 12:
+#endif
         case 16:
         case 32:
 #endif
@@ -2815,14 +2829,25 @@ int set_dynamic_range(int file_des) {
     defined(MOENCHD) || defined(GOTTHARD2D)
         case 16:
 #endif
-            retval = setDynamicRange(dr);
-            LOG(logDEBUG1, ("Dynamic range: %d\n", retval));
-            if (retval == -1) {
-                ret = FAIL;
-                sprintf(mess, "Could not get dynamic range.\n");
-                LOG(logERROR, (mess));
+            if (dr >= 0) {
+                ret = setDynamicRange(dr);
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not set dynamic range to %d\n", dr);
+                    LOG(logERROR, (mess));
+                }
             }
-            validate(&ret, mess, dr, retval, "set dynamic range", DEC);
+
+            // get
+            if (ret == OK) {
+                ret = getDynamicRange(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get dynamic range\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    LOG(logDEBUG1, ("Dynamic range: %d\n", retval));
+                    validate(&ret, mess, dr, retval, "set dynamic range", DEC);
+                }
+            }
             break;
         default:
             modeNotImplemented("Dynamic range", dr);
@@ -2932,7 +2957,7 @@ int enable_ten_giga(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFOBLUE, ("Setting 10GbE: %d\n", arg));
+    LOG(logDEBUG, ("Setting 10GbE: %d\n", arg));
 
 #if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(GOTTHARD2D)
     functionNotImplemented();
@@ -3970,29 +3995,26 @@ int check_version(int file_des) {
         return printSocketReadError();
 
     // check software- firmware compatibility and basic tests
-    if (isControlServer) {
-        LOG(logDEBUG1, ("Checking software-firmware compatibility and basic "
-                        "test result\n"));
+    LOG(logDEBUG1, ("Checking software-firmware compatibility and basic "
+                    "test result\n"));
 
-        // check if firmware check is done
+    // check if firmware check is done
+    if (!isInitCheckDone()) {
+        usleep(3 * 1000 * 1000);
         if (!isInitCheckDone()) {
-            usleep(3 * 1000 * 1000);
-            if (!isInitCheckDone()) {
-                ret = FAIL;
-                strcpy(mess, "Firmware Software Compatibility Check (Server "
-                             "Initialization) "
-                             "still not done done in server. Unexpected.\n");
-                LOG(logERROR, (mess));
-            }
+            ret = FAIL;
+            strcpy(mess, "Server Initialization still not done done in server. Unexpected.\n");
+            LOG(logERROR, (mess));
         }
-        // check firmware check result
-        if (ret == OK) {
-            char *firmware_message = NULL;
-            if (getInitResult(&firmware_message) == FAIL) {
-                ret = FAIL;
-                strcpy(mess, firmware_message);
-                LOG(logERROR, (mess));
-            }
+    }
+
+    // check firmware check result
+    if (ret == OK) {
+        char *firmware_message = NULL;
+        if (getInitResult(&firmware_message) == FAIL) {
+            ret = FAIL;
+            strcpy(mess, firmware_message);
+            LOG(logERROR, (mess));
         }
     }
 
@@ -4411,9 +4433,10 @@ int set_next_frame_number(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting next frame number to %llu\n", arg));
+    LOG(logDEBUG1, ("Setting next frame number to %llu\n", arg));
 
-#if (!defined(EIGERD)) && (!defined(JUNGFRAUD))
+#if (!defined(EIGERD)) && (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) &&      \
+    (!defined(CHIPTESTBOARDD))
     functionNotImplemented();
 #else
     // only set
@@ -4423,7 +4446,7 @@ int set_next_frame_number(int file_des) {
             sprintf(mess, "Could not set next frame number. Cannot be 0.\n");
             LOG(logERROR, (mess));
         }
-#ifdef EIGERD
+#if (defined(EIGERD)) || (defined(MOENCHD)) || (defined(CHIPTESTBOARDD))
         else if (arg > UDP_HEADER_MAX_FRAME_VALUE) {
             ret = FAIL;
 #ifdef VIRTUAL
@@ -4443,16 +4466,18 @@ int set_next_frame_number(int file_des) {
         else {
             ret = setNextFrameNumber(arg);
             if (ret == FAIL) {
-                sprintf(mess, "Could not set next frame number. Failed to "
-                              "map address.\n");
+                sprintf(
+                    mess, "Could not set next frame number. %s\n",
+                    (myDetectorType == EIGER ? "Failed to map address" : ""));
                 LOG(logERROR, (mess));
             }
             if (ret == OK) {
                 uint64_t retval = 0;
                 ret = getNextFrameNumber(&retval);
                 if (ret == FAIL) {
-                    sprintf(mess, "Could not get next frame number. Failed "
-                                  "to map address.\n");
+                    sprintf(mess, "Could not set next frame number. %s\n",
+                            (myDetectorType == EIGER ? "Failed to map address"
+                                                     : ""));
                     LOG(logERROR, (mess));
                 } else if (ret == -2) {
                     sprintf(mess, "Inconsistent next frame number from "
@@ -4489,14 +4514,15 @@ int get_next_frame_number(int file_des) {
 
     LOG(logDEBUG1, ("Getting next frame number \n"));
 
-#if (!defined(EIGERD)) && (!defined(JUNGFRAUD))
+#if (!defined(EIGERD)) && (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) &&      \
+    (!defined(CHIPTESTBOARDD))
     functionNotImplemented();
 #else
     // get
     ret = getNextFrameNumber(&retval);
     if (ret == FAIL) {
-        sprintf(mess, "Could not get next frame number. Failed to map "
-                      "address.\n");
+        sprintf(mess, "Could not set next frame number. %s\n",
+                (myDetectorType == EIGER ? "Failed to map address" : ""));
         LOG(logERROR, (mess));
     } else if (ret == -2) {
         sprintf(mess, "Inconsistent next frame number from left and right "
@@ -4639,11 +4665,17 @@ int set_read_n_rows(int file_des) {
             LOG(logERROR, (mess));
         } else {
 #ifdef EIGERD
-            int dr = setDynamicRange(GET_FLAG);
+            int dr = 0;
+            ret = getDynamicRange(&dr);
             int isTenGiga = enableTenGigabitEthernet(GET_FLAG);
             unsigned int maxnl = MAX_ROWS_PER_READOUT;
             unsigned int maxnp = (isTenGiga ? 4 : 16) * dr;
-            if ((arg * maxnp) % maxnl) {
+            // get dr fail
+            if (ret == FAIL) {
+                strcpy(mess,
+                       "Could not read n rows (failed to get dynamic range)\n");
+                LOG(logERROR, (mess));
+            } else if ((arg * maxnp) % maxnl) {
                 ret = FAIL;
                 sprintf(mess,
                         "Could not set number of rows to %d. For %d bit "
@@ -4725,19 +4757,22 @@ void calculate_and_set_position() {
         LOG(logERROR, (mess));
         return;
     }
-    int maxy = maxydet;
-    // position does not change for gotthard2 (2 interfaces)
-#ifdef JUNGFRAUD
-    maxy *= getNumberofUDPInterfaces();
+
+    // calculating new position
+    int modulePorts[2] = {1, 1};
+    // position does change for eiger and jungfrau (2 interfaces)
+#if defined(EIGERD)
+    modulePorts[1] = getNumberofUDPInterfaces(); // horz
+#elif defined(JUNGFRAUD)
+    modulePorts[0] = getNumberofUDPInterfaces(); // vert
 #endif
+    int maxy = maxydet * modulePorts[0];
     int pos[2] = {0, 0};
     // row
     pos[0] = (detectorId % maxy);
     // col for horiz. udp ports
-    pos[1] = (detectorId / maxy);
-#ifdef EIGERD
-    pos[1] *= 2;
-#endif
+    pos[1] = (detectorId / maxy) * modulePorts[1];
+
     LOG(logDEBUG, ("Setting Positions (%d,%d)\n", pos[0], pos[1]));
     if (setDetectorPosition(pos) == FAIL) {
         ret = FAIL;
@@ -4848,12 +4883,15 @@ int is_udp_configured() {
             LOG(logWARNING, ("%s", configureMessage));
             return FAIL;
         }
+        // virtual: no check (can be eth name: lo, ip: 127.0.0.1)
+#ifndef VIRTUAL
         if (udpDetails[i].dstmac == 0) {
             sprintf(configureMessage,
                     "udp destination mac not configured [entry:%d]\n", i);
             LOG(logWARNING, ("%s", configureMessage));
             return FAIL;
         }
+#endif
 #if defined(JUNGFRAUD) || defined(GOTTHARD2D)
         if (getNumberofUDPInterfaces() == 2) {
             if (udpDetails[i].srcip2 == 0) {
@@ -4874,12 +4912,14 @@ int is_udp_configured() {
                 LOG(logWARNING, ("%s", configureMessage));
                 return FAIL;
             }
+#ifndef VIRTUAL
             if (udpDetails[i].dstmac2 == 0) {
                 sprintf(configureMessage,
                         "udp destination mac2 not configured [entry:%d]\n", i);
                 LOG(logWARNING, ("%s", configureMessage));
                 return FAIL;
             }
+#endif
         }
 #endif
     }
@@ -5320,7 +5360,16 @@ int set_num_interfaces(int file_des) {
     LOG(logINFO, ("Setting number of interfaces: %d\n", arg));
 
 #if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
-    functionNotImplemented();
+    // fixed number of udp interfaces
+    int num_interfaces = getNumberofUDPInterfaces();
+    if (arg != num_interfaces) {
+        ret = FAIL;
+        sprintf(mess,
+                "Could not set number of interfaces. Invalid value: %d. Must "
+                "be %d\n",
+                arg, num_interfaces);
+        LOG(logERROR, (mess));
+    }
 #else
     // only set
     if (Server_VerifyLock() == OK) {
@@ -5380,12 +5429,9 @@ int get_num_interfaces(int file_des) {
     int retval = -1;
     LOG(logDEBUG1, ("Getting number of udp interfaces\n"));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
-    retval = 1;
-#else
     // get only
     retval = getNumberofUDPInterfaces();
-#endif
+
     LOG(logDEBUG1, ("Number of udp interfaces retval: %u\n", retval));
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -6883,11 +6929,7 @@ int get_receiver_parameters(int file_des) {
 
     // sending real detector parameters
     // udp interfaces
-#if defined(JUNGFRAUD) || defined(GOTTHARD2D)
     i32 = getNumberofUDPInterfaces();
-#else
-    i32 = 1;
-#endif
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
         return printSocketReadError();
@@ -7091,7 +7133,10 @@ int get_receiver_parameters(int file_des) {
     }
 
     // dynamic range
-    i32 = setDynamicRange(GET_FLAG);
+    ret = getDynamicRange(&i32);
+    if (ret == FAIL) {
+        i32 = 0;
+    }
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
         return printSocketReadError();
@@ -8173,12 +8218,58 @@ int get_master(int file_des) {
 
     LOG(logDEBUG1, ("Getting master\n"));
 
-#if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARDD)
+#if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARDD) &&           \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
-    retval = isMaster();
+    ret = isMaster(&retval);
+    if (ret == FAIL) {
+        strcpy(mess, "Could not get master\n");
+        LOG(logERROR, (mess));
+    }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_master(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting master: %u\n", (int)arg));
+
+#ifndef EIGERD
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if ((check_detector_idle("set master") == OK) &&
+            (arg != 0 && arg != 1)) {
+            ret = FAIL;
+            sprintf(mess, "Could not set master. Invalid argument %d.\n", arg);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setMaster(arg == 1 ? OW_MASTER : OW_SLAVE);
+            if (ret == FAIL) {
+                strcpy(mess, "Could not set master\n");
+                LOG(logERROR, (mess));
+            } else {
+                int retval = 0;
+                ret = isMaster(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get master\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    LOG(logDEBUG1, ("master retval: %u\n", retval));
+                    validate(&ret, mess, arg, retval, "set master", DEC);
+                }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_csr(int file_des) {
@@ -9653,5 +9744,67 @@ int set_update_mode(int file_des) {
         }
     }
 
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_top(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+    LOG(logDEBUG1, ("Getting top\n"));
+
+#ifndef EIGERD
+    functionNotImplemented();
+#else
+    // get only
+    ret = isTop(&retval);
+    if (ret == FAIL) {
+        strcpy(mess, "Could not get Top\n");
+        LOG(logERROR, (mess));
+    } else {
+        LOG(logDEBUG1, ("retval top: %d\n", retval));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_top(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting top : %u\n", arg));
+
+#ifndef EIGERD
+    functionNotImplemented();
+#else
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg != 0 && arg != 1) {
+            ret = FAIL;
+            sprintf(mess, "Could not set top mode. Invalid value: %d. Must be 0 or 1\n", arg);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setTop(arg == 1 ? OW_TOP : OW_BOTTOM);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set %s\n", (arg == 1 ? "Top" : "Bottom"));
+                LOG(logERROR, (mess));
+            } else {            
+                int retval = -1;
+                ret = isTop(&retval);
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not get Top mode\n");
+                    LOG(logERROR, (mess));
+                } else {                
+                    LOG(logDEBUG1, ("retval top: %d\n", retval));
+                    validate(&ret, mess, arg, retval, "set top mode", DEC);
+                }
+            }
+        }
+    }
+#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }

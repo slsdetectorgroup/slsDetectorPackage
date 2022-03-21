@@ -300,7 +300,7 @@ void AD9257_Configure() {
                                          AD9257_CLK_CH_IFCO_MSK);
 
     // vref
-#ifdef GOTTHARDD
+#if defined(GOTTHARDD) || defined(MOENCHD)
     LOG(logINFO, ("\tVref default at 2.0\n"));
     AD9257_SetVrefVoltage(AD9257_VREF_DEFAULT_VAL, 0);
 #else

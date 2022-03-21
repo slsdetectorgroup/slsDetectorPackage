@@ -854,6 +854,7 @@ class CmdProxy {
         {"trimen", &CmdProxy::TrimEnergies},
         {"gappixels", &CmdProxy::GapPixels},
         {"fliprows", &CmdProxy::fliprows},
+        {"master", &CmdProxy::master},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::Acquire},
@@ -929,7 +930,7 @@ class CmdProxy {
         {"rx_status", &CmdProxy::ReceiverStatus},
         {"status", &CmdProxy::DetectorStatus},
         {"rx_framescaught", &CmdProxy::rx_framescaught},
-        {"rx_missingpackets", &CmdProxy::rx_missingpackets},
+        {"rx_missingpackets", &CmdProxy::RxMissingPackets},
         {"nextframenumber", &CmdProxy::nextframenumber},
         {"trigger", &CmdProxy::Trigger},
         {"scan", &CmdProxy::Scan},
@@ -973,6 +974,7 @@ class CmdProxy {
         {"rx_lock", &CmdProxy::rx_lock},
         {"rx_lastclient", &CmdProxy::rx_lastclient},
         {"rx_threads", &CmdProxy::rx_threads},
+        {"rx_arping", &CmdProxy::rx_arping},
 
         /* File */
         {"fformat", &CmdProxy::fformat},
@@ -1011,6 +1013,7 @@ class CmdProxy {
         {"pulsechip", &CmdProxy::PulseChip},
         {"quad", &CmdProxy::Quad},
         {"datastream", &CmdProxy::DataStream},
+        {"top", &CmdProxy::top},
 
         /* Jungfrau Specific */
         {"chipversion", &CmdProxy::chipversion},
@@ -1178,7 +1181,6 @@ class CmdProxy {
     /* acquisition parameters */
     std::string Acquire(int action);
     std::string Exptime(int action);
-    std::string DynamicRange(int action);
     std::string ReadoutSpeed(int action);
     std::string Adcphase(int action);
     std::string Dbitphase(int action);
@@ -1198,6 +1200,7 @@ class CmdProxy {
     /* acquisition */
     std::string ReceiverStatus(int action);
     std::string DetectorStatus(int action);
+    std::string RxMissingPackets(int action);
     std::string Scan(int action);
     std::string Trigger(int action);
     /* Network Configuration (Detector<->Receiver) */
@@ -1349,6 +1352,12 @@ class CmdProxy {
         "interfaces must be set to 2. slsReceiver and slsDetectorGui "
         "does not handle.");
 
+    INTEGER_COMMAND_VEC_ID_GET(
+        master, getMaster, setMaster, StringTo<int>,
+        "[0, 1]\n\t[Eiger] Sets half module to master and "
+        "others to slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger] "
+        "Gets if the current module/ half module is master.");
+
     /* acquisition parameters */
 
     INTEGER_COMMAND_SET_NOID_GET_ID(
@@ -1396,7 +1405,7 @@ class CmdProxy {
         dr, getDynamicRange, setDynamicRange, StringTo<int>,
         "[value]\n\tDynamic Range or number of bits per "
         "pixel in detector.\n\t"
-        "[Eiger] Options: 4, 8, 16, 32. If set to 32, also sets "
+        "[Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets "
         "clkdivider to 2, else to 0.\n\t"
         "[Mythen3] Options: 8, 16, 32\n\t"
         "[Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16");
@@ -1584,7 +1593,7 @@ class CmdProxy {
         "\n\tStops receiver listener for detector data packets and closes "
         "current data file (if file write enabled).");
 
-    EXECUTE_SET_COMMAND_NOID(
+    EXECUTE_SET_COMMAND(
         start, startDetector,
         "\n\tStarts detector acquisition. Status changes to RUNNING or WAITING "
         "and automatically returns to idle at the end of acquisition. If the "
@@ -1604,13 +1613,15 @@ class CmdProxy {
                 "\n\tNumber of frames caught by receiver.");
 
     GET_COMMAND(rx_missingpackets, getNumMissingPackets,
-                "\n\tNumber of missing packets for each port in receiver.");
+                "\n\tNumber of missing packets for each port in receiver. "
+                "Negative number denotes extra packets.");
 
-    INTEGER_COMMAND_VEC_ID(nextframenumber, getNextFrameNumber,
-                           setNextFrameNumber, StringTo<uint64_t>,
-                           "[n_value]\n\t[Eiger][Jungfrau] Next frame number. "
-                           "Stopping acquisition might result in "
-                           "different frame numbers for different modules.");
+    INTEGER_COMMAND_VEC_ID(
+        nextframenumber, getNextFrameNumber, setNextFrameNumber,
+        StringTo<uint64_t>,
+        "[n_value]\n\t[Eiger][Jungfrau][Moench][CTB] Next frame number. "
+        "Stopping acquisition might result in different frame numbers for "
+        "different modules.");
 
     GET_COMMAND(scanerrmsg, getScanErrorMessage,
                 "\n\tGets Scan error message if scan ended in error for non "
@@ -1806,13 +1817,16 @@ class CmdProxy {
         rx_lastclient, getRxLastClientIP,
         "\n\tClient IP Address that last communicated with the receiver.");
 
-    GET_COMMAND(
-        rx_threads, getRxThreadIds,
-        "\n\tGet thread ids from the receiver in order of [parent, tcp, "
-        "listener 0, "
-        "processor 0, streamer 0, listener 1, processor 1, streamer 1]. If no "
-        "streamer yet or there is no second interface, it gives 0 in its "
-        "place.");
+    GET_COMMAND(rx_threads, getRxThreadIds,
+                "\n\tGet thread ids from the receiver in order of [parent, "
+                "tcp, listener 0, processor 0, streamer 0, listener 1, "
+                "processor 1, streamer 1, arping]. If no streamer yet or there "
+                "is no second interface, it gives 0 in its place.");
+
+    INTEGER_COMMAND_VEC_ID(rx_arping, getRxArping, setRxArping, StringTo<int>,
+                           "[0, 1]\n\tStarts a thread in slsReceiver to arping "
+                           "the interface it is "
+                           "listening to every minute. Useful in 10G mode.");
 
     /* File */
 
@@ -1963,6 +1977,10 @@ class CmdProxy {
         "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at "
         "start of acquisition. 0 complete reset, 1 partial reset. Default is "
         "complete reset. Advanced function!");
+
+    INTEGER_COMMAND_VEC_ID(
+        top, getTop, setTop, StringTo<int>,
+        "[0, 1]\n\t[Eiger] Sets half module to top (1), else bottom.");
 
     /* Jungfrau Specific */
 
@@ -2233,14 +2251,14 @@ class CmdProxy {
 
     INTEGER_COMMAND_HEX_WIDTH16(
         patmask, getPatternMask, setPatternMask, StringTo<uint64_t>,
-        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] Sets the mask applied to "
-        "every pattern to the selected bits.");
-
-    INTEGER_COMMAND_HEX_WIDTH16(
-        patsetbit, getPatternBitMask, setPatternBitMask, StringTo<uint64_t>,
         "[64 bit mask]\n\t[Ctb][Moench][Mythen3] Selects the bits that will "
         "have a pattern mask applied to the selected patmask for every "
         "pattern.");
+
+    INTEGER_COMMAND_HEX_WIDTH16(
+        patsetbit, getPatternBitMask, setPatternBitMask, StringTo<uint64_t>,
+        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] Sets the mask applied to "
+        "every pattern to the selected bits.");
 
     EXECUTE_SET_COMMAND(patternstart, startPattern,
                         "\n\t[Mythen3] Starts Pattern");

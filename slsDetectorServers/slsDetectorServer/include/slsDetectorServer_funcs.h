@@ -245,6 +245,7 @@ int get_pattern(int);
 int load_default_pattern(int);
 int get_all_threshold_energy(int);
 int get_master(int);
+int set_master(int);
 int get_csr();
 int set_gain_caps(int);
 int get_gain_caps(int);
@@ -290,3 +291,5 @@ void receive_program_default(int file_des, enum PROGRAM_INDEX index,
                              char *checksum, char *serverName);
 int get_update_mode(int);
 int set_update_mode(int);
+int get_top(int);
+int set_top(int);

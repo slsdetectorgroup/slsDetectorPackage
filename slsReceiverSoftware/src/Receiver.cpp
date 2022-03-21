@@ -14,8 +14,13 @@
 #include <map>
 #include <sstream>
 #include <string>
-#include <sys/syscall.h>
 #include <unistd.h>
+
+// gettid added in glibc 2.30
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+#endif
 
 namespace sls {
 
@@ -68,8 +73,7 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
         case 'v':
             std::cout << "SLS Receiver Version: " << GITBRANCH << " (0x"
                       << std::hex << APIRECEIVER << ")" << std::endl;
-            LOG(logINFOBLUE)
-                << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
+            LOG(logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
             exit(EXIT_SUCCESS);
 
         case 'h':

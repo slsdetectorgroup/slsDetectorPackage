@@ -97,6 +97,9 @@ u_int32_t getDetectorNumber();
 #if defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D)
 int getModuleId(int *ret, char *mess);
 #endif
+#if defined(EIGERD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+int updateModuleId();
+#endif
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
 void setModuleId(int modid);
 #endif
@@ -110,7 +113,11 @@ u_int32_t getBoardRevision();
 void initControlServer();
 void initStopServer();
 #ifdef EIGERD
-void getModuleConfiguration();
+int updateModuleConfiguration();
+int getModuleConfiguration(int *m, int *t, int *n);
+#ifdef VIRTUAL
+void checkVirtual9MFlag();
+#endif
 #endif
 
 // set up detector
@@ -136,6 +143,10 @@ void setADIFDefaults();
 #endif
 #if defined(GOTTHARD2D) || defined(EIGERD) || defined(JUNGFRAUD)
 int readConfigFile();
+#endif
+#if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
+    defined(MYTHEN3D)
+int checkCommandLineConfiguration();
 #endif
 #ifdef EIGERD
 void resetToHardwareSettings();
@@ -173,6 +184,7 @@ void setMasterSlaveConfiguration();
 
 // parameters - dr, roi
 int setDynamicRange(int dr);
+int getDynamicRange(int *retval);
 #ifdef GOTTHARDD
 int setROI(ROI arg);
 ROI getROI();
@@ -213,7 +225,8 @@ int getReadoutMode();
 int selectStoragecellStart(int pos);
 int getMaxStoragecellStart();
 #endif
-#if defined(JUNGFRAUD) || defined(EIGERD)
+#if defined(JUNGFRAUD) || defined(EIGERD) || defined(MOENCHD) ||               \
+    defined(CHIPTESTBOARDD)
 int setNextFrameNumber(uint64_t value);
 int getNextFrameNumber(uint64_t *value);
 #endif
@@ -361,9 +374,16 @@ int getADC(enum ADCINDEX ind);
 int setHighVoltage(int val);
 
 // parameters - timing, extsig
-#if defined(MYTHEN3D) || defined(EIGERD) || defined(GOTTHARDD)
-int isMaster();
+#ifdef EIGERD
+int setMaster(enum MASTERINDEX m);
+int setTop(enum TOPINDEX  t);
+int isTop(int *retval);
 #endif
+#if defined(MYTHEN3D) || defined(EIGERD) || defined(GOTTHARDD) ||              \
+    defined(GOTTHARD2D)
+int isMaster(int *retval);
+#endif
+
 #ifdef GOTTHARD2D
 void updatingRegisters();
 #endif
@@ -387,8 +407,8 @@ void calcChecksum(mac_conf *mac, int sourceip, int destip);
 #endif
 #if defined(JUNGFRAUD) || defined(GOTTHARD2D)
 void setNumberofUDPInterfaces(int val);
-int getNumberofUDPInterfaces();
 #endif
+int getNumberofUDPInterfaces();
 
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int getNumberofDestinations(int *retval);

@@ -25,9 +25,11 @@ extern int debugflag;
 extern int updateFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern const enum detectorType myDetectorType;
+extern int ignoreConfigFileFlag;
 
 // Variables that will be exported
 int phaseShift = DEFAULT_PHASE_SHIFT;
+int masterCommandLine = -1;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
@@ -359,16 +361,28 @@ void initControlServer() {
 }
 
 void initStopServer() {
-    if (mapCSP0() == FAIL) {
-        LOG(logERROR,
-            ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
-        exit(EXIT_FAILURE);
-    }
+    if (!updateFlag && initError == OK) {
+        usleep(CTRL_SRVR_INIT_TIME_US);
+        LOG(logINFOBLUE, ("Configuring Stop server\n"));
+        if (mapCSP0() == FAIL) {
+            initError = FAIL;
+            strcpy(initErrorMessage,
+                   "Stop Server: Map Fail. Dangerous to continue. Goodbye!\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            return;
+        }
 #ifdef VIRTUAL
-    sharedMemory_setStop(0);
+        sharedMemory_setStop(0);
 #endif
-    // to get master from file
-    readConfigFile();
+        // to get master from file
+        if (readConfigFile() == FAIL ||
+            checkCommandLineConfiguration() == FAIL) {
+            initCheckDone = 1;
+            return;
+        }
+    }
+    initCheckDone = 1;
 }
 
 /* set up detector */
@@ -420,6 +434,13 @@ void setupDetector() {
     rois.xmax = -1;
     setROI(rois); // set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
     setGbitReadout();
+
+    // no config file or not first time server
+    if (readConfigFile() == FAIL)
+        return;
+
+    if (checkCommandLineConfiguration() == FAIL)
+        return;
 
     // master, slave (25um)
     setMasterSlaveConfiguration();
@@ -624,6 +645,16 @@ void setGbitReadout() {
 }
 
 int readConfigFile() {
+
+    if (initError == FAIL) {
+        return initError;
+    }
+
+    if (ignoreConfigFileFlag) {
+        LOG(logWARNING, ("Ignoring Config file\n"));
+        return OK;
+    }
+
     const int fileNameSize = 128;
     char fname[fileNameSize];
     if (getAbsPath(fname, fileNameSize, CONFIG_FILE) == FAIL) {
@@ -647,7 +678,6 @@ int readConfigFile() {
     memset(key, 0, keySize);
     char value[keySize];
     memset(value, 0, keySize);
-    int scan = OK;
 
     // keep reading a line
     while (fgets(line, lineSize, fd)) {
@@ -667,19 +697,22 @@ int readConfigFile() {
                 master = 0;
                 LOG(logINFOBLUE, ("\tSlave or No Master\n"));
             } else {
-                LOG(logERROR,
-                    ("\tCould not scan masterflags %s value from config file\n",
-                     value));
-                scan = FAIL;
-                break;
+                initError = FAIL;
+                sprintf(
+                    initErrorMessage,
+                    "Could not scan masterflags %s value from config file\n",
+                    value);
+                LOG(logERROR, (initErrorMessage))
+                fclose(fd);
+                return FAIL;
             }
 
             // not first server since detector power on
             if (!detectorFirstServer) {
-                LOG(logINFOBLUE, ("\tServer has been started up before. "
-                                  "Ignoring rest of config file\n"));
+                LOG(logWARNING, ("\tServer has been started up before. "
+                                 "Ignoring rest of config file\n"));
                 fclose(fd);
-                return FAIL;
+                return OK;
             }
         }
 
@@ -688,11 +721,14 @@ int readConfigFile() {
             // convert value to int
             int ival = 0;
             if (sscanf(value, "%d", &ival) <= 0) {
-                LOG(logERROR, ("\tCould not scan parameter %s value %s from "
-                               "config file\n",
-                               key, value));
-                scan = FAIL;
-                break;
+                initError = FAIL;
+                sprintf(initErrorMessage,
+                        "Could not scan parameter %s value %s from "
+                        "config file\n",
+                        key, value);
+                LOG(logERROR, (initErrorMessage))
+                fclose(fd);
+                return FAIL;
             }
             // set value
             if (!strcasecmp(key, "masterdefaultdelay"))
@@ -710,16 +746,16 @@ int readConfigFile() {
             else if (!strcasecmp(key, "startacqdelay"))
                 startacqdelay = ival;
             else {
-                LOG(logERROR,
-                    ("\tCould not scan parameter %s from config file\n", key));
-                scan = FAIL;
-                break;
+                initError = FAIL;
+                sprintf(initErrorMessage,
+                        "Could not scan parameter %s from config file\n", key);
+                LOG(logERROR, (initErrorMessage))
+                fclose(fd);
+                return FAIL;
             }
         }
     }
     fclose(fd);
-    if (scan == FAIL)
-        exit(EXIT_FAILURE);
 
     LOG(logINFOBLUE,
         ("\tmasterdefaultdelay:%d\n"
@@ -734,13 +770,28 @@ int readConfigFile() {
     return OK;
 }
 
+int checkCommandLineConfiguration() {
+    if (masterCommandLine != -1) {
+#ifdef VIRTUAL
+        master = masterCommandLine;
+#else
+        initError = FAIL;
+        strcpy(initErrorMessage,
+               "Cannot set Master from command line for this detector. "
+               "Should have been caught before!\n");
+        return FAIL;
+#endif
+    }
+    return OK;
+}
+
 void setMasterSlaveConfiguration() {
-    LOG(logINFO, ("Reading Master Slave Configuration\n"));
-
-    // no config file or not first time server
-    if (readConfigFile() == FAIL)
+    // not the first time its being read
+    if (!detectorFirstServer) {
         return;
+    }
 
+    LOG(logINFO, ("Reading Master Slave Configuration\n"));
     // master configuration
     if (master) {
         // master default delay set, so reset delay
@@ -788,7 +839,16 @@ void setMasterSlaveConfiguration() {
 
 /* set parameters -  dr, roi */
 
-int setDynamicRange(int dr) { return DYNAMIC_RANGE; }
+int setDynamicRange(int dr) {
+    if (dr == 16)
+        return OK;
+    return FAIL;
+}
+
+int getDynamicRange(int *retval) {
+    *retval = DYNAMIC_RANGE;
+    return OK;
+}
 
 int setROI(ROI arg) {
 
@@ -1238,7 +1298,10 @@ int setHighVoltage(int val) {
 
 /* parameters - timing, extsig */
 
-int isMaster() { return master; }
+int isMaster(int *retval) {
+    *retval = master;
+    return OK;
+}
 
 void setTiming(enum timingMode arg) {
     u_int32_t addr = EXT_SIGNAL_REG;
@@ -1298,6 +1361,8 @@ int getExtSignal(int signalIndex) {
 }
 
 /* configure mac */
+
+int getNumberofUDPInterfaces() { return 1; }
 
 void calcChecksum(mac_conf *mac, int sourceip, int destip) {
     mac->ip.ip_ver = 0x4;

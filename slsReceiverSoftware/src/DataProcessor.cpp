@@ -34,15 +34,14 @@ DataProcessor::DataProcessor(int index, detectorType detectorType, Fifo *fifo,
                              uint32_t *streamingTimerInMs,
                              uint32_t *streamingStartFnum, bool *framePadding,
                              std::vector<int> *ctbDbitList, int *ctbDbitOffset,
-                             int *ctbAnalogDataBytes, std::mutex *hdf5Lib)
+                             int *ctbAnalogDataBytes)
     : ThreadObject(index, typeName_), fifo_(fifo), detectorType_(detectorType),
       dataStreamEnable_(dataStreamEnable), activated_(activated),
       streamingFrequency_(streamingFrequency),
       streamingTimerInMs_(streamingTimerInMs),
       streamingStartFnum_(streamingStartFnum), framePadding_(framePadding),
       ctbDbitList_(ctbDbitList), ctbDbitOffset_(ctbDbitOffset),
-      ctbAnalogDataBytes_(ctbAnalogDataBytes), firstStreamerFrame_(false),
-      hdf5Lib_(hdf5Lib) {
+      ctbAnalogDataBytes_(ctbAnalogDataBytes), firstStreamerFrame_(false) {
 
     LOG(logDEBUG) << "DataProcessor " << index << " created";
 
@@ -124,16 +123,16 @@ void DataProcessor::DeleteFiles() {
 void DataProcessor::SetupFileWriter(const bool filewriteEnable,
                                     const bool masterFilewriteEnable,
                                     const fileFormat fileFormatType,
-                                    const int modulePos) {
+                                    const int modulePos, std::mutex *hdf5Lib) {
     DeleteFiles();
     if (filewriteEnable) {
         switch (fileFormatType) {
 #ifdef HDF5C
         case HDF5:
-            dataFile_ = new HDF5DataFile(index, hdf5Lib_);
+            dataFile_ = new HDF5DataFile(index, hdf5Lib);
             if (modulePos == 0 && index == 0) {
                 if (masterFilewriteEnable) {
-                    masterFile_ = new HDF5MasterFile(hdf5Lib_);
+                    masterFile_ = new HDF5MasterFile(hdf5Lib);
                 }
             }
             break;
@@ -208,12 +207,13 @@ void DataProcessor::CreateVirtualFile(
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
     const uint32_t maxFramesPerFile, const uint64_t numImages,
-    const uint32_t dynamicRange, const int numModX, const int numModY) {
+    const uint32_t dynamicRange, const int numModX, const int numModY,
+    std::mutex *hdf5Lib) {
 
     if (virtualFile_) {
         delete virtualFile_;
     }
-    virtualFile_ = new HDF5VirtualFile(hdf5Lib_);
+    virtualFile_ = new HDF5VirtualFile(hdf5Lib);
 
     uint64_t numImagesProcessed = GetProcessedIndex() + 1;
     // maxframesperfile = 0 for infinite files

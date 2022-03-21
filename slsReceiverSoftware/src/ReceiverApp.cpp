@@ -8,8 +8,13 @@
 
 #include <csignal> //SIGINT
 #include <semaphore.h>
-#include <sys/syscall.h>
 #include <unistd.h>
+
+// gettid added in glibc 2.30
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+#endif
 
 sem_t semaphore;
 
@@ -19,7 +24,7 @@ int main(int argc, char *argv[]) {
 
     sem_init(&semaphore, 1, 0);
 
-    LOG(logINFOBLUE) << "Created [ Tid: " << syscall(SYS_gettid) << " ]";
+    LOG(logINFOBLUE) << "Created [ Tid: " << gettid() << " ]";
 
     // Catch signal SIGINT to close files and call destructors properly
     struct sigaction sa;
@@ -50,7 +55,7 @@ int main(int argc, char *argv[]) {
     } catch (...) {
         // pass
     }
-    LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
+    LOG(logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
     LOG(logINFO) << "Exiting Receiver";
     return 0;
 }

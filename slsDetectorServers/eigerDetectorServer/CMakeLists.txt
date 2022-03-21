@@ -16,90 +16,30 @@ include_directories(
     ../../slsSupportLib/include
 )
 
-add_executable(eigerDetectorServerMaster_virtual 
+add_executable(eigerDetectorServer_virtual 
     ${src}
 )
 
-target_include_directories(eigerDetectorServerMaster_virtual
+target_include_directories(eigerDetectorServer_virtual
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_compile_definitions(eigerDetectorServerMaster_virtual
-    PUBLIC EIGERD PCCOMPILE STOP_SERVER
-    PUBLIC VIRTUAL #VIRTUAL_9M
-    PUBLIC VIRTUAL_MASTER
-)
-
-target_link_libraries(eigerDetectorServerMaster_virtual
-    PUBLIC pthread rt slsProjectCSettings
-)
-
-set_target_properties(eigerDetectorServerMaster_virtual PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
-
-install(TARGETS eigerDetectorServerMaster_virtual 
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-
-
-
-
-add_executable(eigerDetectorServerSlaveTop_virtual 
-    ${src}
-)
-
-target_include_directories(eigerDetectorServerSlaveTop_virtual
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-target_compile_definitions(eigerDetectorServerSlaveTop_virtual
-    PUBLIC EIGERD PCCOMPILE STOP_SERVER
-    PUBLIC VIRTUAL #VIRTUAL_9M
-    PUBLIC VIRTUAL_TOP
-)
-
-target_link_libraries(eigerDetectorServerSlaveTop_virtual
-    PUBLIC pthread rt slsProjectCSettings
-)
-
-set_target_properties(eigerDetectorServerSlaveTop_virtual PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
-
-install(TARGETS eigerDetectorServerSlaveTop_virtual
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-
-
-
-add_executable(eigerDetectorServerSlaveBottom_virtual 
-    ${src}
-)
-
-target_include_directories(eigerDetectorServerSlaveBottom_virtual
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-target_compile_definitions(eigerDetectorServerSlaveBottom_virtual
+target_compile_definitions(eigerDetectorServer_virtual
     PUBLIC EIGERD PCCOMPILE STOP_SERVER
     PUBLIC VIRTUAL #VIRTUAL_9M
 )
 
-target_link_libraries(eigerDetectorServerSlaveBottom_virtual
+target_link_libraries(eigerDetectorServer_virtual
     PUBLIC pthread rt slsProjectCSettings
 )
 
-set_target_properties(eigerDetectorServerSlaveBottom_virtual PROPERTIES
+set_target_properties(eigerDetectorServer_virtual PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-install(TARGETS eigerDetectorServerSlaveBottom_virtual
+install(TARGETS eigerDetectorServer_virtual 
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-
 
 
 configure_file(config_eiger.txt ${CMAKE_BINARY_DIR}/bin/config_eiger.txt COPYONLY)

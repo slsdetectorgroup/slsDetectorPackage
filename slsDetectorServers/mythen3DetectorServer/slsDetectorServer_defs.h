@@ -95,7 +95,7 @@ enum DACINDEX {
 #define DAC_NAMES                                                              \
     "vcassh", "vth2", "vrshaper", "vrshaper_n", "vipre_out", "vth3", "vth1",   \
         "vicin", "vcas", "vrpreamp", "vcal_n", "vipre", "vishaper", "vcal_p",  \
-        "vtrim", "vdcsh"
+        "vtrim", "vdcsh", "vthreshold"
 #define DEFAULT_DAC_VALS                                                       \
     {                                                                          \
         1200, /* casSh */                                                      \

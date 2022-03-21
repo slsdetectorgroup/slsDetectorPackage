@@ -26,11 +26,16 @@ extern int updateFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern int numUdpDestinations;
 extern const enum detectorType myDetectorType;
+extern int ignoreConfigFileFlag;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
 extern void getMacAddressinString(char *cmac, int size, uint64_t mac);
 extern void getIpAddressinString(char *cip, uint32_t ip);
+
+// Variables that will be exported
+int masterCommandLine = -1;
+int topCommandLine = -1;
 
 int initError = OK;
 int initCheckDone = 0;
@@ -88,6 +93,7 @@ int eiger_virtual_read_n_rows = 256;
 int eiger_virtual_interrupt_subframe = 0;
 int eiger_virtual_left_datastream = 1;
 int eiger_virtual_right_datastream = 1;
+int eiger_virtual_module_id = 0;
 #endif
 int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
 
@@ -225,6 +231,23 @@ int getModuleId(int *ret, char *mess) {
     return getModuleIdInFile(ret, mess, ID_FILE);
 }
 
+int updateModuleId() {
+    int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+    if (initError == FAIL) {
+        return FAIL;
+    }
+#ifdef VIRTUAL
+    eiger_virtual_module_id = modid;
+#else
+    if (Beb_SetModuleId(modid) == FAIL) {
+        initError = FAIL;
+        strcpy(initErrorMessage, ("Could not get module id from the file"));
+        return FAIL;
+    }
+#endif
+    return OK;
+}
+
 u_int64_t getDetectorMAC() {
     char mac[255] = "";
     u_int64_t res = 0;
@@ -304,47 +327,36 @@ u_int32_t getDetectorIP() {
 void initControlServer() {
     LOG(logINFOBLUE, ("Configuring Control server\n"));
     if (!updateFlag && initError == OK) {
-#ifndef VIRTUAL
-        int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
-#else
-        getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
-#endif
-        if (initError == FAIL) {
+        if (updateModuleConfiguration() == FAIL) {
+            initCheckDone = 1;
             return;
         }
-        getModuleConfiguration();
 #ifndef VIRTUAL
         sharedMemory_lockLocalLink();
-        Feb_Control_SetMasterVariable(master);
         Feb_Interface_FebInterface();
-        Feb_Control_FebControl();
-        // same addresses for top and bottom
-        if (!Feb_Control_Init(master, normal)) {
+        if (!Feb_Control_FebControl(normal)) {
             initError = FAIL;
-            sprintf(initErrorMessage, "Could not intitalize feb control\n");
+            sprintf(initErrorMessage,
+                    "Could not intitalize eiger detector sever: feb control\n");
             LOG(logERROR, (initErrorMessage));
             initCheckDone = 1;
             sharedMemory_unlockLocalLink();
             return;
         }
-        // master of 9M, check high voltage serial communication to blackfin
-        if (master && !normal) {
-            if (!Feb_Control_OpenSerialCommunication()) {
-                initError = FAIL;
-                sprintf(
-                    initErrorMessage,
-                    "Could not intitalize feb control serial communication\n");
-                LOG(logERROR, (initErrorMessage));
-                initCheckDone = 1;
-                sharedMemory_unlockLocalLink();
-                return;
-            }
+        if (Feb_Control_SetMasterEffects(master, isControlServer) == FAIL) {
+            initError = FAIL;
+            sprintf(initErrorMessage, "Could not intitalize HV for eiger "
+                                      "detector server: feb control serial "
+                                      "communication\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            sharedMemory_unlockLocalLink();
+            return;
         }
         sharedMemory_unlockLocalLink();
         LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
         Beb_SetTopVariable(top);
         Beb_Beb();
-        Beb_SetModuleId(modid);
         LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
 #endif
         // also reads config file and deactivates
@@ -354,73 +366,126 @@ void initControlServer() {
 }
 
 void initStopServer() {
+    if (!updateFlag && initError == OK) {
+        // wait a few s (control server is setting top/master from config file/
+        // command line)
+        usleep(WAIT_STOP_SERVER_START);
+        LOG(logINFOBLUE, ("Configuring Stop server\n"));
+        if (updateModuleConfiguration() == FAIL) {
+            initCheckDone = 1;
+            return;
+        }
 #ifdef VIRTUAL
-    LOG(logINFOBLUE, ("Configuring Stop server\n"));
-    getModuleConfiguration();
-    sharedMemory_setStop(0);
-    // get top/master in virtual
-    readConfigFile();
+        sharedMemory_setStop(0);
+        // force top or master if in config file
+        if (readConfigFile() == FAIL) {
+            initCheckDone = 1;
+            return;
+        }
+        // force top or master if in command line
+        if (checkCommandLineConfiguration() == FAIL) {
+            initCheckDone = 1;
+            return;
+        }
 #else
-    // wait a few s (control server is setting top/master from config file)
-    usleep(WAIT_STOP_SERVER_START);
-    LOG(logINFOBLUE, ("Configuring Stop server\n"));
-    // exit(-1);
-    getModuleConfiguration();
-    sharedMemory_lockLocalLink();
-    Feb_Control_SetMasterVariable(master);
-    Feb_Interface_FebInterface();
-    Feb_Control_FebControl();
-    // same addresses for top and bottom
-    Feb_Control_Init(master, normal);
-    sharedMemory_unlockLocalLink();
-    LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
+        // control server read config file and already set up master/top
+        sharedMemory_lockLocalLink();
+        Feb_Interface_FebInterface();
+        if (!Feb_Control_FebControl(normal)) {
+            initError = FAIL;
+            sprintf(initErrorMessage, "Could not intitalize feb control\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            sharedMemory_unlockLocalLink();
+            return;
+        }
+        if (Feb_Control_SetMasterEffects(master, isControlServer) == FAIL) {
+            initError = FAIL;
+            sprintf(initErrorMessage, "Could not intitalize HV for eiger "
+                                      "detector server: feb control serial "
+                                      "communication\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            sharedMemory_unlockLocalLink();
+            return;
+        }
+        sharedMemory_unlockLocalLink();
+        LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
+        Beb_SetTopVariable(top);
+        Beb_Beb();
+        LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
 #endif
-    // client first connect (from shm) will activate
-    if (setActivate(0) == FAIL) {
-        LOG(logERROR, ("Could not deactivate in stop server\n"));
+        // client first connect (from shm) will activate
+        if (setActivate(0) == FAIL) {
+            initError = FAIL;
+            strcpy(initErrorMessage, "Could not deactivate\n");
+            LOG(logERROR, (initErrorMessage));
+        }
     }
+    initCheckDone = 1;
 }
 
-void getModuleConfiguration() {
-    if (initError == FAIL) {
-        return;
-    }
+void checkVirtual9MFlag() {
 #ifdef VIRTUAL
-#ifdef VIRTUAL_MASTER
-    master = 1;
-    top = 1;
-#else
-    master = 0;
-#ifdef VIRTUAL_TOP
-    top = 1;
-#else
-    top = 0;
-#endif
-#endif
-
 #ifdef VIRTUAL_9M
     normal = 0;
 #else
     normal = 1;
 #endif
+#endif
+}
 
-#else
-    Beb_GetModuleConfiguration(&master, &top, &normal);
+int updateModuleConfiguration() {
+    if (getModuleConfiguration(&master, &top, &normal) == FAIL) {
+        return FAIL;
+    }
+#ifdef VIRTUAL
+    checkVirtual9MFlag();
 #endif
     if (isControlServer) {
         LOG(logINFOBLUE,
             ("Module: %s %s %s\n", (top ? "TOP" : "BOTTOM"),
              (master ? "MASTER" : "SLAVE"), (normal ? "NORMAL" : "SPECIAL")));
     }
+    return OK;
+}
+
+int getModuleConfiguration(int *m, int *t, int *n) {
+    if (initError == FAIL) {
+        return FAIL;
+    }
+#ifdef VIRTUAL
+    *m = master;
+    *t = top;
+    *n = normal;
+#else
+    if (Beb_GetModuleConfiguration(m, t, n) == FAIL) {
+        initError = FAIL;
+        strcpy(initErrorMessage, ("Could not get module configuration\n"));
+        LOG(logERROR, (initErrorMessage));
+        return FAIL;
+    }
+#endif
+    LOG(logDEBUG,
+        ("module config read: master:%d top:%d normal:%d\n", *m, *t, *n));
+    return OK;
 }
 
 int readConfigFile() {
-
     if (initError == FAIL) {
         return initError;
     }
-    master = -1;
+
+    if (ignoreConfigFileFlag) {
+        LOG(logWARNING, ("Ignoring Config file\n"));
+        return OK;
+    }
+
+#ifndef VIRTUAL
+    // if not found in config file, they will be reset to hardware settings
     top = -1;
+    master = -1;
+#endif
 
     const int fileNameSize = 128;
     char fname[fileNameSize];
@@ -471,91 +536,54 @@ int readConfigFile() {
 
         // top command
         if (!strncmp(line, "top", strlen("top"))) {
+            int t = -1;
             // cannot scan values
-            if (sscanf(line, "%s %d", command, &top) != 2) {
+            if (sscanf(line, "%s %d", command, &t) != 2) {
                 sprintf(initErrorMessage,
                         "Could not scan top commands from on-board server "
                         "config file. Line:[%s].\n",
                         line);
                 break;
             }
-#ifndef VIRTUAL
-            enum TOPINDEX ind = (top == 1 ? OW_TOP : OW_BOTTOM);
-            if (!Beb_SetTop(ind)) {
-                sprintf(
-                    initErrorMessage,
-                    "Could not overwrite top to %d in Beb from on-board server "
-                    "config file. Line:[%s].\n",
-                    top, line);
+            if (t != 0 && t != 1) {
+                sprintf(initErrorMessage,
+                        "Invalid top argument from on-board server "
+                        "config file. Line:[%s].\n",
+                        line);
                 break;
             }
-            sharedMemory_lockLocalLink();
-            if (!Feb_Control_SetTop(ind, 1, 1)) {
-                sprintf(
-                    initErrorMessage,
-                    "Could not overwrite top to %d in Feb from on-board server "
-                    "config file. Line:[%s].\n",
-                    top, line);
-                sharedMemory_unlockLocalLink();
+            if (setTop(t == 1 ? OW_TOP : OW_BOTTOM) == FAIL) {
+                sprintf(initErrorMessage,
+                        "Could not set top from config file. Line:[%s].\n",
+                        line);
                 break;
             }
-            sharedMemory_unlockLocalLink();
-            // validate change
-            int actual_top = -1, temp = -1, temp2 = -1;
-            Beb_GetModuleConfiguration(&temp, &actual_top, &temp2);
-            if (actual_top != top) {
-                sprintf(initErrorMessage, "Could not set top to %d. Read %d\n",
-                        top, actual_top);
-                break;
-            }
-            Beb_SetTopVariable(top);
-#endif
         }
 
         // master command
         else if (!strncmp(line, "master", strlen("master"))) {
+            int m = -1;
             // cannot scan values
-            if (sscanf(line, "%s %d", command, &master) != 2) {
+            if (sscanf(line, "%s %d", command, &m) != 2) {
                 sprintf(initErrorMessage,
                         "Could not scan master commands from on-board server "
                         "config file. Line:[%s].\n",
                         line);
                 break;
             }
-#ifndef VIRTUAL
-            enum MASTERINDEX ind = (master == 1 ? OW_MASTER : OW_SLAVE);
-            if (!Beb_SetMaster(ind)) {
+            if (m != 0 && m != 1) {
                 sprintf(initErrorMessage,
-                        "Could not overwrite master to %d in Beb from on-board "
-                        "server "
+                        "Invalid master argument from on-board server "
                         "config file. Line:[%s].\n",
-                        master, line);
+                        line);
                 break;
             }
-            sharedMemory_lockLocalLink();
-            if (!Feb_Control_SetMaster(ind)) {
+            if (setMaster(m == 1 ? OW_MASTER : OW_SLAVE) == FAIL) {
                 sprintf(initErrorMessage,
-                        "Could not overwrite master to %d in Feb from on-board "
-                        "server "
-                        "config file. Line:[%s].\n",
-                        master, line);
-                sharedMemory_unlockLocalLink();
+                        "Could not set master from config file. Line:[%s].\n",
+                        line);
                 break;
             }
-            sharedMemory_unlockLocalLink();
-            // validate change
-            int actual_master = -1, temp = -1, temp2 = -1;
-            Beb_GetModuleConfiguration(&actual_master, &temp, &temp2);
-            if (actual_master != master) {
-                sprintf(initErrorMessage,
-                        "Could not set master to %d. Read %d\n", master,
-                        actual_master);
-                break;
-            }
-            sharedMemory_lockLocalLink();
-            Feb_Control_SetMasterVariable(master);
-            sharedMemory_unlockLocalLink();
-#endif
         }
 
         // other commands
@@ -576,8 +604,10 @@ int readConfigFile() {
         LOG(logINFO, ("Successfully read config file\n"));
     }
 
+#ifndef VIRTUAL
     // reset to hardware settings if not in config file (if overwritten)
     resetToHardwareSettings();
+#endif
 
     return initError;
 }
@@ -589,53 +619,54 @@ void resetToHardwareSettings() {
     }
     // top not set in config file
     if (top == -1) {
-        if (!Beb_SetTop(TOP_HARDWARE)) {
+        LOG(logINFO, ("Resetting Top to hardware settings\n"));
+        if (setTop(TOP_HARDWARE) == FAIL) {
             initError = FAIL;
             strcpy(initErrorMessage,
-                   "Could not reset Top flag to Beb hardware settings.\n");
+                   "Could not reset Top flag to hardware settings.\n");
             LOG(logERROR, ("%s\n\n", initErrorMessage));
             return;
         }
-        sharedMemory_lockLocalLink();
-        if (!Feb_Control_SetTop(TOP_HARDWARE, 1, 1)) {
-            initError = FAIL;
-            strcpy(initErrorMessage,
-                   "Could not reset Top flag to Feb hardware settings.\n");
-            LOG(logERROR, ("%s\n\n", initErrorMessage));
-            sharedMemory_unlockLocalLink();
-            return;
-        }
-        sharedMemory_unlockLocalLink();
-        int temp = -1, temp2 = -1;
-        Beb_GetModuleConfiguration(&temp, &top, &temp2);
-        Beb_SetTopVariable(top);
     }
     // master not set in config file
     if (master == -1) {
-        if (!Beb_SetMaster(TOP_HARDWARE)) {
+        LOG(logINFO, ("Resetting Master to hardware settings\n"));
+        if (setMaster(MASTER_HARDWARE) == FAIL) {
             initError = FAIL;
             strcpy(initErrorMessage,
-                   "Could not reset Master flag to Beb hardware settings.\n");
+                   "Could not reset Master flag to hardware settings.\n");
             LOG(logERROR, ("%s\n\n", initErrorMessage));
             return;
         }
-        sharedMemory_lockLocalLink();
-        if (!Feb_Control_SetMaster(TOP_HARDWARE)) {
-            initError = FAIL;
-            strcpy(initErrorMessage,
-                   "Could not reset Master flag to Feb hardware settings.\n");
-            LOG(logERROR, ("%s\n\n", initErrorMessage));
-            sharedMemory_unlockLocalLink();
-            return;
-        }
-        sharedMemory_unlockLocalLink();
-        int temp = -1, temp2 = -1;
-        Beb_GetModuleConfiguration(&master, &temp, &temp2);
-        sharedMemory_lockLocalLink();
-        Feb_Control_SetMasterVariable(master);
-        sharedMemory_unlockLocalLink();
     }
 #endif
+}
+
+int checkCommandLineConfiguration() {
+    if (masterCommandLine != -1) {
+        LOG(logINFO, ("Setting %s from Command Line\n",
+                      (masterCommandLine == 1 ? "Master" : "Slave")));
+        if (setMaster(masterCommandLine == 1 ? OW_MASTER : OW_SLAVE) == FAIL) {
+            initError = FAIL;
+            sprintf(initErrorMessage, "Could not set %s from command line.\n",
+                    (masterCommandLine == 1 ? "Master" : "Slave"));
+            LOG(logERROR, (initErrorMessage));
+            return FAIL;
+        }
+    }
+
+    if (topCommandLine != -1) {
+        LOG(logINFO, ("Setting %s from Command Line\n",
+                      (topCommandLine == 1 ? "Top" : "Bottom")));
+        if (setTop(topCommandLine == 1 ? OW_TOP : OW_BOTTOM) == FAIL) {
+            initError = FAIL;
+            sprintf(initErrorMessage, "Could not set %s from command line.\n",
+                    (topCommandLine == 1 ? "Top" : "Bottom"));
+            LOG(logERROR, (initErrorMessage));
+            return FAIL;
+        }
+    }
+    return OK;
 }
 
 /* set up detector */
@@ -671,15 +702,29 @@ void allocateDetectorStructureMemory() {
 }
 
 void setupDetector() {
-
     allocateDetectorStructureMemory();
+
+    // force top or master if in config file
+    if (readConfigFile() == FAIL)
+        return;
+    // force top or master if in command line
+    if (checkCommandLineConfiguration() == FAIL)
+        return;
+
+    LOG(logINFOBLUE,
+        ("Module: %s %s %s\n", (top ? "TOP" : "BOTTOM"),
+         (master ? "MASTER" : "SLAVE"), (normal ? "NORMAL" : "SPECIAL")));
+
+    if (updateModuleId() == FAIL)
+        return;
+
+    LOG(logINFOBLUE, ("Setting Default Parameters\n"));
     resetToDefaultDacs(0);
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
     setupUDPCommParameters();
 #endif
 
-    LOG(logINFOBLUE, ("Setting Default Parameters\n"));
     // setting default measurement parameters
     setNumFrames(DEFAULT_NUM_FRAMES);
     setExpTime(DEFAULT_EXPTIME);
@@ -719,14 +764,6 @@ void setupDetector() {
     }
     sharedMemory_unlockLocalLink();
 #endif
-    // force top or master if in config file
-    if (readConfigFile() == FAIL) {
-        return;
-    }
-    LOG(logINFOBLUE,
-        ("Module: %s %s %s\n", (top ? "TOP" : "BOTTOM"),
-         (master ? "MASTER" : "SLAVE"), (normal ? "NORMAL" : "SPECIAL")));
-
     if (setNumberofDestinations(numUdpDestinations) == FAIL) {
         initError = FAIL;
         strcpy(initErrorMessage, "Could not set number of udp destinations\n");
@@ -821,29 +858,38 @@ int readRegister(uint32_t offset, uint32_t *retval) {
 /* set parameters -  dr, roi */
 
 int setDynamicRange(int dr) {
-    // setting dr
-    if (dr > 0) {
-        LOG(logDEBUG1, ("Setting dynamic range: %d\n", dr));
-#ifndef VIRTUAL
-        sharedMemory_lockLocalLink();
-        if (Feb_Control_SetDynamicRange(dr)) {
-            if (!Beb_SetUpTransferParameters(dr)) {
-                LOG(logERROR, ("Could not set bit mode in the back end\n"));
-                sharedMemory_unlockLocalLink();
-                return eiger_dynamicrange;
-            }
-        }
-        sharedMemory_unlockLocalLink();
-#endif
-        eiger_dynamicrange = dr;
+    if (dr <= 0) {
+        return FAIL;
     }
-    // getting dr
-#ifndef VIRTUAL
+#ifdef VIRTUAL
+    LOG(logINFO, ("Setting dynamic range: %d\n", dr));
+#else
     sharedMemory_lockLocalLink();
-    eiger_dynamicrange = Feb_Control_GetDynamicRange();
+    if (Feb_Control_SetDynamicRange(dr)) {
+        if (!Beb_SetUpTransferParameters(dr)) {
+            LOG(logERROR, ("Could not set bit mode in the back end\n"));
+            sharedMemory_unlockLocalLink();
+            return eiger_dynamicrange;
+        }
+    }
     sharedMemory_unlockLocalLink();
 #endif
-    return eiger_dynamicrange;
+    eiger_dynamicrange = dr;
+    return OK;
+}
+
+int getDynamicRange(int *retval) {
+#ifdef VIRTUAL
+    *retval = eiger_dynamicrange;
+#else
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_GetDynamicRange(retval)) {
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
+#endif
+    return OK;
 }
 
 /* parameters - readout */
@@ -1158,6 +1204,7 @@ int setModule(sls_detector_module myMod, char *mess) {
 
         // if quad, set M8 and PROGRAM manually
         if (!Feb_Control_SetChipSignalsToTrimQuad(1)) {
+            sharedMemory_unlockLocalLink();
             return FAIL;
         }
 
@@ -1170,6 +1217,7 @@ int setModule(sls_detector_module myMod, char *mess) {
 
             // if quad, reset M8 and PROGRAM manually
             if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
+                sharedMemory_unlockLocalLink();
                 return FAIL;
             }
 
@@ -1179,6 +1227,7 @@ int setModule(sls_detector_module myMod, char *mess) {
 
         // if quad, reset M8 and PROGRAM manually
         if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
+            sharedMemory_unlockLocalLink();
             return FAIL;
         }
 
@@ -1450,7 +1499,120 @@ int setHighVoltage(int val) {
 
 /* parameters - timing, extsig */
 
-int isMaster() { return master; }
+int setMaster(enum MASTERINDEX m) {
+    char *master_names[] = {MASTER_NAMES};
+    LOG(logINFOBLUE, ("Setting up Master flag as %s\n", master_names[m]));
+#ifdef VIRTUAL
+    switch (m) {
+    case OW_MASTER:
+        master = 1;
+        break;
+    case OW_SLAVE:
+        master = 0;
+        break;
+    default:
+        // hardware settings (do nothing)
+        break;
+    }
+#else
+    // need to set it only once via the control server
+    if (isControlServer) {
+        if (!Beb_SetMaster(m)) {
+            return FAIL;
+        }
+
+        sharedMemory_lockLocalLink();
+        if (!Feb_Control_SetMaster(m)) {
+            sharedMemory_unlockLocalLink();
+            return FAIL;
+        }
+        sharedMemory_unlockLocalLink();
+    }
+
+    // get and update master variable (cannot get from m, could be hardware)
+    if (isMaster(&master) == FAIL) {
+        return FAIL;
+    }
+    // verify for master and slave (not hardware)
+    if ((m == OW_MASTER && master == 0) || (m == OW_SLAVE && master == 1)) {
+        LOG(logERROR,
+            ("could not set master/slave. Master value retrieved %d\n",
+             master));
+        return FAIL;
+    }
+
+    // feb variable and hv comms (9m)
+    sharedMemory_lockLocalLink();
+    if (Feb_Control_SetMasterEffects(master, isControlServer) == FAIL) {
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
+#endif
+    return OK;
+}
+
+int isMaster(int *retval) {
+    int m = -1, t = -1, n = -1;
+    if (getModuleConfiguration(&m, &t, &n) == FAIL) {
+        return FAIL;
+    }
+    *retval = m;
+    return OK;
+}
+
+int setTop(enum TOPINDEX t) {
+    char *top_names[] = {TOP_NAMES};
+    LOG(logINFOBLUE, ("Setting up Top flag as %s\n", top_names[t]));
+#ifdef VIRTUAL
+    switch (t) {
+    case OW_TOP:
+        top = 1;
+        break;
+    case OW_BOTTOM:
+        top = 0;
+        break;
+    default:
+        // hardware settings (do nothing)
+        break;
+    }
+#else
+    if (!Beb_SetTop(t)) {
+        return FAIL;
+    }
+
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_SetTop(t, 1, 1)) {
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
+
+    // get and update top variable(cannot get from t, could be hardware)
+    if (isTop(&top) == FAIL) {
+        return FAIL;
+    }
+    // verify for master and slave (not hardware)
+    if ((t == OW_TOP && top == 0) || (t == OW_BOTTOM && top == 1)) {
+        LOG(logERROR,
+            ("could not set top/bottom. Top value retrieved %d\n", top));
+        return FAIL;
+    }
+
+    Beb_SetTopVariable(top);
+#endif
+    return OK;
+}
+
+int isTop(int *retval) {
+    int m = -1, t = -1, n = -1;
+    if (getModuleConfiguration(&m, &t, &n) == FAIL) {
+        return FAIL;
+    }
+
+    *retval = t;
+    return OK;
+}
 
 void setTiming(enum timingMode arg) {
     int ret = 0;
@@ -1500,6 +1662,7 @@ enum timingMode getTiming() {
 }
 
 /* configure mac */
+int getNumberofUDPInterfaces() { return 2; }
 
 int getNumberofDestinations(int *retval) {
 #ifdef VIRTUAL
@@ -1922,7 +2085,8 @@ int setRateCorrection(
     else if (custom_tau_in_nsec == -1)
         custom_tau_in_nsec = Feb_Control_Get_RateTable_Tau_in_nsec();
 
-    int dr = Feb_Control_GetDynamicRange();
+    int dr = eiger_dynamicrange;
+
     // get period = subexptime if 32bit , else period = exptime if 16 bit
     int64_t actual_period =
         Feb_Control_GetSubFrameExposureTime(); // already in nsec
@@ -2104,6 +2268,9 @@ int setDataStream(enum portPosition port, int enable) {
         LOG(logERROR, ("Invalid setDataStream enable argument: %d\n", enable));
         return FAIL;
     }
+    LOG(logINFO,
+        ("%s 10GbE %s datastream\n", (enable ? "Enabling" : "Disabling"),
+         (port == LEFT ? "left" : "right")));
 #ifdef VIRTUAL
     if (port == LEFT) {
         eiger_virtual_left_datastream = enable;
@@ -2317,7 +2484,7 @@ void *start_timer(void *arg) {
     const int maxRows = MAX_ROWS_PER_READOUT;
     const int packetsPerFrame = (maxPacketsPerFrame * readNRows) / maxRows;
 
-    LOG(logDEBUG1,
+    LOG(logDEBUG,
         (" dr:%d\n bytesperpixel:%f\n tgenable:%d\n datasize:%d\n "
          "packetsize:%d\n maxnumpackes:%d\n npixelsx:%d\n databytes:%d\n",
          dr, bytesPerPixel, tgEnable, datasize, packetsize, maxPacketsPerFrame,
@@ -2334,11 +2501,13 @@ void *start_timer(void *arg) {
             npixels /= 2;
         }
         LOG(logDEBUG1,
-            ("pixels:%d pixelsperpacket:%d\n", npixels, pixelsPerPacket));
+            ("npixels:%d pixelsperpacket:%d\n", npixels, pixelsPerPacket));
+        uint8_t *src = (uint8_t *)imageData;
         for (int i = 0; i < npixels; ++i) {
             if (i > 0 && i % pixelsPerPacket == 0) {
                 ++pixelVal;
             }
+
             switch (dr) {
             case 4:
                 *((uint8_t *)(imageData + i)) =
@@ -2352,6 +2521,30 @@ void *start_timer(void *arg) {
             case 8:
                 *((uint8_t *)(imageData + i)) =
                     eiger_virtual_test_mode ? 0xFE : (uint8_t)pixelVal;
+                break;
+            case 12:
+                if (eiger_virtual_test_mode) {
+                    // first 12 bit pixel
+                    // first 8 byte
+                    *src++ = 0xFE;
+                    // second 12bit pixel
+                    ++i;
+                    // second 8 byte
+                    *src++ = 0xEF;
+                    // third byte
+                    *src++ = 0xFF;
+                } else {
+                    // first 12 bit pixel
+                    // first 8 byte
+                    *src++ = (uint8_t)(i & 0xFF);
+                    // second 8 byte (first nibble)
+                    *src = (uint8_t)((i++ >> 8u) & 0xF);
+                    // second 12bit pixel
+                    // second 8 byte (second nibble)
+                    *src++ |= ((uint8_t)(i & 0xF) << 4u);
+                    // third byte
+                    *src++ = (uint8_t)((i >> 4u) & 0xFF);
+                }
                 break;
             case 16:
                 *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
@@ -2407,6 +2600,7 @@ void *start_timer(void *arg) {
                 header->version = SLS_DETECTOR_HEADER_VERSION;
                 header->frameNumber = frameNr + iframes;
                 header->packetNumber = i;
+                header->modId = eiger_virtual_module_id;
                 header->row = row;
                 header->column = colLeft;
 
@@ -2417,6 +2611,7 @@ void *start_timer(void *arg) {
                 header->version = SLS_DETECTOR_HEADER_VERSION;
                 header->frameNumber = frameNr + iframes;
                 header->packetNumber = i;
+                header->modId = eiger_virtual_module_id;
                 header->row = row;
                 header->column = colRight;
                 if (eiger_virtual_quad_mode) {
@@ -2427,9 +2622,27 @@ void *start_timer(void *arg) {
                 // fill data
                 int dstOffset = sizeof(sls_detector_header);
                 int dstOffset2 = sizeof(sls_detector_header);
-                {
-                    for (int psize = 0; psize < datasize; psize += npixelsx) {
+                if (dr == 12) {
+                    // multiple of 768,1024,4096
+                    int copysize = 256;
+                    for (int psize = 0; psize < datasize; psize += copysize) {
+                        memcpy(packetData + dstOffset, imageData + srcOffset,
+                               copysize);
+                        memcpy(packetData2 + dstOffset2, imageData + srcOffset2,
+                               copysize);
+                        srcOffset += copysize;
+                        srcOffset2 += copysize;
+                        dstOffset += copysize;
+                        dstOffset2 += copysize;
 
+                        // reached 1 row (quarter module)
+                        if ((srcOffset % npixelsx) == 0) {
+                            srcOffset += npixelsx;
+                            srcOffset2 += npixelsx;
+                        }
+                    }
+                } else {
+                    for (int psize = 0; psize < datasize; psize += npixelsx) {
                         if (dr == 32 && tgEnable == 0) {
                             memcpy(packetData + dstOffset,
                                    imageData + srcOffset, npixelsx / 2);
@@ -2727,9 +2940,9 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
 int calculateDataBytes() {
     if (send_to_ten_gig)
-        return setDynamicRange(-1) * ONE_GIGA_CONSTANT * TEN_GIGA_BUFFER_SIZE;
+        return eiger_dynamicrange * ONE_GIGA_CONSTANT * TEN_GIGA_BUFFER_SIZE;
     else
-        return setDynamicRange(-1) * TEN_GIGA_CONSTANT * ONE_GIGA_BUFFER_SIZE;
+        return eiger_dynamicrange * TEN_GIGA_CONSTANT * ONE_GIGA_BUFFER_SIZE;
 }
 
 int getTotalNumberOfChannels() {

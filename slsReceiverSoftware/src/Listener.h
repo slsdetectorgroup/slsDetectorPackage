@@ -32,7 +32,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * @param s pointer to receiver status
      * @param portno pointer to udp port number
      * @param e ethernet interface
-     * @param nf pointer to number of images to catch
      * @param dr pointer to dynamic range
      * @param us pointer to udp socket buffer size
      * @param as pointer to actual udp socket buffer size
@@ -43,9 +42,8 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * @param sm pointer to silent mode
      */
     Listener(int ind, detectorType dtype, Fifo *f, std::atomic<runStatus> *s,
-             uint32_t *portno, std::string *e, uint64_t *nf, int *us, int *as,
-             uint32_t *fpf, frameDiscardPolicy *fdp, bool *act, bool *detds,
-             bool *sm);
+             uint32_t *portno, std::string *e, int *us, int *as, uint32_t *fpf,
+             frameDiscardPolicy *fdp, bool *act, bool *detds, bool *sm);
 
     /**
      * Destructor
@@ -65,8 +63,15 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      */
     uint64_t GetLastFrameIndexCaught() const;
 
-    /** Get  number of missing packets */
-    uint64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) const;
+    /** Get  number of missing packets, returns negative values in case to extra
+     * packet */
+    int64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) const;
+
+    bool GetStartedFlag();
+
+    uint64_t GetCurrentFrameIndex();
+    /** (-1 if no frames have been caught) */
+    uint64_t GetListenedIndex();
 
     /**
      * Set Fifo pointer to the one given
@@ -170,9 +175,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
     /** ethernet interface */
     std::string *eth;
-
-    /** Number of Images to catch */
-    uint64_t *numImages;
 
     /** UDP Socket Buffer Size */
     int *udpSocketBufferSize;

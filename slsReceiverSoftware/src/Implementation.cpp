@@ -64,7 +64,7 @@ void Implementation::SetThreadPriorities() {
 
 void Implementation::SetupFifoStructure() {
     fifo.clear();
-    for (int i = 0; i < numThreads; ++i) {
+    for (int i = 0; i < numUDPInterfaces; ++i) {
         uint32_t datasize = generalData->imageSize;
         // veto data size
         if (detType == GOTTHARD2 && i != 0) {
@@ -97,7 +97,7 @@ void Implementation::SetupFifoStructure() {
                             (double)(1024 * 1024)
                      << " MB";
     }
-    LOG(logINFO) << numThreads << " Fifo structure(s) reconstructed";
+    LOG(logINFO) << numUDPInterfaces << " Fifo structure(s) reconstructed";
 }
 
 /**************************************************
@@ -107,6 +107,7 @@ void Implementation::SetupFifoStructure() {
  * ************************************************/
 
 void Implementation::setDetectorType(const detectorType d) {
+
     detType = d;
     switch (detType) {
     case GOTTHARD:
@@ -152,7 +153,7 @@ void Implementation::setDetectorType(const detectorType d) {
     default:
         break;
     }
-    numThreads = generalData->threadsPerReceiver;
+    numUDPInterfaces = generalData->numUDPInterfaces;
     fifoDepth = generalData->defaultFifoDepth;
     udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
     framesPerFile = generalData->maxFramesPerFile;
@@ -161,20 +162,24 @@ void Implementation::setDetectorType(const detectorType d) {
     SetupFifoStructure();
 
     // create threads
-    for (int i = 0; i < numThreads; ++i) {
+    for (int i = 0; i < numUDPInterfaces; ++i) {
 
         try {
             auto fifo_ptr = fifo[i].get();
             listener.push_back(sls::make_unique<Listener>(
                 i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
-                &numberOfTotalFrames, &udpSocketBufferSize,
-                &actualUDPSocketBufferSize, &framesPerFile, &frameDiscardMode,
-                &activated, &detectorDataStream[i], &silentMode));
+                &udpSocketBufferSize, &actualUDPSocketBufferSize,
+                &framesPerFile, &frameDiscardMode, &activated,
+                &detectorDataStream[i], &silentMode));
+            int ctbAnalogDataBytes = 0;
+            if (detType == CHIPTESTBOARD) {
+                ctbAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
+            }
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, detType, fifo_ptr, &activated, &dataStreamEnable,
                 &streamingFrequency, &streamingTimerInMs, &streamingStartFnum,
                 &framePadding, &ctbDbitList, &ctbDbitOffset,
-                &ctbAnalogDataBytes, &hdf5Lib));
+                &ctbAnalogDataBytes));
         } catch (...) {
             listener.clear();
             dataProcessor.clear();
@@ -194,35 +199,35 @@ void Implementation::setDetectorType(const detectorType d) {
     LOG(logDEBUG) << " Detector type set to " << sls::ToString(d);
 }
 
-int *Implementation::getDetectorSize() const { return (int *)numMods; }
+slsDetectorDefs::xy Implementation::getDetectorSize() const {
+    return numModules;
+}
 
-void Implementation::setDetectorSize(const int *size) {
+slsDetectorDefs::xy Implementation::GetPortGeometry() {
+    xy portGeometry{1, 1};
+    if (detType == EIGER)
+        portGeometry.x = numUDPInterfaces;
+    else // (jungfrau and gotthard2)
+        portGeometry.y = numUDPInterfaces;
+    return portGeometry;
+}
+
+void Implementation::setDetectorSize(const slsDetectorDefs::xy size) {
+    xy portGeometry = GetPortGeometry();
+
     std::string log_message = "Detector Size (ports): (";
-    for (int i = 0; i < MAX_DIMENSIONS; ++i) {
-        // x dir (colums) each udp port
-        if (detType == EIGER && i == X)
-            numMods[i] = size[i] * 2;
-        // y dir (rows) each udp port
-        else if (numUDPInterfaces == 2 && i == Y)
-            numMods[i] = size[i] * 2;
-        else
-            numMods[i] = size[i];
-        log_message += std::to_string(numMods[i]);
-        if (i < MAX_DIMENSIONS - 1)
-            log_message += ", ";
-    }
-    log_message += ")";
-
-    int nm[2] = {numMods[0], numMods[1]};
+    numModules.x = portGeometry.x * size.x;
+    numModules.y = portGeometry.y * size.y;
+    xy nm{numModules.x, numModules.y};
     if (quadEnable) {
-        nm[0] = 1;
-        nm[1] = 2;
+        nm.x = 1;
+        nm.y = 2;
     }
     for (const auto &it : dataStreamer) {
         it->SetNumberofModules(nm);
     }
 
-    LOG(logINFO) << log_message;
+    LOG(logINFO) << "Detector Size (ports): " << sls::ToString(numModules);
 }
 
 int Implementation::getModulePositionId() const { return modulePos; }
@@ -232,19 +237,18 @@ void Implementation::setModulePositionId(const int id) {
     LOG(logINFO) << "Module Position Id:" << modulePos;
 
     // update zmq port
-    streamingPort =
-        DEFAULT_ZMQ_RX_PORTNO + (modulePos * (detType == EIGER ? 2 : 1));
+    xy portGeometry = GetPortGeometry();
+    streamingPort = DEFAULT_ZMQ_RX_PORTNO + modulePos * portGeometry.x;
 
     for (const auto &it : dataProcessor)
         it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                            fileFormatType, modulePos);
-    assert(numMods[1] != 0);
+                            fileFormatType, modulePos, &hdf5Lib);
+    assert(numModules.y != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
-        row =
-            (modulePos % numMods[1]) * ((numUDPInterfaces == 2) ? 2 : 1); // row
-        col = (modulePos / numMods[1]) * ((detType == EIGER) ? 2 : 1) +
-              i; // col for horiz. udp ports
+        row = (modulePos % numModules.y) * portGeometry.y;
+        col = (modulePos / numModules.y) * portGeometry.x + i;
+
         listener[i]->SetHardCodedPosition(row, col);
     }
 }
@@ -308,7 +312,7 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
     } else {
         retval[id++] = 0;
     }
-    if (numThreads == 2) {
+    if (numUDPInterfaces == 2) {
         retval[id++] = listener[1]->GetThreadId();
         retval[id++] = dataProcessor[1]->GetThreadId();
         if (dataStreamEnable) {
@@ -317,7 +321,31 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
             retval[id++] = 0;
         }
     }
+    retval[NUM_RX_THREAD_IDS - 1] = arping.GetThreadId();
     return retval;
+}
+
+bool Implementation::getArping() const { return arping.IsRunning(); }
+
+pid_t Implementation::getArpingThreadId() const { return arping.GetThreadId(); }
+
+void Implementation::setArping(const bool i,
+                               const std::vector<std::string> ips) {
+    if (i != arping.IsRunning()) {
+        if (!i) {
+            arping.StopThread();
+        } else {
+            // setup interface
+            for (int i = 0; i != numUDPInterfaces; ++i) {
+                // ignore eiger with 2 interfaces (only udp port)
+                if (i == 1 && (numUDPInterfaces == 1 || detType == EIGER)) {
+                    break;
+                }
+                arping.SetInterfacesAndIps(i, eth[i], ips[i]);
+            }
+            arping.StartThread();
+        }
+    }
 }
 
 /**************************************************
@@ -345,7 +373,7 @@ void Implementation::setFileFormat(const fileFormat f) {
         }
         for (const auto &it : dataProcessor)
             it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos);
+                                fileFormatType, modulePos, &hdf5Lib);
     }
 
     LOG(logINFO) << "File Format: " << sls::ToString(fileFormatType);
@@ -382,7 +410,7 @@ void Implementation::setFileWriteEnable(const bool b) {
         fileWriteEnable = b;
         for (const auto &it : dataProcessor)
             it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos);
+                                fileFormatType, modulePos, &hdf5Lib);
     }
     LOG(logINFO) << "File Write Enable: "
                  << (fileWriteEnable ? "enabled" : "disabled");
@@ -397,7 +425,7 @@ void Implementation::setMasterFileWriteEnable(const bool b) {
         masterFileWriteEnable = b;
         for (const auto &it : dataProcessor)
             it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos);
+                                fileFormatType, modulePos, &hdf5Lib);
     }
     LOG(logINFO) << "Master File Write Enable: "
                  << (masterFileWriteEnable ? "enabled" : "disabled");
@@ -440,32 +468,31 @@ uint64_t Implementation::getFramesCaught() const {
     return min;
 }
 
-uint64_t Implementation::getAcquisitionIndex() const {
-    uint64_t min = -1;
+uint64_t Implementation::getCurrentFrameIndex() const {
+    uint64_t max = 0;
     uint32_t flagsum = 0;
 
-    for (const auto &it : dataProcessor) {
+    for (const auto &it : listener) {
         flagsum += it->GetStartedFlag();
-        min = std::min(min, it->GetCurrentFrameIndex());
+        max = std::max(max, it->GetCurrentFrameIndex());
     }
     // no data processed
-    if (flagsum != dataProcessor.size())
+    if (flagsum != listener.size())
         return 0;
-    return min;
+    return max;
 }
 
 double Implementation::getProgress() const {
     // get minimum of processed frame indices
-    uint64_t currentFrameIndex = -1;
+    uint64_t currentFrameIndex = 0;
     uint32_t flagsum = 0;
 
-    for (const auto &it : dataProcessor) {
+    for (const auto &it : listener) {
         flagsum += it->GetStartedFlag();
-        currentFrameIndex =
-            std::min(currentFrameIndex, it->GetProcessedIndex());
+        currentFrameIndex = std::max(currentFrameIndex, it->GetListenedIndex());
     }
     // no data processed
-    if (flagsum != dataProcessor.size()) {
+    if (flagsum != listener.size()) {
         currentFrameIndex = -1;
     }
 
@@ -473,9 +500,9 @@ double Implementation::getProgress() const {
             ((double)(currentFrameIndex + 1) / (double)numberOfTotalFrames));
 }
 
-std::vector<uint64_t> Implementation::getNumMissingPackets() const {
-    std::vector<uint64_t> mp(numThreads);
-    for (int i = 0; i < numThreads; i++) {
+std::vector<int64_t> Implementation::getNumMissingPackets() const {
+    std::vector<int64_t> mp(numUDPInterfaces);
+    for (int i = 0; i < numUDPInterfaces; ++i) {
         int np = generalData->packetsPerFrame;
         uint64_t totnp = np;
         // ReadNRows
@@ -562,11 +589,12 @@ void Implementation::stopReceiver() {
         if (modulePos == 0) {
             // more than 1 file, create virtual file
             if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
-                (numMods[X] * numMods[Y]) > 1) {
+                (numModules.x * numModules.y) > 1) {
                 dataProcessor[0]->CreateVirtualFile(
                     filePath, fileName, fileIndex, overwriteEnable, silentMode,
-                    modulePos, numThreads, framesPerFile, numberOfTotalFrames,
-                    dynamicRange, numMods[X], numMods[Y]);
+                    modulePos, numUDPInterfaces, framesPerFile,
+                    numberOfTotalFrames, dynamicRange, numModules.x,
+                    numModules.y, &hdf5Lib);
             }
             // link file in master
             dataProcessor[0]->LinkDataInMasterFile(silentMode);
@@ -595,40 +623,41 @@ void Implementation::stopReceiver() {
     LOG(logINFO) << "Status: " << sls::ToString(status);
 
     { // statistics
-        std::vector<uint64_t> mp = getNumMissingPackets();
+        auto mp = getNumMissingPackets();
+        // print summary
         uint64_t tot = 0;
-        for (int i = 0; i < numThreads; i++) {
+        for (int i = 0; i < numUDPInterfaces; i++) {
             int nf = dataProcessor[i]->GetNumCompleteFramesCaught();
             tot += nf;
-            std::string mpMessage = std::to_string((int64_t)mp[i]);
-            if ((int64_t)mp[i] < 0) {
+            std::string mpMessage = std::to_string(mp[i]);
+            if (mp[i] < 0) {
                 mpMessage =
-                    std::to_string(abs(mp[i])) + std::string(" (Extra)");
+                    std::to_string(std::abs(mp[i])) + std::string(" (Extra)");
             }
 
-            TLogLevel lev = (((int64_t)mp[i]) > 0) ? logINFORED : logINFOGREEN;
-            LOG(lev) <<
-                // udp port number could be the second if selected interface is
-                // 2 for jungfrau
-                "Summary of Port " << udpPortNum[i]
-                     << "\n\tMissing Packets\t\t: " << mpMessage
-                     << "\n\tComplete Frames\t\t: " << nf
-                     << "\n\tLast Frame Caught\t: "
-                     << listener[i]->GetLastFrameIndexCaught();
+            std::string summary;
+            if (!activated) {
+                summary = "\n\tDeactivated Receiver";
+            } else if (!detectorDataStream[i]) {
+                summary = (i == 0 ? "\n\tDeactivated Left Port"
+                                  : "\n\tDeactivated Right Port");
+            } else {
+                std::ostringstream os;
+                os << "\n\tMissing Packets\t\t: " << mpMessage
+                   << "\n\tComplete Frames\t\t: " << nf
+                   << "\n\tLast Frame Caught\t: "
+                   << listener[i]->GetLastFrameIndexCaught();
+                summary = os.str();
+            }
+
+            TLogLevel lev = ((mp[i]) > 0) ? logINFORED : logINFOGREEN;
+            LOG(lev) << "Summary of Port " << udpPortNum[i] << summary;
         }
-        if (!activated) {
-            LOG(logINFORED) << "Deactivated Receiver";
-        }
-        if (!detectorDataStream[0]) {
-            LOG(logINFORED) << "Deactivated Left Port";
-        }
-        if (!detectorDataStream[1]) {
-            LOG(logINFORED) << "Deactivated Right Port";
-        }
+
         // callback
         if (acquisitionFinishedCallBack) {
             try {
-                acquisitionFinishedCallBack((tot / numThreads),
+                acquisitionFinishedCallBack((tot / numUDPInterfaces),
                                             pAcquisitionFinished);
             } catch (const std::exception &e) {
                 // change status
@@ -755,6 +784,12 @@ void Implementation::SetupWriter() {
         }
         masterAttributes->detType = detType;
         masterAttributes->timingMode = timingMode;
+        xy nm{numModules.x, numModules.y};
+        if (quadEnable) {
+            nm.x = 1;
+            nm.y = 2;
+        }
+        masterAttributes->geometry = xy(nm.x, nm.y);
         masterAttributes->imageSize = generalData->imageSize;
         masterAttributes->nPixels =
             xy(generalData->nPixelsX, generalData->nPixelsY);
@@ -809,7 +844,7 @@ void Implementation::SetupWriter() {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             dataProcessor[i]->CreateFirstFiles(
                 masterAttributes.get(), filePath, fileName, fileIndex,
-                overwriteEnable, silentMode, modulePos, numThreads,
+                overwriteEnable, silentMode, modulePos, numUDPInterfaces,
                 udpPortNum[i], framesPerFile, numberOfTotalFrames, dynamicRange,
                 detectorDataStream[i]);
         }
@@ -848,16 +883,19 @@ int Implementation::getNumberofUDPInterfaces() const {
     return numUDPInterfaces;
 }
 
+// not Eiger
 void Implementation::setNumberofUDPInterfaces(const int n) {
+    if (detType == EIGER) {
+        throw sls::RuntimeError(
+            "Cannot set number of UDP interfaces for Eiger");
+    }
 
     if (numUDPInterfaces != n) {
 
-        // reduce number of detectors in y dir (rows) if it had 2 interfaces
-        // before
-        if (numUDPInterfaces == 2)
-            numMods[Y] /= 2;
-
-        numUDPInterfaces = n;
+        // reduce number of detectors to size with 1 interface
+        xy portGeometry = GetPortGeometry();
+        numModules.x /= portGeometry.x;
+        numModules.y /= portGeometry.y;
 
         // clear all threads and fifos
         listener.clear();
@@ -867,30 +905,34 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
 
         // set local variables
         generalData->SetNumberofInterfaces(n);
-        numThreads = generalData->threadsPerReceiver;
-        udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
+        numUDPInterfaces = n;
 
         // fifo
+        udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
         SetupFifoStructure();
 
         // create threads
-        for (int i = 0; i < numThreads; ++i) {
+        for (int i = 0; i < numUDPInterfaces; ++i) {
             // listener and dataprocessor threads
             try {
                 auto fifo_ptr = fifo[i].get();
                 listener.push_back(sls::make_unique<Listener>(
                     i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
-                    &numberOfTotalFrames, &udpSocketBufferSize,
-                    &actualUDPSocketBufferSize, &framesPerFile,
-                    &frameDiscardMode, &activated, &detectorDataStream[i],
-                    &silentMode));
+                    &udpSocketBufferSize, &actualUDPSocketBufferSize,
+                    &framesPerFile, &frameDiscardMode, &activated,
+                    &detectorDataStream[i], &silentMode));
                 listener[i]->SetGeneralData(generalData);
 
+                int ctbAnalogDataBytes = 0;
+                if (detType == CHIPTESTBOARD) {
+                    ctbAnalogDataBytes =
+                        generalData->GetNumberOfAnalogDatabytes();
+                }
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
                     i, detType, fifo_ptr, &activated, &dataStreamEnable,
                     &streamingFrequency, &streamingTimerInMs,
                     &streamingStartFnum, &framePadding, &ctbDbitList,
-                    &ctbDbitOffset, &ctbAnalogDataBytes, &hdf5Lib));
+                    &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
             } catch (...) {
                 listener.clear();
@@ -903,18 +945,18 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             if (dataStreamEnable) {
                 try {
                     bool flip = flipRows;
-                    int nm[2] = {numMods[0], numMods[1]};
+                    xy nm{numModules.x, numModules.y};
                     if (quadEnable) {
                         flip = (i == 1 ? true : false);
-                        nm[0] = 1;
-                        nm[1] = 2;
+                        nm.x = 1;
+                        nm.y = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, flip,
-                        (int *)nm, &quadEnable, &numberOfTotalFrames));
+                        nm, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
-                        &numThreads, streamingPort, streamingSrcIP,
+                        &numUDPInterfaces, streamingPort, streamingSrcIP,
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
@@ -934,7 +976,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         SetThreadPriorities();
 
         // update (from 1 to 2 interface) & also for printout
-        setDetectorSize(numMods);
+        setDetectorSize(numModules);
         // update row and column in dataprocessor
         setModulePositionId(modulePos);
 
@@ -994,7 +1036,8 @@ void Implementation::setUDPSocketBufferSize(const int s) {
     // testing default setup at startup, argument is 0 to use default values
     int size = (s == 0) ? udpSocketBufferSize : s;
     size_t listSize = listener.size();
-    if (detType == JUNGFRAU && (int)listSize != numUDPInterfaces) {
+    if ((detType == JUNGFRAU || detType == GOTTHARD2) &&
+        (int)listSize != numUDPInterfaces) {
         throw sls::RuntimeError(
             "Number of Interfaces " + std::to_string(numUDPInterfaces) +
             " do not match listener size " + std::to_string(listSize));
@@ -1029,21 +1072,21 @@ void Implementation::setDataStreamEnable(const bool enable) {
         dataStreamer.clear();
 
         if (enable) {
-            for (int i = 0; i < numThreads; ++i) {
+            for (int i = 0; i < numUDPInterfaces; ++i) {
                 try {
                     bool flip = flipRows;
-                    int nm[2] = {numMods[0], numMods[1]};
+                    xy nm{numModules.x, numModules.y};
                     if (quadEnable) {
                         flip = (i == 1 ? true : false);
-                        nm[0] = 1;
-                        nm[1] = 2;
+                        nm.x = 1;
+                        nm.y = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, flip,
-                        (int *)nm, &quadEnable, &numberOfTotalFrames));
+                        nm, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
-                        &numThreads, streamingPort, streamingSrcIP,
+                        &numUDPInterfaces, streamingPort, streamingSrcIP,
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
@@ -1348,11 +1391,7 @@ void Implementation::setNumberofAnalogSamples(const uint32_t i) {
     if (numberOfAnalogSamples != i) {
         numberOfAnalogSamples = i;
 
-        ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
-            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
-            readoutType);
-
+        generalData->SetNumberOfAnalogSamples(i);
         SetupFifoStructure();
     }
     LOG(logINFO) << "Number of Analog Samples: " << numberOfAnalogSamples;
@@ -1367,11 +1406,7 @@ void Implementation::setNumberofDigitalSamples(const uint32_t i) {
     if (numberOfDigitalSamples != i) {
         numberOfDigitalSamples = i;
 
-        ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
-            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
-            readoutType);
-
+        generalData->SetNumberOfDigitalSamples(i);
         SetupFifoStructure();
     }
     LOG(logINFO) << "Number of Digital Samples: " << numberOfDigitalSamples;
@@ -1389,8 +1424,7 @@ void Implementation::setCounterMask(const uint32_t i) {
                                     ". Expected 1-3.");
         }
         counterMask = i;
-        generalData->SetNumberofCounters(ncounters, dynamicRange,
-                                         tengigaEnable);
+        generalData->SetNumberofCounters(ncounters);
         SetupFifoStructure();
     }
     LOG(logINFO) << "Counter mask: " << sls::ToStringHex(counterMask);
@@ -1405,14 +1439,7 @@ void Implementation::setDynamicRange(const uint32_t i) {
         dynamicRange = i;
 
         if (detType == EIGER || detType == MYTHEN3) {
-
-            if (detType == EIGER) {
-                generalData->SetDynamicRange(i, tengigaEnable);
-            } else {
-                int ncounters = __builtin_popcount(counterMask);
-                generalData->SetNumberofCounters(ncounters, i, tengigaEnable);
-            }
-
+            generalData->SetDynamicRange(i);
             fifoDepth = generalData->defaultFifoDepth;
             SetupFifoStructure();
         }
@@ -1442,26 +1469,24 @@ bool Implementation::getTenGigaEnable() const { return tengigaEnable; }
 void Implementation::setTenGigaEnable(const bool b) {
     if (tengigaEnable != b) {
         tengigaEnable = b;
-        int ncounters = __builtin_popcount(counterMask);
-        // side effects
-        switch (detType) {
-        case EIGER:
-            generalData->SetTenGigaEnable(b, dynamicRange);
-            break;
-        case MYTHEN3:
-            generalData->SetNumberofCounters(ncounters, dynamicRange, b);
-            break;
-        case MOENCH:
-        case CHIPTESTBOARD:
-            ctbAnalogDataBytes = generalData->setImageSize(
-                tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
-                numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
-                readoutType);
-            break;
-        default:
-            break;
-        }
+
+        generalData->SetTenGigaEnable(b);
         SetupFifoStructure();
+
+        // datastream can be disabled/enabled only for Eiger 10GbE
+        if (detType == EIGER) {
+            if (!b) {
+                detectorDataStream[LEFT] = 1;
+                detectorDataStream[RIGHT] = 1;
+            } else {
+                detectorDataStream[LEFT] = detectorDataStream10GbE[LEFT];
+                detectorDataStream[RIGHT] = detectorDataStream10GbE[RIGHT];
+            }
+            LOG(logDEBUG) << "Detector datastream updated [Left: "
+                          << sls::ToString(detectorDataStream[LEFT])
+                          << ", Right: "
+                          << sls::ToString(detectorDataStream[RIGHT]) << "]";
+        }
     }
     LOG(logINFO) << "Ten Giga: " << (tengigaEnable ? "enabled" : "disabled");
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
@@ -1494,14 +1519,15 @@ void Implementation::setQuad(const bool b) {
         quadEnable = b;
 
         if (!quadEnable) {
+            xy nm{numModules.x, numModules.y};
             for (const auto &it : dataStreamer) {
-                it->SetNumberofModules(numMods);
+                it->SetNumberofModules(nm);
                 it->SetFlipRows(flipRows);
             }
         } else {
-            int size[2] = {1, 2};
+            xy nm{1, 2};
             for (const auto &it : dataStreamer) {
-                it->SetNumberofModules(size);
+                it->SetNumberofModules(nm);
             }
             if (dataStreamer.size() == 2) {
                 dataStreamer[0]->SetFlipRows(false);
@@ -1527,9 +1553,16 @@ bool Implementation::getDetectorDataStream(const portPosition port) const {
 void Implementation::setDetectorDataStream(const portPosition port,
                                            const bool enable) {
     int index = (port == LEFT ? 0 : 1);
-    detectorDataStream[index] = enable;
-    LOG(logINFO) << "Detector datastream (" << sls::ToString(port)
-                 << " Port): " << sls::ToString(detectorDataStream[index]);
+    detectorDataStream10GbE[index] = enable;
+    LOG(logINFO) << "Detector 10GbE datastream (" << sls::ToString(port)
+                 << " Port): " << sls::ToString(detectorDataStream10GbE[index]);
+    // update datastream for 10g
+    if (tengigaEnable) {
+        detectorDataStream[index] = detectorDataStream10GbE[index];
+        LOG(logDEBUG) << "Detector datastream updated ["
+                      << (index == 0 ? "Left" : "Right")
+                      << "] : " << sls::ToString(detectorDataStream[index]);
+    }
 }
 
 int Implementation::getReadNRows() const { return readNRows; }
@@ -1563,11 +1596,7 @@ void Implementation::setReadoutMode(const readoutMode f) {
     if (readoutType != f) {
         readoutType = f;
 
-        // side effects
-        ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
-            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
-            readoutType);
+        generalData->SetReadoutMode(f);
         SetupFifoStructure();
     }
     LOG(logINFO) << "Readout Mode: " << sls::ToString(f);
@@ -1581,11 +1610,8 @@ uint32_t Implementation::getADCEnableMask() const {
 void Implementation::setADCEnableMask(uint32_t mask) {
     if (adcEnableMaskOneGiga != mask) {
         adcEnableMaskOneGiga = mask;
-        ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
-            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
-            readoutType);
 
+        generalData->SetOneGigaAdcEnableMask(mask);
         SetupFifoStructure();
     }
     LOG(logINFO) << "ADC Enable Mask for 1Gb mode: 0x" << std::hex
@@ -1601,11 +1627,7 @@ void Implementation::setTenGigaADCEnableMask(uint32_t mask) {
     if (adcEnableMaskTenGiga != mask) {
         adcEnableMaskTenGiga = mask;
 
-        ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
-            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
-            readoutType);
-
+        generalData->SetTenGigaAdcEnableMask(mask);
         SetupFifoStructure();
     }
     LOG(logINFO) << "ADC Enable Mask for 10Gb mode: 0x" << std::hex

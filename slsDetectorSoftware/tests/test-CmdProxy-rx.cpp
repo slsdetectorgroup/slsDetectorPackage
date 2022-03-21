@@ -385,6 +385,30 @@ TEST_CASE("rx_threads", "[.cmd][.rx]") {
     REQUIRE_NOTHROW(proxy.Call("rx_threads", {}, -1, GET, oss));
 }
 
+TEST_CASE("rx_arping", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getRxArping();
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_arping", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_arping 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_arping", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_arping 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_arping", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_arping 0\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxArping(prev_val[i], {i});
+    }
+}
+
 /* File */
 
 TEST_CASE("fformat", "[.cmd]") {

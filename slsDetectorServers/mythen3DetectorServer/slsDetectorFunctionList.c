@@ -35,6 +35,9 @@ extern int isControlServer;
 extern void getMacAddressinString(char *cmac, int size, uint64_t mac);
 extern void getIpAddressinString(char *cip, uint32_t ip);
 
+// Variables that will be exported
+int masterCommandLine = -1;
+
 int initError = OK;
 int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
@@ -42,6 +45,7 @@ char initErrorMessage[MAX_STR_LENGTH];
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
 int64_t virtual_currentFrameNumber = 2;
+int virtual_moduleid = 0;
 #endif
 
 enum detectorSettings thisSettings = UNINITIALIZED;
@@ -288,6 +292,18 @@ void setModuleId(int modid) {
           bus_r(MOD_ID_REG) | ((modid << MOD_ID_OFST) & MOD_ID_MSK));
 }
 
+int updateModuleId() {
+    int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+    if (initError == FAIL) {
+        return FAIL;
+    }
+#ifdef VIRTUAL
+    virtual_moduleid = modid;
+#endif
+    setModuleId(modid);
+    return OK;
+}
+
 u_int64_t getDetectorMAC() {
 #ifdef VIRTUAL
     return 0;
@@ -351,16 +367,26 @@ void initControlServer() {
 }
 
 void initStopServer() {
-
-    usleep(CTRL_SRVR_INIT_TIME_US);
-    if (mapCSP0() == FAIL) {
-        LOG(logERROR,
-            ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
-        exit(EXIT_FAILURE);
-    }
+    if (!updateFlag && initError == OK) {
+        usleep(CTRL_SRVR_INIT_TIME_US);
+        LOG(logINFOBLUE, ("Configuring Stop server\n"));
+        if (mapCSP0() == FAIL) {
+            initError = FAIL;
+            strcpy(initErrorMessage,
+                   "Stop Server: Map Fail. Dangerous to continue. Goodbye!\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            return;
+        }
 #ifdef VIRTUAL
-    sharedMemory_setStop(0);
+        sharedMemory_setStop(0);
+        if (checkCommandLineConfiguration() == FAIL) {
+            initCheckDone = 1;
+            return;
+        }
 #endif
+    }
+    initCheckDone = 1;
 }
 
 /* set up detector */
@@ -406,6 +432,12 @@ void setupDetector() {
 
     allocateDetectorStructureMemory();
 
+    if (checkCommandLineConfiguration() == FAIL)
+        return;
+
+    if (updateModuleId() == FAIL)
+        return;
+
     clkDivider[READOUT_C0] = DEFAULT_READOUT_C0;
     clkDivider[READOUT_C1] = DEFAULT_READOUT_C1;
     clkDivider[SYSTEM_C0] = DEFAULT_SYSTEM_C0;
@@ -446,13 +478,6 @@ void setupDetector() {
     setASICDefaults();
     setADIFDefaults();
 
-    // set module id in register
-    int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
-    if (initError == FAIL) {
-        return;
-    }
-    setModuleId(modid);
-
     // set trigger flow for m3 (for all timing modes)
     bus_w(FLOW_TRIGGER_REG, bus_r(FLOW_TRIGGER_REG) | FLOW_TRIGGER_MSK);
 
@@ -476,13 +501,6 @@ void setupDetector() {
     setInitialExtSignals();
     // 10G UDP
     enableTenGigabitEthernet(1);
-#ifdef VIRTUAL
-    enableTenGigabitEthernet(0);
-#endif
-    getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
-    if (initError == FAIL) {
-        return;
-    }
     setSettings(DEFAULT_SETTINGS);
 
     // check module type attached if not in debug mode
@@ -699,6 +717,27 @@ void setADIFDefaults() {
                           ADIF_ADDTNL_OFST_MSK)));
 }
 
+int checkCommandLineConfiguration() {
+    if (masterCommandLine != -1) {
+#ifdef VIRTUAL
+        if (masterCommandLine == 1) {
+            bus_w(SYSTEM_STATUS_REG,
+                  bus_r(SYSTEM_STATUS_REG) & ~SYSTEM_STATUS_SLV_BRD_DTCT_MSK);
+        } else {
+            bus_w(SYSTEM_STATUS_REG,
+                  bus_r(SYSTEM_STATUS_REG) | SYSTEM_STATUS_SLV_BRD_DTCT_MSK);
+        }
+#else
+        initError = FAIL;
+        strcpy(initErrorMessage,
+               "Cannot set Master from command line for this detector. "
+               "Should have been caught before!\n");
+        return FAIL;
+#endif
+    }
+    return OK;
+}
+
 /* firmware functions (resets) */
 
 void cleanFifos() {
@@ -728,46 +767,54 @@ void resetPeripheral() {
 /* set parameters -  dr, roi */
 
 int setDynamicRange(int dr) {
-    if (dr > 0) {
-        uint32_t regval = 0;
-        switch (dr) {
-        /*case 1: TODO:Not implemented in firmware yet
-            regval = CONFIG_DYNAMIC_RANGE_1_VAL;
-            break;*/
-        case 8:
-            regval = CONFIG_DYNAMIC_RANGE_8_VAL;
-            break;
-        case 16:
-            regval = CONFIG_DYNAMIC_RANGE_16_VAL;
-            break;
-        case 32:
-            regval = CONFIG_DYNAMIC_RANGE_24_VAL;
-            break;
-        default:
-            LOG(logERROR, ("Invalid dynamic range %d\n", dr));
-            return -1;
-        }
-        // set it
-        bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_DYNAMIC_RANGE_MSK);
-        bus_w(CONFIG_REG, bus_r(CONFIG_REG) | regval);
-        updatePacketizing();
+    if (dr <= 0) {
+        return FAIL;
     }
+    uint32_t regval = 0;
+    switch (dr) {
+    /*case 1: TODO:Not implemented in firmware yet
+        regval = CONFIG_DYNAMIC_RANGE_1_VAL;
+        break;*/
+    case 8:
+        regval = CONFIG_DYNAMIC_RANGE_8_VAL;
+        break;
+    case 16:
+        regval = CONFIG_DYNAMIC_RANGE_16_VAL;
+        break;
+    case 32:
+        regval = CONFIG_DYNAMIC_RANGE_24_VAL;
+        break;
+    default:
+        LOG(logERROR, ("Invalid dynamic range %d\n", dr));
+        return -1;
+    }
+    // set it
+    bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_DYNAMIC_RANGE_MSK);
+    bus_w(CONFIG_REG, bus_r(CONFIG_REG) | regval);
+    updatePacketizing();
+    return OK;
+}
 
+int getDynamicRange(int *retval) {
     uint32_t regval = bus_r(CONFIG_REG) & CONFIG_DYNAMIC_RANGE_MSK;
     switch (regval) {
     /*case CONFIG_DYNAMIC_RANGE_1_VAL: TODO:Not implemented in firmware yet
         return 1;*/
     case CONFIG_DYNAMIC_RANGE_8_VAL:
-        return 8;
+        *retval = 8;
+        break;
     case CONFIG_DYNAMIC_RANGE_16_VAL:
-        return 16;
+        *retval = 16;
+        break;
     case CONFIG_DYNAMIC_RANGE_24_VAL:
-        return 32;
+        *retval = 32;
+        break;
     default:
         LOG(logERROR, ("Invalid dynamic range %d read back\n",
                        regval >> CONFIG_DYNAMIC_RANGE_OFST));
-        return -1;
+        return FAIL;
     }
+    return OK;
 }
 
 /* set parameters -  readout */
@@ -1090,7 +1137,8 @@ void updatePacketizing() {
 
     // 10g
     if (tgEnable) {
-        const int dr = setDynamicRange(-1);
+        int dr = 0;
+        getDynamicRange(&dr);
         packetsPerFrame = 1;
         if (dr == 32 && ncounters > 1) {
             packetsPerFrame = 2;
@@ -1544,14 +1592,18 @@ int setHighVoltage(int val) {
 
 /* parameters - timing */
 
-int isMaster() {
-    return !((bus_r(SYSTEM_STATUS_REG) & SYSTEM_STATUS_SLV_BRD_DTCT_MSK) >>
-             SYSTEM_STATUS_SLV_BRD_DTCT_OFST);
+int isMaster(int *retval) {
+    int slave = ((bus_r(SYSTEM_STATUS_REG) & SYSTEM_STATUS_SLV_BRD_DTCT_MSK) >>
+                 SYSTEM_STATUS_SLV_BRD_DTCT_OFST);
+    *retval = (slave == 0 ? 1 : 0);
+    return OK;
 }
 
 void setTiming(enum timingMode arg) {
 
-    if (!isMaster() && arg == AUTO_TIMING)
+    int master = 0;
+    isMaster(&master);
+    if (master && arg == AUTO_TIMING)
         arg = TRIGGER_EXPOSURE;
 
     uint32_t addr = CONFIG_REG;
@@ -1718,6 +1770,8 @@ int getExtSignal(int signalIndex) {
         }
     }
 }
+
+int getNumberofUDPInterfaces() { return 1; }
 
 int configureMAC() {
 
@@ -2199,7 +2253,8 @@ void *start_timer(void *arg) {
 
     const int imageSize = calculateDataBytes();
     const int tgEnable = enableTenGigabitEthernet(-1);
-    const int dr = setDynamicRange(-1);
+    int dr = 0;
+    getDynamicRange(&dr);
     int ncounters = __builtin_popcount(getCounterMask());
     int dataSize = 0;
     int packetsPerFrame = 0;
@@ -2280,7 +2335,7 @@ void *start_timer(void *arg) {
             header->version = SLS_DETECTOR_HEADER_VERSION - 1;
             header->frameNumber = virtual_currentFrameNumber;
             header->packetNumber = i;
-            header->modId = 0;
+            header->modId = virtual_moduleid;
             header->row = detPos[X];
             header->column = detPos[Y];
 
@@ -2520,7 +2575,8 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
 int calculateDataBytes() {
     int numCounters = __builtin_popcount(getCounterMask());
-    int dr = setDynamicRange(-1);
+    int dr = 0;
+    getDynamicRange(&dr);
     return (NCHAN_1_COUNTER * NCHIP * numCounters * ((double)dr / 8.00));
 }
 

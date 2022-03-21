@@ -258,7 +258,7 @@ class Detector(CppDetectorApi):
     @element
     def rx_threads(self):
         """
-        Get thread ids from the receiver in order of [parent, tcp, listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1]. 
+        Get thread ids from the receiver in order of [parent, tcp, listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. 
         
         Note
         -----
@@ -270,13 +270,24 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def rx_arping(self):
+        """Starts a thread in slsReceiver to arping the interface it is listening every minute. Useful in 10G mode. """
+        return self.getRxArping()
+
+    @rx_arping.setter
+    def rx_arping(self, value):
+        ut.set_using_dict(self.setRxArping, value)
+
+
+    @property
+    @element
     def dr(self):
         """
         Dynamic range or number of bits per pixel/channel.
 
         Note
         -----
-        [Eiger] Options: 4, 8, 16, 32. If set to 32, also sets clkdivider to 2 (quarter speed), else to 0 (full speed)\n
+        [Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets clkdivider to 2 (quarter speed), else to 0 (full speed)\n
         [Mythen3] Options: 8, 16, 32 \n
         [Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16
         """
@@ -594,7 +605,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def nextframenumber(self):
-        """[Eiger][Jungfrau] Next frame number. Stopping acquisition might result in different frame numbers for different modules. """
+        """[Eiger][Jungfrau][Moench][CTB] Next frame number. Stopping acquisition might result in different frame numbers for different modules. """
         return self.getNextFrameNumber()
 
     @nextframenumber.setter
@@ -1465,6 +1476,19 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def master(self):
+        """
+        [Eiger] Sets half module to master and others to slaves.\n
+        [Gotthard][Gotthard2][Mythen3][Eiger] Gets if the current module/ half module is master.
+        """
+        return self.getMaster()
+
+    @master.setter
+    def master(self, value):
+        ut.set_using_dict(self.setMaster, value)
+
+    @property
+    @element
     def lock(self):
         """Lock detector to one client IP, 1 locks, 0 unlocks. Default is unlocked."""
         return self.getDetectorLock()
@@ -1900,7 +1924,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def rx_missingpackets(self):
-        """Gets the number of missing packets for each port in receiver."""
+        """Gets the number of missing packets for each port in receiver. Negative number denotes extra packets. """
         return self.getNumMissingPackets()
 
     """
@@ -1913,7 +1937,7 @@ class Detector(CppDetectorApi):
     def datastream(self):
         """
         datastream [left|right] [0, 1]
-	    [Eiger] Enables or disables data streaming from left or/and right side of detector. 1 (enabled) by default.
+	    [Eiger] Enables or disables data streaming from left or/and right side of detector for 10GbE mode. 1 (enabled) by default.
         """
         result = {}
         for port in [defs.LEFT, defs.RIGHT]:
@@ -2114,6 +2138,21 @@ class Detector(CppDetectorApi):
         :setter: Not implemented
         """
         return ut.reduce_time(self.getMeasuredSubFramePeriod())
+
+    @property
+    @element
+    def top(self):
+        """[Eiger] Sets half module to top (1), else bottom.
+        
+        Note
+        -----
+        Advanced Function!
+        """
+        return self.getTop()
+
+    @top.setter
+    def top(self, value):
+        ut.set_using_dict(self.setTop, value)
 
     """
     ------------------<<<Jungfrau specific>>>-------------------------
@@ -3019,7 +3058,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patsetbit(self):
-        """[Ctb][Moench][Mythen3] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern.
+        """[Ctb][Moench][Mythen3] Sets the mask applied to every pattern to the selected bits. 
         
         Example
         --------
@@ -3036,7 +3075,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patmask(self):
-        """[Ctb][Moench][Mythen3] Sets the mask applied to every pattern to the selected bits. 
+        """[Ctb][Moench][Mythen3] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern.
         
         Example
         --------

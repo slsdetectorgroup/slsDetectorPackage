@@ -28,11 +28,15 @@ extern int updateFlag;
 extern int checkModuleFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
 extern const enum detectorType myDetectorType;
+extern int ignoreConfigFileFlag;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
 extern void getMacAddressinString(char *cmac, int size, uint64_t mac);
 extern void getIpAddressinString(char *cip, uint32_t ip);
+
+// Variables that will be exported
+int masterCommandLine = -1;
 
 int initError = OK;
 int initCheckDone = 0;
@@ -41,6 +45,7 @@ char initErrorMessage[MAX_STR_LENGTH];
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
 int64_t virtual_currentFrameNumber = 2;
+int virtual_moduleid = 0;
 #endif
 
 enum detectorSettings thisSettings = UNINITIALIZED;
@@ -68,6 +73,7 @@ int64_t burstPeriodReg = 0;
 int filterResistor = 0;
 int cdsGain = 0;
 int detPos[2] = {};
+int master = 1;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -101,8 +107,9 @@ void basictests() {
     }
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
-        ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) || (checkType() == FAIL) ||
-         (testFpga() == FAIL) || (testBus() == FAIL))) {
+        ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) ||
+         (checkType() == FAIL) || (testFpga() == FAIL) ||
+         (testBus() == FAIL))) {
         sprintf(initErrorMessage,
                 "Could not pass basic tests of FPGA and bus. Dangerous to "
                 "continue. (Firmware version:0x%llx) \n",
@@ -293,6 +300,18 @@ void setModuleId(int modid) {
           bus_r(MOD_ID_REG) | ((modid << MOD_ID_OFST) & MOD_ID_MSK));
 }
 
+int updateModuleId() {
+    int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+    if (initError == FAIL) {
+        return FAIL;
+    }
+#ifdef VIRTUAL
+    virtual_moduleid = modid;
+#endif
+    setModuleId(modid);
+    return OK;
+}
+
 u_int64_t getDetectorMAC() {
 #ifdef VIRTUAL
     return 0;
@@ -356,16 +375,27 @@ void initControlServer() {
 }
 
 void initStopServer() {
-
-    usleep(CTRL_SRVR_INIT_TIME_US);
-    if (mapCSP0() == FAIL) {
-        LOG(logERROR,
-            ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
-        exit(EXIT_FAILURE);
-    }
+    if (!updateFlag && initError == OK) {
+        usleep(CTRL_SRVR_INIT_TIME_US);
+        LOG(logINFOBLUE, ("Configuring Stop server\n"));
+        if (mapCSP0() == FAIL) {
+            initError = FAIL;
+            strcpy(initErrorMessage,
+                   "Stop Server: Map Fail. Dangerous to continue. Goodbye!\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            return;
+        }
 #ifdef VIRTUAL
-    sharedMemory_setStop(0);
+        sharedMemory_setStop(0);
+        // not reading config file (nothing of interest to stop server)
+        if (checkCommandLineConfiguration() == FAIL) {
+            initCheckDone = 1;
+            return;
+        }
 #endif
+    }
+    initCheckDone = 1;
 }
 
 /* set up detector */
@@ -478,12 +508,13 @@ void setupDetector() {
         return;
     }
 
-    // set module id in register
-    int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
-    if (initError == FAIL) {
+    // master for virtual
+    if (checkCommandLineConfiguration() == FAIL)
+        return;
+
+    if (updateModuleId() == FAIL) {
         return;
     }
-    setModuleId(modid);
 
     setBurstMode(DEFAULT_BURST_MODE);
     setFilterResistor(DEFAULT_FILTER_RESISTOR);
@@ -593,6 +624,11 @@ int readConfigFile() {
 
     if (initError == FAIL) {
         return initError;
+    }
+
+    if (ignoreConfigFileFlag) {
+        LOG(logWARNING, ("Ignoring Config file\n"));
+        return OK;
     }
 
     // require a sleep before and after the rst dac signal
@@ -919,6 +955,21 @@ int readConfigFile() {
     return initError;
 }
 
+int checkCommandLineConfiguration() {
+    if (masterCommandLine != -1) {
+#ifdef VIRTUAL
+        master = masterCommandLine;
+#else
+        initError = FAIL;
+        strcpy(initErrorMessage,
+               "Cannot set Master from command line for this detector. "
+               "Should have been caught before!\n");
+        return FAIL;
+#endif
+    }
+    return OK;
+}
+
 /* firmware functions (resets) */
 
 void cleanFifos() {
@@ -947,7 +998,16 @@ void resetPeripheral() {
 
 /* set parameters -  dr, roi */
 
-int setDynamicRange(int dr) { return DYNAMIC_RANGE; }
+int setDynamicRange(int dr) {
+    if (dr == 16)
+        return OK;
+    return FAIL;
+}
+
+int getDynamicRange(int *retval) {
+    *retval = DYNAMIC_RANGE;
+    return OK;
+}
 
 /* parameters - timer */
 void setNumFrames(int64_t val) {
@@ -1437,6 +1497,11 @@ int setHighVoltage(int val) {
 
 /* parameters - timing */
 
+int isMaster(int *retval) {
+    *retval = master;
+    return OK;
+}
+
 void updatingRegisters() {
     LOG(logINFO, ("\tUpdating registers\n"));
     // burst
@@ -1916,9 +1981,17 @@ int checkDetectorType() {
         return -2;
     }
 
-    if ((abs(type - TYPE_GOTTHARD2_MODULE_VAL) > TYPE_TOLERANCE) &&
-        (abs(type - TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL) > TYPE_TOLERANCE) &&
-        (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL) > TYPE_TOLERANCE)) {
+    if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL) <= TYPE_TOLERANCE) {
+        LOG(logINFOBLUE, ("MASTER 25um Module\n"));
+        master = 1;
+    } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL) <=
+               TYPE_TOLERANCE) {
+        master = 0;
+        LOG(logINFOBLUE, ("SLAVE 25um Module\n"));
+    } else if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) <= TYPE_TOLERANCE) {
+        master = -1;
+        LOG(logINFOBLUE, ("50um Module\n"));
+    } else {
         LOG(logERROR,
             ("Wrong Module attached! Expected %d, %d or %d for Gotthard2, got "
              "%d\n",
@@ -2083,40 +2156,56 @@ int setReadoutSpeed(int val) {
     case G2_108MHZ:
         LOG(logINFOBLUE, ("Setting readout speed to 108 MHz\n"));
         if (setClockDivider(READOUT_C0, SPEED_108_CLKDIV_0) == FAIL) {
-            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to set readout clk 0 to %d\n", SPEED_108_CLKDIV_0));
+            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to "
+                           "set readout clk 0 to %d\n",
+                           SPEED_108_CLKDIV_0));
             return FAIL;
         }
         if (setClockDivider(READOUT_C1, SPEED_108_CLKDIV_1) == FAIL) {
-            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to set readout clk 1 to %d\n", SPEED_108_CLKDIV_1));
+            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to "
+                           "set readout clk 1 to %d\n",
+                           SPEED_108_CLKDIV_1));
             return FAIL;
         }
         if (setPhase(READOUT_C1, SPEED_108_CLKPHASE_DEG_1, 1) == FAIL) {
-            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to set clk phase 1 %d deg\n", SPEED_108_CLKPHASE_DEG_1));
+            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to "
+                           "set clk phase 1 %d deg\n",
+                           SPEED_108_CLKPHASE_DEG_1));
             return FAIL;
         }
         setDBITPipeline(SPEED_144_DBIT_PIPELINE);
         if (getDBITPipeline() != SPEED_144_DBIT_PIPELINE) {
-            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to set dbitpipeline to %d \n", SPEED_144_DBIT_PIPELINE));
+            LOG(logERROR, ("Could not set readout speed to 108 MHz. Failed to "
+                           "set dbitpipeline to %d \n",
+                           SPEED_144_DBIT_PIPELINE));
             return FAIL;
         }
         break;
     case G2_144MHZ:
         LOG(logINFOBLUE, ("Setting readout speed to 144 MHz\n"));
         if (setClockDivider(READOUT_C0, SPEED_144_CLKDIV_0) == FAIL) {
-            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to set readout clk 0 to %d\n", SPEED_144_CLKDIV_0));
+            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to "
+                           "set readout clk 0 to %d\n",
+                           SPEED_144_CLKDIV_0));
             return FAIL;
         }
         if (setClockDivider(READOUT_C1, SPEED_144_CLKDIV_1) == FAIL) {
-            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to set readout clk 1 to %d\n", SPEED_144_CLKDIV_1));
+            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to "
+                           "set readout clk 1 to %d\n",
+                           SPEED_144_CLKDIV_1));
             return FAIL;
         }
         if (setPhase(READOUT_C1, SPEED_144_CLKPHASE_DEG_1, 1) == FAIL) {
-            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to set clk phase 1 %d deg\n", SPEED_144_CLKPHASE_DEG_1));
+            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to "
+                           "set clk phase 1 %d deg\n",
+                           SPEED_144_CLKPHASE_DEG_1));
             return FAIL;
         }
         setDBITPipeline(SPEED_144_DBIT_PIPELINE);
         if (getDBITPipeline() != SPEED_144_DBIT_PIPELINE) {
-            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to set dbitpipeline to %d \n", SPEED_144_DBIT_PIPELINE));
+            LOG(logERROR, ("Could not set readout speed to 144 MHz. Failed to "
+                           "set dbitpipeline to %d \n",
+                           SPEED_144_DBIT_PIPELINE));
             return FAIL;
         }
         break;
@@ -3005,7 +3094,7 @@ void *start_timer(void *arg) {
             header->version = SLS_DETECTOR_HEADER_VERSION - 1;
             header->frameNumber = virtual_currentFrameNumber;
             header->packetNumber = 0;
-            header->modId = 0;
+            header->modId = virtual_moduleid;
             header->row = detPos[X];
             header->column = detPos[Y];
             // fill data

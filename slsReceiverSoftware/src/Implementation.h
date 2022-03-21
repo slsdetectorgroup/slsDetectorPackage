@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
+#include "Arping.h"
 #include "receiver_defs.h"
 #include "sls/container_utils.h"
 #include "sls/logger.h"
@@ -33,8 +34,8 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
 
     void setDetectorType(const detectorType d);
-    int *getDetectorSize() const;
-    void setDetectorSize(const int *size);
+    xy getDetectorSize() const;
+    void setDetectorSize(const xy size);
     int getModulePositionId() const;
     void setModulePositionId(const int id);
     std::string getDetectorHostname() const;
@@ -49,6 +50,9 @@ class Implementation : private virtual slsDetectorDefs {
     void setFramePaddingEnable(const bool i);
     void setThreadIds(const pid_t parentTid, const pid_t tcpTid);
     std::array<pid_t, NUM_RX_THREAD_IDS> getThreadIds() const;
+    bool getArping() const;
+    pid_t getArpingThreadId() const;
+    void setArping(const bool i, const std::vector<std::string> ips);
 
     /**************************************************
      *                                                 *
@@ -81,9 +85,9 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
     runStatus getStatus() const;
     uint64_t getFramesCaught() const;
-    uint64_t getAcquisitionIndex() const;
+    uint64_t getCurrentFrameIndex() const;
     double getProgress() const;
-    std::vector<uint64_t> getNumMissingPackets() const;
+    std::vector<int64_t> getNumMissingPackets() const;
     void setScan(slsDetectorDefs::scanParameters s);
     void startReceiver();
     void setStoppedFlag(bool stopped);
@@ -266,6 +270,7 @@ class Implementation : private virtual slsDetectorDefs {
     void SetThreadPriorities();
     void SetupFifoStructure();
 
+    xy GetPortGeometry();
     void ResetParametersforNewAcquisition();
     void CreateUDPSockets();
     void SetupWriter();
@@ -278,9 +283,8 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
 
     // config parameters
-    int numThreads{1};
     detectorType detType{GENERIC};
-    int numMods[MAX_DIMENSIONS] = {0, 0};
+    xy numModules{1, 1};
     int modulePos{0};
     std::string detHostname;
     bool silentMode{false};
@@ -295,7 +299,7 @@ class Implementation : private virtual slsDetectorDefs {
     std::string filePath{"/"};
     std::string fileName{"run"};
     uint64_t fileIndex{0};
-    bool fileWriteEnable{true};
+    bool fileWriteEnable{false};
     bool masterFileWriteEnable{true};
     bool overwriteEnable{true};
     uint32_t framesPerFile{0};
@@ -352,6 +356,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool quadEnable{false};
     bool activated{true};
     std::array<bool, 2> detectorDataStream = {{true, true}};
+    std::array<bool, 2> detectorDataStream10GbE = {{true, true}};
     int readNRows{0};
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};
@@ -361,7 +366,6 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t adcEnableMaskTenGiga{BIT32_MASK};
     std::vector<int> ctbDbitList;
     int ctbDbitOffset{0};
-    int ctbAnalogDataBytes{0};
 
     // callbacks
     int (*startAcquisitionCallBack)(std::string, std::string, uint64_t,
@@ -380,6 +384,7 @@ class Implementation : private virtual slsDetectorDefs {
     std::vector<std::unique_ptr<DataProcessor>> dataProcessor;
     std::vector<std::unique_ptr<DataStreamer>> dataStreamer;
     std::vector<std::unique_ptr<Fifo>> fifo;
+    Arping arping;
 
     std::mutex hdf5Lib;
 };

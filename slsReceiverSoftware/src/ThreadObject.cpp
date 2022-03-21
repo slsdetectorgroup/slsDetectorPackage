@@ -8,8 +8,13 @@
 #include "ThreadObject.h"
 #include "sls/container_utils.h"
 #include <iostream>
-#include <sys/syscall.h>
 #include <unistd.h>
+
+// gettid added in glibc 2.30
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+#include <sys/syscall.h>
+#define gettid() syscall(SYS_gettid)
+#endif
 
 ThreadObject::ThreadObject(int threadIndex, std::string threadType)
     : index(threadIndex), type(threadType) {
@@ -39,7 +44,7 @@ void ThreadObject::StartRunning() { runningFlag = true; }
 void ThreadObject::StopRunning() { runningFlag = false; }
 
 void ThreadObject::RunningThread() {
-    threadId = syscall(SYS_gettid);
+    threadId = gettid();
     LOG(logINFOBLUE) << "Created [ " << type << "Thread " << index
                      << ", Tid: " << threadId << "]";
     while (!killThread) {

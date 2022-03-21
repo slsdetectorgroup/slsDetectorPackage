@@ -165,11 +165,9 @@
 #define PATTERN_OUT_LSB_REG (0x20 << MEM_MAP_SHIFT)
 #define PATTERN_OUT_MSB_REG (0x21 << MEM_MAP_SHIFT)
 
-/* Frames From Start 64 bit RO register TODO */
-//#define FRAMES_FROM_START_LSB_REG           (0x22 << MEM_MAP_SHIFT) // Not
-// used in FW #define FRAMES_FROM_START_MSB_REG           (0x23 <<
-// MEM_MAP_SHIFT)
-//// Not used in FW
+/* Frame number of next acquisition register (64 bit register) */
+#define NEXT_FRAME_NUMB_LOCAL_LSB_REG (0x22 << MEM_MAP_SHIFT)
+#define NEXT_FRAME_NUMB_LOCAL_MSB_REG (0x23 << MEM_MAP_SHIFT)
 
 /* Frames From Start PG 64 bit RO register. Reset using CONTROL_CRST. TODO */
 #define FRAMES_FROM_START_PG_LSB_REG (0x24 << MEM_MAP_SHIFT)

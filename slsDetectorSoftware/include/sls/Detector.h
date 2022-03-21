@@ -193,6 +193,12 @@ class Detector {
      */
     void setFlipRows(bool value, Positions pos = {});
 
+    /** [Eiger][Mythen3][Gotthard1] via stop server **/
+    Result<bool> getMaster(Positions pos = {}) const;
+
+    /** [Eiger] Set half module to master and the others to slaves */
+    void setMaster(bool value, int pos);
+
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@}
 
@@ -284,7 +290,7 @@ class Detector {
     Result<int> getDynamicRange(Positions pos = {}) const;
 
     /**
-     * [Eiger] Options: 4, 8, 16, 32. If i is 32, also sets clkdivider to 2,
+     * [Eiger] Options: 4, 8, 12, 16, 32. If i is 32, also sets clkdivider to 2,
      * else sets clkdivider to 1 \n [Mythen3] Options: 8, 16, 32 \n
      * [Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16
      */
@@ -567,7 +573,7 @@ class Detector {
     /** Non blocking: start detector acquisition. Status changes to RUNNING or
      * WAITING and automatically returns to idle at the end of acquisition.
      [Mythen3] Master starts acquisition first */
-    void startDetector();
+    void startDetector(Positions pos = {});
 
     /** [Mythen3] Non blocking: start detector readout of counters in chip.
      * Status changes to TRANSMITTING and automatically returns to idle at the
@@ -588,15 +594,15 @@ class Detector {
 
     Result<int64_t> getFramesCaught(Positions pos = {}) const;
 
-    /** Gets the number of missing packets for each port in receiver. */
-    Result<std::vector<uint64_t>>
-    getNumMissingPackets(Positions pos = {}) const;
+    /** Gets the number of missing packets for each port in receiver. Negative
+     * number denotes extra packets. */
+    Result<std::vector<int64_t>> getNumMissingPackets(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau] */
+    /** [Eiger][Jungfrau][Moench][CTB] */
     Result<uint64_t> getNextFrameNumber(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau] Stopping acquisition might result in different frame
-     * numbers for different modules.*/
+    /** [Eiger][Jungfrau][Moench][CTB] Stopping acquisition might result in
+     * different frame numbers for different modules.*/
     void setNextFrameNumber(uint64_t value, Positions pos = {});
 
     /** [Eiger][Mythen3] Sends an internal software trigger to the detector
@@ -894,10 +900,18 @@ class Detector {
     Result<sls::IpAddr> getRxLastClientIP(Positions pos = {}) const;
 
     /** Get thread ids from the receiver in order of [parent, tcp, listener 0,
-     * processor 0, streamer 0, listener 1, processor 1, streamer 1]. If no
-     * streamer yet or there is no second interface, it gives 0 in its place. */
+     * processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. If
+     * no streamer yet or there is no second interface, it gives 0 in its place.
+     */
     Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
     getRxThreadIds(Positions pos = {}) const;
+
+    Result<bool> getRxArping(Positions pos = {}) const;
+
+    /** Starts a thread in slsReceiver to arping the interface it is listening
+     * every minute. Useful in 10G mode. */
+    void setRxArping(bool value, Positions pos = {});
+
     ///@}
 
     /** @name File */
@@ -1157,11 +1171,17 @@ class Detector {
     Result<bool> getDataStream(const defs::portPosition port,
                                Positions pos = {}) const;
 
-    /** [Eiger] enable or disable data streaming from left or right of detector.
-     * Default: enabled
+    /** [Eiger] enable or disable data streaming from left or right of detector
+     * for 10GbE. Default: enabled
      */
     void setDataStream(const defs::portPosition port, const bool enable,
                        Positions pos = {});
+
+    /** [Eiger] Advanced */
+    Result<bool> getTop(Positions pos = {}) const;
+
+    /** [Eiger] Advanced. Default is hardware default */
+    void setTop(bool value, Positions pos = {});
 
     ///@}
 
@@ -1460,9 +1480,6 @@ class Detector {
      * (internal gating). Gate index: 0-2, -1 for all */
     Result<std::array<ns, 3>> getGateDelayForAllGates(Positions pos = {}) const;
 
-    /** [Eiger][Mythen3][Gotthard1] via stop server **/
-    Result<bool> getMaster(Positions pos = {}) const;
-
     // TODO! check if we really want to expose this !!!!!
     Result<int> getChipStatusRegister(Positions pos = {}) const;
 
@@ -1685,15 +1702,15 @@ class Detector {
     /** [CTB][Moench][Mythen3] */
     Result<uint64_t> getPatternMask(Positions pos = {});
 
-    /** [CTB][Moench][Mythen3] Sets the mask applied to every pattern to the
-     * selected bits */
+    /** [CTB][Moench][Mythen3] Selects the bits that will have a pattern mask
+     * applied to the selected patmask for every pattern. */
     void setPatternMask(uint64_t mask, Positions pos = {});
 
     /** [CTB][Moench][Mythen3]  */
     Result<uint64_t> getPatternBitMask(Positions pos = {}) const;
 
-    /** [CTB][Moench][Mythen3] Selects the bits that will have a pattern mask
-     * applied to the selected patmask for every pattern. */
+    /** [CTB][Moench][Mythen3] Sets the mask applied to every pattern to the
+     * selected bits */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
 
     /** [Mythen3] */

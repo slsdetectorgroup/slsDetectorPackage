@@ -21,9 +21,10 @@ fi
 
 if [ -f "$infile" ]
 then
-gcc -DINFILE="\"$infile\"" -DOUTFILE="\"$outfile\""  -DOUTFILEBIN="\"$outfilebin\"" -o $exe generator.c ; 
+dir=$(dirname $infile)
+gcc -DINFILE="\"$infile\"" -DOUTFILE="\"$outfile\""  -DOUTFILEBIN="\"$outfilebin\"" -o $exe generator.c -I$dir; 
 echo compiling
-echo gcc -DINFILE="\"$infile\"" -DOUTFILE="\"$outfile\""  -DOUTFILEBIN="\"$outfilebin\"" -o $exe generator.c ; 
+echo gcc -DINFILE="\"$infile\"" -DOUTFILE="\"$outfile\""  -DOUTFILEBIN="\"$outfilebin\"" -o $exe generator.c  -I$dir; 
 $exe ; 
 echo cleaning
 rm $exe

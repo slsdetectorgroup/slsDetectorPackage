@@ -1,3 +1,4 @@
+
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "CmdProxy.h"
@@ -1273,6 +1274,40 @@ std::string CmdProxy::DetectorStatus(int action) {
     return os.str();
 }
 
+std::string CmdProxy::RxMissingPackets(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "Number of missing packets for each port in receiver. If "
+              "negative, they are packets in excess. "
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto mp = det->getNumMissingPackets(std::vector<int>{det_id});
+        /*
+        auto tmp = det->getNumMissingPackets(std::vector<int>{det_id});
+        // convert to signed missing packets (to get excess)
+        Result<std::vector<int64_t>> mp(tmp.size());
+        for (unsigned int i = 0; i < mp.size(); ++i) {
+            mp[i] = static_cast<int64_t>(tmp[i]);
+        }
+        OR
+        Result<std::vector<int64_t>> tmp;
+        for (auto val : tmp) {
+            mp.push_back(static_cast<int64_t>(val));
+        }
+        */
+        os << OutString(mp) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        throw sls::RuntimeError("Cannot put");
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::Scan(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -1790,7 +1825,9 @@ std::string CmdProxy::DataStream(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[left|right] [0, 1]\n\t[Eiger] Enables or disables data "
-              "streaming from left or/and right side of detector. 1 (enabled) "
+              "streaming from left or/and right side of detector for 10 GbE "
+              "mode. "
+              "1 (enabled) "
               "by default."
            << '\n';
     } else if (action == defs::GET_ACTION) {

@@ -74,8 +74,14 @@ int getTimeFromString(char *buf, time_t *result) {
     // remove timezone as strptime cannot validate timezone despite
     // documentation (for blackfin)
     LOG(logDEBUG, ("kernel v %s\n", buffer));
-    const char *timezone = {"CEST"};
+    char timezone[8] = {0};
+    strcpy(timezone, "CEST");
     char *res = strstr(buffer, timezone);
+    // remove CET as well
+    if (res == NULL) {
+        strcpy(timezone, "CET");
+        res = strstr(buffer, timezone);
+    }
     if (res != NULL) {
         size_t cestPos = res - buffer;
         size_t pos = cestPos + strlen(timezone) + 1;

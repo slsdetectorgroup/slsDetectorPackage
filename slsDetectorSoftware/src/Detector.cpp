@@ -298,6 +298,23 @@ void Detector::setFlipRows(bool value, Positions pos) {
     pimpl->Parallel(&Module::setFlipRows, pos, value);
 }
 
+Result<bool> Detector::getMaster(Positions pos) const {
+    return pimpl->Parallel(&Module::isMaster, pos);
+}
+
+void Detector::setMaster(bool master, int pos) {
+    // multi mod, set slaves first
+    if (master && size() > 1) {
+        if (pos == -1) {
+            throw RuntimeError("Master can be set only to a single module");
+        }
+        pimpl->Parallel(&Module::setMaster, {}, false);
+        pimpl->Parallel(&Module::setMaster, {pos}, master);
+    } else {
+        pimpl->Parallel(&Module::setMaster, {pos}, master);
+    }
+}
+
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
     return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
 }
@@ -387,7 +404,7 @@ void Detector::setDynamicRange(int value) {
 std::vector<int> Detector::getDynamicRangeList() const {
     switch (getDetectorType().squash()) {
     case defs::EIGER:
-        return std::vector<int>{4, 8, 16, 32};
+        return std::vector<int>{4, 8, 12, 16, 32};
     case defs::MYTHEN3:
         return std::vector<int>{8, 16, 32};
     default:
@@ -756,22 +773,24 @@ void Detector::startReceiver() { pimpl->Parallel(&Module::startReceiver, {}); }
 
 void Detector::stopReceiver() { pimpl->Parallel(&Module::stopReceiver, {}); }
 
-void Detector::startDetector() {
-    auto detector_type = getDetectorType().squash();
+void Detector::startDetector(Positions pos) {
+    auto detector_type = getDetectorType(pos).squash();
     if (detector_type == defs::MYTHEN3 && size() > 1) {
-        auto is_master = getMaster();
-        int masterPosition = 0;
-        std::vector<int> slaves;
-        for (int i = 0; i < size(); ++i) {
-            if (is_master[i])
+        std::vector<int> slaves(pos);
+        auto is_master = getMaster(pos);
+        int masterPosition = -1;
+        for (unsigned int i = 0; i < is_master.size(); ++i) {
+            if (is_master[i]) {
                 masterPosition = i;
-            else
-                slaves.push_back(i);
+                slaves.erase(slaves.begin() + i);
+            }
         }
-        pimpl->Parallel(&Module::startAcquisition, slaves);
-        pimpl->Parallel(&Module::startAcquisition, {masterPosition});
+        pimpl->Parallel(&Module::startAcquisition, pos);
+        if (masterPosition != -1) {
+            pimpl->Parallel(&Module::startAcquisition, {masterPosition});
+        }
     } else {
-        pimpl->Parallel(&Module::startAcquisition, {});
+        pimpl->Parallel(&Module::startAcquisition, pos);
     }
 }
 
@@ -781,6 +800,25 @@ void Detector::startDetectorReadout() {
 
 void Detector::stopDetector(Positions pos) {
     pimpl->Parallel(&Module::stopAcquisition, pos);
+
+    // validate consistent frame numbers
+    switch (getDetectorType().squash()) {
+    case defs::EIGER:
+    case defs::JUNGFRAU:
+    case defs::MOENCH:
+    case defs::CHIPTESTBOARD: {
+        auto res = getNextFrameNumber(pos);
+        if (!res.equal()) {
+            uint64_t maxVal = 0;
+            for (auto it : res) {
+                maxVal = std::max(maxVal, it);
+            }
+            setNextFrameNumber(maxVal + 1);
+        }
+    } break;
+    default:
+        break;
+    }
 }
 
 Result<defs::runStatus> Detector::getDetectorStatus(Positions pos) const {
@@ -795,7 +833,7 @@ Result<int64_t> Detector::getFramesCaught(Positions pos) const {
     return pimpl->Parallel(&Module::getFramesCaughtByReceiver, pos);
 }
 
-Result<std::vector<uint64_t>>
+Result<std::vector<int64_t>>
 Detector::getNumMissingPackets(Positions pos) const {
     return pimpl->Parallel(&Module::getNumMissingPackets, pos);
 }
@@ -1198,6 +1236,14 @@ Detector::getRxThreadIds(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverThreadIds, pos);
 }
 
+Result<bool> Detector::getRxArping(Positions pos) const {
+    return pimpl->Parallel(&Module::getRxArping, pos);
+}
+
+void Detector::setRxArping(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setRxArping, pos, value);
+}
+
 // File
 
 Result<defs::fileFormat> Detector::getFileFormat(Positions pos) const {
@@ -1506,6 +1552,14 @@ void Detector::setDataStream(const defs::portPosition port, const bool enable,
     pimpl->Parallel(&Module::setDataStream, pos, port, enable);
 }
 
+Result<bool> Detector::getTop(Positions pos) const {
+    return pimpl->Parallel(&Module::getTop, pos);
+}
+
+void Detector::setTop(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setTop, pos, value);
+}
+
 // Jungfrau Specific
 Result<double> Detector::getChipVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getChipVersion, pos);
@@ -1581,7 +1635,6 @@ std::vector<defs::gainMode> Detector::getGainModeList() const {
         return std::vector<defs::gainMode>{
             defs::DYNAMIC, defs::FORCE_SWITCH_G1, defs::FORCE_SWITCH_G2,
             defs::FIX_G1,  defs::FIX_G2,          defs::FIX_G0};
-        break;
     default:
         throw RuntimeError("Gain mode is not implemented for this detector.");
     }
@@ -1824,10 +1877,6 @@ void Detector::setGateDelay(int gateIndex, ns t, Positions pos) {
 Result<std::array<ns, 3>>
 Detector::getGateDelayForAllGates(Positions pos) const {
     return pimpl->Parallel(&Module::getGateDelayForAllGates, pos);
-}
-
-Result<bool> Detector::getMaster(Positions pos) const {
-    return pimpl->Parallel(&Module::isMaster, pos);
 }
 
 Result<int> Detector::getChipStatusRegister(Positions pos) const {
@@ -2334,20 +2383,8 @@ Result<uint64_t> Detector::getRxCurrentFrameIndex(Positions pos) const {
 }
 
 std::vector<int> Detector::getPortNumbers(int start_port) {
-    int num_sockets_per_detector = 1;
-    switch (getDetectorType().squash()) {
-    case defs::EIGER:
-        num_sockets_per_detector *= 2;
-        break;
-    case defs::JUNGFRAU:
-    case defs::GOTTHARD2:
-        if (pimpl->getNumberofUDPInterfaces({}).squash() == 2) {
-            num_sockets_per_detector *= 2;
-        }
-        break;
-    default:
-        break;
-    }
+    int num_sockets_per_detector = pimpl->getNumberofUDPInterfaces({}).tsquash(
+        "Number of UDP Interfaces is not consistent among modules");
     std::vector<int> res;
     res.reserve(size());
     for (int idet = 0; idet < size(); ++idet) {

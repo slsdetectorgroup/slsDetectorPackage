@@ -185,7 +185,7 @@
         return os.str();                                                       \
     }
 
-#define INTEGER_COMMAND_VEC_ID_RX(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)          \
+#define INTEGER_COMMAND_VEC_ID_RX(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)       \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
         os << cmd << ' ';                                                      \
@@ -202,7 +202,7 @@
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             auto val = CONV(args[0]);                                          \
-            det->SETFCN(val, std::vector<int>{det_id}, rx_id);                        \
+            det->SETFCN(val, std::vector<int>{det_id}, rx_id);                 \
             os << args.front() << '\n';                                        \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
@@ -211,7 +211,8 @@
     }
 
 /** int or enum */
-#define INTEGER_COMMAND_VEC_ID_PUT_SINGLE_ID(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)      \
+#define INTEGER_COMMAND_VEC_ID_PUT_SINGLE_ID(CMDNAME, GETFCN, SETFCN, CONV,    \
+                                             HLPSTR)                           \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
         os << cmd << ' ';                                                      \
@@ -236,7 +237,8 @@
         return os.str();                                                       \
     }
 
-#define INTEGER_COMMAND_VEC_ID_P_RX_SINGLE_ID(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)      \
+#define INTEGER_COMMAND_VEC_ID_P_RX_SINGLE_ID(CMDNAME, GETFCN, SETFCN, CONV,   \
+                                              HLPSTR)                          \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
         os << cmd << ' ';                                                      \
@@ -1352,7 +1354,7 @@ class CmdProxy {
         "interfaces must be set to 2. slsReceiver and slsDetectorGui "
         "does not handle.");
 
-    INTEGER_COMMAND_VEC_ID_GET(
+    INTEGER_COMMAND_VEC_ID_PUT_SINGLE_ID(
         master, getMaster, setMaster, StringTo<int>,
         "[0, 1]\n\t[Eiger] Sets half module to master and "
         "others to slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger] "
@@ -1733,7 +1735,7 @@ class CmdProxy {
         "requesting missing udp information.");
 
     GET_COMMAND_RX(rx_printconfig, printRxConfiguration,
-                "\n\tPrints the receiver configuration.");
+                   "\n\tPrints the receiver configuration.");
 
     INTEGER_COMMAND_VEC_ID(
         tengiga, getTenGiga, setTenGiga, StringTo<int>,

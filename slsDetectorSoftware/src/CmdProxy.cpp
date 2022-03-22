@@ -1056,11 +1056,11 @@ std::string CmdProxy::TemperatureValues(int action) {
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;
     os << cmd << ' ';
-
+    auto type = det->getDetectorType().squash();
     // dac indices only for ctb
     if (args.size() > 0 && action != defs::HELP_ACTION) {
         if (is_int(args[0]) &&
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            type != defs::CHIPTESTBOARD) {
             throw sls::RuntimeError(
                 "Dac indices can only be used for chip test board. Use daclist "
                 "to get list of dac names for current detector.");
@@ -1077,7 +1077,13 @@ std::string CmdProxy::Dac(int action) {
         if (args.empty())
             WrongNumberOfParameters(1); // This prints slightly wrong
 
-        defs::dacIndex dacIndex = StringTo<defs::dacIndex>(args[0]);
+        defs::dacIndex dacIndex{};
+        if (type == defs::CHIPTESTBOARD && !is_int(args[0])){
+            dacIndex = det->decodeNamedDac(args[0]);
+        }else{
+            dacIndex = StringTo<defs::dacIndex>(args[0]);
+        }
+        
         bool mV = false;
 
         if (args.size() == 2) {
@@ -1095,7 +1101,11 @@ std::string CmdProxy::Dac(int action) {
         if (args.empty())
             WrongNumberOfParameters(1); // This prints slightly wrong
 
-        defs::dacIndex dacIndex = StringTo<defs::dacIndex>(args[0]);
+        defs::dacIndex dacIndex{};
+        if (type == defs::CHIPTESTBOARD && !is_int(args[0]))
+            dacIndex = det->decodeNamedDac(args[0]);
+        else
+            dacIndex = StringTo<defs::dacIndex>(args[0]);
         bool mV = false;
         if (args.size() == 3) {
             if ((args[2] != "mv") && (args[2] != "mV")) {
@@ -1134,13 +1144,15 @@ std::string CmdProxy::DacValues(int action) {
             WrongNumberOfParameters(1);
         }
         auto t = det->getDacList();
+        auto names  = det->getDacNames();
+        auto name_it = names.begin();
         os << '[';
         auto it = t.cbegin();
-        os << ToString(*it) << ' ';
+        os << ToString(*name_it++) << ' ';
         os << OutString(det->getDAC(*it++, mv, std::vector<int>{det_id}))
            << (!args.empty() ? " mV" : "");
         while (it != t.cend()) {
-            os << ", " << ToString(*it) << ' ';
+            os << ", " << ToString(*name_it++) << ' ';
             os << OutString(det->getDAC(*it++, mv, std::vector<int>{det_id}))
                << (!args.empty() ? " mV" : "");
         }

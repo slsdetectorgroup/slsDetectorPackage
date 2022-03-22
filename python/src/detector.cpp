@@ -1427,6 +1427,20 @@ void init_det(py::module &m) {
              (void (Detector::*)(bool, sls::Positions)) &
                  Detector::setLEDEnable,
              py::arg(), py::arg() = Positions{})
+        .def("setDacNames",
+             (void (Detector::*)(const std::vector<std::string>)) &
+                 Detector::setDacNames,
+             py::arg())
+        .def("getDacNames", (std::vector<std::string>(Detector::*)() const) &
+                                Detector::getDacNames)
+        .def("decodeNamedDac",
+             (defs::dacIndex(Detector::*)(const std::string &)) &
+                 Detector::decodeNamedDac,
+             py::arg())
+        .def("decodeNamedDac",
+             (std::string(Detector::*)(defs::dacIndex)) &
+                 Detector::decodeNamedDac,
+             py::arg())
         .def("setPattern",
              (void (Detector::*)(const std::string &, sls::Positions)) &
                  Detector::setPattern,

@@ -59,7 +59,10 @@ class DetectorDacs:
     def __getattr__(self, name):
         return self.__getattribute__('_' + name)
 
-
+    @property
+    def dacnames(self):
+        return [_d[0] for _d in _dacs]
+        
     def __setattr__(self, name, value):
         if name in self._dacnames:
             return self.__getattribute__('_' + name).__setitem__(slice(None, None, None), value)

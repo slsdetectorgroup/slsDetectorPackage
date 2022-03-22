@@ -2067,6 +2067,69 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
     pimpl->Parallel(&Module::setLEDEnable, pos, enable);
 }
 
+void Detector::setDacNames(const std::vector<std::string> names) {
+    if (getDetectorType().squash() != defs::CHIPTESTBOARD)
+        throw RuntimeError("Named dacs only for CTB");
+    if (names.size() != 18)
+        throw RuntimeError("Need to set all 18 dacs when naming dacs");
+
+    std::ofstream ofs("/dev/shm/slsDetectorPackage_ctbdacnames");
+    if (!ofs)
+        throw RuntimeError("Failed to open dacnames file in shared memory");
+
+    std::string s = sls::ToString(names);
+    ofs.write(&s[0], s.size());
+}
+
+std::vector<std::string> Detector::getDacNames() const {
+
+    auto type = getDetectorType().squash();
+    if (type == defs::CHIPTESTBOARD) {
+        try {
+            std::ifstream ifs("/dev/shm/slsDetectorPackage_ctbdacnames");
+            if (!ifs)
+                throw RuntimeError("Could not read dacnames form shm");
+            std::string dacnames;
+            ifs.seekg(0, std::ios::end);
+            dacnames.resize(ifs.tellg());
+            ifs.seekg(0, std::ios::beg);
+            ifs.read(&dacnames[0], dacnames.size());
+
+            std::string chars = "[] ";
+
+            dacnames.erase(std::remove_if(dacnames.begin(), dacnames.end(),
+                                          [&chars](const char &c) {
+                                              return chars.find(c) !=
+                                                     std::string::npos;
+                                          }),
+                           dacnames.end());
+            auto names = sls::split(dacnames, ',');
+            return names;
+        } catch (...) {
+        }
+    }
+    std::vector<std::string> names;
+    for (const auto& index : getDacList())
+        names.push_back(ToString(index));
+    return names;
+}
+
+defs::dacIndex Detector::decodeNamedDac(const std::string &name) {
+    auto names = getDacNames();
+    auto it = std::find(names.begin(), names.end(), name);
+    if (it == names.end())
+        throw RuntimeError("Dacname not found");
+    return static_cast<defs::dacIndex>(it - names.begin());
+}
+
+std::string Detector::decodeNamedDac(defs::dacIndex i) {
+    auto names = getDacNames();
+    auto index = static_cast<size_t>(i);
+    if (index > names.size())
+        throw RuntimeError("Dac index out of range");
+    return names[index];
+}
+
 // Pattern
 
 void Detector::setPattern(const std::string &fname, Positions pos) {

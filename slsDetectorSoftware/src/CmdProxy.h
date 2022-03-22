@@ -1466,7 +1466,7 @@ class CmdProxy {
     /* dacs */
 
     GET_COMMAND_NOID(
-        daclist, getDacList,
+        daclist, getDacNames,
         "\n\tGets the list of commands for every dac for this detector.");
 
     /* on chip dacs */

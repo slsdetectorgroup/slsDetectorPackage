@@ -203,8 +203,9 @@ class Module : public virtual slsDetectorDefs {
     runStatus getRunStatus() const;
     runStatus getReceiverStatus() const;
     double getReceiverProgress() const;
-    int64_t getFramesCaughtByReceiver() const;
+    std::vector<int64_t> getFramesCaughtByReceiver() const;
     std::vector<int64_t> getNumMissingPackets() const;
+    std::vector<int64_t> getReceiverCurrentFrameIndex() const;
     uint64_t getNextFrameNumber() const;
     void setNextFrameNumber(uint64_t value);
     void sendSoftwareTrigger(const bool block);
@@ -581,7 +582,6 @@ class Module : public virtual slsDetectorDefs {
     int64_t getNumberOfFramesFromStart() const;
     int64_t getActualTime() const;
     int64_t getMeasurementTime() const;
-    uint64_t getReceiverCurrentFrameIndex() const;
 
   private:
     void checkArgs(const void *args, size_t args_size, void *retval,

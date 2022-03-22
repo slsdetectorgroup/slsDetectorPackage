@@ -218,7 +218,7 @@ class Module : public virtual slsDetectorDefs {
      *                                                 *
      * ************************************************/
     int getNumberofUDPInterfacesFromShm() const;
-    int getNumberofUDPInterfaces() const;
+    void updateNumberofUDPInterfaces();
     void setNumberofUDPInterfaces(int n);
     int getSelectedUDPInterface() const;
     void selectUDPInterface(int n);

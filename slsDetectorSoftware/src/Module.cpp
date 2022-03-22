@@ -936,9 +936,8 @@ int Module::getNumberofUDPInterfacesFromShm() const {
     return shm()->numUDPInterfaces;
 }
 
-int Module::getNumberofUDPInterfaces() const {
+void Module::updateNumberofUDPInterfaces() {
     shm()->numUDPInterfaces = sendToDetector<int>(F_GET_NUM_INTERFACES);
-    return shm()->numUDPInterfaces;
 }
 
 void Module::setNumberofUDPInterfaces(int n) {
@@ -1146,7 +1145,7 @@ std::string Module::printReceiverConfiguration() {
        << getReceiverHostname();
 
     if (shm()->detType == JUNGFRAU) {
-        os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfaces()
+        os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfacesFromShm()
            << "\nSelected Interface:\t" << getSelectedUDPInterface();
     }
 
@@ -3183,10 +3182,10 @@ void Module::initializeModuleStructure(detectorType type) {
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
     shm()->useReceiverFlag = false;
+    shm()->numUDPInterfaces = 1;
     shm()->zmqport =
         DEFAULT_ZMQ_CL_PORTNO + moduleIndex * shm()->numUDPInterfaces;
     shm()->zmqip = IpAddr{};
-    shm()->numUDPInterfaces = 1;
     shm()->stoppedFlag = false;
 
     // get the Module parameters based on type

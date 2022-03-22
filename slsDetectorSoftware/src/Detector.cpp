@@ -2182,10 +2182,11 @@ void Detector::setAdditionalJsonParameter(const std::string &key,
 
 // Advanced
 
-void Detector::programFPGA(const std::string &fname, Positions pos) {
+void Detector::programFPGA(const std::string &fname,
+                           const bool forceDeleteNormalFile, Positions pos) {
     LOG(logINFO) << "Updating Firmware...";
     std::vector<char> buffer = pimpl->readProgrammingFile(fname);
-    pimpl->Parallel(&Module::programFPGA, pos, buffer);
+    pimpl->Parallel(&Module::programFPGA, pos, buffer, forceDeleteNormalFile);
     rebootController(pos);
 }
 
@@ -2230,7 +2231,7 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
     LOG(logINFO) << "Updating Firmware and Detector Server (with tftp)...";
     LOG(logINFO) << "Updating Detector Server (via tftp)...";
     pimpl->Parallel(&Module::copyDetectorServer, pos, sname, hostname);
-    programFPGA(fname, pos);
+    programFPGA(fname, false, pos);
 }
 
 void Detector::updateFirmwareAndServer(const std::string &sname,
@@ -2241,7 +2242,7 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
     std::vector<char> buffer = readBinaryFile(sname, "Update Detector Server");
     std::string filename = sls::getFileNameFromFilePath(sname);
     pimpl->Parallel(&Module::updateDetectorServer, pos, buffer, filename);
-    programFPGA(fname, pos);
+    programFPGA(fname, false, pos);
 }
 
 Result<bool> Detector::getUpdateMode(Positions pos) const {

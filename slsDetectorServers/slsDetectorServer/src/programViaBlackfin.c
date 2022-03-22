@@ -39,6 +39,9 @@
 
 #define CMD_GET_AMD_FLASH  "dmesg | grep Amd"
 
+#define CMD_CREATE_DEVICE_FILE_PART1 "mknod"
+#define CMD_CREATE_DEVICE_FILE_PART2 "c 90 6"
+
 #define FLASH_BUFFER_MEMORY_SIZE (128 * 1024) // 500 KB
 // clang-format on
 
@@ -321,7 +324,7 @@ int preparetoCopyProgram(char *mess, char *functionType, FILE **fd,
 
 int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
                          char *functionType, char *clientChecksum,
-                         ssize_t fsize) {
+                         ssize_t fsize, int forceDeleteNormalFile) {
 
     memset(messageType, 0, sizeof(messageType));
     strcpy(messageType, functionType);
@@ -332,7 +335,8 @@ int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
 
     FILE *flashfd = NULL;
     FILE *srcfd = NULL;
-    if (openFileForFlash(mess, &flashfd, &srcfd) == FAIL) {
+    if (openFileForFlash(mess, &flashfd, &srcfd, forceDeleteNormalFile) ==
+        FAIL) {
         return FAIL;
     }
 
@@ -436,7 +440,8 @@ int getDrive(char *mess, enum PROGRAM_INDEX index) {
     return OK;
 }
 
-int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd) {
+int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd,
+                     int forceDeleteNormalFile) {
     // open src file
     *srcfd = fopen(TEMP_PROG_FILE_NAME, "r");
     if (*srcfd == NULL) {
@@ -449,29 +454,8 @@ int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd) {
     }
     LOG(logDEBUG1, ("Temp file ready for reading\n"));
 
-#ifndef VIRTUAL
-    // check if its a normal file or special file
-    struct stat buf;
-    if (stat(flashDriveName, &buf) == -1) {
-        sprintf(mess,
-                "Could not %s. Unable to validate if flash drive found is a "
-                "special file\n",
-                messageType);
-        LOG(logERROR, (mess));
+    if (checkNormalFile(mess, forceDeleteNormalFile) == FAIL)
         return FAIL;
-    }
-    // non zero = block special file
-    if (S_ISBLK(buf.st_mode)) {
-        sprintf(mess,
-                "Could not %s. The flash drive found is a normal file. To "
-                "delete this file, create the flash drive and proceed with "
-                "programming, re-run the programming command with parameter "
-                "'--force-delete-normal-file'\n",
-                messageType);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-#endif
 
     // open flash drive for writing
     *flashfd = fopen(flashDriveName, "w");
@@ -485,6 +469,91 @@ int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd) {
         return FAIL;
     }
     LOG(logINFO, ("\tFlash ready for writing\n"));
+    return OK;
+}
+
+int checkNormalFile(char *mess, int forceDeleteNormalFile) {
+#ifndef VIRTUAL
+    // check if its a normal file or special file
+    struct stat buf;
+    if (stat(flashDriveName, &buf) == -1) {
+        sprintf(mess,
+                "Could not %s. Unable to validate if flash drive found is a "
+                "special file\n",
+                messageType);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // non zero = block special file
+    if (S_ISBLK(buf.st_mode)) {
+        // kernel memory is not permanent
+        if (index != PROGRAM_FPGA) {
+            sprintf(mess,
+                    "Could not %s. The flash drive found is a normal file. "
+                    "Reboot board using 'rebootcontroller' command to load "
+                    "proper device tree\n",
+                    messageType);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        // fpga memory stays after a reboot, so fix it if user allows
+        sprintf(mess,
+                "Could not %s. The flash drive found is a normal file. To "
+                "delete this file, create the flash drive and proceed with "
+                "programming, re-run the programming command with parameter "
+                "'--force-delete-normal-file'\n",
+                messageType);
+        LOG(logERROR, (mess));
+        // user does not allow (default)
+        if (!forceDeleteNormalFile) {
+            return FAIL;
+        }
+
+        // user allows to fix it, so force delete normal file
+        char cmd[MAX_STR_LENGTH] = {0};
+        char retvals[MAX_STR_LENGTH] = {0};
+
+        if (snprintf(cmd, MAX_STR_LENGTH, "rm %s", flashDriveName) >=
+            MAX_STR_LENGTH) {
+            sprintf(mess,
+                    "Could not update %s. Command to delete normal file %s is "
+                    "too long\n",
+                    messageType, flashDriveName);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+            snprintf(
+                mess, MAX_STR_LENGTH,
+                "Could not update %s. (could not delete normal file %s: %s)\n",
+                messageType, flashDriveName, retvals);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        LOG(logINFO, ("\tDeleted Normal File(%s)\n", flashDriveName));
+
+        // create special drive
+        if (snprintf(cmd, MAX_STR_LENGTH, "%s %s %s",
+                     CMD_CREATE_DEVICE_FILE_PART1, flashDriveName,
+                     CMD_CREATE_DEVICE_FILE_PART2) >= MAX_STR_LENGTH) {
+            sprintf(mess,
+                    "Could not update %s. Command to create special file %s is "
+                    "too long\n",
+                    messageType, flashDriveName);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+            snprintf(
+                mess, MAX_STR_LENGTH,
+                "Could not update %s. (could not create special file %s: %s)\n",
+                messageType, flashDriveName, retvals);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        LOG(logINFO, ("\tSpecial File created (%s)\n", flashDriveName));
+    }
+#endif
     return OK;
 }
 

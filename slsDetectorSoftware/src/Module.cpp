@@ -2551,12 +2551,14 @@ void Module::setAdditionalJsonParameter(const std::string &key,
 }
 
 // Advanced
-void Module::programFPGA(std::vector<char> buffer) {
+void Module::programFPGA(std::vector<char> buffer,
+                         const bool forceDeleteNormalFile) {
     switch (shm()->detType) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
     case MOENCH:
-        sendProgram(true, buffer, F_PROGRAM_FPGA, "Update Firmware");
+        sendProgram(true, buffer, F_PROGRAM_FPGA, "Update Firmware", "",
+                    forceDeleteNormalFile);
         break;
     case MYTHEN3:
     case GOTTHARD2:
@@ -3547,7 +3549,8 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 void Module::sendProgram(bool blackfin, std::vector<char> buffer,
                          const int functionEnum,
                          const std::string &functionType,
-                         const std::string serverName) {
+                         const std::string serverName,
+                         const bool forceDeleteNormalFile) {
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
                  << "): Sending " << functionType;
 
@@ -3569,6 +3572,11 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
         char sname[MAX_STR_LENGTH] = {0};
         strcpy(sname, serverName.c_str());
         client.Send(sname);
+    }
+
+    // send forceDeleteNormalFile flag
+    if (blackfin) {
+        client.Send(static_cast<int>(forceDeleteNormalFile));
     }
 
     // validate memory allocation etc in detector

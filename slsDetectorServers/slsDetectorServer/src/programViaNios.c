@@ -146,6 +146,30 @@ int getDrive(char *mess, enum PROGRAM_INDEX index) {
 }
 
 int openFileForFlash(char *mess, FILE **flashfd) {
+#ifndef VIRTUAL
+    // check if its a normal file or special file
+    struct stat buf;
+    if (stat(flashDriveName, &buf) == -1) {
+        sprintf(mess,
+                "Could not %s. Unable to validate if flash drive found is a "
+                "special file\n",
+                messageType);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // non zero = block special file
+    if (S_ISBLK(buf.st_mode)) {
+        // memory is not permanent
+        sprintf(mess,
+                "Could not %s. The flash drive found is a normal file. "
+                "Reboot board using 'rebootcontroller' command to load "
+                "proper device tree\n",
+                messageType);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+#endif
+
     *flashfd = fopen(flashDriveName, "w");
     if (*flashfd == NULL) {
         sprintf(mess,

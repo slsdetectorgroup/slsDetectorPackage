@@ -1742,10 +1742,13 @@ class Detector {
     /**  [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2]
      * Advanced user Function!
      * Program firmware from command line, after which detector controller is
-     * rebooted. [Jungfrau][CTB][Moench] fname is a pof file (full path) \n
-     * [Mythen3][Gotthard2] fname is an rbf file (full path)
+     * rebooted. forceDeleteNormalFile is true, if normal file found
+     * in device tree, it must be deleted, a new device drive created and
+     * programming continued.[Jungfrau][CTB][Moench] fname is a pof file (full
+     * path) \n [Mythen3][Gotthard2] fname is an rbf file (full path)
      */
-    void programFPGA(const std::string &fname, Positions pos = {});
+    void programFPGA(const std::string &fname, const bool forceDeleteNormalFile,
+                     Positions pos = {});
 
     /** [Jungfrau][CTB][Moench]  Advanced user Function!  */
     void resetFPGA(Positions pos = {});

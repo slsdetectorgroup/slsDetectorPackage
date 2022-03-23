@@ -1128,10 +1128,11 @@ std::string CmdProxy::DacList(const int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == slsDetectorDefs::HELP_ACTION) {
-        os << "\n\t\tGets the list of dac names for every dac for this "
-              "detector.\n\t[dacname1 dacname2 .. dacname18] "
-              "\n\t\t[ChipTestBoard] Set the list of dac names for this "
-              "detector."
+        os << "\n\t[dacname1 dacname2 .. dacname18] \n\t\t[ChipTestBoard] Set "
+              "the list of dac names for this detector.\n\t\t[All] Gets the "
+              "list "
+              "of "
+              "dac names for every dac for this detector."
            << '\n';
     } else if (action == slsDetectorDefs::GET_ACTION) {
         if (!args.empty()) {

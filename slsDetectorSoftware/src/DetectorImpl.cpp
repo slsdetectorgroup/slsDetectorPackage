@@ -1142,7 +1142,7 @@ int DetectorImpl::acquire() {
         if (acquisition_finished != nullptr) {
             int status = Parallel(&Module::getRunStatus, {}).squash(ERROR);
             auto a = Parallel(&Module::getReceiverProgress, {});
-            double progress = (*std::min_element(a.begin(), a.end()));
+            double progress = (*std::max_element(a.begin(), a.end()));
             acquisition_finished(progress, status, acqFinished_p);
         }
 

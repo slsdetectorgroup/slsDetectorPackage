@@ -52,19 +52,7 @@ DataProcessor::~DataProcessor() { DeleteFiles(); }
 
 /** getters */
 
-bool DataProcessor::GetStartedFlag() { return startedFlag_; }
-
-uint64_t DataProcessor::GetNumFramesCaught() { return numFramesCaught_; }
-
-uint64_t DataProcessor::GetNumCompleteFramesCaught() {
-    return numCompleteFramesCaught_;
-}
-
-uint64_t DataProcessor::GetCurrentFrameIndex() { return currentFrameIndex_; }
-
-uint64_t DataProcessor::GetProcessedIndex() {
-    return currentFrameIndex_ - firstIndex_;
-}
+bool DataProcessor::GetStartedFlag() const { return startedFlag_; }
 
 void DataProcessor::SetFifo(Fifo *fifo) { fifo_ = fifo; }
 
@@ -72,7 +60,6 @@ void DataProcessor::ResetParametersforNewAcquisition() {
     StopRunning();
     startedFlag_ = false;
     numFramesCaught_ = 0;
-    numCompleteFramesCaught_ = 0;
     firstIndex_ = 0;
     currentFrameIndex_ = 0;
     firstStreamerFrame_ = true;
@@ -218,10 +205,9 @@ void DataProcessor::CreateVirtualFile(
          (numModX * numModY) == 2);
     virtualFile_ = new HDF5VirtualFile(hdf5Lib, gotthard25um);
 
-    uint64_t numImagesProcessed = GetProcessedIndex() + 1;
     // maxframesperfile = 0 for infinite files
     uint32_t framesPerFile =
-        ((maxFramesPerFile == 0) ? numImagesProcessed + 1 : maxFramesPerFile);
+        ((maxFramesPerFile == 0) ? numFramesCaught_ : maxFramesPerFile);
 
     // TODO: assumption 1: create virtual file even if no data in other
     // files (they exist anyway) assumption2: virtual file max frame index
@@ -347,9 +333,6 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
     currentFrameIndex_ = fnum;
     numFramesCaught_++;
     uint32_t nump = header.packetNumber;
-    if (nump == generalData_->packetsPerFrame) {
-        numCompleteFramesCaught_++;
-    }
 
     LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
 

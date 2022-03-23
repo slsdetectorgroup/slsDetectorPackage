@@ -36,12 +36,22 @@ Listener::~Listener() = default;
 
 uint64_t Listener::GetPacketsCaught() const { return numPacketsCaught; }
 
+uint64_t Listener::GetNumCompleteFramesCaught() const {
+    return numCompleteFramesCaught;
+}
+
 uint64_t Listener::GetLastFrameIndexCaught() const {
     return lastCaughtFrameIndex;
 }
 
 int64_t Listener::GetNumMissingPacket(bool stoppedFlag,
                                       uint64_t numPackets) const {
+    if (!activated) {
+        return 0;
+    }
+    if (!(*detectorDataStream)) {
+        return 0;
+    }
     if (!stoppedFlag) {
         return (numPackets - numPacketsCaught);
     }
@@ -53,11 +63,11 @@ int64_t Listener::GetNumMissingPacket(bool stoppedFlag,
            numPacketsCaught;
 }
 
-bool Listener::GetStartedFlag() { return startedFlag; }
+bool Listener::GetStartedFlag() const { return startedFlag; }
 
-uint64_t Listener::GetCurrentFrameIndex() { return lastCaughtFrameIndex; }
+uint64_t Listener::GetCurrentFrameIndex() const { return lastCaughtFrameIndex; }
 
-uint64_t Listener::GetListenedIndex() {
+uint64_t Listener::GetListenedIndex() const {
     return lastCaughtFrameIndex - firstIndex;
 }
 
@@ -67,6 +77,7 @@ void Listener::ResetParametersforNewAcquisition() {
     StopRunning();
     startedFlag = false;
     numPacketsCaught = 0;
+    numCompleteFramesCaught = 0;
     firstIndex = 0;
     currentFrameIndex = 0;
     lastCaughtFrameIndex = 0;
@@ -607,6 +618,9 @@ uint32_t Listener::ListenToAnImage(char *buf) {
     // complete image
     new_header->detHeader.packetNumber = numpackets; // number of packets caught
     new_header->detHeader.frameNumber = currentFrameIndex;
+    if (numpackets == pperFrame) {
+        ++numCompleteFramesCaught;
+    }
     ++currentFrameIndex;
     return imageSize;
 }

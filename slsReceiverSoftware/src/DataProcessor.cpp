@@ -217,7 +217,7 @@ void DataProcessor::CreateVirtualFile(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
         modulePos, numUnitsPerReadout, framesPerFile, numImages,
         generalData_->nPixelsX, generalData_->nPixelsY, dynamicRange,
-        numImagesProcessed, numModX, numModY, dataFile_->GetPDataType(),
+        numFramesCaught_, numModX, numModY, dataFile_->GetPDataType(),
         dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes());
 }
 

@@ -73,12 +73,10 @@ void HDF5VirtualFile::CreateVirtualFile(
             "version", PredType::NATIVE_DOUBLE, dataspace_attr);
         attribute.write(PredType::NATIVE_DOUBLE, &dValue);
 
-        // virtual data dataspace
+        // virtual dataspace
         hsize_t vdsDims[3] = {numImagesCaught, numModY * nDimy,
                               numModZ * nDimz};
         DataSpace vdsDataSpace(3, vdsDims, nullptr);
-
-        // virtual parameter dataspace
         hsize_t vdsDimsPara[2] = {numImagesCaught,
                                   (unsigned int)numModY * numModZ};
         DataSpace vdsDataSpacePara(2, vdsDimsPara, nullptr);
@@ -91,64 +89,54 @@ void HDF5VirtualFile::CreateVirtualFile(
         // property list for parameters (datatype)
         std::vector<DSetCreatPropList> plistPara(paraSize);
 
-        // hyperslab
-        int numMajorHyperslab = numImagesCaught / maxFramesPerFile;
+        // hyperslab (files)
+        int numFiles = numImagesCaught / maxFramesPerFile;
         if (numImagesCaught % maxFramesPerFile)
-            ++numMajorHyperslab;
+            ++numFiles;
         uint64_t framesSaved = 0;
-        // loop through files
-        for (int hyperSlab = 0; hyperSlab < numMajorHyperslab; ++hyperSlab) {
+        for (int iFile = 0; iFile < numFiles; ++iFile) {
 
             uint64_t nDimx =
                 ((numImagesCaught - framesSaved) > maxFramesPerFile)
                     ? maxFramesPerFile
                     : (numImagesCaught - framesSaved);
 
-            // starting location
-            hsize_t start[3] = {framesSaved, 0, 0};
-            // number of elements separating each block
-            hsize_t stride[3] = {1, 1, 1};
-            // number of blocks
-            hsize_t count[3] = {nDimx, nDimy, nDimz};
-            // block size
-            hsize_t block[3] = {1, 1, 1};
+            hsize_t startLocation[3] = {framesSaved, 0, 0};
+            hsize_t strideBetweenBlocks[3] = {1, 1, 1};
+            hsize_t numBlocks[3] = {nDimx, nDimy, nDimz};
+            hsize_t blockSize[3] = {1, 1, 1};
 
-            // starting location
-            hsize_t startPara[2] = {framesSaved, 0};
-            // number of elements separating each block
-            hsize_t stridePara[3] = {1, 1};
-            // number of blocks
-            hsize_t countPara[2] = {1, 1};
-            // block size
-            hsize_t blockPara[3] = {nDimx, 1};
+            hsize_t startLocationPara[2] = {framesSaved, 0};
+            hsize_t strideBetweenBlocksPara[3] = {1, 1};
+            hsize_t numBlocksPara[2] = {1, 1};
+            hsize_t blockSizePara[3] = {nDimx, 1};
 
             // interleaving for g2
             if (gotthard25um) {
-                stride[2] = 2;
+                strideBetweenBlocks[2] = 2;
             }
 
-            // loop through readouts (image)
-            for (unsigned int i = 0; i < numModY * numModZ; ++i) {
+            for (unsigned int iReadout = 0; iReadout < numModY * numModZ;
+                 ++iReadout) {
 
-                // interleaving for g2 (start is 0 and 1)
+                // interleaving for g2 (startLocation is 0 and 1)
                 if (gotthard25um) {
-                    start[2] = i;
+                    startLocation[2] = iReadout;
                 }
 
-                // setect data hyperslabs
-                vdsDataSpace.selectHyperslab(H5S_SELECT_SET, count, start,
-                                             stride, block);
+                vdsDataSpace.selectHyperslab(H5S_SELECT_SET, numBlocks,
+                                             startLocation, strideBetweenBlocks,
+                                             blockSize);
 
-                // select parameter hyperslabs
-                vdsDataSpacePara.selectHyperslab(H5S_SELECT_SET, countPara,
-                                                 startPara, stridePara,
-                                                 blockPara);
+                vdsDataSpacePara.selectHyperslab(
+                    H5S_SELECT_SET, numBlocksPara, startLocationPara,
+                    strideBetweenBlocksPara, blockSizePara);
 
                 // source file name
                 std::ostringstream os;
                 os << filePath << "/" << fileNamePrefix << "_d"
-                   << (modulePos * numUnitsPerReadout + i) << "_f" << hyperSlab
-                   << '_' << fileIndex << ".h5";
+                   << (modulePos * numUnitsPerReadout + iReadout) << "_f"
+                   << iFile << '_' << fileIndex << ".h5";
                 std::string srcFileName = os.str();
                 LOG(logDEBUG1) << srcFileName;
 
@@ -165,25 +153,20 @@ void HDF5VirtualFile::CreateVirtualFile(
                 std::ostringstream osfn;
                 osfn << "/data";
                 if (numImages > 1)
-                    osfn << "_f" << std::setfill('0') << std::setw(12)
-                         << hyperSlab;
+                    osfn << "_f" << std::setfill('0') << std::setw(12) << iFile;
                 std::string srcDatasetName = osfn.str();
 
-                // source data dataspace
+                // source dataspace
                 hsize_t srcDims[3] = {nDimx, nDimy, nDimz};
                 hsize_t srcDimsMax[3] = {H5S_UNLIMITED, nDimy, nDimz};
                 DataSpace srcDataSpace(3, srcDims, srcDimsMax);
-
-                // source parameter dataspace
                 hsize_t srcDimsPara[1] = {nDimx};
                 hsize_t srcDimsMaxPara[1] = {H5S_UNLIMITED};
                 DataSpace srcDataSpacePara(1, srcDimsPara, srcDimsMaxPara);
 
-                // mapping of data property list
+                // mapping of property list
                 plist.setVirtual(vdsDataSpace, relative_srcFileName.c_str(),
                                  srcDatasetName.c_str(), srcDataSpace);
-
-                // mapping of parameter property list
                 for (unsigned int p = 0; p < paraSize; ++p) {
                     plistPara[p].setVirtual(
                         vdsDataSpacePara, relative_srcFileName.c_str(),
@@ -194,22 +177,21 @@ void HDF5VirtualFile::CreateVirtualFile(
                 // H5Sclose(srcDataspace_para);
 
                 if (!gotthard25um) {
-                    start[2] += nDimz;
-                    if (start[2] >= (numModZ * nDimz)) {
-                        start[2] = 0;
-                        start[1] += nDimy;
+                    startLocation[2] += nDimz;
+                    if (startLocation[2] >= (numModZ * nDimz)) {
+                        startLocation[2] = 0;
+                        startLocation[1] += nDimy;
                     }
                 }
-                startPara[1]++;
+                startLocationPara[1]++;
             }
             framesSaved += nDimx;
         }
-        // data dataset
+        // datasets
         dataSetName_ = "data";
         DataSet vdsDataSet(fd_->createDataSet(dataSetName_.c_str(), dataType,
                                               vdsDataSpace, plist));
 
-        // parameter dataset
         for (unsigned int p = 0; p < paraSize; ++p) {
             DataSet vdsDataSetPara(fd_->createDataSet(
                 parameterNames[p].c_str(), parameterDataTypes[p],

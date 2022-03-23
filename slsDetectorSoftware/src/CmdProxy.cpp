@@ -1059,8 +1059,7 @@ std::string CmdProxy::Dac(int action) {
     auto type = det->getDetectorType().squash();
     // dac indices only for ctb
     if (args.size() > 0 && action != defs::HELP_ACTION) {
-        if (is_int(args[0]) &&
-            type != defs::CHIPTESTBOARD) {
+        if (is_int(args[0]) && type != defs::CHIPTESTBOARD) {
             throw sls::RuntimeError(
                 "Dac indices can only be used for chip test board. Use daclist "
                 "to get list of dac names for current detector.");
@@ -1078,12 +1077,12 @@ std::string CmdProxy::Dac(int action) {
             WrongNumberOfParameters(1); // This prints slightly wrong
 
         defs::dacIndex dacIndex{};
-        if (type == defs::CHIPTESTBOARD && !is_int(args[0])){
+        if (type == defs::CHIPTESTBOARD && !is_int(args[0])) {
             dacIndex = det->decodeNamedDac(args[0]);
-        }else{
+        } else {
             dacIndex = StringTo<defs::dacIndex>(args[0]);
         }
-        
+
         bool mV = false;
 
         if (args.size() == 2) {
@@ -1125,6 +1124,37 @@ std::string CmdProxy::Dac(int action) {
     return os.str();
 }
 
+std::string CmdProxy::DacList(const int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "\n\t\tGets the list of dac names for every dac for this "
+              "detector.\n\t[dacname1 dacname2 .. dacname18] "
+              "\n\t\t[ChipTestBoard] Set the list of dac names for this "
+              "detector."
+           << '\n';
+    } else if (action == slsDetectorDefs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getDacNames();
+        os << sls::ToString(t) << '\n';
+    } else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            throw sls::RuntimeError("This detector already has fixed dac "
+                                    "names. Cannot change them.");
+        }
+        if (args.size() != 18) {
+            WrongNumberOfParameters(18);
+        }
+        det->setDacNames(args);
+        os << ToString(args) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::DacValues(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -1144,7 +1174,7 @@ std::string CmdProxy::DacValues(int action) {
             WrongNumberOfParameters(1);
         }
         auto t = det->getDacList();
-        auto names  = det->getDacNames();
+        auto names = det->getDacNames();
         auto name_it = names.begin();
         os << '[';
         auto it = t.cbegin();

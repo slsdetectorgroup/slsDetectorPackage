@@ -2104,7 +2104,7 @@ defs::dacIndex Detector::decodeNamedDac(const std::string &name) {
 std::string Detector::decodeNamedDac(defs::dacIndex i) {
     auto names = getDacNames();
     auto index = static_cast<size_t>(i);
-    if (index > names.size())
+    if (index >= names.size())
         throw RuntimeError("Dac index out of range");
     return names[index];
 }

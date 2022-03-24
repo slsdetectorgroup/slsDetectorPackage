@@ -1578,6 +1578,10 @@ class Detector(CppDetectorApi):
         """
         return self.getDacNames()
 
+    @daclist.setter
+    def daclist(self, value):
+        self.setDacNames(value)
+
     @property
     def dacvalues(self):
         """Gets the dac values for every dac for this detector."""

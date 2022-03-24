@@ -7,6 +7,7 @@
 #include "CmdProxy.h"
 #include "DetectorImpl.h"
 #include "Module.h"
+#include "ctb_named_dacs.h"
 #include "sls/Pattern.h"
 #include "sls/container_utils.h"
 #include "sls/file_utils.h"
@@ -21,6 +22,9 @@
 namespace sls {
 
 void freeSharedMemory(int detectorIndex, int moduleIndex) {
+    //
+    remove_ctb_dacnames(detectorIndex);
+
     // single module
     if (moduleIndex >= 0) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, moduleIndex);
@@ -54,7 +58,10 @@ Detector::Detector(int shm_id)
 Detector::~Detector() = default;
 
 // Configuration
-void Detector::freeSharedMemory() { pimpl->freeSharedMemory(); }
+void Detector::freeSharedMemory() {
+    remove_ctb_dacnames(pimpl->getDetectorIndex());
+    pimpl->freeSharedMemory();
+}
 
 void Detector::loadConfig(const std::string &fname) {
     int shm_id = getShmId();
@@ -2070,47 +2077,19 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
 void Detector::setDacNames(const std::vector<std::string> names) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named dacs only for CTB");
-    if (names.size() != 18)
-        throw RuntimeError("Need to set all 18 dacs when naming dacs");
-
-    std::ofstream ofs("/dev/shm/slsDetectorPackage_ctbdacnames");
-    if (!ofs)
-        throw RuntimeError("Failed to open dacnames file in shared memory");
-
-    std::string s = sls::ToString(names);
-    ofs.write(&s[0], s.size());
+    set_ctb_dac_names(names, pimpl->getDetectorIndex());
 }
 
 std::vector<std::string> Detector::getDacNames() const {
-
+    std::vector<std::string> names;
     auto type = getDetectorType().squash();
     if (type == defs::CHIPTESTBOARD) {
-        try {
-            std::ifstream ifs("/dev/shm/slsDetectorPackage_ctbdacnames");
-            if (!ifs)
-                throw RuntimeError("Could not read dacnames form shm");
-            std::string dacnames;
-            ifs.seekg(0, std::ios::end);
-            dacnames.resize(ifs.tellg());
-            ifs.seekg(0, std::ios::beg);
-            ifs.read(&dacnames[0], dacnames.size());
-
-            std::string chars = "[] ";
-
-            dacnames.erase(std::remove_if(dacnames.begin(), dacnames.end(),
-                                          [&chars](const char &c) {
-                                              return chars.find(c) !=
-                                                     std::string::npos;
-                                          }),
-                           dacnames.end());
-            auto names = sls::split(dacnames, ',');
-            return names;
-        } catch (...) {
-        }
+        names = get_ctb_dac_names(pimpl->getDetectorIndex());
     }
-    std::vector<std::string> names;
-    for (const auto& index : getDacList())
-        names.push_back(ToString(index));
+    if (names.empty()) {
+        for (const auto &index : getDacList())
+            names.push_back(ToString(index));
+    }
     return names;
 }
 

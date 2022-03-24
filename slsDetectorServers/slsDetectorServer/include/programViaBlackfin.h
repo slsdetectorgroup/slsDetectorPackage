@@ -29,9 +29,9 @@ int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
                          ssize_t fsize, int forceDeleteNormalFile);
 int getDrive(char *mess, enum PROGRAM_INDEX index);
 /** Notify fpga not to touch flash, open src and flash drive to write */
-int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd,
+int openFileForFlash(char *mess, enum PROGRAM_INDEX index, FILE **flashfd, FILE **srcfd,
                      int forceDeleteNormalFile);
-int checkNormalFile(char *mess, int forceDeleteNormalFile);
+int checkNormalFile(char *mess, enum PROGRAM_INDEX index, int forceDeleteNormalFile);
 int eraseFlash(char *mess);
 /* write from tmp file to flash */
 int writeToFlash(char *mess, ssize_t fsize, FILE *flashfd, FILE *srcfd);

@@ -335,7 +335,7 @@ int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
 
     FILE *flashfd = NULL;
     FILE *srcfd = NULL;
-    if (openFileForFlash(mess, &flashfd, &srcfd, forceDeleteNormalFile) ==
+    if (openFileForFlash(mess, index, &flashfd, &srcfd, forceDeleteNormalFile) ==
         FAIL) {
         return FAIL;
     }
@@ -440,7 +440,7 @@ int getDrive(char *mess, enum PROGRAM_INDEX index) {
     return OK;
 }
 
-int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd,
+int openFileForFlash(char *mess, enum PROGRAM_INDEX index, FILE **flashfd, FILE **srcfd,
                      int forceDeleteNormalFile) {
     // open src file
     *srcfd = fopen(TEMP_PROG_FILE_NAME, "r");
@@ -454,8 +454,10 @@ int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd,
     }
     LOG(logDEBUG1, ("Temp file ready for reading\n"));
 
-    if (checkNormalFile(mess, forceDeleteNormalFile) == FAIL)
+    if (checkNormalFile(mess, index, forceDeleteNormalFile) == FAIL) {
+        fclose(*srcfd);
         return FAIL;
+    }
 
     // open flash drive for writing
     *flashfd = fopen(flashDriveName, "w");
@@ -472,7 +474,7 @@ int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd,
     return OK;
 }
 
-int checkNormalFile(char *mess, int forceDeleteNormalFile) {
+int checkNormalFile(char *mess, enum PROGRAM_INDEX index, int forceDeleteNormalFile) {
 #ifndef VIRTUAL
     // check if its a normal file or special file
     struct stat buf;
@@ -484,7 +486,7 @@ int checkNormalFile(char *mess, int forceDeleteNormalFile) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    // non zero = block special file
+    // zero = normal file (not block special file)
     if (S_ISBLK(buf.st_mode)) {
         // kernel memory is not permanent
         if (index != PROGRAM_FPGA) {
@@ -496,18 +498,21 @@ int checkNormalFile(char *mess, int forceDeleteNormalFile) {
             LOG(logERROR, (mess));
             return FAIL;
         }
-        // fpga memory stays after a reboot, so fix it if user allows
-        sprintf(mess,
-                "Could not %s. The flash drive found is a normal file. To "
-                "delete this file, create the flash drive and proceed with "
-                "programming, re-run the programming command with parameter "
+
+        // user does not allow to fix it (default)
+        if (forceDeleteNormalFile == 0) {
+            sprintf(mess,
+                "Could not %s. The flash drive %s found for fpga programming is a normal file. To "
+                "fix this (by deleting this file, creating the flash drive and proceeding with "
+                "programming), re-run the programming command 'programfpga' with parameter "
                 "'--force-delete-normal-file'\n",
-                messageType);
-        LOG(logERROR, (mess));
-        // user does not allow (default)
-        if (!forceDeleteNormalFile) {
+                messageType, flashDriveName);
+            LOG(logERROR, (mess));
             return FAIL;
         }
+        
+        // fpga memory stays after a reboot, user allowed to fix it
+        LOG(logWARNING, ("Flash drive invalidated (normal file). Fixing it...\n"));
 
         // user allows to fix it, so force delete normal file
         char cmd[MAX_STR_LENGTH] = {0};
@@ -530,7 +535,7 @@ int checkNormalFile(char *mess, int forceDeleteNormalFile) {
             LOG(logERROR, (mess));
             return FAIL;
         }
-        LOG(logINFO, ("\tDeleted Normal File(%s)\n", flashDriveName));
+        LOG(logINFO, ("\tDeleted Normal File (%s)\n", flashDriveName));
 
         // create special drive
         if (snprintf(cmd, MAX_STR_LENGTH, "%s %s %s",
@@ -552,6 +557,8 @@ int checkNormalFile(char *mess, int forceDeleteNormalFile) {
             return FAIL;
         }
         LOG(logINFO, ("\tSpecial File created (%s)\n", flashDriveName));
+    } else {
+        LOG(logINFO, ("\tValidated flash drive (not a normal file)\n"));
     }
 #endif
     return OK;

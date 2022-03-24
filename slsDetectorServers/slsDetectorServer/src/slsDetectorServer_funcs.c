@@ -9450,7 +9450,7 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
                         sizeof(forceDeleteNormalFile), INT32) < 0)
             return printSocketReadError();
         LOG(logINFO,
-            ("\tForce Delete Normal File: %d\n", forceDeleteNormalFile));
+            ("\tForce Delete Normal File flag? %s\n", (forceDeleteNormalFile ? "Y" : "N")));
 #endif
 
         // in same folder as current process (will also work for virtual then

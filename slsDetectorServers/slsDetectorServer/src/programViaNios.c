@@ -158,7 +158,7 @@ int openFileForFlash(char *mess, FILE **flashfd) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    // non zero = block special file
+    // zero = normal file (not block special file)
     if (S_ISBLK(buf.st_mode)) {
         // memory is not permanent
         sprintf(mess,
@@ -169,6 +169,7 @@ int openFileForFlash(char *mess, FILE **flashfd) {
         LOG(logERROR, (mess));
         return FAIL;
     }
+    LOG(logINFO, ("\tValidated flash drive (not a normal file)\n"));
 #endif
 
     *flashfd = fopen(flashDriveName, "w");

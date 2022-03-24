@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <unistd.h> // usleep
+#include <sys/stat.h>
 
 /* global variables */
 

@@ -23,7 +23,7 @@ void BinaryMasterFile::CreateMasterFile(const std::string filePath,
     // create file name
     std::ostringstream os;
     os << filePath << "/" << fileNamePrefix << "_master"
-       << "_" << fileIndex << ".raw";
+       << "_" << fileIndex << ".json";
     fileName_ = os.str();
 
     // create file

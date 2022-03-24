@@ -2,29 +2,61 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "MasterAttributes.h"
 
+#include <rapidjson/stringbuffer.h>
+
+
 void MasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
     LOG(logERROR) << "WriteMasterBinaryAttributes should have been called "
                      "by a child class";
 }
 
-std::string MasterAttributes::GetBinaryMasterAttributes() {
+void MasterAttributes::GetBinaryMasterAttributes(rapidjson::Writer<rapidjson::StringBuffer>* w) {
     time_t t = time(nullptr);
-    std::ostringstream oss;
-    oss << "Version                    : " << std::setprecision(2)
-        << BINARY_WRITER_VERSION << '\n'
-        << "TimeStamp                  : " << ctime(&t) << '\n'
-        << "Detector Type              : " << sls::ToString(detType) << '\n'
-        << "Timing Mode                : " << sls::ToString(timingMode) << '\n'
-        << "Geometry                   : " << sls::ToString(geometry) << '\n'
-        << "Image Size                 : " << imageSize << " bytes" << '\n'
-        << "Pixels                     : " << sls::ToString(nPixels) << '\n'
-        << "Max Frames Per File        : " << maxFramesPerFile << '\n'
-        << "Frame Discard Policy       : " << sls::ToString(frameDiscardMode)
-        << '\n'
-        << "Frame Padding              : " << framePadding << '\n'
-        << "Scan Parameters            : " << sls::ToString(scanParams) << '\n'
-        << "Total Frames               : " << totalFrames << '\n';
-    return oss.str();
+    
+    w->Key("Version");
+    w->SetMaxDecimalPlaces(2);
+    w->Double(BINARY_WRITER_VERSION);
+
+    w->Key("Timestamp");
+    w->String(ctime(&t));
+
+    w->Key("Detector Type");
+    w->String(sls::ToString(detType).c_str());
+
+    w->Key("Timing Mode");
+    w->String(sls::ToString(timingMode).c_str());
+
+    w->Key("Geometry");
+    w->StartObject();
+    w->Key("x");
+    w->Uint(geometry.x);
+    w->Key("y");
+    w->Uint(geometry.y);
+    w->EndObject();
+
+    w->Key("Image Size in bytes");
+    w->Uint(imageSize);
+
+    w->Key("Pixels");
+    w->StartArray();
+    w->Uint(nPixels.x);
+    w->Uint(nPixels.y);
+    w->EndArray();
+
+    w->Key("Max Frames Per File");
+    w->Uint(maxFramesPerFile);
+
+    w->Key("Frame Discard Policy");
+    w->String(sls::ToString(frameDiscardMode).c_str());
+
+    w->Key("Frame Padding");
+    w->Uint(framePadding);
+
+    w->Key("Scan Parameters");
+    w->String(sls::ToString(scanParams).c_str());
+
+    w->Key("Total Frames");
+    w->Uint64(totalFrames);
 };
 
 void MasterAttributes::WriteBinaryAttributes(FILE *fd, std::string message) {
@@ -36,8 +68,30 @@ void MasterAttributes::WriteBinaryAttributes(FILE *fd, std::string message) {
 };
 
 void MasterAttributes::WriteFinalBinaryAttributes(FILE *fd) {
+ /*
+    FILE* fp = fopen(json_file_name.c_str(), "r");
+char readBuffer[65536];
+FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+
+Document d, d2;
+d.ParseStream(is);
+assert(d.IsArray());
+fclose(fp);
+d2.SetObject();
+Value json_objects(kObjectType);
+json_objects.AddMember("three", 3, d2.GetAllocator());
+d.PushBack(json_objects, d2.GetAllocator());
+
+FILE* outfile = fopen(json_file_name.c_str(), "w");
+char writeBuffer[65536];
+FileWriteStream os(outfile, writeBuffer, sizeof(writeBuffer));
+
+Writer writer(os);
+d.Accept (writer);
+fclose(outfile);
+*/
     // adding few common parameters to the end
-    std::ostringstream oss;
+    /*std::ostringstream oss;
 
     if (!additionalJsonHeader.empty()) {
         oss << "Additional Json Header     : "
@@ -70,7 +124,7 @@ void MasterAttributes::WriteFinalBinaryAttributes(FILE *fd) {
         message.length()) {
         throw sls::RuntimeError(
             "Master binary file incorrect number of bytes written to file");
-    }
+    }*/
 };
 
 #ifdef HDF5C
@@ -270,7 +324,7 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 
     void GotthardMasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
         std::ostringstream oss;
-        oss << MasterAttributes::GetBinaryMasterAttributes()
+        oss //<< MasterAttributes::GetBinaryMasterAttributes()
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
             << "Period                     : " << sls::ToString(period) << '\n'
             << "Roi (xmin, xmax)           : " << sls::ToString(roi) << '\n';
@@ -301,13 +355,27 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
     void JungfrauMasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
-        std::ostringstream oss;
-        oss << MasterAttributes::GetBinaryMasterAttributes()
-            << "Exptime                    : " << sls::ToString(exptime) << '\n'
-            << "Period                     : " << sls::ToString(period) << '\n'
-            << "Number of UDP Interfaces   : " << numUDPInterfaces << '\n'
-            << "Number of rows             : " << readNRows << '\n';
-        std::string message = oss.str();
+        rapidjson::StringBuffer s;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+        writer.StartObject();
+        
+        MasterAttributes::GetBinaryMasterAttributes(&writer);
+
+        writer.Key("Exptime");
+        writer.String(sls::ToString(exptime).c_str());
+        
+        writer.Key("Period");
+        writer.String(sls::ToString(period).c_str());
+
+        writer.Key("Number of UDP Interfaces");
+        writer.Uint(numUDPInterfaces);        
+
+        writer.Key("Number of rows");
+        writer.Uint(readNRows); 
+
+        writer.EndObject();
+        
+        std::string message = s.GetString();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 
@@ -334,7 +402,7 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 
     void EigerMasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
         std::ostringstream oss;
-        oss << MasterAttributes::GetBinaryMasterAttributes()
+        oss //<< MasterAttributes::GetBinaryMasterAttributes()
             << "Dynamic Range              : " << dynamicRange << '\n'
             << "Ten Giga                   : " << tenGiga << '\n'
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
@@ -420,7 +488,7 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 
     void Mythen3MasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
         std::ostringstream oss;
-        oss << MasterAttributes::GetBinaryMasterAttributes()
+        oss //<< MasterAttributes::GetBinaryMasterAttributes()
             << "Dynamic Range              : " << dynamicRange << '\n'
             << "Ten Giga                   : " << tenGiga << '\n'
             << "Period                     : " << sls::ToString(period) << '\n'
@@ -535,7 +603,7 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 
     void Gotthard2MasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
         std::ostringstream oss;
-        oss << MasterAttributes::GetBinaryMasterAttributes()
+        oss //<< MasterAttributes::GetBinaryMasterAttributes()
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
             << "Period                     : " << sls::ToString(period) << '\n'
             << "Burst Mode                 : " << sls::ToString(burstMode)
@@ -565,7 +633,7 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 
     void MoenchMasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
         std::ostringstream oss;
-        oss << MasterAttributes::GetBinaryMasterAttributes()
+        oss //<< MasterAttributes::GetBinaryMasterAttributes()
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
             << "Period                     : " << sls::ToString(period) << '\n'
             << "Ten Giga                   : " << tenGiga << '\n'
@@ -601,7 +669,7 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 
     void CtbMasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
         std::ostringstream oss;
-        oss << MasterAttributes::GetBinaryMasterAttributes()
+        oss //<< MasterAttributes::GetBinaryMasterAttributes()
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
             << "Period                     : " << sls::ToString(period) << '\n'
             << "Ten Giga                   : " << tenGiga << '\n'

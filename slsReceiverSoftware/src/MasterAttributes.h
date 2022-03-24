@@ -7,6 +7,8 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
+#include <rapidjson/writer.h>
+
 #ifdef HDF5C
 #include "H5Cpp.h"
 #ifndef H5_NO_NAMESPACE
@@ -68,7 +70,7 @@ class MasterAttributes {
     MasterAttributes() = default;
     virtual ~MasterAttributes() = default;
     virtual void WriteMasterBinaryAttributes(FILE *fd);
-    std::string GetBinaryMasterAttributes();
+    void GetBinaryMasterAttributes(rapidjson::Writer<rapidjson::StringBuffer>* w);
     void WriteBinaryAttributes(FILE *fd, std::string message);
     void WriteFinalBinaryAttributes(FILE *fd);
 #ifdef HDF5C

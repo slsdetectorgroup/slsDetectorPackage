@@ -51,6 +51,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - 10g eiger nextframenumber get fixed.
 - stop, able to set nextframenumber to a consistent (max + 1) for all modules if different (eiger/ctb/jungfrau/moench)
 - fpga/kernel programming, checks if drive is a special file and not a normal file
+- fpga/kernel programming, checks if drive is a special file and not a normal file
 
 2. Resolved Issues
 ==================

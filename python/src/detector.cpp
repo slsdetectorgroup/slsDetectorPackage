@@ -1433,13 +1433,12 @@ void init_det(py::module &m) {
              py::arg())
         .def("getDacNames", (std::vector<std::string>(Detector::*)() const) &
                                 Detector::getDacNames)
-        .def("decodeNamedDac",
+        .def("getDacIndex",
              (defs::dacIndex(Detector::*)(const std::string &)) &
-                 Detector::decodeNamedDac,
+                 Detector::getDacIndex,
              py::arg())
-        .def("decodeNamedDac",
-             (std::string(Detector::*)(defs::dacIndex)) &
-                 Detector::decodeNamedDac,
+        .def("getDacName",
+             (std::string(Detector::*)(defs::dacIndex)) & Detector::getDacName,
              py::arg())
         .def("setPattern",
              (void (Detector::*)(const std::string &, sls::Positions)) &

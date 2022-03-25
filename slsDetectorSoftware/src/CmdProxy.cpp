@@ -1077,8 +1077,9 @@ std::string CmdProxy::Dac(int action) {
             WrongNumberOfParameters(1); // This prints slightly wrong
 
         defs::dacIndex dacIndex{};
+        //TODO! Remove if
         if (type == defs::CHIPTESTBOARD && !is_int(args[0])) {
-            dacIndex = det->decodeNamedDac(args[0]);
+            dacIndex = det->getDacIndex(args[0]);
         } else {
             dacIndex = StringTo<defs::dacIndex>(args[0]);
         }
@@ -1102,7 +1103,7 @@ std::string CmdProxy::Dac(int action) {
 
         defs::dacIndex dacIndex{};
         if (type == defs::CHIPTESTBOARD && !is_int(args[0]))
-            dacIndex = det->decodeNamedDac(args[0]);
+            dacIndex = det->getDacIndex(args[0]);
         else
             dacIndex = StringTo<defs::dacIndex>(args[0]);
         bool mV = false;

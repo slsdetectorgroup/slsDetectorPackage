@@ -7,7 +7,7 @@ set(SOURCES
     src/CmdProxy.cpp
     src/CmdParser.cpp
     src/Pattern.cpp
-    src/ctb_named_dacs.cpp
+    src/CtbConfig.cpp
 )
 
 add_library(slsDetectorObject OBJECT

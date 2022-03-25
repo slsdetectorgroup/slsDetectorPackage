@@ -1619,8 +1619,8 @@ class Detector {
 
     std::vector<std::string> getDacNames() const;
 
-    defs::dacIndex decodeNamedDac(const std::string& name);
-    std::string decodeNamedDac(defs::dacIndex i);
+    defs::dacIndex getDacIndex(const std::string& name);
+    std::string getDacName(defs::dacIndex i);
     ///@}
 
     /** @name Pattern */

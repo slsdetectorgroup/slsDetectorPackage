@@ -7,7 +7,7 @@
 #include "CmdProxy.h"
 #include "DetectorImpl.h"
 #include "Module.h"
-#include "ctb_named_dacs.h"
+#include "CtbConfig.h"
 #include "sls/Pattern.h"
 #include "sls/container_utils.h"
 #include "sls/file_utils.h"
@@ -22,8 +22,6 @@
 namespace sls {
 
 void freeSharedMemory(int detectorIndex, int moduleIndex) {
-    //
-    remove_ctb_dacnames(detectorIndex);
 
     // single module
     if (moduleIndex >= 0) {
@@ -48,6 +46,11 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, i);
         moduleShm.RemoveSharedMemory();
     }
+
+    // Ctb configuration
+    SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
+    if (ctbShm.IsExisting())
+        ctbShm.RemoveSharedMemory();
 }
 
 using defs = slsDetectorDefs;
@@ -58,10 +61,7 @@ Detector::Detector(int shm_id)
 Detector::~Detector() = default;
 
 // Configuration
-void Detector::freeSharedMemory() {
-    remove_ctb_dacnames(pimpl->getDetectorIndex());
-    pimpl->freeSharedMemory();
-}
+void Detector::freeSharedMemory() { pimpl->freeSharedMemory(); }
 
 void Detector::loadConfig(const std::string &fname) {
     int shm_id = getShmId();
@@ -2077,36 +2077,37 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
 void Detector::setDacNames(const std::vector<std::string> names) {
     if (getDetectorType().squash() != defs::CHIPTESTBOARD)
         throw RuntimeError("Named dacs only for CTB");
-    set_ctb_dac_names(names, pimpl->getDetectorIndex());
+    pimpl->setCtbDacNames(names);
 }
 
 std::vector<std::string> Detector::getDacNames() const {
     std::vector<std::string> names;
     auto type = getDetectorType().squash();
-    if (type == defs::CHIPTESTBOARD) {
-        names = get_ctb_dac_names(pimpl->getDetectorIndex());
-    }
-    if (names.empty()) {
-        for (const auto &index : getDacList())
-            names.push_back(ToString(index));
-    }
+    if (type == defs::CHIPTESTBOARD)
+        return pimpl->getCtbDacNames();
+
+    for (const auto &index : getDacList())
+        names.push_back(ToString(index));
     return names;
 }
 
-defs::dacIndex Detector::decodeNamedDac(const std::string &name) {
-    auto names = getDacNames();
-    auto it = std::find(names.begin(), names.end(), name);
-    if (it == names.end())
-        throw RuntimeError("Dacname not found");
-    return static_cast<defs::dacIndex>(it - names.begin());
+defs::dacIndex Detector::getDacIndex(const std::string &name) {
+    auto type = getDetectorType().squash();
+    if (type == defs::CHIPTESTBOARD) {
+        auto names = getDacNames();
+        auto it = std::find(names.begin(), names.end(), name);
+        if (it == names.end())
+            throw RuntimeError("Dacname not found");
+        return static_cast<defs::dacIndex>(it - names.begin());
+    }
+    return StringTo<defs::dacIndex>(name);
 }
 
-std::string Detector::decodeNamedDac(defs::dacIndex i) {
-    auto names = getDacNames();
-    auto index = static_cast<size_t>(i);
-    if (index >= names.size())
-        throw RuntimeError("Dac index out of range");
-    return names[index];
+std::string Detector::getDacName(defs::dacIndex i) {
+    auto type = getDetectorType().squash();
+    if (type == defs::CHIPTESTBOARD)
+        return pimpl->getCtbDacName(i);
+    return ToString(i);
 }
 
 // Pattern

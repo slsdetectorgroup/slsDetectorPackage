@@ -310,12 +310,23 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
     void GotthardMasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
-        std::ostringstream oss;
-        oss //<< MasterAttributes::GetBinaryMasterAttributes()
-            << "Exptime                    : " << sls::ToString(exptime) << '\n'
-            << "Period                     : " << sls::ToString(period) << '\n'
-            << "Roi (xmin, xmax)           : " << sls::ToString(roi) << '\n';
-        std::string message = oss.str();
+        rapidjson::StringBuffer s;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+        writer.StartObject();
+        MasterAttributes::GetBinaryMasterAttributes(&writer);
+
+        writer.Key("Exptime");
+        writer.String(sls::ToString(exptime).c_str());
+        
+        writer.Key("Period");
+        writer.String(sls::ToString(period).c_str());
+
+        writer.Key("Roi (xmin, xmax)");
+        writer.String(sls::ToString(roi).c_str());
+
+        MasterAttributes::WriteFinalBinaryAttributes(&writer);   
+        writer.EndObject();
+        std::string message = s.GetString();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 
@@ -345,7 +356,6 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
         rapidjson::StringBuffer s;
         rapidjson::Writer<rapidjson::StringBuffer> writer(s);
         writer.StartObject();
-        
         MasterAttributes::GetBinaryMasterAttributes(&writer);
 
         writer.Key("Exptime");
@@ -361,9 +371,7 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
         writer.Uint(readNRows); 
 
         MasterAttributes::WriteFinalBinaryAttributes(&writer);   
-
         writer.EndObject();
-
         std::string message = s.GetString();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
@@ -390,22 +398,44 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
     void EigerMasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
-        std::ostringstream oss;
-        oss //<< MasterAttributes::GetBinaryMasterAttributes()
-            << "Dynamic Range              : " << dynamicRange << '\n'
-            << "Ten Giga                   : " << tenGiga << '\n'
-            << "Exptime                    : " << sls::ToString(exptime) << '\n'
-            << "Period                     : " << sls::ToString(period) << '\n'
-            << "Threshold Energy           : " << thresholdEnergyeV << '\n'
-            << "SubExptime                 : " << sls::ToString(subExptime)
-            << '\n'
-            << "SubPeriod                  : " << sls::ToString(subPeriod)
-            << '\n'
-            << "Quad                       : " << quad << '\n'
-            << "Number of rows             : " << readNRows << '\n'
-            << "Rate Corrections           : " << sls::ToString(ratecorr)
-            << '\n';
-        std::string message = oss.str();
+        rapidjson::StringBuffer s;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+        writer.StartObject();
+        MasterAttributes::GetBinaryMasterAttributes(&writer);
+
+        writer.Key("Dynamic Range");
+        writer.Uint(dynamicRange);
+
+        writer.Key("Ten Giga");
+        writer.Uint(tenGiga);
+
+        writer.Key("Exptime");
+        writer.String(sls::ToString(exptime).c_str());
+        
+        writer.Key("Period");
+        writer.String(sls::ToString(period).c_str());
+
+        writer.Key("Threshold Energy");
+        writer.Int(thresholdEnergyeV);
+
+        writer.Key("Sub Exptime");
+        writer.String(sls::ToString(subExptime).c_str());
+        
+        writer.Key("Sub Period");
+        writer.String(sls::ToString(subPeriod).c_str());
+
+        writer.Key("Quad");
+        writer.Int(quad);
+
+        writer.Key("Number of rows");
+        writer.Int(readNRows);
+
+        writer.Key("Rate Corrections");
+        writer.String(sls::ToString(ratecorr).c_str());
+
+        MasterAttributes::WriteFinalBinaryAttributes(&writer);   
+        writer.EndObject();
+        std::string message = s.GetString();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 
@@ -476,29 +506,50 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
     void Mythen3MasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
-        std::ostringstream oss;
-        oss //<< MasterAttributes::GetBinaryMasterAttributes()
-            << "Dynamic Range              : " << dynamicRange << '\n'
-            << "Ten Giga                   : " << tenGiga << '\n'
-            << "Period                     : " << sls::ToString(period) << '\n'
-            << "Counter Mask               : " << sls::ToStringHex(counterMask)
-            << '\n'
-            << "Exptime1                   : " << sls::ToString(exptime1)
-            << '\n'
-            << "Exptime2                   : " << sls::ToString(exptime2)
-            << '\n'
-            << "Exptime3                   : " << sls::ToString(exptime3)
-            << '\n'
-            << "GateDelay1                 : " << sls::ToString(gateDelay1)
-            << '\n'
-            << "GateDelay2                 : " << sls::ToString(gateDelay2)
-            << '\n'
-            << "GateDelay3                 : " << sls::ToString(gateDelay3)
-            << '\n'
-            << "Gates                      : " << gates << '\n'
-            << "Threshold Energies         : "
-            << sls::ToString(thresholdAllEnergyeV) << '\n';
-        std::string message = oss.str();
+        rapidjson::StringBuffer s;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+        writer.StartObject();
+        MasterAttributes::GetBinaryMasterAttributes(&writer);
+
+        writer.Key("Dynamic Range");
+        writer.Uint(dynamicRange);
+
+        writer.Key("Ten Giga");
+        writer.Uint(tenGiga);
+
+        writer.Key("Period");
+        writer.String(sls::ToString(period).c_str());
+
+        writer.Key("Counter Mask");
+        writer.String(sls::ToStringHex(counterMask).c_str());
+
+        writer.Key("Exptime1");
+        writer.String(sls::ToString(exptime1).c_str());
+    
+        writer.Key("Exptime2");
+        writer.String(sls::ToString(exptime2).c_str());
+
+        writer.Key("Exptime3");
+        writer.String(sls::ToString(exptime3).c_str());
+
+        writer.Key("GateDelay1");
+        writer.String(sls::ToString(gateDelay1).c_str());
+    
+        writer.Key("GateDelay2");
+        writer.String(sls::ToString(gateDelay2).c_str());
+
+        writer.Key("GateDelay3");
+        writer.String(sls::ToString(gateDelay3).c_str());
+
+        writer.Key("Gates");
+        writer.Uint(gates);
+
+        writer.Key("Threshold Energies");
+        writer.String(sls::ToString(thresholdAllEnergyeV).c_str());
+
+        MasterAttributes::WriteFinalBinaryAttributes(&writer);   
+        writer.EndObject();
+        std::string message = s.GetString();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 
@@ -591,13 +642,23 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
     void Gotthard2MasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
-        std::ostringstream oss;
-        oss //<< MasterAttributes::GetBinaryMasterAttributes()
-            << "Exptime                    : " << sls::ToString(exptime) << '\n'
-            << "Period                     : " << sls::ToString(period) << '\n'
-            << "Burst Mode                 : " << sls::ToString(burstMode)
-            << '\n';
-        std::string message = oss.str();
+        rapidjson::StringBuffer s;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+        writer.StartObject();
+        MasterAttributes::GetBinaryMasterAttributes(&writer);
+
+        writer.Key("Exptime");
+        writer.String(sls::ToString(exptime).c_str());
+        
+        writer.Key("Period");
+        writer.String(sls::ToString(period).c_str());
+
+        writer.Key("Burst Mode");
+        writer.String(sls::ToString(burstMode).c_str());
+
+        MasterAttributes::WriteFinalBinaryAttributes(&writer);   
+        writer.EndObject();
+        std::string message = s.GetString();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 
@@ -621,15 +682,29 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
     void MoenchMasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
-        std::ostringstream oss;
-        oss //<< MasterAttributes::GetBinaryMasterAttributes()
-            << "Exptime                    : " << sls::ToString(exptime) << '\n'
-            << "Period                     : " << sls::ToString(period) << '\n'
-            << "Ten Giga                   : " << tenGiga << '\n'
-            << "ADC Mask                   : " << sls::ToStringHex(adcmask)
-            << '\n'
-            << "Analog Samples             : " << analogSamples << '\n';
-        std::string message = oss.str();
+        rapidjson::StringBuffer s;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+        writer.StartObject();
+        MasterAttributes::GetBinaryMasterAttributes(&writer);
+
+        writer.Key("Exptime");
+        writer.String(sls::ToString(exptime).c_str());
+        
+        writer.Key("Period");
+        writer.String(sls::ToString(period).c_str());
+
+        writer.Key("Ten Giga");
+        writer.Uint(tenGiga);
+
+        writer.Key("ADC Mask");
+        writer.String(sls::ToStringHex(adcmask).c_str());
+
+        writer.Key("Analog Samples");
+        writer.Uint(analogSamples);
+
+        MasterAttributes::WriteFinalBinaryAttributes(&writer);   
+        writer.EndObject();
+        std::string message = s.GetString();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 
@@ -657,20 +732,44 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
     void CtbMasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
-        std::ostringstream oss;
-        oss //<< MasterAttributes::GetBinaryMasterAttributes()
-            << "Exptime                    : " << sls::ToString(exptime) << '\n'
-            << "Period                     : " << sls::ToString(period) << '\n'
-            << "Ten Giga                   : " << tenGiga << '\n'
-            << "ADC Mask                   : " << sls::ToStringHex(adcmask)
-            << '\n'
-            << "Analog Flag                : " << analog << '\n'
-            << "Analog Samples             : " << analogSamples << '\n'
-            << "Digital Flag               : " << digital << '\n'
-            << "Digital Samples            : " << digitalSamples << '\n'
-            << "Dbit Offset                : " << dbitoffset << '\n'
-            << "Dbit Bitset                : " << dbitlist << '\n';
-        std::string message = oss.str();
+        rapidjson::StringBuffer s;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+        writer.StartObject();
+        MasterAttributes::GetBinaryMasterAttributes(&writer);
+
+        writer.Key("Exptime");
+        writer.String(sls::ToString(exptime).c_str());
+        
+        writer.Key("Period");
+        writer.String(sls::ToString(period).c_str());
+
+        writer.Key("Ten Giga");
+        writer.Uint(tenGiga);
+
+        writer.Key("ADC Mask");
+        writer.String(sls::ToStringHex(adcmask).c_str());
+
+        writer.Key("Analog Flag");
+        writer.Uint(analog);
+
+        writer.Key("Analog Samples");
+        writer.Uint(analogSamples);
+
+        writer.Key("Digital Flag");
+        writer.Uint(digital);
+
+        writer.Key("Digital Samples");
+        writer.Uint(digitalSamples);
+
+        writer.Key("Dbit Offset");
+        writer.Uint(dbitoffset);
+
+        writer.Key("Dbit Bitset");
+        writer.Uint64(dbitlist);
+
+        MasterAttributes::WriteFinalBinaryAttributes(&writer);   
+        writer.EndObject();
+        std::string message = s.GetString();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 

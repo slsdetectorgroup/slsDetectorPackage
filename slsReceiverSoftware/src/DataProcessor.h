@@ -36,13 +36,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     ~DataProcessor() override;
 
-    bool GetStartedFlag();
-    uint64_t GetNumFramesCaught();
-    uint64_t GetNumCompleteFramesCaught();
-    /** (-1 if no frames have been caught */
-    uint64_t GetCurrentFrameIndex();
-    /** (-1 if no frames have been caught) */
-    uint64_t GetProcessedIndex();
+    bool GetStartedFlag() const;
 
     void SetFifo(Fifo *f);
     void ResetParametersforNewAcquisition();
@@ -177,9 +171,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     // for statistics
     /** Number of frames caught */
     uint64_t numFramesCaught_{0};
-
-    /** Number of complete frames caught */
-    uint64_t numCompleteFramesCaught_{0};
 
     /** Frame Number of latest processed frame number */
     std::atomic<uint64_t> currentFrameIndex_{0};

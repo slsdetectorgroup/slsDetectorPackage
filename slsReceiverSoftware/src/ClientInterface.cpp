@@ -848,9 +848,13 @@ int ClientInterface::get_file_index(Interface &socket) {
 }
 
 int ClientInterface::get_frame_index(Interface &socket) {
-    uint64_t retval = impl()->getCurrentFrameIndex();
-    LOG(logDEBUG1) << "frame index:" << retval;
-    return socket.sendResult(retval);
+    auto retval = impl()->getCurrentFrameIndex();
+    LOG(logDEBUG1) << "frames index:" << sls::ToString(retval);
+    auto size = static_cast<int>(retval.size());
+    socket.Send(OK);
+    socket.Send(size);
+    socket.Send(retval);
+    return OK;
 }
 
 int ClientInterface::get_missing_packets(Interface &socket) {
@@ -864,9 +868,13 @@ int ClientInterface::get_missing_packets(Interface &socket) {
 }
 
 int ClientInterface::get_frames_caught(Interface &socket) {
-    int64_t retval = impl()->getFramesCaught();
-    LOG(logDEBUG1) << "frames caught:" << retval;
-    return socket.sendResult(retval);
+    auto retval = impl()->getFramesCaught();
+    LOG(logDEBUG1) << "frames caught:" << sls::ToString(retval);
+    auto size = static_cast<int>(retval.size());
+    socket.Send(OK);
+    socket.Send(size);
+    socket.Send(retval);
+    return OK;
 }
 
 int ClientInterface::set_file_write(Interface &socket) {

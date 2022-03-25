@@ -873,8 +873,26 @@ double Module::getReceiverProgress() const {
     return sendToReceiver<double>(F_GET_RECEIVER_PROGRESS);
 }
 
-int64_t Module::getFramesCaughtByReceiver() const {
-    return sendToReceiver<int64_t>(F_GET_RECEIVER_FRAMES_CAUGHT);
+std::vector<int64_t> Module::getFramesCaughtByReceiver() const {
+    // TODO!(Erik) Refactor
+    LOG(logDEBUG1) << "Getting frames caught";
+    if (shm()->useReceiverFlag) {
+        auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+        client.Send(F_GET_RECEIVER_FRAMES_CAUGHT);
+        if (client.Receive<int>() == FAIL) {
+            throw ReceiverError(
+                "Receiver " + std::to_string(moduleIndex) +
+                " returned error: " + client.readErrorMessage());
+        } else {
+            auto nports = client.Receive<int>();
+            std::vector<int64_t> retval(nports);
+            client.Receive(retval);
+            LOG(logDEBUG1) << "Frames caught of Receiver" << moduleIndex << ": "
+                           << sls::ToString(retval);
+            return retval;
+        }
+    }
+    throw RuntimeError("No receiver to get frames caught.");
 }
 
 std::vector<int64_t> Module::getNumMissingPackets() const {
@@ -897,6 +915,28 @@ std::vector<int64_t> Module::getNumMissingPackets() const {
         }
     }
     throw RuntimeError("No receiver to get missing packets.");
+}
+
+std::vector<int64_t> Module::getReceiverCurrentFrameIndex() const {
+    // TODO!(Erik) Refactor
+    LOG(logDEBUG1) << "Getting frame index";
+    if (shm()->useReceiverFlag) {
+        auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+        client.Send(F_GET_RECEIVER_FRAME_INDEX);
+        if (client.Receive<int>() == FAIL) {
+            throw ReceiverError(
+                "Receiver " + std::to_string(moduleIndex) +
+                " returned error: " + client.readErrorMessage());
+        } else {
+            auto nports = client.Receive<int>();
+            std::vector<int64_t> retval(nports);
+            client.Receive(retval);
+            LOG(logDEBUG1) << "Frame index of Receiver" << moduleIndex << ": "
+                           << sls::ToString(retval);
+            return retval;
+        }
+    }
+    throw RuntimeError("No receiver to get frame index.");
 }
 
 uint64_t Module::getNextFrameNumber() const {
@@ -2753,10 +2793,6 @@ int64_t Module::getActualTime() const {
 
 int64_t Module::getMeasurementTime() const {
     return sendToDetectorStop<int64_t>(F_GET_MEASUREMENT_TIME);
-}
-
-uint64_t Module::getReceiverCurrentFrameIndex() const {
-    return sendToReceiver<uint64_t>(F_GET_RECEIVER_FRAME_INDEX);
 }
 
 // private

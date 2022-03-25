@@ -599,7 +599,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def rx_framescaught(self):
-        """Number of frames caught by receiver."""
+        """Number of frames caught by each port in receiver."""
         return self.getFramesCaught()
 
     @property
@@ -1918,7 +1918,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def rx_frameindex(self):
-        """Current frame index received in receiver during acquisition."""
+        """Current frame index received for each port in receiver during acquisition."""
         return self.getRxCurrentFrameIndex()
 
     @property

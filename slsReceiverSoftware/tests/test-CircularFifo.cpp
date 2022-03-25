@@ -34,8 +34,8 @@ TEST_CASE("Push pop") {
     for (size_t i = 0; i != vec.size(); ++i) {
         fifo.push(p);
         ++p;
-        CHECK(fifo.getDataValue() == i + 1);
-        CHECK(fifo.getFreeValue() == 4 - i);
+        CHECK(fifo.getDataValue() == (int)(i + 1));
+        CHECK(fifo.getFreeValue() == (int)(4 - i));
     }
 
     CHECK(fifo.isEmpty() == false);
@@ -44,8 +44,8 @@ TEST_CASE("Push pop") {
     for (size_t i = 0; i != vec.size(); ++i) {
         fifo.pop(p);
         CHECK(*p == vec[i]);
-        CHECK(fifo.getDataValue() == 4 - i);
-        CHECK(fifo.getFreeValue() == i + 1);
+        CHECK(fifo.getDataValue() == (int)(4 - i));
+        CHECK(fifo.getFreeValue() == (int)(i + 1));
     }
 
     CHECK(fifo.isEmpty() == true);

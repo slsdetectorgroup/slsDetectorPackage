@@ -12,7 +12,6 @@ class HDF5MasterFile : private virtual slsDetectorDefs, public File {
     HDF5MasterFile(std::mutex *hdf5Lib);
     ~HDF5MasterFile();
 
-    void CloseFile() override;
     void LinkDataFile(std::string dataFilename, std::string dataSetname,
                       const std::vector<std::string> parameterNames,
                       const bool silentMode) override;
@@ -21,7 +20,6 @@ class HDF5MasterFile : private virtual slsDetectorDefs, public File {
                           const uint64_t fileIndex, const bool overWriteEnable,
                           const bool silentMode,
                           MasterAttributes *attr) override;
-    void UpdateMasterFile(MasterAttributes *attr, bool silentMode) override;
 
   private:
     std::mutex *hdf5Lib_;

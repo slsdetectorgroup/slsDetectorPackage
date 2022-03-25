@@ -103,25 +103,10 @@ class File : private virtual slsDetectorDefs {
                          "should be overloaded by a derived class";
     };
 
-    virtual void CreateMasterFile(const std::string filePath,
-                                  const std::string fileNamePrefix,
-                                  const uint64_t fileIndex,
-                                  const bool overWriteEnable,
-                                  const bool silentMode,
-                                  MasterAttributes *attr) {
-        LOG(logERROR) << "This is a generic function CreateMasterFile that "
-                         "should be overloaded by a derived class";
-    };
-
     virtual void WriteToFile(char *buffer, const int buffersize,
                              const uint64_t currentFrameNumber,
                              const uint32_t numPacketsCaught) {
         LOG(logERROR) << "This is a generic function WriteToFile that "
-                         "should be overloaded by a derived class";
-    };
-
-    virtual void UpdateMasterFile(MasterAttributes *attr, bool silentMode) {
-        LOG(logERROR) << "This is a generic function UpdateMasterFile that "
                          "should be overloaded by a derived class";
     };
 

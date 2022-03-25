@@ -274,6 +274,7 @@ class Implementation : private virtual slsDetectorDefs {
     void ResetParametersforNewAcquisition();
     void CreateUDPSockets();
     void SetupWriter();
+    void StartMasterWriter();
     void StartRunning();
 
     /**************************************************

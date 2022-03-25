@@ -45,11 +45,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void CloseFiles();
     void DeleteFiles();
     void SetupFileWriter(const bool filewriteEnable,
-                         const bool masterFilewriteEnable,
-                         const fileFormat fileFormatType, const int modulePos,
-                         std::mutex *hdf5Lib);
+                         const fileFormat fileFormatType, std::mutex *hdf5Lib);
 
-    void CreateFirstFiles(MasterAttributes *attr, const std::string filePath,
+    void CreateFirstFiles(const std::string filePath,
                           const std::string fileNamePrefix,
                           const uint64_t fileIndex, const bool overWriteEnable,
                           const bool silentMode, const int modulePos,
@@ -71,7 +69,11 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                            const int numModY, std::mutex *hdf5Lib);
     void LinkDataInMasterFile(const bool silentMode);
 #endif
-    void UpdateMasterFile(bool silentMode);
+    void CreateMasterFile(const std::string filePath,
+                          const std::string fileNamePrefix,
+                          const uint64_t fileIndex, const bool overWriteEnable,
+                          bool silentMode, const fileFormat fileFormatType,
+                          MasterAttributes *attr);
     /**
      * Call back for raw data
      * args to raw data ready callback are
@@ -179,7 +181,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     bool firstStreamerFrame_{false};
 
     File *dataFile_{nullptr};
-    File *masterFile_{nullptr};
 #ifdef HDF5C
     File *virtualFile_{nullptr};
 #endif

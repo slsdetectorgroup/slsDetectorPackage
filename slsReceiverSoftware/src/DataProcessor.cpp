@@ -82,8 +82,6 @@ void DataProcessor::SetGeneralData(GeneralData *generalData) {
 void DataProcessor::CloseFiles() {
     if (dataFile_)
         dataFile_->CloseFile();
-    if (masterFile_)
-        masterFile_->CloseFile();
 #ifdef HDF5C
     if (virtualFile_)
         virtualFile_->CloseFile();
@@ -96,10 +94,10 @@ void DataProcessor::DeleteFiles() {
         delete dataFile_;
         dataFile_ = nullptr;
     }
-    if (masterFile_) {
-        delete masterFile_;
-        masterFile_ = nullptr;
-    }
+    /* if (masterFile_) {
+         delete masterFile_;
+         masterFile_ = nullptr;
+     }*/
 #ifdef HDF5C
     if (virtualFile_) {
         delete virtualFile_;
@@ -108,27 +106,18 @@ void DataProcessor::DeleteFiles() {
 #endif
 }
 void DataProcessor::SetupFileWriter(const bool filewriteEnable,
-                                    const bool masterFilewriteEnable,
                                     const fileFormat fileFormatType,
-                                    const int modulePos, std::mutex *hdf5Lib) {
+                                    std::mutex *hdf5Lib) {
     DeleteFiles();
     if (filewriteEnable) {
         switch (fileFormatType) {
 #ifdef HDF5C
         case HDF5:
             dataFile_ = new HDF5DataFile(index, hdf5Lib);
-            if (modulePos == 0 && index == 0) {
-                if (masterFilewriteEnable) {
-                    masterFile_ = new HDF5MasterFile(hdf5Lib);
-                }
-            }
             break;
 #endif
         case BINARY:
             dataFile_ = new BinaryDataFile(index);
-            if (modulePos == 0 && index == 0 && masterFilewriteEnable) {
-                masterFile_ = new BinaryMasterFile();
-            }
             break;
         default:
             throw sls::RuntimeError(
@@ -138,22 +127,16 @@ void DataProcessor::SetupFileWriter(const bool filewriteEnable,
 }
 
 void DataProcessor::CreateFirstFiles(
-    MasterAttributes *attr, const std::string filePath,
-    const std::string fileNamePrefix, const uint64_t fileIndex,
-    const bool overWriteEnable, const bool silentMode, const int modulePos,
-    const int numUnitsPerReadout, const uint32_t udpPortNumber,
-    const uint32_t maxFramesPerFile, const uint64_t numImages,
-    const uint32_t dynamicRange, const bool detectorDataStream) {
+    const std::string filePath, const std::string fileNamePrefix,
+    const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
+    const int modulePos, const int numUnitsPerReadout,
+    const uint32_t udpPortNumber, const uint32_t maxFramesPerFile,
+    const uint64_t numImages, const uint32_t dynamicRange,
+    const bool detectorDataStream) {
     if (dataFile_ == nullptr) {
         throw sls::RuntimeError("file object not contstructed");
     }
     CloseFiles();
-
-    // master file write enabled
-    if (masterFile_) {
-        masterFile_->CreateMasterFile(filePath, fileNamePrefix, fileIndex,
-                                      overWriteEnable, silentMode, attr);
-    }
 
     // deactivated (half module/ single port), dont write file
     if ((!*activated_) || (!detectorDataStream)) {
@@ -238,38 +221,26 @@ void DataProcessor::LinkDataInMasterFile(const bool silentMode) {
 }
 #endif
 
-void DataProcessor::UpdateMasterFile(bool silentMode) {
-    if (masterFile_) {
-        // final attributes
-        std::unique_ptr<MasterAttributes> masterAttributes;
-        switch (detectorType_) {
-        case GOTTHARD:
-            masterAttributes = sls::make_unique<GotthardMasterAttributes>();
-            break;
-        case JUNGFRAU:
-            masterAttributes = sls::make_unique<JungfrauMasterAttributes>();
-            break;
-        case EIGER:
-            masterAttributes = sls::make_unique<EigerMasterAttributes>();
-            break;
-        case MYTHEN3:
-            masterAttributes = sls::make_unique<Mythen3MasterAttributes>();
-            break;
-        case GOTTHARD2:
-            masterAttributes = sls::make_unique<Gotthard2MasterAttributes>();
-            break;
-        case MOENCH:
-            masterAttributes = sls::make_unique<MoenchMasterAttributes>();
-            break;
-        case CHIPTESTBOARD:
-            masterAttributes = sls::make_unique<CtbMasterAttributes>();
-            break;
-        default:
-            throw sls::RuntimeError(
-                "Unknown detector type to set up master file attributes");
-        }
-        masterAttributes->framesInFile = numFramesCaught_;
-        masterFile_->UpdateMasterFile(masterAttributes.get(), silentMode);
+void DataProcessor::CreateMasterFile(
+    const std::string filePath, const std::string fileNamePrefix,
+    const uint64_t fileIndex, const bool overWriteEnable, bool silentMode,
+    const fileFormat fileFormatType, MasterAttributes *attr) {
+
+    attr->framesInFile = numFramesCaught_;
+
+    std::unique_ptr<File> masterFile{nullptr};
+    switch (fileFormatType) {
+#ifdef HDF5C
+    case HDF5:
+        masterFile = sls::make_unique<HDF5MasterFile>(hdf5Lib);
+        break;
+#endif
+    case BINARY:
+        BinaryMasterFile::CreateMasterFile(filePath, fileNamePrefix, fileIndex,
+                                           overWriteEnable, silentMode, attr);
+        break;
+    default:
+        throw sls::RuntimeError("Unknown file format (compile with hdf5 flags");
     }
 }
 

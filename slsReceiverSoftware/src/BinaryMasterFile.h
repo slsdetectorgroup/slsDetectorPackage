@@ -5,21 +5,12 @@
 #include "File.h"
 #include "MasterAttributes.h"
 
-class BinaryMasterFile : private virtual slsDetectorDefs, public File {
+class BinaryMasterFile : private virtual slsDetectorDefs {
 
   public:
-    BinaryMasterFile();
-    ~BinaryMasterFile();
-
-    void CloseFile() override;
-    void CreateMasterFile(const std::string filePath,
-                          const std::string fileNamePrefix,
-                          const uint64_t fileIndex, const bool overWriteEnable,
-                          const bool silentMode,
-                          MasterAttributes *attr) override;
-    void UpdateMasterFile(MasterAttributes *attr, bool silentMode) override;
-
-  private:
-    FILE *fd_{nullptr};
-    std::string fileName_;
+    static void CreateMasterFile(const std::string filePath,
+                                 const std::string fileNamePrefix,
+                                 const uint64_t fileIndex,
+                                 const bool overWriteEnable,
+                                 const bool silentMode, MasterAttributes *attr);
 };

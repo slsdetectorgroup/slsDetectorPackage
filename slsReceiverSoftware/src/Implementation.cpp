@@ -240,9 +240,6 @@ void Implementation::setModulePositionId(const int id) {
     xy portGeometry = GetPortGeometry();
     streamingPort = DEFAULT_ZMQ_RX_PORTNO + modulePos * portGeometry.x;
 
-    for (const auto &it : dataProcessor)
-        it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                            fileFormatType, modulePos, &hdf5Lib);
     assert(numModules.y != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
@@ -372,8 +369,7 @@ void Implementation::setFileFormat(const fileFormat f) {
             throw sls::RuntimeError("Unknown file format");
         }
         for (const auto &it : dataProcessor)
-            it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos, &hdf5Lib);
+            it->SetupFileWriter(fileWriteEnable, fileFormatType, &hdf5Lib);
     }
 
     LOG(logINFO) << "File Format: " << sls::ToString(fileFormatType);
@@ -409,8 +405,7 @@ void Implementation::setFileWriteEnable(const bool b) {
     if (fileWriteEnable != b) {
         fileWriteEnable = b;
         for (const auto &it : dataProcessor)
-            it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos, &hdf5Lib);
+            it->SetupFileWriter(fileWriteEnable, fileFormatType, &hdf5Lib);
     }
     LOG(logINFO) << "File Write Enable: "
                  << (fileWriteEnable ? "enabled" : "disabled");
@@ -423,9 +418,6 @@ bool Implementation::getMasterFileWriteEnable() const {
 void Implementation::setMasterFileWriteEnable(const bool b) {
     if (masterFileWriteEnable != b) {
         masterFileWriteEnable = b;
-        for (const auto &it : dataProcessor)
-            it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos, &hdf5Lib);
     }
     LOG(logINFO) << "Master File Write Enable: "
                  << (masterFileWriteEnable ? "enabled" : "disabled");
@@ -584,29 +576,9 @@ void Implementation::stopReceiver() {
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 
-#ifdef HDF5C
-    if (fileWriteEnable && fileFormatType == HDF5) {
-        if (modulePos == 0) {
-            // more than 1 file, create virtual file
-            if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
-                (numModules.x * numModules.y) > 1) {
-                dataProcessor[0]->CreateVirtualFile(
-                    filePath, fileName, fileIndex, overwriteEnable, silentMode,
-                    modulePos, numUDPInterfaces, framesPerFile,
-                    numberOfTotalFrames, dynamicRange, numModules.x,
-                    numModules.y, &hdf5Lib);
-            }
-            // link file in master
-            dataProcessor[0]->LinkDataInMasterFile(silentMode);
-        }
-    }
-#endif
-    if (fileWriteEnable && masterFileWriteEnable && modulePos == 0) {
-        try {
-            dataProcessor[0]->UpdateMasterFile(silentMode);
-        } catch (...) {
-            ; // ignore it and just print it
-        }
+    if (fileWriteEnable && modulePos == 0) {
+        // master and virtual file (hdf5)
+        StartMasterWriter();
     }
 
     // wait for the processes (dataStreamer) to be done
@@ -753,9 +725,25 @@ void Implementation::CreateUDPSockets() {
 }
 
 void Implementation::SetupWriter() {
+    try {
+        for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
+            dataProcessor[i]->CreateFirstFiles(
+                filePath, fileName, fileIndex, overwriteEnable, silentMode,
+                modulePos, numUDPInterfaces, udpPortNum[i], framesPerFile,
+                numberOfTotalFrames, dynamicRange, detectorDataStream[i]);
+        }
+    } catch (const sls::RuntimeError &e) {
+        shutDownUDPSockets();
+        for (const auto &it : dataProcessor)
+            it->CloseFiles();
+        throw sls::RuntimeError("Could not create first data file.");
+    }
+}
+
+void Implementation::StartMasterWriter() {
     // master file
-    std::unique_ptr<MasterAttributes> masterAttributes;
-    if (masterFileWriteEnable && modulePos == 0) {
+    if (masterFileWriteEnable) {
+        std::unique_ptr<MasterAttributes> masterAttributes;
         switch (detType) {
         case GOTTHARD:
             masterAttributes = sls::make_unique<GotthardMasterAttributes>();
@@ -838,22 +826,31 @@ void Implementation::SetupWriter() {
         masterAttributes->gateDelay3 = gateDelay3;
         masterAttributes->gates = numberOfGates;
         masterAttributes->additionalJsonHeader = additionalJsonHeader;
-    }
 
-    try {
-        for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-            dataProcessor[i]->CreateFirstFiles(
-                masterAttributes.get(), filePath, fileName, fileIndex,
-                overwriteEnable, silentMode, modulePos, numUDPInterfaces,
-                udpPortNum[i], framesPerFile, numberOfTotalFrames, dynamicRange,
-                detectorDataStream[i]);
+        try {
+            dataProcessor[0]->CreateMasterFile(
+                filePath, fileName, fileIndex, overwriteEnable, silentMode,
+                fileFormatType, masterAttributes.get());
+        } catch (...) {
+            ; // ignore it and just print it
         }
-    } catch (const sls::RuntimeError &e) {
-        shutDownUDPSockets();
-        for (const auto &it : dataProcessor)
-            it->CloseFiles();
-        throw sls::RuntimeError("Could not create first data file.");
     }
+#ifdef HDF5C
+    if (fileFormatType == HDF5) {
+        // virtual hdf5 file (if multiple files)
+        if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
+            (numModules.x * numModules.y) > 1) {
+            dataProcessor[0]->CreateVirtualFile(
+                filePath, fileName, fileIndex, overwriteEnable, silentMode,
+                modulePos, numUDPInterfaces, framesPerFile, numberOfTotalFrames,
+                dynamicRange, numModules.x, numModules.y, &hdf5Lib);
+        }
+        // link file in master
+        if (masterFileWriteEnable) {
+            dataProcessor[0]->LinkDataInMasterFile(silentMode);
+        }
+    }
+#endif
 }
 
 void Implementation::StartRunning() {

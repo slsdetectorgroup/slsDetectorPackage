@@ -4,15 +4,15 @@
 
 #include <rapidjson/stringbuffer.h>
 
-
 void MasterAttributes::WriteMasterBinaryAttributes(FILE *fd) {
     LOG(logERROR) << "WriteMasterBinaryAttributes should have been called "
                      "by a child class";
 }
 
-void MasterAttributes::GetBinaryMasterAttributes(rapidjson::Writer<rapidjson::StringBuffer>* w) {
+void MasterAttributes::GetBinaryMasterAttributes(
+    rapidjson::Writer<rapidjson::StringBuffer> *w) {
     time_t t = time(nullptr);
-    
+
     w->Key("Version");
     w->SetMaxDecimalPlaces(2);
     w->Double(BINARY_WRITER_VERSION);
@@ -38,10 +38,12 @@ void MasterAttributes::GetBinaryMasterAttributes(rapidjson::Writer<rapidjson::St
     w->Uint(imageSize);
 
     w->Key("Pixels");
-    w->StartArray();
+    w->StartObject();
+    w->Key("x");
     w->Uint(nPixels.x);
+    w->Key("y");
     w->Uint(nPixels.y);
-    w->EndArray();
+    w->EndObject();
 
     w->Key("Max Frames Per File");
     w->Uint(maxFramesPerFile);
@@ -67,64 +69,49 @@ void MasterAttributes::WriteBinaryAttributes(FILE *fd, std::string message) {
     }
 };
 
-void MasterAttributes::WriteFinalBinaryAttributes(FILE *fd) {
- /*
-    FILE* fp = fopen(json_file_name.c_str(), "r");
-char readBuffer[65536];
-FileReadStream is(fp, readBuffer, sizeof(readBuffer));
-
-Document d, d2;
-d.ParseStream(is);
-assert(d.IsArray());
-fclose(fp);
-d2.SetObject();
-Value json_objects(kObjectType);
-json_objects.AddMember("three", 3, d2.GetAllocator());
-d.PushBack(json_objects, d2.GetAllocator());
-
-FILE* outfile = fopen(json_file_name.c_str(), "w");
-char writeBuffer[65536];
-FileWriteStream os(outfile, writeBuffer, sizeof(writeBuffer));
-
-Writer writer(os);
-d.Accept (writer);
-fclose(outfile);
-*/
+void MasterAttributes::WriteFinalBinaryAttributes(
+    rapidjson::Writer<rapidjson::StringBuffer> *w) {
     // adding few common parameters to the end
-    /*std::ostringstream oss;
 
     if (!additionalJsonHeader.empty()) {
-        oss << "Additional Json Header     : "
-            << sls::ToString(additionalJsonHeader) << '\n';
+        w->Key("Additional Json Header");
+        w->String(sls::ToString(additionalJsonHeader).c_str());
     }
-    oss << "Frames in File             : " << framesInFile << '\n';
 
-    // adding sls_receiver header format
-    oss << '\n'
-        << "#Frame Header" << '\n'
-        << "Frame Number               : 8 bytes" << '\n'
-        << "SubFrame Number/ExpLength  : 4 bytes" << '\n'
-        << "Packet Number              : 4 bytes" << '\n'
-        << "Bunch ID                   : 8 bytes" << '\n'
-        << "Timestamp                  : 8 bytes" << '\n'
-        << "Module Id                  : 2 bytes" << '\n'
-        << "Row                        : 2 bytes" << '\n'
-        << "Column                     : 2 bytes" << '\n'
-        << "Reserved                   : 2 bytes" << '\n'
-        << "Debug                      : 4 bytes" << '\n'
-        << "Round Robin Number         : 2 bytes" << '\n'
-        << "Detector Type              : 1 byte" << '\n'
-        << "Header Version             : 1 byte" << '\n'
-        << "Packets Caught Mask        : 64 bytes" << '\n';
+    w->Key("Frames in File");
+    w->Uint64(framesInFile);
 
-    std::string message = oss.str();
-
-    // writing to file
-    if (fwrite((void *)message.c_str(), 1, message.length(), fd) !=
-        message.length()) {
-        throw sls::RuntimeError(
-            "Master binary file incorrect number of bytes written to file");
-    }*/
+    w->Key("Frame Header Format");
+    w->StartObject();
+    w->Key("Frame Number");
+    w->String("8 bytes");
+    w->Key("SubFrame Number/ExpLength");
+    w->String("4 bytes");
+    w->Key("Packet Number");
+    w->String("4 bytes");
+    w->Key("Bunch ID");
+    w->String("8 bytes");
+    w->Key("Timestamp");
+    w->String("8 bytes");
+    w->Key("Module Id");
+    w->String("2 bytes");
+    w->Key("Row");
+    w->String("2 bytes");
+    w->Key("Column");
+    w->String("2 bytes");
+    w->Key("Reserved");
+    w->String("2 bytes");
+    w->Key("Debug");
+    w->String("4 bytes");
+    w->Key("Round Robin Number");
+    w->String("2 bytes");
+    w->Key("Detector Type");
+    w->String("1 byte");
+    w->Key("Header Version");
+    w->String("1 byte");
+    w->Key("Packets Caught Mask");
+    w->String("64 bytes");
+    w->EndObject();
 };
 
 #ifdef HDF5C
@@ -373,8 +360,10 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
         writer.Key("Number of rows");
         writer.Uint(readNRows); 
 
+        MasterAttributes::WriteFinalBinaryAttributes(&writer);   
+
         writer.EndObject();
-        
+
         std::string message = s.GetString();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };

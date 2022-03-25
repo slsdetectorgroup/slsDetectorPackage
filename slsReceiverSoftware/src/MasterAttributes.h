@@ -70,9 +70,11 @@ class MasterAttributes {
     MasterAttributes() = default;
     virtual ~MasterAttributes() = default;
     virtual void WriteMasterBinaryAttributes(FILE *fd);
-    void GetBinaryMasterAttributes(rapidjson::Writer<rapidjson::StringBuffer>* w);
+    void
+    GetBinaryMasterAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
     void WriteBinaryAttributes(FILE *fd, std::string message);
-    void WriteFinalBinaryAttributes(FILE *fd);
+    void
+    WriteFinalBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     virtual void WriteMasterHDF5Attributes(H5File *fd, Group *group);
     void WriteHDF5Attributes(H5File *fd, Group *group);

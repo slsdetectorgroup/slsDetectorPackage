@@ -3,17 +3,6 @@
 #include "BinaryMasterFile.h"
 #include "MasterAttributes.h"
 
-BinaryMasterFile::BinaryMasterFile() : File(BINARY) {}
-
-BinaryMasterFile::~BinaryMasterFile() { CloseFile(); }
-
-void BinaryMasterFile::CloseFile() {
-    if (fd_) {
-        fclose(fd_);
-    }
-    fd_ = nullptr;
-}
-
 void BinaryMasterFile::CreateMasterFile(const std::string filePath,
                                         const std::string fileNamePrefix,
                                         const uint64_t fileIndex,
@@ -24,37 +13,26 @@ void BinaryMasterFile::CreateMasterFile(const std::string filePath,
     std::ostringstream os;
     os << filePath << "/" << fileNamePrefix << "_master"
        << "_" << fileIndex << ".json";
-    fileName_ = os.str();
+    std::string fileName = os.str();
 
     // create file
+    FILE *fd{nullptr};
     if (!overWriteEnable) {
-        if (nullptr == (fd_ = fopen((const char *)fileName_.c_str(), "wx"))) {
-            fd_ = nullptr;
+        if (nullptr == (fd = fopen((const char *)fileName.c_str(), "wx"))) {
+            fd = nullptr;
             throw sls::RuntimeError("Could not create binary master file " +
-                                    fileName_);
+                                    fileName);
         }
-    } else if (nullptr == (fd_ = fopen((const char *)fileName_.c_str(), "w"))) {
-        fd_ = nullptr;
+    } else if (nullptr == (fd = fopen((const char *)fileName.c_str(), "w"))) {
+        fd = nullptr;
         throw sls::RuntimeError(
-            "Could not create/overwrite binary master file " + fileName_);
+            "Could not create/overwrite binary master file " + fileName);
     }
     if (!silentMode) {
-        LOG(logINFO) << "Master File: " << fileName_;
+        LOG(logINFO) << "Master File: " << fileName;
     }
-    attr->WriteMasterBinaryAttributes(fd_);
-    CloseFile();
-}
-
-void BinaryMasterFile::UpdateMasterFile(MasterAttributes *attr,
-                                        bool silentMode) {
-    if (nullptr == (fd_ = fopen((const char *)fileName_.c_str(), "a"))) {
-        fd_ = nullptr;
-        throw sls::RuntimeError("Could not append binary master file " +
-                                fileName_);
-    }
-    attr->WriteFinalBinaryAttributes(fd_);
-    CloseFile();
-    if (!silentMode) {
-        LOG(logINFO) << "Updated Master File";
+    attr->WriteMasterBinaryAttributes(fd);
+    if (fd) {
+        fclose(fd);
     }
 }

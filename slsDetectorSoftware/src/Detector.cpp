@@ -829,13 +829,18 @@ Result<defs::runStatus> Detector::getReceiverStatus(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverStatus, pos);
 }
 
-Result<int64_t> Detector::getFramesCaught(Positions pos) const {
+Result<std::vector<int64_t>> Detector::getFramesCaught(Positions pos) const {
     return pimpl->Parallel(&Module::getFramesCaughtByReceiver, pos);
 }
 
 Result<std::vector<int64_t>>
 Detector::getNumMissingPackets(Positions pos) const {
     return pimpl->Parallel(&Module::getNumMissingPackets, pos);
+}
+
+Result<std::vector<int64_t>>
+Detector::getRxCurrentFrameIndex(Positions pos) const {
+    return pimpl->Parallel(&Module::getReceiverCurrentFrameIndex, pos);
 }
 
 Result<uint64_t> Detector::getNextFrameNumber(Positions pos) const {
@@ -871,7 +876,7 @@ Result<std::string> Detector::getScanErrorMessage(Positions pos) const {
 
 Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
     // also called by vetostream (for gotthard2)
-    return pimpl->getNumberofUDPInterfaces(pos);
+    return pimpl->Parallel(&Module::getNumberofUDPInterfacesFromShm, pos);
 }
 
 void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
@@ -1739,7 +1744,7 @@ Result<defs::streamingInterface> Detector::getVetoStream(Positions pos) const {
     // 3gbe
     auto r3 = pimpl->Parallel(&Module::getVetoStream, pos);
     // 10gbe (debugging interface) opens 2nd udp interface in receiver
-    auto r10 = pimpl->getNumberofUDPInterfaces(pos);
+    auto r10 = getNumberofUDPInterfaces(pos);
 
     Result<defs::streamingInterface> res(r3.size());
     for (unsigned int i = 0; i < res.size(); ++i) {
@@ -1761,7 +1766,7 @@ void Detector::setVetoStream(defs::streamingInterface interface,
     pimpl->Parallel(&Module::setVetoStream, pos, LOW_LATENCY_LINK);
 
     // 10gbe (debugging interface) opens 2nd udp interface in receiver
-    int old_numinterfaces = pimpl->getNumberofUDPInterfaces(pos).tsquash(
+    int old_numinterfaces = getNumberofUDPInterfaces(pos).tsquash(
         "retrieved inconsistent number of udp interfaces");
     int numinterfaces =
         (((interface & defs::streamingInterface::ETHERNET_10GB) ==
@@ -2350,12 +2355,8 @@ Result<ns> Detector::getMeasurementTime(Positions pos) const {
 
 std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
-Result<uint64_t> Detector::getRxCurrentFrameIndex(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverCurrentFrameIndex, pos);
-}
-
 std::vector<int> Detector::getPortNumbers(int start_port) {
-    int num_sockets_per_detector = pimpl->getNumberofUDPInterfaces({}).tsquash(
+    int num_sockets_per_detector = getNumberofUDPInterfaces({}).tsquash(
         "Number of UDP Interfaces is not consistent among modules");
     std::vector<int> res;
     res.reserve(size());

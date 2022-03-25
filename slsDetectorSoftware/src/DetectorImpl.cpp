@@ -245,15 +245,6 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
         addModule(hostname);
     }
     updateDetectorSize();
-
-    // update zmq port (especially for eiger)
-    int numInterfaces = modules[0]->getNumberofUDPInterfaces();
-    if (numInterfaces == 2) {
-        for (size_t i = 0; i < modules.size(); ++i) {
-            modules[i]->setClientStreamingPort(DEFAULT_ZMQ_CL_PORTNO +
-                                               i * numInterfaces);
-        }
-    }
 }
 
 void DetectorImpl::addModule(const std::string &hostname) {
@@ -281,6 +272,13 @@ void DetectorImpl::addModule(const std::string &hostname) {
 
     // get type by connecting
     detectorType type = Module::getTypeFromDetector(host, port);
+
+    // gotthard cannot have more than 2 modules (50um=1, 25um=2
+    if ((type == GOTTHARD || type == GOTTHARD2) && modules.size() > 2) {
+        freeSharedMemory();
+        throw sls::RuntimeError("Gotthard cannot have more than 2 modules");
+    }
+
     auto pos = modules.size();
     modules.emplace_back(
         sls::make_unique<Module>(type, detectorIndex, pos, false));
@@ -288,11 +286,20 @@ void DetectorImpl::addModule(const std::string &hostname) {
     modules[pos]->setControlPort(port);
     modules[pos]->setStopPort(port + 1);
     modules[pos]->setHostname(host, shm()->initialChecks);
+
     // module type updated by now
     shm()->detType = Parallel(&Module::getDetectorType, {})
                          .tsquash("Inconsistent detector types.");
     // for moench and ctb
     modules[pos]->updateNumberOfChannels();
+
+    // for eiger, jungfrau, gotthard2
+    modules[pos]->updateNumberofUDPInterfaces();
+
+    // update zmq port in case numudpinterfaces changed
+    int numInterfaces = modules[pos]->getNumberofUDPInterfacesFromShm();
+    modules[pos]->setClientStreamingPort(DEFAULT_ZMQ_CL_PORTNO +
+                                         pos * numInterfaces);
 }
 
 void DetectorImpl::updateDetectorSize() {
@@ -1142,7 +1149,7 @@ int DetectorImpl::acquire() {
         if (acquisition_finished != nullptr) {
             int status = Parallel(&Module::getRunStatus, {}).squash(ERROR);
             auto a = Parallel(&Module::getReceiverProgress, {});
-            double progress = (*std::min_element(a.begin(), a.end()));
+            double progress = (*std::max_element(a.begin(), a.end()));
             acquisition_finished(progress, status, acqFinished_p);
         }
 
@@ -1359,10 +1366,6 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     // delete temporary
     unlink(destfname);
     return buffer;
-}
-
-sls::Result<int> DetectorImpl::getNumberofUDPInterfaces(Positions pos) const {
-    return Parallel(&Module::getNumberofUDPInterfaces, pos);
 }
 
 sls::Result<int> DetectorImpl::getDefaultDac(defs::dacIndex index,

@@ -47,10 +47,14 @@ This document describes the differences between v7.0.0 and v6.x.x
 - stop servers also check for errors at startup( in case it was running with an older version)
 - hostname cmd failed when connecting to servers in update mode (ctb, moench, jungfrau, eiger)
 - missingpackets signed (negative => extra packets)
+- framescaught and frameindex now returns a vector for each port
+- progress looks at activated or enabled ports, so progress does not stagnate
+- (eiger) disable datastreaming also for virtual servers only for 10g
+- missing packets also takes care of disabled ports
 - added geometry to metadata
 - 10g eiger nextframenumber get fixed.
 - stop, able to set nextframenumber to a consistent (max + 1) for all modules if different (eiger/ctb/jungfrau/moench)
-
+- gotthard 25 um image reconstructed in gui and virtual hdf5 (firmware updated for slave to reverse channels)
 
 2. Resolved Issues
 ==================

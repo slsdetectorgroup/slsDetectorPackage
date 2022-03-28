@@ -51,53 +51,19 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      */
     ~Listener();
 
-    /**
-     * Get Packets caught
-     * @return Packets caught
-     */
     uint64_t GetPacketsCaught() const;
-
-    /**
-     * Get Last Frame index caught
-     * @return last frame index caught
-     */
+    uint64_t GetNumCompleteFramesCaught() const;
     uint64_t GetLastFrameIndexCaught() const;
-
-    /** Get  number of missing packets, returns negative values in case to extra
-     * packet */
+    /**  negative values in case of extra packets */
     int64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) const;
+    bool GetStartedFlag() const;
+    uint64_t GetCurrentFrameIndex() const;
+    uint64_t GetListenedIndex() const;
 
-    bool GetStartedFlag();
-
-    uint64_t GetCurrentFrameIndex();
-    /** (-1 if no frames have been caught) */
-    uint64_t GetListenedIndex();
-
-    /**
-     * Set Fifo pointer to the one given
-     * @param f address of Fifo pointer
-     */
     void SetFifo(Fifo *f);
-
-    /**
-     * Reset parameters for new acquisition
-     */
     void ResetParametersforNewAcquisition();
-
-    /**
-     * Set GeneralData pointer to the one given
-     * @param g address of GeneralData (Detector Data) pointer
-     */
     void SetGeneralData(GeneralData *g);
-
-    /**
-     * Creates UDP Sockets
-     */
     void CreateUDPSockets();
-
-    /**
-     * Shuts down and deletes UDP Sockets
-     */
     void ShutDownUDPSocket();
 
     /**
@@ -116,10 +82,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void SetHardCodedPosition(uint16_t r, uint16_t c);
 
   private:
-    /**
-     * Record First Acquisition Index
-     * @param fnum frame index to record
-     */
     void RecordFirstIndex(uint64_t fnum);
 
     /**
@@ -146,55 +108,25 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      */
     uint32_t ListenToAnImage(char *buf);
 
-    /**
-     * Print Fifo Statistics
-     */
     void PrintFifoStatistics();
 
-    /** type of thread */
     static const std::string TypeName;
-
-    /** GeneralData (Detector Data) object */
     GeneralData *generalData{nullptr};
-
-    /** Fifo structure */
     Fifo *fifo;
 
     // individual members
-    /** Detector Type */
     detectorType myDetectorType;
-
-    /** Receiver Status */
     std::atomic<runStatus> *status;
-
-    /** UDP Socket - Detector to Receiver */
     std::unique_ptr<sls::UdpRxSocket> udpSocket{nullptr};
-
-    /** UDP Port Number */
     uint32_t *udpPortNumber;
-
-    /** ethernet interface */
     std::string *eth;
-
-    /** UDP Socket Buffer Size */
     int *udpSocketBufferSize;
-
-    /** actual UDP Socket Buffer Size (double due to kernel bookkeeping) */
+    /** double due to kernel bookkeeping */
     int *actualUDPSocketBufferSize;
-
-    /** frames per file */
     uint32_t *framesPerFile;
-
-    /** frame discard policy */
     frameDiscardPolicy *frameDiscardMode;
-
-    /** Activated/Deactivated */
     bool *activated;
-
-    /** detector data stream */
     bool *detectorDataStream;
-
-    /** Silent Mode */
     bool *silentMode;
 
     /** row hardcoded as 1D or 2d,
@@ -209,15 +141,12 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     // acquisition start
     /** Aquisition Started flag */
     std::atomic<bool> startedFlag{false};
-
     /** Frame Number of First Frame  */
     uint64_t firstIndex{0};
 
     // for acquisition summary
-    /** Number of complete Packets caught */
     std::atomic<uint64_t> numPacketsCaught{0};
-
-    /** Last Frame Index caught  from udp network */
+    std::atomic<uint64_t> numCompleteFramesCaught{0};
     std::atomic<uint64_t> lastCaughtFrameIndex{0};
 
     // parameters to acquire image
@@ -225,25 +154,16 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * ( always check startedFlag for validity first)
      */
     uint64_t currentFrameIndex{0};
-
     /** True if there is a packet carry over from previous Image */
     bool carryOverFlag{false};
-
-    /** Carry over packet buffer */
     std::unique_ptr<char[]> carryOverPacket;
-
     /** Listening buffer for one packet - might be removed when we can peek and
      * eiger fnum is in header */
     std::unique_ptr<char[]> listeningPacket;
-
-    /** if the udp socket is connected */
     std::atomic<bool> udpSocketAlive{false};
 
-    // for print progress during acquisition
-    /** number of packets for statistic */
+    // for print progress during acquisition*/
     uint32_t numPacketsStatistic{0};
-
-    /** number of images for statistic */
     uint32_t numFramesStatistic{0};
 
     /**

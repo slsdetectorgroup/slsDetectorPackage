@@ -493,12 +493,16 @@ void init_det(py::module &m) {
                  Detector::getReceiverStatus,
              py::arg() = Positions{})
         .def("getFramesCaught",
-             (Result<int64_t>(Detector::*)(sls::Positions) const) &
+             (Result<std::vector<int64_t>>(Detector::*)(sls::Positions) const) &
                  Detector::getFramesCaught,
              py::arg() = Positions{})
         .def("getNumMissingPackets",
              (Result<std::vector<int64_t>>(Detector::*)(sls::Positions) const) &
                  Detector::getNumMissingPackets,
+             py::arg() = Positions{})
+        .def("getRxCurrentFrameIndex",
+             (Result<std::vector<int64_t>>(Detector::*)(sls::Positions) const) &
+                 Detector::getRxCurrentFrameIndex,
              py::arg() = Positions{})
         .def("getNextFrameNumber",
              (Result<uint64_t>(Detector::*)(sls::Positions) const) &
@@ -1657,9 +1661,5 @@ void init_det(py::module &m) {
                  Detector::getMeasurementTime,
              py::arg() = Positions{})
         .def("getUserDetails",
-             (std::string(Detector::*)() const) & Detector::getUserDetails)
-        .def("getRxCurrentFrameIndex",
-             (Result<uint64_t>(Detector::*)(sls::Positions) const) &
-                 Detector::getRxCurrentFrameIndex,
-             py::arg() = Positions{});
+             (std::string(Detector::*)() const) & Detector::getUserDetails);
 }

@@ -873,8 +873,26 @@ double Module::getReceiverProgress() const {
     return sendToReceiver<double>(F_GET_RECEIVER_PROGRESS);
 }
 
-int64_t Module::getFramesCaughtByReceiver() const {
-    return sendToReceiver<int64_t>(F_GET_RECEIVER_FRAMES_CAUGHT);
+std::vector<int64_t> Module::getFramesCaughtByReceiver() const {
+    // TODO!(Erik) Refactor
+    LOG(logDEBUG1) << "Getting frames caught";
+    if (shm()->useReceiverFlag) {
+        auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+        client.Send(F_GET_RECEIVER_FRAMES_CAUGHT);
+        if (client.Receive<int>() == FAIL) {
+            throw ReceiverError(
+                "Receiver " + std::to_string(moduleIndex) +
+                " returned error: " + client.readErrorMessage());
+        } else {
+            auto nports = client.Receive<int>();
+            std::vector<int64_t> retval(nports);
+            client.Receive(retval);
+            LOG(logDEBUG1) << "Frames caught of Receiver" << moduleIndex << ": "
+                           << sls::ToString(retval);
+            return retval;
+        }
+    }
+    throw RuntimeError("No receiver to get frames caught.");
 }
 
 std::vector<int64_t> Module::getNumMissingPackets() const {
@@ -897,6 +915,28 @@ std::vector<int64_t> Module::getNumMissingPackets() const {
         }
     }
     throw RuntimeError("No receiver to get missing packets.");
+}
+
+std::vector<int64_t> Module::getReceiverCurrentFrameIndex() const {
+    // TODO!(Erik) Refactor
+    LOG(logDEBUG1) << "Getting frame index";
+    if (shm()->useReceiverFlag) {
+        auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+        client.Send(F_GET_RECEIVER_FRAME_INDEX);
+        if (client.Receive<int>() == FAIL) {
+            throw ReceiverError(
+                "Receiver " + std::to_string(moduleIndex) +
+                " returned error: " + client.readErrorMessage());
+        } else {
+            auto nports = client.Receive<int>();
+            std::vector<int64_t> retval(nports);
+            client.Receive(retval);
+            LOG(logDEBUG1) << "Frame index of Receiver" << moduleIndex << ": "
+                           << sls::ToString(retval);
+            return retval;
+        }
+    }
+    throw RuntimeError("No receiver to get frame index.");
 }
 
 uint64_t Module::getNextFrameNumber() const {
@@ -936,9 +976,8 @@ int Module::getNumberofUDPInterfacesFromShm() const {
     return shm()->numUDPInterfaces;
 }
 
-int Module::getNumberofUDPInterfaces() const {
+void Module::updateNumberofUDPInterfaces() {
     shm()->numUDPInterfaces = sendToDetector<int>(F_GET_NUM_INTERFACES);
-    return shm()->numUDPInterfaces;
 }
 
 void Module::setNumberofUDPInterfaces(int n) {
@@ -1146,7 +1185,7 @@ std::string Module::printReceiverConfiguration() {
        << getReceiverHostname();
 
     if (shm()->detType == JUNGFRAU) {
-        os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfaces()
+        os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfacesFromShm()
            << "\nSelected Interface:\t" << getSelectedUDPInterface();
     }
 
@@ -2758,10 +2797,6 @@ int64_t Module::getMeasurementTime() const {
     return sendToDetectorStop<int64_t>(F_GET_MEASUREMENT_TIME);
 }
 
-uint64_t Module::getReceiverCurrentFrameIndex() const {
-    return sendToReceiver<uint64_t>(F_GET_RECEIVER_FRAME_INDEX);
-}
-
 // private
 
 void Module::checkArgs(const void *args, size_t args_size, void *retval,
@@ -3185,10 +3220,10 @@ void Module::initializeModuleStructure(detectorType type) {
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
     shm()->useReceiverFlag = false;
+    shm()->numUDPInterfaces = 1;
     shm()->zmqport =
         DEFAULT_ZMQ_CL_PORTNO + moduleIndex * shm()->numUDPInterfaces;
     shm()->zmqip = IpAddr{};
-    shm()->numUDPInterfaces = 1;
     shm()->stoppedFlag = false;
 
     // get the Module parameters based on type

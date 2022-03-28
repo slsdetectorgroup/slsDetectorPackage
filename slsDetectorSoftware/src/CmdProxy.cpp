@@ -1146,6 +1146,9 @@ std::string CmdProxy::DacList(const int action) {
             throw sls::RuntimeError("This detector already has fixed dac "
                                     "names. Cannot change them.");
         }
+        if (det_id != -1) {
+            throw sls::RuntimeError("Cannot configure dacnames at module level");
+        }
         if (args.size() != 18) {
             WrongNumberOfParameters(18);
         }

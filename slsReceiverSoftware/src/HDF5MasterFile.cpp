@@ -3,30 +3,12 @@
 #include "HDF5MasterFile.h"
 #include "MasterAttributes.h"
 
-HDF5MasterFile::HDF5MasterFile(std::mutex *hdf5Lib)
-    : File(HDF5), hdf5Lib_(hdf5Lib) {}
-
-HDF5MasterFile::~HDF5MasterFile() { CloseFile(); }
-
-void HDF5MasterFile::CloseFile() {
-    std::lock_guard<std::mutex> lock(*hdf5Lib_);
-    try {
-        Exception::dontPrint(); // to handle errors
-        if (fd_) {
-            fd_->close();
-            delete fd_;
-            fd_ = nullptr;
-        }
-    } catch (const Exception &error) {
-        LOG(logERROR) << "Could not close master HDF5 handles";
-        error.printErrorStack();
-    }
-}
-
-void HDF5MasterFile::LinkDataFile(std::string dataFilename,
-                                  std::string dataSetname,
+void HDF5MasterFile::LinkDataFile(const std::string &masterFileName,
+                                  const std::string &dataFilename,
+                                  const std::string &dataSetname,
                                   const std::vector<std::string> parameterNames,
-                                  const bool silentMode) {
+                                  const bool silentMode,
+                                  std::mutex *hdf5LibMutex) {
 
     std::lock_guard<std::mutex> lock(*hdf5Lib_);
     try {
@@ -36,7 +18,7 @@ void HDF5MasterFile::LinkDataFile(std::string dataFilename,
         flist.setFcloseDegree(H5F_CLOSE_STRONG);
 
         // open master file
-        H5File masterfd(fileName_.c_str(), H5F_ACC_RDWR,
+        H5File masterfd(masterFileName.c_str(), H5F_ACC_RDWR,
                         FileCreatPropList::DEFAULT, flist);
 
         // open data file
@@ -69,7 +51,7 @@ void HDF5MasterFile::LinkDataFile(std::string dataFilename,
         masterfd.close();
     } catch (const Exception &error) {
         error.printErrorStack();
-        CloseFile();
+        fd.close();
         throw sls::RuntimeError("Could not link in master hdf5 file");
     }
     if (!silentMode) {
@@ -77,17 +59,15 @@ void HDF5MasterFile::LinkDataFile(std::string dataFilename,
     }
 }
 
-void HDF5MasterFile::CreateMasterFile(const std::string filePath,
-                                      const std::string fileNamePrefix,
-                                      const uint64_t fileIndex,
-                                      const bool overWriteEnable,
-                                      const bool silentMode,
-                                      MasterAttributes *attr) {
+std::string HDF5MasterFile::CreateMasterFile(
+    const std::string filePath, const std::string fileNamePrefix,
+    const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
+    MasterAttributes *attr, std::mutex *hdf5LibMutex) {
 
     std::ostringstream os;
     os << filePath << "/" << fileNamePrefix << "_master"
        << "_" << fileIndex << ".h5";
-    fileName_ = os.str();
+    std::string fileName = os.str();
 
     std::lock_guard<std::mutex> lock(*hdf5Lib_);
 
@@ -96,67 +76,39 @@ void HDF5MasterFile::CreateMasterFile(const std::string filePath,
 
         FileAccPropList flist;
         flist.setFcloseDegree(H5F_CLOSE_STRONG);
-        fd_ = nullptr;
-        if (!(overWriteEnable))
-            fd_ = new H5File(fileName_.c_str(), H5F_ACC_EXCL,
-                             FileCreatPropList::DEFAULT, flist);
-        else
-            fd_ = new H5File(fileName_.c_str(), H5F_ACC_TRUNC,
-                             FileCreatPropList::DEFAULT, flist);
+
+        unsigned int createFlags = H5F_ACC_EXCL;
+        if (overWriteEnable) {
+            createFlags = H5F_ACC_TRUNC;
+        }
+        H5File fd(fileName.c_str(), createFlags, FileCreatPropList::DEFAULT,
+                  flist);
 
         // attributes - version
         double dValue = HDF5_WRITER_VERSION;
         DataSpace dataspace_attr = DataSpace(H5S_SCALAR);
-        Attribute attribute = fd_->createAttribute(
+        Attribute attribute = fd.createAttribute(
             "version", PredType::NATIVE_DOUBLE, dataspace_attr);
         attribute.write(PredType::NATIVE_DOUBLE, &dValue);
 
         // Create a group in the file
-        Group group1(fd_->createGroup("entry"));
+        Group group1(fd.createGroup("entry"));
         Group group2(group1.createGroup("data"));
         Group group3(group1.createGroup("instrument"));
         Group group4(group3.createGroup("beam"));
         Group group5(group3.createGroup("detector"));
         Group group6(group1.createGroup("sample"));
 
-        // TODO find a way to get complete group link
-        attrGroupName_ = "/entry/instrument/detector";
-
-        attr->WriteMasterHDF5Attributes(fd_, &group5);
-        fd_->close();
-
+        attr->WriteMasterHDF5Attributes(&fd, &group5);
+        fd.close();
     } catch (const Exception &error) {
         error.printErrorStack();
-        CloseFile();
+        fd.close();
         throw sls::RuntimeError(
             "Could not create/overwrite master HDF5 handles");
     }
     if (!silentMode) {
-        LOG(logINFO) << "Master File: " << fileName_;
+        LOG(logINFO) << "Master File: " << fileName;
     }
-}
-
-void HDF5MasterFile::UpdateMasterFile(MasterAttributes *attr, bool silentMode) {
-    std::lock_guard<std::mutex> lock(*hdf5Lib_);
-
-    try {
-        Exception::dontPrint(); // to handle errors
-        FileAccPropList flist;
-        flist.setFcloseDegree(H5F_CLOSE_STRONG);
-        fd_ = new H5File(fileName_.c_str(), H5F_ACC_RDWR,
-                         FileCreatPropList::DEFAULT, flist);
-
-        Group group = fd_->openGroup(attrGroupName_.c_str());
-        attr->WriteFinalHDF5Attributes(fd_, &group);
-        fd_->close();
-
-    } catch (const Exception &error) {
-        error.printErrorStack();
-        CloseFile();
-        throw sls::RuntimeError(
-            "Could not create/overwrite master HDF5 handles");
-    }
-    if (!silentMode) {
-        LOG(logINFO) << "Updated Master File";
-    }
+    return fileName;
 }

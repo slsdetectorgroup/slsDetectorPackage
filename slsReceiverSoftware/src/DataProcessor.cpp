@@ -94,10 +94,6 @@ void DataProcessor::DeleteFiles() {
         delete dataFile_;
         dataFile_ = nullptr;
     }
-    /* if (masterFile_) {
-         delete masterFile_;
-         masterFile_ = nullptr;
-     }*/
 #ifdef HDF5C
     if (virtualFile_) {
         delete virtualFile_;
@@ -107,13 +103,13 @@ void DataProcessor::DeleteFiles() {
 }
 void DataProcessor::SetupFileWriter(const bool filewriteEnable,
                                     const fileFormat fileFormatType,
-                                    std::mutex *hdf5Lib) {
+                                    std::mutex *hdf5LibMutex) {
     DeleteFiles();
     if (filewriteEnable) {
         switch (fileFormatType) {
 #ifdef HDF5C
         case HDF5:
-            dataFile_ = new HDF5DataFile(index, hdf5Lib);
+            dataFile_ = new HDF5DataFile(index, hdf5LibMutex);
             break;
 #endif
         case BINARY:
@@ -178,7 +174,7 @@ void DataProcessor::CreateVirtualFile(
     const int modulePos, const int numUnitsPerReadout,
     const uint32_t maxFramesPerFile, const uint64_t numImages,
     const uint32_t dynamicRange, const int numModX, const int numModY,
-    std::mutex *hdf5Lib) {
+    std::mutex *hdf5LibMutex) {
 
     if (virtualFile_) {
         delete virtualFile_;
@@ -186,7 +182,7 @@ void DataProcessor::CreateVirtualFile(
     bool gotthard25um =
         ((detectorType_ == GOTTHARD || detectorType_ == GOTTHARD2) &&
          (numModX * numModY) == 2);
-    virtualFile_ = new HDF5VirtualFile(hdf5Lib, gotthard25um);
+    virtualFile_ = new HDF5VirtualFile(hdf5LibMutex, gotthard25um);
 
     // maxframesperfile = 0 for infinite files
     uint32_t framesPerFile =
@@ -204,7 +200,9 @@ void DataProcessor::CreateVirtualFile(
         dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes());
 }
 
-void DataProcessor::LinkDataInMasterFile(const bool silentMode) {
+void DataProcessor::LinkDataInMasterFile(const string &masterFileName,
+                                         const bool silentMode,
+                                         std::mutex *hdf5LibMutex) {
     std::string fname, datasetName;
     if (virtualFile_) {
         auto res = virtualFile_->GetFileAndDatasetName();
@@ -216,15 +214,17 @@ void DataProcessor::LinkDataInMasterFile(const bool silentMode) {
         datasetName = res[1];
     }
     // link in master
-    masterFile_->LinkDataFile(fname, datasetName,
-                              dataFile_->GetParameterNames(), silentMode);
+    HDF5MasterFile::LinkDataFile(masterFileName, fname, datasetName,
+                                 dataFile_->GetParameterNames(), silentMode,
+                                 &hdf5LibMutex);
 }
 #endif
 
-void DataProcessor::CreateMasterFile(
-    const std::string filePath, const std::string fileNamePrefix,
+std::string DataProcessor::CreateMasterFile(
+    const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, bool silentMode,
-    const fileFormat fileFormatType, MasterAttributes *attr) {
+    const fileFormat fileFormatType, MasterAttributes *attr,
+    std::mutex *hdf5LibMutex) {
 
     attr->framesInFile = numFramesCaught_;
 
@@ -232,13 +232,14 @@ void DataProcessor::CreateMasterFile(
     switch (fileFormatType) {
 #ifdef HDF5C
     case HDF5:
-        masterFile = sls::make_unique<HDF5MasterFile>(hdf5Lib);
-        break;
+        return HDF5MasterFile::CreateMasterFile(filePath, fileNamePrefix,
+                                                fileIndex, overWriteEnable,
+                                                silentMode, attr, hdf5LibMutex);
 #endif
     case BINARY:
-        BinaryMasterFile::CreateMasterFile(filePath, fileNamePrefix, fileIndex,
-                                           overWriteEnable, silentMode, attr);
-        break;
+        return BinaryMasterFile::CreateMasterFile(filePath, fileNamePrefix,
+                                                  fileIndex, overWriteEnable,
+                                                  silentMode, attr);
     default:
         throw sls::RuntimeError("Unknown file format (compile with hdf5 flags");
     }

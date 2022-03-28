@@ -7,6 +7,7 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
+#include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 
 #ifdef HDF5C
@@ -69,12 +70,12 @@ class MasterAttributes {
 
     MasterAttributes() = default;
     virtual ~MasterAttributes() = default;
-    virtual void WriteMasterBinaryAttributes(FILE *fd);
+    virtual void
+    GetSpecificBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
     void
-    GetBinaryMasterAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
-    void WriteBinaryAttributes(FILE *fd, std::string message);
+    GetCommonBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
     void
-    WriteFinalBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
+    GetFinalBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     virtual void WriteMasterHDF5Attributes(H5File *fd, Group *group);
     void WriteHDF5Attributes(H5File *fd, Group *group);
@@ -89,7 +90,8 @@ class MasterAttributes {
 class GotthardMasterAttributes : public MasterAttributes {
   public:
     GotthardMasterAttributes() = default;
-    void WriteMasterBinaryAttributes(FILE *fd) override;
+    void GetSpecificBinaryAttributes(
+        rapidjson::Writer<rapidjson::StringBuffer> *w) override;
 #ifdef HDF5C
     void WriteMasterHDF5Attributes(H5File *fd, Group *group) override;
 #endif
@@ -98,7 +100,8 @@ class GotthardMasterAttributes : public MasterAttributes {
 class JungfrauMasterAttributes : public MasterAttributes {
   public:
     JungfrauMasterAttributes() = default;
-    void WriteMasterBinaryAttributes(FILE *fd) override;
+    void GetSpecificBinaryAttributes(
+        rapidjson::Writer<rapidjson::StringBuffer> *w) override;
 #ifdef HDF5C
     void WriteMasterHDF5Attributes(H5File *fd, Group *group) override;
 #endif
@@ -107,7 +110,8 @@ class JungfrauMasterAttributes : public MasterAttributes {
 class EigerMasterAttributes : public MasterAttributes {
   public:
     EigerMasterAttributes() = default;
-    void WriteMasterBinaryAttributes(FILE *fd) override;
+    void GetSpecificBinaryAttributes(
+        rapidjson::Writer<rapidjson::StringBuffer> *w) override;
 #ifdef HDF5C
     void WriteMasterHDF5Attributes(H5File *fd, Group *group) override;
 #endif
@@ -116,7 +120,8 @@ class EigerMasterAttributes : public MasterAttributes {
 class Mythen3MasterAttributes : public MasterAttributes {
   public:
     Mythen3MasterAttributes() = default;
-    void WriteMasterBinaryAttributes(FILE *fd) override;
+    void GetSpecificBinaryAttributes(
+        rapidjson::Writer<rapidjson::StringBuffer> *w) override;
 #ifdef HDF5C
     void WriteMasterHDF5Attributes(H5File *fd, Group *group) override;
 #endif
@@ -125,7 +130,8 @@ class Mythen3MasterAttributes : public MasterAttributes {
 class Gotthard2MasterAttributes : public MasterAttributes {
   public:
     Gotthard2MasterAttributes() = default;
-    void WriteMasterBinaryAttributes(FILE *fd) override;
+    void GetSpecificBinaryAttributes(
+        rapidjson::Writer<rapidjson::StringBuffer> *w) override;
 #ifdef HDF5C
     void WriteMasterHDF5Attributes(H5File *fd, Group *group) override;
 #endif
@@ -134,7 +140,8 @@ class Gotthard2MasterAttributes : public MasterAttributes {
 class MoenchMasterAttributes : public MasterAttributes {
   public:
     MoenchMasterAttributes() = default;
-    void WriteMasterBinaryAttributes(FILE *fd) override;
+    void GetSpecificBinaryAttributes(
+        rapidjson::Writer<rapidjson::StringBuffer> *w) override;
 #ifdef HDF5C
     void WriteMasterHDF5Attributes(H5File *fd, Group *group) override;
 #endif
@@ -143,7 +150,8 @@ class MoenchMasterAttributes : public MasterAttributes {
 class CtbMasterAttributes : public MasterAttributes {
   public:
     CtbMasterAttributes() = default;
-    void WriteMasterBinaryAttributes(FILE *fd) override;
+    void GetSpecificBinaryAttributes(
+        rapidjson::Writer<rapidjson::StringBuffer> *w) override;
 #ifdef HDF5C
     void WriteMasterHDF5Attributes(H5File *fd, Group *group) override;
 #endif

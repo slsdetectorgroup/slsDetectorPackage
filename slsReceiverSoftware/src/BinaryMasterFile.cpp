@@ -3,12 +3,12 @@
 #include "BinaryMasterFile.h"
 #include "MasterAttributes.h"
 
-void BinaryMasterFile::CreateMasterFile(const std::string filePath,
-                                        const std::string fileNamePrefix,
-                                        const uint64_t fileIndex,
-                                        const bool overWriteEnable,
-                                        const bool silentMode,
-                                        MasterAttributes *attr) {
+std::string BinaryMasterFile::CreateMasterFile(const std::string filePath,
+                                               const std::string fileNamePrefix,
+                                               const uint64_t fileIndex,
+                                               const bool overWriteEnable,
+                                               const bool silentMode,
+                                               MasterAttributes *attr) {
     // create file name
     std::ostringstream os;
     os << filePath << "/" << fileNamePrefix << "_master"
@@ -28,11 +28,31 @@ void BinaryMasterFile::CreateMasterFile(const std::string filePath,
         throw sls::RuntimeError(
             "Could not create/overwrite binary master file " + fileName);
     }
-    if (!silentMode) {
-        LOG(logINFO) << "Master File: " << fileName;
+
+    std::string message = BinaryMasterFile::GetMasterAttributes(attr);
+    if (fwrite((void *)message.c_str(), 1, message.length(), fd) !=
+        message.length()) {
+        throw sls::RuntimeError(
+            "Master binary file incorrect number of bytes written to file");
     }
-    attr->WriteMasterBinaryAttributes(fd);
     if (fd) {
         fclose(fd);
     }
+    if (!silentMode) {
+        LOG(logINFO) << "Master File: " << fileName;
+    }
+    return fileName;
+}
+
+std::string BinaryMasterFile::GetMasterAttributes(MasterAttributes *attr) {
+    rapidjson::StringBuffer s;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+    writer.StartObject();
+
+    attr->GetCommonBinaryAttributes(&writer);
+    attr->GetSpecificBinaryAttributes(&writer);
+    attr->GetFinalBinaryAttributes(&writer);
+
+    writer.EndObject();
+    return s.GetString();
 }

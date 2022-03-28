@@ -8,9 +8,13 @@
 class BinaryMasterFile : private virtual slsDetectorDefs {
 
   public:
-    static void CreateMasterFile(const std::string filePath,
-                                 const std::string fileNamePrefix,
-                                 const uint64_t fileIndex,
-                                 const bool overWriteEnable,
-                                 const bool silentMode, MasterAttributes *attr);
+    static std::string CreateMasterFile(const std::string filePath,
+                                        const std::string fileNamePrefix,
+                                        const uint64_t fileIndex,
+                                        const bool overWriteEnable,
+                                        const bool silentMode,
+                                        MasterAttributes *attr);
+
+  private:
+    static std::string GetMasterAttributes(MasterAttributes *attr);
 };

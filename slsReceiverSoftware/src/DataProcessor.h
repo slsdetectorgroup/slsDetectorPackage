@@ -45,7 +45,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void CloseFiles();
     void DeleteFiles();
     void SetupFileWriter(const bool filewriteEnable,
-                         const fileFormat fileFormatType, std::mutex *hdf5Lib);
+                         const fileFormat fileFormatType,
+                         std::mutex *hdf5LibMutex);
 
     void CreateFirstFiles(const std::string filePath,
                           const std::string fileNamePrefix,
@@ -58,22 +59,26 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                           const bool detectorDataStream);
 #ifdef HDF5C
     uint32_t GetFilesInAcquisition() const;
-    void CreateVirtualFile(const std::string filePath,
-                           const std::string fileNamePrefix,
+    void CreateVirtualFile(const std::string &filePath,
+                           const std::string &fileNamePrefix,
                            const uint64_t fileIndex, const bool overWriteEnable,
                            const bool silentMode, const int modulePos,
                            const int numUnitsPerReadout,
                            const uint32_t maxFramesPerFile,
                            const uint64_t numImages,
                            const uint32_t dynamicRange, const int numModX,
-                           const int numModY, std::mutex *hdf5Lib);
-    void LinkDataInMasterFile(const bool silentMode);
+                           const int numModY, std::mutex *hdf5LibMutex);
+    void LinkDataInMasterFile(const string &masterFileName,
+                              const bool silentMode, std::mutex *hdf5LibMutex);
 #endif
-    void CreateMasterFile(const std::string filePath,
-                          const std::string fileNamePrefix,
-                          const uint64_t fileIndex, const bool overWriteEnable,
-                          bool silentMode, const fileFormat fileFormatType,
-                          MasterAttributes *attr);
+
+    std::string CreateMasterFile(const std::string &filePath,
+                                 const std::string &fileNamePrefix,
+                                 const uint64_t fileIndex,
+                                 const bool overWriteEnable, bool silentMode,
+                                 const fileFormat fileFormatType,
+                                 MasterAttributes *attr,
+                                 std::mutex *hdf5LibMutex);
     /**
      * Call back for raw data
      * args to raw data ready callback are

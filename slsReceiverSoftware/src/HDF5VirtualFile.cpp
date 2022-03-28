@@ -5,8 +5,8 @@
 
 #include <iomanip>
 
-HDF5VirtualFile::HDF5VirtualFile(std::mutex *hdf5Lib, bool g25)
-    : File(HDF5), hdf5Lib_(hdf5Lib), gotthard25um(g25) {}
+HDF5VirtualFile::HDF5VirtualFile(std::mutex *hdf5LibMutex, bool g25)
+    : File(HDF5), hdf5Lib_(hdf5LibMutex), gotthard25um(g25) {}
 
 HDF5VirtualFile::~HDF5VirtualFile() { CloseFile(); }
 
@@ -30,7 +30,7 @@ void HDF5VirtualFile::CloseFile() {
 }
 
 void HDF5VirtualFile::CreateVirtualFile(
-    const std::string filePath, const std::string fileNamePrefix,
+    const &std::string filePath, const &std::string fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
     const uint32_t maxFramesPerFile, const uint64_t numImages,

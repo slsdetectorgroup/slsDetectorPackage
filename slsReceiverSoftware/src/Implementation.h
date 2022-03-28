@@ -387,5 +387,6 @@ class Implementation : private virtual slsDetectorDefs {
     std::vector<std::unique_ptr<Fifo>> fifo;
     Arping arping;
 
-    std::mutex hdf5Lib;
+    // mutex shared across all hdf5 virtual, master and data files
+    std::mutex hdf5LibMutex;
 };

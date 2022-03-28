@@ -19,7 +19,6 @@
 #include <fcntl.h> // O_CREAT, O_TRUNC..
 #include <iostream>
 #include <sstream>
-// #include <stdio.h>    // printf
 #include <sys/mman.h> // shared memory
 #include <sys/stat.h> // fstat
 #include <unistd.h>
@@ -36,11 +35,9 @@ namespace sls {
 template <typename T> class SharedMemory {
 
   public:
-    /**
-     * moduleid of -1 creates a detector only shared memory
-     */
-    SharedMemory(int detectorId, int moduleIndex) {
-        name = ConstructSharedMemoryName(detectorId, moduleIndex);
+    //moduleid of -1 creates a detector only shared memory
+    SharedMemory(int detectorId, int moduleIndex, const std::string& tag = "") {
+        name = ConstructSharedMemoryName(detectorId, moduleIndex, tag);
     }
 
     /**
@@ -103,11 +100,7 @@ template <typename T> class SharedMemory {
         return ret;
     }
 
-    /**
-     * Get shared memory name
-     */
     std::string GetName() const { return name; }
-
     size_t size() const { return shmSize; }
 
     /**
@@ -133,8 +126,10 @@ template <typename T> class SharedMemory {
             RemoveSharedMemory();
             throw SharedMemoryError(msg);
         }
+        // int *pInt = new (buf) int(3);
 
         shared_struct = MapSharedMemory();
+        new (shared_struct) T{}; // is this ok? 
         LOG(logINFO) << "Shared memory created " << name;
     }
 
@@ -211,7 +206,7 @@ template <typename T> class SharedMemory {
      * @param moduleIndex module id, -1 if a detector shared memory
      * @returns shared memory name
      */
-    std::string ConstructSharedMemoryName(int detectorId, int moduleIndex) {
+    std::string ConstructSharedMemoryName(int detectorId, int moduleIndex, const std::string& tag) {
 
         // using environment path
         std::string sEnvPath;
@@ -222,8 +217,12 @@ template <typename T> class SharedMemory {
         }
 
         std::stringstream ss;
-        if (moduleIndex < 0)
+        if (moduleIndex < 0){
             ss << SHM_DETECTOR_PREFIX << detectorId << sEnvPath;
+            if (!tag.empty())
+                ss << "_" << tag;
+        }
+            
         else
             ss << SHM_DETECTOR_PREFIX << detectorId << SHM_MODULE_PREFIX
                << moduleIndex << sEnvPath;
@@ -293,15 +292,10 @@ template <typename T> class SharedMemory {
         return 0;
     }
 
-    /** Shared memory name */
+
     std::string name;
-
-    /** File descriptor */
     int fd{-1};
-
-    /** shm size */
     size_t shmSize{0};
-
     T *shared_struct{nullptr};
 };
 

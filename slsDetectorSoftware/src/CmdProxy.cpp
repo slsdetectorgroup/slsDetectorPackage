@@ -1056,11 +1056,10 @@ std::string CmdProxy::TemperatureValues(int action) {
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;
     os << cmd << ' ';
-
+    auto type = det->getDetectorType().squash();
     // dac indices only for ctb
     if (args.size() > 0 && action != defs::HELP_ACTION) {
-        if (is_int(args[0]) &&
-            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+        if (is_int(args[0]) && type != defs::CHIPTESTBOARD) {
             throw sls::RuntimeError(
                 "Dac indices can only be used for chip test board. Use daclist "
                 "to get list of dac names for current detector.");
@@ -1077,7 +1076,14 @@ std::string CmdProxy::Dac(int action) {
         if (args.empty())
             WrongNumberOfParameters(1); // This prints slightly wrong
 
-        defs::dacIndex dacIndex = StringTo<defs::dacIndex>(args[0]);
+        defs::dacIndex dacIndex{};
+        //TODO! Remove if
+        if (type == defs::CHIPTESTBOARD && !is_int(args[0])) {
+            dacIndex = det->getDacIndex(args[0]);
+        } else {
+            dacIndex = StringTo<defs::dacIndex>(args[0]);
+        }
+
         bool mV = false;
 
         if (args.size() == 2) {
@@ -1095,7 +1101,11 @@ std::string CmdProxy::Dac(int action) {
         if (args.empty())
             WrongNumberOfParameters(1); // This prints slightly wrong
 
-        defs::dacIndex dacIndex = StringTo<defs::dacIndex>(args[0]);
+        defs::dacIndex dacIndex{};
+        if (type == defs::CHIPTESTBOARD && !is_int(args[0]))
+            dacIndex = det->getDacIndex(args[0]);
+        else
+            dacIndex = StringTo<defs::dacIndex>(args[0]);
         bool mV = false;
         if (args.size() == 3) {
             if ((args[2] != "mv") && (args[2] != "mV")) {
@@ -1109,6 +1119,38 @@ std::string CmdProxy::Dac(int action) {
         det->setDAC(dacIndex, StringTo<int>(args[1]), mV,
                     std::vector<int>{det_id});
         os << args[0] << ' ' << args[1] << (mV ? " mV\n" : "\n");
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::DacList(const int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == slsDetectorDefs::HELP_ACTION) {
+        os << "\n\t[dacname1 dacname2 .. dacname18] \n\t\t[ChipTestBoard] Set "
+              "the list of dac names for this detector.\n\t\t[All] Gets the "
+              "list "
+              "of "
+              "dac names for every dac for this detector."
+           << '\n';
+    } else if (action == slsDetectorDefs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getDacNames();
+        os << sls::ToString(t) << '\n';
+    } else if (action == slsDetectorDefs::PUT_ACTION) {
+        if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            throw sls::RuntimeError("This detector already has fixed dac "
+                                    "names. Cannot change them.");
+        }
+        if (args.size() != 18) {
+            WrongNumberOfParameters(18);
+        }
+        det->setDacNames(args);
+        os << ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }
@@ -1134,13 +1176,15 @@ std::string CmdProxy::DacValues(int action) {
             WrongNumberOfParameters(1);
         }
         auto t = det->getDacList();
+        auto names = det->getDacNames();
+        auto name_it = names.begin();
         os << '[';
         auto it = t.cbegin();
-        os << ToString(*it) << ' ';
+        os << ToString(*name_it++) << ' ';
         os << OutString(det->getDAC(*it++, mv, std::vector<int>{det_id}))
            << (!args.empty() ? " mV" : "");
         while (it != t.cend()) {
-            os << ", " << ToString(*it) << ' ';
+            os << ", " << ToString(*name_it++) << ' ';
             os << OutString(det->getDAC(*it++, mv, std::vector<int>{det_id}))
                << (!args.empty() ? " mV" : "");
         }

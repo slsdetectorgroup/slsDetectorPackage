@@ -32,7 +32,8 @@
 namespace sls {
 
 DetectorImpl::DetectorImpl(int detector_index, bool verify, bool update)
-    : detectorIndex(detector_index), shm(detector_index, -1) {
+    : detectorIndex(detector_index), shm(detector_index, -1),
+      ctb_shm(detector_index, -1, CtbConfig::shm_tag()) {
     setupDetector(verify, update);
 }
 
@@ -44,6 +45,9 @@ void DetectorImpl::setupDetector(bool verify, bool update) {
     if (update) {
         updateUserdetails();
     }
+
+    if (ctb_shm.IsExisting())
+        ctb_shm.OpenSharedMemory();
 }
 
 void DetectorImpl::setAcquiringFlag(bool flag) { shm()->acquiringFlag = flag; }
@@ -74,6 +78,10 @@ void DetectorImpl::freeSharedMemory(int detectorIndex, int detPos) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, i);
         moduleShm.RemoveSharedMemory();
     }
+
+    SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
+    if (ctbShm.IsExisting())
+        ctbShm.RemoveSharedMemory();
 }
 
 void DetectorImpl::freeSharedMemory() {
@@ -86,6 +94,9 @@ void DetectorImpl::freeSharedMemory() {
     // clear detector shm
     shm.RemoveSharedMemory();
     client_downstream = false;
+
+    if (ctb_shm.IsExisting())
+        ctb_shm.RemoveSharedMemory();
 }
 
 std::string DetectorImpl::getUserDetails() {
@@ -144,6 +155,8 @@ void DetectorImpl::initSharedMemory(bool verify) {
             throw SharedMemoryError("Shared memory version mismatch!");
         }
     }
+
+    // std::cout <<
 }
 
 void DetectorImpl::initializeDetectorStructure() {
@@ -245,6 +258,16 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
         addModule(hostname);
     }
     updateDetectorSize();
+
+    // Here we know the detector type and can add ctb shared memory
+    // if needed, CTB dac names are only on detector level
+
+    if (shm()->detType == defs::CHIPTESTBOARD) {
+        if (ctb_shm.IsExisting())
+            ctb_shm.OpenSharedMemory();
+        else
+            ctb_shm.CreateSharedMemory();
+    }
 }
 
 void DetectorImpl::addModule(const std::string &hostname) {
@@ -1377,6 +1400,18 @@ sls::Result<int> DetectorImpl::getDefaultDac(defs::dacIndex index,
 void DetectorImpl::setDefaultDac(defs::dacIndex index, int defaultValue,
                                  defs::detectorSettings sett, Positions pos) {
     Parallel(&Module::setDefaultDac, pos, index, defaultValue, sett);
+}
+
+std::vector<std::string> DetectorImpl::getCtbDacNames() const {
+    return ctb_shm()->getDacNames();
+}
+
+void DetectorImpl::setCtbDacNames(const std::vector<std::string> &names) {
+    ctb_shm()->setDacNames(names);
+}
+
+std::string DetectorImpl::getCtbDacName(defs::dacIndex i) const {
+    return ctb_shm()->getDacName(static_cast<int>(i));
 }
 
 } // namespace sls

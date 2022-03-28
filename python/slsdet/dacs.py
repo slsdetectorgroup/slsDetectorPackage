@@ -36,6 +36,79 @@ class Dac(DetectorProperty):
         dacstr = ''.join([f'{item:5d}' for item in self.get()])
         return f'{self.__name__:15s}:{dacstr}'
 
+class NamedDacs:
+    """
+    New implementation of the detector dacs. Used at the momen for 
+    Ctb but should replace the old one for all detectors
+    """
+    _frozen = False
+    _direct_access = ['_detector', '_current', '_dacnames']
+    def __init__(self, detector):
+        self._detector = detector
+        self._current = 0
+
+        self._dacnames = [n.replace(" ", "") for n in detector.getDacNames()]
+        # # Populate the dacs
+        for i,name in enumerate(self._dacnames):
+            #name, enum, low, high, default, detector
+            setattr(self, name, Dac(name, dacIndex(i), 0, 4000, 1000, detector))
+
+        self._frozen = True
+
+    # def __getattr__(self, name):
+    #     return self.__getattribute__('_' + name)
+
+    def __setattr__(self, name, value):
+        if not self._frozen:
+            #durining init we need to be able to set up the class
+            super().__setattr__(name, value)
+        else:
+            #Later we restrict us to manipulate dacs and a few fields
+            if name in self._direct_access:
+                super().__setattr__(name, value)
+            elif name in self._dacnames:
+                return self.__getattribute__(name).__setitem__(slice(None, None, None), value)
+            else:
+                raise AttributeError(f'Dac not found: {name}')
+
+    def __next__(self):
+        if self._current >= len(self._dacnames):
+            self._current = 0
+            raise StopIteration
+        else:
+            self._current += 1
+            return self.__getattribute__(self._dacnames[self._current-1])
+            # return self.__getattr__(self._dacnames[self._current-1])
+
+    def __iter__(self):
+        return self
+
+    def __repr__(self):
+        r_str = ['========== DACS =========']
+        r_str += [repr(dac) for dac in self]
+        return '\n'.join(r_str)
+    def get_asarray(self):
+        """
+        Read the dacs into a numpy array with dimensions [ndacs, nmodules]
+        """
+        dac_array = np.zeros((len(self._dacnames), len(self._detector)))
+        for i, _d in enumerate(self):
+            dac_array[i,:] = _d[:]
+        return dac_array
+
+    def to_array(self):
+        return self.get_asarray()       
+
+    def set_from_array(self, dac_array):
+        """
+        Set the dacs from an numpy array with dac values. [ndacs, nmodules]
+        """
+        dac_array = dac_array.astype(np.int)
+        for i, _d in enumerate(self):
+            _d[:] = dac_array[i]
+
+    def from_array(self, dac_array):
+        self.set_from_array(dac_array)
 
 class DetectorDacs:
     _dacs = []
@@ -50,7 +123,7 @@ class DetectorDacs:
         # Index to support iteration
         self._current = 0
 
-        # Populate the dacs
+        # Name the attributes? 
         for _d in self._dacs:
             setattr(self, '_'+_d[0], Dac(*_d, detector))
 
@@ -59,7 +132,10 @@ class DetectorDacs:
     def __getattr__(self, name):
         return self.__getattribute__('_' + name)
 
-
+    @property
+    def dacnames(self):
+        return [_d[0] for _d in _dacs]
+        
     def __setattr__(self, name, value):
         if name in self._dacnames:
             return self.__getattribute__('_' + name).__setitem__(slice(None, None, None), value)

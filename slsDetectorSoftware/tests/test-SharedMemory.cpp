@@ -134,3 +134,31 @@ TEST_CASE("Create several shared memories", "[detector]") {
         CHECK(v[i].IsExisting() == false);
     }
 }
+
+TEST_CASE("Create create a shared memory with a tag"){
+    SharedMemory<int> shm(0, -1, "ctbdacs");
+    REQUIRE(shm.GetName() == "/slsDetectorPackage_detector_0_ctbdacs");
+
+}
+
+TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set"){
+
+    // if SLSDETNAME is already set we unset it but
+    // save the value
+    std::string old_slsdetname;
+    if (getenv(SHM_ENV_NAME))
+        old_slsdetname = getenv(SHM_ENV_NAME);
+    unsetenv(SHM_ENV_NAME);
+    setenv(SHM_ENV_NAME, "myprefix", 1);
+
+    SharedMemory<int> shm(0, -1, "ctbdacs");
+    REQUIRE(shm.GetName() == "/slsDetectorPackage_detector_0_myprefix_ctbdacs");
+
+    // Clean up after us
+    if (old_slsdetname.empty())
+        unsetenv(SHM_ENV_NAME);
+    else
+        setenv(SHM_ENV_NAME, old_slsdetname.c_str(), 1);
+
+}
+

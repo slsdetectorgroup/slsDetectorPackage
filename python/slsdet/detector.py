@@ -1571,8 +1571,16 @@ class Detector(CppDetectorApi):
 
     @property
     def daclist(self):
-        """Gets the list of enums for every dac for this detector."""
-        return self.getDacList()
+        """
+        List of enums for every dac for this detector.
+        :setter: Only implemented for Chiptestboard
+        
+        """
+        return self.getDacNames()
+
+    @daclist.setter
+    def daclist(self, value):
+        self.setDacNames(value)
 
     @property
     def dacvalues(self):

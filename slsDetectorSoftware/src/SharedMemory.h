@@ -69,7 +69,6 @@ template <typename T> class SharedMemory {
     T *operator()() { return shared_struct; }
     const T *operator()() const { return shared_struct; }
     std::string getName() const { return name; }
-    // size_t size() const { return sizeof(T); }
 
     bool exists() {
         int tempfd = shm_open(name.c_str(), O_RDWR, 0);

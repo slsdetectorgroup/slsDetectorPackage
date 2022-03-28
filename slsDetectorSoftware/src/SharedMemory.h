@@ -13,7 +13,8 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 
-#include "stdlib.h"
+// #include "stdlib.h"
+#include <cstdlib>
 #include <cerrno>  // errno
 #include <cstring> // strerror
 #include <fcntl.h> // O_CREAT, O_TRUNC..
@@ -169,7 +170,7 @@ template <typename T> class SharedMemory {
         return shm_name;
     }
 
-    // Linux manual
+    // from the Linux manual:
     // After the mmap() call has returned, the file descriptor, fd, can
     // be closed immediately without invalidating the mapping.
     T *mapSharedMemory(int fd) {

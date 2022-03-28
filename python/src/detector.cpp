@@ -1531,9 +1531,10 @@ void init_det(py::module &m) {
                  Detector::setAdditionalJsonParameter,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("programFPGA",
-             (void (Detector::*)(const std::string &, sls::Positions)) &
+             (void (Detector::*)(const std::string &, const bool,
+                                 sls::Positions)) &
                  Detector::programFPGA,
-             py::arg(), py::arg() = Positions{})
+             py::arg(), py::arg(), py::arg() = Positions{})
         .def("resetFPGA",
              (void (Detector::*)(sls::Positions)) & Detector::resetFPGA,
              py::arg() = Positions{})

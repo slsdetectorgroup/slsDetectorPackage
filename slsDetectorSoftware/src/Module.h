@@ -545,7 +545,8 @@ class Module : public virtual slsDetectorDefs {
      *    Advanced                                    *
      *                                                *
      * ************************************************/
-    void programFPGA(std::vector<char> buffer);
+    void programFPGA(std::vector<char> buffer,
+                     const bool forceDeleteNormalFile);
     void resetFPGA();
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname);
@@ -760,7 +761,8 @@ class Module : public virtual slsDetectorDefs {
                                          bool trimbits = true);
     void sendProgram(bool blackfin, std::vector<char> buffer,
                      const int functionEnum, const std::string &functionType,
-                     const std::string serverName = "");
+                     const std::string serverName = "",
+                     const bool forceDeleteNormalFile = false);
     void simulatingActivityinDetector(const std::string &functionType,
                                       const int timeRequired);
 

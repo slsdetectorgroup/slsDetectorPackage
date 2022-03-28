@@ -2832,19 +2832,31 @@ std::string CmdProxy::ProgramFpga(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname.pof | fname.rbf (full path)]\n\t[Jungfrau][Ctb][Moench] "
-              "Programs FPGA from pof file (full path). Then, detector "
-              "controller is rebooted \n\t[Mythen3][Gotthard2] Programs FPGA "
-              "from rbf file (full path). Then, detector controller is "
-              "rebooted."
+        os << "[fname.pof | fname.rbf (full "
+              "path)][(opitonal)--force-delete-normal-file]\n\t[Jungfrau][Ctb]["
+              "Moench] Programs FPGA from pof file (full path). Then, detector "
+              "controller is rebooted. \n\t\tUse --force-delete-normal-file "
+              "argument, if normal file found in device tree, it must be "
+              "deleted, a new device drive created and programming "
+              "continued.\n\t[Mythen3][Gotthard2] Programs FPGA from rbf file "
+              "(full path). Then, detector controller is rebooted."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 1) {
+        bool forceDeteleNormalFile = false;
+        if (args.size() == 2) {
+            if (args[1] != "--force-delete-normal-file") {
+                throw sls::RuntimeError(
+                    "Could not scan second argument. Did you "
+                    "mean --force-delete-normal-file?");
+            }
+            forceDeteleNormalFile = true;
+        } else if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        det->programFPGA(args[0], std::vector<int>{det_id});
+        det->programFPGA(args[0], forceDeteleNormalFile,
+                         std::vector<int>{det_id});
         os << "successful\n";
     } else {
         throw sls::RuntimeError("Unknown action");

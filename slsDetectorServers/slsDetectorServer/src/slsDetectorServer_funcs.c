@@ -4003,7 +4003,8 @@ int check_version(int file_des) {
         usleep(3 * 1000 * 1000);
         if (!isInitCheckDone()) {
             ret = FAIL;
-            strcpy(mess, "Server Initialization still not done done in server. Unexpected.\n");
+            strcpy(mess, "Server Initialization still not done done in server. "
+                         "Unexpected.\n");
             LOG(logERROR, (mess));
         }
     }
@@ -9443,6 +9444,15 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
             LOG(logINFO, ("\tServer Name: %s\n", serverName));
         }
 
+#if !defined(GOTTHARD2D) && !defined(MYTHEN3D) && !defined(EIGERD)
+        int forceDeleteNormalFile = 0;
+        if (receiveData(file_des, &forceDeleteNormalFile,
+                        sizeof(forceDeleteNormalFile), INT32) < 0)
+            return printSocketReadError();
+        LOG(logINFO,
+            ("\tForce Delete Normal File flag? %s\n", (forceDeleteNormalFile ? "Y" : "N")));
+#endif
+
         // in same folder as current process (will also work for virtual then
         // with write permissions)
         {
@@ -9467,7 +9477,7 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
                                     checksum, serverName);
 #else
             receive_program_via_blackfin(file_des, index, functionType,
-                                         filesize, checksum, serverName);
+                                         filesize, checksum, serverName, forceDeleteNormalFile);
 #endif
         }
 
@@ -9483,7 +9493,7 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
 
 void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                   char *functionType, uint64_t filesize,
-                                  char *checksum, char *serverName) {
+                                  char *checksum, char *serverName, int forceDeleteNormalFile) {
 
 #if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARDD)
@@ -9582,7 +9592,7 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
     case PROGRAM_FPGA:
     case PROGRAM_KERNEL:
         ret = eraseAndWriteToFlash(mess, index, functionType, checksum,
-                                   totalsize);
+                                   totalsize, forceDeleteNormalFile);
         break;
     case PROGRAM_SERVER:
         ret = moveBinaryFile(mess, serverName, TEMP_PROG_FILE_NAME,
@@ -9785,20 +9795,24 @@ int set_top(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (arg != 0 && arg != 1) {
             ret = FAIL;
-            sprintf(mess, "Could not set top mode. Invalid value: %d. Must be 0 or 1\n", arg);
+            sprintf(
+                mess,
+                "Could not set top mode. Invalid value: %d. Must be 0 or 1\n",
+                arg);
             LOG(logERROR, (mess));
         } else {
             ret = setTop(arg == 1 ? OW_TOP : OW_BOTTOM);
             if (ret == FAIL) {
-                sprintf(mess, "Could not set %s\n", (arg == 1 ? "Top" : "Bottom"));
+                sprintf(mess, "Could not set %s\n",
+                        (arg == 1 ? "Top" : "Bottom"));
                 LOG(logERROR, (mess));
-            } else {            
+            } else {
                 int retval = -1;
                 ret = isTop(&retval);
                 if (ret == FAIL) {
                     strcpy(mess, "Could not get Top mode\n");
                     LOG(logERROR, (mess));
-                } else {                
+                } else {
                     LOG(logDEBUG1, ("retval top: %d\n", retval));
                     validate(&ret, mess, arg, retval, "set top mode", DEC);
                 }

@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <unistd.h> // usleep
+#include <sys/stat.h>
 
 /* global variables */
 
@@ -146,6 +147,30 @@ int getDrive(char *mess, enum PROGRAM_INDEX index) {
 }
 
 int openFileForFlash(char *mess, FILE **flashfd) {
+#ifndef VIRTUAL
+    // check if its a normal file or special file
+    struct stat buf;
+    if (stat(flashDriveName, &buf) == -1) {
+        sprintf(mess,
+                "Could not %s. Unable to find the flash drive %s\n",
+                messageType, flashDriveName);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // zero = normal file (not char drive special file)
+    if (!S_ISCHR(buf.st_mode)) {
+        // memory is not permanent
+        sprintf(mess,
+                "Could not %s. The flash drive found is a normal file. "
+                "Reboot board using 'rebootcontroller' command to load "
+                "proper device tree\n",
+                messageType);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    LOG(logINFO, ("\tValidated flash drive (not a normal file)\n"));
+#endif
+
     *flashfd = fopen(flashDriveName, "w");
     if (*flashfd == NULL) {
         sprintf(mess,

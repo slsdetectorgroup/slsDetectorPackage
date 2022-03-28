@@ -976,9 +976,8 @@ int Module::getNumberofUDPInterfacesFromShm() const {
     return shm()->numUDPInterfaces;
 }
 
-int Module::getNumberofUDPInterfaces() const {
+void Module::updateNumberofUDPInterfaces() {
     shm()->numUDPInterfaces = sendToDetector<int>(F_GET_NUM_INTERFACES);
-    return shm()->numUDPInterfaces;
 }
 
 void Module::setNumberofUDPInterfaces(int n) {
@@ -1186,7 +1185,7 @@ std::string Module::printReceiverConfiguration() {
        << getReceiverHostname();
 
     if (shm()->detType == JUNGFRAU) {
-        os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfaces()
+        os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfacesFromShm()
            << "\nSelected Interface:\t" << getSelectedUDPInterface();
     }
 
@@ -2591,12 +2590,14 @@ void Module::setAdditionalJsonParameter(const std::string &key,
 }
 
 // Advanced
-void Module::programFPGA(std::vector<char> buffer) {
+void Module::programFPGA(std::vector<char> buffer,
+                         const bool forceDeleteNormalFile) {
     switch (shm()->detType) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
     case MOENCH:
-        sendProgram(true, buffer, F_PROGRAM_FPGA, "Update Firmware");
+        sendProgram(true, buffer, F_PROGRAM_FPGA, "Update Firmware", "",
+                    forceDeleteNormalFile);
         break;
     case MYTHEN3:
     case GOTTHARD2:
@@ -3219,10 +3220,10 @@ void Module::initializeModuleStructure(detectorType type) {
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
     shm()->useReceiverFlag = false;
+    shm()->numUDPInterfaces = 1;
     shm()->zmqport =
         DEFAULT_ZMQ_CL_PORTNO + moduleIndex * shm()->numUDPInterfaces;
     shm()->zmqip = IpAddr{};
-    shm()->numUDPInterfaces = 1;
     shm()->stoppedFlag = false;
 
     // get the Module parameters based on type
@@ -3583,7 +3584,8 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 void Module::sendProgram(bool blackfin, std::vector<char> buffer,
                          const int functionEnum,
                          const std::string &functionType,
-                         const std::string serverName) {
+                         const std::string serverName,
+                         const bool forceDeleteNormalFile) {
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
                  << "): Sending " << functionType;
 
@@ -3605,6 +3607,11 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
         char sname[MAX_STR_LENGTH] = {0};
         strcpy(sname, serverName.c_str());
         client.Send(sname);
+    }
+
+    // send forceDeleteNormalFile flag
+    if (blackfin) {
+        client.Send(static_cast<int>(forceDeleteNormalFile));
     }
 
     // validate memory allocation etc in detector

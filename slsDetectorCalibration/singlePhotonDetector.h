@@ -429,23 +429,28 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
                     for (ic = -(clusterSize / 2); ic < (clusterSize / 2) + 1;
                          ic++) {
 
-                        if ((iy + ir) >= iy && (iy + ir) < ny &&
-                            (ix + ic) >= ix && (ix + ic) < nx) {
+                        if ((iy + ir) >= 0 && (iy + ir) < ny &&
+                            (ix + ic) >= 0 && (ix + ic) < nx) {
+
+
+                        if ((iy + ir) >= iy && (ix + ic) >= ix ) {
                             val[(iy + ir) * nx + ix + ic] =
                                 subtractPedestal(data, ix + ic, iy + ir, cm);
-                            v = &(val[(iy + ir) * nx + ix + ic]);
-                            tot += *v;
-                            if (ir <= 0 && ic <= 0)
-                                bl += *v;
-                            if (ir <= 0 && ic >= 0)
-                                br += *v;
-                            if (ir >= 0 && ic <= 0)
-                                tl += *v;
-                            if (ir >= 0 && ic >= 0)
-                                tr += *v;
-                            if (*v > max) {
-                                max = *v;
-                            }
+
+			}
+			v = &(val[(iy + ir) * nx + ix + ic]);
+			tot += *v;
+			if (ir <= 0 && ic <= 0)
+			  bl += *v;
+			if (ir <= 0 && ic >= 0)
+			  br += *v;
+			if (ir >= 0 && ic <= 0)
+			  tl += *v;
+			if (ir >= 0 && ic >= 0)
+			  tr += *v;
+			if (*v > max) //{
+			  max = *v;
+			//}
                         }
                     }
                 }
@@ -513,12 +518,19 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
                         for (ic = -(clusterSize / 2);
                              ic < (clusterSize / 2) + 1; ic++) {
                             if ((iy + ir) >= 0 && (iy + ir) < ny &&
-                                (ix + ic) >= 0 && (ix + ic) < nx)
-                                (clusters + nph)
+                                (ix + ic) >= 0 && (ix + ic) < nx) {
+			      (clusters + nph)
                                     ->set_data(val[(iy + ir) * nx + ix + ic],
                                                ic, ir);
+			      if (val[(iy + ir) * nx + ix + ic]>max) 
+				good=0;
+			    }
                         }
                     }
+		    if (good==0) {
+		      (clusters + nph)->print();
+		      cout << max << " " <<  val[iy * nx + ix] << endl;
+		    }
                     good = 1;
                     if (eMin > 0 && tot < eMin)
                         good = 0;

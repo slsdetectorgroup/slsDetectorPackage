@@ -7,6 +7,7 @@
 #include "slsDetectorServer_defs.h"
 
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/sysinfo.h>
 #include <unistd.h> // usleep
 
@@ -37,6 +38,9 @@
 
 
 #define CMD_GET_AMD_FLASH  "dmesg | grep Amd"
+
+#define CMD_CREATE_DEVICE_FILE_PART1 "mknod"
+#define CMD_CREATE_DEVICE_FILE_PART2 "c 90 6"
 
 #define FLASH_BUFFER_MEMORY_SIZE (128 * 1024) // 500 KB
 // clang-format on
@@ -274,7 +278,8 @@ int allowUpdate(char *mess, char *functionType) {
         getKernelVersion(retvals);
         snprintf(mess, MAX_STR_LENGTH,
                  "Could not update %s. Kernel version %s is too old to "
-                 "update the Amd flash/ root directory. Most likely, blackfin needs rescue or replacement. Please contact us.\n",
+                 "update the Amd flash/ root directory. Most likely, blackfin "
+                 "needs rescue or replacement. Please contact us.\n",
                  functionType, retvals);
         LOG(logERROR, (mess));
         return FAIL;
@@ -319,7 +324,7 @@ int preparetoCopyProgram(char *mess, char *functionType, FILE **fd,
 
 int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
                          char *functionType, char *clientChecksum,
-                         ssize_t fsize) {
+                         ssize_t fsize, int forceDeleteNormalFile) {
 
     memset(messageType, 0, sizeof(messageType));
     strcpy(messageType, functionType);
@@ -330,7 +335,8 @@ int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
 
     FILE *flashfd = NULL;
     FILE *srcfd = NULL;
-    if (openFileForFlash(mess, &flashfd, &srcfd) == FAIL) {
+    if (openFileForFlash(mess, index, &flashfd, &srcfd, forceDeleteNormalFile) ==
+        FAIL) {
         return FAIL;
     }
 
@@ -434,7 +440,8 @@ int getDrive(char *mess, enum PROGRAM_INDEX index) {
     return OK;
 }
 
-int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd) {
+int openFileForFlash(char *mess, enum PROGRAM_INDEX index, FILE **flashfd, FILE **srcfd,
+                     int forceDeleteNormalFile) {
     // open src file
     *srcfd = fopen(TEMP_PROG_FILE_NAME, "r");
     if (*srcfd == NULL) {
@@ -446,6 +453,11 @@ int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd) {
         return FAIL;
     }
     LOG(logDEBUG1, ("Temp file ready for reading\n"));
+
+    if (checkNormalFile(mess, index, forceDeleteNormalFile) == FAIL) {
+        fclose(*srcfd);
+        return FAIL;
+    }
 
     // open flash drive for writing
     *flashfd = fopen(flashDriveName, "w");
@@ -459,6 +471,95 @@ int openFileForFlash(char *mess, FILE **flashfd, FILE **srcfd) {
         return FAIL;
     }
     LOG(logINFO, ("\tFlash ready for writing\n"));
+    return OK;
+}
+
+int checkNormalFile(char *mess, enum PROGRAM_INDEX index, int forceDeleteNormalFile) {
+#ifndef VIRTUAL
+    // check if its a normal file or special file
+    struct stat buf;
+    if (stat(flashDriveName, &buf) == -1) {
+        sprintf(mess,
+                "Could not %s. Unable to find the flash drive %s\n",
+                messageType, flashDriveName);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+    // zero = normal file (not char special drive file)
+    if (!S_ISCHR(buf.st_mode)) {
+        // kernel memory is not permanent
+        if (index != PROGRAM_FPGA) {
+            sprintf(mess,
+                    "Could not %s. The flash drive found is a normal file. "
+                    "Reboot board using 'rebootcontroller' command to load "
+                    "proper device tree\n",
+                    messageType);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+
+        // user does not allow to fix it (default)
+        if (forceDeleteNormalFile == 0) {
+            sprintf(mess,
+                "Could not %s. The flash drive %s found for fpga programming is a normal file. To "
+                "fix this (by deleting this file, creating the flash drive and proceeding with "
+                "programming), re-run the programming command 'programfpga' with parameter "
+                "'--force-delete-normal-file'\n",
+                messageType, flashDriveName);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        
+        // fpga memory stays after a reboot, user allowed to fix it
+        LOG(logWARNING, ("Flash drive invalidated (normal file). Fixing it...\n"));
+
+        // user allows to fix it, so force delete normal file
+        char cmd[MAX_STR_LENGTH] = {0};
+        char retvals[MAX_STR_LENGTH] = {0};
+
+        if (snprintf(cmd, MAX_STR_LENGTH, "rm %s", flashDriveName) >=
+            MAX_STR_LENGTH) {
+            sprintf(mess,
+                    "Could not update %s. Command to delete normal file %s is "
+                    "too long\n",
+                    messageType, flashDriveName);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+            snprintf(
+                mess, MAX_STR_LENGTH,
+                "Could not update %s. (could not delete normal file %s: %s)\n",
+                messageType, flashDriveName, retvals);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        LOG(logINFO, ("\tDeleted Normal File (%s)\n", flashDriveName));
+
+        // create special drive
+        if (snprintf(cmd, MAX_STR_LENGTH, "%s %s %s",
+                     CMD_CREATE_DEVICE_FILE_PART1, flashDriveName,
+                     CMD_CREATE_DEVICE_FILE_PART2) >= MAX_STR_LENGTH) {
+            sprintf(mess,
+                    "Could not update %s. Command to create special file %s is "
+                    "too long\n",
+                    messageType, flashDriveName);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+            snprintf(
+                mess, MAX_STR_LENGTH,
+                "Could not update %s. (could not create special file %s: %s)\n",
+                messageType, flashDriveName, retvals);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        LOG(logINFO, ("\tSpecial File created (%s)\n", flashDriveName));
+    } else {
+        LOG(logINFO, ("\tValidated flash drive (not a normal file)\n"));
+    }
+#endif
     return OK;
 }
 

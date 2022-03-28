@@ -216,13 +216,17 @@ class single_photon_hit {
 
         // int ix, iy;
 
+      printf("***************\n");
+      printf("** %d %d **\n",x,y);
         for (int iy = 0; iy < dy; iy++) {
             for (int ix = 0; ix < dx; ix++) {
                 printf("%d \t", data[ix + iy * dx]);
             }
             printf("\n");
         }
+      printf("***************\n");
     }
+
 
     /**
         assign the value to the element of the cluster matrix, with relative

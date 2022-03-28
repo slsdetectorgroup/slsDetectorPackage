@@ -46,8 +46,8 @@ void DetectorImpl::setupDetector(bool verify, bool update) {
         updateUserdetails();
     }
 
-    if (ctb_shm.IsExisting())
-        ctb_shm.OpenSharedMemory();
+    if (ctb_shm.exists())
+        ctb_shm.openSharedMemory();
 }
 
 void DetectorImpl::setAcquiringFlag(bool flag) { shm()->acquiringFlag = flag; }
@@ -58,8 +58,8 @@ void DetectorImpl::freeSharedMemory(int detectorIndex, int detPos) {
     // single
     if (detPos >= 0) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, detPos);
-        if (moduleShm.IsExisting()) {
-            moduleShm.RemoveSharedMemory();
+        if (moduleShm.exists()) {
+            moduleShm.removeSharedMemory();
         }
         return;
     }
@@ -68,20 +68,20 @@ void DetectorImpl::freeSharedMemory(int detectorIndex, int detPos) {
     SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     int numModules = 0;
 
-    if (detectorShm.IsExisting()) {
-        detectorShm.OpenSharedMemory();
+    if (detectorShm.exists()) {
+        detectorShm.openSharedMemory();
         numModules = detectorShm()->numberOfModules;
-        detectorShm.RemoveSharedMemory();
+        detectorShm.removeSharedMemory();
     }
 
     for (int i = 0; i < numModules; ++i) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, i);
-        moduleShm.RemoveSharedMemory();
+        moduleShm.removeSharedMemory();
     }
 
     SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
-    if (ctbShm.IsExisting())
-        ctbShm.RemoveSharedMemory();
+    if (ctbShm.exists())
+        ctbShm.removeSharedMemory();
 }
 
 void DetectorImpl::freeSharedMemory() {
@@ -92,11 +92,11 @@ void DetectorImpl::freeSharedMemory() {
     modules.clear();
 
     // clear detector shm
-    shm.RemoveSharedMemory();
+    shm.removeSharedMemory();
     client_downstream = false;
 
-    if (ctb_shm.IsExisting())
-        ctb_shm.RemoveSharedMemory();
+    if (ctb_shm.exists())
+        ctb_shm.removeSharedMemory();
 }
 
 std::string DetectorImpl::getUserDetails() {
@@ -140,11 +140,11 @@ void DetectorImpl::setInitialChecks(const bool value) {
 }
 
 void DetectorImpl::initSharedMemory(bool verify) {
-    if (!shm.IsExisting()) {
-        shm.CreateSharedMemory();
+    if (!shm.exists()) {
+        shm.createSharedMemory();
         initializeDetectorStructure();
     } else {
-        shm.OpenSharedMemory();
+        shm.openSharedMemory();
         if (verify && shm()->shmversion != DETECTOR_SHMVERSION) {
             LOG(logERROR) << "Detector shared memory (" << detectorIndex
                           << ") version mismatch "
@@ -263,10 +263,10 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
     // if needed, CTB dac names are only on detector level
 
     if (shm()->detType == defs::CHIPTESTBOARD) {
-        if (ctb_shm.IsExisting())
-            ctb_shm.OpenSharedMemory();
+        if (ctb_shm.exists())
+            ctb_shm.openSharedMemory();
         else
-            ctb_shm.CreateSharedMemory();
+            ctb_shm.createSharedMemory();
     }
 }
 

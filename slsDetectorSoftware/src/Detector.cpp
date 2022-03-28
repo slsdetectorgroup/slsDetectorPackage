@@ -26,8 +26,8 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
     // single module
     if (moduleIndex >= 0) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, moduleIndex);
-        if (moduleShm.IsExisting()) {
-            moduleShm.RemoveSharedMemory();
+        if (moduleShm.exists()) {
+            moduleShm.removeSharedMemory();
         }
         return;
     }
@@ -36,21 +36,21 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
     SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     int numDetectors = 0;
 
-    if (detectorShm.IsExisting()) {
-        detectorShm.OpenSharedMemory();
+    if (detectorShm.exists()) {
+        detectorShm.openSharedMemory();
         numDetectors = detectorShm()->numberOfModules;
-        detectorShm.RemoveSharedMemory();
+        detectorShm.removeSharedMemory();
     }
 
     for (int i = 0; i < numDetectors; ++i) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, i);
-        moduleShm.RemoveSharedMemory();
+        moduleShm.removeSharedMemory();
     }
 
     // Ctb configuration
     SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
-    if (ctbShm.IsExisting())
-        ctbShm.RemoveSharedMemory();
+    if (ctbShm.exists())
+        ctbShm.removeSharedMemory();
 }
 
 using defs = slsDetectorDefs;

@@ -37,7 +37,7 @@ Module::Module(detectorType type, int det_id, int module_index, bool verify)
         LOG(logWARNING) << "This shared memory should have been "
                            "deleted before! "
                         << shm.getName() << ". Freeing it again";
-        shm.RemoveSharedMemory();
+        shm.removeSharedMemory();
     }
 
     initSharedMemory(type, det_id, verify);
@@ -56,7 +56,7 @@ Module::~Module() = default;
 
 void Module::freeSharedMemory() {
     if (shm.exists()) {
-        shm.RemoveSharedMemory();
+        shm.removeSharedMemory();
     }
 }
 

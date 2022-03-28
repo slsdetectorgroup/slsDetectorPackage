@@ -41,7 +41,7 @@ template <typename T> class SharedMemory {
   public:
     // moduleid of -1 creates a detector only shared memory
     SharedMemory(int detectorId, int moduleIndex, const std::string &tag = "") {
-        name = ConstructSharedMemoryName(detectorId, moduleIndex, tag);
+        name = constructSharedMemoryName(detectorId, moduleIndex, tag);
     }
 
     // Disable copy, since we refer to a unique location
@@ -93,7 +93,7 @@ template <typename T> class SharedMemory {
             std::string msg = "Create shared memory " + name +
                               " failed at ftruncate: " + strerror(errno);
             close(fd);
-            RemoveSharedMemory();
+            removeSharedMemory();
             throw SharedMemoryError(msg);
         }
         shared_struct = mapSharedMemory(fd);
@@ -123,7 +123,7 @@ template <typename T> class SharedMemory {
         }
     }
 
-    void RemoveSharedMemory() {
+    void removeSharedMemory() {
         unmapSharedMemory();
         if (shm_unlink(name.c_str()) < 0) {
             // silent exit if shm did not exist anyway
@@ -137,7 +137,7 @@ template <typename T> class SharedMemory {
     }
 
   private:
-    std::string ConstructSharedMemoryName(int detectorId, int moduleIndex,
+    std::string constructSharedMemoryName(int detectorId, int moduleIndex,
                                           const std::string &tag) {
 
         // using environment variable

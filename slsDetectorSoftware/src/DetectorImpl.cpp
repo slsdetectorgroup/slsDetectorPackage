@@ -59,7 +59,7 @@ void DetectorImpl::freeSharedMemory(int detectorIndex, int detPos) {
     if (detPos >= 0) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, detPos);
         if (moduleShm.exists()) {
-            moduleShm.RemoveSharedMemory();
+            moduleShm.removeSharedMemory();
         }
         return;
     }
@@ -71,17 +71,17 @@ void DetectorImpl::freeSharedMemory(int detectorIndex, int detPos) {
     if (detectorShm.exists()) {
         detectorShm.openSharedMemory();
         numModules = detectorShm()->numberOfModules;
-        detectorShm.RemoveSharedMemory();
+        detectorShm.removeSharedMemory();
     }
 
     for (int i = 0; i < numModules; ++i) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, i);
-        moduleShm.RemoveSharedMemory();
+        moduleShm.removeSharedMemory();
     }
 
     SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
     if (ctbShm.exists())
-        ctbShm.RemoveSharedMemory();
+        ctbShm.removeSharedMemory();
 }
 
 void DetectorImpl::freeSharedMemory() {
@@ -92,11 +92,11 @@ void DetectorImpl::freeSharedMemory() {
     modules.clear();
 
     // clear detector shm
-    shm.RemoveSharedMemory();
+    shm.removeSharedMemory();
     client_downstream = false;
 
     if (ctb_shm.exists())
-        ctb_shm.RemoveSharedMemory();
+        ctb_shm.removeSharedMemory();
 }
 
 std::string DetectorImpl::getUserDetails() {

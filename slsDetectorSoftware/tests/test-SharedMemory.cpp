@@ -33,7 +33,7 @@ TEST_CASE("Create SharedMemory read and write", "[detector]") {
     CHECK(std::string(shm()->mess) == "Some string");
 
     shm.unmapSharedMemory();
-    shm.RemoveSharedMemory();
+    shm.removeSharedMemory();
 
     CHECK(shm.exists() == false);
 }
@@ -50,7 +50,7 @@ TEST_CASE("Open existing SharedMemory and read", "[detector]") {
     shm2.openSharedMemory();
     CHECK(*shm2() == 5.3);
 
-    shm2.RemoveSharedMemory();
+    shm2.removeSharedMemory();
 }
 
 TEST_CASE("Creating a second shared memory with the same name throws",
@@ -61,7 +61,7 @@ TEST_CASE("Creating a second shared memory with the same name throws",
 
     shm0.createSharedMemory();
     CHECK_THROWS(shm1.createSharedMemory());
-    shm0.RemoveSharedMemory();
+    shm0.removeSharedMemory();
 }
 
 TEST_CASE("Open two shared memories to the same place", "[detector]") {
@@ -84,7 +84,7 @@ TEST_CASE("Open two shared memories to the same place", "[detector]") {
 
     // Remove only needs to be done once since they refer
     // to the same memory
-    shm2.RemoveSharedMemory();
+    shm2.removeSharedMemory();
     CHECK(shm.exists() == false);
     CHECK(shm2.exists() == false);
 }
@@ -105,7 +105,7 @@ TEST_CASE("Move SharedMemory", "[detector]") {
     CHECK(shm() == nullptr);
     CHECK(shm2.getName() == std::string("/slsDetectorPackage_detector_") +
                                 std::to_string(shm_id));
-    shm2.RemoveSharedMemory();
+    shm2.removeSharedMemory();
 }
 
 TEST_CASE("Create several shared memories", "[detector]") {
@@ -127,7 +127,7 @@ TEST_CASE("Create several shared memories", "[detector]") {
     }
 
     for (int i = 0; i != N; ++i) {
-        v[i].RemoveSharedMemory();
+        v[i].removeSharedMemory();
         CHECK(v[i].exists() == false);
     }
 }
@@ -167,7 +167,7 @@ TEST_CASE("map int64 to int32 throws"){
     SharedMemory<int64_t> shm2(shm_id, -1);
     REQUIRE_THROWS(shm2.openSharedMemory());
 
-    shm.RemoveSharedMemory();
+    shm.removeSharedMemory();
     
 
 

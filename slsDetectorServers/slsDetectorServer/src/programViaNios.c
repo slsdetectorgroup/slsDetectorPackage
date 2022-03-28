@@ -152,9 +152,8 @@ int openFileForFlash(char *mess, FILE **flashfd) {
     struct stat buf;
     if (stat(flashDriveName, &buf) == -1) {
         sprintf(mess,
-                "Could not %s. Unable to validate if flash drive found is a "
-                "special file\n",
-                messageType);
+                "Could not %s. Unable to find the flash drive %s\n",
+                messageType, flashDriveName);
         LOG(logERROR, (mess));
         return FAIL;
     }

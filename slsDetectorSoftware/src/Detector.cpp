@@ -883,7 +883,7 @@ Result<std::string> Detector::getScanErrorMessage(Positions pos) const {
 
 Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
     // also called by vetostream (for gotthard2)
-    return pimpl->getNumberofUDPInterfaces(pos);
+    return pimpl->Parallel(&Module::getNumberofUDPInterfacesFromShm, pos);
 }
 
 void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
@@ -1751,7 +1751,7 @@ Result<defs::streamingInterface> Detector::getVetoStream(Positions pos) const {
     // 3gbe
     auto r3 = pimpl->Parallel(&Module::getVetoStream, pos);
     // 10gbe (debugging interface) opens 2nd udp interface in receiver
-    auto r10 = pimpl->getNumberofUDPInterfaces(pos);
+    auto r10 = getNumberofUDPInterfaces(pos);
 
     Result<defs::streamingInterface> res(r3.size());
     for (unsigned int i = 0; i < res.size(); ++i) {
@@ -1773,7 +1773,7 @@ void Detector::setVetoStream(defs::streamingInterface interface,
     pimpl->Parallel(&Module::setVetoStream, pos, LOW_LATENCY_LINK);
 
     // 10gbe (debugging interface) opens 2nd udp interface in receiver
-    int old_numinterfaces = pimpl->getNumberofUDPInterfaces(pos).tsquash(
+    int old_numinterfaces = getNumberofUDPInterfaces(pos).tsquash(
         "retrieved inconsistent number of udp interfaces");
     int numinterfaces =
         (((interface & defs::streamingInterface::ETHERNET_10GB) ==
@@ -2230,10 +2230,11 @@ void Detector::setAdditionalJsonParameter(const std::string &key,
 
 // Advanced
 
-void Detector::programFPGA(const std::string &fname, Positions pos) {
+void Detector::programFPGA(const std::string &fname,
+                           const bool forceDeleteNormalFile, Positions pos) {
     LOG(logINFO) << "Updating Firmware...";
     std::vector<char> buffer = pimpl->readProgrammingFile(fname);
-    pimpl->Parallel(&Module::programFPGA, pos, buffer);
+    pimpl->Parallel(&Module::programFPGA, pos, buffer, forceDeleteNormalFile);
     rebootController(pos);
 }
 
@@ -2278,7 +2279,7 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
     LOG(logINFO) << "Updating Firmware and Detector Server (with tftp)...";
     LOG(logINFO) << "Updating Detector Server (via tftp)...";
     pimpl->Parallel(&Module::copyDetectorServer, pos, sname, hostname);
-    programFPGA(fname, pos);
+    programFPGA(fname, false, pos);
 }
 
 void Detector::updateFirmwareAndServer(const std::string &sname,
@@ -2289,7 +2290,7 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
     std::vector<char> buffer = readBinaryFile(sname, "Update Detector Server");
     std::string filename = sls::getFileNameFromFilePath(sname);
     pimpl->Parallel(&Module::updateDetectorServer, pos, buffer, filename);
-    programFPGA(fname, pos);
+    programFPGA(fname, false, pos);
 }
 
 Result<bool> Detector::getUpdateMode(Positions pos) const {
@@ -2399,7 +2400,7 @@ Result<ns> Detector::getMeasurementTime(Positions pos) const {
 std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
 std::vector<int> Detector::getPortNumbers(int start_port) {
-    int num_sockets_per_detector = pimpl->getNumberofUDPInterfaces({}).tsquash(
+    int num_sockets_per_detector = getNumberofUDPInterfaces({}).tsquash(
         "Number of UDP Interfaces is not consistent among modules");
     std::vector<int> res;
     res.reserve(size());

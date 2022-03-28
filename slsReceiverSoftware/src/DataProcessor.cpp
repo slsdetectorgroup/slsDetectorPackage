@@ -200,7 +200,10 @@ void DataProcessor::CreateVirtualFile(
     if (virtualFile_) {
         delete virtualFile_;
     }
-    virtualFile_ = new HDF5VirtualFile(hdf5Lib);
+    bool gotthard25um =
+        ((detectorType_ == GOTTHARD || detectorType_ == GOTTHARD2) &&
+         (numModX * numModY) == 2);
+    virtualFile_ = new HDF5VirtualFile(hdf5Lib, gotthard25um);
 
     // maxframesperfile = 0 for infinite files
     uint32_t framesPerFile =
@@ -214,7 +217,7 @@ void DataProcessor::CreateVirtualFile(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
         modulePos, numUnitsPerReadout, framesPerFile, numImages,
         generalData_->nPixelsX, generalData_->nPixelsY, dynamicRange,
-        numImagesProcessed, numModX, numModY, dataFile_->GetPDataType(),
+        numFramesCaught_, numModX, numModY, dataFile_->GetPDataType(),
         dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes());
 }
 

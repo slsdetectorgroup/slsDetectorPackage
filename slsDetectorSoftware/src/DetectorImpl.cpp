@@ -32,7 +32,8 @@
 namespace sls {
 
 DetectorImpl::DetectorImpl(int detector_index, bool verify, bool update)
-    : detectorIndex(detector_index), shm(detector_index, -1),ctb_shm(detector_index, -1, CtbConfig::shm_tag()) {
+    : detectorIndex(detector_index), shm(detector_index, -1),
+      ctb_shm(detector_index, -1, CtbConfig::shm_tag()) {
     setupDetector(verify, update);
 }
 
@@ -44,7 +45,7 @@ void DetectorImpl::setupDetector(bool verify, bool update) {
     if (update) {
         updateUserdetails();
     }
-    
+
     if (ctb_shm.IsExisting())
         ctb_shm.OpenSharedMemory();
 }
@@ -94,7 +95,7 @@ void DetectorImpl::freeSharedMemory() {
     shm.RemoveSharedMemory();
     client_downstream = false;
 
-    if(ctb_shm.IsExisting())
+    if (ctb_shm.IsExisting())
         ctb_shm.RemoveSharedMemory();
 }
 
@@ -155,7 +156,7 @@ void DetectorImpl::initSharedMemory(bool verify) {
         }
     }
 
-    // std::cout << 
+    // std::cout <<
 }
 
 void DetectorImpl::initializeDetectorStructure() {
@@ -258,20 +259,11 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
     }
     updateDetectorSize();
 
-    // update zmq port (especially for eiger)
-    int numInterfaces = modules[0]->getNumberofUDPInterfaces();
-    if (numInterfaces == 2) {
-        for (size_t i = 0; i < modules.size(); ++i) {
-            modules[i]->setClientStreamingPort(DEFAULT_ZMQ_CL_PORTNO +
-                                               i * numInterfaces);
-        }
-    }
+    // Here we know the detector type and can add ctb shared memory
+    // if needed, CTB dac names are only on detector level
 
-    //Here we know the detector type and can add ctb shared memory 
-    //if needed, CTB dac names are only on detector level
-
-    if (shm()->detType == defs::CHIPTESTBOARD){
-        if(ctb_shm.IsExisting())
+    if (shm()->detType == defs::CHIPTESTBOARD) {
+        if (ctb_shm.IsExisting())
             ctb_shm.OpenSharedMemory();
         else
             ctb_shm.CreateSharedMemory();
@@ -303,6 +295,13 @@ void DetectorImpl::addModule(const std::string &hostname) {
 
     // get type by connecting
     detectorType type = Module::getTypeFromDetector(host, port);
+
+    // gotthard cannot have more than 2 modules (50um=1, 25um=2
+    if ((type == GOTTHARD || type == GOTTHARD2) && modules.size() > 2) {
+        freeSharedMemory();
+        throw sls::RuntimeError("Gotthard cannot have more than 2 modules");
+    }
+
     auto pos = modules.size();
     modules.emplace_back(
         sls::make_unique<Module>(type, detectorIndex, pos, false));
@@ -310,11 +309,20 @@ void DetectorImpl::addModule(const std::string &hostname) {
     modules[pos]->setControlPort(port);
     modules[pos]->setStopPort(port + 1);
     modules[pos]->setHostname(host, shm()->initialChecks);
+
     // module type updated by now
     shm()->detType = Parallel(&Module::getDetectorType, {})
                          .tsquash("Inconsistent detector types.");
     // for moench and ctb
     modules[pos]->updateNumberOfChannels();
+
+    // for eiger, jungfrau, gotthard2
+    modules[pos]->updateNumberofUDPInterfaces();
+
+    // update zmq port in case numudpinterfaces changed
+    int numInterfaces = modules[pos]->getNumberofUDPInterfacesFromShm();
+    modules[pos]->setClientStreamingPort(DEFAULT_ZMQ_CL_PORTNO +
+                                         pos * numInterfaces);
 }
 
 void DetectorImpl::updateDetectorSize() {
@@ -1383,10 +1391,6 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     return buffer;
 }
 
-sls::Result<int> DetectorImpl::getNumberofUDPInterfaces(Positions pos) const {
-    return Parallel(&Module::getNumberofUDPInterfaces, pos);
-}
-
 sls::Result<int> DetectorImpl::getDefaultDac(defs::dacIndex index,
                                              defs::detectorSettings sett,
                                              Positions pos) {
@@ -1398,16 +1402,15 @@ void DetectorImpl::setDefaultDac(defs::dacIndex index, int defaultValue,
     Parallel(&Module::setDefaultDac, pos, index, defaultValue, sett);
 }
 
-
 std::vector<std::string> DetectorImpl::getCtbDacNames() const {
     return ctb_shm()->getDacNames();
 }
 
-void DetectorImpl::setCtbDacNames(const std::vector<std::string>& names){
+void DetectorImpl::setCtbDacNames(const std::vector<std::string> &names) {
     ctb_shm()->setDacNames(names);
 }
 
-std::string DetectorImpl::getCtbDacName(defs::dacIndex i) const{
+std::string DetectorImpl::getCtbDacName(defs::dacIndex i) const {
     return ctb_shm()->getDacName(static_cast<int>(i));
 }
 

@@ -9,7 +9,7 @@
 class HDF5VirtualFile : private virtual slsDetectorDefs, public File {
 
   public:
-    HDF5VirtualFile(std::mutex *hdf5Lib);
+    HDF5VirtualFile(std::mutex *hdf5Lib, bool g25);
     ~HDF5VirtualFile();
 
     std::array<std::string, 2> GetFileAndDatasetName() const override;
@@ -30,4 +30,5 @@ class HDF5VirtualFile : private virtual slsDetectorDefs, public File {
     H5File *fd_{nullptr};
     std::string fileName_;
     std::string dataSetName_;
+    bool gotthard25um;
 };

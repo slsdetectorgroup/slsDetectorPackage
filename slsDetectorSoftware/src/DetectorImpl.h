@@ -388,7 +388,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     const int detectorIndex{0};
     sls::SharedMemory<sharedDetector> shm{0, -1};
-    sls::SharedMemory<CtbConfig> ctb_shm{0, -1, "a"};
+    sls::SharedMemory<CtbConfig> ctb_shm{0, -1, CtbConfig::shm_tag()};
     std::vector<std::unique_ptr<sls::Module>> modules;
 
     /** data streaming (down stream) enabled in client (zmq sckets created) */

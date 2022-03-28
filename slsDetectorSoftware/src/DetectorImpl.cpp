@@ -155,8 +155,6 @@ void DetectorImpl::initSharedMemory(bool verify) {
             throw SharedMemoryError("Shared memory version mismatch!");
         }
     }
-
-    // std::cout <<
 }
 
 void DetectorImpl::initializeDetectorStructure() {

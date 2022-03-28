@@ -126,10 +126,8 @@ template <typename T> class SharedMemory {
             RemoveSharedMemory();
             throw SharedMemoryError(msg);
         }
-        // int *pInt = new (buf) int(3);
-
         shared_struct = MapSharedMemory();
-        new (shared_struct) T{}; // is this ok? 
+        new (shared_struct) T{}; 
         LOG(logINFO) << "Shared memory created " << name;
     }
 

@@ -20,8 +20,8 @@ constexpr int shm_id = 10;
 TEST_CASE("Create SharedMemory read and write", "[detector]") {
 
     SharedMemory<Data> shm(shm_id, -1);
-    shm.CreateSharedMemory();
-    CHECK(shm.GetName() == std::string("/slsDetectorPackage_detector_") +
+    shm.createSharedMemory();
+    CHECK(shm.getName() == std::string("/slsDetectorPackage_detector_") +
                                std::to_string(shm_id));
 
     shm()->x = 3;
@@ -32,22 +32,22 @@ TEST_CASE("Create SharedMemory read and write", "[detector]") {
     CHECK(shm()->y == 5.7);
     CHECK(std::string(shm()->mess) == "Some string");
 
-    shm.UnmapSharedMemory();
+    shm.unmapSharedMemory();
     shm.RemoveSharedMemory();
 
-    CHECK(shm.IsExisting() == false);
+    CHECK(shm.exists() == false);
 }
 
 TEST_CASE("Open existing SharedMemory and read", "[detector]") {
 
     {
         SharedMemory<double> shm(shm_id, -1);
-        shm.CreateSharedMemory();
+        shm.createSharedMemory();
         *shm() = 5.3;
     }
 
     SharedMemory<double> shm2(shm_id, -1);
-    shm2.OpenSharedMemory();
+    shm2.openSharedMemory();
     CHECK(*shm2() == 5.3);
 
     shm2.RemoveSharedMemory();
@@ -59,8 +59,8 @@ TEST_CASE("Creating a second shared memory with the same name throws",
     SharedMemory<double> shm0(shm_id, -1);
     SharedMemory<double> shm1(shm_id, -1);
 
-    shm0.CreateSharedMemory();
-    CHECK_THROWS(shm1.CreateSharedMemory());
+    shm0.createSharedMemory();
+    CHECK_THROWS(shm1.createSharedMemory());
     shm0.RemoveSharedMemory();
 }
 
@@ -68,15 +68,15 @@ TEST_CASE("Open two shared memories to the same place", "[detector]") {
 
     // Create the first shared memory
     SharedMemory<Data> shm(shm_id, -1);
-    shm.CreateSharedMemory();
+    shm.createSharedMemory();
     shm()->x = 5;
     CHECK(shm()->x == 5);
 
     // Open the second shared memory with the same name
     SharedMemory<Data> shm2(shm_id, -1);
-    shm2.OpenSharedMemory();
+    shm2.openSharedMemory();
     CHECK(shm2()->x == 5);
-    CHECK(shm.GetName() == shm2.GetName());
+    CHECK(shm.getName() == shm2.getName());
 
     // Check that they still point to the same place
     shm2()->x = 7;
@@ -85,28 +85,25 @@ TEST_CASE("Open two shared memories to the same place", "[detector]") {
     // Remove only needs to be done once since they refer
     // to the same memory
     shm2.RemoveSharedMemory();
-    CHECK(shm.IsExisting() == false);
-    CHECK(shm2.IsExisting() == false);
+    CHECK(shm.exists() == false);
+    CHECK(shm2.exists() == false);
 }
 
 TEST_CASE("Move SharedMemory", "[detector]") {
 
     SharedMemory<Data> shm(shm_id, -1);
-    CHECK(shm.GetName() == std::string("/slsDetectorPackage_detector_") +
+    CHECK(shm.getName() == std::string("/slsDetectorPackage_detector_") +
                                std::to_string(shm_id));
-    shm.CreateSharedMemory();
+    shm.createSharedMemory();
     shm()->x = 9;
 
-    CHECK(shm.size() == sizeof(Data));
 
     SharedMemory<Data> shm2(shm_id + 1, -1);
     shm2 = std::move(shm); // shm is now a moved from object!
 
     CHECK(shm2()->x == 9);
     CHECK(shm() == nullptr);
-    CHECK(shm.size() == 0);
-
-    CHECK(shm2.GetName() == std::string("/slsDetectorPackage_detector_") +
+    CHECK(shm2.getName() == std::string("/slsDetectorPackage_detector_") +
                                 std::to_string(shm_id));
     shm2.RemoveSharedMemory();
 }
@@ -117,27 +114,27 @@ TEST_CASE("Create several shared memories", "[detector]") {
     v.reserve(N);
     for (int i = 0; i != N; ++i) {
         v.emplace_back(shm_id + i, -1);
-        CHECK(v[i].IsExisting() == false);
-        v[i].CreateSharedMemory();
+        CHECK(v[i].exists() == false);
+        v[i].createSharedMemory();
         *v[i]() = i;
         CHECK(*v[i]() == i);
     }
 
     for (int i = 0; i != N; ++i) {
         CHECK(*v[i]() == i);
-        CHECK(v[i].GetName() == std::string("/slsDetectorPackage_detector_") +
+        CHECK(v[i].getName() == std::string("/slsDetectorPackage_detector_") +
                                     std::to_string(i + shm_id));
     }
 
     for (int i = 0; i != N; ++i) {
         v[i].RemoveSharedMemory();
-        CHECK(v[i].IsExisting() == false);
+        CHECK(v[i].exists() == false);
     }
 }
 
 TEST_CASE("Create create a shared memory with a tag"){
     SharedMemory<int> shm(0, -1, "ctbdacs");
-    REQUIRE(shm.GetName() == "/slsDetectorPackage_detector_0_ctbdacs");
+    REQUIRE(shm.getName() == "/slsDetectorPackage_detector_0_ctbdacs");
 
 }
 
@@ -152,7 +149,7 @@ TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set"){
     setenv(SHM_ENV_NAME, "myprefix", 1);
 
     SharedMemory<int> shm(0, -1, "ctbdacs");
-    REQUIRE(shm.GetName() == "/slsDetectorPackage_detector_0_myprefix_ctbdacs");
+    REQUIRE(shm.getName() == "/slsDetectorPackage_detector_0_myprefix_ctbdacs");
 
     // Clean up after us
     if (old_slsdetname.empty())
@@ -162,3 +159,17 @@ TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set"){
 
 }
 
+TEST_CASE("map int64 to int32 throws"){
+    SharedMemory<int32_t> shm(shm_id, -1);
+    shm.createSharedMemory();
+    *shm() = 7;
+
+    SharedMemory<int64_t> shm2(shm_id, -1);
+    REQUIRE_THROWS(shm2.openSharedMemory());
+
+    shm.RemoveSharedMemory();
+    
+
+
+
+}

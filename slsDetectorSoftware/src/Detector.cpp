@@ -26,7 +26,7 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
     // single module
     if (moduleIndex >= 0) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, moduleIndex);
-        if (moduleShm.IsExisting()) {
+        if (moduleShm.exists()) {
             moduleShm.RemoveSharedMemory();
         }
         return;
@@ -36,8 +36,8 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
     SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     int numDetectors = 0;
 
-    if (detectorShm.IsExisting()) {
-        detectorShm.OpenSharedMemory();
+    if (detectorShm.exists()) {
+        detectorShm.openSharedMemory();
         numDetectors = detectorShm()->numberOfModules;
         detectorShm.RemoveSharedMemory();
     }
@@ -49,7 +49,7 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
 
     // Ctb configuration
     SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
-    if (ctbShm.IsExisting())
+    if (ctbShm.exists())
         ctbShm.RemoveSharedMemory();
 }
 

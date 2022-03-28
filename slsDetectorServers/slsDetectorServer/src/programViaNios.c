@@ -158,8 +158,8 @@ int openFileForFlash(char *mess, FILE **flashfd) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    // zero = normal file (not block special file)
-    if (S_ISBLK(buf.st_mode)) {
+    // zero = normal file (not char drive special file)
+    if (!S_ISCHR(buf.st_mode)) {
         // memory is not permanent
         sprintf(mess,
                 "Could not %s. The flash drive found is a normal file. "

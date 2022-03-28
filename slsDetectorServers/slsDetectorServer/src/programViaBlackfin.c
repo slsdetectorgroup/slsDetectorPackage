@@ -486,8 +486,8 @@ int checkNormalFile(char *mess, enum PROGRAM_INDEX index, int forceDeleteNormalF
         LOG(logERROR, (mess));
         return FAIL;
     }
-    // zero = normal file (not block special file)
-    if (S_ISBLK(buf.st_mode)) {
+    // zero = normal file (not char special drive file)
+    if (!S_ISCHR(buf.st_mode)) {
         // kernel memory is not permanent
         if (index != PROGRAM_FPGA) {
             sprintf(mess,

@@ -1,17 +1,62 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-#include "HDF5Utility.h"
+#include "MasterFileUtility.h"
 #include "sls/container_utils.h"
 
 #include <iomanip>
 
-namespace hdf5Utility {
+namespace masterFileUtility {
 
-void LinkFileInMaster(const std::string &masterFileName,
-                      const std::string &dataFilename,
-                      const std::string &dataSetname,
-                      const std::vector<std::string> parameterNames,
-                      const bool silentMode, std::mutex *hdf5LibMutex) {
+std::string CreateMasterBinaryFile(const std::string filePath,
+                                   const std::string fileNamePrefix,
+                                   const uint64_t fileIndex,
+                                   const bool overWriteEnable,
+                                   const bool silentMode,
+                                   MasterAttributes *attr) {
+    // create file name
+    std::ostringstream os;
+    os << filePath << "/" << fileNamePrefix << "_master"
+       << "_" << fileIndex << ".json";
+    std::string fileName = os.str();
+
+    // create file
+    FILE *fd{nullptr};
+    if (!overWriteEnable) {
+        if (nullptr == (fd = fopen((const char *)fileName.c_str(), "wx"))) {
+            fd = nullptr;
+            throw sls::RuntimeError("Could not create binary master file " +
+                                    fileName);
+        }
+    } else if (nullptr == (fd = fopen((const char *)fileName.c_str(), "w"))) {
+        fd = nullptr;
+        throw sls::RuntimeError(
+            "Could not create/overwrite binary master file " + fileName);
+    }
+
+    rapidjson::StringBuffer s;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+    attr->GetBinaryAttributes(&writer);
+    std::string message = s.GetString();
+    if (fwrite((void *)message.c_str(), 1, message.length(), fd) !=
+        message.length()) {
+        throw sls::RuntimeError(
+            "Master binary file incorrect number of bytes written to file");
+    }
+    if (fd) {
+        fclose(fd);
+    }
+    if (!silentMode) {
+        LOG(logINFO) << "Master File: " << fileName;
+    }
+    return fileName;
+}
+
+#ifdef HDF5C
+void LinkHDF5FileInMaster(const std::string &masterFileName,
+                          const std::string &dataFilename,
+                          const std::string &dataSetname,
+                          const std::vector<std::string> parameterNames,
+                          const bool silentMode, std::mutex *hdf5LibMutex) {
 
     std::lock_guard<std::mutex> lock(*hdf5LibMutex);
     std::unique_ptr<H5File> fd{nullptr};
@@ -64,11 +109,12 @@ void LinkFileInMaster(const std::string &masterFileName,
     }
 }
 
-std::string CreateMasterFile(const std::string &filePath,
-                             const std::string &fileNamePrefix,
-                             const uint64_t fileIndex,
-                             const bool overWriteEnable, const bool silentMode,
-                             MasterAttributes *attr, std::mutex *hdf5LibMutex) {
+std::string CreateMasterHDF5File(const std::string &filePath,
+                                 const std::string &fileNamePrefix,
+                                 const uint64_t fileIndex,
+                                 const bool overWriteEnable,
+                                 const bool silentMode, MasterAttributes *attr,
+                                 std::mutex *hdf5LibMutex) {
 
     std::ostringstream os;
     os << filePath << "/" << fileNamePrefix << "_master"
@@ -121,18 +167,17 @@ std::string CreateMasterFile(const std::string &filePath,
     return fileName;
 }
 
-std::array<std::string, 2>
-CreateVirtualFile(const std::string &filePath,
-                  const std::string &fileNamePrefix, const uint64_t fileIndex,
-                  const bool overWriteEnable, const bool silentMode,
-                  const int modulePos, const int numUnitsPerReadout,
-                  const uint32_t maxFramesPerFile, const uint64_t numImages,
-                  const uint32_t nPixelsX, const uint32_t nPixelsY,
-                  const uint32_t dynamicRange, const uint64_t numImagesCaught,
-                  const int numModX, const int numModY, const DataType dataType,
-                  const std::vector<std::string> parameterNames,
-                  const std::vector<DataType> parameterDataTypes,
-                  std::mutex *hdf5LibMutex, bool gotthard25um) {
+std::array<std::string, 2> CreateVirtualHDF5File(
+    const std::string &filePath, const std::string &fileNamePrefix,
+    const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
+    const int modulePos, const int numUnitsPerReadout,
+    const uint32_t maxFramesPerFile, const uint64_t numImages,
+    const uint32_t nPixelsX, const uint32_t nPixelsY,
+    const uint32_t dynamicRange, const uint64_t numImagesCaught,
+    const int numModX, const int numModY, const DataType dataType,
+    const std::vector<std::string> parameterNames,
+    const std::vector<DataType> parameterDataTypes, std::mutex *hdf5LibMutex,
+    bool gotthard25um) {
 
     // virtual file name
     std::ostringstream osfn;
@@ -308,5 +353,6 @@ CreateVirtualFile(const std::string &filePath,
     }
     return std::array<std::string, 2>{fileName, dataSetName};
 }
+#endif
 
-} // namespace hdf5Utility
+} // namespace masterFileUtility

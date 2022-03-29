@@ -13,9 +13,9 @@
 #include "Fifo.h"
 #include "GeneralData.h"
 #include "MasterAttributes.h"
+#include "MasterFileUtility.h"
 #ifdef HDF5C
 #include "HDF5DataFile.h"
-#include "HDF5Utility.h"
 #endif
 #include "DataStreamer.h"
 #include "sls/container_utils.h"
@@ -177,7 +177,7 @@ std::array<std::string, 2> DataProcessor::CreateVirtualFile(
     // files (they exist anyway) assumption2: virtual file max frame index
     // is from R0 P0 (difference from others when missing frames or for a
     // stop acquisition)
-    return hdf5Utility::CreateVirtualFile(
+    return masterFileUtility::CreateVirtualHDF5File(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
         modulePos, numUnitsPerReadout, framesPerFile, numImages,
         generalData_->nPixelsX, generalData_->nPixelsY, dynamicRange,
@@ -198,9 +198,9 @@ void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
         fname = res[0];
         datasetName = res[1];
     }
-    hdf5Utility::LinkFileInMaster(masterFileName, fname, datasetName,
-                                  dataFile_->GetParameterNames(), silentMode,
-                                  hdf5LibMutex);
+    masterFileUtility::LinkHDF5FileInMaster(masterFileName, fname, datasetName,
+                                            dataFile_->GetParameterNames(),
+                                            silentMode, hdf5LibMutex);
 }
 #endif
 
@@ -216,14 +216,14 @@ std::string DataProcessor::CreateMasterFile(
     switch (fileFormatType) {
 #ifdef HDF5C
     case HDF5:
-        return hdf5Utility::CreateMasterFile(filePath, fileNamePrefix,
-                                             fileIndex, overWriteEnable,
-                                             silentMode, attr, hdf5LibMutex);
+        return masterFileUtility::CreateMasterHDF5File(
+            filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
+            attr, hdf5LibMutex);
 #endif
     case BINARY:
-        return BinaryMasterFile::CreateMasterFile(filePath, fileNamePrefix,
-                                                  fileIndex, overWriteEnable,
-                                                  silentMode, attr);
+        return masterFileUtility::CreateMasterBinaryFile(
+            filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
+            attr);
     default:
         throw sls::RuntimeError("Unknown file format (compile with hdf5 flags");
     }

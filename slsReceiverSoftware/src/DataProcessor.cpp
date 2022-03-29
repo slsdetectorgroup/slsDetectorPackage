@@ -15,8 +15,7 @@
 #include "MasterAttributes.h"
 #ifdef HDF5C
 #include "HDF5DataFile.h"
-#include "HDF5MasterFile.h"
-#include "HDF5VirtualFile.h"
+#include "HDF5Utility.h"
 #endif
 #include "DataStreamer.h"
 #include "sls/container_utils.h"
@@ -82,10 +81,6 @@ void DataProcessor::SetGeneralData(GeneralData *generalData) {
 void DataProcessor::CloseFiles() {
     if (dataFile_)
         dataFile_->CloseFile();
-#ifdef HDF5C
-    if (virtualFile_)
-        virtualFile_->CloseFile();
-#endif
 }
 
 void DataProcessor::DeleteFiles() {
@@ -94,12 +89,6 @@ void DataProcessor::DeleteFiles() {
         delete dataFile_;
         dataFile_ = nullptr;
     }
-#ifdef HDF5C
-    if (virtualFile_) {
-        delete virtualFile_;
-        virtualFile_ = nullptr;
-    }
-#endif
 }
 void DataProcessor::SetupFileWriter(const bool filewriteEnable,
                                     const fileFormat fileFormatType,
@@ -168,21 +157,17 @@ uint32_t DataProcessor::GetFilesInAcquisition() const {
     return dataFile_->GetFilesInAcquisition();
 }
 
-void DataProcessor::CreateVirtualFile(
-    const std::string filePath, const std::string fileNamePrefix,
+std::array<std::string, 2> DataProcessor::CreateVirtualFile(
+    const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
     const uint32_t maxFramesPerFile, const uint64_t numImages,
-    const uint32_t dynamicRange, const int numModX, const int numModY,
+    const int numModX, const int numModY, const uint32_t dynamicRange,
     std::mutex *hdf5LibMutex) {
 
-    if (virtualFile_) {
-        delete virtualFile_;
-    }
     bool gotthard25um =
         ((detectorType_ == GOTTHARD || detectorType_ == GOTTHARD2) &&
          (numModX * numModY) == 2);
-    virtualFile_ = new HDF5VirtualFile(hdf5LibMutex, gotthard25um);
 
     // maxframesperfile = 0 for infinite files
     uint32_t framesPerFile =
@@ -192,31 +177,30 @@ void DataProcessor::CreateVirtualFile(
     // files (they exist anyway) assumption2: virtual file max frame index
     // is from R0 P0 (difference from others when missing frames or for a
     // stop acquisition)
-    virtualFile_->CreateVirtualFile(
+    return hdf5Utility::CreateVirtualFile(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
         modulePos, numUnitsPerReadout, framesPerFile, numImages,
         generalData_->nPixelsX, generalData_->nPixelsY, dynamicRange,
         numFramesCaught_, numModX, numModY, dataFile_->GetPDataType(),
-        dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes());
+        dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes(),
+        hdf5LibMutex, gotthard25um);
 }
 
-void DataProcessor::LinkDataInMasterFile(const std::string &masterFileName,
-                                         const bool silentMode,
-                                         std::mutex *hdf5LibMutex) {
-    std::string fname, datasetName;
-    if (virtualFile_) {
-        auto res = virtualFile_->GetFileAndDatasetName();
-        fname = res[0];
-        datasetName = res[1];
-    } else {
+void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
+                                     const std::string &virtualFileName,
+                                     const std::string &virtualDatasetName,
+                                     const bool silentMode,
+                                     std::mutex *hdf5LibMutex) {
+    std::string fname{virtualFileName}, datasetName{virtualDatasetName};
+    // if no virtual file, link data file
+    if (virtualFileName.empty()) {
         auto res = dataFile_->GetFileAndDatasetName();
         fname = res[0];
         datasetName = res[1];
     }
-    // link in master
-    HDF5MasterFile::LinkDataFile(masterFileName, fname, datasetName,
-                                 dataFile_->GetParameterNames(), silentMode,
-                                 &hdf5LibMutex);
+    hdf5Utility::LinkFileInMaster(masterFileName, fname, datasetName,
+                                  dataFile_->GetParameterNames(), silentMode,
+                                  hdf5LibMutex);
 }
 #endif
 
@@ -232,9 +216,9 @@ std::string DataProcessor::CreateMasterFile(
     switch (fileFormatType) {
 #ifdef HDF5C
     case HDF5:
-        return HDF5MasterFile::CreateMasterFile(filePath, fileNamePrefix,
-                                                fileIndex, overWriteEnable,
-                                                silentMode, attr, hdf5LibMutex);
+        return hdf5Utility::CreateMasterFile(filePath, fileNamePrefix,
+                                             fileIndex, overWriteEnable,
+                                             silentMode, attr, hdf5LibMutex);
 #endif
     case BINARY:
         return BinaryMasterFile::CreateMasterFile(filePath, fileNamePrefix,

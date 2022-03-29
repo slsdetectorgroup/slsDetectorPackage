@@ -385,6 +385,7 @@ void MasterAttributes::WriteHDF5ThresholdEnergy(H5File *fd, Group *group) {
 }
 
 void MasterAttributes::WriteHDF5ThresholdEnergies(H5File *fd, Group *group) {
+    char c[1024]{0};
     DataSpace dataspace = DataSpace(H5S_SCALAR);
     StrType strdatatype(PredType::C_S1, 1024);
     DataSet dataset =

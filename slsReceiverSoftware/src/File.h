@@ -60,20 +60,6 @@ class File : private virtual slsDetectorDefs {
         return std::vector<DataType>{};
     };
 
-    virtual void CreateVirtualFile(
-        const std::string filePath, const std::string fileNamePrefix,
-        const uint64_t fileIndex, const bool overWriteEnable,
-        const bool silentMode, const int modulePos,
-        const int numUnitsPerReadout, const uint32_t maxFramesPerFile,
-        const uint64_t numImages, const uint32_t nPixelsX,
-        const uint32_t nPixelsY, const uint32_t dynamicRange,
-        const uint64_t numImagesCaught, const int numModX, const int numModY,
-        const DataType dataType, const std::vector<std::string> parameterNames,
-        const std::vector<DataType> parameterDataTypes) {
-        LOG(logERROR) << "This is a generic function CreateVirtualFile that "
-                         "should be overloaded by a derived class";
-    }
-
     virtual void CreateFirstHDF5DataFile(
         const std::string filePath, const std::string fileNamePrefix,
         const uint64_t fileIndex, const bool overWriteEnable,
@@ -83,13 +69,6 @@ class File : private virtual slsDetectorDefs {
         const uint32_t nPixelsX, const uint32_t nPixelsY,
         const uint32_t dynamicRange) {
         LOG(logERROR) << "This is a generic function CreateFirstDataFile that "
-                         "should be overloaded by a derived class";
-    };
-
-    virtual void LinkDataFile(std::string dataFilename, std::string dataSetname,
-                              const std::vector<std::string> parameterNames,
-                              const bool silentMode) {
-        LOG(logERROR) << "This is a generic function LinkDataFile that "
                          "should be overloaded by a derived class";
     };
 #endif

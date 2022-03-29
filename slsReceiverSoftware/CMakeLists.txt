@@ -28,8 +28,7 @@ if (SLS_USE_HDF5)
 	    )
 	    list (APPEND SOURCES 
 	        src/HDF5DataFile.cpp 
-	        src/HDF5MasterFile.cpp 
-	        src/HDF5VirtualFile.cpp 
+	        src/HDF5Utility.cpp 
 	    )
 endif (SLS_USE_HDF5)
 

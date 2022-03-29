@@ -9,7 +9,6 @@
 
 #include "DataProcessor.h"
 #include "BinaryDataFile.h"
-#include "BinaryMasterFile.h"
 #include "Fifo.h"
 #include "GeneralData.h"
 #include "MasterAttributes.h"

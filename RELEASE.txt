@@ -54,7 +54,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - added geometry to metadata
 - 10g eiger nextframenumber get fixed.
 - stop, able to set nextframenumber to a consistent (max + 1) for all modules if different (eiger/ctb/jungfrau/moench)
-- fpga/kernel programming, checks if drive is a special file and not a normal file
+- ctb: can set names for all the dacs
 - fpga/kernel programming, checks if drive is a special file and not a normal file
 - gotthard 25 um image reconstructed in gui and virtual hdf5 (firmware updated for slave to reverse channels)
 

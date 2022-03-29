@@ -590,13 +590,13 @@ TEST_CASE("master", "[.cmd]") {
             }
             {
                 std::ostringstream oss1;
-                proxy.Call("master", {"0"}, 0, PUT, oss3);
-                REQUIRE(oss3.str() == "master 0\n");
+                proxy.Call("master", {"0"}, 0, PUT, oss1);
+                REQUIRE(oss1.str() == "master 0\n");
             }
             {
                 std::ostringstream oss1;
-                proxy.Call("master", {"1"}, 0, PUT, oss3);
-                REQUIRE(oss3.str() == "master 1\n");
+                proxy.Call("master", {"1"}, 0, PUT, oss1);
+                REQUIRE(oss1.str() == "master 1\n");
             }
             REQUIRE_THROWS(proxy.Call("master", {"1"}, -1, PUT));
             // set all to slaves, and then master

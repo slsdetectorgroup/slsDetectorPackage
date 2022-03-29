@@ -32,7 +32,8 @@
 namespace sls {
 
 DetectorImpl::DetectorImpl(int detector_index, bool verify, bool update)
-    : detectorIndex(detector_index), shm(detector_index, -1) {
+    : detectorIndex(detector_index), shm(detector_index, -1),
+      ctb_shm(detector_index, -1, CtbConfig::shm_tag()) {
     setupDetector(verify, update);
 }
 
@@ -44,6 +45,9 @@ void DetectorImpl::setupDetector(bool verify, bool update) {
     if (update) {
         updateUserdetails();
     }
+
+    if (ctb_shm.exists())
+        ctb_shm.openSharedMemory();
 }
 
 void DetectorImpl::setAcquiringFlag(bool flag) { shm()->acquiringFlag = flag; }
@@ -54,8 +58,8 @@ void DetectorImpl::freeSharedMemory(int detectorIndex, int detPos) {
     // single
     if (detPos >= 0) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, detPos);
-        if (moduleShm.IsExisting()) {
-            moduleShm.RemoveSharedMemory();
+        if (moduleShm.exists()) {
+            moduleShm.removeSharedMemory();
         }
         return;
     }
@@ -64,16 +68,20 @@ void DetectorImpl::freeSharedMemory(int detectorIndex, int detPos) {
     SharedMemory<sharedDetector> detectorShm(detectorIndex, -1);
     int numModules = 0;
 
-    if (detectorShm.IsExisting()) {
-        detectorShm.OpenSharedMemory();
+    if (detectorShm.exists()) {
+        detectorShm.openSharedMemory();
         numModules = detectorShm()->numberOfModules;
-        detectorShm.RemoveSharedMemory();
+        detectorShm.removeSharedMemory();
     }
 
     for (int i = 0; i < numModules; ++i) {
         SharedMemory<sharedModule> moduleShm(detectorIndex, i);
-        moduleShm.RemoveSharedMemory();
+        moduleShm.removeSharedMemory();
     }
+
+    SharedMemory<CtbConfig> ctbShm(detectorIndex, -1, CtbConfig::shm_tag());
+    if (ctbShm.exists())
+        ctbShm.removeSharedMemory();
 }
 
 void DetectorImpl::freeSharedMemory() {
@@ -84,8 +92,11 @@ void DetectorImpl::freeSharedMemory() {
     modules.clear();
 
     // clear detector shm
-    shm.RemoveSharedMemory();
+    shm.removeSharedMemory();
     client_downstream = false;
+
+    if (ctb_shm.exists())
+        ctb_shm.removeSharedMemory();
 }
 
 std::string DetectorImpl::getUserDetails() {
@@ -129,11 +140,11 @@ void DetectorImpl::setInitialChecks(const bool value) {
 }
 
 void DetectorImpl::initSharedMemory(bool verify) {
-    if (!shm.IsExisting()) {
-        shm.CreateSharedMemory();
+    if (!shm.exists()) {
+        shm.createSharedMemory();
         initializeDetectorStructure();
     } else {
-        shm.OpenSharedMemory();
+        shm.openSharedMemory();
         if (verify && shm()->shmversion != DETECTOR_SHMVERSION) {
             LOG(logERROR) << "Detector shared memory (" << detectorIndex
                           << ") version mismatch "
@@ -144,6 +155,8 @@ void DetectorImpl::initSharedMemory(bool verify) {
             throw SharedMemoryError("Shared memory version mismatch!");
         }
     }
+
+    // std::cout <<
 }
 
 void DetectorImpl::initializeDetectorStructure() {
@@ -245,6 +258,16 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
         addModule(hostname);
     }
     updateDetectorSize();
+
+    // Here we know the detector type and can add ctb shared memory
+    // if needed, CTB dac names are only on detector level
+
+    if (shm()->detType == defs::CHIPTESTBOARD) {
+        if (ctb_shm.exists())
+            ctb_shm.openSharedMemory();
+        else
+            ctb_shm.createSharedMemory();
+    }
 }
 
 void DetectorImpl::addModule(const std::string &hostname) {
@@ -1377,6 +1400,18 @@ sls::Result<int> DetectorImpl::getDefaultDac(defs::dacIndex index,
 void DetectorImpl::setDefaultDac(defs::dacIndex index, int defaultValue,
                                  defs::detectorSettings sett, Positions pos) {
     Parallel(&Module::setDefaultDac, pos, index, defaultValue, sett);
+}
+
+std::vector<std::string> DetectorImpl::getCtbDacNames() const {
+    return ctb_shm()->getDacNames();
+}
+
+void DetectorImpl::setCtbDacNames(const std::vector<std::string> &names) {
+    ctb_shm()->setDacNames(names);
+}
+
+std::string DetectorImpl::getCtbDacName(defs::dacIndex i) const {
+    return ctb_shm()->getDacName(static_cast<int>(i));
 }
 
 } // namespace sls

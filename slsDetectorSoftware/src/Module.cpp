@@ -33,11 +33,11 @@ Module::Module(detectorType type, int det_id, int module_index, bool verify)
     : moduleIndex(module_index), shm(det_id, module_index) {
 
     // ensure shared memory was not created before
-    if (shm.IsExisting()) {
+    if (shm.exists()) {
         LOG(logWARNING) << "This shared memory should have been "
                            "deleted before! "
-                        << shm.GetName() << ". Freeing it again";
-        shm.RemoveSharedMemory();
+                        << shm.getName() << ". Freeing it again";
+        shm.removeSharedMemory();
     }
 
     initSharedMemory(type, det_id, verify);
@@ -55,8 +55,8 @@ Module::Module(int det_id, int module_index, bool verify)
 Module::~Module() = default;
 
 void Module::freeSharedMemory() {
-    if (shm.IsExisting()) {
-        shm.RemoveSharedMemory();
+    if (shm.exists()) {
+        shm.removeSharedMemory();
     }
 }
 
@@ -3171,20 +3171,20 @@ Ret Module::sendToReceiver(int fnum, const Arg &args) {
 
 slsDetectorDefs::detectorType Module::getDetectorTypeFromShm(int det_id,
                                                              bool verify) {
-    if (!shm.IsExisting()) {
-        throw SharedMemoryError("Shared memory " + shm.GetName() +
+    if (!shm.exists()) {
+        throw SharedMemoryError("Shared memory " + shm.getName() +
                                 "does not exist.\n Corrupted Multi Shared "
                                 "memory. Please free shared memory.");
     }
 
-    shm.OpenSharedMemory();
+    shm.openSharedMemory();
     if (verify && shm()->shmversion != MODULE_SHMVERSION) {
         std::ostringstream ss;
         ss << "Single shared memory (" << det_id << "-" << moduleIndex
            << ":)version mismatch (expected 0x" << std::hex << MODULE_SHMVERSION
            << " but got 0x" << shm()->shmversion << ")" << std::dec
            << ". Clear Shared memory to continue.";
-        shm.UnmapSharedMemory();
+        shm.unmapSharedMemory();
         throw SharedMemoryError(ss.str());
     }
     return shm()->detType;
@@ -3192,11 +3192,11 @@ slsDetectorDefs::detectorType Module::getDetectorTypeFromShm(int det_id,
 
 void Module::initSharedMemory(detectorType type, int det_id, bool verify) {
     shm = SharedMemory<sharedModule>(det_id, moduleIndex);
-    if (!shm.IsExisting()) {
-        shm.CreateSharedMemory();
+    if (!shm.exists()) {
+        shm.createSharedMemory();
         initializeModuleStructure(type);
     } else {
-        shm.OpenSharedMemory();
+        shm.openSharedMemory();
         if (verify && shm()->shmversion != MODULE_SHMVERSION) {
             std::ostringstream ss;
             ss << "Single shared memory (" << det_id << "-" << moduleIndex

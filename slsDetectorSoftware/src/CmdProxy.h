@@ -837,7 +837,7 @@ class CmdProxy {
 
         /* dacs */
         {"dac", &CmdProxy::Dac},
-        {"daclist", &CmdProxy::daclist},
+        {"daclist", &CmdProxy::DacList},
         {"dacvalues", &CmdProxy::DacValues},
         {"resetdacs", &CmdProxy::ResetDacs},
         {"defaultdac", &CmdProxy::DefaultDac},
@@ -1124,6 +1124,7 @@ class CmdProxy {
     std::string TemperatureValues(int action);
     /* dacs */
     std::string Dac(int action);
+    std::string DacList(int action);
     std::string DacValues(int action);
     std::string ResetDacs(int action);
     std::string DefaultDac(int action);
@@ -1464,10 +1465,6 @@ class CmdProxy {
                     "[n_value]\n\t[Ctb]Temperature of the slow adc");
 
     /* dacs */
-
-    GET_COMMAND_NOID(
-        daclist, getDacList,
-        "\n\tGets the list of commands for every dac for this detector.");
 
     /* on chip dacs */
     INTEGER_USER_IND_COMMAND(

@@ -18,6 +18,7 @@ target_sources(tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdParser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test-Module.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test-Pattern.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CtbConfig.cpp
 )
 
 target_include_directories(tests PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../src>")

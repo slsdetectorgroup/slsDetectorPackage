@@ -7,6 +7,8 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
+
+#include "CtbConfig.h"
 class ZmqSocket;
 class detectorData;
 
@@ -298,6 +300,11 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos);
 
+
+    std::vector<std::string> getCtbDacNames() const;
+    std::string getCtbDacName(defs::dacIndex i) const;
+    void setCtbDacNames(const std::vector<std::string>& names);
+
   private:
     /**
      * Creates/open shared memory, initializes detector structure and members
@@ -381,6 +388,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     const int detectorIndex{0};
     sls::SharedMemory<sharedDetector> shm{0, -1};
+    sls::SharedMemory<CtbConfig> ctb_shm{0, -1, CtbConfig::shm_tag()};
     std::vector<std::unique_ptr<sls::Module>> modules;
 
     /** data streaming (down stream) enabled in client (zmq sckets created) */

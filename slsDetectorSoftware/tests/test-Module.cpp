@@ -32,8 +32,8 @@ TEST_CASE("Is shm fixed pattern shm compatible") {
 
     // Set shm version to 0
     sls::SharedMemory<sls::sharedModule> shm(0, 0);
-    REQUIRE(shm.IsExisting() == true);
-    shm.OpenSharedMemory();
+    REQUIRE(shm.exists() == true);
+    shm.openSharedMemory();
     shm()->shmversion = 0;
 
     // Should fail since version is set to 0

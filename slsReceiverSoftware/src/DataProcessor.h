@@ -68,7 +68,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                            const uint64_t numImages,
                            const uint32_t dynamicRange, const int numModX,
                            const int numModY, std::mutex *hdf5LibMutex);
-    void LinkDataInMasterFile(const string &masterFileName,
+    void LinkDataInMasterFile(const std::string &masterFileName,
                               const bool silentMode, std::mutex *hdf5LibMutex);
 #endif
 

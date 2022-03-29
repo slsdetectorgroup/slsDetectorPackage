@@ -47,12 +47,6 @@ std::string BinaryMasterFile::CreateMasterFile(const std::string filePath,
 std::string BinaryMasterFile::GetMasterAttributes(MasterAttributes *attr) {
     rapidjson::StringBuffer s;
     rapidjson::Writer<rapidjson::StringBuffer> writer(s);
-    writer.StartObject();
-
-    attr->GetCommonBinaryAttributes(&writer);
-    attr->GetSpecificBinaryAttributes(&writer);
-    attr->GetFinalBinaryAttributes(&writer);
-
-    writer.EndObject();
+    attr->GetBinaryAttributes(&writer);
     return s.GetString();
 }

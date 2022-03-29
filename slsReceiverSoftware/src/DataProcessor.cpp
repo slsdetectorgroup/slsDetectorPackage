@@ -200,7 +200,7 @@ void DataProcessor::CreateVirtualFile(
         dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes());
 }
 
-void DataProcessor::LinkDataInMasterFile(const string &masterFileName,
+void DataProcessor::LinkDataInMasterFile(const std::string &masterFileName,
                                          const bool silentMode,
                                          std::mutex *hdf5LibMutex) {
     std::string fname, datasetName;

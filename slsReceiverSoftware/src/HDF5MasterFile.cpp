@@ -99,7 +99,7 @@ std::string HDF5MasterFile::CreateMasterFile(
         Group group5(group3.createGroup("detector"));
         Group group6(group1.createGroup("sample"));
 
-        attr->WriteMasterHDF5Attributes(&fd, &group5);
+        attr->WriteHDF5Attributes(&fd, &group5);
         fd.close();
     } catch (const Exception &error) {
         error.printErrorStack();

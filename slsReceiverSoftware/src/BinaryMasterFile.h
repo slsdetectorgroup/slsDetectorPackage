@@ -2,7 +2,6 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
-#include "File.h"
 #include "MasterAttributes.h"
 
 class BinaryMasterFile : private virtual slsDetectorDefs {

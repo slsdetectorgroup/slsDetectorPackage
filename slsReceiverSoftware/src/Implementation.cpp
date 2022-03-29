@@ -745,95 +745,68 @@ void Implementation::StartMasterWriter() {
         std::string masterFileName;
         // master file
         if (masterFileWriteEnable) {
-            std::unique_ptr<MasterAttributes> masterAttributes{nullptr};
-            switch (detType) {
-            case GOTTHARD:
-                masterAttributes = sls::make_unique<GotthardMasterAttributes>();
-                break;
-            case JUNGFRAU:
-                masterAttributes = sls::make_unique<JungfrauMasterAttributes>();
-                break;
-            case EIGER:
-                masterAttributes = sls::make_unique<EigerMasterAttributes>();
-                break;
-            case MYTHEN3:
-                masterAttributes = sls::make_unique<Mythen3MasterAttributes>();
-                break;
-            case GOTTHARD2:
-                masterAttributes =
-                    sls::make_unique<Gotthard2MasterAttributes>();
-                break;
-            case MOENCH:
-                masterAttributes = sls::make_unique<MoenchMasterAttributes>();
-                break;
-            case CHIPTESTBOARD:
-                masterAttributes = sls::make_unique<CtbMasterAttributes>();
-                break;
-            default:
-                throw sls::RuntimeError(
-                    "Unknown detector type to set up master file attributes");
-            }
-            masterAttributes->detType = detType;
-            masterAttributes->timingMode = timingMode;
+            MasterAttributes masterAttributes;
+            masterAttributes.detType = detType;
+            masterAttributes.timingMode = timingMode;
             xy nm{numModules.x, numModules.y};
             if (quadEnable) {
                 nm.x = 1;
                 nm.y = 2;
             }
-            masterAttributes->geometry = xy(nm.x, nm.y);
-            masterAttributes->imageSize = generalData->imageSize;
-            masterAttributes->nPixels =
+            masterAttributes.geometry = xy(nm.x, nm.y);
+            masterAttributes.imageSize = generalData->imageSize;
+            masterAttributes.nPixels =
                 xy(generalData->nPixelsX, generalData->nPixelsY);
-            masterAttributes->maxFramesPerFile = framesPerFile;
-            masterAttributes->frameDiscardMode = frameDiscardMode;
-            masterAttributes->framePadding = framePadding;
-            masterAttributes->scanParams = scanParams;
-            masterAttributes->totalFrames = numberOfTotalFrames;
-            masterAttributes->exptime = acquisitionTime;
-            masterAttributes->period = acquisitionPeriod;
-            masterAttributes->burstMode = burstMode;
-            masterAttributes->numUDPInterfaces = numUDPInterfaces;
-            masterAttributes->dynamicRange = dynamicRange;
-            masterAttributes->tenGiga = tengigaEnable;
-            masterAttributes->thresholdEnergyeV = thresholdEnergyeV;
-            masterAttributes->thresholdAllEnergyeV = thresholdAllEnergyeV;
-            masterAttributes->subExptime = subExpTime;
-            masterAttributes->subPeriod = subPeriod;
-            masterAttributes->quad = quadEnable;
-            masterAttributes->readNRows = readNRows;
-            masterAttributes->ratecorr = rateCorrections;
-            masterAttributes->adcmask =
+            masterAttributes.maxFramesPerFile = framesPerFile;
+            masterAttributes.frameDiscardMode = frameDiscardMode;
+            masterAttributes.framePadding = framePadding;
+            masterAttributes.scanParams = scanParams;
+            masterAttributes.totalFrames = numberOfTotalFrames;
+            masterAttributes.exptime = acquisitionTime;
+            masterAttributes.period = acquisitionPeriod;
+            masterAttributes.burstMode = burstMode;
+            masterAttributes.numUDPInterfaces = numUDPInterfaces;
+            masterAttributes.dynamicRange = dynamicRange;
+            masterAttributes.tenGiga = tengigaEnable;
+            masterAttributes.thresholdEnergyeV = thresholdEnergyeV;
+            masterAttributes.thresholdAllEnergyeV = thresholdAllEnergyeV;
+            masterAttributes.subExptime = subExpTime;
+            masterAttributes.subPeriod = subPeriod;
+            masterAttributes.quad = quadEnable;
+            masterAttributes.readNRows = readNRows;
+            masterAttributes.ratecorr = rateCorrections;
+            masterAttributes.adcmask =
                 tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
-            masterAttributes->analog = (readoutType == ANALOG_ONLY ||
+            masterAttributes.analog = (readoutType == ANALOG_ONLY ||
+                                       readoutType == ANALOG_AND_DIGITAL)
+                                          ? 1
+                                          : 0;
+            masterAttributes.analogSamples = numberOfAnalogSamples;
+            masterAttributes.digital = (readoutType == DIGITAL_ONLY ||
                                         readoutType == ANALOG_AND_DIGITAL)
                                            ? 1
                                            : 0;
-            masterAttributes->analogSamples = numberOfAnalogSamples;
-            masterAttributes->digital = (readoutType == DIGITAL_ONLY ||
-                                         readoutType == ANALOG_AND_DIGITAL)
-                                            ? 1
-                                            : 0;
-            masterAttributes->digitalSamples = numberOfDigitalSamples;
-            masterAttributes->dbitoffset = ctbDbitOffset;
-            masterAttributes->dbitlist = 0;
+            masterAttributes.digitalSamples = numberOfDigitalSamples;
+            masterAttributes.dbitoffset = ctbDbitOffset;
+            masterAttributes.dbitlist = 0;
             for (auto &i : ctbDbitList) {
-                masterAttributes->dbitlist |= (1 << i);
+                masterAttributes.dbitlist |= (1 << i);
             }
-            masterAttributes->roi = roi;
-            masterAttributes->counterMask = counterMask;
-            masterAttributes->exptime1 = acquisitionTime1;
-            masterAttributes->exptime2 = acquisitionTime2;
-            masterAttributes->exptime3 = acquisitionTime3;
-            masterAttributes->gateDelay1 = gateDelay1;
-            masterAttributes->gateDelay2 = gateDelay2;
-            masterAttributes->gateDelay3 = gateDelay3;
-            masterAttributes->gates = numberOfGates;
-            masterAttributes->additionalJsonHeader = additionalJsonHeader;
+            masterAttributes.roi = roi;
+            masterAttributes.counterMask = counterMask;
+            masterAttributes.exptimeArray[0] = acquisitionTime1;
+            masterAttributes.exptimeArray[1] = acquisitionTime2;
+            masterAttributes.exptimeArray[2] = acquisitionTime3;
+            masterAttributes.gateDelayArray[0] = gateDelay1;
+            masterAttributes.gateDelayArray[1] = gateDelay2;
+            masterAttributes.gateDelayArray[2] = gateDelay3;
+            masterAttributes.gates = numberOfGates;
+            masterAttributes.additionalJsonHeader = additionalJsonHeader;
 
             // create master file
             masterFileName = dataProcessor[0]->CreateMasterFile(
                 filePath, fileName, fileIndex, overwriteEnable, silentMode,
-                fileFormatType, masterAttributes.get(), &hdf5LibMutex);
+                fileFormatType, &masterAttributes, &hdf5LibMutex);
         }
 #ifdef HDF5C
         if (fileFormatType == HDF5) {

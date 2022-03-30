@@ -76,7 +76,9 @@ void MasterAttributes::GetCommonBinaryAttributes(
     w->Double(BINARY_WRITER_VERSION);
     w->Key("Timestamp");
     time_t t = time(nullptr);
-    w->String(ctime(&t));
+    std::string sTime(ctime(&t));
+    std::replace(sTime.begin(), sTime.end(), '\n', '\0');
+    w->String(sTime.c_str());
     w->Key("Detector Type");
     w->String(sls::ToString(detType).c_str());
     w->Key("Timing Mode");

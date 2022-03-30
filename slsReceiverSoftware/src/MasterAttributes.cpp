@@ -3,7 +3,7 @@
 #include "MasterAttributes.h"
 
 void MasterAttributes::GetBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->StartObject();
     GetCommonBinaryAttributes(w);
     switch (detType) {
@@ -70,7 +70,7 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetCommonBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Version");
     w->SetMaxDecimalPlaces(2);
     w->Double(BINARY_WRITER_VERSION);
@@ -112,7 +112,7 @@ void MasterAttributes::GetCommonBinaryAttributes(
 }
 
 void MasterAttributes::GetFinalBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     // adding few common parameters to the end
     if (!additionalJsonHeader.empty()) {
         w->Key("Additional Json Header");
@@ -533,7 +533,7 @@ void MasterAttributes::WriteHDF5DbitList(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetGotthardBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
     w->String(sls::ToString(exptime).c_str());
     w->Key("Period");
@@ -551,7 +551,7 @@ void MasterAttributes::WriteGotthardHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetJungfrauBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
     w->String(sls::ToString(exptime).c_str());
     w->Key("Period");
@@ -572,7 +572,7 @@ void MasterAttributes::WriteJungfrauHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetEigerBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Dynamic Range");
     w->Uint(dynamicRange);
     w->Key("Ten Giga");
@@ -611,7 +611,7 @@ void MasterAttributes::WriteEigerHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetMythen3BinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Dynamic Range");
     w->Uint(dynamicRange);
     w->Key("Ten Giga");
@@ -648,7 +648,7 @@ void MasterAttributes::WriteMythen3HDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetGotthard2BinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
     w->String(sls::ToString(exptime).c_str());
     w->Key("Period");
@@ -666,7 +666,7 @@ void MasterAttributes::WriteGotthard2HDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetMoenchBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
     w->String(sls::ToString(exptime).c_str());
     w->Key("Period");
@@ -690,7 +690,7 @@ void MasterAttributes::WriteMoenchHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetCtbBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
     w->String(sls::ToString(exptime).c_str());
     w->Key("Period");

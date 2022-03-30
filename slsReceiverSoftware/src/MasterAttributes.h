@@ -8,7 +8,7 @@
 #include "sls/sls_detector_defs.h"
 
 #include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
+#include <rapidjson/prettywriter.h>
 
 #ifdef HDF5C
 #include "H5Cpp.h"
@@ -65,15 +65,15 @@ class MasterAttributes {
     MasterAttributes() = default;
     ~MasterAttributes() = default;
 
-    void GetBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
+    void GetBinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     void WriteHDF5Attributes(H5File *fd, Group *group);
 #endif
 
     void
-    GetCommonBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
+    GetCommonBinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
     void
-    GetFinalBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
+    GetFinalBinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     void WriteCommonHDF5Attributes(H5File *fd, Group *group);
     void WriteFinalHDF5Attributes(H5File *fd, Group *group);
@@ -105,42 +105,42 @@ class MasterAttributes {
 #endif
 
     void
-    GetGotthardBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
+    GetGotthardBinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     void WriteGotthardHDF5Attributes(H5File *fd, Group *group);
 #endif
 
     void
-    GetJungfrauBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
+    GetJungfrauBinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     void WriteJungfrauHDF5Attributes(H5File *fd, Group *group);
 #endif
 
     void
-    GetEigerBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
+    GetEigerBinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     void WriteEigerHDF5Attributes(H5File *fd, Group *group);
 #endif
 
     void
-    GetMythen3BinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
+    GetMythen3BinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     void WriteMythen3HDF5Attributes(H5File *fd, Group *group);
 #endif
 
     void
-    GetGotthard2BinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
+    GetGotthard2BinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     void WriteGotthard2HDF5Attributes(H5File *fd, Group *group);
 #endif
 
     void
-    GetMoenchBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
+    GetMoenchBinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     void WriteMoenchHDF5Attributes(H5File *fd, Group *group);
 #endif
 
-    void GetCtbBinaryAttributes(rapidjson::Writer<rapidjson::StringBuffer> *w);
+    void GetCtbBinaryAttributes(rapidjson::PrettyWriter<rapidjson::StringBuffer> *w);
 #ifdef HDF5C
     void WriteCtbHDF5Attributes(H5File *fd, Group *group);
 #endif

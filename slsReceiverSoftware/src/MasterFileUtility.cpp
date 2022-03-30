@@ -34,7 +34,7 @@ std::string CreateMasterBinaryFile(const std::string filePath,
     }
 
     rapidjson::StringBuffer s;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(s);
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
     attr->GetBinaryAttributes(&writer);
     std::string message = s.GetString();
     if (fwrite((void *)message.c_str(), 1, message.length(), fd) !=

@@ -72,7 +72,7 @@ void BinaryDataFile::WriteToFile(char *buffer, const int buffersize,
         ++subFileIndex_;
         CreateFile();
     }
-    numFramesInFile_++;
+    ++numFramesInFile_;
 
     // write to file
     int ret = 0;

@@ -7,38 +7,31 @@
 
 namespace masterFileUtility {
 
-std::string CreateMasterBinaryFile(const std::string filePath,
-                                   const std::string fileNamePrefix,
+std::string CreateMasterBinaryFile(const std::string &filePath,
+                                   const std::string &fileNamePrefix,
                                    const uint64_t fileIndex,
                                    const bool overWriteEnable,
                                    const bool silentMode,
                                    MasterAttributes *attr) {
-    // create file name
     std::ostringstream os;
     os << filePath << "/" << fileNamePrefix << "_master"
        << "_" << fileIndex << ".json";
     std::string fileName = os.str();
 
-    // create file
-    FILE *fd{nullptr};
-    if (!overWriteEnable) {
-        if (nullptr == (fd = fopen((const char *)fileName.c_str(), "wx"))) {
-            fd = nullptr;
-            throw sls::RuntimeError("Could not create binary master file " +
+    std::string mode = "w";
+    if (!overWriteEnable)
+        mode = "wx";
+    FILE *fd = fopen(fileName.c_str(), mode.c_str());
+    if(!fd) {
+        throw sls::RuntimeError("Could not create/overwrite binary master file " +
                                     fileName);
-        }
-    } else if (nullptr == (fd = fopen((const char *)fileName.c_str(), "w"))) {
-        fd = nullptr;
-        throw sls::RuntimeError(
-            "Could not create/overwrite binary master file " + fileName);
     }
 
     rapidjson::StringBuffer s;
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
     attr->GetBinaryAttributes(&writer);
-    std::string message = s.GetString();
-    if (fwrite((void *)message.c_str(), 1, message.length(), fd) !=
-        message.length()) {
+    if (fwrite(s.GetString(), 1, strlen(s.GetString()), fd) !=
+        strlen(s.GetString())) {
         throw sls::RuntimeError(
             "Master binary file incorrect number of bytes written to file");
     }

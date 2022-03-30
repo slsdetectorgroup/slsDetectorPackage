@@ -48,8 +48,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                          const fileFormat fileFormatType,
                          std::mutex *hdf5LibMutex);
 
-    void CreateFirstFiles(const std::string filePath,
-                          const std::string fileNamePrefix,
+    void CreateFirstFiles(const std::string &filePath,
+                          const std::string &fileNamePrefix,
                           const uint64_t fileIndex, const bool overWriteEnable,
                           const bool silentMode, const int modulePos,
                           const int numUnitsPerReadout,

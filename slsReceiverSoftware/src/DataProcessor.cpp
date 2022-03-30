@@ -111,7 +111,7 @@ void DataProcessor::SetupFileWriter(const bool filewriteEnable,
 }
 
 void DataProcessor::CreateFirstFiles(
-    const std::string filePath, const std::string fileNamePrefix,
+    const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
     const uint32_t udpPortNumber, const uint32_t maxFramesPerFile,

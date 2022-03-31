@@ -1472,6 +1472,24 @@ class Detector {
 
     Result<int> getGainCaps(Positions pos = {});
 
+    /** [Mythen3] */
+    Result<defs::Polarity> getPolarity(Positions pos = {}) const;
+
+    /** [Mythen3] */
+    void setPolarity(defs::Polarity value, Positions pos = {});
+
+    /** [Mythen3] */
+    Result<bool> getInterpolation(Positions pos = {}) const;
+
+    /** [Mythen3] */
+    void setInterpolation(bool value, Positions pos = {});
+
+    /** [Mythen3] */
+    Result<bool> getPumpProbe(Positions pos = {}) const;
+
+    /** [Mythen3] */
+    void setPumpProbe(bool value, Positions pos = {});
+
     ///@}
 
     /** @name CTB / Moench Specific */
@@ -1614,12 +1632,11 @@ class Detector {
     /** [CTB] Default is enabled. */
     void setLEDEnable(bool enable, Positions pos = {});
 
-
     void setDacNames(const std::vector<std::string> names);
 
     std::vector<std::string> getDacNames() const;
 
-    defs::dacIndex getDacIndex(const std::string& name);
+    defs::dacIndex getDacIndex(const std::string &name);
     std::string getDacName(defs::dacIndex i);
     ///@}
 

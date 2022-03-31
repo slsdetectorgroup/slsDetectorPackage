@@ -3498,10 +3498,38 @@ class Detector(CppDetectorApi):
 
     def readout(self):
         """
-        Mythen3] Starts detector readout. Status changes to TRANSMITTING and automatically returns to idle at the end of readout.
+        [Mythen3] Starts detector readout. Status changes to TRANSMITTING and automatically returns to idle at the end of readout.
         """
         self.startDetectorReadout()
     
+    @property
+    @element
+    def polarity(self):
+        """[Mythen3] Set positive or negative polarity. Enum: polarity"""
+        return self.getPolarity()
+
+    @polarity.setter
+    def polarity(self, value):
+        ut.set_using_dict(self.setPolarity, value)
+
+    @element
+    def interpolation(self):
+        """[Mythen3] Enable or disable interpolation. """
+        return self.getInterpolation()
+
+    @interpolation.setter
+    def interpolation(self, value):
+        ut.set_using_dict(self.setInterpolation, value)
+
+    @element
+    def pumpprobe(self):
+        """[Mythen3] Enable or disable pump probe mode. """
+        return self.getPumpProbe()
+
+    @pumpprobe.setter
+    def pumpprobe(self, value):
+        ut.set_using_dict(self.setPumpProbe, value)
+
 
     """
     ---------------------------<<<Debug>>>---------------------------

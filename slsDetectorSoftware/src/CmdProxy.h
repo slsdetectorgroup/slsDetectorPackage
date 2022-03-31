@@ -992,6 +992,9 @@ class CmdProxy {
         {"gatedelay2", &CmdProxy::GateDelay},
         {"gatedelay3", &CmdProxy::GateDelay},
         {"gaincaps", &CmdProxy::GainCaps},
+        {"polarity", &CmdProxy::polarity},
+        {"interpolation", &CmdProxy::interpolation},
+        {"pumpprobe", &CmdProxy::pumpprobe},
 
         /* CTB/ Moench Specific */
         {"samples", &CmdProxy::Samples},
@@ -2031,6 +2034,19 @@ class CmdProxy {
         gates, getNumberOfGates, setNumberOfGates, StringTo<int>,
         "[n_gates]\n\t[Mythen3] Number of external gates in gating "
         "or trigger_gating mode (external gating).");
+
+    INTEGER_COMMAND_VEC_ID(
+        polarity, getPolarity, setPolarity, StringTo<defs::polarity>,
+        "[pos|neg]\n\t[Mythen3] Sets negative or positive polarity. Default??");
+
+    INTEGER_COMMAND_VEC_ID(interpolation, getInterpolation, setInterpolation,
+                           StringTo<int>,
+                           "[0, 1]\n\t[Mythen3] Enables or disables "
+                           "interpolation. Default is disabled??");
+
+    INTEGER_COMMAND_VEC_ID(
+        pumpprobe, getPumpProbe, setPumpProbe, StringTo<int>,
+        "[0, 1]\n\t[Mythen3] Enables or disables pump probe mode. Default ??");
 
     /* CTB/ Moench Specific */
 

@@ -45,12 +45,11 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void CloseFiles();
     void DeleteFiles();
     void SetupFileWriter(const bool filewriteEnable,
-                         const bool masterFilewriteEnable,
-                         const fileFormat fileFormatType, const int modulePos,
-                         std::mutex *hdf5Lib);
+                         const fileFormat fileFormatType,
+                         std::mutex *hdf5LibMutex);
 
-    void CreateFirstFiles(MasterAttributes *attr, const std::string filePath,
-                          const std::string fileNamePrefix,
+    void CreateFirstFiles(const std::string &filePath,
+                          const std::string &fileNamePrefix,
                           const uint64_t fileIndex, const bool overWriteEnable,
                           const bool silentMode, const int modulePos,
                           const int numUnitsPerReadout,
@@ -60,18 +59,26 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                           const bool detectorDataStream);
 #ifdef HDF5C
     uint32_t GetFilesInAcquisition() const;
-    void CreateVirtualFile(const std::string filePath,
-                           const std::string fileNamePrefix,
-                           const uint64_t fileIndex, const bool overWriteEnable,
-                           const bool silentMode, const int modulePos,
-                           const int numUnitsPerReadout,
-                           const uint32_t maxFramesPerFile,
-                           const uint64_t numImages,
-                           const uint32_t dynamicRange, const int numModX,
-                           const int numModY, std::mutex *hdf5Lib);
-    void LinkDataInMasterFile(const bool silentMode);
+    std::array<std::string, 2> CreateVirtualFile(
+        const std::string &filePath, const std::string &fileNamePrefix,
+        const uint64_t fileIndex, const bool overWriteEnable,
+        const bool silentMode, const int modulePos,
+        const int numUnitsPerReadout, const uint32_t maxFramesPerFile,
+        const uint64_t numImages, const int numModX, const int numModY,
+        const uint32_t dynamicRange, std::mutex *hdf5LibMutex);
+    void LinkFileInMaster(const std::string &masterFileName,
+                          const std::string &virtualFileName,
+                          const std::string &virtualDatasetName,
+                          const bool silentMode, std::mutex *hdf5LibMutex);
 #endif
-    void UpdateMasterFile(bool silentMode);
+
+    std::string CreateMasterFile(const std::string &filePath,
+                                 const std::string &fileNamePrefix,
+                                 const uint64_t fileIndex,
+                                 const bool overWriteEnable, bool silentMode,
+                                 const fileFormat fileFormatType,
+                                 MasterAttributes *attr,
+                                 std::mutex *hdf5LibMutex);
     /**
      * Call back for raw data
      * args to raw data ready callback are
@@ -179,10 +186,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     bool firstStreamerFrame_{false};
 
     File *dataFile_{nullptr};
-    File *masterFile_{nullptr};
-#ifdef HDF5C
-    File *virtualFile_{nullptr};
-#endif
 
     // call back
     /**

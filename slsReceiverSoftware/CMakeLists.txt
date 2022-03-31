@@ -6,7 +6,6 @@ set(SOURCES
     src/Receiver.cpp
     src/File.cpp
     src/BinaryDataFile.cpp
-    src/BinaryMasterFile.cpp
     src/ThreadObject.cpp
     src/Listener.cpp
     src/DataProcessor.cpp
@@ -14,6 +13,7 @@ set(SOURCES
     src/Fifo.cpp
     src/Arping.cpp
     src/MasterAttributes.cpp
+    src/MasterFileUtility.cpp
 )
 
 set(PUBLICHEADERS
@@ -28,8 +28,6 @@ if (SLS_USE_HDF5)
 	    )
 	    list (APPEND SOURCES 
 	        src/HDF5DataFile.cpp 
-	        src/HDF5MasterFile.cpp 
-	        src/HDF5VirtualFile.cpp 
 	    )
 endif (SLS_USE_HDF5)
 

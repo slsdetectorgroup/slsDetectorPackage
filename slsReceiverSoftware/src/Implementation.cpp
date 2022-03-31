@@ -240,9 +240,6 @@ void Implementation::setModulePositionId(const int id) {
     xy portGeometry = GetPortGeometry();
     streamingPort = DEFAULT_ZMQ_RX_PORTNO + modulePos * portGeometry.x;
 
-    for (const auto &it : dataProcessor)
-        it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                            fileFormatType, modulePos, &hdf5Lib);
     assert(numModules.y != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
@@ -372,8 +369,7 @@ void Implementation::setFileFormat(const fileFormat f) {
             throw sls::RuntimeError("Unknown file format");
         }
         for (const auto &it : dataProcessor)
-            it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos, &hdf5Lib);
+            it->SetupFileWriter(fileWriteEnable, fileFormatType, &hdf5LibMutex);
     }
 
     LOG(logINFO) << "File Format: " << sls::ToString(fileFormatType);
@@ -409,8 +405,7 @@ void Implementation::setFileWriteEnable(const bool b) {
     if (fileWriteEnable != b) {
         fileWriteEnable = b;
         for (const auto &it : dataProcessor)
-            it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos, &hdf5Lib);
+            it->SetupFileWriter(fileWriteEnable, fileFormatType, &hdf5LibMutex);
     }
     LOG(logINFO) << "File Write Enable: "
                  << (fileWriteEnable ? "enabled" : "disabled");
@@ -423,9 +418,6 @@ bool Implementation::getMasterFileWriteEnable() const {
 void Implementation::setMasterFileWriteEnable(const bool b) {
     if (masterFileWriteEnable != b) {
         masterFileWriteEnable = b;
-        for (const auto &it : dataProcessor)
-            it->SetupFileWriter(fileWriteEnable, masterFileWriteEnable,
-                                fileFormatType, modulePos, &hdf5Lib);
     }
     LOG(logINFO) << "Master File Write Enable: "
                  << (masterFileWriteEnable ? "enabled" : "disabled");
@@ -584,29 +576,9 @@ void Implementation::stopReceiver() {
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 
-#ifdef HDF5C
-    if (fileWriteEnable && fileFormatType == HDF5) {
-        if (modulePos == 0) {
-            // more than 1 file, create virtual file
-            if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
-                (numModules.x * numModules.y) > 1) {
-                dataProcessor[0]->CreateVirtualFile(
-                    filePath, fileName, fileIndex, overwriteEnable, silentMode,
-                    modulePos, numUDPInterfaces, framesPerFile,
-                    numberOfTotalFrames, dynamicRange, numModules.x,
-                    numModules.y, &hdf5Lib);
-            }
-            // link file in master
-            dataProcessor[0]->LinkDataInMasterFile(silentMode);
-        }
-    }
-#endif
-    if (fileWriteEnable && masterFileWriteEnable && modulePos == 0) {
-        try {
-            dataProcessor[0]->UpdateMasterFile(silentMode);
-        } catch (...) {
-            ; // ignore it and just print it
-        }
+    if (fileWriteEnable && modulePos == 0) {
+        // master and virtual file (hdf5)
+        StartMasterWriter();
     }
 
     // wait for the processes (dataStreamer) to be done
@@ -753,106 +725,112 @@ void Implementation::CreateUDPSockets() {
 }
 
 void Implementation::SetupWriter() {
-    // master file
-    std::unique_ptr<MasterAttributes> masterAttributes;
-    if (masterFileWriteEnable && modulePos == 0) {
-        switch (detType) {
-        case GOTTHARD:
-            masterAttributes = sls::make_unique<GotthardMasterAttributes>();
-            break;
-        case JUNGFRAU:
-            masterAttributes = sls::make_unique<JungfrauMasterAttributes>();
-            break;
-        case EIGER:
-            masterAttributes = sls::make_unique<EigerMasterAttributes>();
-            break;
-        case MYTHEN3:
-            masterAttributes = sls::make_unique<Mythen3MasterAttributes>();
-            break;
-        case GOTTHARD2:
-            masterAttributes = sls::make_unique<Gotthard2MasterAttributes>();
-            break;
-        case MOENCH:
-            masterAttributes = sls::make_unique<MoenchMasterAttributes>();
-            break;
-        case CHIPTESTBOARD:
-            masterAttributes = sls::make_unique<CtbMasterAttributes>();
-            break;
-        default:
-            throw sls::RuntimeError(
-                "Unknown detector type to set up master file attributes");
-        }
-        masterAttributes->detType = detType;
-        masterAttributes->timingMode = timingMode;
-        xy nm{numModules.x, numModules.y};
-        if (quadEnable) {
-            nm.x = 1;
-            nm.y = 2;
-        }
-        masterAttributes->geometry = xy(nm.x, nm.y);
-        masterAttributes->imageSize = generalData->imageSize;
-        masterAttributes->nPixels =
-            xy(generalData->nPixelsX, generalData->nPixelsY);
-        masterAttributes->maxFramesPerFile = framesPerFile;
-        masterAttributes->frameDiscardMode = frameDiscardMode;
-        masterAttributes->framePadding = framePadding;
-        masterAttributes->scanParams = scanParams;
-        masterAttributes->totalFrames = numberOfTotalFrames;
-        masterAttributes->exptime = acquisitionTime;
-        masterAttributes->period = acquisitionPeriod;
-        masterAttributes->burstMode = burstMode;
-        masterAttributes->numUDPInterfaces = numUDPInterfaces;
-        masterAttributes->dynamicRange = dynamicRange;
-        masterAttributes->tenGiga = tengigaEnable;
-        masterAttributes->thresholdEnergyeV = thresholdEnergyeV;
-        masterAttributes->thresholdAllEnergyeV = thresholdAllEnergyeV;
-        masterAttributes->subExptime = subExpTime;
-        masterAttributes->subPeriod = subPeriod;
-        masterAttributes->quad = quadEnable;
-        masterAttributes->readNRows = readNRows;
-        masterAttributes->ratecorr = rateCorrections;
-        masterAttributes->adcmask =
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
-        masterAttributes->analog =
-            (readoutType == ANALOG_ONLY || readoutType == ANALOG_AND_DIGITAL)
-                ? 1
-                : 0;
-        masterAttributes->analogSamples = numberOfAnalogSamples;
-        masterAttributes->digital =
-            (readoutType == DIGITAL_ONLY || readoutType == ANALOG_AND_DIGITAL)
-                ? 1
-                : 0;
-        masterAttributes->digitalSamples = numberOfDigitalSamples;
-        masterAttributes->dbitoffset = ctbDbitOffset;
-        masterAttributes->dbitlist = 0;
-        for (auto &i : ctbDbitList) {
-            masterAttributes->dbitlist |= (1 << i);
-        }
-        masterAttributes->roi = roi;
-        masterAttributes->counterMask = counterMask;
-        masterAttributes->exptime1 = acquisitionTime1;
-        masterAttributes->exptime2 = acquisitionTime2;
-        masterAttributes->exptime3 = acquisitionTime3;
-        masterAttributes->gateDelay1 = gateDelay1;
-        masterAttributes->gateDelay2 = gateDelay2;
-        masterAttributes->gateDelay3 = gateDelay3;
-        masterAttributes->gates = numberOfGates;
-        masterAttributes->additionalJsonHeader = additionalJsonHeader;
-    }
-
     try {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             dataProcessor[i]->CreateFirstFiles(
-                masterAttributes.get(), filePath, fileName, fileIndex,
-                overwriteEnable, silentMode, modulePos, numUDPInterfaces,
-                udpPortNum[i], framesPerFile, numberOfTotalFrames, dynamicRange,
-                detectorDataStream[i]);
+                filePath, fileName, fileIndex, overwriteEnable, silentMode,
+                modulePos, numUDPInterfaces, udpPortNum[i], framesPerFile,
+                numberOfTotalFrames, dynamicRange, detectorDataStream[i]);
         }
     } catch (const sls::RuntimeError &e) {
         shutDownUDPSockets();
         for (const auto &it : dataProcessor)
             it->CloseFiles();
         throw sls::RuntimeError("Could not create first data file.");
+    }
+}
+
+void Implementation::StartMasterWriter() {
+    try {
+        std::string masterFileName;
+        // master file
+        if (masterFileWriteEnable) {
+            MasterAttributes masterAttributes;
+            masterAttributes.detType = detType;
+            masterAttributes.timingMode = timingMode;
+            xy nm{numModules.x, numModules.y};
+            if (quadEnable) {
+                nm.x = 1;
+                nm.y = 2;
+            }
+            masterAttributes.geometry = xy(nm.x, nm.y);
+            masterAttributes.imageSize = generalData->imageSize;
+            masterAttributes.nPixels =
+                xy(generalData->nPixelsX, generalData->nPixelsY);
+            masterAttributes.maxFramesPerFile = framesPerFile;
+            masterAttributes.frameDiscardMode = frameDiscardMode;
+            masterAttributes.framePadding = framePadding;
+            masterAttributes.scanParams = scanParams;
+            masterAttributes.totalFrames = numberOfTotalFrames;
+            masterAttributes.exptime = acquisitionTime;
+            masterAttributes.period = acquisitionPeriod;
+            masterAttributes.burstMode = burstMode;
+            masterAttributes.numUDPInterfaces = numUDPInterfaces;
+            masterAttributes.dynamicRange = dynamicRange;
+            masterAttributes.tenGiga = tengigaEnable;
+            masterAttributes.thresholdEnergyeV = thresholdEnergyeV;
+            masterAttributes.thresholdAllEnergyeV = thresholdAllEnergyeV;
+            masterAttributes.subExptime = subExpTime;
+            masterAttributes.subPeriod = subPeriod;
+            masterAttributes.quad = quadEnable;
+            masterAttributes.readNRows = readNRows;
+            masterAttributes.ratecorr = rateCorrections;
+            masterAttributes.adcmask =
+                tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
+            masterAttributes.analog = (readoutType == ANALOG_ONLY ||
+                                       readoutType == ANALOG_AND_DIGITAL)
+                                          ? 1
+                                          : 0;
+            masterAttributes.analogSamples = numberOfAnalogSamples;
+            masterAttributes.digital = (readoutType == DIGITAL_ONLY ||
+                                        readoutType == ANALOG_AND_DIGITAL)
+                                           ? 1
+                                           : 0;
+            masterAttributes.digitalSamples = numberOfDigitalSamples;
+            masterAttributes.dbitoffset = ctbDbitOffset;
+            masterAttributes.dbitlist = 0;
+            for (auto &i : ctbDbitList) {
+                masterAttributes.dbitlist |= (1 << i);
+            }
+            masterAttributes.roi = roi;
+            masterAttributes.counterMask = counterMask;
+            masterAttributes.exptimeArray[0] = acquisitionTime1;
+            masterAttributes.exptimeArray[1] = acquisitionTime2;
+            masterAttributes.exptimeArray[2] = acquisitionTime3;
+            masterAttributes.gateDelayArray[0] = gateDelay1;
+            masterAttributes.gateDelayArray[1] = gateDelay2;
+            masterAttributes.gateDelayArray[2] = gateDelay3;
+            masterAttributes.gates = numberOfGates;
+            masterAttributes.additionalJsonHeader = additionalJsonHeader;
+
+            // create master file
+            masterFileName = dataProcessor[0]->CreateMasterFile(
+                filePath, fileName, fileIndex, overwriteEnable, silentMode,
+                fileFormatType, &masterAttributes, &hdf5LibMutex);
+        }
+#ifdef HDF5C
+        if (fileFormatType == HDF5) {
+            std::array<std::string, 2> virtualFileAndDatasetNames;
+            // create virtual hdf5 file (if multiple files)
+            if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
+                (numModules.x * numModules.y) > 1) {
+                virtualFileAndDatasetNames =
+                    dataProcessor[0]->CreateVirtualFile(
+                        filePath, fileName, fileIndex, overwriteEnable,
+                        silentMode, modulePos, numUDPInterfaces, framesPerFile,
+                        numberOfTotalFrames, numModules.x, numModules.y,
+                        dynamicRange, &hdf5LibMutex);
+            }
+            // link file in master
+            if (masterFileWriteEnable) {
+                dataProcessor[0]->LinkFileInMaster(
+                    masterFileName, virtualFileAndDatasetNames[0],
+                    virtualFileAndDatasetNames[1], silentMode, &hdf5LibMutex);
+            }
+        }
+#endif
+    } catch (...) {
+        ; // ignore it and just print it
     }
 }
 

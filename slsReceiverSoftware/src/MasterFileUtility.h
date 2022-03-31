@@ -14,8 +14,8 @@ using namespace H5;
 
 namespace masterFileUtility {
 
-std::string CreateMasterBinaryFile(const std::string filePath,
-                                   const std::string fileNamePrefix,
+std::string CreateMasterBinaryFile(const std::string &filePath,
+                                   const std::string &fileNamePrefix,
                                    const uint64_t fileIndex,
                                    const bool overWriteEnable,
                                    const bool silentMode,

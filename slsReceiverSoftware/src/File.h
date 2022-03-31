@@ -84,10 +84,7 @@ class File : private virtual slsDetectorDefs {
 
     virtual void WriteToFile(char *buffer, const int buffersize,
                              const uint64_t currentFrameNumber,
-                             const uint32_t numPacketsCaught) {
-        LOG(logERROR) << "This is a generic function WriteToFile that "
-                         "should be overloaded by a derived class";
-    };
+                             const uint32_t numPacketsCaught) = 0;
 
   protected:
     slsDetectorDefs::fileFormat format_;

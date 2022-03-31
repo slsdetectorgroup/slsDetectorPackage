@@ -3,7 +3,7 @@
 #include "MasterAttributes.h"
 
 void MasterAttributes::GetBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->StartObject();
     GetCommonBinaryAttributes(w);
     switch (detType) {
@@ -70,13 +70,15 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetCommonBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Version");
     w->SetMaxDecimalPlaces(2);
     w->Double(BINARY_WRITER_VERSION);
     w->Key("Timestamp");
     time_t t = time(nullptr);
-    w->String(ctime(&t));
+    std::string sTime(ctime(&t));
+    std::replace(sTime.begin(), sTime.end(), '\n', '\0');
+    w->String(sTime.c_str());
     w->Key("Detector Type");
     w->String(sls::ToString(detType).c_str());
     w->Key("Timing Mode");
@@ -110,7 +112,7 @@ void MasterAttributes::GetCommonBinaryAttributes(
 }
 
 void MasterAttributes::GetFinalBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     // adding few common parameters to the end
     if (!additionalJsonHeader.empty()) {
         w->Key("Additional Json Header");
@@ -153,8 +155,7 @@ void MasterAttributes::GetFinalBinaryAttributes(
 
 #ifdef HDF5C
 void MasterAttributes::WriteCommonHDF5Attributes(H5File *fd, Group *group) {
-    char c[1024];
-    memset(c, 0, sizeof(c));
+    char c[1024]{};
     // version
     {
         double version = BINARY_WRITER_VERSION;
@@ -276,8 +277,7 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5File *fd, Group *group) {
 }
 
 void MasterAttributes::WriteFinalHDF5Attributes(H5File *fd, Group *group) {
-    char c[1024];
-    memset(c, 0, sizeof(c));
+    char c[1024]{};
     // Total Frames in file
     {
         DataSpace dataspace = DataSpace(H5S_SCALAR);
@@ -302,8 +302,7 @@ void MasterAttributes::WriteHDF5Exptime(H5File *fd, Group *group) {
     StrType strdatatype(PredType::C_S1, 256);
     DataSet dataset =
         group->createDataSet("Exposure Time", strdatatype, dataspace);
-    char c[1024];
-    memset(c, 0, sizeof(c));
+    char c[1024]{};
     sls::strcpy_safe(c, sls::ToString(exptime));
     dataset.write(c, strdatatype);
 }
@@ -313,8 +312,7 @@ void MasterAttributes::WriteHDF5Period(H5File *fd, Group *group) {
     StrType strdatatype(PredType::C_S1, 256);
     DataSet dataset =
         group->createDataSet("Acquisition Period", strdatatype, dataspace);
-    char c[1024];
-    memset(c, 0, sizeof(c));
+    char c[1024]{};
     sls::strcpy_safe(c, sls::ToString(period));
     dataset.write(c, strdatatype);
 }
@@ -371,7 +369,7 @@ void MasterAttributes::WriteHDF5ReadNRows(H5File *fd, Group *group) {
 }
 
 void MasterAttributes::WriteHDF5ThresholdEnergy(H5File *fd, Group *group) {
-    char c[1024]{0};
+     char c[1024]{};
     DataSpace dataspace = DataSpace(H5S_SCALAR);
     DataSet dataset = group->createDataSet("Threshold Energy",
                                            PredType::NATIVE_INT, dataspace);
@@ -385,7 +383,7 @@ void MasterAttributes::WriteHDF5ThresholdEnergy(H5File *fd, Group *group) {
 }
 
 void MasterAttributes::WriteHDF5ThresholdEnergies(H5File *fd, Group *group) {
-    char c[1024]{0};
+     char c[1024]{};
     DataSpace dataspace = DataSpace(H5S_SCALAR);
     StrType strdatatype(PredType::C_S1, 1024);
     DataSet dataset =
@@ -395,7 +393,7 @@ void MasterAttributes::WriteHDF5ThresholdEnergies(H5File *fd, Group *group) {
 }
 
 void MasterAttributes::WriteHDF5SubExpTime(H5File *fd, Group *group) {
-    char c[1024]{0};
+     char c[1024]{};
     DataSpace dataspace = DataSpace(H5S_SCALAR);
     StrType strdatatype(PredType::C_S1, 256);
     DataSet dataset =
@@ -405,7 +403,7 @@ void MasterAttributes::WriteHDF5SubExpTime(H5File *fd, Group *group) {
 }
 
 void MasterAttributes::WriteHDF5SubPeriod(H5File *fd, Group *group) {
-    char c[1024]{0};
+     char c[1024]{};
     DataSpace dataspace = DataSpace(H5S_SCALAR);
     StrType strdatatype(PredType::C_S1, 256);
     DataSet dataset =
@@ -422,7 +420,7 @@ void MasterAttributes::WriteHDF5SubQuad(H5File *fd, Group *group) {
 }
 
 void MasterAttributes::WriteHDF5RateCorrections(H5File *fd, Group *group) {
-    char c[1024]{0};
+     char c[1024]{};
     DataSpace dataspace = DataSpace(H5S_SCALAR);
     StrType strdatatype(PredType::C_S1, 1024);
     DataSet dataset =
@@ -440,7 +438,7 @@ void MasterAttributes::WriteHDF5CounterMask(H5File *fd, Group *group) {
 
 void MasterAttributes::WriteHDF5ExptimeArray(H5File *fd, Group *group) {
     for (int i = 0; i != 3; ++i) {
-        char c[1024]{0};
+         char c[1024]{};
         DataSpace dataspace = DataSpace(H5S_SCALAR);
         StrType strdatatype(PredType::C_S1, 256);
         DataSet dataset =
@@ -452,7 +450,7 @@ void MasterAttributes::WriteHDF5ExptimeArray(H5File *fd, Group *group) {
 
 void MasterAttributes::WriteHDF5GateDelayArray(H5File *fd, Group *group) {
     for (int i = 0; i != 3; ++i) {
-        char c[1024]{0};
+         char c[1024]{};
         DataSpace dataspace = DataSpace(H5S_SCALAR);
         StrType strdatatype(PredType::C_S1, 256);
         DataSet dataset =
@@ -474,8 +472,7 @@ void MasterAttributes::WriteHDF5BurstMode(H5File *fd, Group *group) {
     StrType strdatatype(PredType::C_S1, 256);
     DataSet dataset =
         group->createDataSet("Burst Mode", strdatatype, dataspace);
-    char c[1024];
-    memset(c, 0, sizeof(c));
+    char c[1024]{};
     sls::strcpy_safe(c, sls::ToString(burstMode));
     dataset.write(c, strdatatype);
 }
@@ -531,7 +528,7 @@ void MasterAttributes::WriteHDF5DbitList(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetGotthardBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
     w->String(sls::ToString(exptime).c_str());
     w->Key("Period");
@@ -549,7 +546,7 @@ void MasterAttributes::WriteGotthardHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetJungfrauBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
     w->String(sls::ToString(exptime).c_str());
     w->Key("Period");
@@ -570,7 +567,7 @@ void MasterAttributes::WriteJungfrauHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetEigerBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Dynamic Range");
     w->Uint(dynamicRange);
     w->Key("Ten Giga");
@@ -609,7 +606,7 @@ void MasterAttributes::WriteEigerHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetMythen3BinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Dynamic Range");
     w->Uint(dynamicRange);
     w->Key("Ten Giga");
@@ -646,7 +643,7 @@ void MasterAttributes::WriteMythen3HDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetGotthard2BinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
     w->String(sls::ToString(exptime).c_str());
     w->Key("Period");
@@ -664,7 +661,7 @@ void MasterAttributes::WriteGotthard2HDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetMoenchBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
     w->String(sls::ToString(exptime).c_str());
     w->Key("Period");
@@ -688,7 +685,7 @@ void MasterAttributes::WriteMoenchHDF5Attributes(H5File *fd, Group *group) {
 #endif
 
 void MasterAttributes::GetCtbBinaryAttributes(
-    rapidjson::Writer<rapidjson::StringBuffer> *w) {
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
     w->String(sls::ToString(exptime).c_str());
     w->Key("Period");

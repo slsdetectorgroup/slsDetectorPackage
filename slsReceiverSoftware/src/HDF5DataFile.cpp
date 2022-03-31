@@ -128,7 +128,7 @@ void HDF5DataFile::CreateFirstHDF5DataFile(
 }
 
 void HDF5DataFile::CreateFile() {
-
+    numFramesInFile_ = 0;
     numFilesInAcquisition_++;
 
     std::ostringstream os;
@@ -237,7 +237,7 @@ void HDF5DataFile::WriteToFile(char *buffer, const int buffersize,
         ++subFileIndex_;
         CreateFile();
     }
-    numFramesInFile_++;
+    ++numFramesInFile_;
 
     // extend dataset (when receiver start followed by many status starts
     // (jungfrau)))

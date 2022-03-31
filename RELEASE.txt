@@ -57,6 +57,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - ctb: can set names for all the dacs
 - fpga/kernel programming, checks if drive is a special file and not a normal file
 - gotthard 25 um image reconstructed in gui and virtual hdf5 (firmware updated for slave to reverse channels)
+- master binary file in json format now
 
 2. Resolved Issues
 ==================

@@ -155,37 +155,40 @@ int setGainCaps(int caps) {
 }
 
 int getInterpolation() {
-    return (chipStatusRegister & CSR_interp_MSK >> CSR_interp);
+    return ((chipStatusRegister & CSR_interp_MSK) >> CSR_interp);
 }
 
 int setInterpolation(int mask) {
     LOG(logINFO, ("%s Interpolation\n", mask == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
     if (mask)
-        csr = chipStatusRegister | (1 << CSR_interp);
+        csr = chipStatusRegister | CSR_interp_MSK;
     else
-        csr = chipStatusRegister & ~(1 << CSR_interp);
+        csr = chipStatusRegister & ~CSR_interp_MSK;
+
+    LOG(logINFOBLUE,
+        ("interpolation:0x%x\n", chipStatusRegister & CSR_interp_MSK));
 
     return setChipStatusRegister(csr);
 }
 
 int getPumpProbe() {
-    return (chipStatusRegister & CSR_pumprobe_MSK >> CSR_pumprobe);
+    return ((chipStatusRegister & CSR_pumprobe_MSK) >> CSR_pumprobe);
 }
 
 int setPumpProbe(int mask) {
     LOG(logINFO, ("%s Pump Probe\n", mask == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
     if (mask)
-        csr = chipStatusRegister | (1 << CSR_pumprobe);
+        csr = chipStatusRegister | CSR_pumprobe_MSK;
     else
-        csr = chipStatusRegister & ~(1 << CSR_pumprobe);
+        csr = chipStatusRegister & ~CSR_pumprobe_MSK;
 
     return setChipStatusRegister(csr);
 }
 
 int getDigitalPulsing() {
-    return (chipStatusRegister & CSR_dpulse_MSK >> CSR_dpulse);
+    return ((chipStatusRegister & CSR_dpulse_MSK) >> CSR_dpulse);
 }
 
 int setDigitalPulsing(int mask) {
@@ -193,30 +196,30 @@ int setDigitalPulsing(int mask) {
         ("%s Digital Pulsing\n", mask == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
     if (mask)
-        csr = chipStatusRegister | (1 << CSR_dpulse);
+        csr = chipStatusRegister | CSR_dpulse_MSK;
     else
-        csr = chipStatusRegister & ~(1 << CSR_dpulse);
+        csr = chipStatusRegister & ~CSR_dpulse_MSK;
 
     return setChipStatusRegister(csr);
 }
 
 int getAnalogPulsing() {
-    return (chipStatusRegister & CSR_apulse_MSK >> CSR_apulse);
+    return ((chipStatusRegister & CSR_apulse_MSK) >> CSR_apulse);
 }
 
 int setAnalogPulsing(int mask) {
     LOG(logINFO, ("%s Analog Pulsing\n", mask == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
     if (mask)
-        csr = chipStatusRegister | (1 << CSR_apulse);
+        csr = chipStatusRegister | CSR_apulse_MSK;
     else
-        csr = chipStatusRegister & ~(1 << CSR_apulse);
+        csr = chipStatusRegister & ~CSR_apulse_MSK;
 
     return setChipStatusRegister(csr);
 }
 
 int getNegativePolarity() {
-    return (chipStatusRegister & CSR_invpol_MSK >> CSR_invpol);
+    return ((chipStatusRegister & CSR_invpol_MSK) >> CSR_invpol);
 }
 
 int setNegativePolarity(int mask) {
@@ -224,9 +227,9 @@ int setNegativePolarity(int mask) {
         ("%s Negative Polarity\n", mask == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
     if (mask)
-        csr = chipStatusRegister | (1 << CSR_invpol);
+        csr = chipStatusRegister | CSR_invpol_MSK;
     else
-        csr = chipStatusRegister & ~(1 << CSR_invpol);
+        csr = chipStatusRegister & ~CSR_invpol_MSK;
 
     return setChipStatusRegister(csr);
 }

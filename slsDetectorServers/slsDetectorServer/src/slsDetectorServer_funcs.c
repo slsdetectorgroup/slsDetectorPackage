@@ -4201,7 +4201,12 @@ int copy_detector_server(int file_des) {
 int reboot_controller(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+
+#ifdef EIGERD
+    functionNotImplemented();
+#elif VIRTUAL
+    ret = GOODBYE;
+#elif defined(MYTHEN3D) || defined(GOTTHARD2D)
     if (getHardwareVersionNumber() == 0) {
         ret = FAIL;
         strcpy(mess, "Old board version, reboot by yourself please!\n");
@@ -4209,20 +4214,11 @@ int reboot_controller(int file_des) {
         Server_SendResult(file_des, INT32, NULL, 0);
         return GOODBYE;
     }
-#ifdef VIRTUAL
-    ret = GOODBYE;
+    ret = REBOOT;
 #else
     ret = REBOOT;
 #endif
-#elif EIGERD
-    functionNotImplemented();
-#else
-#ifdef VIRTUAL
-    ret = GOODBYE;
-#else
-    ret = REBOOT;
-#endif
-#endif
+
     Server_SendResult(file_des, INT32, NULL, 0);
     return ret;
 }
@@ -9449,9 +9445,17 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
         if (receiveData(file_des, &forceDeleteNormalFile,
                         sizeof(forceDeleteNormalFile), INT32) < 0)
             return printSocketReadError();
-        LOG(logINFO,
-            ("\tForce Delete Normal File flag? %s\n", (forceDeleteNormalFile ? "Y" : "N")));
+        LOG(logINFO, ("\tForce Delete Normal File flag? %s\n",
+                      (forceDeleteNormalFile ? "Y" : "N")));
 #endif
+
+        // ensure the name is not the same as the linked name
+        if (!strcmp(serverName, LINKED_SERVER_NAME)) {
+            ret = FAIL;
+            strcpy(mess, "Server name is the same as the symbolic link. Please "
+                         "use a different server name\n");
+            LOG(logERROR, (mess));
+        }
 
         // in same folder as current process (will also work for virtual then
         // with write permissions)
@@ -9477,7 +9481,8 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
                                     checksum, serverName);
 #else
             receive_program_via_blackfin(file_des, index, functionType,
-                                         filesize, checksum, serverName, forceDeleteNormalFile);
+                                         filesize, checksum, serverName,
+                                         forceDeleteNormalFile);
 #endif
         }
 
@@ -9493,7 +9498,8 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
 
 void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                   char *functionType, uint64_t filesize,
-                                  char *checksum, char *serverName, int forceDeleteNormalFile) {
+                                  char *checksum, char *serverName,
+                                  int forceDeleteNormalFile) {
 
 #if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARDD)
@@ -9595,8 +9601,11 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                    totalsize, forceDeleteNormalFile);
         break;
     case PROGRAM_SERVER:
-        ret = moveBinaryFile(mess, serverName, TEMP_PROG_FILE_NAME,
-                             "update detector server");
+        ret = deleteOldServers(mess, serverName, "update detector server");
+        if (ret == OK) {
+            ret = moveBinaryFile(mess, serverName, TEMP_PROG_FILE_NAME,
+                                 "update detector server");
+        }
         if (ret == OK) {
             ret = setupDetectorServer(mess, serverName);
         }

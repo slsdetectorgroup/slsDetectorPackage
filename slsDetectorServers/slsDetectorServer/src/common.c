@@ -670,3 +670,15 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
     }
     return OK;
 }
+
+int deleteOldServers(char *mess, char *newServerName, char *errorPrefix) {
+    LOG(logINFOBLUE, ("newserver name:%s\n", newServerName));
+
+    // if it exists
+    if (access(newServerName, F_OK) == 0) {
+        LOG(logINFO,
+            ("\tOld server does exist: %s (%s)\n", newServerName, errorPrefix));
+    }
+    exit(-1);
+    return OK;
+}

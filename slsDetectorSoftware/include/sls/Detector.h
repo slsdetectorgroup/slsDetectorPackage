@@ -1473,10 +1473,10 @@ class Detector {
     Result<int> getGainCaps(Positions pos = {});
 
     /** [Mythen3] */
-    Result<defs::Polarity> getPolarity(Positions pos = {}) const;
+    Result<defs::polarity> getPolarity(Positions pos = {}) const;
 
     /** [Mythen3] */
-    void setPolarity(defs::Polarity value, Positions pos = {});
+    void setPolarity(defs::polarity value, Positions pos = {});
 
     /** [Mythen3] */
     Result<bool> getInterpolation(Positions pos = {}) const;
@@ -1489,6 +1489,18 @@ class Detector {
 
     /** [Mythen3] */
     void setPumpProbe(bool value, Positions pos = {});
+
+    /** [Mythen3] */
+    Result<bool> getAnalogPulsing(Positions pos = {}) const;
+
+    /** [Mythen3] */
+    void setAnalogPulsing(bool value, Positions pos = {});
+
+    /** [Mythen3] */
+    Result<bool> getDigitalPulsing(Positions pos = {}) const;
+
+    /** [Mythen3] */
+    void setDigitalPulsing(bool value, Positions pos = {});
 
     ///@}
 

@@ -3530,6 +3530,25 @@ class Detector(CppDetectorApi):
     def pumpprobe(self, value):
         ut.set_using_dict(self.setPumpProbe, value)
 
+    @element
+    def apulse(self):
+        """[Mythen3] Enable or disable analog pulsing. """
+        return self.getAnalogPulsing()
+
+    @apulse.setter
+    def apulse(self, value):
+        ut.set_using_dict(self.setAnalogPulsing, value)
+
+
+    @element
+    def dpulse(self):
+        """[Mythen3] Enable or disable digital pulsing. """
+        return self.getDigitalPulsing()
+
+    @dpulse.setter
+    def dpulse(self, value):
+        ut.set_using_dict(self.setDigitalPulsing, value)
+
 
     """
     ---------------------------<<<Debug>>>---------------------------

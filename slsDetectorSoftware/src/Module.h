@@ -466,6 +466,16 @@ class Module : public virtual slsDetectorDefs {
     int getChipStatusRegister() const;
     void setGainCaps(int caps);
     int getGainCaps();
+    defs::polarity getPolarity() const;
+    void setPolarity(const defs::polarity enable);
+    bool getInterpolation() const;
+    void setInterpolation(const bool enable);
+    bool getPumpProbe() const;
+    void setPumpProbe(const bool enable);
+    bool getAnalogPulsing() const;
+    void setAnalogPulsing(const bool enable);
+    bool getDigitalPulsing() const;
+    void setDigitalPulsing(const bool enable);
 
     /**************************************************
      *                                                *

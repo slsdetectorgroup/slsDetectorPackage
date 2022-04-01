@@ -1290,6 +1290,46 @@ void init_det(py::module &m) {
         .def("getGainCaps",
              (Result<int>(Detector::*)(sls::Positions)) & Detector::getGainCaps,
              py::arg() = Positions{})
+        .def("getPolarity",
+             (Result<defs::polarity>(Detector::*)(sls::Positions) const) &
+                 Detector::getPolarity,
+             py::arg() = Positions{})
+        .def("setPolarity",
+             (void (Detector::*)(defs::polarity, sls::Positions)) &
+                 Detector::setPolarity,
+             py::arg(), py::arg() = Positions{})
+        .def("getInterpolation",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getInterpolation,
+             py::arg() = Positions{})
+        .def("setInterpolation",
+             (void (Detector::*)(bool, sls::Positions)) &
+                 Detector::setInterpolation,
+             py::arg(), py::arg() = Positions{})
+        .def("getPumpProbe",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getPumpProbe,
+             py::arg() = Positions{})
+        .def("setPumpProbe",
+             (void (Detector::*)(bool, sls::Positions)) &
+                 Detector::setPumpProbe,
+             py::arg(), py::arg() = Positions{})
+        .def("getAnalogPulsing",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getAnalogPulsing,
+             py::arg() = Positions{})
+        .def("setAnalogPulsing",
+             (void (Detector::*)(bool, sls::Positions)) &
+                 Detector::setAnalogPulsing,
+             py::arg(), py::arg() = Positions{})
+        .def("getDigitalPulsing",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getDigitalPulsing,
+             py::arg() = Positions{})
+        .def("setDigitalPulsing",
+             (void (Detector::*)(bool, sls::Positions)) &
+                 Detector::setDigitalPulsing,
+             py::arg(), py::arg() = Positions{})
         .def("getNumberOfAnalogSamples",
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfAnalogSamples,

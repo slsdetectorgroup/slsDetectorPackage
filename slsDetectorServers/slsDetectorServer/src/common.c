@@ -493,7 +493,7 @@ int setupDetectorServer(char *mess, char *sname) {
 
     // add new link name to /etc/inittab
     if (snprintf(cmd, MAX_STR_LENGTH,
-                 "echo 'ttyS0::respawn:/./%s' >> /etc/inittab",
+                 "echo 'ttyS0::respawn:%s' >> /etc/inittab",
                  linkname) >= MAX_STR_LENGTH) {
         strcpy(mess, "Could not copy detector server. Command "
                      "to add new server for spawning is too long\n");

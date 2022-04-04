@@ -680,7 +680,7 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
 }
 
 int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
-    LOG(logINFO, ("Checking if current binary is to be deleted ...\n"))
+    LOG(logINFO, ("\tChecking if current binary is to be deleted ...\n"))
     // get path of current binary
     char currentBinary[MAX_STR_LENGTH];
     memset(currentBinary, 0, MAX_STR_LENGTH);

@@ -316,15 +316,16 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
     try {
         // normal call back
         if (rawDataReadyCallBack != nullptr) {
+            size_t dsize = (uint32_t)(*((uint32_t *)buf));
             rawDataReadyCallBack(rheader,
                                  buf + FIFO_HEADER_NUMBYTES +
                                      sizeof(sls_receiver_header),
-                                 (uint32_t)(*((uint32_t *)buf)), pRawDataReady);
+                                 dsize, pRawDataReady);
         }
 
         // call back with modified size
         else if (rawDataModifyReadyCallBack != nullptr) {
-            auto revsize = (uint32_t)(*((uint32_t *)buf));
+            size_t revsize = (uint32_t)(*((uint32_t *)buf));
             rawDataModifyReadyCallBack(rheader,
                                        buf + FIFO_HEADER_NUMBYTES +
                                            sizeof(sls_receiver_header),
@@ -394,14 +395,13 @@ bool DataProcessor::CheckCount() {
 }
 
 void DataProcessor::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header *, char *, uint32_t, void *), void *arg) {
+    void (*func)(sls_receiver_header *, char *, size_t, void *), void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
 
 void DataProcessor::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header *, char *, uint32_t &, void *),
-    void *arg) {
+    void (*func)(sls_receiver_header *, char *, size_t &, void *), void *arg) {
     rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
 }

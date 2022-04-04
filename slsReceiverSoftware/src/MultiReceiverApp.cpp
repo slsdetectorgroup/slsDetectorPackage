@@ -59,7 +59,7 @@ void printHelp() {
  * \returns ignored
  */
 int StartAcq(std::string filepath, std::string filename, uint64_t fileindex,
-             uint32_t datasize, void *p) {
+             size_t datasize, void *p) {
     LOG(logINFOBLUE) << "#### StartAcq:  filepath:" << filepath
                      << "  filename:" << filename << " fileindex:" << fileindex
                      << "  datasize:" << datasize << " ####";
@@ -86,7 +86,7 @@ void AcquisitionFinished(uint64_t frames, void *p) {
  * @param p pointer to object
  */
 void GetData(slsDetectorDefs::sls_receiver_header *header, char *datapointer,
-             uint32_t datasize, void *p) {
+             size_t datasize, void *p) {
     slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
 
     PRINT_IN_COLOR(
@@ -97,7 +97,7 @@ void GetData(slsDetectorDefs::sls_receiver_header *header, char *datapointer,
         "row: %u\t\tcolumn: %u\t\treserved: %u\t\tdebug: %u"
         "\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
         //"\t\tpacketsMask:%s"
-        "\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
+        "\t\tfirstbytedata: 0x%x\t\tdatsize: %zu\n\n",
         detectorHeader.row, (long unsigned int)detectorHeader.frameNumber,
         detectorHeader.expLength, detectorHeader.packetNumber,
         (long unsigned int)detectorHeader.bunchId,
@@ -120,7 +120,7 @@ void GetData(slsDetectorDefs::sls_receiver_header *header, char *datapointer,
  * @param p pointer to object
  */
 void GetData(slsDetectorDefs::sls_receiver_header *header, char *datapointer,
-             uint32_t &revDatasize, void *p) {
+             size_t &revDatasize, void *p) {
     slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
 
     PRINT_IN_COLOR(
@@ -132,7 +132,7 @@ void GetData(slsDetectorDefs::sls_receiver_header *header, char *datapointer,
         "row: %u\t\tcolumn: %u\t\treserved: %u\t\tdebug: %u"
         "\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
         //"\t\tpacketsMask:%s"
-        "\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
+        "\t\tfirstbytedata: 0x%x\t\tdatsize: %zu\n\n",
         detectorHeader.row, (long long unsigned int)detectorHeader.frameNumber,
         detectorHeader.expLength, detectorHeader.packetNumber,
         (long long unsigned int)detectorHeader.bunchId,

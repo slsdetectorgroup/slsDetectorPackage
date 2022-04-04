@@ -87,7 +87,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * dataSize in bytes is the size of the data in bytes.
      */
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
-                                                   char *, uint32_t, void *),
+                                                   char *, size_t, void *),
                                       void *arg);
 
     /**
@@ -100,7 +100,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * value).
      */
     void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
-                                                         char *, uint32_t &,
+                                                         char *, size_t &,
                                                          void *),
                                             void *arg);
 
@@ -196,7 +196,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * dataPointer is the pointer to the data
      * dataSize in bytes is the size of the data in bytes.
      */
-    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, uint32_t,
+    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, size_t,
                                  void *) = nullptr;
 
     /**
@@ -207,8 +207,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * revDatasize is the reference of data size in bytes. Can be modified to
      * the new size to be written/streamed. (only smaller value).
      */
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *,
-                                       uint32_t &, void *) = nullptr;
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *, size_t &,
+                                       void *) = nullptr;
 
     void *pRawDataReady{nullptr};
 };

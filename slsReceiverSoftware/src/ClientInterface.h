@@ -32,8 +32,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     //***callback functions***
     /** params: filepath, filename, fileindex, datasize */
     void registerCallBackStartAcquisition(int (*func)(std::string, std::string,
-                                                      uint64_t, uint32_t,
-                                                      void *),
+                                                      uint64_t, size_t, void *),
                                           void *arg);
 
     /** params: total frames caught */
@@ -42,13 +41,13 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     /** params: sls_receiver_header frame metadata, dataPointer, dataSize */
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
-                                                   char *, uint32_t, void *),
+                                                   char *, size_t, void *),
                                       void *arg);
 
     /** params: sls_receiver_header frame metadata, dataPointer, modified size
      */
     void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
-                                                         char *, uint32_t &,
+                                                         char *, size_t &,
                                                          void *),
                                             void *arg);
 
@@ -181,15 +180,15 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     //***callback parameters***
 
-    int (*startAcquisitionCallBack)(std::string, std::string, uint64_t,
-                                    uint32_t, void *) = nullptr;
+    int (*startAcquisitionCallBack)(std::string, std::string, uint64_t, size_t,
+                                    void *) = nullptr;
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(uint64_t, void *) = nullptr;
     void *pAcquisitionFinished{nullptr};
-    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, uint32_t,
+    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, size_t,
                                  void *) = nullptr;
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *,
-                                       uint32_t &, void *) = nullptr;
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *, size_t &,
+                                       void *) = nullptr;
     void *pRawDataReady{nullptr};
 
     pid_t parentThreadId{0};

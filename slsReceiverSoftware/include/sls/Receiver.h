@@ -51,8 +51,7 @@ class Receiver : private virtual slsDetectorDefs {
      * users get data to write depending on call backs registered
      */
     void registerCallBackStartAcquisition(int (*func)(std::string, std::string,
-                                                      uint64_t, uint32_t,
-                                                      void *),
+                                                      uint64_t, size_t, void *),
                                           void *arg);
 
     /**
@@ -71,7 +70,7 @@ class Receiver : private virtual slsDetectorDefs {
      * dataSize in bytes is the size of the data in bytes.
      */
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
-                                                   char *, uint32_t, void *),
+                                                   char *, size_t, void *),
                                       void *arg);
 
     /**
@@ -84,7 +83,7 @@ class Receiver : private virtual slsDetectorDefs {
      * value).
      */
     void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
-                                                         char *, uint32_t &,
+                                                         char *, size_t &,
                                                          void *),
                                             void *arg);
 

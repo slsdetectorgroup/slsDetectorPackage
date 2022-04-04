@@ -253,16 +253,15 @@ class Implementation : private virtual slsDetectorDefs {
      *                                                *
      * ************************************************/
     void registerCallBackStartAcquisition(int (*func)(std::string, std::string,
-                                                      uint64_t, uint32_t,
-                                                      void *),
+                                                      uint64_t, size_t, void *),
                                           void *arg);
     void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
                                              void *arg);
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
-                                                   char *, uint32_t, void *),
+                                                   char *, size_t, void *),
                                       void *arg);
     void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
-                                                         char *, uint32_t &,
+                                                         char *, size_t &,
                                                          void *),
                                             void *arg);
 
@@ -370,15 +369,15 @@ class Implementation : private virtual slsDetectorDefs {
     int ctbDbitOffset{0};
 
     // callbacks
-    int (*startAcquisitionCallBack)(std::string, std::string, uint64_t,
-                                    uint32_t, void *){nullptr};
+    int (*startAcquisitionCallBack)(std::string, std::string, uint64_t, size_t,
+                                    void *){nullptr};
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(uint64_t, void *){nullptr};
     void *pAcquisitionFinished{nullptr};
-    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, uint32_t,
+    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, size_t,
                                  void *){nullptr};
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *,
-                                       uint32_t &, void *){nullptr};
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *, size_t &,
+                                       void *){nullptr};
     void *pRawDataReady{nullptr};
 
     // class objects

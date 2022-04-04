@@ -466,7 +466,7 @@ int setupDetectorServer(char *mess, char *sname) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tSymbolic link created\n"));
+    LOG(logINFO, ("\tSymbolic link created %s -> %s\n", linkname, sname));
 
     // blackfin boards (respawn) (only kept for backwards compatibility)
 #ifndef VIRTUAL
@@ -704,7 +704,7 @@ int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
         }
         return OK;
     } else {
-        LOG(logINFO, ("Current binary same as new server name\n"));
+        LOG(logINFO, ("\tCurrent binary same as new server name\n"));
     }
 
     return OK;

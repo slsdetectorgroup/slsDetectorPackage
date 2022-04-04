@@ -41,14 +41,15 @@ class ClientInterface : private virtual slsDetectorDefs {
                                              void *arg);
 
     /** params: sls_receiver_header frame metadata, dataPointer, dataSize */
-    void registerCallBackRawDataReady(void (*func)(char *, char *, uint32_t,
-                                                   void *),
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
+                                                   char *, uint32_t, void *),
                                       void *arg);
 
     /** params: sls_receiver_header frame metadata, dataPointer, modified size
      */
-    void registerCallBackRawDataModifyReady(void (*func)(char *, char *,
-                                                         uint32_t &, void *),
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
+                                                         char *, uint32_t &,
+                                                         void *),
                                             void *arg);
 
   private:
@@ -185,9 +186,10 @@ class ClientInterface : private virtual slsDetectorDefs {
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(uint64_t, void *) = nullptr;
     void *pAcquisitionFinished{nullptr};
-    void (*rawDataReadyCallBack)(char *, char *, uint32_t, void *) = nullptr;
-    void (*rawDataModifyReadyCallBack)(char *, char *, uint32_t &,
-                                       void *) = nullptr;
+    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, uint32_t,
+                                 void *) = nullptr;
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *,
+                                       uint32_t &, void *) = nullptr;
     void *pRawDataReady{nullptr};
 
     pid_t parentThreadId{0};

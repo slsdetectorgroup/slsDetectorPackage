@@ -85,9 +85,8 @@ void AcquisitionFinished(uint64_t frames, void *p) {
  * @param datasize data size in bytes.
  * @param p pointer to object
  */
-void GetData(char *metadata, char *datapointer, uint32_t datasize, void *p) {
-    slsDetectorDefs::sls_receiver_header *header =
-        (slsDetectorDefs::sls_receiver_header *)metadata;
+void GetData(slsDetectorDefs::sls_receiver_header *header, char *datapointer,
+             uint32_t datasize, void *p) {
     slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
 
     PRINT_IN_COLOR(
@@ -120,10 +119,8 @@ void GetData(char *metadata, char *datapointer, uint32_t datasize, void *p) {
  * This will be the size written/streamed. (only smaller value is allowed).
  * @param p pointer to object
  */
-void GetData(char *metadata, char *datapointer, uint32_t &revDatasize,
-             void *p) {
-    slsDetectorDefs::sls_receiver_header *header =
-        (slsDetectorDefs::sls_receiver_header *)metadata;
+void GetData(slsDetectorDefs::sls_receiver_header *header, char *datapointer,
+             uint32_t &revDatasize, void *p) {
     slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
 
     PRINT_IN_COLOR(

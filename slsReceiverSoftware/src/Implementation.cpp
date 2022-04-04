@@ -1641,7 +1641,7 @@ void Implementation::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
 }
 
 void Implementation::registerCallBackRawDataReady(
-    void (*func)(char *, char *, uint32_t, void *), void *arg) {
+    void (*func)(sls_receiver_header *, char *, uint32_t, void *), void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
     for (const auto &it : dataProcessor)
@@ -1649,7 +1649,8 @@ void Implementation::registerCallBackRawDataReady(
 }
 
 void Implementation::registerCallBackRawDataModifyReady(
-    void (*func)(char *, char *, uint32_t &, void *), void *arg) {
+    void (*func)(sls_receiver_header *, char *, uint32_t &, void *),
+    void *arg) {
     rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
     for (const auto &it : dataProcessor)

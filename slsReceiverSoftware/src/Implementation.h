@@ -258,11 +258,12 @@ class Implementation : private virtual slsDetectorDefs {
                                           void *arg);
     void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
                                              void *arg);
-    void registerCallBackRawDataReady(void (*func)(char *, char *, uint32_t,
-                                                   void *),
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
+                                                   char *, uint32_t, void *),
                                       void *arg);
-    void registerCallBackRawDataModifyReady(void (*func)(char *, char *,
-                                                         uint32_t &, void *),
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
+                                                         char *, uint32_t &,
+                                                         void *),
                                             void *arg);
 
   private:
@@ -374,9 +375,10 @@ class Implementation : private virtual slsDetectorDefs {
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(uint64_t, void *){nullptr};
     void *pAcquisitionFinished{nullptr};
-    void (*rawDataReadyCallBack)(char *, char *, uint32_t, void *){nullptr};
-    void (*rawDataModifyReadyCallBack)(char *, char *, uint32_t &,
-                                       void *){nullptr};
+    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, uint32_t,
+                                 void *){nullptr};
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *,
+                                       uint32_t &, void *){nullptr};
     void *pRawDataReady{nullptr};
 
     // class objects

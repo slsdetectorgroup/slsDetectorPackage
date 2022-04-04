@@ -69,13 +69,14 @@ void ClientInterface::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
 }
 
 void ClientInterface::registerCallBackRawDataReady(
-    void (*func)(char *, char *, uint32_t, void *), void *arg) {
+    void (*func)(sls_receiver_header *, char *, uint32_t, void *), void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
 
 void ClientInterface::registerCallBackRawDataModifyReady(
-    void (*func)(char *, char *, uint32_t &, void *), void *arg) {
+    void (*func)(sls_receiver_header *, char *, uint32_t &, void *),
+    void *arg) {
     rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
 }

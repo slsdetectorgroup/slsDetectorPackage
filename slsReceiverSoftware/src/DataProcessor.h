@@ -86,8 +86,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * dataPointer is the pointer to the data
      * dataSize in bytes is the size of the data in bytes.
      */
-    void registerCallBackRawDataReady(void (*func)(char *, char *, uint32_t,
-                                                   void *),
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
+                                                   char *, uint32_t, void *),
                                       void *arg);
 
     /**
@@ -99,8 +99,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * Can be modified to the new size to be written/streamed. (only smaller
      * value).
      */
-    void registerCallBackRawDataModifyReady(void (*func)(char *, char *,
-                                                         uint32_t &, void *),
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
+                                                         char *, uint32_t &,
+                                                         void *),
                                             void *arg);
 
   private:
@@ -195,7 +196,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * dataPointer is the pointer to the data
      * dataSize in bytes is the size of the data in bytes.
      */
-    void (*rawDataReadyCallBack)(char *, char *, uint32_t, void *) = nullptr;
+    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, uint32_t,
+                                 void *) = nullptr;
 
     /**
      * Call back for raw data (modified)
@@ -205,8 +207,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * revDatasize is the reference of data size in bytes. Can be modified to
      * the new size to be written/streamed. (only smaller value).
      */
-    void (*rawDataModifyReadyCallBack)(char *, char *, uint32_t &,
-                                       void *) = nullptr;
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *,
+                                       uint32_t &, void *) = nullptr;
 
     void *pRawDataReady{nullptr};
 };

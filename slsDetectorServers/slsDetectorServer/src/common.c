@@ -675,23 +675,29 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
     return OK;
 }
 
-int deleteOldServers(char *mess, char *newServerName, char *errorPrefix) {
+int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
     // get path of current binary
-    char path[MAX_STR_LENGTH];
-    memset(path, 0, MAX_STR_LENGTH);
-    ssize_t len = readlink("/proc/self/exe", path, MAX_STR_LENGTH - 1);
+    char currentBinary[MAX_STR_LENGTH];
+    memset(currentBinary, 0, MAX_STR_LENGTH);
+    ssize_t len = readlink("/proc/self/exe", currentBinary, MAX_STR_LENGTH - 1);
     if (len < 0) {
         LOG(logWARNING, ("(%s): Could not delete old servers. Could not "
                          "readlink current binary\n",
                          errorPrefix));
         return FAIL;
     }
-    path[len] = '\0';
-    LOG(logINFO, ("Current binary:%s\n", path));
+    currentBinary[len] = '\0';
+    LOG(logDEBUG1, ("Current binary:%s\n", currentBinary));
+
+    // resolve double slashes to compare
+    char *newBinary = newServerPath;
+    while (newBinary[0] == '/' && newBinary[1] == '/') {
+        ++newBinary;
+    }
 
     // if current binary same as new server name, replaced anyway
-    if (strcmp(path, newServerName)) {
-        if (deleteFile(mess, path, errorPrefix) == FAIL) {
+    if (strcmp(currentBinary, newBinary)) {
+        if (deleteFile(mess, currentBinary, errorPrefix) == FAIL) {
             LOG(logWARNING,
                 ("(%s). Could not delete old servers\n", errorPrefix));
             return FAIL;

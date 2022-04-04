@@ -4190,6 +4190,10 @@ int copy_detector_server(int file_des) {
             }
         }
 
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+        // a fail here is not a show stopper (just for memory)
+        deleteOldServers(mess, serverName, "update detector server");
+#endif
         if (ret == OK) {
             ret = setupDetectorServer(mess, sname);
         }

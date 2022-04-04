@@ -676,8 +676,6 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
 }
 
 int deleteOldServers(char *mess, char *newServerName, char *errorPrefix) {
-    LOG(logINFOBLUE, ("newserver name:%s\n", newServerName));
-
     // get path of current binary
     char path[MAX_STR_LENGTH];
     memset(path, 0, MAX_STR_LENGTH);
@@ -698,8 +696,9 @@ int deleteOldServers(char *mess, char *newServerName, char *errorPrefix) {
                 ("(%s). Could not delete old servers\n", errorPrefix));
             return FAIL;
         }
+        return OK;
     } else {
-        LOG(logINFO, ("Current binary same as server name\n"));
+        LOG(logINFO, ("Current binary same as new server name\n"));
     }
 
     return OK;

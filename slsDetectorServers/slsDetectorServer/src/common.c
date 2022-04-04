@@ -645,42 +645,39 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
     char fullname[fileNameSize];
     strcpy(fullname, fname);
 
-    if (fname[0] != '/') {
-        if (getAbsPath(fullname, fileNameSize, fname) == FAIL) {
-            sprintf(mess,
-                    "Could not %s. Could not get abs path of current "
-                    "process\n",
-                    errorPrefix);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
+    if (getAbsPath(fullname, fileNameSize, fname) == FAIL) {
+        sprintf(mess,
+                "Could not %s. Could not get abs path of current "
+                "process\n",
+                errorPrefix);
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+}
+
+if (access(fullname, F_OK) == 0) {
+    char cmd[MAX_STR_LENGTH] = {0};
+    char retvals[MAX_STR_LENGTH] = {0};
+
+    if (snprintf(cmd, MAX_STR_LENGTH, "rm %s", fullname) >= MAX_STR_LENGTH) {
+        sprintf(mess, "Could not %s. Command to delete is too long\n",
+                errorPrefix);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 
-    if (access(fullname, F_OK) == 0) {
-        char cmd[MAX_STR_LENGTH] = {0};
-        char retvals[MAX_STR_LENGTH] = {0};
-
-        if (snprintf(cmd, MAX_STR_LENGTH, "rm %s", fullname) >=
-            MAX_STR_LENGTH) {
-            sprintf(mess, "Could not %s. Command to delete is too long\n",
-                    errorPrefix);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-
-        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-            snprintf(mess, MAX_STR_LENGTH,
-                     "Could not %s. (deleting file %s). %s\n", errorPrefix,
-                     fullname, retvals);
-            LOG(logERROR, (mess));
-            return FAIL;
-        }
-        LOG(logINFO, ("\tDeleted file: %s (%s)\n", fullname, errorPrefix));
-    } else {
-        LOG(logINFO,
-            ("\tFile does not exist anyway: %s (%s)\n", fullname, errorPrefix));
+    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+        snprintf(mess, MAX_STR_LENGTH, "Could not %s. (deleting file %s). %s\n",
+                 errorPrefix, fullname, retvals);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
-    return OK;
+    LOG(logINFO, ("\tDeleted file: %s (%s)\n", fullname, errorPrefix));
+} else {
+    LOG(logINFO,
+        ("\tFile does not exist anyway: %s (%s)\n", fullname, errorPrefix));
+}
+return OK;
 }
 
 int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {

@@ -60,7 +60,7 @@ int getAbsPath(char *buf, size_t bufSize, char *fname) {
     }
     path[len] = '\0';
 
-    // get dir path and attach config file name
+    // get dir path and attach file name
     char *dir = dirname(path);
     memset(buf, 0, bufSize);
     sprintf(buf, "%s/%s", dir, fname);
@@ -635,13 +635,17 @@ int createEmptyFile(char *mess, char *fname, char *errorPrefix) {
 int deleteFile(char *mess, char *fname, char *errorPrefix) {
     const int fileNameSize = 128;
     char fullname[fileNameSize];
-    if (getAbsPath(fullname, fileNameSize, fname) == FAIL) {
-        sprintf(mess,
-                "Could not %s. Could not get abs path of current "
-                "process\n",
-                errorPrefix);
-        LOG(logERROR, (mess));
-        return FAIL;
+    strcpy(fullname, fname);
+
+    if (fname[0] != '/') {
+        if (getAbsPath(fullname, fileNameSize, fname) == FAIL) {
+            sprintf(mess,
+                    "Could not %s. Could not get abs path of current "
+                    "process\n",
+                    errorPrefix);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
     }
 
     if (access(fullname, F_OK) == 0) {
@@ -674,11 +678,29 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
 int deleteOldServers(char *mess, char *newServerName, char *errorPrefix) {
     LOG(logINFOBLUE, ("newserver name:%s\n", newServerName));
 
-    // if it exists
-    if (access(newServerName, F_OK) == 0) {
-        LOG(logINFO,
-            ("\tOld server does exist: %s (%s)\n", newServerName, errorPrefix));
+    // get path of current binary
+    char path[MAX_STR_LENGTH];
+    memset(path, 0, MAX_STR_LENGTH);
+    ssize_t len = readlink("/proc/self/exe", path, MAX_STR_LENGTH - 1);
+    if (len < 0) {
+        LOG(logWARNING, ("(%s): Could not delete old servers. Could not "
+                         "readlink current binary\n",
+                         errorPrefix));
+        return FAIL;
     }
-    exit(-1);
+    path[len] = '\0';
+    LOG(logINFO, ("Current binary:%s\n", path));
+
+    // if current binary same as new server name, replaced anyway
+    if (strcmp(path, newServerName)) {
+        if (deleteFile(mess, path, errorPrefix) == FAIL) {
+            LOG(logWARNING,
+                ("(%s). Could not delete old servers\n", errorPrefix));
+            return FAIL;
+        }
+    } else {
+        LOG(logINFO, ("Current binary same as server name\n"));
+    }
+
     return OK;
 }

@@ -9601,11 +9601,10 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                    totalsize, forceDeleteNormalFile);
         break;
     case PROGRAM_SERVER:
-        ret = deleteOldServers(mess, serverName, "update detector server");
-        if (ret == OK) {
-            ret = moveBinaryFile(mess, serverName, TEMP_PROG_FILE_NAME,
-                                 "update detector server");
-        }
+        // a fail here is not a show stopper (just for memory)
+        deleteOldServers(mess, serverName, "update detector server");
+        ret = moveBinaryFile(mess, serverName, TEMP_PROG_FILE_NAME,
+                             "update detector server");
         if (ret == OK) {
             ret = setupDetectorServer(mess, serverName);
         }

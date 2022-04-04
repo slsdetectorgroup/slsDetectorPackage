@@ -63,7 +63,11 @@ int getAbsPath(char *buf, size_t bufSize, char *fname) {
     // get dir path and attach file name
     char *dir = dirname(path);
     memset(buf, 0, bufSize);
-    sprintf(buf, "%s/%s", dir, fname);
+    if (!strcmp(dir, "/")) {
+        sprintf(buf, "/%s", fname);
+    } else {
+        sprintf(buf, "%s/%s", dir, fname);
+    }
     LOG(logDEBUG1, ("full path for %s: %s\n", fname, buf));
     return OK;
 }
@@ -689,14 +693,8 @@ int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
     currentBinary[len] = '\0';
     LOG(logDEBUG1, ("Current binary:%s\n", currentBinary));
 
-    // resolve double slashes to compare
-    char *newBinary = newServerPath;
-    while (newBinary[0] == '/' && newBinary[1] == '/') {
-        ++newBinary;
-    }
-
     // if current binary same as new server name, replaced anyway
-    if (strcmp(currentBinary, newBinary)) {
+    if (strcmp(currentBinary, newServerPath)) {
         if (deleteFile(mess, currentBinary, errorPrefix) == FAIL) {
             LOG(logWARNING,
                 ("(%s). Could not delete old servers\n", errorPrefix));

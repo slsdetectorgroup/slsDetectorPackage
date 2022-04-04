@@ -643,8 +643,6 @@ int createEmptyFile(char *mess, char *fname, char *errorPrefix) {
 int deleteFile(char *mess, char *fname, char *errorPrefix) {
     const int fileNameSize = 128;
     char fullname[fileNameSize];
-    strcpy(fullname, fname);
-
     if (getAbsPath(fullname, fileNameSize, fname) == FAIL) {
         sprintf(mess,
                 "Could not %s. Could not get abs path of current "

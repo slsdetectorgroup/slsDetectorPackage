@@ -653,31 +653,32 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-}
 
-if (access(fullname, F_OK) == 0) {
-    char cmd[MAX_STR_LENGTH] = {0};
-    char retvals[MAX_STR_LENGTH] = {0};
+    if (access(fullname, F_OK) == 0) {
+        char cmd[MAX_STR_LENGTH] = {0};
+        char retvals[MAX_STR_LENGTH] = {0};
 
-    if (snprintf(cmd, MAX_STR_LENGTH, "rm %s", fullname) >= MAX_STR_LENGTH) {
-        sprintf(mess, "Could not %s. Command to delete is too long\n",
-                errorPrefix);
-        LOG(logERROR, (mess));
-        return FAIL;
+        if (snprintf(cmd, MAX_STR_LENGTH, "rm %s", fullname) >=
+            MAX_STR_LENGTH) {
+            sprintf(mess, "Could not %s. Command to delete is too long\n",
+                    errorPrefix);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+
+        if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
+            snprintf(mess, MAX_STR_LENGTH,
+                     "Could not %s. (deleting file %s). %s\n", errorPrefix,
+                     fullname, retvals);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        LOG(logINFO, ("\tDeleted file: %s (%s)\n", fullname, errorPrefix));
+    } else {
+        LOG(logINFO,
+            ("\tFile does not exist anyway: %s (%s)\n", fullname, errorPrefix));
     }
-
-    if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-        snprintf(mess, MAX_STR_LENGTH, "Could not %s. (deleting file %s). %s\n",
-                 errorPrefix, fullname, retvals);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    LOG(logINFO, ("\tDeleted file: %s (%s)\n", fullname, errorPrefix));
-} else {
-    LOG(logINFO,
-        ("\tFile does not exist anyway: %s (%s)\n", fullname, errorPrefix));
-}
-return OK;
+    return OK;
 }
 
 int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {

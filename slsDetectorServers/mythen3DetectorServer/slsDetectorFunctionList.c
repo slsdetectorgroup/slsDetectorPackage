@@ -1603,7 +1603,7 @@ void setTiming(enum timingMode arg) {
 
     int master = 0;
     isMaster(&master);
-    if (master && arg == AUTO_TIMING)
+    if (!master && arg == AUTO_TIMING)
         arg = TRIGGER_EXPOSURE;
 
     uint32_t addr = CONFIG_REG;

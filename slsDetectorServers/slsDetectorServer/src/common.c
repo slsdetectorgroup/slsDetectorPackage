@@ -681,7 +681,7 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
 
 int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
     LOG(logINFO, ("\tChecking if current binary is to be deleted ...\n"))
-    // get path of current binary
+    // get path of current binary (get file name if link)
     char currentBinary[MAX_STR_LENGTH];
     memset(currentBinary, 0, MAX_STR_LENGTH);
     ssize_t len = readlink("/proc/self/exe", currentBinary, MAX_STR_LENGTH - 1);
@@ -694,6 +694,7 @@ int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
     currentBinary[len] = '\0';
     LOG(logDEBUG1, ("Current binary:%s\n", currentBinary));
 
+    // delete file
     if (deleteFile(mess, currentBinary, errorPrefix) == FAIL) {
         LOG(logWARNING, ("(%s). Could not delete old servers\n", errorPrefix));
         return FAIL;

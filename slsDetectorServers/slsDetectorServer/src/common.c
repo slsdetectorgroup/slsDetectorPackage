@@ -50,6 +50,10 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
 }
 
 int getAbsPath(char *buf, size_t bufSize, char *fname) {
+    if (fname[0] == '/') {
+        strcpy(buf, fname);
+        return OK;
+    }
     // get path of current binary
     char path[bufSize];
     memset(path, 0, bufSize);

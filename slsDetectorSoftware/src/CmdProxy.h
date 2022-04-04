@@ -906,6 +906,7 @@ class CmdProxy {
         {"rx_lastclient", &CmdProxy::rx_lastclient},
         {"rx_threads", &CmdProxy::rx_threads},
         {"rx_arping", &CmdProxy::rx_arping},
+        //{"rx_roi", &CmdProxy::rx_roi},
 
         /* File */
         {"fformat", &CmdProxy::fformat},

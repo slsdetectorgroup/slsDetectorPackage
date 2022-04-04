@@ -172,13 +172,19 @@ class slsDetectorDefs {
     struct ROI {
         int xmin{-1};
         int xmax{-1};
+        int ymin{-1};
+        int ymax{-1};
         ROI() = default;
         ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax){};
+        ROI(int xmin, int xmax, int ymin, int ymax)
+            : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax){};
     } __attribute__((packed));
 #else
 typedef struct {
     int xmin;
     int xmax;
+    int ymin;
+    int ymax;
 } ROI;
 #endif
 

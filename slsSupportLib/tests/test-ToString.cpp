@@ -227,14 +227,19 @@ TEST_CASE("Detector type") {
 TEST_CASE("Formatting slsDetectorDefs::ROI") {
     slsDetectorDefs::ROI roi(5, 159);
     REQUIRE(ToString(roi) == "[5, 159]");
+    slsDetectorDefs::ROI roi1(5, 159, 6, 170);
+    REQUIRE(ToString(roi1) == "[5, 159, 6, 170]");
 }
 
 TEST_CASE("Streaming of slsDetectorDefs::ROI") {
     using namespace sls;
     slsDetectorDefs::ROI roi(-10, 1);
-    std::ostringstream oss;
+    std::ostringstream oss, oss1;
     oss << roi;
     REQUIRE(oss.str() == "[-10, 1]");
+    slsDetectorDefs::ROI roi1(-10, 1, 5, 11);
+    oss1 << roi1;
+    REQUIRE(oss1.str() == "[-10, 1, 5, 11]");
 }
 
 TEST_CASE("std::array") {

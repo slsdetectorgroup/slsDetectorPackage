@@ -680,6 +680,7 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
 }
 
 int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
+    LOG(logINFO, ("Checking if current binary is to be deleted ...\n"))
     // get path of current binary
     char currentBinary[MAX_STR_LENGTH];
     memset(currentBinary, 0, MAX_STR_LENGTH);
@@ -693,17 +694,9 @@ int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
     currentBinary[len] = '\0';
     LOG(logDEBUG1, ("Current binary:%s\n", currentBinary));
 
-    // if current binary same as new server name, replaced anyway
-    if (strcmp(currentBinary, newServerPath)) {
-        if (deleteFile(mess, currentBinary, errorPrefix) == FAIL) {
-            LOG(logWARNING,
-                ("(%s). Could not delete old servers\n", errorPrefix));
-            return FAIL;
-        }
-        return OK;
-    } else {
-        LOG(logINFO, ("\tCurrent binary same as new server name\n"));
+    if (deleteFile(mess, currentBinary, errorPrefix) == FAIL) {
+        LOG(logWARNING, ("(%s). Could not delete old servers\n", errorPrefix));
+        return FAIL;
     }
-
     return OK;
 }

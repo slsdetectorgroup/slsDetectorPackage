@@ -2911,35 +2911,6 @@ std::string CmdProxy::ProgramFpga(int action) {
     return os.str();
 }
 
-std::string CmdProxy::CopyDetectorServer(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        LOG(logWARNING) << "Deprecated! Replaced by updatedetectorserver that "
-                           "requires no tftp.\n";
-        os << "[server_name (in tftp folder)] "
-              "[pc_host_name]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3]["
-              "Gotthard2] Copies detector server via TFTP from pc. Ensure that "
-              "server is in the pc's tftp folder. Makes a symbolic link with a "
-              "shorter name (without vx.x.x). Then, detector controller "
-              "reboots (except "
-              "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn server "
-              "to the link, which is effective after a reboot."
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 2) {
-            WrongNumberOfParameters(2);
-        }
-        det->copyDetectorServer(args[0], args[1], std::vector<int>{det_id});
-        os << "successful\n";
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
 std::string CmdProxy::UpdateDetectorServer(int action) {
     std::ostringstream os;
     os << cmd << ' ';

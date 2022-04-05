@@ -1766,23 +1766,11 @@ class Detector {
     /** [Jungfrau][CTB][Moench]  Advanced user Function!  */
     void resetFPGA(Positions pos = {});
 
-    /** [[deprecated ("Replaced by updateDetectorServer, which does not require
-     * tftp")]] [Jungfrau][Eiger][Gotthard][CTB][Moench][Mythen3][Gotthard2]
-     * Advanced user Function! \n
-     * Copy detector server fname from tftp folder of hostname to detector. Also
-     * creates a symbolic link to a shorter name (without vx.x.x). Then the
-     * detector controller reboots (except eiger) \n
-     * [Jungfrau][Gotthard][CTB][Moench] Also changes respawn server (to the
-     * link), which is effective after a reboot.
-     */
-    void copyDetectorServer(const std::string &fname,
-                            const std::string &hostname, Positions pos = {});
-
     /** [Jungfrau][Eiger][Ctb][Moench][Mythen3][Gotthard2] Copies detector
      * server via TCP (without tftp).\nMakes a symbolic link with a shorter
      * name (without vx.x.x).\nThen, detector controller reboots (except
-     * Eiger).\n[Jungfrau][Ctb][Moench]Also changes respawn server to the
-     * link, which is effective after a reboot.
+     * Eiger).\n[Jungfrau][Ctb][Moench] Also deletes old server binary and
+     *  changes respawn server to the link, which is effective after a reboot.
      */
     void updateDetectorServer(const std::string &fname, Positions pos = {});
 

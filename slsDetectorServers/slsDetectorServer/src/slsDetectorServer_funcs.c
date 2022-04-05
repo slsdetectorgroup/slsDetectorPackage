@@ -93,7 +93,6 @@ int updateModeAllowedFunction(int file_des) {
                                     F_PROGRAM_FPGA,
                                     F_RESET_FPGA,
                                     F_CHECK_VERSION,
-                                    F_COPY_DET_SERVER,
                                     F_REBOOT_CONTROLLER,
                                     F_GET_KERNEL_VERSION,
                                     F_UPDATE_KERNEL,
@@ -322,7 +321,6 @@ void function_table() {
     flist[F_SOFTWARE_TRIGGER] = &software_trigger;
     flist[F_LED] = &led;
     flist[F_DIGITAL_IO_DELAY] = &digital_io_delay;
-    flist[F_COPY_DET_SERVER] = &copy_detector_server;
     flist[F_REBOOT_CONTROLLER] = &reboot_controller;
     flist[F_SET_ADC_ENABLE_MASK] = &set_adc_enable_mask;
     flist[F_GET_ADC_ENABLE_MASK] = &get_adc_enable_mask;
@@ -4141,65 +4139,6 @@ int digital_io_delay(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
-}
-
-int copy_detector_server(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    char args[2][MAX_STR_LENGTH];
-    char retvals[MAX_STR_LENGTH] = {0};
-
-    memset(args, 0, sizeof(args));
-    memset(retvals, 0, sizeof(retvals));
-
-    if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
-        return printSocketReadError();
-
-#ifdef VIRTUAL
-    functionNotImplemented();
-#else
-
-    // only set
-    if (Server_VerifyLock() == OK) {
-        char *sname = args[0];
-        char *hostname = args[1];
-        LOG(logINFOBLUE, ("Copying server %s from host %s\n", sname, hostname));
-        char cmd[MAX_STR_LENGTH] = {0};
-
-#ifdef BLACKFIN_DEFINED
-        // check update is allowed  (Non Amd OR AMD + current kernel)
-        ret = allowUpdate(mess, "copy detector server");
-#endif
-
-        // tftp server
-        if (ret == OK) {
-            if (snprintf(cmd, MAX_STR_LENGTH, "tftp %s -r %s -g", hostname,
-                         sname) >= MAX_STR_LENGTH) {
-                ret = FAIL;
-                strcpy(mess, "Could not copy detector server. Command to copy "
-                             "server too long\n");
-                LOG(logERROR, (mess));
-            } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-                ret = FAIL;
-                snprintf(mess, MAX_STR_LENGTH,
-                         "Could not copy detector server (tftp). %s\n",
-                         retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            } else {
-                LOG(logINFO, ("\tServer copied\n"));
-            }
-        }
-
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-        // a fail here is not a show stopper (just for memory)
-        deleteOldServers(mess, serverName, "update detector server");
-#endif
-        if (ret == OK) {
-            ret = setupDetectorServer(mess, sname);
-        }
-    }
-#endif
-    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
 int reboot_controller(int file_des) {

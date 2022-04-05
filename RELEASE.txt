@@ -60,6 +60,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - master binary file in json format now
 - fixed bug introduced in 6.0.0: hdf5 files created 1 file per frame after the initial file which had maxframesperfile
 - updatedetectorserver - removes old server current binary pointing to for blackfin
+- removing copydetectorserver using tftp 
 
 
 2. Resolved Issues

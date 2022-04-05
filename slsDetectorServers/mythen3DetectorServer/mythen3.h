@@ -70,14 +70,14 @@ patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits);
 int getGainCaps();
 int setGainCaps(int caps);
 int getInterpolation();
-int setInterpolation(int mask);
+int setInterpolation(int enable);
 int getPumpProbe();
-int setPumpProbe(int mask);
+int setPumpProbe(int enable);
 int getDigitalPulsing();
-int setDigitalPulsing(int mask);
+int setDigitalPulsing(int enable);
 int getAnalogPulsing();
-int setAnalogPulsing(int mask);
+int setAnalogPulsing(int enable);
 int getNegativePolarity();
-int setNegativePolarity(int mask);
+int setNegativePolarity(int enable);
 
 #endif

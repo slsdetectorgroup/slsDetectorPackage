@@ -3512,6 +3512,7 @@ class Detector(CppDetectorApi):
     def polarity(self, value):
         ut.set_using_dict(self.setPolarity, value)
 
+    @property
     @element
     def interpolation(self):
         """[Mythen3] Enable or disable interpolation. """
@@ -3521,6 +3522,7 @@ class Detector(CppDetectorApi):
     def interpolation(self, value):
         ut.set_using_dict(self.setInterpolation, value)
 
+    @property
     @element
     def pumpprobe(self):
         """[Mythen3] Enable or disable pump probe mode. """
@@ -3530,6 +3532,7 @@ class Detector(CppDetectorApi):
     def pumpprobe(self, value):
         ut.set_using_dict(self.setPumpProbe, value)
 
+    @property
     @element
     def apulse(self):
         """[Mythen3] Enable or disable analog pulsing. """
@@ -3539,7 +3542,7 @@ class Detector(CppDetectorApi):
     def apulse(self, value):
         ut.set_using_dict(self.setAnalogPulsing, value)
 
-
+    @property
     @element
     def dpulse(self):
         """[Mythen3] Enable or disable digital pulsing. """

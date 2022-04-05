@@ -158,10 +158,10 @@ int getInterpolation() {
     return ((chipStatusRegister & CSR_interp_MSK) >> CSR_interp);
 }
 
-int setInterpolation(int mask) {
-    LOG(logINFO, ("%s Interpolation\n", mask == 0 ? "Disabling" : "Enabling"));
+int setInterpolation(int enable) {
+    LOG(logINFO, ("%s Interpolation\n", enable == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
-    if (mask)
+    if (enable)
         csr = chipStatusRegister | CSR_interp_MSK;
     else
         csr = chipStatusRegister & ~CSR_interp_MSK;
@@ -176,10 +176,10 @@ int getPumpProbe() {
     return ((chipStatusRegister & CSR_pumprobe_MSK) >> CSR_pumprobe);
 }
 
-int setPumpProbe(int mask) {
-    LOG(logINFO, ("%s Pump Probe\n", mask == 0 ? "Disabling" : "Enabling"));
+int setPumpProbe(int enable) {
+    LOG(logINFO, ("%s Pump Probe\n", enable == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
-    if (mask)
+    if (enable)
         csr = chipStatusRegister | CSR_pumprobe_MSK;
     else
         csr = chipStatusRegister & ~CSR_pumprobe_MSK;
@@ -191,11 +191,11 @@ int getDigitalPulsing() {
     return ((chipStatusRegister & CSR_dpulse_MSK) >> CSR_dpulse);
 }
 
-int setDigitalPulsing(int mask) {
+int setDigitalPulsing(int enable) {
     LOG(logINFO,
-        ("%s Digital Pulsing\n", mask == 0 ? "Disabling" : "Enabling"));
+        ("%s Digital Pulsing\n", enable == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
-    if (mask)
+    if (enable)
         csr = chipStatusRegister | CSR_dpulse_MSK;
     else
         csr = chipStatusRegister & ~CSR_dpulse_MSK;
@@ -207,10 +207,10 @@ int getAnalogPulsing() {
     return ((chipStatusRegister & CSR_apulse_MSK) >> CSR_apulse);
 }
 
-int setAnalogPulsing(int mask) {
-    LOG(logINFO, ("%s Analog Pulsing\n", mask == 0 ? "Disabling" : "Enabling"));
+int setAnalogPulsing(int enable) {
+    LOG(logINFO, ("%s Analog Pulsing\n", enable == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
-    if (mask)
+    if (enable)
         csr = chipStatusRegister | CSR_apulse_MSK;
     else
         csr = chipStatusRegister & ~CSR_apulse_MSK;
@@ -222,11 +222,11 @@ int getNegativePolarity() {
     return ((chipStatusRegister & CSR_invpol_MSK) >> CSR_invpol);
 }
 
-int setNegativePolarity(int mask) {
+int setNegativePolarity(int enable) {
     LOG(logINFO,
-        ("%s Negative Polarity\n", mask == 0 ? "Disabling" : "Enabling"));
+        ("%s Negative Polarity\n", enable == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
-    if (mask)
+    if (enable)
         csr = chipStatusRegister | CSR_invpol_MSK;
     else
         csr = chipStatusRegister & ~CSR_invpol_MSK;

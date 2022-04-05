@@ -122,7 +122,7 @@ int ClientInterface::functionTable(){
 	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&ClientInterface::get_last_client_ip;
 	flist[F_GET_RECEIVER_VERSION]			=	&ClientInterface::get_version;
 	flist[F_SETUP_RECEIVER]				    =	&ClientInterface::setup_receiver;
-	flist[F_RECEIVER_SET_ROI]				=	&ClientInterface::set_roi;
+	flist[F_RECEIVER_SET_DETECTOR_ROI]		=	&ClientInterface::set_detector_roi;
 	flist[F_RECEIVER_SET_NUM_FRAMES]        =   &ClientInterface::set_num_frames;  
 	flist[F_SET_RECEIVER_NUM_TRIGGERS]      =   &ClientInterface::set_num_triggers;           
 	flist[F_SET_RECEIVER_NUM_BURSTS]        =   &ClientInterface::set_num_bursts;         
@@ -455,7 +455,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
     }
     if (detType == GOTTHARD) {
         try {
-            impl()->setROI(arg.roi);
+            impl()->setDetectorROI(arg.roi);
         } catch (const RuntimeError &e) {
             throw RuntimeError("Could not set ROI");
         }
@@ -518,16 +518,16 @@ void ClientInterface::setDetectorType(detectorType arg) {
     impl()->setThreadIds(parentThreadId, tcpThreadId);
 }
 
-int ClientInterface::set_roi(Interface &socket) {
+int ClientInterface::set_detector_roi(Interface &socket) {
     auto arg = socket.Receive<ROI>();
-    LOG(logDEBUG1) << "Set ROI: [" << arg.xmin << ", " << arg.xmax << "]";
+    LOG(logDEBUG1) << "Set Detector ROI: [" << arg.xmin << ", " << arg.xmax << "]";
 
     if (detType != GOTTHARD)
         functionNotImplemented();
 
     verifyIdle(socket);
     try {
-        impl()->setROI(arg);
+        impl()->setDetectorROI(arg);
     } catch (const RuntimeError &e) {
         throw RuntimeError("Could not set ROI");
     }

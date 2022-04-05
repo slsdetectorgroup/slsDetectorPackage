@@ -19,7 +19,7 @@ const std::string DataStreamer::TypeName = "DataStreamer";
 DataStreamer::DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi,
                            bool fr, slsDetectorDefs::xy nm, bool *qe,
                            uint64_t *tot)
-    : ThreadObject(ind, TypeName), fifo(f), dynamicRange(dr), roi(r),
+    : ThreadObject(ind, TypeName), fifo(f), dynamicRange(dr), detectorRoi(r),
       fileIndex(fi), flipRows(fr), quadEnable(qe), totalNumFrames(tot) {
     numMods.x = nm.x;
     numMods.y = nm.y;
@@ -44,8 +44,8 @@ void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
         delete[] completeBuffer;
         completeBuffer = nullptr;
     }
-    if (generalData->myDetectorType == GOTTHARD && roi->xmin != -1) {
-        adcConfigured = generalData->GetAdcConfigured(index, *roi);
+    if (generalData->myDetectorType == GOTTHARD && detectorRoi->xmin != -1) {
+        adcConfigured = generalData->GetAdcConfigured(index, *detectorRoi);
         completeBuffer = new char[generalData->imageSizeComplete];
         memset(completeBuffer, 0, generalData->imageSizeComplete);
     }

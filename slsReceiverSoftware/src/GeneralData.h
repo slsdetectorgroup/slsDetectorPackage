@@ -71,7 +71,7 @@ class GeneralData {
 
     void ThrowGenericError(std::string msg) const {
         throw sls::RuntimeError(
-            msg + std::string("SetROI is a generic function that should be "
+            msg + std::string("This is a generic function that should be "
                               "overloaded by a derived class"));
     }
 
@@ -95,8 +95,8 @@ class GeneralData {
         bunchId = -1;
     }
 
-    virtual void SetROI(slsDetectorDefs::ROI i) {
-        ThrowGenericError("SetROI");
+    virtual void SetDetectorROI(slsDetectorDefs::ROI i) {
+        ThrowGenericError("SetDetectorROI");
     };
 
     /**@returns adc configured */
@@ -247,7 +247,7 @@ class GotthardData : public GeneralData {
         return oddStartingPacket;
     };
 
-    void SetROI(slsDetectorDefs::ROI i) {
+    void SetDetectorROI(slsDetectorDefs::ROI i) {
         roi = i;
         UpdateImageSize();
     };

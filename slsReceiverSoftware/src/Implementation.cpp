@@ -792,7 +792,7 @@ void Implementation::StartMasterWriter() {
             for (auto &i : ctbDbitList) {
                 masterAttributes.dbitlist |= (1 << i);
             }
-            masterAttributes.roi = roi;
+            masterAttributes.detectorRoi = detectorRoi;
             masterAttributes.counterMask = counterMask;
             masterAttributes.exptimeArray[0] = acquisitionTime1;
             masterAttributes.exptimeArray[1] = acquisitionTime2;
@@ -930,7 +930,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         nm.y = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, flip,
+                        i, fifo[i].get(), &dynamicRange, &detectorRoi, &fileIndex, flip,
                         nm, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
@@ -1060,7 +1060,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         nm.y = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, flip,
+                        i, fifo[i].get(), &dynamicRange, &detectorRoi, &fileIndex, flip,
                         nm, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
@@ -1425,20 +1425,20 @@ void Implementation::setDynamicRange(const uint32_t i) {
     LOG(logINFO) << "Dynamic Range: " << dynamicRange;
 }
 
-slsDetectorDefs::ROI Implementation::getROI() const { return roi; }
+slsDetectorDefs::ROI Implementation::getROI() const { return detectorRoi; }
 
-void Implementation::setROI(slsDetectorDefs::ROI arg) {
-    if (roi.xmin != arg.xmin || roi.xmax != arg.xmax) {
-        roi.xmin = arg.xmin;
-        roi.xmax = arg.xmax;
+void Implementation::setDetectorROI(slsDetectorDefs::ROI arg) {
+    if (detectorRoi.xmin != arg.xmin || detectorRoi.xmax != arg.xmax) {
+        detectorRoi.xmin = arg.xmin;
+        detectorRoi.xmax = arg.xmax;
 
         // only for gotthard
-        generalData->SetROI(arg);
+        generalData->SetDetectorROI(arg);
         framesPerFile = generalData->maxFramesPerFile;
         SetupFifoStructure();
     }
 
-    LOG(logINFO) << "ROI: [" << roi.xmin << ", " << roi.xmax << "]";
+    LOG(logINFO) << "Detector ROI: [" << detectorRoi.xmin << ", " << detectorRoi.xmax << "]";
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 

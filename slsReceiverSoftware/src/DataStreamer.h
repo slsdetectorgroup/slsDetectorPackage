@@ -30,7 +30,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param ind self index
      * @param f address of Fifo pointer
      * @param dr pointer to dynamic range
-     * @param r roi
+     * @param r detectorRoi
      * @param fi pointer to file index
      * @param fr flip rows
      * @param nm number of modules in each dimension
@@ -159,7 +159,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t *dynamicRange;
 
     /** ROI */
-    ROI *roi;
+    ROI *detectorRoi;
 
     /** adc Configured */
     int adcConfigured{-1};
@@ -192,7 +192,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     /* File name to stream */
     std::string fileNametoStream;
 
-    /** Complete buffer used for roi, eg. shortGotthard */
+    /** Complete buffer used for detectorRoi, eg. shortGotthard */
     char *completeBuffer{nullptr};
 
     /** Number of Modules in X and Y dimension */

@@ -343,14 +343,14 @@ void MasterAttributes::WriteHDF5ROI(H5File *fd, Group *group) {
         DataSpace dataspace = DataSpace(H5S_SCALAR);
         DataSet dataset =
             group->createDataSet("roi xmin", PredType::NATIVE_INT, dataspace);
-        dataset.write(&roi.xmin, PredType::NATIVE_INT);
+        dataset.write(&detectorRoi.xmin, PredType::NATIVE_INT);
     }
     // Roi xmax
     {
         DataSpace dataspace = DataSpace(H5S_SCALAR);
         DataSet dataset =
             group->createDataSet("roi xmax", PredType::NATIVE_INT, dataspace);
-        dataset.write(&roi.xmax, PredType::NATIVE_INT);
+        dataset.write(&detectorRoi.xmax, PredType::NATIVE_INT);
     }
 }
 
@@ -534,7 +534,7 @@ void MasterAttributes::GetGotthardBinaryAttributes(
     w->Key("Period");
     w->String(sls::ToString(period).c_str());
     w->Key("Roi (xmin, xmax)");
-    w->String(sls::ToString(roi).c_str());
+    w->String(sls::ToString(detectorRoi).c_str());
 };
 
 #ifdef HDF5C

@@ -54,7 +54,7 @@ class MasterAttributes {
     uint32_t digitalSamples{0};
     uint32_t dbitoffset{0};
     uint64_t dbitlist{0};
-    slsDetectorDefs::ROI roi{};
+    slsDetectorDefs::ROI detectorRoi{};
     uint32_t counterMask{0};
     std::array<ns, 3> exptimeArray{};
     std::array<ns, 3> gateDelayArray{};

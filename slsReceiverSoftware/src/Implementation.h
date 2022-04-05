@@ -204,7 +204,7 @@ class Implementation : private virtual slsDetectorDefs {
     void setDynamicRange(const uint32_t i);
     ROI getROI() const;
     /* [Gotthard] */
-    void setROI(ROI arg);
+    void setDetectorROI(ROI arg);
     bool getTenGigaEnable() const;
     /* [Eiger][Ctb] */
     void setTenGigaEnable(const bool b);
@@ -351,7 +351,7 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t numberOfDigitalSamples{0};
     uint32_t counterMask{0};
     uint32_t dynamicRange{16};
-    ROI roi{};
+    ROI detectorRoi{};
     bool tengigaEnable{false};
     bool flipRows{false};
     bool quadEnable{false};

@@ -1785,19 +1785,6 @@ class Detector {
      * Function! */
     void rebootController(Positions pos = {});
 
-    /** [[deprecated ("Replaced by overloaded updateDetectorServer, which does
-     * not require tftp and has one less argument")]] Advanced user Function!\n
-     * [Jungfrau][Gotthard][CTB][Moench] Updates the firmware, detector server,
-     * make a soft link and then reboots detector controller. \n
-     * [Mythen3][Gotthard2] Will require a script to start up the shorter named
-     * server link at start up \n sname is name of detector server binary found
-     * on tftp folder of host pc \n hostname is name of pc to tftp from \n fname
-     * is programming file name with full path to it
-     */
-    void updateFirmwareAndServer(const std::string &sname,
-                                 const std::string &hostname,
-                                 const std::string &fname, Positions pos = {});
-
     /**
      * Advanced user Function!\n [Jungfrau][Gotthard][CTB][Moench] Updates the
      * firmware, detector server, make a soft link and then reboots detector

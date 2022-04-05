@@ -2264,16 +2264,6 @@ void Detector::rebootController(Positions pos) {
 }
 
 void Detector::updateFirmwareAndServer(const std::string &sname,
-                                       const std::string &hostname,
-                                       const std::string &fname,
-                                       Positions pos) {
-    LOG(logINFO) << "Updating Firmware and Detector Server (with tftp)...";
-    LOG(logINFO) << "Updating Detector Server (via tftp)...";
-    pimpl->Parallel(&Module::copyDetectorServer, pos, sname, hostname);
-    programFPGA(fname, false, pos);
-}
-
-void Detector::updateFirmwareAndServer(const std::string &sname,
                                        const std::string &fname,
                                        Positions pos) {
     LOG(logINFO) << "Updating Firmware and Detector Server (no tftp)...";

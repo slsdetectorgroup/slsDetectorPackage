@@ -315,4 +315,9 @@ void init_enums(py::module &m) {
         .value("FIX_G2", slsDetectorDefs::gainMode::FIX_G2)
         .value("FIX_G0", slsDetectorDefs::gainMode::FIX_G0)
         .export_values();
+
+    py::enum_<slsDetectorDefs::polarity>(Defs, "polarity")
+        .value("POSITIVE", slsDetectorDefs::polarity::POSITIVE)
+        .value("NEGATIVE", slsDetectorDefs::polarity::NEGATIVE)
+        .export_values();
 }

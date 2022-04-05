@@ -1831,7 +1831,7 @@ void Module::setROI(slsDetectorDefs::ROI arg) {
     }
     sendToDetector(F_SET_ROI, arg, nullptr);
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RECEIVER_SET_ROI, arg, nullptr);
+        sendToReceiver(F_RECEIVER_SET_DETECTOR_ROI, arg, nullptr);
     }
 }
 

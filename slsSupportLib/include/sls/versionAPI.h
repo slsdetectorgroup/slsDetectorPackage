@@ -2,7 +2,6 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 /** API versions */
 #define GITBRANCH "developer"
-
 #define APILIB 0x220405
 #define APIRECEIVER 0x220405
 #define APIGUI 0x220328

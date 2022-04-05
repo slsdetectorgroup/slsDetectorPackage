@@ -440,6 +440,71 @@ TEST_CASE("rx_arping", "[.cmd][.rx]") {
     }
 }
 
+TEST_CASE("rx_roi", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+        REQUIRE_THROWS(proxy.Call("rx_roi", {"0", "255"}, -1, PUT));
+    } else {
+        auto prev_val = det.getRxROI();
+        
+        // 1d
+        if (det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2  || det_type == defs::MYTHEN3) {
+            {
+                std::ostringstream oss;
+                proxy.Call("rx_roi", {"0", "255"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [0, 255]\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("rx_roi", {"256", "511"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [256, 511]\n");
+            }
+            REQUIRE_THROWS(proxy.Call("rx_roi", {"0", "256"}, -1, PUT));
+        } 
+        // 2d
+        else {
+            {
+                std::ostringstream oss;
+                proxy.Call("rx_roi", {"0", "255", "0", "255"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [0, 255, 0, 255]\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("rx_roi", {"5", "255", "5", "255"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [5, 255, 5, 255]\n");
+            }
+            REQUIRE_THROWS(proxy.Call("rx_roi", {"-1", "256"}, -1, PUT));
+        } 
+        
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxROI(prev_val[i], i);
+        }
+    }
+}
+
+TEST_CASE("rx_clearroi", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+        REQUIRE_THROWS(proxy.Call("rx_clearroi", {}, -1, PUT));
+    } else {
+        auto prev_val = det.getRxROI();
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_clearroi", {}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_clearroi [-1, -1]\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxROI(prev_val[i], i);
+        }
+    } 
+}
+
 /* File */
 
 TEST_CASE("fformat", "[.cmd]") {

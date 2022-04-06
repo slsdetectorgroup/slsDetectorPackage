@@ -129,7 +129,7 @@ int64_t Receiver::getReceiverVersion() {
 }
 
 void Receiver::registerCallBackStartAcquisition(
-    int (*func)(std::string, std::string, uint64_t, size_t, void *),
+    int (*func)(const std::string &, const std::string &, uint64_t, size_t, void *),
     void *arg) {
     tcpipInterface->registerCallBackStartAcquisition(func, arg);
 }

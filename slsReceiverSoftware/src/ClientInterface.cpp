@@ -55,7 +55,7 @@ int64_t ClientInterface::getReceiverVersion() { return APIRECEIVER; }
 
 /***callback functions***/
 void ClientInterface::registerCallBackStartAcquisition(
-    int (*func)(std::string, std::string, uint64_t, size_t, void *),
+    int (*func)(const std::string &, const std::string &, uint64_t, size_t, void *),
     void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;

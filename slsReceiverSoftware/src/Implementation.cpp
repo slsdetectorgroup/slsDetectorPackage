@@ -1627,7 +1627,7 @@ void Implementation::setDbitOffset(const int s) { ctbDbitOffset = s; }
  *                                                *
  * ************************************************/
 void Implementation::registerCallBackStartAcquisition(
-    int (*func)(std::string, std::string, uint64_t, size_t, void *),
+    int (*func)(const std::string &, const std::string &, uint64_t, size_t, void *),
     void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;

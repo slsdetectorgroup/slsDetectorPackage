@@ -51,7 +51,7 @@ void printHelp() {
  * if registerCallBackRawDataReady or registerCallBackRawDataModifyReady registered,
  * users get data
  */
-int StartAcq(std::string filePath, std::string fileName, uint64_t fileIndex,
+int StartAcq(const std::string & filePath, const std::string & fileName, uint64_t fileIndex,
              size_t imageSize, void *objectPointer) {
     LOG(logINFOBLUE) << "#### StartAcq:  filePath:" << filePath
                      << "  fileName:" << fileName << " fileIndex:" << fileIndex

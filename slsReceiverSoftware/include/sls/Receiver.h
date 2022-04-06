@@ -48,7 +48,7 @@ class Receiver : private virtual slsDetectorDefs {
      * - file index
      * - image size in bytes
      */
-    void registerCallBackStartAcquisition(int (*func)(std::string, std::string,
+    void registerCallBackStartAcquisition(int (*func)(const std::string &, const std::string &,
                                                       uint64_t, size_t, void *),
                                           void *arg);
 

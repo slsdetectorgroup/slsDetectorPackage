@@ -39,16 +39,14 @@ class Receiver : private virtual slsDetectorDefs {
     int64_t getReceiverVersion();
 
     /**
-     * Call back for start acquisition
-     * callback arguments are
-     * filepath
-     * filename
-     * fileindex
-     * datasize
-     *
-     * return value is undefined at the moment
-     * we write depending on file write enable
-     * users get data to write depending on call backs registered
+     * Start Acquisition Call back (slsMultiReceiver writes data if file write enabled)
+     * if registerCallBackRawDataReady or registerCallBackRawDataModifyReady registered,
+     * users get data
+     * callback arguments are:
+     * - file path
+     * - file name prefix
+     * - file index
+     * - image size in bytes
      */
     void registerCallBackStartAcquisition(int (*func)(std::string, std::string,
                                                       uint64_t, size_t, void *),
@@ -56,18 +54,18 @@ class Receiver : private virtual slsDetectorDefs {
 
     /**
      * Call back for acquisition finished
-     * callback argument is
-     * total frames caught
+     * callback argument is:
+     * - total frames caught
      */
     void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
                                              void *arg);
 
     /**
      * Call back for raw data
-     * args to raw data ready callback are
-     * sls_receiver_header frame metadata,
-     * dataPointer is the pointer to the data,
-     * dataSize in bytes is the size of the data in bytes.
+     * args to raw data ready callback are:
+     * - sls_receiver_header frame metadata,
+     * - pointer to data
+     * - image size in bytes 
      */
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
                                                    char *, size_t, void *),
@@ -75,12 +73,12 @@ class Receiver : private virtual slsDetectorDefs {
 
     /**
      * Call back for raw data (modified)
-     * args to raw data ready callback are
-     * sls_receiver_header frame metadata,
-     * dataPointer is the pointer to the data,
-     * revDatasize is the reference of data size in bytes.
+     * args to raw data ready callback are:
+     * - sls_receiver_header frame metadata,
+     * - pointer to data
+     * - revDatasize is the reference of data size in bytes.
      * Can be modified to the new size to be written/streamed. (only smaller
-     * value).
+     * value allowed).
      */
     void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
                                                          char *, size_t &,

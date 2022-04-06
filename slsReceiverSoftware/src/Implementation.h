@@ -252,14 +252,18 @@ class Implementation : private virtual slsDetectorDefs {
      *    Callbacks                                   *
      *                                                *
      * ************************************************/
+    /** params: file path, file name, file index, image size */
     void registerCallBackStartAcquisition(int (*func)(std::string, std::string,
                                                       uint64_t, size_t, void *),
                                           void *arg);
+    /** params: total frames caught */
     void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
                                              void *arg);
+    /** params: sls_receiver_header pointer, pointer to data, image size */
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
                                                    char *, size_t, void *),
                                       void *arg);
+    /** params: sls_receiver_header pointer, pointer to data, reference to image size */
     void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
                                                          char *, size_t &,
                                                          void *),

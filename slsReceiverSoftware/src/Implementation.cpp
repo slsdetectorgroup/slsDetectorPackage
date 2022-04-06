@@ -523,7 +523,7 @@ void Implementation::startReceiver() {
     // callbacks
     if (startAcquisitionCallBack) {
         try {
-            std::size_t imageSize = static_cast<uint32_t>(generalData->imageSize + generalData->fifoBufferHeaderSize);
+            std::size_t imageSize = static_cast<uint32_t>(generalData->imageSize);
             startAcquisitionCallBack(
                 filePath, fileName, fileIndex, imageSize,
                 pStartAcquisition);

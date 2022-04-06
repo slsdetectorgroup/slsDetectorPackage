@@ -30,7 +30,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int64_t getReceiverVersion();
 
     //***callback functions***
-    /** params: filepath, filename, fileindex, datasize */
+    /** params: file path, file name, file index, image size */
     void registerCallBackStartAcquisition(int (*func)(std::string, std::string,
                                                       uint64_t, size_t, void *),
                                           void *arg);
@@ -39,13 +39,12 @@ class ClientInterface : private virtual slsDetectorDefs {
     void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
                                              void *arg);
 
-    /** params: sls_receiver_header frame metadata, dataPointer, dataSize */
+    /** params: sls_receiver_header pointer, pointer to data, image size */
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
                                                    char *, size_t, void *),
                                       void *arg);
 
-    /** params: sls_receiver_header frame metadata, dataPointer, modified size
-     */
+    /** params: sls_receiver_header pointer, pointer to data, reference to image size */
     void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
                                                          char *, size_t &,
                                                          void *),

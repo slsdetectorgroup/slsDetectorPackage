@@ -523,10 +523,9 @@ void Implementation::startReceiver() {
     // callbacks
     if (startAcquisitionCallBack) {
         try {
+            std::size_t imageSize = static_cast<uint32_t>(generalData->imageSize + generalData->fifoBufferHeaderSize);
             startAcquisitionCallBack(
-                filePath, fileName, fileIndex,
-                (size_t)((generalData->imageSize) +
-                         (generalData->fifoBufferHeaderSize)),
+                filePath, fileName, fileIndex, imageSize,
                 pStartAcquisition);
         } catch (const std::exception &e) {
             throw sls::RuntimeError("Start Acquisition Callback Error: " +

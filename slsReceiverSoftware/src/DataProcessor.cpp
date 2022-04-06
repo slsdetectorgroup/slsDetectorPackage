@@ -316,7 +316,7 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
     try {
         // normal call back
         if (rawDataReadyCallBack != nullptr) {
-            size_t dsize = (uint32_t)(*((uint32_t *)buf));
+            std::size_t dsize = *reinterpret_cast<uint32_t*>(buf);
             rawDataReadyCallBack(rheader,
                                  buf + FIFO_HEADER_NUMBYTES +
                                      sizeof(sls_receiver_header),
@@ -325,7 +325,7 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
 
         // call back with modified size
         else if (rawDataModifyReadyCallBack != nullptr) {
-            size_t revsize = (uint32_t)(*((uint32_t *)buf));
+            std::size_t revsize = *reinterpret_cast<uint32_t*>(buf);
             rawDataModifyReadyCallBack(rheader,
                                        buf + FIFO_HEADER_NUMBYTES +
                                            sizeof(sls_receiver_header),

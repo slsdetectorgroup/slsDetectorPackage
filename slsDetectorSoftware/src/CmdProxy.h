@@ -906,7 +906,7 @@ class CmdProxy {
         {"rx_lastclient", &CmdProxy::rx_lastclient},
         {"rx_threads", &CmdProxy::rx_threads},
         {"rx_arping", &CmdProxy::rx_arping},
-        {"rx_roi", &CmdProxy::rx_roi},
+        {"rx_roi", &CmdProxy::Rx_ROI},
         {"rx_clearroi", &CmdProxy::rx_clearroi},
 
         /* File */
@@ -963,7 +963,7 @@ class CmdProxy {
 
         /* Gotthard Specific */
         {"roi", &CmdProxy::ROI},
-        {"clearroi", &CmdProxy::ClearROI},
+        {"clearroi", &CmdProxy::clearroi},
         {"exptimel", &CmdProxy::exptimel},
 
         /* Gotthard2 Specific */
@@ -1144,6 +1144,7 @@ class CmdProxy {
     std::string UDPDestinationIP2(int action);
     /* Receiver Config */
     std::string ReceiverHostname(int action);
+    std::string Rx_ROI(int action);
     /* File */
     /* ZMQ Streaming Parameters (Receiver<->Client) */
     std::string ZMQHWM(int action);
@@ -1158,7 +1159,6 @@ class CmdProxy {
     std::string TemperatureEvent(int action);
     /* Gotthard Specific */
     std::string ROI(int action);
-    std::string ClearROI(int action);
     /* Gotthard2 Specific */
     std::string InjectChannel(int action);
     std::string VetoPhoton(int action);
@@ -1761,13 +1761,17 @@ class CmdProxy {
                            "the interface it is "
                            "listening to every minute. Useful in 10G mode.");
 
+    EXECUTE_SET_COMMAND(rx_clearroi, ClearRxROI,
+                        "Resets Region of interest in receiver. Default is all "
+                        "channels/pixels enabled.");
+
     /* File */
 
-    INTEGER_COMMAND_VEC_ID(
-        fformat, getFileFormat, setFileFormat,
-        sls::StringTo<slsDetectorDefs::fileFormat>,
-        "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be "
-        "compiled with HDF5 flags. Default is binary.");
+    INTEGER_COMMAND_VEC_ID(fformat, getFileFormat, setFileFormat,
+                           sls::StringTo<slsDetectorDefs::fileFormat>,
+                           "[binary|hdf5]\n\tFile format of data file. For "
+                           "HDF5, package must be "
+                           "compiled with HDF5 flags. Default is binary.");
 
     STRING_COMMAND(fpath, getFilePath, setFilePath,
                    "[path]\n\tDirectory where output data files are written in "
@@ -1995,6 +1999,10 @@ class CmdProxy {
     TIME_GET_COMMAND(exptimel, getExptimeLeft,
                      "[(optional unit) ns|us|ms|s]\n\t[Gotthard] Exposure time "
                      "left for current frame. ");
+
+    EXECUTE_SET_COMMAND(clearroi, clearROI,
+                        "[Gotthard] Resets Region of interest in detector. All "
+                        "channels enabled. Default is all channels enabled.");
 
     /* Gotthard2 Specific */
     INTEGER_COMMAND_SET_NOID_GET_ID(

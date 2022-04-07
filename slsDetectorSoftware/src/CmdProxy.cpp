@@ -1077,7 +1077,7 @@ std::string CmdProxy::Dac(int action) {
             WrongNumberOfParameters(1); // This prints slightly wrong
 
         defs::dacIndex dacIndex{};
-        //TODO! Remove if
+        // TODO! Remove if
         if (type == defs::CHIPTESTBOARD && !is_int(args[0])) {
             dacIndex = det->getDacIndex(args[0]);
         } else {
@@ -1147,7 +1147,8 @@ std::string CmdProxy::DacList(const int action) {
                                     "names. Cannot change them.");
         }
         if (det_id != -1) {
-            throw sls::RuntimeError("Cannot configure dacnames at module level");
+            throw sls::RuntimeError(
+                "Cannot configure dacnames at module level");
         }
         if (args.size() != 18) {
             WrongNumberOfParameters(18);
@@ -1641,6 +1642,40 @@ std::string CmdProxy::ReceiverHostname(int action) {
     }
     return os.str();
 }
+
+std::string CmdProxy::RxROI(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in "
+              "receiver.\n\t Can only have a single multi module roi that can "
+              "also be broken down to 0 or 1 ROIs per module."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getRxROI(std::vector<int>{det_id});
+        // combine it into a single multi roi?
+        os << t << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        // OR allow only at multi module level?
+        if (det_id == -1 && det->size() > 1) {
+            throw sls::RuntimeError("Cannot execute ROI at multi module level");
+        }
+        // 2 or 4 arguments
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }
+        defs::RxROI t(StringTo<int>(args[0]), StringTo<int>(args[1]));
+        det->setROI(t, det_id);
+        os << t << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* File */
 
 /* ZMQ Streaming Parameters (Receiver<->Client) */
@@ -1893,9 +1928,7 @@ std::string CmdProxy::ROI(int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getROI(std::vector<int>{det_id});
-        for (auto &it : t) {
-            os << '[' << it.xmin << ", " << it.xmax << "] \n";
-        }
+        os << t << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id == -1 && det->size() > 1) {
             throw sls::RuntimeError("Cannot execute ROI at multi module level");
@@ -1905,28 +1938,7 @@ std::string CmdProxy::ROI(int action) {
         }
         defs::ROI t(StringTo<int>(args[0]), StringTo<int>(args[1]));
         det->setROI(t, det_id);
-        os << '[' << t.xmin << ", " << t.xmax << "]\n";
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
-std::string CmdProxy::ClearROI(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "\n\t[Gotthard] Resets Region of interest in detector. All "
-              "channels enabled. Default is all channels enabled."
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
-    } else if (action == defs::PUT_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        det->clearROI(std::vector<int>{det_id});
-        os << "[-1, -1]\n";
+        os << t << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }
@@ -1940,7 +1952,8 @@ std::string CmdProxy::InjectChannel(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[offset] [increment]\n\t[Gotthard2] Inject channels with "
-              "current source for calibration. Offset is starting channel that "
+              "current source for calibration. Offset is starting channel "
+              "that "
               "is injected, increment determines succeeding channels to be "
               "injected."
            << '\n';
@@ -1968,9 +1981,12 @@ std::string CmdProxy::VetoPhoton(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[ichip] [#photons] [energy in keV] [reference "
-              "file]\n\t[Gotthard2] Set veto reference for 128 channels for "
-              "chip ichip according to reference file and #photons and energy "
-              "in keV.\n[ichip] [output file]\n\t Get gain indices and veto "
+              "file]\n\t[Gotthard2] Set veto reference for 128 channels "
+              "for "
+              "chip ichip according to reference file and #photons and "
+              "energy "
+              "in keV.\n[ichip] [output file]\n\t Get gain indices and "
+              "veto "
               "reference for 128 channels for chip ichip, saved to file."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2020,9 +2036,11 @@ std::string CmdProxy::VetoFile(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[chip index 0-10, -1 for all] [file name] \n\t[Gotthard2] Set "
+        os << "[chip index 0-10, -1 for all] [file name] \n\t[Gotthard2] "
+              "Set "
               "veto reference for each 128 channels for specific chip. The "
-              "file should have 128 rows of gain index and 12 bit value in dec"
+              "file should have 128 rows of gain index and 12 bit value in "
+              "dec"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError(
@@ -2044,8 +2062,10 @@ std::string CmdProxy::BurstMode(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[burst_internal or 0, burst_external or 1, cw_internal or 2, "
-              "cw_external or 3]\n\t[Gotthard2] Default is burst_internal type"
+        os << "[burst_internal or 0, burst_external or 1, cw_internal or "
+              "2, "
+              "cw_external or 3]\n\t[Gotthard2] Default is burst_internal "
+              "type"
            << '\n';
     } else {
         if (action == defs::GET_ACTION) {
@@ -2094,7 +2114,8 @@ std::string CmdProxy::VetoStreaming(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[none|lll|10gbe|...]\n\t[Gotthard2] Enable or disable the 2 "
-              "veto streaming interfaces available. Can include more than one "
+              "veto streaming interfaces available. Can include more than "
+              "one "
               "interface. \n\tDefault: none. lll (low latency link) is the "
               "default "
               "interface to work with. \n\t10GbE is for debugging and also "
@@ -2118,8 +2139,8 @@ std::string CmdProxy::VetoStreaming(int action) {
             if (arg == "none") {
                 if (args.size() > 1) {
                     throw sls::RuntimeError(
-                        std::string(
-                            "cannot have other arguments with 'none'. args: ") +
+                        std::string("cannot have other arguments with "
+                                    "'none'. args: ") +
                         ToString(args));
                 }
                 break;
@@ -2176,9 +2197,11 @@ std::string CmdProxy::ConfigureADC(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[chip index 0-10, -1 for all] [adc index 0-31, -1 for all] [12 "
+        os << "[chip index 0-10, -1 for all] [adc index 0-31, -1 for all] "
+              "[12 "
               "bit configuration value in hex]\n\t[Gotthard2] Sets "
-              "configuration for specific chip and adc, but configures 1 chip "
+              "configuration for specific chip and adc, but configures 1 "
+              "chip "
               "(all adcs for that chip) at a time."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2208,7 +2231,8 @@ std::string CmdProxy::BadChannels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Gotthard2] Sets the bad channels (from file of bad "
+        os << "[fname]\n\t[Gotthard2] Sets the bad channels (from file of "
+              "bad "
               "channel numbers) to be masked out."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2290,19 +2314,23 @@ std::string CmdProxy::GateDelay(int action) {
     if (action == defs::HELP_ACTION) {
         if (cmd == "gatedelay") {
             os << "[duration] [(optional unit) "
-                  "ns|us|ms|s]\n\t[Mythen3] Gate Delay of all gate signals in "
+                  "ns|us|ms|s]\n\t[Mythen3] Gate Delay of all gate signals "
+                  "in "
                   "auto and trigger mode (internal gating)."
                << '\n';
         } else if (cmd == "gatedelay1") {
-            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 1 in auto "
+            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 1 in "
+                  "auto "
                   "and trigger mode (internal gating)."
                << '\n';
         } else if (cmd == "gatedelay2") {
-            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 2 in auto "
+            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 2 in "
+                  "auto "
                   "and trigger mode (internal gating)."
                << '\n';
         } else {
-            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 3 in auto "
+            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 3 in "
+                  "auto "
                   "and trigger mode (internal gating)."
                << '\n';
         }
@@ -2356,7 +2384,8 @@ std::string CmdProxy::GainCaps(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[cap1, cap2, ...]\n\t[Mythen3] gain, options: C10pre, C15sh, "
+        os << "[cap1, cap2, ...]\n\t[Mythen3] gain, options: C10pre, "
+              "C15sh, "
               "C30sh, C50sh, C225ACsh, C15pre"
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2396,7 +2425,8 @@ std::string CmdProxy::Samples(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_samples]\n\t[CTB] Number of samples (both analog and "
-              "digitial) expected.\n\t[Moench] Number of samples (analog only)"
+              "digitial) expected.\n\t[Moench] Number of samples (analog "
+              "only)"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -2471,8 +2501,10 @@ std::string CmdProxy::ReceiverDbitList(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[all] or [i0] [i1] [i2]... \n\t[Ctb] List of digital signal "
-              "bits read out. If all is used instead of a list, all digital "
-              "bits (64) enabled. Each element in list can be 0 - 63 and must "
+              "bits read out. If all is used instead of a list, all "
+              "digital "
+              "bits (64) enabled. Each element in list can be 0 - 63 and "
+              "must "
               "be non repetitive."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2557,8 +2589,10 @@ std::string CmdProxy::PatternWord(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[step or address] [64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 "
-              "bit pattern at address of pattern memory.\n\t[Ctb][Moench] read "
+        os << "[step or address] [64 bit mask]\n\t[Ctb][Moench][Mythen3] "
+              "64 "
+              "bit pattern at address of pattern memory.\n\t[Ctb][Moench] "
+              "read "
               "is same as executing pattern"
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2589,19 +2623,23 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patlimits") {
-            os << "[start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] Limits "
+            os << "[start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] "
+                  "Limits "
                   "of complete pattern."
                << '\n';
         } else if (cmd == "patloop0") {
-            os << "[start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] Limits "
+            os << "[start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] "
+                  "Limits "
                   "of loop 0."
                << '\n';
         } else if (cmd == "patloop1") {
-            os << "[start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] Limits "
+            os << "[start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] "
+                  "Limits "
                   "of loop 1."
                << '\n';
         } else if (cmd == "patloop2") {
-            os << "[start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] Limits "
+            os << "[start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] "
+                  "Limits "
                   "of loop 2."
                << '\n';
         } else {
@@ -2651,15 +2689,18 @@ std::string CmdProxy::PatternLoopCycles(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patnloop0") {
-            os << "[n_cycles] \n\t[Ctb][Moench][Mythen3] Number of cycles of "
+            os << "[n_cycles] \n\t[Ctb][Moench][Mythen3] Number of cycles "
+                  "of "
                   "loop 0."
                << '\n';
         } else if (cmd == "patnloop1") {
-            os << "[n_cycles] \n\t[Ctb][Moench][Mythen3] Number of cycles of "
+            os << "[n_cycles] \n\t[Ctb][Moench][Mythen3] Number of cycles "
+                  "of "
                   "loop 1."
                << '\n';
         } else if (cmd == "patnloop2") {
-            os << "[n_cycles] \n\t[Ctb][Moench][Mythen3] Number of cycles of "
+            os << "[n_cycles] \n\t[Ctb][Moench][Mythen3] Number of cycles "
+                  "of "
                   "loop 2."
                << '\n';
         } else {
@@ -2803,10 +2844,13 @@ std::string CmdProxy::AdditionalJsonHeader(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[key1] [value1] [key2] [value2]...[keyn] [valuen]"
-              "\n\tAdditional json header to be streamed out from receiver via "
-              "zmq. Default is empty. Max 20 characters for each key/value. "
+              "\n\tAdditional json header to be streamed out from receiver "
+              "via "
+              "zmq. Default is empty. Max 20 characters for each "
+              "key/value. "
               "Use only if to be processed by an intermediate user process "
-              "listening to receiver zmq packets. Empty value deletes header. "
+              "listening to receiver zmq packets. Empty value deletes "
+              "header. "
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -2837,9 +2881,11 @@ std::string CmdProxy::JsonParameter(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[key1] [value1]\n\tAdditional json header parameter streamed "
+        os << "[key1] [value1]\n\tAdditional json header parameter "
+              "streamed "
               "out from receiver. If not found in header, the pair is "
-              "appended. An empty values deletes parameter. Max 20 characters "
+              "appended. An empty values deletes parameter. Max 20 "
+              "characters "
               "for each key/value."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2880,12 +2926,16 @@ std::string CmdProxy::ProgramFpga(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[fname.pof | fname.rbf (full "
-              "path)][(opitonal)--force-delete-normal-file]\n\t[Jungfrau][Ctb]["
-              "Moench] Programs FPGA from pof file (full path). Then, detector "
-              "controller is rebooted. \n\t\tUse --force-delete-normal-file "
+              "path)][(opitonal)--force-delete-normal-file]\n\t[Jungfrau]["
+              "Ctb]["
+              "Moench] Programs FPGA from pof file (full path). Then, "
+              "detector "
+              "controller is rebooted. \n\t\tUse "
+              "--force-delete-normal-file "
               "argument, if normal file found in device tree, it must be "
               "deleted, a new device drive created and programming "
-              "continued.\n\t[Mythen3][Gotthard2] Programs FPGA from rbf file "
+              "continued.\n\t[Mythen3][Gotthard2] Programs FPGA from rbf "
+              "file "
               "(full path). Then, detector controller is rebooted."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2919,11 +2969,14 @@ std::string CmdProxy::CopyDetectorServer(int action) {
                            "requires no tftp.\n";
         os << "[server_name (in tftp folder)] "
               "[pc_host_name]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3]["
-              "Gotthard2] Copies detector server via TFTP from pc. Ensure that "
-              "server is in the pc's tftp folder. Makes a symbolic link with a "
+              "Gotthard2] Copies detector server via TFTP from pc. Ensure "
+              "that "
+              "server is in the pc's tftp folder. Makes a symbolic link "
+              "with a "
               "shorter name (without vx.x.x). Then, detector controller "
               "reboots (except "
-              "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn server "
+              "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn "
+              "server "
               "to the link, which is effective after a reboot."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2946,10 +2999,12 @@ std::string CmdProxy::UpdateDetectorServer(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[server_name  with full "
               "path]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3]["
-              "Gotthard2] Copies detector server via TCP (without tftp). Makes "
+              "Gotthard2] Copies detector server via TCP (without tftp). "
+              "Makes "
               "a symbolic link with a shorter name (without vx.x.x). Then, "
               "detector controller reboots (except "
-              "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn server "
+              "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn "
+              "server "
               "to the link, which is effective after a reboot."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2972,7 +3027,8 @@ std::string CmdProxy::UpdateKernel(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[kernel_name with full "
               "path]\n\t[Jungfrau][Ctb][Moench][Mythen3]["
-              "Gotthard2] Advanced Command!! You could damage the detector. "
+              "Gotthard2] Advanced Command!! You could damage the "
+              "detector. "
               "Please use"
               " with caution.\n\tUpdates the kernel image. Then, detector "
               "controller "
@@ -2997,14 +3053,18 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "\n\tUsing tftp: Deprecated!! [server_name"
-              " (in tftp folder)] [pc_host_name] [fname.pof (incl full path)]"
+              " (in tftp folder)] [pc_host_name] [fname.pof (incl full "
+              "path)]"
               "\n\tWithout tftp: Recommended [server_name (incl fullpath)] "
               "[fname.pof (incl full path)] "
               "This does not use tftp."
               "\n\t\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
-              "firmware, detector server, creates the symbolic link and then "
-              "reboots detector controller. \n\t\t[Mythen3][Gotthard2] will "
-              "require a script to start up the shorter named server link at "
+              "firmware, detector server, creates the symbolic link and "
+              "then "
+              "reboots detector controller. \n\t\t[Mythen3][Gotthard2] "
+              "will "
+              "require a script to start up the shorter named server link "
+              "at "
               "start up. \n\t\tsname is full path name of detector server "
               "binary"
               "\n\t\tfname is full path of programming file"
@@ -3024,7 +3084,8 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
 
         if (args.size() == 3) {
             LOG(logWARNING)
-                << "Deprecated! Recommend to use same command without tftp (no "
+                << "Deprecated! Recommend to use same command without tftp "
+                   "(no "
                    "pc name) and using full path to the server binary";
             det->updateFirmwareAndServer(args[0], args[1], args[2],
                                          std::vector<int>{det_id});
@@ -3043,9 +3104,12 @@ std::string CmdProxy::Register(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[address] [32 bit value]\n\tReads/writes to a 32 bit register "
-              "in hex. Advanced Function!\n\tGoes to stop server. Hence, can "
-              "be called while calling blocking acquire(). \n\t[Eiger] +0x100 "
+        os << "[address] [32 bit value]\n\tReads/writes to a 32 bit "
+              "register "
+              "in hex. Advanced Function!\n\tGoes to stop server. Hence, "
+              "can "
+              "be called while calling blocking acquire(). \n\t[Eiger] "
+              "+0x100 "
               "for only left, +0x200 for only right."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -3073,7 +3137,8 @@ std::string CmdProxy::AdcRegister(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[address] [value]\n\t[Jungfrau][Ctb][Moench][Gotthard] Writes "
+        os << "[address] [value]\n\t[Jungfrau][Ctb][Moench][Gotthard] "
+              "Writes "
               "to an adc "
               "register in hex. Advanced user Function!"
            << '\n';
@@ -3101,7 +3166,8 @@ std::string CmdProxy::BitOperations(int action) {
             os << "[reg address in hex] [bit index]\n\tSets bit in address."
                << '\n';
         } else if (cmd == "clearbit") {
-            os << "[reg address in hex] [bit index]\n\tClears bit in address."
+            os << "[reg address in hex] [bit index]\n\tClears bit in "
+                  "address."
                << '\n';
         } else if (cmd == "getbit") {
             os << "[reg address in hex] [bit index]\n\tGets bit in address."
@@ -3153,7 +3219,8 @@ std::string CmdProxy::InitialChecks(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[0, 1]\n\tEnable or disable intial compatibility and other "
               "checks at detector start up. It is enabled by default. Must "
-              "come before 'hostname' command to take effect. Can be used to "
+              "come before 'hostname' command to take effect. Can be used "
+              "to "
               "reprogram fpga when current firmware is "
               "incompatible.\n\tAdvanced User function!"
            << '\n';
@@ -3210,7 +3277,8 @@ std::string CmdProxy::UserDetails(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\tUser details from shared memory (hostname, type, PID, User, "
+        os << "\n\tUser details from shared memory (hostname, type, PID, "
+              "User, "
               "Date)."
            << '\n';
     } else if (action == defs::GET_ACTION) {

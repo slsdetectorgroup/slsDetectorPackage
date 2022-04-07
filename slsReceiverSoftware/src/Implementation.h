@@ -252,17 +252,21 @@ class Implementation : private virtual slsDetectorDefs {
      *    Callbacks                                   *
      *                                                *
      * ************************************************/
-    void registerCallBackStartAcquisition(int (*func)(std::string, std::string,
-                                                      uint64_t, uint32_t,
-                                                      void *),
+    /** params: file path, file name, file index, image size */
+    void registerCallBackStartAcquisition(int (*func)(const std::string &, const std::string &,
+                                                      uint64_t, size_t, void *),
                                           void *arg);
+    /** params: total frames caught */
     void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
                                              void *arg);
-    void registerCallBackRawDataReady(void (*func)(char *, char *, uint32_t,
-                                                   void *),
+    /** params: sls_receiver_header pointer, pointer to data, image size */
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
+                                                   char *, size_t, void *),
                                       void *arg);
-    void registerCallBackRawDataModifyReady(void (*func)(char *, char *,
-                                                         uint32_t &, void *),
+    /** params: sls_receiver_header pointer, pointer to data, reference to image size */
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
+                                                         char *, size_t &,
+                                                         void *),
                                             void *arg);
 
   private:
@@ -369,13 +373,14 @@ class Implementation : private virtual slsDetectorDefs {
     int ctbDbitOffset{0};
 
     // callbacks
-    int (*startAcquisitionCallBack)(std::string, std::string, uint64_t,
-                                    uint32_t, void *){nullptr};
+    int (*startAcquisitionCallBack)(const std::string &, const std::string &, uint64_t, size_t,
+                                    void *){nullptr};
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(uint64_t, void *){nullptr};
     void *pAcquisitionFinished{nullptr};
-    void (*rawDataReadyCallBack)(char *, char *, uint32_t, void *){nullptr};
-    void (*rawDataModifyReadyCallBack)(char *, char *, uint32_t &,
+    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, size_t,
+                                 void *){nullptr};
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *, size_t &,
                                        void *){nullptr};
     void *pRawDataReady{nullptr};
 

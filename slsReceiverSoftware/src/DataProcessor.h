@@ -155,7 +155,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t *streamingTimerInMs_;
     uint32_t *streamingStartFnum_;
     uint32_t currentFreqCount_{0};
-    struct timespec timerbegin_;
+    struct timespec timerbegin_{};
     bool *framePadding_;
     std::vector<int> *ctbDbitList_;
     int *ctbDbitOffset_;

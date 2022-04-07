@@ -16,6 +16,17 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
+TEST_CASE("Calling help doesn't throw or cause segfault"){
+    //Dont add [.cmd] tag this should run with normal tests
+    CmdProxy proxy(nullptr);
+    auto commands = proxy.GetProxyCommands();
+    std::ostringstream os;
+    for (const auto &cmd : commands)
+        REQUIRE_NOTHROW(proxy.Call(cmd, {}, -1, slsDetectorDefs::HELP_ACTION, os));
+    
+    
+}
+
 TEST_CASE("Unknown command", "[.cmd]") {
 
     Detector det;

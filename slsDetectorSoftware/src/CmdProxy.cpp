@@ -1056,7 +1056,18 @@ std::string CmdProxy::TemperatureValues(int action) {
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;
     os << cmd << ' ';
+    
+    if (action == defs::HELP_ACTION) {
+        if (args.size() == 0) {
+            os << GetHelpDac(std::to_string(0)) << '\n';
+        } else {
+            os << args[0] << ' ' << GetHelpDac(args[0]) << '\n';
+        }
+        return os.str();
+    }
+
     auto type = det->getDetectorType().squash();
+
     // dac indices only for ctb
     if (args.size() > 0 && action != defs::HELP_ACTION) {
         if (is_int(args[0]) && type != defs::CHIPTESTBOARD) {
@@ -1066,13 +1077,7 @@ std::string CmdProxy::Dac(int action) {
         }
     }
 
-    if (action == defs::HELP_ACTION) {
-        if (args.size() == 0) {
-            os << GetHelpDac(std::to_string(0)) << '\n';
-        } else {
-            os << args[0] << ' ' << GetHelpDac(args[0]) << '\n';
-        }
-    } else if (action == defs::GET_ACTION) {
+    if (action == defs::GET_ACTION) {
         if (args.empty())
             WrongNumberOfParameters(1); // This prints slightly wrong
 

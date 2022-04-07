@@ -45,6 +45,7 @@ int main() {
 
     for (const auto &cmd : commands) {
         std::ostringstream os;
+        std::cout << cmd << '\n';
         proxy.Call(cmd, {}, -1, slsDetectorDefs::HELP_ACTION, os);
 
         auto tmp = os.str().erase(0, cmd.size());

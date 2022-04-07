@@ -1648,8 +1648,7 @@ std::string CmdProxy::RxROI(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in "
-              "receiver.\n\t Can only have a single multi module roi that can "
-              "also be broken down to 0 or 1 ROIs per module."
+              "receiver.\n\tOnly allowed at multi module level."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -1659,16 +1658,24 @@ std::string CmdProxy::RxROI(int action) {
         // combine it into a single multi roi?
         os << t << '\n';
     } else if (action == defs::PUT_ACTION) {
-        // OR allow only at multi module level?
-        if (det_id == -1 && det->size() > 1) {
-            throw sls::RuntimeError("Cannot execute ROI at multi module level");
-        }
+        defs::RxROI t;
         // 2 or 4 arguments
-        if (args.size() != 2) {
+        if (args.size() != 2 && args.size() != 4) {
             WrongNumberOfParameters(2);
         }
-        defs::RxROI t(StringTo<int>(args[0]), StringTo<int>(args[1]));
-        det->setROI(t, det_id);
+        if (args.size() == 2 || args.size() == 4) {
+            t.xmin = StringTo<int>(args[0]);
+            t.xmax = StringTo<int>(args[1]);
+        }
+        if (args.size() == 4) {
+            t.xmin = StringTo<int>(args[2]);
+            t.xmax = StringTo<int>(args[3]);
+        }
+        // only multi level
+        if (det_id != -1) {
+            throw RuntimeError("Cannot execute receiver ROI at module level");
+        }
+        det->setRxROI(t);
         os << t << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");

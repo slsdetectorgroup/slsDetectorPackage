@@ -5,9 +5,9 @@
 
 #include "CmdParser.h"
 #include "CmdProxy.h"
+#include "CtbConfig.h"
 #include "DetectorImpl.h"
 #include "Module.h"
-#include "CtbConfig.h"
 #include "sls/Pattern.h"
 #include "sls/container_utils.h"
 #include "sls/file_utils.h"
@@ -1226,6 +1226,12 @@ Result<bool> Detector::getRxArping(Positions pos) const {
 
 void Detector::setRxArping(bool value, Positions pos) {
     pimpl->Parallel(&Module::setRxArping, pos, value);
+}
+
+void Detector::setRxROI(defs::ROI value) { pimpl->setRxROI(value); }
+
+void Detector::clearRxROI(Positions pos) {
+    pimpl->Parallel(&Module::clearRxROI, pos);
 }
 
 // File

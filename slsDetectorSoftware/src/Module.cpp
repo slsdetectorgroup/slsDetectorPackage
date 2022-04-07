@@ -1404,6 +1404,17 @@ void Module::setRxArping(bool enable) {
     sendToReceiver(F_SET_RECEIVER_ARPING, static_cast<int>(enable), nullptr);
 }
 
+void Module::setRxROI(slsDetectorDefs::ROI arg) {
+    // for detectorimpl
+    /*if (arg.xmin < 0 || arg.xmax >= getNumberOfChannels().x || arg.ymin < 0 ||
+    arg.ymax >= getNumberOfChannels().y) { throw RuntimeError("Invalid Roi");
+    }
+    */
+    sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI, arg, nullptr);
+}
+
+void Module::clearRxROI() { setRxROI(slsDetectorDefs::ROI{}); }
+
 // File
 slsDetectorDefs::fileFormat Module::getFileFormat() const {
     return sendToReceiver<fileFormat>(F_GET_RECEIVER_FILE_FORMAT);

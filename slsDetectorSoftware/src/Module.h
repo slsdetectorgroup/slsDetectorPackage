@@ -290,6 +290,8 @@ class Module : public virtual slsDetectorDefs {
     std::array<pid_t, NUM_RX_THREAD_IDS> getReceiverThreadIds() const;
     bool getRxArping() const;
     void setRxArping(bool enable);
+    void setRxROI(slsDetectorDefs::ROI arg);
+    void clearRxROI();
 
     /**************************************************
      *                                                *

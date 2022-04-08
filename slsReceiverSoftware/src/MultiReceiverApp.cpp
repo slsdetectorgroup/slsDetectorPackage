@@ -47,32 +47,21 @@ void printHelp() {
 }
 
 /**
- * Start Acquisition Call back
- * slsReceiver writes data if file write enabled.
- * Users get data to write using call back if registerCallBackRawDataReady is
- * registered.
- * @param filepath file path
- * @param filename file name
- * @param fileindex file index
- * @param datasize data size in bytes
- * @param p pointer to object
- * \returns ignored
+ * Start Acquisition Call back (slsMultiReceiver writes data if file write enabled)
+ * if registerCallBackRawDataReady or registerCallBackRawDataModifyReady registered,
+ * users get data
  */
-int StartAcq(std::string filepath, std::string filename, uint64_t fileindex,
-             uint32_t datasize, void *p) {
-    LOG(logINFOBLUE) << "#### StartAcq:  filepath:" << filepath
-                     << "  filename:" << filename << " fileindex:" << fileindex
-                     << "  datasize:" << datasize << " ####";
+int StartAcq(const std::string & filePath, const std::string & fileName, uint64_t fileIndex,
+             size_t imageSize, void *objectPointer) {
+    LOG(logINFOBLUE) << "#### StartAcq:  filePath:" << filePath
+                     << "  fileName:" << fileName << " fileIndex:" << fileIndex
+                     << "  imageSize:" << imageSize << " ####";
     return 0;
 }
 
-/**
- * Acquisition Finished Call back
- * @param frames Number of frames caught
- * @param p pointer to object
- */
-void AcquisitionFinished(uint64_t frames, void *p) {
-    LOG(logINFOBLUE) << "#### AcquisitionFinished: frames:" << frames
+/** Acquisition Finished Call back */
+void AcquisitionFinished(uint64_t framesCaught, void *objectPointer) {
+    LOG(logINFOBLUE) << "#### AcquisitionFinished: framesCaught:" << framesCaught
                      << " ####";
 }
 
@@ -80,14 +69,9 @@ void AcquisitionFinished(uint64_t frames, void *p) {
  * Get Receiver Data Call back
  * Prints in different colors(for each receiver process) the different headers
  * for each image call back.
- * @param metadata sls_receiver_header metadata
- * @param datapointer pointer to data
- * @param datasize data size in bytes.
- * @param p pointer to object
  */
-void GetData(char *metadata, char *datapointer, uint32_t datasize, void *p) {
-    slsDetectorDefs::sls_receiver_header *header =
-        (slsDetectorDefs::sls_receiver_header *)metadata;
+void GetData(slsDetectorDefs::sls_receiver_header *header, char *dataPointer,
+             size_t imageSize, void *objectPointer) {
     slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
 
     PRINT_IN_COLOR(
@@ -98,7 +82,7 @@ void GetData(char *metadata, char *datapointer, uint32_t datasize, void *p) {
         "row: %u\t\tcolumn: %u\t\treserved: %u\t\tdebug: %u"
         "\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
         //"\t\tpacketsMask:%s"
-        "\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
+        "\t\tfirstbytedata: 0x%x\t\tdatsize: %zu\n\n",
         detectorHeader.row, (long unsigned int)detectorHeader.frameNumber,
         detectorHeader.expLength, detectorHeader.packetNumber,
         (long unsigned int)detectorHeader.bunchId,
@@ -107,23 +91,18 @@ void GetData(char *metadata, char *datapointer, uint32_t datasize, void *p) {
         detectorHeader.debug, detectorHeader.roundRNumber,
         detectorHeader.detType, detectorHeader.version,
         // header->packetsMask.to_string().c_str(),
-        ((uint8_t)(*((uint8_t *)(datapointer)))), datasize);
+        ((uint8_t)(*((uint8_t *)(dataPointer)))), imageSize);
 }
 
 /**
  * Get Receiver Data Call back (modified)
  * Prints in different colors(for each receiver process) the different headers
  * for each image call back.
- * @param metadata sls_receiver_header metadata
- * @param datapointer pointer to data
- * @param revDatasize new data size in bytes after the callback.
+ * @param modifiedImageSize new data size in bytes after the callback.
  * This will be the size written/streamed. (only smaller value is allowed).
- * @param p pointer to object
  */
-void GetData(char *metadata, char *datapointer, uint32_t &revDatasize,
-             void *p) {
-    slsDetectorDefs::sls_receiver_header *header =
-        (slsDetectorDefs::sls_receiver_header *)metadata;
+void GetData(slsDetectorDefs::sls_receiver_header *header, char *dataPointer,
+             size_t &modifiedImageSize, void *objectPointer) {
     slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
 
     PRINT_IN_COLOR(
@@ -135,7 +114,7 @@ void GetData(char *metadata, char *datapointer, uint32_t &revDatasize,
         "row: %u\t\tcolumn: %u\t\treserved: %u\t\tdebug: %u"
         "\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
         //"\t\tpacketsMask:%s"
-        "\t\tfirstbytedata: 0x%x\t\tdatsize: %u\n\n",
+        "\t\tfirstbytedata: 0x%x\t\tdatsize: %zu\n\n",
         detectorHeader.row, (long long unsigned int)detectorHeader.frameNumber,
         detectorHeader.expLength, detectorHeader.packetNumber,
         (long long unsigned int)detectorHeader.bunchId,
@@ -144,10 +123,10 @@ void GetData(char *metadata, char *datapointer, uint32_t &revDatasize,
         detectorHeader.debug, detectorHeader.roundRNumber,
         detectorHeader.detType, detectorHeader.version,
         // header->packetsMask.to_string().c_str(),
-        ((uint8_t)(*((uint8_t *)(datapointer)))), revDatasize);
+        ((uint8_t)(*((uint8_t *)(dataPointer)))), modifiedImageSize);
 
     // if data is modified, eg ROI and size is reduced
-    revDatasize = 26000;
+    modifiedImageSize = 26000;
 }
 
 /**

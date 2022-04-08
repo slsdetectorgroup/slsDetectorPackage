@@ -129,7 +129,7 @@ int64_t Receiver::getReceiverVersion() {
 }
 
 void Receiver::registerCallBackStartAcquisition(
-    int (*func)(std::string, std::string, uint64_t, uint32_t, void *),
+    int (*func)(const std::string &, const std::string &, uint64_t, size_t, void *),
     void *arg) {
     tcpipInterface->registerCallBackStartAcquisition(func, arg);
 }
@@ -140,14 +140,13 @@ void Receiver::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
     tcpipInterface->registerCallBackAcquisitionFinished(func, arg);
 }
 
-void Receiver::registerCallBackRawDataReady(void (*func)(char *, char *,
-                                                         uint32_t, void *),
-                                            void *arg) {
+void Receiver::registerCallBackRawDataReady(
+    void (*func)(sls_receiver_header *, char *, size_t, void *), void *arg) {
     tcpipInterface->registerCallBackRawDataReady(func, arg);
 }
 
 void Receiver::registerCallBackRawDataModifyReady(
-    void (*func)(char *, char *, uint32_t &, void *), void *arg) {
+    void (*func)(sls_receiver_header *, char *, size_t &, void *), void *arg) {
     tcpipInterface->registerCallBackRawDataModifyReady(func, arg);
 }
 

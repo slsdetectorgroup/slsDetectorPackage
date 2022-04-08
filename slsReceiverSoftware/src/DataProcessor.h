@@ -80,28 +80,16 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                  const fileFormat fileFormatType,
                                  MasterAttributes *attr,
                                  std::mutex *hdf5LibMutex);
-    /**
-     * Call back for raw data
-     * args to raw data ready callback are
-     * sls_receiver_header frame metadata
-     * dataPointer is the pointer to the data
-     * dataSize in bytes is the size of the data in bytes.
-     */
-    void registerCallBackRawDataReady(void (*func)(char *, char *, uint32_t,
-                                                   void *),
+
+    /** params: sls_receiver_header pointer, pointer to data, image size */
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
+                                                   char *, size_t, void *),
                                       void *arg);
 
-    /**
-     * Call back for raw data (modified)
-     * args to raw data ready callback are
-     * sls_receiver_header frame metadata
-     * dataPointer is the pointer to the data
-     * revDatasize is the reference of data size in bytes.
-     * Can be modified to the new size to be written/streamed. (only smaller
-     * value).
-     */
-    void registerCallBackRawDataModifyReady(void (*func)(char *, char *,
-                                                         uint32_t &, void *),
+    /** params: sls_receiver_header pointer, pointer to data, reference to image size */
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
+                                                         char *, size_t &,
+                                                         void *),
                                             void *arg);
 
   private:
@@ -169,7 +157,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t *streamingTimerInMs_;
     uint32_t *streamingStartFnum_;
     uint32_t currentFreqCount_{0};
-    struct timespec timerbegin_;
+    struct timespec timerbegin_{};
     bool *framePadding_;
     std::vector<int> *ctbDbitList_;
     int *ctbDbitOffset_;
@@ -196,7 +184,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * dataPointer is the pointer to the data
      * dataSize in bytes is the size of the data in bytes.
      */
-    void (*rawDataReadyCallBack)(char *, char *, uint32_t, void *) = nullptr;
+    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, size_t,
+                                 void *) = nullptr;
 
     /**
      * Call back for raw data (modified)
@@ -206,7 +195,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * revDatasize is the reference of data size in bytes. Can be modified to
      * the new size to be written/streamed. (only smaller value).
      */
-    void (*rawDataModifyReadyCallBack)(char *, char *, uint32_t &,
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *, size_t &,
                                        void *) = nullptr;
 
     void *pRawDataReady{nullptr};

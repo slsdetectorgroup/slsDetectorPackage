@@ -19,6 +19,7 @@ Checks:          '*,
                     -google-readability-braces-around-statements,
                     -modernize-use-trailing-return-type,
                     -readability-isolate-declaration,
+                    -readability-implicit-bool-conversion,
                     -llvmlibc-*'
 
 HeaderFilterRegex: \.h

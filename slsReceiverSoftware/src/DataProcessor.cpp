@@ -42,13 +42,9 @@ DataProcessor::DataProcessor(int index, detectorType detectorType, Fifo *fifo,
       ctbAnalogDataBytes_(ctbAnalogDataBytes), firstStreamerFrame_(false) {
 
     LOG(logDEBUG) << "DataProcessor " << index << " created";
-
-    memset((void *)&timerbegin_, 0, sizeof(timespec));
 }
 
 DataProcessor::~DataProcessor() { DeleteFiles(); }
-
-/** getters */
 
 bool DataProcessor::GetStartedFlag() const { return startedFlag_; }
 
@@ -66,10 +62,8 @@ void DataProcessor::ResetParametersforNewAcquisition() {
 void DataProcessor::RecordFirstIndex(uint64_t fnum) {
     // listen to this fnum, later +1
     currentFrameIndex_ = fnum;
-
     startedFlag_ = true;
     firstIndex_ = fnum;
-
     LOG(logDEBUG1) << index << " First Index:" << firstIndex_;
 }
 
@@ -84,10 +78,8 @@ void DataProcessor::CloseFiles() {
 
 void DataProcessor::DeleteFiles() {
     CloseFiles();
-    if (dataFile_) {
-        delete dataFile_;
-        dataFile_ = nullptr;
-    }
+    delete dataFile_;
+    dataFile_ = nullptr;
 }
 void DataProcessor::SetupFileWriter(const bool filewriteEnable,
                                     const fileFormat fileFormatType,
@@ -231,13 +223,11 @@ std::string DataProcessor::CreateMasterFile(
 void DataProcessor::ThreadExecution() {
     char *buffer = nullptr;
     fifo_->PopAddress(buffer);
-    LOG(logDEBUG5) << "DataProcessor " << index
-                   << ", "
-                      "pop 0x"
-                   << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
+    LOG(logDEBUG5) << "DataProcessor " << index << ", " << std::hex
+                   << static_cast<void *>(buffer) << std::dec << ":" << buffer;
 
     // check dummy
-    auto numBytes = (uint32_t)(*((uint32_t *)buffer));
+    auto numBytes = *reinterpret_cast<uint32_t *>(buffer);
     LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << numBytes;
     if (numBytes == DUMMY_PACKET_VALUE) {
         StopProcessing(buffer);
@@ -282,7 +272,7 @@ void DataProcessor::StopProcessing(char *buf) {
 
 uint64_t DataProcessor::ProcessAnImage(char *buf) {
 
-    auto *rheader = (sls_receiver_header *)(buf + FIFO_HEADER_NUMBYTES);
+    auto *rheader = reinterpret_cast<sls_receiver_header *>(buf + FIFO_HEADER_NUMBYTES);
     sls_detector_header header = rheader->detHeader;
     uint64_t fnum = header.frameNumber;
     currentFrameIndex_ = fnum;
@@ -316,16 +306,17 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
     try {
         // normal call back
         if (rawDataReadyCallBack != nullptr) {
-            rawDataReadyCallBack((char *)rheader,
+            std::size_t dsize = *reinterpret_cast<uint32_t *>(buf);
+            rawDataReadyCallBack(rheader,
                                  buf + FIFO_HEADER_NUMBYTES +
                                      sizeof(sls_receiver_header),
-                                 (uint32_t)(*((uint32_t *)buf)), pRawDataReady);
+                                 dsize, pRawDataReady);
         }
 
         // call back with modified size
         else if (rawDataModifyReadyCallBack != nullptr) {
-            auto revsize = (uint32_t)(*((uint32_t *)buf));
-            rawDataModifyReadyCallBack((char *)rheader,
+            std::size_t revsize = *reinterpret_cast<uint32_t *>(buf);
+            rawDataModifyReadyCallBack(rheader,
                                        buf + FIFO_HEADER_NUMBYTES +
                                            sizeof(sls_receiver_header),
                                        revsize, pRawDataReady);
@@ -369,14 +360,15 @@ bool DataProcessor::CheckTimer() {
     struct timespec end;
     clock_gettime(CLOCK_REALTIME, &end);
 
-    LOG(logDEBUG1) << index << " Timer elapsed time:"
-                   << ((end.tv_sec - timerbegin_.tv_sec) +
-                       (end.tv_nsec - timerbegin_.tv_nsec) / 1000000000.0)
+    auto elapsed_s = (end.tv_sec - timerbegin_.tv_sec) +
+                     (end.tv_nsec - timerbegin_.tv_nsec) / 1e9;
+    double timer_s = *streamingTimerInMs_ / 1e3;
+
+    LOG(logDEBUG1) << index << " Timer elapsed time:" << elapsed_s
                    << " seconds";
+
     // still less than streaming timer, keep waiting
-    if (((end.tv_sec - timerbegin_.tv_sec) +
-         (end.tv_nsec - timerbegin_.tv_nsec) / 1000000000.0) <
-        ((double)*streamingTimerInMs_ / 1000.00))
+    if (elapsed_s < timer_s)
         return false;
 
     // restart timer
@@ -393,15 +385,14 @@ bool DataProcessor::CheckCount() {
     return false;
 }
 
-void DataProcessor::registerCallBackRawDataReady(void (*func)(char *, char *,
-                                                              uint32_t, void *),
-                                                 void *arg) {
+void DataProcessor::registerCallBackRawDataReady(
+    void (*func)(sls_receiver_header *, char *, size_t, void *), void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
 
 void DataProcessor::registerCallBackRawDataModifyReady(
-    void (*func)(char *, char *, uint32_t &, void *), void *arg) {
+    void (*func)(sls_receiver_header *, char *, size_t &, void *), void *arg) {
     rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
 }
@@ -410,7 +401,8 @@ void DataProcessor::PadMissingPackets(char *buf) {
     LOG(logDEBUG) << index << ": Padding Missing Packets";
 
     uint32_t pperFrame = generalData_->packetsPerFrame;
-    auto *header = (sls_receiver_header *)(buf + FIFO_HEADER_NUMBYTES);
+    auto *header =
+        reinterpret_cast<sls_receiver_header *>(buf + FIFO_HEADER_NUMBYTES);
     uint32_t nmissing = pperFrame - header->detHeader.packetNumber;
     sls_bitset pmask = header->packetsMask;
 
@@ -483,7 +475,7 @@ void DataProcessor::RearrangeDbitData(char *buf) {
 
     // ceil as numResult8Bits could be decimal
     const int numResult8Bits =
-        ceil((double)(numSamples * (*ctbDbitList_).size()) / 8.00);
+        ceil((numSamples * (*ctbDbitList_).size()) / 8.00);
     std::vector<uint8_t> result(numResult8Bits);
     uint8_t *dest = &result[0];
 
@@ -499,7 +491,7 @@ void DataProcessor::RearrangeDbitData(char *buf) {
         }
 
         // loop through the frame digital data
-        for (auto ptr = source; ptr < (source + numSamples);) {
+        for (auto *ptr = source; ptr < (source + numSamples);) {
             // get selected bit from each 8 bit
             uint8_t bit = (*ptr++ >> bi) & 1;
             *dest |= bit << bitoffset;

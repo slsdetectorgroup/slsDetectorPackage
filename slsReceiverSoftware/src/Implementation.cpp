@@ -523,10 +523,10 @@ void Implementation::startReceiver() {
     // callbacks
     if (startAcquisitionCallBack) {
         try {
-            startAcquisitionCallBack(filePath, fileName, fileIndex,
-                                     (generalData->imageSize) +
-                                         (generalData->fifoBufferHeaderSize),
-                                     pStartAcquisition);
+            std::size_t imageSize = static_cast<uint32_t>(generalData->imageSize);
+            startAcquisitionCallBack(
+                filePath, fileName, fileIndex, imageSize,
+                pStartAcquisition);
         } catch (const std::exception &e) {
             throw sls::RuntimeError("Start Acquisition Callback Error: " +
                                     std::string(e.what()));
@@ -1627,7 +1627,7 @@ void Implementation::setDbitOffset(const int s) { ctbDbitOffset = s; }
  *                                                *
  * ************************************************/
 void Implementation::registerCallBackStartAcquisition(
-    int (*func)(std::string, std::string, uint64_t, uint32_t, void *),
+    int (*func)(const std::string &, const std::string &, uint64_t, size_t, void *),
     void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
@@ -1641,7 +1641,7 @@ void Implementation::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
 }
 
 void Implementation::registerCallBackRawDataReady(
-    void (*func)(char *, char *, uint32_t, void *), void *arg) {
+    void (*func)(sls_receiver_header *, char *, size_t, void *), void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
     for (const auto &it : dataProcessor)
@@ -1649,7 +1649,7 @@ void Implementation::registerCallBackRawDataReady(
 }
 
 void Implementation::registerCallBackRawDataModifyReady(
-    void (*func)(char *, char *, uint32_t &, void *), void *arg) {
+    void (*func)(sls_receiver_header *, char *, size_t &, void *), void *arg) {
     rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
     for (const auto &it : dataProcessor)

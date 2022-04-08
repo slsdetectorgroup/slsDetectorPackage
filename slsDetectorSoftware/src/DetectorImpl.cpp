@@ -1288,8 +1288,13 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             throw RuntimeError("Programming file must be an rbf file.");
         }
         break;
-    default:
+    case EIGER:
+    case GOTTHARD:
         throw RuntimeError("programfpga not implemented for this detector");
+    default:
+        throw RuntimeError(
+            "Unknown detector type. Did the 'hostname' command execute "
+            "successfully? Or use update mode in the detector server side.");
     }
 
     LOG(logINFO) << "This can take awhile. Please be patient.";

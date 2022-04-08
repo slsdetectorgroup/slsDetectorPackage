@@ -558,8 +558,6 @@ class Module : public virtual slsDetectorDefs {
     void programFPGA(std::vector<char> buffer,
                      const bool forceDeleteNormalFile);
     void resetFPGA();
-    void copyDetectorServer(const std::string &fname,
-                            const std::string &hostname);
     void updateDetectorServer(std::vector<char> buffer,
                               const std::string &serverName);
     void updateKernel(std::vector<char> buffer);

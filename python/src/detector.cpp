@@ -1591,11 +1591,6 @@ void init_det(py::module &m) {
         .def("resetFPGA",
              (void (Detector::*)(sls::Positions)) & Detector::resetFPGA,
              py::arg() = Positions{})
-        .def("copyDetectorServer",
-             (void (Detector::*)(const std::string &, const std::string &,
-                                 sls::Positions)) &
-                 Detector::copyDetectorServer,
-             py::arg(), py::arg(), py::arg() = Positions{})
         .def("updateDetectorServer",
              (void (Detector::*)(const std::string &, sls::Positions)) &
                  Detector::updateDetectorServer,

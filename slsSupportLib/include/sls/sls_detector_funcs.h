@@ -111,7 +111,6 @@ enum detFuncs {
     F_SOFTWARE_TRIGGER,
     F_LED,
     F_DIGITAL_IO_DELAY,
-    F_COPY_DET_SERVER,
     F_REBOOT_CONTROLLER,
     F_SET_ADC_ENABLE_MASK,
     F_GET_ADC_ENABLE_MASK,
@@ -487,7 +486,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SOFTWARE_TRIGGER:              	return "F_SOFTWARE_TRIGGER";
     case F_LED:              				return "F_LED";
 	case F_DIGITAL_IO_DELAY:              	return "F_DIGITAL_IO_DELAY";
-    case F_COPY_DET_SERVER:              	return "F_COPY_DET_SERVER";
     case F_REBOOT_CONTROLLER:              	return "F_REBOOT_CONTROLLER";
 	case F_SET_ADC_ENABLE_MASK:          	return "F_SET_ADC_ENABLE_MASK";
 	case F_GET_ADC_ENABLE_MASK:          	return "F_GET_ADC_ENABLE_MASK";

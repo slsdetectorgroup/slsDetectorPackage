@@ -93,7 +93,6 @@ int updateModeAllowedFunction(int file_des) {
                                     F_PROGRAM_FPGA,
                                     F_RESET_FPGA,
                                     F_CHECK_VERSION,
-                                    F_COPY_DET_SERVER,
                                     F_REBOOT_CONTROLLER,
                                     F_GET_KERNEL_VERSION,
                                     F_UPDATE_KERNEL,
@@ -322,7 +321,6 @@ void function_table() {
     flist[F_SOFTWARE_TRIGGER] = &software_trigger;
     flist[F_LED] = &led;
     flist[F_DIGITAL_IO_DELAY] = &digital_io_delay;
-    flist[F_COPY_DET_SERVER] = &copy_detector_server;
     flist[F_REBOOT_CONTROLLER] = &reboot_controller;
     flist[F_SET_ADC_ENABLE_MASK] = &set_adc_enable_mask;
     flist[F_GET_ADC_ENABLE_MASK] = &get_adc_enable_mask;
@@ -4153,65 +4151,15 @@ int digital_io_delay(int file_des) {
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
-int copy_detector_server(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    char args[2][MAX_STR_LENGTH];
-    char retvals[MAX_STR_LENGTH] = {0};
-
-    memset(args, 0, sizeof(args));
-    memset(retvals, 0, sizeof(retvals));
-
-    if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
-        return printSocketReadError();
-
-#ifdef VIRTUAL
-    functionNotImplemented();
-#else
-
-    // only set
-    if (Server_VerifyLock() == OK) {
-        char *sname = args[0];
-        char *hostname = args[1];
-        LOG(logINFOBLUE, ("Copying server %s from host %s\n", sname, hostname));
-        char cmd[MAX_STR_LENGTH] = {0};
-
-#ifdef BLACKFIN_DEFINED
-        // check update is allowed  (Non Amd OR AMD + current kernel)
-        ret = allowUpdate(mess, "copy detector server");
-#endif
-
-        // tftp server
-        if (ret == OK) {
-            if (snprintf(cmd, MAX_STR_LENGTH, "tftp %s -r %s -g", hostname,
-                         sname) >= MAX_STR_LENGTH) {
-                ret = FAIL;
-                strcpy(mess, "Could not copy detector server. Command to copy "
-                             "server too long\n");
-                LOG(logERROR, (mess));
-            } else if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {
-                ret = FAIL;
-                snprintf(mess, MAX_STR_LENGTH,
-                         "Could not copy detector server (tftp). %s\n",
-                         retvals);
-                // LOG(logERROR, (mess)); already printed in executecommand
-            } else {
-                LOG(logINFO, ("\tServer copied\n"));
-            }
-        }
-
-        if (ret == OK) {
-            ret = setupDetectorServer(mess, sname);
-        }
-    }
-#endif
-    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
-}
-
 int reboot_controller(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+
+#ifdef EIGERD
+    functionNotImplemented();
+#elif VIRTUAL
+    ret = GOODBYE;
+#elif defined(MYTHEN3D) || defined(GOTTHARD2D)
     if (getHardwareVersionNumber() == 0) {
         ret = FAIL;
         strcpy(mess, "Old board version, reboot by yourself please!\n");
@@ -4219,20 +4167,11 @@ int reboot_controller(int file_des) {
         Server_SendResult(file_des, INT32, NULL, 0);
         return GOODBYE;
     }
-#ifdef VIRTUAL
-    ret = GOODBYE;
+    ret = REBOOT;
 #else
     ret = REBOOT;
 #endif
-#elif EIGERD
-    functionNotImplemented();
-#else
-#ifdef VIRTUAL
-    ret = GOODBYE;
-#else
-    ret = REBOOT;
-#endif
-#endif
+
     Server_SendResult(file_des, INT32, NULL, 0);
     return ret;
 }
@@ -9465,6 +9404,14 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
                       (forceDeleteNormalFile ? "Y" : "N")));
 #endif
 
+        // ensure the name is not the same as the linked name
+        if (!strcmp(serverName, LINKED_SERVER_NAME)) {
+            ret = FAIL;
+            strcpy(mess, "Server name is the same as the symbolic link. Please "
+                         "use a different server name\n");
+            LOG(logERROR, (mess));
+        }
+
         // in same folder as current process (will also work for virtual then
         // with write permissions)
         {
@@ -9609,6 +9556,8 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                    totalsize, forceDeleteNormalFile);
         break;
     case PROGRAM_SERVER:
+        // a fail here is not a show stopper (just for memory)
+        deleteOldServers(mess, serverName, "update detector server");
         ret = moveBinaryFile(mess, serverName, TEMP_PROG_FILE_NAME,
                              "update detector server");
         if (ret == OK) {

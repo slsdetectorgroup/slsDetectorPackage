@@ -2242,15 +2242,6 @@ void Detector::resetFPGA(Positions pos) {
     pimpl->Parallel(&Module::resetFPGA, pos);
 }
 
-void Detector::copyDetectorServer(const std::string &fname,
-                                  const std::string &hostname, Positions pos) {
-    LOG(logINFO) << "Updating Detector Server (via tftp)...";
-    pimpl->Parallel(&Module::copyDetectorServer, pos, fname, hostname);
-    if (getDetectorType().squash() != defs::EIGER) {
-        rebootController(pos);
-    }
-}
-
 void Detector::updateDetectorServer(const std::string &fname, Positions pos) {
     LOG(logINFO) << "Updating Detector Server (no tftp)...";
     std::vector<char> buffer = readBinaryFile(fname, "Update Detector Server");
@@ -2270,16 +2261,6 @@ void Detector::updateKernel(const std::string &fname, Positions pos) {
 
 void Detector::rebootController(Positions pos) {
     pimpl->Parallel(&Module::rebootController, pos);
-}
-
-void Detector::updateFirmwareAndServer(const std::string &sname,
-                                       const std::string &hostname,
-                                       const std::string &fname,
-                                       Positions pos) {
-    LOG(logINFO) << "Updating Firmware and Detector Server (with tftp)...";
-    LOG(logINFO) << "Updating Detector Server (via tftp)...";
-    pimpl->Parallel(&Module::copyDetectorServer, pos, sname, hostname);
-    programFPGA(fname, false, pos);
 }
 
 void Detector::updateFirmwareAndServer(const std::string &sname,

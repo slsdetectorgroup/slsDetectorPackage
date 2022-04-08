@@ -136,7 +136,7 @@ can use dir()
     '__str__', '__subclasshook__', '_adc_register', '_frozen', 
     '_register', 'acquire', 'adcclk', 'adcphase', 'adcpipeline', 
     'adcreg', 'asamples', 'auto_comp_disable', 'clearAcquiringFlag', 
-    'clearBit', 'clearROI', 'client_version', 'config', 'copyDetectorServer', 
+    'clearBit', 'clearROI', 'client_version', 'config',  
     'counters', 'daclist', 'dacvalues', 'dbitclk', 'dbitphase' ...
 
 Since the list for Detector is rather long it's an good idea to filter it. 

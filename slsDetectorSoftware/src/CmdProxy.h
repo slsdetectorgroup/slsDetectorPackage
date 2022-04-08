@@ -743,7 +743,11 @@ class CmdProxy {
 
         /* Pattern */
         /* Moench */
+        
         /* Advanced */
+        {"copydetectorserver", "updatedetectorserver"},
+
+
         /* Insignificant */
         {"nframes", "framecounter"},
         {"now", "runtime"},
@@ -1062,7 +1066,6 @@ class CmdProxy {
         /* Advanced */
         {"programfpga", &CmdProxy::ProgramFpga},
         {"resetfpga", &CmdProxy::resetfpga},
-        {"copydetectorserver", &CmdProxy::CopyDetectorServer},
         {"updatedetectorserver", &CmdProxy::UpdateDetectorServer},
         {"updatekernel", &CmdProxy::UpdateKernel},
         {"rebootcontroller", &CmdProxy::rebootcontroller},
@@ -1189,7 +1192,6 @@ class CmdProxy {
     std::string JsonParameter(int action);
     /* Advanced */
     std::string ProgramFpga(int action);
-    std::string CopyDetectorServer(int action);
     std::string UpdateDetectorServer(int action);
     std::string UpdateKernel(int action);
     std::string UpdateFirmwareAndDetectorServer(int action);

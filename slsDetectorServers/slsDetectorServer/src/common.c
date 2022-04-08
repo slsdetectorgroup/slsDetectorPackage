@@ -50,6 +50,10 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
 }
 
 int getAbsPath(char *buf, size_t bufSize, char *fname) {
+    if (fname[0] == '/') {
+        strcpy(buf, fname);
+        return OK;
+    }
     // get path of current binary
     char path[bufSize];
     memset(path, 0, bufSize);
@@ -60,10 +64,14 @@ int getAbsPath(char *buf, size_t bufSize, char *fname) {
     }
     path[len] = '\0';
 
-    // get dir path and attach config file name
+    // get dir path and attach file name
     char *dir = dirname(path);
     memset(buf, 0, bufSize);
-    sprintf(buf, "%s/%s", dir, fname);
+    if (!strcmp(dir, "/")) {
+        sprintf(buf, "/%s", fname);
+    } else {
+        sprintf(buf, "%s/%s", dir, fname);
+    }
     LOG(logDEBUG1, ("full path for %s: %s\n", fname, buf));
     return OK;
 }
@@ -466,7 +474,7 @@ int setupDetectorServer(char *mess, char *sname) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tSymbolic link created\n"));
+    LOG(logINFO, ("\tSymbolic link created %s -> %s\n", linkname, sname));
 
     // blackfin boards (respawn) (only kept for backwards compatibility)
 #ifndef VIRTUAL
@@ -485,7 +493,7 @@ int setupDetectorServer(char *mess, char *sname) {
 
     // add new link name to /etc/inittab
     if (snprintf(cmd, MAX_STR_LENGTH,
-                 "echo 'ttyS0::respawn:/./%s' >> /etc/inittab",
+                 "echo 'ttyS0::respawn:%s' >> /etc/inittab",
                  linkname) >= MAX_STR_LENGTH) {
         strcpy(mess, "Could not copy detector server. Command "
                      "to add new server for spawning is too long\n");
@@ -667,6 +675,29 @@ int deleteFile(char *mess, char *fname, char *errorPrefix) {
     } else {
         LOG(logINFO,
             ("\tFile does not exist anyway: %s (%s)\n", fullname, errorPrefix));
+    }
+    return OK;
+}
+
+int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
+    LOG(logINFO, ("\tChecking if current binary is to be deleted ...\n"))
+    // get path of current binary (get file name if link)
+    char currentBinary[MAX_STR_LENGTH];
+    memset(currentBinary, 0, MAX_STR_LENGTH);
+    ssize_t len = readlink("/proc/self/exe", currentBinary, MAX_STR_LENGTH - 1);
+    if (len < 0) {
+        LOG(logWARNING, ("(%s): Could not delete old servers. Could not "
+                         "readlink current binary\n",
+                         errorPrefix));
+        return FAIL;
+    }
+    currentBinary[len] = '\0';
+    LOG(logDEBUG1, ("Current binary:%s\n", currentBinary));
+
+    // delete file
+    if (deleteFile(mess, currentBinary, errorPrefix) == FAIL) {
+        LOG(logWARNING, ("(%s). Could not delete old servers\n", errorPrefix));
+        return FAIL;
     }
     return OK;
 }

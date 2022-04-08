@@ -2611,28 +2611,6 @@ void Module::programFPGA(std::vector<char> buffer,
 
 void Module::resetFPGA() { sendToDetector(F_RESET_FPGA); }
 
-void Module::copyDetectorServer(const std::string &fname,
-                                const std::string &hostname) {
-    char args[2][MAX_STR_LENGTH]{};
-    sls::strcpy_safe(args[0], fname.c_str());
-    sls::strcpy_safe(args[1], hostname.c_str());
-    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): Sending detector server " << args[0] << " from host "
-                 << args[1];
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_COPY_DET_SERVER);
-    client.Send(args);
-    if (client.Receive<int>() == FAIL) {
-        std::cout << '\n';
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): Detector server copied";
-}
-
 void Module::updateDetectorServer(std::vector<char> buffer,
                                   const std::string &serverName) {
     switch (shm()->detType) {

@@ -2275,6 +2275,7 @@ bool Module::getInterpolation() const {
 
 void Module::setInterpolation(const bool enable) {
     sendToDetector(F_SET_INTERPOLATION, static_cast<int>(enable), nullptr);
+    setCounterMask(getCounterMask());
 }
 
 bool Module::getPumpProbe() const {

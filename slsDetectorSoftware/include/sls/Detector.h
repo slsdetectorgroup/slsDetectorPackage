@@ -1481,7 +1481,7 @@ class Detector {
     /** [Mythen3] */
     Result<bool> getInterpolation(Positions pos = {}) const;
 
-    /** [Mythen3] */
+    /** [Mythen3] Also enables all counters */
     void setInterpolation(bool value, Positions pos = {});
 
     /** [Mythen3] */

@@ -10,22 +10,6 @@
 
 #include <string.h>
 
-extern int setChipStatusRegister(int csr);
-
-/*
-// Common C/C++ structure to handle pattern data
-typedef struct __attribute__((packed)) {
-    uint64_t word[MAX_PATTERN_LENGTH];
-    uint64_t ioctrl;
-    uint32_t limits[2];
-    // loop0 start, loop0 stop .. loop2 start, loop2 stop
-    uint32_t loop[6];
-    uint32_t nloop[3];
-    uint32_t wait[3];
-    uint64_t waittime[3];
-} patternParameters;
-*/
-
 int chipStatusRegister = 0;
 
 int setBit(int ibit, int patword) { return patword |= (1 << ibit); }
@@ -133,8 +117,7 @@ int getGainCaps() {
     return caps;
 }
 
-int setGainCaps(int caps) {
-    LOG(logINFO, ("Setting gain caps to: %u\n", caps));
+int M3SetGainCaps(int caps) {
     int csr = chipStatusRegister & ~GAIN_MASK;
 
     // Translates bit representation
@@ -151,47 +134,41 @@ int setGainCaps(int caps) {
     if (!(caps & M3_C15pre))
         csr |= 1 << _CSR_C15pre;
 
-    return setChipStatusRegister(csr);
+    return csr;
 }
 
 int getInterpolation() {
     return ((chipStatusRegister & CSR_interp_MSK) >> CSR_interp);
 }
 
-int setInterpolation(int enable) {
-    LOG(logINFO, ("%s Interpolation\n", enable == 0 ? "Disabling" : "Enabling"));
+int M3SetInterpolation(int enable) {
     int csr = 0;
     if (enable)
         csr = chipStatusRegister | CSR_interp_MSK;
     else
         csr = chipStatusRegister & ~CSR_interp_MSK;
-
-    LOG(logINFOBLUE,
-        ("interpolation:0x%x\n", chipStatusRegister & CSR_interp_MSK));
-
-    return setChipStatusRegister(csr);
+    return csr;
 }
 
 int getPumpProbe() {
     return ((chipStatusRegister & CSR_pumprobe_MSK) >> CSR_pumprobe);
 }
 
-int setPumpProbe(int enable) {
+int M3SetPumpProbe(int enable) {
     LOG(logINFO, ("%s Pump Probe\n", enable == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
     if (enable)
         csr = chipStatusRegister | CSR_pumprobe_MSK;
     else
         csr = chipStatusRegister & ~CSR_pumprobe_MSK;
-
-    return setChipStatusRegister(csr);
+    return csr;
 }
 
 int getDigitalPulsing() {
     return ((chipStatusRegister & CSR_dpulse_MSK) >> CSR_dpulse);
 }
 
-int setDigitalPulsing(int enable) {
+int M3SetDigitalPulsing(int enable) {
     LOG(logINFO,
         ("%s Digital Pulsing\n", enable == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
@@ -199,30 +176,29 @@ int setDigitalPulsing(int enable) {
         csr = chipStatusRegister | CSR_dpulse_MSK;
     else
         csr = chipStatusRegister & ~CSR_dpulse_MSK;
-
-    return setChipStatusRegister(csr);
+    return csr;
 }
 
 int getAnalogPulsing() {
     return ((chipStatusRegister & CSR_apulse_MSK) >> CSR_apulse);
 }
 
-int setAnalogPulsing(int enable) {
-    LOG(logINFO, ("%s Analog Pulsing\n", enable == 0 ? "Disabling" : "Enabling"));
+int M3SetAnalogPulsing(int enable) {
+    LOG(logINFO,
+        ("%s Analog Pulsing\n", enable == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
     if (enable)
         csr = chipStatusRegister | CSR_apulse_MSK;
     else
         csr = chipStatusRegister & ~CSR_apulse_MSK;
-
-    return setChipStatusRegister(csr);
+    return csr;
 }
 
 int getNegativePolarity() {
     return ((chipStatusRegister & CSR_invpol_MSK) >> CSR_invpol);
 }
 
-int setNegativePolarity(int enable) {
+int M3SetNegativePolarity(int enable) {
     LOG(logINFO,
         ("%s Negative Polarity\n", enable == 0 ? "Disabling" : "Enabling"));
     int csr = 0;
@@ -230,8 +206,7 @@ int setNegativePolarity(int enable) {
         csr = chipStatusRegister | CSR_invpol_MSK;
     else
         csr = chipStatusRegister & ~CSR_invpol_MSK;
-
-    return setChipStatusRegister(csr);
+    return csr;
 }
 
 patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits) {

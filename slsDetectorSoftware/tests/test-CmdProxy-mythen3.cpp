@@ -497,15 +497,22 @@ TEST_CASE("interpolation", "[.cmd]") {
     CmdProxy proxy(&det);
     if (det.getDetectorType().squash() == defs::MYTHEN3) {
         auto prev_val = det.getInterpolation();
+        auto mask = det.getCounterMask();
         {
+            proxy.Call("counters", {"0", "1"}, -1, PUT);
             std::ostringstream oss;
             proxy.Call("interpolation", {"1"}, -1, PUT, oss);
             REQUIRE(oss.str() == "interpolation 1\n");
+            REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") ==
+                    7);
         }
         {
+            proxy.Call("counters", {"0", "1"}, -1, PUT);
             std::ostringstream oss;
             proxy.Call("interpolation", {"0"}, -1, PUT, oss);
             REQUIRE(oss.str() == "interpolation 0\n");
+            REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") ==
+                    3);
         }
         {
             std::ostringstream oss;
@@ -513,6 +520,7 @@ TEST_CASE("interpolation", "[.cmd]") {
             REQUIRE(oss.str() == "interpolation 0\n");
         }
         for (int i = 0; i != det.size(); ++i) {
+            det.setCounterMask(mask[i], {i});
             det.setInterpolation(prev_val[i], {i});
         }
     } else {

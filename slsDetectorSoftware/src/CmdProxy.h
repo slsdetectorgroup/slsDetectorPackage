@@ -2045,7 +2045,8 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(interpolation, getInterpolation, setInterpolation,
                            StringTo<int>,
                            "[0, 1]\n\t[Mythen3] Enables or disables "
-                           "interpolation. Default is disabled");
+                           "interpolation. Default is disabled.  Enabling also "
+                           "enables all counters. ");
 
     INTEGER_COMMAND_VEC_ID(pumpprobe, getPumpProbe, setPumpProbe, StringTo<int>,
                            "[0, 1]\n\t[Mythen3] Enables or disables pump probe "

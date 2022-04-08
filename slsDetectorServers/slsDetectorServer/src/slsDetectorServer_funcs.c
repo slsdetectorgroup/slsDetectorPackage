@@ -9925,7 +9925,11 @@ int set_interpolation(int file_des) {
     if (Server_VerifyLock() == OK) {
         ret = setInterpolation(arg);
         if (ret == FAIL) {
-            sprintf(mess, "Could not set interpolation\n");
+            if (arg)
+                sprintf(mess, "Could not set interpolation or enable all "
+                              "counters for it.\n");
+            else
+                sprintf(mess, "Could not set interpolation\n");
             LOG(logERROR, (mess));
         } else {
             int retval = getInterpolation();

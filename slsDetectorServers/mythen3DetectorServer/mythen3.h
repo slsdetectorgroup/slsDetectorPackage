@@ -68,16 +68,16 @@ int getChipStatusRegister();
 patternParameters *setChipStatusRegisterPattern(int csr);
 patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits);
 int getGainCaps();
-int setGainCaps(int caps);
+int M3SetGainCaps(int caps);
 int getInterpolation();
-int setInterpolation(int enable);
+int M3SetInterpolation(int enable);
 int getPumpProbe();
-int setPumpProbe(int enable);
+int M3SetPumpProbe(int enable);
 int getDigitalPulsing();
-int setDigitalPulsing(int enable);
+int M3SetDigitalPulsing(int enable);
 int getAnalogPulsing();
-int setAnalogPulsing(int enable);
+int M3SetAnalogPulsing(int enable);
 int getNegativePolarity();
-int setNegativePolarity(int enable);
+int M3SetNegativePolarity(int enable);
 
 #endif

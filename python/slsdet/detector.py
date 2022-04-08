@@ -3515,7 +3515,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def interpolation(self):
-        """[Mythen3] Enable or disable interpolation. """
+        """[Mythen3] Enable or disable interpolation.  Enabling also enables all counters """
         return self.getInterpolation()
 
     @interpolation.setter

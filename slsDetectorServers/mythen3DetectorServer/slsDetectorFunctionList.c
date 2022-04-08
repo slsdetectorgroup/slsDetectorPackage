@@ -1689,6 +1689,55 @@ void setInitialExtSignals() {
                                         DOUTIF_RISING_LNGTH_PORT_1_MSK));
 }
 
+int setGainCaps(int caps) {
+    LOG(logINFO, ("Setting gain caps to: %u\n", caps));
+    int csr = M3SetGainCaps(caps);
+    return setChipStatusRegister(csr);
+}
+
+int setInterpolation(int enable) {
+    LOG(logINFO,
+        ("%s Interpolation\n", enable == 0 ? "Disabling" : "Enabling"));
+    if (enable) {
+        setCounterMask(MAX_COUNTER_MSK);
+        if (getCounterMask() != MAX_COUNTER_MSK) {
+            LOG(logERROR,
+                ("Could not set interpolation. Could not enable all counters"));
+            return FAIL;
+        }
+        LOG(logINFO, ("\tEnabled all counters\n"));
+    }
+    int csr = M3SetInterpolation(enable);
+    return setChipStatusRegister(csr);
+}
+
+int setPumpProbe(int enable) {
+    LOG(logINFO, ("%s Pump Probe\n", enable == 0 ? "Disabling" : "Enabling"));
+    int csr = M3SetPumpProbe(enable);
+    return setChipStatusRegister(csr);
+}
+
+int setDigitalPulsing(int enable) {
+    LOG(logINFO,
+        ("%s Digital Pulsing\n", enable == 0 ? "Disabling" : "Enabling"));
+    int csr = M3SetDigitalPulsing(enable);
+    return setChipStatusRegister(csr);
+}
+
+int setAnalogPulsing(int enable) {
+    LOG(logINFO,
+        ("%s Analog Pulsing\n", enable == 0 ? "Disabling" : "Enabling"));
+    int csr = M3SetAnalogPulsing(enable);
+    return setChipStatusRegister(csr);
+}
+
+int setNegativePolarity(int enable) {
+    LOG(logINFO,
+        ("%s Negative Polarity\n", enable == 0 ? "Disabling" : "Enabling"));
+    int csr = M3SetNegativePolarity(enable);
+    return setChipStatusRegister(csr);
+}
+
 void setExtSignal(int signalIndex, enum externalSignalFlag mode) {
     LOG(logDEBUG1, ("Setting signal flag[%d] to %d\n", signalIndex, mode));
 

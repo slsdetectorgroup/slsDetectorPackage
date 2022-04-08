@@ -392,6 +392,12 @@ enum timingMode getTiming();
 #ifdef MYTHEN3D
 void setInitialExtSignals();
 int setChipStatusRegister(int csr);
+int setGainCaps(int caps);
+int setInterpolation(int enable);
+int setPumpProbe(int enable);
+int setDigitalPulsing(int enable);
+int setAnalogPulsing(int enable);
+int setNegativePolarity(int enable);
 int setDACS(int *dacs);
 #endif
 #if defined(GOTTHARDD) || defined(MYTHEN3D)

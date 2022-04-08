@@ -2256,10 +2256,51 @@ int Module::getChipStatusRegister() const {
 }
 
 void Module::setGainCaps(int caps) {
-    sendToDetector<int>(F_SET_GAIN_CAPS, caps);
+    sendToDetector(F_SET_GAIN_CAPS, caps, nullptr);
 }
 
 int Module::getGainCaps() { return sendToDetector<int>(F_GET_GAIN_CAPS); }
+
+defs::polarity Module::getPolarity() const {
+    return sendToDetector<defs::polarity>(F_GET_POLARITY);
+}
+
+void Module::setPolarity(const defs::polarity value) {
+    sendToDetector(F_SET_POLARITY, static_cast<int>(value), nullptr);
+}
+
+bool Module::getInterpolation() const {
+    return sendToDetector<int>(F_GET_INTERPOLATION);
+}
+
+void Module::setInterpolation(const bool enable) {
+    sendToDetector(F_SET_INTERPOLATION, static_cast<int>(enable), nullptr);
+    setCounterMask(getCounterMask());
+}
+
+bool Module::getPumpProbe() const {
+    return sendToDetector<int>(F_GET_PUMP_PROBE);
+}
+
+void Module::setPumpProbe(const bool enable) {
+    sendToDetector(F_SET_PUMP_PROBE, static_cast<int>(enable), nullptr);
+}
+
+bool Module::getAnalogPulsing() const {
+    return sendToDetector<int>(F_GET_ANALOG_PULSING);
+}
+
+void Module::setAnalogPulsing(const bool enable) {
+    sendToDetector(F_SET_ANALOG_PULSING, static_cast<int>(enable), nullptr);
+}
+
+bool Module::getDigitalPulsing() const {
+    return sendToDetector<int>(F_GET_DIGITAL_PULSING);
+}
+
+void Module::setDigitalPulsing(const bool enable) {
+    sendToDetector(F_SET_DIGITAL_PULSING, static_cast<int>(enable), nullptr);
+}
 
 // CTB / Moench Specific
 int Module::getNumberOfAnalogSamples() const {

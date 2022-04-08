@@ -1472,6 +1472,36 @@ class Detector {
 
     Result<int> getGainCaps(Positions pos = {});
 
+    /** [Mythen3] */
+    Result<defs::polarity> getPolarity(Positions pos = {}) const;
+
+    /** [Mythen3] */
+    void setPolarity(defs::polarity value, Positions pos = {});
+
+    /** [Mythen3] */
+    Result<bool> getInterpolation(Positions pos = {}) const;
+
+    /** [Mythen3] Also enables all counters */
+    void setInterpolation(bool value, Positions pos = {});
+
+    /** [Mythen3] */
+    Result<bool> getPumpProbe(Positions pos = {}) const;
+
+    /** [Mythen3] */
+    void setPumpProbe(bool value, Positions pos = {});
+
+    /** [Mythen3] */
+    Result<bool> getAnalogPulsing(Positions pos = {}) const;
+
+    /** [Mythen3] */
+    void setAnalogPulsing(bool value, Positions pos = {});
+
+    /** [Mythen3] */
+    Result<bool> getDigitalPulsing(Positions pos = {}) const;
+
+    /** [Mythen3] */
+    void setDigitalPulsing(bool value, Positions pos = {});
+
     ///@}
 
     /** @name CTB / Moench Specific */
@@ -1614,12 +1644,11 @@ class Detector {
     /** [CTB] Default is enabled. */
     void setLEDEnable(bool enable, Positions pos = {});
 
-
     void setDacNames(const std::vector<std::string> names);
 
     std::vector<std::string> getDacNames() const;
 
-    defs::dacIndex getDacIndex(const std::string& name);
+    defs::dacIndex getDacIndex(const std::string &name);
     std::string getDacName(defs::dacIndex i);
     ///@}
 

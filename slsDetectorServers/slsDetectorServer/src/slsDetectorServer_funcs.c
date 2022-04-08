@@ -470,6 +470,16 @@ void function_table() {
     flist[F_SET_MASTER] = &set_master;
     flist[F_GET_TOP] = &get_top;
     flist[F_SET_TOP] = &set_top;
+    flist[F_GET_POLARITY] = &get_polarity;
+    flist[F_SET_POLARITY] = &set_polarity;
+    flist[F_GET_INTERPOLATION] = &get_interpolation;
+    flist[F_SET_INTERPOLATION] = &set_interpolation;
+    flist[F_GET_PUMP_PROBE] = &get_pump_probe;
+    flist[F_SET_PUMP_PROBE] = &set_pump_probe;
+    flist[F_GET_ANALOG_PULSING] = &get_analog_pulsing;
+    flist[F_SET_ANALOG_PULSING] = &set_analog_pulsing;
+    flist[F_GET_DIGITAL_PULSING] = &get_digital_pulsing;
+    flist[F_SET_DIGITAL_PULSING] = &set_digital_pulsing;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -8236,33 +8246,35 @@ int set_gain_caps(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting gain caps to: %u\n", arg));
 
-    int retval = -1;
-
 #ifndef MYTHEN3D
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
-        setGainCaps(arg);
-        retval = getChipStatusRegister(); // TODO! fix
-        LOG(logDEBUG1, ("gain caps retval: %u\n", retval));
+        ret = setGainCaps(arg);
+        if (ret == FAIL) {
+            strcpy(mess, "Could not set gain caps.\n");
+            LOG(logERROR, (mess));
+        } else {
+            int retval = getGainCaps();
+            validate(&ret, mess, (int)arg, (int)retval, "set gain caps", DEC);
+            LOG(logDEBUG1, ("gain caps retval: %u\n", retval));
+        }
     }
 #endif
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_gain_caps(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
-    LOG(logINFO, ("Getting gain caps\n"));
+    LOG(logDEBUG1, ("Getting gain caps\n"));
 
 #ifndef MYTHEN3D
     functionNotImplemented();
 #else
-    if (Server_VerifyLock() == OK) {
-        retval = getGainCaps();
-        LOG(logDEBUG1, ("Gain caps: %u\n", retval));
-    }
+    retval = getGainCaps();
+    LOG(logDEBUG1, ("Gain caps: %u\n", retval));
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -9768,6 +9780,248 @@ int set_top(int file_des) {
                     validate(&ret, mess, arg, retval, "set top mode", DEC);
                 }
             }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_polarity(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum polarity retval = POSITIVE;
+
+    LOG(logDEBUG1, ("Getting negativepolarity\n"));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // get only
+    retval = getNegativePolarity() ? NEGATIVE : POSITIVE;
+    LOG(logDEBUG1, ("negative polarity retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_polarity(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum polarity arg = POSITIVE;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting negative polarity: %u\n", (int)arg));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        switch (arg) {
+        case POSITIVE:
+            ret = setNegativePolarity(0);
+            break;
+        case NEGATIVE:
+            ret = setNegativePolarity(1);
+            break;
+        default:
+            modeNotImplemented("Polarity index", (int)arg);
+            break;
+        }
+        if (ret == FAIL) {
+            sprintf(mess, "Could not set polarity\n");
+            LOG(logERROR, (mess));
+        } else {
+            enum polarity retval = getNegativePolarity() ? NEGATIVE : POSITIVE;
+            validate(&ret, mess, (int)arg, (int)retval, "set polarity", DEC);
+            LOG(logDEBUG1, ("negative polarity retval: %u\n", retval));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_interpolation(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting interpolation\n"));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // get only
+    retval = getInterpolation();
+    LOG(logDEBUG1, ("interpolation retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_interpolation(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting interpolation: %u\n", arg));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        ret = setInterpolation(arg);
+        if (ret == FAIL) {
+            if (arg)
+                sprintf(mess, "Could not set interpolation or enable all "
+                              "counters for it.\n");
+            else
+                sprintf(mess, "Could not set interpolation\n");
+            LOG(logERROR, (mess));
+        } else {
+            int retval = getInterpolation();
+            validate(&ret, mess, (int)arg, (int)retval, "set interpolation",
+                     DEC);
+            LOG(logDEBUG1, ("interpolation retval: %u\n", retval));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_pump_probe(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting pump probe\n"));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // get only
+    retval = getPumpProbe();
+    LOG(logDEBUG1, ("pump probe retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_pump_probe(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting pump probe: %u\n", arg));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        ret = setPumpProbe(arg);
+        if (ret == FAIL) {
+            sprintf(mess, "Could not set pump probe\n");
+            LOG(logERROR, (mess));
+        } else {
+            int retval = getPumpProbe();
+            validate(&ret, mess, (int)arg, (int)retval, "set pump probe", DEC);
+            LOG(logDEBUG1, ("pump probe retval: %u\n", retval));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_analog_pulsing(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting analog pulsing\n"));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // get only
+    retval = getAnalogPulsing();
+    LOG(logDEBUG1, ("analog pulsing retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_analog_pulsing(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting analog pulsing: %u\n", arg));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        ret = setAnalogPulsing(arg);
+        if (ret == FAIL) {
+            sprintf(mess, "Could not set analog pulsing\n");
+            LOG(logERROR, (mess));
+        } else {
+            int retval = getAnalogPulsing();
+            validate(&ret, mess, (int)arg, (int)retval, "set analog pulsing",
+                     DEC);
+            LOG(logDEBUG1, ("analog pulsing retval: %u\n", retval));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_digital_pulsing(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting digital pulsing\n"));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // get only
+    retval = getDigitalPulsing();
+    LOG(logDEBUG1, ("digital pulsing retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_digital_pulsing(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting digital pulsing: %u\n", arg));
+
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        ret = setDigitalPulsing(arg);
+        if (ret == FAIL) {
+            sprintf(mess, "Could not set digital pulsing\n");
+            LOG(logERROR, (mess));
+        } else {
+            int retval = getDigitalPulsing();
+            validate(&ret, mess, (int)arg, (int)retval, "set digital pulsing",
+                     DEC);
+            LOG(logDEBUG1, ("digital pulsing retval: %u\n", retval));
         }
     }
 #endif

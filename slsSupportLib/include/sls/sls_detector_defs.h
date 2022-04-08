@@ -438,6 +438,8 @@ enum streamingInterface {
         FIX_G0
     };
 
+    enum polarity { POSITIVE, NEGATIVE };
+
 #ifdef __cplusplus
 
     /** scan structure */

@@ -5,9 +5,9 @@
 
 #include "CmdParser.h"
 #include "CmdProxy.h"
+#include "CtbConfig.h"
 #include "DetectorImpl.h"
 #include "Module.h"
-#include "CtbConfig.h"
 #include "sls/Pattern.h"
 #include "sls/container_utils.h"
 #include "sls/file_utils.h"
@@ -1873,6 +1873,46 @@ void Detector::setGainCaps(int caps, Positions pos) {
 
 Result<int> Detector::getGainCaps(Positions pos) {
     return pimpl->Parallel(&Module::getGainCaps, pos);
+}
+
+Result<defs::polarity> Detector::getPolarity(Positions pos) const {
+    return pimpl->Parallel(&Module::getPolarity, pos);
+}
+
+void Detector::setPolarity(defs::polarity value, Positions pos) {
+    pimpl->Parallel(&Module::setPolarity, pos, value);
+}
+
+Result<bool> Detector::getInterpolation(Positions pos) const {
+    return pimpl->Parallel(&Module::getInterpolation, pos);
+}
+
+void Detector::setInterpolation(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setInterpolation, pos, value);
+}
+
+Result<bool> Detector::getPumpProbe(Positions pos) const {
+    return pimpl->Parallel(&Module::getPumpProbe, pos);
+}
+
+void Detector::setPumpProbe(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setPumpProbe, pos, value);
+}
+
+Result<bool> Detector::getAnalogPulsing(Positions pos) const {
+    return pimpl->Parallel(&Module::getAnalogPulsing, pos);
+}
+
+void Detector::setAnalogPulsing(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setAnalogPulsing, pos, value);
+}
+
+Result<bool> Detector::getDigitalPulsing(Positions pos) const {
+    return pimpl->Parallel(&Module::getDigitalPulsing, pos);
+}
+
+void Detector::setDigitalPulsing(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setDigitalPulsing, pos, value);
 }
 
 // CTB/ Moench Specific

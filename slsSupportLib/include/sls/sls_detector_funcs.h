@@ -260,9 +260,19 @@ enum detFuncs {
     F_SET_MASTER,
     F_GET_TOP,
     F_SET_TOP,
+    F_GET_POLARITY,
+    F_SET_POLARITY,
+    F_GET_INTERPOLATION,
+    F_SET_INTERPOLATION,
+    F_GET_PUMP_PROBE,
+    F_SET_PUMP_PROBE,
+    F_GET_ANALOG_PULSING,
+    F_SET_ANALOG_PULSING,
+    F_GET_DIGITAL_PULSING,
+    F_SET_DIGITAL_PULSING,
 
     NUM_DET_FUNCTIONS,
-    RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
+    RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
                                   (detector server should not compile anyway) */
 
     F_EXEC_RECEIVER_COMMAND,
@@ -623,6 +633,16 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_MASTER:                      return "F_SET_MASTER";
     case F_GET_TOP:                         return "F_GET_TOP";
     case F_SET_TOP:                         return "F_SET_TOP";
+    case F_GET_POLARITY:                    return "F_GET_POLARITY";
+    case F_SET_POLARITY:                    return "F_SET_POLARITY";
+    case F_GET_INTERPOLATION:               return "F_GET_INTERPOLATION";
+    case F_SET_INTERPOLATION:               return "F_SET_INTERPOLATION";
+    case F_GET_PUMP_PROBE:                  return "F_GET_PUMP_PROBE";
+    case F_SET_PUMP_PROBE:                  return "F_SET_PUMP_PROBE";
+    case F_GET_ANALOG_PULSING:              return "F_GET_ANALOG_PULSING";
+    case F_SET_ANALOG_PULSING:              return "F_SET_ANALOG_PULSING";
+    case F_GET_DIGITAL_PULSING:             return "F_GET_DIGITAL_PULSING";
+    case F_SET_DIGITAL_PULSING:             return "F_SET_DIGITAL_PULSING";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

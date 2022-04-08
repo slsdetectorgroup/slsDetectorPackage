@@ -61,7 +61,9 @@ This document describes the differences between v7.0.0 and v6.x.x
 - fixed bug introduced in 6.0.0: hdf5 files created 1 file per frame after the initial file which had maxframesperfile
 - updatedetectorserver - removes old server current binary pointing to for blackfin
 - removing copydetectorserver using tftp 
-
+- registerCallBackRawDataReady and registerCallBackRawDataModifyReady now gives a sls_receiver_header* instead of a char*, and uint32_t to size_t
+- registerCallBackStartAcquisition gave incorrect imagesize (+120 bytes). corrected.
+- registerCallBackStartAcquisition parameter is a const string reference
 
 2. Resolved Issues
 ==================

@@ -1408,11 +1408,11 @@ defs::ROI DetectorImpl::getRxROI() const {
 }
 
 void DetectorImpl::setRxROI(const defs::ROI arg) {
-    if (arg.xmin < 0 || arg.xmax >= getNumberOfChannels().x || arg.ymin < 0 ||
-        arg.ymax >= getNumberOfChannels().y) {
+    if (arg.xmin < 0 || arg.xmax >= shm()->numberOfChannels.x || arg.ymin < 0 ||
+        arg.ymax >= shm()->numberOfChannels.y) {
         throw RuntimeError("Invalid Receiver Roi");
     }
-    // TODO
+    modules[0]->setRxROI(arg);
 }
 
 std::vector<std::string> DetectorImpl::getCtbDacNames() const {

@@ -121,14 +121,21 @@ void DataProcessor::CreateFirstFiles(
         return;
     }
 
+#ifdef HDF5C
+    int nx = generalData_->nPixelsX;
+    int ny = generalData_->nPixelsY;
+    if (!receiverRoi_.isEmpty()) {
+        nx = receiverRoi_.xmax - receiverRoi_.xmin;
+        ny = receiverRoi_.ymax - receiverRoi_.ymin;
+    }
+#endif
     switch (dataFile_->GetFileFormat()) {
 #ifdef HDF5C
     case HDF5:
         dataFile_->CreateFirstHDF5DataFile(
             filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
             modulePos, numUnitsPerReadout, udpPortNumber, maxFramesPerFile,
-            numImages, generalData_->nPixelsX, generalData_->nPixelsY,
-            dynamicRange);
+            numImages, nx, ny, dynamicRange);
         break;
 #endif
     case BINARY:
@@ -166,17 +173,23 @@ std::array<std::string, 2> DataProcessor::CreateVirtualFile(
     uint32_t framesPerFile =
         ((maxFramesPerFile == 0) ? numFramesCaught_ : maxFramesPerFile);
 
+    int nx = generalData_->nPixelsX;
+    int ny = generalData_->nPixelsY;
+    if (!receiverRoi_.isEmpty()) {
+        nx = receiverRoi_.xmax - receiverRoi_.xmin;
+        ny = receiverRoi_.ymax - receiverRoi_.ymin;
+    }
+
     // TODO: assumption 1: create virtual file even if no data in other
     // files (they exist anyway) assumption2: virtual file max frame index
     // is from R0 P0 (difference from others when missing frames or for a
     // stop acquisition)
     return masterFileUtility::CreateVirtualHDF5File(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
-        modulePos, numUnitsPerReadout, framesPerFile, numImages,
-        generalData_->nPixelsX, generalData_->nPixelsY, dynamicRange,
-        numFramesCaught_, numModX, numModY, dataFile_->GetPDataType(),
-        dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes(),
-        hdf5LibMutex, gotthard25um);
+        modulePos, numUnitsPerReadout, framesPerFile, numImages, nx, ny,
+        dynamicRange, numFramesCaught_, numModX, numModY,
+        dataFile_->GetPDataType(), dataFile_->GetParameterNames(),
+        dataFile_->GetParameterDataTypes(), hdf5LibMutex, gotthard25um);
 }
 
 void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
@@ -274,7 +287,8 @@ void DataProcessor::StopProcessing(char *buf) {
 
 uint64_t DataProcessor::ProcessAnImage(char *buf) {
 
-    auto *rheader = reinterpret_cast<sls_receiver_header *>(buf + FIFO_HEADER_NUMBYTES);
+    auto *rheader =
+        reinterpret_cast<sls_receiver_header *>(buf + FIFO_HEADER_NUMBYTES);
     sls_detector_header header = rheader->detHeader;
     uint64_t fnum = header.frameNumber;
     currentFrameIndex_ = fnum;
@@ -303,6 +317,10 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
     // rearrange ctb digital bits (if ctbDbitlist is not empty)
     if (!(*ctbDbitList_).empty()) {
         RearrangeDbitData(buf);
+    }
+
+    if (!receiverRoi_.isEmpty()) {
+        CropImage(buf);
     }
 
     try {
@@ -509,4 +527,39 @@ void DataProcessor::RearrangeDbitData(char *buf) {
     // copy back to buf and update size
     memcpy(buf + digOffset, result.data(), numResult8Bits * sizeof(uint8_t));
     (*((uint32_t *)buf)) = numResult8Bits * sizeof(uint8_t);
+}
+
+void DataProcessor::CropImage(char *buf) {
+    LOG(logDEBUG) << "Cropping Image to ROI " << sls::ToString(receiverRoi_);
+    int nPixelsY = generalData_->nPixelsY;
+    int xmin = receiverRoi_.xmin;
+    int xmax = receiverRoi_.xmax;
+    int ymin = receiverRoi_.ymin;
+    int ymax = receiverRoi_.ymax;
+    int xwidth = xmax - xmin;
+    int ywidth = ymax - ymin;
+
+    // calculate total roi size
+    double bytesPerPixel = generalData_->dynamicRange / 8.00;
+    int startOffset = (int)((nPixelsY * xmin + ymin) * bytesPerPixel);
+
+    // write size into fifo buffer header
+    std::size_t roiImageSize = xwidth * ywidth * bytesPerPixel;
+    (*((uint32_t *)buf)) = roiImageSize;
+
+    // copy the roi to the beginning of the image
+    char *srcOffset = buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header);
+    char *dstOffset = srcOffset;
+    // entire width
+    if (ywidth == nPixelsY) {
+        memcpy(dstOffset, srcOffset + startOffset, roiImageSize);
+    }
+    // width is cropped
+    else {
+        for (int y = 0; y != ywidth; ++y) {
+            memcpy(dstOffset, srcOffset + startOffset, xwidth * bytesPerPixel);
+            dstOffset += (int)(xwidth * bytesPerPixel);
+            srcOffset += generalData_->nPixelsX;
+        }
+    }
 }

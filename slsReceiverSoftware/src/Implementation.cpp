@@ -353,6 +353,8 @@ void Implementation::setReceiverROI(slsDetectorDefs::ROI arg) {
     receiverRoi = arg;
     for (const auto &it : dataProcessor)
         it->SetReceiverROI(receiverRoi);
+    for (const auto &it : dataStreamer)
+        it->SetReceiverROI(receiverRoi);
     LOG(logINFO) << "receiverRoi ROI: " << sls::ToString(receiverRoi);
 }
 
@@ -534,10 +536,10 @@ void Implementation::startReceiver() {
     // callbacks
     if (startAcquisitionCallBack) {
         try {
-            std::size_t imageSize = static_cast<uint32_t>(generalData->imageSize);
-            startAcquisitionCallBack(
-                filePath, fileName, fileIndex, imageSize,
-                pStartAcquisition);
+            std::size_t imageSize =
+                static_cast<uint32_t>(generalData->imageSize);
+            startAcquisitionCallBack(filePath, fileName, fileIndex, imageSize,
+                                     pStartAcquisition);
         } catch (const std::exception &e) {
             throw sls::RuntimeError("Start Acquisition Callback Error: " +
                                     std::string(e.what()));
@@ -924,6 +926,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     &streamingStartFnum, &framePadding, &ctbDbitList,
                     &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
+                dataProcessor[i]->SetReceiverROI(receiverRoi);
             } catch (...) {
                 listener.clear();
                 dataProcessor.clear();
@@ -951,7 +954,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
-
+                    dataStreamer[i]->SetReceiverROI(receiverRoi);
                 } catch (...) {
                     if (dataStreamEnable) {
                         dataStreamer.clear();
@@ -1082,6 +1085,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
+                    dataStreamer[i]->SetReceiverROI(receiverRoi);
                 } catch (...) {
                     dataStreamer.clear();
                     dataStreamEnable = false;
@@ -1641,7 +1645,8 @@ void Implementation::setDbitOffset(const int s) { ctbDbitOffset = s; }
  *                                                *
  * ************************************************/
 void Implementation::registerCallBackStartAcquisition(
-    int (*func)(const std::string &, const std::string &, uint64_t, size_t, void *),
+    int (*func)(const std::string &, const std::string &, uint64_t, size_t,
+                void *),
     void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;

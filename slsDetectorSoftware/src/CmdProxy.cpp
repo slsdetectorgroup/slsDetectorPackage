@@ -1056,7 +1056,7 @@ std::string CmdProxy::TemperatureValues(int action) {
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;
     os << cmd << ' ';
-    
+
     if (action == defs::HELP_ACTION) {
         if (args.size() == 0) {
             os << GetHelpDac(std::to_string(0)) << '\n';
@@ -1672,8 +1672,8 @@ std::string CmdProxy::Rx_ROI(int action) {
             t.xmax = StringTo<int>(args[1]);
         }
         if (args.size() == 4) {
-            t.xmin = StringTo<int>(args[2]);
-            t.xmax = StringTo<int>(args[3]);
+            t.ymin = StringTo<int>(args[2]);
+            t.ymax = StringTo<int>(args[3]);
         }
         // only multi level
         if (det_id != -1) {

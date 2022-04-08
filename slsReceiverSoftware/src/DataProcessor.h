@@ -86,7 +86,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                                    char *, size_t, void *),
                                       void *arg);
 
-    /** params: sls_receiver_header pointer, pointer to data, reference to image size */
+    /** params: sls_receiver_header pointer, pointer to data, reference to image
+     * size */
     void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
                                                          char *, size_t &,
                                                          void *),
@@ -144,6 +145,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      */
     void RearrangeDbitData(char *buf);
 
+    void CropImage(char *buf);
+
     static const std::string typeName_;
 
     const GeneralData *generalData_{nullptr};
@@ -157,7 +160,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t *streamingTimerInMs_;
     uint32_t *streamingStartFnum_;
     uint32_t currentFreqCount_{0};
-    struct timespec timerbegin_{};
+    struct timespec timerbegin_ {};
     bool *framePadding_;
     std::vector<int> *ctbDbitList_;
     int *ctbDbitOffset_;

@@ -786,6 +786,11 @@ void init_det(py::module &m) {
         .def("setRxArping",
              (void (Detector::*)(bool, sls::Positions)) & Detector::setRxArping,
              py::arg(), py::arg() = Positions{})
+        .def("getRxROI", (defs::ROI(Detector::*)() const) & Detector::getRxROI)
+        .def("setRxROI",
+             (void (Detector::*)(const defs::ROI)) & Detector::setRxROI,
+             py::arg())
+        .def("clearRxROI", (void (Detector::*)()) & Detector::clearRxROI)
         .def("getFileFormat",
              (Result<defs::fileFormat>(Detector::*)(sls::Positions) const) &
                  Detector::getFileFormat,

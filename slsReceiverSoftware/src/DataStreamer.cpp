@@ -34,6 +34,8 @@ DataStreamer::~DataStreamer() {
 
 void DataStreamer::SetFifo(Fifo *f) { fifo = f; }
 
+void DataStreamer::SetReceiverROI(ROI roi) { receiverRoi = roi; }
+
 void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
     StopRunning();
     startedFlag = false;
@@ -118,7 +120,7 @@ void DataStreamer::ThreadExecution() {
                    << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
 
     // check dummy
-    uint32_t numBytes = (uint32_t)(*((uint32_t *)buffer));
+    auto numBytes = *reinterpret_cast<uint32_t *>(buffer);
     LOG(logDEBUG1) << "DataStreamer " << index << ", Numbytes:" << numBytes;
     if (numBytes == DUMMY_PACKET_VALUE) {
         StopProcessing(buffer);
@@ -157,6 +159,7 @@ void DataStreamer::ProcessAnImage(char *buf) {
     if (!startedFlag) {
         RecordFirstIndex(fnum, buf);
     }
+    auto numBytes = *reinterpret_cast<uint32_t *>(buf);
 
     // shortframe gotthard
     if (completeBuffer) {
@@ -174,7 +177,7 @@ void DataStreamer::ProcessAnImage(char *buf) {
         }
         memcpy(completeBuffer + ((generalData->imageSize) * adcConfigured),
                buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
-               (uint32_t)(*((uint32_t *)buf)));
+               numBytes);
 
         if (!zmqSocket->SendData(completeBuffer,
                                  generalData->imageSizeComplete)) {
@@ -186,16 +189,15 @@ void DataStreamer::ProcessAnImage(char *buf) {
     // normal
     else {
 
-        if (!SendHeader(header, (uint32_t)(*((uint32_t *)buf)),
-                        generalData->nPixelsX, generalData->nPixelsY,
+        if (!SendHeader(header, numBytes, generalData->nPixelsX,
+                        generalData->nPixelsY,
                         false)) { // new size possibly from callback
             LOG(logERROR) << "Could not send zmq header for fnum " << fnum
                           << " and streamer " << index;
         }
-        if (!zmqSocket->SendData(
-                buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
-                (uint32_t)(*(
-                    (uint32_t *)buf)))) { // new size possibly from callback
+        if (!zmqSocket->SendData(buf + FIFO_HEADER_NUMBYTES +
+                                     sizeof(sls_receiver_header),
+                                 numBytes)) { // new size possibly from callback
             LOG(logERROR) << "Could not send zmq data for fnum " << fnum
                           << " and streamer " << index;
         }
@@ -247,6 +249,13 @@ int DataStreamer::SendHeader(sls_receiver_header *rheader, uint32_t size,
     zHeader.quad = *quadEnable;
     zHeader.completeImage =
         (header.packetNumber < generalData->packetsPerFrame ? false : true);
+
+    if (!receiverRoi.isEmpty()) {
+        zHeader.npixelsx = receiverRoi.xmax - receiverRoi.xmin;
+        zHeader.npixelsy = receiverRoi.ymax - receiverRoi.ymin;
+        zHeader.imageSize =
+            zHeader.npixelsx * zHeader.npixelsy * (zHeader.dynamicRange / 8.00);
+    }
 
     // update local copy only if it was updated (to prevent locking each time)
     if (isAdditionalJsonUpdated) {

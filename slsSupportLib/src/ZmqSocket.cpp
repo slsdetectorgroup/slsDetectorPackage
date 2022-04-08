@@ -201,9 +201,9 @@ int ZmqSocket::SendHeader(int index, zmqHeader header) {
     strcat(header_buffer.get(), "}\n");
     int length = strlen(header_buffer.get());
 
-#ifdef VERBOSE
+#ifdef ZMQ_DETAIL
     // if(!index)
-    cprintf(BLUE, "%d : Streamer: buf: %s\n", index, buf);
+    cprintf(BLUE, "%d : Streamer: buf: %s\n", index, header_buffer.get());
 #endif
 
     if (zmq_send(sockfd.socketDescriptor, header_buffer.get(), length,
@@ -232,13 +232,13 @@ int ZmqSocket::ReceiveHeader(const int index, zmqHeader &zHeader,
     if (bytes_received > 0) {
 #ifdef ZMQ_DETAIL
         cprintf(BLUE, "Header %d [%d] Length: %d Header:%s \n", index, portno,
-                bytes_received, buffer.data());
+                bytes_received, header_buffer.get());
 #endif
         if (ParseHeader(index, bytes_received, header_buffer.get(), zHeader,
                         version)) {
 #ifdef ZMQ_DETAIL
             cprintf(RED, "Parsed Header %d [%d] Length: %d Header:%s \n", index,
-                    portno, bytes_received, buffer.data());
+                    portno, bytes_received, header_buffer.get());
 #endif
             if (!zHeader.data) {
 #ifdef ZMQ_DETAIL
@@ -333,7 +333,7 @@ int ZmqSocket::ReceiveData(const int index, char *buf, const int size) {
         memset(buf + length, 0xFF, size - length);
     } else {
         LOG(logERROR) << "Received weird packet size " << length
-                      << " for socket " << index;
+                      << " (expected " << size << ") for socket " << index;
         memset(buf, 0xFF, size);
     }
 

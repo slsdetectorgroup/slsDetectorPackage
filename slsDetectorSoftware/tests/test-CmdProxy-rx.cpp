@@ -449,9 +449,10 @@ TEST_CASE("rx_roi", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("rx_roi", {"0", "255"}, -1, PUT));
     } else {
         auto prev_val = det.getRxROI();
-        
+
         // 1d
-        if (det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2  || det_type == defs::MYTHEN3) {
+        if (det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2 ||
+            det_type == defs::MYTHEN3) {
             {
                 std::ostringstream oss;
                 proxy.Call("rx_roi", {"0", "255"}, -1, PUT, oss);
@@ -463,7 +464,7 @@ TEST_CASE("rx_roi", "[.cmd]") {
                 REQUIRE(oss.str() == "rx_roi [256, 511]\n");
             }
             REQUIRE_THROWS(proxy.Call("rx_roi", {"0", "256"}, -1, PUT));
-        } 
+        }
         // 2d
         else {
             {
@@ -477,10 +478,10 @@ TEST_CASE("rx_roi", "[.cmd]") {
                 REQUIRE(oss.str() == "rx_roi [5, 255, 5, 255]\n");
             }
             REQUIRE_THROWS(proxy.Call("rx_roi", {"-1", "256"}, -1, PUT));
-        } 
-        
+        }
+
         for (int i = 0; i != det.size(); ++i) {
-            det.setRxROI(prev_val[i], i);
+            det.setRxROI(prev_val);
         }
     }
 }
@@ -497,12 +498,12 @@ TEST_CASE("rx_clearroi", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("rx_clearroi", {}, -1, PUT, oss);
-            REQUIRE(oss.str() == "rx_clearroi [-1, -1]\n");
+            REQUIRE(oss.str() == "rx_clearroi successful\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setRxROI(prev_val[i], i);
+            det.setRxROI(prev_val);
         }
-    } 
+    }
 }
 
 /* File */

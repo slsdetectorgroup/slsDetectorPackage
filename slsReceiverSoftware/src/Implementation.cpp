@@ -345,6 +345,17 @@ void Implementation::setArping(const bool i,
     }
 }
 
+slsDetectorDefs::ROI Implementation::getReceiverROI() const {
+    return receiverRoi;
+}
+
+void Implementation::setReceiverROI(slsDetectorDefs::ROI arg) {
+    receiverRoi = arg;
+    for (const auto &it : dataProcessor)
+        it->SetReceiverROI(receiverRoi);
+    LOG(logINFO) << "receiverRoi ROI: " << sls::ToString(receiverRoi);
+}
+
 /**************************************************
  *                                                 *
  *   File Parameters                               *
@@ -762,6 +773,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.framePadding = framePadding;
             masterAttributes.scanParams = scanParams;
             masterAttributes.totalFrames = numberOfTotalFrames;
+            masterAttributes.receiverRoi = receiverRoi;
             masterAttributes.exptime = acquisitionTime;
             masterAttributes.period = acquisitionPeriod;
             masterAttributes.burstMode = burstMode;
@@ -930,8 +942,9 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         nm.y = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, fifo[i].get(), &dynamicRange, &detectorRoi, &fileIndex, flip,
-                        nm, &quadEnable, &numberOfTotalFrames));
+                        i, fifo[i].get(), &dynamicRange, &detectorRoi,
+                        &fileIndex, flip, nm, &quadEnable,
+                        &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numUDPInterfaces, streamingPort, streamingSrcIP,
@@ -1060,8 +1073,9 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         nm.y = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, fifo[i].get(), &dynamicRange, &detectorRoi, &fileIndex, flip,
-                        nm, &quadEnable, &numberOfTotalFrames));
+                        i, fifo[i].get(), &dynamicRange, &detectorRoi,
+                        &fileIndex, flip, nm, &quadEnable,
+                        &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numUDPInterfaces, streamingPort, streamingSrcIP,
@@ -1438,7 +1452,7 @@ void Implementation::setDetectorROI(slsDetectorDefs::ROI arg) {
         SetupFifoStructure();
     }
 
-    LOG(logINFO) << "Detector ROI: [" << detectorRoi.xmin << ", " << detectorRoi.xmax << "]";
+    LOG(logINFO) << "Detector ROI: " << sls::ToString(detectorRoi);
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 

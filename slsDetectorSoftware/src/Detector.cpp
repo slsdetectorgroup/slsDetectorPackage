@@ -1228,10 +1228,12 @@ void Detector::setRxArping(bool value, Positions pos) {
     pimpl->Parallel(&Module::setRxArping, pos, value);
 }
 
-void Detector::setRxROI(defs::ROI value) { pimpl->setRxROI(value); }
+defs::ROI Detector::getRxROI() const { return pimpl->getRxROI(); }
 
-void Detector::clearRxROI(Positions pos) {
-    pimpl->Parallel(&Module::clearRxROI, pos);
+void Detector::setRxROI(const defs::ROI value) { pimpl->setRxROI(value); }
+
+void Detector::clearRxROI() {
+    pimpl->Parallel(&Module::setRxROI, {}, defs::ROI{});
 }
 
 // File

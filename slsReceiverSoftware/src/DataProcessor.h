@@ -39,6 +39,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     bool GetStartedFlag() const;
 
     void SetFifo(Fifo *f);
+    void SetReceiverROI(ROI roi);
     void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *generalData);
 
@@ -162,6 +163,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     detectorType detectorType_;
     bool *dataStreamEnable_;
     bool *activated_;
+    ROI receiverRoi_{};
     /** if 0, sending random images with a timer */
     uint32_t *streamingFrequency_;
     uint32_t *streamingTimerInMs_;
@@ -176,7 +178,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     std::atomic<uint64_t> firstIndex_{0};
 
     // for statistics
-    /** Number of frames caught */
     uint64_t numFramesCaught_{0};
 
     /** Frame Number of latest processed frame number */

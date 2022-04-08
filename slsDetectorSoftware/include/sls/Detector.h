@@ -899,10 +899,12 @@ class Detector {
      * every minute. Useful in 10G mode. */
     void setRxArping(bool value, Positions pos = {});
 
-    /** only allowed at multi module level */
-    void setRxROI(defs::ROI value);
+    defs::ROI getRxROI() const;
 
-    void clearRxROI(Positions pos = {});
+    /** only at multi module level */
+    void setRxROI(const defs::ROI value);
+
+    void clearRxROI();
 
     ///@}
 

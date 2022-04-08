@@ -53,7 +53,8 @@ class Implementation : private virtual slsDetectorDefs {
     bool getArping() const;
     pid_t getArpingThreadId() const;
     void setArping(const bool i, const std::vector<std::string> ips);
-
+    ROI getReceiverROI() const;
+    void setReceiverROI(ROI arg);
     /**************************************************
      *                                                 *
      *   File Parameters                               *
@@ -294,6 +295,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool framePadding{true};
     pid_t parentThreadId;
     pid_t tcpThreadId;
+    ROI receiverRoi{};
 
     // file parameters
     fileFormat fileFormatType{BINARY};

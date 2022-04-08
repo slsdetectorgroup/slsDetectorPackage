@@ -1761,9 +1761,10 @@ class CmdProxy {
                            "the interface it is "
                            "listening to every minute. Useful in 10G mode.");
 
-    EXECUTE_SET_COMMAND(rx_clearroi, ClearRxROI,
-                        "Resets Region of interest in receiver. Default is all "
-                        "channels/pixels enabled.");
+    EXECUTE_SET_COMMAND_NOID(
+        rx_clearroi, clearRxROI,
+        "Resets Region of interest in receiver. Default is all "
+        "channels/pixels enabled.");
 
     /* File */
 

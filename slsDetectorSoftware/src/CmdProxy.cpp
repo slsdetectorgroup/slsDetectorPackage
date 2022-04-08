@@ -1643,7 +1643,7 @@ std::string CmdProxy::ReceiverHostname(int action) {
     return os.str();
 }
 
-std::string CmdProxy::RxROI(int action) {
+std::string CmdProxy::Rx_ROI(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -1654,11 +1654,10 @@ std::string CmdProxy::RxROI(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        auto t = det->getRxROI(std::vector<int>{det_id});
-        // combine it into a single multi roi?
+        auto t = det->getRxROI();
         os << t << '\n';
     } else if (action == defs::PUT_ACTION) {
-        defs::RxROI t;
+        defs::ROI t;
         // 2 or 4 arguments
         if (args.size() != 2 && args.size() != 4) {
             WrongNumberOfParameters(2);

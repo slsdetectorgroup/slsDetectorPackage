@@ -1402,6 +1402,19 @@ void DetectorImpl::setDefaultDac(defs::dacIndex index, int defaultValue,
     Parallel(&Module::setDefaultDac, pos, index, defaultValue, sett);
 }
 
+defs::ROI DetectorImpl::getRxROI() const {
+    return Parallel(&Module::getRxROI, {})
+        .tsquash("havent put rx rois together");
+}
+
+void DetectorImpl::setRxROI(const defs::ROI arg) {
+    if (arg.xmin < 0 || arg.xmax >= getNumberOfChannels().x || arg.ymin < 0 ||
+        arg.ymax >= getNumberOfChannels().y) {
+        throw RuntimeError("Invalid Receiver Roi");
+    }
+    // TODO
+}
+
 std::vector<std::string> DetectorImpl::getCtbDacNames() const {
     return ctb_shm()->getDacNames();
 }

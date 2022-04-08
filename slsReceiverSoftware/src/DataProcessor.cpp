@@ -54,6 +54,8 @@ bool DataProcessor::GetStartedFlag() const { return startedFlag_; }
 
 void DataProcessor::SetFifo(Fifo *fifo) { fifo_ = fifo; }
 
+void DataProcessor::SetReceiverROI(ROI roi) { receiverRoi_ = roi; }
+
 void DataProcessor::ResetParametersforNewAcquisition() {
     StopRunning();
     startedFlag_ = false;

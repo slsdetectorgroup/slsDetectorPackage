@@ -7,7 +7,6 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
-
 #include "CtbConfig.h"
 class ZmqSocket;
 class detectorData;
@@ -300,10 +299,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos);
 
+    defs::ROI getRxROI() const;
+    void setRxROI(const defs::ROI arg);
 
     std::vector<std::string> getCtbDacNames() const;
     std::string getCtbDacName(defs::dacIndex i) const;
-    void setCtbDacNames(const std::vector<std::string>& names);
+    void setCtbDacNames(const std::vector<std::string> &names);
 
   private:
     /**

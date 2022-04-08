@@ -217,6 +217,8 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_SET_DATASTREAM]        =   &ClientInterface::set_detector_datastream;
     flist[F_GET_RECEIVER_ARPING]            =   &ClientInterface::get_arping;
     flist[F_SET_RECEIVER_ARPING]            =   &ClientInterface::set_arping;
+    flist[F_RECEIVER_GET_RECEIVER_ROI]      =   &ClientInterface::get_receiver_roi;
+    flist[F_RECEIVER_SET_RECEIVER_ROI]      =   &ClientInterface::set_receiver_roi;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -520,7 +522,7 @@ void ClientInterface::setDetectorType(detectorType arg) {
 
 int ClientInterface::set_detector_roi(Interface &socket) {
     auto arg = socket.Receive<ROI>();
-    LOG(logDEBUG1) << "Set Detector ROI: [" << arg.xmin << ", " << arg.xmax << "]";
+    LOG(logDEBUG1) << "Set Detector ROI: " << sls::ToString(arg);
 
     if (detType != GOTTHARD)
         functionNotImplemented();
@@ -1734,5 +1736,24 @@ int ClientInterface::set_arping(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Starting/ Killing arping thread:" << value;
     impl()->setArping(value, udpips);
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_receiver_roi(Interface &socket) {
+    auto retval = impl()->getReceiverROI();
+    LOG(logDEBUG1) << "Receiver roi retval:" << sls::ToString(retval);
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::set_receiver_roi(Interface &socket) {
+    auto arg = socket.Receive<ROI>();
+    LOG(logDEBUG1) << "Set Receiver ROI: " << sls::ToString(arg);
+
+    verifyIdle(socket);
+    try {
+        impl()->setReceiverROI(arg);
+    } catch (const RuntimeError &e) {
+        throw RuntimeError("Could not set ReceiverROI");
+    }
     return socket.Send(OK);
 }

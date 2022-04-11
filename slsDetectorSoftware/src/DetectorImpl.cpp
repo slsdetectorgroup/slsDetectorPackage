@@ -1412,12 +1412,12 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
         arg.ymax >= shm()->numberOfChannels.y) {
         throw RuntimeError("Invalid Receiver Roi");
     }
-    bool oneDimension = false;
+    bool twoD = true;
     switch (shm()->detType) {
         case GOTTHARD:
         case GOTTHARD2:
         case MYTHEN3:
-            oneDimension = true;
+            twoD = false;
             break;
         case CHIPTESTBOARD:
         case MOENCH:
@@ -1429,7 +1429,9 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
     }
     defs::xy numChansPerMod{};
     numChansPerMod.x = shm()->numberOfChannels.x/shm()->numberOfModules.x;
-    numChansPerMod.y = shm()->numberOfChannels.y/shm()->numberOfModules.y;
+    if (twoD) {
+        numChansPerMod.y = shm()->numberOfChannels.y/shm()->numberOfModules.y;
+    }
  // how to deal with 1d dets??
     for (int iModule = 0; iModule != modules.size(); ++iModule) {
         // get module limits
@@ -1437,14 +1439,13 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
         defs::ROI moduleFullRoi{};
         moduleFullRoi.xmin = numChansPerMod.x * pos.y;
         moduleFullRoi.xmax = numChansPerMod.x * (pos.y + 1) - 1;
-        moduleFullRoi.ymin = numChansPerMod.y * pos.x;
-        moduleFullRoi.ymax = numChansPerMod.y * (pos.x + 1) - 1;
-        
-        defs::ROI moduleArg = arg;
-        int modXMin = 0;
-        int modYMin = 1;
-        int modXMax = numChansPerMod.x - 1;
-        int modYMax = numChansPerMod.y - 1;
+        if (twoD) {
+            moduleFullRoi.ymin = numChansPerMod.y * pos.x;
+            moduleFullRoi.ymax = numChansPerMod.y * (pos.x + 1) - 1;
+        }
+
+        // default = complete roi
+        defs::ROI moduleArg{};
 
         // outside module limits
         if (arg.xmin > moduleFullRoi.xmax || arg.ymin > moduleFullRoi.ymax || arg.xmax < moduleFullRoi.xmin || arg.ymax < moduleFullRoi.ymin) {
@@ -1453,18 +1454,14 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
             moduleArg.ymin = 0;
             moduleArg.ymax = 0;
         } 
-        // complete module roi
-        else if (arg.xmin >= moduleFullRoi.xmin && arg.ymin >= moduleFullRoi.ymin && arg.xmax <= moduleFullRoi.xmax && arg.ymax <= moduleFullRoi.ymax) {
-            moduleArg.xmin = -1;
-            moduleArg.xmax = -1;
-            moduleArg.ymin = -1;
-            moduleArg.ymax = -1;        
-        
-        } else {
-            moduleArg.xmin = (arg.xmin <= moduleFullRoi.xmin) ? modXMin : (arg.xmin % numChansPerMod.x);
-            moduleArg.xmax = (arg.xmax >= moduleFullRoi.xmax) ? modXMax : (arg.xmax % numChansPerMod.x);
-            moduleArg.ymin = (arg.ymin <= moduleFullRoi.ymin) ? modYMin : (arg.ymin % numChansPerMod.y);
-            moduleArg.ymax = (arg.ymax >= moduleFullRoi.ymax) ? modYMax : (arg.ymax % numChansPerMod.y);
+        // incomplete module roi
+        else if (arg.xmin < moduleFullRoi.xmin || arg.ymin < moduleFullRoi.ymin || arg.xmax > moduleFullRoi.xmax || arg.ymax > moduleFullRoi.ymax) {
+            moduleArg.xmin = (arg.xmin <= moduleFullRoi.xmin) ? 0 : (arg.xmin % numChansPerMod.x);
+            moduleArg.xmax = (arg.xmax >= moduleFullRoi.xmax) ? numChansPerMod.x - 1 : (arg.xmax % numChansPerMod.x);
+            if (twoD) {
+                moduleArg.ymin = (arg.ymin <= moduleFullRoi.ymin) ? 0 : (arg.ymin % numChansPerMod.y);
+                moduleArg.ymax = (arg.ymax >= moduleFullRoi.ymax) ? numChansPerMod.y - 1 : (arg.ymax % numChansPerMod.y);
+            }
         }
         modules[iModule]->setRxROI(moduleArg);
     }

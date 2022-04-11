@@ -184,9 +184,8 @@ class slsDetectorDefs {
                     ymax == -1);
         }
         constexpr bool noRoi() const {
-            return (xmin == 0 && xmax == 0 && ((ymin == 0 &&
-                    ymax == 0) || (ymin == -1 &&
-                    ymax == -1)));
+            return (xmin == 0 && xmax == 0 && ymin == 0 &&
+                    ymax == 0);
         }
     } __attribute__((packed));
 #else

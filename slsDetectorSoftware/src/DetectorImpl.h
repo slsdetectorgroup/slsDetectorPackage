@@ -57,7 +57,7 @@ struct sharedDetector {
      * -----------------------------------------------*/
 
     /** Number of modules operated at once */
-    slsDetectorDefs::xy numberOfModule;
+    slsDetectorDefs::xy numberOfModules;
 
     /**  max number of channels for complete detector*/
     slsDetectorDefs::xy numberOfChannels;

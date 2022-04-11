@@ -149,6 +149,7 @@ int get_interrupt_subframe(int);
 int set_read_n_rows(int);
 int get_read_n_rows(int);
 void calculate_and_set_position();
+int get_detector_position(int);
 int set_detector_position(int);
 int check_detector_idle(const char *s);
 int is_udp_configured();

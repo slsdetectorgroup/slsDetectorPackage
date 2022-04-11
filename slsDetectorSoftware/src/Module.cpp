@@ -520,6 +520,12 @@ bool Module::isVirtualDetectorServer() const {
     return sendToDetector<int>(F_IS_VIRTUAL);
 }
 
+defs:: xy Module::getPosition() const {
+    std::array<int, 2> retval = sendToDetector<std::array<int, 2>>(F_GET_POSITION);
+    return defs::xy(retval[0], retval[1]);
+}
+
+
 int64_t Module::getNumberOfFrames() const {
     return sendToDetector<int64_t>(F_GET_NUM_FRAMES);
 }

@@ -319,7 +319,7 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
         RearrangeDbitData(buf);
     }
 
-    if (!receiverRoi_.isEmpty()) {
+    if (!receiverRoi_.completeRoi()) {
         CropImage(buf);
     }
 

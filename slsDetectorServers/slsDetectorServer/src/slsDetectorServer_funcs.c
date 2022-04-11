@@ -472,6 +472,7 @@ void function_table() {
     flist[F_SET_MASTER] = &set_master;
     flist[F_GET_TOP] = &get_top;
     flist[F_SET_TOP] = &set_top;
+    flist[F_GET_POSITION] = &get_detector_position;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -4832,6 +4833,21 @@ void calculate_and_set_position() {
         configure_mac();
     }
     // no need to do a get (also jungfrau gives bigger set for second)
+}
+
+int get_detector_position(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retvals[2] = {-1, -1};
+
+    LOG(logDEBUG1, ("Getting detector position\n"));
+    
+    // jungfrau  has a 4 element array (first 2 inner), others 2
+    int* p_retvals = getDetectorPosition();
+    retvals[0] = p_retvals[0];
+    retvals[1] = p_retvals[1];
+
+    return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
 }
 
 int set_detector_position(int file_des) {

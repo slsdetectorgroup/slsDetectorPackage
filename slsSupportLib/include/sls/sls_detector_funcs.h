@@ -261,6 +261,7 @@ enum detFuncs {
     F_SET_MASTER,
     F_GET_TOP,
     F_SET_TOP,
+    F_GET_POSITION,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -627,6 +628,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_MASTER:                      return "F_SET_MASTER";
     case F_GET_TOP:                         return "F_GET_TOP";
     case F_SET_TOP:                         return "F_SET_TOP";
+    case F_GET_POSITION:                    return "F_GET_POSITION";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

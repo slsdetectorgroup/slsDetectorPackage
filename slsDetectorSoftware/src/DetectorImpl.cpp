@@ -163,8 +163,8 @@ void DetectorImpl::initializeDetectorStructure() {
     shm()->shmversion = DETECTOR_SHMVERSION;
     shm()->numberOfModules = 0;
     shm()->detType = GENERIC;
-    shm()->numberOfModule.x = 0;
-    shm()->numberOfModule.y = 0;
+    shm()->numberOfModules.x = 0;
+    shm()->numberOfModules.y = 0;
     shm()->numberOfChannels.x = 0;
     shm()->numberOfChannels.y = 0;
     shm()->acquiringFlag = false;
@@ -362,15 +362,15 @@ void DetectorImpl::updateDetectorSize() {
         }
     }
 
-    shm()->numberOfModule.x = ndetx;
-    shm()->numberOfModule.y = ndety;
+    shm()->numberOfModules.x = ndetx;
+    shm()->numberOfModules.y = ndety;
     shm()->numberOfChannels.x = det_size.x * ndetx;
     shm()->numberOfChannels.y = det_size.y * ndety;
 
     LOG(logDEBUG) << "\n\tNumber of Modules in X direction:"
-                  << shm()->numberOfModule.x
+                  << shm()->numberOfModules.x
                   << "\n\tNumber of Modules in Y direction:"
-                  << shm()->numberOfModule.y
+                  << shm()->numberOfModules.y
                   << "\n\tNumber of Channels in X direction:"
                   << shm()->numberOfChannels.x
                   << "\n\tNumber of Channels in Y direction:"
@@ -378,7 +378,7 @@ void DetectorImpl::updateDetectorSize() {
 
     for (auto &module : modules) {
         if (module->getUpdateMode() == 0) {
-            module->updateNumberOfModule(shm()->numberOfModule);
+            module->updateNumberOfModule(shm()->numberOfModules);
         }
     }
 }
@@ -386,7 +386,7 @@ void DetectorImpl::updateDetectorSize() {
 int DetectorImpl::size() const { return modules.size(); }
 
 slsDetectorDefs::xy DetectorImpl::getNumberOfModules() const {
-    return shm()->numberOfModule;
+    return shm()->numberOfModules;
 }
 
 slsDetectorDefs::xy DetectorImpl::getNumberOfChannels() const {
@@ -412,7 +412,7 @@ void DetectorImpl::setGapPixelsinCallback(const bool enable) {
             if (size() && modules[0]->getQuad()) {
                 break;
             }
-            if (shm()->numberOfModule.y % 2 != 0) {
+            if (shm()->numberOfModules.y % 2 != 0) {
                 throw RuntimeError("Gap pixels can only be used "
                                    "for full modules.");
             }
@@ -1412,7 +1412,62 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
         arg.ymax >= shm()->numberOfChannels.y) {
         throw RuntimeError("Invalid Receiver Roi");
     }
-    modules[0]->setRxROI(arg);
+    bool oneDimension = false;
+    switch (shm()->detType) {
+        case GOTTHARD:
+        case GOTTHARD2:
+        case MYTHEN3:
+            oneDimension = true;
+            break;
+        case CHIPTESTBOARD:
+        case MOENCH:
+            throw RuntimeError("RxRoi not implemented for this Detector");
+        case GENERIC:
+            throw RuntimeError("Unknown Generic Detector");
+        default:
+        break;
+    }
+    defs::xy numChansPerMod{};
+    numChansPerMod.x = shm()->numberOfChannels.x/shm()->numberOfModules.x;
+    numChansPerMod.y = shm()->numberOfChannels.y/shm()->numberOfModules.y;
+ // how to deal with 1d dets??
+    for (int iModule = 0; iModule != modules.size(); ++iModule) {
+        // get module limits
+        defs::xy pos = modules[iModule]->getPosition();
+        defs::ROI moduleFullRoi{};
+        moduleFullRoi.xmin = numChansPerMod.x * pos.y;
+        moduleFullRoi.xmax = numChansPerMod.x * (pos.y + 1) - 1;
+        moduleFullRoi.ymin = numChansPerMod.y * pos.x;
+        moduleFullRoi.ymax = numChansPerMod.y * (pos.x + 1) - 1;
+        
+        defs::ROI moduleArg = arg;
+        int modXMin = 0;
+        int modYMin = 1;
+        int modXMax = numChansPerMod.x - 1;
+        int modYMax = numChansPerMod.y - 1;
+
+        // outside module limits
+        if (arg.xmin > moduleFullRoi.xmax || arg.ymin > moduleFullRoi.ymax || arg.xmax < moduleFullRoi.xmin || arg.ymax < moduleFullRoi.ymin) {
+            moduleArg.xmin = 0;
+            moduleArg.xmax = 0;
+            moduleArg.ymin = 0;
+            moduleArg.ymax = 0;
+        } 
+        // complete module roi
+        else if (arg.xmin >= moduleFullRoi.xmin && arg.ymin >= moduleFullRoi.ymin && arg.xmax <= moduleFullRoi.xmax && arg.ymax <= moduleFullRoi.ymax) {
+            moduleArg.xmin = -1;
+            moduleArg.xmax = -1;
+            moduleArg.ymin = -1;
+            moduleArg.ymax = -1;        
+        
+        } else {
+            moduleArg.xmin = (arg.xmin <= moduleFullRoi.xmin) ? modXMin : (arg.xmin % numChansPerMod.x);
+            moduleArg.xmax = (arg.xmax >= moduleFullRoi.xmax) ? modXMax : (arg.xmax % numChansPerMod.x);
+            moduleArg.ymin = (arg.ymin <= moduleFullRoi.ymin) ? modYMin : (arg.ymin % numChansPerMod.y);
+            moduleArg.ymax = (arg.ymax >= moduleFullRoi.ymax) ? modYMax : (arg.ymax % numChansPerMod.y);
+        }
+        modules[iModule]->setRxROI(moduleArg);
+    }
 }
 
 std::vector<std::string> DetectorImpl::getCtbDacNames() const {

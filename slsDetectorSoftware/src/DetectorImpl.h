@@ -50,7 +50,7 @@ struct sharedDetector {
     /** last time stamp when accessing the shared memory */
     char lastDate[SHORT_STRING_LENGTH];
 
-    int numberOfModules;
+    int totalNumberOfModules;
     slsDetectorDefs::detectorType detType;
 
     /** END OF FIXED PATTERN

@@ -70,7 +70,7 @@ void DetectorImpl::freeSharedMemory(int detectorIndex, int detPos) {
 
     if (detectorShm.exists()) {
         detectorShm.openSharedMemory();
-        numModules = detectorShm()->numberOfModules;
+        numModules = detectorShm()->totalNumberOfModules;
         detectorShm.removeSharedMemory();
     }
 
@@ -161,7 +161,7 @@ void DetectorImpl::initSharedMemory(bool verify) {
 
 void DetectorImpl::initializeDetectorStructure() {
     shm()->shmversion = DETECTOR_SHMVERSION;
-    shm()->numberOfModules = 0;
+    shm()->totalNumberOfModules = 0;
     shm()->detType = GENERIC;
     shm()->numberOfModules.x = 0;
     shm()->numberOfModules.y = 0;
@@ -179,7 +179,7 @@ void DetectorImpl::initializeMembers(bool verify) {
     zmqSocket.clear();
 
     // get objects from single det shared memory (open)
-    for (int i = 0; i < shm()->numberOfModules; i++) {
+    for (int i = 0; i < shm()->totalNumberOfModules; i++) {
         try {
             modules.push_back(
                 sls::make_unique<Module>(detectorIndex, i, verify));
@@ -246,7 +246,7 @@ void DetectorImpl::setVirtualDetectorServers(const int numdet, const int port) {
 
 void DetectorImpl::setHostname(const std::vector<std::string> &name) {
     // this check is there only to allow the previous detsizechan command
-    if (shm()->numberOfModules != 0) {
+    if (shm()->totalNumberOfModules != 0) {
         LOG(logWARNING) << "There are already module(s) in shared memory."
                            "Freeing Shared memory now.";
         bool initialChecks = shm()->initialChecks;
@@ -305,7 +305,7 @@ void DetectorImpl::addModule(const std::string &hostname) {
     auto pos = modules.size();
     modules.emplace_back(
         sls::make_unique<Module>(type, detectorIndex, pos, false));
-    shm()->numberOfModules = modules.size();
+    shm()->totalNumberOfModules = modules.size();
     modules[pos]->setControlPort(port);
     modules[pos]->setStopPort(port + 1);
     modules[pos]->setHostname(host, shm()->initialChecks);
@@ -1403,8 +1403,36 @@ void DetectorImpl::setDefaultDac(defs::dacIndex index, int defaultValue,
 }
 
 defs::ROI DetectorImpl::getRxROI() const {
-    return Parallel(&Module::getRxROI, {})
-        .tsquash("havent put rx rois together");
+    bool twoD = true;
+    switch (shm()->detType) {
+    case GOTTHARD:
+    case GOTTHARD2:
+    case MYTHEN3:
+        twoD = false;
+        break;
+    case CHIPTESTBOARD:
+    case MOENCH:
+        throw RuntimeError("RxRoi not implemented for this Detector");
+    case GENERIC:
+        throw RuntimeError("Unknown Generic Detector");
+    default:
+        break;
+    }
+
+    defs::xy numChansPerMod{};
+    numChansPerMod.x = shm()->numberOfChannels.x / shm()->numberOfModules.x;
+    if (twoD) {
+        numChansPerMod.y = shm()->numberOfChannels.y / shm()->numberOfModules.y;
+    }
+
+    defs::ROI retval{};
+    for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
+        defs::ROI moduleRoi = modules[iModule]->getRxROI();
+        if (moduleRoi.noRoi()) {
+            continue;
+        }
+    }
+    return modules[0]->getRxROI();
 }
 
 void DetectorImpl::setRxROI(const defs::ROI arg) {
@@ -1414,26 +1442,26 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
     }
     bool twoD = true;
     switch (shm()->detType) {
-        case GOTTHARD:
-        case GOTTHARD2:
-        case MYTHEN3:
-            twoD = false;
-            break;
-        case CHIPTESTBOARD:
-        case MOENCH:
-            throw RuntimeError("RxRoi not implemented for this Detector");
-        case GENERIC:
-            throw RuntimeError("Unknown Generic Detector");
-        default:
+    case GOTTHARD:
+    case GOTTHARD2:
+    case MYTHEN3:
+        twoD = false;
+        break;
+    case CHIPTESTBOARD:
+    case MOENCH:
+        throw RuntimeError("RxRoi not implemented for this Detector");
+    case GENERIC:
+        throw RuntimeError("Unknown Generic Detector");
+    default:
         break;
     }
     defs::xy numChansPerMod{};
-    numChansPerMod.x = shm()->numberOfChannels.x/shm()->numberOfModules.x;
+    numChansPerMod.x = shm()->numberOfChannels.x / shm()->numberOfModules.x;
     if (twoD) {
-        numChansPerMod.y = shm()->numberOfChannels.y/shm()->numberOfModules.y;
+        numChansPerMod.y = shm()->numberOfChannels.y / shm()->numberOfModules.y;
     }
- // how to deal with 1d dets??
-    for (int iModule = 0; iModule != modules.size(); ++iModule) {
+
+    for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
         // get module limits
         defs::xy pos = modules[iModule]->getPosition();
         defs::ROI moduleFullRoi{};
@@ -1446,21 +1474,36 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
 
         // default = complete roi
         defs::ROI moduleArg{};
+        LOG(logINFOBLUE) << "pos:" << pos << ", moduleFullRoi:" << moduleFullRoi
+                         << ", arg:" << arg;
 
         // outside module limits
-        if (arg.xmin > moduleFullRoi.xmax || arg.ymin > moduleFullRoi.ymax || arg.xmax < moduleFullRoi.xmin || arg.ymax < moduleFullRoi.ymin) {
+        if (arg.xmin > moduleFullRoi.xmax || arg.xmax < moduleFullRoi.xmin ||
+            (twoD && (arg.ymin > moduleFullRoi.ymax ||
+                      arg.ymax < moduleFullRoi.ymin))) {
             moduleArg.xmin = 0;
             moduleArg.xmax = 0;
             moduleArg.ymin = 0;
             moduleArg.ymax = 0;
-        } 
+        }
         // incomplete module roi
-        else if (arg.xmin < moduleFullRoi.xmin || arg.ymin < moduleFullRoi.ymin || arg.xmax > moduleFullRoi.xmax || arg.ymax > moduleFullRoi.ymax) {
-            moduleArg.xmin = (arg.xmin <= moduleFullRoi.xmin) ? 0 : (arg.xmin % numChansPerMod.x);
-            moduleArg.xmax = (arg.xmax >= moduleFullRoi.xmax) ? numChansPerMod.x - 1 : (arg.xmax % numChansPerMod.x);
+        else if (arg.xmin != moduleFullRoi.xmin ||
+                 arg.xmax != moduleFullRoi.xmax ||
+                 (twoD && (arg.ymin != moduleFullRoi.ymin ||
+                           arg.ymax != moduleFullRoi.ymax))) {
+            moduleArg.xmin = (arg.xmin <= moduleFullRoi.xmin)
+                                 ? 0
+                                 : (arg.xmin % numChansPerMod.x);
+            moduleArg.xmax = (arg.xmax >= moduleFullRoi.xmax)
+                                 ? numChansPerMod.x - 1
+                                 : (arg.xmax % numChansPerMod.x);
             if (twoD) {
-                moduleArg.ymin = (arg.ymin <= moduleFullRoi.ymin) ? 0 : (arg.ymin % numChansPerMod.y);
-                moduleArg.ymax = (arg.ymax >= moduleFullRoi.ymax) ? numChansPerMod.y - 1 : (arg.ymax % numChansPerMod.y);
+                moduleArg.ymin = (arg.ymin <= moduleFullRoi.ymin)
+                                     ? 0
+                                     : (arg.ymin % numChansPerMod.y);
+                moduleArg.ymax = (arg.ymax >= moduleFullRoi.ymax)
+                                     ? numChansPerMod.y - 1
+                                     : (arg.ymax % numChansPerMod.y);
             }
         }
         modules[iModule]->setRxROI(moduleArg);

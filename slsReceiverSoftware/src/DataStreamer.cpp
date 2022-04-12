@@ -250,7 +250,7 @@ int DataStreamer::SendHeader(sls_receiver_header *rheader, uint32_t size,
     zHeader.completeImage =
         (header.packetNumber < generalData->packetsPerFrame ? false : true);
 
-    if (!receiverRoi.isEmpty()) {
+    if (!receiverRoi.completeRoi()) {
         zHeader.npixelsx = receiverRoi.xmax - receiverRoi.xmin;
         zHeader.npixelsy = receiverRoi.ymax - receiverRoi.ymin;
         zHeader.imageSize =

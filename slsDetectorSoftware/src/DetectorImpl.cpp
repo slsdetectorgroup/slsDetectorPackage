@@ -328,9 +328,8 @@ void DetectorImpl::addModule(const std::string &hostname) {
 void DetectorImpl::updateDetectorSize() {
     LOG(logDEBUG) << "Updating Detector Size: " << size();
 
-    const slsDetectorDefs::xy det_size = modules[0]->getNumberOfChannels();
-
-    if (det_size.x == 0 || det_size.y == 0) {
+    const slsDetectorDefs::xy modSize = modules[0]->getNumberOfChannels();
+    if (modSize.x == 0 || modSize.y == 0) {
         throw sls::RuntimeError(
             "Module size for x or y dimensions is 0. Unable to proceed in "
             "updating detector size. ");
@@ -338,34 +337,34 @@ void DetectorImpl::updateDetectorSize() {
 
     int maxx = shm()->numberOfChannels.x;
     int maxy = shm()->numberOfChannels.y;
-    int ndetx = 0, ndety = 0;
+    int nModx = 0, nMody = 0;
     // 1d, add modules along x axis
-    if (det_size.y == 1) {
+    if (modSize.y == 1) {
         if (maxx == 0) {
-            maxx = det_size.x * size();
+            maxx = modSize.x * size();
         }
-        ndetx = maxx / det_size.x;
-        ndety = size() / ndetx;
-        if ((maxx % det_size.x) > 0) {
-            ++ndety;
+        nModx = maxx / modSize.x;
+        nMody = size() / nModx;
+        if ((maxx % modSize.x) > 0) {
+            ++nMody;
         }
     }
     // 2d, add modules along y axis (due to eiger top/bottom)
     else {
         if (maxy == 0) {
-            maxy = det_size.y * size();
+            maxy = modSize.y * size();
         }
-        ndety = maxy / det_size.y;
-        ndetx = size() / ndety;
-        if ((maxy % det_size.y) > 0) {
-            ++ndetx;
+        nMody = maxy / modSize.y;
+        nModx = size() / nMody;
+        if ((maxy % modSize.y) > 0) {
+            ++nModx;
         }
     }
 
-    shm()->numberOfModules.x = ndetx;
-    shm()->numberOfModules.y = ndety;
-    shm()->numberOfChannels.x = det_size.x * ndetx;
-    shm()->numberOfChannels.y = det_size.y * ndety;
+    shm()->numberOfModules.x = nModx;
+    shm()->numberOfModules.y = nMody;
+    shm()->numberOfChannels.x = modSize.x * nModx;
+    shm()->numberOfChannels.y = modSize.y * nMody;
 
     LOG(logDEBUG) << "\n\tNumber of Modules in X direction:"
                   << shm()->numberOfModules.x
@@ -1455,6 +1454,7 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
     default:
         break;
     }
+    LOG(logINFOBLUE) << "numchannels: " << shm()->numberOfChannels;
     defs::xy numChansPerMod{};
     numChansPerMod.x = shm()->numberOfChannels.x / shm()->numberOfModules.x;
     if (twoD) {
@@ -1474,8 +1474,6 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
 
         // default = complete roi
         defs::ROI moduleArg{};
-        LOG(logINFOBLUE) << "pos:" << pos << ", moduleFullRoi:" << moduleFullRoi
-                         << ", arg:" << arg;
 
         // outside module limits
         if (arg.xmin > moduleFullRoi.xmax || arg.xmax < moduleFullRoi.xmin ||
@@ -1487,10 +1485,10 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
             moduleArg.ymax = 0;
         }
         // incomplete module roi
-        else if (arg.xmin != moduleFullRoi.xmin ||
-                 arg.xmax != moduleFullRoi.xmax ||
-                 (twoD && (arg.ymin != moduleFullRoi.ymin ||
-                           arg.ymax != moduleFullRoi.ymax))) {
+        else if (arg.xmin > moduleFullRoi.xmin ||
+                 arg.xmax < moduleFullRoi.xmax ||
+                 (twoD && (arg.ymin > moduleFullRoi.ymin ||
+                           arg.ymax < moduleFullRoi.ymax))) {
             moduleArg.xmin = (arg.xmin <= moduleFullRoi.xmin)
                                  ? 0
                                  : (arg.xmin % numChansPerMod.x);

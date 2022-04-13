@@ -520,10 +520,8 @@ bool Module::isVirtualDetectorServer() const {
     return sendToDetector<int>(F_IS_VIRTUAL);
 }
 
-defs::xy Module::getPosition() const {
-    std::array<int, 2> retval =
-        sendToDetector<std::array<int, 2>>(F_GET_POSITION);
-    return defs::xy(retval[0], retval[1]);
+std::array<int, 2> Module::getPosition() const {
+    return sendToDetector<std::array<int, 2>>(F_GET_POSITION);
 }
 
 int64_t Module::getNumberOfFrames() const {
@@ -1415,7 +1413,7 @@ defs::ROI Module::getRxROI() const {
 }
 
 void Module::setRxROI(const slsDetectorDefs::ROI arg) {
-    LOG(logINFOBLUE) << moduleIndex << ": " << arg;
+    LOG(logDEBUG) << moduleIndex << ": " << arg;
     sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI, arg, nullptr);
 }
 

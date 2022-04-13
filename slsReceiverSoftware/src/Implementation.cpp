@@ -349,7 +349,7 @@ slsDetectorDefs::ROI Implementation::getReceiverROI() const {
     return receiverRoi;
 }
 
-void Implementation::setReceiverROI(slsDetectorDefs::ROI arg) {
+void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
     receiverRoi = arg;
     for (const auto &it : dataProcessor)
         it->SetReceiverROI(receiverRoi);

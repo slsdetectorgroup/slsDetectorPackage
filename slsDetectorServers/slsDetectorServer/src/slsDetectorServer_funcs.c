@@ -2871,8 +2871,9 @@ int set_roi(int file_des) {
     if (receiveData(file_des, &arg.ymin, sizeof(int), INT32) < 0)
         return printSocketReadError();
     if (receiveData(file_des, &arg.ymax, sizeof(int), INT32) < 0)
-        return printSocketReadError();       
-    LOG(logDEBUG1, ("Set ROI: [%d, %d, %d, %d]\n", arg.xmin, arg.xmax, arg.ymin, arg.ymax));
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Set ROI: [%d, %d, %d, %d]\n", arg.xmin, arg.xmax, arg.ymin,
+                    arg.ymax));
 
 #ifndef GOTTHARDD
     functionNotImplemented();
@@ -2904,7 +2905,8 @@ int get_roi(int file_des) {
 #else
     // only get
     retval = getROI();
-    LOG(logDEBUG1, ("nRois: (%d, %d, %d, %d)\n", retval.xmin, retval.xmax, retval.ymin, retval.ymax));
+    LOG(logDEBUG1, ("nRois: (%d, %d, %d, %d)\n", retval.xmin, retval.xmax,
+                    retval.ymin, retval.ymax));
 #endif
 
     Server_SendResult(file_des, INT32, NULL, 0);
@@ -4841,11 +4843,12 @@ int get_detector_position(int file_des) {
     int retvals[2] = {-1, -1};
 
     LOG(logDEBUG1, ("Getting detector position\n"));
-    
+
     // jungfrau  has a 4 element array (first 2 inner), others 2
-    int* p_retvals = getDetectorPosition();
-    retvals[0] = p_retvals[0];
-    retvals[1] = p_retvals[1];
+    int *p_retvals = getDetectorPosition();
+    // order in retvals[column, row]
+    retvals[0] = p_retvals[1];
+    retvals[1] = p_retvals[0];
 
     return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
 }
@@ -9479,8 +9482,8 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
         if (receiveData(file_des, &forceDeleteNormalFile,
                         sizeof(forceDeleteNormalFile), INT32) < 0)
             return printSocketReadError();
-        LOG(logINFO,
-            ("\tForce Delete Normal File flag? %s\n", (forceDeleteNormalFile ? "Y" : "N")));
+        LOG(logINFO, ("\tForce Delete Normal File flag? %s\n",
+                      (forceDeleteNormalFile ? "Y" : "N")));
 #endif
 
         // in same folder as current process (will also work for virtual then
@@ -9507,7 +9510,8 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
                                     checksum, serverName);
 #else
             receive_program_via_blackfin(file_des, index, functionType,
-                                         filesize, checksum, serverName, forceDeleteNormalFile);
+                                         filesize, checksum, serverName,
+                                         forceDeleteNormalFile);
 #endif
         }
 
@@ -9523,7 +9527,8 @@ int receive_program(int file_des, enum PROGRAM_INDEX index) {
 
 void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                   char *functionType, uint64_t filesize,
-                                  char *checksum, char *serverName, int forceDeleteNormalFile) {
+                                  char *checksum, char *serverName,
+                                  int forceDeleteNormalFile) {
 
 #if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARDD)

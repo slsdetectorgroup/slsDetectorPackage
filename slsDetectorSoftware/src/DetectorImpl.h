@@ -298,7 +298,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
                                    Positions pos = {});
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos);
-
     defs::ROI getRxROI() const;
     void setRxROI(const defs::ROI arg);
 
@@ -386,6 +385,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * when using acquire command
      */
     int kbhit();
+    bool is2D() const;
 
     const int detectorIndex{0};
     sls::SharedMemory<sharedDetector> shm{0, -1};

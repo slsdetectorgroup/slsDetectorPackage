@@ -1401,37 +1401,80 @@ void DetectorImpl::setDefaultDac(defs::dacIndex index, int defaultValue,
     Parallel(&Module::setDefaultDac, pos, index, defaultValue, sett);
 }
 
-defs::ROI DetectorImpl::getRxROI() const {
-    bool twoD = true;
+bool DetectorImpl::is2D() const {
     switch (shm()->detType) {
     case GOTTHARD:
     case GOTTHARD2:
     case MYTHEN3:
-        twoD = false;
-        break;
     case CHIPTESTBOARD:
+        return false;
     case MOENCH:
-        throw RuntimeError("RxRoi not implemented for this Detector");
-    case GENERIC:
-        throw RuntimeError("Unknown Generic Detector");
+    case JUNGFRAU:
+    case EIGER:
+        return true;
     default:
-        break;
+        throw RuntimeError("Unknown Detector");
     }
+}
 
+defs::ROI DetectorImpl::getRxROI() const {
+    if (shm()->detType == CHIPTESTBOARD || shm()->detType == MOENCH) {
+        throw RuntimeError("RxRoi not implemented for this Detector");
+    }
+    bool twoD = is2D();
     defs::xy numChansPerMod{};
     numChansPerMod.x = shm()->numberOfChannels.x / shm()->numberOfModules.x;
     if (twoD) {
         numChansPerMod.y = shm()->numberOfChannels.y / shm()->numberOfModules.y;
     }
 
-    defs::ROI retval{};
+    defs::ROI retval(0, 0, 0, 0);
+    size_t numCompleteModules = 0;
     for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
+        std::array<int, 2> pos = modules[iModule]->getPosition();
+        int col = pos[0];
+        int row = pos[1];
         defs::ROI moduleRoi = modules[iModule]->getRxROI();
         if (moduleRoi.noRoi()) {
             continue;
         }
+        if (moduleRoi.completeRoi()) {
+            ++numCompleteModules;
+            moduleRoi.xmin = 0;
+            moduleRoi.xmax = numChansPerMod.x - 1;
+            if (twoD) {
+                moduleRoi.ymin = 0;
+                moduleRoi.ymax = numChansPerMod.y - 1;
+            }
+        }
+        LOG(logDEBUG) << iModule << ":[" << moduleRoi << "] [" << row << ", "
+                      << col << "]";
+        // module roi relative to detector
+        moduleRoi.xmin += numChansPerMod.x * col;
+        moduleRoi.xmax += numChansPerMod.x * col;
+        if (twoD) {
+            moduleRoi.ymin += numChansPerMod.y * row;
+            moduleRoi.ymax += numChansPerMod.y * row;
+        }
+        LOG(logDEBUG) << iModule << ":" << moduleRoi;
+        // first roi will have xmin, ymin
+        if (retval.xmin == 0) {
+            retval.xmin = moduleRoi.xmin;
+        }
+        if (retval.ymin == 0) {
+            retval.ymin = moduleRoi.ymin;
+        }
+        if (moduleRoi.xmax > retval.xmax) {
+            retval.xmax = moduleRoi.xmax;
+        }
+        if (moduleRoi.ymax > retval.ymax) {
+            retval.ymax = moduleRoi.ymax;
+        }
     }
-    return modules[0]->getRxROI();
+    if (numCompleteModules == modules.size()) {
+        return ROI{};
+    }
+    return retval;
 }
 
 void DetectorImpl::setRxROI(const defs::ROI arg) {
@@ -1439,22 +1482,7 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
         arg.ymax >= shm()->numberOfChannels.y) {
         throw RuntimeError("Invalid Receiver Roi");
     }
-    bool twoD = true;
-    switch (shm()->detType) {
-    case GOTTHARD:
-    case GOTTHARD2:
-    case MYTHEN3:
-        twoD = false;
-        break;
-    case CHIPTESTBOARD:
-    case MOENCH:
-        throw RuntimeError("RxRoi not implemented for this Detector");
-    case GENERIC:
-        throw RuntimeError("Unknown Generic Detector");
-    default:
-        break;
-    }
-    LOG(logINFOBLUE) << "numchannels: " << shm()->numberOfChannels;
+    bool twoD = is2D();
     defs::xy numChansPerMod{};
     numChansPerMod.x = shm()->numberOfChannels.x / shm()->numberOfModules.x;
     if (twoD) {
@@ -1463,13 +1491,15 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
 
     for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
         // get module limits
-        defs::xy pos = modules[iModule]->getPosition();
+        std::array<int, 2> pos = modules[iModule]->getPosition();
+        int col = pos[0];
+        int row = pos[1];
         defs::ROI moduleFullRoi{};
-        moduleFullRoi.xmin = numChansPerMod.x * pos.y;
-        moduleFullRoi.xmax = numChansPerMod.x * (pos.y + 1) - 1;
+        moduleFullRoi.xmin = numChansPerMod.x * col;
+        moduleFullRoi.xmax = numChansPerMod.x * (col + 1) - 1;
         if (twoD) {
-            moduleFullRoi.ymin = numChansPerMod.y * pos.x;
-            moduleFullRoi.ymax = numChansPerMod.y * (pos.x + 1) - 1;
+            moduleFullRoi.ymin = numChansPerMod.y * row;
+            moduleFullRoi.ymax = numChansPerMod.y * (row + 1) - 1;
         }
 
         // default = complete roi

@@ -545,6 +545,7 @@ void DataProcessor::CropImage(char *buf) {
 
     // write size into fifo buffer header
     std::size_t roiImageSize = xwidth * ywidth * bytesPerPixel;
+    LOG(logDEBUG) << "roiImageSize:" << roiImageSize;
     (*((uint32_t *)buf)) = roiImageSize;
 
     // copy the roi to the beginning of the image

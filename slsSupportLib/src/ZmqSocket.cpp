@@ -131,82 +131,57 @@ int ZmqSocket::Connect() {
 }
 
 int ZmqSocket::SendHeader(int index, zmqHeader header) {
+    std::ostringstream oss;
+    oss << "{\"jsonversion\":" << header.jsonversion
+        << ", \"bitmode\":" << header.dynamicRange
+        << ", \"fileIndex\":" << header.fileIndex << ", \"detshape\":["
+        << header.ndetx << ", " << header.ndety << ']' << ", \"shape\":["
+        << header.npixelsx << ", " << header.npixelsy << ']'
+        << ", \"size\":" << header.imageSize
+        << ", \"acqIndex\":" << header.acqIndex
+        << ", \"frameIndex\":" << header.frameIndex
+        << ", \"progress\":" << header.progress << ", \"fname\":\""
+        << header.fname << '\"' << ", \"data\":" << (header.data ? 1 : 0)
+        << ", \"completeImage\":" << (header.completeImage ? 1 : 0)
 
-    /** Json Header Format */
-    const char jsonHeaderFormat[] = "{"
-                                    "\"jsonversion\":%u, "
-                                    "\"bitmode\":%u, "
-                                    "\"fileIndex\":%lu, "
-                                    "\"detshape\":[%u, %u], "
-                                    "\"shape\":[%u, %u], "
-                                    "\"size\":%u, "
-                                    "\"acqIndex\":%lu, "
-                                    "\"frameIndex\":%lu, "
-                                    "\"progress\":%lf, "
-                                    "\"fname\":\"%s\", "
-                                    "\"data\": %d, "
-                                    "\"completeImage\": %d, "
+        << ", \"frameNumber\":" << header.frameNumber
+        << ", \"expLength\":" << header.expLength
+        << ", \"packetNumber\":" << header.packetNumber
+        << ", \"bunchId\":" << header.bunchId
+        << ", \"timestamp\":" << header.timestamp
+        << ", \"modId\":" << header.modId << ", \"row\":" << header.row
+        << ", \"column\":" << header.column
+        << ", \"reserved\":" << header.reserved
+        << ", \"debug\":" << header.debug
+        << ", \"roundRNumber\":" << header.roundRNumber
+        << ", \"detType\":" << static_cast<int>(header.detType)
+        << ", \"version\":"
+        << static_cast<int>(header.version)
 
-                                    "\"frameNumber\":%lu, "
-                                    "\"expLength\":%u, "
-                                    "\"packetNumber\":%u, "
-                                    "\"bunchId\":%lu, "
-                                    "\"timestamp\":%lu, "
-                                    "\"modId\":%u, "
-                                    "\"row\":%u, "
-                                    "\"column\":%u, "
-                                    "\"reserved\":%u, "
-                                    "\"debug\":%u, "
-                                    "\"roundRNumber\":%u, "
-                                    "\"detType\":%u, "
-                                    "\"version\":%u, "
-
-                                    // additional stuff
-                                    "\"flipRows\":%u, "
-                                    "\"quad\":%u"
-
-        ;                                              //"}\n";
-    memset(header_buffer.get(), '\0', MAX_STR_LENGTH); // TODO! Do we need this
-    sprintf(header_buffer.get(), jsonHeaderFormat, header.jsonversion,
-            header.dynamicRange, header.fileIndex, header.ndetx, header.ndety,
-            header.npixelsx, header.npixelsy, header.imageSize, header.acqIndex,
-            header.frameIndex, header.progress, header.fname.c_str(),
-            header.data ? 1 : 0, header.completeImage ? 1 : 0,
-
-            header.frameNumber, header.expLength, header.packetNumber,
-            header.bunchId, header.timestamp, header.modId, header.row,
-            header.column, header.reserved, header.debug, header.roundRNumber,
-            header.detType, header.version,
-
-            // additional stuff
-            header.flipRows, header.quad);
+        // additional stuff
+        << ", \"flipRows\":" << header.flipRows << ", \"quad\":" << header.quad;
 
     if (!header.addJsonHeader.empty()) {
-        strcat(header_buffer.get(), ", ");
-        strcat(header_buffer.get(), "\"addJsonHeader\": {");
+        oss << ", \"addJsonHeader\": {";
         for (auto it = header.addJsonHeader.begin();
              it != header.addJsonHeader.end(); ++it) {
             if (it != header.addJsonHeader.begin()) {
-                strcat(header_buffer.get(), ", ");
+                oss << ", ";
             }
-            strcat(header_buffer.get(), "\"");
-            strcat(header_buffer.get(), it->first.c_str());
-            strcat(header_buffer.get(), "\":\"");
-            strcat(header_buffer.get(), it->second.c_str());
-            strcat(header_buffer.get(), "\"");
+            oss << "\"" << it->first.c_str() << "\":\"" << it->second.c_str()
+                << "\"";
         }
-        strcat(header_buffer.get(), " } ");
+        oss << " } ";
     }
-
-    strcat(header_buffer.get(), "}\n");
-    int length = strlen(header_buffer.get());
-
+    oss << "}\n";
+    std::string message = oss.str();
+    int length = message.length();
 #ifdef ZMQ_DETAIL
     // if(!index)
-    cprintf(BLUE, "%d : Streamer: buf: %s\n", index, header_buffer.get());
+    LOG(logINFOBLUE) << index << " : Streamer: buf: " << message;
 #endif
 
-    if (zmq_send(sockfd.socketDescriptor, header_buffer.get(), length,
+    if (zmq_send(sockfd.socketDescriptor, message.c_str(), length,
                  header.data ? ZMQ_SNDMORE : 0) < 0) {
         PrintError();
         return 0;

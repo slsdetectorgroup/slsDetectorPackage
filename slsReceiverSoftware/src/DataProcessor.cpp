@@ -27,14 +27,14 @@
 const std::string DataProcessor::typeName_ = "DataProcessor";
 
 DataProcessor::DataProcessor(int index, detectorType detectorType, Fifo *fifo,
-                             bool *activated, bool *dataStreamEnable,
+                             bool *dataStreamEnable,
                              uint32_t *streamingFrequency,
                              uint32_t *streamingTimerInMs,
                              uint32_t *streamingStartFnum, bool *framePadding,
                              std::vector<int> *ctbDbitList, int *ctbDbitOffset,
                              int *ctbAnalogDataBytes)
     : ThreadObject(index, typeName_), fifo_(fifo), detectorType_(detectorType),
-      dataStreamEnable_(dataStreamEnable), activated_(activated),
+      dataStreamEnable_(dataStreamEnable),
       streamingFrequency_(streamingFrequency),
       streamingTimerInMs_(streamingTimerInMs),
       streamingStartFnum_(streamingStartFnum), framePadding_(framePadding),
@@ -49,6 +49,8 @@ DataProcessor::~DataProcessor() { DeleteFiles(); }
 bool DataProcessor::GetStartedFlag() const { return startedFlag_; }
 
 void DataProcessor::SetFifo(Fifo *fifo) { fifo_ = fifo; }
+
+void DataProcessor::SetActivate(bool enable) { activated_ = enable; }
 
 void DataProcessor::SetReceiverROI(ROI roi) { receiverRoi_ = roi; }
 
@@ -117,7 +119,7 @@ void DataProcessor::CreateFirstFiles(
     CloseFiles();
 
     // deactivated (half module/ single port), dont write file
-    if ((!*activated_) || (!detectorDataStream)) {
+    if (!activated_ || !detectorDataStream) {
         return;
     }
 
@@ -311,7 +313,7 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
     }
 
     // frame padding
-    if (*activated_ && *framePadding_ && nump < generalData_->packetsPerFrame)
+    if (activated_ && *framePadding_ && nump < generalData_->packetsPerFrame)
         PadMissingPackets(buf);
 
     // rearrange ctb digital bits (if ctbDbitlist is not empty)

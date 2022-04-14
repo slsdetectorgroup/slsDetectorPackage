@@ -28,17 +28,17 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
     DataProcessor(int index, detectorType detectorType, Fifo *fifo,
-                  bool *activated, bool *dataStreamEnable,
-                  uint32_t *streamingFrequency, uint32_t *streamingTimerInMs,
-                  uint32_t *streamingStartFnum, bool *framePadding,
-                  std::vector<int> *ctbDbitList, int *ctbDbitOffset,
-                  int *ctbAnalogDataBytes);
+                  bool *dataStreamEnable, uint32_t *streamingFrequency,
+                  uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum,
+                  bool *framePadding, std::vector<int> *ctbDbitList,
+                  int *ctbDbitOffset, int *ctbAnalogDataBytes);
 
     ~DataProcessor() override;
 
     bool GetStartedFlag() const;
 
     void SetFifo(Fifo *f);
+    void SetActivate(bool enable);
     void SetReceiverROI(ROI roi);
     void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *generalData);
@@ -153,7 +153,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     Fifo *fifo_;
     detectorType detectorType_;
     bool *dataStreamEnable_;
-    bool *activated_;
+    bool activated_{false};
     ROI receiverRoi_{};
     /** if 0, sending random images with a timer */
     uint32_t *streamingFrequency_;

@@ -169,17 +169,16 @@ void Implementation::setDetectorType(const detectorType d) {
             listener.push_back(sls::make_unique<Listener>(
                 i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                 &udpSocketBufferSize, &actualUDPSocketBufferSize,
-                &framesPerFile, &frameDiscardMode, &activated,
-                &detectorDataStream[i], &silentMode));
+                &framesPerFile, &frameDiscardMode, &detectorDataStream[i],
+                &silentMode));
             int ctbAnalogDataBytes = 0;
             if (detType == CHIPTESTBOARD) {
                 ctbAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
             }
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                i, detType, fifo_ptr, &activated, &dataStreamEnable,
-                &streamingFrequency, &streamingTimerInMs, &streamingStartFnum,
-                &framePadding, &ctbDbitList, &ctbDbitOffset,
-                &ctbAnalogDataBytes));
+                i, detType, fifo_ptr, &dataStreamEnable, &streamingFrequency,
+                &streamingTimerInMs, &streamingStartFnum, &framePadding,
+                &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
         } catch (...) {
             listener.clear();
             dataProcessor.clear();
@@ -190,10 +189,14 @@ void Implementation::setDetectorType(const detectorType d) {
     }
 
     // set up writer and callbacks
-    for (const auto &it : listener)
+    for (const auto &it : listener) {
         it->SetGeneralData(generalData);
-    for (const auto &it : dataProcessor)
+        it->SetActivate(activated);
+    }
+    for (const auto &it : dataProcessor) {
         it->SetGeneralData(generalData);
+        it->SetActivate(activated);
+    }
     SetThreadPriorities();
 
     LOG(logDEBUG) << " Detector type set to " << sls::ToString(d);
@@ -346,15 +349,98 @@ void Implementation::setArping(const bool i,
 }
 
 slsDetectorDefs::ROI Implementation::getReceiverROI() const {
-    return receiverRoi;
+    if (numUDPInterfaces == 1 || detType == defs::GOTTHARD2) ||
+        receiverRoi[0] == receiverRoi[1]) {
+        return receiverRoi[0];
+    }
+    // send other roi if no roi
+    for (int i = 0; i != 2; ++i) {
+        if (receiverRoi[i].noRoi()) {
+            int otherPortIndex = (i == 0 ? 1 : 0);
+            // check for -1 (complete roi)
+            if (!receiverRoi[otherPortIndex].completeRoi()) {
+                return receiverRoi[otherPortIndex];
+            }
+            // expand for complete roi
+            ROI retval(0, generalData->nPixelsX, 0, generalData->nPixelsY);
+            // if left right eiger else top down jungfrau
+            if (GetPortGeometry().x == 2) {
+                if (i == 0) {
+                    retval.xmin = (generalData->nPixelsX / 2);
+                } else {
+                    retval.xmax = (generalData->nPixelsX / 2) - 1;
+                }
+            } else {
+                if (i == 0) {
+                    retval.ymin = (generalData->nPixelsX / 2);
+                } else {
+                    retval.ymax = (generalData->nPixelsX / 2) - 1;
+                }
+            }
+            return retval;
+        }
+    }
+
+    // expand completeRoi
+    if (receiverRoi[0].completeRoi()) {
+        receiverRoi[0].xmin = xx ?
+    }
+    if (receiverRoi[0].noRoi()) {
+        return receiverRoi[1];
+    }
+    if (receiverRoi[1].noRoi()) {
+        return receiverRoi[0];
+    }
 }
 
 void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
-    receiverRoi = arg;
-    for (const auto &it : dataProcessor)
-        it->SetReceiverROI(receiverRoi);
-    for (const auto &it : dataStreamer)
-        it->SetReceiverROI(receiverRoi);
+    if (numUDPInterfaces == 1 || detType == defs::GOTTHARD2) {
+        receiverRoi[0] = arg;
+    } else {
+        receiverRoi[0] = arg;
+        receiverRoi[1] = arg;
+        if (!arg.completeRoi() && !arg.noRoi()) {
+
+            // left right (eiger)
+            if (GetPortGeometry().x == 2) {
+                int nPixelsXHalf = generalData->nPixelsX / 2;
+                // skip first half
+                if (arg.xmin >= nPixelsXHalf) {
+                    receiverRoi[0].SetNoRoi();
+                }
+                // skip second half
+                else if (arg.xmax < nPixelsXHalf) {
+                    receiverRoi[1].SetNoRoi();
+                } else {
+                    receiverRoi[0].xmin = arg.xmin;
+                    receiverRoi[0].xmax = nPixelsXHalf - 1;
+                    receiverRoi[1].xmin = nPixelsXHalf;
+                    receiverRoi[1].xmax = arg.xmax;
+                }
+            }
+            // top down (jungfrau)
+            else {
+                int nPixelsYHalf = generalData->nPixelsY / 2;
+                // skip first half (top = port 2)
+                if (arg.ymin >= nPixelsYHalf) {
+                    receiverRoi[1].SetNoRoi();
+                }
+                // skip second half (bottom = port 1)
+                else if (arg.xmax < nPixelsYHalf) {
+                    receiverRoi[0].SetNoRoi();
+                } else {
+                    receiverRoi[1].ymin = arg.ymin;
+                    receiverRoi[1].ymax = nPixelsYHalf - 1;
+                    receiverRoi[0].ymin = nPixelsYHalf;
+                    receiverRoi[0].ymax = arg.ymax;
+                }
+            }
+        }
+    }
+    for (const size_t i = 0; i != dataProcessor.size(); _++ i)
+        dataProcessor[i]->SetReceiverROI(receiverRoi[i]);
+    for (const size_t i = 0; i != dataSrreamer.size(); _++ i)
+        dataProcessor[i]->SetReceiverROI(receiverRoi[i]);
     LOG(logINFO) << "receiverRoi ROI: " << sls::ToString(receiverRoi);
 }
 
@@ -911,9 +997,10 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 listener.push_back(sls::make_unique<Listener>(
                     i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                     &udpSocketBufferSize, &actualUDPSocketBufferSize,
-                    &framesPerFile, &frameDiscardMode, &activated,
-                    &detectorDataStream[i], &silentMode));
+                    &framesPerFile, &frameDiscardMode, &detectorDataStream[i],
+                    &silentMode));
                 listener[i]->SetGeneralData(generalData);
+                listener[i]->SetActivate(activated);
 
                 int ctbAnalogDataBytes = 0;
                 if (detType == CHIPTESTBOARD) {
@@ -921,11 +1008,12 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         generalData->GetNumberOfAnalogDatabytes();
                 }
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                    i, detType, fifo_ptr, &activated, &dataStreamEnable,
+                    i, detType, fifo_ptr, &dataStreamEnable,
                     &streamingFrequency, &streamingTimerInMs,
                     &streamingStartFnum, &framePadding, &ctbDbitList,
                     &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
+                dataProcessor[i]->SetActivate(activated);
                 dataProcessor[i]->SetReceiverROI(receiverRoi);
             } catch (...) {
                 listener.clear();
@@ -1538,6 +1626,11 @@ bool Implementation::getActivate() const { return activated; }
 
 void Implementation::setActivate(bool enable) {
     activated = enable;
+    for (const auto &it : listener)
+        it->SetActivate(enable);
+    for (const auto &it : dataProcessor)
+        it->SetActivate(enable);
+
     LOG(logINFO) << "Activation: " << (activated ? "enabled" : "disabled");
 }
 

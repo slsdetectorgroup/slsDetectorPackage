@@ -301,7 +301,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool framePadding{true};
     pid_t parentThreadId;
     pid_t tcpThreadId;
-    ROI receiverRoi{};
+    std::array<ROI, 2> receiverRoi{};
 
     // file parameters
     fileFormat fileFormatType{BINARY};

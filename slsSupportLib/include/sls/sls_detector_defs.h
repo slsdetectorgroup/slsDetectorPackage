@@ -180,12 +180,16 @@ class slsDetectorDefs {
                     (ymin == other.ymin) && (ymax == other.ymax));
         }
         constexpr bool completeRoi() const {
-            return (xmin == -1 && xmax == -1 && ymin == -1 &&
-                    ymax == -1);
+            return (xmin == -1 && xmax == -1 && ymin == -1 && ymax == -1);
         }
         constexpr bool noRoi() const {
-            return (xmin == 0 && xmax == 0 && ymin == 0 &&
-                    ymax == 0);
+            return (xmin == 0 && xmax == 0 && ymin == 0 && ymax == 0);
+        }
+        void SetNoRoi() {
+            xmin = 0;
+            xmax = 0;
+            ymin = 0;
+            ymax = 0;
         }
     } __attribute__((packed));
 #else

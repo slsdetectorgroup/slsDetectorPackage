@@ -1509,10 +1509,7 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
         if (arg.xmin > moduleFullRoi.xmax || arg.xmax < moduleFullRoi.xmin ||
             (twoD && (arg.ymin > moduleFullRoi.ymax ||
                       arg.ymax < moduleFullRoi.ymin))) {
-            moduleArg.xmin = 0;
-            moduleArg.xmax = 0;
-            moduleArg.ymin = 0;
-            moduleArg.ymax = 0;
+            moduleArg.SetNoRoi();
         }
         // incomplete module roi
         else if (arg.xmin > moduleFullRoi.xmin ||

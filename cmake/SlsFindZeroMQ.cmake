@@ -6,7 +6,7 @@ function(custom_find_zmq)
             message(STATUS "Looking for ZeroMQ in: ${ZeroMQ_HINT}")
             find_package(ZeroMQ 4 
                 NO_DEFAULT_PATH
-                HINTS ${ZeroMQ_DIR}
+                HINTS ${ZeroMQ_HINT}
             )
         else()
             find_package(ZeroMQ 4 QUIET)

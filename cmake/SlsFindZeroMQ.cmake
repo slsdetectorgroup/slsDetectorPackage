@@ -13,7 +13,9 @@ function(custom_find_zmq)
         endif()
         
     # libzmq autotools install: fallback to pkg-config
-    if(NOT ZeroMQ_FOUND)
+    if(ZeroMQ_FOUND)
+        message(STATUS "Found libzmq using find_package")
+    else()
         message(STATUS "CMake libzmq package not found, trying again with pkg-config (normal install of zeromq)")
         list (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/libzmq-pkg-config)
         find_package(ZeroMQ 4 REQUIRED)
@@ -30,7 +32,7 @@ function(custom_find_zmq)
     endif()
 
     get_target_property(VAR libzmq IMPORTED_LOCATION)
-    message(STATUS "Using zmqlib: ${VAR}")
+    message(STATUS "Using libzmq: ${VAR}")
 
 
 endfunction()

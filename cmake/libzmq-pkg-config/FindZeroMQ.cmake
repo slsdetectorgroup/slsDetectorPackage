@@ -11,6 +11,7 @@ find_library(ZeroMQ_STATIC_LIBRARY NAMES libzmq-static.a libzmq.a libzmq.dll.a
 
 if(ZeroMQ_LIBRARY OR ZeroMQ_STATIC_LIBRARY)
     set(ZeroMQ_FOUND ON)
+    message(STATUS "Found libzmq using PkgConfig")
 endif()
 
 if (TARGET libzmq)

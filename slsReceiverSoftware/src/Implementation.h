@@ -277,7 +277,7 @@ class Implementation : private virtual slsDetectorDefs {
     void SetThreadPriorities();
     void SetupFifoStructure();
 
-    xy GetPortGeometry();
+    const xy GetPortGeometry() const;
     void ResetParametersforNewAcquisition();
     void CreateUDPSockets();
     void SetupWriter();

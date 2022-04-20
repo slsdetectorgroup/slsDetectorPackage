@@ -206,7 +206,7 @@ slsDetectorDefs::xy Implementation::getDetectorSize() const {
     return numModules;
 }
 
-slsDetectorDefs::xy Implementation::GetPortGeometry() {
+const slsDetectorDefs::xy Implementation::GetPortGeometry() const {
     xy portGeometry{1, 1};
     if (detType == EIGER)
         portGeometry.x = numUDPInterfaces;
@@ -349,52 +349,56 @@ void Implementation::setArping(const bool i,
 }
 
 slsDetectorDefs::ROI Implementation::getReceiverROI() const {
-    if (numUDPInterfaces == 1 || detType == defs::GOTTHARD2) ||
+    if (numUDPInterfaces == 1 || detType == slsDetectorDefs::GOTTHARD2 ||
         receiverRoi[0] == receiverRoi[1]) {
         return receiverRoi[0];
     }
-    // send other roi if no roi
+    // 2 rois
+    ROI retvals[2]{};
     for (int i = 0; i != 2; ++i) {
-        if (receiverRoi[i].noRoi()) {
-            int otherPortIndex = (i == 0 ? 1 : 0);
-            // check for -1 (complete roi)
-            if (!receiverRoi[otherPortIndex].completeRoi()) {
-                return receiverRoi[otherPortIndex];
-            }
-            // expand for complete roi
-            ROI retval(0, generalData->nPixelsX, 0, generalData->nPixelsY);
-            // if left right eiger else top down jungfrau
-            if (GetPortGeometry().x == 2) {
+        retvals[i] = receiverRoi[i];
+
+        // expand roi
+        if (receiverRoi[i].completeRoi()) {
+            retvals[i].xmin = 0;
+            retvals[i].xmax = generalData->nPixelsX;
+            retvals[i].ymin = 0;
+            retvals[i].ymax = generalData->nPixelsY;
+
+            // if left right eiger, else top down jungfrau
+            xy portGeometry = GetPortGeometry();
+            if (portGeometry.x == 2) {
                 if (i == 0) {
-                    retval.xmin = (generalData->nPixelsX / 2);
+                    retvals[i].xmax = (generalData->nPixelsX / 2) - 1;
                 } else {
-                    retval.xmax = (generalData->nPixelsX / 2) - 1;
+                    retvals[i].xmin = (generalData->nPixelsX / 2);
                 }
             } else {
+                // bottom, i = 0
                 if (i == 0) {
-                    retval.ymin = (generalData->nPixelsX / 2);
+                    retvals[i].ymax = (generalData->nPixelsX / 2) - 1;
                 } else {
-                    retval.ymax = (generalData->nPixelsX / 2) - 1;
+                    retvals[i].ymin = (generalData->nPixelsX / 2);
                 }
             }
-            return retval;
         }
     }
 
-    // expand completeRoi
-    if (receiverRoi[0].completeRoi()) {
-        receiverRoi[0].xmin = xx ?
-    }
+    // send other roi if no roi
     if (receiverRoi[0].noRoi()) {
-        return receiverRoi[1];
+        return retvals[1];
     }
     if (receiverRoi[1].noRoi()) {
-        return receiverRoi[0];
+        return retvals[0];
     }
+
+    ROI retval(retvals[0].xmin, retvals[1].xmax, retvals[0].ymin,
+               retvals[1].ymax);
+    return retval;
 }
 
 void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
-    if (numUDPInterfaces == 1 || detType == defs::GOTTHARD2) {
+    if (numUDPInterfaces == 1 || detType == slsDetectorDefs::GOTTHARD2) {
         receiverRoi[0] = arg;
     } else {
         receiverRoi[0] = arg;
@@ -421,11 +425,11 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
             // top down (jungfrau)
             else {
                 int nPixelsYHalf = generalData->nPixelsY / 2;
-                // skip first half (top = port 2)
+                // skip first half (top = port 1)
                 if (arg.ymin >= nPixelsYHalf) {
                     receiverRoi[1].SetNoRoi();
                 }
-                // skip second half (bottom = port 1)
+                // skip second half (bottom = port 0)
                 else if (arg.xmax < nPixelsYHalf) {
                     receiverRoi[0].SetNoRoi();
                 } else {
@@ -437,10 +441,10 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
             }
         }
     }
-    for (const size_t i = 0; i != dataProcessor.size(); _++ i)
+    for (size_t i = 0; i != dataProcessor.size(); ++i)
         dataProcessor[i]->SetReceiverROI(receiverRoi[i]);
-    for (const size_t i = 0; i != dataSrreamer.size(); _++ i)
-        dataProcessor[i]->SetReceiverROI(receiverRoi[i]);
+    for (size_t i = 0; i != dataStreamer.size(); ++i)
+        dataStreamer[i]->SetReceiverROI(receiverRoi[i]);
     LOG(logINFO) << "receiverRoi ROI: " << sls::ToString(receiverRoi);
 }
 
@@ -861,7 +865,8 @@ void Implementation::StartMasterWriter() {
             masterAttributes.framePadding = framePadding;
             masterAttributes.scanParams = scanParams;
             masterAttributes.totalFrames = numberOfTotalFrames;
-            masterAttributes.receiverRoi = receiverRoi;
+            masterAttributes.receiverRoi =
+                receiverRoi[0]; // TODO: to be replaced by master receiver roi
             masterAttributes.exptime = acquisitionTime;
             masterAttributes.period = acquisitionPeriod;
             masterAttributes.burstMode = burstMode;
@@ -1014,7 +1019,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
                 dataProcessor[i]->SetActivate(activated);
-                dataProcessor[i]->SetReceiverROI(receiverRoi);
+                dataProcessor[i]->SetReceiverROI(receiverRoi[i]);
             } catch (...) {
                 listener.clear();
                 dataProcessor.clear();
@@ -1042,7 +1047,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
-                    dataStreamer[i]->SetReceiverROI(receiverRoi);
+                    dataStreamer[i]->SetReceiverROI(receiverRoi[i]);
                 } catch (...) {
                     if (dataStreamEnable) {
                         dataStreamer.clear();
@@ -1173,7 +1178,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
-                    dataStreamer[i]->SetReceiverROI(receiverRoi);
+                    dataStreamer[i]->SetReceiverROI(receiverRoi[i]);
                 } catch (...) {
                     dataStreamer.clear();
                     dataStreamEnable = false;

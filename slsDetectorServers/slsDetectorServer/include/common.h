@@ -66,3 +66,5 @@ int moveBinaryFile(char *mess, char *dest, char *src, char *errorPrefix);
 
 int createEmptyFile(char *mess, char *fname, char *errorPrefix);
 int deleteFile(char *mess, char *fname, char *errorPrefix);
+
+int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix);

@@ -646,6 +646,17 @@ std::string ToString(const defs::gainMode s) {
     }
 }
 
+std::string ToString(const defs::polarity s) {
+    switch (s) {
+    case defs::POSITIVE:
+        return std::string("pos");
+    case defs::NEGATIVE:
+        return std::string("neg");
+    default:
+        return std::string("Unknown");
+    }
+}
+
 const std::string &ToString(const std::string &s) { return s; }
 
 template <> defs::detectorType StringTo(const std::string &s) {
@@ -1057,6 +1068,14 @@ template <> defs::gainMode StringTo(const std::string &s) {
     if (s == "fixg0")
         return defs::FIX_G0;
     throw sls::RuntimeError("Unknown gain mode " + s);
+}
+
+template <> defs::polarity StringTo(const std::string &s) {
+    if (s == "pos")
+        return defs::POSITIVE;
+    if (s == "neg")
+        return defs::NEGATIVE;
+    throw sls::RuntimeError("Unknown polarity mode " + s);
 }
 
 template <> uint32_t StringTo(const std::string &s) {

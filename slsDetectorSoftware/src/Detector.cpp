@@ -1883,6 +1883,46 @@ Result<int> Detector::getGainCaps(Positions pos) {
     return pimpl->Parallel(&Module::getGainCaps, pos);
 }
 
+Result<defs::polarity> Detector::getPolarity(Positions pos) const {
+    return pimpl->Parallel(&Module::getPolarity, pos);
+}
+
+void Detector::setPolarity(defs::polarity value, Positions pos) {
+    pimpl->Parallel(&Module::setPolarity, pos, value);
+}
+
+Result<bool> Detector::getInterpolation(Positions pos) const {
+    return pimpl->Parallel(&Module::getInterpolation, pos);
+}
+
+void Detector::setInterpolation(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setInterpolation, pos, value);
+}
+
+Result<bool> Detector::getPumpProbe(Positions pos) const {
+    return pimpl->Parallel(&Module::getPumpProbe, pos);
+}
+
+void Detector::setPumpProbe(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setPumpProbe, pos, value);
+}
+
+Result<bool> Detector::getAnalogPulsing(Positions pos) const {
+    return pimpl->Parallel(&Module::getAnalogPulsing, pos);
+}
+
+void Detector::setAnalogPulsing(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setAnalogPulsing, pos, value);
+}
+
+Result<bool> Detector::getDigitalPulsing(Positions pos) const {
+    return pimpl->Parallel(&Module::getDigitalPulsing, pos);
+}
+
+void Detector::setDigitalPulsing(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setDigitalPulsing, pos, value);
+}
+
 // CTB/ Moench Specific
 
 Result<int> Detector::getNumberOfAnalogSamples(Positions pos) const {
@@ -2250,15 +2290,6 @@ void Detector::resetFPGA(Positions pos) {
     pimpl->Parallel(&Module::resetFPGA, pos);
 }
 
-void Detector::copyDetectorServer(const std::string &fname,
-                                  const std::string &hostname, Positions pos) {
-    LOG(logINFO) << "Updating Detector Server (via tftp)...";
-    pimpl->Parallel(&Module::copyDetectorServer, pos, fname, hostname);
-    if (getDetectorType().squash() != defs::EIGER) {
-        rebootController(pos);
-    }
-}
-
 void Detector::updateDetectorServer(const std::string &fname, Positions pos) {
     LOG(logINFO) << "Updating Detector Server (no tftp)...";
     std::vector<char> buffer = readBinaryFile(fname, "Update Detector Server");
@@ -2278,16 +2309,6 @@ void Detector::updateKernel(const std::string &fname, Positions pos) {
 
 void Detector::rebootController(Positions pos) {
     pimpl->Parallel(&Module::rebootController, pos);
-}
-
-void Detector::updateFirmwareAndServer(const std::string &sname,
-                                       const std::string &hostname,
-                                       const std::string &fname,
-                                       Positions pos) {
-    LOG(logINFO) << "Updating Firmware and Detector Server (with tftp)...";
-    LOG(logINFO) << "Updating Detector Server (via tftp)...";
-    pimpl->Parallel(&Module::copyDetectorServer, pos, sname, hostname);
-    programFPGA(fname, false, pos);
 }
 
 void Detector::updateFirmwareAndServer(const std::string &sname,

@@ -463,3 +463,151 @@ TEST_CASE("gatedelay3", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("gatedelay3", {}, -1, GET));
     }
 }
+
+TEST_CASE("polarity", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    if (det.getDetectorType().squash() == defs::MYTHEN3) {
+        auto prev_val = det.getPolarity();
+        {
+            std::ostringstream oss;
+            proxy.Call("polarity", {"pos"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "polarity pos\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("polarity", {"neg"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "polarity neg\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("polarity", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "polarity neg\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setPolarity(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("polarity", {}, -1, GET));
+    }
+}
+
+TEST_CASE("interpolation", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    if (det.getDetectorType().squash() == defs::MYTHEN3) {
+        auto prev_val = det.getInterpolation();
+        auto mask = det.getCounterMask();
+        {
+            proxy.Call("counters", {"0", "1"}, -1, PUT);
+            std::ostringstream oss;
+            proxy.Call("interpolation", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "interpolation 1\n");
+            REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") ==
+                    7);
+        }
+        {
+            proxy.Call("counters", {"0", "1"}, -1, PUT);
+            std::ostringstream oss;
+            proxy.Call("interpolation", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "interpolation 0\n");
+            REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") ==
+                    3);
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("interpolation", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "interpolation 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setCounterMask(mask[i], {i});
+            det.setInterpolation(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("interpolation", {}, -1, GET));
+    }
+}
+
+TEST_CASE("pumpprobe", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    if (det.getDetectorType().squash() == defs::MYTHEN3) {
+        auto prev_val = det.getPumpProbe();
+        {
+            std::ostringstream oss;
+            proxy.Call("pumpprobe", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pumpprobe 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("pumpprobe", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "pumpprobe 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("pumpprobe", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "pumpprobe 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setPumpProbe(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("pumpprobe", {}, -1, GET));
+    }
+}
+
+TEST_CASE("apulse", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    if (det.getDetectorType().squash() == defs::MYTHEN3) {
+        auto prev_val = det.getAnalogPulsing();
+        {
+            std::ostringstream oss;
+            proxy.Call("apulse", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "apulse 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("apulse", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "apulse 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("apulse", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "apulse 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setAnalogPulsing(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("apulse", {}, -1, GET));
+    }
+}
+
+TEST_CASE("dpulse", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    if (det.getDetectorType().squash() == defs::MYTHEN3) {
+        auto prev_val = det.getDigitalPulsing();
+        {
+            std::ostringstream oss;
+            proxy.Call("dpulse", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "dpulse 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("dpulse", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "dpulse 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("dpulse", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "dpulse 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDigitalPulsing(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("dpulse", {}, -1, GET));
+    }
+}

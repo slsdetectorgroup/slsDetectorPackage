@@ -3498,10 +3498,60 @@ class Detector(CppDetectorApi):
 
     def readout(self):
         """
-        Mythen3] Starts detector readout. Status changes to TRANSMITTING and automatically returns to idle at the end of readout.
+        [Mythen3] Starts detector readout. Status changes to TRANSMITTING and automatically returns to idle at the end of readout.
         """
         self.startDetectorReadout()
     
+    @property
+    @element
+    def polarity(self):
+        """[Mythen3] Set positive or negative polarity. Enum: polarity"""
+        return self.getPolarity()
+
+    @polarity.setter
+    def polarity(self, value):
+        ut.set_using_dict(self.setPolarity, value)
+
+    @property
+    @element
+    def interpolation(self):
+        """[Mythen3] Enable or disable interpolation.  Enabling also enables all counters """
+        return self.getInterpolation()
+
+    @interpolation.setter
+    def interpolation(self, value):
+        ut.set_using_dict(self.setInterpolation, value)
+
+    @property
+    @element
+    def pumpprobe(self):
+        """[Mythen3] Enable or disable pump probe mode. """
+        return self.getPumpProbe()
+
+    @pumpprobe.setter
+    def pumpprobe(self, value):
+        ut.set_using_dict(self.setPumpProbe, value)
+
+    @property
+    @element
+    def apulse(self):
+        """[Mythen3] Enable or disable analog pulsing. """
+        return self.getAnalogPulsing()
+
+    @apulse.setter
+    def apulse(self, value):
+        ut.set_using_dict(self.setAnalogPulsing, value)
+
+    @property
+    @element
+    def dpulse(self):
+        """[Mythen3] Enable or disable digital pulsing. """
+        return self.getDigitalPulsing()
+
+    @dpulse.setter
+    def dpulse(self, value):
+        ut.set_using_dict(self.setDigitalPulsing, value)
+
 
     """
     ---------------------------<<<Debug>>>---------------------------

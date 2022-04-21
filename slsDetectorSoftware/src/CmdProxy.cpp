@@ -2972,38 +2972,6 @@ std::string CmdProxy::ProgramFpga(int action) {
     return os.str();
 }
 
-std::string CmdProxy::CopyDetectorServer(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        LOG(logWARNING) << "Deprecated! Replaced by updatedetectorserver that "
-                           "requires no tftp.\n";
-        os << "[server_name (in tftp folder)] "
-              "[pc_host_name]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3]["
-              "Gotthard2] Copies detector server via TFTP from pc. Ensure "
-              "that "
-              "server is in the pc's tftp folder. Makes a symbolic link "
-              "with a "
-              "shorter name (without vx.x.x). Then, detector controller "
-              "reboots (except "
-              "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn "
-              "server "
-              "to the link, which is effective after a reboot."
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 2) {
-            WrongNumberOfParameters(2);
-        }
-        det->copyDetectorServer(args[0], args[1], std::vector<int>{det_id});
-        os << "successful\n";
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
 std::string CmdProxy::UpdateDetectorServer(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -3063,52 +3031,20 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\tUsing tftp: Deprecated!! [server_name"
-              " (in tftp folder)] [pc_host_name] [fname.pof (incl full "
-              "path)]"
-              "\n\tWithout tftp: Recommended [server_name (incl fullpath)] "
-              "[fname.pof (incl full path)] "
-              "This does not use tftp."
-              "\n\t\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
-              "firmware, detector server, creates the symbolic link and "
-              "then "
-              "reboots detector controller. \n\t\t[Mythen3][Gotthard2] "
-              "will "
-              "require a script to start up the shorter named server link "
-              "at "
-              "start up. \n\t\tsname is full path name of detector server "
-              "binary"
-              "\n\t\tfname is full path of programming file"
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 3 && args.size() != 2) {
-            WrongNumberOfParameters(2);
-        }
-
-        int fpos = args.size() - 1;
-        if (args[fpos].find(".pof") == std::string::npos &&
-            args[fpos].find(".rbf") == std::string::npos) {
-            throw sls::RuntimeError("Programming file must be a pof/rbf file.");
-        }
-
-        if (args.size() == 3) {
-            LOG(logWARNING)
-                << "Deprecated! Recommend to use same command without tftp "
-                   "(no "
-                   "pc name) and using full path to the server binary";
-            det->updateFirmwareAndServer(args[0], args[1], args[2],
-                                         std::vector<int>{det_id});
-        } else {
-            det->updateFirmwareAndServer(args[0], args[1],
-                                         std::vector<int>{det_id});
-        }
-        os << "successful\n";
-    } else {
-        throw sls::RuntimeError("Unknown action");
     }
-    return os.str();
+
+    int fpos = args.size() - 1;
+    if (args[fpos].find(".pof") == std::string::npos &&
+        args[fpos].find(".rbf") == std::string::npos) {
+        throw sls::RuntimeError("Programming file must be a pof/rbf file.");
+    }
+    det->updateFirmwareAndServer(args[0], args[1], std::vector<int>{det_id});
+    os << "successful\n";
+}
+else {
+    throw sls::RuntimeError("Unknown action");
+}
+return os.str();
 }
 
 std::string CmdProxy::Register(int action) {

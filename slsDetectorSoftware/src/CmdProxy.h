@@ -743,7 +743,11 @@ class CmdProxy {
 
         /* Pattern */
         /* Moench */
+        
         /* Advanced */
+        {"copydetectorserver", "updatedetectorserver"},
+
+
         /* Insignificant */
         {"nframes", "framecounter"},
         {"now", "runtime"},
@@ -994,6 +998,11 @@ class CmdProxy {
         {"gatedelay2", &CmdProxy::GateDelay},
         {"gatedelay3", &CmdProxy::GateDelay},
         {"gaincaps", &CmdProxy::GainCaps},
+        {"polarity", &CmdProxy::polarity},
+        {"interpolation", &CmdProxy::interpolation},
+        {"pumpprobe", &CmdProxy::pumpprobe},
+        {"apulse", &CmdProxy::apulse},
+        {"dpulse", &CmdProxy::dpulse},
 
         /* CTB/ Moench Specific */
         {"samples", &CmdProxy::Samples},
@@ -1064,7 +1073,6 @@ class CmdProxy {
         /* Advanced */
         {"programfpga", &CmdProxy::ProgramFpga},
         {"resetfpga", &CmdProxy::resetfpga},
-        {"copydetectorserver", &CmdProxy::CopyDetectorServer},
         {"updatedetectorserver", &CmdProxy::UpdateDetectorServer},
         {"updatekernel", &CmdProxy::UpdateKernel},
         {"rebootcontroller", &CmdProxy::rebootcontroller},
@@ -1191,7 +1199,6 @@ class CmdProxy {
     std::string JsonParameter(int action);
     /* Advanced */
     std::string ProgramFpga(int action);
-    std::string CopyDetectorServer(int action);
     std::string UpdateDetectorServer(int action);
     std::string UpdateKernel(int action);
     std::string UpdateFirmwareAndDetectorServer(int action);
@@ -2042,6 +2049,31 @@ class CmdProxy {
         gates, getNumberOfGates, setNumberOfGates, StringTo<int>,
         "[n_gates]\n\t[Mythen3] Number of external gates in gating "
         "or trigger_gating mode (external gating).");
+
+    INTEGER_COMMAND_VEC_ID(polarity, getPolarity, setPolarity,
+                           StringTo<defs::polarity>,
+                           "[pos|neg]\n\t[Mythen3] Sets negative or positive "
+                           "polarity. Default is positive");
+
+    INTEGER_COMMAND_VEC_ID(interpolation, getInterpolation, setInterpolation,
+                           StringTo<int>,
+                           "[0, 1]\n\t[Mythen3] Enables or disables "
+                           "interpolation. Default is disabled.  Enabling also "
+                           "enables all counters. ");
+
+    INTEGER_COMMAND_VEC_ID(pumpprobe, getPumpProbe, setPumpProbe, StringTo<int>,
+                           "[0, 1]\n\t[Mythen3] Enables or disables pump probe "
+                           "mode. Default is disabled");
+
+    INTEGER_COMMAND_VEC_ID(apulse, getAnalogPulsing, setAnalogPulsing,
+                           StringTo<int>,
+                           "[0, 1]\n\t[Mythen3] Enables or disables analog "
+                           "pulsing. Default is disabled");
+
+    INTEGER_COMMAND_VEC_ID(dpulse, getDigitalPulsing, setDigitalPulsing,
+                           StringTo<int>,
+                           "[0, 1]\n\t[Mythen3] Enables or disables digital "
+                           "pulsing. Default is disabled");
 
     /* CTB/ Moench Specific */
 

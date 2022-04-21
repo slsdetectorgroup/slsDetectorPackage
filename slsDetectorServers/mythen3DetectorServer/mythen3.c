@@ -10,20 +10,6 @@
 
 #include <string.h>
 
-/*
-// Common C/C++ structure to handle pattern data
-typedef struct __attribute__((packed)) {
-    uint64_t word[MAX_PATTERN_LENGTH];
-    uint64_t ioctrl;
-    uint32_t limits[2];
-    // loop0 start, loop0 stop .. loop2 start, loop2 stop
-    uint32_t loop[6];
-    uint32_t nloop[3];
-    uint32_t wait[3];
-    uint64_t waittime[3];
-} patternParameters;
-*/
-
 int chipStatusRegister = 0;
 
 int setBit(int ibit, int patword) { return patword |= (1 << ibit); }
@@ -31,44 +17,6 @@ int setBit(int ibit, int patword) { return patword |= (1 << ibit); }
 int clearBit(int ibit, int patword) { return patword &= ~(1 << ibit); }
 
 int getChipStatusRegister() { return chipStatusRegister; }
-
-int gainCapsToCsr(int caps) {
-    // Translates bit representation
-    int csr = 0;
-    if (!(caps & M3_C10pre))
-        csr |= 1 << _CSR_C10pre;
-    if (caps & M3_C15sh)
-        csr |= 1 << CSR_C15sh;
-    if (caps & M3_C30sh)
-        csr |= 1 << CSR_C30sh;
-    if (caps & M3_C50sh)
-        csr |= 1 << CSR_C50sh;
-    if (caps & M3_C225ACsh)
-        csr |= 1 << CSR_C225ACsh;
-    if (!(caps & M3_C15pre))
-        csr |= 1 << _CSR_C15pre;
-
-    return csr;
-}
-
-int csrToGainCaps(int csr) {
-    // Translates bit representation
-    int caps = 0;
-    if (!(csr & (1 << _CSR_C10pre)))
-        caps |= M3_C10pre;
-    if (csr & (1 << CSR_C15sh))
-        caps |= M3_C15sh;
-    if (csr & (1 << CSR_C30sh))
-        caps |= M3_C30sh;
-    if (csr & (1 << CSR_C50sh))
-        caps |= M3_C50sh;
-    if (csr & (1 << CSR_C225ACsh))
-        caps |= M3_C225ACsh;
-    if (!(csr & (1 << _CSR_C15pre)))
-        caps |= M3_C15pre;
-
-    return caps;
-}
 
 patternParameters *setChipStatusRegisterPattern(int csr) {
     int iaddr = 0;
@@ -149,54 +97,116 @@ patternParameters *setChipStatusRegisterPattern(int csr) {
     return pat;
 }
 
-patternParameters *setInterpolation(int mask) {
-    int csr;
-    if (mask)
-        csr = chipStatusRegister | (1 << CSR_interp);
-    else
-        csr = chipStatusRegister & ~(1 << CSR_interp);
+int getGainCaps() {
+    int csr = chipStatusRegister;
+    // Translates bit representation
+    int caps = 0;
+    if (!(csr & (1 << _CSR_C10pre)))
+        caps |= M3_C10pre;
+    if (csr & (1 << CSR_C15sh))
+        caps |= M3_C15sh;
+    if (csr & (1 << CSR_C30sh))
+        caps |= M3_C30sh;
+    if (csr & (1 << CSR_C50sh))
+        caps |= M3_C50sh;
+    if (csr & (1 << CSR_C225ACsh))
+        caps |= M3_C225ACsh;
+    if (!(csr & (1 << _CSR_C15pre)))
+        caps |= M3_C15pre;
 
-    return setChipStatusRegisterPattern(csr);
+    return caps;
 }
 
-patternParameters *setPumpProbe(int mask) {
-    int csr;
-    if (mask)
-        csr = chipStatusRegister | (1 << CSR_pumprobe);
-    else
-        csr = chipStatusRegister & ~(1 << CSR_pumprobe);
+int M3SetGainCaps(int caps) {
+    int csr = chipStatusRegister & ~GAIN_MASK;
 
-    return setChipStatusRegisterPattern(csr);
+    // Translates bit representation
+    if (!(caps & M3_C10pre))
+        csr |= 1 << _CSR_C10pre;
+    if (caps & M3_C15sh)
+        csr |= 1 << CSR_C15sh;
+    if (caps & M3_C30sh)
+        csr |= 1 << CSR_C30sh;
+    if (caps & M3_C50sh)
+        csr |= 1 << CSR_C50sh;
+    if (caps & M3_C225ACsh)
+        csr |= 1 << CSR_C225ACsh;
+    if (!(caps & M3_C15pre))
+        csr |= 1 << _CSR_C15pre;
+
+    return csr;
 }
-patternParameters *setDigitalPulsing(int mask) {
 
-    int csr;
-    if (mask)
-        csr = chipStatusRegister | (1 << CSR_dpulse);
-    else
-        csr = chipStatusRegister & ~(1 << CSR_dpulse);
-
-    return setChipStatusRegisterPattern(csr);
+int getInterpolation() {
+    return ((chipStatusRegister & CSR_interp_MSK) >> CSR_interp);
 }
-patternParameters *setAnalogPulsing(int mask) {
 
-    int csr;
-    if (mask)
-        csr = chipStatusRegister | (1 << CSR_apulse);
+int M3SetInterpolation(int enable) {
+    int csr = 0;
+    if (enable)
+        csr = chipStatusRegister | CSR_interp_MSK;
     else
-        csr = chipStatusRegister & ~(1 << CSR_apulse);
-
-    return setChipStatusRegisterPattern(csr);
+        csr = chipStatusRegister & ~CSR_interp_MSK;
+    return csr;
 }
-patternParameters *setNegativePolarity(int mask) {
 
-    int csr;
-    if (mask)
-        csr = chipStatusRegister | (1 << CSR_invpol);
+int getPumpProbe() {
+    return ((chipStatusRegister & CSR_pumprobe_MSK) >> CSR_pumprobe);
+}
+
+int M3SetPumpProbe(int enable) {
+    LOG(logINFO, ("%s Pump Probe\n", enable == 0 ? "Disabling" : "Enabling"));
+    int csr = 0;
+    if (enable)
+        csr = chipStatusRegister | CSR_pumprobe_MSK;
     else
-        csr = chipStatusRegister & ~(1 << CSR_invpol);
+        csr = chipStatusRegister & ~CSR_pumprobe_MSK;
+    return csr;
+}
 
-    return setChipStatusRegisterPattern(csr);
+int getDigitalPulsing() {
+    return ((chipStatusRegister & CSR_dpulse_MSK) >> CSR_dpulse);
+}
+
+int M3SetDigitalPulsing(int enable) {
+    LOG(logINFO,
+        ("%s Digital Pulsing\n", enable == 0 ? "Disabling" : "Enabling"));
+    int csr = 0;
+    if (enable)
+        csr = chipStatusRegister | CSR_dpulse_MSK;
+    else
+        csr = chipStatusRegister & ~CSR_dpulse_MSK;
+    return csr;
+}
+
+int getAnalogPulsing() {
+    return ((chipStatusRegister & CSR_apulse_MSK) >> CSR_apulse);
+}
+
+int M3SetAnalogPulsing(int enable) {
+    LOG(logINFO,
+        ("%s Analog Pulsing\n", enable == 0 ? "Disabling" : "Enabling"));
+    int csr = 0;
+    if (enable)
+        csr = chipStatusRegister | CSR_apulse_MSK;
+    else
+        csr = chipStatusRegister & ~CSR_apulse_MSK;
+    return csr;
+}
+
+int getNegativePolarity() {
+    return ((chipStatusRegister & CSR_invpol_MSK) >> CSR_invpol);
+}
+
+int M3SetNegativePolarity(int enable) {
+    LOG(logINFO,
+        ("%s Negative Polarity\n", enable == 0 ? "Disabling" : "Enabling"));
+    int csr = 0;
+    if (enable)
+        csr = chipStatusRegister | CSR_invpol_MSK;
+    else
+        csr = chipStatusRegister & ~CSR_invpol_MSK;
+    return csr;
 }
 
 patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits) {

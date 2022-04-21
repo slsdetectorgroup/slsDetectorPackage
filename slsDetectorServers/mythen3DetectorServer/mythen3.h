@@ -49,6 +49,12 @@
        // shaper)
 #define _CSR_C15pre 14 // negative polarity
 
+#define CSR_invpol_MSK   (0x1 << CSR_invpol)
+#define CSR_dpulse_MSK   (0x1 << CSR_dpulse)
+#define CSR_interp_MSK   (0x1 << CSR_interp)
+#define CSR_pumprobe_MSK (0x1 << CSR_pumprobe)
+#define CSR_apulse_MSK   (0x1 << CSR_apulse)
+
 #define CSR_default (1 << _CSR_C10pre) | (1 << CSR_C30sh)
 
 #define GAIN_MASK                                                              \
@@ -58,15 +64,20 @@
 int setBit(int ibit, int patword);
 int clearBit(int ibit, int patword);
 int getChipStatusRegister();
-int gainCapsToCsr(int caps);
-int csrToGainCaps(int csr);
 
 patternParameters *setChipStatusRegisterPattern(int csr);
 patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits);
-patternParameters *setInterpolation(int mask);
-patternParameters *setPumpProbe(int mask);
-patternParameters *setDigitalPulsing(int mask);
-patternParameters *setAnalogPulsing(int mask);
-patternParameters *setNegativePolarity(int mask);
+int getGainCaps();
+int M3SetGainCaps(int caps);
+int getInterpolation();
+int M3SetInterpolation(int enable);
+int getPumpProbe();
+int M3SetPumpProbe(int enable);
+int getDigitalPulsing();
+int M3SetDigitalPulsing(int enable);
+int getAnalogPulsing();
+int M3SetAnalogPulsing(int enable);
+int getNegativePolarity();
+int M3SetNegativePolarity(int enable);
 
 #endif

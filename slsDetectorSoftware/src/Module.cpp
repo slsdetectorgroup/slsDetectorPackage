@@ -2269,10 +2269,51 @@ int Module::getChipStatusRegister() const {
 }
 
 void Module::setGainCaps(int caps) {
-    sendToDetector<int>(F_SET_GAIN_CAPS, caps);
+    sendToDetector(F_SET_GAIN_CAPS, caps, nullptr);
 }
 
 int Module::getGainCaps() { return sendToDetector<int>(F_GET_GAIN_CAPS); }
+
+defs::polarity Module::getPolarity() const {
+    return sendToDetector<defs::polarity>(F_GET_POLARITY);
+}
+
+void Module::setPolarity(const defs::polarity value) {
+    sendToDetector(F_SET_POLARITY, static_cast<int>(value), nullptr);
+}
+
+bool Module::getInterpolation() const {
+    return sendToDetector<int>(F_GET_INTERPOLATION);
+}
+
+void Module::setInterpolation(const bool enable) {
+    sendToDetector(F_SET_INTERPOLATION, static_cast<int>(enable), nullptr);
+    setCounterMask(getCounterMask());
+}
+
+bool Module::getPumpProbe() const {
+    return sendToDetector<int>(F_GET_PUMP_PROBE);
+}
+
+void Module::setPumpProbe(const bool enable) {
+    sendToDetector(F_SET_PUMP_PROBE, static_cast<int>(enable), nullptr);
+}
+
+bool Module::getAnalogPulsing() const {
+    return sendToDetector<int>(F_GET_ANALOG_PULSING);
+}
+
+void Module::setAnalogPulsing(const bool enable) {
+    sendToDetector(F_SET_ANALOG_PULSING, static_cast<int>(enable), nullptr);
+}
+
+bool Module::getDigitalPulsing() const {
+    return sendToDetector<int>(F_GET_DIGITAL_PULSING);
+}
+
+void Module::setDigitalPulsing(const bool enable) {
+    sendToDetector(F_SET_DIGITAL_PULSING, static_cast<int>(enable), nullptr);
+}
 
 // CTB / Moench Specific
 int Module::getNumberOfAnalogSamples() const {
@@ -2623,28 +2664,6 @@ void Module::programFPGA(std::vector<char> buffer,
 }
 
 void Module::resetFPGA() { sendToDetector(F_RESET_FPGA); }
-
-void Module::copyDetectorServer(const std::string &fname,
-                                const std::string &hostname) {
-    char args[2][MAX_STR_LENGTH]{};
-    sls::strcpy_safe(args[0], fname.c_str());
-    sls::strcpy_safe(args[1], hostname.c_str());
-    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): Sending detector server " << args[0] << " from host "
-                 << args[1];
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_COPY_DET_SERVER);
-    client.Send(args);
-    if (client.Receive<int>() == FAIL) {
-        std::cout << '\n';
-        std::ostringstream os;
-        os << "Module " << moduleIndex << " (" << shm()->hostname << ")"
-           << " returned error: " << client.readErrorMessage();
-        throw DetectorError(os.str());
-    }
-    LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
-                 << "): Detector server copied";
-}
 
 void Module::updateDetectorServer(std::vector<char> buffer,
                                   const std::string &serverName) {

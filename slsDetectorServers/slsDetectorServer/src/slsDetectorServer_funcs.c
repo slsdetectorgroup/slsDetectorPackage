@@ -81,27 +81,14 @@ char scanErrMessage[MAX_STR_LENGTH] = "";
 /* initialization functions */
 
 int updateModeAllowedFunction(int file_des) {
-    enum detFuncs allowedFuncs[] = {F_EXEC_COMMAND,
-                                    F_GET_DETECTOR_TYPE,
-                                    F_GET_FIRMWARE_VERSION,
-                                    F_GET_SERVER_VERSION,
-                                    F_GET_SERIAL_NUMBER,
-                                    F_WRITE_REGISTER,
-                                    F_READ_REGISTER,
-                                    F_LOCK_SERVER,
-                                    F_GET_LAST_CLIENT_IP,
-                                    F_PROGRAM_FPGA,
-                                    F_RESET_FPGA,
-                                    F_CHECK_VERSION,
-                                    F_REBOOT_CONTROLLER,
-                                    F_GET_KERNEL_VERSION,
-                                    F_UPDATE_KERNEL,
-                                    F_UPDATE_DETECTOR_SERVER,
-                                    F_GET_UPDATE_MODE,
-                                    F_SET_UPDATE_MODE,
-                                    F_GET_NUM_CHANNELS,
-                                    F_GET_NUM_INTERFACES,
-                                    F_ACTIVATE};
+    enum detFuncs allowedFuncs[] = {
+        F_EXEC_COMMAND,           F_GET_DETECTOR_TYPE,  F_GET_FIRMWARE_VERSION,
+        F_GET_SERVER_VERSION,     F_GET_SERIAL_NUMBER,  F_WRITE_REGISTER,
+        F_READ_REGISTER,          F_LOCK_SERVER,        F_GET_LAST_CLIENT_IP,
+        F_PROGRAM_FPGA,           F_RESET_FPGA,         F_CHECK_VERSION,
+        F_REBOOT_CONTROLLER,      F_GET_KERNEL_VERSION, F_UPDATE_KERNEL,
+        F_UPDATE_DETECTOR_SERVER, F_GET_UPDATE_MODE,    F_SET_UPDATE_MODE,
+        F_GET_NUM_CHANNELS,       F_GET_NUM_INTERFACES, F_ACTIVATE};
     size_t allowedFuncsSize = sizeof(allowedFuncs) / sizeof(enum detFuncs);
 
     for (unsigned int i = 0; i < allowedFuncsSize; ++i) {
@@ -4709,21 +4696,17 @@ void calculate_and_set_position() {
     }
 
     // calculating new position
-    int modulePorts[2] = {1, 1};
-    // position does change for eiger and jungfrau (2 interfaces)
-#if defined(EIGERD)
-    modulePorts[1] = getNumberofUDPInterfaces(); // horz
-#elif defined(JUNGFRAUD)
-    modulePorts[0] = getNumberofUDPInterfaces(); // vert
-#endif
-    int maxy = maxydet * modulePorts[0];
     int pos[2] = {0, 0};
     // row
-    pos[0] = (detectorId % maxy);
+    pos[0] = (detectorId % maxydet);
     // col for horiz. udp ports
-    pos[1] = (detectorId / maxy) * modulePorts[1];
-
-    LOG(logDEBUG, ("Setting Positions (%d,%d)\n", pos[0], pos[1]));
+    pos[1] = (detectorId / maxydet);
+#if defined(EIGERD)
+    pos[1] *= getNumberofUDPInterfaces(); // horiz
+#elif defined(JUNGFRAUD)
+    pos[0] *= getNumberofUDPInterfaces(); // vert
+#endif
+    LOG(logINFO, ("Setting Positions (row:%d,col:%d)\n", pos[0], pos[1]));
     if (setDetectorPosition(pos) == FAIL) {
         ret = FAIL;
         sprintf(mess, "Could not set detector position.\n");
@@ -4784,7 +4767,8 @@ int set_detector_position(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting detector positions: [%u, %u]\n", args[0], args[1]));
+    LOG(logDEBUG, ("Setting detector positions: [maxy:%u, detid:%u]\n", args[0],
+                   args[1]));
 
     // only set
     if (Server_VerifyLock() == OK) {

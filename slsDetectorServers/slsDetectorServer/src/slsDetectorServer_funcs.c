@@ -4718,8 +4718,8 @@ void calculate_and_set_position() {
     pos[0] = (detectorId % maxy);
     // col for horiz. udp ports
     pos[1] = (detectorId / maxy) * modulePorts[1];
-
-    LOG(logDEBUG, ("Setting Positions (%d,%d)\n", pos[0], pos[1]));
+    LOG(logINFORED, ("maxydet: %d, detId:%d\n", maxydet, detectorId));
+    LOG(logINFORED, ("Setting Positions (%d,%d)\n", pos[0], pos[1]));
     if (setDetectorPosition(pos) == FAIL) {
         ret = FAIL;
         sprintf(mess, "Could not set detector position.\n");
@@ -4785,6 +4785,13 @@ int get_detector_position(int file_des) {
     // order in retvals[column, row]
     retvals[0] = p_retvals[1];
     retvals[1] = p_retvals[0];
+    /*#ifdef JUNGFRAUD
+        // get outer interface
+        if (getNumberofUDPInterfaces() == 2) {
+            retvals[0] = p_retvals[3];
+            retvals[1] = p_retvals[2];
+        }
+    #endif*/
 
     return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
 }

@@ -1626,14 +1626,14 @@ int setDetectorPosition(int pos[]) {
     int selInterface = getPrimaryInterface();
 
     if (getNumberofUDPInterfaces() == 1) {
-        LOG(logDEBUG,
+        LOG(logINFORED,
             ("Setting detector position: 1 Interface %s \n(%d, %d)\n",
              (selInterface ? "Inner" : "Outer"), innerPos[X], innerPos[Y]));
     } else {
         ++outerPos[X];
-        LOG(logDEBUG, ("Setting detector position: 2 Interfaces \n"
-                       "  inner top(%d, %d), outer bottom(%d, %d)\n",
-                       innerPos[X], innerPos[Y], outerPos[X], outerPos[Y]));
+        LOG(logINFORED, ("Setting detector position: 2 Interfaces \n"
+                         "  inner top(%d, %d), outer bottom(%d, %d)\n",
+                         innerPos[X], innerPos[Y], outerPos[X], outerPos[Y]));
     }
     detPos[0] = innerPos[0];
     detPos[1] = innerPos[1];

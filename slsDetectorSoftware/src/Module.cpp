@@ -148,6 +148,7 @@ slsDetectorDefs::xy Module::getNumberOfChannels() const {
 void Module::updateNumberOfModule(slsDetectorDefs::xy det) {
     shm()->numberOfModule = det;
     int args[2] = {shm()->numberOfModule.y, moduleIndex};
+    LOG(logINFORED) << "set pos " << ToString(args);
     sendToDetector(F_SET_POSITION, args, nullptr);
 }
 

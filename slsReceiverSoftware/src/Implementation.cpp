@@ -349,60 +349,19 @@ void Implementation::setArping(const bool i,
 }
 
 slsDetectorDefs::ROI Implementation::getReceiverROI() const {
-    if (numUDPInterfaces == 1 || detType == slsDetectorDefs::GOTTHARD2 ||
-        receiverRoi[0] == receiverRoi[1]) {
-        return receiverRoi[0];
-    }
-    // 2 rois
-    ROI retvals[2]{};
-    for (int i = 0; i != 2; ++i) {
-        retvals[i] = receiverRoi[i];
-
-        // expand roi
-        if (receiverRoi[i].completeRoi()) {
-            retvals[i].xmin = 0;
-            retvals[i].xmax = generalData->nPixelsX;
-            retvals[i].ymin = 0;
-            retvals[i].ymax = generalData->nPixelsY;
-
-            // if left right eiger, else top down jungfrau
-            xy portGeometry = GetPortGeometry();
-            if (portGeometry.x == 2) {
-                if (i == 0) {
-                    retvals[i].xmax = (generalData->nPixelsX / 2) - 1;
-                } else {
-                    retvals[i].xmin = (generalData->nPixelsX / 2);
-                }
-            } else {
-                // bottom, i = 0
-                if (i == 0) {
-                    retvals[i].ymax = (generalData->nPixelsX / 2) - 1;
-                } else {
-                    retvals[i].ymin = (generalData->nPixelsX / 2);
-                }
-            }
-        }
-    }
-
-    // send other roi if no roi
-    if (receiverRoi[0].noRoi()) {
-        return retvals[1];
-    }
-    if (receiverRoi[1].noRoi()) {
-        return retvals[0];
-    }
-
-    ROI retval(retvals[0].xmin, retvals[1].xmax, retvals[0].ymin,
-               retvals[1].ymax);
-    return retval;
+    return receiverRoi;
 }
 
 void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
+    receiverRoi = arg;
+
     if (numUDPInterfaces == 1 || detType == slsDetectorDefs::GOTTHARD2) {
-        receiverRoi[0] = arg;
+        portRois[0] = arg;
     } else {
-        receiverRoi[0] = arg;
-        receiverRoi[1] = arg;
+        portRois[0] = arg;
+        portRois[1] = arg;
+
+        // split into port rois
         if (!arg.completeRoi() && !arg.noRoi()) {
 
             // left right (eiger)
@@ -410,16 +369,16 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
                 int nPixelsXHalf = generalData->nPixelsX / 2;
                 // skip first half
                 if (arg.xmin >= nPixelsXHalf) {
-                    receiverRoi[0].SetNoRoi();
+                    portRois[0].SetNoRoi();
                 }
                 // skip second half
                 else if (arg.xmax < nPixelsXHalf) {
-                    receiverRoi[1].SetNoRoi();
+                    portRois[1].SetNoRoi();
                 } else {
-                    receiverRoi[0].xmin = arg.xmin;
-                    receiverRoi[0].xmax = nPixelsXHalf - 1;
-                    receiverRoi[1].xmin = nPixelsXHalf;
-                    receiverRoi[1].xmax = arg.xmax;
+                    portRois[0].xmin = arg.xmin;
+                    portRois[0].xmax = nPixelsXHalf - 1;
+                    portRois[1].xmin = nPixelsXHalf;
+                    portRois[1].xmax = arg.xmax;
                 }
             }
             // top down (jungfrau)
@@ -427,25 +386,28 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
                 int nPixelsYHalf = generalData->nPixelsY / 2;
                 // skip first half (top = port 1)
                 if (arg.ymin >= nPixelsYHalf) {
-                    receiverRoi[1].SetNoRoi();
+                    portRois[1].SetNoRoi();
                 }
                 // skip second half (bottom = port 0)
                 else if (arg.xmax < nPixelsYHalf) {
-                    receiverRoi[0].SetNoRoi();
+                    portRois[0].SetNoRoi();
                 } else {
-                    receiverRoi[1].ymin = arg.ymin;
-                    receiverRoi[1].ymax = nPixelsYHalf - 1;
-                    receiverRoi[0].ymin = nPixelsYHalf;
-                    receiverRoi[0].ymax = arg.ymax;
+                    portRois[1].ymin = arg.ymin;
+                    portRois[1].ymax = nPixelsYHalf - 1;
+                    portRois[0].ymin = nPixelsYHalf;
+                    portRois[0].ymax = arg.ymax;
                 }
             }
         }
     }
     for (size_t i = 0; i != dataProcessor.size(); ++i)
-        dataProcessor[i]->SetReceiverROI(receiverRoi[i]);
+        dataProcessor[i]->SetReceiverROI(portRois[i]);
     for (size_t i = 0; i != dataStreamer.size(); ++i)
-        dataStreamer[i]->SetReceiverROI(receiverRoi[i]);
-    LOG(logINFO) << "receiverRoi ROI: " << sls::ToString(receiverRoi);
+        dataStreamer[i]->SetReceiverROI(portRois[i]);
+    LOG(logINFO) << "receiver Roi: " << sls::ToString(receiverRoi);
+    if (numUDPInterfaces == 2) {
+        LOG(logINFO) << "port Rois: " << sls::ToString(portRois);
+    }
 }
 
 /**************************************************
@@ -866,7 +828,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.scanParams = scanParams;
             masterAttributes.totalFrames = numberOfTotalFrames;
             masterAttributes.receiverRoi =
-                receiverRoi[0]; // TODO: to be replaced by master receiver roi
+                receiverRoi; // TODO: to be replaced by master receiver roi
             masterAttributes.exptime = acquisitionTime;
             masterAttributes.period = acquisitionPeriod;
             masterAttributes.burstMode = burstMode;
@@ -993,6 +955,8 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         // fifo
         udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
         SetupFifoStructure();
+        // recalculate port rois
+        setReceiverROI(receiverRoi);
 
         // create threads
         for (int i = 0; i < numUDPInterfaces; ++i) {
@@ -1019,7 +983,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
                 dataProcessor[i]->SetActivate(activated);
-                dataProcessor[i]->SetReceiverROI(receiverRoi[i]);
+                dataProcessor[i]->SetReceiverROI(portRois[i]);
             } catch (...) {
                 listener.clear();
                 dataProcessor.clear();
@@ -1047,7 +1011,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
-                    dataStreamer[i]->SetReceiverROI(receiverRoi[i]);
+                    dataStreamer[i]->SetReceiverROI(portRois[i]);
                 } catch (...) {
                     if (dataStreamEnable) {
                         dataStreamer.clear();
@@ -1178,7 +1142,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
-                    dataStreamer[i]->SetReceiverROI(receiverRoi[i]);
+                    dataStreamer[i]->SetReceiverROI(portRois[i]);
                 } catch (...) {
                     dataStreamer.clear();
                     dataStreamEnable = false;

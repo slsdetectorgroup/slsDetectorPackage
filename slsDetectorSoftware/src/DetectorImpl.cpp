@@ -1447,8 +1447,8 @@ defs::ROI DetectorImpl::getRxROI() const {
                 moduleRoi.ymax = numChansPerMod.y - 1;
             }
         }
-        LOG(logDEBUG) << iModule << ":[" << moduleRoi << "] [" << row << ", "
-                      << col << "]";
+        LOG(logINFOBLUE) << iModule << ":[" << moduleRoi << "] [" << row << ", "
+                         << col << "]";
         // module roi relative to detector
         moduleRoi.xmin += numChansPerMod.x * col;
         moduleRoi.xmax += numChansPerMod.x * col;
@@ -1456,7 +1456,7 @@ defs::ROI DetectorImpl::getRxROI() const {
             moduleRoi.ymin += numChansPerMod.y * row;
             moduleRoi.ymax += numChansPerMod.y * row;
         }
-        LOG(logDEBUG) << iModule << ":" << moduleRoi;
+        LOG(logINFORED) << iModule << ":" << moduleRoi;
         // first roi will have xmin, ymin
         if (retval.xmin == 0) {
             retval.xmin = moduleRoi.xmin;

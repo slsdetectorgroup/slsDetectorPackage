@@ -159,7 +159,7 @@ void Implementation::setDetectorType(const detectorType d) {
     numUDPInterfaces = generalData->numUDPInterfaces;
     udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
     dynamicRange = generalData->dynamicRange;
-    // tengigaEnable = generalData->tengigaEnable;
+    tengigaEnable = generalData->tengigaEnable;
     numberOfAnalogSamples = generalData->nAnalogSamples;
     numberOfDigitalSamples = generalData->nDigitalSamples;
     readoutType = generalData->readoutType;
@@ -533,10 +533,10 @@ void Implementation::startReceiver() {
     // callbacks
     if (startAcquisitionCallBack) {
         try {
-            std::size_t imageSize = static_cast<uint32_t>(generalData->imageSize);
-            startAcquisitionCallBack(
-                filePath, fileName, fileIndex, imageSize,
-                pStartAcquisition);
+            std::size_t imageSize =
+                static_cast<uint32_t>(generalData->imageSize);
+            startAcquisitionCallBack(filePath, fileName, fileIndex, imageSize,
+                                     pStartAcquisition);
         } catch (const std::exception &e) {
             throw sls::RuntimeError("Start Acquisition Callback Error: " +
                                     std::string(e.what()));
@@ -1449,8 +1449,6 @@ void Implementation::setROI(slsDetectorDefs::ROI arg) {
 bool Implementation::getTenGigaEnable() const { return tengigaEnable; }
 
 void Implementation::setTenGigaEnable(const bool b) {
-    LOG(logINFORED) << "setting tengiga  old:" << tengigaEnable << " new:" << b
-                    << " gene:" << generalData->tengigaEnable;
     if (tengigaEnable != b) {
         tengigaEnable = b;
 
@@ -1633,7 +1631,8 @@ void Implementation::setDbitOffset(const int s) { ctbDbitOffset = s; }
  *                                                *
  * ************************************************/
 void Implementation::registerCallBackStartAcquisition(
-    int (*func)(const std::string &, const std::string &, uint64_t, size_t, void *),
+    int (*func)(const std::string &, const std::string &, uint64_t, size_t,
+                void *),
     void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;

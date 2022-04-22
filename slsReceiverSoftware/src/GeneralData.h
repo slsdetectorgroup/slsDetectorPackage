@@ -62,6 +62,7 @@ class GeneralData {
     uint32_t adcEnableMaskOneGiga{BIT32_MASK};
     uint32_t adcEnableMaskTenGiga{BIT32_MASK};
     slsDetectorDefs::ROI roi{};
+    uint32_t counterMask{0};
 
     GeneralData(){};
     virtual ~GeneralData(){};
@@ -122,8 +123,8 @@ class GeneralData {
         ThrowGenericError("SetNumberofInterfaces");
     };
 
-    virtual void SetNumberofCounters(const int n) {
-        ThrowGenericError("SetNumberofCounters");
+    virtual void SetCounterMask(const int n) {
+        ThrowGenericError("setCounterMask");
     };
 
     virtual int GetNumberOfAnalogDatabytes() {
@@ -359,13 +360,12 @@ class JungfrauData : public GeneralData {
 
 class Mythen3Data : public GeneralData {
   private:
-    int ncounters;
+    int ncounters{0};
     const int NCHAN = 1280;
 
   public:
     Mythen3Data() {
         myDetectorType = slsDetectorDefs::MYTHEN3;
-        ncounters = 3;
         nPixelsY = 1;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         maxFramesPerFile = MYTHEN3_MAX_FRAMES_PER_FILE;
@@ -376,6 +376,7 @@ class Mythen3Data : public GeneralData {
         defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
         dynamicRange = 32;
         tengigaEnable = true;
+        SetCounterMask(0x7);
         UpdateImageSize();
     };
 
@@ -389,7 +390,13 @@ class Mythen3Data : public GeneralData {
         UpdateImageSize();
     };
 
-    virtual void SetNumberofCounters(const int n) {
+    virtual void SetCounterMask(const int mask) {
+        int n = __builtin_popcount(mask);
+        if (n < 1 || n > 3) {
+            throw sls::RuntimeError("Invalid number of counters " +
+                                    std::to_string(n) + ". Expected 1-3.");
+        }
+        counterMask = mask;
         ncounters = n;
         UpdateImageSize();
     };

@@ -66,6 +66,8 @@ This document describes the differences between v7.0.0 and v6.x.x
 - registerCallBackRawDataReady and registerCallBackRawDataModifyReady now gives a sls_receiver_header* instead of a char*, and uint32_t to size_t
 - registerCallBackStartAcquisition gave incorrect imagesize (+120 bytes). corrected.
 - registerCallBackStartAcquisition parameter is a const string reference
+- m3 (runnig config second time with tengiga 0, dr !=32, counters !=0x7) calculated incorrect image size expected
+
 
 2. Resolved Issues
 ==================

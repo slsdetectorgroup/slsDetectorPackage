@@ -153,10 +153,20 @@ void Implementation::setDetectorType(const detectorType d) {
     default:
         break;
     }
-    numUDPInterfaces = generalData->numUDPInterfaces;
-    fifoDepth = generalData->defaultFifoDepth;
-    udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
+
     framesPerFile = generalData->maxFramesPerFile;
+    fifoDepth = generalData->defaultFifoDepth;
+    numUDPInterfaces = generalData->numUDPInterfaces;
+    udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
+    dynamicRange = generalData->dynamicRange;
+    tengigaEnable = generalData->tengigaEnable;
+    numberOfAnalogSamples = generalData->nAnalogSamples;
+    numberOfDigitalSamples = generalData->nDigitalSamples;
+    readoutType = generalData->readoutType;
+    adcEnableMaskOneGiga = generalData->adcEnableMaskOneGiga;
+    adcEnableMaskTenGiga = generalData->adcEnableMaskTenGiga;
+    roi = generalData->roi;
+    counterMask = generalData->counterMask;
 
     SetLocalNetworkParameters();
     SetupFifoStructure();
@@ -523,10 +533,10 @@ void Implementation::startReceiver() {
     // callbacks
     if (startAcquisitionCallBack) {
         try {
-            std::size_t imageSize = static_cast<uint32_t>(generalData->imageSize);
-            startAcquisitionCallBack(
-                filePath, fileName, fileIndex, imageSize,
-                pStartAcquisition);
+            std::size_t imageSize =
+                static_cast<uint32_t>(generalData->imageSize);
+            startAcquisitionCallBack(filePath, fileName, fileIndex, imageSize,
+                                     pStartAcquisition);
         } catch (const std::exception &e) {
             throw sls::RuntimeError("Start Acquisition Callback Error: " +
                                     std::string(e.what()));
@@ -1395,14 +1405,8 @@ uint32_t Implementation::getCounterMask() const { return counterMask; }
 
 void Implementation::setCounterMask(const uint32_t i) {
     if (counterMask != i) {
-        int ncounters = __builtin_popcount(i);
-        if (ncounters < 1 || ncounters > 3) {
-            throw sls::RuntimeError("Invalid number of counters " +
-                                    std::to_string(ncounters) +
-                                    ". Expected 1-3.");
-        }
+        generalData->SetCounterMask(i);
         counterMask = i;
-        generalData->SetNumberofCounters(ncounters);
         SetupFifoStructure();
     }
     LOG(logINFO) << "Counter mask: " << sls::ToStringHex(counterMask);
@@ -1627,7 +1631,8 @@ void Implementation::setDbitOffset(const int s) { ctbDbitOffset = s; }
  *                                                *
  * ************************************************/
 void Implementation::registerCallBackStartAcquisition(
-    int (*func)(const std::string &, const std::string &, uint64_t, size_t, void *),
+    int (*func)(const std::string &, const std::string &, uint64_t, size_t,
+                void *),
     void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;

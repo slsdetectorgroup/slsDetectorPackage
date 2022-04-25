@@ -4770,7 +4770,7 @@ int set_detector_position(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-    LOG(logDEBUG, ("Setting detector positions: [maxy:%u, detid:%u]\n", args[0],
+    LOG(logDEBUG, ("Setting detector positions: [maxy:%u, modid:%u]\n", args[0],
                    args[1]));
 
     // only set

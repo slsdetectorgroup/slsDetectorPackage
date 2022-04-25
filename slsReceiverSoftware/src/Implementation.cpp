@@ -217,7 +217,7 @@ slsDetectorDefs::xy Implementation::GetPortGeometry() {
     xy portGeometry{1, 1};
     if (detType == EIGER)
         portGeometry.x = numUDPInterfaces;
-    else // (jungfrau and gotthard2)
+    else if (detType == JUNGFRAU)
         portGeometry.y = numUDPInterfaces;
     return portGeometry;
 }
@@ -253,7 +253,7 @@ void Implementation::setModulePositionId(const int id) {
     assert(numModules.y != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
-        row = (modulePos % numModules.y) * portGeometry.y;
+        row = (modulePos % numModules.y) * portGeometry.y + i;
         col = (modulePos / numModules.y) * portGeometry.x + i;
 
         listener[i]->SetHardCodedPosition(row, col);

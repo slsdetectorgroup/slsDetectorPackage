@@ -62,8 +62,8 @@ int firstUDPDestination = 0;
 
 int configured = FAIL;
 char configureMessage[MAX_STR_LENGTH] = "udp parameters not configured yet";
-int maxydet = -1;
-int detectorId = -1;
+int maxYMods = -1;
+int moduleId = -1;
 
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
@@ -4687,7 +4687,7 @@ int get_read_n_rows(int file_des) {
 }
 
 void calculate_and_set_position() {
-    if (maxydet == -1 || detectorId == -1) {
+    if (maxYMods == -1 || moduleId == -1) {
         ret = FAIL;
         sprintf(mess,
                 "Could not set detector position (did not get multi size).\n");
@@ -4697,15 +4697,18 @@ void calculate_and_set_position() {
 
     // calculating new position
     int pos[2] = {0, 0};
-    // row
-    pos[0] = (detectorId % maxydet);
-    // col for horiz. udp ports
-    pos[1] = (detectorId / maxydet);
+
+    int portGeometry[2] = {1, 1};
+    // position does change for eiger and jungfrau (2 interfaces)
 #if defined(EIGERD)
-    pos[1] *= getNumberofUDPInterfaces(); // horiz
+    portGeometry[X] = getNumberofUDPInterfaces(); // horz
 #elif defined(JUNGFRAUD)
-    pos[0] *= getNumberofUDPInterfaces(); // vert
+    portGeometry[Y] = getNumberofUDPInterfaces(); // vert
 #endif
+    // row
+    pos[0] = (moduleId % maxYMods) * portGeometry[Y];
+    // col for horiz. udp ports
+    pos[1] = (moduleId / maxYMods) * portGeometry[X];
     LOG(logINFO, ("Setting Positions (row:%d,col:%d)\n", pos[0], pos[1]));
     if (setDetectorPosition(pos) == FAIL) {
         ret = FAIL;
@@ -4775,8 +4778,8 @@ int set_detector_position(int file_des) {
         // if in update mode, there is no need to do this (also detector not set
         // up)
         if (!updateFlag && check_detector_idle("configure mac") == OK) {
-            maxydet = args[0];
-            detectorId = args[1];
+            maxYMods = args[0];
+            moduleId = args[1];
             calculate_and_set_position();
         }
     }

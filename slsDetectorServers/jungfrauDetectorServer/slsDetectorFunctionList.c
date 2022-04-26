@@ -1621,19 +1621,21 @@ int configureMAC() {
 
 int setDetectorPosition(int pos[]) {
     int ret = OK;
-    uint32_t innerPos[2] = {pos[X], pos[Y]};
-    uint32_t outerPos[2] = {pos[X], pos[Y]};
+    // row, col
+    uint32_t innerPos[2] = {pos[0], pos[1]};
+    uint32_t outerPos[2] = {pos[0], pos[1]};
     int selInterface = getPrimaryInterface();
 
     if (getNumberofUDPInterfaces() == 1) {
         LOG(logDEBUG,
             ("Setting detector position: 1 Interface %s \n(%d, %d)\n",
-             (selInterface ? "Inner" : "Outer"), innerPos[X], innerPos[Y]));
+             (selInterface ? "Inner" : "Outer"), innerPos[0], innerPos[1]));
     } else {
-        ++outerPos[X];
+        // top has row
+        ++innerPos[0];
         LOG(logDEBUG, ("Setting detector position: 2 Interfaces \n"
                        "  inner top(%d, %d), outer bottom(%d, %d)\n",
-                       innerPos[X], innerPos[Y], outerPos[X], outerPos[Y]));
+                       innerPos[0], innerPos[1], outerPos[0], outerPos[1]));
     }
     detPos[0] = innerPos[0];
     detPos[1] = innerPos[1];
@@ -1645,16 +1647,16 @@ int setDetectorPosition(int pos[]) {
     uint32_t addr = COORD_ROW_REG;
     bus_w(addr,
           (bus_r(addr) & ~COORD_ROW_OUTER_MSK) |
-              ((outerPos[X] << COORD_ROW_OUTER_OFST) & COORD_ROW_OUTER_MSK));
+              ((outerPos[0] << COORD_ROW_OUTER_OFST) & COORD_ROW_OUTER_MSK));
     if (((bus_r(addr) & COORD_ROW_OUTER_MSK) >> COORD_ROW_OUTER_OFST) !=
-        outerPos[X])
+        outerPos[0])
         ret = FAIL;
     // inner
     bus_w(addr,
           (bus_r(addr) & ~COORD_ROW_INNER_MSK) |
-              ((innerPos[X] << COORD_ROW_INNER_OFST) & COORD_ROW_INNER_MSK));
+              ((innerPos[0] << COORD_ROW_INNER_OFST) & COORD_ROW_INNER_MSK));
     if (((bus_r(addr) & COORD_ROW_INNER_MSK) >> COORD_ROW_INNER_OFST) !=
-        innerPos[X])
+        innerPos[0])
         ret = FAIL;
 
     // col
@@ -1662,27 +1664,27 @@ int setDetectorPosition(int pos[]) {
     addr = COORD_COL_REG;
     bus_w(addr,
           (bus_r(addr) & ~COORD_COL_OUTER_MSK) |
-              ((outerPos[Y] << COORD_COL_OUTER_OFST) & COORD_COL_OUTER_MSK));
+              ((outerPos[1] << COORD_COL_OUTER_OFST) & COORD_COL_OUTER_MSK));
     if (((bus_r(addr) & COORD_COL_OUTER_MSK) >> COORD_COL_OUTER_OFST) !=
-        outerPos[Y])
+        outerPos[1])
         ret = FAIL;
     // inner
     bus_w(addr,
           (bus_r(addr) & ~COORD_COL_INNER_MSK) |
-              ((innerPos[Y] << COORD_COL_INNER_OFST) & COORD_COL_INNER_MSK));
+              ((innerPos[1] << COORD_COL_INNER_OFST) & COORD_COL_INNER_MSK));
     if (((bus_r(addr) & COORD_COL_INNER_MSK) >> COORD_COL_INNER_OFST) !=
-        innerPos[Y])
+        innerPos[1])
         ret = FAIL;
 
     if (ret == OK) {
         if (getNumberofUDPInterfaces() == 1) {
             LOG(logINFOBLUE,
-                ("Position set to [%d, %d]\n", innerPos[X], innerPos[Y]));
+                ("Position set to [%d, %d]\n", innerPos[0], innerPos[1]));
         } else {
             LOG(logINFOBLUE, (" Inner (top) position set to [%d, %d]\n",
-                              innerPos[X], innerPos[Y]));
+                              innerPos[0], innerPos[1]));
             LOG(logINFOBLUE, (" Outer (bottom) position set to [%d, %d]\n",
-                              outerPos[X], outerPos[Y]));
+                              outerPos[0], outerPos[1]));
         }
     }
     return ret;

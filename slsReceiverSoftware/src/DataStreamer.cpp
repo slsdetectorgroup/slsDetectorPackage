@@ -21,8 +21,8 @@ DataStreamer::DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi,
                            uint64_t *tot)
     : ThreadObject(ind, TypeName), fifo(f), dynamicRange(dr), roi(r),
       fileIndex(fi), flipRows(fr), quadEnable(qe), totalNumFrames(tot) {
-    numMods.x = nm.x;
-    numMods.y = nm.y;
+    numPorts.x = nm.x;
+    numPorts.y = nm.y;
 
     LOG(logDEBUG) << "DataStreamer " << ind << " created";
 }
@@ -63,9 +63,9 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum, char *buf) {
 
 void DataStreamer::SetGeneralData(GeneralData *g) { generalData = g; }
 
-void DataStreamer::SetNumberofModules(xy nm) {
-    numMods.x = nm.x;
-    numMods.y = nm.y;
+void DataStreamer::SetNumberofPorts(xy nm) {
+    numPorts.x = nm.x;
+    numPorts.y = nm.y;
 }
 
 void DataStreamer::SetFlipRows(bool fd) { flipRows = fd; }
@@ -220,8 +220,8 @@ int DataStreamer::SendHeader(sls_receiver_header *rheader, uint32_t size,
 
     zHeader.dynamicRange = *dynamicRange;
     zHeader.fileIndex = *fileIndex;
-    zHeader.ndetx = numMods.x;
-    zHeader.ndety = numMods.y;
+    zHeader.ndetx = numPorts.x;
+    zHeader.ndety = numPorts.y;
     zHeader.npixelsx = nx;
     zHeader.npixelsy = ny;
     zHeader.imageSize = size;

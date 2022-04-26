@@ -63,7 +63,7 @@ int firstUDPDestination = 0;
 int configured = FAIL;
 char configureMessage[MAX_STR_LENGTH] = "udp parameters not configured yet";
 int maxYMods = -1;
-int moduleId = -1;
+int moduleIndex = -1;
 
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
@@ -4687,7 +4687,7 @@ int get_read_n_rows(int file_des) {
 }
 
 void calculate_and_set_position() {
-    if (maxYMods == -1 || moduleId == -1) {
+    if (maxYMods == -1 || moduleIndex == -1) {
         ret = FAIL;
         sprintf(mess,
                 "Could not set detector position (did not get multi size).\n");
@@ -4706,9 +4706,9 @@ void calculate_and_set_position() {
     portGeometry[Y] = getNumberofUDPInterfaces(); // vert
 #endif
     // row
-    pos[0] = (moduleId % maxYMods) * portGeometry[Y];
+    pos[0] = (moduleIndex % maxYMods) * portGeometry[Y];
     // col for horiz. udp ports
-    pos[1] = (moduleId / maxYMods) * portGeometry[X];
+    pos[1] = (moduleIndex / maxYMods) * portGeometry[X];
     LOG(logINFO, ("Setting Positions (row:%d,col:%d)\n", pos[0], pos[1]));
     if (setDetectorPosition(pos) == FAIL) {
         ret = FAIL;
@@ -4770,8 +4770,8 @@ int set_detector_position(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-    LOG(logDEBUG, ("Setting detector positions: [maxy:%u, modid:%u]\n", args[0],
-                   args[1]));
+    LOG(logDEBUG, ("Setting detector positions: [maxy:%u, modIndex:%u]\n",
+                   args[0], args[1]));
 
     // only set
     if (Server_VerifyLock() == OK) {
@@ -4779,7 +4779,7 @@ int set_detector_position(int file_des) {
         // up)
         if (!updateFlag && check_detector_idle("configure mac") == OK) {
             maxYMods = args[0];
-            moduleId = args[1];
+            moduleIndex = args[1];
             calculate_and_set_position();
         }
     }

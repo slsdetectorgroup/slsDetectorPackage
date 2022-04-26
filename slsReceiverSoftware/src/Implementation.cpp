@@ -233,7 +233,7 @@ void Implementation::setDetectorSize(const slsDetectorDefs::xy size) {
         numPorts.y = 2;
     }
     for (const auto &it : dataStreamer) {
-        it->SetNumberofModules(numPorts);
+        it->SetNumberofPorts(numPorts);
     }
 
     LOG(logINFO) << "Detector Size (ports): " << sls::ToString(numPorts);

@@ -1622,41 +1622,41 @@ int configureMAC() {
 int setDetectorPosition(int pos[]) {
     int ret = OK;
     // row, col
-    uint32_t innerPos[2] = {pos[0], pos[1]};
-    uint32_t outerPos[2] = {pos[0], pos[1]};
+    uint32_t innerPos[2] = {pos[X], pos[Y]};
+    uint32_t outerPos[2] = {pos[X], pos[Y]};
     int selInterface = getPrimaryInterface();
 
     if (getNumberofUDPInterfaces() == 1) {
         LOG(logDEBUG,
             ("Setting detector position: 1 Interface %s \n(%d, %d)\n",
-             (selInterface ? "Inner" : "Outer"), innerPos[0], innerPos[1]));
+             (selInterface ? "Inner" : "Outer"), innerPos[X], innerPos[Y]));
     } else {
         // top has row
-        ++innerPos[0];
+        ++innerPos[X];
         LOG(logDEBUG, ("Setting detector position: 2 Interfaces \n"
                        "  inner top(%d, %d), outer bottom(%d, %d)\n",
-                       innerPos[0], innerPos[1], outerPos[0], outerPos[1]));
+                       innerPos[X], innerPos[Y], outerPos[X], outerPos[Y]));
     }
-    detPos[0] = innerPos[0];
-    detPos[1] = innerPos[1];
-    detPos[2] = outerPos[0];
-    detPos[3] = outerPos[1];
+    detPos[X] = innerPos[X];
+    detPos[Y] = innerPos[Y];
+    detPos[2] = outerPos[X];
+    detPos[3] = outerPos[Y];
 
     // row
     // outer
     uint32_t addr = COORD_ROW_REG;
     bus_w(addr,
           (bus_r(addr) & ~COORD_ROW_OUTER_MSK) |
-              ((outerPos[0] << COORD_ROW_OUTER_OFST) & COORD_ROW_OUTER_MSK));
+              ((outerPos[X] << COORD_ROW_OUTER_OFST) & COORD_ROW_OUTER_MSK));
     if (((bus_r(addr) & COORD_ROW_OUTER_MSK) >> COORD_ROW_OUTER_OFST) !=
-        outerPos[0])
+        outerPos[X])
         ret = FAIL;
     // inner
     bus_w(addr,
           (bus_r(addr) & ~COORD_ROW_INNER_MSK) |
-              ((innerPos[0] << COORD_ROW_INNER_OFST) & COORD_ROW_INNER_MSK));
+              ((innerPos[X] << COORD_ROW_INNER_OFST) & COORD_ROW_INNER_MSK));
     if (((bus_r(addr) & COORD_ROW_INNER_MSK) >> COORD_ROW_INNER_OFST) !=
-        innerPos[0])
+        innerPos[X])
         ret = FAIL;
 
     // col
@@ -1664,27 +1664,27 @@ int setDetectorPosition(int pos[]) {
     addr = COORD_COL_REG;
     bus_w(addr,
           (bus_r(addr) & ~COORD_COL_OUTER_MSK) |
-              ((outerPos[1] << COORD_COL_OUTER_OFST) & COORD_COL_OUTER_MSK));
+              ((outerPos[Y] << COORD_COL_OUTER_OFST) & COORD_COL_OUTER_MSK));
     if (((bus_r(addr) & COORD_COL_OUTER_MSK) >> COORD_COL_OUTER_OFST) !=
-        outerPos[1])
+        outerPos[Y])
         ret = FAIL;
     // inner
     bus_w(addr,
           (bus_r(addr) & ~COORD_COL_INNER_MSK) |
-              ((innerPos[1] << COORD_COL_INNER_OFST) & COORD_COL_INNER_MSK));
+              ((innerPos[Y] << COORD_COL_INNER_OFST) & COORD_COL_INNER_MSK));
     if (((bus_r(addr) & COORD_COL_INNER_MSK) >> COORD_COL_INNER_OFST) !=
-        innerPos[1])
+        innerPos[Y])
         ret = FAIL;
 
     if (ret == OK) {
         if (getNumberofUDPInterfaces() == 1) {
-            LOG(logINFOBLUE,
-                ("Position set to [%d, %d]\n", innerPos[0], innerPos[1]));
+            LOG(logINFOBLUE, ("Position set to [%d, %d] #(col, row)\n",
+                              innerPos[X], innerPos[Y]));
         } else {
             LOG(logINFOBLUE, (" Inner (top) position set to [%d, %d]\n",
-                              innerPos[0], innerPos[1]));
+                              innerPos[X], innerPos[Y]));
             LOG(logINFOBLUE, (" Outer (bottom) position set to [%d, %d]\n",
-                              outerPos[0], outerPos[1]));
+                              outerPos[X], outerPos[Y]));
         }
     }
     return ret;
@@ -2578,8 +2578,8 @@ void *start_timer(void *arg) {
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = pnum;
                     header->modId = 0;
-                    header->row = detPos[0];
-                    header->column = detPos[1];
+                    header->row = detPos[X];
+                    header->column = detPos[Y];
 
                     // fill data
                     memcpy(packetData + sizeof(sls_detector_header),

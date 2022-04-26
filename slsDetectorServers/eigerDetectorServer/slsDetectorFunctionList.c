@@ -2473,9 +2473,9 @@ void *start_timer(void *arg) {
     int maxPacketsPerFrame = (tgEnable ? 4 : 16) * dr;
     int npixelsx = 256 * 2 * bytesPerPixel;
     int databytes = 256 * 256 * 2 * bytesPerPixel;
-    int row = eiger_virtual_detPos[0];
-    int colLeft = top ? eiger_virtual_detPos[1] : eiger_virtual_detPos[1] + 1;
-    int colRight = top ? eiger_virtual_detPos[1] + 1 : eiger_virtual_detPos[1];
+    int row = eiger_virtual_detPos[Y];
+    int colLeft = top ? eiger_virtual_detPos[X] : eiger_virtual_detPos[X] + 1;
+    int colRight = top ? eiger_virtual_detPos[X] + 1 : eiger_virtual_detPos[X];
 
     int readNRows = getReadNRows();
     if (readNRows == -1) {

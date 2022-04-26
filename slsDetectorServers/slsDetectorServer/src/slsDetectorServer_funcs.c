@@ -4705,11 +4705,9 @@ void calculate_and_set_position() {
 #elif defined(JUNGFRAUD)
     portGeometry[Y] = getNumberofUDPInterfaces(); // vert
 #endif
-    // row
-    pos[0] = (moduleIndex % maxYMods) * portGeometry[Y];
-    // col for horiz. udp ports
-    pos[1] = (moduleIndex / maxYMods) * portGeometry[X];
-    LOG(logINFO, ("Setting Positions (row:%d,col:%d)\n", pos[0], pos[1]));
+    pos[Y] = (moduleIndex % maxYMods) * portGeometry[Y];
+    pos[X] = (moduleIndex / maxYMods) * portGeometry[X];
+    LOG(logINFO, ("Setting Positions (%d,%d)\n", pos[X], pos[Y]));
     if (setDetectorPosition(pos) == FAIL) {
         ret = FAIL;
         sprintf(mess, "Could not set detector position.\n");
@@ -4721,8 +4719,8 @@ void calculate_and_set_position() {
         if (udpDetails[0].srcmac == 0) {
             char dmac[MAC_ADDRESS_SIZE];
             memset(dmac, 0, MAC_ADDRESS_SIZE);
-            sprintf(dmac, "aa:bb:cc:dd:%02x:%02x", pos[0] & 0xFF,
-                    pos[1] & 0xFF);
+            sprintf(dmac, "aa:bb:cc:dd:%02x:%02x", pos[X] & 0xFF,
+                    pos[Y] & 0xFF);
             LOG(logINFO, ("Udp source mac address created: %s\n", dmac));
             unsigned char a[6];
             sscanf(dmac, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &a[0], &a[1], &a[2],
@@ -4741,8 +4739,8 @@ void calculate_and_set_position() {
             if (udpDetails[0].srcmac2 == 0) {
                 char dmac2[MAC_ADDRESS_SIZE];
                 memset(dmac2, 0, MAC_ADDRESS_SIZE);
-                sprintf(dmac2, "aa:bb:cc:dd:%02x:%02x", (pos[0] + 1) & 0xFF,
-                        pos[1] & 0xFF);
+                sprintf(dmac2, "aa:bb:cc:dd:%02x:%02x", (pos[X] + 1) & 0xFF,
+                        pos[Y] & 0xFF);
                 LOG(logINFO, ("Udp source mac address2 created: %s\n", dmac2));
                 unsigned char a[6];
                 sscanf(dmac2, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &a[0], &a[1],

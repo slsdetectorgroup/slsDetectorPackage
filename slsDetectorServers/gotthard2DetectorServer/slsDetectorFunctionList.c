@@ -1917,7 +1917,7 @@ int setDetectorPosition(int pos[]) {
     int ret = OK;
 
     // row
-    value = detPos[X];
+    value = detPos[Y];
     bus_w(addr, (bus_r(addr) & ~COORD_ROW_MSK) |
                     ((value << COORD_ROW_OFST) & COORD_ROW_MSK));
     valueRead = ((bus_r(addr) & COORD_ROW_MSK) >> COORD_ROW_OFST);
@@ -1928,7 +1928,7 @@ int setDetectorPosition(int pos[]) {
     }
 
     // col
-    value = detPos[Y];
+    value = detPos[X];
     bus_w(addr, (bus_r(addr) & ~COORD_COL_MSK) |
                     ((value << COORD_COL_OFST) & COORD_COL_MSK));
     valueRead = ((bus_r(addr) & COORD_COL_MSK) >> COORD_COL_OFST);
@@ -1939,7 +1939,8 @@ int setDetectorPosition(int pos[]) {
     }
 
     if (ret == OK) {
-        LOG(logINFO, ("\tPosition set to [%d, %d]\n", detPos[X], detPos[Y]));
+        LOG(logINFO,
+            ("\tPosition set to [%d, %d] #(col, row)\n", detPos[X], detPos[Y]));
     }
 
     return ret;

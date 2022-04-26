@@ -226,6 +226,7 @@ void Implementation::setDetectorSize(const slsDetectorDefs::xy size) {
     xy portGeometry = GetPortGeometry();
 
     std::string log_message = "Detector Size (ports): (";
+    numModules = size;
     numPorts.x = portGeometry.x * size.x;
     numPorts.y = portGeometry.y * size.y;
     if (quadEnable) {
@@ -252,9 +253,17 @@ void Implementation::setModulePositionId(const int id) {
     assert(numModules.y != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
-        row = (modulePos % numModules.y) * portGeometry.y + i;
-        col = (modulePos / numModules.y) * portGeometry.x + i;
-
+        row = (modulePos % numModules.y) * portGeometry.y;
+        col = (modulePos / numModules.y) * portGeometry.x;
+        if (portGeometry.y == 2) {
+            row += i;
+        }
+        if (portGeometry.x == 2) {
+            col += i;
+        }
+        LOG(logINFORED) << i << ":numModules:" << numModules.x << ","
+                        << numModules.y << " portGeometry:" << portGeometry.x
+                        << "," << portGeometry.y;
         listener[i]->SetHardCodedPosition(row, col);
     }
 }

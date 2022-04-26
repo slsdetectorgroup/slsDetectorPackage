@@ -21,7 +21,7 @@
 #include <pthread.h>
 #include <time.h>
 #endif
-
+extern int portno;
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
@@ -1631,7 +1631,7 @@ int setDetectorPosition(int pos[]) {
             ("Setting detector position: 1 Interface %s \n(%d, %d)\n",
              (selInterface ? "Inner" : "Outer"), innerPos[X], innerPos[Y]));
     } else {
-        // top has row
+        // top has row incremented by 1
         ++innerPos[X];
         LOG(logDEBUG, ("Setting detector position: 2 Interfaces \n"
                        "  inner top(%d, %d), outer bottom(%d, %d)\n",
@@ -2534,7 +2534,9 @@ void *start_timer(void *arg) {
                 ++pixelVal;
             }
             *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
-                virtual_image_test_mode ? 0x0FFE : (uint16_t)pixelVal;
+                portno % 1900 +
+                (i >= npixels / 2 ? 1 : 0); // virtual_image_test_mode ? 0x0FFE
+                                            // : (uint16_t)pixelVal;
         }
     }
 
@@ -2578,8 +2580,8 @@ void *start_timer(void *arg) {
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = pnum;
                     header->modId = 0;
-                    header->row = detPos[X];
-                    header->column = detPos[Y];
+                    header->row = detPos[Y];
+                    header->column = detPos[X];
 
                     // fill data
                     memcpy(packetData + sizeof(sls_detector_header),

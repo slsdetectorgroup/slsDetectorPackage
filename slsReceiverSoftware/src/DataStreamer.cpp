@@ -17,12 +17,11 @@
 const std::string DataStreamer::TypeName = "DataStreamer";
 
 DataStreamer::DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi,
-                           bool fr, slsDetectorDefs::xy nm, bool *qe,
+                           bool fr, slsDetectorDefs::xy np, bool *qe,
                            uint64_t *tot)
     : ThreadObject(ind, TypeName), fifo(f), dynamicRange(dr), roi(r),
-      fileIndex(fi), flipRows(fr), quadEnable(qe), totalNumFrames(tot) {
-    numPorts.x = nm.x;
-    numPorts.y = nm.y;
+      fileIndex(fi), flipRows(fr), numPorts(np), quadEnable(qe),
+      totalNumFrames(tot) {
 
     LOG(logDEBUG) << "DataStreamer " << ind << " created";
 }
@@ -63,10 +62,7 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum, char *buf) {
 
 void DataStreamer::SetGeneralData(GeneralData *g) { generalData = g; }
 
-void DataStreamer::SetNumberofPorts(xy nm) {
-    numPorts.x = nm.x;
-    numPorts.y = nm.y;
-}
+void DataStreamer::SetNumberofPorts(xy np) { numPorts = np; }
 
 void DataStreamer::SetFlipRows(bool fd) { flipRows = fd; }
 

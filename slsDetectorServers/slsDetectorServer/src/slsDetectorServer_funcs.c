@@ -116,6 +116,7 @@ void init_detector() {
 #ifdef VIRTUAL
     LOG(logINFO, ("This is a VIRTUAL detector\n"));
     udpDetails[0].srcip = LOCALHOSTIP_INT;
+    udpDetails[0].srcip2 = LOCALHOSTIP_INT;
 #endif
     udpDetails[0].srcport = DEFAULT_UDP_SRC_PORTNO;
     udpDetails[0].dstport = DEFAULT_UDP_DST_PORTNO;

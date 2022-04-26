@@ -33,12 +33,12 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param r roi
      * @param fi pointer to file index
      * @param fr flip rows
-     * @param nm number of modules in each dimension
+     * @param nm number of ports in each dimension
      * @param qe pointer to quad Enable
      * @param tot pointer to total number of frames
      */
     DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi, bool fr,
-                 xy nm, bool *qe, uint64_t *tot);
+                 xy np, bool *qe, uint64_t *tot);
 
     /**
      * Destructor
@@ -49,7 +49,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     void SetFifo(Fifo *f);
     void ResetParametersforNewAcquisition(const std::string &fname);
     void SetGeneralData(GeneralData *g);
-    void SetNumberofPorts(xy nm);
+    void SetNumberofPorts(xy np);
     void SetFlipRows(bool fd);
     void
     SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);

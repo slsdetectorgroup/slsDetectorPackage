@@ -39,6 +39,7 @@ extern int masterCommandLine;
 #ifdef EIGERD
 extern int topCommandLine;
 #endif
+int portno = DEFAULT_PORTNO;
 
 void error(char *msg) { perror(msg); }
 
@@ -50,7 +51,7 @@ void sigInterruptHandler(int p) {
 int main(int argc, char *argv[]) {
 
     // options
-    int portno = DEFAULT_PORTNO;
+    // int portno = DEFAULT_PORTNO;
     isControlServer = 1;
     debugflag = 0;
     updateFlag = 0;

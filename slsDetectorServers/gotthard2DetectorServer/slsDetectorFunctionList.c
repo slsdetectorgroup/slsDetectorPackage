@@ -3096,8 +3096,8 @@ void *start_timer(void *arg) {
             header->frameNumber = virtual_currentFrameNumber;
             header->packetNumber = 0;
             header->modId = virtual_moduleid;
-            header->row = detPos[X];
-            header->column = detPos[Y];
+            header->row = detPos[Y];
+            header->column = detPos[X];
             // fill data
             memcpy(packetData + sizeof(sls_detector_header), imageData,
                    datasize);

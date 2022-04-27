@@ -2533,10 +2533,14 @@ void *start_timer(void *arg) {
             if (i > 0 && i % pixelsPerPacket == 0) {
                 ++pixelVal;
             }
+#ifdef TEST_MOD_GEOMETRY
             *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
-                portno % 1900 +
-                (i >= npixels / 2 ? 1 : 0); // virtual_image_test_mode ? 0x0FFE
-                                            // : (uint16_t)pixelVal;
+                portno % 1900 + (i >= npixels / 2 ? 1 : 0);
+#else
+            *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                virtual_image_test_mode ? 0x0FFE : (uint16_t)pixelVal;
+
+#endif
         }
     }
 

@@ -19,7 +19,7 @@
 #include <pthread.h>
 #include <time.h>
 #endif
-
+extern int portno;
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
@@ -2548,8 +2548,18 @@ void *start_timer(void *arg) {
                 }
                 break;
             case 16:
-                *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+#ifdef TEST_MOD_GEOMETRY
+                if ((i % 1024) < 512) {
+                    *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                        top ? (portno % 1900) : ((portno % 1900) + 1);
+                } else {
+                    *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                        top ? ((portno % 1900) + 1) : (portno % 1900);
+                }
+#else
+                ((uint16_t *)(imageData + i * sizeof(uint16_t))) =
                     eiger_virtual_test_mode ? 0xFFE : (uint16_t)pixelVal;
+#endif
                 break;
             case 32:
                 *((uint32_t *)(imageData + i * sizeof(uint32_t))) =

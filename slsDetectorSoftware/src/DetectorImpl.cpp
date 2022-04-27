@@ -607,6 +607,7 @@ void DetectorImpl::readFrameFromReceiver() {
                         completeImage = false;
                     }
                     LOG(logDEBUG1)
+                        << zmqSocket[isocket]->GetPortNumber() << " "
                         << "Header Info:"
                            "\n\tcurrentFileName: "
                         << currentFileName << "\n\tcurrentAcquisitionIndex: "

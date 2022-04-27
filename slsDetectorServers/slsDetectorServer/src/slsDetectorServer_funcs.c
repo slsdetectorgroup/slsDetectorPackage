@@ -4708,7 +4708,7 @@ void calculate_and_set_position() {
 #endif
     pos[Y] = (moduleIndex % maxYMods) * portGeometry[Y];
     pos[X] = (moduleIndex / maxYMods) * portGeometry[X];
-    LOG(logINFO, ("Setting Positions (%d,%d)\n", pos[X], pos[Y]));
+    LOG(logINFO, ("Setting Positions (%d,%d) #(col, row)\n", pos[X], pos[Y]));
     if (setDetectorPosition(pos) == FAIL) {
         ret = FAIL;
         sprintf(mess, "Could not set detector position.\n");

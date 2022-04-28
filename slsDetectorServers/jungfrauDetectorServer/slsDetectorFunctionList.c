@@ -21,7 +21,7 @@
 #include <pthread.h>
 #include <time.h>
 #endif
-
+extern int portno;
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
@@ -1621,6 +1621,7 @@ int configureMAC() {
 
 int setDetectorPosition(int pos[]) {
     int ret = OK;
+    // row, col
     uint32_t innerPos[2] = {pos[X], pos[Y]};
     uint32_t outerPos[2] = {pos[X], pos[Y]};
     int selInterface = getPrimaryInterface();
@@ -1630,15 +1631,16 @@ int setDetectorPosition(int pos[]) {
             ("Setting detector position: 1 Interface %s \n(%d, %d)\n",
              (selInterface ? "Inner" : "Outer"), innerPos[X], innerPos[Y]));
     } else {
-        ++outerPos[X];
-        LOG(logINFORED, ("Setting detector position: 2 Interfaces \n"
-                         "  inner top(%d, %d), outer bottom(%d, %d)\n",
-                         innerPos[X], innerPos[Y], outerPos[X], outerPos[Y]));
+        // top has row incremented by 1
+        ++innerPos[Y];
+        LOG(logDEBUG, ("Setting detector position: 2 Interfaces \n"
+                       "  inner top(%d, %d), outer bottom(%d, %d)\n",
+                       innerPos[X], innerPos[Y], outerPos[X], outerPos[Y]));
     }
-    detPos[0] = innerPos[0];
-    detPos[1] = innerPos[1];
-    detPos[2] = outerPos[0];
-    detPos[3] = outerPos[1];
+    detPos[0] = innerPos[X];
+    detPos[1] = innerPos[Y];
+    detPos[2] = outerPos[X];
+    detPos[3] = outerPos[Y];
 
     // row
     // outer
@@ -1676,8 +1678,8 @@ int setDetectorPosition(int pos[]) {
 
     if (ret == OK) {
         if (getNumberofUDPInterfaces() == 1) {
-            LOG(logINFOBLUE,
-                ("Position set to [%d, %d]\n", innerPos[X], innerPos[Y]));
+            LOG(logINFOBLUE, ("Position set to [%d, %d] #(col, row)\n",
+                              innerPos[X], innerPos[Y]));
         } else {
             LOG(logINFOBLUE, (" Inner (top) position set to [%d, %d]\n",
                               innerPos[X], innerPos[Y]));
@@ -2531,8 +2533,14 @@ void *start_timer(void *arg) {
             if (i > 0 && i % pixelsPerPacket == 0) {
                 ++pixelVal;
             }
+#ifdef TEST_MOD_GEOMETRY
+            *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                portno % 1900 + (i >= npixels / 2 ? 1 : 0);
+#else
             *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
                 virtual_image_test_mode ? 0x0FFE : (uint16_t)pixelVal;
+
+#endif
         }
     }
 
@@ -2557,6 +2565,10 @@ void *start_timer(void *arg) {
 
             int srcOffset = 0;
             int srcOffset2 = DATA_BYTES / 2;
+            int row0 = (numInterfaces == 1 ? detPos[1] : detPos[3]);
+            int col0 = (numInterfaces == 1 ? detPos[0] : detPos[2]);
+            int row1 = detPos[1];
+            int col1 = detPos[0];
             // loop packet (128 packets)
             for (int i = 0; i != maxPacketsPerFrame; ++i) {
 
@@ -2576,8 +2588,8 @@ void *start_timer(void *arg) {
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = pnum;
                     header->modId = 0;
-                    header->row = detPos[0];
-                    header->column = detPos[1];
+                    header->row = row0;
+                    header->column = col0;
 
                     // fill data
                     memcpy(packetData + sizeof(sls_detector_header),
@@ -2603,8 +2615,8 @@ void *start_timer(void *arg) {
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = pnum;
                     header->modId = 0;
-                    header->row = detPos[2];
-                    header->column = detPos[3];
+                    header->row = row1;
+                    header->column = col1;
 
                     // fill data
                     memcpy(packetData2 + sizeof(sls_detector_header),

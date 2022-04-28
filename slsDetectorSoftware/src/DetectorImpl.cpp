@@ -601,14 +601,12 @@ void DetectorImpl::readFrameFromReceiver() {
                     currentSubFrameIndex = zHeader.expLength;
                     coordY = zHeader.row;
                     coordX = zHeader.column;
-                    if (eiger) {
-                        coordY = (nY - 1) - coordY;
-                    }
                     flipRows = zHeader.flipRows;
                     if (zHeader.completeImage == 0) {
                         completeImage = false;
                     }
                     LOG(logDEBUG1)
+                        << zmqSocket[isocket]->GetPortNumber() << " "
                         << "Header Info:"
                            "\n\tcurrentFileName: "
                         << currentFileName << "\n\tcurrentAcquisitionIndex: "

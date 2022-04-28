@@ -47,12 +47,12 @@ void printHelp() {
 }
 
 /**
- * Start Acquisition Call back (slsMultiReceiver writes data if file write enabled)
- * if registerCallBackRawDataReady or registerCallBackRawDataModifyReady registered,
- * users get data
+ * Start Acquisition Call back (slsMultiReceiver writes data if file write
+ * enabled) if registerCallBackRawDataReady or
+ * registerCallBackRawDataModifyReady registered, users get data
  */
-int StartAcq(const std::string & filePath, const std::string & fileName, uint64_t fileIndex,
-             size_t imageSize, void *objectPointer) {
+int StartAcq(const std::string &filePath, const std::string &fileName,
+             uint64_t fileIndex, size_t imageSize, void *objectPointer) {
     LOG(logINFOBLUE) << "#### StartAcq:  filePath:" << filePath
                      << "  fileName:" << fileName << " fileIndex:" << fileIndex
                      << "  imageSize:" << imageSize << " ####";
@@ -61,8 +61,8 @@ int StartAcq(const std::string & filePath, const std::string & fileName, uint64_
 
 /** Acquisition Finished Call back */
 void AcquisitionFinished(uint64_t framesCaught, void *objectPointer) {
-    LOG(logINFOBLUE) << "#### AcquisitionFinished: framesCaught:" << framesCaught
-                     << " ####";
+    LOG(logINFOBLUE) << "#### AcquisitionFinished: framesCaught:"
+                     << framesCaught << " ####";
 }
 
 /**
@@ -76,16 +76,16 @@ void GetData(slsDetectorDefs::sls_receiver_header *header, char *dataPointer,
 
     PRINT_IN_COLOR(
         detectorHeader.modId ? detectorHeader.modId : detectorHeader.row,
-        "#### %d GetData: ####\n"
+        "#### %d %d GetData: ####\n"
         "frameNumber: %lu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %lu"
         "\t\ttimestamp: %lu\t\tmodId: %u\t\t"
         "row: %u\t\tcolumn: %u\t\treserved: %u\t\tdebug: %u"
         "\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
         //"\t\tpacketsMask:%s"
         "\t\tfirstbytedata: 0x%x\t\tdatsize: %zu\n\n",
-        detectorHeader.row, (long unsigned int)detectorHeader.frameNumber,
-        detectorHeader.expLength, detectorHeader.packetNumber,
-        (long unsigned int)detectorHeader.bunchId,
+        detectorHeader.column, detectorHeader.row,
+        (long unsigned int)detectorHeader.frameNumber, detectorHeader.expLength,
+        detectorHeader.packetNumber, (long unsigned int)detectorHeader.bunchId,
         (long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
         detectorHeader.row, detectorHeader.column, detectorHeader.reserved,
         detectorHeader.debug, detectorHeader.roundRNumber,

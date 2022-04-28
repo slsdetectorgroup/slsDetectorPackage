@@ -33,12 +33,12 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param r detectorRoi
      * @param fi pointer to file index
      * @param fr flip rows
-     * @param nm number of modules in each dimension
+     * @param nm number of ports in each dimension
      * @param qe pointer to quad Enable
      * @param tot pointer to total number of frames
      */
     DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi, bool fr,
-                 xy nm, bool *qe, uint64_t *tot);
+                 xy np, bool *qe, uint64_t *tot);
 
     /**
      * Destructor
@@ -47,10 +47,16 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     ~DataStreamer();
 
     void SetFifo(Fifo *f);
+<<<<<<< HEAD
     void SetReceiverROI(ROI roi);
     void ResetParametersforNewAcquisition(const std::string &fname);
     void SetGeneralData(GeneralData *g);
     void SetNumberofModules(xy nm);
+=======
+    void ResetParametersforNewAcquisition(const std::string &fname);
+    void SetGeneralData(GeneralData *g);
+    void SetNumberofPorts(xy np);
+>>>>>>> fixpositions
     void SetFlipRows(bool fd);
     void
     SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);
@@ -128,7 +134,8 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     std::string fileNametoStream;
     /** Complete buffer used for detectorRoi, eg. shortGotthard */
     char *completeBuffer{nullptr};
-    xy numMods{1, 1};
+
+    xy numPorts{1, 1};
     bool *quadEnable;
     uint64_t *totalNumFrames;
 };

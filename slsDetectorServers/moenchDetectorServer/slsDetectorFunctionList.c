@@ -1731,8 +1731,8 @@ void *start_timer(void *arg) {
             header->frameNumber = frameNr + iframes;
             header->packetNumber = i;
             header->modId = 0;
-            header->row = detPos[X];
-            header->column = detPos[Y];
+            header->row = detPos[Y];
+            header->column = detPos[X];
 
             // fill data
             memcpy(packetData + sizeof(sls_detector_header),

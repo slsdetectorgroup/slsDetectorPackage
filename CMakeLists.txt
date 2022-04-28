@@ -150,7 +150,7 @@ if (NOT TARGET slsProjectWarnings)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5 AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             target_compile_options(slsProjectWarnings INTERFACE 
                                                 -Wno-missing-field-initializers)
-endif()
+    endif()
 
 
 endif()

@@ -71,6 +71,7 @@ if(SLS_BUILD_ONLY_MOENCH)
 endif()
 
 
+
 set(ClangFormat_EXCLUDE_PATTERNS    "build/" 
                                     "libs/" 
                                     "slsDetectorCalibration/" 
@@ -100,6 +101,7 @@ if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
 else()
     message(STATUS "Building without link time optimization")
 endif()
+
 
 
 #Add two fake libraries to manage options
@@ -224,8 +226,8 @@ if (SLS_USE_INTEGRATION_TESTS)
 endif (SLS_USE_INTEGRATION_TESTS)
 
 if (SLS_USE_PYTHON)
-    find_package (Python 3.6 COMPONENTS Interpreter Development)
-    add_subdirectory(libs/pybind11)
+    # find_package (Python 3.6 COMPONENTS Interpreter Development)
+    # add_subdirectory(libs/pybind11)
     add_subdirectory(python)
 endif(SLS_USE_PYTHON)
 

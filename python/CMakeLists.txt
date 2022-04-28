@@ -1,6 +1,17 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    #if we are only building the python extension
+    cmake_minimum_required(VERSION 3.12)    
+    project(slsdet)
+    find_package(slsDetectorPackage 6 REQUIRED)
+endif()
+
+
+find_package (Python 3.6 COMPONENTS Interpreter Development)
+add_subdirectory(../libs/pybind11  ${CMAKE_BINARY_DIR}/bin/)
+
 pybind11_add_module(_slsdet 
     src/main.cpp 
     src/enums.cpp

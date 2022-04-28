@@ -217,7 +217,7 @@ slsDetectorDefs::xy Implementation::GetPortGeometry() {
     xy portGeometry{1, 1};
     if (detType == EIGER)
         portGeometry.x = numUDPInterfaces;
-    else // (jungfrau and gotthard2)
+    else if (detType == JUNGFRAU)
         portGeometry.y = numUDPInterfaces;
     return portGeometry;
 }
@@ -226,18 +226,18 @@ void Implementation::setDetectorSize(const slsDetectorDefs::xy size) {
     xy portGeometry = GetPortGeometry();
 
     std::string log_message = "Detector Size (ports): (";
-    numModules.x = portGeometry.x * size.x;
-    numModules.y = portGeometry.y * size.y;
-    xy nm{numModules.x, numModules.y};
+    numModules = size;
+    numPorts.x = portGeometry.x * size.x;
+    numPorts.y = portGeometry.y * size.y;
     if (quadEnable) {
-        nm.x = 1;
-        nm.y = 2;
+        numPorts.x = 1;
+        numPorts.y = 2;
     }
     for (const auto &it : dataStreamer) {
-        it->SetNumberofModules(nm);
+        it->SetNumberofPorts(numPorts);
     }
 
-    LOG(logINFO) << "Detector Size (ports): " << sls::ToString(numModules);
+    LOG(logINFO) << "Detector Size (ports): " << sls::ToString(numPorts);
 }
 
 int Implementation::getModulePositionId() const { return modulePos; }
@@ -254,8 +254,16 @@ void Implementation::setModulePositionId(const int id) {
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
         row = (modulePos % numModules.y) * portGeometry.y;
-        col = (modulePos / numModules.y) * portGeometry.x + i;
-
+        col = (modulePos / numModules.y) * portGeometry.x;
+        if (portGeometry.y == 2) {
+            row += i;
+        }
+        if (portGeometry.x == 2) {
+            col += i;
+        }
+        LOG(logDEBUG1) << i << ":numModules:" << numModules.x << ","
+                       << numModules.y << " portGeometry:" << portGeometry.x
+                       << "," << portGeometry.y;
         listener[i]->SetHardCodedPosition(row, col);
     }
 }
@@ -758,12 +766,7 @@ void Implementation::StartMasterWriter() {
             MasterAttributes masterAttributes;
             masterAttributes.detType = detType;
             masterAttributes.timingMode = timingMode;
-            xy nm{numModules.x, numModules.y};
-            if (quadEnable) {
-                nm.x = 1;
-                nm.y = 2;
-            }
-            masterAttributes.geometry = xy(nm.x, nm.y);
+            masterAttributes.geometry = numPorts;
             masterAttributes.imageSize = generalData->imageSize;
             masterAttributes.nPixels =
                 xy(generalData->nPixelsX, generalData->nPixelsY);
@@ -823,12 +826,12 @@ void Implementation::StartMasterWriter() {
             std::array<std::string, 2> virtualFileAndDatasetNames;
             // create virtual hdf5 file (if multiple files)
             if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
-                (numModules.x * numModules.y) > 1) {
+                (numPorts.x * numPorts.y) > 1) {
                 virtualFileAndDatasetNames =
                     dataProcessor[0]->CreateVirtualFile(
                         filePath, fileName, fileIndex, overwriteEnable,
                         silentMode, modulePos, numUDPInterfaces, framesPerFile,
-                        numberOfTotalFrames, numModules.x, numModules.y,
+                        numberOfTotalFrames, numPorts.x, numPorts.y,
                         dynamicRange, &hdf5LibMutex);
             }
             // link file in master
@@ -879,12 +882,6 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
     }
 
     if (numUDPInterfaces != n) {
-
-        // reduce number of detectors to size with 1 interface
-        xy portGeometry = GetPortGeometry();
-        numModules.x /= portGeometry.x;
-        numModules.y /= portGeometry.y;
-
         // clear all threads and fifos
         listener.clear();
         dataProcessor.clear();
@@ -933,15 +930,12 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             if (dataStreamEnable) {
                 try {
                     bool flip = flipRows;
-                    xy nm{numModules.x, numModules.y};
                     if (quadEnable) {
                         flip = (i == 1 ? true : false);
-                        nm.x = 1;
-                        nm.y = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, flip,
-                        nm, &quadEnable, &numberOfTotalFrames));
+                        numPorts, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numUDPInterfaces, streamingPort, streamingSrcIP,
@@ -1063,15 +1057,12 @@ void Implementation::setDataStreamEnable(const bool enable) {
             for (int i = 0; i < numUDPInterfaces; ++i) {
                 try {
                     bool flip = flipRows;
-                    xy nm{numModules.x, numModules.y};
                     if (quadEnable) {
                         flip = (i == 1 ? true : false);
-                        nm.x = 1;
-                        nm.y = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, flip,
-                        nm, &quadEnable, &numberOfTotalFrames));
+                        numPorts, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numUDPInterfaces, streamingPort, streamingSrcIP,
@@ -1499,18 +1490,12 @@ bool Implementation::getQuad() const { return quadEnable; }
 void Implementation::setQuad(const bool b) {
     if (quadEnable != b) {
         quadEnable = b;
-
+        setDetectorSize(numModules);
         if (!quadEnable) {
-            xy nm{numModules.x, numModules.y};
             for (const auto &it : dataStreamer) {
-                it->SetNumberofModules(nm);
                 it->SetFlipRows(flipRows);
             }
         } else {
-            xy nm{1, 2};
-            for (const auto &it : dataStreamer) {
-                it->SetNumberofModules(nm);
-            }
             if (dataStreamer.size() == 2) {
                 dataStreamer[0]->SetFlipRows(false);
                 dataStreamer[1]->SetFlipRows(true);

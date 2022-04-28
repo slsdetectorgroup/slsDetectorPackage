@@ -33,12 +33,12 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param r roi
      * @param fi pointer to file index
      * @param fr flip rows
-     * @param nm number of modules in each dimension
+     * @param nm number of ports in each dimension
      * @param qe pointer to quad Enable
      * @param tot pointer to total number of frames
      */
     DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi, bool fr,
-                 xy nm, bool *qe, uint64_t *tot);
+                 xy np, bool *qe, uint64_t *tot);
 
     /**
      * Destructor
@@ -46,39 +46,11 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      */
     ~DataStreamer();
 
-    /**
-     * Set Fifo pointer to the one given
-     * @param f address of Fifo pointer
-     */
     void SetFifo(Fifo *f);
-
-    /**
-     * Reset parameters for new acquisition
-     */
     void ResetParametersforNewAcquisition(const std::string &fname);
-
-    /**
-     * Set GeneralData pointer to the one given
-     * @param g address of GeneralData (Detector Data) pointer
-     */
     void SetGeneralData(GeneralData *g);
-
-    /**
-     * Set number of detectors
-     * @param nm number of modules/ports  in both dimensions
-     */
-    void SetNumberofModules(xy nm);
-
-    /**
-     * Set Flipped rows
-     * @param fd flip rows enable
-     */
+    void SetNumberofPorts(xy np);
     void SetFlipRows(bool fd);
-
-    /**
-     * Set additional json header
-     * @param json additional json header
-     */
     void
     SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);
 
@@ -143,34 +115,16 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     int SendHeader(sls_receiver_header *rheader, uint32_t size = 0,
                    uint32_t nx = 0, uint32_t ny = 0, bool dummy = true);
 
-    /** type of thread */
     static const std::string TypeName;
-
-    /** GeneralData (Detector Data) object */
     const GeneralData *generalData{nullptr};
-
-    /** Fifo structure */
     Fifo *fifo;
-
-    /** ZMQ Socket - Receiver to Client */
     ZmqSocket *zmqSocket{nullptr};
-
-    /** Pointer to dynamic range */
     uint32_t *dynamicRange;
-
-    /** ROI */
     ROI *roi;
-
-    /** adc Configured */
     int adcConfigured{-1};
-
-    /** Pointer to file index */
     uint64_t *fileIndex;
-
-    /** flip rows */
     bool flipRows;
 
-    /** additional json header */
     std::map<std::string, std::string> additionalJsonHeader;
 
     /** Used by streamer thread to update local copy (reduce number of locks
@@ -189,18 +143,12 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     /** Frame Number of First Frame */
     uint64_t firstIndex{0};
 
-    /* File name to stream */
     std::string fileNametoStream;
 
     /** Complete buffer used for roi, eg. shortGotthard */
     char *completeBuffer{nullptr};
 
-    /** Number of Modules in X and Y dimension */
-    xy numMods{1, 1};
-
-    /** Quad Enable */
+    xy numPorts{1, 1};
     bool *quadEnable;
-
-    /** Total number of frames */
     uint64_t *totalNumFrames;
 };

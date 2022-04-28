@@ -19,7 +19,7 @@
 #include <pthread.h>
 #include <time.h>
 #endif
-
+extern int portno;
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern int updateFlag;
@@ -2473,9 +2473,9 @@ void *start_timer(void *arg) {
     int maxPacketsPerFrame = (tgEnable ? 4 : 16) * dr;
     int npixelsx = 256 * 2 * bytesPerPixel;
     int databytes = 256 * 256 * 2 * bytesPerPixel;
-    int row = eiger_virtual_detPos[0];
-    int colLeft = top ? eiger_virtual_detPos[1] : eiger_virtual_detPos[1] + 1;
-    int colRight = top ? eiger_virtual_detPos[1] + 1 : eiger_virtual_detPos[1];
+    int row = eiger_virtual_detPos[Y];
+    int colLeft = top ? eiger_virtual_detPos[X] : eiger_virtual_detPos[X] + 1;
+    int colRight = top ? eiger_virtual_detPos[X] + 1 : eiger_virtual_detPos[X];
 
     int readNRows = getReadNRows();
     if (readNRows == -1) {
@@ -2548,8 +2548,20 @@ void *start_timer(void *arg) {
                 }
                 break;
             case 16:
+// to debug multi module geometry (row, column) in virtual servers (all pixels
+// in a module set to particular value)
+#ifdef TEST_MOD_GEOMETRY
+                if ((i % 1024) < 512) {
+                    *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                        top ? (portno % 1900) : ((portno % 1900) + 1);
+                } else {
+                    *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                        top ? ((portno % 1900) + 1) : (portno % 1900);
+                }
+#else
                 *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
                     eiger_virtual_test_mode ? 0xFFE : (uint16_t)pixelVal;
+#endif
                 break;
             case 32:
                 *((uint32_t *)(imageData + i * sizeof(uint32_t))) =

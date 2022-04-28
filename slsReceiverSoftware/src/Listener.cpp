@@ -210,6 +210,8 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
 void Listener::SetHardCodedPosition(uint16_t r, uint16_t c) {
     row = r;
     column = c;
+    LOG(logDEBUG1) << "Setting hardcoded position [" << index
+                   << "] (row: " << row << ", col: " << column << ")";
 }
 
 void Listener::ThreadExecution() {

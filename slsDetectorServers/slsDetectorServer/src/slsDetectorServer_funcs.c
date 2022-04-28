@@ -62,8 +62,8 @@ int firstUDPDestination = 0;
 
 int configured = FAIL;
 char configureMessage[MAX_STR_LENGTH] = "udp parameters not configured yet";
-int maxydet = -1;
-int detectorId = -1;
+int maxYMods = -1;
+int moduleIndex = -1;
 
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
@@ -81,27 +81,14 @@ char scanErrMessage[MAX_STR_LENGTH] = "";
 /* initialization functions */
 
 int updateModeAllowedFunction(int file_des) {
-    enum detFuncs allowedFuncs[] = {F_EXEC_COMMAND,
-                                    F_GET_DETECTOR_TYPE,
-                                    F_GET_FIRMWARE_VERSION,
-                                    F_GET_SERVER_VERSION,
-                                    F_GET_SERIAL_NUMBER,
-                                    F_WRITE_REGISTER,
-                                    F_READ_REGISTER,
-                                    F_LOCK_SERVER,
-                                    F_GET_LAST_CLIENT_IP,
-                                    F_PROGRAM_FPGA,
-                                    F_RESET_FPGA,
-                                    F_CHECK_VERSION,
-                                    F_REBOOT_CONTROLLER,
-                                    F_GET_KERNEL_VERSION,
-                                    F_UPDATE_KERNEL,
-                                    F_UPDATE_DETECTOR_SERVER,
-                                    F_GET_UPDATE_MODE,
-                                    F_SET_UPDATE_MODE,
-                                    F_GET_NUM_CHANNELS,
-                                    F_GET_NUM_INTERFACES,
-                                    F_ACTIVATE};
+    enum detFuncs allowedFuncs[] = {
+        F_EXEC_COMMAND,           F_GET_DETECTOR_TYPE,  F_GET_FIRMWARE_VERSION,
+        F_GET_SERVER_VERSION,     F_GET_SERIAL_NUMBER,  F_WRITE_REGISTER,
+        F_READ_REGISTER,          F_LOCK_SERVER,        F_GET_LAST_CLIENT_IP,
+        F_PROGRAM_FPGA,           F_RESET_FPGA,         F_CHECK_VERSION,
+        F_REBOOT_CONTROLLER,      F_GET_KERNEL_VERSION, F_UPDATE_KERNEL,
+        F_UPDATE_DETECTOR_SERVER, F_GET_UPDATE_MODE,    F_SET_UPDATE_MODE,
+        F_GET_NUM_CHANNELS,       F_GET_NUM_INTERFACES, F_ACTIVATE};
     size_t allowedFuncsSize = sizeof(allowedFuncs) / sizeof(enum detFuncs);
 
     for (unsigned int i = 0; i < allowedFuncsSize; ++i) {
@@ -129,6 +116,7 @@ void init_detector() {
 #ifdef VIRTUAL
     LOG(logINFO, ("This is a VIRTUAL detector\n"));
     udpDetails[0].srcip = LOCALHOSTIP_INT;
+    udpDetails[0].srcip2 = LOCALHOSTIP_INT;
 #endif
     udpDetails[0].srcport = DEFAULT_UDP_SRC_PORTNO;
     udpDetails[0].dstport = DEFAULT_UDP_DST_PORTNO;
@@ -4700,7 +4688,7 @@ int get_read_n_rows(int file_des) {
 }
 
 void calculate_and_set_position() {
-    if (maxydet == -1 || detectorId == -1) {
+    if (maxYMods == -1 || moduleIndex == -1) {
         ret = FAIL;
         sprintf(mess,
                 "Could not set detector position (did not get multi size).\n");
@@ -4709,21 +4697,20 @@ void calculate_and_set_position() {
     }
 
     // calculating new position
-    int modulePorts[2] = {1, 1};
+    int pos[2] = {0, 0};
+
+    int portGeometry[2] = {1, 1};
     // position does change for eiger and jungfrau (2 interfaces)
 #if defined(EIGERD)
-    modulePorts[1] = getNumberofUDPInterfaces(); // horz
+    portGeometry[X] = getNumberofUDPInterfaces(); // horz
 #elif defined(JUNGFRAUD)
-    modulePorts[0] = getNumberofUDPInterfaces(); // vert
+    portGeometry[Y] = getNumberofUDPInterfaces(); // vert
 #endif
-    int maxy = maxydet * modulePorts[0];
-    int pos[2] = {0, 0};
-    // row
-    pos[0] = (detectorId % maxy);
-    // col for horiz. udp ports
-    pos[1] = (detectorId / maxy) * modulePorts[1];
-
-    LOG(logDEBUG, ("Setting Positions (%d,%d)\n", pos[0], pos[1]));
+    LOG(logDEBUG1, ("moduleIndex:%d maxymods:%d portGeo.x:%d portgeo.y:%d\n",
+                    moduleIndex, maxYMods, portGeometry[X], portGeometry[Y]));
+    pos[Y] = (moduleIndex % maxYMods) * portGeometry[Y];
+    pos[X] = (moduleIndex / maxYMods) * portGeometry[X];
+    LOG(logINFO, ("Setting Positions (%d,%d) #(col, row)\n", pos[X], pos[Y]));
     if (setDetectorPosition(pos) == FAIL) {
         ret = FAIL;
         sprintf(mess, "Could not set detector position.\n");
@@ -4735,8 +4722,8 @@ void calculate_and_set_position() {
         if (udpDetails[0].srcmac == 0) {
             char dmac[MAC_ADDRESS_SIZE];
             memset(dmac, 0, MAC_ADDRESS_SIZE);
-            sprintf(dmac, "aa:bb:cc:dd:%02x:%02x", pos[0] & 0xFF,
-                    pos[1] & 0xFF);
+            sprintf(dmac, "aa:bb:cc:dd:%02x:%02x", pos[X] & 0xFF,
+                    pos[Y] & 0xFF);
             LOG(logINFO, ("Udp source mac address created: %s\n", dmac));
             unsigned char a[6];
             sscanf(dmac, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &a[0], &a[1], &a[2],
@@ -4755,8 +4742,8 @@ void calculate_and_set_position() {
             if (udpDetails[0].srcmac2 == 0) {
                 char dmac2[MAC_ADDRESS_SIZE];
                 memset(dmac2, 0, MAC_ADDRESS_SIZE);
-                sprintf(dmac2, "aa:bb:cc:dd:%02x:%02x", (pos[0] + 1) & 0xFF,
-                        pos[1] & 0xFF);
+                sprintf(dmac2, "aa:bb:cc:dd:%02x:%02x", (pos[X] + 1) & 0xFF,
+                        pos[Y] & 0xFF);
                 LOG(logINFO, ("Udp source mac address2 created: %s\n", dmac2));
                 unsigned char a[6];
                 sscanf(dmac2, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &a[0], &a[1],
@@ -4784,15 +4771,16 @@ int set_detector_position(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting detector positions: [%u, %u]\n", args[0], args[1]));
+    LOG(logDEBUG, ("Setting detector positions: [maxy:%u, modIndex:%u]\n",
+                   args[0], args[1]));
 
     // only set
     if (Server_VerifyLock() == OK) {
         // if in update mode, there is no need to do this (also detector not set
         // up)
         if (!updateFlag && check_detector_idle("configure mac") == OK) {
-            maxydet = args[0];
-            detectorId = args[1];
+            maxYMods = args[0];
+            moduleIndex = args[1];
             calculate_and_set_position();
         }
     }

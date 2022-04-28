@@ -2557,7 +2557,7 @@ void *start_timer(void *arg) {
                         top ? ((portno % 1900) + 1) : (portno % 1900);
                 }
 #else
-                ((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+                *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
                     eiger_virtual_test_mode ? 0xFFE : (uint16_t)pixelVal;
 #endif
                 break;

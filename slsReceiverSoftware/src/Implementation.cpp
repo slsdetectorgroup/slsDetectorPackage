@@ -165,7 +165,7 @@ void Implementation::setDetectorType(const detectorType d) {
     readoutType = generalData->readoutType;
     adcEnableMaskOneGiga = generalData->adcEnableMaskOneGiga;
     adcEnableMaskTenGiga = generalData->adcEnableMaskTenGiga;
-    roi = generalData->roi;
+    detectorRoi = generalData->roi;
     counterMask = generalData->counterMask;
 
     SetLocalNetworkParameters();

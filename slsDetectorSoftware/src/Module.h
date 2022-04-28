@@ -124,7 +124,6 @@ class Module : public virtual slsDetectorDefs {
     void setMaster(const bool master);
 
     bool isVirtualDetectorServer() const;
-    std::array<int, 2> getPosition() const;
 
     /**************************************************
      *                                                *

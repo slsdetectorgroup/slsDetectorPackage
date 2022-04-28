@@ -743,10 +743,9 @@ class CmdProxy {
 
         /* Pattern */
         /* Moench */
-        
+
         /* Advanced */
         {"copydetectorserver", "updatedetectorserver"},
-
 
         /* Insignificant */
         {"nframes", "framecounter"},
@@ -1775,11 +1774,11 @@ class CmdProxy {
 
     /* File */
 
-    INTEGER_COMMAND_VEC_ID(fformat, getFileFormat, setFileFormat,
-                           sls::StringTo<slsDetectorDefs::fileFormat>,
-                           "[binary|hdf5]\n\tFile format of data file. For "
-                           "HDF5, package must be "
-                           "compiled with HDF5 flags. Default is binary.");
+    INTEGER_COMMAND_VEC_ID(
+        fformat, getFileFormat, setFileFormat,
+        sls::StringTo<slsDetectorDefs::fileFormat>,
+        "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be "
+        "compiled with HDF5 flags. Default is binary.");
 
     STRING_COMMAND(fpath, getFilePath, setFilePath,
                    "[path]\n\tDirectory where output data files are written in "

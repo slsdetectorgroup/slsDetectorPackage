@@ -1627,7 +1627,7 @@ int setDetectorPosition(int pos[]) {
     int selInterface = getPrimaryInterface();
 
     if (getNumberofUDPInterfaces() == 1) {
-        LOG(logINFORED,
+        LOG(logDEBUG,
             ("Setting detector position: 1 Interface %s \n(%d, %d)\n",
              (selInterface ? "Inner" : "Outer"), innerPos[X], innerPos[Y]));
     } else {

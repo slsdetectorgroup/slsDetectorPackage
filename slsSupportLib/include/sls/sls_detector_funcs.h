@@ -260,7 +260,6 @@ enum detFuncs {
     F_SET_MASTER,
     F_GET_TOP,
     F_SET_TOP,
-    F_GET_POSITION,
     F_GET_POLARITY,
     F_SET_POLARITY,
     F_GET_INTERPOLATION,
@@ -636,7 +635,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_MASTER:                      return "F_SET_MASTER";
     case F_GET_TOP:                         return "F_GET_TOP";
     case F_SET_TOP:                         return "F_SET_TOP";
-    case F_GET_POSITION:                    return "F_GET_POSITION";
     case F_GET_POLARITY:                    return "F_GET_POLARITY";
     case F_SET_POLARITY:                    return "F_SET_POLARITY";
     case F_GET_INTERPOLATION:               return "F_GET_INTERPOLATION";

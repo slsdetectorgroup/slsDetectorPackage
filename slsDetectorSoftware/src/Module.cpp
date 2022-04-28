@@ -148,7 +148,6 @@ slsDetectorDefs::xy Module::getNumberOfChannels() const {
 void Module::updateNumberOfModule(slsDetectorDefs::xy det) {
     shm()->numberOfModule = det;
     int args[2] = {shm()->numberOfModule.y, moduleIndex};
-    LOG(logINFORED) << "set pos " << ToString(args);
     sendToDetector(F_SET_POSITION, args, nullptr);
 }
 
@@ -519,10 +518,6 @@ void Module::setMaster(const bool master) {
 
 bool Module::isVirtualDetectorServer() const {
     return sendToDetector<int>(F_IS_VIRTUAL);
-}
-
-std::array<int, 2> Module::getPosition() const {
-    return sendToDetector<std::array<int, 2>>(F_GET_POSITION);
 }
 
 int64_t Module::getNumberOfFrames() const {

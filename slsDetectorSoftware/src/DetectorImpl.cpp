@@ -1434,7 +1434,7 @@ defs::ROI DetectorImpl::getRxROI() const {
     defs::ROI retval(0, 0, 0, 0);
     size_t numCompleteModules = 0;
     for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
-        std::array<int, 2> pos = modules[iModule]->getPosition();
+        std::array<int, 2> pos; // = modules[iModule]->getPosition();
         int col = pos[0];
         int row = pos[1];
         defs::ROI moduleRoi = modules[iModule]->getRxROI();
@@ -1494,7 +1494,7 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
 
     for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
         // get module limits
-        std::array<int, 2> pos = modules[iModule]->getPosition();
+        std::array<int, 2> pos; // = modules[iModule]->getPosition();
         int col = pos[0];
         int row = pos[1];
         defs::ROI moduleFullRoi{};

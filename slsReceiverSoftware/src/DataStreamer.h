@@ -47,16 +47,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     ~DataStreamer();
 
     void SetFifo(Fifo *f);
-<<<<<<< HEAD
     void SetReceiverROI(ROI roi);
     void ResetParametersforNewAcquisition(const std::string &fname);
     void SetGeneralData(GeneralData *g);
-    void SetNumberofModules(xy nm);
-=======
-    void ResetParametersforNewAcquisition(const std::string &fname);
-    void SetGeneralData(GeneralData *g);
     void SetNumberofPorts(xy np);
->>>>>>> fixpositions
     void SetFlipRows(bool fd);
     void
     SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);

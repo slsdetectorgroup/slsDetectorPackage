@@ -4780,18 +4780,19 @@ int get_detector_position(int file_des) {
 
     LOG(logDEBUG1, ("Getting detector position\n"));
 
-    // jungfrau  has a 4 element array (first 2 inner), others 2
     int *p_retvals = getDetectorPosition();
-    // order in retvals[column, row]
-    retvals[0] = p_retvals[1];
-    retvals[1] = p_retvals[0];
-    /*#ifdef JUNGFRAUD
-        // get outer interface
-        if (getNumberofUDPInterfaces() == 2) {
-            retvals[0] = p_retvals[3];
-            retvals[1] = p_retvals[2];
-        }
-    #endif*/
+    retvals[X] = p_retvals[X];
+    retvals[Y] = p_retvals[Y];
+// jungfrau  has a 4 element array (first 2 inner), others 2
+#ifdef JUNGFRAUD
+    // get outer interface
+    retvals[Y] = p_retvals[1];
+    retvals[X] = p_retvals[0];
+    if (getNumberofUDPInterfaces() == 2) {
+        retvals[Y] = p_retvals[3];
+        retvals[X] = p_retvals[2];
+    }
+#endif
 
     return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
 }

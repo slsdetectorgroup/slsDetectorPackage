@@ -56,7 +56,8 @@ foreach(exe ${MOENCH_EXECUTABLES})
         ../dataStructures 
         ../interpolations
         ../../slsReceiverSoftware/include/
-	../../slsSupportLib/include/
+	    ../../slsSupportLib/include/
+        ${SLS_INTERNAL_RAPIDJSON_DIR}
     )
 
     target_link_libraries(${exe} 

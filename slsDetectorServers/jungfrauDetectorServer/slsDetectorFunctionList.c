@@ -2533,6 +2533,8 @@ void *start_timer(void *arg) {
             if (i > 0 && i % pixelsPerPacket == 0) {
                 ++pixelVal;
             }
+// to debug multi module geometry (row, column) in virtual servers (all pixels
+// in a module set to particular value)
 #ifdef TEST_MOD_GEOMETRY
             *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
                 portno % 1900 + (i >= npixels / 2 ? 1 : 0);

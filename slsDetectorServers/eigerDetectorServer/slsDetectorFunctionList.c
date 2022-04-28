@@ -2548,6 +2548,8 @@ void *start_timer(void *arg) {
                 }
                 break;
             case 16:
+// to debug multi module geometry (row, column) in virtual servers (all pixels
+// in a module set to particular value)
 #ifdef TEST_MOD_GEOMETRY
                 if ((i % 1024) < 512) {
                     *((uint16_t *)(imageData + i * sizeof(uint16_t))) =

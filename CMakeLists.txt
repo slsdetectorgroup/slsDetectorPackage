@@ -109,21 +109,6 @@ else()
     message(STATUS "Building without link time optimization")
 endif()
 
-#Testing for minimum version for compilers
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.2)
-        message(FATAL_ERROR "Clang version must be at least 3.2!")
-    endif()
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
-            message(FATAL_ERROR "GCC version must be at least 4.8!")
-    endif()
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5)
-            target_compile_options(slsProjectWarnings INTERFACE 
-                                             -Wno-missing-field-initializers)
-    endif()
-endif()
-
 
 if(SLS_EXT_BUILD)
     # Find ourself in case of external build
@@ -161,6 +146,13 @@ if (NOT TARGET slsProjectWarnings)
     sls_enable_cxx_warning("-Wnull-dereference")
     sls_enable_cxx_warning("-Wduplicated-cond")
     sls_disable_cxx_warning("-Wclass-memaccess")
+
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5 AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            target_compile_options(slsProjectWarnings INTERFACE 
+                                                -Wno-missing-field-initializers)
+endif()
+
+
 endif()
 
 

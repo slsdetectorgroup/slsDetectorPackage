@@ -127,7 +127,7 @@ endif()
 
 if(SLS_EXT_BUILD)
     # Find ourself in case of external build
-    find_package(slsDetectorPackage 6 REQUIRED)
+    find_package(slsDetectorPackage ${PROJECT_VERSION} REQUIRED)
 endif()
 
 

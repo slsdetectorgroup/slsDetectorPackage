@@ -261,9 +261,9 @@ void Implementation::setModulePositionId(const int id) {
         if (portGeometry.x == 2) {
             col += i;
         }
-        LOG(logINFORED) << i << ":numModules:" << numModules.x << ","
-                        << numModules.y << " portGeometry:" << portGeometry.x
-                        << "," << portGeometry.y;
+        LOG(logDEBUG1) << i << ":numModules:" << numModules.x << ","
+                       << numModules.y << " portGeometry:" << portGeometry.x
+                       << "," << portGeometry.y;
         listener[i]->SetHardCodedPosition(row, col);
     }
 }

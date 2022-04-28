@@ -51,7 +51,6 @@ void sigInterruptHandler(int p) {
 int main(int argc, char *argv[]) {
 
     // options
-    // int portno = DEFAULT_PORTNO;
     isControlServer = 1;
     debugflag = 0;
     updateFlag = 0;

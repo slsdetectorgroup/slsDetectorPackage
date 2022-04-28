@@ -4706,8 +4706,8 @@ void calculate_and_set_position() {
 #elif defined(JUNGFRAUD)
     portGeometry[Y] = getNumberofUDPInterfaces(); // vert
 #endif
-    LOG(logINFORED, ("moduleIndex:%d maxymods:%d portGeo.x:%d portgeo.y:%d\n",
-                     moduleIndex, maxYMods, portGeometry[X], portGeometry[Y]));
+    LOG(logDEBUG1, ("moduleIndex:%d maxymods:%d portGeo.x:%d portgeo.y:%d\n",
+                    moduleIndex, maxYMods, portGeometry[X], portGeometry[Y]));
     pos[Y] = (moduleIndex % maxYMods) * portGeometry[Y];
     pos[X] = (moduleIndex / maxYMods) * portGeometry[X];
     LOG(logINFO, ("Setting Positions (%d,%d) #(col, row)\n", pos[X], pos[Y]));

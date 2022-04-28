@@ -19,4 +19,4 @@ cp build/install/bin/slsMultiReceiver $PREFIX/bin/.
 
 
 cp build/install/include/sls/* $PREFIX/include/sls
-cp -r build/install/share/ $PREFIX/share
+cp -rv build/install/share $PREFIX

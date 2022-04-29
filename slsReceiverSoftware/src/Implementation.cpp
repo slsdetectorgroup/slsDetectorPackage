@@ -376,70 +376,72 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
     if (numUDPInterfaces == 1 || detType == slsDetectorDefs::GOTTHARD2) {
         portRois[0] = arg;
     } else {
-        portRois[0] = arg;
-        portRois[1] = arg;
 
-        // split into port rois
-        if (!arg.completeRoi() && !arg.noRoi()) {
+        for (int iPort = 0; iPort != numUDPInterfaces; ++iPort) {
+            // default init = complete roi
+            defs::ROI portRoi{};
 
-            // left right (eiger)
-            if (GetPortGeometry().x == 2) {
-                int nPixelsXHalf = generalData->nPixelsX / 2;
-                // skip first half
-                if (arg.xmin >= nPixelsXHalf) {
-                    portRois[0].SetNoRoi();
-                }
-                // skip second half
-                else if (arg.xmax < nPixelsXHalf) {
-                    portRois[1].SetNoRoi();
-                } else {
-                    portRois[0].xmax = nPixelsXHalf - 1;
-                    portRois[1].xmin = nPixelsXHalf;
-                }
-                // complete half
-                if (portRois[0].ymin == 0 &&
-                    portRois[0].ymax == generalData->nPixelsY - 1) {
-                    // complete left half
-                    if (portRois[0].xmin == 0 &&
-                        portRois[0].xmax == nPixelsXHalf - 1) {
-                        portRois[0].ResetNoRoi();
+            // no roi
+            if (arg.noRoi()) {
+                portRoi.SetNoRoi();
+            }
+
+            // incomplete roi
+            else if (!arg.completeRoi()  {
+                // get port limits
+                defs::xy nPortDim(generalData->nPixelsX / 2,
+                                  generalData->nPixelsY / 2);
+                defs::xy portFullRoi{0, generalData->nPixelsX - 1, 0,
+                                     generalData->nPixelsY - 1};
+                // left right (eiger)
+                if (GetPortGeometry().x == 2) {
+                    if (iPort == 0) {
+                        portFullRoi.xmax = nPortDim.x - 1;
+                    } else {
+                        portFullRoi.xmin = nPortDim.x;
                     }
-                    // complete right half
-                    if (portRois[1].xmin == nPixelsXHalf &&
-                        portRois[1].xmax == nPixelsX - 1) {
-                        portRois[1].ResetNoRoi();
+                    portFullRoi.xmin += (iPort * nPortDim.x);
+                    portFullRoi.xmax += (iPort * nPortDim.x);
+                }
+                // top bottom (jungfrau)
+                else {
+                    if (iPort == 0) {
+                        portFullRoi.ymax = nPortDim.y - 1;
+                    } else {
+                        portFullRoi.ymin = nPortDim.y;
                     }
+                    portFullRoi.ymin += (iPort * nPortDim.y);
+                    portFullRoi.ymax += (iPort * nPortDim.y);
+                }
+
+                // no roi
+                if (arg.xmin > portFullRoi.xmax ||
+                    arg.xmax < portFullRoi.xmin ||
+                    arg.ymin > portFullRoi.ymax ||
+                    arg.ymax < portFullRoi.ymin) {
+                    portRoi.SetNoRoi();
+                }
+
+                // incomplete module roi
+                else if (arg.xmin > portFullRoi.xmin ||
+                         arg.xmax < portFullRoi.xmax ||
+                         arg.ymin > portFullRoi.ymin ||
+                         arg.ymax < portFullRoi.ymax) {
+                    portRoi.xmin = (arg.xmin <= portFullRoi.xmin)
+                                       ? 0
+                                       : (arg.xmin % nPortDim.x);
+                    portRoi.xmax = (arg.xmax >= portFullRoi.xmax)
+                                       ? nPortDim.x - 1
+                                       : (arg.xmax % nPortDim.x);
+                    portRoi.ymin = (arg.ymin <= portFullRoi.ymin)
+                                       ? 0
+                                       : (arg.ymin % nPortDim.y);
+                    portRoi.ymax = (arg.ymax >= portFullRoi.ymax)
+                                       ? nPortDim.y - 1
+                                       : (arg.ymax % nPortDim.y);
                 }
             }
-            // top down (jungfrau)
-            else {
-                int nPixelsYHalf = generalData->nPixelsY / 2;
-                // skip bottom half (top = port 1)
-                if (arg.ymin >= nPixelsYHalf) {
-                    portRois[0].SetNoRoi();
-                }
-                // skip top half (bottom = port 0)
-                else if (arg.xmax < nPixelsYHalf) {
-                    portRois[1].SetNoRoi();
-                } else {
-                    portRois[0].ymax = nPixelsYHalf - 1;
-                    portRois[1].ymin = nPixelsYHalf;
-                }
-                // complete half
-                if (portRois[0].xmin == 0 &&
-                    portRois[0].xmax == generalData->nPixelsX - 1) {
-                    // complete left half
-                    if (portRois[0].ymin == 0 &&
-                        portRois[0].ymax == nPixelsYHalf - 1) {
-                        portRois[0].ResetNoRoi();
-                    }
-                    // complete right half
-                    if (portRois[1].ymin == nPixelsYHalf &&
-                        portRois[1].ymax == nPixelsY - 1) {
-                        portRois[1].ResetNoRoi();
-                    }
-                }
-            }
+            portRois[iPort] = portRoi;
         }
     }
     for (size_t i = 0; i != dataProcessor.size(); ++i)

@@ -1,0 +1,90 @@
+
+package:
+  name: slsdetlib
+  version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
+
+source:
+  - path: ../..
+
+build:
+  number: 0
+  binary_relocation: True
+  rpaths:
+    - lib/
+
+requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{compiler('cxx')}}
+        - cmake
+        - libstdcxx-ng
+        - libgcc-ng
+        - zeromq
+
+      host:
+        - zeromq
+
+      run: 
+        - libstdcxx-ng
+        - libgcc-ng
+        - zeromq
+
+
+# outputs:
+#   - name: slsdetlib
+#     script: build_lib.sh
+
+#     requirements:
+#       build:
+#         - {{ compiler('c') }}
+#         - {{compiler('cxx')}}
+#         - libstdcxx-ng
+#         - libgcc-ng
+#         - zeromq
+
+#       host:
+#         - zeromq
+
+#       run: 
+#         - libstdcxx-ng
+#         - libgcc-ng
+#         - zeromq
+
+  # - name: slsdet
+  #   script: build_py.sh
+
+    # requirements:
+    #   build:
+    #     - python
+    #     - {{ compiler('c') }}
+    #     - {{compiler('cxx')}}
+    #     - {{ pin_subpackage('slsdetlib', exact=True) }}
+    #     - setuptools
+
+    #   host:
+    #     - python
+    #     - {{ pin_subpackage('slsdetlib', exact=True) }}
+
+
+    #   run:
+    #     - libstdcxx-ng
+    #     - libgcc-ng
+    #     - python
+    #     - numpy
+    #     - {{ pin_subpackage('slsdetlib', exact=True) }}
+
+  # - name: slsdetgui
+  #   script: build_gui.sh
+  #   requirements:
+
+  #     build:
+  #       - {{ compiler('c') }}
+  #       - {{compiler('cxx')}}
+  #       - {{ pin_subpackage('slsdetlib', exact=True) }}
+  #       - qwt 6.*
+
+  #     run:
+  #       - {{ pin_subpackage('slsdetlib', exact=True) }}
+  #       - qwt 6.*
+  #       - qt 4.8.*
+  #       - expat

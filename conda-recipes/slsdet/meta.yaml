@@ -1,0 +1,34 @@
+
+package:
+  name: slsdet
+  version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
+
+source:
+  - path: ../..
+
+build:
+  number: 0
+  binary_relocation: True
+  rpaths:
+    - lib/
+
+requirements:
+  build:
+    - python
+    - {{ compiler('c') }}
+    - {{compiler('cxx')}}
+    - cmake
+    - slsdetlib {{ environ.get('GIT_DESCRIBE_TAG', '') }}
+    - setuptools
+
+  host:
+    - python
+    - slsdetlib {{ environ.get('GIT_DESCRIBE_TAG', '') }}
+
+
+  run:
+    - libstdcxx-ng
+    - libgcc-ng
+    - python
+    - numpy
+    - slsdetlib {{ environ.get('GIT_DESCRIBE_TAG', '') }}

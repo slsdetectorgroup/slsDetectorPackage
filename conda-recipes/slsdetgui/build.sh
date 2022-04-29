@@ -2,17 +2,13 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 
 mkdir build
-mkdir install
+
 cd build
 cmake .. \
       -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
-      -DCMAKE_INSTALL_PREFIX=install \
-      -DSLS_USE_TEXTCLIENT=ON \
-      -DSLS_USE_RECEIVER=ON \
+      -DCMAKE_INSTALL_PREFIX=$PREFIX \
       -DSLS_USE_GUI=ON \
-      -DSLS_USE_MOENCH=ON\
-      -DSLS_USE_TESTS=ON \
-      -DSLS_USE_PYTHON=OFF \
+      -DSLS_EXT_BUILD=ON\
       -DCMAKE_BUILD_TYPE=Release \
       -DSLS_USE_HDF5=OFF\
      
@@ -22,3 +18,7 @@ cmake --build . -- -j${NCORES}
 cmake --build . --target install
 
 CTEST_OUTPUT_ON_FAILURE=1 ctest -j 2
+
+#Clean up for the next build
+# cd ..
+# rm -rf build

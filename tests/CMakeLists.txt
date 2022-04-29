@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 include_directories(
     ${PROJECT_SOURCE_DIR}/libs/catch
+    ${SLS_INTERNAL_RAPIDJSON_DIR}
     include
 )
 

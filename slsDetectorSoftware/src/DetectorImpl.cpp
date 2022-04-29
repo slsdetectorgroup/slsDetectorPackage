@@ -1404,20 +1404,27 @@ void DetectorImpl::setDefaultDac(defs::dacIndex index, int defaultValue,
     Parallel(&Module::setDefaultDac, pos, index, defaultValue, sett);
 }
 
-bool DetectorImpl::is2D() const {
+defs::xy DetectorImpl::getPortGeometry() {
+    defs::xy portGeometry(1, 1);
     switch (shm()->detType) {
-    case GOTTHARD:
-    case GOTTHARD2:
-    case MYTHEN3:
-    case CHIPTESTBOARD:
-        return false;
-    case MOENCH:
-    case JUNGFRAU:
     case EIGER:
-        return true;
+        portGeometry.x = modules[0]->getNumberofUDPInterfacesFromShm();
+        break;
+    case JUNGFRAU:
+        portGeometry.y = modules[0]->getNumberofUDPInterfacesFromShm();
+        break;
     default:
-        throw RuntimeError("Unknown Detector");
+        break;
     }
+    return portGeometry;
+}
+
+defs::xy DetectorImpl::calculatePosition(int moduleIndex, defs::xy geometry) {
+    defs::xy position{};
+    int maxYMods = shm()->numberOfModules.y;
+    pos.y = (moduleIndex % maxYMods) * geometry.y;
+    pos.x = (moduleIndex / maxYMods) * geometry.x;
+    return pos;
 }
 
 defs::ROI DetectorImpl::getRxROI() const {
@@ -1485,56 +1492,54 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
         arg.ymax >= shm()->numberOfChannels.y) {
         throw RuntimeError("Invalid Receiver Roi");
     }
-    bool twoD = is2D();
-    defs::xy numChansPerMod{};
-    numChansPerMod.x = shm()->numberOfChannels.x / shm()->numberOfModules.x;
-    if (twoD) {
-        numChansPerMod.y = shm()->numberOfChannels.y / shm()->numberOfModules.y;
+    if (modules.size() == 0) {
+        throw RuntimeError("No Modules added");
     }
+    defs::xy numChansPerMod{} = modules[0]->getNumberOfChannels();
+    bool is2D = (numChansPerMod.y > 1 ? true : false);
+    defs::xy geometry = getPortGeometry();
 
     for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
         // get module limits
-        std::array<int, 2> pos; // = modules[iModule]->getPosition();
-        int col = pos[0];
-        int row = pos[1];
+        desf::xy pos = calculatePosition(iModule, geometry);
         defs::ROI moduleFullRoi{};
-        moduleFullRoi.xmin = numChansPerMod.x * col;
-        moduleFullRoi.xmax = numChansPerMod.x * (col + 1) - 1;
-        if (twoD) {
-            moduleFullRoi.ymin = numChansPerMod.y * row;
-            moduleFullRoi.ymax = numChansPerMod.y * (row + 1) - 1;
+        moduleFullRoi.xmin = numChansPerMod.x * pox.x;
+        moduleFullRoi.xmax = numChansPerMod.x * (pos.x + 1) - 1;
+        if (is2D) {
+            moduleFullRoi.ymin = numChansPerMod.y * pos.y;
+            moduleFullRoi.ymax = numChansPerMod.y * (pos.y + 1) - 1;
         }
 
         // default = complete roi
-        defs::ROI moduleArg{};
+        defs::ROI moduleRoi{};
 
         // outside module limits
         if (arg.xmin > moduleFullRoi.xmax || arg.xmax < moduleFullRoi.xmin ||
             (twoD && (arg.ymin > moduleFullRoi.ymax ||
                       arg.ymax < moduleFullRoi.ymin))) {
-            moduleArg.SetNoRoi();
+            moduleRoi.SetNoRoi();
         }
         // incomplete module roi
         else if (arg.xmin > moduleFullRoi.xmin ||
                  arg.xmax < moduleFullRoi.xmax ||
-                 (twoD && (arg.ymin > moduleFullRoi.ymin ||
+                 (is2D && (arg.ymin > moduleFullRoi.ymin ||
                            arg.ymax < moduleFullRoi.ymax))) {
-            moduleArg.xmin = (arg.xmin <= moduleFullRoi.xmin)
+            moduleRoi.xmin = (arg.xmin <= moduleFullRoi.xmin)
                                  ? 0
                                  : (arg.xmin % numChansPerMod.x);
-            moduleArg.xmax = (arg.xmax >= moduleFullRoi.xmax)
+            moduleRoi.xmax = (arg.xmax >= moduleFullRoi.xmax)
                                  ? numChansPerMod.x - 1
                                  : (arg.xmax % numChansPerMod.x);
-            if (twoD) {
-                moduleArg.ymin = (arg.ymin <= moduleFullRoi.ymin)
+            if (is2D) {
+                moduleRoi.ymin = (arg.ymin <= moduleFullRoi.ymin)
                                      ? 0
                                      : (arg.ymin % numChansPerMod.y);
-                moduleArg.ymax = (arg.ymax >= moduleFullRoi.ymax)
+                moduleRoi.ymax = (arg.ymax >= moduleFullRoi.ymax)
                                      ? numChansPerMod.y - 1
                                      : (arg.ymax % numChansPerMod.y);
             }
         }
-        modules[iModule]->setRxROI(moduleArg);
+        modules[iModule]->setRxROI(moduleRoi);
     }
 }
 

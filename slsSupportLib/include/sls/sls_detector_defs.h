@@ -191,6 +191,12 @@ class slsDetectorDefs {
             ymin = 0;
             ymax = 0;
         }
+        void ResetNoRoi() {
+            xmin = -1;
+            xmax = -1;
+            ymin = -1;
+            ymax = -1;
+        }
     } __attribute__((packed));
 #else
 typedef struct {

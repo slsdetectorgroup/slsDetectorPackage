@@ -385,7 +385,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * when using acquire command
      */
     int kbhit();
-    bool is2D() const;
 
     const int detectorIndex{0};
     sls::SharedMemory<sharedDetector> shm{0, -1};

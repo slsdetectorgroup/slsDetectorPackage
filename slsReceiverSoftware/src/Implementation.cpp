@@ -393,27 +393,51 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
                 else if (arg.xmax < nPixelsXHalf) {
                     portRois[1].SetNoRoi();
                 } else {
-                    portRois[0].xmin = arg.xmin;
                     portRois[0].xmax = nPixelsXHalf - 1;
                     portRois[1].xmin = nPixelsXHalf;
-                    portRois[1].xmax = arg.xmax;
+                }
+                // complete half
+                if (portRois[0].ymin == 0 &&
+                    portRois[0].ymax == generalData->nPixelsY - 1) {
+                    // complete left half
+                    if (portRois[0].xmin == 0 &&
+                        portRois[0].xmax == nPixelsXHalf - 1) {
+                        portRois[0].ResetNoRoi();
+                    }
+                    // complete right half
+                    if (portRois[1].xmin == nPixelsXHalf &&
+                        portRois[1].xmax == nPixelsX - 1) {
+                        portRois[1].ResetNoRoi();
+                    }
                 }
             }
             // top down (jungfrau)
             else {
                 int nPixelsYHalf = generalData->nPixelsY / 2;
-                // skip first half (top = port 1)
+                // skip bottom half (top = port 1)
                 if (arg.ymin >= nPixelsYHalf) {
-                    portRois[1].SetNoRoi();
-                }
-                // skip second half (bottom = port 0)
-                else if (arg.xmax < nPixelsYHalf) {
                     portRois[0].SetNoRoi();
+                }
+                // skip top half (bottom = port 0)
+                else if (arg.xmax < nPixelsYHalf) {
+                    portRois[1].SetNoRoi();
                 } else {
-                    portRois[1].ymin = arg.ymin;
-                    portRois[1].ymax = nPixelsYHalf - 1;
-                    portRois[0].ymin = nPixelsYHalf;
-                    portRois[0].ymax = arg.ymax;
+                    portRois[0].ymax = nPixelsYHalf - 1;
+                    portRois[1].ymin = nPixelsYHalf;
+                }
+                // complete half
+                if (portRois[0].xmin == 0 &&
+                    portRois[0].xmax == generalData->nPixelsX - 1) {
+                    // complete left half
+                    if (portRois[0].ymin == 0 &&
+                        portRois[0].ymax == nPixelsYHalf - 1) {
+                        portRois[0].ResetNoRoi();
+                    }
+                    // complete right half
+                    if (portRois[1].ymin == nPixelsYHalf &&
+                        portRois[1].ymax == nPixelsY - 1) {
+                        portRois[1].ResetNoRoi();
+                    }
                 }
             }
         }

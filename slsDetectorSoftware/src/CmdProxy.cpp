@@ -1659,8 +1659,13 @@ std::string CmdProxy::Rx_ROI(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        auto t = det->getRxROI();
-        os << t << '\n';
+        if (det_id == -1) {
+            auto t = det->getRxROI();
+            os << t << '\n';
+        } else {
+            auto t = det->getIndividualRxROIs(std::vector<int>{det_id});
+            os << t << '\n';
+        }
     } else if (action == defs::PUT_ACTION) {
         defs::ROI t;
         // 2 or 4 arguments

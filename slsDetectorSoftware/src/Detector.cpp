@@ -1228,6 +1228,10 @@ void Detector::setRxArping(bool value, Positions pos) {
     pimpl->Parallel(&Module::setRxArping, pos, value);
 }
 
+Result<defs::ROI> Detector::getIndividualRxROIs(Positions pos) const {
+    return pimpl->Parallel(&Module::getRxROI, pos);
+}
+
 defs::ROI Detector::getRxROI() const { return pimpl->getRxROI(); }
 
 void Detector::setRxROI(const defs::ROI value) { pimpl->setRxROI(value); }

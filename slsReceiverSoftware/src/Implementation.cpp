@@ -376,10 +376,12 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
     if (numUDPInterfaces == 1 || detType == slsDetectorDefs::GOTTHARD2) {
         portRois[0] = arg;
     } else {
+        slsDetectorDefs::xy nPortDim(generalData->nPixelsX,
+                                     generalData->nPixelsY);
 
         for (int iPort = 0; iPort != numUDPInterfaces; ++iPort) {
             // default init = complete roi
-            defs::ROI portRoi{};
+            slsDetectorDefs::ROI portRoi{};
 
             // no roi
             if (arg.noRoi()) {
@@ -387,32 +389,24 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
             }
 
             // incomplete roi
-            else if (!arg.completeRoi()  {
+            else if (!arg.completeRoi()) {
                 // get port limits
-                defs::xy nPortDim(generalData->nPixelsX / 2,
-                                  generalData->nPixelsY / 2);
-                defs::xy portFullRoi{0, generalData->nPixelsX - 1, 0,
-                                     generalData->nPixelsY - 1};
-                // left right (eiger)
-                if (GetPortGeometry().x == 2) {
-                    if (iPort == 0) {
-                        portFullRoi.xmax = nPortDim.x - 1;
-                    } else {
-                        portFullRoi.xmin = nPortDim.x;
+                slsDetectorDefs::ROI portFullRoi{0, nPortDim.x - 1, 0,
+                                                 nPortDim.y - 1};
+                if (iPort == 1) {
+                    // left right (eiger)
+                    if (GetPortGeometry().x == 2) {
+                        portFullRoi.xmin += nPortDim.x;
+                        portFullRoi.xmax += nPortDim.x;
                     }
-                    portFullRoi.xmin += (iPort * nPortDim.x);
-                    portFullRoi.xmax += (iPort * nPortDim.x);
-                }
-                // top bottom (jungfrau)
-                else {
-                    if (iPort == 0) {
-                        portFullRoi.ymax = nPortDim.y - 1;
-                    } else {
-                        portFullRoi.ymin = nPortDim.y;
+                    // top bottom (jungfrau)
+                    else {
+                        portFullRoi.ymin += nPortDim.y;
+                        portFullRoi.ymax += nPortDim.y;
                     }
-                    portFullRoi.ymin += (iPort * nPortDim.y);
-                    portFullRoi.ymax += (iPort * nPortDim.y);
                 }
+                LOG(logINFO)
+                    << iPort << ": portfullroi:" << sls::ToString(portFullRoi);
 
                 // no roi
                 if (arg.xmin > portFullRoi.xmax ||

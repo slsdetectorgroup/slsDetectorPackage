@@ -386,6 +386,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int kbhit();
 
+    defs::xy getPortGeometry() const;
+    defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
+
     const int detectorIndex{0};
     sls::SharedMemory<sharedDetector> shm{0, -1};
     sls::SharedMemory<CtbConfig> ctb_shm{0, -1, CtbConfig::shm_tag()};

@@ -83,8 +83,12 @@ target_link_libraries(ctbGui PUBLIC
     ${TIFF_LIBRARIES}
 )
 
-set_target_properties(ctbGui PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+#set_target_properties(ctbGui PROPERTIES
+#    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+#
+#)
 
+install(TARGETS ctbGui ctbRootLib
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-

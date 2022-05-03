@@ -570,7 +570,7 @@ void DetectorImpl::readFrameFromReceiver() {
                         // shape
                         nPixelsX = zHeader.npixelsx;
                         nPixelsY = zHeader.npixelsy;
-                        // module shape (port)
+                        // port geometry
                         nX = zHeader.ndetx;
                         nY = zHeader.ndety;
                         nDetPixelsX = nX * nPixelsX;
@@ -1435,11 +1435,13 @@ defs::ROI DetectorImpl::getRxROI() const {
     if (modules.size() == 0) {
         throw RuntimeError("No Modules added");
     }
+    // complete detector in roi
     auto t = Parallel(&Module::getRxROI, {});
     if (t.equal() && t.front().completeRoi()) {
         LOG(logDEBUG) << "no roi";
-        return t.front();
+        return defs::ROI (0, shm()->numberOfChannels.x - 1, 0, shm()->numberOfChannels.y - 1);
     }
+
     defs::xy numChansPerMod = modules[0]->getNumberOfChannels();
     bool is2D = (numChansPerMod.y > 1 ? true : false);
     defs::xy geometry = getPortGeometry();
@@ -1493,7 +1495,10 @@ defs::ROI DetectorImpl::getRxROI() const {
         }
         LOG(logDEBUG) << iModule << ": (retval): " << retval;
     }
-
+    if (retval.ymin == -1) {
+        retval.ymin = 0;
+        retval.ymax = 0;
+    }
     return retval;
 }
 

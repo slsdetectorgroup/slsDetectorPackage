@@ -1572,6 +1572,12 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
         }
         modules[iModule]->setRxROI(moduleRoi);
     }
+    // metadata
+    if (arg.completeRoi()) {
+        modules[0]->setRxROIMetadata(defs::ROI (0, shm()->numberOfChannels.x - 1, 0, shm()->numberOfChannels.y - 1));
+    } else {
+        modules[0]->setRxROIMetadata(arg);
+    }
 }
 
 std::vector<std::string> DetectorImpl::getCtbDacNames() const {

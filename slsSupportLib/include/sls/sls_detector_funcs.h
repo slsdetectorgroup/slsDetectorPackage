@@ -377,6 +377,7 @@ enum detFuncs {
     F_SET_RECEIVER_ARPING,
     F_RECEIVER_GET_RECEIVER_ROI,
     F_RECEIVER_SET_RECEIVER_ROI,
+    F_RECEIVER_SET_RECEIVER_ROI_METADATA,
 
     NUM_REC_FUNCTIONS
 };
@@ -750,8 +751,9 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_RECEIVER_SET_DATASTREAM:         return "F_RECEIVER_SET_DATASTREAM";
     case F_GET_RECEIVER_ARPING:             return "F_GET_RECEIVER_ARPING";
     case F_SET_RECEIVER_ARPING:             return "F_SET_RECEIVER_ARPING";
-case F_RECEIVER_GET_RECEIVER_ROI:           return "F_RECEIVER_GET_RECEIVER_ROI";
+    case F_RECEIVER_GET_RECEIVER_ROI:       return "F_RECEIVER_GET_RECEIVER_ROI";
     case F_RECEIVER_SET_RECEIVER_ROI:       return "F_RECEIVER_SET_RECEIVER_ROI";
+    case F_RECEIVER_SET_RECEIVER_ROI_METADATA: return "F_RECEIVER_SET_RECEIVER_ROI_METADATA";
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

@@ -220,6 +220,7 @@ int ClientInterface::functionTable(){
     flist[F_SET_RECEIVER_ARPING]            =   &ClientInterface::set_arping;
     flist[F_RECEIVER_GET_RECEIVER_ROI]      =   &ClientInterface::get_receiver_roi;
     flist[F_RECEIVER_SET_RECEIVER_ROI]      =   &ClientInterface::set_receiver_roi;
+    flist[F_RECEIVER_SET_RECEIVER_ROI_METADATA] =   &ClientInterface::set_receiver_roi_metadata;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -1759,6 +1760,20 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
         impl()->setReceiverROI(arg);
     } catch (const RuntimeError &e) {
         throw RuntimeError("Could not set ReceiverROI");
+    }
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
+    auto arg = socket.Receive<ROI>();
+    if (detType == CHIPTESTBOARD || detType == MYTHEN3)
+        functionNotImplemented();
+    LOG(logDEBUG1) << "Set Receiver ROI Metadata: " << sls::ToString(arg);
+    verifyIdle(socket);
+    try {
+        impl()->setReceiverROIMetadata(arg);
+    } catch (const RuntimeError &e) {
+        throw RuntimeError("Could not set ReceiverROI metadata");
     }
     return socket.Send(OK);
 }

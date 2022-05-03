@@ -1413,6 +1413,10 @@ void Module::setRxROI(const slsDetectorDefs::ROI arg) {
     sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI, arg, nullptr);
 }
 
+void Module::setRxROIMetadata(const slsDetectorDefs::ROI arg) {
+    sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI_METADATA, arg, nullptr);
+}
+
 // File
 slsDetectorDefs::fileFormat Module::getFileFormat() const {
     return sendToReceiver<fileFormat>(F_GET_RECEIVER_FILE_FORMAT);

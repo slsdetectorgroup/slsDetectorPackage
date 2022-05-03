@@ -442,10 +442,15 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
         dataProcessor[i]->SetReceiverROI(portRois[i]);
     for (size_t i = 0; i != dataStreamer.size(); ++i)
         dataStreamer[i]->SetReceiverROI(portRois[i]);
-    LOG(logINFO) << "receiver Roi: " << sls::ToString(receiverRoi);
+    LOG(logINFO) << "receiver roi: " << sls::ToString(receiverRoi);
     if (numUDPInterfaces == 2 && detType != slsDetectorDefs::GOTTHARD2) {
-        LOG(logINFO) << "port Rois: " << sls::ToString(portRois);
+        LOG(logINFO) << "port rois: " << sls::ToString(portRois);
     }
+}
+
+void Implementation::setReceiverROIMetadata(const ROI arg) {
+    receiverRoiMetadata = arg;
+    LOG(logINFO) << "receiver roi Metadata: " << sls::ToString(receiverRoiMetadata);
 }
 
 /**************************************************
@@ -861,7 +866,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.scanParams = scanParams;
             masterAttributes.totalFrames = numberOfTotalFrames;
             masterAttributes.receiverRoi =
-                receiverRoi; // TODO: to be replaced by master receiver roi
+                receiverRoiMetadata;
             masterAttributes.exptime = acquisitionTime;
             masterAttributes.period = acquisitionPeriod;
             masterAttributes.burstMode = burstMode;

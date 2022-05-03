@@ -55,6 +55,8 @@ class Implementation : private virtual slsDetectorDefs {
     void setArping(const bool i, const std::vector<std::string> ips);
     ROI getReceiverROI() const;
     void setReceiverROI(const ROI arg);
+    void setReceiverROIMetadata(const ROI arg);
+
     /**************************************************
      *                                                 *
      *   File Parameters                               *
@@ -304,6 +306,8 @@ class Implementation : private virtual slsDetectorDefs {
     pid_t tcpThreadId;
     ROI receiverRoi{};
     std::array<ROI, 2> portRois{};
+    // receiver roi for complete detector for metadata
+    ROI receiverRoiMetadata{};
 
     // file parameters
     fileFormat fileFormatType{BINARY};

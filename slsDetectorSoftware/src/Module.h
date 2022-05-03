@@ -292,6 +292,7 @@ class Module : public virtual slsDetectorDefs {
     void setRxArping(bool enable);
     defs::ROI getRxROI() const;
     void setRxROI(const slsDetectorDefs::ROI arg);
+    void setRxROIMetadata(const slsDetectorDefs::ROI arg);
 
     /**************************************************
      *                                                *

@@ -166,6 +166,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_arping(sls::ServerInterface &socket);
     int get_receiver_roi(sls::ServerInterface &socket);
     int set_receiver_roi(sls::ServerInterface &socket);
+    int set_receiver_roi_metadata(sls::ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {

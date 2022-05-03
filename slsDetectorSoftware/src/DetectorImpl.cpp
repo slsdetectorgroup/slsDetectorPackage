@@ -1437,6 +1437,7 @@ defs::ROI DetectorImpl::getRxROI() const {
     }
     auto t = Parallel(&Module::getRxROI, {});
     if (t.equal() && t.front().completeRoi()) {
+        LOG(logDEBUG) << "no roi";
         return t.front();
     }
     defs::xy numChansPerMod = modules[0]->getNumberOfChannels();
@@ -1445,59 +1446,53 @@ defs::ROI DetectorImpl::getRxROI() const {
 
     defs::ROI retval{};
     for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
+
         defs::ROI moduleRoi = modules[iModule]->getRxROI();
-        // expand complete roi
-        if (moduleRoi.completeRoi()) {
-            moduleRoi.xmin = 0;
-            moduleRoi.xmax = numChansPerMod.x;
-            if (is2D) {
-                moduleRoi.ymin = 0;
-                moduleRoi.ymax = numChansPerMod.y;
-            }
-        }
-
-        // get roi at detector level
-        defs::xy pos = calculatePosition(iModule, geometry);
-        defs::ROI moduleFullRoi{};
-        moduleFullRoi.xmin = numChansPerMod.x * pos.x + moduleRoi.xmin;
-        moduleFullRoi.xmax = numChansPerMod.x * pos.x + moduleRoi.xmax;
-        if (is2D) {
-            moduleFullRoi.ymin = numChansPerMod.y * pos.y + moduleRoi.ymin;
-            moduleFullRoi.ymax = numChansPerMod.y * pos.y + moduleRoi.ymax;
-        }
-
-        // no roi (move roi beyond module limits)
-        if (moduleRoi.noRoi()) {
-            if (retval.xmin == -1) {
-                retval.xmin = moduleFullRoi.xmax + 1;
-                retval.xmax = retval.xmin;
-            }
-            if (is2D && retval.ymin == -1) {
-                retval.ymin = moduleFullRoi.ymax + 1;
-                retval.ymax = retval.ymin;
-            }
-            if (retval.xmax >= shm()->numberOfChannels.x ||
-                retval.ymax >= shm()->numberOfChannels.y) {
-                throw RuntimeError("Invalid Roi when calculating detector "
-                                   "level. Try getting individual rois.");
-            }
-        }
-
-        // has roi
+        if (!moduleRoi.noRoi()) {
         else {
-            if (retval.xmin == -1 || moduleRoi.xmin < retval.xmin) {
+            LOG(logDEBUG) << iModule << ": no roi";
+        } else {
+            // expand complete roi
+            if (moduleRoi.completeRoi()) {
+                moduleRoi.xmin = 0;
+                moduleRoi.xmax = numChansPerMod.x;
+                if (is2D) {
+                    moduleRoi.ymin = 0;
+                    moduleRoi.ymax = numChansPerMod.y;
+                }
+            }
+            LOG(logDEBUG) << iModule << ": " << moduleRoi;
+
+            // get roi at detector level
+            defs::xy pos = calculatePosition(iModule, geometry);
+            defs::ROI moduleFullRoi{};
+            moduleFullRoi.xmin = numChansPerMod.x * pos.x + moduleRoi.xmin;
+            moduleFullRoi.xmax = numChansPerMod.x * pos.x + moduleRoi.xmax;
+            if (is2D) {
+                moduleFullRoi.ymin = numChansPerMod.y * pos.y + moduleRoi.ymin;
+                moduleFullRoi.ymax = numChansPerMod.y * pos.y + moduleRoi.ymax;
+            }
+            LOG(logDEBUG) << iModule << ": (full roi)" << moduleFullRoi;
+
+            // get min and max
+            if (retval.xmin == -1 || moduleFullRoi.xmin < retval.xmin) {
+                LOG(logDEBUG) << iModule << ": xmin updated";
                 retval.xmin = moduleFullRoi.xmin;
             }
-            if (retval.xmax == -1 || moduleRoi.xmax > retval.xmax) {
+            if (retval.xmax == -1 || moduleFullRoi.xmax > retval.xmax) {
+                LOG(logDEBUG) << iModule << ": xmax updated";
                 retval.xmax = moduleFullRoi.xmax;
             }
-            if (retval.ymin == -1 || moduleRoi.ymin < retval.ymin) {
+            if (retval.ymin == -1 || moduleFullRoi.ymin < retval.ymin) {
+                LOG(logDEBUG) << iModule << ": ymin updated";
                 retval.ymin = moduleFullRoi.ymin;
             }
-            if (retval.ymax == -1 || moduleRoi.ymax > retval.ymax) {
+            if (retval.ymax == -1 || moduleFullRoi.ymax > retval.ymax) {
+                LOG(logDEBUG) << iModule << ": ymax updated";
                 retval.ymax = moduleFullRoi.ymax;
             }
         }
+        LOG(logDEBUG) << iModule << ": (retval): " << retval;
     }
 
     return retval;
@@ -1507,12 +1502,21 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
     if (shm()->detType == CHIPTESTBOARD || shm()->detType == MOENCH) {
         throw RuntimeError("RxRoi not implemented for this Detector");
     }
-    if (arg.xmin < 0 || arg.xmax >= shm()->numberOfChannels.x || arg.ymin < 0 ||
-        arg.ymax >= shm()->numberOfChannels.y) {
-        throw RuntimeError("Invalid Receiver Roi");
-    }
     if (modules.size() == 0) {
         throw RuntimeError("No Modules added");
+    }
+    if (arg.noRoi()) {
+        throw RuntimeError("Invalid Roi of size 0.");
+    }
+    if (arg.completeRoi()) {
+        throw RuntimeError("Did you mean the clear roi command (API: clearRxROI, cmd: rx_clearroi)?");
+    }
+    if (arg.xmin > arg.xmax || arg.ymin > arg.ymax) {
+        throw RuntimeError("Invalid Receiver Roi. xmin/ymin exceeds xmax/ymax.");
+    }
+    if (arg.xmin < 0 || arg.xmax >= shm()->numberOfChannels.x || arg.ymin < 0 ||
+        arg.ymax >= shm()->numberOfChannels.y) {
+        throw RuntimeError("Invalid Receiver Roi. Outside detector range.");
     }
     defs::xy numChansPerMod = modules[0]->getNumberOfChannels();
     bool is2D = (numChansPerMod.y > 1 ? true : false);

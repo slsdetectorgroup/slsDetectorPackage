@@ -1806,7 +1806,7 @@ Detector::getVetoAlgorithm(const defs::streamingInterface interface,
 void Detector::setVetoAlgorithm(const defs::vetoAlgorithm alg,
                                 defs::streamingInterface interface,
                                 Positions pos) {
-    LOG(logINFOBLUE) << "alg:" << ToString(alg)
+    LOG(logDEBUG) << "alg:" << ToString(alg)
                      << " interface:" << ToString(interface);
     pimpl->Parallel(&Module::setVetoAlgorithm, pos, alg, interface);
 }

@@ -500,8 +500,11 @@ void ClientInterface::setDetectorType(detectorType arg) {
         detType = GENERIC;
         receiver = sls::make_unique<Implementation>(arg);
         detType = arg;
-    } catch (...) {
-        throw RuntimeError("Could not set detector type");
+    } catch (std::exception &e) {
+        std::ostringstream os;
+        os << "Could not set detector type in the receiver. ";
+        os << e.what();
+        throw RuntimeError(os.str());
     }
 
     // callbacks after (in setdetectortype, the object is reinitialized)

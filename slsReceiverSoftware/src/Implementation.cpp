@@ -405,7 +405,7 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
                         portFullRoi.ymax += nPortDim.y;
                     }
                 }
-                LOG(logINFO)
+                LOG(logDEBUG)
                     << iPort << ": portfullroi:" << sls::ToString(portFullRoi);
 
                 // no roi
@@ -443,7 +443,7 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
     for (size_t i = 0; i != dataStreamer.size(); ++i)
         dataStreamer[i]->SetReceiverROI(portRois[i]);
     LOG(logINFO) << "receiver Roi: " << sls::ToString(receiverRoi);
-    if (numUDPInterfaces == 2) {
+    if (numUDPInterfaces == 2 && detType != slsDetectorDefs::GOTTHARD2) {
         LOG(logINFO) << "port Rois: " << sls::ToString(portRois);
     }
 }

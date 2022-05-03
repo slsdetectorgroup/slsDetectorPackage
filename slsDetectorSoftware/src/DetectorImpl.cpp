@@ -1448,8 +1448,7 @@ defs::ROI DetectorImpl::getRxROI() const {
     for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
 
         defs::ROI moduleRoi = modules[iModule]->getRxROI();
-        if (!moduleRoi.noRoi()) {
-        else {
+        if (moduleRoi.noRoi()) {
             LOG(logDEBUG) << iModule << ": no roi";
         } else {
             // expand complete roi

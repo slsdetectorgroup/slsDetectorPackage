@@ -19,7 +19,7 @@ class detectorData;
 #include <vector>
 
 #define DETECTOR_SHMAPIVERSION 0x190809
-#define DETECTOR_SHMVERSION    0x201007
+#define DETECTOR_SHMVERSION    0x220505
 #define SHORT_STRING_LENGTH    50
 
 #include <future>
@@ -67,6 +67,8 @@ struct sharedDetector {
     bool gapPixels;
     /** high water mark of listening tcp port (only data) */
     int zmqHwm;
+    /** in shm for gui purposes */
+    defs::ROI rx_roi{};
 };
 
 class DetectorImpl : public virtual slsDetectorDefs {
@@ -299,6 +301,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos);
     defs::ROI getRxROI() const;
+    defs::ROI getRxROIFromShm() const;
     void setRxROI(const defs::ROI arg);
 
     std::vector<std::string> getCtbDacNames() const;

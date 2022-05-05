@@ -172,6 +172,7 @@ void DetectorImpl::initializeDetectorStructure() {
     shm()->gapPixels = false;
     // zmqlib default
     shm()->zmqHwm = -1;
+    shm()->rx_roi.ResetNoRoi();
 }
 
 void DetectorImpl::initializeMembers(bool verify) {
@@ -1428,6 +1429,10 @@ defs::xy DetectorImpl::calculatePosition(int moduleIndex,
     return pos;
 }
 
+defs::ROI DetectorImpl::getRxROIFromShm() const {
+    return shm()->rx_roi;
+}
+
 defs::ROI DetectorImpl::getRxROI() const {
     if (shm()->detType == CHIPTESTBOARD || shm()->detType == MOENCH) {
         throw RuntimeError("RxRoi not implemented for this Detector");
@@ -1572,6 +1577,9 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
         }
         modules[iModule]->setRxROI(moduleRoi);
     }
+    // updating shm rx_roi for gui purposes
+    shm()->rx_roi = arg;
+
     // metadata
     if (arg.completeRoi()) {
         modules[0]->setRxROIMetadata(defs::ROI (0, shm()->numberOfChannels.x - 1, 0, shm()->numberOfChannels.y - 1));

@@ -33,8 +33,6 @@ DataStreamer::~DataStreamer() {
 
 void DataStreamer::SetFifo(Fifo *f) { fifo = f; }
 
-void DataStreamer::SetReceiverROI(ROI roi) { receiverRoi = roi; }
-
 void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
     StopRunning();
     startedFlag = false;
@@ -245,13 +243,6 @@ int DataStreamer::SendHeader(sls_receiver_header *rheader, uint32_t size,
     zHeader.quad = *quadEnable;
     zHeader.completeImage =
         (header.packetNumber < generalData->packetsPerFrame ? false : true);
-
-    if (!receiverRoi.completeRoi()) {
-        zHeader.npixelsx = receiverRoi.xmax - receiverRoi.xmin;
-        zHeader.npixelsy = receiverRoi.ymax - receiverRoi.ymin;
-        zHeader.imageSize =
-            zHeader.npixelsx * zHeader.npixelsy * (zHeader.dynamicRange / 8.00);
-    }
 
     // update local copy only if it was updated (to prevent locking each time)
     if (isAdditionalJsonUpdated) {

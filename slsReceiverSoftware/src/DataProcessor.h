@@ -112,9 +112,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     /**
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
-     * @returns frame number
      */
-    uint64_t ProcessAnImage(char *buf);
+    void ProcessAnImage(char *buf);
 
     /**
      * Calls CheckTimer and CheckCount for streaming frequency and timer
@@ -155,6 +154,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     bool *dataStreamEnable_;
     bool activated_{false};
     ROI receiverRoi_{};
+    bool receiverRoiEnabled_{false};
+    std::unique_ptr<char[]> completeImageToStreamBeforeCropping;
     /** if 0, sending random images with a timer */
     uint32_t *streamingFrequency_;
     uint32_t *streamingTimerInMs_;
@@ -176,6 +177,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     /** first streamer frame to add frame index in fifo header */
     bool firstStreamerFrame_{false};
+
+    bool streamCurrentFrame_{false};
 
     File *dataFile_{nullptr};
 

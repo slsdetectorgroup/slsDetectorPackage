@@ -440,8 +440,6 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
     }
     for (size_t i = 0; i != dataProcessor.size(); ++i)
         dataProcessor[i]->SetReceiverROI(portRois[i]);
-    for (size_t i = 0; i != dataStreamer.size(); ++i)
-        dataStreamer[i]->SetReceiverROI(portRois[i]);
     LOG(logINFO) << "receiver roi: " << sls::ToString(receiverRoi);
     if (numUDPInterfaces == 2 && detType != slsDetectorDefs::GOTTHARD2) {
         LOG(logINFO) << "port rois: " << sls::ToString(portRois);
@@ -1040,7 +1038,6 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
-                    dataStreamer[i]->SetReceiverROI(portRois[i]);
                 } catch (...) {
                     if (dataStreamEnable) {
                         dataStreamer.clear();
@@ -1168,7 +1165,6 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
-                    dataStreamer[i]->SetReceiverROI(portRois[i]);
                 } catch (...) {
                     dataStreamer.clear();
                     dataStreamEnable = false;

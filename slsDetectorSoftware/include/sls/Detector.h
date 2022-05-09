@@ -902,7 +902,7 @@ class Detector {
     Result<defs::ROI> getIndividualRxROIs(Positions pos) const;
 
     defs::ROI getRxROI() const;
-
+    
     /** only at multi module level */
     void setRxROI(const defs::ROI value);
 

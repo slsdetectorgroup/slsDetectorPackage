@@ -1236,9 +1236,7 @@ defs::ROI Detector::getRxROI() const { return pimpl->getRxROI(); }
 
 void Detector::setRxROI(const defs::ROI value) { pimpl->setRxROI(value); }
 
-void Detector::clearRxROI() {
-    pimpl->Parallel(&Module::setRxROI, {}, defs::ROI{});
-}
+void Detector::clearRxROI() { pimpl->clearRxROI(); }
 
 // File
 

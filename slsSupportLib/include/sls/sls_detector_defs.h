@@ -175,27 +175,26 @@ class slsDetectorDefs {
         ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax){};
         ROI(int xmin, int xmax, int ymin, int ymax)
             : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax){};
-        constexpr bool operator==(const ROI &other) const {
-            return ((xmin == other.xmin) && (xmax == other.xmax) &&
-                    (ymin == other.ymin) && (ymax == other.ymax));
-        }
+        ROI(const std::array<int, 4> roi)
+            : xmin(roi[0]), xmax(roi[1]), ymin(roi[2]), ymax(roi[3]){};
+        constexpr std::array<int, 4> getIntArray() const {
+            return std::array<int, 4> ({xmin, xmax, ymin, ymax});
+        }    
         constexpr bool completeRoi() const {
             return (xmin == -1 && xmax == -1 && ymin == -1 && ymax == -1);
         }
         constexpr bool noRoi() const {
             return (xmin == 0 && xmax == 0 && ymin == 0 && ymax == 0);
         }
-        void SetNoRoi() {
+        void setNoRoi() {
             xmin = 0;
             xmax = 0;
             ymin = 0;
             ymax = 0;
         }
-        void ResetNoRoi() {
-            xmin = -1;
-            xmax = -1;
-            ymin = -1;
-            ymax = -1;
+        constexpr bool operator==(const ROI &other) const {
+            return ((xmin == other.xmin) && (xmax == other.xmax) &&
+                    (ymin == other.ymin) && (ymax == other.ymax));
         }
     } __attribute__((packed));
 #else

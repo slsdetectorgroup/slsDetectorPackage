@@ -301,8 +301,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos);
     defs::ROI getRxROI() const;
-    defs::ROI getRxROIFromShm() const;
     void setRxROI(const defs::ROI arg);
+    void clearRxROI();
 
     std::vector<std::string> getCtbDacNames() const;
     std::string getCtbDacName(defs::dacIndex i) const;

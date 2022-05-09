@@ -172,7 +172,10 @@ void DetectorImpl::initializeDetectorStructure() {
     shm()->gapPixels = false;
     // zmqlib default
     shm()->zmqHwm = -1;
-    shm()->rx_roi.ResetNoRoi();
+    shm()->rx_roi.xmin = -1;
+    shm()->rx_roi.xmax = -1;
+    shm()->rx_roi.ymin = -1;
+    shm()->rx_roi.ymax = -1;
 }
 
 void DetectorImpl::initializeMembers(bool verify) {
@@ -495,6 +498,7 @@ void DetectorImpl::readFrameFromReceiver() {
     bool quadEnable = false;
     // to flip image
     bool eiger = false;
+    std::array<int, 4> rxRoi = shm()->rx_roi.getIntArray();
 
     std::vector<bool> runningList(zmqSocket.size());
     std::vector<bool> connectList(zmqSocket.size());
@@ -668,6 +672,7 @@ void DetectorImpl::readFrameFromReceiver() {
                       << "\n\t databytes: " << multisize
                       << "\n\t dynamicRange: " << dynamicRange;
 
+ 
         // send data to callback
         if (data) {
             char *callbackImage = multiframe.get();
@@ -691,7 +696,7 @@ void DetectorImpl::readFrameFromReceiver() {
             thisData = new detectorData(currentProgress, currentFileName,
                                         nDetActualPixelsX, nDetActualPixelsY,
                                         callbackImage, imagesize, dynamicRange,
-                                        currentFileIndex, completeImage);
+                                        currentFileIndex, completeImage, rxRoi);
             try {
                 dataReady(
                     thisData, currentFrameIndex,
@@ -1429,10 +1434,6 @@ defs::xy DetectorImpl::calculatePosition(int moduleIndex,
     return pos;
 }
 
-defs::ROI DetectorImpl::getRxROIFromShm() const {
-    return shm()->rx_roi;
-}
-
 defs::ROI DetectorImpl::getRxROI() const {
     if (shm()->detType == CHIPTESTBOARD || shm()->detType == MOENCH) {
         throw RuntimeError("RxRoi not implemented for this Detector");
@@ -1552,7 +1553,7 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
                 arg.xmax < moduleFullRoi.xmin ||
                 (is2D && (arg.ymin > moduleFullRoi.ymax ||
                           arg.ymax < moduleFullRoi.ymin))) {
-                moduleRoi.SetNoRoi();
+                moduleRoi.setNoRoi();
             }
             // incomplete module roi
             else if (arg.xmin > moduleFullRoi.xmin ||
@@ -1587,6 +1588,15 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
         modules[0]->setRxROIMetadata(arg);
     }
 }
+
+void DetectorImpl::clearRxROI() {
+    Parallel(&Module::setRxROI, {}, defs::ROI{});
+    shm()->rx_roi.xmin = -1;
+    shm()->rx_roi.ymin = -1;
+    shm()->rx_roi.xmax = -1;
+    shm()->rx_roi.ymax = -1;
+}
+
 
 std::vector<std::string> DetectorImpl::getCtbDacNames() const {
     return ctb_shm()->getDacNames();

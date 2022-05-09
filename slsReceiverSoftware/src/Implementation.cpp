@@ -385,7 +385,7 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
 
             // no roi
             if (arg.noRoi()) {
-                portRoi.SetNoRoi();
+                portRoi.setNoRoi();
             }
 
             // incomplete roi
@@ -413,7 +413,7 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
                     arg.xmax < portFullRoi.xmin ||
                     arg.ymin > portFullRoi.ymax ||
                     arg.ymax < portFullRoi.ymin) {
-                    portRoi.SetNoRoi();
+                    portRoi.setNoRoi();
                 }
 
                 // incomplete module roi

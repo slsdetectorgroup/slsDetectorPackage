@@ -1411,6 +1411,9 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
 }
 
 void validateSettings() {
+    LOG(logWARNING, ("Not validating dac settings temporarily"));
+    return;
+    
     // if any special dac value is changed individually => undefined
     const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
     int *specialDacValues[] = {defaultDacValue_standard, defaultDacValue_fast,

@@ -101,14 +101,15 @@ template <typename T> class SharedMemory {
         LOG(logINFO) << "Shared memory created " << name;
     }
 
-    void openSharedMemory() {
+    void openSharedMemory(bool verifySize) {
         int fd = shm_open(name.c_str(), O_RDWR, 0);
         if (fd < 0) {
             std::string msg = "Open existing shared memory " + name +
                               " failed: " + strerror(errno);
             throw SharedMemoryError(msg);
         }
-        checkSize(fd);
+        if (verifySize)
+            checkSize(fd);
         shared_struct = mapSharedMemory(fd);
     }
 

@@ -37,7 +37,7 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
     int numDetectors = 0;
 
     if (detectorShm.exists()) {
-        detectorShm.openSharedMemory();
+        detectorShm.openSharedMemory(false);
         numDetectors = detectorShm()->numberOfModules;
         detectorShm.removeSharedMemory();
     }

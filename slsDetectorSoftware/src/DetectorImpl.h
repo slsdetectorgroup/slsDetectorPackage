@@ -279,7 +279,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int acquire();
 
     /** also takes care of master and slave for multi module mythen */
-    void startAcquisition(bool blocking, Positions pos);
+    void startAcquisition(bool blocking, std::vector<int> positions);
 
     /**
      * Combines data from all readouts and gives it to the gui

@@ -1173,31 +1173,40 @@ int DetectorImpl::acquire() {
     return OK;
 }
 
-void DetectorImpl::startAcquisition(bool blocking, Positions pos) {
+void DetectorImpl::startAcquisition(bool blocking, std::vector<int> positions) {
     if (shm()->detType == defs::MYTHEN3 && size() > 1) {
         std::vector<int> master;
         std::vector<int> slaves;
-        auto is_master = Parallel(&Module::isMaster, pos);
-        // could be all slaves in pos
-        slaves.reserve(pos.size()); 
-        for (size_t i = 0; i != pos.size(); ++i) {
+        if (positions.empty() ||
+            (positions.size() == 1 && positions[0] == -1)) {
+            positions.resize(modules.size());
+            std::iota(begin(positions), end(positions), 0);
+        }
+        // could be all slaves in positions
+        slaves.reserve(positions.size()); 
+        auto is_master = Parallel(&Module::isMaster, positions);
+        for (size_t i : positions) {
             if (is_master[i]) 
                 master.push_back(i);
             else
                 slaves.push_back(i);
         }
 
-        Parallel(&Module::startAcquisition, slaves);
-        if (blocking) {
-            Parallel(&Module::startAndReadAll, master);
-        } else {
-            Parallel(&Module::startAcquisition, master);
+        if (!slaves.empty()) {
+            Parallel(&Module::startAcquisition, slaves);
+        }
+        if (!master.empty()) {
+            if (blocking) {
+                Parallel(&Module::startAndReadAll, master);
+            } else {
+                Parallel(&Module::startAcquisition, master);
+            }
         }
     } else {
         if (blocking) {
-            Parallel(&Module::startAndReadAll, pos);
+            Parallel(&Module::startAndReadAll, positions);
         } else {
-            Parallel(&Module::startAcquisition, pos);
+            Parallel(&Module::startAcquisition, positions);
         }
     }
 }

@@ -155,7 +155,7 @@ int decode_function(int file_des) {
             return FAIL;
         }
 
-        LOG(logDEBUG1, (" calling function fnum=%d, (%s)\n", fnum,
+        LOG(logINFORED, (" calling function fnum=%d, (%s)\n", fnum,
                         getFunctionNameFromEnum((enum detFuncs)fnum)));
         ret = (*flist[fnum])(file_des);
 

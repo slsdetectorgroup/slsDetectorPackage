@@ -1194,7 +1194,11 @@ void DetectorImpl::startAcquisition(bool blocking, Positions pos) {
             Parallel(&Module::startAcquisition, master);
         }
     } else {
-        Parallel(&Module::startAcquisition, pos);
+        if (blocking) {
+            Parallel(&Module::startAndReadAll, pos);
+        } else {
+            Parallel(&Module::startAcquisition, pos);
+        }
     }
 }
 

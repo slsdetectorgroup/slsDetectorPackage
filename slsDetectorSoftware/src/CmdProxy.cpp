@@ -1653,7 +1653,7 @@ std::string CmdProxy::Rx_ROI(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in "
-              "receiver.\n\tOnly allowed at multi module level."
+              "receiver.\n\tOnly allowed at multi module level and without gap pixels."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {

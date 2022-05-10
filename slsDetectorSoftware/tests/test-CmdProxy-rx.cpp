@@ -446,38 +446,44 @@ TEST_CASE("rx_roi", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
-        REQUIRE_THROWS(proxy.Call("rx_roi", {"0", "255"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("rx_roi", {"5", "10"}, -1, PUT));
     } else {
         auto prev_val = det.getRxROI();
+        defs::xy detsize = det.getDetectrSize();
 
         // 1d
         if (det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2 ||
             det_type == defs::MYTHEN3) {
             {
                 std::ostringstream oss;
-                proxy.Call("rx_roi", {"0", "255"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "rx_roi [0, 255]\n");
+                proxy.Call("rx_roi", {"5", "10"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [5, 10]\n");
             }
             {
                 std::ostringstream oss;
-                proxy.Call("rx_roi", {"256", "511"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "rx_roi [256, 511]\n");
+                proxy.Call("rx_roi", {"10", "15"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [10, 15]\n");
             }
-            REQUIRE_THROWS(proxy.Call("rx_roi", {"0", "256"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("rx_roi", {"-1", "-1"}, -1, PUT));
         }
         // 2d
         else {
             {
                 std::ostringstream oss;
-                proxy.Call("rx_roi", {"0", "255", "0", "255"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "rx_roi [0, 255, 0, 255]\n");
+                proxy.Call("rx_roi", {"10", "15", "1", "5"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [10, 15, 1, 5]\n");
             }
             {
                 std::ostringstream oss;
-                proxy.Call("rx_roi", {"5", "255", "5", "255"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "rx_roi [5, 255, 5, 255]\n");
+                proxy.Call("rx_roi", {"10", "22", "18", "19"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [10, 22, 18, 19]\n");
             }
-            REQUIRE_THROWS(proxy.Call("rx_roi", {"-1", "256"}, -1, PUT));
+            {
+                std::ostringstream oss;
+                proxy.Call("rx_roi", {"1", std::to_string(detsize.x - 5), "1", std::to_string(detsize.y - 5)}, -1, PUT, oss);
+                REQUIRE(oss.str() == std::string("rx_roi [1, ") + std::to_string(detsize.x - 5) + std::string(", ") + std::to_string(detsize.y - 5) + std::string(", 1]\n"));
+            }            
+            REQUIRE_THROWS(proxy.Call("rx_roi", {"-1", "-1", "-1", "-1"}, -1, PUT));
         }
 
         for (int i = 0; i != det.size(); ++i) {

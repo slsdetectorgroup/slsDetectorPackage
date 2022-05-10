@@ -1186,9 +1186,6 @@ void DetectorImpl::startAcquisition(bool blocking, Positions pos) {
             else
                 slaves.push_back(i);
         }
-        if (master.size() > 1) {
-            throw RuntimeError("Could not start acquisitoin. There cannot be more than one master.");
-        }
 
         Parallel(&Module::startAcquisition, slaves);
         if (blocking) {

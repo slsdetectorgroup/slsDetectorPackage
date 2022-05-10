@@ -1124,25 +1124,7 @@ int DetectorImpl::acquire() {
 
         // start and read all
         try {
-            if (detector_type == defs::MYTHEN3 && modules.size() > 1) {
-                // Multi module mythen
-                std::vector<int> master;
-                std::vector<int> slaves;
-                auto is_master = Parallel(&Module::isMaster, {});
-                slaves.reserve(modules.size() - 1); // check this one!!
-                for (size_t i = 0; i < modules.size(); ++i) {
-                    if (is_master[i])
-                        master.push_back(i);
-                    else
-                        slaves.push_back(i);
-                }
-                Parallel(&Module::startAcquisition, slaves);
-                Parallel(&Module::startAndReadAll, master);
-            } else {
-                // Normal acquire
-                Parallel(&Module::startAndReadAll, {});
-            }
-
+            startAcquisition(true, {});
         } catch (...) {
             if (receiver)
                 Parallel(&Module::stopReceiver, {});
@@ -1189,6 +1171,35 @@ int DetectorImpl::acquire() {
     }
     setAcquiringFlag(false);
     return OK;
+}
+
+void DetectorImpl::startAcquisition(bool blocking, Positions pos) {
+    if (shm()->detType == defs::MYTHEN3 && size() > 1) {
+        std::vector<int> master;
+        std::vector<int> slaves;
+        auto is_master = Parallel(&Module::isMaster, pos);
+        // could be all slaves in pos
+        slaves.reserve(pos.size()); 
+        for (size_t i = 0; i != pos.size(); ++i) {
+            if (is_master[i]) 
+                master.push_back(i);
+            else
+                slaves.push_back(i);
+        }
+
+        Parallel(&Module::startAcquisition, slaves);
+        if (blocking) {
+            Parallel(&Module::startAndReadAll, master);
+        } else {
+            Parallel(&Module::startAcquisition, master);
+        }
+    } else {
+        if (blocking) {
+            Parallel(&Module::startAndReadAll, pos);
+        } else {
+            Parallel(&Module::startAcquisition, pos);
+        }
+    }
 }
 
 void DetectorImpl::printProgress(double progress) {

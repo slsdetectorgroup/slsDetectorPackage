@@ -74,6 +74,10 @@ void qTabPlot::SetupWidgetWindow() {
     // set zmq high water mark to GUI_ZMQ_RCV_HWM (2)
     spinSndHwm->setValue(qDefs::GUI_ZMQ_RCV_HWM);
     spinRcvHwm->setValue(qDefs::GUI_ZMQ_RCV_HWM);
+
+    if (chkGapPixels->isEnabled()) {
+        chkGapPixels->setChecked(true);
+    }
 }
 
 void qTabPlot::Initialization() {

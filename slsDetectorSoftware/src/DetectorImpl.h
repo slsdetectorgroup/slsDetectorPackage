@@ -278,6 +278,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int acquire();
 
+    /** also takes care of master and slave for multi module mythen */
+    void startAcquisition(bool blocking, Positions pos);
+
     /**
      * Combines data from all readouts and gives it to the gui
      * or just gives progress of acquisition by polling receivers

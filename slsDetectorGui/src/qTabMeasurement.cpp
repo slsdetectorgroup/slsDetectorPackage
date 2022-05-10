@@ -337,9 +337,26 @@ void qTabMeasurement::GetTimingMode() {
     disconnect(comboTimingMode, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetTimingMode(int)));
     try {
+        
+        slsDetectorDefs::timingMode retval{slsDetectorDefs::AUTO_TIMING};
+        // m3: remove slave modes (always trigger) before squashing
+        if (det->getDetectorType().squash() == slsDetectorDefs::MYTHEN3) {
+            auto retvals = det->getTimingMode();
+            auto is_master = det->getMaster();
+            sls::Result<slsDetectorDefs::timingMode> masterRetvals;
+            for (size_t i = 0; i != is_master.size(); ++i) {
+                if (is_master[i]) {
+                    masterRetvals.push_back(retvals[i]);
+                }
+            }
+            retval = masterRetvals.tsquash(
+                "Inconsistent timing mode for all detectors.");
+        } else {
+            retval = det->getTimingMode().tsquash(
+                "Inconsistent timing mode for all detectors.");
+        }
+
         auto oldMode = comboTimingMode->currentIndex();
-        auto retval = det->getTimingMode().tsquash(
-            "Inconsistent timing mode for all detectors.");
         switch (retval) {
         case slsDetectorDefs::AUTO_TIMING:
         case slsDetectorDefs::TRIGGER_EXPOSURE:

@@ -295,7 +295,7 @@ void SlsQt2DPlot::EnableRoiBox(std::array<int, 4> roi) {
     if (roiBox == nullptr) {
         roiBox = new QwtPlotShapeItem();
     }
-    roiBox->setPen(QColor(Qt::blue), 2.0, Qt::SolidLine);
+    roiBox->setPen(QColor(Qt::yellow), 2.0, Qt::SolidLine);
 
     // TopLeft - BottomRight (max points are +1 on graph)
     QRect myRect(QPoint(roi[0], roi[2]), QPoint(roi[1] - 1, roi[3] - 1));
@@ -306,7 +306,9 @@ void SlsQt2DPlot::EnableRoiBox(std::array<int, 4> roi) {
 }
 
 void SlsQt2DPlot::DisableRoiBox() {
-    roiBox->detach();
-    replot();
+    if (roiBox != nullptr) {
+        roiBox->detach();
+        replot();
+    }
 }
 

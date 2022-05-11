@@ -451,8 +451,6 @@ void SlsQt1DPlot::EnableRoiBox(std::array<int, 4> roi) {
     } 
 
     // TopLeft - BottomRight (max points are +1 on graph)
-    roi[2] = GetYMinimum();
-    roi[3] = GetYMaximum();
     QRect myRect(QPoint(roi[0], roi[2]), QPoint(roi[1] - 1, roi[3] - 1));
     roiBox->setRect( QRectF(myRect) );
     replot();

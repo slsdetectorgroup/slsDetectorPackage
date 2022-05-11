@@ -1099,9 +1099,6 @@ int DetectorImpl::acquire() {
         return FAIL;
     }
 
-    // We need this to handle Mythen3 synchronization
-    auto detector_type = Parallel(&Module::getDetectorType, {}).squash();
-
     try {
         struct timespec begin, end;
         clock_gettime(CLOCK_REALTIME, &begin);
@@ -1179,6 +1176,7 @@ int DetectorImpl::acquire() {
 }
 
 void DetectorImpl::startAcquisition(bool blocking, std::vector<int> positions) {
+    // handle Mythen3 synchronization
     if (shm()->detType == defs::MYTHEN3 && size() > 1) {
         std::vector<int> master;
         std::vector<int> slaves;

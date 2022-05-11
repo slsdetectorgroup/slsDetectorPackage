@@ -1544,13 +1544,14 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
     if (arg.xmin > arg.xmax || arg.ymin > arg.ymax) {
         throw RuntimeError("Invalid Receiver Roi. xmin/ymin exceeds xmax/ymax.");
     }
-    if (arg.xmin < 0 || arg.xmax >= shm()->numberOfChannels.x || arg.ymin < 0 ||
-        arg.ymax >= shm()->numberOfChannels.y) {
-        throw RuntimeError("Invalid Receiver Roi. Outside detector range.");
-    }
+
     defs::xy numChansPerMod = modules[0]->getNumberOfChannels();
     bool is2D = (numChansPerMod.y > 1 ? true : false);
     defs::xy geometry = getPortGeometry();
+
+    if (arg.xmin < 0 || arg.xmax >= shm()->numberOfChannels.x || (is2D && (arg.ymin < 0 || arg.ymax >= shm()->numberOfChannels.y))) {
+        throw RuntimeError("Invalid Receiver Roi. Outside detector range.");
+    }
 
     for (size_t iModule = 0; iModule != modules.size(); ++iModule) {
         // default init = complete roi

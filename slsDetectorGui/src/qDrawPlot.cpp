@@ -774,6 +774,7 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
         rxRoi.xmax = data->rxRoi[1];
         rxRoi.ymin = data->rxRoi[2];
         rxRoi.ymax = data->rxRoi[3];
+        // only for 2d anyway
         if (isGapPixels) {
             rxRoi.xmin += ((rxRoi.xmin/1024) * 6 + (rxRoi.xmin/256) * 2);
             rxRoi.xmax += ((rxRoi.xmax/1024) * 6 + (rxRoi.xmax/256) * 2);
@@ -1022,6 +1023,20 @@ void qDrawPlot::Update1dPlot() {
         xyRangeChanged = false;
     }
     plot1d->DisableZoom(disableZoom);
+    if (!isRxRoiDisplayed) {
+        isRxRoiDisplayed = true;
+        if (rxRoi.completeRoi()) {
+            plot1d->DisableRoiBox();
+            lblRxRoiEnabled->hide();
+        } else {
+            plot1d->EnableRoiBox(rxRoi.getIntArray());
+            lblRxRoiEnabled->show();
+        }
+    }
+    // ymin and ymax could change (so replot roi every time)
+    if (!rxRoi.completeRoi()) {
+        plot1d->EnableRoiBox(rxRoi.getIntArray());
+    } 
 }
 
 void qDrawPlot::Update2dPlot() {
@@ -1056,7 +1071,6 @@ void qDrawPlot::Update2dPlot() {
             plot2d->EnableRoiBox(rxRoi.getIntArray());
             lblRxRoiEnabled->show();
         } else {
-            LOG(logINFOBLUE) << "Disabled";
             plot2d->DisableRoiBox();
             lblRxRoiEnabled->hide();
         }

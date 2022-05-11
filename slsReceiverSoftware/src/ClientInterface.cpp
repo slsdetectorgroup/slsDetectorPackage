@@ -251,7 +251,7 @@ int ClientInterface::decodeFunction(Interface &socket) {
 void ClientInterface::functionNotImplemented() {
     std::ostringstream os;
     os << "Function: " << getFunctionNameFromEnum((enum detFuncs)fnum)
-       << ", is is not implemented for this detector";
+       << " is not implemented for this detector";
     throw RuntimeError(os.str());
 }
 
@@ -1752,7 +1752,7 @@ int ClientInterface::get_receiver_roi(Interface &socket) {
 
 int ClientInterface::set_receiver_roi(Interface &socket) {
     auto arg = socket.Receive<ROI>();
-    if (detType == CHIPTESTBOARD || detType == MYTHEN3)
+    if (detType == CHIPTESTBOARD || detType == MOENCH)
         functionNotImplemented();
     LOG(logDEBUG1) << "Set Receiver ROI: " << sls::ToString(arg);
     verifyIdle(socket);
@@ -1766,7 +1766,7 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
 
 int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
     auto arg = socket.Receive<ROI>();
-    if (detType == CHIPTESTBOARD || detType == MYTHEN3)
+    if (detType == CHIPTESTBOARD || detType == MOENCH)
         functionNotImplemented();
     LOG(logDEBUG1) << "Set Receiver ROI Metadata: " << sls::ToString(arg);
     verifyIdle(socket);

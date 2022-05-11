@@ -1032,24 +1032,16 @@ void qDrawPlot::Update1dPlot() {
             }
             lblRxRoiEnabled->hide();
         } else {
-            std::array<int, 4> roi = rxRoi.getIntArray();
-            roi[2] = GetYMinimum();
-            roi[3] = GetYMaximum();
-            plot1d->EnableRoiBox(roi);
+            plot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, (int)plot1d->GetYMinimum(), (int)plot1d->GetYMaximum()};
             if (isGainDataExtracted) {
-                roi[2] = 0;
-                roi[3] = 3;
-                gainplot1d->EnableRoiBox(roi);
+                gainplot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, 0, 3};
             }
             lblRxRoiEnabled->show();
         }
     }
     // ymin and ymax could change (so replot roi every time)
     if (!rxRoi.completeRoi()) {
-        std::array<int, 4> roi = rxRoi.getIntArray();
-        roi[2] = GetYMinimum();
-        roi[3] = GetYMaximum();
-        plot1d->EnableRoiBox(rxRoi.getIntArray());
+        plot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, (int)plot1d->GetYMinimum(), (int)plot1d->GetYMaximum()};
     } 
 }
 

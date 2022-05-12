@@ -407,18 +407,12 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
 
     // check dacs
     out_of_range = false;
-    for (int i = 0; i != myMod.ndac; ++i) {
-        int dacMin = 0;
-        int dacMax = 2800;
-        if (i == M_VTH1 || i == M_VTH2 || i == M_VTH3) {
-            dacMin = 200;
-            dacMax = 2400;
-        }
-        if (myMod.dacs[dac] < dacMin) {
-            myMod.dacs[dac] = dacMin;
+    for (auto dac : {M_VTRIM, M_VTH1, M_VTH2, M_VTH3}) {
+        if (myMod.dacs[dac] < 600) {
+            myMod.dacs[dac] = 600;
             out_of_range = true;
-        } else if (myMod.dacs[dac] > dacMax) {
-            myMod.dacs[dac] = dacMax;
+        } else if (myMod.dacs[dac] > 2400) {
+            myMod.dacs[dac] = 2400;
             out_of_range = true;
         }
     }

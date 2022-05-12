@@ -1032,16 +1032,16 @@ void qDrawPlot::Update1dPlot() {
             }
             lblRxRoiEnabled->hide();
         } else {
-            plot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, (int)plot1d->GetYMinimum(), (int)plot1d->GetYMaximum()};
+            plot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, (int)plot1d->GetYMinimum(), (int)plot1d->GetYMaximum()});
             if (isGainDataExtracted) {
-                gainplot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, 0, 3};
+                gainplot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, 0, 3});
             }
             lblRxRoiEnabled->show();
         }
     }
     // ymin and ymax could change (so replot roi every time)
     if (!rxRoi.completeRoi()) {
-        plot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, (int)plot1d->GetYMinimum(), (int)plot1d->GetYMaximum()};
+        plot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, (int)plot1d->GetYMinimum(), (int)plot1d->GetYMaximum()});
     } 
 }
 
@@ -1073,18 +1073,18 @@ void qDrawPlot::Update2dPlot() {
     plot2d->SetZRange(isZRange[0], isZRange[1], zRange[0], zRange[1]);
     if (!isRxRoiDisplayed) {
         isRxRoiDisplayed = true;
-        if (!rxRoi.completeRoi()) {
-            plot2d->EnableRoiBox(rxRoi.getIntArray());
-            if (isGainDataExtracted) {
-                gainplot2d->EnableRoiBox(rxRoi.getIntArray());
-            }
-            lblRxRoiEnabled->show();
-        } else {
+        if (rxRoi.completeRoi()) {
             plot2d->DisableRoiBox();
             if (isGainDataExtracted) {
                 gainplot2d->DisableRoiBox();
             }
             lblRxRoiEnabled->hide();
+        } else {
+            plot2d->EnableRoiBox(rxRoi.getIntArray());
+            if (isGainDataExtracted) {
+                gainplot2d->EnableRoiBox(rxRoi.getIntArray());
+            }
+            lblRxRoiEnabled->show();
         }
     }
 }

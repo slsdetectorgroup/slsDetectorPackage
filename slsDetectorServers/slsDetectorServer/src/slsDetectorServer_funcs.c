@@ -2045,7 +2045,7 @@ int set_num_frames(int file_des) {
                 arg > MAX_FRAMES_IN_BURST_MODE) {
                 ret = FAIL;
                 sprintf(mess,
-                        "Could not set number of frames %lld. Must be <= %d in "
+                        "Could not set number of frames %lld. Must be less than equal to %d in "
                         "burst mode.\n",
                         (long long unsigned int)arg, MAX_FRAMES_IN_BURST_MODE);
                 LOG(logERROR, (mess));

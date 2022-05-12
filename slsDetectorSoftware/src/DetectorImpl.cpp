@@ -1547,6 +1547,10 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
     bool is2D = (numChansPerMod.y > 1 ? true : false);
     defs::xy geometry = getPortGeometry();
 
+    if (!is2D && ((arg.ymin != -1 && arg.ymin != 0) || (arg.ymax != -1 && arg.ymax != 0))) {
+        throw RuntimeError("Invalid Receiver roi. Cannot set 2d roi for a 1d detector.");
+    }
+
     if (arg.xmin < 0 || arg.xmax >= shm()->numberOfChannels.x || (is2D && (arg.ymin < 0 || arg.ymax >= shm()->numberOfChannels.y))) {
         throw RuntimeError("Invalid Receiver Roi. Outside detector range.");
     }
@@ -1557,41 +1561,60 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
 
         // incomplete roi
         if (!arg.completeRoi()) {
-            // get module limits
-            defs::xy pos = calculatePosition(iModule, geometry);
-            defs::ROI moduleFullRoi{};
-            moduleFullRoi.xmin = numChansPerMod.x * pos.x;
-            moduleFullRoi.xmax = numChansPerMod.x * (pos.x + 1) - 1;
-            if (is2D) {
-                moduleFullRoi.ymin = numChansPerMod.y * pos.y;
-                moduleFullRoi.ymax = numChansPerMod.y * (pos.y + 1) - 1;
-            }
-
-            // no roi
-            if (arg.xmin > moduleFullRoi.xmax ||
-                arg.xmax < moduleFullRoi.xmin ||
-                (is2D && (arg.ymin > moduleFullRoi.ymax ||
-                          arg.ymax < moduleFullRoi.ymin))) {
-                moduleRoi.setNoRoi();
-            }
-            // incomplete module roi
-            else if (arg.xmin > moduleFullRoi.xmin ||
-                     arg.xmax < moduleFullRoi.xmax ||
-                     (is2D && (arg.ymin > moduleFullRoi.ymin ||
-                               arg.ymax < moduleFullRoi.ymax))) {
-                moduleRoi.xmin = (arg.xmin <= moduleFullRoi.xmin)
-                                     ? 0
-                                     : (arg.xmin % numChansPerMod.x);
-                moduleRoi.xmax = (arg.xmax >= moduleFullRoi.xmax)
-                                     ? numChansPerMod.x - 1
-                                     : (arg.xmax % numChansPerMod.x);
+            // multi module Gotthard2
+            if (shm()->detType == GOTTHARD2 && size() > 1) {
+                moduleRoi.xmin = arg.xmin / 2;
+                moduleRoi.xmax = arg.xmax / 2;
+                if (iModule == 0) {
+                    // all should be even
+                    if (arg.xmin % 2 != 0) {
+                        ++moduleRoi.xmin;
+                    }
+                } else if (iModule == 1) {
+                    // all should be odd
+                    if (arg.xmax % 2 == 0) {
+                        --moduleRoi.xmax;
+                    }
+                } else {
+                    throw RuntimeError("Cannot have more than 2 modules for a Gotthard2 detector");
+                }
+            } else {
+                // get module limits
+                defs::xy pos = calculatePosition(iModule, geometry);
+                defs::ROI moduleFullRoi{};
+                moduleFullRoi.xmin = numChansPerMod.x * pos.x;
+                moduleFullRoi.xmax = numChansPerMod.x * (pos.x + 1) - 1;
                 if (is2D) {
-                    moduleRoi.ymin = (arg.ymin <= moduleFullRoi.ymin)
-                                         ? 0
-                                         : (arg.ymin % numChansPerMod.y);
-                    moduleRoi.ymax = (arg.ymax >= moduleFullRoi.ymax)
-                                         ? numChansPerMod.y - 1
-                                         : (arg.ymax % numChansPerMod.y);
+                    moduleFullRoi.ymin = numChansPerMod.y * pos.y;
+                    moduleFullRoi.ymax = numChansPerMod.y * (pos.y + 1) - 1;
+                }
+
+                // no roi
+                if (arg.xmin > moduleFullRoi.xmax ||
+                    arg.xmax < moduleFullRoi.xmin ||
+                    (is2D && (arg.ymin > moduleFullRoi.ymax ||
+                            arg.ymax < moduleFullRoi.ymin))) {
+                    moduleRoi.setNoRoi();
+                }
+                // incomplete module roi
+                else if (arg.xmin > moduleFullRoi.xmin ||
+                        arg.xmax < moduleFullRoi.xmax ||
+                        (is2D && (arg.ymin > moduleFullRoi.ymin ||
+                                arg.ymax < moduleFullRoi.ymax))) {
+                    moduleRoi.xmin = (arg.xmin <= moduleFullRoi.xmin)
+                                        ? 0
+                                        : (arg.xmin % numChansPerMod.x);
+                    moduleRoi.xmax = (arg.xmax >= moduleFullRoi.xmax)
+                                        ? numChansPerMod.x - 1
+                                        : (arg.xmax % numChansPerMod.x);
+                    if (is2D) {
+                        moduleRoi.ymin = (arg.ymin <= moduleFullRoi.ymin)
+                                            ? 0
+                                            : (arg.ymin % numChansPerMod.y);
+                        moduleRoi.ymax = (arg.ymax >= moduleFullRoi.ymax)
+                                            ? numChansPerMod.y - 1
+                                            : (arg.ymax % numChansPerMod.y);
+                    }
                 }
             }
         }

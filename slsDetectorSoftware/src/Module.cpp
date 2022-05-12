@@ -414,11 +414,11 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
             dacMin = 200;
             dacMax = 2400;
         }
-        if (myMod.dacs[dac] < dacMin) {
-            myMod.dacs[dac] = dacMin;
+        if (myMod.dacs[i] < dacMin) {
+            myMod.dacs[i] = dacMin;
             out_of_range = true;
-        } else if (myMod.dacs[dac] > dacMax) {
-            myMod.dacs[dac] = dacMax;
+        } else if (myMod.dacs[i] > dacMax) {
+            myMod.dacs[i] = dacMax;
             out_of_range = true;
         }
     }

@@ -134,6 +134,9 @@ void DataProcessor::CreateFirstFiles(
     if (receiverRoiEnabled_) {
         nx = receiverRoi_.xmax - receiverRoi_.xmin;
         ny = receiverRoi_.ymax - receiverRoi_.ymin;
+        if (receiverRoi_.ymax == -1 || receiverRoi_.ymin == -1) {
+            ny = 1;
+        }
     }
 #endif
     switch (dataFile_->GetFileFormat()) {
@@ -185,6 +188,9 @@ std::array<std::string, 2> DataProcessor::CreateVirtualFile(
     if (receiverRoiEnabled_) {
         nx = receiverRoi_.xmax - receiverRoi_.xmin;
         ny = receiverRoi_.ymax - receiverRoi_.ymin;
+        if (receiverRoi_.ymax == -1 || receiverRoi_.ymin == -1) {
+            ny = 1;
+        }
     }
 
     // TODO: assumption 1: create virtual file even if no data in other
@@ -577,18 +583,19 @@ void DataProcessor::CropImage(char *buf) {
     (*((uint32_t *)buf)) = roiImageSize;
 
     // copy the roi to the beginning of the image
-    char *srcOffset = buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header);
-    char *dstOffset = srcOffset;
+    char *dstOffset = buf + generalData_->fifoBufferHeaderSize;
+    char *srcOffset = dstOffset + startOffset;
+
     // entire width
     if (xwidth == nPixelsX) {
-        memcpy(dstOffset, srcOffset + startOffset, roiImageSize);
+        memcpy(dstOffset, srcOffset, roiImageSize);
     }
     // width is cropped
     else {
         for (int y = 0; y != ywidth; ++y) {
-            memcpy(dstOffset, srcOffset + startOffset, xwidth * bytesPerPixel);
+            memcpy(dstOffset, srcOffset, xwidth * bytesPerPixel);
             dstOffset += (int)(xwidth * bytesPerPixel);
-            srcOffset += generalData_->nPixelsX;
+            srcOffset += (int)(generalData_->nPixelsX * bytesPerPixel);
         }
     }
 }

@@ -555,17 +555,21 @@ void DataProcessor::RearrangeDbitData(char *buf) {
 
 void DataProcessor::CropImage(char *buf) {
     LOG(logDEBUG) << "Cropping Image to ROI " << sls::ToString(receiverRoi_);
-    int nPixelsY = generalData_->nPixelsY;
+    int nPixelsX = generalData_->nPixelsX;
     int xmin = receiverRoi_.xmin;
     int xmax = receiverRoi_.xmax;
     int ymin = receiverRoi_.ymin;
     int ymax = receiverRoi_.ymax;
     int xwidth = xmax - xmin;
     int ywidth = ymax - ymin;
+    if (ymin == -1 || ymax == -1) {
+        ywidth = 1;
+        ymin = 0;
+    }
 
     // calculate total roi size
     double bytesPerPixel = generalData_->dynamicRange / 8.00;
-    int startOffset = (int)((nPixelsY * xmin + ymin) * bytesPerPixel);
+    int startOffset = (int)((nPixelsX * ymin + xmin) * bytesPerPixel);
 
     // write size into fifo buffer header
     std::size_t roiImageSize = xwidth * ywidth * bytesPerPixel;
@@ -576,7 +580,7 @@ void DataProcessor::CropImage(char *buf) {
     char *srcOffset = buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header);
     char *dstOffset = srcOffset;
     // entire width
-    if (ywidth == nPixelsY) {
+    if (xwidth == nPixelsX) {
         memcpy(dstOffset, srcOffset + startOffset, roiImageSize);
     }
     // width is cropped

@@ -132,8 +132,8 @@ void DataProcessor::CreateFirstFiles(
     int nx = generalData_->nPixelsX;
     int ny = generalData_->nPixelsY;
     if (receiverRoiEnabled_) {
-        nx = receiverRoi_.xmax - receiverRoi_.xmin;
-        ny = receiverRoi_.ymax - receiverRoi_.ymin;
+        nx = receiverRoi_.xmax - receiverRoi_.xmin + 1;
+        ny = receiverRoi_.ymax - receiverRoi_.ymin + 1;
         if (receiverRoi_.ymax == -1 || receiverRoi_.ymin == -1) {
             ny = 1;
         }
@@ -175,6 +175,10 @@ std::array<std::string, 2> DataProcessor::CreateVirtualFile(
     const int numModX, const int numModY, const uint32_t dynamicRange,
     std::mutex *hdf5LibMutex) {
 
+    if (receiverRoiEnabled_) {
+        throw std::runtime_error("Skipping virtual hdf5 file since rx_roi is enabled.");
+    }
+
     bool gotthard25um =
         ((detectorType_ == GOTTHARD || detectorType_ == GOTTHARD2) &&
          (numModX * numModY) == 2);
@@ -185,13 +189,6 @@ std::array<std::string, 2> DataProcessor::CreateVirtualFile(
 
     int nx = generalData_->nPixelsX;
     int ny = generalData_->nPixelsY;
-    if (receiverRoiEnabled_) {
-        nx = receiverRoi_.xmax - receiverRoi_.xmin;
-        ny = receiverRoi_.ymax - receiverRoi_.ymin;
-        if (receiverRoi_.ymax == -1 || receiverRoi_.ymin == -1) {
-            ny = 1;
-        }
-    }
 
     // TODO: assumption 1: create virtual file even if no data in other
     // files (they exist anyway) assumption2: virtual file max frame index
@@ -210,6 +207,10 @@ void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
                                      const std::string &virtualDatasetName,
                                      const bool silentMode,
                                      std::mutex *hdf5LibMutex) {
+
+    if (receiverRoiEnabled_) {
+        throw std::runtime_error("Should not be here, roi with hdf5 virtual should throw.");
+    }
     std::string fname{virtualFileName}, datasetName{virtualDatasetName};
     // if no virtual file, link data file
     if (virtualFileName.empty()) {
@@ -566,8 +567,8 @@ void DataProcessor::CropImage(char *buf) {
     int xmax = receiverRoi_.xmax;
     int ymin = receiverRoi_.ymin;
     int ymax = receiverRoi_.ymax;
-    int xwidth = xmax - xmin;
-    int ywidth = ymax - ymin;
+    int xwidth = xmax - xmin + 1;
+    int ywidth = ymax - ymin + 1;
     if (ymin == -1 || ymax == -1) {
         ywidth = 1;
         ymin = 0;

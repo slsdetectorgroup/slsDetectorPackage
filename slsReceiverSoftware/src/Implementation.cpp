@@ -932,8 +932,9 @@ void Implementation::StartMasterWriter() {
             }
         }
 #endif
-    } catch (...) {
-        ; // ignore it and just print it
+    } catch (std::exception &e) {
+        // ignore it and just print it
+        LOG(logWARNING) << "Caught exception when handling virtual hdf5 file [" << e.what() << "]";
     }
 }
 

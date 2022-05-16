@@ -465,6 +465,7 @@ TEST_CASE("rx_roi", "[.cmd]") {
                 REQUIRE(oss.str() == "rx_roi [10, 15]\n");
             }
             REQUIRE_THROWS(proxy.Call("rx_roi", {"-1", "-1"}, -1, PUT));
+            REQUIRE_THROWS(proxy.Call("rx_roi", {"10", "15", "25", "30"}, -1, PUT));
         }
         // 2d
         else {

@@ -14,12 +14,12 @@
 #include <map>
 #include <vector>
 
+namespace sls {
+
 class ServerInterface;
 
 #define MODULE_SHMAPIVERSION 0x190726
 #define MODULE_SHMVERSION    0x200402
-
-namespace sls {
 
 /**
  * @short structure allocated in shared memory to store Module settings for

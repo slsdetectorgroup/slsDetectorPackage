@@ -13,7 +13,6 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 
-// #include "stdlib.h"
 #include <cstdlib>
 #include <cerrno>  // errno
 #include <cstring> // strerror
@@ -23,15 +22,14 @@
 #include <sys/mman.h> // shared memory
 #include <sys/stat.h> // fstat
 #include <unistd.h>
-
-#define SHM_DETECTOR_PREFIX "/slsDetectorPackage_detector_"
-#define SHM_MODULE_PREFIX   "_module_"
-#define SHM_ENV_NAME        "SLSDETNAME"
-
 #include <iostream>
 #include <string>
 
 namespace sls {
+
+#define SHM_DETECTOR_PREFIX "/slsDetectorPackage_detector_"
+#define SHM_MODULE_PREFIX   "_module_"
+#define SHM_ENV_NAME        "SLSDETNAME"
 
 template <typename T> class SharedMemory {
     static constexpr int NAME_MAX_LENGTH = 255;

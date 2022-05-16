@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+namespace sls {
+    
 /** Macro to make an integer command.
  * CMDNAME name of the function that does the command
  * GETFCN Detector function to get
@@ -522,8 +524,6 @@
         }                                                                      \
         return os.str();                                                       \
     }
-
-namespace sls {
 
 class CmdProxy {
   public:

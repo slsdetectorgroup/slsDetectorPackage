@@ -6,10 +6,7 @@
 #include "sls/Result.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
-
 #include "CtbConfig.h"
-class ZmqSocket;
-class detectorData;
 
 #include <memory>
 #include <mutex>
@@ -17,16 +14,17 @@ class detectorData;
 #include <string>
 #include <thread>
 #include <vector>
+#include <future>
+#include <numeric>
 
 #define DETECTOR_SHMAPIVERSION 0x190809
 #define DETECTOR_SHMVERSION    0x220505
 #define SHORT_STRING_LENGTH    50
 
-#include <future>
-#include <numeric>
-
 namespace sls {
 
+class ZmqSocket;
+class detectorData;
 class Module;
 
 /**

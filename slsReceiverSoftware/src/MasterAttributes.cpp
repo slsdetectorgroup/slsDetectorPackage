@@ -2,6 +2,8 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "MasterAttributes.h"
 
+namespace sls {
+
 void MasterAttributes::GetBinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->StartObject();
@@ -75,7 +77,7 @@ void MasterAttributes::GetCommonBinaryAttributes(
     w->SetMaxDecimalPlaces(2);
     w->Double(BINARY_WRITER_VERSION);
     w->Key("Timestamp");
-    time_t t = time(nullptr);
+    time_t t = std::time(nullptr);
     std::string sTime(ctime(&t));
     std::replace(sTime.begin(), sTime.end(), '\n', '\0');
     w->String(sTime.c_str());
@@ -766,3 +768,5 @@ void MasterAttributes::WriteCtbHDF5Attributes(H5File *fd, Group *group) {
     MasterAttributes::WriteHDF5DbitList(fd, group);
 }
 #endif
+
+} // namespace sls

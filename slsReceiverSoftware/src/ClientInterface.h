@@ -6,10 +6,13 @@
 #include "sls/ServerSocket.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/sls_detector_funcs.h"
-class ServerInterface;
 
 #include <atomic>
 #include <future>
+
+namespace sls {
+
+class ServerInterface;
 
 class ClientInterface : private virtual slsDetectorDefs {
     enum numberMode { DEC, HEX };
@@ -198,3 +201,5 @@ class ClientInterface : private virtual slsDetectorDefs {
     std::vector<std::string> udpips =
         std::vector<std::string>(MAX_NUMBER_OF_LISTENING_THREADS);
 };
+
+} // namespace sls

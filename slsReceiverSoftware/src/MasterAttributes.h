@@ -9,6 +9,11 @@
 
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
+#include <chrono>
+
+namespace sls {
+
+using ns = std::chrono::nanoseconds;
 
 #ifdef HDF5C
 #include "H5Cpp.h"
@@ -16,9 +21,6 @@
 using namespace H5;
 #endif
 #endif
-
-#include <chrono>
-using ns = std::chrono::nanoseconds;
 
 class MasterAttributes {
   public:
@@ -148,3 +150,5 @@ class MasterAttributes {
     void WriteCtbHDF5Attributes(H5File *fd, Group *group);
 #endif
 };
+
+} // namespace sls

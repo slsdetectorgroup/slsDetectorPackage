@@ -14,6 +14,8 @@
 #include <cerrno>
 #include <iostream>
 
+namespace sls {
+
 const std::string DataStreamer::TypeName = "DataStreamer";
 
 DataStreamer::DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi,
@@ -267,3 +269,5 @@ void DataStreamer::RestreamStop() {
             std::to_string(zmqSocket->GetPortNumber()));
     }
 }
+
+} // namespace sls

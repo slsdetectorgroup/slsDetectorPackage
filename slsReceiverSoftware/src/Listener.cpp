@@ -19,6 +19,8 @@
 #include <cstring>
 #include <iostream>
 
+namespace sls {
+
 const std::string Listener::TypeName = "Listener";
 
 Listener::Listener(int ind, detectorType dtype, Fifo *f,
@@ -649,3 +651,5 @@ void Listener::PrintFifoStatistics() {
                << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree()
                << " \tCurrent_Frame#:" << currentFrameIndex;
 }
+
+} // namespace sls

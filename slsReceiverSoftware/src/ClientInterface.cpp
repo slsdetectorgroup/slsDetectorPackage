@@ -22,6 +22,9 @@
 #include <unistd.h>
 #include <vector>
 
+
+namespace sls {
+
 using ns = std::chrono::nanoseconds;
 using sls::RuntimeError;
 using sls::SocketError;
@@ -32,6 +35,7 @@ using Interface = sls::ServerInterface;
 #include <sys/syscall.h>
 #define gettid() syscall(SYS_gettid)
 #endif
+
 
 ClientInterface::~ClientInterface() {
     killTcpThread = true;
@@ -1777,3 +1781,5 @@ int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
     }
     return socket.Send(OK);
 }
+
+} // namespace sls

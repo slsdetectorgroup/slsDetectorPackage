@@ -5,6 +5,8 @@
 
 #include <iomanip>
 
+namespace sls {
+
 namespace masterFileUtility {
 
 std::string CreateMasterBinaryFile(const std::string &filePath,
@@ -349,3 +351,5 @@ std::array<std::string, 2> CreateVirtualHDF5File(
 #endif
 
 } // namespace masterFileUtility
+
+} // namespace sls

@@ -4,9 +4,10 @@
 #include "sls/sls_detector_defs.h"
 #include <memory>
 
-class ClientInterface;
 
 namespace sls {
+
+class ClientInterface;
 
 class Receiver : private virtual slsDetectorDefs {
 

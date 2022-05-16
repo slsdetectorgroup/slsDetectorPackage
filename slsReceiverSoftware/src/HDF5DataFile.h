@@ -6,6 +6,8 @@
 
 #include <mutex>
 
+namespace sls {
+
 class HDF5DataFile : private virtual slsDetectorDefs, public File {
 
   public:
@@ -77,3 +79,5 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
     static const int EIGER_NUM_PIXELS{256 * 2 * 256};
     static const int EIGER_16_BIT_IMAGE_SIZE{EIGER_NUM_PIXELS * 2};
 };
+
+} // namespace sls

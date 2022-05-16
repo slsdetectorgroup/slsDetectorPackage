@@ -5,6 +5,8 @@
 
 #include <iomanip>
 
+namespace sls {
+
 HDF5DataFile::HDF5DataFile(int index, std::mutex *hdf5Lib)
     : File(HDF5), index_(index), hdf5Lib_(hdf5Lib) {
 
@@ -422,3 +424,5 @@ void HDF5DataFile::ExtendDataset() {
     }
     extNumImages_ += numImages_;
 }
+
+} // namespace sls

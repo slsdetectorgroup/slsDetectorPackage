@@ -4,8 +4,12 @@
 
 #include <iostream>
 
+namespace sls {
+
 File::File(const slsDetectorDefs::fileFormat format) : format_(format) {}
 
 File::~File() {}
 
 slsDetectorDefs::fileFormat File::GetFileFormat() const { return format_; }
+
+} // namespace sls

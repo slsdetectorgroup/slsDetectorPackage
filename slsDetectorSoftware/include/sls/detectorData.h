@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <string>
 
+namespace sls {
+
 /**
    @short data structure to hold the detector data after postprocessing
  */
@@ -51,3 +53,5 @@ class detectorData {
     bool completeImage;
     std::array<int,4> rxRoi{{-1, -1, -1, -1}};
 };
+
+} // namespace sls

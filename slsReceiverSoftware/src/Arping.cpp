@@ -6,6 +6,8 @@
 #include <chrono>
 #include <unistd.h>
 
+namespace sls {
+
 // gettid added in glibc 2.30
 #if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
 #include <sys/syscall.h>
@@ -118,3 +120,5 @@ std::string Arping::ExecuteCommands() {
 
     return std::string();
 }
+
+} // namespace sls

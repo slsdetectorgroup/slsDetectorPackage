@@ -12,13 +12,15 @@
 #include "ThreadObject.h"
 #include "sls/network_utils.h"
 
+#include <map>
+#include <mutex>
+
+namespace sls {
+
 class GeneralData;
 class Fifo;
 class DataStreamer;
 class ZmqSocket;
-
-#include <map>
-#include <mutex>
 
 class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
@@ -131,3 +133,5 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     bool *quadEnable;
     uint64_t *totalNumFrames;
 };
+
+} // namespace sls

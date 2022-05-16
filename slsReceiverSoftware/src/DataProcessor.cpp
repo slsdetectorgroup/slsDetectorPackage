@@ -24,6 +24,8 @@
 #include <cstring>
 #include <iostream>
 
+namespace sls {
+
 const std::string DataProcessor::typeName_ = "DataProcessor";
 
 DataProcessor::DataProcessor(int index, detectorType detectorType, Fifo *fifo,
@@ -598,3 +600,5 @@ void DataProcessor::CropImage(char *buf) {
         }
     }
 }
+
+} // namespace sls

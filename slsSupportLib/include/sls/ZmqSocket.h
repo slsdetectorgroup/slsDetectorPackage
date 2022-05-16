@@ -21,6 +21,9 @@ class zmq_msg_t;
 #include "sls/container_utils.h"
 #include <map>
 #include <memory>
+
+namespace sls {
+
 /** zmq header structure */
 struct zmqHeader {
     /** true if incoming data, false if end of acquisition */
@@ -224,3 +227,5 @@ class ZmqSocket {
     std::unique_ptr<char[]> header_buffer =
         sls::make_unique<char[]>(MAX_STR_LENGTH);
 };
+
+} // namespace sls

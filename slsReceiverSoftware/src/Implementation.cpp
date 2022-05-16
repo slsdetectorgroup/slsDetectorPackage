@@ -22,6 +22,8 @@
 #include <thread>
 #include <unistd.h>
 
+namespace sls {
+
 /** cosntructor & destructor */
 
 Implementation::Implementation(const detectorType d) { setDetectorType(d); }
@@ -1748,3 +1750,5 @@ void Implementation::registerCallBackRawDataModifyReady(
         it->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,
                                                pRawDataReady);
 }
+
+} // namespace sls

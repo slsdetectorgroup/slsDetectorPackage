@@ -15,6 +15,8 @@
 #include <iostream>
 #include <unistd.h>
 
+namespace sls {
+
 Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth)
     : index(ind), memory(nullptr), fifoBound(nullptr), fifoFree(nullptr),
       fifoStream(nullptr), fifoDepth(depth), status_fifoBound(0),
@@ -116,3 +118,5 @@ int Fifo::GetMinLevelForFifoFree() {
     status_fifoFree = fifoDepth;
     return temp;
 }
+
+} // namespace sls

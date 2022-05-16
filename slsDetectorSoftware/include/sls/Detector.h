@@ -10,10 +10,10 @@
 #include <memory>
 #include <vector>
 
-class detectorData;
 
 namespace sls {
 using ns = std::chrono::nanoseconds;
+class detectorData;
 class DetectorImpl;
 class MacAddr;
 class IpAddr;

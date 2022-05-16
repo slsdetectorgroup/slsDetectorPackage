@@ -16,6 +16,8 @@
 #include <cmath> //ceil
 #include <vector>
 
+namespace sls {
+
 class GeneralData {
 
   public:
@@ -642,3 +644,5 @@ class MoenchData : public GeneralData {
         LOG(logDEBUG) << "Databytes: " << imageSize;
     };
 };
+
+} // namespace sls

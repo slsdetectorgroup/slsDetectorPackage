@@ -16,6 +16,8 @@
 
 #include "sls/CircularFifo.h"
 
+namespace sls {
+
 class Fifo : private virtual slsDetectorDefs {
 
   public:
@@ -108,3 +110,6 @@ class Fifo : private virtual slsDetectorDefs {
     volatile int status_fifoBound;
     volatile int status_fifoFree;
 };
+
+} // namespace sls
+

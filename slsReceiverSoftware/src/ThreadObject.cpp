@@ -10,6 +10,8 @@
 #include <iostream>
 #include <unistd.h>
 
+namespace sls {
+
 // gettid added in glibc 2.30
 #if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
 #include <sys/syscall.h>
@@ -75,3 +77,5 @@ void ThreadObject::SetThreadPriority(int priority) {
         LOG(logINFO) << "Priorities set - " << type << ": " << priority;
     }
 }
+
+} // namespace sls

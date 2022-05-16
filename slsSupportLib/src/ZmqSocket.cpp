@@ -12,6 +12,8 @@
 #include <vector>
 #include <zmq.h>
 
+namespace sls {
+
 using namespace rapidjson;
 ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
                      const uint32_t portnumber)
@@ -414,3 +416,6 @@ void ZmqSocket::mySocketDescriptors::Close() {
         contextDescriptor = nullptr;
     }
 };
+
+} // namespace sls
+

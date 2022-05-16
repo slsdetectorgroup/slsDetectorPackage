@@ -6,12 +6,7 @@
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
-class GeneralData;
-class Listener;
-class DataProcessor;
-class DataStreamer;
-class Fifo;
-class slsDetectorDefs;
+#include "sls/sls_detector_defs.h"
 
 #include <atomic>
 #include <chrono>
@@ -20,7 +15,15 @@ class slsDetectorDefs;
 #include <memory>
 #include <mutex>
 #include <vector>
+
+namespace sls {
 using ns = std::chrono::nanoseconds;
+
+class GeneralData;
+class Listener;
+class DataProcessor;
+class DataStreamer;
+class Fifo;
 
 class Implementation : private virtual slsDetectorDefs {
   public:
@@ -406,3 +409,5 @@ class Implementation : private virtual slsDetectorDefs {
     // mutex shared across all hdf5 virtual, master and data files
     std::mutex hdf5LibMutex;
 };
+
+} // namespace sls

@@ -16,6 +16,8 @@
 #include <atomic>
 #include <memory>
 
+namespace sls {
+
 class GeneralData;
 class Fifo;
 
@@ -172,3 +174,5 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * (pecific to gotthard, can vary between modules, hence defined here) */
     bool oddStartingPacket{true};
 };
+
+} // namespace sls

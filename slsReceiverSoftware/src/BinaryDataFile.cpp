@@ -2,6 +2,8 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "BinaryDataFile.h"
 
+namespace sls {
+
 BinaryDataFile::BinaryDataFile(const int index) : File(BINARY), index_(index) {}
 
 BinaryDataFile::~BinaryDataFile() { CloseFile(); }
@@ -108,3 +110,5 @@ void BinaryDataFile::WriteToFile(char *buffer, const int buffersize,
                                 std::to_string(currentFrameNumber));
     }
 }
+
+} // namespace sls

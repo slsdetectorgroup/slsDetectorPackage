@@ -47,7 +47,7 @@ void DetectorImpl::setupDetector(bool verify, bool update) {
     }
 
     if (ctb_shm.exists())
-        ctb_shm.openSharedMemory();
+        ctb_shm.openSharedMemory(verify);
 }
 
 void DetectorImpl::setAcquiringFlag(bool flag) { shm()->acquiringFlag = flag; }
@@ -69,7 +69,7 @@ void DetectorImpl::freeSharedMemory(int detectorIndex, int detPos) {
     int numModules = 0;
 
     if (detectorShm.exists()) {
-        detectorShm.openSharedMemory();
+        detectorShm.openSharedMemory(false);
         numModules = detectorShm()->totalNumberOfModules;
         detectorShm.removeSharedMemory();
     }
@@ -144,7 +144,7 @@ void DetectorImpl::initSharedMemory(bool verify) {
         shm.createSharedMemory();
         initializeDetectorStructure();
     } else {
-        shm.openSharedMemory();
+        shm.openSharedMemory(verify);
         if (verify && shm()->shmversion != DETECTOR_SHMVERSION) {
             LOG(logERROR) << "Detector shared memory (" << detectorIndex
                           << ") version mismatch "
@@ -268,7 +268,7 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
 
     if (shm()->detType == defs::CHIPTESTBOARD) {
         if (ctb_shm.exists())
-            ctb_shm.openSharedMemory();
+            ctb_shm.openSharedMemory(true);
         else
             ctb_shm.createSharedMemory();
     }

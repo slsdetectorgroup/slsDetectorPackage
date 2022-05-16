@@ -69,6 +69,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - fixed row column indexing (mainly for multi module Jungfrau 2 interfaces )
 - eiger gui row indices not flipped anymore (fix in config)
 - m3 (settings dac check disabled temporarily?)
+- gap pixels in gui enabled by default
 
 2. Resolved Issues
 ==================

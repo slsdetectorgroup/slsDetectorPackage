@@ -6,6 +6,8 @@
 #include "ui_form_plot.h"
 #include <mutex>
 
+namespace sls {
+
 class SlsQt1DPlot;
 class SlsQtH1D;
 class SlsQt2DPlot;
@@ -172,3 +174,5 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     int gainOffset{0};
     bool gotthard25;
 };
+
+} // namespace sls

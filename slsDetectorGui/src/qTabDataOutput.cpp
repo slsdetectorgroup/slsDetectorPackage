@@ -11,6 +11,8 @@
 
 #include <unistd.h>
 
+namespace sls {
+
 qTabDataOutput::qTabDataOutput(QWidget *parent, sls::Detector *detector)
     : QWidget(parent), det(detector), btnGroupRate(nullptr) {
     setupUi(this);
@@ -442,3 +444,5 @@ void qTabDataOutput::Refresh() {
 
     LOG(logDEBUG) << "**Updated DataOutput Tab";
 }
+
+} // namespace sls

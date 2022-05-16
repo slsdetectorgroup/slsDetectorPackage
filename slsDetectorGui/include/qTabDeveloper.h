@@ -6,6 +6,8 @@
 #include "ui_form_tab_developer.h"
 #include <vector>
 
+namespace sls {
+
 class qDacWidget;
 
 class qTabDeveloper : public QWidget, private Ui::TabDeveloperObject {
@@ -38,3 +40,5 @@ class qTabDeveloper : public QWidget, private Ui::TabDeveloperObject {
     static const int HV_MIN = 60;
     static const int HV_MAX = 200;
 };
+
+} // namespace sls

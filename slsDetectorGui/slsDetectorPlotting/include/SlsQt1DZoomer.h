@@ -8,6 +8,8 @@
 #include <qwt_plot_panner.h>
 #include <qwt_plot_zoomer.h>
 
+namespace sls {
+
 class SlsQtH1D;
 
 class SlsQt1DZoomer : public QwtPlotZoomer {
@@ -50,5 +52,7 @@ class SlsQt1DZoomer : public QwtPlotZoomer {
         return text;
     }
 };
+
+} // namespace sls
 
 #endif

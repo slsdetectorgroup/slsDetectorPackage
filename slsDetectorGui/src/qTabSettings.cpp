@@ -6,6 +6,8 @@
 #include "sls/bit_utils.h"
 #include <QStandardItemModel>
 
+namespace sls {
+
 qTabSettings::qTabSettings(QWidget *parent, sls::Detector *detector)
     : QWidget(parent), det(detector) {
     setupUi(this);
@@ -496,3 +498,5 @@ void qTabSettings::Refresh() {
 
     LOG(logDEBUG) << "**Updated Settings Tab";
 }
+
+} // namespace sls

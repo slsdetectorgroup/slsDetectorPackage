@@ -5,6 +5,8 @@
 #include "ui_form_tab_settings.h"
 #include <QCheckBox>
 
+namespace sls {
+
 class qTabSettings : public QWidget, private Ui::TabSettingsObject {
     Q_OBJECT
 
@@ -77,3 +79,5 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
         DYNAMICRANGE_4
     };
 };
+
+} // namespace sls

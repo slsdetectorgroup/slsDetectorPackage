@@ -6,6 +6,8 @@
 #include "ui_form_detectormain.h"
 #include <QTabWidget>
 
+namespace sls {
+
 class qDrawPlot;
 class qTabMeasurement;
 class qTabDataOutput;
@@ -88,3 +90,5 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     QString zoomToolTip;
     QColor defaultTabColor;
 };
+
+} // namespace sls

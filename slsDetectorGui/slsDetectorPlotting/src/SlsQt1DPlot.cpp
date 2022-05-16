@@ -15,6 +15,8 @@
 #include <qwt_symbol.h>
 #include <stdlib.h>
 
+namespace sls {
+
 #define QwtLog10ScaleEngine QwtLogScaleEngine // hmm
 
 SlsQtH1D::SlsQtH1D(QString title, int n, double min, double max, double *data)
@@ -602,3 +604,5 @@ void SlsQt1DPlot::DisableZoom(bool disable) {
         }
     }
 }
+
+} // namespace sls

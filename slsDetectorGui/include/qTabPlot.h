@@ -4,6 +4,8 @@
 #include "sls/Detector.h"
 #include "ui_form_tab_plot.h"
 
+namespace sls {
+
 class qDrawPlot;
 
 class qTabPlot : public QWidget, private Ui::TabPlotObject {
@@ -65,3 +67,5 @@ class qTabPlot : public QWidget, private Ui::TabPlotObject {
     static QString defaultImageYAxisTitle;
     static QString defaultImageZAxisTitle;
 };
+
+} // namespace sls

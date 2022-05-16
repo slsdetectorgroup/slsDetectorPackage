@@ -7,6 +7,8 @@
 #include <QStandardItemModel>
 #include <QTimer>
 
+namespace sls {
+
 qTabMeasurement::qTabMeasurement(QWidget *parent, sls::Detector *detector,
                                  qDrawPlot *p)
     : QWidget(parent), det(detector), plot(p), progressTimer(nullptr) {
@@ -1017,3 +1019,5 @@ void qTabMeasurement::Refresh() {
 
     LOG(logDEBUG) << "**Updated Measurement Tab";
 }
+
+} // namespace sls

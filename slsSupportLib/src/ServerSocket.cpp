@@ -14,11 +14,13 @@
 #include <iostream>
 #include <stdexcept>
 #include <unistd.h>
+
+
+namespace sls {
+
 #define DEFAULT_PACKET_SIZE 1286
 #define SOCKET_BUFFER_SIZE  (100 * 1024 * 1024) // 100 MB
 #define DEFAULT_BACKLOG     5
-
-namespace sls {
 
 ServerSocket::ServerSocket(int port)
     : DataSocket(socket(AF_INET, SOCK_STREAM, 0)), serverPort(port) {

@@ -9,6 +9,8 @@
 using std::cout;
 using std::endl;
 
+namespace sls {
+
 SlsQt2DHist::SlsQt2DHist(int nbinsx, double xmin, double xmax, int nbinsy,
                          double ymin, double ymax, double *d, double zmin,
                          double zmax)
@@ -143,3 +145,5 @@ double SlsQt2DHist::SetMinimumToFirstGreaterThanZero() {
 
     return z_min;
 }
+
+} // namespace sls

@@ -11,6 +11,8 @@
 #include <QPainter>
 #include <qwt_text.h>
 
+namespace sls {
+
 int qCloneWidget::NumClones{0};
 
 qCloneWidget::qCloneWidget(QWidget *parent, SlsQt1DPlot *p1, SlsQt2DPlot *p2,
@@ -147,3 +149,5 @@ void qCloneWidget::resizeEvent(QResizeEvent *event) {
     }
     event->accept();
 }
+
+} // namespace sls

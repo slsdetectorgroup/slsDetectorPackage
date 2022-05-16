@@ -14,6 +14,8 @@
 #include <ostream>
 #include <string>
 
+namespace sls {
+
 using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::hours;
@@ -329,3 +331,5 @@ class qDefs : public QWidget {
                        source);
     }
 };
+
+} // namespace sls

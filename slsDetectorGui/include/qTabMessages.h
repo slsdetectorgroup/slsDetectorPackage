@@ -3,6 +3,8 @@
 #pragma once
 #include "ui_form_tab_messages.h"
 
+namespace sls {
+
 class QProcess;
 class QKeyEvent;
 
@@ -34,3 +36,5 @@ class qTabMessages : public QWidget, private Ui::TabMessagesObject {
     QProcess *process;
     QStringList lastCommand;
 };
+
+} // namespace sls

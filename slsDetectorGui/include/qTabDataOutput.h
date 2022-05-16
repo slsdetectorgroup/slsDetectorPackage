@@ -4,6 +4,8 @@
 #include "sls/Detector.h"
 #include "ui_form_tab_dataoutput.h"
 
+namespace sls {
+
 class qTabDataOutput : public QWidget, private Ui::TabDataOutputObject {
     Q_OBJECT
 
@@ -43,3 +45,5 @@ class qTabDataOutput : public QWidget, private Ui::TabDataOutputObject {
     // Button group for radiobuttons for rate
     QButtonGroup *btnGroupRate;
 };
+
+} // namespace sls

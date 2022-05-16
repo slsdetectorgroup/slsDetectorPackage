@@ -4,6 +4,8 @@
 #include "sls/Detector.h"
 #include "ui_form_tab_debugging.h"
 
+namespace sls {
+
 class QTreeWidget;
 class QTreeWidgetItem;
 
@@ -33,3 +35,5 @@ class qTabDebugging : public QWidget, private Ui::TabDebuggingObject {
     QLabel *lblDetectorFirmware;
     QLabel *lblDetectorSoftware;
 };
+
+} // namespace sls

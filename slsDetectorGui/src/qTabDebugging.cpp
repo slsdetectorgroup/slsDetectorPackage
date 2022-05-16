@@ -7,6 +7,8 @@
 #include <QGridLayout>
 #include <QTreeWidget>
 
+namespace sls {
+
 qTabDebugging::qTabDebugging(QWidget *parent, sls::Detector *detector)
     : QWidget(parent), det(detector), treeDet(nullptr),
       lblDetectorHostname(nullptr), lblDetectorFirmware(nullptr),
@@ -241,3 +243,5 @@ void qTabDebugging::Refresh() {
     GetDetectorStatus();
     LOG(logDEBUG) << "**Updated Debugging Tab";
 }
+
+} // namespace sls

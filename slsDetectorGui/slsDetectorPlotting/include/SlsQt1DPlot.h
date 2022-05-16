@@ -15,6 +15,8 @@ class QPen;
 class SlsQt1DPlot;
 class QwtSymbol;
 
+namespace sls {
+
 class SlsQtH1D : public QwtPlotCurve {
 
   public:
@@ -170,4 +172,8 @@ class SlsQt1DPlot : public QwtPlot {
     void Update();
 };
 
+} // namespace sls
+
 #endif
+
+

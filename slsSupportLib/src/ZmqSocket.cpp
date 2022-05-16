@@ -10,7 +10,6 @@
 #include <string.h>
 #include <thread>
 #include <vector>
-#include <zmq.h>
 
 namespace sls {
 

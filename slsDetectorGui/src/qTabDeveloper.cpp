@@ -4,6 +4,8 @@
 #include "qDacWidget.h"
 #include "qDefs.h"
 
+namespace sls {
+
 qTabDeveloper::qTabDeveloper(QWidget *parent, sls::Detector *detector)
     : QWidget(parent), det(detector) {
     setupUi(this);
@@ -607,3 +609,5 @@ void qTabDeveloper::Refresh() {
     GetHighVoltage();
     LOG(logDEBUG) << "**Updated Developer Tab";
 }
+
+} // namespace sls

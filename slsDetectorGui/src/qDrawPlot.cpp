@@ -14,6 +14,8 @@
 #include <QResizeEvent>
 #include <QtConcurrentRun>
 
+namespace sls {
+
 qDrawPlot::qDrawPlot(QWidget *parent, sls::Detector *detector)
     : QWidget(parent), det(detector) {
     setupUi(this);
@@ -1272,3 +1274,5 @@ void qDrawPlot::UpdatePlot() {
 
     LOG(logDEBUG) << "End of Update Plot";
 }
+
+} // namespace sls

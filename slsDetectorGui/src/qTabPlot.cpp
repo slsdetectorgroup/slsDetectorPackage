@@ -6,6 +6,8 @@
 #include <QStackedLayout>
 #include <QStandardItemModel>
 
+namespace sls {
+
 QString qTabPlot::defaultPlotTitle("");
 QString qTabPlot::defaultHistXAxisTitle("Channel Number");
 QString qTabPlot::defaultHistYAxisTitle("Counts");
@@ -797,3 +799,5 @@ void qTabPlot::Refresh() {
 
     LOG(logDEBUG) << "**Updated Plot Tab";
 }
+
+} // namespace sls

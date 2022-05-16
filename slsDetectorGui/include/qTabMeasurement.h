@@ -4,6 +4,8 @@
 #include "sls/Detector.h"
 #include "ui_form_tab_measurement.h"
 
+namespace sls {
+
 class qDrawPlot;
 class QStandardItemModel;
 
@@ -98,3 +100,5 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     int numMeasurements{1};
     int currentMeasurement{0};
 };
+
+} // namespace sls

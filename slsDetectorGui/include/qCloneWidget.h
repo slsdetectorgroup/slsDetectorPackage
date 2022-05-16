@@ -5,6 +5,8 @@
 #include <QMainWindow>
 #include <QString>
 
+namespace sls {
+
 class SlsQtH1D;
 class SlsQt1DPlot;
 class SlsQt2DPlot;
@@ -43,3 +45,5 @@ class qCloneWidget : public QMainWindow, private Ui::ClonePlotObject {
 
     static int NumClones;
 };
+
+} // namespace sls

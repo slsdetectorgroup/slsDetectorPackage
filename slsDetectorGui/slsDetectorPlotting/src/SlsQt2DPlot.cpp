@@ -18,6 +18,8 @@
 #include <cmath>
 #include <iostream>
 
+namespace sls {
+
 SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
     isLog = 0;
     axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Floating);
@@ -312,3 +314,4 @@ void SlsQt2DPlot::DisableRoiBox() {
     }
 }
 
+} // namespace sls

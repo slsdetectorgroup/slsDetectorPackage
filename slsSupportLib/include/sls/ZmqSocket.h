@@ -10,19 +10,19 @@
  */
 
 #include "sls/sls_detector_exceptions.h"
+#include "sls/container_utils.h"
+
+#include <map>
+#include <memory>
 #include <rapidjson/document.h> //json header in zmq stream
+#include <zmq.h>
+
+namespace sls {
 
 #define MAX_STR_LENGTH 1000
-
 // #define ZMQ_DETAIL
 #define ROIVERBOSITY
 
-class zmq_msg_t;
-#include "sls/container_utils.h"
-#include <map>
-#include <memory>
-
-namespace sls {
 
 /** zmq header structure */
 struct zmqHeader {

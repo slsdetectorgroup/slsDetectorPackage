@@ -4,6 +4,8 @@
 #include "sls/Detector.h"
 #include "ui_form_tab_advanced.h"
 
+namespace sls {
+
 class qDrawPlot;
 
 class qTabAdvanced : public QWidget, private Ui::TabAdvancedObject {
@@ -77,3 +79,5 @@ class qTabAdvanced : public QWidget, private Ui::TabAdvancedObject {
     sls::Detector *det;
     qDrawPlot *plot;
 };
+
+} // namespace sls

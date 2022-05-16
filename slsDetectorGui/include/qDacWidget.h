@@ -6,6 +6,8 @@
 #include "ui_form_dac.h"
 #include <string>
 
+namespace sls {
+
 class qDacWidget : public QWidget, private Ui::WidgetDacObject {
     Q_OBJECT
 
@@ -30,3 +32,5 @@ class qDacWidget : public QWidget, private Ui::WidgetDacObject {
     slsDetectorDefs::dacIndex index;
     int detectorIndex{-1};
 };
+
+} // namespace sls

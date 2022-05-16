@@ -106,6 +106,8 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+namespace sls {
+
 qDetectorMain::qDetectorMain(int multiId, const std::string &fname,
                              bool isDevel)
     : QMainWindow(nullptr), detType(slsDetectorDefs::GENERIC),
@@ -609,3 +611,5 @@ void qDetectorMain::SetZoomToolTip(bool disable) {
     else
         dockWidgetPlot->setToolTip(zoomToolTip);
 }
+
+} // namespace sls

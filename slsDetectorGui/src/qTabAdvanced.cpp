@@ -5,6 +5,8 @@
 #include "qDrawPlot.h"
 #include "sls/network_utils.h"
 
+namespace sls {
+
 qTabAdvanced::qTabAdvanced(QWidget *parent, sls::Detector *detector,
                            qDrawPlot *p)
     : QWidget(parent), det(detector), plot(p) {
@@ -891,3 +893,5 @@ void qTabAdvanced::Refresh() {
     }
     LOG(logDEBUG) << "**Updated Advanced Tab";
 }
+
+} // namespace sls

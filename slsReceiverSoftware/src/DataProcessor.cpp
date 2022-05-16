@@ -187,19 +187,17 @@ std::array<std::string, 2> DataProcessor::CreateVirtualFile(
     uint32_t framesPerFile =
         ((maxFramesPerFile == 0) ? numFramesCaught_ : maxFramesPerFile);
 
-    int nx = generalData_->nPixelsX;
-    int ny = generalData_->nPixelsY;
-
     // TODO: assumption 1: create virtual file even if no data in other
     // files (they exist anyway) assumption2: virtual file max frame index
     // is from R0 P0 (difference from others when missing frames or for a
     // stop acquisition)
     return masterFileUtility::CreateVirtualHDF5File(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
-        modulePos, numUnitsPerReadout, framesPerFile, numImages, nx, ny,
-        dynamicRange, numFramesCaught_, numModX, numModY,
-        dataFile_->GetPDataType(), dataFile_->GetParameterNames(),
-        dataFile_->GetParameterDataTypes(), hdf5LibMutex, gotthard25um);
+        modulePos, numUnitsPerReadout, framesPerFile, numImages, 
+        generalData_->nPixelsX, generalData_->nPixelsY, dynamicRange, 
+        numFramesCaught_, numModX, numModY, dataFile_->GetPDataType(), 
+        dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes(), 
+        hdf5LibMutex, gotthard25um);
 }
 
 void DataProcessor::LinkFileInMaster(const std::string &masterFileName,

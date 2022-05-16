@@ -59,6 +59,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - gotthard 25 um image reconstructed in gui and virtual hdf5 (firmware updated for slave to reverse channels)
 - master binary file in json format now
 - fixed bug introduced in 6.0.0: hdf5 files created 1 file per frame after the initial file which had maxframesperfile
+- rx_roi
 - m3 polarity, interpolation (enables all counters when enabled), pump probe, analog pulsing, digital pulsing
 - updatedetectorserver - removes old server current binary pointing to for blackfin
 - removing copydetectorserver using tftp 
@@ -69,6 +70,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - fixed row column indexing (mainly for multi module Jungfrau 2 interfaces )
 - eiger gui row indices not flipped anymore (fix in config)
 - m3 (settings dac check disabled temporarily?)
+- m3 virtual server sends the right pacets now
 - gap pixels in gui enabled by default
 
 2. Resolved Issues

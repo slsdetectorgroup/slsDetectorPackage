@@ -28,17 +28,18 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
     DataProcessor(int index, detectorType detectorType, Fifo *fifo,
-                  bool *activated, bool *dataStreamEnable,
-                  uint32_t *streamingFrequency, uint32_t *streamingTimerInMs,
-                  uint32_t *streamingStartFnum, bool *framePadding,
-                  std::vector<int> *ctbDbitList, int *ctbDbitOffset,
-                  int *ctbAnalogDataBytes);
+                  bool *dataStreamEnable, uint32_t *streamingFrequency,
+                  uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum,
+                  bool *framePadding, std::vector<int> *ctbDbitList,
+                  int *ctbDbitOffset, int *ctbAnalogDataBytes);
 
     ~DataProcessor() override;
 
     bool GetStartedFlag() const;
 
     void SetFifo(Fifo *f);
+    void SetActivate(bool enable);
+    void SetReceiverROI(ROI roi);
     void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *generalData);
 
@@ -85,7 +86,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                                    char *, size_t, void *),
                                       void *arg);
 
-    /** params: sls_receiver_header pointer, pointer to data, reference to image size */
+    /** params: sls_receiver_header pointer, pointer to data, reference to image
+     * size */
     void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
                                                          char *, size_t &,
                                                          void *),
@@ -110,9 +112,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     /**
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
-     * @returns frame number
      */
-    uint64_t ProcessAnImage(char *buf);
+    void ProcessAnImage(char *buf);
 
     /**
      * Calls CheckTimer and CheckCount for streaming frequency and timer
@@ -143,19 +144,24 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      */
     void RearrangeDbitData(char *buf);
 
+    void CropImage(char *buf);
+
     static const std::string typeName_;
 
     const GeneralData *generalData_{nullptr};
     Fifo *fifo_;
     detectorType detectorType_;
     bool *dataStreamEnable_;
-    bool *activated_;
+    bool activated_{false};
+    ROI receiverRoi_{};
+    bool receiverRoiEnabled_{false};
+    std::unique_ptr<char[]> completeImageToStreamBeforeCropping;
     /** if 0, sending random images with a timer */
     uint32_t *streamingFrequency_;
     uint32_t *streamingTimerInMs_;
     uint32_t *streamingStartFnum_;
     uint32_t currentFreqCount_{0};
-    struct timespec timerbegin_{};
+    struct timespec timerbegin_ {};
     bool *framePadding_;
     std::vector<int> *ctbDbitList_;
     int *ctbDbitOffset_;
@@ -164,7 +170,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     std::atomic<uint64_t> firstIndex_{0};
 
     // for statistics
-    /** Number of frames caught */
     uint64_t numFramesCaught_{0};
 
     /** Frame Number of latest processed frame number */
@@ -172,6 +177,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     /** first streamer frame to add frame index in fifo header */
     bool firstStreamerFrame_{false};
+
+    bool streamCurrentFrame_{false};
 
     File *dataFile_{nullptr};
 

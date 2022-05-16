@@ -31,8 +31,10 @@ ServerSocket::ServerSocket(int port)
     if (bind(getSocketId(), (struct sockaddr *)&serverAddr,
              sizeof(serverAddr)) != 0) {
         close();
-        throw sls::SocketError("Server ERROR: cannot bind socket. Please check "
-                               "if another instance is running.");
+        throw sls::SocketError(
+            std::string("Server ERROR: cannot bind socket with port number ") +
+            std::to_string(port) +
+            std::string(". Please check if another instance is running."));
     }
     if (listen(getSocketId(), DEFAULT_BACKLOG) != 0) {
         close();

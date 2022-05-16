@@ -37,13 +37,12 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * @param as pointer to actual udp socket buffer size
      * @param fpf pointer to frames per file
      * @param fdp frame discard policy
-     * @param act pointer to activated
      * @param detds pointer to detector data stream
      * @param sm pointer to silent mode
      */
     Listener(int ind, detectorType dtype, Fifo *f, std::atomic<runStatus> *s,
              uint32_t *portno, std::string *e, int *us, int *as, uint32_t *fpf,
-             frameDiscardPolicy *fdp, bool *act, bool *detds, bool *sm);
+             frameDiscardPolicy *fdp, bool *detds, bool *sm);
 
     /**
      * Destructor
@@ -63,6 +62,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void SetFifo(Fifo *f);
     void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *g);
+    void SetActivate(bool enable);
     void CreateUDPSockets();
     void ShutDownUDPSocket();
 
@@ -76,8 +76,8 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     /**
      * Set hard coded (calculated but not from detector) row and column
      * r is in row index if detector has not send them yet in firmware,
-     * c is in col index for jungfrau and eiger (for missing packets/deactivated
-     * eiger) c when used is in 2d
+     * c is in col index for jungfrau and eiger (for missing
+     * packets/deactivated) c when used is in 2d
      */
     void SetHardCodedPosition(uint16_t r, uint16_t c);
 
@@ -125,7 +125,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     int *actualUDPSocketBufferSize;
     uint32_t *framesPerFile;
     frameDiscardPolicy *frameDiscardMode;
-    bool *activated;
+    bool activated{false};
     bool *detectorDataStream;
     bool *silentMode;
 
@@ -135,7 +135,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     uint16_t row{0};
 
     /** column hardcoded as 2D,
-     * deactivated eiger/missing packets (eiger/jungfrau sends 2d pos) **/
+     * deactivated/missing packets (eiger/jungfrau sends 2d pos) **/
     uint16_t column{0};
 
     // acquisition start

@@ -49,9 +49,6 @@
 // ctb/ moench 1g udp (read from fifo)
 #define UDP_PACKET_DATA_BYTES (1344)
 
-/** maximum rois */
-#define MAX_ROIS 100
-
 /** maximum trim en */
 #define MAX_TRIMEN 100
 
@@ -172,13 +169,38 @@ class slsDetectorDefs {
     struct ROI {
         int xmin{-1};
         int xmax{-1};
+        int ymin{-1};
+        int ymax{-1};
         ROI() = default;
         ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax){};
+        ROI(int xmin, int xmax, int ymin, int ymax)
+            : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax){};
+        constexpr std::array<int, 4> getIntArray() const {
+            return std::array<int, 4> ({xmin, xmax, ymin, ymax});
+        }    
+        constexpr bool completeRoi() const {
+            return (xmin == -1 && xmax == -1 && ymin == -1 && ymax == -1);
+        }
+        constexpr bool noRoi() const {
+            return (xmin == 0 && xmax == 0 && ymin == 0 && ymax == 0);
+        }
+        void setNoRoi() {
+            xmin = 0;
+            xmax = 0;
+            ymin = 0;
+            ymax = 0;
+        }
+        constexpr bool operator==(const ROI &other) const {
+            return ((xmin == other.xmin) && (xmax == other.xmax) &&
+                    (ymin == other.ymin) && (ymax == other.ymax));
+        }
     } __attribute__((packed));
 #else
 typedef struct {
     int xmin;
     int xmax;
+    int ymin;
+    int ymax;
 } ROI;
 #endif
 

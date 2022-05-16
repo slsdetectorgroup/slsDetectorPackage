@@ -7,7 +7,6 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
-
 #include "CtbConfig.h"
 class ZmqSocket;
 class detectorData;
@@ -20,7 +19,7 @@ class detectorData;
 #include <vector>
 
 #define DETECTOR_SHMAPIVERSION 0x190809
-#define DETECTOR_SHMVERSION    0x201007
+#define DETECTOR_SHMVERSION    0x220505
 #define SHORT_STRING_LENGTH    50
 
 #include <future>
@@ -51,14 +50,14 @@ struct sharedDetector {
     /** last time stamp when accessing the shared memory */
     char lastDate[SHORT_STRING_LENGTH];
 
-    int numberOfModules;
+    int totalNumberOfModules;
     slsDetectorDefs::detectorType detType;
 
     /** END OF FIXED PATTERN
      * -----------------------------------------------*/
 
     /** Number of modules operated at once */
-    slsDetectorDefs::xy numberOfModule;
+    slsDetectorDefs::xy numberOfModules;
 
     /**  max number of channels for complete detector*/
     slsDetectorDefs::xy numberOfChannels;
@@ -68,6 +67,8 @@ struct sharedDetector {
     bool gapPixels;
     /** high water mark of listening tcp port (only data) */
     int zmqHwm;
+    /** in shm for gui purposes */
+    defs::ROI rx_roi{};
 };
 
 class DetectorImpl : public virtual slsDetectorDefs {
@@ -302,11 +303,13 @@ class DetectorImpl : public virtual slsDetectorDefs {
                                    Positions pos = {});
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos);
-
+    defs::ROI getRxROI() const;
+    void setRxROI(const defs::ROI arg);
+    void clearRxROI();
 
     std::vector<std::string> getCtbDacNames() const;
     std::string getCtbDacName(defs::dacIndex i) const;
-    void setCtbDacNames(const std::vector<std::string>& names);
+    void setCtbDacNames(const std::vector<std::string> &names);
 
   private:
     /**
@@ -388,6 +391,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * when using acquire command
      */
     int kbhit();
+
+    defs::xy getPortGeometry() const;
+    defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
 
     const int detectorIndex{0};
     sls::SharedMemory<sharedDetector> shm{0, -1};

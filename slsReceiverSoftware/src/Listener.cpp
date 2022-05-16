@@ -24,11 +24,11 @@ const std::string Listener::TypeName = "Listener";
 Listener::Listener(int ind, detectorType dtype, Fifo *f,
                    std::atomic<runStatus> *s, uint32_t *portno, std::string *e,
                    int *us, int *as, uint32_t *fpf, frameDiscardPolicy *fdp,
-                   bool *act, bool *detds, bool *sm)
+                   bool *detds, bool *sm)
     : ThreadObject(ind, TypeName), fifo(f), myDetectorType(dtype), status(s),
       udpPortNumber(portno), eth(e), udpSocketBufferSize(us),
       actualUDPSocketBufferSize(as), framesPerFile(fpf), frameDiscardMode(fdp),
-      activated(act), detectorDataStream(detds), silentMode(sm) {
+      detectorDataStream(detds), silentMode(sm) {
     LOG(logDEBUG) << "Listener " << ind << " created";
 }
 
@@ -115,8 +115,10 @@ void Listener::RecordFirstIndex(uint64_t fnum) {
 
 void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
 
+void Listener::SetActivate(bool enable) { activated = enable; }
+
 void Listener::CreateUDPSockets() {
-    if (!(*activated) || !(*detectorDataStream)) {
+    if (!activated || !(*detectorDataStream)) {
         return;
     }
 
@@ -166,7 +168,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
     LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port "
                  << *udpPortNumber;
 
-    if (!(*activated) || !(*detectorDataStream)) {
+    if (!activated || !(*detectorDataStream)) {
         *actualUDPSocketBufferSize = (s * 2);
         return;
     }
@@ -225,8 +227,7 @@ void Listener::ThreadExecution() {
                    << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
 
     // udpsocket doesnt exist
-    if (*activated && *detectorDataStream && !udpSocketAlive &&
-        !carryOverFlag) {
+    if (activated && *detectorDataStream && !udpSocketAlive && !carryOverFlag) {
         // LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not
         // created or shut down earlier";
         (*((uint32_t *)buffer)) = 0;
@@ -236,7 +237,7 @@ void Listener::ThreadExecution() {
 
     // get data
     if ((*status != TRANSMITTING &&
-         (!(*activated) || !(*detectorDataStream) || udpSocketAlive)) ||
+         (!activated || !(*detectorDataStream) || udpSocketAlive)) ||
         carryOverFlag) {
         rc = ListenToAnImage(buffer);
     }
@@ -319,7 +320,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
         return 0;
     }
     // deactivated (eiger)
-    if (!(*activated)) {
+    if (!activated) {
         return 0;
     }
 

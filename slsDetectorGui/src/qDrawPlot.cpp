@@ -278,11 +278,13 @@ void qDrawPlot::Select1dPlot(bool enable) {
 }
 
 void qDrawPlot::SetPlotTitlePrefix(QString title) {
+    std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting Title to " << title.toAscii().constData();
     plotTitlePrefix = title;
 }
 
 void qDrawPlot::SetXAxisTitle(QString title) {
+    std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting X Axis Title to " << title.toAscii().constData();
     if (is1d) {
         xTitle1d = title;
@@ -292,6 +294,7 @@ void qDrawPlot::SetXAxisTitle(QString title) {
 }
 
 void qDrawPlot::SetYAxisTitle(QString title) {
+    std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting Y Axis Title to " << title.toAscii().constData();
     if (is1d) {
         yTitle1d = title;
@@ -301,6 +304,7 @@ void qDrawPlot::SetYAxisTitle(QString title) {
 }
 
 void qDrawPlot::SetZAxisTitle(QString title) {
+    std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting Z Axis Title to " << title.toAscii().constData();
     zTitle2d = title;
 }
@@ -318,6 +322,7 @@ void qDrawPlot::SetXYRangeChanged(bool disable, double *xy, bool *isXY) {
 }
 
 void qDrawPlot::SetZRange(double *z, bool *isZ) {
+    std::lock_guard<std::mutex> lock(mPlots);
     std::copy(z, z + 2, zRange);
     std::copy(isZ, isZ + 2, isZRange);
 }
@@ -351,6 +356,7 @@ double qDrawPlot::GetYMaximum() {
 }
 
 void qDrawPlot::SetDataCallBack(bool enable) {
+    std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting data call back to " << std::boolalpha << enable
                  << std::noboolalpha;
     try {
@@ -369,6 +375,7 @@ void qDrawPlot::SetDataCallBack(bool enable) {
 }
 
 void qDrawPlot::SetBinary(bool enable, int from, int to) {
+    std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << (enable ? "Enabling" : "Disabling")
                  << " Binary output from " << from << " to " << to;
     binaryFrom = from;
@@ -377,6 +384,7 @@ void qDrawPlot::SetBinary(bool enable, int from, int to) {
 }
 
 void qDrawPlot::SetPersistency(int val) {
+    std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting Persistency to " << val;
     persistency = val;
 }
@@ -458,17 +466,20 @@ void qDrawPlot::ResetAccumulate() {
 }
 
 void qDrawPlot::DisplayStatistics(bool enable) {
+    std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << (enable ? "Enabling" : "Disabling")
                  << " Statistics Display";
     displayStatistics = enable;
 }
 
 void qDrawPlot::SetNumDiscardBits(int value) {
+    std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting number of bits to discard: " << value;
     numDiscardBits = value;
 }
 
 void qDrawPlot::EnableGainPlot(bool enable) {
+    std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << (enable ? "Enabling" : "Disabling") << " Gain Plot";
     hasGainData = enable;
 }
@@ -609,6 +620,13 @@ void qDrawPlot::SavePlot() {
     }
 }
 
+void qDrawPlot::SetGapPixels(bool enable) {
+    LOG(logDEBUG) << "Gap pixels enabled";
+    std::lock_guard<std::mutex> lock(mPlots);
+    isGapPixels = enable;
+}
+
+
 void qDrawPlot::GetStatistics(double &min, double &max, double &sum) {
     LOG(logDEBUG) << "Calculating Statistics";
     double *array = data2d;
@@ -642,6 +660,7 @@ void qDrawPlot::StartAcquisition() {
     currentFrame = 0;
     boxPlot->setTitle("Old Plot");
     det->clearAcquiringFlag(); // (from previous exit) or if running
+    isRxRoiDisplayed = false;
 
     // ensure data streaming in receiver (if plot enabled)
     if (isPlot) {
@@ -742,6 +761,7 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
                   << "  \t dynamic range: " << data->dynamicRange << std::endl
                   << "  \t file index: " << data->fileIndex << std::endl
                   << "  \t complete image: " << data->completeImage << std::endl
+                  << "  \t rx Roi: " << sls::ToString(data->rxRoi) << std::endl
                   << "  ]";
 
     progress = data->progressIndex;
@@ -749,6 +769,22 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
     currentFrame = frameIndex;
     LOG(logDEBUG) << "[ Progress:" << progress << "%, Frame:" << currentFrame
                   << " ]";
+    if (!isRxRoiDisplayed) {
+        rxRoi.xmin = data->rxRoi[0];
+        rxRoi.xmax = data->rxRoi[1];
+        rxRoi.ymin = data->rxRoi[2];
+        rxRoi.ymax = data->rxRoi[3];
+        // only for 2d anyway
+        if (isGapPixels) {
+            rxRoi.xmin += ((rxRoi.xmin/1024) * 6 + (rxRoi.xmin/256) * 2);
+            rxRoi.xmax += ((rxRoi.xmax/1024) * 6 + (rxRoi.xmax/256) * 2);
+            rxRoi.ymin += ((rxRoi.ymin/512) * 34 + (rxRoi.ymin/256) * 2);
+            rxRoi.ymax += ((rxRoi.ymax/512) * 34 + (rxRoi.ymax/256) * 2);
+            LOG(logINFO) << "Rx_roi recalculated with gap pixels: " << sls::ToString(rxRoi);
+        }
+        LOG(logDEBUG) << "Rx_roi: " << sls::ToString(rxRoi);
+    }
+    
 
     // 1d check if npixelX has changed (m3 for different counters enabled)
     if (is1d && static_cast<int>(nPixelsX) != data->nx) {
@@ -987,6 +1023,26 @@ void qDrawPlot::Update1dPlot() {
         xyRangeChanged = false;
     }
     plot1d->DisableZoom(disableZoom);
+    if (!isRxRoiDisplayed) {
+        isRxRoiDisplayed = true;
+        if (rxRoi.completeRoi()) {
+            plot1d->DisableRoiBox();
+            if (isGainDataExtracted) {
+                gainplot1d->DisableRoiBox();
+            }
+            lblRxRoiEnabled->hide();
+        } else {
+            plot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, (int)plot1d->GetYMinimum(), (int)plot1d->GetYMaximum()});
+            if (isGainDataExtracted) {
+                gainplot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, 0, 3});
+            }
+            lblRxRoiEnabled->show();
+        }
+    }
+    // ymin and ymax could change (so replot roi every time)
+    if (!rxRoi.completeRoi()) {
+        plot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, (int)plot1d->GetYMinimum(), (int)plot1d->GetYMaximum()});
+    } 
 }
 
 void qDrawPlot::Update2dPlot() {
@@ -1015,6 +1071,22 @@ void qDrawPlot::Update2dPlot() {
     }
     plot2d->DisableZoom(disableZoom);
     plot2d->SetZRange(isZRange[0], isZRange[1], zRange[0], zRange[1]);
+    if (!isRxRoiDisplayed) {
+        isRxRoiDisplayed = true;
+        if (rxRoi.completeRoi()) {
+            plot2d->DisableRoiBox();
+            if (isGainDataExtracted) {
+                gainplot2d->DisableRoiBox();
+            }
+            lblRxRoiEnabled->hide();
+        } else {
+            plot2d->EnableRoiBox(rxRoi.getIntArray());
+            if (isGainDataExtracted) {
+                gainplot2d->EnableRoiBox(rxRoi.getIntArray());
+            }
+            lblRxRoiEnabled->show();
+        }
+    }
 }
 
 void qDrawPlot::Update1dXYRange() {

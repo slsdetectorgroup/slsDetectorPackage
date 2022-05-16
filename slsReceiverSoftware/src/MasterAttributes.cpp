@@ -109,6 +109,17 @@ void MasterAttributes::GetCommonBinaryAttributes(
     w->String(sls::ToString(scanParams).c_str());
     w->Key("Total Frames");
     w->Uint64(totalFrames);
+    w->Key("Receiver Roi");
+    w->StartObject();
+    w->Key("xmin");
+    w->Uint(receiverRoi.xmin);
+    w->Key("xmax");
+    w->Uint(receiverRoi.xmax);
+    w->Key("ymin");
+    w->Uint(receiverRoi.ymin);
+    w->Key("ymax");
+    w->Uint(receiverRoi.ymax);
+    w->EndObject();
 }
 
 void MasterAttributes::GetFinalBinaryAttributes(
@@ -274,6 +285,34 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5File *fd, Group *group) {
                                                PredType::STD_U64LE, dataspace);
         dataset.write(&totalFrames, PredType::STD_U64LE);
     }
+    // Receiver Roi xmin
+    {
+        DataSpace dataspace = DataSpace(H5S_SCALAR);
+        DataSet dataset = group->createDataSet("receiver roi xmin",
+                                               PredType::NATIVE_INT, dataspace);
+        dataset.write(&receiverRoi.xmin, PredType::NATIVE_INT);
+    }
+    // Receiver Roi xmax
+    {
+        DataSpace dataspace = DataSpace(H5S_SCALAR);
+        DataSet dataset = group->createDataSet("receiver roi xmax",
+                                               PredType::NATIVE_INT, dataspace);
+        dataset.write(&receiverRoi.xmax, PredType::NATIVE_INT);
+    }
+    // Receiver Roi ymin
+    {
+        DataSpace dataspace = DataSpace(H5S_SCALAR);
+        DataSet dataset = group->createDataSet("receiver roi ymin",
+                                               PredType::NATIVE_INT, dataspace);
+        dataset.write(&receiverRoi.ymin, PredType::NATIVE_INT);
+    }
+    // Receiver Roi ymax
+    {
+        DataSpace dataspace = DataSpace(H5S_SCALAR);
+        DataSet dataset = group->createDataSet("receiver roi ymax",
+                                               PredType::NATIVE_INT, dataspace);
+        dataset.write(&receiverRoi.ymax, PredType::NATIVE_INT);
+    }
 }
 
 void MasterAttributes::WriteFinalHDF5Attributes(H5File *fd, Group *group) {
@@ -343,14 +382,14 @@ void MasterAttributes::WriteHDF5ROI(H5File *fd, Group *group) {
         DataSpace dataspace = DataSpace(H5S_SCALAR);
         DataSet dataset =
             group->createDataSet("roi xmin", PredType::NATIVE_INT, dataspace);
-        dataset.write(&roi.xmin, PredType::NATIVE_INT);
+        dataset.write(&detectorRoi.xmin, PredType::NATIVE_INT);
     }
     // Roi xmax
     {
         DataSpace dataspace = DataSpace(H5S_SCALAR);
         DataSet dataset =
             group->createDataSet("roi xmax", PredType::NATIVE_INT, dataspace);
-        dataset.write(&roi.xmax, PredType::NATIVE_INT);
+        dataset.write(&detectorRoi.xmax, PredType::NATIVE_INT);
     }
 }
 
@@ -369,7 +408,7 @@ void MasterAttributes::WriteHDF5ReadNRows(H5File *fd, Group *group) {
 }
 
 void MasterAttributes::WriteHDF5ThresholdEnergy(H5File *fd, Group *group) {
-     char c[1024]{};
+    char c[1024]{};
     DataSpace dataspace = DataSpace(H5S_SCALAR);
     DataSet dataset = group->createDataSet("Threshold Energy",
                                            PredType::NATIVE_INT, dataspace);
@@ -383,7 +422,7 @@ void MasterAttributes::WriteHDF5ThresholdEnergy(H5File *fd, Group *group) {
 }
 
 void MasterAttributes::WriteHDF5ThresholdEnergies(H5File *fd, Group *group) {
-     char c[1024]{};
+    char c[1024]{};
     DataSpace dataspace = DataSpace(H5S_SCALAR);
     StrType strdatatype(PredType::C_S1, 1024);
     DataSet dataset =
@@ -393,7 +432,7 @@ void MasterAttributes::WriteHDF5ThresholdEnergies(H5File *fd, Group *group) {
 }
 
 void MasterAttributes::WriteHDF5SubExpTime(H5File *fd, Group *group) {
-     char c[1024]{};
+    char c[1024]{};
     DataSpace dataspace = DataSpace(H5S_SCALAR);
     StrType strdatatype(PredType::C_S1, 256);
     DataSet dataset =
@@ -403,7 +442,7 @@ void MasterAttributes::WriteHDF5SubExpTime(H5File *fd, Group *group) {
 }
 
 void MasterAttributes::WriteHDF5SubPeriod(H5File *fd, Group *group) {
-     char c[1024]{};
+    char c[1024]{};
     DataSpace dataspace = DataSpace(H5S_SCALAR);
     StrType strdatatype(PredType::C_S1, 256);
     DataSet dataset =
@@ -420,7 +459,7 @@ void MasterAttributes::WriteHDF5SubQuad(H5File *fd, Group *group) {
 }
 
 void MasterAttributes::WriteHDF5RateCorrections(H5File *fd, Group *group) {
-     char c[1024]{};
+    char c[1024]{};
     DataSpace dataspace = DataSpace(H5S_SCALAR);
     StrType strdatatype(PredType::C_S1, 1024);
     DataSet dataset =
@@ -438,7 +477,7 @@ void MasterAttributes::WriteHDF5CounterMask(H5File *fd, Group *group) {
 
 void MasterAttributes::WriteHDF5ExptimeArray(H5File *fd, Group *group) {
     for (int i = 0; i != 3; ++i) {
-         char c[1024]{};
+        char c[1024]{};
         DataSpace dataspace = DataSpace(H5S_SCALAR);
         StrType strdatatype(PredType::C_S1, 256);
         DataSet dataset =
@@ -450,7 +489,7 @@ void MasterAttributes::WriteHDF5ExptimeArray(H5File *fd, Group *group) {
 
 void MasterAttributes::WriteHDF5GateDelayArray(H5File *fd, Group *group) {
     for (int i = 0; i != 3; ++i) {
-         char c[1024]{};
+        char c[1024]{};
         DataSpace dataspace = DataSpace(H5S_SCALAR);
         StrType strdatatype(PredType::C_S1, 256);
         DataSet dataset =
@@ -533,8 +572,13 @@ void MasterAttributes::GetGotthardBinaryAttributes(
     w->String(sls::ToString(exptime).c_str());
     w->Key("Period");
     w->String(sls::ToString(period).c_str());
-    w->Key("Roi (xmin, xmax)");
-    w->String(sls::ToString(roi).c_str());
+    w->Key("Detector Roi");
+    w->StartObject();
+    w->Key("xmin");
+    w->Uint(detectorRoi.xmin);
+    w->Key("xmax");
+    w->Uint(detectorRoi.xmax);
+    w->EndObject();
 };
 
 #ifdef HDF5C

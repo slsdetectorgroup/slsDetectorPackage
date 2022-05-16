@@ -53,6 +53,9 @@ class Implementation : private virtual slsDetectorDefs {
     bool getArping() const;
     pid_t getArpingThreadId() const;
     void setArping(const bool i, const std::vector<std::string> ips);
+    ROI getReceiverROI() const;
+    void setReceiverROI(const ROI arg);
+    void setReceiverROIMetadata(const ROI arg);
 
     /**************************************************
      *                                                 *
@@ -204,7 +207,7 @@ class Implementation : private virtual slsDetectorDefs {
     void setDynamicRange(const uint32_t i);
     ROI getROI() const;
     /* [Gotthard] */
-    void setROI(ROI arg);
+    void setDetectorROI(ROI arg);
     bool getTenGigaEnable() const;
     /* [Eiger][Ctb] */
     void setTenGigaEnable(const bool b);
@@ -253,7 +256,8 @@ class Implementation : private virtual slsDetectorDefs {
      *                                                *
      * ************************************************/
     /** params: file path, file name, file index, image size */
-    void registerCallBackStartAcquisition(int (*func)(const std::string &, const std::string &,
+    void registerCallBackStartAcquisition(int (*func)(const std::string &,
+                                                      const std::string &,
                                                       uint64_t, size_t, void *),
                                           void *arg);
     /** params: total frames caught */
@@ -263,7 +267,8 @@ class Implementation : private virtual slsDetectorDefs {
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
                                                    char *, size_t, void *),
                                       void *arg);
-    /** params: sls_receiver_header pointer, pointer to data, reference to image size */
+    /** params: sls_receiver_header pointer, pointer to data, reference to image
+     * size */
     void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
                                                          char *, size_t &,
                                                          void *),
@@ -274,7 +279,7 @@ class Implementation : private virtual slsDetectorDefs {
     void SetThreadPriorities();
     void SetupFifoStructure();
 
-    xy GetPortGeometry();
+    const xy GetPortGeometry() const;
     void ResetParametersforNewAcquisition();
     void CreateUDPSockets();
     void SetupWriter();
@@ -299,6 +304,10 @@ class Implementation : private virtual slsDetectorDefs {
     bool framePadding{true};
     pid_t parentThreadId;
     pid_t tcpThreadId;
+    ROI receiverRoi{};
+    std::array<ROI, 2> portRois{};
+    // receiver roi for complete detector for metadata
+    ROI receiverRoiMetadata{};
 
     // file parameters
     fileFormat fileFormatType{BINARY};
@@ -356,13 +365,14 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t numberOfDigitalSamples{0};
     uint32_t counterMask{0};
     uint32_t dynamicRange{16};
-    ROI roi{};
+    ROI detectorRoi{};
     bool tengigaEnable{false};
     bool flipRows{false};
     bool quadEnable{false};
     bool activated{true};
     std::array<bool, 2> detectorDataStream = {{true, true}};
     std::array<bool, 2> detectorDataStream10GbE = {{true, true}};
+    std::array<bool, 2> portStream = {{true, true}};
     int readNRows{0};
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};
@@ -374,8 +384,8 @@ class Implementation : private virtual slsDetectorDefs {
     int ctbDbitOffset{0};
 
     // callbacks
-    int (*startAcquisitionCallBack)(const std::string &, const std::string &, uint64_t, size_t,
-                                    void *){nullptr};
+    int (*startAcquisitionCallBack)(const std::string &, const std::string &,
+                                    uint64_t, size_t, void *){nullptr};
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(uint64_t, void *){nullptr};
     void *pAcquisitionFinished{nullptr};

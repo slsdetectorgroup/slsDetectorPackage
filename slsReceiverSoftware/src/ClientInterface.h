@@ -66,7 +66,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_version(sls::ServerInterface &socket);
     int setup_receiver(sls::ServerInterface &socket);
     void setDetectorType(detectorType arg);
-    int set_roi(sls::ServerInterface &socket);
+    int set_detector_roi(sls::ServerInterface &socket);
     int set_num_frames(sls::ServerInterface &socket);
     int set_num_triggers(sls::ServerInterface &socket);
     int set_num_bursts(sls::ServerInterface &socket);
@@ -164,6 +164,9 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_detector_datastream(sls::ServerInterface &socket);
     int get_arping(sls::ServerInterface &socket);
     int set_arping(sls::ServerInterface &socket);
+    int get_receiver_roi(sls::ServerInterface &socket);
+    int set_receiver_roi(sls::ServerInterface &socket);
+    int set_receiver_roi_metadata(sls::ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {

@@ -6,6 +6,7 @@
 #include <qlist.h>
 #include <qwt_plot.h>
 #include <qwt_plot_spectrogram.h>
+#include <qwt_plot_shapeitem.h>
 
 class QwtPlotPanner;
 class QwtScaleWidget;
@@ -67,6 +68,8 @@ class SlsQt2DPlot : public QwtPlot {
     void SetLogz(bool enable, bool isMin, bool isMax, double min, double max);
     void SetZRange(bool isMin, bool isMax, double min, double max);
     void LogZ(bool on = 1);
+    void EnableRoiBox(std::array<int, 4> roi);  
+    void DisableRoiBox();
 
   public slots:
     void showSpectrogram(bool on);
@@ -86,4 +89,5 @@ class SlsQt2DPlot : public QwtPlot {
     QList<double> contourLevelsLog;
     bool disableZoom{false};
     int isLog;
+    QwtPlotShapeItem *roiBox{nullptr};
 };

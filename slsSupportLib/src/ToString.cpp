@@ -17,7 +17,11 @@ std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::xy &coord) {
 
 std::string ToString(const slsDetectorDefs::ROI &roi) {
     std::ostringstream oss;
-    oss << '[' << roi.xmin << ", " << roi.xmax << ']';
+    oss << '[' << roi.xmin << ", " << roi.xmax;
+    if (roi.ymin != -1 || roi.ymax != -1) {
+        oss << ", " << roi.ymin << ", " << roi.ymax;
+    }
+    oss << ']';
     return oss.str();
 }
 

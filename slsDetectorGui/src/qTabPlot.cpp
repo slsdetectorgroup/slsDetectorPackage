@@ -331,6 +331,7 @@ void qTabPlot::SetGapPixels(bool enable) {
     LOG(logINFO) << "Setting Gap Pixels Enable to " << enable;
     try {
         det->setGapPixelsinCallback(enable);
+        plot->SetGapPixels(enable);
     }
     CATCH_HANDLE("Could not set gap pixels enable.", "qTabPlot::SetGapPixels",
                  this, &qTabPlot::GetGapPixels)

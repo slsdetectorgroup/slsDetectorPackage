@@ -30,7 +30,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param ind self index
      * @param f address of Fifo pointer
      * @param dr pointer to dynamic range
-     * @param r roi
+     * @param r detectorRoi
      * @param fi pointer to file index
      * @param fr flip rows
      * @param nm number of ports in each dimension
@@ -64,15 +64,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      */
     void CreateZmqSockets(int *nunits, uint32_t port, const sls::IpAddr ip,
                           int hwm);
-
-    /**
-     * Shuts down and deletes Zmq Sockets
-     */
     void CloseZmqSocket();
-
-    /**
-     * Restream stop dummy packet
-     */
     void RestreamStop();
 
   private:
@@ -82,24 +74,17 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param buf get frame index from buffer to calculate first index to record
      */
     void RecordFirstIndex(uint64_t fnum, char *buf);
-
-    /**
-     * Thread Exeution for DataStreamer Class
-     * Stream an image via zmq
-     */
     void ThreadExecution();
 
     /**
      * Frees dummy buffer,
      * reset running mask by calling StopRunning()
-     * @param buf address of pointer
      */
     void StopProcessing(char *buf);
 
     /**
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
-     * @param buf address of pointer
      */
     void ProcessAnImage(char *buf);
 
@@ -120,11 +105,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     Fifo *fifo;
     ZmqSocket *zmqSocket{nullptr};
     uint32_t *dynamicRange;
-    ROI *roi;
+    ROI *detectorRoi;
     int adcConfigured{-1};
     uint64_t *fileIndex;
     bool flipRows;
-
     std::map<std::string, std::string> additionalJsonHeader;
 
     /** Used by streamer thread to update local copy (reduce number of locks
@@ -137,15 +121,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     /** local copy of additional json header  (it can be update on the fly) */
     std::map<std::string, std::string> localAdditionalJsonHeader;
 
-    /** Aquisition Started flag */
     bool startedFlag{false};
-
-    /** Frame Number of First Frame */
     uint64_t firstIndex{0};
-
     std::string fileNametoStream;
-
-    /** Complete buffer used for roi, eg. shortGotthard */
+    /** Complete buffer used for detectorRoi, eg. shortGotthard */
     char *completeBuffer{nullptr};
 
     xy numPorts{1, 1};

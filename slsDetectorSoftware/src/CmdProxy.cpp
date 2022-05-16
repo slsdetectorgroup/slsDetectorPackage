@@ -354,7 +354,7 @@ std::string CmdProxy::DetectorSize(int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getDetectorSize();
-        os << "[" << t.x << ", " << t.y << "]\n";
+        os << t << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
@@ -1056,7 +1056,7 @@ std::string CmdProxy::TemperatureValues(int action) {
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;
     os << cmd << ' ';
-    
+
     if (action == defs::HELP_ACTION) {
         if (args.size() == 0) {
             os << GetHelpDac(std::to_string(0)) << '\n';
@@ -1082,7 +1082,7 @@ std::string CmdProxy::Dac(int action) {
             WrongNumberOfParameters(1); // This prints slightly wrong
 
         defs::dacIndex dacIndex{};
-        //TODO! Remove if
+        // TODO! Remove if
         if (type == defs::CHIPTESTBOARD && !is_int(args[0])) {
             dacIndex = det->getDacIndex(args[0]);
         } else {
@@ -1152,7 +1152,8 @@ std::string CmdProxy::DacList(const int action) {
                                     "names. Cannot change them.");
         }
         if (det_id != -1) {
-            throw sls::RuntimeError("Cannot configure dacnames at module level");
+            throw sls::RuntimeError(
+                "Cannot configure dacnames at module level");
         }
         if (args.size() != 18) {
             WrongNumberOfParameters(18);
@@ -1646,6 +1647,51 @@ std::string CmdProxy::ReceiverHostname(int action) {
     }
     return os.str();
 }
+
+std::string CmdProxy::Rx_ROI(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in "
+              "receiver.\n\tOnly allowed at multi module level and without gap pixels."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        if (det_id == -1) {
+            auto t = det->getRxROI();
+            os << t << '\n';
+        } else {
+            auto t = det->getIndividualRxROIs(std::vector<int>{det_id});
+            os << t << '\n';
+        }
+    } else if (action == defs::PUT_ACTION) {
+        defs::ROI t;
+        // 2 or 4 arguments
+        if (args.size() != 2 && args.size() != 4) {
+            WrongNumberOfParameters(2);
+        }
+        if (args.size() == 2 || args.size() == 4) {
+            t.xmin = StringTo<int>(args[0]);
+            t.xmax = StringTo<int>(args[1]);
+        }
+        if (args.size() == 4) {
+            t.ymin = StringTo<int>(args[2]);
+            t.ymax = StringTo<int>(args[3]);
+        }
+        // only multi level
+        if (det_id != -1) {
+            throw RuntimeError("Cannot execute receiver ROI at module level");
+        }
+        det->setRxROI(t);
+        os << t << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* File */
 
 /* ZMQ Streaming Parameters (Receiver<->Client) */
@@ -1898,9 +1944,7 @@ std::string CmdProxy::ROI(int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getROI(std::vector<int>{det_id});
-        for (auto &it : t) {
-            os << '[' << it.xmin << ", " << it.xmax << "] \n";
-        }
+        os << t << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id == -1 && det->size() > 1) {
             throw sls::RuntimeError("Cannot execute ROI at multi module level");
@@ -1910,28 +1954,7 @@ std::string CmdProxy::ROI(int action) {
         }
         defs::ROI t(StringTo<int>(args[0]), StringTo<int>(args[1]));
         det->setROI(t, det_id);
-        os << '[' << t.xmin << ", " << t.xmax << "]\n";
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
-std::string CmdProxy::ClearROI(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "\n\t[Gotthard] Resets Region of interest in detector. All "
-              "channels enabled. Default is all channels enabled."
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
-    } else if (action == defs::PUT_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        det->clearROI(std::vector<int>{det_id});
-        os << "[-1, -1]\n";
+        os << t << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }
@@ -2101,9 +2124,8 @@ std::string CmdProxy::VetoStreaming(int action) {
         os << "[none|lll|10gbe|...]\n\t[Gotthard2] Enable or disable the 2 "
               "veto streaming interfaces available. Can include more than one "
               "interface. \n\tDefault: none. lll (low latency link) is the "
-              "default "
-              "interface to work with. \n\t10GbE is for debugging and also "
-              "enables second interface in receiver for listening to veto "
+              "default interface to work with. \n\t10GbE is for debugging and "
+              "also enables second interface in receiver for listening to veto "
               "packets (writes a separate file if writing enabled). Also "
               "restarts client and receiver zmq sockets if zmq streaming "
               "enabled."
@@ -2294,9 +2316,9 @@ std::string CmdProxy::GateDelay(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "gatedelay") {
-            os << "[duration] [(optional unit) "
-                  "ns|us|ms|s]\n\t[Mythen3] Gate Delay of all gate signals in "
-                  "auto and trigger mode (internal gating)."
+            os << "[duration] [(optional unit) ns|us|ms|s]\n\t[Mythen3] Gate "
+                  "Delay of all gate signals in auto and trigger mode "
+                  "(internal gating)."
                << '\n';
         } else if (cmd == "gatedelay1") {
             os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 1 in auto "
@@ -2807,11 +2829,11 @@ std::string CmdProxy::AdditionalJsonHeader(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[key1] [value1] [key2] [value2]...[keyn] [valuen]"
-              "\n\tAdditional json header to be streamed out from receiver via "
-              "zmq. Default is empty. Max 20 characters for each key/value. "
-              "Use only if to be processed by an intermediate user process "
-              "listening to receiver zmq packets. Empty value deletes header. "
+        os << "[key1] [value1] [key2] [value2]...[keyn] [valuen]\n\tAdditional "
+              "json header to be streamed out from receiver via zmq. Default "
+              "is empty. Max 20 characters for each key/value. Use only if to "
+              "be processed by an intermediate user process listening to "
+              "receiver zmq packets. Empty value deletes header. "
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -2921,10 +2943,10 @@ std::string CmdProxy::UpdateDetectorServer(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[server_name  with full "
-              "path]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3]["
-              "Gotthard2] Copies detector server via TCP (without tftp). Makes "
-              "a symbolic link with a shorter name (without vx.x.x). Then, "
-              "detector controller reboots (except "
+              "path]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3][Gotthard2] "
+              "Copies detector server via TCP (without tftp). Makes a symbolic "
+              "link with a shorter name (without vx.x.x). Then, detector "
+              "controller reboots (except "
               "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn server "
               "to the link, which is effective after a reboot."
            << '\n';
@@ -2947,11 +2969,9 @@ std::string CmdProxy::UpdateKernel(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[kernel_name with full "
-              "path]\n\t[Jungfrau][Ctb][Moench][Mythen3]["
-              "Gotthard2] Advanced Command!! You could damage the detector. "
-              "Please use"
-              " with caution.\n\tUpdates the kernel image. Then, detector "
-              "controller "
+              "path]\n\t[Jungfrau][Ctb][Moench][Mythen3][Gotthard2] Advanced "
+              "Command!! You could damage the detector. Please use with "
+              "caution.\n\tUpdates the kernel image. Then, detector controller "
               "reboots with new kernel."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2972,16 +2992,15 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\tWithout tftp: [server_name (incl fullpath)] "
-              "[fname.pof (incl full path)] "
-              "This does not use tftp."
-              "\n\t\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
-              "firmware, detector server, deletes old server, creates the symbolic link and then "
-              "reboots detector controller. \n\t\t[Mythen3][Gotthard2] will "
-              "require a script to start up the shorter named server link at "
-              "start up. \n\t\tserver_name is full path name of detector server "
-              "binary"
-              "\n\t\tfname is full path of programming file"
+        os << "\n\tWithout tftp: [server_name (incl fullpath)] [fname.pof "
+              "(incl full path)] This does not use "
+              "tftp.\n\t\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
+              "firmware, detector server, deletes old server, creates the "
+              "symbolic link and then reboots detector controller. "
+              "\n\t\t[Mythen3][Gotthard2] will require a script to start up "
+              "the shorter named server link at start up. \n\t\tserver_name is "
+              "full path name of detector server binary\n\t\tfname is full "
+              "path of programming file"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
@@ -2989,14 +3008,13 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-
         int fpos = args.size() - 1;
         if (args[fpos].find(".pof") == std::string::npos &&
             args[fpos].find(".rbf") == std::string::npos) {
             throw sls::RuntimeError("Programming file must be a pof/rbf file.");
         }
         det->updateFirmwareAndServer(args[0], args[1],
-                                         std::vector<int>{det_id});
+                                     std::vector<int>{det_id});
         os << "successful\n";
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -3039,8 +3057,7 @@ std::string CmdProxy::AdcRegister(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[address] [value]\n\t[Jungfrau][Ctb][Moench][Gotthard] Writes "
-              "to an adc "
-              "register in hex. Advanced user Function!"
+              "to an adc register in hex. Advanced user Function!"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get.");

@@ -786,6 +786,15 @@ void init_det(py::module &m) {
         .def("setRxArping",
              (void (Detector::*)(bool, sls::Positions)) & Detector::setRxArping,
              py::arg(), py::arg() = Positions{})
+        .def("getIndividualRxROIs",
+             (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
+                 Detector::getIndividualRxROIs,
+             py::arg())
+        .def("getRxROI", (defs::ROI(Detector::*)() const) & Detector::getRxROI)
+        .def("setRxROI",
+             (void (Detector::*)(const defs::ROI)) & Detector::setRxROI,
+             py::arg())
+        .def("clearRxROI", (void (Detector::*)()) & Detector::clearRxROI)
         .def("getFileFormat",
              (Result<defs::fileFormat>(Detector::*)(sls::Positions) const) &
                  Detector::getFileFormat,
@@ -1602,11 +1611,6 @@ void init_det(py::module &m) {
         .def("rebootController",
              (void (Detector::*)(sls::Positions)) & Detector::rebootController,
              py::arg() = Positions{})
-        .def("updateFirmwareAndServer",
-             (void (Detector::*)(const std::string &, const std::string &,
-                                 const std::string &, sls::Positions)) &
-                 Detector::updateFirmwareAndServer,
-             py::arg(), py::arg(), py::arg(), py::arg() = Positions{})
         .def("updateFirmwareAndServer",
              (void (Detector::*)(const std::string &, const std::string &,
                                  sls::Positions)) &

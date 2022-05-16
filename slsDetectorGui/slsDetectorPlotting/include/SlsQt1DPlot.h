@@ -9,6 +9,7 @@
 #include <qwt_plot_curve.h>
 #include <qwt_plot_marker.h>
 #include <qwt_scale_div.h>
+#include <qwt_plot_shapeitem.h>
 
 class QPen;
 class SlsQt1DPlot;
@@ -136,6 +137,9 @@ class SlsQt1DPlot : public QwtPlot {
     void SetLogX(bool yes = 1);
     void SetLogY(bool yes = 1);
 
+    void EnableRoiBox(std::array<int, 4> roi);  
+    void DisableRoiBox();
+
   private:
     SlsQtH1DList *hist_list{nullptr};
     SlsQt1DZoomer *zoomer{nullptr};
@@ -158,6 +162,8 @@ class SlsQt1DPlot : public QwtPlot {
 
     friend void SlsQtH1D::Attach(SlsQt1DPlot *p);
     friend void SlsQtH1D::Detach(SlsQt1DPlot *p);
+
+    QwtPlotShapeItem *roiBox{nullptr};
 
   public slots:
     void UnZoom();

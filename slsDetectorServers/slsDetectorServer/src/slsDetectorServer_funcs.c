@@ -2045,7 +2045,7 @@ int set_num_frames(int file_des) {
                 arg > MAX_FRAMES_IN_BURST_MODE) {
                 ret = FAIL;
                 sprintf(mess,
-                        "Could not set number of frames %lld. Must be <= %d in "
+                        "Could not set number of frames %lld. Must be less than equal to %d in "
                         "burst mode.\n",
                         (long long unsigned int)arg, MAX_FRAMES_IN_BURST_MODE);
                 LOG(logERROR, (mess));
@@ -2863,7 +2863,12 @@ int set_roi(int file_des) {
         return printSocketReadError();
     if (receiveData(file_des, &arg.xmax, sizeof(int), INT32) < 0)
         return printSocketReadError();
-    LOG(logDEBUG1, ("Set ROI: [%d, %d]\n", arg.xmin, arg.xmax));
+    if (receiveData(file_des, &arg.ymin, sizeof(int), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, &arg.ymax, sizeof(int), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Set ROI: [%d, %d, %d, %d]\n", arg.xmin, arg.xmax, arg.ymin,
+                    arg.ymax));
 
 #ifndef GOTTHARDD
     functionNotImplemented();
@@ -2895,13 +2900,16 @@ int get_roi(int file_des) {
 #else
     // only get
     retval = getROI();
-    LOG(logDEBUG1, ("nRois: (%d, %d)\n", retval.xmin, retval.xmax));
+    LOG(logDEBUG1, ("nRois: (%d, %d, %d, %d)\n", retval.xmin, retval.xmax,
+                    retval.ymin, retval.ymax));
 #endif
 
     Server_SendResult(file_des, INT32, NULL, 0);
     if (ret != FAIL) {
         sendData(file_des, &retval.xmin, sizeof(int), INT32);
         sendData(file_des, &retval.xmax, sizeof(int), INT32);
+        sendData(file_des, &retval.ymin, sizeof(int), INT32);
+        sendData(file_des, &retval.ymax, sizeof(int), INT32);
     }
     return ret;
 }
@@ -7134,11 +7142,19 @@ int get_receiver_parameters(int file_des) {
 #else
         roi.xmin = -1;
         roi.xmax = -1;
+        roi.ymin = -1;
+        roi.ymax = -1;
 #endif
         n += sendData(file_des, &roi.xmin, sizeof(int), INT32);
         if (n < 0)
             return printSocketReadError();
         n += sendData(file_des, &roi.xmax, sizeof(int), INT32);
+        if (n < 0)
+            return printSocketReadError();
+        n += sendData(file_des, &roi.ymin, sizeof(int), INT32);
+        if (n < 0)
+            return printSocketReadError();
+        n += sendData(file_des, &roi.ymax, sizeof(int), INT32);
         if (n < 0)
             return printSocketReadError();
     }

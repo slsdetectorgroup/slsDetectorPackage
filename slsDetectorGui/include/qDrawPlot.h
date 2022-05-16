@@ -55,6 +55,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void EnableGainPlot(bool enable);
     void ClonePlot();
     void SavePlot();
+    void SetGapPixels(bool enable);
 
   protected:
     void resizeEvent(QResizeEvent *event);
@@ -160,6 +161,9 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     int64_t currentFrame{0};
     mutable std::mutex mPlots;
     int64_t currentAcqIndex{0};
+    slsDetectorDefs::ROI rxRoi{};
+    bool isRxRoiDisplayed{false};
+    bool isGapPixels{false};
 
     unsigned int nPixelsX{0};
     unsigned int nPixelsY{0};

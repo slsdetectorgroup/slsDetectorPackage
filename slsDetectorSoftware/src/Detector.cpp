@@ -38,7 +38,7 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
 
     if (detectorShm.exists()) {
         detectorShm.openSharedMemory(false);
-        numDetectors = detectorShm()->numberOfModules;
+        numDetectors = detectorShm()->totalNumberOfModules;
         detectorShm.removeSharedMemory();
     }
 
@@ -1211,6 +1211,16 @@ void Detector::setRxArping(bool value, Positions pos) {
     pimpl->Parallel(&Module::setRxArping, pos, value);
 }
 
+Result<defs::ROI> Detector::getIndividualRxROIs(Positions pos) const {
+    return pimpl->Parallel(&Module::getRxROI, pos);
+}
+
+defs::ROI Detector::getRxROI() const { return pimpl->getRxROI(); }
+
+void Detector::setRxROI(const defs::ROI value) { pimpl->setRxROI(value); }
+
+void Detector::clearRxROI() { pimpl->clearRxROI(); }
+
 // File
 
 Result<defs::fileFormat> Detector::getFileFormat(Positions pos) const {
@@ -1777,7 +1787,7 @@ Detector::getVetoAlgorithm(const defs::streamingInterface interface,
 void Detector::setVetoAlgorithm(const defs::vetoAlgorithm alg,
                                 defs::streamingInterface interface,
                                 Positions pos) {
-    LOG(logINFOBLUE) << "alg:" << ToString(alg)
+    LOG(logDEBUG) << "alg:" << ToString(alg)
                      << " interface:" << ToString(interface);
     pimpl->Parallel(&Module::setVetoAlgorithm, pos, alg, interface);
 }

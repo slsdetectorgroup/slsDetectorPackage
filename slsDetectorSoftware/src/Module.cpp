@@ -1410,6 +1410,19 @@ void Module::setRxArping(bool enable) {
     sendToReceiver(F_SET_RECEIVER_ARPING, static_cast<int>(enable), nullptr);
 }
 
+defs::ROI Module::getRxROI() const {
+    return sendToReceiver<slsDetectorDefs::ROI>(F_RECEIVER_GET_RECEIVER_ROI);
+}
+
+void Module::setRxROI(const slsDetectorDefs::ROI arg) {
+    LOG(logDEBUG) << moduleIndex << ": " << arg;
+    sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI, arg, nullptr);
+}
+
+void Module::setRxROIMetadata(const slsDetectorDefs::ROI arg) {
+    sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI_METADATA, arg, nullptr);
+}
+
 // File
 slsDetectorDefs::fileFormat Module::getFileFormat() const {
     return sendToReceiver<fileFormat>(F_GET_RECEIVER_FILE_FORMAT);
@@ -1837,7 +1850,7 @@ void Module::setROI(slsDetectorDefs::ROI arg) {
     }
     sendToDetector(F_SET_ROI, arg, nullptr);
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RECEIVER_SET_ROI, arg, nullptr);
+        sendToReceiver(F_RECEIVER_SET_DETECTOR_ROI, arg, nullptr);
     }
 }
 

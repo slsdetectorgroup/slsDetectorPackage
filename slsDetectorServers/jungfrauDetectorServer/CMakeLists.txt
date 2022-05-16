@@ -25,7 +25,7 @@ target_include_directories(jungfrauDetectorServer_virtual
 )
 
 target_compile_definitions(jungfrauDetectorServer_virtual
-    PUBLIC JUNGFRAUD VIRTUAL STOP_SERVER
+    PUBLIC JUNGFRAUD VIRTUAL STOP_SERVER #TEST_MOD_GEOMETRY
 )
 
 target_link_libraries(jungfrauDetectorServer_virtual

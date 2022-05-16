@@ -27,19 +27,19 @@
 const std::string DataProcessor::typeName_ = "DataProcessor";
 
 DataProcessor::DataProcessor(int index, detectorType detectorType, Fifo *fifo,
-                             bool *activated, bool *dataStreamEnable,
+                             bool *dataStreamEnable,
                              uint32_t *streamingFrequency,
                              uint32_t *streamingTimerInMs,
                              uint32_t *streamingStartFnum, bool *framePadding,
                              std::vector<int> *ctbDbitList, int *ctbDbitOffset,
                              int *ctbAnalogDataBytes)
     : ThreadObject(index, typeName_), fifo_(fifo), detectorType_(detectorType),
-      dataStreamEnable_(dataStreamEnable), activated_(activated),
+      dataStreamEnable_(dataStreamEnable),
       streamingFrequency_(streamingFrequency),
       streamingTimerInMs_(streamingTimerInMs),
       streamingStartFnum_(streamingStartFnum), framePadding_(framePadding),
       ctbDbitList_(ctbDbitList), ctbDbitOffset_(ctbDbitOffset),
-      ctbAnalogDataBytes_(ctbAnalogDataBytes), firstStreamerFrame_(false) {
+      ctbAnalogDataBytes_(ctbAnalogDataBytes) {
 
     LOG(logDEBUG) << "DataProcessor " << index << " created";
 }
@@ -50,6 +50,13 @@ bool DataProcessor::GetStartedFlag() const { return startedFlag_; }
 
 void DataProcessor::SetFifo(Fifo *fifo) { fifo_ = fifo; }
 
+void DataProcessor::SetActivate(bool enable) { activated_ = enable; }
+
+void DataProcessor::SetReceiverROI(ROI roi) { 
+    receiverRoi_ = roi; 
+    receiverRoiEnabled_ = receiverRoi_.completeRoi() ? false : true;
+}
+
 void DataProcessor::ResetParametersforNewAcquisition() {
     StopRunning();
     startedFlag_ = false;
@@ -57,6 +64,8 @@ void DataProcessor::ResetParametersforNewAcquisition() {
     firstIndex_ = 0;
     currentFrameIndex_ = 0;
     firstStreamerFrame_ = true;
+    streamCurrentFrame_ = false;
+    completeImageToStreamBeforeCropping = sls::make_unique<char[]>(generalData_->imageSize);
 }
 
 void DataProcessor::RecordFirstIndex(uint64_t fnum) {
@@ -115,18 +124,28 @@ void DataProcessor::CreateFirstFiles(
     CloseFiles();
 
     // deactivated (half module/ single port), dont write file
-    if ((!*activated_) || (!detectorDataStream)) {
+    if (!activated_ || !detectorDataStream) {
         return;
     }
 
+#ifdef HDF5C
+    int nx = generalData_->nPixelsX;
+    int ny = generalData_->nPixelsY;
+    if (receiverRoiEnabled_) {
+        nx = receiverRoi_.xmax - receiverRoi_.xmin + 1;
+        ny = receiverRoi_.ymax - receiverRoi_.ymin + 1;
+        if (receiverRoi_.ymax == -1 || receiverRoi_.ymin == -1) {
+            ny = 1;
+        }
+    }
+#endif
     switch (dataFile_->GetFileFormat()) {
 #ifdef HDF5C
     case HDF5:
         dataFile_->CreateFirstHDF5DataFile(
             filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
             modulePos, numUnitsPerReadout, udpPortNumber, maxFramesPerFile,
-            numImages, generalData_->nPixelsX, generalData_->nPixelsY,
-            dynamicRange);
+            numImages, nx, ny, dynamicRange);
         break;
 #endif
     case BINARY:
@@ -156,6 +175,10 @@ std::array<std::string, 2> DataProcessor::CreateVirtualFile(
     const int numModX, const int numModY, const uint32_t dynamicRange,
     std::mutex *hdf5LibMutex) {
 
+    if (receiverRoiEnabled_) {
+        throw std::runtime_error("Skipping virtual hdf5 file since rx_roi is enabled.");
+    }
+
     bool gotthard25um =
         ((detectorType_ == GOTTHARD || detectorType_ == GOTTHARD2) &&
          (numModX * numModY) == 2);
@@ -170,10 +193,10 @@ std::array<std::string, 2> DataProcessor::CreateVirtualFile(
     // stop acquisition)
     return masterFileUtility::CreateVirtualHDF5File(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
-        modulePos, numUnitsPerReadout, framesPerFile, numImages,
-        generalData_->nPixelsX, generalData_->nPixelsY, dynamicRange,
-        numFramesCaught_, numModX, numModY, dataFile_->GetPDataType(),
-        dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes(),
+        modulePos, numUnitsPerReadout, framesPerFile, numImages, 
+        generalData_->nPixelsX, generalData_->nPixelsY, dynamicRange, 
+        numFramesCaught_, numModX, numModY, dataFile_->GetPDataType(), 
+        dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes(), 
         hdf5LibMutex, gotthard25um);
 }
 
@@ -182,6 +205,10 @@ void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
                                      const std::string &virtualDatasetName,
                                      const bool silentMode,
                                      std::mutex *hdf5LibMutex) {
+
+    if (receiverRoiEnabled_) {
+        throw std::runtime_error("Should not be here, roi with hdf5 virtual should throw.");
+    }
     std::string fname{virtualFileName}, datasetName{virtualDatasetName};
     // if no virtual file, link data file
     if (virtualFileName.empty()) {
@@ -234,21 +261,19 @@ void DataProcessor::ThreadExecution() {
         return;
     }
 
-    uint64_t fnum = 0;
     try {
-        fnum = ProcessAnImage(buffer);
+        ProcessAnImage(buffer);
     } catch (const std::exception &e) {
         fifo_->FreeAddress(buffer);
         return;
     }
+
     // stream (if time/freq to stream) or free
-    if (*dataStreamEnable_ && SendToStreamer()) {
-        // if first frame to stream, add frame index to fifo header (might
-        // not be the first)
-        if (firstStreamerFrame_) {
-            firstStreamerFrame_ = false;
-            (*((uint32_t *)(buffer + FIFO_DATASIZE_NUMBYTES))) =
-                (uint32_t)(fnum - firstIndex_);
+    if (streamCurrentFrame_) {
+        // copy the complete image back if roi enabled
+        if (receiverRoiEnabled_) {
+            (*((uint32_t *)buffer)) = generalData_->imageSize;
+            memcpy(buffer + generalData_->fifoBufferHeaderSize, &completeImageToStreamBeforeCropping[0], generalData_->imageSize);
         }
         fifo_->PushAddressToStream(buffer);
     } else {
@@ -270,9 +295,10 @@ void DataProcessor::StopProcessing(char *buf) {
     LOG(logDEBUG1) << index << ": Processing Completed";
 }
 
-uint64_t DataProcessor::ProcessAnImage(char *buf) {
+void DataProcessor::ProcessAnImage(char *buf) {
 
-    auto *rheader = reinterpret_cast<sls_receiver_header *>(buf + FIFO_HEADER_NUMBYTES);
+    auto *rheader =
+        reinterpret_cast<sls_receiver_header *>(buf + FIFO_HEADER_NUMBYTES);
     sls_detector_header header = rheader->detHeader;
     uint64_t fnum = header.frameNumber;
     currentFrameIndex_ = fnum;
@@ -295,12 +321,36 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
     }
 
     // frame padding
-    if (*activated_ && *framePadding_ && nump < generalData_->packetsPerFrame)
+    if (activated_ && *framePadding_ && nump < generalData_->packetsPerFrame)
         PadMissingPackets(buf);
 
     // rearrange ctb digital bits (if ctbDbitlist is not empty)
     if (!(*ctbDbitList_).empty()) {
         RearrangeDbitData(buf);
+    }
+
+    // 'stream Image' check has to be done here before crop image 
+    // stream (if time/freq to stream) or free
+    if (*dataStreamEnable_ && SendToStreamer()) {
+        // if first frame to stream, add frame index to fifo header (might
+        // not be the first)
+        if (firstStreamerFrame_) {
+            firstStreamerFrame_ = false;
+            (*((uint32_t *)(buf + FIFO_DATASIZE_NUMBYTES))) =
+                (uint32_t)(fnum - firstIndex_);
+        }
+        streamCurrentFrame_ = true;
+    } else {
+        streamCurrentFrame_ = false;
+    }
+
+
+    if (receiverRoiEnabled_) {
+        // copy the complete image to stream before cropping
+        if (streamCurrentFrame_) {
+            memcpy(&completeImageToStreamBeforeCropping[0], buf + generalData_->fifoBufferHeaderSize, generalData_->imageSize);
+        }
+        CropImage(buf);
     }
 
     try {
@@ -341,7 +391,6 @@ uint64_t DataProcessor::ProcessAnImage(char *buf) {
               // via stopReceiver tcp)
         }
     }
-    return fnum;
 }
 
 bool DataProcessor::SendToStreamer() {
@@ -507,4 +556,45 @@ void DataProcessor::RearrangeDbitData(char *buf) {
     // copy back to buf and update size
     memcpy(buf + digOffset, result.data(), numResult8Bits * sizeof(uint8_t));
     (*((uint32_t *)buf)) = numResult8Bits * sizeof(uint8_t);
+}
+
+void DataProcessor::CropImage(char *buf) {
+    LOG(logDEBUG) << "Cropping Image to ROI " << sls::ToString(receiverRoi_);
+    int nPixelsX = generalData_->nPixelsX;
+    int xmin = receiverRoi_.xmin;
+    int xmax = receiverRoi_.xmax;
+    int ymin = receiverRoi_.ymin;
+    int ymax = receiverRoi_.ymax;
+    int xwidth = xmax - xmin + 1;
+    int ywidth = ymax - ymin + 1;
+    if (ymin == -1 || ymax == -1) {
+        ywidth = 1;
+        ymin = 0;
+    }
+
+    // calculate total roi size
+    double bytesPerPixel = generalData_->dynamicRange / 8.00;
+    int startOffset = (int)((nPixelsX * ymin + xmin) * bytesPerPixel);
+
+    // write size into fifo buffer header
+    std::size_t roiImageSize = xwidth * ywidth * bytesPerPixel;
+    LOG(logDEBUG) << "roiImageSize:" << roiImageSize;
+    (*((uint32_t *)buf)) = roiImageSize;
+
+    // copy the roi to the beginning of the image
+    char *dstOffset = buf + generalData_->fifoBufferHeaderSize;
+    char *srcOffset = dstOffset + startOffset;
+
+    // entire width
+    if (xwidth == nPixelsX) {
+        memcpy(dstOffset, srcOffset, roiImageSize);
+    }
+    // width is cropped
+    else {
+        for (int y = 0; y != ywidth; ++y) {
+            memcpy(dstOffset, srcOffset, xwidth * bytesPerPixel);
+            dstOffset += (int)(xwidth * bytesPerPixel);
+            srcOffset += (int)(generalData_->nPixelsX * bytesPerPixel);
+        }
+    }
 }

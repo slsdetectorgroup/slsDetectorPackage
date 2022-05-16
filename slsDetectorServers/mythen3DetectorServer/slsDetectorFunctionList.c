@@ -2317,6 +2317,7 @@ void *start_timer(void *arg) {
         if (dr == 32 && ncounters > 1) {
             packetsPerFrame = 2;
         }
+        dataSize = imageSize / packetsPerFrame;
     }
     // 1g
     else {
@@ -2338,27 +2339,22 @@ void *start_timer(void *arg) {
     {
         const int nchannels = NCHAN_1_COUNTER * NCHIP * ncounters;
 
-        switch (dr) {
-        /*case 1: // TODO: Not implemented in firmware yet
-                break;*/
-        case 8:
-            for (int i = 0; i < nchannels; ++i) {
+        for (int i = 0; i < nchannels; ++i) {
+            switch (dr) {
+            //case 1: // TODO: Not implemented in firmware yet 
+            // break;
+            case 8:
                 *((uint8_t *)(imageData + i)) = (uint8_t)i;
-            }
-            break;
-        case 16:
-            for (int i = 0; i < nchannels; ++i) {
+                break;
+            case 16:
                 *((uint16_t *)(imageData + i * sizeof(uint16_t))) = (uint16_t)i;
+                break;
+            case 32:
+                *((uint32_t *)(imageData + i * sizeof(uint32_t))) = ((uint32_t)i & 0xFFFFFF); // 24 bit
+                break;
+            default:
+                break;
             }
-            break;
-        case 32:
-            for (int i = 0; i < nchannels; ++i) {
-                *((uint32_t *)(imageData + i * sizeof(uint32_t))) =
-                    ((uint32_t)i & 0xFFFFFF); // 24 bit
-            }
-            break;
-        default:
-            break;
         }
     }
 
@@ -2375,7 +2371,8 @@ void *start_timer(void *arg) {
         struct timespec begin, end;
         clock_gettime(CLOCK_REALTIME, &begin);
         usleep(expUs);
-
+        
+        
         int srcOffset = 0;
         // loop packet
         for (int i = 0; i != packetsPerFrame; ++i) {
@@ -2396,7 +2393,6 @@ void *start_timer(void *arg) {
             memcpy(packetData + sizeof(sls_detector_header),
                    imageData + srcOffset, dataSize);
             srcOffset += dataSize;
-
             sendUDPPacket(0, 0, packetData, packetSize);
         }
         LOG(logINFO, ("Sent frame: %d [%lld]\n", frameNr,

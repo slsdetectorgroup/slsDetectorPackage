@@ -17,15 +17,15 @@
 #include <future>
 #include <numeric>
 
-#define DETECTOR_SHMAPIVERSION 0x190809
-#define DETECTOR_SHMVERSION    0x220505
-#define SHORT_STRING_LENGTH    50
-
 namespace sls {
 
 class ZmqSocket;
 class detectorData;
 class Module;
+
+#define DETECTOR_SHMAPIVERSION 0x190809
+#define DETECTOR_SHMVERSION    0x220505
+#define SHORT_STRING_LENGTH    50
 
 /**
  * @short structure allocated in shared memory to store detector settings

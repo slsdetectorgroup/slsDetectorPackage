@@ -47,7 +47,7 @@ TEST_CASE("Open existing SharedMemory and read", "[detector]") {
     }
 
     SharedMemory<double> shm2(shm_id, -1);
-    shm2.openSharedMemory();
+    shm2.openSharedMemory(true);
     CHECK(*shm2() == 5.3);
 
     shm2.removeSharedMemory();
@@ -74,7 +74,7 @@ TEST_CASE("Open two shared memories to the same place", "[detector]") {
 
     // Open the second shared memory with the same name
     SharedMemory<Data> shm2(shm_id, -1);
-    shm2.openSharedMemory();
+    shm2.openSharedMemory(true);
     CHECK(shm2()->x == 5);
     CHECK(shm.getName() == shm2.getName());
 
@@ -165,7 +165,7 @@ TEST_CASE("map int64 to int32 throws"){
     *shm() = 7;
 
     SharedMemory<int64_t> shm2(shm_id, -1);
-    REQUIRE_THROWS(shm2.openSharedMemory());
+    REQUIRE_THROWS(shm2.openSharedMemory(true));
 
     shm.removeSharedMemory();
     

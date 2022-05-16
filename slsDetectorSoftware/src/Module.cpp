@@ -3202,7 +3202,7 @@ slsDetectorDefs::detectorType Module::getDetectorTypeFromShm(int det_id,
                                 "memory. Please free shared memory.");
     }
 
-    shm.openSharedMemory();
+    shm.openSharedMemory(verify);
     if (verify && shm()->shmversion != MODULE_SHMVERSION) {
         std::ostringstream ss;
         ss << "Single shared memory (" << det_id << "-" << moduleIndex
@@ -3221,7 +3221,7 @@ void Module::initSharedMemory(detectorType type, int det_id, bool verify) {
         shm.createSharedMemory();
         initializeModuleStructure(type);
     } else {
-        shm.openSharedMemory();
+        shm.openSharedMemory(verify);
         if (verify && shm()->shmversion != MODULE_SHMVERSION) {
             std::ostringstream ss;
             ss << "Single shared memory (" << det_id << "-" << moduleIndex

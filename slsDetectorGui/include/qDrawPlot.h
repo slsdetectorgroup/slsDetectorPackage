@@ -6,6 +6,8 @@
 #include "ui_form_plot.h"
 #include <mutex>
 
+class QResizeEvent;
+
 namespace sls {
 
 class SlsQt1DPlot;
@@ -13,7 +15,6 @@ class SlsQtH1D;
 class SlsQt2DPlot;
 class qCloneWidget;
 class detectorData;
-class QResizeEvent;
 
 class qDrawPlot : public QWidget, private Ui::PlotObject {
     Q_OBJECT

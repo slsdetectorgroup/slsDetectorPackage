@@ -4,10 +4,10 @@
 #include "sls/Detector.h"
 #include "ui_form_tab_debugging.h"
 
-namespace sls {
-
 class QTreeWidget;
 class QTreeWidgetItem;
+
+namespace sls {
 
 class qTabDebugging : public QWidget, private Ui::TabDebuggingObject {
     Q_OBJECT

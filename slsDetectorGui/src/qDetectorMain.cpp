@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 
         case 'f':
             fname = optarg;
-            LOG(logDEBUG) << long_options[option_index].name << " " << optarg;
+            LOG(sls::logDEBUG) << long_options[option_index].name << " " << optarg;
             break;
 
         case 'd':
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 
         case 'v':
             tempval = APIGUI;
-            LOG(logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x"
+            LOG(sls::logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x"
                          << std::hex << tempval << ")";
             return 0;
 
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
                 "i. Default: 0. Required \n" +
                 "\t                            only when more than one multi "
                 "detector object is needed.\n\n";
-            LOG(logERROR) << help_message;
+            LOG(sls::logERROR) << help_message;
             return -1;
         }
     }
@@ -96,11 +96,11 @@ int main(int argc, char **argv) {
     QApplication app(argc, argv);
     app.setStyle(new QPlastiqueStyle); // style is deleted by QApplication
     try {
-        qDetectorMain det(multiId, fname, isDeveloper);
+        sls::qDetectorMain det(multiId, fname, isDeveloper);
         det.show();
         app.exec();
     } catch (const std::exception &e) {
-        qDefs::Message(qDefs::CRITICAL,
+        sls::qDefs::Message(sls::qDefs::CRITICAL,
                        std::string(e.what()) + "\nExiting Gui :'( ", "main");
     }
     return 0;

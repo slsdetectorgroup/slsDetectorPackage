@@ -6,6 +6,9 @@
 #include "ui_form_detectormain.h"
 #include <QTabWidget>
 
+class QScrollArea;
+class QResizeEvent;
+
 namespace sls {
 
 class qDrawPlot;
@@ -17,8 +20,6 @@ class qTabSettings;
 class qTabDebugging;
 class qTabDeveloper;
 class qTabMessages;
-class QScrollArea;
-class QResizeEvent;
 
 /** To Over-ride the QTabWidget class to get the tabBar protected
  * methodTabWidget */

@@ -3,10 +3,10 @@
 #pragma once
 #include "ui_form_tab_messages.h"
 
-namespace sls {
-
 class QProcess;
 class QKeyEvent;
+
+namespace sls {
 
 class qTabMessages : public QWidget, private Ui::TabMessagesObject {
     Q_OBJECT

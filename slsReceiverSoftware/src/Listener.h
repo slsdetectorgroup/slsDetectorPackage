@@ -119,7 +119,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     // individual members
     detectorType myDetectorType;
     std::atomic<runStatus> *status;
-    std::unique_ptr<sls::UdpRxSocket> udpSocket{nullptr};
+    std::unique_ptr<UdpRxSocket> udpSocket{nullptr};
     uint32_t *udpPortNumber;
     std::string *eth;
     int *udpSocketBufferSize;

@@ -93,7 +93,7 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
         Receive(retval, retval_size);
     }
     // debugging
-    catch (sls::SocketError &e) {
+    catch (SocketError &e) {
         if (socketType == "Receiver") {
             throw ReceiverError("Receiver returned: " + std::string(e.what()));
         } else if (socketType == "Detector") {

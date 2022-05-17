@@ -214,7 +214,7 @@ void qDetectorMain::SetUpWidgetWindow() {
 void qDetectorMain::SetUpDetector(const std::string &config_file, int multiID) {
 
     // instantiate detector and set window title
-    det = sls::make_unique<sls::Detector>(multiID);
+    det = make_unique<Detector>(multiID);
 
     // create messages tab to capture config file loading logs
     tabMessages = new qTabMessages(this);
@@ -240,15 +240,15 @@ void qDetectorMain::SetUpDetector(const std::string &config_file, int multiID) {
     default:
         std::ostringstream os;
         os << det->getHostname() << " has "
-           << sls::ToString(det->getDetectorType().squash())
+           << ToString(det->getDetectorType().squash())
            << " detector type (" << std::to_string(detType)
            << "). Exiting GUI.";
         std::string errorMess = os.str();
-        throw sls::RuntimeError(errorMess.c_str());
+        throw RuntimeError(errorMess.c_str());
     }
     std::ostringstream os;
     os << "SLS Detector GUI : "
-       << sls::ToString(det->getDetectorType().squash()) << " - "
+       << ToString(det->getDetectorType().squash()) << " - "
        << det->getHostname();
     std::string title = os.str();
     LOG(logINFO) << title;
@@ -443,10 +443,10 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
         LOG(logINFO) << "About Common GUI for Jungfrau, Eiger, Mythen3, "
                         "Gotthard, Gotthard2 and Moench detectors";
 
-        std::string guiVersion = sls::ToStringHex(APIGUI);
+        std::string guiVersion = ToStringHex(APIGUI);
         std::string clientVersion = "unknown";
         try {
-            clientVersion = sls::ToStringHex(det->getClientVersion());
+            clientVersion = ToStringHex(det->getClientVersion());
         }
         CATCH_DISPLAY("Could not get client version.",
                       "qDetectorMain::ExecuteHelp")

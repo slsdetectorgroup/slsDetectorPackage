@@ -31,7 +31,7 @@ void MasterAttributes::GetBinaryAttributes(
         GetCtbBinaryAttributes(w);
         break;
     default:
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Unknown Detector type to get master attributes");
     }
     GetFinalBinaryAttributes(w);
@@ -64,7 +64,7 @@ void MasterAttributes::WriteHDF5Attributes(H5File *fd, Group *group) {
         WriteCtbHDF5Attributes(fd, group);
         break;
     default:
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Unknown Detector type to get master attributes");
     }
     WriteFinalHDF5Attributes(fd, group);
@@ -82,9 +82,9 @@ void MasterAttributes::GetCommonBinaryAttributes(
     std::replace(sTime.begin(), sTime.end(), '\n', '\0');
     w->String(sTime.c_str());
     w->Key("Detector Type");
-    w->String(sls::ToString(detType).c_str());
+    w->String(ToString(detType).c_str());
     w->Key("Timing Mode");
-    w->String(sls::ToString(timingMode).c_str());
+    w->String(ToString(timingMode).c_str());
     w->Key("Geometry");
     w->StartObject();
     w->Key("x");
@@ -104,11 +104,11 @@ void MasterAttributes::GetCommonBinaryAttributes(
     w->Key("Max Frames Per File");
     w->Uint(maxFramesPerFile);
     w->Key("Frame Discard Policy");
-    w->String(sls::ToString(frameDiscardMode).c_str());
+    w->String(ToString(frameDiscardMode).c_str());
     w->Key("Frame Padding");
     w->Uint(framePadding);
     w->Key("Scan Parameters");
-    w->String(sls::ToString(scanParams).c_str());
+    w->String(ToString(scanParams).c_str());
     w->Key("Total Frames");
     w->Uint64(totalFrames);
     w->Key("Receiver Roi");
@@ -129,7 +129,7 @@ void MasterAttributes::GetFinalBinaryAttributes(
     // adding few common parameters to the end
     if (!additionalJsonHeader.empty()) {
         w->Key("Additional Json Header");
-        w->String(sls::ToString(additionalJsonHeader).c_str());
+        w->String(ToString(additionalJsonHeader).c_str());
     }
     w->Key("Frames in File");
     w->Uint64(framesInFile);
@@ -184,7 +184,7 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5File *fd, Group *group) {
         DataSpace dataspace = DataSpace(H5S_SCALAR);
         DataSet dataset =
             group->createDataSet("Timestamp", strdatatype, dataspace);
-        sls::strcpy_safe(c, std::string(ctime(&t)));
+        strcpy_safe(c, std::string(ctime(&t)));
         dataset.write(c, strdatatype);
     }
     // detector type
@@ -193,7 +193,7 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5File *fd, Group *group) {
         StrType strdatatype(PredType::C_S1, 256);
         DataSet dataset =
             group->createDataSet("Detector Type", strdatatype, dataspace);
-        sls::strcpy_safe(c, sls::ToString(detType));
+        strcpy_safe(c, ToString(detType));
         dataset.write(c, strdatatype);
     }
     // timing mode
@@ -202,7 +202,7 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5File *fd, Group *group) {
         StrType strdatatype(PredType::C_S1, 256);
         DataSet dataset =
             group->createDataSet("Timing Mode", strdatatype, dataspace);
-        sls::strcpy_safe(c, sls::ToString(timingMode));
+        strcpy_safe(c, ToString(timingMode));
         dataset.write(c, strdatatype);
     }
     // TODO: make this into an array?
@@ -230,7 +230,7 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5File *fd, Group *group) {
         StrType strdatatype(PredType::C_S1, 256);
         Attribute attribute =
             dataset.createAttribute("Unit", strdatatype, dataspaceAttr);
-        sls::strcpy_safe(c, "bytes");
+        strcpy_safe(c, "bytes");
         attribute.write(strdatatype, c);
     }
     // TODO: make this into an array?
@@ -261,7 +261,7 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5File *fd, Group *group) {
         StrType strdatatype(PredType::C_S1, 256);
         DataSet dataset = group->createDataSet("Frame Discard Policy",
                                                strdatatype, dataspace);
-        sls::strcpy_safe(c, sls::ToString(frameDiscardMode));
+        strcpy_safe(c, ToString(frameDiscardMode));
         dataset.write(c, strdatatype);
     }
     // Frame Padding
@@ -277,7 +277,7 @@ void MasterAttributes::WriteCommonHDF5Attributes(H5File *fd, Group *group) {
         StrType strdatatype(PredType::C_S1, 256);
         DataSet dataset =
             group->createDataSet("Scan Parameters", strdatatype, dataspace);
-        sls::strcpy_safe(c, sls::ToString(scanParams));
+        strcpy_safe(c, ToString(scanParams));
         dataset.write(c, strdatatype);
     }
     // Total Frames
@@ -328,12 +328,12 @@ void MasterAttributes::WriteFinalHDF5Attributes(H5File *fd, Group *group) {
     }
     // additional json header
     if (!additionalJsonHeader.empty()) {
-        std::string json = sls::ToString(additionalJsonHeader);
+        std::string json = ToString(additionalJsonHeader);
         StrType strdatatype(PredType::C_S1, json.length());
         DataSpace dataspace = DataSpace(H5S_SCALAR);
         DataSet dataset = group->createDataSet("Additional JSON Header",
                                                strdatatype, dataspace);
-        sls::strcpy_safe(c, sls::ToString(additionalJsonHeader));
+        strcpy_safe(c, ToString(additionalJsonHeader));
         dataset.write(c, strdatatype);
     }
 }
@@ -344,7 +344,7 @@ void MasterAttributes::WriteHDF5Exptime(H5File *fd, Group *group) {
     DataSet dataset =
         group->createDataSet("Exposure Time", strdatatype, dataspace);
     char c[1024]{};
-    sls::strcpy_safe(c, sls::ToString(exptime));
+    strcpy_safe(c, ToString(exptime));
     dataset.write(c, strdatatype);
 }
 
@@ -354,7 +354,7 @@ void MasterAttributes::WriteHDF5Period(H5File *fd, Group *group) {
     DataSet dataset =
         group->createDataSet("Acquisition Period", strdatatype, dataspace);
     char c[1024]{};
-    sls::strcpy_safe(c, sls::ToString(period));
+    strcpy_safe(c, ToString(period));
     dataset.write(c, strdatatype);
 }
 
@@ -419,7 +419,7 @@ void MasterAttributes::WriteHDF5ThresholdEnergy(H5File *fd, Group *group) {
     StrType strdatatype(PredType::C_S1, 256);
     Attribute attribute =
         dataset.createAttribute("Unit", strdatatype, dataspaceAttr);
-    sls::strcpy_safe(c, "eV");
+    strcpy_safe(c, "eV");
     attribute.write(strdatatype, c);
 }
 
@@ -429,7 +429,7 @@ void MasterAttributes::WriteHDF5ThresholdEnergies(H5File *fd, Group *group) {
     StrType strdatatype(PredType::C_S1, 1024);
     DataSet dataset =
         group->createDataSet("Threshold Energies", strdatatype, dataspace);
-    sls::strcpy_safe(c, sls::ToString(thresholdAllEnergyeV));
+    strcpy_safe(c, ToString(thresholdAllEnergyeV));
     dataset.write(c, strdatatype);
 }
 
@@ -439,7 +439,7 @@ void MasterAttributes::WriteHDF5SubExpTime(H5File *fd, Group *group) {
     StrType strdatatype(PredType::C_S1, 256);
     DataSet dataset =
         group->createDataSet("Sub Exposure Time", strdatatype, dataspace);
-    sls::strcpy_safe(c, sls::ToString(subExptime));
+    strcpy_safe(c, ToString(subExptime));
     dataset.write(c, strdatatype);
 }
 
@@ -449,7 +449,7 @@ void MasterAttributes::WriteHDF5SubPeriod(H5File *fd, Group *group) {
     StrType strdatatype(PredType::C_S1, 256);
     DataSet dataset =
         group->createDataSet("Sub Period", strdatatype, dataspace);
-    sls::strcpy_safe(c, sls::ToString(subPeriod));
+    strcpy_safe(c, ToString(subPeriod));
     dataset.write(c, strdatatype);
 }
 
@@ -466,7 +466,7 @@ void MasterAttributes::WriteHDF5RateCorrections(H5File *fd, Group *group) {
     StrType strdatatype(PredType::C_S1, 1024);
     DataSet dataset =
         group->createDataSet("Rate Corrections", strdatatype, dataspace);
-    sls::strcpy_safe(c, sls::ToString(ratecorr));
+    strcpy_safe(c, ToString(ratecorr));
     dataset.write(c, strdatatype);
 }
 
@@ -484,7 +484,7 @@ void MasterAttributes::WriteHDF5ExptimeArray(H5File *fd, Group *group) {
         StrType strdatatype(PredType::C_S1, 256);
         DataSet dataset =
             group->createDataSet("Exposure Time1", strdatatype, dataspace);
-        sls::strcpy_safe(c, sls::ToString(exptimeArray[i]));
+        strcpy_safe(c, ToString(exptimeArray[i]));
         dataset.write(c, strdatatype);
     }
 }
@@ -496,7 +496,7 @@ void MasterAttributes::WriteHDF5GateDelayArray(H5File *fd, Group *group) {
         StrType strdatatype(PredType::C_S1, 256);
         DataSet dataset =
             group->createDataSet("Gate Delay1", strdatatype, dataspace);
-        sls::strcpy_safe(c, sls::ToString(gateDelayArray[i]));
+        strcpy_safe(c, ToString(gateDelayArray[i]));
         dataset.write(c, strdatatype);
     }
 }
@@ -514,7 +514,7 @@ void MasterAttributes::WriteHDF5BurstMode(H5File *fd, Group *group) {
     DataSet dataset =
         group->createDataSet("Burst Mode", strdatatype, dataspace);
     char c[1024]{};
-    sls::strcpy_safe(c, sls::ToString(burstMode));
+    strcpy_safe(c, ToString(burstMode));
     dataset.write(c, strdatatype);
 }
 
@@ -571,9 +571,9 @@ void MasterAttributes::WriteHDF5DbitList(H5File *fd, Group *group) {
 void MasterAttributes::GetGotthardBinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
-    w->String(sls::ToString(exptime).c_str());
+    w->String(ToString(exptime).c_str());
     w->Key("Period");
-    w->String(sls::ToString(period).c_str());
+    w->String(ToString(period).c_str());
     w->Key("Detector Roi");
     w->StartObject();
     w->Key("xmin");
@@ -594,9 +594,9 @@ void MasterAttributes::WriteGotthardHDF5Attributes(H5File *fd, Group *group) {
 void MasterAttributes::GetJungfrauBinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
-    w->String(sls::ToString(exptime).c_str());
+    w->String(ToString(exptime).c_str());
     w->Key("Period");
-    w->String(sls::ToString(period).c_str());
+    w->String(ToString(period).c_str());
     w->Key("Number of UDP Interfaces");
     w->Uint(numUDPInterfaces);
     w->Key("Number of rows");
@@ -619,21 +619,21 @@ void MasterAttributes::GetEigerBinaryAttributes(
     w->Key("Ten Giga");
     w->Uint(tenGiga);
     w->Key("Exptime");
-    w->String(sls::ToString(exptime).c_str());
+    w->String(ToString(exptime).c_str());
     w->Key("Period");
-    w->String(sls::ToString(period).c_str());
+    w->String(ToString(period).c_str());
     w->Key("Threshold Energy");
     w->Int(thresholdEnergyeV);
     w->Key("Sub Exptime");
-    w->String(sls::ToString(subExptime).c_str());
+    w->String(ToString(subExptime).c_str());
     w->Key("Sub Period");
-    w->String(sls::ToString(subPeriod).c_str());
+    w->String(ToString(subPeriod).c_str());
     w->Key("Quad");
     w->Int(quad);
     w->Key("Number of rows");
     w->Int(readNRows);
     w->Key("Rate Corrections");
-    w->String(sls::ToString(ratecorr).c_str());
+    w->String(ToString(ratecorr).c_str());
 }
 
 #ifdef HDF5C
@@ -658,21 +658,21 @@ void MasterAttributes::GetMythen3BinaryAttributes(
     w->Key("Ten Giga");
     w->Uint(tenGiga);
     w->Key("Period");
-    w->String(sls::ToString(period).c_str());
+    w->String(ToString(period).c_str());
     w->Key("Counter Mask");
-    w->String(sls::ToStringHex(counterMask).c_str());
+    w->String(ToStringHex(counterMask).c_str());
     for (int i = 0; i != 3; ++i) {
         w->Key((std::string("Exptime") + std::to_string(i + 1)).c_str());
-        w->String(sls::ToString(exptimeArray[i]).c_str());
+        w->String(ToString(exptimeArray[i]).c_str());
     }
     for (int i = 0; i != 3; ++i) {
         w->Key((std::string("GateDelay") + std::to_string(i + 1)).c_str());
-        w->String(sls::ToString(gateDelayArray[i]).c_str());
+        w->String(ToString(gateDelayArray[i]).c_str());
     }
     w->Key("Gates");
     w->Uint(gates);
     w->Key("Threshold Energies");
-    w->String(sls::ToString(thresholdAllEnergyeV).c_str());
+    w->String(ToString(thresholdAllEnergyeV).c_str());
 }
 
 #ifdef HDF5C
@@ -691,11 +691,11 @@ void MasterAttributes::WriteMythen3HDF5Attributes(H5File *fd, Group *group) {
 void MasterAttributes::GetGotthard2BinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
-    w->String(sls::ToString(exptime).c_str());
+    w->String(ToString(exptime).c_str());
     w->Key("Period");
-    w->String(sls::ToString(period).c_str());
+    w->String(ToString(period).c_str());
     w->Key("Burst Mode");
-    w->String(sls::ToString(burstMode).c_str());
+    w->String(ToString(burstMode).c_str());
 }
 
 #ifdef HDF5C
@@ -709,13 +709,13 @@ void MasterAttributes::WriteGotthard2HDF5Attributes(H5File *fd, Group *group) {
 void MasterAttributes::GetMoenchBinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
-    w->String(sls::ToString(exptime).c_str());
+    w->String(ToString(exptime).c_str());
     w->Key("Period");
-    w->String(sls::ToString(period).c_str());
+    w->String(ToString(period).c_str());
     w->Key("Ten Giga");
     w->Uint(tenGiga);
     w->Key("ADC Mask");
-    w->String(sls::ToStringHex(adcmask).c_str());
+    w->String(ToStringHex(adcmask).c_str());
     w->Key("Analog Samples");
     w->Uint(analogSamples);
 }
@@ -733,13 +733,13 @@ void MasterAttributes::WriteMoenchHDF5Attributes(H5File *fd, Group *group) {
 void MasterAttributes::GetCtbBinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Exptime");
-    w->String(sls::ToString(exptime).c_str());
+    w->String(ToString(exptime).c_str());
     w->Key("Period");
-    w->String(sls::ToString(period).c_str());
+    w->String(ToString(period).c_str());
     w->Key("Ten Giga");
     w->Uint(tenGiga);
     w->Key("ADC Mask");
-    w->String(sls::ToStringHex(adcmask).c_str());
+    w->String(ToStringHex(adcmask).c_str());
     w->Key("Analog Flag");
     w->Uint(analog);
     w->Key("Analog Samples");

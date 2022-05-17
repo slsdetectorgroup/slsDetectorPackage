@@ -8,7 +8,7 @@
 
 namespace sls {
 
-qTabSettings::qTabSettings(QWidget *parent, sls::Detector *detector)
+qTabSettings::qTabSettings(QWidget *parent, Detector *detector)
     : QWidget(parent), det(detector) {
     setupUi(this);
     SetupWidgetWindow();
@@ -217,7 +217,7 @@ void qTabSettings::GetSettings() {
             break;
         default:
             if ((int)retval < -1 || (int)retval >= comboSettings->count()) {
-                throw sls::RuntimeError(std::string("Unknown settings: ") +
+                throw RuntimeError(std::string("Unknown settings: ") +
                                         std::to_string(retval));
             }
             comboSettings->setCurrentIndex(retval);
@@ -233,7 +233,7 @@ void qTabSettings::SetSettings(int index) {
     // settings
     auto val = static_cast<slsDetectorDefs::detectorSettings>(index);
     try {
-        LOG(logINFO) << "Setting Settings to " << sls::ToString(val);
+        LOG(logINFO) << "Setting Settings to " << ToString(val);
         det->setSettings(val);
     }
     CATCH_HANDLE("Could not set settings.", "qTabSettings::SetSettings", this,
@@ -252,7 +252,7 @@ void qTabSettings::GetGainMode() {
         auto retval = det->getGainMode().tsquash(
             "Inconsistent gain mode for all detectors.");
         if ((int)retval < 0 || (int)retval >= comboGainMode->count()) {
-            throw sls::RuntimeError(std::string("Unknown gain mode: ") +
+            throw RuntimeError(std::string("Unknown gain mode: ") +
                                     std::to_string(retval));
         }
         // warning when using fix_g0 and not in export mode
@@ -323,7 +323,7 @@ void qTabSettings::GetDynamicRange() {
             comboDynamicRange->setCurrentIndex(DYNAMICRANGE_4);
             break;
         default:
-            throw sls::RuntimeError(std::string("Unknown dynamic range: ") +
+            throw RuntimeError(std::string("Unknown dynamic range: ") +
                                     std::to_string(retval));
         }
     }
@@ -354,7 +354,7 @@ void qTabSettings::SetDynamicRange(int index) {
             det->setDynamicRange(4);
             break;
         default:
-            throw sls::RuntimeError(std::string("Unknown dynamic range: ") +
+            throw RuntimeError(std::string("Unknown dynamic range: ") +
                                     std::to_string(index));
         }
     }
@@ -401,7 +401,7 @@ void qTabSettings::SetThresholdEnergies() {
     slsDetectorDefs::detectorSettings sett =
         static_cast<slsDetectorDefs::detectorSettings>(
             comboSettings->currentIndex());
-    LOG(logINFO) << "Setting Threshold Energies to " << sls::ToString(eV)
+    LOG(logINFO) << "Setting Threshold Energies to " << ToString(eV)
                  << " (eV)";
     try {
         det->setThresholdEnergy(eV, sett);
@@ -432,7 +432,7 @@ void qTabSettings::GetCounterMask() {
     disconnect(chkCounter3, SIGNAL(toggled(bool)), this,
                SLOT(SetCounterMask()));
     try {
-        auto retval = sls::getSetBits(det->getCounterMask().tsquash(
+        auto retval = getSetBits(det->getCounterMask().tsquash(
             "Counter mask is inconsistent for all detectors."));
         // default to unchecked
         for (auto p : counters) {
@@ -441,7 +441,7 @@ void qTabSettings::GetCounterMask() {
         // if retval[i] = 2, chkCounter2 is checked
         for (auto i : retval) {
             if (i > 3) {
-                throw sls::RuntimeError(
+                throw RuntimeError(
                     std::string("Unknown counter index : ") +
                     std::to_string(static_cast<int>(i)));
             }

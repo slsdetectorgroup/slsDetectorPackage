@@ -14,7 +14,7 @@ class qTabDeveloper : public QWidget, private Ui::TabDeveloperObject {
     Q_OBJECT
 
   public:
-    qTabDeveloper(QWidget *parent, sls::Detector *detector);
+    qTabDeveloper(QWidget *parent, Detector *detector);
     ~qTabDeveloper();
 
   public slots:
@@ -31,7 +31,7 @@ class qTabDeveloper : public QWidget, private Ui::TabDeveloperObject {
     slsDetectorDefs::dacIndex getSLSIndex(slsDetectorDefs::detectorType detType,
                                           int index);
 
-    sls::Detector *det;
+    Detector *det;
     std::vector<qDacWidget *> dacWidgets;
     std::vector<qDacWidget *> adcWidgets;
 

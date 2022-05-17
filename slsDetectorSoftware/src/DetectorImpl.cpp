@@ -186,7 +186,7 @@ void DetectorImpl::initializeMembers(bool verify) {
     for (int i = 0; i < shm()->totalNumberOfModules; i++) {
         try {
             modules.push_back(
-                sls::make_unique<Module>(detectorIndex, i, verify));
+                make_unique<Module>(detectorIndex, i, verify));
         } catch (...) {
             modules.clear();
             throw;
@@ -199,11 +199,11 @@ void DetectorImpl::updateUserdetails() {
     memset(shm()->lastUser, 0, sizeof(shm()->lastUser));
     memset(shm()->lastDate, 0, sizeof(shm()->lastDate));
     try {
-        sls::strcpy_safe(shm()->lastUser, exec("whoami").c_str());
-        sls::strcpy_safe(shm()->lastDate, exec("date").c_str());
+        strcpy_safe(shm()->lastUser, exec("whoami").c_str());
+        strcpy_safe(shm()->lastDate, exec("date").c_str());
     } catch (...) {
-        sls::strcpy_safe(shm()->lastUser, "errorreading");
-        sls::strcpy_safe(shm()->lastDate, "errorreading");
+        strcpy_safe(shm()->lastUser, "errorreading");
+        strcpy_safe(shm()->lastDate, "errorreading");
     }
 }
 
@@ -279,7 +279,7 @@ void DetectorImpl::addModule(const std::string &hostname) {
 
     int port = DEFAULT_PORTNO;
     std::string host = hostname;
-    auto res = sls::split(hostname, ':');
+    auto res = split(hostname, ':');
     if (res.size() > 1) {
         host = res[0];
         port = StringTo<int>(res[1]);
@@ -303,12 +303,12 @@ void DetectorImpl::addModule(const std::string &hostname) {
     // gotthard cannot have more than 2 modules (50um=1, 25um=2
     if ((type == GOTTHARD || type == GOTTHARD2) && modules.size() > 2) {
         freeSharedMemory();
-        throw sls::RuntimeError("Gotthard cannot have more than 2 modules");
+        throw RuntimeError("Gotthard cannot have more than 2 modules");
     }
 
     auto pos = modules.size();
     modules.emplace_back(
-        sls::make_unique<Module>(type, detectorIndex, pos, false));
+        make_unique<Module>(type, detectorIndex, pos, false));
     shm()->totalNumberOfModules = modules.size();
     modules[pos]->setControlPort(port);
     modules[pos]->setStopPort(port + 1);
@@ -334,7 +334,7 @@ void DetectorImpl::updateDetectorSize() {
 
     const slsDetectorDefs::xy modSize = modules[0]->getNumberOfChannels();
     if (modSize.x == 0 || modSize.y == 0) {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Module size for x or y dimensions is 0. Unable to proceed in "
             "updating detector size. ");
     }
@@ -458,7 +458,7 @@ int DetectorImpl::createReceivingDataSockets() {
         portnum += (iSocket % numUDPInterfaces);
         try {
             zmqSocket.push_back(
-                sls::make_unique<ZmqSocket>(modules[iSocket / numUDPInterfaces]
+                make_unique<ZmqSocket>(modules[iSocket / numUDPInterfaces]
                                                 ->getClientStreamingIP()
                                                 .str()
                                                 .c_str(),
@@ -468,7 +468,7 @@ int DetectorImpl::createReceivingDataSockets() {
             if (hwm >= 0) {
                 zmqSocket[iSocket]->SetReceiveHighWaterMark(hwm);
                 if (zmqSocket[iSocket]->GetReceiveHighWaterMark() != hwm) {
-                    throw sls::ZmqSocketError("Could not set zmq rcv hwm to " +
+                    throw ZmqSocketError("Could not set zmq rcv hwm to " +
                                               std::to_string(hwm));
                 }
             }
@@ -566,8 +566,8 @@ void DetectorImpl::readFrameFromReceiver() {
                         // allocate
                         size = zHeader.imageSize;
                         multisize = size * zmqSocket.size();
-                        image = sls::make_unique<char[]>(size);
-                        multiframe = sls::make_unique<char[]>(multisize);
+                        image = make_unique<char[]>(size);
+                        multiframe = make_unique<char[]>(multisize);
                         memset(multiframe.get(), 0xFF, multisize);
                         // dynamic range
                         dynamicRange = zHeader.dynamicRange;
@@ -1037,7 +1037,7 @@ int DetectorImpl::getClientStreamingHwm() const {
         return shm()->zmqHwm;
     }
     // enabled
-    sls::Result<int> result;
+    Result<int> result;
     result.reserve(zmqSocket.size());
     for (auto &it : zmqSocket) {
         result.push_back(it->GetReceiveHighWaterMark());
@@ -1048,7 +1048,7 @@ int DetectorImpl::getClientStreamingHwm() const {
 
 void DetectorImpl::setClientStreamingHwm(const int limit) {
     if (limit < -1) {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Cannot set hwm to less than -1 (-1 is lib default).");
     }
     // update shm
@@ -1062,7 +1062,7 @@ void DetectorImpl::setClientStreamingHwm(const int limit) {
                 it->SetReceiveHighWaterMark(limit);
                 if (it->GetReceiveHighWaterMark() != limit) {
                     shm()->zmqHwm = -1;
-                    throw sls::ZmqSocketError("Could not set zmq rcv hwm to " +
+                    throw ZmqSocketError("Could not set zmq rcv hwm to " +
                                               std::to_string(limit));
                 }
             }
@@ -1336,7 +1336,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     }
 
     // get srcSize to print progress
-    ssize_t srcSize = sls::getFileSize(src, "Program FPGA");
+    ssize_t srcSize = getFileSize(src, "Program FPGA");
 
     // create temp destination file
     char destfname[] = "/tmp/SLS_DET_MCB.XXXXXX";
@@ -1417,7 +1417,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     return buffer;
 }
 
-sls::Result<int> DetectorImpl::getDefaultDac(defs::dacIndex index,
+Result<int> DetectorImpl::getDefaultDac(defs::dacIndex index,
                                              defs::detectorSettings sett,
                                              Positions pos) {
     return Parallel(&Module::getDefaultDac, pos, index, sett);

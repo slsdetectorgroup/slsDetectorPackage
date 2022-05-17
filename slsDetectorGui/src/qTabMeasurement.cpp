@@ -9,7 +9,7 @@
 
 namespace sls {
 
-qTabMeasurement::qTabMeasurement(QWidget *parent, sls::Detector *detector,
+qTabMeasurement::qTabMeasurement(QWidget *parent, Detector *detector,
                                  qDrawPlot *p)
     : QWidget(parent), det(detector), plot(p), progressTimer(nullptr) {
     setupUi(this);
@@ -345,7 +345,7 @@ void qTabMeasurement::GetTimingMode() {
         if (det->getDetectorType().squash() == slsDetectorDefs::MYTHEN3) {
             auto retvals = det->getTimingMode();
             auto is_master = det->getMaster();
-            sls::Result<slsDetectorDefs::timingMode> masterRetvals;
+            Result<slsDetectorDefs::timingMode> masterRetvals;
             for (size_t i = 0; i != is_master.size(); ++i) {
                 if (is_master[i]) {
                     masterRetvals.push_back(retvals[i]);
@@ -372,7 +372,7 @@ void qTabMeasurement::GetTimingMode() {
             }
             break;
         default:
-            throw sls::RuntimeError(std::string("Unknown timing mode: ") +
+            throw RuntimeError(std::string("Unknown timing mode: ") +
                                     std::to_string(retval));
         }
     }
@@ -409,7 +409,7 @@ void qTabMeasurement::GetBurstMode() {
             ShowTriggerDelay();
             break;
         default:
-            throw sls::RuntimeError(std::string("Unknown burst mode: ") +
+            throw RuntimeError(std::string("Unknown burst mode: ") +
                                     std::to_string(retval));
         }
     }

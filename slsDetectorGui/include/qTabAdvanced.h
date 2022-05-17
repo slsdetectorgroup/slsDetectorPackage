@@ -12,7 +12,7 @@ class qTabAdvanced : public QWidget, private Ui::TabAdvancedObject {
     Q_OBJECT
 
   public:
-    qTabAdvanced(QWidget *parent, sls::Detector *detector, qDrawPlot *p);
+    qTabAdvanced(QWidget *parent, Detector *detector, qDrawPlot *p);
     ~qTabAdvanced();
 
   public slots:
@@ -76,7 +76,7 @@ class qTabAdvanced : public QWidget, private Ui::TabAdvancedObject {
     void GetExposureTime();
     void GetGateDelay();
 
-    sls::Detector *det;
+    Detector *det;
     qDrawPlot *plot;
 };
 

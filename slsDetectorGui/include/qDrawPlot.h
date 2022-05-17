@@ -20,7 +20,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     Q_OBJECT
 
   public:
-    qDrawPlot(QWidget *parent, sls::Detector *detector);
+    qDrawPlot(QWidget *parent, Detector *detector);
     ~qDrawPlot();
     bool GetIsRunning();
     void SetRunning(bool enable);
@@ -99,7 +99,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
 
     static const int NUM_PEDESTAL_FRAMES = 20;
     static const int NUM_GOTTHARD25_CHANS = 1280;
-    sls::Detector *det;
+    Detector *det;
     slsDetectorDefs::detectorType detType;
 
     SlsQt1DPlot *plot1d{nullptr};

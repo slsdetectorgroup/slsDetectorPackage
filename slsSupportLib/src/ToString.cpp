@@ -38,11 +38,11 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << "hostname:" << r.hostname << std::endl
         << "udpInterfaces:" << r.udpInterfaces << std::endl
         << "udp_dstport:" << r.udp_dstport << std::endl
-        << "udp_dstip:" << sls::IpAddr(r.udp_dstip) << std::endl
-        << "udp_dstmac:" << sls::MacAddr(r.udp_dstmac) << std::endl
+        << "udp_dstip:" << IpAddr(r.udp_dstip) << std::endl
+        << "udp_dstmac:" << MacAddr(r.udp_dstmac) << std::endl
         << "udp_dstport2:" << r.udp_dstport2 << std::endl
-        << "udp_dstip2:" << sls::IpAddr(r.udp_dstip2) << std::endl
-        << "udp_dstmac2:" << sls::MacAddr(r.udp_dstmac2) << std::endl
+        << "udp_dstip2:" << IpAddr(r.udp_dstip2) << std::endl
+        << "udp_dstmac2:" << MacAddr(r.udp_dstmac2) << std::endl
         << "frames:" << r.frames << std::endl
         << "triggers:" << r.triggers << std::endl
         << "bursts:" << r.bursts << std::endl
@@ -86,7 +86,7 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << "gateDelay3:" << ToString(std::chrono::nanoseconds(r.gateDelay3Ns))
         << std::endl
         << "gates:" << r.gates << std::endl
-        << "scanParams:" << sls::ToString(r.scanParams) << std::endl
+        << "scanParams:" << ToString(r.scanParams) << std::endl
         << ']';
     return oss.str();
 }
@@ -123,7 +123,7 @@ std::ostream &operator<<(std::ostream &os,
 std::string ToString(const slsDetectorDefs::currentSrcParameters &r) {
     std::ostringstream oss;
     if (r.fix < -1 || r.fix > 1 || r.normal < -1 || r.normal > 1) {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Invalid current source parameters. Cannot print.");
     }
     oss << '[';
@@ -674,7 +674,7 @@ template <> defs::detectorType StringTo(const std::string &s) {
         return defs::MYTHEN3;
     if (s == "Gotthard2")
         return defs::GOTTHARD2;
-    throw sls::RuntimeError("Unknown detector type " + s);
+    throw RuntimeError("Unknown detector type " + s);
 }
 
 template <> defs::detectorSettings StringTo(const std::string &s) {
@@ -718,7 +718,7 @@ template <> defs::detectorSettings StringTo(const std::string &s) {
         return defs::GAIN0;
     if (s == "g4_lg")
         return defs::G4_LOWGAIN;
-    throw sls::RuntimeError("Unknown setting " + s);
+    throw RuntimeError("Unknown setting " + s);
 }
 
 template <> defs::speedLevel StringTo(const std::string &s) {
@@ -738,7 +738,7 @@ template <> defs::speedLevel StringTo(const std::string &s) {
         return defs::G2_108MHZ;
     if (s == "144")
         return defs::G2_144MHZ;
-    throw sls::RuntimeError("Unknown speed " + s);
+    throw RuntimeError("Unknown speed " + s);
 }
 
 template <> defs::timingMode StringTo(const std::string &s) {
@@ -752,7 +752,7 @@ template <> defs::timingMode StringTo(const std::string &s) {
         return defs::BURST_TRIGGER;
     if (s == "trigger_gating")
         return defs::TRIGGER_GATED;
-    throw sls::RuntimeError("Unknown timing mode " + s);
+    throw RuntimeError("Unknown timing mode " + s);
 }
 
 template <> defs::frameDiscardPolicy StringTo(const std::string &s) {
@@ -762,7 +762,7 @@ template <> defs::frameDiscardPolicy StringTo(const std::string &s) {
         return defs::DISCARD_EMPTY_FRAMES;
     if (s == "discardpartial")
         return defs::DISCARD_PARTIAL_FRAMES;
-    throw sls::RuntimeError("Unknown frame discard policy " + s);
+    throw RuntimeError("Unknown frame discard policy " + s);
 }
 
 template <> defs::fileFormat StringTo(const std::string &s) {
@@ -770,7 +770,7 @@ template <> defs::fileFormat StringTo(const std::string &s) {
         return defs::HDF5;
     if (s == "binary")
         return defs::BINARY;
-    throw sls::RuntimeError("Unknown file format " + s);
+    throw RuntimeError("Unknown file format " + s);
 }
 
 template <> defs::externalSignalFlag StringTo(const std::string &s) {
@@ -782,7 +782,7 @@ template <> defs::externalSignalFlag StringTo(const std::string &s) {
         return defs::INVERSION_ON;
     if (s == "inversion_off")
         return defs::INVERSION_OFF;
-    throw sls::RuntimeError("Unknown external signal flag " + s);
+    throw RuntimeError("Unknown external signal flag " + s);
 }
 
 template <> defs::readoutMode StringTo(const std::string &s) {
@@ -792,7 +792,7 @@ template <> defs::readoutMode StringTo(const std::string &s) {
         return defs::DIGITAL_ONLY;
     if (s == "analog_digital")
         return defs::ANALOG_AND_DIGITAL;
-    throw sls::RuntimeError("Unknown readout mode " + s);
+    throw RuntimeError("Unknown readout mode " + s);
 }
 
 template <> defs::dacIndex StringTo(const std::string &s) {
@@ -982,7 +982,7 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::TEMPERATURE_FPGA3;
     if (s == "temp_slowadc")
         return defs::SLOW_ADC_TEMP;
-    throw sls::RuntimeError("Unknown dac Index " + s);
+    throw RuntimeError("Unknown dac Index " + s);
 }
 
 template <> defs::burstMode StringTo(const std::string &s) {
@@ -994,7 +994,7 @@ template <> defs::burstMode StringTo(const std::string &s) {
         return defs::CONTINUOUS_INTERNAL;
     if (s == "cw_external")
         return defs::CONTINUOUS_EXTERNAL;
-    throw sls::RuntimeError("Unknown burst mode " + s);
+    throw RuntimeError("Unknown burst mode " + s);
 }
 
 template <> defs::timingSourceType StringTo(const std::string &s) {
@@ -1002,7 +1002,7 @@ template <> defs::timingSourceType StringTo(const std::string &s) {
         return defs::TIMING_INTERNAL;
     if (s == "external")
         return defs::TIMING_EXTERNAL;
-    throw sls::RuntimeError("Unknown timing source type " + s);
+    throw RuntimeError("Unknown timing source type " + s);
 }
 
 template <> defs::M3_GainCaps StringTo(const std::string &s) {
@@ -1018,7 +1018,7 @@ template <> defs::M3_GainCaps StringTo(const std::string &s) {
         return defs::M3_C225ACsh;
     if (s == "C15pre")
         return defs::M3_C15pre;
-    throw sls::RuntimeError("Unknown gain cap " + s);
+    throw RuntimeError("Unknown gain cap " + s);
 }
 
 template <> defs::portPosition StringTo(const std::string &s) {
@@ -1030,7 +1030,7 @@ template <> defs::portPosition StringTo(const std::string &s) {
         return defs::TOP;
     if (s == "bottom")
         return defs::BOTTOM;
-    throw sls::RuntimeError("Unknown port position " + s);
+    throw RuntimeError("Unknown port position " + s);
 }
 
 template <> defs::streamingInterface StringTo(const std::string &s) {
@@ -1043,7 +1043,7 @@ template <> defs::streamingInterface StringTo(const std::string &s) {
         return defs::streamingInterface::LOW_LATENCY_LINK;
     if (rs == "10gbe")
         return defs::streamingInterface::ETHERNET_10GB;
-    throw sls::RuntimeError("Unknown streamingInterface type " + s);
+    throw RuntimeError("Unknown streamingInterface type " + s);
 }
 
 template <> defs::vetoAlgorithm StringTo(const std::string &s) {
@@ -1051,7 +1051,7 @@ template <> defs::vetoAlgorithm StringTo(const std::string &s) {
         return defs::ALG_HITS;
     if (s == "raw")
         return defs::ALG_RAW;
-    throw sls::RuntimeError("Unknown veto algorithm " + s);
+    throw RuntimeError("Unknown veto algorithm " + s);
 }
 
 template <> defs::gainMode StringTo(const std::string &s) {
@@ -1067,7 +1067,7 @@ template <> defs::gainMode StringTo(const std::string &s) {
         return defs::FIX_G2;
     if (s == "fixg0")
         return defs::FIX_G0;
-    throw sls::RuntimeError("Unknown gain mode " + s);
+    throw RuntimeError("Unknown gain mode " + s);
 }
 
 template <> defs::polarity StringTo(const std::string &s) {
@@ -1075,7 +1075,7 @@ template <> defs::polarity StringTo(const std::string &s) {
         return defs::POSITIVE;
     if (s == "neg")
         return defs::NEGATIVE;
-    throw sls::RuntimeError("Unknown polarity mode " + s);
+    throw RuntimeError("Unknown polarity mode " + s);
 }
 
 template <> uint32_t StringTo(const std::string &s) {
@@ -1101,7 +1101,7 @@ template <> bool StringTo(const std::string &s) {
     case 1:
         return true;
     default:
-        throw sls::RuntimeError("Unknown boolean. Expecting be 0 or 1.");
+        throw RuntimeError("Unknown boolean. Expecting be 0 or 1.");
     }
 }
 

@@ -73,7 +73,7 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
         NumberOfTabs
     };
     slsDetectorDefs::detectorType detType;
-    std::unique_ptr<sls::Detector> det;
+    std::unique_ptr<Detector> det;
     qDrawPlot *plot;
     MyTabWidget *tabs;
     QScrollArea *scroll[NumberOfTabs];

@@ -13,7 +13,7 @@
 
 namespace sls {
 
-qTabDataOutput::qTabDataOutput(QWidget *parent, sls::Detector *detector)
+qTabDataOutput::qTabDataOutput(QWidget *parent, Detector *detector)
     : QWidget(parent), det(detector), btnGroupRate(nullptr) {
     setupUi(this);
     SetupWidgetWindow();
@@ -234,7 +234,7 @@ void qTabDataOutput::GetFileFormat() {
             comboFileFormat->setCurrentIndex(static_cast<int>(retval));
             break;
         default:
-            throw sls::RuntimeError(std::string("Unknown file format: ") +
+            throw RuntimeError(std::string("Unknown file format: ") +
                                     std::to_string(static_cast<int>(retval)));
         }
     }
@@ -341,7 +341,7 @@ void qTabDataOutput::EnableRateCorrection() {
     LOG(logINFO) << "Disabling Rate correction";
     // disable
     try {
-        det->setRateCorrection(sls::ns(0));
+        det->setRateCorrection(ns(0));
     }
     CATCH_HANDLE("Could not switch off rate correction.",
                  "qTabDataOutput::EnableRateCorrection", this,
@@ -359,7 +359,7 @@ void qTabDataOutput::SetRateCorrection() {
             int64_t deadtime = spinCustomDeadTime->value();
             LOG(logINFO) << "Setting Rate Correction with custom dead time: "
                          << deadtime;
-            det->setRateCorrection(sls::ns(deadtime));
+            det->setRateCorrection(ns(deadtime));
         }
         // default dead time
         else {

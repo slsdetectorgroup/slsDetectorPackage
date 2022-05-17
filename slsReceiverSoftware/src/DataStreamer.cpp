@@ -76,7 +76,7 @@ void DataStreamer::SetAdditionalJsonHeader(
 }
 
 void DataStreamer::CreateZmqSockets(int *nunits, uint32_t port,
-                                    const sls::IpAddr ip, int hwm) {
+                                    const IpAddr ip, int hwm) {
     uint32_t portnum = port + index;
     std::string sip = ip.str();
     try {
@@ -85,7 +85,7 @@ void DataStreamer::CreateZmqSockets(int *nunits, uint32_t port,
         if (hwm >= 0) {
             zmqSocket->SetSendHighWaterMark(hwm);
             if (zmqSocket->GetSendHighWaterMark() != hwm) {
-                throw sls::RuntimeError(
+                throw RuntimeError(
                     "Could not set zmq send high water mark to " +
                     std::to_string(hwm));
             }
@@ -264,7 +264,7 @@ void DataStreamer::RestreamStop() {
     zHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
     int ret = zmqSocket->SendHeader(index, zHeader);
     if (!ret) {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Could not restream Dummy Header via ZMQ for port " +
             std::to_string(zmqSocket->GetPortNumber()));
     }

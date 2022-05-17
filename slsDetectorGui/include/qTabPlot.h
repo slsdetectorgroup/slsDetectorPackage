@@ -12,7 +12,7 @@ class qTabPlot : public QWidget, private Ui::TabPlotObject {
     Q_OBJECT
 
   public:
-    qTabPlot(QWidget *parent, sls::Detector *detector, qDrawPlot *p);
+    qTabPlot(QWidget *parent, Detector *detector, qDrawPlot *p);
     ~qTabPlot();
     void SetScanArgument();
     void Refresh();
@@ -55,7 +55,7 @@ class qTabPlot : public QWidget, private Ui::TabPlotObject {
     void SetXYRange();
     void MaintainAspectRatio(int dimension);
 
-    sls::Detector *det;
+    Detector *det;
     qDrawPlot *plot;
     bool is1d;
 

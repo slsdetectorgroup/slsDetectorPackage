@@ -9,7 +9,7 @@
 
 namespace sls {
 
-qTabDebugging::qTabDebugging(QWidget *parent, sls::Detector *detector)
+qTabDebugging::qTabDebugging(QWidget *parent, Detector *detector)
     : QWidget(parent), det(detector), treeDet(nullptr),
       lblDetectorHostname(nullptr), lblDetectorFirmware(nullptr),
       lblDetectorSoftware(nullptr) {
@@ -64,7 +64,7 @@ void qTabDebugging::GetDetectorStatus() {
     LOG(logDEBUG) << "Getting Status";
 
     try {
-        std::string status = sls::ToString(
+        std::string status = ToString(
             det->getDetectorStatus({comboDetector->currentIndex()})[0]);
         lblStatus->setText(QString(status.c_str()).toUpper());
     }
@@ -90,7 +90,7 @@ void qTabDebugging::GetInfo() {
     lblDetectorFirmware->setFixedWidth(100);
     layout->addWidget(dispFrame, 0, 1);
     QString detName =
-        QString(sls::ToString(det->getDetectorType().squash()).c_str());
+        QString(ToString(det->getDetectorType().squash()).c_str());
 
     switch (det->getDetectorType().squash()) {
 

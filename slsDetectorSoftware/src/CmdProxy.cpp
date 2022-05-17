@@ -48,7 +48,7 @@ void CmdProxy::Call(const std::string &command,
     if (it != functions.end()) {
         os << ((*this).*(it->second))(action);
     } else {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             cmd + " Unknown command, use list to list all commands");
     }
 }
@@ -159,11 +159,11 @@ std::string CmdProxy::Hostname(int action) {
             WrongNumberOfParameters(1);
         }
         if (det_id != -1) {
-            throw sls::RuntimeError("Cannot execute this at module level");
+            throw RuntimeError("Cannot execute this at module level");
         }
         // only args[0], but many hostames concatenated with +
         if (args[0].find('+') != std::string::npos) {
-            auto t = sls::split(args[0], '+');
+            auto t = split(args[0], '+');
             det->setHostname(t);
             os << ToString(t) << '\n';
         }
@@ -173,7 +173,7 @@ std::string CmdProxy::Hostname(int action) {
             os << ToString(args) << '\n';
         }
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -187,19 +187,19 @@ std::string CmdProxy::VirtualServer(int action) {
               "virtual server will have a stop port (control port + 1)"
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("cannot get");
+        throw RuntimeError("cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
         if (det_id != -1) {
-            throw sls::RuntimeError("Cannot execute this at module level");
+            throw RuntimeError("Cannot execute this at module level");
         }
         det->setVirtualDetectorServers(StringTo<int>(args[0]),
                                        StringTo<int>(args[1]));
-        os << sls::ToString(args);
+        os << ToString(args);
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -219,11 +219,11 @@ std::string CmdProxy::Acquire(int action) {
            << '\n';
     } else {
         if (det->empty()) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "This shared memory has no detectors added.");
         }
         if (det_id >= 0) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Individual detectors not allowed for readout.");
         }
 
@@ -260,9 +260,9 @@ std::string CmdProxy::FirmwareVersion(int action) {
             os << OutStringHex(t) << '\n';
         }
     } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("cannot put");
+        throw RuntimeError("cannot put");
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -297,9 +297,9 @@ std::string CmdProxy::Versions(int action) {
         }
         os << std::dec << '\n';
     } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("cannot put");
+        throw RuntimeError("cannot put");
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -315,9 +315,9 @@ std::string CmdProxy::PackageVersion(int action) {
         }
         os << det->getPackageVersion() << '\n';
     } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("cannot put");
+        throw RuntimeError("cannot put");
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -333,9 +333,9 @@ std::string CmdProxy::ClientVersion(int action) {
         }
         os << ToStringHex(det->getClientVersion()) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("cannot put");
+        throw RuntimeError("cannot put");
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -365,7 +365,7 @@ std::string CmdProxy::DetectorSize(int action) {
         det->setDetectorSize(t);
         os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -390,7 +390,7 @@ std::string CmdProxy::Threshold(int action) {
         os << '\n';
     } else if (action == defs::GET_ACTION) {
         if (cmd == "thresholdnotb") {
-            throw sls::RuntimeError("cannot get");
+            throw RuntimeError("cannot get");
         }
         if (!args.empty()) {
             WrongNumberOfParameters(0);
@@ -447,7 +447,7 @@ std::string CmdProxy::Threshold(int action) {
         }
         os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -476,9 +476,9 @@ std::string CmdProxy::TrimEnergies(int action) {
             }
         }
         det->setTrimEnergies(t, std::vector<int>{det_id});
-        os << sls::ToString(args) << '\n';
+        os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -493,7 +493,7 @@ std::string CmdProxy::GapPixels(int action) {
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (det_id != -1) {
-            throw sls::RuntimeError("Cannot get gap pixels at module level");
+            throw RuntimeError("Cannot get gap pixels at module level");
         }
         if (!args.empty()) {
             WrongNumberOfParameters(0);
@@ -502,7 +502,7 @@ std::string CmdProxy::GapPixels(int action) {
         os << t << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id != -1) {
-            throw sls::RuntimeError("Cannot add gap pixels at module level");
+            throw RuntimeError("Cannot add gap pixels at module level");
         }
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
@@ -510,7 +510,7 @@ std::string CmdProxy::GapPixels(int action) {
         det->setGapPixelsinCallback(StringTo<int>(args[0]));
         os << args.front() << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -528,7 +528,7 @@ std::string CmdProxy::Exptime(int action) {
     } else if (cmd == "exptime3") {
         gateIndex = 2;
     } else {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Unknown command, use list to list all commands");
     }
 
@@ -612,7 +612,7 @@ std::string CmdProxy::Exptime(int action) {
             os << args[0] << '\n';
         }
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -634,7 +634,7 @@ std::string CmdProxy::ReadoutSpeed(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash();
         if (type == defs::CHIPTESTBOARD || type == defs::MOENCH) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "ReadoutSpeed not implemented. Did you mean runclk?");
         }
         if (action == defs::GET_ACTION) {
@@ -647,11 +647,11 @@ std::string CmdProxy::ReadoutSpeed(int action) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            defs::speedLevel t = sls::StringTo<defs::speedLevel>(args[0]);
+            defs::speedLevel t = StringTo<defs::speedLevel>(args[0]);
             det->setReadoutSpeed(t, std::vector<int>{det_id});
-            os << sls::ToString(t) << '\n'; // no args to convert 0,1,2 as well
+            os << ToString(t) << '\n'; // no args to convert 0,1,2 as well
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -674,7 +674,7 @@ std::string CmdProxy::Adcphase(int action) {
         auto det_type = det->getDetectorType().squash(defs::GENERIC);
         if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
             det_type == defs::GOTTHARD2) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "adcphase not implemented for this detector");
         }
         if (action == defs::GET_ACTION) {
@@ -684,7 +684,7 @@ std::string CmdProxy::Adcphase(int action) {
                 os << OutString(t) << '\n';
             } else if (args.size() == 1) {
                 if (args[0] != "deg") {
-                    throw sls::RuntimeError("Unknown adcphase   argument " +
+                    throw RuntimeError("Unknown adcphase   argument " +
                                             args[0] +
                                             ". Did you mean deg?    ");
                 }
@@ -700,7 +700,7 @@ std::string CmdProxy::Adcphase(int action) {
                 os << args.front() << '\n';
             } else if (args.size() == 2) {
                 if (args[1] != "deg") {
-                    throw sls::RuntimeError("Unknown adcphase   2nd argument " +
+                    throw RuntimeError("Unknown adcphase   2nd argument " +
                                             args[1] + ". Did you    mean deg?");
                 }
                 det->setADCPhaseInDegrees(StringTo<int>(args[0]),
@@ -710,7 +710,7 @@ std::string CmdProxy::Adcphase(int action) {
                 WrongNumberOfParameters(1);
             }
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -729,7 +729,7 @@ std::string CmdProxy::Dbitphase(int action) {
         auto det_type = det->getDetectorType().squash(defs::GENERIC);
         if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
             det_type == defs::GOTTHARD2) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "dbitphase not implemented for this detector");
         }
         if (action == defs::GET_ACTION) {
@@ -739,7 +739,7 @@ std::string CmdProxy::Dbitphase(int action) {
                 os << OutString(t) << '\n';
             } else if (args.size() == 1) {
                 if (args[0] != "deg") {
-                    throw sls::RuntimeError("Unknown dbitphase argument " +
+                    throw RuntimeError("Unknown dbitphase argument " +
                                             args[0] + ". Did you mean deg?  ");
                 }
                 t = det->getDBITPhaseInDegrees(std::vector<int>{det_id});
@@ -754,7 +754,7 @@ std::string CmdProxy::Dbitphase(int action) {
                 os << args.front() << '\n';
             } else if (args.size() == 2) {
                 if (args[1] != "deg") {
-                    throw sls::RuntimeError("Unknown dbitphase 2nd  argument " +
+                    throw RuntimeError("Unknown dbitphase 2nd  argument " +
                                             args[1] + ". Did you mean deg?  ");
                 }
                 det->setDBITPhaseInDegrees(StringTo<int>(args[0]),
@@ -764,7 +764,7 @@ std::string CmdProxy::Dbitphase(int action) {
                 WrongNumberOfParameters(1);
             }
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -780,7 +780,7 @@ std::string CmdProxy::ClockFrequency(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "clkfreq not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
@@ -791,9 +791,9 @@ std::string CmdProxy::ClockFrequency(int action) {
                                             std::vector<int>{det_id});
             os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
-            throw sls::RuntimeError("cannot put");
+            throw RuntimeError("cannot put");
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -811,7 +811,7 @@ std::string CmdProxy::ClockPhase(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "clkphase not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
@@ -821,7 +821,7 @@ std::string CmdProxy::ClockPhase(int action) {
                 os << OutString(t) << '\n';
             } else if (args.size() == 2) {
                 if (args[1] != "deg") {
-                    throw sls::RuntimeError("Cannot scan argument" + args[1] +
+                    throw RuntimeError("Cannot scan argument" + args[1] +
                                             ". Did you mean deg?");
                 }
                 auto t = det->getClockPhaseinDegrees(StringTo<int>(args[0]),
@@ -838,7 +838,7 @@ std::string CmdProxy::ClockPhase(int action) {
                 os << args[1] << '\n';
             } else if (args.size() == 3) {
                 if (args[2] != "deg") {
-                    throw sls::RuntimeError("Cannot scan argument" + args[2] +
+                    throw RuntimeError("Cannot scan argument" + args[2] +
                                             ". Did you mean deg?");
                 }
                 det->setClockPhaseinDegrees(StringTo<int>(args[0]),
@@ -849,7 +849,7 @@ std::string CmdProxy::ClockPhase(int action) {
                 WrongNumberOfParameters(1);
             }
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -865,7 +865,7 @@ std::string CmdProxy::MaxClockPhaseShift(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "maxclkphaseshift not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
@@ -876,9 +876,9 @@ std::string CmdProxy::MaxClockPhaseShift(int action) {
                                                 std::vector<int>{det_id});
             os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
-            throw sls::RuntimeError("Cannot put");
+            throw RuntimeError("Cannot put");
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -894,7 +894,7 @@ std::string CmdProxy::ClockDivider(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "clkdiv not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
@@ -912,7 +912,7 @@ std::string CmdProxy::ClockDivider(int action) {
                                  {det_id});
             os << args[1] << '\n';
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -949,7 +949,7 @@ std::string CmdProxy::ExternalSignal(int action) {
             std::vector<int>{det_id});
         os << args[0] << " " << args[1] << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -984,7 +984,7 @@ std::string CmdProxy::CurrentSource(int action) {
             } else if (args[1] == "nofix") {
                 fix = false;
             } else {
-                throw sls::RuntimeError("Invalid argument: " + args[1] +
+                throw RuntimeError("Invalid argument: " + args[1] +
                                         ". Did you mean fix or nofix?");
             }
             if (args.size() == 3) {
@@ -997,22 +997,22 @@ std::string CmdProxy::CurrentSource(int action) {
                 } else if (args[3] == "low") {
                     normalCurrent = false;
                 } else {
-                    throw sls::RuntimeError("Invalid argument: " + args[3] +
+                    throw RuntimeError("Invalid argument: " + args[3] +
                                             ". Did you mean normal or low?");
                 }
                 det->setCurrentSource(defs::currentSrcParameters(
                     fix, StringTo<uint64_t>(args[2]), normalCurrent));
             } else {
-                throw sls::RuntimeError(
+                throw RuntimeError(
                     "Invalid number of parareters for this command.");
             }
         } else {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Invalid number of parareters for this command.");
         }
         os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1045,9 +1045,9 @@ std::string CmdProxy::TemperatureValues(int action) {
         }
         os << "]\n";
     } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("Cannot put");
+        throw RuntimeError("Cannot put");
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1071,7 +1071,7 @@ std::string CmdProxy::Dac(int action) {
     // dac indices only for ctb
     if (args.size() > 0 && action != defs::HELP_ACTION) {
         if (is_int(args[0]) && type != defs::CHIPTESTBOARD) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Dac indices can only be used for chip test board. Use daclist "
                 "to get list of dac names for current detector.");
         }
@@ -1093,7 +1093,7 @@ std::string CmdProxy::Dac(int action) {
 
         if (args.size() == 2) {
             if ((args[1] != "mv") && (args[1] != "mV")) {
-                throw sls::RuntimeError("Unknown argument " + args[1] +
+                throw RuntimeError("Unknown argument " + args[1] +
                                         ". Did you mean mV?");
             }
             mV = true;
@@ -1114,7 +1114,7 @@ std::string CmdProxy::Dac(int action) {
         bool mV = false;
         if (args.size() == 3) {
             if ((args[2] != "mv") && (args[2] != "mV")) {
-                throw sls::RuntimeError("Unknown argument " + args[2] +
+                throw RuntimeError("Unknown argument " + args[2] +
                                         ". Did you mean mV?");
             }
             mV = true;
@@ -1125,7 +1125,7 @@ std::string CmdProxy::Dac(int action) {
                     std::vector<int>{det_id});
         os << args[0] << ' ' << args[1] << (mV ? " mV\n" : "\n");
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1145,14 +1145,14 @@ std::string CmdProxy::DacList(const int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getDacNames();
-        os << sls::ToString(t) << '\n';
+        os << ToString(t) << '\n';
     } else if (action == slsDetectorDefs::PUT_ACTION) {
         if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
-            throw sls::RuntimeError("This detector already has fixed dac "
+            throw RuntimeError("This detector already has fixed dac "
                                     "names. Cannot change them.");
         }
         if (det_id != -1) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Cannot configure dacnames at module level");
         }
         if (args.size() != 18) {
@@ -1161,7 +1161,7 @@ std::string CmdProxy::DacList(const int action) {
         det->setDacNames(args);
         os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1177,7 +1177,7 @@ std::string CmdProxy::DacValues(int action) {
         bool mv = false;
         if (args.size() == 1) {
             if ((args[0] != "mv") && (args[0] != "mV")) {
-                throw sls::RuntimeError("Unknown argument " + args[0] +
+                throw RuntimeError("Unknown argument " + args[0] +
                                         ". Did you mean mV?");
             }
             mv = true;
@@ -1199,9 +1199,9 @@ std::string CmdProxy::DacValues(int action) {
         }
         os << "]\n";
     } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("Cannot put");
+        throw RuntimeError("Cannot put");
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1217,12 +1217,12 @@ std::string CmdProxy::ResetDacs(int action) {
               "detector server."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
+        throw RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
         bool hardReset = false;
         if (args.size() == 1) {
             if (args[0] != "hard") {
-                throw sls::RuntimeError("Unknown argument " + args[0] +
+                throw RuntimeError("Unknown argument " + args[0] +
                                         ". Did you mean hard?");
             }
             hardReset = true;
@@ -1232,7 +1232,7 @@ std::string CmdProxy::ResetDacs(int action) {
         det->resetToDefaultDacs(hardReset, std::vector<int>{det_id});
         os << "successful\n";
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1253,7 +1253,7 @@ std::string CmdProxy::DefaultDac(int action) {
         if (args.size() == 2) {
             auto t = det->getDefaultDac(
                 StringTo<defs::dacIndex>(args[0]),
-                sls::StringTo<slsDetectorDefs::detectorSettings>(args[1]),
+                StringTo<slsDetectorDefs::detectorSettings>(args[1]),
                 std::vector<int>{det_id});
             os << args[0] << ' ' << args[1] << ' ' << OutString(t) << '\n';
         } else {
@@ -1269,7 +1269,7 @@ std::string CmdProxy::DefaultDac(int action) {
         if (args.size() == 3) {
             det->setDefaultDac(
                 StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
-                sls::StringTo<slsDetectorDefs::detectorSettings>(args[2]),
+                StringTo<slsDetectorDefs::detectorSettings>(args[2]),
                 std::vector<int>{det_id});
             os << args[0] << ' ' << args[2] << ' ' << args[1] << '\n';
         } else {
@@ -1278,7 +1278,7 @@ std::string CmdProxy::DefaultDac(int action) {
             os << args[0] << ' ' << args[1] << '\n';
         }
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1297,10 +1297,10 @@ std::string CmdProxy::ReceiverStatus(int action) {
         auto t = det->getReceiverStatus(std::vector<int>{det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Cannot put. Did you mean to use command 'rx_start' or 'rx_stop'?");
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1319,10 +1319,10 @@ std::string CmdProxy::DetectorStatus(int action) {
         auto t = det->getDetectorStatus(std::vector<int>{det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Cannot put. Did you mean to use command 'start' or 'stop'?");
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1347,12 +1347,12 @@ std::string CmdProxy::Scan(int action) {
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id != -1) {
-            throw sls::RuntimeError("Cannot configure scan at module level");
+            throw RuntimeError("Cannot configure scan at module level");
         }
         // disable
         if (args.size() == 1) {
             if (StringTo<int>(args[0]) != 0) {
-                throw sls::RuntimeError("Did you mean '0' to disable?");
+                throw RuntimeError("Did you mean '0' to disable?");
             }
             det->setScan(defs::scanParameters());
         }
@@ -1375,7 +1375,7 @@ std::string CmdProxy::Scan(int action) {
         }
         os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1392,14 +1392,14 @@ std::string CmdProxy::Trigger(int action) {
                   "blocks till "
                   "the frames are sent out for that trigger.";
         } else {
-            throw sls::RuntimeError("unknown command " + cmd);
+            throw RuntimeError("unknown command " + cmd);
         }
         os << '\n';
     } else if (action == slsDetectorDefs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
+        throw RuntimeError("Cannot get");
     } else if (action == slsDetectorDefs::PUT_ACTION) {
         if (det_id != -1) {
-            throw sls::RuntimeError("Cannot execute this at module level");
+            throw RuntimeError("Cannot execute this at module level");
         }
         if (!args.empty()) {
             WrongNumberOfParameters(0);
@@ -1411,7 +1411,7 @@ std::string CmdProxy::Trigger(int action) {
         det->sendSoftwareTrigger(block);
         os << "successful\n";
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1422,7 +1422,7 @@ IpAddr CmdProxy::getIpFromAuto() {
     std::string rxHostname =
         det->getRxHostname(std::vector<int>{det_id}).squash("none");
     // Hostname could be ip try to decode otherwise look up the hostname
-    auto val = sls::IpAddr{rxHostname};
+    auto val = IpAddr{rxHostname};
     if (val == 0) {
         val = HostnameToIp(rxHostname.c_str());
     }
@@ -1485,10 +1485,10 @@ std::string CmdProxy::UDPDestinationList(int action) {
             WrongNumberOfParameters(0);
         }
         if (det_id == -1) {
-            throw sls::RuntimeError("udp_dstlist must be at module level.");
+            throw RuntimeError("udp_dstlist must be at module level.");
         }
         if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
-            throw sls::RuntimeError(std::string("Invalid receiver index ") +
+            throw RuntimeError(std::string("Invalid receiver index ") +
                                     std::to_string(rx_id) +
                                     std::string(" to set round robin entry."));
         }
@@ -1499,17 +1499,17 @@ std::string CmdProxy::UDPDestinationList(int action) {
             WrongNumberOfParameters(1);
         }
         if (det_id == -1) {
-            throw sls::RuntimeError("udp_dstlist must be at module level.");
+            throw RuntimeError("udp_dstlist must be at module level.");
         }
         if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Invalid receiver index to set round robin entry.");
         }
         auto t = getUdpEntry();
         det->setDestinationUDPList(t, det_id);
         os << ToString(args) << std::endl;
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1544,7 +1544,7 @@ std::string CmdProxy::UDPDestinationIP(int action) {
             os << args.front() << '\n';
         }
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1580,7 +1580,7 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
             os << args.front() << '\n';
         }
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1614,11 +1614,11 @@ std::string CmdProxy::ReceiverHostname(int action) {
         if (args.size() > 1) {
             // multiple in mulitple
             if (args[0].find('+') != std::string::npos) {
-                throw sls::RuntimeError(
+                throw RuntimeError(
                     "Cannot add multiple receivers at module level");
             }
             if (det_id != -1) {
-                throw sls::RuntimeError(
+                throw RuntimeError(
                     "Cannot add multiple receivers at module level");
             }
             det->setRxHostname(args);
@@ -1629,10 +1629,10 @@ std::string CmdProxy::ReceiverHostname(int action) {
             // multiple receivers concatenated with +
             if (args[0].find('+') != std::string::npos) {
                 if (det_id != -1) {
-                    throw sls::RuntimeError(
+                    throw RuntimeError(
                         "Cannot add multiple receivers at module level");
                 }
-                auto t = sls::split(args[0], '+');
+                auto t = split(args[0], '+');
                 det->setRxHostname(t);
                 os << ToString(t) << '\n';
             }
@@ -1643,7 +1643,7 @@ std::string CmdProxy::ReceiverHostname(int action) {
             }
         }
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1687,7 +1687,7 @@ std::string CmdProxy::Rx_ROI(int action) {
         det->setRxROI(t);
         os << t << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1722,7 +1722,7 @@ std::string CmdProxy::ZMQHWM(int action) {
         det->setClientZmqHwm(t);
         os << det->getClientZmqHwm() << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1758,7 +1758,7 @@ std::string CmdProxy::RateCorrection(int action) {
             os << args.front() << "ns\n";
         }
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1771,7 +1771,7 @@ std::string CmdProxy::PulsePixel(int action) {
               "coordinates (x, y). Advanced User!"
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("cannot get");
+        throw RuntimeError("cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 3) {
             WrongNumberOfParameters(3);
@@ -1781,9 +1781,9 @@ std::string CmdProxy::PulsePixel(int action) {
         c.x = StringTo<int>(args[1]);
         c.y = StringTo<int>(args[2]);
         det->pulsePixel(n, c, std::vector<int>{det_id});
-        os << sls::ToString(args) << '\n';
+        os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1796,7 +1796,7 @@ std::string CmdProxy::PulsePixelAndMove(int action) {
               "moves relatively by (x, y). Advanced User!"
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("cannot get");
+        throw RuntimeError("cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 3) {
             WrongNumberOfParameters(3);
@@ -1806,9 +1806,9 @@ std::string CmdProxy::PulsePixelAndMove(int action) {
         c.x = StringTo<int>(args[1]);
         c.y = StringTo<int>(args[2]);
         det->pulsePixelNMove(n, c, std::vector<int>{det_id});
-        os << sls::ToString(args) << '\n';
+        os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1822,7 +1822,7 @@ std::string CmdProxy::PulseChip(int action) {
               "where partialreset = 0). Advanced User!"
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("cannot get");
+        throw RuntimeError("cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
@@ -1830,7 +1830,7 @@ std::string CmdProxy::PulseChip(int action) {
         det->pulseChip(StringTo<int>(args[0]), std::vector<int>{det_id});
         os << args.front() << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1850,7 +1850,7 @@ std::string CmdProxy::Quad(int action) {
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id != -1) {
-            throw sls::RuntimeError("Cannot execute quad at module level");
+            throw RuntimeError("Cannot execute quad at module level");
         }
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
@@ -1858,7 +1858,7 @@ std::string CmdProxy::Quad(int action) {
         det->setQuad(StringTo<int>(args[0]));
         os << args.front() << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1888,7 +1888,7 @@ std::string CmdProxy::DataStream(int action) {
                            StringTo<bool>(args[1]), std::vector<int>{det_id});
         os << args << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1917,13 +1917,13 @@ std::string CmdProxy::TemperatureEvent(int action) {
             WrongNumberOfParameters(1);
         }
         if (StringTo<int>(args[0]) != 0) {
-            throw sls::RuntimeError("Unknown argument for temp event. Did you "
+            throw RuntimeError("Unknown argument for temp event. Did you "
                                     "mean 0 to reset event?");
         }
         det->resetTemperatureEvent(std::vector<int>{det_id});
         os << "cleared" << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1947,7 +1947,7 @@ std::string CmdProxy::ROI(int action) {
         os << t << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id == -1 && det->size() > 1) {
-            throw sls::RuntimeError("Cannot execute ROI at multi module level");
+            throw RuntimeError("Cannot execute ROI at multi module level");
         }
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
@@ -1956,7 +1956,7 @@ std::string CmdProxy::ROI(int action) {
         det->setROI(t, det_id);
         os << t << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1984,9 +1984,9 @@ std::string CmdProxy::InjectChannel(int action) {
         }
         det->setInjectChannel(StringTo<int>(args[0]), StringTo<int>(args[1]),
                               {det_id});
-        os << sls::ToString(args) << '\n';
+        os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2015,9 +2015,9 @@ std::string CmdProxy::VetoPhoton(int action) {
         det->setVetoPhoton(StringTo<int>(args[0]), StringTo<int>(args[1]),
                            StringTo<int>(args[2]), args[3],
                            std::vector<int>{det_id});
-        os << sls::ToString(args) << '\n';
+        os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2030,16 +2030,16 @@ std::string CmdProxy::VetoReference(int action) {
               "reference for all 128 channels for all chips."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("cannot get vetoref. Did you mean vetophoton?");
+        throw RuntimeError("cannot get vetoref. Did you mean vetophoton?");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
         det->setVetoReference(StringTo<int>(args[0]), StringTo<int>(args[1]),
                               {det_id});
-        os << sls::ToString(args) << '\n';
+        os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2053,7 +2053,7 @@ std::string CmdProxy::VetoFile(int action) {
               "file should have 128 rows of gain index and 12 bit value in dec"
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "cannot get vetofile. Did you mean vetophoton?");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
@@ -2061,9 +2061,9 @@ std::string CmdProxy::VetoFile(int action) {
         }
         det->setVetoFile(StringTo<int>(args[0]), args[1],
                          std::vector<int>{det_id});
-        os << sls::ToString(args) << '\n';
+        os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2103,15 +2103,15 @@ std::string CmdProxy::BurstMode(int action) {
                     t = defs::CONTINUOUS_EXTERNAL;
                     break;
                 default:
-                    throw sls::RuntimeError("Unknown burst mode " + args[0]);
+                    throw RuntimeError("Unknown burst mode " + args[0]);
                 }
             } catch (...) {
-                t = sls::StringTo<defs::burstMode>(args[0]);
+                t = StringTo<defs::burstMode>(args[0]);
             }
             det->setBurstMode(t, std::vector<int>{det_id});
-            os << sls::ToString(t) << '\n'; // no args to convert 0,1,2 as well
+            os << ToString(t) << '\n'; // no args to convert 0,1,2 as well
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -2144,7 +2144,7 @@ std::string CmdProxy::VetoStreaming(int action) {
         for (const auto &arg : args) {
             if (arg == "none") {
                 if (args.size() > 1) {
-                    throw sls::RuntimeError(
+                    throw RuntimeError(
                         std::string(
                             "cannot have other arguments with 'none'. args: ") +
                         ToString(args));
@@ -2156,7 +2156,7 @@ std::string CmdProxy::VetoStreaming(int action) {
         det->setVetoStream(interface, std::vector<int>{det_id});
         os << ToString(interface) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2175,7 +2175,7 @@ std::string CmdProxy::VetoAlgorithm(int action) {
         defs::streamingInterface interface =
             StringTo<defs::streamingInterface>(args[0]);
         if (interface == defs::streamingInterface::NONE) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Must specify an interface to set algorithm");
         }
         auto t = det->getVetoAlgorithm(interface, std::vector<int>{det_id});
@@ -2188,13 +2188,13 @@ std::string CmdProxy::VetoAlgorithm(int action) {
         defs::streamingInterface interface =
             StringTo<defs::streamingInterface>(args[1]);
         if (interface == defs::streamingInterface::NONE) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Must specify an interface to set algorithm");
         }
         det->setVetoAlgorithm(alg, interface, std::vector<int>{det_id});
         os << ToString(alg) << ' ' << ToString(interface) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2226,7 +2226,7 @@ std::string CmdProxy::ConfigureADC(int action) {
         os << '[' << args[0] << ", " << args[1] << ", " << ToStringHex(value)
            << "]\n";
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2251,7 +2251,7 @@ std::string CmdProxy::BadChannels(int action) {
         det->setBadChannels(args[0], std::vector<int>{det_id});
         os << "successfully loaded" << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2272,7 +2272,7 @@ std::string CmdProxy::Counters(int action) {
             WrongNumberOfParameters(0);
         }
         auto mask = det->getCounterMask(std::vector<int>{det_id}).squash(-1);
-        os << sls::ToString(getSetBits(mask)) << '\n';
+        os << ToString(getSetBits(mask)) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
@@ -2285,14 +2285,14 @@ std::string CmdProxy::Counters(int action) {
             if (mask & (1 << val)) {
                 std::ostringstream oss;
                 oss << "Duplicate counter values (" << val << ") in arguments";
-                throw sls::RuntimeError(oss.str());
+                throw RuntimeError(oss.str());
             }
             mask |= (1 << val);
         }
         det->setCounterMask(mask, std::vector<int>{det_id});
-        os << sls::ToString(args) << '\n';
+        os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2308,7 +2308,7 @@ std::string CmdProxy::GateDelay(int action) {
     } else if (cmd == "gatedelay3") {
         gateIndex = 2;
     } else {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Unknown command, use list to list all commands");
     }
 
@@ -2374,7 +2374,7 @@ std::string CmdProxy::GateDelay(int action) {
             os << args[0] << '\n';
         }
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2391,7 +2391,7 @@ std::string CmdProxy::GainCaps(int action) {
             WrongNumberOfParameters(0);
 
         auto tmp = det->getGainCaps();
-        sls::Result<defs::M3_GainCaps> csr;
+        Result<defs::M3_GainCaps> csr;
         for (auto val : tmp) {
             if (val)
                 csr.push_back(static_cast<defs::M3_GainCaps>(val));
@@ -2405,13 +2405,13 @@ std::string CmdProxy::GainCaps(int action) {
         int caps = 0;
         for (const auto &arg : args) {
             if (arg != "0")
-                caps |= sls::StringTo<defs::M3_GainCaps>(arg);
+                caps |= StringTo<defs::M3_GainCaps>(arg);
         }
 
         det->setGainCaps(caps);
         os << OutString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2436,7 +2436,7 @@ std::string CmdProxy::Samples(int action) {
             int as = a.squash(-1);
             int ds = d.squash(-1);
             if (as == -1 || ds == -1 || as != ds) { // check if a == d?
-                throw sls::RuntimeError(
+                throw RuntimeError(
                     "Different samples. Use asamples or dsamples.");
             }
         }
@@ -2454,7 +2454,7 @@ std::string CmdProxy::Samples(int action) {
         }
         os << args.front() << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2474,7 +2474,7 @@ std::string CmdProxy::SlowAdc(int action) {
         }
         int nchan = StringTo<int>(args[0]);
         if (nchan < 0 || nchan > 7) {
-            throw sls::RuntimeError("Unknown adc argument " + args[0]);
+            throw RuntimeError("Unknown adc argument " + args[0]);
         }
         auto t = det->getSlowADC(
             static_cast<defs::dacIndex>(nchan + defs::SLOW_ADC0),
@@ -2486,9 +2486,9 @@ std::string CmdProxy::SlowAdc(int action) {
         os << OutString(result) << " mV\n";
 
     } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("cannot put");
+        throw RuntimeError("cannot put");
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2526,9 +2526,9 @@ std::string CmdProxy::ReceiverDbitList(int action) {
             }
         }
         det->setRxDbitList(t, std::vector<int>{det_id});
-        os << sls::ToString(args) << '\n';
+        os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2542,7 +2542,7 @@ std::string CmdProxy::DigitalIODelay(int action) {
               "Resolution is 25 ps."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
+        throw RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
@@ -2550,9 +2550,9 @@ std::string CmdProxy::DigitalIODelay(int action) {
         det->setDigitalIODelay(StringTo<uint64_t>(args[0]),
                                StringTo<int>(args[1]),
                                std::vector<int>{det_id});
-        os << sls::ToString(args) << '\n';
+        os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2567,7 +2567,7 @@ std::string CmdProxy::Pattern(int action) {
               "directly to server (instead of executing line by line)"
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
+        throw RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
@@ -2575,7 +2575,7 @@ std::string CmdProxy::Pattern(int action) {
         det->setPattern(args[0], std::vector<int>{det_id});
         os << args.front() << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2606,7 +2606,7 @@ std::string CmdProxy::PatternWord(int action) {
         os << '[' << ToStringHex(addr, 4) << ", " << ToStringHex(word, 16)
            << "]\n";
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2632,7 +2632,7 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
                   "of loop 2."
                << '\n';
         } else {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Unknown command, use list to list all commands");
         }
     } else {
@@ -2646,7 +2646,7 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
         } else if (cmd == "patloop2") {
             level = 2;
         } else {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Unknown command, use list to list all commands");
         }
         if (action == defs::GET_ACTION) {
@@ -2667,7 +2667,7 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
             os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
                << "]\n";
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -2690,7 +2690,7 @@ std::string CmdProxy::PatternLoopCycles(int action) {
                   "loop 2."
                << '\n';
         } else {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Unknown command, use list to list all commands");
         }
     } else {
@@ -2702,7 +2702,7 @@ std::string CmdProxy::PatternLoopCycles(int action) {
         } else if (cmd == "patnloop2") {
             level = 2;
         } else {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Unknown command, use list to list all commands");
         }
         if (action == defs::GET_ACTION) {
@@ -2719,7 +2719,7 @@ std::string CmdProxy::PatternLoopCycles(int action) {
                                       std::vector<int>{det_id});
             os << args.front() << '\n';
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -2736,7 +2736,7 @@ std::string CmdProxy::PatternWaitAddress(int action) {
         } else if (cmd == "patwait2") {
             os << "[addr] \n\t[Ctb][Moench][Mythen3] Wait 2 address." << '\n';
         } else {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Unknown command, use list to list all commands");
         }
     } else {
@@ -2748,7 +2748,7 @@ std::string CmdProxy::PatternWaitAddress(int action) {
         } else if (cmd == "patwait2") {
             level = 2;
         } else {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Unknown command, use list to list all commands");
         }
         if (action == defs::GET_ACTION) {
@@ -2765,7 +2765,7 @@ std::string CmdProxy::PatternWaitAddress(int action) {
             det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
             os << ToStringHex(addr, 4) << '\n';
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -2788,7 +2788,7 @@ std::string CmdProxy::PatternWaitTime(int action) {
                   "cycles."
                << '\n';
         } else {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Unknown command, use list to list all commands");
         }
     } else {
@@ -2800,7 +2800,7 @@ std::string CmdProxy::PatternWaitTime(int action) {
         } else if (cmd == "patwaittime2") {
             level = 2;
         } else {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Unknown command, use list to list all commands");
         }
         if (action == defs::GET_ACTION) {
@@ -2817,7 +2817,7 @@ std::string CmdProxy::PatternWaitTime(int action) {
                                     {det_id});
             os << args.front() << '\n';
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -2853,9 +2853,9 @@ std::string CmdProxy::AdditionalJsonHeader(int action) {
             }
         }
         det->setAdditionalJsonHeader(json, std::vector<int>{det_id});
-        os << sls::ToString(json) << '\n';
+        os << ToString(json) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2895,7 +2895,7 @@ std::string CmdProxy::JsonParameter(int action) {
             os << "{" << args[0] << ": " << args[1] << "}" << '\n';
         }
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2916,12 +2916,12 @@ std::string CmdProxy::ProgramFpga(int action) {
               "(full path). Then, detector controller is rebooted."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
+        throw RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
         bool forceDeteleNormalFile = false;
         if (args.size() == 2) {
             if (args[1] != "--force-delete-normal-file") {
-                throw sls::RuntimeError(
+                throw RuntimeError(
                     "Could not scan second argument. Did you "
                     "mean --force-delete-normal-file?");
             }
@@ -2933,7 +2933,7 @@ std::string CmdProxy::ProgramFpga(int action) {
                          std::vector<int>{det_id});
         os << "successful\n";
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2951,7 +2951,7 @@ std::string CmdProxy::UpdateDetectorServer(int action) {
               "to the link, which is effective after a reboot."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
+        throw RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
@@ -2959,7 +2959,7 @@ std::string CmdProxy::UpdateDetectorServer(int action) {
         det->updateDetectorServer(args[0], std::vector<int>{det_id});
         os << "successful\n";
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -2975,7 +2975,7 @@ std::string CmdProxy::UpdateKernel(int action) {
               "reboots with new kernel."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
+        throw RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
@@ -2983,7 +2983,7 @@ std::string CmdProxy::UpdateKernel(int action) {
         det->updateKernel(args[0], std::vector<int>{det_id});
         os << "successful\n";
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -3003,7 +3003,7 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
               "path of programming file"
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get");
+        throw RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
@@ -3011,13 +3011,13 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
         int fpos = args.size() - 1;
         if (args[fpos].find(".pof") == std::string::npos &&
             args[fpos].find(".rbf") == std::string::npos) {
-            throw sls::RuntimeError("Programming file must be a pof/rbf file.");
+            throw RuntimeError("Programming file must be a pof/rbf file.");
         }
         det->updateFirmwareAndServer(args[0], args[1],
                                      std::vector<int>{det_id});
         os << "successful\n";
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -3045,9 +3045,9 @@ std::string CmdProxy::Register(int action) {
         det->writeRegister(StringTo<uint32_t>(args[0]),
                            StringTo<uint32_t>(args[1]),
                            std::vector<int>{det_id});
-        os << sls::ToString(args) << '\n';
+        os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -3060,7 +3060,7 @@ std::string CmdProxy::AdcRegister(int action) {
               "to an adc register in hex. Advanced user Function!"
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get.");
+        throw RuntimeError("Cannot get.");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
@@ -3068,9 +3068,9 @@ std::string CmdProxy::AdcRegister(int action) {
         det->writeAdcRegister(StringTo<uint32_t>(args[0]),
                               StringTo<uint32_t>(args[1]),
                               std::vector<int>{det_id});
-        os << sls::ToString(args) << '\n';
+        os << ToString(args) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -3089,12 +3089,12 @@ std::string CmdProxy::BitOperations(int action) {
             os << "[reg address in hex] [bit index]\n\tGets bit in address."
                << '\n';
         } else {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Unknown command, use list to list all commands");
         }
     } else {
         if (cmd != "setbit" && cmd != "clearbit" && cmd != "getbit") {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Unknown command, use list to list all commands");
         }
         if (args.size() != 2) {
@@ -3108,22 +3108,22 @@ std::string CmdProxy::BitOperations(int action) {
         }
         if (action == defs::GET_ACTION) {
             if (cmd == "setbit" || cmd == "clearbit") {
-                throw sls::RuntimeError("Cannot get");
+                throw RuntimeError("Cannot get");
             }
             auto t = det->getBit(addr, bitnr, std::vector<int>{det_id});
             os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
             if (cmd == "getbit") {
-                throw sls::RuntimeError("Cannot put");
+                throw RuntimeError("Cannot put");
             }
             if (cmd == "setbit") {
                 det->setBit(addr, bitnr, std::vector<int>{det_id});
             } else if (cmd == "clearbit") {
                 det->clearBit(addr, bitnr, std::vector<int>{det_id});
             }
-            os << sls::ToString(args) << '\n';
+            os << ToString(args) << '\n';
         } else {
-            throw sls::RuntimeError("Unknown action");
+            throw RuntimeError("Unknown action");
         }
     }
     return os.str();
@@ -3141,7 +3141,7 @@ std::string CmdProxy::InitialChecks(int action) {
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (det_id != -1) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Cannot enable/disable initial checks at module level");
         }
         if (!args.empty()) {
@@ -3151,7 +3151,7 @@ std::string CmdProxy::InitialChecks(int action) {
         os << t << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id != -1) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Cannot get initial checks enable at module level");
         }
         if (args.size() != 1) {
@@ -3160,7 +3160,7 @@ std::string CmdProxy::InitialChecks(int action) {
         det->setInitialChecks(StringTo<int>(args[0]));
         os << args.front() << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -3174,7 +3174,7 @@ std::string CmdProxy::ExecuteCommand(int action) {
         os << "[command]\n\tExecutes command on detector server console."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw sls::RuntimeError("Cannot get.");
+        throw RuntimeError("Cannot get.");
     } else if (action == defs::PUT_ACTION) {
         std::string command;
         for (auto &i : args) {
@@ -3183,7 +3183,7 @@ std::string CmdProxy::ExecuteCommand(int action) {
         auto t = det->executeCommand(command, std::vector<int>{det_id});
         os << OutString(t) << '\n';
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -3197,7 +3197,7 @@ std::string CmdProxy::UserDetails(int action) {
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (det_id != -1) {
-            throw sls::RuntimeError("Cannot execute this at module level");
+            throw RuntimeError("Cannot execute this at module level");
         }
         if (!args.empty()) {
             WrongNumberOfParameters(0);
@@ -3205,9 +3205,9 @@ std::string CmdProxy::UserDetails(int action) {
         auto t = det->getUserDetails();
         os << t << '\n';
     } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("Cannot put.");
+        throw RuntimeError("Cannot put.");
     } else {
-        throw sls::RuntimeError("Unknown action");
+        throw RuntimeError("Unknown action");
     }
     return os.str();
 }

@@ -73,7 +73,7 @@ class GeneralData {
     float GetPixelDepth() { return float(dynamicRange) / 8; }
 
     void ThrowGenericError(std::string msg) const {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             msg + std::string("This is a generic function that should be "
                               "overloaded by a derived class"));
     }
@@ -395,7 +395,7 @@ class Mythen3Data : public GeneralData {
     virtual void SetCounterMask(const int mask) {
         int n = __builtin_popcount(mask);
         if (n < 1 || n > 3) {
-            throw sls::RuntimeError("Invalid number of counters " +
+            throw RuntimeError("Invalid number of counters " +
                                     std::to_string(n) + ". Expected 1-3.");
         }
         counterMask = mask;

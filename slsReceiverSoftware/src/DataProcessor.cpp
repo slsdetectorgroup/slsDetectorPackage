@@ -67,7 +67,7 @@ void DataProcessor::ResetParametersforNewAcquisition() {
     currentFrameIndex_ = 0;
     firstStreamerFrame_ = true;
     streamCurrentFrame_ = false;
-    completeImageToStreamBeforeCropping = sls::make_unique<char[]>(generalData_->imageSize);
+    completeImageToStreamBeforeCropping = make_unique<char[]>(generalData_->imageSize);
 }
 
 void DataProcessor::RecordFirstIndex(uint64_t fnum) {
@@ -107,7 +107,7 @@ void DataProcessor::SetupFileWriter(const bool filewriteEnable,
             dataFile_ = new BinaryDataFile(index);
             break;
         default:
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Unknown file format (compile with hdf5 flags");
         }
     }
@@ -121,7 +121,7 @@ void DataProcessor::CreateFirstFiles(
     const uint64_t numImages, const uint32_t dynamicRange,
     const bool detectorDataStream) {
     if (dataFile_ == nullptr) {
-        throw sls::RuntimeError("file object not contstructed");
+        throw RuntimeError("file object not contstructed");
     }
     CloseFiles();
 
@@ -156,14 +156,14 @@ void DataProcessor::CreateFirstFiles(
             modulePos, numUnitsPerReadout, udpPortNumber, maxFramesPerFile);
         break;
     default:
-        throw sls::RuntimeError("Unknown file format (compile with hdf5 flags");
+        throw RuntimeError("Unknown file format (compile with hdf5 flags");
     }
 }
 
 #ifdef HDF5C
 uint32_t DataProcessor::GetFilesInAcquisition() const {
     if (dataFile_ == nullptr) {
-        throw sls::RuntimeError("No data file object created to get number of "
+        throw RuntimeError("No data file object created to get number of "
                                 "files in acquiistion");
     }
     return dataFile_->GetFilesInAcquisition();
@@ -245,7 +245,7 @@ std::string DataProcessor::CreateMasterFile(
             filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
             attr);
     default:
-        throw sls::RuntimeError("Unknown file format (compile with hdf5 flags");
+        throw RuntimeError("Unknown file format (compile with hdf5 flags");
     }
 }
 
@@ -375,7 +375,7 @@ void DataProcessor::ProcessAnImage(char *buf) {
             (*((uint32_t *)buf)) = revsize;
         }
     } catch (const std::exception &e) {
-        throw sls::RuntimeError("Get Data Callback Error: " +
+        throw RuntimeError("Get Data Callback Error: " +
                                 std::string(e.what()));
     }
 
@@ -388,7 +388,7 @@ void DataProcessor::ProcessAnImage(char *buf) {
                     (uint32_t)(*((uint32_t *)buf)), //+ size of data (resizable
                                                     // from previous call back
                 fnum - firstIndex_, nump);
-        } catch (const sls::RuntimeError &e) {
+        } catch (const RuntimeError &e) {
             ; // ignore write exception for now (TODO: send error message
               // via stopReceiver tcp)
         }
@@ -561,7 +561,7 @@ void DataProcessor::RearrangeDbitData(char *buf) {
 }
 
 void DataProcessor::CropImage(char *buf) {
-    LOG(logDEBUG) << "Cropping Image to ROI " << sls::ToString(receiverRoi_);
+    LOG(logDEBUG) << "Cropping Image to ROI " << ToString(receiverRoi_);
     int nPixelsX = generalData_->nPixelsX;
     int xmin = receiverRoi_.xmin;
     int xmax = receiverRoi_.xmax;

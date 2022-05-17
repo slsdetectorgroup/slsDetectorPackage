@@ -15,7 +15,7 @@ QString qTabPlot::defaultImageXAxisTitle("Pixel");
 QString qTabPlot::defaultImageYAxisTitle("Pixel");
 QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
-qTabPlot::qTabPlot(QWidget *parent, sls::Detector *detector, qDrawPlot *p)
+qTabPlot::qTabPlot(QWidget *parent, Detector *detector, qDrawPlot *p)
     : QWidget(parent), det(detector), plot(p), is1d(false) {
     setupUi(this);
     SetupWidgetWindow();

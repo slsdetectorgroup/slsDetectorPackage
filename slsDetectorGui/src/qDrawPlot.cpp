@@ -16,7 +16,7 @@
 
 namespace sls {
 
-qDrawPlot::qDrawPlot(QWidget *parent, sls::Detector *detector)
+qDrawPlot::qDrawPlot(QWidget *parent, Detector *detector)
     : QWidget(parent), det(detector) {
     setupUi(this);
     SetupWidgetWindow();
@@ -730,7 +730,7 @@ void qDrawPlot::AcquisitionFinished(double currentProgress,
                                     int detectorStatus) {
     progress = currentProgress;
     std::string status =
-        sls::ToString(static_cast<slsDetectorDefs::runStatus>(detectorStatus));
+        ToString(static_cast<slsDetectorDefs::runStatus>(detectorStatus));
 
     if (detectorStatus == slsDetectorDefs::ERROR) {
         qDefs::Message(qDefs::WARNING,
@@ -763,7 +763,7 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
                   << "  \t dynamic range: " << data->dynamicRange << std::endl
                   << "  \t file index: " << data->fileIndex << std::endl
                   << "  \t complete image: " << data->completeImage << std::endl
-                  << "  \t rx Roi: " << sls::ToString(data->rxRoi) << std::endl
+                  << "  \t rx Roi: " << ToString(data->rxRoi) << std::endl
                   << "  ]";
 
     progress = data->progressIndex;
@@ -782,9 +782,9 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
             rxRoi.xmax += ((rxRoi.xmax/1024) * 6 + (rxRoi.xmax/256) * 2);
             rxRoi.ymin += ((rxRoi.ymin/512) * 34 + (rxRoi.ymin/256) * 2);
             rxRoi.ymax += ((rxRoi.ymax/512) * 34 + (rxRoi.ymax/256) * 2);
-            LOG(logINFO) << "Rx_roi recalculated with gap pixels: " << sls::ToString(rxRoi);
+            LOG(logINFO) << "Rx_roi recalculated with gap pixels: " << ToString(rxRoi);
         }
-        LOG(logDEBUG) << "Rx_roi: " << sls::ToString(rxRoi);
+        LOG(logDEBUG) << "Rx_roi: " << ToString(rxRoi);
     }
     
 

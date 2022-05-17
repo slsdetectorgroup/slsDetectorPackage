@@ -884,7 +884,7 @@ class Detector {
     void setRxLock(bool value, Positions pos = {});
 
     /** Client IP Address that last communicated with the receiver */
-    Result<sls::IpAddr> getRxLastClientIP(Positions pos = {}) const;
+    Result<IpAddr> getRxLastClientIP(Positions pos = {}) const;
 
     /** Get thread ids from the receiver in order of [parent, tcp, listener 0,
      * processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. If
@@ -1919,7 +1919,7 @@ class Detector {
     void setDetectorLock(bool lock, Positions pos = {});
 
     /** Client IP Address that last communicated with the detector */
-    Result<sls::IpAddr> getLastClientIP(Positions pos = {}) const;
+    Result<IpAddr> getLastClientIP(Positions pos = {}) const;
 
     /** Execute a command on the detector server console */
     Result<std::string> executeCommand(const std::string &value,

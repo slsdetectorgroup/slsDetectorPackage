@@ -11,7 +11,7 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
     Q_OBJECT
 
   public:
-    qTabSettings(QWidget *parent, sls::Detector *detector);
+    qTabSettings(QWidget *parent, Detector *detector);
     ~qTabSettings();
     void Refresh();
   public slots:
@@ -39,7 +39,7 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
     void GetThresholdEnergies();
     void GetCounterMask();
 
-    sls::Detector *det;
+    Detector *det;
     std::vector<QCheckBox *> counters;
 
     enum {

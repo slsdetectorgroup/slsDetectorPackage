@@ -49,9 +49,9 @@ class qDefs : public QWidget {
     static void DisplayExceptions(std::string emsg, std::string src) {
         try {
             throw;
-        } catch (const sls::SocketError &e) {
+        } catch (const SocketError &e) {
             throw;
-        } catch (const sls::SharedMemoryError &e) {
+        } catch (const SharedMemoryError &e) {
             throw;
         } catch (const std::exception &e) {
             ExceptionMessage(emsg, e.what(), src);
@@ -65,9 +65,9 @@ class qDefs : public QWidget {
                                  typename NonDeduced<CT>::type... Args) {
         try {
             throw;
-        } catch (const sls::SocketError &e) {
+        } catch (const SocketError &e) {
             throw;
-        } catch (const sls::SharedMemoryError &e) {
+        } catch (const SharedMemoryError &e) {
             throw;
         } catch (const std::exception &e) {
             ExceptionMessage(emsg, e.what(), src);

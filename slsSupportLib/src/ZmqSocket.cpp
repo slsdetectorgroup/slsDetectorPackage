@@ -18,7 +18,7 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
                      const uint32_t portnumber)
     : portno(portnumber), sockfd(false) {
     // Extra check that throws if conversion fails, could be removed
-    auto ipstr = sls::HostnameToIp(hostname_or_ip).str();
+    auto ipstr = HostnameToIp(hostname_or_ip).str();
     std::ostringstream oss;
     oss << "tcp://" << ipstr << ":" << portno;
     sockfd.serverAddress = oss.str();
@@ -27,20 +27,20 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
     // create context
     sockfd.contextDescriptor = zmq_ctx_new();
     if (sockfd.contextDescriptor == nullptr)
-        throw sls::ZmqSocketError("Could not create contextDescriptor");
+        throw ZmqSocketError("Could not create contextDescriptor");
 
     // create subscriber
     sockfd.socketDescriptor = zmq_socket(sockfd.contextDescriptor, ZMQ_SUB);
     if (sockfd.socketDescriptor == nullptr) {
         PrintError();
-        throw sls::ZmqSocketError("Could not create socket");
+        throw ZmqSocketError("Could not create socket");
     }
 
     // Socket Options provided above
     // an empty string implies receiving any messages
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SUBSCRIBE, "", 0)) {
         PrintError();
-        throw sls::ZmqSocketError("Could set socket opt");
+        throw ZmqSocketError("Could set socket opt");
     }
     // ZMQ_LINGER default is already -1 means no messages discarded. use this
     // options if optimizing required ZMQ_SNDHWM default is 0 means no limit.
@@ -49,7 +49,7 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_LINGER, &value,
                        sizeof(value))) {
         PrintError();
-        throw sls::ZmqSocketError("Could not set ZMQ_LINGER");
+        throw ZmqSocketError("Could not set ZMQ_LINGER");
     }
     LOG(logDEBUG) << "Default receive high water mark:"
                   << GetReceiveHighWaterMark();
@@ -60,13 +60,13 @@ ZmqSocket::ZmqSocket(const uint32_t portnumber, const char *ethip)
     // create context
     sockfd.contextDescriptor = zmq_ctx_new();
     if (sockfd.contextDescriptor == nullptr)
-        throw sls::ZmqSocketError("Could not create contextDescriptor");
+        throw ZmqSocketError("Could not create contextDescriptor");
 
     // create publisher
     sockfd.socketDescriptor = zmq_socket(sockfd.contextDescriptor, ZMQ_PUB);
     if (sockfd.socketDescriptor == nullptr) {
         PrintError();
-        throw sls::ZmqSocketError("Could not create socket");
+        throw ZmqSocketError("Could not create socket");
     }
     LOG(logDEBUG) << "Default send high water mark:" << GetSendHighWaterMark();
 
@@ -79,7 +79,7 @@ ZmqSocket::ZmqSocket(const uint32_t portnumber, const char *ethip)
     // bind address
     if (zmq_bind(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {
         PrintError();
-        throw sls::ZmqSocketError("Could not bind socket");
+        throw ZmqSocketError("Could not bind socket");
     }
     // sleep to allow a slow-joiner
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -91,7 +91,7 @@ int ZmqSocket::GetSendHighWaterMark() {
     if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_SNDHWM, &value,
                        &value_size)) {
         PrintError();
-        throw sls::ZmqSocketError("Could not get ZMQ_SNDHWM");
+        throw ZmqSocketError("Could not get ZMQ_SNDHWM");
     }
     return value;
 }
@@ -100,7 +100,7 @@ void ZmqSocket::SetSendHighWaterMark(int limit) {
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SNDHWM, &limit,
                        sizeof(limit))) {
         PrintError();
-        throw sls::ZmqSocketError("Could not set ZMQ_SNDHWM");
+        throw ZmqSocketError("Could not set ZMQ_SNDHWM");
     }
 }
 
@@ -110,7 +110,7 @@ int ZmqSocket::GetReceiveHighWaterMark() {
     if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_RCVHWM, &value,
                        &value_size)) {
         PrintError();
-        throw sls::ZmqSocketError("Could not get ZMQ_SNDHWM");
+        throw ZmqSocketError("Could not get ZMQ_SNDHWM");
     }
     return value;
 }
@@ -119,7 +119,7 @@ void ZmqSocket::SetReceiveHighWaterMark(int limit) {
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_RCVHWM, &limit,
                        sizeof(limit))) {
         PrintError();
-        throw sls::ZmqSocketError("Could not set ZMQ_SNDHWM");
+        throw ZmqSocketError("Could not set ZMQ_SNDHWM");
     }
 }
 

@@ -96,13 +96,13 @@ class Fifo : private virtual slsDetectorDefs {
     char *memory;
 
     /** Circular Fifo pointing to addresses of bound data in memory */
-    sls::CircularFifo<char> *fifoBound;
+    CircularFifo<char> *fifoBound;
 
     /** Circular Fifo pointing to addresses of freed data in memory */
-    sls::CircularFifo<char> *fifoFree;
+    CircularFifo<char> *fifoFree;
 
     /** Circular Fifo pointing to addresses of to be streamed data in memory */
-    sls::CircularFifo<char> *fifoStream;
+    CircularFifo<char> *fifoStream;
 
     /** Fifo depth set */
     int fifoDepth;

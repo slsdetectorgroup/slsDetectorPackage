@@ -225,7 +225,7 @@ class ZmqSocket {
     mySocketDescriptors sockfd;
 
     std::unique_ptr<char[]> header_buffer =
-        sls::make_unique<char[]>(MAX_STR_LENGTH);
+        make_unique<char[]>(MAX_STR_LENGTH);
 };
 
 } // namespace sls

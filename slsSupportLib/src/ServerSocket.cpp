@@ -33,7 +33,7 @@ ServerSocket::ServerSocket(int port)
     if (bind(getSocketId(), (struct sockaddr *)&serverAddr,
              sizeof(serverAddr)) != 0) {
         close();
-        throw sls::SocketError(
+        throw SocketError(
             std::string("Server ERROR: cannot bind socket with port number ") +
             std::to_string(port) +
             std::string(". Please check if another instance is running."));
@@ -51,7 +51,7 @@ ServerInterface ServerSocket::accept() {
     int newSocket =
         ::accept(getSocketId(), (struct sockaddr *)&clientAddr, &addr_size);
     if (newSocket == -1) {
-        throw sls::SocketError("Server ERROR: socket accept failed\n");
+        throw SocketError("Server ERROR: socket accept failed\n");
     }
     char tc[INET_ADDRSTRLEN]{};
     inet_ntop(AF_INET, &(clientAddr.sin_addr), tc, INET_ADDRSTRLEN);

@@ -11,7 +11,7 @@
 #include "Fifo.h"
 #include "GeneralData.h"
 #include "sls/UdpRxSocket.h"
-#include "sls/container_utils.h" // For sls::make_unique<>
+#include "sls/container_utils.h" // For make_unique<>
 #include "sls/network_utils.h"
 #include "sls/sls_detector_exceptions.h"
 
@@ -88,9 +88,9 @@ void Listener::ResetParametersforNewAcquisition() {
     if (myDetectorType == GOTTHARD2 && index != 0) {
         packetSize = generalData->vetoPacketSize;
     }
-    carryOverPacket = sls::make_unique<char[]>(packetSize);
+    carryOverPacket = make_unique<char[]>(packetSize);
     memset(carryOverPacket.get(), 0, packetSize);
-    listeningPacket = sls::make_unique<char[]>(packetSize);
+    listeningPacket = make_unique<char[]>(packetSize);
     memset(carryOverPacket.get(), 0, packetSize);
 
     numPacketsStatistic = 0;
@@ -141,14 +141,14 @@ void Listener::CreateUDPSockets() {
 
     // InterfaceNameToIp(eth).str().c_str()
     try {
-        udpSocket = sls::make_unique<sls::UdpRxSocket>(
+        udpSocket = make_unique<UdpRxSocket>(
             *udpPortNumber, packetSize,
-            ((*eth).length() ? sls::InterfaceNameToIp(*eth).str().c_str()
+            ((*eth).length() ? InterfaceNameToIp(*eth).str().c_str()
                              : nullptr),
             *udpSocketBufferSize);
         LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
     } catch (...) {
-        throw sls::RuntimeError("Could not create UDP socket on port " +
+        throw RuntimeError("Could not create UDP socket on port " +
                                 std::to_string(*udpPortNumber));
     }
 
@@ -190,9 +190,9 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
 
     // create dummy socket
     try {
-        sls::UdpRxSocket g(*udpPortNumber, packetSize,
+        UdpRxSocket g(*udpPortNumber, packetSize,
                            ((*eth).length()
-                                ? sls::InterfaceNameToIp(*eth).str().c_str()
+                                ? InterfaceNameToIp(*eth).str().c_str()
                                 : nullptr),
                            *udpSocketBufferSize);
 
@@ -206,7 +206,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
         }
 
     } catch (...) {
-        throw sls::RuntimeError("Could not create a test UDP socket on port " +
+        throw RuntimeError("Could not create a test UDP socket on port " +
                                 std::to_string(*udpPortNumber));
     }
 }

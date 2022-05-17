@@ -220,7 +220,7 @@ void HDF5DataFile::CreateFile() {
     } catch (const Exception &error) {
         error.printErrorStack();
         CloseFile();
-        throw sls::RuntimeError("Could not create HDF5 handles in object " +
+        throw RuntimeError("Could not create HDF5 handles in object " +
                                 index_);
     }
     if (!silentMode_) {
@@ -268,7 +268,7 @@ void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
     if (dynamicRange_ == 12) {
         revBuffer = (char *)malloc(EIGER_16_BIT_IMAGE_SIZE);
         if (revBuffer == nullptr) {
-            throw sls::RuntimeError("Could not allocate memory for 12 bit to "
+            throw RuntimeError("Could not allocate memory for 12 bit to "
                                     "16 bit conversion in object " +
                                     std::to_string(index_));
         }
@@ -302,7 +302,7 @@ void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
         }
         LOG(logERROR) << "Could not write to file in object " << index_;
         error.printErrorStack();
-        throw sls::RuntimeError("Could not write to file in object " +
+        throw RuntimeError("Could not write to file in object " +
                                 std::to_string(index_));
     }
 }
@@ -385,7 +385,7 @@ void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
         i = 14;
     } catch (const Exception &error) {
         error.printErrorStack();
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Could not write parameters (index:" + std::to_string(i) +
             ") to file in object " + std::to_string(index_));
     }
@@ -415,7 +415,7 @@ void HDF5DataFile::ExtendDataset() {
 
     } catch (const Exception &error) {
         error.printErrorStack();
-        throw sls::RuntimeError("Could not extend dataset in object " +
+        throw RuntimeError("Could not extend dataset in object " +
                                 std::to_string(index_));
     }
     if (!silentMode_) {

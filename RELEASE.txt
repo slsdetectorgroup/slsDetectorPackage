@@ -73,6 +73,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - m3 virtual server sends the right pacets now
 - gap pixels in gui enabled by default
 - rxr src files and classes (detectordata, ZmqSocket, helpDacs) added to sls namespace, and macros (namely from logger (logINFO etc)), slsDetectorGui
+- blackfin programing made seamless (nCE fixed which helps)
 
 2. Resolved Issues
 ==================

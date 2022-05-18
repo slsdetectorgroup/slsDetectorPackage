@@ -12,13 +12,15 @@
 #include "ThreadObject.h"
 #include "sls/network_utils.h"
 
+#include <map>
+#include <mutex>
+
+namespace sls {
+
 class GeneralData;
 class Fifo;
 class DataStreamer;
 class ZmqSocket;
-
-#include <map>
-#include <mutex>
 
 class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
@@ -62,7 +64,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param ip streaming source ip
      * @param hwm streaming high water mark
      */
-    void CreateZmqSockets(int *nunits, uint32_t port, const sls::IpAddr ip,
+    void CreateZmqSockets(int *nunits, uint32_t port, const IpAddr ip,
                           int hwm);
     void CloseZmqSocket();
     void RestreamStop();
@@ -131,3 +133,5 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     bool *quadEnable;
     uint64_t *totalNumFrames;
 };
+
+} // namespace sls

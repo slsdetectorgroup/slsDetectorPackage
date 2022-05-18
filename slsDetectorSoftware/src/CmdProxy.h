@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+namespace sls {
+    
 /** Macro to make an integer command.
  * CMDNAME name of the function that does the command
  * GETFCN Detector function to get
@@ -53,7 +55,7 @@
                 os << args[0] << '\n';                                         \
             }                                                                  \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -75,9 +77,9 @@
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
-            throw sls::RuntimeError("cannot put");                             \
+            throw RuntimeError("cannot put");                             \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -102,7 +104,7 @@
             det->SETFCN(args[0], std::vector<int>{det_id});                    \
             os << args.front() << '\n';                                        \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -128,7 +130,7 @@
             det->SETFCN(val, std::vector<int>{det_id});                        \
             os << ToStringHex(val, 16) << '\n';                                \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -154,7 +156,7 @@
             det->SETFCN(val, std::vector<int>{det_id});                        \
             os << args.front() << '\n';                                        \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -180,7 +182,7 @@
             det->SETFCN(val, std::vector<int>{det_id});                        \
             os << args.front() << '\n';                                        \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -206,7 +208,7 @@
             det->SETFCN(val, det_id);                                          \
             os << args.front() << '\n';                                        \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -232,7 +234,7 @@
             det->SETFCN(val, det_id);                                          \
             os << args.front() << '\n';                                        \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -252,7 +254,7 @@
             os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (det_id != -1) {                                                \
-                throw sls::RuntimeError(                                       \
+                throw RuntimeError(                                       \
                     "Cannot execute this at module level");                    \
             }                                                                  \
             if (args.size() != 1) {                                            \
@@ -262,7 +264,7 @@
             det->SETFCN(val);                                                  \
             os << args.front() << '\n';                                        \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -273,7 +275,7 @@
         std::ostringstream os;                                                 \
         os << cmd << ' ';                                                      \
         if (det_id != -1) {                                                    \
-            throw sls::RuntimeError("Cannot execute this at module level");    \
+            throw RuntimeError("Cannot execute this at module level");    \
         }                                                                      \
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
@@ -291,7 +293,7 @@
             det->SETFCN(val);                                                  \
             os << args.front() << '\n';                                        \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -317,7 +319,7 @@
             det->SETFCN(INDEX, val, std::vector<int>{det_id});                 \
             os << args.front() << '\n';                                        \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -345,7 +347,7 @@
                         std::vector<int>{det_id});                             \
             os << args[0] << ' ' << args[1] << '\n';                           \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -356,12 +358,12 @@
         std::ostringstream os;                                                 \
         os << cmd << ' ';                                                      \
         if (det_id != -1) {                                                    \
-            throw sls::RuntimeError("Cannot execute this at module level");    \
+            throw RuntimeError("Cannot execute this at module level");    \
         }                                                                      \
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            throw sls::RuntimeError("Cannot get");                             \
+            throw RuntimeError("Cannot get");                             \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
@@ -369,7 +371,7 @@
             det->SETFCN();                                                     \
             os << "successful\n";                                              \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -382,7 +384,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            throw sls::RuntimeError("Cannot get");                             \
+            throw RuntimeError("Cannot get");                             \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
@@ -390,7 +392,7 @@
             det->SETFCN(std::vector<int>{det_id});                             \
             os << "successful\n";                                              \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -401,12 +403,12 @@
         std::ostringstream os;                                                 \
         os << cmd << ' ';                                                      \
         if (det_id != -1) {                                                    \
-            throw sls::RuntimeError("Cannot execute this at module level");    \
+            throw RuntimeError("Cannot execute this at module level");    \
         }                                                                      \
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            throw sls::RuntimeError("Cannot get");                             \
+            throw RuntimeError("Cannot get");                             \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
@@ -414,7 +416,7 @@
             det->SETFCN(args[0]);                                              \
             os << args.front() << '\n';                                        \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -427,7 +429,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            throw sls::RuntimeError("Cannot get");                             \
+            throw RuntimeError("Cannot get");                             \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
@@ -435,7 +437,7 @@
             det->SETFCN(args[0], std::vector<int>{det_id});                    \
             os << args.front() << '\n';                                        \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -454,9 +456,9 @@
             auto t = det->GETFCN(std::vector<int>{det_id});                    \
             os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
-            throw sls::RuntimeError("Cannot put");                             \
+            throw RuntimeError("Cannot put");                             \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -473,11 +475,11 @@
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN();                                            \
-            os << sls::ToString(t) << '\n';                                    \
+            os << ToString(t) << '\n';                                    \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
-            throw sls::RuntimeError("Cannot put");                             \
+            throw RuntimeError("Cannot put");                             \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -496,9 +498,9 @@
             auto t = det->GETFCN(std::vector<int>{det_id});                    \
             os << OutStringHex(t) << '\n';                                     \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
-            throw sls::RuntimeError("Cannot put");                             \
+            throw RuntimeError("Cannot put");                             \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
@@ -516,14 +518,12 @@
             auto t = det->GETFCN(VAL, std::vector<int>{det_id});               \
             os << OutString(t) << APPEND << '\n';                              \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
-            throw sls::RuntimeError("Cannot put");                             \
+            throw RuntimeError("Cannot put");                             \
         } else {                                                               \
-            throw sls::RuntimeError("Unknown action");                         \
+            throw RuntimeError("Unknown action");                         \
         }                                                                      \
         return os.str();                                                       \
     }
-
-namespace sls {
 
 class CmdProxy {
   public:
@@ -558,7 +558,7 @@ class CmdProxy {
         return ToStringHex(value, width);
     }
 
-    template <typename V> std::string OutString(const sls::Result<V> &value) {
+    template <typename V> std::string OutString(const Result<V> &value) {
         if (value.equal())
             return ToString(value.front());
         return ToString(value);
@@ -1251,7 +1251,7 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         settings, getSettings, setSettings,
-        sls::StringTo<slsDetectorDefs::detectorSettings>,
+        StringTo<slsDetectorDefs::detectorSettings>,
         "[standard, fast, highgain, dynamicgain, lowgain, "
         "mediumgain, veryhighgain, highgain0, "
         "fixgain1, fixgain2, forceswitchg1, forceswitchg2, "
@@ -1354,7 +1354,7 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         timing, getTimingMode, setTimingMode,
-        sls::StringTo<slsDetectorDefs::timingMode>,
+        StringTo<slsDetectorDefs::timingMode>,
         "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of "
         "detector.\n\t[Jungfrau][Gotthard][Ctb][Moench][Gotthard2] "
         "[auto|trigger]\n\t[Mythen3] "
@@ -1726,7 +1726,7 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         rx_discardpolicy, getRxFrameDiscardPolicy, setRxFrameDiscardPolicy,
-        sls::StringTo<slsDetectorDefs::frameDiscardPolicy>,
+        StringTo<slsDetectorDefs::frameDiscardPolicy>,
         "[nodiscard (default)|discardempty|discardpartial(fastest)]\n\tFrame "
         "discard policy of receiver. nodiscard does not discard frames, "
         "discardempty discards empty frames, discardpartial discards partial "
@@ -1776,7 +1776,7 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         fformat, getFileFormat, setFileFormat,
-        sls::StringTo<slsDetectorDefs::fileFormat>,
+        StringTo<slsDetectorDefs::fileFormat>,
         "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be "
         "compiled with HDF5 flags. Default is binary.");
 
@@ -1992,13 +1992,13 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         gainmode, getGainMode, setGainMode,
-        sls::StringTo<slsDetectorDefs::gainMode>,
+        StringTo<slsDetectorDefs::gainMode>,
         "[dynamicgain|forceswitchg1|forceswitchg2|fixg1|fixg2|fixg0]\n\t["
         "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, "
         "you can damage the detector!!!");
 
     INTEGER_COMMAND_VEC_ID(filtercells, getNumberOfFilterCells,
-                           setNumberOfFilterCells, sls::StringTo<int>,
+                           setNumberOfFilterCells, StringTo<int>,
                            "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for "
                            "chipv1.1. Advanced user Command");
 
@@ -2034,7 +2034,7 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         timingsource, getTimingSource, setTimingSource,
-        sls::StringTo<slsDetectorDefs::timingSourceType>,
+        StringTo<slsDetectorDefs::timingSourceType>,
         "[internal|external]\n\t[Gotthard2] Timing source. Internal is crystal "
         "and external is system timing. Default is internal.");
 
@@ -2121,7 +2121,7 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         romode, getReadoutMode, setReadoutMode,
-        sls::StringTo<slsDetectorDefs::readoutMode>,
+        StringTo<slsDetectorDefs::readoutMode>,
         "[analog|digital|analog_digital]\n\t[CTB] Readout mode. "
         "Default is analog.");
 

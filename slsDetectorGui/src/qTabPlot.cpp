@@ -6,6 +6,8 @@
 #include <QStackedLayout>
 #include <QStandardItemModel>
 
+namespace sls {
+
 QString qTabPlot::defaultPlotTitle("");
 QString qTabPlot::defaultHistXAxisTitle("Channel Number");
 QString qTabPlot::defaultHistYAxisTitle("Counts");
@@ -13,7 +15,7 @@ QString qTabPlot::defaultImageXAxisTitle("Pixel");
 QString qTabPlot::defaultImageYAxisTitle("Pixel");
 QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
-qTabPlot::qTabPlot(QWidget *parent, sls::Detector *detector, qDrawPlot *p)
+qTabPlot::qTabPlot(QWidget *parent, Detector *detector, qDrawPlot *p)
     : QWidget(parent), det(detector), plot(p), is1d(false) {
     setupUi(this);
     SetupWidgetWindow();
@@ -797,3 +799,5 @@ void qTabPlot::Refresh() {
 
     LOG(logDEBUG) << "**Updated Plot Tab";
 }
+
+} // namespace sls

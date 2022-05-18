@@ -4,11 +4,13 @@
 #include "sls/Detector.h"
 #include "ui_form_tab_dataoutput.h"
 
+namespace sls {
+
 class qTabDataOutput : public QWidget, private Ui::TabDataOutputObject {
     Q_OBJECT
 
   public:
-    qTabDataOutput(QWidget *parent, sls::Detector *detector);
+    qTabDataOutput(QWidget *parent, Detector *detector);
     ~qTabDataOutput();
     void Refresh();
 
@@ -39,7 +41,9 @@ class qTabDataOutput : public QWidget, private Ui::TabDataOutputObject {
     void GetSpeed();
     void GetParallel();
 
-    sls::Detector *det;
+    Detector *det;
     // Button group for radiobuttons for rate
     QButtonGroup *btnGroupRate;
 };
+
+} // namespace sls

@@ -68,7 +68,7 @@ std::string Module::getHostname() const { return shm()->hostname; }
 
 void Module::setHostname(const std::string &hostname,
                          const bool initialChecks) {
-    sls::strcpy_safe(shm()->hostname, hostname.c_str());
+    strcpy_safe(shm()->hostname, hostname.c_str());
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.close();
     try {
@@ -117,7 +117,7 @@ int64_t Module::getReceiverSoftwareVersion() const {
 slsDetectorDefs::detectorType
 Module::getTypeFromDetector(const std::string &hostname, int cport) {
     LOG(logDEBUG1) << "Getting Module type ";
-    sls::ClientSocket socket("Detector", hostname, cport);
+    ClientSocket socket("Detector", hostname, cport);
     socket.Send(F_GET_DETECTOR_TYPE);
     socket.Receive<int>(); // TODO! Should we look at this OK/FAIL?
     auto retval = socket.Receive<detectorType>();
@@ -443,7 +443,7 @@ std::string Module::getSettingsDir() const {
 }
 
 std::string Module::setSettingsDir(const std::string &dir) {
-    sls::strcpy_safe(shm()->settingsDir, dir.c_str());
+    strcpy_safe(shm()->settingsDir, dir.c_str());
     return shm()->settingsDir;
 }
 
@@ -894,7 +894,7 @@ std::vector<int64_t> Module::getFramesCaughtByReceiver() const {
             std::vector<int64_t> retval(nports);
             client.Receive(retval);
             LOG(logDEBUG1) << "Frames caught of Receiver" << moduleIndex << ": "
-                           << sls::ToString(retval);
+                           << ToString(retval);
             return retval;
         }
     }
@@ -916,7 +916,7 @@ std::vector<int64_t> Module::getNumMissingPackets() const {
             std::vector<int64_t> retval(nports);
             client.Receive(retval);
             LOG(logDEBUG1) << "Missing packets of Receiver" << moduleIndex
-                           << ": " << sls::ToString(retval);
+                           << ": " << ToString(retval);
             return retval;
         }
     }
@@ -938,7 +938,7 @@ std::vector<int64_t> Module::getReceiverCurrentFrameIndex() const {
             std::vector<int64_t> retval(nports);
             client.Receive(retval);
             LOG(logDEBUG1) << "Frame index of Receiver" << moduleIndex << ": "
-                           << sls::ToString(retval);
+                           << ToString(retval);
             return retval;
         }
     }
@@ -1002,8 +1002,8 @@ void Module::selectUDPInterface(int n) {
     sendToDetector(F_SET_INTERFACE_SEL, n, nullptr);
 }
 
-sls::IpAddr Module::getSourceUDPIP() const {
-    return sendToDetector<sls::IpAddr>(F_GET_SOURCE_UDP_IP);
+IpAddr Module::getSourceUDPIP() const {
+    return sendToDetector<IpAddr>(F_GET_SOURCE_UDP_IP);
 }
 
 void Module::setSourceUDPIP(const IpAddr ip) {
@@ -1013,8 +1013,8 @@ void Module::setSourceUDPIP(const IpAddr ip) {
     sendToDetector(F_SET_SOURCE_UDP_IP, ip, nullptr);
 }
 
-sls::IpAddr Module::getSourceUDPIP2() const {
-    return sendToDetector<sls::IpAddr>(F_GET_SOURCE_UDP_IP2);
+IpAddr Module::getSourceUDPIP2() const {
+    return sendToDetector<IpAddr>(F_GET_SOURCE_UDP_IP2);
 }
 
 void Module::setSourceUDPIP2(const IpAddr ip) {
@@ -1024,33 +1024,33 @@ void Module::setSourceUDPIP2(const IpAddr ip) {
     sendToDetector(F_SET_SOURCE_UDP_IP2, ip, nullptr);
 }
 
-sls::MacAddr Module::getSourceUDPMAC() const {
-    return sendToDetector<sls::MacAddr>(F_GET_SOURCE_UDP_MAC);
+MacAddr Module::getSourceUDPMAC() const {
+    return sendToDetector<MacAddr>(F_GET_SOURCE_UDP_MAC);
 }
 
-void Module::setSourceUDPMAC(const sls::MacAddr mac) {
+void Module::setSourceUDPMAC(const MacAddr mac) {
     if (mac == 0) {
         throw RuntimeError("Invalid source udp mac address");
     }
     sendToDetector(F_SET_SOURCE_UDP_MAC, mac, nullptr);
 }
 
-sls::MacAddr Module::getSourceUDPMAC2() const {
-    return sendToDetector<sls::MacAddr>(F_GET_SOURCE_UDP_MAC2);
+MacAddr Module::getSourceUDPMAC2() const {
+    return sendToDetector<MacAddr>(F_GET_SOURCE_UDP_MAC2);
 }
 
-void Module::setSourceUDPMAC2(const sls::MacAddr mac) {
+void Module::setSourceUDPMAC2(const MacAddr mac) {
     if (mac == 0) {
         throw RuntimeError("Invalid source udp mac address2");
     }
     sendToDetector(F_SET_SOURCE_UDP_MAC2, mac, nullptr);
 }
 
-sls::UdpDestination Module::getDestinationUDPList(const uint32_t entry) const {
-    return sendToDetector<sls::UdpDestination>(F_GET_DEST_UDP_LIST, entry);
+UdpDestination Module::getDestinationUDPList(const uint32_t entry) const {
+    return sendToDetector<UdpDestination>(F_GET_DEST_UDP_LIST, entry);
 }
 
-void Module::setDestinationUDPList(const sls::UdpDestination dest) {
+void Module::setDestinationUDPList(const UdpDestination dest) {
     // set them in the default way so the receivers are also set up
     if (dest.entry == 0) {
         if (dest.port != 0) {
@@ -1090,8 +1090,8 @@ void Module::setFirstUDPDestination(const int value) {
     sendToDetector(F_SET_UDP_FIRST_DEST, value, nullptr);
 }
 
-sls::IpAddr Module::getDestinationUDPIP() const {
-    return sendToDetector<sls::IpAddr>(F_GET_DEST_UDP_IP);
+IpAddr Module::getDestinationUDPIP() const {
+    return sendToDetector<IpAddr>(F_GET_DEST_UDP_IP);
 }
 
 void Module::setDestinationUDPIP(const IpAddr ip) {
@@ -1104,7 +1104,7 @@ void Module::setDestinationUDPIP(const IpAddr ip) {
     }
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr);
     if (shm()->useReceiverFlag) {
-        sls::MacAddr retval(0LU);
+        MacAddr retval(0LU);
         sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
         LOG(logINFO) << "Setting destination udp mac of Module " << moduleIndex
                      << " to " << retval;
@@ -1112,8 +1112,8 @@ void Module::setDestinationUDPIP(const IpAddr ip) {
     }
 }
 
-sls::IpAddr Module::getDestinationUDPIP2() const {
-    return sendToDetector<sls::IpAddr>(F_GET_DEST_UDP_IP2);
+IpAddr Module::getDestinationUDPIP2() const {
+    return sendToDetector<IpAddr>(F_GET_DEST_UDP_IP2);
 }
 
 void Module::setDestinationUDPIP2(const IpAddr ip) {
@@ -1127,7 +1127,7 @@ void Module::setDestinationUDPIP2(const IpAddr ip) {
     }
     sendToDetector(F_SET_DEST_UDP_IP2, ip, nullptr);
     if (shm()->useReceiverFlag) {
-        sls::MacAddr retval(0LU);
+        MacAddr retval(0LU);
         sendToReceiver(F_SET_RECEIVER_UDP_IP2, ip, retval);
         LOG(logINFO) << "Setting destination udp mac2 of Module " << moduleIndex
                      << " to " << retval;
@@ -1135,8 +1135,8 @@ void Module::setDestinationUDPIP2(const IpAddr ip) {
     }
 }
 
-sls::MacAddr Module::getDestinationUDPMAC() const {
-    return sendToDetector<sls::MacAddr>(F_GET_DEST_UDP_MAC);
+MacAddr Module::getDestinationUDPMAC() const {
+    return sendToDetector<MacAddr>(F_GET_DEST_UDP_MAC);
 }
 
 void Module::setDestinationUDPMAC(const MacAddr mac) {
@@ -1146,8 +1146,8 @@ void Module::setDestinationUDPMAC(const MacAddr mac) {
     sendToDetector(F_SET_DEST_UDP_MAC, mac, nullptr);
 }
 
-sls::MacAddr Module::getDestinationUDPMAC2() const {
-    return sendToDetector<sls::MacAddr>(F_GET_DEST_UDP_MAC2);
+MacAddr Module::getDestinationUDPMAC2() const {
+    return sendToDetector<MacAddr>(F_GET_DEST_UDP_MAC2);
 }
 
 void Module::setDestinationUDPMAC2(const MacAddr mac) {
@@ -1279,19 +1279,19 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
 
     if (receiverIP == "none") {
         memset(shm()->rxHostname, 0, MAX_STR_LENGTH);
-        sls::strcpy_safe(shm()->rxHostname, "none");
+        strcpy_safe(shm()->rxHostname, "none");
         shm()->useReceiverFlag = false;
         return;
     }
 
     // start updating
     std::string host = receiverIP;
-    auto res = sls::split(host, ':');
+    auto res = split(host, ':');
     if (res.size() > 1) {
         host = res[0];
         shm()->rxTCPPort = std::stoi(res[1]);
     }
-    sls::strcpy_safe(shm()->rxHostname, host.c_str());
+    strcpy_safe(shm()->rxHostname, host.c_str());
     shm()->useReceiverFlag = true;
     checkReceiverVersionCompatibility();
 
@@ -1307,7 +1307,7 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
     memset(retval.hostname, 0, sizeof(retval.hostname));
     strcpy_safe(retval.hostname, shm()->hostname);
 
-    sls::MacAddr retvals[2];
+    MacAddr retvals[2];
     sendToReceiver(F_SETUP_RECEIVER, retval, retvals);
     // update Modules with dest mac
     if (retval.udp_dstmac == 0 && retvals[0] != 0) {
@@ -1393,8 +1393,8 @@ void Module::setReceiverLock(bool lock) {
     sendToReceiver<int>(F_LOCK_RECEIVER, static_cast<int>(lock));
 }
 
-sls::IpAddr Module::getReceiverLastClientIP() const {
-    return sendToReceiver<sls::IpAddr>(F_GET_LAST_RECEIVER_CLIENT_IP);
+IpAddr Module::getReceiverLastClientIP() const {
+    return sendToReceiver<IpAddr>(F_GET_LAST_RECEIVER_CLIENT_IP);
 }
 
 std::array<pid_t, NUM_RX_THREAD_IDS> Module::getReceiverThreadIds() const {
@@ -1443,7 +1443,7 @@ void Module::setFilePath(const std::string &path) {
         throw RuntimeError("Cannot set empty file path");
     }
     char args[MAX_STR_LENGTH]{};
-    sls::strcpy_safe(args, path.c_str());
+    strcpy_safe(args, path.c_str());
     sendToReceiver(F_SET_RECEIVER_FILE_PATH, args, nullptr);
 }
 
@@ -1458,7 +1458,7 @@ void Module::setFileName(const std::string &fname) {
         throw RuntimeError("Cannot set empty file name prefix");
     }
     char args[MAX_STR_LENGTH]{};
-    sls::strcpy_safe(args, fname.c_str());
+    strcpy_safe(args, fname.c_str());
     sendToReceiver(F_SET_RECEIVER_FILE_NAME, args, nullptr);
 }
 
@@ -1555,11 +1555,11 @@ void Module::setReceiverStreamingPort(int port) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
 }
 
-sls::IpAddr Module::getReceiverStreamingIP() const {
-    return sendToReceiver<sls::IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
+IpAddr Module::getReceiverStreamingIP() const {
+    return sendToReceiver<IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
 }
 
-void Module::setReceiverStreamingIP(const sls::IpAddr ip) {
+void Module::setReceiverStreamingIP(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid receiver zmq ip address");
     }
@@ -1574,9 +1574,9 @@ int Module::getClientStreamingPort() const { return shm()->zmqport; }
 
 void Module::setClientStreamingPort(int port) { shm()->zmqport = port; }
 
-sls::IpAddr Module::getClientStreamingIP() const { return shm()->zmqip; }
+IpAddr Module::getClientStreamingIP() const { return shm()->zmqip; }
 
-void Module::setClientStreamingIP(const sls::IpAddr ip) {
+void Module::setClientStreamingIP(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid client zmq ip address");
     }
@@ -2420,18 +2420,18 @@ void Module::setExternalSampling(bool value) {
 }
 
 std::vector<int> Module::getReceiverDbitList() const {
-    return sendToReceiver<sls::StaticVector<int, MAX_RX_DBIT>>(
+    return sendToReceiver<StaticVector<int, MAX_RX_DBIT>>(
         F_GET_RECEIVER_DBIT_LIST);
 }
 
 void Module::setReceiverDbitList(std::vector<int> list) {
     LOG(logDEBUG1) << "Setting Receiver Dbit List";
     if (list.size() > 64) {
-        throw sls::RuntimeError("Dbit list size cannot be greater than 64\n");
+        throw RuntimeError("Dbit list size cannot be greater than 64\n");
     }
     for (auto &it : list) {
         if (it < 0 || it > 63) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Dbit list value must be between 0 and 63\n");
         }
     }
@@ -2439,7 +2439,7 @@ void Module::setReceiverDbitList(std::vector<int> list) {
     auto last = std::unique(begin(list), end(list));
     list.erase(last, list.end());
 
-    sls::StaticVector<int, MAX_RX_DBIT> arg = list;
+    StaticVector<int, MAX_RX_DBIT> arg = list;
     sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);
 }
 
@@ -2628,7 +2628,7 @@ void Module::setAdditionalJsonHeader(
 
 std::string Module::getAdditionalJsonParameter(const std::string &key) const {
     char arg[SHORT_STR_LENGTH]{};
-    sls::strcpy_safe(arg, key.c_str());
+    strcpy_safe(arg, key.c_str());
     char retval[SHORT_STR_LENGTH]{};
     sendToReceiver(F_GET_ADDITIONAL_JSON_PARAMETER, arg, retval);
     return retval;
@@ -2644,8 +2644,8 @@ void Module::setAdditionalJsonParameter(const std::string &key,
             "Key cannot be empty. Both can have max 2 characters");
     }
     char args[2][SHORT_STR_LENGTH]{};
-    sls::strcpy_safe(args[0], key.c_str());
-    sls::strcpy_safe(args[1], value.c_str());
+    strcpy_safe(args[0], key.c_str());
+    strcpy_safe(args[1], value.c_str());
     sendToReceiver(F_SET_ADDITIONAL_JSON_PARAMETER, args, nullptr);
 }
 
@@ -2797,14 +2797,14 @@ void Module::setLockDetector(bool lock) {
     sendToDetector<int>(F_LOCK_SERVER, static_cast<int>(lock));
 }
 
-sls::IpAddr Module::getLastClientIP() const {
-    return sendToDetector<sls::IpAddr>(F_GET_LAST_CLIENT_IP);
+IpAddr Module::getLastClientIP() const {
+    return sendToDetector<IpAddr>(F_GET_LAST_CLIENT_IP);
 }
 
 std::string Module::executeCommand(const std::string &cmd) {
     char arg[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
-    sls::strcpy_safe(arg, cmd.c_str());
+    strcpy_safe(arg, cmd.c_str());
     LOG(logINFO) << "Module " << moduleIndex << " (" << shm()->hostname
                  << "): Sending command " << cmd;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
@@ -3254,8 +3254,8 @@ void Module::initializeModuleStructure(detectorType type) {
     shm()->numberOfModule.y = 0;
     shm()->controlPort = DEFAULT_PORTNO;
     shm()->stopPort = DEFAULT_PORTNO + 1;
-    sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
-    sls::strcpy_safe(shm()->rxHostname, "none");
+    strcpy_safe(shm()->settingsDir, getenv("HOME"));
+    strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
     shm()->useReceiverFlag = false;
     shm()->numUDPInterfaces = 1;
@@ -3310,7 +3310,7 @@ void Module::checkReceiverVersionCompatibility() {
     sendToReceiver(F_RECEIVER_CHECK_VERSION, int64_t(APIRECEIVER), nullptr);
 }
 
-int Module::sendModule(sls_detector_module *myMod, sls::ClientSocket &client) {
+int Module::sendModule(sls_detector_module *myMod, ClientSocket &client) {
     constexpr TLogLevel level = logDEBUG1;
     LOG(level) << "Sending Module";
     int ts = 0;
@@ -3381,7 +3381,7 @@ void Module::updateReceiverStreamingIP() {
     auto ip = getReceiverStreamingIP();
     if (ip == 0) {
         // Hostname could be ip try to decode otherwise look up the hostname
-        ip = sls::IpAddr{shm()->rxHostname};
+        ip = IpAddr{shm()->rxHostname};
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }
@@ -3634,7 +3634,7 @@ void Module::sendProgram(bool blackfin, std::vector<char> buffer,
     client.Send(filesize);
 
     // send checksum
-    std::string checksum = sls::md5_calculate_checksum(buffer.data(), filesize);
+    std::string checksum = md5_calculate_checksum(buffer.data(), filesize);
     LOG(logDEBUG1) << "Checksum:" << checksum;
     char cChecksum[MAX_STR_LENGTH] = {0};
     strcpy(cChecksum, checksum.c_str());

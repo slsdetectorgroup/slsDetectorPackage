@@ -56,7 +56,7 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
 using defs = slsDetectorDefs;
 
 Detector::Detector(int shm_id)
-    : pimpl(sls::make_unique<DetectorImpl>(shm_id)) {}
+    : pimpl(make_unique<DetectorImpl>(shm_id)) {}
 
 Detector::~Detector() = default;
 
@@ -66,7 +66,7 @@ void Detector::freeSharedMemory() { pimpl->freeSharedMemory(); }
 void Detector::loadConfig(const std::string &fname) {
     int shm_id = getShmId();
     freeSharedMemory();
-    pimpl = sls::make_unique<DetectorImpl>(shm_id);
+    pimpl = make_unique<DetectorImpl>(shm_id);
     LOG(logINFO) << "Loading configuration file: " << fname;
     loadParameters(fname);
 }
@@ -871,7 +871,7 @@ Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
 
 void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
     if (getDetectorType().squash() != defs::JUNGFRAU) {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Cannot set number of udp interfaces for this detector.");
     }
     // also called by vetostream (for gotthard2)
@@ -951,7 +951,7 @@ Result<UdpDestination> Detector::getDestinationUDPList(const uint32_t entry,
 void Detector::setDestinationUDPList(const UdpDestination dest,
                                      const int module_id) {
     if (module_id == -1 && size() > 1) {
-        throw sls::RuntimeError("Cannot set this parameter at detector level.");
+        throw RuntimeError("Cannot set this parameter at detector level.");
     }
     pimpl->Parallel(&Module::setDestinationUDPList, {module_id}, dest);
 }
@@ -1194,7 +1194,7 @@ void Detector::setRxLock(bool value, Positions pos) {
     pimpl->Parallel(&Module::setReceiverLock, pos, value);
 }
 
-Result<sls::IpAddr> Detector::getRxLastClientIP(Positions pos) const {
+Result<IpAddr> Detector::getRxLastClientIP(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverLastClientIP, pos);
 }
 
@@ -2278,7 +2278,7 @@ void Detector::resetFPGA(Positions pos) {
 void Detector::updateDetectorServer(const std::string &fname, Positions pos) {
     LOG(logINFO) << "Updating Detector Server (no tftp)...";
     std::vector<char> buffer = readBinaryFile(fname, "Update Detector Server");
-    std::string filename = sls::getFileNameFromFilePath(fname);
+    std::string filename = getFileNameFromFilePath(fname);
     pimpl->Parallel(&Module::updateDetectorServer, pos, buffer, filename);
     if (getDetectorType().squash() != defs::EIGER) {
         rebootController(pos);
@@ -2287,7 +2287,7 @@ void Detector::updateDetectorServer(const std::string &fname, Positions pos) {
 
 void Detector::updateKernel(const std::string &fname, Positions pos) {
     LOG(logINFO) << "Updating Kernel...";
-    std::vector<char> buffer = sls::readBinaryFile(fname, "Update Kernel");
+    std::vector<char> buffer = readBinaryFile(fname, "Update Kernel");
     pimpl->Parallel(&Module::updateKernel, pos, buffer);
     rebootController(pos);
 }
@@ -2302,7 +2302,7 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
     LOG(logINFO) << "Updating Firmware and Detector Server (no tftp)...";
     LOG(logINFO) << "Updating Detector Server (no tftp)...";
     std::vector<char> buffer = readBinaryFile(sname, "Update Detector Server");
-    std::string filename = sls::getFileNameFromFilePath(sname);
+    std::string filename = getFileNameFromFilePath(sname);
     pimpl->Parallel(&Module::updateDetectorServer, pos, buffer, filename);
     programFPGA(fname, false, pos);
 }
@@ -2390,7 +2390,7 @@ void Detector::setDetectorLock(bool lock, Positions pos) {
     pimpl->Parallel(&Module::setLockDetector, pos, lock);
 }
 
-Result<sls::IpAddr> Detector::getLastClientIP(Positions pos) const {
+Result<IpAddr> Detector::getLastClientIP(Positions pos) const {
     return pimpl->Parallel(&Module::getLastClientIP, pos);
 }
 

@@ -2,6 +2,8 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/string_utils.h"
 
+namespace sls {
+
 std::string GetHelpDac(std::string dac) {
     if (sls::is_int(dac)) {
         return std::string("[dac name] [dac or mV value] [(optional unit) mV] "
@@ -304,3 +306,5 @@ std::string GetHelpDac(std::string dac) {
 
     throw sls::RuntimeError("Unknown dac command");
 }
+
+} // namespace sls

@@ -16,6 +16,8 @@
 #include <atomic>
 #include <memory>
 
+namespace sls {
+
 class GeneralData;
 class Fifo;
 
@@ -117,7 +119,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     // individual members
     detectorType myDetectorType;
     std::atomic<runStatus> *status;
-    std::unique_ptr<sls::UdpRxSocket> udpSocket{nullptr};
+    std::unique_ptr<UdpRxSocket> udpSocket{nullptr};
     uint32_t *udpPortNumber;
     std::string *eth;
     int *udpSocketBufferSize;
@@ -172,3 +174,5 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * (pecific to gotthard, can vary between modules, hence defined here) */
     bool oddStartingPacket{true};
 };
+
+} // namespace sls

@@ -6,6 +6,8 @@
 class QProcess;
 class QKeyEvent;
 
+namespace sls {
+
 class qTabMessages : public QWidget, private Ui::TabMessagesObject {
     Q_OBJECT
 
@@ -34,3 +36,5 @@ class qTabMessages : public QWidget, private Ui::TabMessagesObject {
     QProcess *process;
     QStringList lastCommand;
 };
+
+} // namespace sls

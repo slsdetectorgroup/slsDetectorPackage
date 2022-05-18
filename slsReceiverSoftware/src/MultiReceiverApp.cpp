@@ -53,7 +53,7 @@ void printHelp() {
  */
 int StartAcq(const std::string &filePath, const std::string &fileName,
              uint64_t fileIndex, size_t imageSize, void *objectPointer) {
-    LOG(logINFOBLUE) << "#### StartAcq:  filePath:" << filePath
+    LOG(sls::logINFOBLUE) << "#### StartAcq:  filePath:" << filePath
                      << "  fileName:" << fileName << " fileIndex:" << fileIndex
                      << "  imageSize:" << imageSize << " ####";
     return 0;
@@ -61,7 +61,7 @@ int StartAcq(const std::string &filePath, const std::string &fileName,
 
 /** Acquisition Finished Call back */
 void AcquisitionFinished(uint64_t framesCaught, void *objectPointer) {
-    LOG(logINFOBLUE) << "#### AcquisitionFinished: framesCaught:"
+    LOG(sls::logINFOBLUE) << "#### AcquisitionFinished: framesCaught:"
                      << framesCaught << " ####";
 }
 
@@ -204,7 +204,7 @@ int main(int argc, char *argv[]) {
             try {
                 receiver = sls::make_unique<sls::Receiver>(startTCPPort + i);
             } catch (...) {
-                LOG(logINFOBLUE)
+                LOG(sls::logINFOBLUE)
                     << "Exiting Child Process [ Tid: " << gettid() << " ]";
                 throw;
             }

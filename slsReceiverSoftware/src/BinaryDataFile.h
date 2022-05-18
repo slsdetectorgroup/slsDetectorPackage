@@ -4,6 +4,8 @@
 
 #include "File.h"
 
+namespace sls {
+
 class BinaryDataFile : private virtual slsDetectorDefs, public File {
 
   public:
@@ -43,3 +45,5 @@ class BinaryDataFile : private virtual slsDetectorDefs, public File {
     uint32_t udpPortNumber_{0};
     uint32_t maxFramesPerFile_{0};
 };
+
+} // namespace sls

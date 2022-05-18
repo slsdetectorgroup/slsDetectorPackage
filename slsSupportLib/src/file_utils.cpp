@@ -60,28 +60,28 @@ std::vector<char> readBinaryFile(const std::string &fname,
     // check if it exists
     struct stat st;
     if (stat(fname.c_str(), &st) != 0) {
-        throw sls::RuntimeError(errorPrefix +
+        throw RuntimeError(errorPrefix +
                                 std::string(" (file does not exist)"));
     }
 
     FILE *fp = fopen(fname.c_str(), "rb");
     if (fp == nullptr) {
-        throw sls::RuntimeError(errorPrefix +
+        throw RuntimeError(errorPrefix +
                                 std::string(" (Could not open file: ") + fname +
                                 std::string(")"));
     }
 
     // get file size to print progress
-    ssize_t filesize = sls::getFileSize(fp, errorPrefix);
+    ssize_t filesize = getFileSize(fp, errorPrefix);
 
     std::vector<char> buffer(filesize, 0);
     if ((ssize_t)fread(buffer.data(), sizeof(char), filesize, fp) != filesize) {
-        throw sls::RuntimeError(errorPrefix +
+        throw RuntimeError(errorPrefix +
                                 std::string(" (Could not read file)"));
     }
 
     if (fclose(fp) != 0) {
-        throw sls::RuntimeError(errorPrefix +
+        throw RuntimeError(errorPrefix +
                                 std::string(" (Could not close file)"));
     }
 
@@ -125,7 +125,7 @@ void mkdir_p(const std::string &path, std::string dir) {
     }
     if (mkdir(dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0) {
         if (errno != EEXIST)
-            throw sls::RuntimeError("Could not create: " + dir);
+            throw RuntimeError("Could not create: " + dir);
     }
 
     if (i + 1 < path.length())

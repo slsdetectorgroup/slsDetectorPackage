@@ -2,6 +2,8 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "BinaryDataFile.h"
 
+namespace sls {
+
 BinaryDataFile::BinaryDataFile(const int index) : File(BINARY), index_(index) {}
 
 BinaryDataFile::~BinaryDataFile() { CloseFile(); }
@@ -47,12 +49,12 @@ void BinaryDataFile::CreateFile() {
     if (!overWriteEnable_) {
         if (nullptr == (fd_ = fopen((const char *)fileName_.c_str(), "wx"))) {
             fd_ = nullptr;
-            throw sls::RuntimeError("Could not create/overwrite file " +
+            throw RuntimeError("Could not create/overwrite file " +
                                     fileName_);
         }
     } else if (nullptr == (fd_ = fopen((const char *)fileName_.c_str(), "w"))) {
         fd_ = nullptr;
-        throw sls::RuntimeError("Could not create file " + fileName_);
+        throw RuntimeError("Could not create file " + fileName_);
     }
     // setting to no file buffering
     setvbuf(fd_, nullptr, _IONBF, 0);
@@ -103,8 +105,10 @@ void BinaryDataFile::WriteToFile(char *buffer, const int buffersize,
 
     // if write error
     if (ret != buffersize) {
-        throw sls::RuntimeError(std::to_string(index_) +
+        throw RuntimeError(std::to_string(index_) +
                                 " : Write to file failed for image number " +
                                 std::to_string(currentFrameNumber));
     }
 }
+
+} // namespace sls

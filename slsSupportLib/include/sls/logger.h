@@ -8,6 +8,8 @@
 #include <sstream>
 #include <sys/time.h>
 
+namespace sls {
+
 enum TLogLevel {
     logERROR,
     logWARNING,
@@ -25,7 +27,7 @@ enum TLogLevel {
 
 // Compiler should optimize away anything below this value
 #ifndef LOG_MAX_REPORTING_LEVEL
-#define LOG_MAX_REPORTING_LEVEL logINFO
+#define LOG_MAX_REPORTING_LEVEL sls::logINFO
 #endif
 
 #define __AT__                                                                 \
@@ -37,7 +39,6 @@ enum TLogLevel {
     std::string(__SHORT_FORM_OF_FILE__) + std::string("::") +                  \
         std::string(__func__) + std::string("(): ")
 
-namespace sls {
 class Logger {
     std::ostringstream os;
     TLogLevel level = LOG_MAX_REPORTING_LEVEL;

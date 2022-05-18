@@ -15,6 +15,8 @@
 #include <iostream>
 #include <unistd.h>
 
+namespace sls {
+
 Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth)
     : index(ind), memory(nullptr), fifoBound(nullptr), fifoFree(nullptr),
       fifoStream(nullptr), fifoDepth(depth), status_fifoBound(0),
@@ -35,14 +37,14 @@ void Fifo::CreateFifos(uint32_t fifoItemSize) {
     DestroyFifos();
 
     // create fifos
-    fifoBound = new sls::CircularFifo<char>(fifoDepth);
-    fifoFree = new sls::CircularFifo<char>(fifoDepth);
-    fifoStream = new sls::CircularFifo<char>(fifoDepth);
+    fifoBound = new CircularFifo<char>(fifoDepth);
+    fifoFree = new CircularFifo<char>(fifoDepth);
+    fifoStream = new CircularFifo<char>(fifoDepth);
     // allocate memory
     size_t mem_len = (size_t)fifoItemSize * (size_t)fifoDepth * sizeof(char);
     memory = (char *)malloc(mem_len);
     if (memory == nullptr) {
-        throw sls::RuntimeError("Could not allocate memory for fifos");
+        throw RuntimeError("Could not allocate memory for fifos");
     }
     memset(memory, 0, mem_len);
     int pagesize = getpagesize();
@@ -116,3 +118,5 @@ int Fifo::GetMinLevelForFifoFree() {
     status_fifoFree = fifoDepth;
     return temp;
 }
+
+} // namespace sls

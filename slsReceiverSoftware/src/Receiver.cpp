@@ -16,13 +16,13 @@
 #include <string>
 #include <unistd.h>
 
+namespace sls {
+
 // gettid added in glibc 2.30
 #if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
 #include <sys/syscall.h>
 #define gettid() syscall(SYS_gettid)
 #endif
-
-namespace sls {
 
 Receiver::~Receiver() = default;
 
@@ -66,7 +66,7 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
 
         case 'u':
             if (sscanf(optarg, "%u", &userid) != 1) {
-                throw sls::RuntimeError("Could not scan uid");
+                throw RuntimeError("Could not scan uid");
             }
             break;
 
@@ -90,7 +90,7 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
                 "\t                          started with privileges. \n\n";
 
             // std::cout << help_message << std::endl;
-            throw sls::RuntimeError(help_message);
+            throw RuntimeError(help_message);
         }
     }
 
@@ -103,25 +103,25 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
             if (seteuid(userid) != 0) {
                 std::ostringstream oss;
                 oss << "Could not set Effective UID to " << userid;
-                throw sls::RuntimeError(oss.str());
+                throw RuntimeError(oss.str());
             }
             if (geteuid() != userid) {
                 std::ostringstream oss;
                 oss << "Could not set Effective UID to " << userid << ". Got "
                     << geteuid();
-                throw sls::RuntimeError(oss.str());
+                throw RuntimeError(oss.str());
             }
             LOG(logINFO) << "Process Effective UID changed to " << userid;
         }
     }
 
     // might throw an exception
-    tcpipInterface = sls::make_unique<ClientInterface>(tcpip_port_no);
+    tcpipInterface = make_unique<ClientInterface>(tcpip_port_no);
 }
 
 Receiver::Receiver(int tcpip_port_no) {
     // might throw an exception
-    tcpipInterface = sls::make_unique<ClientInterface>(tcpip_port_no);
+    tcpipInterface = make_unique<ClientInterface>(tcpip_port_no);
 }
 
 int64_t Receiver::getReceiverVersion() {

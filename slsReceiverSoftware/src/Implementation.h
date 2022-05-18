@@ -6,12 +6,7 @@
 #include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/network_utils.h"
-class GeneralData;
-class Listener;
-class DataProcessor;
-class DataStreamer;
-class Fifo;
-class slsDetectorDefs;
+#include "sls/sls_detector_defs.h"
 
 #include <atomic>
 #include <chrono>
@@ -20,7 +15,15 @@ class slsDetectorDefs;
 #include <memory>
 #include <mutex>
 #include <vector>
+
+namespace sls {
 using ns = std::chrono::nanoseconds;
+
+class GeneralData;
+class Listener;
+class DataProcessor;
+class DataStreamer;
+class Fifo;
 
 class Implementation : private virtual slsDetectorDefs {
   public:
@@ -137,8 +140,8 @@ class Implementation : private virtual slsDetectorDefs {
     void setStreamingStartingFrameNumber(const uint32_t fnum);
     uint32_t getStreamingPort() const;
     void setStreamingPort(const uint32_t i);
-    sls::IpAddr getStreamingSourceIP() const;
-    void setStreamingSourceIP(const sls::IpAddr ip);
+    IpAddr getStreamingSourceIP() const;
+    void setStreamingSourceIP(const IpAddr ip);
     int getStreamingHwm() const;
     void setStreamingHwm(const int i);
     std::map<std::string, std::string> getAdditionalJsonHeader() const;
@@ -338,7 +341,7 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t streamingTimerInMs{DEFAULT_STREAMING_TIMER_IN_MS};
     uint32_t streamingStartFnum{0};
     uint32_t streamingPort{0};
-    sls::IpAddr streamingSrcIP = sls::IpAddr{};
+    IpAddr streamingSrcIP = IpAddr{};
     int streamingHwm{-1};
     std::map<std::string, std::string> additionalJsonHeader;
 
@@ -406,3 +409,5 @@ class Implementation : private virtual slsDetectorDefs {
     // mutex shared across all hdf5 virtual, master and data files
     std::mutex hdf5LibMutex;
 };
+
+} // namespace sls

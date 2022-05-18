@@ -14,12 +14,12 @@
 #include <map>
 #include <vector>
 
+namespace sls {
+
 class ServerInterface;
 
 #define MODULE_SHMAPIVERSION 0x190726
 #define MODULE_SHMVERSION    0x200402
-
-namespace sls {
 
 /**
  * @short structure allocated in shared memory to store Module settings for
@@ -40,7 +40,7 @@ struct sharedModule {
     int stopPort;
     char settingsDir[MAX_STR_LENGTH];
     /** list of the energies at which the Module has been trimmed  */
-    sls::StaticVector<int, MAX_TRIMEN> trimEnergies;
+    StaticVector<int, MAX_TRIMEN> trimEnergies;
     /**  number of channels per chip */
     slsDetectorDefs::xy nChan;
     slsDetectorDefs::xy nChip;
@@ -52,7 +52,7 @@ struct sharedModule {
     /** Listening tcp port from gui (only data) */
     int zmqport;
     /**  Listening tcp ip address from gui (only data) **/
-    sls::IpAddr zmqip;
+    IpAddr zmqip;
     int numUDPInterfaces;
     /** to inform rxr when stopping rxr */
     bool stoppedFlag;
@@ -223,28 +223,28 @@ class Module : public virtual slsDetectorDefs {
     void setNumberofUDPInterfaces(int n);
     int getSelectedUDPInterface() const;
     void selectUDPInterface(int n);
-    sls::IpAddr getSourceUDPIP() const;
-    void setSourceUDPIP(const sls::IpAddr ip);
-    sls::IpAddr getSourceUDPIP2() const;
-    void setSourceUDPIP2(const sls::IpAddr ip);
-    sls::MacAddr getSourceUDPMAC() const;
-    void setSourceUDPMAC(const sls::MacAddr mac);
-    sls::MacAddr getSourceUDPMAC2() const;
-    void setSourceUDPMAC2(const sls::MacAddr mac);
-    sls::UdpDestination getDestinationUDPList(const uint32_t entry) const;
-    void setDestinationUDPList(const sls::UdpDestination dest);
+    IpAddr getSourceUDPIP() const;
+    void setSourceUDPIP(const IpAddr ip);
+    IpAddr getSourceUDPIP2() const;
+    void setSourceUDPIP2(const IpAddr ip);
+    MacAddr getSourceUDPMAC() const;
+    void setSourceUDPMAC(const MacAddr mac);
+    MacAddr getSourceUDPMAC2() const;
+    void setSourceUDPMAC2(const MacAddr mac);
+    UdpDestination getDestinationUDPList(const uint32_t entry) const;
+    void setDestinationUDPList(const UdpDestination dest);
     int getNumberofUDPDestinations() const;
     void clearUDPDestinations();
     int getFirstUDPDestination() const;
     void setFirstUDPDestination(const int value);
-    sls::IpAddr getDestinationUDPIP() const;
-    void setDestinationUDPIP(const sls::IpAddr ip);
-    sls::IpAddr getDestinationUDPIP2() const;
-    void setDestinationUDPIP2(const sls::IpAddr ip);
-    sls::MacAddr getDestinationUDPMAC() const;
-    void setDestinationUDPMAC(const sls::MacAddr mac);
-    sls::MacAddr getDestinationUDPMAC2() const;
-    void setDestinationUDPMAC2(const sls::MacAddr mac);
+    IpAddr getDestinationUDPIP() const;
+    void setDestinationUDPIP(const IpAddr ip);
+    IpAddr getDestinationUDPIP2() const;
+    void setDestinationUDPIP2(const IpAddr ip);
+    MacAddr getDestinationUDPMAC() const;
+    void setDestinationUDPMAC(const MacAddr mac);
+    MacAddr getDestinationUDPMAC2() const;
+    void setDestinationUDPMAC2(const MacAddr mac);
     int getDestinationUDPPort() const;
     void setDestinationUDPPort(int udpport);
     int getDestinationUDPPort2() const;
@@ -286,7 +286,7 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverUDPSocketBufferSize(int udpsockbufsize);
     bool getReceiverLock() const;
     void setReceiverLock(bool lock);
-    sls::IpAddr getReceiverLastClientIP() const;
+    IpAddr getReceiverLastClientIP() const;
     std::array<pid_t, NUM_RX_THREAD_IDS> getReceiverThreadIds() const;
     bool getRxArping() const;
     void setRxArping(bool enable);
@@ -334,12 +334,12 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverStreamingStartingFrame(int fnum);
     int getReceiverStreamingPort() const;
     void setReceiverStreamingPort(int port);
-    sls::IpAddr getReceiverStreamingIP() const;
-    void setReceiverStreamingIP(const sls::IpAddr ip);
+    IpAddr getReceiverStreamingIP() const;
+    void setReceiverStreamingIP(const IpAddr ip);
     int getClientStreamingPort() const;
     void setClientStreamingPort(int port);
-    sls::IpAddr getClientStreamingIP() const;
-    void setClientStreamingIP(const sls::IpAddr ip);
+    IpAddr getClientStreamingIP() const;
+    void setClientStreamingIP(const IpAddr ip);
     int getReceiverStreamingHwm() const;
     void setReceiverStreamingHwm(const int limit);
 
@@ -589,7 +589,7 @@ class Module : public virtual slsDetectorDefs {
     void setStopPort(int port_number);
     bool getLockDetector() const;
     void setLockDetector(bool lock);
-    sls::IpAddr getLastClientIP() const;
+    IpAddr getLastClientIP() const;
     std::string executeCommand(const std::string &cmd);
     int64_t getNumberOfFramesFromStart() const;
     int64_t getActualTime() const;
@@ -736,7 +736,7 @@ class Module : public virtual slsDetectorDefs {
     void checkDetectorVersionCompatibility();
     void checkReceiverVersionCompatibility();
     void setModule(sls_detector_module &module, bool trimbits = true);
-    int sendModule(sls_detector_module *myMod, sls::ClientSocket &client);
+    int sendModule(sls_detector_module *myMod, ClientSocket &client);
     void updateReceiverStreamingIP();
 
     void updateRateCorrection();
@@ -778,7 +778,7 @@ class Module : public virtual slsDetectorDefs {
                                       const int timeRequired);
 
     const int moduleIndex;
-    mutable sls::SharedMemory<sharedModule> shm{0, 0};
+    mutable SharedMemory<sharedModule> shm{0, 0};
     static const int BLACKFIN_ERASE_FLASH_TIME = 65;
     static const int BLACKFIN_WRITE_TO_FLASH_TIME = 30;
     static const int NIOS_ERASE_FLASH_TIME_FPGA = 10;

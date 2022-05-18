@@ -12,8 +12,11 @@
 #include <qwt_plot_shapeitem.h>
 
 class QPen;
-class SlsQt1DPlot;
 class QwtSymbol;
+
+namespace sls {
+
+class SlsQt1DPlot;
 
 class SlsQtH1D : public QwtPlotCurve {
 
@@ -170,4 +173,8 @@ class SlsQt1DPlot : public QwtPlot {
     void Update();
 };
 
+} // namespace sls
+
 #endif
+
+

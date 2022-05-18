@@ -12,6 +12,8 @@ class QwtPlotPanner;
 class QwtScaleWidget;
 class QwtLinearColorMap;
 
+namespace sls {
+
 class SlsQt2DPlot : public QwtPlot {
     Q_OBJECT
 
@@ -91,3 +93,5 @@ class SlsQt2DPlot : public QwtPlot {
     int isLog;
     QwtPlotShapeItem *roiBox{nullptr};
 };
+
+} // namespace sls

@@ -14,15 +14,17 @@
 #include "ThreadObject.h"
 #include "receiver_defs.h"
 
+#include <atomic>
+#include <mutex>
+#include <vector>
+
+namespace sls {
+
 class GeneralData;
 class Fifo;
 class File;
 class DataStreamer;
 struct MasterAttributes;
-
-#include <atomic>
-#include <mutex>
-#include <vector>
 
 class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
@@ -206,3 +208,5 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     void *pRawDataReady{nullptr};
 };
+
+} // namespace sls

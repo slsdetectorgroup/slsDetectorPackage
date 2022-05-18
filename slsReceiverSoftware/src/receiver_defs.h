@@ -5,6 +5,8 @@
 #include "sls/sls_detector_defs.h"
 #include <cstdint>
 
+namespace sls {
+
 #define MAX_DIMENSIONS                  (2)
 #define MAX_NUMBER_OF_LISTENING_THREADS (2)
 
@@ -55,3 +57,6 @@
 #define PROCESSOR_PRIORITY (70)
 #define STREAMER_PRIORITY  (10)
 #define TCP_PRIORITY       (10)
+
+
+} // namespace sls

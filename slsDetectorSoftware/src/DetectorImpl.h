@@ -6,10 +6,7 @@
 #include "sls/Result.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
-
 #include "CtbConfig.h"
-class ZmqSocket;
-class detectorData;
 
 #include <memory>
 #include <mutex>
@@ -17,17 +14,18 @@ class detectorData;
 #include <string>
 #include <thread>
 #include <vector>
-
-#define DETECTOR_SHMAPIVERSION 0x190809
-#define DETECTOR_SHMVERSION    0x220505
-#define SHORT_STRING_LENGTH    50
-
 #include <future>
 #include <numeric>
 
 namespace sls {
 
+class ZmqSocket;
+class detectorData;
 class Module;
+
+#define DETECTOR_SHMAPIVERSION 0x190809
+#define DETECTOR_SHMVERSION    0x220505
+#define SHORT_STRING_LENGTH    50
 
 /**
  * @short structure allocated in shared memory to store detector settings
@@ -88,12 +86,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
-    sls::Result<RT> Parallel(RT (sls::Module::*somefunc)(CT...),
+    Result<RT> Parallel(RT (Module::*somefunc)(CT...),
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) {
 
         if (modules.empty())
-            throw sls::RuntimeError("No modules added");
+            throw RuntimeError("No modules added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(modules.size());
@@ -103,11 +101,11 @@ class DetectorImpl : public virtual slsDetectorDefs {
         futures.reserve(positions.size());
         for (size_t i : positions) {
             if (i >= modules.size())
-                throw sls::RuntimeError("Module out of range");
+                throw RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
                                          modules[i].get(), Args...));
         }
-        sls::Result<RT> result;
+        Result<RT> result;
         result.reserve(positions.size());
         for (auto &i : futures) {
             result.push_back(i.get());
@@ -116,12 +114,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename RT, typename... CT>
-    sls::Result<RT> Parallel(RT (sls::Module::*somefunc)(CT...) const,
+    Result<RT> Parallel(RT (Module::*somefunc)(CT...) const,
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) const {
 
         if (modules.empty())
-            throw sls::RuntimeError("No modules added");
+            throw RuntimeError("No modules added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(modules.size());
@@ -131,11 +129,11 @@ class DetectorImpl : public virtual slsDetectorDefs {
         futures.reserve(positions.size());
         for (size_t i : positions) {
             if (i >= modules.size())
-                throw sls::RuntimeError("Module out of range");
+                throw RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
                                          modules[i].get(), Args...));
         }
-        sls::Result<RT> result;
+        Result<RT> result;
         result.reserve(positions.size());
         for (auto &i : futures) {
             result.push_back(i.get());
@@ -144,12 +142,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename... CT>
-    void Parallel(void (sls::Module::*somefunc)(CT...),
+    void Parallel(void (Module::*somefunc)(CT...),
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) {
 
         if (modules.empty())
-            throw sls::RuntimeError("No modules added");
+            throw RuntimeError("No modules added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(modules.size());
@@ -159,7 +157,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
         futures.reserve(positions.size());
         for (size_t i : positions) {
             if (i >= modules.size())
-                throw sls::RuntimeError("Module out of range");
+                throw RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
                                          modules[i].get(), Args...));
         }
@@ -169,12 +167,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename... CT>
-    void Parallel(void (sls::Module::*somefunc)(CT...) const,
+    void Parallel(void (Module::*somefunc)(CT...) const,
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) const {
 
         if (modules.empty())
-            throw sls::RuntimeError("No modules added");
+            throw RuntimeError("No modules added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(modules.size());
@@ -184,7 +182,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
         futures.reserve(positions.size());
         for (size_t i : positions) {
             if (i >= modules.size())
-                throw sls::RuntimeError("Module out of range");
+                throw RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
                                          modules[i].get(), Args...));
         }
@@ -298,7 +296,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::vector<char> readProgrammingFile(const std::string &fname);
 
     void setNumberofUDPInterfaces(int n, Positions pos);
-    sls::Result<int> getDefaultDac(defs::dacIndex index,
+    Result<int> getDefaultDac(defs::dacIndex index,
                                    defs::detectorSettings sett,
                                    Positions pos = {});
     void setDefaultDac(defs::dacIndex index, int defaultValue,
@@ -396,9 +394,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
     defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
 
     const int detectorIndex{0};
-    sls::SharedMemory<sharedDetector> shm{0, -1};
-    sls::SharedMemory<CtbConfig> ctb_shm{0, -1, CtbConfig::shm_tag()};
-    std::vector<std::unique_ptr<sls::Module>> modules;
+    SharedMemory<sharedDetector> shm{0, -1};
+    SharedMemory<CtbConfig> ctb_shm{0, -1, CtbConfig::shm_tag()};
+    std::vector<std::unique_ptr<Module>> modules;
 
     /** data streaming (down stream) enabled in client (zmq sckets created) */
     bool client_downstream{false};

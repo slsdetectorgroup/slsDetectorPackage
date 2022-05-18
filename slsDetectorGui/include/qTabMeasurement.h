@@ -4,14 +4,17 @@
 #include "sls/Detector.h"
 #include "ui_form_tab_measurement.h"
 
-class qDrawPlot;
 class QStandardItemModel;
+
+namespace sls {
+
+class qDrawPlot;
 
 class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     Q_OBJECT
 
   public:
-    qTabMeasurement(QWidget *parent, sls::Detector *detector, qDrawPlot *p);
+    qTabMeasurement(QWidget *parent, Detector *detector, qDrawPlot *p);
     ~qTabMeasurement();
 
     void Refresh();
@@ -81,7 +84,7 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     void FileNameChangedSignal(QString);
 
   private:
-    sls::Detector *det;
+    Detector *det;
     qDrawPlot *plot;
     // enum for the timing mode
     enum { AUTO, TRIGGER, GATED, BURST_TRIGGER, TRIGGER_GATED, NUMTIMINGMODES };
@@ -98,3 +101,5 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     int numMeasurements{1};
     int currentMeasurement{0};
 };
+
+} // namespace sls

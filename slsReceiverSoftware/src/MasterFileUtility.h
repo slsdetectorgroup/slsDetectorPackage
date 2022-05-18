@@ -4,6 +4,10 @@
 
 #include "MasterAttributes.h"
 
+namespace sls {
+
+namespace masterFileUtility {
+
 #ifdef HDF5C
 #include "H5Cpp.h"
 #include <mutex>
@@ -12,7 +16,6 @@ using namespace H5;
 #endif
 #endif
 
-namespace masterFileUtility {
 
 std::string CreateMasterBinaryFile(const std::string &filePath,
                                    const std::string &fileNamePrefix,
@@ -48,3 +51,5 @@ std::array<std::string, 2> CreateVirtualHDF5File(
     bool gotthard25um);
 #endif
 } // namespace masterFileUtility
+
+} // namespace sls

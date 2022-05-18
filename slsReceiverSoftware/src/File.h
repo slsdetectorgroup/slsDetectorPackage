@@ -5,7 +5,9 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
-struct MasterAttributes;
+#include <array>
+
+namespace sls {
 
 #ifdef HDF5C
 #include "H5Cpp.h"
@@ -14,7 +16,7 @@ using namespace H5;
 #endif
 #endif
 
-#include <array>
+struct MasterAttributes;
 
 class File : private virtual slsDetectorDefs {
 
@@ -89,3 +91,5 @@ class File : private virtual slsDetectorDefs {
   protected:
     slsDetectorDefs::fileFormat format_;
 };
+
+} // namespace sls

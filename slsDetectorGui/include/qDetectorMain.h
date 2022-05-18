@@ -6,6 +6,11 @@
 #include "ui_form_detectormain.h"
 #include <QTabWidget>
 
+class QScrollArea;
+class QResizeEvent;
+
+namespace sls {
+
 class qDrawPlot;
 class qTabMeasurement;
 class qTabDataOutput;
@@ -15,8 +20,6 @@ class qTabSettings;
 class qTabDebugging;
 class qTabDeveloper;
 class qTabMessages;
-class QScrollArea;
-class QResizeEvent;
 
 /** To Over-ride the QTabWidget class to get the tabBar protected
  * methodTabWidget */
@@ -70,7 +73,7 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
         NumberOfTabs
     };
     slsDetectorDefs::detectorType detType;
-    std::unique_ptr<sls::Detector> det;
+    std::unique_ptr<Detector> det;
     qDrawPlot *plot;
     MyTabWidget *tabs;
     QScrollArea *scroll[NumberOfTabs];
@@ -88,3 +91,5 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     QString zoomToolTip;
     QColor defaultTabColor;
 };
+
+} // namespace sls

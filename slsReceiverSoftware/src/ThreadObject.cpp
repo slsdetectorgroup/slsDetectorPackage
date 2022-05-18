@@ -10,6 +10,8 @@
 #include <iostream>
 #include <unistd.h>
 
+namespace sls {
+
 // gettid added in glibc 2.30
 #if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
 #include <sys/syscall.h>
@@ -23,7 +25,7 @@ ThreadObject::ThreadObject(int threadIndex, std::string threadType)
     try {
         threadObject = std::thread(&ThreadObject::RunningThread, this);
     } catch (...) {
-        throw sls::RuntimeError("Could not create " + type +
+        throw RuntimeError("Could not create " + type +
                                 " thread with index " + std::to_string(index));
     }
 }
@@ -75,3 +77,5 @@ void ThreadObject::SetThreadPriority(int priority) {
         LOG(logINFO) << "Priorities set - " << type << ": " << priority;
     }
 }
+
+} // namespace sls

@@ -5,6 +5,8 @@
 
 #include <iomanip>
 
+namespace sls {
+
 namespace masterFileUtility {
 
 std::string CreateMasterBinaryFile(const std::string &filePath,
@@ -23,7 +25,7 @@ std::string CreateMasterBinaryFile(const std::string &filePath,
         mode = "wx";
     FILE *fd = fopen(fileName.c_str(), mode.c_str());
     if(!fd) {
-        throw sls::RuntimeError("Could not create/overwrite binary master file " +
+        throw RuntimeError("Could not create/overwrite binary master file " +
                                     fileName);
     }
 
@@ -32,7 +34,7 @@ std::string CreateMasterBinaryFile(const std::string &filePath,
     attr->GetBinaryAttributes(&writer);
     if (fwrite(s.GetString(), 1, strlen(s.GetString()), fd) !=
         strlen(s.GetString())) {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Master binary file incorrect number of bytes written to file");
     }
     if (fd) {
@@ -64,7 +66,7 @@ void LinkHDF5FileInMaster(const std::string &masterFileName,
                         FileCreatPropList::DEFAULT, flist);
 
         // open data file
-        fd = sls::make_unique<H5File>(dataFilename.c_str(), H5F_ACC_RDONLY,
+        fd = make_unique<H5File>(dataFilename.c_str(), H5F_ACC_RDONLY,
                                       FileCreatPropList::DEFAULT, flist);
 
         // create link for data dataset
@@ -73,7 +75,7 @@ void LinkHDF5FileInMaster(const std::string &masterFileName,
         if (H5Lcreate_external(dataFilename.c_str(), dataSetname.c_str(),
                                masterfd.getLocId(), linkname.c_str(),
                                H5P_DEFAULT, H5P_DEFAULT) < 0) {
-            throw sls::RuntimeError(
+            throw RuntimeError(
                 "Could not create link to data dataset in master");
         }
 
@@ -85,7 +87,7 @@ void LinkHDF5FileInMaster(const std::string &masterFileName,
                                    parameterNames[i].c_str(),
                                    masterfd.getLocId(), linkname.c_str(),
                                    H5P_DEFAULT, H5P_DEFAULT) < 0) {
-                throw sls::RuntimeError(
+                throw RuntimeError(
                     "Could not create link to parameter dataset in master");
             }
         }
@@ -95,7 +97,7 @@ void LinkHDF5FileInMaster(const std::string &masterFileName,
         error.printErrorStack();
         if (fd != nullptr)
             fd->close();
-        throw sls::RuntimeError("Could not link in master hdf5 file");
+        throw RuntimeError("Could not link in master hdf5 file");
     }
     if (!silentMode) {
         LOG(logINFO) << "Linked in Master File: " << dataFilename;
@@ -127,7 +129,7 @@ std::string CreateMasterHDF5File(const std::string &filePath,
         if (overWriteEnable) {
             createFlags = H5F_ACC_TRUNC;
         }
-        fd = sls::make_unique<H5File>(fileName.c_str(), createFlags,
+        fd = make_unique<H5File>(fileName.c_str(), createFlags,
                                       FileCreatPropList::DEFAULT, flist);
 
         // attributes - version
@@ -151,7 +153,7 @@ std::string CreateMasterHDF5File(const std::string &filePath,
         error.printErrorStack();
         if (fd != nullptr)
             fd->close();
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Could not create/overwrite master HDF5 handles");
     }
     if (!silentMode) {
@@ -195,10 +197,10 @@ std::array<std::string, 2> CreateVirtualHDF5File(
         FileAccPropList fapl;
         fapl.setFcloseDegree(H5F_CLOSE_STRONG);
         if (!overWriteEnable)
-            fd = sls::make_unique<H5File>(fileName.c_str(), H5F_ACC_EXCL,
+            fd = make_unique<H5File>(fileName.c_str(), H5F_ACC_EXCL,
                                           FileCreatPropList::DEFAULT, fapl);
         else
-            fd = sls::make_unique<H5File>(fileName.c_str(), H5F_ACC_TRUNC,
+            fd = make_unique<H5File>(fileName.c_str(), H5F_ACC_TRUNC,
                                           FileCreatPropList::DEFAULT, fapl);
 
         // attributes - version
@@ -338,7 +340,7 @@ std::array<std::string, 2> CreateVirtualHDF5File(
         if (fd) {
             fd->close();
         }
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Could not create/overwrite virtual HDF5 handles");
     }
     if (!silentMode) {
@@ -349,3 +351,5 @@ std::array<std::string, 2> CreateVirtualHDF5File(
 #endif
 
 } // namespace masterFileUtility
+
+} // namespace sls

@@ -6,11 +6,13 @@
 #include "ui_form_dac.h"
 #include <string>
 
+namespace sls {
+
 class qDacWidget : public QWidget, private Ui::WidgetDacObject {
     Q_OBJECT
 
   public:
-    qDacWidget(QWidget *parent, sls::Detector *detector, bool d, std::string n,
+    qDacWidget(QWidget *parent, Detector *detector, bool d, std::string n,
                slsDetectorDefs::dacIndex i);
     ~qDacWidget();
     void SetDetectorIndex(int id);
@@ -25,8 +27,10 @@ class qDacWidget : public QWidget, private Ui::WidgetDacObject {
     void GetAdc();
     void Refresh();
 
-    sls::Detector *det;
+    Detector *det;
     bool isDac{true};
     slsDetectorDefs::dacIndex index;
     int detectorIndex{-1};
 };
+
+} // namespace sls

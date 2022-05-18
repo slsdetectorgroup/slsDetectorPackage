@@ -4,7 +4,9 @@
 #include "qDacWidget.h"
 #include "qDefs.h"
 
-qTabDeveloper::qTabDeveloper(QWidget *parent, sls::Detector *detector)
+namespace sls {
+
+qTabDeveloper::qTabDeveloper(QWidget *parent, Detector *detector)
     : QWidget(parent), det(detector) {
     setupUi(this);
     SetupWidgetWindow();
@@ -324,7 +326,7 @@ void qTabDeveloper::GetHighVoltage() {
         // spinHV
         if (spinHV->isVisible()) {
             if (retval != 0 && retval < hvmin && retval > HV_MAX) {
-                throw sls::RuntimeError(std::string("Unknown High Voltage: ") +
+                throw RuntimeError(std::string("Unknown High Voltage: ") +
                                         std::to_string(retval));
             }
             spinHV->setValue(retval);
@@ -354,7 +356,7 @@ void qTabDeveloper::GetHighVoltage() {
                 comboHV->setCurrentIndex(HV_200);
                 break;
             default:
-                throw sls::RuntimeError(std::string("Unknown High Voltage: ") +
+                throw RuntimeError(std::string("Unknown High Voltage: ") +
                                         std::to_string(retval));
             }
         }
@@ -431,7 +433,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
         case 22:
             return slsDetectorDefs::TEMPERATURE_FPGA;
         default:
-            throw sls::RuntimeError(std::string("Unknown dac/adc index") +
+            throw RuntimeError(std::string("Unknown dac/adc index") +
                                     std::to_string(index));
         }
         break;
@@ -458,7 +460,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
         case 9:
             return slsDetectorDefs::TEMPERATURE_FPGA;
         default:
-            throw sls::RuntimeError(std::string("Unknown dac/adc index") +
+            throw RuntimeError(std::string("Unknown dac/adc index") +
                                     std::to_string(index));
         }
         break;
@@ -484,7 +486,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
         case 8:
             return slsDetectorDefs::TEMPERATURE_ADC;
         default:
-            throw sls::RuntimeError(std::string("Unknown dac/adc index") +
+            throw RuntimeError(std::string("Unknown dac/adc index") +
                                     std::to_string(index));
         }
         break;
@@ -508,7 +510,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
         case 7:
             return slsDetectorDefs::IBIAS_SFP;
         default:
-            throw sls::RuntimeError(std::string("Unknown dac/adc index") +
+            throw RuntimeError(std::string("Unknown dac/adc index") +
                                     std::to_string(index));
         }
         break;
@@ -550,7 +552,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
         case 16:
             return slsDetectorDefs::VTHRESHOLD;
         default:
-            throw sls::RuntimeError(std::string("Unknown dac/adc index") +
+            throw RuntimeError(std::string("Unknown dac/adc index") +
                                     std::to_string(index));
         }
         break;
@@ -586,13 +588,13 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
         case 13:
             return slsDetectorDefs::VCOM_ADC2;
         default:
-            throw sls::RuntimeError(std::string("Unknown dac/adc index") +
+            throw RuntimeError(std::string("Unknown dac/adc index") +
                                     std::to_string(index));
         }
         break;
 
     default:
-        throw sls::RuntimeError(std::string("Unknown detector type"));
+        throw RuntimeError(std::string("Unknown detector type"));
     }
 }
 
@@ -607,3 +609,5 @@ void qTabDeveloper::Refresh() {
     GetHighVoltage();
     LOG(logDEBUG) << "**Updated Developer Tab";
 }
+
+} // namespace sls

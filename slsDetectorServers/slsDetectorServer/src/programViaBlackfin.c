@@ -18,8 +18,11 @@
 #define CMD_GPIO9_DEFINE "echo 9 > /sys/class/gpio/export"
 #define CMD_GPIO3_DEFINE "echo 3 > /sys/class/gpio/export"
 
+// N config done
 #define CMD_GPIO7_EXIST "/sys/class/gpio/gpio7"
+// N Config
 #define CMD_GPIO9_EXIST "/sys/class/gpio/gpio9"
+// N CE (access to AS interface)
 #define CMD_GPIO3_EXIST "/sys/class/gpio/gpio3"
 
 #define CMD_GPIO9_DEFINE_OUT "echo out > /sys/class/gpio/gpio9/direction"
@@ -28,8 +31,11 @@
 #define CMD_GPIO9_DEFINE_IN "echo in > /sys/class/gpio/gpio9/direction"
 #define CMD_GPIO3_DEFINE_IN "echo in > /sys/class/gpio/gpio3/direction"
 
+// nConfig
 #define CMD_GPIO9_DONT_TOUCH_FLASH "echo 0 > /sys/class/gpio/gpio9/value"
-#define CMD_GPIO3_DONT_TOUCH_FLASH "echo 0 > /sys/class/gpio/gpio3/value"
+// nCE
+#define CMD_GPIO3_DONT_TOUCH_FLASH "echo 1 > /sys/class/gpio/gpio3/value"
+// CD
 #define CMD_FPGA_PICKED_STATUS  "cat /sys/class/gpio/gpio7/value"
 
 #define CMD_GET_FPGA_FLASH_DRIVE    "awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd"
@@ -65,7 +71,7 @@ int defineGPIOpins(char *mess) {
         if (FAIL == validateKernelVersion(KERNEL_DATE_VRSN_3GPIO)) {
             latestKernelVerified = 0;
             LOG(logWARNING,
-                ("Kernel too old to use gpio 3 pins. Update kernel to "
+                ("Kernel too old to use gpio3 (nCE). Update kernel to "
                  "guarantee error-free fpga programming. \n\tNot the end "
                  "of the world. Continuing with current kernel...\n"));
         } else {
@@ -78,35 +84,35 @@ int defineGPIOpins(char *mess) {
     if (access(CMD_GPIO7_EXIST, F_OK) != 0) {
         if (executeCommand(CMD_GPIO7_DEFINE, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not define gpio7 pins for fpga (%s)\n", retvals);
+                     "Could not define gpio7 (CD) for fpga (%s)\n", retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }
-        LOG(logINFO, ("\tgpio7: defined\n"));
+        LOG(logINFO, ("\tgpio7 (CD): defined\n"));
     } else {
-        LOG(logINFO, ("\tgpio7: already defined\n"));
+        LOG(logINFO, ("\tgpio7 (CD): already defined\n"));
     }
 
     // define gpio7 direction
     if (executeCommand(CMD_GPIO7_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not set gpio7 as input for fpga (%s)\n", retvals);
+                 "Could not set gpio7 (CD) as input for fpga (%s)\n", retvals);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tgpio7: setting intput\n"));
+    LOG(logINFO, ("\tgpio7 (CD): setting intput\n"));
 
     // define gpio9
     if (access(CMD_GPIO9_EXIST, F_OK) != 0) {
         if (executeCommand(CMD_GPIO9_DEFINE, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not define gpio9 pins for fpga (%s)\n", retvals);
+                     "Could not define gpio9 (nConfig) for fpga (%s)\n", retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }
-        LOG(logINFO, ("\tgpio9: defined\n"));
+        LOG(logINFO, ("\tgpio9 (nConfig): defined\n"));
     } else {
-        LOG(logINFO, ("\tgpio9: already defined\n"));
+        LOG(logINFO, ("\tgpio9 (nConfig): already defined\n"));
     }
 
     // define gpio3 (not chip enable)
@@ -114,21 +120,21 @@ int defineGPIOpins(char *mess) {
         if (access(CMD_GPIO3_EXIST, F_OK) != 0) {
             if (executeCommand(CMD_GPIO3_DEFINE, retvals, logDEBUG1) == FAIL) {
                 snprintf(mess, MAX_STR_LENGTH,
-                         "Could not define gpio3 pins for fpga (%s)\n",
+                         "Could not define gpio3 (nCE) for fpga (%s)\n",
                          retvals);
                 LOG(logERROR, (mess));
                 return FAIL;
             }
-            LOG(logINFO, ("\tgpio3: defined\n"));
+            LOG(logINFO, ("\tgpio3 (nCE): defined\n"));
         } else {
-            LOG(logINFO, ("\tgpio3: already defined\n"));
+            LOG(logINFO, ("\tgpio3 (nCE): already defined\n"));
         }
     }
 
     return OK;
 }
 
-int FPGAdontTouchFlash(char *mess) {
+int FPGAdontTouchFlash(char *mess, int programming) {
 #ifdef VIRTUAL
     return OK;
 #endif
@@ -136,51 +142,51 @@ int FPGAdontTouchFlash(char *mess) {
     // define gpio9 as output
     if (executeCommand(CMD_GPIO9_DEFINE_OUT, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not set gpio9 as output for fpga (%s)\n", retvals);
+                 "Could not set gpio9 (nConfig) as output for fpga (%s)\n", retvals);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tgpio9: setting output\n"));
+    LOG(logINFO, ("\tgpio9 (nConfig): setting output\n"));
 
     // define gpio3 as output
-    if (latestKernelVerified == 1) {
+    if (programming && latestKernelVerified == 1) {
         if (executeCommand(CMD_GPIO3_DEFINE_OUT, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not set gpio3 as output for fpga (%s)\n", retvals);
+                     "Could not set gpio3 (nCE) as output for fpga (%s)\n", retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }
-        LOG(logINFO, ("\tgpio3: setting output\n"));
+        LOG(logINFO, ("\tgpio3 (nCE): setting output\n"));
     }
 
     // tell FPGA to not: gpio9
     if (executeCommand(CMD_GPIO9_DONT_TOUCH_FLASH, retvals, logDEBUG1) ==
         FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not set gpio9 to not touch flash for fpga (%s)\n",
+                 "Could not set gpio9 (nConfig) to not touch flash for fpga (%s)\n",
                  retvals);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tgpio9: fpga dont touch flash\n"));
+    LOG(logINFO, ("\tgpio9 (nConfig): fpga dont touch flash (Low)\n"));
 
     // tell FPGA to not: gpio3
-    if (latestKernelVerified == 1) {
+    if (programming && latestKernelVerified == 1) {
         if (executeCommand(CMD_GPIO3_DONT_TOUCH_FLASH, retvals, logDEBUG1) ==
             FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not set gpio3 to not touch flash for fpga (%s)\n",
+                     "Could not set gpio3 (nCE) to not touch flash for fpga (%s)\n",
                      retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }
-        LOG(logINFO, ("\tgpio3: fpga dont touch flash\n"));
+        LOG(logINFO, ("\tgpio3 (nCE): fpga dont touch flash (High)\n"));
     }
     // usleep(100*1000);
     return OK;
 }
 
-int FPGATouchFlash(char *mess) {
+int FPGATouchFlash(char *mess, int programming) {
 #ifdef VIRTUAL
     return OK;
 #endif
@@ -188,20 +194,20 @@ int FPGATouchFlash(char *mess) {
     // tell FPGA to touch flash to program itself
     if (executeCommand(CMD_GPIO9_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not set gpio9 as input for fpga (%s)\n", retvals);
+                 "Could not set gpio9 (nConfig) as input for fpga (%s)\n", retvals);
         LOG(logERROR, (mess));
         return FAIL;
     }
-    LOG(logINFO, ("\tgpio9: setting input\n"));
+    LOG(logINFO, ("\tgpio9 (nConfig): setting input\n"));
 
-    if (latestKernelVerified == 1) {
+    if (programming && latestKernelVerified == 1) {
         if (executeCommand(CMD_GPIO3_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not set gpio3 as input for fpga (%s)\n", retvals);
+                     "Could not set gpio3 (nCE) as input for fpga (%s)\n", retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }
-        LOG(logINFO, ("\tgpio3: setting input\n"));
+        LOG(logINFO, ("\tgpio3 (nCE): setting input\n"));
     }
     return OK;
 }
@@ -211,10 +217,10 @@ int resetFPGA(char *mess) {
 #ifdef VIRTUAL
     return OK;
 #endif
-    if (FPGAdontTouchFlash(mess) == FAIL) {
+    if (FPGAdontTouchFlash(mess, 0) == FAIL) {
         return FAIL;
     }
-    if (FPGATouchFlash(mess) == FAIL) {
+    if (FPGATouchFlash(mess, 0) == FAIL) {
         return FAIL;
     }
     usleep(CTRL_SRVR_INIT_TIME_US);
@@ -335,7 +341,7 @@ int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
     }
 
     if (index == PROGRAM_FPGA) {
-        if (FPGAdontTouchFlash(mess) == FAIL) {
+        if (FPGAdontTouchFlash(mess, 1) == FAIL) {
             return FAIL;
         }
     }
@@ -564,14 +570,14 @@ int writeToFlash(char *mess, ssize_t fsize, FILE *flashfd, FILE *srcfd) {
 
 int waitForFPGAtoTouchFlash(char *mess) {
     // touch and program
-    if (FPGATouchFlash(mess) == FAIL) {
+    if (FPGATouchFlash(mess, 1) == FAIL) {
         return FAIL;
     }
 
 #ifdef VIRTUAL
     return OK;
 #endif
-    LOG(logINFO, ("\tWaiting for FPGA to program from flash\n"));
+    LOG(logINFO, ("\tWaiting for FPGA to program from flash... \n\t[gpio7 (CD) should be High when done]\n"));
     int timeSpent = 0;
 
     int result = 0;
@@ -609,8 +615,8 @@ int waitForFPGAtoTouchFlash(char *mess) {
             LOG(logERROR, (mess));
             return FAIL;
         }
-        LOG(logDEBUG1, ("gpi07 returned %d\n", result));
+        LOG(logDEBUG1, ("gpi07 (CD)returned %d\n", result));
     }
-    LOG(logINFO, ("\tFPGA has picked up the program from flash\n"));
+    LOG(logINFO, ("\tFPGA has picked up the program from flash. gpio7 (CD) is High\n"));
     return OK;
 }

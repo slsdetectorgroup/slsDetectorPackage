@@ -1244,6 +1244,9 @@ Result<std::string> Detector::getFileNamePrefix(Positions pos) const {
 }
 
 void Detector::setFileNamePrefix(const std::string &fname, Positions pos) {
+    if (fname.find_first_of("/ ") != std::string::npos) {
+        throw RuntimeError("Cannot set file name prefix with '/' or ' '");
+    }
     pimpl->Parallel(&Module::setFileName, pos, fname);
 }
 

@@ -572,6 +572,9 @@ TEST_CASE("fname", "[.cmd]") {
         proxy.Call("fname", {"run"}, -1, PUT, oss);
         REQUIRE(oss.str() == "fname run\n");
     }
+    REQUIRE_THROWS(proxy.Call("fname", {"fdf/dfd"}, -1, PUT));
+    REQUIRE_THROWS(proxy.Call("fname", {"fdf dfd"}, -1, PUT));
+    
     for (int i = 0; i != det.size(); ++i) {
         det.setFileNamePrefix(prev_val[i], {i});
     }

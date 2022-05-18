@@ -11,8 +11,8 @@
 #define BLACKFIN_DEFINED
 
 int defineGPIOpins(char *mess);
-int FPGAdontTouchFlash(char *mess);
-int FPGATouchFlash(char *mess);
+int FPGAdontTouchFlash(char *mess, int programming);
+int FPGATouchFlash(char *mess, int programming);
 int resetFPGA(char *mess);
 
 int emptyTempFolder(char *mess);

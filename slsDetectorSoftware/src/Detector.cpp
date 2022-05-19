@@ -273,6 +273,10 @@ void Detector::loadTrimbits(const std::string &fname, Positions pos) {
     pimpl->Parallel(&Module::loadTrimbits, pos, fname);
 }
 
+void Detector::saveTrimbits(const std::string &fname, Positions pos) {
+    pimpl->Parallel(&Module::saveTrimbits, pos, fname);
+}
+
 Result<int> Detector::getAllTrimbits(Positions pos) const {
     return pimpl->Parallel(&Module::getAllTrimbits, pos);
 }

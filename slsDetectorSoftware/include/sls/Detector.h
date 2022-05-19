@@ -159,6 +159,10 @@ class Detector {
      * is attached. */
     void loadTrimbits(const std::string &fname, Positions pos = {});
 
+    /** [Eiger][Mythen3] If no extension specified, serial number of each module
+     * is attached. */
+    void saveTrimbits(const std::string &fname, Positions pos = {});
+
     /** [Eiger][Mythen3] -1 if they are all different */
     Result<int> getAllTrimbits(Positions pos = {}) const;
 

@@ -452,6 +452,31 @@ std::string CmdProxy::Threshold(int action) {
     return os.str();
 }
 
+std::string CmdProxy::Trimbits(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[fname]\n\t[Eiger][Mythen3] Put will load the trimbit file to detector. If no extension specified, serial number of each module is attached. Get will save the trimbits from the detector to file with serial number added to file name."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->saveTrimbits(args[0], std::vector<int>{det_id});
+        os << args << '\n'; 
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->loadTrimbits(args[0], std::vector<int>{det_id});
+        os << args << '\n'; 
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+
 std::string CmdProxy::TrimEnergies(int action) {
     std::ostringstream os;
     os << cmd << ' ';

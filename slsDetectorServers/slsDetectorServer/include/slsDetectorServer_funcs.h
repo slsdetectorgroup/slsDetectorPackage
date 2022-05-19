@@ -303,3 +303,4 @@ int get_analog_pulsing(int);
 int set_analog_pulsing(int);
 int get_digital_pulsing(int);
 int set_digital_pulsing(int);
+int get_module(int);

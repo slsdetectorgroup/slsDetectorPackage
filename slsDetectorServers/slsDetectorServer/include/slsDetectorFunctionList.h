@@ -308,8 +308,15 @@ int64_t getMeasurementTime();
 #endif
 
 // parameters - module, settings
+#if defined(MYTHEN3D) || defined(EIGERD)
+void getModule(sls_detector_module* myMod);
+#endif
 #if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(GOTTHARD2D))
 int setModule(sls_detector_module myMod, char *mess);
+#endif
+
+#ifdef EIGERD
+int setTrimbits(int* chanregs, char* mess);
 #endif
 #ifdef MYTHEN3D
 int setTrimbits(int *trimbits);
@@ -662,9 +669,6 @@ u_int32_t runState(enum TLogLevel lev);
 #endif
 
 // common
-#if defined(EIGERD) || defined(MYTHEN3D)
-int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);
-#endif
 int calculateDataBytes();
 int getTotalNumberOfChannels();
 #if defined(MOENCHD) || defined(CHIPTESTBOARDD)

@@ -114,6 +114,7 @@ class Module : public virtual slsDetectorDefs {
     std::string getSettingsDir() const;
     std::string setSettingsDir(const std::string &dir);
     void loadTrimbits(const std::string &fname);
+    void saveTrimbits(const std::string &fname);
     int getAllTrimbits() const;
     void setAllTrimbits(int val);
     std::vector<int> getTrimEn() const;
@@ -736,7 +737,9 @@ class Module : public virtual slsDetectorDefs {
     void checkDetectorVersionCompatibility();
     void checkReceiverVersionCompatibility();
     void setModule(sls_detector_module &module, bool trimbits = true);
-    int sendModule(sls_detector_module *myMod, ClientSocket &client);
+    sls_detector_module getModule();
+    void sendModule(sls_detector_module *myMod, ClientSocket &client);
+    void receiveModule(sls_detector_module *myMod, ClientSocket &client);
     void updateReceiverStreamingIP();
 
     void updateRateCorrection();
@@ -770,6 +773,7 @@ class Module : public virtual slsDetectorDefs {
     std::string getTrimbitFilename(detectorSettings settings, int e_eV);
     sls_detector_module readSettingsFile(const std::string &fname,
                                          bool trimbits = true);
+    void saveSettingsFile(sls_detector_module &myMod, const std::string &fname);
     void sendProgram(bool blackfin, std::vector<char> buffer,
                      const int functionEnum, const std::string &functionType,
                      const std::string serverName = "",

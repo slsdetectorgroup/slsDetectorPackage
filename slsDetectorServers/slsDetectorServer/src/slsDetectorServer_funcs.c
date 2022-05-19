@@ -468,6 +468,7 @@ void function_table() {
     flist[F_SET_ANALOG_PULSING] = &set_analog_pulsing;
     flist[F_GET_DIGITAL_PULSING] = &get_digital_pulsing;
     flist[F_SET_DIGITAL_PULSING] = &set_digital_pulsing;
+    flist[F_GET_MODULE] = &get_module;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -1555,6 +1556,71 @@ int read_register(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
+int get_module(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+    sls_detector_module module;
+    int *myDac = NULL;
+    int *myChan = NULL;
+    module.dacs = NULL;
+    module.chanregs = NULL;
+
+#if !defined(MYTHEN3D) && !defined(EIGERD)
+    functionNotImplemented();
+#else 
+
+    // allocate to receive module structure
+    // allocate dacs
+    myDac = malloc(getNumberOfDACs() * sizeof(int));
+    // error
+    if (getNumberOfDACs() > 0 && myDac == NULL) {
+        ret = FAIL;
+        sprintf(mess, "Could not allocate dacs\n");
+        LOG(logERROR, (mess));
+    } else
+        module.dacs = myDac;
+
+    // allocate chans
+    if (ret == OK) {
+        myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
+        if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
+            ret = FAIL;
+            sprintf(mess, "Could not allocate chans\n");
+            LOG(logERROR, (mess));
+        } else
+            module.chanregs = myChan;
+    }
+
+    // receive module structure
+    if (ret == OK) {
+        module.nchip = getNumberOfChips();
+        module.nchan = getTotalNumberOfChannels();
+        module.ndac = getNumberOfDACs();
+
+        // ensure nchan is not 0, else trimbits not copied
+        if (module.nchan == 0) {
+            strcpy(mess, "Could not get module as the number of channels to copy is 0\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        getModule(&module);
+    }
+#endif
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret != FAIL) {
+        if (sendModule(file_des, &module) < 0) {
+            ret = FAIL;
+        }
+    }
+    if (myChan != NULL)
+        free(myChan);
+    if (myDac != NULL)
+        free(myDac);
+    return ret;
+}
+
+
 int set_module(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
@@ -1631,8 +1697,10 @@ int set_module(int file_des) {
 #endif
         LOG(logDEBUG1, ("Settings: %d\n", retval));
     }
-    free(myChan);
-    free(myDac);
+    if (myChan != NULL)
+        free(myChan);
+    if (myDac != NULL)
+        free(myDac);
 #endif
 
     return Server_SendResult(file_des, INT32, NULL, 0);

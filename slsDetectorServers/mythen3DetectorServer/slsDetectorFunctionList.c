@@ -421,7 +421,7 @@ void allocateDetectorStructureMemory() {
         detectorDacs[idac] = 0;
     }
 
-    // trimbits start at 0 //TODO: restart server will not have 0 always
+    // trimbits start at 0 
     for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
         *((detectorModules->chanregs) + ichan) = 0;
     }
@@ -1255,21 +1255,44 @@ int setDACS(int *dacs) {
     return OK;
 }
 
+void getModule(sls_detector_module* myMod) {
+    // copy trimbits
+    for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
+        *((myMod->chanregs) + ichan) = *((detectorModules->chanregs) + ichan);
+    }
+    // copy dacs
+    for (int idac = 0; idac < (detectorModules->ndac); idac++) {
+        *((myMod->dacs) + idac) = *((detectorModules->dacs) + idac);
+    }
+}
+
 int setModule(sls_detector_module myMod, char *mess) {
     LOG(logINFO, ("Setting module\n"));
 
+    if (((myMod.nchan) > (detectorModules->nchan)) || ((myMod.ndac) > (detectorModules->ndac))) {
+        strcpy(mess, "Could not set module as the number of channels or dacs do not match to the one in the detector server\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    // serial number (pointless)
+    detectorModules->serialnumber = myMod.serialnumber;
+
+    // gain caps from reg
     if (setChipStatusRegister(myMod.reg)) {
         sprintf(mess, "Could not CSR from module\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
 
+    // dacs
     if (setDACS(myMod.dacs)) {
         sprintf(mess, "Could not set dacs\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
 
+    // threshold energy
     for (int i = 0; i < NCOUNTERS; ++i) {
         if (myMod.eV[i] >= 0) {
             setThresholdEnergy(i, myMod.eV[i]);
@@ -1336,6 +1359,12 @@ int setTrimbits(int *trimbits) {
     if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
         LOG(logERROR, ("Could not set to previous run clock after trimming\n"));
         return FAIL;
+    }
+
+    // copying trimbits locally (if tirmbit value > -1)
+    for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
+        if (*(trimbits + ichan) >= 0)
+            *((detectorModules->chanregs) + ichan) = *(trimbits + ichan);
     }
 
     return (error ? FAIL : OK);
@@ -2572,56 +2601,6 @@ u_int32_t runBusy() {
 
 /* common */
 
-int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
-    LOG(logDEBUG1, ("Copying module\n"));
-
-    if (srcMod->serialnumber >= 0) {
-        destMod->serialnumber = srcMod->serialnumber;
-    }
-    // no trimbit feature
-    if (destMod->nchan && ((srcMod->nchan) > (destMod->nchan))) {
-        LOG(logINFO, ("Number of channels of source is larger than number of "
-                      "channels of destination\n"));
-        return FAIL;
-    }
-    if ((srcMod->ndac) > (destMod->ndac)) {
-        LOG(logINFO, ("Number of dacs of source is larger than number of dacs "
-                      "of destination\n"));
-        return FAIL;
-    }
-
-    LOG(logDEBUG1, ("DACs: src %d, dest %d\n", srcMod->ndac, destMod->ndac));
-    LOG(logDEBUG1, ("Chans: src %d, dest %d\n", srcMod->nchan, destMod->nchan));
-    if (srcMod->reg >= 0)
-        destMod->reg = srcMod->reg;
-    /*
-    if (srcMod->iodelay >= 0)
-        destMod->iodelay = srcMod->iodelay;
-    if (srcMod->tau >= 0)
-        destMod->tau = srcMod->tau;
-    */
-    for (int i = 0; i < NCOUNTERS; ++i) {
-        if (srcMod->eV[i] >= 0)
-            destMod->eV[i] = srcMod->eV[i];
-    }
-
-    LOG(logDEBUG1, ("Copying register %x (%x)\n", destMod->reg, srcMod->reg));
-
-    if (destMod->nchan != 0 && srcMod->nchan != 0) {
-        for (int ichan = 0; ichan < (srcMod->nchan); ichan++) {
-            *((destMod->chanregs) + ichan) = *((srcMod->chanregs) + ichan);
-        }
-    } else
-        LOG(logINFO, ("Not Copying trimbits\n"));
-
-    for (int idac = 0; idac < (srcMod->ndac); idac++) {
-        if (*((srcMod->dacs) + idac) >= 0) {
-            *((destMod->dacs) + idac) = *((srcMod->dacs) + idac);
-        }
-    }
-    return OK;
-}
-
 int calculateDataBytes() {
     int numCounters = __builtin_popcount(getCounterMask());
     int dr = 0;
@@ -2670,5 +2649,6 @@ int setChipStatusRegister(int csr) {
         return FAIL;
     }
 
+    detectorModules->reg = csr;
     return iret;
 }

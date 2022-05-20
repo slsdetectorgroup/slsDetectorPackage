@@ -75,7 +75,7 @@ void Implementation::SetupFifoStructure() {
 
         // create fifo structure
         try {
-            fifo.push_back(make_unique<Fifo>(
+            fifo.push_back(sls::make_unique<Fifo>(
                 i, datasize + (generalData->fifoBufferHeaderSize), fifoDepth));
         } catch (...) {
             fifo.clear();
@@ -178,7 +178,7 @@ void Implementation::setDetectorType(const detectorType d) {
 
         try {
             auto fifo_ptr = fifo[i].get();
-            listener.push_back(make_unique<Listener>(
+            listener.push_back(sls::make_unique<Listener>(
                 i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                 &udpSocketBufferSize, &actualUDPSocketBufferSize,
                 &framesPerFile, &frameDiscardMode, &detectorDataStream[i],
@@ -187,7 +187,7 @@ void Implementation::setDetectorType(const detectorType d) {
             if (detType == CHIPTESTBOARD) {
                 ctbAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
             }
-            dataProcessor.push_back(make_unique<DataProcessor>(
+            dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, detType, fifo_ptr, &dataStreamEnable, &streamingFrequency,
                 &streamingTimerInMs, &streamingStartFnum, &framePadding,
                 &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
@@ -996,7 +996,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             // listener and dataprocessor threads
             try {
                 auto fifo_ptr = fifo[i].get();
-                listener.push_back(make_unique<Listener>(
+                listener.push_back(sls::make_unique<Listener>(
                     i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                     &udpSocketBufferSize, &actualUDPSocketBufferSize,
                     &framesPerFile, &frameDiscardMode, &detectorDataStream[i],
@@ -1009,7 +1009,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     ctbAnalogDataBytes =
                         generalData->GetNumberOfAnalogDatabytes();
                 }
-                dataProcessor.push_back(make_unique<DataProcessor>(
+                dataProcessor.push_back(sls::make_unique<DataProcessor>(
                     i, detType, fifo_ptr, &dataStreamEnable,
                     &streamingFrequency, &streamingTimerInMs,
                     &streamingStartFnum, &framePadding, &ctbDbitList,
@@ -1031,7 +1031,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     if (quadEnable) {
                         flip = (i == 1 ? true : false);
                     }
-                    dataStreamer.push_back(make_unique<DataStreamer>(
+                    dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &detectorRoi,
                         &fileIndex, flip, numPorts, &quadEnable,
                         &numberOfTotalFrames));
@@ -1158,7 +1158,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
                     if (quadEnable) {
                         flip = (i == 1 ? true : false);
                     }
-                    dataStreamer.push_back(make_unique<DataStreamer>(
+                    dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &detectorRoi,
                         &fileIndex, flip, numPorts, &quadEnable,
                         &numberOfTotalFrames));

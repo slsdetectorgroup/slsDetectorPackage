@@ -12,8 +12,8 @@
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
 
-using sls::CmdProxy;
-using sls::Detector;
+namespace sls {
+
 using test::GET;
 using test::PUT;
 
@@ -216,9 +216,9 @@ TEST_CASE("counters", "[.cmd]") {
         REQUIRE(oss_set2.str() == "counters [0, 2]\n");
         // put back old value
         proxy.Call("counters", list_str, -1, PUT, oss_set3);
-        REQUIRE(oss_set3.str() == "counters " + sls::ToString(list_str) + "\n");
+        REQUIRE(oss_set3.str() == "counters " + ToString(list_str) + "\n");
         proxy.Call("counters", {}, -1, GET, oss_get);
-        REQUIRE(oss_get.str() == "counters " + sls::ToString(list_str) + "\n");
+        REQUIRE(oss_get.str() == "counters " + ToString(list_str) + "\n");
     } else {
         REQUIRE_THROWS(proxy.Call("counters", {}, -1, GET));
     }
@@ -349,7 +349,7 @@ TEST_CASE("gatedelay", "[.cmd]") {
         auto prev_val = det.getExptimeForAllGates().tsquash(
             "inconsistent gatedelay to test");
         if (prev_val[0] != prev_val[1] || prev_val[1] != prev_val[2]) {
-            throw sls::RuntimeError("inconsistent gatedelay for all gates");
+            throw RuntimeError("inconsistent gatedelay for all gates");
         }
         {
             std::ostringstream oss;
@@ -611,3 +611,5 @@ TEST_CASE("dpulse", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("dpulse", {}, -1, GET));
     }
 }
+
+} // namespace sls

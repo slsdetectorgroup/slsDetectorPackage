@@ -1440,25 +1440,27 @@ class Detector(CppDetectorApi):
         return self.getRxRealUDPSocketBufferSize()
 
     @property
-    def trimbits(self):
+    def trimbits(self, fname):
+        fname = ut.make_string_path(fname)
+        ut.set_using_dict(self.saveTrimbits, fname)
+
+    @trimbits.setter
+    def trimbits(self, fname):
         """
-        [Eiger][Mythen3] Loads custom trimbit file to detector. 
+        [Eiger][Mythen3] Loads/Saves custom trimbit file to detector. 
         
         Note
         -----
         If no extension specified, serial number of each module is attached.
 
-        :getter: Not implemented
+        :setter: Loads the trimbit file to detector
+        :getter: Saves the trimbits from the detector to file
 
         Example
         -------
         >>> d.trimbits = '/path_to_file/noise'
         - 14:53:27.931 INFO: Settings file loaded: /path_to_file/noise.sn000
         """
-        return NotImplementedError("trimbits are set only")
-
-    @trimbits.setter
-    def trimbits(self, fname):
         fname = ut.make_string_path(fname)
         ut.set_using_dict(self.loadTrimbits, fname)
 

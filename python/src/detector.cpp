@@ -144,6 +144,10 @@ void init_det(py::module &m) {
              (void (Detector::*)(const std::string &, sls::Positions)) &
                  Detector::loadTrimbits,
              py::arg(), py::arg() = Positions{})
+        .def("saveTrimbits",
+             (void (Detector::*)(const std::string &, sls::Positions)) &
+                 Detector::saveTrimbits,
+             py::arg(), py::arg() = Positions{})
         .def("getAllTrimbits",
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getAllTrimbits,
@@ -187,12 +191,12 @@ void init_det(py::module &m) {
              (void (Detector::*)(void (*)(double, int, void *), void *)) &
                  Detector::registerAcquisitionFinishedCallback,
              py::arg(), py::arg())
-        .def(
-            "registerDataCallback",
-            (void (Detector::*)(
-                void (*)(detectorData *, uint64_t, uint32_t, void *), void *)) &
-                Detector::registerDataCallback,
-            py::arg(), py::arg())
+        .def("registerDataCallback",
+             (void (Detector::*)(
+                 void (*)(sls::detectorData *, uint64_t, uint32_t, void *),
+                 void *)) &
+                 Detector::registerDataCallback,
+             py::arg(), py::arg())
         .def("getNumberOfFrames",
              (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfFrames,

@@ -9,8 +9,9 @@
 // help for all docs
 // command for all depreciated commands
 
+namespace sls {
+
 using vs = std::vector<std::string>;
-using sls::CmdParser;
 
 SCENARIO("Construction", "[support]") {
     GIVEN("A default constructed CmdParser") {
@@ -407,3 +408,5 @@ TEST_CASE("Parse a command in the form 0-1:command") {
     REQUIRE(p.detector_id() == 5);
     REQUIRE(p.command() == "exptime");
 }
+
+} // namespace sls

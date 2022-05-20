@@ -11,6 +11,8 @@
 #include "tests/config.h"
 #include <string>
 
+namespace sls {
+
 // using namespace Catch::clara;
 using Opt = Catch::clara::Opt;
 using dt = slsDetectorDefs::detectorType;
@@ -46,8 +48,10 @@ int main(int argc, char *argv[]) {
     test::type = slsDetectorDefs::GENERIC;
     if (!test::detector_type.empty()) {
         test::type =
-            sls::StringTo<slsDetectorDefs::detectorType>(test::detector_type);
+            StringTo<slsDetectorDefs::detectorType>(test::detector_type);
     }
 
     return session.run();
 }
+
+} // namespace sls

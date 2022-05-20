@@ -6,8 +6,8 @@
 #include "sls/Detector.h"
 #include "tests/globals.h"
 
-using sls::CmdProxy;
-using sls::Detector;
+namespace sls {
+
 using test::GET;
 using test::PUT;
 
@@ -52,7 +52,7 @@ void test_onchip_dac(defs::dacIndex index, const std::string &dacname,
 
     int chipIndex = -1; // for now, it is -1 only
     auto prev_val = det.getOnChipDAC(index, chipIndex);
-    auto dacValueStr = sls::ToStringHex(dacvalue);
+    auto dacValueStr = ToStringHex(dacvalue);
     auto chipIndexStr = std::to_string(chipIndex);
     std::ostringstream oss_set, oss_get;
     proxy.Call(dacname, {chipIndexStr, dacValueStr}, -1, PUT, oss_set);
@@ -67,3 +67,5 @@ void test_onchip_dac(defs::dacIndex index, const std::string &dacname,
         det.setOnChipDAC(index, chipIndex, prev_val[i], {i});
     }
 }
+
+} // namespace sls

@@ -1440,12 +1440,7 @@ class Detector(CppDetectorApi):
         return self.getRxRealUDPSocketBufferSize()
 
     @property
-    def trimbits(self, fname):
-        fname = ut.make_string_path(fname)
-        ut.set_using_dict(self.saveTrimbits, fname)
-
-    @trimbits.setter
-    def trimbits(self, fname):
+    def trimbits(self):
         """
         [Eiger][Mythen3] Loads/Saves custom trimbit file to detector. 
         
@@ -1454,13 +1449,17 @@ class Detector(CppDetectorApi):
         If no extension specified, serial number of each module is attached.
 
         :setter: Loads the trimbit file to detector
-        :getter: Saves the trimbits from the detector to file
+        :getter: Saves the trimbits from the detector to file. Not implemented with 'trimbits'. Use saveTrimbits().
 
         Example
         -------
         >>> d.trimbits = '/path_to_file/noise'
         - 14:53:27.931 INFO: Settings file loaded: /path_to_file/noise.sn000
         """
+        raise NotImplementedError('trimbits is set only. Use saveTrimbits()')
+
+    @trimbits.setter
+    def trimbits(self, fname):
         fname = ut.make_string_path(fname)
         ut.set_using_dict(self.loadTrimbits, fname)
 
@@ -2619,7 +2618,7 @@ class Detector(CppDetectorApi):
         -------
         >>> d.vetophoton = (2, 24, 2560, '/tmp/bla.txt')
         """
-        raise NotImplementedError('vetofile is set only')
+        raise NotImplementedError('vetophoton is set only')
 
     @vetophoton.setter
     def vetophoton(self, args):

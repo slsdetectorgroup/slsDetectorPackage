@@ -235,8 +235,8 @@
     </property>
     <addaction name="actionLoadConfiguration"/>
     <addaction name="actionLoadTrimbits"/>
-    <addaction name="actionLoadParameters"/>
     <addaction name="actionSaveTrimbits"/>
+    <addaction name="actionLoadParameters"/>
    </widget>
    <widget class="QMenu" name="menuModes">
     <property name="title">

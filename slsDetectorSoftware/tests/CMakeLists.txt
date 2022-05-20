@@ -21,9 +21,4 @@ target_sources(tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/test-CtbConfig.cpp
 )
 
-target_include_directories(tests 
-    PUBLIC 
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../src>"
-    PRIVATE
-    ${SLS_INTERNAL_RAPIDJSON_DIR}
-)
+target_include_directories(tests PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../src>")

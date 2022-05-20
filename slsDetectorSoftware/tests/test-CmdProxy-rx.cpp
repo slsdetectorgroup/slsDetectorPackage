@@ -9,8 +9,8 @@
 #include "sls/versionAPI.h"
 #include "tests/globals.h"
 
-namespace sls {
-
+using sls::CmdProxy;
+using sls::Detector;
 using test::GET;
 using test::PUT;
 
@@ -449,7 +449,7 @@ TEST_CASE("rx_roi", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("rx_roi", {"5", "10"}, -1, PUT));
     } else {
         auto prev_val = det.getRxROI();
-        defs::xy detsize = det.getDetectorSize();
+        defs::xy detsize = det.getDetectrSize();
 
         // 1d
         if (det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2 ||
@@ -991,5 +991,3 @@ TEST_CASE("rx_jsonpara", "[.cmd][.rx]") {
 }
 
 /* Insignificant */
-
-} // namespace sls

@@ -15,8 +15,6 @@
 #include <unistd.h>
 #include <vector>
 
-namespace sls {
-
 constexpr int default_port = 50001;
 
 int open_socket(int port) {
@@ -33,16 +31,16 @@ int open_socket(int port) {
 
     const std::string portname = std::to_string(port);
     if (getaddrinfo(host, portname.c_str(), &hints, &res)) {
-        throw RuntimeError("Failed at getaddrinfo with " +
+        throw sls::RuntimeError("Failed at getaddrinfo with " +
                                 std::string(host));
     }
     int fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (fd == -1) {
-        throw RuntimeError("Failed to create UDP RX socket");
+        throw sls::RuntimeError("Failed to create UDP RX socket");
     }
 
     if (connect(fd, res->ai_addr, res->ai_addrlen)) {
-        throw RuntimeError("Failed to connect socket");
+        throw sls::RuntimeError("Failed to connect socket");
     }
     freeaddrinfo(res);
     return fd;
@@ -51,7 +49,7 @@ int open_socket(int port) {
 TEST_CASE("Get packet size returns the packet size we set in the constructor") {
     constexpr int port = 50001;
     constexpr ssize_t packet_size = 8000;
-    UdpRxSocket s{port, packet_size};
+    sls::UdpRxSocket s{port, packet_size};
     CHECK(s.getPacketSize() == packet_size);
 }
 
@@ -62,7 +60,7 @@ TEST_CASE("Receive data from a vector") {
     ssize_t packet_size =
         sizeof(decltype(data_to_send)::value_type) * data_to_send.size();
 
-    UdpRxSocket udpsock{port, packet_size};
+    sls::UdpRxSocket udpsock{port, packet_size};
 
     int fd = open_socket(port);
     auto n = write(fd, data_to_send.data(), packet_size);
@@ -76,13 +74,13 @@ TEST_CASE("Receive data from a vector") {
 TEST_CASE("Shutdown socket without hanging when waiting for data") {
     constexpr int port = 50001;
     constexpr ssize_t packet_size = 8000;
-    UdpRxSocket s{port, packet_size};
+    sls::UdpRxSocket s{port, packet_size};
     char buff[packet_size];
 
     // Start a thread and wait for package
     // if the socket is left open we would block
     std::future<bool> ret =
-        std::async(&UdpRxSocket::ReceivePacket, &s, (char *)&buff);
+        std::async(&sls::UdpRxSocket::ReceivePacket, &s, (char *)&buff);
 
     s.Shutdown();
     auto r = ret.get();
@@ -92,7 +90,7 @@ TEST_CASE("Shutdown socket without hanging when waiting for data") {
 
 TEST_CASE("Too small packet") {
     constexpr int port = 50001;
-    UdpRxSocket s(port, 2 * sizeof(uint32_t));
+    sls::UdpRxSocket s(port, 2 * sizeof(uint32_t));
     auto fd = open_socket(port);
     uint32_t val = 10;
     write(fd, &val, sizeof(val));
@@ -105,10 +103,8 @@ TEST_CASE("Receive an int to an external buffer") {
     int to_send = 5;
     int received = -1;
     auto fd = open_socket(default_port);
-    UdpRxSocket s(default_port, sizeof(int));
+    sls::UdpRxSocket s(default_port, sizeof(int));
     write(fd, &to_send, sizeof(to_send));
     CHECK(s.ReceivePacket(reinterpret_cast<char *>(&received)));
     CHECK(received == to_send);
 }
-
-} // namespace sls

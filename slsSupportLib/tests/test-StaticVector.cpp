@@ -7,11 +7,10 @@
 #include <array>
 #include <sstream>
 #include <vector>
-
-namespace sls {
+using sls::StaticVector;
 
 TEST_CASE("StaticVector is a container") {
-    REQUIRE(is_container<StaticVector<int, 7>>::value == true);
+    REQUIRE(sls::is_container<StaticVector<int, 7>>::value == true);
 }
 
 TEST_CASE("Comparing StaticVector containers") {
@@ -318,15 +317,15 @@ SCENARIO("Converting to vector", "[support]") {
     }
 }
 
-TEST_CASE("StaticVector") {
-    StaticVector<int, 5> vec;
+TEST_CASE("sls::StaticVector") {
+    sls::StaticVector<int, 5> vec;
     vec.push_back(3);
     vec.push_back(8);
-    REQUIRE(ToString(vec) == "[3, 8]");
+    REQUIRE(sls::ToString(vec) == "[3, 8]");
 }
 
-TEST_CASE("StaticVector stream") {
-    StaticVector<int, 5> vec;
+TEST_CASE("sls::StaticVector stream") {
+    sls::StaticVector<int, 5> vec;
     vec.push_back(33);
     vec.push_back(85667);
     vec.push_back(2);
@@ -334,5 +333,3 @@ TEST_CASE("StaticVector stream") {
     oss << vec;
     REQUIRE(oss.str() == "[33, 85667, 2]");
 }
-
-} // namespace sls

@@ -6,8 +6,6 @@
 #include "tests/globals.h"
 #include <iostream>
 
-namespace sls {
-
 class MultiDetectorFixture {
   protected:
     DetectorImpl d;
@@ -138,7 +136,7 @@ TEST_CASE_METHOD(MultiDetectorFixture, "Get ID", "[.eigerintegration][cli]") {
     std::string hn = test::hostname;
     hn.erase(std::remove(begin(hn), end(hn), 'b'), end(hn));
     hn.erase(std::remove(begin(hn), end(hn), 'e'), end(hn));
-    auto hostnames = split(hn, '+');
+    auto hostnames = sls::split(hn, '+');
     CHECK(hostnames.size() == d.getNumberOfDetectors());
     for (int i = 0; i != d.getNumberOfDetectors(); ++i) {
         CHECK(d.getId(defs::DETECTOR_SERIAL_NUMBER, 0) ==
@@ -200,5 +198,3 @@ TEST_CASE_METHOD(MultiDetectorFixture, "rate correction",
     d.setRateCorrection(200);
     CHECK(d.getRateCorrection() == 200);
 }
-
-} // namespace sls

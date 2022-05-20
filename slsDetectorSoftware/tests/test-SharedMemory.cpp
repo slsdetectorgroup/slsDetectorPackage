@@ -7,13 +7,13 @@
 
 #include <iostream>
 
-namespace sls {
-
 struct Data {
     int x;
     double y;
     char mess[50];
 };
+
+using namespace sls;
 
 constexpr int shm_id = 10;
 
@@ -26,7 +26,7 @@ TEST_CASE("Create SharedMemory read and write", "[detector]") {
 
     shm()->x = 3;
     shm()->y = 5.7;
-    strcpy_safe(shm()->mess, "Some string");
+    sls::strcpy_safe(shm()->mess, "Some string");
 
     CHECK(shm()->x == 3);
     CHECK(shm()->y == 5.7);
@@ -168,6 +168,8 @@ TEST_CASE("map int64 to int32 throws"){
     REQUIRE_THROWS(shm2.openSharedMemory(true));
 
     shm.removeSharedMemory();
-}
+    
 
-} // namespace sls
+
+
+}

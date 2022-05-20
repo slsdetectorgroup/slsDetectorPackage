@@ -12,8 +12,8 @@
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
 
-namespace sls {
-
+using sls::CmdProxy;
+using sls::Detector;
 using test::GET;
 using test::PUT;
 
@@ -108,5 +108,3 @@ TEST_CASE("Setting and reading back MOENCH dacs", "[.cmd][.dacs]") {
         REQUIRE_THROWS(proxy.Call("dac", {"vcom_adc2"}, -1, GET));
     }
 }
-
-} // namespace sls

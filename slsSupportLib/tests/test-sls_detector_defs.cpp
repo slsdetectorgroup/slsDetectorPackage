@@ -3,8 +3,6 @@
 #include "catch.hpp"
 #include "sls/sls_detector_defs.h"
 
-namespace sls {
-
 using dt = slsDetectorDefs::detectorType;
 
 TEST_CASE("sls_detector_module default construction", "[support][new]") {
@@ -78,5 +76,3 @@ TEST_CASE("compare two scanParameters") {
     p0.enable = 1;
     CHECK_FALSE(p0 == p1);
 }
-
-} // namespace sls

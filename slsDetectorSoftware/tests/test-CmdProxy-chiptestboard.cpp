@@ -12,8 +12,8 @@
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
 
-namespace sls {
-
+using sls::CmdProxy;
+using sls::Detector;
 using test::GET;
 using test::PUT;
 
@@ -141,7 +141,7 @@ TEST_CASE("samples", "[.cmd]") {
 
     if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
         auto prev_asamples = det.getNumberOfAnalogSamples();
-        Result<int> prev_dsamples = 0;
+        sls::Result<int> prev_dsamples = 0;
         if (det_type == defs::CHIPTESTBOARD) {
             prev_dsamples = det.getNumberOfDigitalSamples();
         }
@@ -866,5 +866,3 @@ TEST_CASE("led", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("led", {}, -1, GET));
     }
 }
-
-} // namespace sls

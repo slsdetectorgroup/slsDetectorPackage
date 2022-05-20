@@ -24,8 +24,6 @@
 // extern std::string detector_type;
 // extern dt type;
 
-namespace sls {
-
 TEST_CASE("Single detector no receiver", "[.integration][.single]") {
     auto t = Module::getTypeFromDetector(test::hostname);
     CHECK(t == test::type);
@@ -285,14 +283,14 @@ TEST_CASE(
     CHECK(m.getRateCorrection() == ratecorr);
 
     // ratecorr fail with dr 4 or 8
-    CHECK_THROWS_AS(m.setDynamicRange(8), RuntimeError);
+    CHECK_THROWS_AS(m.setDynamicRange(8), sls::RuntimeError);
     CHECK(m.getRateCorrection() == 0);
     m.setDynamicRange(16);
     m.setDynamicRange(16);
     m.setRateCorrection(ratecorr);
     m.setDynamicRange(16);
     m.setRateCorrection(ratecorr);
-    CHECK_THROWS_AS(m.setDynamicRange(4), RuntimeError);
+    CHECK_THROWS_AS(m.setDynamicRange(4), sls::RuntimeError);
     CHECK(m.getRateCorrection() == 0);
 }
 
@@ -331,11 +329,11 @@ TEST_CASE("Chiptestboard Loading Patterns", "[.ctbintegration]") {
     m.setPatternWord(addr, word);
     CHECK(m.setPatternWord(addr, -1) == word);
     addr = MAX_ADDR;
-    CHECK_THROWS_AS(m.setPatternWord(addr, word), RuntimeError);
+    CHECK_THROWS_AS(m.setPatternWord(addr, word), sls::RuntimeError);
     CHECK_THROWS_WITH(m.setPatternWord(addr, word),
                       Catch::Matchers::Contains("be between 0 and"));
     addr = -1;
-    CHECK_THROWS_AS(m.setPatternWord(addr, word), RuntimeError);
+    CHECK_THROWS_AS(m.setPatternWord(addr, word), sls::RuntimeError);
     CHECK_THROWS_WITH(m.setPatternWord(addr, word),
                       Catch::Matchers::Contains("be between 0 and"));
 
@@ -410,7 +408,7 @@ TEST_CASE("Chiptestboard Dbit offset, list, sampling, advinvert",
     CHECK(m.getReceiverDbitList().size() == 10);
 
     list.push_back(64);
-    CHECK_THROWS_AS(m.setReceiverDbitList(list), RuntimeError);
+    CHECK_THROWS_AS(m.setReceiverDbitList(list), sls::RuntimeError);
     CHECK_THROWS_WITH(m.setReceiverDbitList(list),
                       Catch::Matchers::Contains("be between 0 and 63"));
 
@@ -478,7 +476,7 @@ TEST_CASE("Eiger or Jungfrau nextframenumber",
     CHECK(m.acquire() == slsDetectorDefs::OK);
     CHECK(m.getReceiverCurrentFrameIndex() == val);
 
-    CHECK_THROWS_AS(m.setNextFrameNumber(0), RuntimeError);
+    CHECK_THROWS_AS(m.setNextFrameNumber(0), sls::RuntimeError);
 
     if (m.getDetectorTypeAsString() == "Eiger") {
         val = 281474976710655;
@@ -513,10 +511,8 @@ TEST_CASE("Eiger partialread", "[.eigerintegration][partialread]") {
     m.setDynamicRange(8);
     m.setPartialReadout(256);
     CHECK(m.getPartialReadout() == 256);
-    CHECK_THROWS_AS(m.setPartialReadout(1), RuntimeError);
+    CHECK_THROWS_AS(m.setPartialReadout(1), sls::RuntimeError);
     CHECK(m.getPartialReadout() == 256);
-    CHECK_THROWS_AS(m.setPartialReadout(0), RuntimeError);
+    CHECK_THROWS_AS(m.setPartialReadout(0), sls::RuntimeError);
     m.setPartialReadout(256);
 }
-
-} // namespace sls

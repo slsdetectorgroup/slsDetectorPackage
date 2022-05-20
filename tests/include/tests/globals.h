@@ -2,9 +2,6 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 #include "sls/sls_detector_defs.h"
-
-namespace sls {
-
 using dt = slsDetectorDefs::detectorType;
 using di = slsDetectorDefs::dacIndex;
 using defs = slsDetectorDefs;
@@ -18,5 +15,3 @@ extern decltype(defs::GET_ACTION) GET;
 extern decltype(defs::PUT_ACTION) PUT;
 
 } // namespace test
-
-} // namespace sls

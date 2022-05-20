@@ -5,9 +5,9 @@
 
 #include "SharedMemory.h"
 #include "CtbConfig.h"
+using namespace sls;
 #include <fstream>
 
-namespace sls {
 
 TEST_CASE("Default construction"){
     static_assert(sizeof(CtbConfig) == 360); // 18*20 
@@ -57,5 +57,3 @@ TEST_CASE("Move CtbConfig "){
     CtbConfig c2(std::move(c1));
     REQUIRE(c2.getDacName(3) == "yetanothername");
 }
-
-} // namespace sls

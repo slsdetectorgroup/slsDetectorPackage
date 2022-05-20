@@ -4,8 +4,6 @@
 #include "sls/sls_detector_defs.h"
 #include <string>
 
-namespace sls {
-
 struct SingleDetectorConfig {
     slsDetectorDefs::detectorType type_enum =
         slsDetectorDefs::detectorType::EIGER;
@@ -13,5 +11,3 @@ struct SingleDetectorConfig {
     const std::string type_string = "Eiger";
     const std::string my_ip = "129.129.205.171";
 };
-
-} // namespace sls

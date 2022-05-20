@@ -7,12 +7,10 @@
 #include <unistd.h>
 #include <vector>
 
-namespace sls {
-
 TEST_CASE("Get size of empty file") {
     char fname[] = "temfile_XXXXXX";
     std::ifstream ifs(fname);
-    auto size = getFileSize(ifs);
+    auto size = sls::getFileSize(ifs);
     REQUIRE(size <= 0); // -1 or zero
 }
 
@@ -24,9 +22,7 @@ TEST_CASE("Get size of file with data") {
     write(fh, data.data(), n_bytes);
 
     std::ifstream ifs(fname);
-    auto size = getFileSize(ifs);
+    auto size = sls::getFileSize(ifs);
     REQUIRE(size == n_bytes);
     REQUIRE(ifs.tellg() == 0); // getting size resets pos!
 }
-
-} // namespace sls

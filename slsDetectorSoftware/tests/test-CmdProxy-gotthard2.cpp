@@ -12,8 +12,8 @@
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
 
-namespace sls {
-
+using sls::CmdProxy;
+using sls::Detector;
 using test::GET;
 using test::PUT;
 
@@ -467,7 +467,7 @@ TEST_CASE("burstmode", "[.cmd]") {
 
     if (det_type == defs::GOTTHARD2) {
         auto burst = det.getBurstMode();
-        auto burststr = ToString(burst);
+        auto burststr = sls::ToString(burst);
         {
             std::ostringstream oss;
             proxy.Call("burstmode", {"burst_internal"}, -1, PUT, oss);
@@ -744,5 +744,3 @@ TEST_CASE("badchannels", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
     }
 }
-
-} // namespace sls

@@ -12,8 +12,8 @@
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
 
-namespace sls {
-
+using sls::CmdProxy;
+using sls::Detector;
 using test::GET;
 using test::PUT;
 
@@ -155,5 +155,3 @@ TEST_CASE("exptimel", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("exptimel", {}, -1, GET));
     }
 }
-
-} // namespace sls

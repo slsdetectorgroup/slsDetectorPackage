@@ -11,8 +11,8 @@
 
 #include "tests/globals.h"
 
-namespace sls {
-
+using sls::CmdProxy;
+using sls::Detector;
 using test::GET;
 using test::PUT;
 
@@ -152,7 +152,7 @@ TEST_CASE("type", "[.cmd]") {
     std::ostringstream oss;
     proxy.Call("type", {}, -1, GET, oss);
     auto ans = oss.str().erase(0, strlen("type "));
-    REQUIRE(ans == ToString(dt) + '\n');
+    REQUIRE(ans == sls::ToString(dt) + '\n');
     // REQUIRE(dt == test::type);
 }
 
@@ -339,7 +339,7 @@ TEST_CASE("threshold", "[.cmd]") {
             for (int i = 0; i != det.size(); ++i) {
                 if (prev_threshold[i][0] >= 0) {
                     std::cout
-                        << "prev cvalues:" << ToString(prev_threshold[i])
+                        << "prev cvalues:" << sls::ToString(prev_threshold[i])
                         << std::endl;
                     det.setThresholdEnergy(prev_threshold[i], prev_settings,
                                            true, {i});
@@ -684,7 +684,7 @@ TEST_CASE("exptime", "[.cmd][.time]") {
         auto t =
             det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
         if (t[0] != t[1] || t[1] != t[2]) {
-            throw RuntimeError("inconsistent exptime for all gates");
+            throw sls::RuntimeError("inconsistent exptime for all gates");
         }
         prev_val = t[0];
     }
@@ -1867,7 +1867,7 @@ TEST_CASE("defaultdac", "[.cmd]") {
             if (it == defs::VTHRESHOLD) {
                 continue;
             }
-            auto dacname = ToString(it);
+            auto dacname = sls::ToString(it);
             auto prev_val = det.getDefaultDac(it);
             {
                 std::ostringstream oss;
@@ -1889,7 +1889,7 @@ TEST_CASE("defaultdac", "[.cmd]") {
             std::vector<defs::dacIndex> daclist = {
                 defs::VREF_PRECH, defs::VREF_DS, defs::VREF_COMP};
             for (auto it : daclist) {
-                auto dacname = ToString(it);
+                auto dacname = sls::ToString(it);
                 auto prev_val = det.getDefaultDac(it, defs::GAIN0);
                 {
                     std::ostringstream oss;
@@ -2044,7 +2044,7 @@ TEST_CASE("start", "[.cmd]") {
         auto t =
             det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
         if (t[0] != t[1] || t[1] != t[2]) {
-            throw RuntimeError("inconsistent exptime for all gates");
+            throw sls::RuntimeError("inconsistent exptime for all gates");
         }
         prev_val = t[0];
     }
@@ -2083,7 +2083,7 @@ TEST_CASE("stop", "[.cmd]") {
         auto t =
             det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
         if (t[0] != t[1] || t[1] != t[2]) {
-            throw RuntimeError("inconsistent exptime for all gates");
+            throw sls::RuntimeError("inconsistent exptime for all gates");
         }
         prev_val = t[0];
     }
@@ -2126,7 +2126,7 @@ TEST_CASE("status", "[.cmd]") {
         auto t =
             det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
         if (t[0] != t[1] || t[1] != t[2]) {
-            throw RuntimeError("inconsistent exptime for all gates");
+            throw sls::RuntimeError("inconsistent exptime for all gates");
         }
         prev_val = t[0];
     }
@@ -2265,29 +2265,29 @@ TEST_CASE("scan", "[.cmd]") {
 
     {
         std::ostringstream oss;
-        proxy.Call("scan", {ToString(ind), "500", "1500", "500"}, -1, PUT,
+        proxy.Call("scan", {sls::ToString(ind), "500", "1500", "500"}, -1, PUT,
                    oss);
         CHECK(oss.str() ==
-              "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
+              "scan [" + sls::ToString(ind) + ", 500, 1500, 500]\n");
     }
     {
         std::ostringstream oss;
         proxy.Call("scan", {}, -1, GET, oss);
-        CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
+        CHECK(oss.str() == "scan [enabled\ndac " + sls::ToString(ind) +
                                "\nstart 500\nstop 1500\nstep "
                                "500\nsettleTime 1ms\n]\n");
     }
     {
         std::ostringstream oss;
-        proxy.Call("scan", {ToString(ind), "500", "1500", "500", "2s"}, -1,
+        proxy.Call("scan", {sls::ToString(ind), "500", "1500", "500", "2s"}, -1,
                    PUT, oss);
         CHECK(oss.str() ==
-              "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
+              "scan [" + sls::ToString(ind) + ", 500, 1500, 500, 2s]\n");
     }
     {
         std::ostringstream oss;
         proxy.Call("scan", {}, -1, GET, oss);
-        CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
+        CHECK(oss.str() == "scan [enabled\ndac " + sls::ToString(ind) +
                                "\nstart 500\nstop 1500\nstep "
                                "500\nsettleTime 2s\n]\n");
     }
@@ -2303,17 +2303,17 @@ TEST_CASE("scan", "[.cmd]") {
     }
     {
         std::ostringstream oss;
-        proxy.Call("scan", {ToString(ind), "1500", "500", "-500"}, -1, PUT,
+        proxy.Call("scan", {sls::ToString(ind), "1500", "500", "-500"}, -1, PUT,
                    oss);
         CHECK(oss.str() ==
-              "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
+              "scan [" + sls::ToString(ind) + ", 1500, 500, -500]\n");
     }
     CHECK_THROWS(proxy.Call(
-        "scan", {ToString(notImplementedInd), "500", "1500", "500"}, -1,
+        "scan", {sls::ToString(notImplementedInd), "500", "1500", "500"}, -1,
         PUT));
-    CHECK_THROWS(proxy.Call("scan", {ToString(ind), "500", "1500", "-500"},
+    CHECK_THROWS(proxy.Call("scan", {sls::ToString(ind), "500", "1500", "-500"},
                             -1, PUT));
-    CHECK_THROWS(proxy.Call("scan", {ToString(ind), "1500", "500", "500"},
+    CHECK_THROWS(proxy.Call("scan", {sls::ToString(ind), "1500", "500", "500"},
                             -1, PUT));
 
     if (det_type == defs::MYTHEN3 || defs::EIGER) {
@@ -2491,7 +2491,7 @@ TEST_CASE("udp_srcip2", "[.cmd]") {
             REQUIRE(oss.str() == "udp_srcip2 129.129.205.12\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            if (prev_val[i] != IpAddr{"0.0.0.0"})
+            if (prev_val[i] != sls::IpAddr{"0.0.0.0"})
                 det.setSourceUDPIP2(prev_val[i], {i});
         }
     } else {
@@ -2846,7 +2846,7 @@ TEST_CASE("reg", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
-        std::string saddr = ToStringHex(addr);
+        std::string saddr = sls::ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
             std::ostringstream oss1, oss2;
@@ -2889,7 +2889,7 @@ TEST_CASE("setbit", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
-        std::string saddr = ToStringHex(addr);
+        std::string saddr = sls::ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
             std::ostringstream oss1, oss2;
@@ -2911,7 +2911,7 @@ TEST_CASE("clearbit", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
-        std::string saddr = ToStringHex(addr);
+        std::string saddr = sls::ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
             std::ostringstream oss1, oss2;
@@ -2933,7 +2933,7 @@ TEST_CASE("getbit", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type != defs::EIGER) {
         uint32_t addr = 0x64;
-        std::string saddr = ToStringHex(addr);
+        std::string saddr = sls::ToStringHex(addr);
         auto prev_val = det.readRegister(addr);
         {
             std::ostringstream oss1, oss2;
@@ -3162,5 +3162,3 @@ TEST_CASE("user", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("user", {}, -1, PUT));
     REQUIRE_NOTHROW(proxy.Call("user", {}, -1, GET));
 }
-
-} // namespace sls

@@ -6,7 +6,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace sls {
+using sls::Logger;
 
 TEST_CASE("LogLevel to string") {
     CHECK(Logger::ToString(logERROR) == "ERROR");
@@ -49,5 +49,3 @@ TEST_CASE("Test output") {
     auto pos = r.find("This should be printed");
     CHECK(pos != std::string::npos);
 }
-
-} // namespace sls

@@ -6,12 +6,10 @@
 #include "tests/globals.h"
 #include <iostream>
 
-namespace sls {
-
 using namespace Catch::literals;
 
 TEST_CASE("Initialize a multi detector", "[.integration][.multi]") {
-    auto hostnames = split(test::hostname, '+');
+    auto hostnames = sls::split(test::hostname, '+');
 
     DetectorImpl d(0, true, true);
     d.setHostname(test::hostname.c_str());
@@ -104,6 +102,3 @@ TEST_CASE("Set and read timers", "[.integration][.multi]") {
 
     d.freeSharedMemory();
 }
-
-} // namespace sls
-

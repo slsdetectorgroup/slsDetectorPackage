@@ -12,8 +12,8 @@
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
 
-namespace sls {
-
+using sls::CmdProxy;
+using sls::Detector;
 using test::GET;
 using test::PUT;
 
@@ -99,7 +99,7 @@ TEST_CASE("patword", "[.cmd]") {
     if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
         det_type == defs::MYTHEN3) {
         int addr = 0x23;
-        std::string saddr = ToStringHex(addr, 4);
+        std::string saddr = sls::ToStringHex(addr, 4);
         auto prev_val = det.getPatternWord(addr);
         {
             std::ostringstream oss;
@@ -529,5 +529,3 @@ TEST_CASE("patternstart", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("patternstart", {}, -1, PUT));
     }
 }
-
-} // namespace sls

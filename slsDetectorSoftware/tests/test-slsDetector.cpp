@@ -238,7 +238,7 @@
 //     CHECK(d.getReceiverDbitList().size() == 10);
 
 //     list.push_back(64);
-//     CHECK_THROWS_AS(d.setReceiverDbitList(list), sls::RuntimeError);
+//     CHECK_THROWS_AS(d.setReceiverDbitList(list), RuntimeError);
 //     CHECK_THROWS_WITH(d.setReceiverDbitList(list),
 //         Catch::Matchers::Contains("be between 0 and 63"));
 

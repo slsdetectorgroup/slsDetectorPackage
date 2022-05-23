@@ -1256,13 +1256,21 @@ int setDACS(int *dacs) {
 }
 
 void getModule(sls_detector_module* myMod) {
-    // copy trimbits
-    for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
-        *((myMod->chanregs) + ichan) = *((detectorModules->chanregs) + ichan);
-    }
-    // copy dacs
+    // serial number
+    myMod->serialnumber = detectorModules->serialnumber;
+    // reg (gain caps)
+    myMod->reg = detectorModules->reg;
+    // eV
+    myMod->eV[0] = detectorModules->eV[0];
+    myMod->eV[1] = detectorModules->eV[1];
+    myMod->eV[2] = detectorModules->eV[2];
+    // dacs
     for (int idac = 0; idac < (detectorModules->ndac); idac++) {
         *((myMod->dacs) + idac) = *((detectorModules->dacs) + idac);
+    }
+    // trimbits
+    for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
+        *((myMod->chanregs) + ichan) = *((detectorModules->chanregs) + ichan);
     }
 }
 

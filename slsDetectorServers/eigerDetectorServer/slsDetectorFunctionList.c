@@ -1126,13 +1126,23 @@ int64_t getMeasuredSubPeriod() {
 /* parameters - channel, module, settings */
 
 void getModule(sls_detector_module* myMod) {
-    // copy trimbits
-    for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
-        *((myMod->chanregs) + ichan) = *((detectorModules->chanregs) + ichan);
-    }
-    // copy dacs
+    // serial number
+    myMod->serialnumber = detectorModules->serialnumber;
+    // reg (settings)
+    myMod->reg = detectorModules->reg;
+    // iodelay
+    myMod->iodelay = setIODelay(-1);
+    // tau
+    myMod->tau = (int) getCurrentTau();
+    // eV
+    myMod->eV[0] = detectorModules->eV[0];
+    // dacs
     for (int idac = 0; idac < (detectorModules->ndac); idac++) {
         *((myMod->dacs) + idac) = *((detectorModules->dacs) + idac);
+    }
+    // trimbits
+    for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
+        *((myMod->chanregs) + ichan) = *((detectorModules->chanregs) + ichan);
     }
 }
 

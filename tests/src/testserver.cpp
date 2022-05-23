@@ -10,6 +10,8 @@
 #include <iostream>
 #include <unordered_map>
 
+namespace sls {
+
 // For hashing of enum with C++11, not needed in 14
 struct EnumClassHash {
     template <typename T> std::size_t operator()(T t) const {
@@ -55,6 +57,8 @@ std::unordered_map<sls::func_id, func_ptr, EnumClassHash> fmap{
     {sls::func_id::read_half_data, &read_half_data},
     {sls::func_id::combined, &read_combined}};
 
+} // namespace sls
+
 int main(int argc, char **argv) {
     std::cout << "Starting test server...\n";
     int port = 2345;
@@ -75,7 +79,7 @@ int main(int argc, char **argv) {
             auto socket = server.accept();
             auto fnum = socket.Receive<sls::func_id>();
             std::cout << "Calling func: " << (int)fnum << "\n";
-            (*fmap[fnum])(socket); // call mapped function
+            (*sls::fmap[fnum])(socket); // call mapped function
 
         } catch (const sls::RuntimeError &e) {
             // Do nothing, error is printed when the exeption is created

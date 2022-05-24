@@ -782,7 +782,7 @@ class CmdProxy {
         {"threshold", &CmdProxy::Threshold},
         {"thresholdnotb", &CmdProxy::Threshold},
         {"settingspath", &CmdProxy::settingspath},
-        {"trimbits", &CmdProxy::trimbits},
+        {"trimbits", &CmdProxy::Trimbits},
         {"trimval", &CmdProxy::trimval},
         {"trimen", &CmdProxy::TrimEnergies},
         {"gappixels", &CmdProxy::GapPixels},
@@ -1115,6 +1115,7 @@ class CmdProxy {
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
     std::string Threshold(int action);
+    std::string Trimbits(int action);
     std::string TrimEnergies(int action);
     std::string GapPixels(int action);
     /* acquisition parameters */
@@ -1272,11 +1273,6 @@ class CmdProxy {
     STRING_COMMAND(settingspath, getSettingsPath, setSettingsPath,
                    "[path]\n\t[Eiger][Mythen3] Directory where settings files "
                    "are loaded from/to.");
-
-    EXECUTE_SET_COMMAND_1ARG(
-        trimbits, loadTrimbits,
-        "[fname]\n\t[Eiger][Mythen3] Loads the trimbit file to detector. If no "
-        "extension specified, serial number of each module is attached.");
 
     INTEGER_COMMAND_VEC_ID(
         trimval, getAllTrimbits, setAllTrimbits, StringTo<int>,

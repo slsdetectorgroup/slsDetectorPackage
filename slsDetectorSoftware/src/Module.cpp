@@ -468,6 +468,27 @@ void Module::loadTrimbits(const std::string &fname) {
     }
 }
 
+void Module::saveTrimbits(const std::string &fname) {
+    // find specific file if it has detid in file name (.snxxx)
+    if (shm()->detType == EIGER || shm()->detType == MYTHEN3) {
+        std::ostringstream ostfn;
+        ostfn << fname;
+        int moduleIdWidth = 3;
+        if (shm()->detType == MYTHEN3) {
+            moduleIdWidth = 4;
+        }
+        if ((fname.find(".sn") == std::string::npos) &&
+            (fname.find(".trim") == std::string::npos)) {
+            ostfn << ".sn" << std::setfill('0') << std::setw(moduleIdWidth)
+                  << std::dec << getModuleId();
+        }
+        auto myMod = getModule();
+        saveSettingsFile(myMod, ostfn.str());
+    } else {
+        throw RuntimeError("not implemented for this detector");
+    }
+}
+
 int Module::getAllTrimbits() const {
     return sendToDetector<int>(F_SET_ALL_TRIMBITS, GET_FLAG);
 }
@@ -3310,7 +3331,36 @@ void Module::checkReceiverVersionCompatibility() {
     sendToReceiver(F_RECEIVER_CHECK_VERSION, int64_t(APIRECEIVER), nullptr);
 }
 
-int Module::sendModule(sls_detector_module *myMod, ClientSocket &client) {
+void Module::setModule(sls_detector_module &module, bool trimbits) {
+    LOG(logDEBUG1) << "Setting module with trimbits:" << trimbits;
+    // to exclude trimbits
+    if (!trimbits) {
+        module.nchan = 0;
+        module.nchip = 0;
+    }
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SET_MODULE);
+    sendModule(&module, client);
+    if (client.Receive<int>() == FAIL) {
+        throw DetectorError("Module " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
+}
+
+sls_detector_module Module::getModule() {
+    LOG(logDEBUG1) << "Getting module";
+    sls_detector_module module(shm()->detType);
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_GET_MODULE);
+    if (client.Receive<int>() == FAIL) {
+        throw DetectorError("Module " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
+    receiveModule(&module, client);
+    return module;
+}
+
+void Module::sendModule(sls_detector_module *myMod, ClientSocket &client) {
     constexpr TLogLevel level = logDEBUG1;
     LOG(level) << "Sending Module";
     int ts = 0;
@@ -3353,28 +3403,41 @@ int Module::sendModule(sls_detector_module *myMod, ClientSocket &client) {
     ts += n;
     LOG(level) << "dacs sent. " << n << " bytes";
 
-    if (shm()->detType == EIGER || shm()->detType == MYTHEN3) {
-        n = client.Send(myMod->chanregs, sizeof(int) * (myMod->nchan));
-        ts += n;
-        LOG(level) << "channels sent. " << n << " bytes";
+    n = client.Send(myMod->chanregs, sizeof(int) * (myMod->nchan));
+    ts += n;
+    LOG(level) << "channels sent. " << n << " bytes";
+
+    int expectedBytesSent = sizeof(sls_detector_module) - sizeof(myMod->dacs) - sizeof(myMod->chanregs) + (myMod->ndac * sizeof(int)) + (myMod->nchan * sizeof(int));
+
+    if (expectedBytesSent != ts) {
+        throw RuntimeError("Module size "  + std::to_string(ts) + " sent does not match expected size to be sent " + std::to_string(expectedBytesSent));
     }
-    return ts;
 }
 
-void Module::setModule(sls_detector_module &module, bool trimbits) {
-    LOG(logDEBUG1) << "Setting module with trimbits:" << trimbits;
-    // to exclude trimbits
-    if (!trimbits) {
-        module.nchan = 0;
-        module.nchip = 0;
-    }
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SET_MODULE);
-    sendModule(&module, client);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Module " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
+
+void Module::receiveModule(sls_detector_module *myMod, ClientSocket &client) {
+    constexpr TLogLevel level = logDEBUG1;
+    LOG(level) << "Receiving Module";
+    myMod->serialnumber = client.Receive<int>();
+    LOG(level) << "serialno: " << myMod->serialnumber;
+    myMod->nchan = client.Receive<int>();
+    LOG(level) << "nchan: " << myMod->nchan;
+    myMod->nchip = client.Receive<int>();
+    LOG(level) << "nchip: " << myMod->nchip;
+    myMod->ndac = client.Receive<int>();
+    LOG(level) << "ndac: " << myMod->ndac;
+    myMod->reg = client.Receive<int>();
+    LOG(level) << "reg: " << myMod->reg;
+    myMod->iodelay = client.Receive<int>();
+    LOG(level) << "iodelay: " << myMod->iodelay;
+    myMod->tau = client.Receive<int>();
+    LOG(level) << "tau: " << myMod->tau;
+    client.Receive(myMod->eV);
+    LOG(level) << "eV: " << ToString(myMod->eV);
+    client.Receive(myMod->dacs, sizeof(int) * (myMod->ndac));
+    LOG(level) << myMod->ndac << " dacs received";
+    client.Receive(myMod->chanregs, sizeof(int) * (myMod->nchan));
+    LOG(level) << myMod->nchan << " chans received";
 }
 
 void Module::updateReceiverStreamingIP() {
@@ -3615,8 +3678,37 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
     else {
         throw RuntimeError("Not implemented for this detector");
     }
-    LOG(logINFO) << "Settings file loaded: " << fname.c_str();
+    LOG(logINFO) << "Settings file loaded: " << fname;
     return myMod;
+}
+
+void Module::saveSettingsFile(sls_detector_module &myMod, const std::string &fname) {
+    LOG(logDEBUG1) << moduleIndex << ": Saving settings to " << fname;
+    std::ofstream outfile(fname);
+    if (!outfile) {
+        throw RuntimeError("Could not write settings file: " + fname);
+    }
+    switch (shm()->detType) {
+        case MYTHEN3:
+            outfile.write(reinterpret_cast<char *>(&myMod.reg), sizeof(myMod.reg));
+            outfile.write(reinterpret_cast<char *>(myMod.dacs),
+                    sizeof(int) * (myMod.ndac));
+            outfile.write(reinterpret_cast<char *>(myMod.chanregs),
+                        sizeof(int) * (myMod.nchan));
+            break;
+        case EIGER:
+            outfile.write(reinterpret_cast<char *>(myMod.dacs),
+                        sizeof(int) * (myMod.ndac));
+            outfile.write(reinterpret_cast<char *>(&myMod.iodelay),
+                        sizeof(myMod.iodelay));
+            outfile.write(reinterpret_cast<char *>(&myMod.tau), sizeof(myMod.tau));  
+            outfile.write(reinterpret_cast<char *>(myMod.chanregs),
+                            sizeof(int) * (myMod.nchan));   
+            break;   
+        default:
+            throw RuntimeError("Saving settings file is not implemented for this detector.");
+    }
+    LOG(logINFO) << "Settings for " << shm()->hostname << " written to " << fname; 
 }
 
 void Module::sendProgram(bool blackfin, std::vector<char> buffer,

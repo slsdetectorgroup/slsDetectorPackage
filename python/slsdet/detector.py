@@ -1442,20 +1442,21 @@ class Detector(CppDetectorApi):
     @property
     def trimbits(self):
         """
-        [Eiger][Mythen3] Loads custom trimbit file to detector. 
+        [Eiger][Mythen3] Loads/Saves custom trimbit file to detector. 
         
         Note
         -----
         If no extension specified, serial number of each module is attached.
 
-        :getter: Not implemented
+        :setter: Loads the trimbit file to detector
+        :getter: Saves the trimbits from the detector to file. Not implemented with 'trimbits'. Use saveTrimbits().
 
         Example
         -------
         >>> d.trimbits = '/path_to_file/noise'
         - 14:53:27.931 INFO: Settings file loaded: /path_to_file/noise.sn000
         """
-        return NotImplementedError("trimbits are set only")
+        raise NotImplementedError('trimbits is set only. Use saveTrimbits()')
 
     @trimbits.setter
     def trimbits(self, fname):
@@ -2617,7 +2618,7 @@ class Detector(CppDetectorApi):
         -------
         >>> d.vetophoton = (2, 24, 2560, '/tmp/bla.txt')
         """
-        raise NotImplementedError('vetofile is set only')
+        raise NotImplementedError('vetophoton is set only')
 
     @vetophoton.setter
     def vetophoton(self, args):

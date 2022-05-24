@@ -197,6 +197,7 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->setTabEnabled(ADVANCED, false);
     tabs->setTabEnabled(DEVELOPER, isDeveloper);
     actionLoadTrimbits->setVisible(false);
+    actionSaveTrimbits->setVisible(false);
 
     dockWidgetPlot->setFloating(false);
     dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
@@ -227,10 +228,12 @@ void qDetectorMain::SetUpDetector(const std::string &config_file, int multiID) {
     detType = det->getDetectorType().tsquash(
         "Different detector type for all modules.");
     actionLoadTrimbits->setEnabled(false);
+    actionSaveTrimbits->setEnabled(false);
     switch (detType) {
     case slsDetectorDefs::EIGER:
     case slsDetectorDefs::MYTHEN3:
         actionLoadTrimbits->setEnabled(true);
+        actionSaveTrimbits->setEnabled(true);
         break;
     case slsDetectorDefs::GOTTHARD:
     case slsDetectorDefs::JUNGFRAU:
@@ -341,9 +344,9 @@ void qDetectorMain::EnableModes(QAction *action) {
         enable = actionExpert->isChecked();
 
         tabs->setTabEnabled(ADVANCED, enable);
-        actionLoadTrimbits->setVisible(enable &&
-                                       (detType == slsDetectorDefs::EIGER ||
-                                        detType == slsDetectorDefs::MYTHEN3));
+        bool visible = enable && (detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::MYTHEN3);
+        actionLoadTrimbits->setVisible(visible);
+        actionSaveTrimbits->setVisible(visible);
         tabSettings->SetExportMode(enable);
         LOG(logINFO) << "Expert Mode: " << qDefs::stringEnable(enable);
     }
@@ -417,6 +420,22 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                                "The Trimbits have been loaded successfully.",
                                "qDetectorMain::ExecuteUtilities");
                 LOG(logINFO) << "Trimbits loaded successfully";
+            }
+        }
+
+        else if (action == actionSaveTrimbits) {
+            QString fPath =
+                QString((det->getSettingsPath().squash("/tmp/")).c_str());
+            LOG(logDEBUG) << "Saving Trimbits";
+            QString fName = QFileDialog::getSaveFileName(
+                this, tr("Save Detector Trimbits"), fPath,
+                tr("Trimbit files (*.trim noise.sn*);;All Files(*)"));
+            if (!fName.isEmpty()) {
+                det->saveTrimbits(std::string(fName.toAscii().constData()));
+                qDefs::Message(qDefs::INFORMATION,
+                               "The Trimbits have been saved successfully.",
+                               "qDetectorMain::ExecuteUtilities");
+                LOG(logINFO) << "Trimbits saved successfully";
             }
         }
     }
@@ -578,6 +597,8 @@ void qDetectorMain::EnableTabs(bool enable) {
     bool expertTab = enable && (actionExpert->isChecked());
     tabs->setTabEnabled(ADVANCED, expertTab);
     actionLoadTrimbits->setVisible(expertTab &&
+                                   detType == slsDetectorDefs::EIGER);
+    actionSaveTrimbits->setVisible(expertTab &&
                                    detType == slsDetectorDefs::EIGER);
 
     // moved to here, so that its all in order, instead of signals and different

@@ -1258,7 +1258,7 @@ int setDACS(int *dacs) {
 void getModule(sls_detector_module* myMod) {
     // serial number
     myMod->serialnumber = detectorModules->serialnumber;
-    // reg (gain caps)
+    // csr reg
     myMod->reg = detectorModules->reg;
     // eV
     myMod->eV[0] = detectorModules->eV[0];
@@ -1286,7 +1286,7 @@ int setModule(sls_detector_module myMod, char *mess) {
     // serial number (pointless)
     detectorModules->serialnumber = myMod.serialnumber;
 
-    // gain caps from reg
+    // csr reg
     if (setChipStatusRegister(myMod.reg)) {
         sprintf(mess, "Could not CSR from module\n");
         LOG(logERROR, (mess));

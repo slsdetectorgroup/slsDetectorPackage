@@ -1288,7 +1288,12 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                 LOG(logERROR, (mess));
             } else
 #endif
+#ifdef MYTHEN3D
+                // ignore counter enable to force vth dac values
+                setDAC(serverDacIndex, val, mV, 0);
+#else
                 setDAC(serverDacIndex, val, mV);
+#endif
             retval = getDAC(serverDacIndex, mV);
         }
 #ifdef EIGERD

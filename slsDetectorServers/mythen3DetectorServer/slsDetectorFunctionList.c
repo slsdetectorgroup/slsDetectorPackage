@@ -474,17 +474,19 @@ void setupDetector() {
 
     // defaults
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
-    resetToDefaultDacs(0);
     setASICDefaults();
     setADIFDefaults();
+
+    // enable all counters before setting dacs (vthx)
+    setCounterMask(MAX_COUNTER_MSK);
+    resetToDefaultDacs(0);
 
     // set trigger flow for m3 (for all timing modes)
     bus_w(FLOW_TRIGGER_REG, bus_r(FLOW_TRIGGER_REG) | FLOW_TRIGGER_MSK);
 
     // dynamic range
     setDynamicRange(DEFAULT_DYNAMIC_RANGE);
-    // enable all counters
-    setCounterMask(MAX_COUNTER_MSK);
+
 
     // Initialization of acquistion parameters
     setNumFrames(DEFAULT_NUM_FRAMES);
@@ -596,8 +598,8 @@ int resetToDefaultDacs(int hardReset) {
             }
         }
 
-        // set to defualt
-        setDAC((enum DACINDEX)i, value, 0);
+        // set to default (last arg to ensure counter check)
+        setDAC((enum DACINDEX)i, value, 0, 1);
         if (detectorDacs[i] != value) {
             LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
                            value, detectorDacs[i]));
@@ -1109,6 +1111,7 @@ void setCounterMask(uint32_t arg) {
     }
 
     LOG(logINFO, ("\tUpdating Vth dacs\n"));
+    // enables (from remembered values) or disables vthx
     enum DACINDEX vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
     for (int i = 0; i < NCOUNTERS; ++i) {
         // if change in enable
@@ -1241,7 +1244,8 @@ int64_t getMeasurementTime() {
 int setDACS(int *dacs) {
     for (int i = 0; i < NDAC; ++i) {
         if (dacs[i] != -1) {
-            setDAC((enum DACINDEX)i, dacs[i], 0);
+            // set to default (last arg to ensure counter check)
+            setDAC((enum DACINDEX)i, dacs[i], 0, 1);
             if (dacs[i] != detectorDacs[i]) {
                 // dont complain if that counter was disabled
                 if ((i == M_VTH1 || i == M_VTH2 || i == M_VTH3) &&
@@ -1440,7 +1444,8 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     // set special dacs
     const int specialDacs[] = SPECIALDACINDEX;
     for (int i = 0; i < NSPECIALDACS; ++i) {
-        setDAC(specialDacs[i], dacVals[i], 0);
+        // set to default (last arg to ensure counter check)
+        setDAC(specialDacs[i], dacVals[i], 0, 1);
     }
 
     LOG(logINFO, ("Settings: %d\n", thisSettings));
@@ -1500,7 +1505,8 @@ void setThresholdEnergy(int counterIndex, int eV) {
 }
 
 /* parameters - dac, hv */
-void setDAC(enum DACINDEX ind, int val, int mV) {
+// counterEnableCheck false only if setDAC called directly
+void setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck) {
     // invalid value
     if (val < 0) {
         return;
@@ -1511,7 +1517,10 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         return;
     }
 
-    // threshold dacs (remember value, vthreshold: skip disabled)
+    // threshold dacs 
+    // remember value, vthreshold: skip disabled,
+    // others: disable or enable dac if counter mask
+    // setDAC called directly: will set independent of counter enable
     if (ind == M_VTHRESHOLD || ind == M_VTH1 || ind == M_VTH2 ||
         ind == M_VTH3) {
         char *dac_names[] = {DAC_NAMES};
@@ -1522,7 +1531,6 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
                 int dacval = val;
                 // if not disabled value, remember value
                 if (dacval != DEFAULT_COUNTER_DISABLED_VTH_VAL) {
-                    // convert mv to dac
                     if (mV) {
                         if (LTC2620_D_VoltageToDac(val, &dacval) == FAIL) {
                             return;
@@ -1532,9 +1540,16 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
                     LOG(logINFO,
                         ("Remembering %s [%d]\n", dac_names[ind], dacval));
                 }
-                // if vthreshold,skip for disabled counters
-                if ((ind == M_VTHRESHOLD) && (!(counters & (1 << i)))) {
-                    continue;
+                // disabled counter
+                if (!(counters & (1 << i))) {
+                    // skip setting vthx dac (value remembered anyway)
+                    if (ind == M_VTHRESHOLD) {
+                        continue;
+                    }          
+                    // disable dac (except when setting dac directly) 
+                    if (counterEnableCheck) {
+                        val = DEFAULT_COUNTER_DISABLED_VTH_VAL;
+                    }
                 }
                 setGeneralDAC(vthdacs[i], val, mV);
             }

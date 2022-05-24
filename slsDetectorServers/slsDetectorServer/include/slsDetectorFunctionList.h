@@ -347,9 +347,11 @@ void setThresholdEnergy(int counterIndex, int eV);
 int setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val);
 int getOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex);
 #endif
-void setDAC(enum DACINDEX ind, int val, int mV);
 #ifdef MYTHEN3D
+void setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck);
 void setGeneralDAC(enum DACINDEX ind, int val, int mV);
+#else
+void setDAC(enum DACINDEX ind, int val, int mV);
 #endif
 int getDAC(enum DACINDEX ind, int mV);
 int getMaxDacSteps();

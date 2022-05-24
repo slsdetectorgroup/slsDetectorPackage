@@ -144,7 +144,7 @@ class Detector {
                             defs::detectorSettings settings = defs::STANDARD,
                             bool trimbits = true, Positions pos = {});
 
-    /** [Mythen3] It loads trim files from settingspath */
+    /** [Mythen3] It loads trim files from settingspath. An energy of -1 will pick up values from detector */
     void setThresholdEnergy(std::array<int, 3> threshold_ev,
                             defs::detectorSettings settings = defs::STANDARD,
                             bool trimbits = true, Positions pos = {});

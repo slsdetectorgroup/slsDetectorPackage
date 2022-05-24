@@ -1834,13 +1834,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def threshold(self):
-        """[Eiger] Threshold in eV
+        """[Eiger][Mythen3] Threshold in eV
         
         Note
         ----
         To change settings as well or set threshold without trimbits, use setThresholdEnergy.
 
-        :setter: It loads trim files from settingspath.
+        :setter: It loads trim files from settingspath.\n [Mythen3] An energy of -1 will pick up values from detector.
         """
         if self.type == detectorType.MYTHEN3:
             return self.getAllThresholdEnergy()

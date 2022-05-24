@@ -173,7 +173,9 @@ std::array<int, 3> Module::getAllThresholdEnergy() const {
 
 void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
                                 bool trimbits) {
-
+    if (shm()->detType == MYTHEN3) {
+        throw RuntimeError("Mythen3 should have called with 3 energies");
+    }
     // verify e_eV exists in trimEneregies[]
     if (shm()->trimEnergies.empty() || (e_eV < shm()->trimEnergies.front()) ||
         (e_eV > shm()->trimEnergies.back())) {
@@ -214,21 +216,9 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
         myMod.iodelay = myMod1.iodelay;
         myMod.tau =
             linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
-        // m3, reg is used for gaincaps
-        if (shm()->detType == MYTHEN3) {
-            if (myMod1.reg != myMod2.reg) {
-                throw RuntimeError(
-                    "setThresholdEnergyAndSettings: gaincaps do not "
-                    "match between files");
-            }
-            myMod.reg = myMod1.reg;
-        }
-    }
-    // m3, reg is used for gaincaps
-    if (shm()->detType != MYTHEN3) {
-        myMod.reg = isettings;
     }
 
+    myMod.reg = isettings;
     myMod.eV[0] = e_eV;
     setModule(myMod, trimbits);
     if (getSettings() != isettings) {
@@ -243,42 +233,35 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
 
 void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
                                    detectorSettings isettings, bool trimbits) {
-    // only mythen3
+    if (shm()->detType != MYTHEN3) {
+        throw RuntimeError("This detector should have called with 3 energies");
+    }
     if (shm()->trimEnergies.empty()) {
         throw RuntimeError(
-            "Trim energies have not been defined for this module yet!");
+            "Trim energies have not been defined for this module yet! Use trimen.");
     }
 
-    auto counters = getSetBits(getCounterMask());
-    enum mythen3_DacIndex {
-        M_VCASSH,
-        M_VTH2,
-        M_VRSHAPER,
-        M_VRSHAPER_N,
-        M_VIPRE_OUT,
-        M_VTH3,
-        M_VTH1,
-        M_VICIN,
-        M_VCAS,
-        M_VRPREAMP,
-        M_VCAL_N,
-        M_VIPRE,
-        M_VISHAPER,
-        M_VCAL_P,
-        M_VTRIM,
-        M_VDCSH
-    };
-
-    std::vector<sls_detector_module> myMods{shm()->detType};
     std::vector<int> energy(e_eV.begin(), e_eV.end());
     // if all energies are same
     if (allEqualTo(energy, energy[0])) {
+        if (energy[0] == -1) {
+           throw RuntimeError("Every energy provided to set threshold energy is -1. Typo?"); 
+        }
         energy.resize(1);
     }
-    myMods.resize(energy.size());
 
     // for each threshold
+    std::vector<sls_detector_module> myMods;
     for (size_t i = 0; i < energy.size(); ++i) {
+        if (energy[i] == -1) {
+            sls_detector_module mod = getModule();
+            myMods.push_back(mod);
+            continue;
+        }
+
+        sls_detector_module mod{shm()->detType};
+        myMods.push_back(mod);
+
         // don't interpolate
         if (shm()->trimEnergies.anyEqualTo(energy[i])) {
             std::string settingsfname =
@@ -324,10 +307,9 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
 
             myMods[i] = interpolateTrim(&myMod1, &myMod2, energy[i], trim1,
                                         trim2, trimbits);
-            // gaincaps
+            // csr
             if (myMod1.reg != myMod2.reg) {
-                throw RuntimeError("setAllThresholdEnergy: gaincaps do not "
-                                   "match between files for energy (eV) " +
+                throw RuntimeError("setAllThresholdEnergy: chip shift register values do not match between files for energy (eV) " +
                                    std::to_string(energy[i]));
             }
             myMods[i].reg = myMod1.reg;
@@ -336,9 +318,29 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
 
     sls_detector_module myMod{shm()->detType};
     myMod = myMods[0];
-
+    enum mythen3_DacIndex {
+        M_VCASSH,
+        M_VTH2,
+        M_VRSHAPER,
+        M_VRSHAPER_N,
+        M_VIPRE_OUT,
+        M_VTH3,
+        M_VTH1,
+        M_VICIN,
+        M_VCAS,
+        M_VRPREAMP,
+        M_VCAL_N,
+        M_VIPRE,
+        M_VISHAPER,
+        M_VCAL_P,
+        M_VTRIM,
+        M_VDCSH
+    };
+    
     // if multiple thresholds, combine
     if (myMods.size() > 1) {
+        auto counters = getSetBits(getCounterMask());
+
 
         // average vtrim of enabled counters
         int sum = 0;
@@ -377,14 +379,12 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
         for (int i = 0; i < myMod.nchan; ++i) {
             myMod.chanregs[i] = myMods[i % 3].chanregs[i];
         }
-        // gain caps
+        // csr
         if (myMods[0].reg != myMods[1].reg || myMods[1].reg != myMods[2].reg) {
-            throw RuntimeError("setAllThresholdEnergy: gaincaps do not "
-                               "match between files for all energies");
+            throw RuntimeError("setAllThresholdEnergy: chip shift register values do not match between files for all energies");
         }
     }
 
-    myMod.reg = isettings;
     std::copy(e_eV.begin(), e_eV.end(), myMod.eV);
     LOG(logDEBUG) << "ev:" << ToString(myMod.eV);
 

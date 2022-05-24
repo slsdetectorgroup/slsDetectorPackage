@@ -382,8 +382,8 @@ std::string CmdProxy::Threshold(int action) {
         }
         os << "\n\nthreshold [eV1] [eV2] [eV3] [(optional settings)]"
               "\n\t[Mythen3] Threshold in eV for each counter. It loads trim "
-              "files from "
-              "settingspath.";
+              "files from settingspath. An energy of -1 will pick up values "
+              " from detector.";
         if (cmd == "thresholdnotb") {
             os << "Trimbits are not loaded.";
         }

@@ -68,6 +68,7 @@ int64_t exptimeReg[NCOUNTERS] = {0, 0, 0};
 int64_t gateDelayReg[NCOUNTERS] = {0, 0, 0};
 int vthEnabledVals[NCOUNTERS] = {0, 0, 0};
 int detID = 0;
+int oldCounterMask = 0x0;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -1093,7 +1094,7 @@ void setCounterMask(uint32_t arg) {
     if (arg == 0 || arg > MAX_COUNTER_MSK) {
         return;
     }
-    uint32_t oldmask = getCounterMask();
+    oldCounterMask = getCounterMask();
     LOG(logINFO, ("Setting counter mask to  0x%x\n", arg));
     uint32_t addr = CONFIG_REG;
     bus_w(addr, bus_r(addr) & ~CONFIG_COUNTERS_ENA_MSK);
@@ -1111,20 +1112,18 @@ void setCounterMask(uint32_t arg) {
     }
 
     LOG(logINFO, ("\tUpdating Vth dacs\n"));
-    // enables (from remembered values) or disables vthx
-    enum DACINDEX vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
     for (int i = 0; i < NCOUNTERS; ++i) {
+        int enable = (arg & (1 << i));
+        int oldEnable = (oldCounterMask & (1 << i));
         // if change in enable
-        if ((arg & (1 << i)) ^ (oldmask & (1 << i))) {
-            // disable, disable value
-            int value = DEFAULT_COUNTER_DISABLED_VTH_VAL;
-            // enable, set saved values
-            if (arg & (1 << i)) {
-                value = vthEnabledVals[i];
-            }
-            setGeneralDAC(vthdacs[i], value, 0);
+        if (enable ^ oldEnable) {
+            setVthDac(i, enable);
         }
     }
+}
+
+void updateOldCounterMask() {
+    oldCounterMask = getCounterMask();
 }
 
 uint32_t getCounterMask() {
@@ -1590,6 +1589,19 @@ void setGeneralDAC(enum DACINDEX ind, int val, int mV) {
     }
 }
 
+void setVthDac(int index, int enable) {
+    LOG(logINFO, ("\t%s vth%d\n", (enable ? "Enabling" : "Disabing"), index));
+    // enables (from remembered values) or disables vthx
+    enum DACINDEX vthdacs[] = {M_VTH1, M_VTH2, M_VTH3};
+    // disable value
+    int value = DEFAULT_COUNTER_DISABLED_VTH_VAL;
+    // enable, set saved values
+    if (enable) {
+        value = vthEnabledVals[index];
+    }
+    setGeneralDAC(vthdacs[index], value, 0);   
+}
+
 int getDAC(enum DACINDEX ind, int mV) {
     if (ind == M_VTHRESHOLD) {
         int ret = -1, ret1 = -1;
@@ -1753,15 +1765,32 @@ int setGainCaps(int caps) {
 int setInterpolation(int enable) {
     LOG(logINFO,
         ("%s Interpolation\n", enable == 0 ? "Disabling" : "Enabling"));
+    
+    // enabling all counters/ back to remembered mask
     if (enable) {
+        oldCounterMask = getCounterMask();
         setCounterMask(MAX_COUNTER_MSK);
+        // not updating old counter mask
         if (getCounterMask() != MAX_COUNTER_MSK) {
             LOG(logERROR,
                 ("Could not set interpolation. Could not enable all counters"));
             return FAIL;
         }
         LOG(logINFO, ("\tEnabled all counters\n"));
+    } else {
+        LOG(logINFO, ("\tSetting back to previous counter mask: 0x%x\n", oldCounterMask));
+        setCounterMask(oldCounterMask);
+        updateOldCounterMask();
     }
+
+    // disable vth3 if interpolation enabled
+    // enable vth3 if interpolation disabled and if counter enabled
+    int vth3Enable = 0;
+    if (!enable && getCounterMask() & 0x4) {
+        vth3Enable = 1;
+    }
+    setVthDac(2, vth3Enable);
+
     int csr = M3SetInterpolation(enable);
     return setChipStatusRegister(csr);
 }

@@ -2252,10 +2252,8 @@ uint32_t Module::getCounterMask() const {
 }
 
 void Module::setCounterMask(uint32_t countermask) {
-    LOG(logDEBUG1) << "Setting Counter mask to " << countermask;
     sendToDetector(F_SET_COUNTER_MASK, countermask, nullptr);
     if (shm()->useReceiverFlag) {
-        LOG(logDEBUG1) << "Sending Reciver counter mask: " << countermask;
         sendToReceiver(F_RECEIVER_SET_COUNTER_MASK, countermask, nullptr);
     }
 }
@@ -2315,7 +2313,10 @@ bool Module::getInterpolation() const {
 
 void Module::setInterpolation(const bool enable) {
     sendToDetector(F_SET_INTERPOLATION, static_cast<int>(enable), nullptr);
-    setCounterMask(getCounterMask());
+    int mask = getCounterMask();
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_COUNTER_MASK, mask, nullptr);
+    }
 }
 
 bool Module::getPumpProbe() const {
@@ -2398,12 +2399,9 @@ int Module::getNumberOfDigitalSamples() const {
 }
 
 void Module::setNumberOfDigitalSamples(int value) {
-    LOG(logDEBUG1) << "Setting number of digital samples to " << value;
     sendToDetector(F_SET_NUM_DIGITAL_SAMPLES, value, nullptr);
     updateNumberOfChannels(); // depends on samples and adcmask
     if (shm()->useReceiverFlag) {
-        LOG(logDEBUG1) << "Sending number of digital samples to Receiver: "
-                       << value;
         sendToReceiver(F_RECEIVER_SET_NUM_DIGITAL_SAMPLES, value, nullptr);
     }
 }

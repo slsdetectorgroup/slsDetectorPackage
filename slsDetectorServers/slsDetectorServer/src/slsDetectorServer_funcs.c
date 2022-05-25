@@ -6556,6 +6556,8 @@ int set_counter_mask(int file_des) {
             LOG(logERROR, (mess));
         } else {
             setCounterMask(arg);
+            // mainly for interpolation
+            updateOldCounterMask();
             uint32_t retval = getCounterMask();
             LOG(logDEBUG, ("counter mask retval: 0x%x\n", retval));
             if (retval != arg) {

@@ -281,6 +281,7 @@ int getNumDigitalSamples();
 #endif
 #ifdef MYTHEN3D
 void setCounterMask(uint32_t arg);
+void updateOldCounterMask();
 uint32_t getCounterMask();
 void updatePacketizing();
 #endif
@@ -350,6 +351,7 @@ int getOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex);
 #ifdef MYTHEN3D
 void setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck);
 void setGeneralDAC(enum DACINDEX ind, int val, int mV);
+void setVthDac(int index, int enable);
 #else
 void setDAC(enum DACINDEX ind, int val, int mV);
 #endif

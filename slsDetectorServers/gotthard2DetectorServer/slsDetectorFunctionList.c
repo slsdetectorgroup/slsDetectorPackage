@@ -2297,6 +2297,24 @@ int setClockDivider(enum CLKINDEX ind, int val) {
             setPhase(i, oldPhases[i], 1);
         }
     }
+
+    // update system frequency and time settings that depend on it
+    if (ind == SYSTEM_C0) {
+        LOG(logINFO, ("\tUpdating time settings (sys freq change)\n"));
+        int64_t exptime = getExpTime();
+        int64_t period = getPeriod();
+        int64_t delayAfterTrigger = getDelayAfterTrigger();
+        int64_t burstPeriod = getBurstPeriod();
+        
+        systemFrequency = ((double)getVCOFrequency(SYSTEM_C0) /
+                        (double)clkDivider[SYSTEM_C0]);
+
+        setExpTime(exptime);
+        setPeriod(period);
+        setDelayAfterTrigger(delayAfterTrigger);
+        setBurstPeriod(burstPeriod);
+        LOG(logINFO, ("\tDone updating time settings\n"));
+    }
     return OK;
 }
 
@@ -2798,13 +2816,10 @@ void setTimingSource(enum timingSourceType value) {
     case TIMING_INTERNAL:
         LOG(logINFO, ("Setting timing source to internal\n"));
         bus_w(addr, (bus_r(addr) & ~CONTROL_TIMING_SOURCE_EXT_MSK));
-        systemFrequency = INT_SYSTEM_C0_FREQUENCY;
         break;
     case TIMING_EXTERNAL:
         LOG(logINFO, ("Setting timing source to exernal\n"));
         bus_w(addr, (bus_r(addr) | CONTROL_TIMING_SOURCE_EXT_MSK));
-        systemFrequency = ((double)getVCOFrequency(SYSTEM_C0) /
-                           (double)clkDivider[SYSTEM_C0]);
         break;
     default:
         LOG(logERROR, ("Unknown timing source %d\n", value));

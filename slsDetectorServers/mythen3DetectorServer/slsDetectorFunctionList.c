@@ -1334,7 +1334,7 @@ int setTrimbits(int *trimbits) {
     uint32_t prevRunClk = clkDivider[SYSTEM_C0];
 
     // set to trimming clock
-    if (setClockDivider(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV) == FAIL) {
+    if (setClockDividerWithTimeUpdateOption(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV, 0) == FAIL) {
         LOG(logERROR,
             ("Could not start trimming. Could not set to trimming clock\n"));
         return FAIL;
@@ -1367,7 +1367,7 @@ int setTrimbits(int *trimbits) {
     }
 
     // set back to previous clock
-    if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
+    if (setClockDividerWithTimeUpdateOption(SYSTEM_C0, prevRunClk, 0) == FAIL) {
         LOG(logERROR, ("Could not set to previous run clock after trimming\n"));
         return FAIL;
     }
@@ -2259,6 +2259,10 @@ int getVCOFrequency(enum CLKINDEX ind) {
 int getMaxClockDivider() { return ALTERA_PLL_C10_GetMaxClockDivider(); }
 
 int setClockDivider(enum CLKINDEX ind, int val) {
+    return setClockDividerWithTimeUpdateOption(ind, val, 1);
+}
+
+int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val, int timeUpdate) {
     if (ind < 0 || ind >= NUM_CLOCKS) {
         LOG(logERROR, ("Unknown clock index %d to set clock divider\n", ind));
         return FAIL;
@@ -2283,6 +2287,32 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
     int clkIndex = (int)(ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind);
     ALTERA_PLL_C10_SetOuputClockDivider(pllIndex, clkIndex, val);
+
+    // Update time settings that depend on system frequency
+    // timeUpdate = 0 for setChipRegister/setTrimbits etc
+    // as clk reverted back again
+    if (timeUpdate && ind == SYSTEM_C0) {
+        LOG(logINFO, ("\tUpdating time settings (sys freq change)\n"));
+        int64_t exptime[3] = {0, 0, 0};
+        int64_t gateDelay[3] = {0, 0, 0};
+        for (int i = 0; i != 3; ++i) {
+            exptime[i] = getExpTime(i);
+            gateDelay[i] = getGateDelay(i);
+        }
+        int64_t period = getPeriod();
+        int64_t delayAfterTrigger = getDelayAfterTrigger();
+        
+        clkDivider[ind] = val;
+
+        for (int i = 0; i != 3; ++i) {
+            setExpTime(i, exptime[i]);
+            setGateDelay(i, gateDelay[i]);
+        }
+        setPeriod(period);
+        setDelayAfterTrigger(delayAfterTrigger);
+        LOG(logINFO, ("\tDone updating time settings\n"));
+    }
+
     clkDivider[ind] = val;
     LOG(logINFO, ("\t%s clock (%d) divider set to %d\n", clock_names[ind], ind,
                   clkDivider[ind]));
@@ -2673,7 +2703,7 @@ int setChipStatusRegister(int csr) {
     uint32_t prevRunClk = clkDivider[SYSTEM_C0];
 
     // set to trimming clock
-    if (setClockDivider(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV) == FAIL) {
+    if (setClockDividerWithTimeUpdateOption(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV, 0) == FAIL) {
         LOG(logERROR,
             ("Could not set to trimming clock in order to change CSR\n"));
         return FAIL;
@@ -2695,7 +2725,7 @@ int setChipStatusRegister(int csr) {
     }
 
     // set back to previous clock
-    if (setClockDivider(SYSTEM_C0, prevRunClk) == FAIL) {
+    if (setClockDividerWithTimeUpdateOption(SYSTEM_C0, prevRunClk, 0) == FAIL) {
         LOG(logERROR,
             ("Could not set to previous run clock after changing CSR\n"));
         return FAIL;

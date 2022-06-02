@@ -569,6 +569,7 @@ int getFrequency(enum CLKINDEX ind);
 int getVCOFrequency(enum CLKINDEX ind);
 int getMaxClockDivider();
 int setClockDivider(enum CLKINDEX ind, int val);
+int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val, int timeUpdate);
 int getClockDivider(enum CLKINDEX ind);
 
 #elif GOTTHARD2D

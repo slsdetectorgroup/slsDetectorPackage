@@ -76,6 +76,8 @@ This document describes the differences between v7.0.0 and v6.x.x
 - blackfin programing made seamless (nCE fixed which helps)
 -save settings file for m3 and eiger
 - m3 threshold changes
+- g2 and m3 clkdiv 2 (system clock) change should affect time settings (g2: exptime, period, delayaftertrigger, burstperiod, m3: exptime, gatedelay, gateperiod, period, delayaftertrigger)
+- g2 system frequency is the same irrespective of timing source
 
 2. Resolved Issues
 ==================

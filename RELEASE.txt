@@ -78,6 +78,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - m3 threshold changes
 - g2 and m3 clkdiv 2 (system clock) change should affect time settings (g2: exptime, period, delayaftertrigger, burstperiod, m3: exptime, gatedelay, gateperiod, period, delayaftertrigger)
 - g2 system frequency is the same irrespective of timing source
+- (apparently) rxr doesnt get stuck anymore from 6.1.1
 
 2. Resolved Issues
 ==================

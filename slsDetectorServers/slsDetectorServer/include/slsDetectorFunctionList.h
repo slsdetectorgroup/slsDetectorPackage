@@ -281,7 +281,7 @@ int getNumDigitalSamples();
 #endif
 #ifdef MYTHEN3D
 void setCounterMask(uint32_t arg);
-void updateOldCounterMask();
+void setCounterMaskWithUpdateFlag(uint32_t arg, int updateMaskFlag);
 uint32_t getCounterMask();
 void updatePacketizing();
 #endif

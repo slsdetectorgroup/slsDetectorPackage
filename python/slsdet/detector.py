@@ -3516,7 +3516,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def interpolation(self):
-        """[Mythen3] Enable or disable interpolation.  interpolation mode enables all counters and disables vth3 """
+        """[Mythen3] Enable or disable interpolation.  interpolation mode enables all counters and disables vth3. Disabling sets back counter mask and vth3. """
         return self.getInterpolation()
 
     @interpolation.setter

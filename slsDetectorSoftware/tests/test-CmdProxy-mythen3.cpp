@@ -496,32 +496,47 @@ TEST_CASE("interpolation", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     if (det.getDetectorType().squash() == defs::MYTHEN3) {
-        auto prev_val = det.getInterpolation();
-        auto mask = det.getCounterMask();
-        {
-            proxy.Call("counters", {"0", "1"}, -1, PUT);
-            std::ostringstream oss;
-            proxy.Call("interpolation", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "interpolation 1\n");
-            REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") ==
-                    7);
+        auto prev_interpolation = det.getInterpolation();
+        auto prev_mask = det.getCounterMask();
+        auto prev_vth3DacVal = det.getDAC(defs::VTH3, 0, {});
+
+        int disabledDacValue = 2800;
+        auto fixedVth3DacVal = 1000;
+        det.setDAC(defs::VTH3, fixedVth3DacVal, 0, {});
+        // mask with counter 3 disabled and enabled(to test vth3)
+        uint32_t fixedMask[2] = {0x2, 0x4};
+        for (int i = 0; i != 2; ++i) {
+            det.setCounterMask(fixedMask[i]);
+            {
+                proxy.Call("counters", {"0", "1"}, -1, PUT);
+                std::ostringstream oss;
+                proxy.Call("interpolation", {"1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "interpolation 1\n");
+                REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") ==
+                        7);
+                REQUIRE(det.getDAC(defs::VTH3, 0, {0}).tsquash("inconsistent vth3 dac value") == disabledDacValue);
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("interpolation", {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "interpolation 0\n");
+                REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") ==
+                        fixedMask[i]);
+                uint32_t expectedVth3DacVal = (fixedMask[i] & 0x4 ? fixedVth3DacVal : disabledDacValue);
+                REQUIRE(det.getDAC(defs::VTH3, 0, {0}).tsquash("inconsistent vth3 dac value") == expectedVth3DacVal);
+            }
         }
-        {
-            proxy.Call("counters", {"0", "1"}, -1, PUT);
-            std::ostringstream oss;
-            proxy.Call("interpolation", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "interpolation 0\n");
-            REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") ==
-                    3);
-        }
+
         {
             std::ostringstream oss;
             proxy.Call("interpolation", {}, -1, GET, oss);
             REQUIRE(oss.str() == "interpolation 0\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setCounterMask(mask[i], {i});
-            det.setInterpolation(prev_val[i], {i});
+            det.setCounterMask(prev_mask[i], {i});
+            det.setInterpolation(prev_interpolation[i], {i});
+            det.setDAC(defs::VTH3, prev_vth3DacVal[i], 0, {i});
+
         }
     } else {
         REQUIRE_THROWS(proxy.Call("interpolation", {}, -1, GET));

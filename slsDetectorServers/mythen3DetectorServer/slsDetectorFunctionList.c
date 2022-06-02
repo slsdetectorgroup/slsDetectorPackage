@@ -68,7 +68,7 @@ int64_t exptimeReg[NCOUNTERS] = {0, 0, 0};
 int64_t gateDelayReg[NCOUNTERS] = {0, 0, 0};
 int vthEnabledVals[NCOUNTERS] = {0, 0, 0};
 int detID = 0;
-int oldCounterMask = 0x0;
+int counterMask = 0x0;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -1091,11 +1091,14 @@ int64_t getGateDelay(int gateIndex) {
 }
 
 void setCounterMask(uint32_t arg) {
+    setCounterMaskWithUpdateFlag(arg, 1);
+}
+
+void setCounterMaskWithUpdateFlag(uint32_t arg, int updateMaskFlag) {
     if (arg == 0 || arg > MAX_COUNTER_MSK) {
         return;
     }
-    oldCounterMask = getCounterMask();
-    LOG(logINFO, ("Setting counter mask to  0x%x\n", arg));
+    LOG(logINFO, ("\tSetting counter mask to  0x%x\n", arg));
     uint32_t addr = CONFIG_REG;
     bus_w(addr, bus_r(addr) & ~CONFIG_COUNTERS_ENA_MSK);
     bus_w(addr, bus_r(addr) | ((arg << CONFIG_COUNTERS_ENA_OFST) &
@@ -1114,16 +1117,12 @@ void setCounterMask(uint32_t arg) {
     LOG(logINFO, ("\tUpdating Vth dacs\n"));
     for (int i = 0; i < NCOUNTERS; ++i) {
         int enable = (arg & (1 << i));
-        int oldEnable = (oldCounterMask & (1 << i));
-        // if change in enable
-        if (enable ^ oldEnable) {
-            setVthDac(i, enable);
-        }
+        setVthDac(i, enable);
     }
-}
 
-void updateOldCounterMask() {
-    oldCounterMask = getCounterMask();
+    if (updateMaskFlag) {
+        counterMask = arg;
+    }
 }
 
 uint32_t getCounterMask() {
@@ -1768,28 +1767,20 @@ int setInterpolation(int enable) {
     
     // enabling all counters/ back to remembered mask
     if (enable) {
-        oldCounterMask = getCounterMask();
-        setCounterMask(MAX_COUNTER_MSK);
-        // not updating old counter mask
-        if (getCounterMask() != MAX_COUNTER_MSK) {
-            LOG(logERROR,
-                ("Could not set interpolation. Could not enable all counters"));
-            return FAIL;
-        }
-        LOG(logINFO, ("\tEnabled all counters\n"));
+        LOG(logINFO, ("\tEnabling all counters\n"));
+        // do not remember this temp mask
+        setCounterMaskWithUpdateFlag(MAX_COUNTER_MSK, 0);
     } else {
-        LOG(logINFO, ("\tSetting back to previous counter mask: 0x%x\n", oldCounterMask));
-        setCounterMask(oldCounterMask);
-        updateOldCounterMask();
+        // also sets vth2 to original (acc. to counter mask)
+        LOG(logINFO, ("\tSetting previous counter mask: 0x%x\n", counterMask));
+        // remember this mask
+        setCounterMaskWithUpdateFlag(counterMask, 1);
     }
 
-    // disable vth3 if interpolation enabled
-    // enable vth3 if interpolation disabled and if counter enabled
-    int vth3Enable = 0;
-    if (!enable && getCounterMask() & 0x4) {
-        vth3Enable = 1;
+    // disable vth2 (got enabled when all counters enabled)
+    if (enable) {
+        setVthDac(2, 0);
     }
-    setVthDac(2, vth3Enable);
 
     int csr = M3SetInterpolation(enable);
     return setChipStatusRegister(csr);

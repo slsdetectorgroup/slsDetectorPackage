@@ -75,6 +75,8 @@ This document describes the differences between v7.0.0 and v6.x.x
 - rxr src files and classes (detectordata, ZmqSocket, helpDacs) added to sls namespace, and macros (namely from logger (logINFO etc)), slsDetectorGui (make_unique in implemtnation requires sls nemspace (points to std otherwise) but not deectorImpl.cpp)
 - blackfin programing made seamless (nCE fixed which helps)
 -save settings file for m3 and eiger
+- g2 and m3 clkdiv 2 (system clock) change should affect time settings (g2: exptime, period, delayaftertrigger, burstperiod, m3: exptime, gatedelay, gateperiod, period, delayaftertrigger)
+- g2 system frequency is the same irrespective of timing source
 
 2. Resolved Issues
 ==================

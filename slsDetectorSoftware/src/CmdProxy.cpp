@@ -2302,6 +2302,9 @@ std::string CmdProxy::Counters(int action) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
         }
+        if (std::any_of(args.cbegin(), args.cend(), [](std::string s){ return (StringTo<int>(s) < 0 ||  StringTo<int>(s) > 2); })) {
+            throw RuntimeError("Invalid counter indices list. Example: 0 1 2");
+        }
         // convert vector to counter enable mask
         uint32_t mask = 0;
         for (size_t i = 0; i < args.size(); ++i) {

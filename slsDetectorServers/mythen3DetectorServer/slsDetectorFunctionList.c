@@ -1092,6 +1092,10 @@ int64_t getGateDelay(int gateIndex) {
 
 void setCounterMask(uint32_t arg) {
     setCounterMaskWithUpdateFlag(arg, 1);
+    if (getInterpolation()) 
+        interpolationEffects();
+    if (getPumpProbe())
+        pumpProbeEffects();
 }
 
 void setCounterMaskWithUpdateFlag(uint32_t arg, int updateMaskFlag) {
@@ -1765,31 +1769,52 @@ int setInterpolation(int enable) {
     LOG(logINFO,
         ("%s Interpolation\n", enable == 0 ? "Disabling" : "Enabling"));
     
-    // enabling all counters/ back to remembered mask
     if (enable) {
-        LOG(logINFO, ("\tEnabling all counters\n"));
-        // do not remember this temp mask
-        setCounterMaskWithUpdateFlag(MAX_COUNTER_MSK, 0);
+        interpolationEffects();
     } else {
-        // also sets vth2 to original (acc. to counter mask)
+        // also sets vth3 to original (acc. to counter mask)
         LOG(logINFO, ("\tSetting previous counter mask: 0x%x\n", counterMask));
         // remember this mask
         setCounterMaskWithUpdateFlag(counterMask, 1);
     }
 
-    // disable vth2 (got enabled when all counters enabled)
-    if (enable) {
-        setVthDac(2, 0);
-    }
+    // gets cancelled by interoplation effects(repeat)
+    if (getPumpProbe())
+        pumpProbeEffects();   
 
     int csr = M3SetInterpolation(enable);
     return setChipStatusRegister(csr);
 }
 
+void interpolationEffects() {
+        LOG(logINFO, ("\tInterpolation Effects...\n"));
+        // do not remember this temp mask (also enables all vthx)
+        setCounterMaskWithUpdateFlag(MAX_COUNTER_MSK, 0);
+
+        // disable vth3
+        setVthDac(2, 0);  
+}
+
 int setPumpProbe(int enable) {
     LOG(logINFO, ("%s Pump Probe\n", enable == 0 ? "Disabling" : "Enabling"));
+
+    if (enable) {
+        pumpProbeEffects();
+    } else {
+        // vth also set acc to counter mask
+        setCounterMaskWithUpdateFlag(counterMask, 1);
+    }
+
     int csr = M3SetPumpProbe(enable);
     return setChipStatusRegister(csr);
+}
+
+void pumpProbeEffects() {
+    LOG(logINFO, ("\tPump Probe Effects...\n"));
+    // only vth2 enabled
+    setVthDac(0, 0);
+    setVthDac(1, 1);
+    setVthDac(2, 0);
 }
 
 int setDigitalPulsing(int enable) {

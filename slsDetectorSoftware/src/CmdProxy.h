@@ -2057,7 +2057,7 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(pumpprobe, getPumpProbe, setPumpProbe, StringTo<int>,
                            "[0, 1]\n\t[Mythen3] Enables or disables pump probe "
-                           "mode. Default is disabled");
+                           "mode. Default is disabled. Pump probe mode only enables vth2. Disabling sets back to previous value.");
 
     INTEGER_COMMAND_VEC_ID(apulse, getAnalogPulsing, setAnalogPulsing,
                            StringTo<int>,

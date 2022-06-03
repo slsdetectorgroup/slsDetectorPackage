@@ -3526,7 +3526,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def pumpprobe(self):
-        """[Mythen3] Enable or disable pump probe mode. """
+        """[Mythen3] Enable or disable pump probe mode. Pump probe mode only enables vth2. Disabling sets back to previous value """
         return self.getPumpProbe()
 
     @pumpprobe.setter

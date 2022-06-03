@@ -1501,7 +1501,7 @@ class Detector {
     /** [Mythen3] */
     Result<bool> getPumpProbe(Positions pos = {}) const;
 
-    /** [Mythen3] */
+    /** [Mythen3] pump probe mode only enables vth2. Disabling sets back to previous value */
     void setPumpProbe(bool value, Positions pos = {});
 
     /** [Mythen3] */

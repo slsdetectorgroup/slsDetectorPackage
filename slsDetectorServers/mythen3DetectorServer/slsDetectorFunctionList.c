@@ -1091,6 +1091,7 @@ int64_t getGateDelay(int gateIndex) {
 }
 
 void updateVthAndCounterMask() {
+    LOG(logINFO, ("\tUpdating Vth and countermask\n"));
     int interpolation = getInterpolation();
     int pumpProbe = getPumpProbe();
 
@@ -1099,6 +1100,9 @@ void updateVthAndCounterMask() {
         setCounterMaskWithUpdateFlag(MAX_COUNTER_MSK, 0);
         // disable vth3
         setVthDac(2, 0);
+    } else {
+        // previous counter values
+        setCounterMaskWithUpdateFlag(counterMask, 0);        
     }
     if (pumpProbe) {
         // enable only vth2
@@ -1106,16 +1110,17 @@ void updateVthAndCounterMask() {
         setVthDac(1, 1);
         setVthDac(2, 0);
     } else {
-        
+        setVthDac(0, (counterMask & (1 << 0)));
+        setVthDac(1, (counterMask & (1 << 1)));
+    }
+    if (!interpolation && !pumpProbe) {
+        setVthDac(2, (counterMask & (1 << 2)));
     }
 }
 
 void setCounterMask(uint32_t arg) {
     setCounterMaskWithUpdateFlag(arg, 1);
-    if (getInterpolation()) 
-        interpolationEffects();
-    if (getPumpProbe())
-        pumpProbeEffects();
+    updateVthAndCounterMask();
 }
 
 void setCounterMaskWithUpdateFlag(uint32_t arg, int updateMaskFlag) {
@@ -1136,12 +1141,6 @@ void setCounterMaskWithUpdateFlag(uint32_t arg, int updateMaskFlag) {
         setExpTime(i, ns);
         ns = gateDelayReg[i] / (1E-9 * getFrequency(SYSTEM_C0));
         setGateDelay(i, ns);
-    }
-
-    LOG(logINFO, ("\tUpdating Vth dacs\n"));
-    for (int i = 0; i < NCOUNTERS; ++i) {
-        int enable = (arg & (1 << i));
-        setVthDac(i, enable);
     }
 
     if (updateMaskFlag) {
@@ -1325,6 +1324,9 @@ int setModule(sls_detector_module myMod, char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
+
+    // update vth and countermask
+    updateVthAndCounterMask();
 
     // threshold energy
     for (int i = 0; i < NCOUNTERS; ++i) {
@@ -1789,52 +1791,23 @@ int setInterpolation(int enable) {
     LOG(logINFO,
         ("%s Interpolation\n", enable == 0 ? "Disabling" : "Enabling"));
     
-    if (enable) {
-        interpolationEffects();
-    } else {
-        // also sets vth3 to original (acc. to counter mask)
-        LOG(logINFO, ("\tSetting previous counter mask: 0x%x\n", counterMask));
-        setCounterMaskWithUpdateFlag(counterMask, 0);
-    }
-
-    // gets cancelled by interoplation effects(repeat)
-    if (getPumpProbe())
-        pumpProbeEffects();   
-
     int csr = M3SetInterpolation(enable);
-    return setChipStatusRegister(csr);
-}
-
-void interpolationEffects() {
-        LOG(logINFO, ("\tInterpolation Effects...\n"));
-        // do not remember this temp mask (also enables all vthx)
-        setCounterMaskWithUpdateFlag(MAX_COUNTER_MSK, 0);
-
-        // disable vth3
-        setVthDac(2, 0);  
+    int ret = setChipStatusRegister(csr);
+    if (ret == OK) {
+        updateVthAndCounterMask();  
+    }
+    return ret;
 }
 
 int setPumpProbe(int enable) {
     LOG(logINFO, ("%s Pump Probe\n", enable == 0 ? "Disabling" : "Enabling"));
 
-
-    if (enable) {
-        pumpProbeEffects();
-    } else {
-        // vth also set acc to counter mask
-        setCounterMaskWithUpdateFlag(counterMask, 0);
-    }
-
     int csr = M3SetPumpProbe(enable);
-    return setChipStatusRegister(csr);
-}
-
-void pumpProbeEffects() {
-    LOG(logINFO, ("\tPump Probe Effects...\n"));
-    // only vth2 enabled
-    setVthDac(0, 0);
-    setVthDac(1, 1);
-    setVthDac(2, 0);
+    int ret = setChipStatusRegister(csr);
+    if (ret == OK) {
+        updateVthAndCounterMask();
+    }
+    return ret;
 }
 
 int setDigitalPulsing(int enable) {

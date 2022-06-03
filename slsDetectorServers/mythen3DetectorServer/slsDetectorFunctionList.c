@@ -1090,6 +1090,26 @@ int64_t getGateDelay(int gateIndex) {
     return retval / (1E-9 * getFrequency(SYSTEM_C0));
 }
 
+void updateVthAndCounterMask() {
+    int interpolation = getInterpolation();
+    int pumpProbe = getPumpProbe();
+
+    if (interpolation) {
+        // enable all counters
+        setCounterMaskWithUpdateFlag(MAX_COUNTER_MSK, 0);
+        // disable vth3
+        setVthDac(2, 0);
+    }
+    if (pumpProbe) {
+        // enable only vth2
+        setVthDac(0, 0);
+        setVthDac(1, 1);
+        setVthDac(2, 0);
+    } else {
+        
+    }
+}
+
 void setCounterMask(uint32_t arg) {
     setCounterMaskWithUpdateFlag(arg, 1);
     if (getInterpolation()) 
@@ -1774,8 +1794,7 @@ int setInterpolation(int enable) {
     } else {
         // also sets vth3 to original (acc. to counter mask)
         LOG(logINFO, ("\tSetting previous counter mask: 0x%x\n", counterMask));
-        // remember this mask
-        setCounterMaskWithUpdateFlag(counterMask, 1);
+        setCounterMaskWithUpdateFlag(counterMask, 0);
     }
 
     // gets cancelled by interoplation effects(repeat)
@@ -1798,11 +1817,12 @@ void interpolationEffects() {
 int setPumpProbe(int enable) {
     LOG(logINFO, ("%s Pump Probe\n", enable == 0 ? "Disabling" : "Enabling"));
 
+
     if (enable) {
         pumpProbeEffects();
     } else {
         // vth also set acc to counter mask
-        setCounterMaskWithUpdateFlag(counterMask, 1);
+        setCounterMaskWithUpdateFlag(counterMask, 0);
     }
 
     int csr = M3SetPumpProbe(enable);

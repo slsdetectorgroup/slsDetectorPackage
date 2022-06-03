@@ -318,24 +318,7 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
 
     sls_detector_module myMod{shm()->detType};
     myMod = myMods[0];
-    enum mythen3_DacIndex {
-        M_VCASSH,
-        M_VTH2,
-        M_VRSHAPER,
-        M_VRSHAPER_N,
-        M_VIPRE_OUT,
-        M_VTH3,
-        M_VTH1,
-        M_VICIN,
-        M_VCAS,
-        M_VRPREAMP,
-        M_VCAL_N,
-        M_VIPRE,
-        M_VISHAPER,
-        M_VCAL_P,
-        M_VTRIM,
-        M_VDCSH
-    };
+
     
     // if multiple thresholds, combine
     if (myMods.size() > 1) {
@@ -387,45 +370,6 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
 
     std::copy(e_eV.begin(), e_eV.end(), myMod.eV);
     LOG(logDEBUG) << "ev:" << ToString(myMod.eV);
-
-    // check for trimbits that are out of range
-    bool out_of_range = false;
-    for (int i = 0; i != myMod.nchan; ++i) {
-        if (myMod.chanregs[i] < 0) {
-            myMod.chanregs[i] = 0;
-            out_of_range = true;
-        } else if (myMod.chanregs[i] > 63) {
-            myMod.chanregs[i] = 63;
-            out_of_range = true;
-        }
-    }
-    if (out_of_range) {
-        LOG(logWARNING)
-            << "Some trimbits were out of range after interpolation, these "
-               "have been replaced with 0 or 63.";
-    }
-
-    // check dacs
-    out_of_range = false;
-    for (int i = 0; i != myMod.ndac; ++i) {
-        int dacMin = 0;
-        int dacMax = 2800;
-        if (i == M_VTH1 || i == M_VTH2 || i == M_VTH3) {
-            dacMin = 200;
-            dacMax = 2400;
-        }
-        if (myMod.dacs[i] < dacMin) {
-            myMod.dacs[i] = dacMin;
-            out_of_range = true;
-        } else if (myMod.dacs[i] > dacMax) {
-            myMod.dacs[i] = dacMax;
-            out_of_range = true;
-        }
-    }
-    if (out_of_range) {
-        LOG(logWARNING) << "Some dacs were out of range after interpolation, "
-                           "these have been replaced with 600 or 2400.";
-    }
 
     setModule(myMod, trimbits);
     if (getSettings() != isettings) {
@@ -3336,6 +3280,45 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
         module.nchan = 0;
         module.nchip = 0;
     }
+    // validate dacs and trimbits
+    if (shm()->detType == MYTHEN3) {
+        // check for trimbits that are out of range
+        bool out_of_range = false;
+        for (int i = 0; i != module.nchan; ++i) {
+            if (module.chanregs[i] < 0) {
+                module.chanregs[i] = 0;
+                out_of_range = true;
+            } else if (module.chanregs[i] > 63) {
+                module.chanregs[i] = 63;
+                out_of_range = true;
+            }
+        }
+        if (out_of_range) {
+            LOG(logWARNING)
+                << "Some trimbits were out of range, these have been replaced with 0 or 63.";
+        }
+        // check dacs
+        out_of_range = false;
+        for (int i = 0; i != module.ndac; ++i) {
+            int dacMin = 0;
+            int dacMax = 2800;
+            if (i == M_VTH1 || i == M_VTH2 || i == M_VTH3) {
+                dacMin = 200;
+                dacMax = 2400;
+            }
+            if (module.dacs[i] < dacMin) {
+                module.dacs[i] = dacMin;
+                out_of_range = true;
+            } else if (module.dacs[i] > dacMax) {
+                module.dacs[i] = dacMax;
+                out_of_range = true;
+            }
+        }
+        if (out_of_range) {
+            LOG(logWARNING) << "Some dacs were out of range, "
+                            "these have been replaced with 0/200 or 2800/2400.";
+        }
+    }
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_MODULE);
     sendModule(&module, client);
@@ -3467,42 +3450,6 @@ sls_detector_module Module::interpolateTrim(sls_detector_module *a,
     }
 
     sls_detector_module myMod{shm()->detType};
-    enum eiger_DacIndex {
-        E_SVP,
-        E_VTR,
-        E_VRF,
-        E_VRS,
-        E_SVN,
-        E_VTGSTV,
-        E_VCMP_LL,
-        E_VCMP_LR,
-        E_CAL,
-        E_VCMP_RL,
-        E_RXB_RB,
-        E_RXB_LB,
-        E_VCMP_RR,
-        E_VCP,
-        E_VCN,
-        E_VIS
-    };
-    enum mythen3_DacIndex {
-        M_VCASSH,
-        M_VTH2,
-        M_VRSHAPER,
-        M_VRSHAPER_N,
-        M_VIPRE_OUT,
-        M_VTH3,
-        M_VTH1,
-        M_VICIN,
-        M_VCAS,
-        M_VRPREAMP,
-        M_VCAL_N,
-        M_VIPRE,
-        M_VISHAPER,
-        M_VCAL_P,
-        M_VTRIM,
-        M_VDCSH
-    };
 
     // create copy and interpolate dac lists
     std::vector<int> dacs_to_copy, dacs_to_interpolate;

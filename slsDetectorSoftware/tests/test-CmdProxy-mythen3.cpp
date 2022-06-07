@@ -571,31 +571,13 @@ TEST_CASE("pumpprobe", "[.cmd]") {
                 REQUIRE(det.getDAC(defs::VTH2, 0, {0}).tsquash("inconsistent vth2 dac value") == fixedVthDacVal);
                  REQUIRE(det.getDAC(defs::VTH3, 0, {0}).tsquash("inconsistent vth2 dac value") == disabledDacValue);
             }       
-            {
-                // pump probe and interpolation
-                std::ostringstream oss;
-                proxy.Call("interpolation", {"1"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "interpolation 1\n");
-                REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") == 7);
-                REQUIRE(det.getDAC(defs::VTH1, 0, {0}).tsquash("inconsistent vth2 dac value") == disabledDacValue);
-                REQUIRE(det.getDAC(defs::VTH2, 0, {0}).tsquash("inconsistent vth2 dac value") == fixedVthDacVal);
-                 REQUIRE(det.getDAC(defs::VTH3, 0, {0}).tsquash("inconsistent vth2 dac value") == disabledDacValue);
-            }   
-            {
-                // interpolation
-                std::ostringstream oss;
-                proxy.Call("pumpprobe", {"0"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "pumpprobe 0\n");
-                REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") == 7);
-                REQUIRE(det.getDAC(defs::VTH1, 0, {0}).tsquash("inconsistent vth1 dac value") == (fixedMask[i] & 0x1 ? fixedVthDacVal : disabledDacValue));
-                REQUIRE(det.getDAC(defs::VTH2, 0, {0}).tsquash("inconsistent vth2 dac value") == (fixedMask[i] & 0x2 ? fixedVthDacVal : disabledDacValue));
-                REQUIRE(det.getDAC(defs::VTH3, 0, {0}).tsquash("inconsistent vth3 dac value") == disabledDacValue);
-            }
+            // interpolation and pump probe 
+            REQUIRE_THROWS(proxy.Call("interpolation", {"1"}, -1, PUT));
             {
                 // none
                 std::ostringstream oss;
-                proxy.Call("interpolation", {"0"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "interpolation 0\n");
+                proxy.Call("pumpprobe", {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "pumpprobe 0\n");
                 REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") == 7);
                 REQUIRE(det.getDAC(defs::VTH1, 0, {0}).tsquash("inconsistent vth1 dac value") == (fixedMask[i] & 0x1 ? fixedVthDacVal : disabledDacValue));
                 REQUIRE(det.getDAC(defs::VTH2, 0, {0}).tsquash("inconsistent vth2 dac value") == (fixedMask[i] & 0x2 ? fixedVthDacVal : disabledDacValue));

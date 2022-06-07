@@ -9949,7 +9949,7 @@ int set_interpolation(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getPumpProbe() == 1 && arg) {
+        if (getPumpProbe() && arg) {
             ret = FAIL;
             sprintf(mess, "Could not set interpolation. Disable pump probe mode first.\n");
             LOG(logERROR, (mess));
@@ -10005,7 +10005,7 @@ int set_pump_probe(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (getInterpolation() == 1 && arg) {
+        if (getInterpolation() && arg) {
             ret = FAIL;
             sprintf(mess, "Could not set pump probe mode. Disable interpolation mode first.\n");
             LOG(logERROR, (mess));

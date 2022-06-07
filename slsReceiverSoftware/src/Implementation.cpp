@@ -693,13 +693,15 @@ void Implementation::stopReceiver() {
     while (running) {
         running = false;
         for (const auto &it : listener)
-            if (it->IsRunning())
+            if (it->IsRunning()) {
                 running = true;
-        LOG(logINFOBLUE) << "listener done";
+                //LOG(logINFOBLUE) << "listener NOT done";
+            }
         for (const auto &it : dataProcessor)
-            if (it->IsRunning())
+            if (it->IsRunning()) {
                 running = true;
-        LOG(logINFOBLUE) << "processor done";
+                //LOG(logINFOBLUE) << "processor NOT done";
+            }
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 

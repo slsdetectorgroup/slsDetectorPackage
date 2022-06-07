@@ -263,7 +263,7 @@ std::string DataProcessor::CreateMasterFile(
 void DataProcessor::ThreadExecution() {
     char *buffer = nullptr;
     fifo_->PopAddress(buffer);
-    LOG(logINFOBLUE) << "DataProcessor " << index << ", " << std::hex
+    LOG(logDEBUG1) << "DataProcessor " << index << ", " << std::hex
                    << static_cast<void *>(buffer) << std::dec;
 
     char* tempBuffer = buffer;
@@ -271,7 +271,7 @@ void DataProcessor::ThreadExecution() {
 
         // end of acquisition (check dummy)
         auto numBytes = *reinterpret_cast<uint32_t *>(tempBuffer);
-        LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << numBytes;
+        LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << numBytes << " " << std::hex << static_cast<void *>(tempBuffer)  << std::dec;
         if (numBytes == DUMMY_PACKET_VALUE) {
             StopProcessing(buffer);
             return;

@@ -264,7 +264,7 @@ void Listener::ThreadExecution() {
 
     // last check
     if ((*status != TRANSMITTING || !udpSocketAlive) && !carryOverFlag) {
-        LOG(logINFOBLUE) << "Last check ";
+        LOG(logINFOBLUE) << "Last check " << std::hex << static_cast<void *>(tempBuffer)  << std::dec;
         (*((uint32_t *)tempBuffer)) = DUMMY_PACKET_VALUE;
         StopListening(buffer);
         return;

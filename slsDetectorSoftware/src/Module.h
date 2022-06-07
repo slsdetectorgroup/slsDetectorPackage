@@ -789,6 +789,44 @@ class Module : public virtual slsDetectorDefs {
     static const int NIOS_WRITE_TO_FLASH_TIME_FPGA = 45;
     static const int NIOS_ERASE_FLASH_TIME_KERNEL = 9;
     static const int NIOS_WRITE_TO_FLASH_TIME_KERNEL = 40;
+
+    enum mythen3_DacIndex {
+      M_VCASSH,
+      M_VTH2,
+      M_VRSHAPER,
+      M_VRSHAPER_N,
+      M_VIPRE_OUT,
+      M_VTH3,
+      M_VTH1,
+      M_VICIN,
+      M_VCAS,
+      M_VRPREAMP,
+      M_VCAL_N,
+      M_VIPRE,
+      M_VISHAPER,
+      M_VCAL_P,
+      M_VTRIM,
+      M_VDCSH
+    };
+
+    enum eiger_DacIndex {
+        E_SVP,
+        E_VTR,
+        E_VRF,
+        E_VRS,
+        E_SVN,
+        E_VTGSTV,
+        E_VCMP_LL,
+        E_VCMP_LR,
+        E_CAL,
+        E_VCMP_RL,
+        E_RXB_RB,
+        E_RXB_LB,
+        E_VCMP_RR,
+        E_VCP,
+        E_VCN,
+        E_VIS
+    };
 };
 
 } // namespace sls

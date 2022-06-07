@@ -382,8 +382,8 @@ std::string CmdProxy::Threshold(int action) {
         }
         os << "\n\nthreshold [eV1] [eV2] [eV3] [(optional settings)]"
               "\n\t[Mythen3] Threshold in eV for each counter. It loads trim "
-              "files from "
-              "settingspath.";
+              "files from settingspath. An energy of -1 will pick up values "
+              " from detector.";
         if (cmd == "thresholdnotb") {
             os << "Trimbits are not loaded.";
         }
@@ -2301,6 +2301,9 @@ std::string CmdProxy::Counters(int action) {
     } else if (action == defs::PUT_ACTION) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
+        }
+        if (std::any_of(args.cbegin(), args.cend(), [](std::string s){ return (StringTo<int>(s) < 0 ||  StringTo<int>(s) > 2); })) {
+            throw RuntimeError("Invalid counter indices list. Example: 0 1 2");
         }
         // convert vector to counter enable mask
         uint32_t mask = 0;

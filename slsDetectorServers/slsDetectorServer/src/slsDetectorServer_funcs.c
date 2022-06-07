@@ -1288,7 +1288,12 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                 LOG(logERROR, (mess));
             } else
 #endif
+#ifdef MYTHEN3D
+                // ignore counter enable to force vth dac values
+                setDAC(serverDacIndex, val, mV, 0);
+#else
                 setDAC(serverDacIndex, val, mV);
+#endif
             retval = getDAC(serverDacIndex, mV);
         }
 #ifdef EIGERD
@@ -9944,19 +9949,25 @@ int set_interpolation(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        ret = setInterpolation(arg);
-        if (ret == FAIL) {
-            if (arg)
-                sprintf(mess, "Could not set interpolation or enable all "
-                              "counters for it.\n");
-            else
-                sprintf(mess, "Could not set interpolation\n");
+        if (getPumpProbe() && arg) {
+            ret = FAIL;
+            sprintf(mess, "Could not set interpolation. Disable pump probe mode first.\n");
             LOG(logERROR, (mess));
-        } else {
-            int retval = getInterpolation();
-            validate(&ret, mess, (int)arg, (int)retval, "set interpolation",
-                     DEC);
-            LOG(logDEBUG1, ("interpolation retval: %u\n", retval));
+        } else {        
+            ret = setInterpolation(arg);
+            if (ret == FAIL) {
+                if (arg)
+                    sprintf(mess, "Could not set interpolation or enable all "
+                                "counters for it.\n");
+                else
+                    sprintf(mess, "Could not set interpolation\n");
+                LOG(logERROR, (mess));
+            } else {
+                int retval = getInterpolation();
+                validate(&ret, mess, (int)arg, (int)retval, "set interpolation",
+                        DEC);
+                LOG(logDEBUG1, ("interpolation retval: %u\n", retval));
+            }
         }
     }
 #endif
@@ -9994,14 +10005,20 @@ int set_pump_probe(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        ret = setPumpProbe(arg);
-        if (ret == FAIL) {
-            sprintf(mess, "Could not set pump probe\n");
+        if (getInterpolation() && arg) {
+            ret = FAIL;
+            sprintf(mess, "Could not set pump probe mode. Disable interpolation mode first.\n");
             LOG(logERROR, (mess));
-        } else {
-            int retval = getPumpProbe();
-            validate(&ret, mess, (int)arg, (int)retval, "set pump probe", DEC);
-            LOG(logDEBUG1, ("pump probe retval: %u\n", retval));
+        } else { 
+            ret = setPumpProbe(arg);
+            if (ret == FAIL) {
+                sprintf(mess, "Could not set pump probe\n");
+                LOG(logERROR, (mess));
+            } else {
+                int retval = getPumpProbe();
+                validate(&ret, mess, (int)arg, (int)retval, "set pump probe", DEC);
+                LOG(logDEBUG1, ("pump probe retval: %u\n", retval));
+            }
         }
     }
 #endif

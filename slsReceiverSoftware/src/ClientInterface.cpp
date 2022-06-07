@@ -223,6 +223,8 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_GET_RECEIVER_ROI]      =   &ClientInterface::get_receiver_roi;
     flist[F_RECEIVER_SET_RECEIVER_ROI]      =   &ClientInterface::set_receiver_roi;
     flist[F_RECEIVER_SET_RECEIVER_ROI_METADATA] =   &ClientInterface::set_receiver_roi_metadata;
+    flist[F_GET_RECEIVER_BUNCH_SIZE]        =   &ClientInterface::get_bunch_size;
+    flist[F_SET_RECEIVER_BUNCH_SIZE]        =   &ClientInterface::set_bunch_size;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -1176,7 +1178,7 @@ int ClientInterface::get_additional_json_header(Interface &socket) {
 int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
     auto size = socket.Receive<int>();
     if (size == 0) {
-        throw RuntimeError("Receiver socket buffer size must be > 0.");
+        throw RuntimeError("Receiver socket buffer size must be greater than 0.");
     }
     if (size > 0) {
         verifyIdle(socket);
@@ -1778,6 +1780,31 @@ int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
         throw RuntimeError("Could not set ReceiverROI metadata");
     }
     return socket.Send(OK);
+}
+
+int ClientInterface::get_bunch_size(Interface &socket) {
+    int retval = impl()->getBunchSize();
+    LOG(logDEBUG1) << "bunch size retval:" << retval;
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::set_bunch_size(Interface &socket) {
+    auto value = socket.Receive<int>();
+    if (value <= 0) {
+        throw RuntimeError("Could not set rx bunch size. Must be greater than 0.");
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting bunch size:" << value;
+    try {
+        impl()->setBunchSize(value);
+    } catch (const RuntimeError &e) {
+        throw RuntimeError("Could not set rx bunch size due to fifo structure memory allocation.");
+    }
+    
+    int retval = impl()->getBunchSize();
+    validate(value, retval, std::string("set bunch size"), DEC);
+    LOG(logDEBUG1) << "bunch size retval:" << retval;
+    return socket.sendResult(retval);
 }
 
 } // namespace sls

@@ -59,6 +59,8 @@ class Implementation : private virtual slsDetectorDefs {
     ROI getReceiverROI() const;
     void setReceiverROI(const ROI arg);
     void setReceiverROIMetadata(const ROI arg);
+    uint32_t getBunchSize() const;
+    void setBunchSize(const uint32_t i);
 
     /**************************************************
      *                                                 *
@@ -311,6 +313,7 @@ class Implementation : private virtual slsDetectorDefs {
     std::array<ROI, 2> portRois{};
     // receiver roi for complete detector for metadata
     ROI receiverRoiMetadata{};
+    uint32_t bunchSize{0};
 
     // file parameters
     fileFormat fileFormatType{BINARY};

@@ -1444,6 +1444,15 @@ void Module::setRxROIMetadata(const slsDetectorDefs::ROI arg) {
     sendToReceiver(F_RECEIVER_SET_RECEIVER_ROI_METADATA, arg, nullptr);
 }
 
+int Module::getRxBunchSize() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_BUNCH_SIZE);
+}
+
+void Module::setRxBunchSize(int value) {
+    sendToReceiver<int>(F_SET_RECEIVER_BUNCH_SIZE, value);
+}
+
+
 // File
 slsDetectorDefs::fileFormat Module::getFileFormat() const {
     return sendToReceiver<fileFormat>(F_GET_RECEIVER_FILE_FORMAT);

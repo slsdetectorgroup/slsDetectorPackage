@@ -44,6 +44,7 @@ DataProcessor::DataProcessor(int index, detectorType detectorType, Fifo *fifo,
       ctbAnalogDataBytes_(ctbAnalogDataBytes) {
 
     LOG(logDEBUG) << "DataProcessor " << index << " created";
+    vetoThread = (detectorType_ == GOTTHARD2 && index != 0);
 }
 
 DataProcessor::~DataProcessor() { DeleteFiles(); }
@@ -59,6 +60,10 @@ void DataProcessor::SetReceiverROI(ROI roi) {
     receiverRoiEnabled_ = receiverRoi_.completeRoi() ? false : true;
 }
 
+void DataProcessor::SetBunchSize(uint32_t value) {
+    fifoBunchSize = value;
+}
+
 void DataProcessor::ResetParametersforNewAcquisition() {
     StopRunning();
     startedFlag_ = false;
@@ -68,6 +73,12 @@ void DataProcessor::ResetParametersforNewAcquisition() {
     firstStreamerFrame_ = true;
     streamCurrentFrame_ = false;
     completeImageToStreamBeforeCropping = make_unique<char[]>(generalData_->imageSize);
+
+    fifoBunchSizeBytes = generalData_->imageSize;
+    if (vetoThread) {
+        fifoBunchSizeBytes = generalData_->vetoDataSize;
+    }
+    fifoBunchSizeBytes += generalData_->fifoBufferHeaderSize;
 }
 
 void DataProcessor::RecordFirstIndex(uint64_t fnum) {
@@ -252,24 +263,30 @@ std::string DataProcessor::CreateMasterFile(
 void DataProcessor::ThreadExecution() {
     char *buffer = nullptr;
     fifo_->PopAddress(buffer);
-    LOG(logDEBUG5) << "DataProcessor " << index << ", " << std::hex
-                   << static_cast<void *>(buffer) << std::dec << ":" << buffer;
+    LOG(logINFOBLUE) << "DataProcessor " << index << ", " << std::hex
+                   << static_cast<void *>(buffer) << std::dec;
 
-    // check dummy
-    auto numBytes = *reinterpret_cast<uint32_t *>(buffer);
-    LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << numBytes;
-    if (numBytes == DUMMY_PACKET_VALUE) {
-        StopProcessing(buffer);
-        return;
+    char* tempBuffer = buffer;
+    for (uint32_t iFrame = 0; iFrame != fifoBunchSize; iFrame ++) {
+
+        // end of acquisition (check dummy)
+        auto numBytes = *reinterpret_cast<uint32_t *>(tempBuffer);
+        LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << numBytes;
+        if (numBytes == DUMMY_PACKET_VALUE) {
+            StopProcessing(buffer);
+            return;
+        }
+
+        try {
+            ProcessAnImage(tempBuffer);
+        } 
+        // exception from callback
+        catch (const std::exception &e) {
+            ;
+        }
+        tempBuffer += fifoBunchSizeBytes;
     }
-
-    try {
-        ProcessAnImage(buffer);
-    } catch (const std::exception &e) {
-        fifo_->FreeAddress(buffer);
-        return;
-    }
-
+    
     // stream (if time/freq to stream) or free
     if (streamCurrentFrame_) {
         // copy the complete image back if roi enabled
@@ -284,9 +301,9 @@ void DataProcessor::ThreadExecution() {
 }
 
 void DataProcessor::StopProcessing(char *buf) {
-    LOG(logDEBUG1) << "DataProcessing " << index << ": Dummy";
+    LOG(logINFORED) << "DataProcessing " << index << ": Dummy";
 
-    // stream or free
+    // stream dummy or free
     if (*dataStreamEnable_)
         fifo_->PushAddressToStream(buf);
     else
@@ -428,11 +445,11 @@ bool DataProcessor::CheckTimer() {
 }
 
 bool DataProcessor::CheckCount() {
-    if (currentFreqCount_ == *streamingFrequency_) {
+    if (currentFreqCount_ >= *streamingFrequency_) {
         currentFreqCount_ = 1;
         return true;
     }
-    currentFreqCount_++;
+    currentFreqCount_ += fifoBunchSize;
     return false;
 }
 
@@ -458,7 +475,7 @@ void DataProcessor::PadMissingPackets(char *buf) {
     sls_bitset pmask = header->packetsMask;
 
     uint32_t dsize = generalData_->dataSize;
-    if (detectorType_ == GOTTHARD2 && index != 0) {
+    if (vetoThread) {
         dsize = generalData_->vetoDataSize;
     }
     uint32_t fifohsize = generalData_->fifoBufferHeaderSize;

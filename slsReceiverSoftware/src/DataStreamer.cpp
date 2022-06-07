@@ -18,14 +18,15 @@ namespace sls {
 
 const std::string DataStreamer::TypeName = "DataStreamer";
 
-DataStreamer::DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi,
+DataStreamer::DataStreamer(int ind, detectorType dType, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi,
                            bool fr, slsDetectorDefs::xy np, bool *qe,
                            uint64_t *tot)
-    : ThreadObject(ind, TypeName), fifo(f), dynamicRange(dr), detectorRoi(r),
+    : ThreadObject(ind, TypeName), fifo(f), detType(dType), dynamicRange(dr), detectorRoi(r),
       fileIndex(fi), flipRows(fr), numPorts(np), quadEnable(qe),
       totalNumFrames(tot) {
 
     LOG(logDEBUG) << "DataStreamer " << ind << " created";
+    vetoThread = (detType == GOTTHARD2 && index != 0);
 }
 
 DataStreamer::~DataStreamer() {
@@ -50,6 +51,11 @@ void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
         completeBuffer = new char[generalData->imageSizeComplete];
         memset(completeBuffer, 0, generalData->imageSizeComplete);
     }
+    fifoBunchSizeBytes = generalData->imageSize;
+    if (vetoThread) {
+        fifoBunchSizeBytes = generalData->vetoDataSize;
+    }
+    fifoBunchSizeBytes += generalData->fifoBufferHeaderSize;
 }
 
 void DataStreamer::RecordFirstIndex(uint64_t fnum, char *buf) {
@@ -73,6 +79,10 @@ void DataStreamer::SetAdditionalJsonHeader(
     std::lock_guard<std::mutex> lock(additionalJsonMutex);
     additionalJsonHeader = json;
     isAdditionalJsonUpdated = true;
+}
+
+void DataStreamer::SetBunchSize(uint32_t value) {
+    fifoBunchSize = value;
 }
 
 void DataStreamer::CreateZmqSockets(int *nunits, uint32_t port,
@@ -115,15 +125,20 @@ void DataStreamer::ThreadExecution() {
                       "pop 0x"
                    << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
 
-    // check dummy
-    auto numBytes = *reinterpret_cast<uint32_t *>(buffer);
-    LOG(logDEBUG1) << "DataStreamer " << index << ", Numbytes:" << numBytes;
-    if (numBytes == DUMMY_PACKET_VALUE) {
-        StopProcessing(buffer);
-        return;
-    }
+     char* tempBuffer = buffer;
+    for (uint32_t iFrame = 0; iFrame != fifoBunchSize; iFrame ++) {
 
-    ProcessAnImage(buffer);
+        //  end of acquisition (check dummy)
+        auto numBytes = *reinterpret_cast<uint32_t *>(tempBuffer);
+        LOG(logDEBUG1) << "DataStreamer " << index << ", Numbytes:" << numBytes;
+        if (numBytes == DUMMY_PACKET_VALUE) {
+            StopProcessing(buffer);
+            return;
+        }
+
+        ProcessAnImage(tempBuffer);
+        tempBuffer += fifoBunchSizeBytes;
+    }
 
     // free
     fifo->FreeAddress(buffer);

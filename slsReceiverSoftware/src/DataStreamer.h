@@ -30,6 +30,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * Calls Base Class CreateThread(), sets ErrorMask if error and increments
      * NumberofDataStreamers
      * @param ind self index
+     * @param dType detector type
      * @param f address of Fifo pointer
      * @param dr pointer to dynamic range
      * @param r detectorRoi
@@ -39,7 +40,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param qe pointer to quad Enable
      * @param tot pointer to total number of frames
      */
-    DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi, bool fr,
+    DataStreamer(int ind, detectorType dType, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi, bool fr,
                  xy np, bool *qe, uint64_t *tot);
 
     /**
@@ -55,6 +56,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     void SetFlipRows(bool fd);
     void
     SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);
+    void SetBunchSize(uint32_t value);
 
     /**
      * Creates Zmq Sockets
@@ -105,6 +107,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     static const std::string TypeName;
     const GeneralData *generalData{nullptr};
     Fifo *fifo;
+    detectorType detType;
     ZmqSocket *zmqSocket{nullptr};
     uint32_t *dynamicRange;
     ROI *detectorRoi;
@@ -112,6 +115,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     uint64_t *fileIndex;
     bool flipRows;
     std::map<std::string, std::string> additionalJsonHeader;
+    bool vetoThread{false};
 
     /** Used by streamer thread to update local copy (reduce number of locks
      * during streaming) */
@@ -132,6 +136,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     xy numPorts{1, 1};
     bool *quadEnable;
     uint64_t *totalNumFrames;
+
+    uint32_t fifoBunchSize{0};
+    /** size in memory including headers */
+    uint32_t fifoBunchSizeBytes{0};
 };
 
 } // namespace sls

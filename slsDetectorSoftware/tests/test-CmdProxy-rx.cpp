@@ -254,6 +254,7 @@ TEST_CASE("rx_fifodepth", "[.cmd][.rx]") {
         proxy.Call("rx_fifodepth", {}, -1, GET, oss);
         REQUIRE(oss.str() == "rx_fifodepth 100\n");
     }
+    REQUIRE_THROWS(proxy.Call("rx_fifodepth", {"0"}, -1, PUT));
     for (int i = 0; i != det.size(); ++i) {
         det.setRxFifoDepth(prev_val[i], {i});
     }
@@ -510,6 +511,32 @@ TEST_CASE("rx_clearroi", "[.cmd]") {
         for (int i = 0; i != det.size(); ++i) {
             det.setRxROI(prev_val);
         }
+    }
+}
+
+
+TEST_CASE("rx_bunchsize", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getRxBunchSize();
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_bunchsize", {"10"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_bunchsize 10\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_bunchsize", {"100"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_bunchsize 100\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_bunchsize", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_bunchsize 100\n");
+    }
+    REQUIRE_THROWS(proxy.Call("rx_bunchsize", {"0"}, -1, PUT));
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxBunchSize(prev_val[i], {i});
     }
 }
 

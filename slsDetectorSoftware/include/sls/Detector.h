@@ -913,6 +913,15 @@ class Detector {
 
     void clearRxROI();
 
+    Result<int> getRxBunchSize(Positions pos = {}) const;
+
+    /** Number of frames the receiver listens to before pushing into fifo 
+     * (buffer between listener and writer threads). 
+     * Higher number results in fewer locks between fifo access. \n
+     * Default is 1. */
+    void setRxBunchSize(int value, Positions pos = {});
+
+
     ///@}
 
     /** @name File */

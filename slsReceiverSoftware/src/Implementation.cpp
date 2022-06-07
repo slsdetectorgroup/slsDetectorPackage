@@ -67,16 +67,17 @@ void Implementation::SetThreadPriorities() {
 void Implementation::SetupFifoStructure() {
     fifo.clear();
     for (int i = 0; i < numUDPInterfaces; ++i) {
-        uint32_t datasize = generalData->imageSize;
+        size_t datasize = generalData->imageSize;
         // veto data size
         if (detType == GOTTHARD2 && i != 0) {
             datasize = generalData->vetoImageSize;
         }
+        datasize += generalData->fifoBufferHeaderSize;
+        datasize *= bunchSize;
 
         // create fifo structure
         try {
-            fifo.push_back(sls::make_unique<Fifo>(
-                i, datasize + (generalData->fifoBufferHeaderSize), fifoDepth));
+            fifo.push_back(sls::make_unique<Fifo>(i, datasize, fifoDepth));
         } catch (...) {
             fifo.clear();
             fifoDepth = 0;
@@ -93,9 +94,7 @@ void Implementation::SetupFifoStructure() {
             dataStreamer[i]->SetFifo(fifo[i].get());
 
         LOG(logINFO) << "Memory Allocated for Fifo " << i << ": "
-                     << (double)(((size_t)(datasize) +
-                                  (size_t)(generalData->fifoBufferHeaderSize)) *
-                                 (size_t)fifoDepth) /
+                     << (double)(datasize * (size_t)fifoDepth) /
                             (double)(1024 * 1024)
                      << " MB";
     }
@@ -169,6 +168,7 @@ void Implementation::setDetectorType(const detectorType d) {
     adcEnableMaskTenGiga = generalData->adcEnableMaskTenGiga;
     detectorRoi = generalData->roi;
     counterMask = generalData->counterMask;
+    bunchSize = generalData->defaultBunchSize;
 
     SetLocalNetworkParameters();
     SetupFifoStructure();
@@ -204,10 +204,12 @@ void Implementation::setDetectorType(const detectorType d) {
     for (const auto &it : listener) {
         it->SetGeneralData(generalData);
         it->SetActivate(activated);
+        it->SetBunchSize(bunchSize);
     }
     for (const auto &it : dataProcessor) {
         it->SetGeneralData(generalData);
         it->SetActivate(activated);
+        it->SetBunchSize(bunchSize);
     }
     SetThreadPriorities();
 
@@ -453,6 +455,22 @@ void Implementation::setReceiverROIMetadata(const ROI arg) {
     LOG(logINFO) << "receiver roi Metadata: " << ToString(receiverRoiMetadata);
 }
 
+uint32_t Implementation::getBunchSize() const { return bunchSize; }
+
+void Implementation::setBunchSize(const uint32_t i) {
+    if (bunchSize != i) {
+        bunchSize = i;
+        for (const auto &it : listener)
+            it->SetBunchSize(i);
+        for (const auto &it : dataProcessor)
+            it->SetBunchSize(i);
+        for (const auto &it : dataStreamer)
+            it->SetBunchSize(i);
+        SetupFifoStructure();
+    }
+    LOG(logINFO) << "Fifo Bunch Size: " << i;
+}
+
 /**************************************************
  *                                                 *
  *   File Parameters                               *
@@ -677,10 +695,11 @@ void Implementation::stopReceiver() {
         for (const auto &it : listener)
             if (it->IsRunning())
                 running = true;
-
+        LOG(logINFOBLUE) << "listener done";
         for (const auto &it : dataProcessor)
             if (it->IsRunning())
                 running = true;
+        LOG(logINFOBLUE) << "processor done";
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 
@@ -1003,6 +1022,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     &silentMode));
                 listener[i]->SetGeneralData(generalData);
                 listener[i]->SetActivate(activated);
+                listener[i]->SetBunchSize(bunchSize);
 
                 int ctbAnalogDataBytes = 0;
                 if (detType == CHIPTESTBOARD) {
@@ -1017,6 +1037,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 dataProcessor[i]->SetGeneralData(generalData);
                 dataProcessor[i]->SetActivate(activated);
                 dataProcessor[i]->SetReceiverROI(portRois[i]);
+                dataProcessor[i]->SetBunchSize(bunchSize);
             } catch (...) {
                 listener.clear();
                 dataProcessor.clear();
@@ -1032,7 +1053,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         flip = (i == 1 ? true : false);
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, fifo[i].get(), &dynamicRange, &detectorRoi,
+                        i, detType, fifo[i].get(), &dynamicRange, &detectorRoi,
                         &fileIndex, flip, numPorts, &quadEnable,
                         &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
@@ -1041,6 +1062,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
+                    dataStreamer[i]->SetBunchSize(bunchSize);
                 } catch (...) {
                     if (dataStreamEnable) {
                         dataStreamer.clear();
@@ -1159,7 +1181,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         flip = (i == 1 ? true : false);
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, fifo[i].get(), &dynamicRange, &detectorRoi,
+                        i, detType, fifo[i].get(), &dynamicRange, &detectorRoi,
                         &fileIndex, flip, numPorts, &quadEnable,
                         &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
@@ -1168,6 +1190,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         streamingHwm);
                     dataStreamer[i]->SetAdditionalJsonHeader(
                         additionalJsonHeader);
+                    dataStreamer[i]->SetBunchSize(bunchSize);
                 } catch (...) {
                     dataStreamer.clear();
                     dataStreamEnable = false;

@@ -294,6 +294,8 @@ class Module : public virtual slsDetectorDefs {
     defs::ROI getRxROI() const;
     void setRxROI(const slsDetectorDefs::ROI arg);
     void setRxROIMetadata(const slsDetectorDefs::ROI arg);
+    int getRxBunchSize() const;
+    void setRxBunchSize(int value);
 
     /**************************************************
      *                                                *

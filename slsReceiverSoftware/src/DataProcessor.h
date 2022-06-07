@@ -44,6 +44,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetReceiverROI(ROI roi);
     void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *generalData);
+    void SetBunchSize(uint32_t value);
 
     void CloseFiles();
     void DeleteFiles();
@@ -157,6 +158,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     bool activated_{false};
     ROI receiverRoi_{};
     bool receiverRoiEnabled_{false};
+    bool vetoThread{false};
+
     std::unique_ptr<char[]> completeImageToStreamBeforeCropping;
     /** if 0, sending random images with a timer */
     uint32_t *streamingFrequency_;
@@ -183,6 +186,10 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     bool streamCurrentFrame_{false};
 
     File *dataFile_{nullptr};
+
+    uint32_t fifoBunchSize{0};
+    /** size in memory including headers */
+    uint32_t fifoBunchSizeBytes{0};
 
     // call back
     /**

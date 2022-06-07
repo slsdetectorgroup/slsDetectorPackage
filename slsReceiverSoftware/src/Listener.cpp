@@ -32,6 +32,7 @@ Listener::Listener(int ind, detectorType dtype, Fifo *f,
       actualUDPSocketBufferSize(as), framesPerFile(fpf), frameDiscardMode(fdp),
       detectorDataStream(detds), silentMode(sm) {
     LOG(logDEBUG) << "Listener " << ind << " created";
+    vetoThread = (myDetectorType == GOTTHARD2 && index != 0);
 }
 
 Listener::~Listener() = default;
@@ -85,7 +86,7 @@ void Listener::ResetParametersforNewAcquisition() {
     lastCaughtFrameIndex = 0;
     carryOverFlag = false;
     uint32_t packetSize = generalData->packetSize;
-    if (myDetectorType == GOTTHARD2 && index != 0) {
+    if (vetoThread) {
         packetSize = generalData->vetoPacketSize;
     }
     carryOverPacket = make_unique<char[]>(packetSize);
@@ -98,6 +99,12 @@ void Listener::ResetParametersforNewAcquisition() {
     // reset fifo statistic
     fifo->GetMaxLevelForFifoBound();
     fifo->GetMinLevelForFifoFree();
+
+    fifoBunchSizeBytes = generalData->imageSize;
+    if (vetoThread) {
+        fifoBunchSizeBytes = generalData->vetoDataSize;
+    }
+    fifoBunchSizeBytes += generalData->fifoBufferHeaderSize;
 }
 
 void Listener::RecordFirstIndex(uint64_t fnum) {
@@ -119,6 +126,10 @@ void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
 
 void Listener::SetActivate(bool enable) { activated = enable; }
 
+void Listener::SetBunchSize(uint32_t value) {
+    fifoBunchSize = value;
+}
+
 void Listener::CreateUDPSockets() {
     if (!activated || !(*detectorDataStream)) {
         return;
@@ -135,7 +146,7 @@ void Listener::CreateUDPSockets() {
     ShutDownUDPSocket();
 
     uint32_t packetSize = generalData->packetSize;
-    if (myDetectorType == GOTTHARD2 && index != 0) {
+    if (vetoThread) {
         packetSize = generalData->vetoPacketSize;
     }
 
@@ -184,7 +195,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
     }
 
     uint32_t packetSize = generalData->packetSize;
-    if (myDetectorType == GOTTHARD2 && index != 0) {
+    if (vetoThread) {
         packetSize = generalData->vetoPacketSize;
     }
 
@@ -220,51 +231,48 @@ void Listener::SetHardCodedPosition(uint16_t r, uint16_t c) {
 
 void Listener::ThreadExecution() {
     char *buffer;
-    int rc = 0;
-
     fifo->GetNewAddress(buffer);
     LOG(logDEBUG5) << "Listener " << index
                    << ", "
                       "pop 0x"
                    << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
 
-    // udpsocket doesnt exist
-    if (activated && *detectorDataStream && !udpSocketAlive && !carryOverFlag) {
-        // LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not
-        // created or shut down earlier";
-        (*((uint32_t *)buffer)) = 0;
+    // get data
+    char* tempBuffer = buffer;
+    for (uint32_t iFrame = 0; iFrame != fifoBunchSize; iFrame ++) {
+     
+        // end of acquisition or not activated
+        if ((*status == TRANSMITTING || !udpSocketAlive) && !carryOverFlag) {
+            (*((uint32_t *)tempBuffer)) = DUMMY_PACKET_VALUE;
+            StopListening(buffer);
+            return;
+        }
+        LOG(logDEBUG) << "iframe:" << iFrame << " currentframeindex:" << currentFrameIndex;
+        int rc = ListenToAnImage(tempBuffer);
+
+        // socket closed or discarding image (free retake)
+            // weird frame numbers (print and rc = 0), then retake
+        if (rc <= 0) {
+            if (udpSocketAlive) {
+                --iFrame;
+            }
+        } else {
+            (*((uint32_t *)tempBuffer)) = rc;
+            tempBuffer += fifoBunchSizeBytes;
+        }
+    }
+
+    // last check
+    if ((*status != TRANSMITTING || !udpSocketAlive) && !carryOverFlag) {
+        LOG(logINFOBLUE) << "Last check ";
+        (*((uint32_t *)tempBuffer)) = DUMMY_PACKET_VALUE;
         StopListening(buffer);
         return;
     }
 
-    // get data
-    if ((*status != TRANSMITTING &&
-         (!activated || !(*detectorDataStream) || udpSocketAlive)) ||
-        carryOverFlag) {
-        rc = ListenToAnImage(buffer);
-    }
-
-    // error check, (should not be here) if not transmitting yet (previous if)
-    // rc should be > 0
-    if (rc == 0) {
-        if (!udpSocketAlive) {
-            (*((uint32_t *)buffer)) = 0;
-            StopListening(buffer);
-        } else
-            fifo->FreeAddress(buffer);
-        return;
-    }
-
-    // discarding image
-    else if (rc < 0) {
-        fifo->FreeAddress(buffer);
-        return;
-    }
-
-    (*((uint32_t *)buffer)) = rc;
-
     // push into fifo
     fifo->PushAddress(buffer);
+    LOG(logINFOBLUE) << "Pushed Listening bunch " << (void*)(buffer);
 
     // Statistics
     if (!(*silentMode)) {
@@ -278,8 +286,8 @@ void Listener::ThreadExecution() {
 }
 
 void Listener::StopListening(char *buf) {
-    (*((uint32_t *)buf)) = DUMMY_PACKET_VALUE;
     fifo->PushAddress(buf);
+    LOG(logINFOBLUE) << "Pushed Listening bunch (EOA) " << (void*)(buf);
     StopRunning();
     LOG(logDEBUG1) << index << ": Listening Packets (" << *udpPortNumber
                    << ") : " << numPacketsCaught;
@@ -300,7 +308,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
     uint32_t hsize = generalData->headerSizeinPacket;
     uint32_t fifohsize = generalData->fifoBufferHeaderSize;
     bool standardheader = generalData->standardheader;
-    if (myDetectorType == GOTTHARD2 && index != 0) {
+    if (vetoThread) {
         dsize = generalData->vetoDataSize;
         imageSize = generalData->vetoImageSize;
         packetSize = generalData->vetoPacketSize;
@@ -316,15 +324,6 @@ uint32_t Listener::ListenToAnImage(char *buf) {
     // reset to -1
     memset(buf, 0, fifohsize);
     new_header = (sls_receiver_header *)(buf + FIFO_HEADER_NUMBYTES);
-
-    // deactivated port (eiger)
-    if (!(*detectorDataStream)) {
-        return 0;
-    }
-    // deactivated (eiger)
-    if (!activated) {
-        return 0;
-    }
 
     // look for carry over
     if (carryOverFlag) {
@@ -350,6 +349,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
                     << "(Weird), With carry flag: Frame number " << fnum
                     << " less than current frame number " << currentFrameIndex;
                 carryOverFlag = false;
+                exit(-1);//***************************
                 return 0;
             }
             switch (*frameDiscardMode) {
@@ -514,7 +514,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
 
         lastCaughtFrameIndex = fnum;
 
-        LOG(logDEBUG1) << "Listening " << index
+        LOG(logDEBUG) << "Listening " << index
                        << ": currentfindex:" << currentFrameIndex
                        << ", fnum:" << fnum << ", pnum:" << pnum
                        << ", numpackets:" << numpackets;
@@ -533,6 +533,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
         // future packet	by looking at image number  (all other
         // detectors)
         if (fnum != currentFrameIndex) {
+            LOG(logINFORED) << "not equal. fnum:" << fnum << " currentfnum:" << currentFrameIndex;
             carryOverFlag = true;
             memcpy(carryOverPacket.get(), &listeningPacket[0], packetSize);
 

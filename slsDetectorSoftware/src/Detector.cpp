@@ -1225,6 +1225,14 @@ void Detector::setRxROI(const defs::ROI value) { pimpl->setRxROI(value); }
 
 void Detector::clearRxROI() { pimpl->clearRxROI(); }
 
+Result<int> Detector::getRxBunchSize(Positions pos) const {
+    return pimpl->Parallel(&Module::getRxBunchSize, pos);
+}
+
+void Detector::setRxBunchSize(int value, Positions pos) {
+    pimpl->Parallel(&Module::setRxBunchSize, pos, value);
+}
+
 // File
 
 Result<defs::fileFormat> Detector::getFileFormat(Positions pos) const {

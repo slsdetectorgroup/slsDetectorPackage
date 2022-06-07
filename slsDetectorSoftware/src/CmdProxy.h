@@ -911,6 +911,7 @@ class CmdProxy {
         {"rx_arping", &CmdProxy::rx_arping},
         {"rx_roi", &CmdProxy::Rx_ROI},
         {"rx_clearroi", &CmdProxy::rx_clearroi},
+        {"rx_bunchsize", &CmdProxy::rx_bunchsize},// FIXME: rx_fifobunchsize?
 
         /* File */
         {"fformat", &CmdProxy::fformat},
@@ -1767,6 +1768,10 @@ class CmdProxy {
         rx_clearroi, clearRxROI,
         "Resets Region of interest in receiver. Default is all "
         "channels/pixels enabled.");
+
+    INTEGER_COMMAND_VEC_ID(
+        rx_bunchsize, getRxBunchSize, setRxBunchSize, StringTo<int>,
+        "[n_frames]\n\tSet the number of frames the receiver listens to before pushing into fifo (buffer between listener and writer threads). Higher number results in fewer locks between fifo access. Default is 1. Expect signed 32 bit integer. ");
 
     /* File */
 

@@ -65,6 +65,7 @@ class GeneralData {
     uint32_t adcEnableMaskTenGiga{BIT32_MASK};
     slsDetectorDefs::ROI roi{};
     uint32_t counterMask{0};
+    uint32_t defaultBunchSize{1};
 
     GeneralData(){};
     virtual ~GeneralData(){};
@@ -445,10 +446,11 @@ class Gotthard2Data : public GeneralData {
         maxFramesPerFile = GOTTHARD2_MAX_FRAMES_PER_FILE;
         fifoBufferHeaderSize =
             FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-        defaultFifoDepth = 50000;
+        defaultFifoDepth = 50;
         standardheader = true;
         vetoDataSize = 160;
         vetoHsize = 16;
+        defaultBunchSize = 10000;
         UpdateImageSize();
     };
 

@@ -65,6 +65,8 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *g);
     void SetActivate(bool enable);
+    void SetBunchSize(uint32_t value);
+
     void CreateUDPSockets();
     void ShutDownUDPSocket();
 
@@ -130,6 +132,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     bool activated{false};
     bool *detectorDataStream;
     bool *silentMode;
+    bool vetoThread{false};
 
     /** row hardcoded as 1D or 2d,
      * if detector does not send them yet or
@@ -163,6 +166,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * eiger fnum is in header */
     std::unique_ptr<char[]> listeningPacket;
     std::atomic<bool> udpSocketAlive{false};
+
+    uint32_t fifoBunchSize{0};
+    /** size in memory including headers */
+    uint32_t fifoBunchSizeBytes{0};
 
     // for print progress during acquisition*/
     uint32_t numPacketsStatistic{0};

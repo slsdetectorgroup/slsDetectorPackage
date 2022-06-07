@@ -144,7 +144,7 @@ class Detector {
                             defs::detectorSettings settings = defs::STANDARD,
                             bool trimbits = true, Positions pos = {});
 
-    /** [Mythen3] It loads trim files from settingspath */
+    /** [Mythen3] It loads trim files from settingspath. An energy of -1 will pick up values from detector */
     void setThresholdEnergy(std::array<int, 3> threshold_ev,
                             defs::detectorSettings settings = defs::STANDARD,
                             bool trimbits = true, Positions pos = {});
@@ -1504,13 +1504,13 @@ class Detector {
     /** [Mythen3] */
     Result<bool> getInterpolation(Positions pos = {}) const;
 
-    /** [Mythen3] Also enables all counters */
+    /** [Mythen3] interpolation mode enables all counters and disables vth3. Disabling sets back counter mask and vth3. */
     void setInterpolation(bool value, Positions pos = {});
 
     /** [Mythen3] */
     Result<bool> getPumpProbe(Positions pos = {}) const;
 
-    /** [Mythen3] */
+    /** [Mythen3] pump probe mode only enables vth2. Disabling sets back to previous value */
     void setPumpProbe(bool value, Positions pos = {});
 
     /** [Mythen3] */

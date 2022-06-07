@@ -173,7 +173,9 @@ std::array<int, 3> Module::getAllThresholdEnergy() const {
 
 void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
                                 bool trimbits) {
-
+    if (shm()->detType == MYTHEN3) {
+        throw RuntimeError("Mythen3 should have called with 3 energies");
+    }
     // verify e_eV exists in trimEneregies[]
     if (shm()->trimEnergies.empty() || (e_eV < shm()->trimEnergies.front()) ||
         (e_eV > shm()->trimEnergies.back())) {
@@ -214,21 +216,9 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
         myMod.iodelay = myMod1.iodelay;
         myMod.tau =
             linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
-        // m3, reg is used for gaincaps
-        if (shm()->detType == MYTHEN3) {
-            if (myMod1.reg != myMod2.reg) {
-                throw RuntimeError(
-                    "setThresholdEnergyAndSettings: gaincaps do not "
-                    "match between files");
-            }
-            myMod.reg = myMod1.reg;
-        }
-    }
-    // m3, reg is used for gaincaps
-    if (shm()->detType != MYTHEN3) {
-        myMod.reg = isettings;
     }
 
+    myMod.reg = isettings;
     myMod.eV[0] = e_eV;
     setModule(myMod, trimbits);
     if (getSettings() != isettings) {
@@ -243,42 +233,35 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
 
 void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
                                    detectorSettings isettings, bool trimbits) {
-    // only mythen3
+    if (shm()->detType != MYTHEN3) {
+        throw RuntimeError("This detector should have called with 3 energies");
+    }
     if (shm()->trimEnergies.empty()) {
         throw RuntimeError(
-            "Trim energies have not been defined for this module yet!");
+            "Trim energies have not been defined for this module yet! Use trimen.");
     }
 
-    auto counters = getSetBits(getCounterMask());
-    enum mythen3_DacIndex {
-        M_VCASSH,
-        M_VTH2,
-        M_VRSHAPER,
-        M_VRSHAPER_N,
-        M_VIPRE_OUT,
-        M_VTH3,
-        M_VTH1,
-        M_VICIN,
-        M_VCAS,
-        M_VRPREAMP,
-        M_VCAL_N,
-        M_VIPRE,
-        M_VISHAPER,
-        M_VCAL_P,
-        M_VTRIM,
-        M_VDCSH
-    };
-
-    std::vector<sls_detector_module> myMods{shm()->detType};
     std::vector<int> energy(e_eV.begin(), e_eV.end());
     // if all energies are same
     if (allEqualTo(energy, energy[0])) {
+        if (energy[0] == -1) {
+           throw RuntimeError("Every energy provided to set threshold energy is -1. Typo?"); 
+        }
         energy.resize(1);
     }
-    myMods.resize(energy.size());
 
     // for each threshold
+    std::vector<sls_detector_module> myMods;
     for (size_t i = 0; i < energy.size(); ++i) {
+        if (energy[i] == -1) {
+            sls_detector_module mod = getModule();
+            myMods.push_back(mod);
+            continue;
+        }
+
+        sls_detector_module mod{shm()->detType};
+        myMods.push_back(mod);
+
         // don't interpolate
         if (shm()->trimEnergies.anyEqualTo(energy[i])) {
             std::string settingsfname =
@@ -324,10 +307,9 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
 
             myMods[i] = interpolateTrim(&myMod1, &myMod2, energy[i], trim1,
                                         trim2, trimbits);
-            // gaincaps
+            // csr
             if (myMod1.reg != myMod2.reg) {
-                throw RuntimeError("setAllThresholdEnergy: gaincaps do not "
-                                   "match between files for energy (eV) " +
+                throw RuntimeError("setAllThresholdEnergy: chip shift register values do not match between files for energy (eV) " +
                                    std::to_string(energy[i]));
             }
             myMods[i].reg = myMod1.reg;
@@ -337,8 +319,11 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
     sls_detector_module myMod{shm()->detType};
     myMod = myMods[0];
 
+    
     // if multiple thresholds, combine
     if (myMods.size() > 1) {
+        auto counters = getSetBits(getCounterMask());
+
 
         // average vtrim of enabled counters
         int sum = 0;
@@ -377,55 +362,14 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
         for (int i = 0; i < myMod.nchan; ++i) {
             myMod.chanregs[i] = myMods[i % 3].chanregs[i];
         }
-        // gain caps
+        // csr
         if (myMods[0].reg != myMods[1].reg || myMods[1].reg != myMods[2].reg) {
-            throw RuntimeError("setAllThresholdEnergy: gaincaps do not "
-                               "match between files for all energies");
+            throw RuntimeError("setAllThresholdEnergy: chip shift register values do not match between files for all energies");
         }
     }
 
-    myMod.reg = isettings;
     std::copy(e_eV.begin(), e_eV.end(), myMod.eV);
     LOG(logDEBUG) << "ev:" << ToString(myMod.eV);
-
-    // check for trimbits that are out of range
-    bool out_of_range = false;
-    for (int i = 0; i != myMod.nchan; ++i) {
-        if (myMod.chanregs[i] < 0) {
-            myMod.chanregs[i] = 0;
-            out_of_range = true;
-        } else if (myMod.chanregs[i] > 63) {
-            myMod.chanregs[i] = 63;
-            out_of_range = true;
-        }
-    }
-    if (out_of_range) {
-        LOG(logWARNING)
-            << "Some trimbits were out of range after interpolation, these "
-               "have been replaced with 0 or 63.";
-    }
-
-    // check dacs
-    out_of_range = false;
-    for (int i = 0; i != myMod.ndac; ++i) {
-        int dacMin = 0;
-        int dacMax = 2800;
-        if (i == M_VTH1 || i == M_VTH2 || i == M_VTH3) {
-            dacMin = 200;
-            dacMax = 2400;
-        }
-        if (myMod.dacs[i] < dacMin) {
-            myMod.dacs[i] = dacMin;
-            out_of_range = true;
-        } else if (myMod.dacs[i] > dacMax) {
-            myMod.dacs[i] = dacMax;
-            out_of_range = true;
-        }
-    }
-    if (out_of_range) {
-        LOG(logWARNING) << "Some dacs were out of range after interpolation, "
-                           "these have been replaced with 600 or 2400.";
-    }
 
     setModule(myMod, trimbits);
     if (getSettings() != isettings) {
@@ -2261,10 +2205,8 @@ uint32_t Module::getCounterMask() const {
 }
 
 void Module::setCounterMask(uint32_t countermask) {
-    LOG(logDEBUG1) << "Setting Counter mask to " << countermask;
     sendToDetector(F_SET_COUNTER_MASK, countermask, nullptr);
     if (shm()->useReceiverFlag) {
-        LOG(logDEBUG1) << "Sending Reciver counter mask: " << countermask;
         sendToReceiver(F_RECEIVER_SET_COUNTER_MASK, countermask, nullptr);
     }
 }
@@ -2324,7 +2266,10 @@ bool Module::getInterpolation() const {
 
 void Module::setInterpolation(const bool enable) {
     sendToDetector(F_SET_INTERPOLATION, static_cast<int>(enable), nullptr);
-    setCounterMask(getCounterMask());
+    int mask = getCounterMask();
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_COUNTER_MASK, mask, nullptr);
+    }
 }
 
 bool Module::getPumpProbe() const {
@@ -2407,12 +2352,9 @@ int Module::getNumberOfDigitalSamples() const {
 }
 
 void Module::setNumberOfDigitalSamples(int value) {
-    LOG(logDEBUG1) << "Setting number of digital samples to " << value;
     sendToDetector(F_SET_NUM_DIGITAL_SAMPLES, value, nullptr);
     updateNumberOfChannels(); // depends on samples and adcmask
     if (shm()->useReceiverFlag) {
-        LOG(logDEBUG1) << "Sending number of digital samples to Receiver: "
-                       << value;
         sendToReceiver(F_RECEIVER_SET_NUM_DIGITAL_SAMPLES, value, nullptr);
     }
 }
@@ -3347,6 +3289,45 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
         module.nchan = 0;
         module.nchip = 0;
     }
+    // validate dacs and trimbits
+    if (shm()->detType == MYTHEN3) {
+        // check for trimbits that are out of range
+        bool out_of_range = false;
+        for (int i = 0; i != module.nchan; ++i) {
+            if (module.chanregs[i] < 0) {
+                module.chanregs[i] = 0;
+                out_of_range = true;
+            } else if (module.chanregs[i] > 63) {
+                module.chanregs[i] = 63;
+                out_of_range = true;
+            }
+        }
+        if (out_of_range) {
+            LOG(logWARNING)
+                << "Some trimbits were out of range, these have been replaced with 0 or 63.";
+        }
+        // check dacs
+        out_of_range = false;
+        for (int i = 0; i != module.ndac; ++i) {
+            int dacMin = 0;
+            int dacMax = 2800;
+            if (i == M_VTH1 || i == M_VTH2 || i == M_VTH3) {
+                dacMin = 200;
+                dacMax = 2400;
+            }
+            if (module.dacs[i] < dacMin) {
+                module.dacs[i] = dacMin;
+                out_of_range = true;
+            } else if (module.dacs[i] > dacMax) {
+                module.dacs[i] = dacMax;
+                out_of_range = true;
+            }
+        }
+        if (out_of_range) {
+            LOG(logWARNING) << "Some dacs were out of range, "
+                            "these have been replaced with 0/200 or 2800/2400.";
+        }
+    }
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_MODULE);
     sendModule(&module, client);
@@ -3478,42 +3459,6 @@ sls_detector_module Module::interpolateTrim(sls_detector_module *a,
     }
 
     sls_detector_module myMod{shm()->detType};
-    enum eiger_DacIndex {
-        E_SVP,
-        E_VTR,
-        E_VRF,
-        E_VRS,
-        E_SVN,
-        E_VTGSTV,
-        E_VCMP_LL,
-        E_VCMP_LR,
-        E_CAL,
-        E_VCMP_RL,
-        E_RXB_RB,
-        E_RXB_LB,
-        E_VCMP_RR,
-        E_VCP,
-        E_VCN,
-        E_VIS
-    };
-    enum mythen3_DacIndex {
-        M_VCASSH,
-        M_VTH2,
-        M_VRSHAPER,
-        M_VRSHAPER_N,
-        M_VIPRE_OUT,
-        M_VTH3,
-        M_VTH1,
-        M_VICIN,
-        M_VCAS,
-        M_VRPREAMP,
-        M_VCAL_N,
-        M_VIPRE,
-        M_VISHAPER,
-        M_VCAL_P,
-        M_VTRIM,
-        M_VDCSH
-    };
 
     // create copy and interpolate dac lists
     std::vector<int> dacs_to_copy, dacs_to_interpolate;

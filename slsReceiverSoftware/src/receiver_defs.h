@@ -37,7 +37,7 @@ namespace sls {
 #define FILE_BUFFER_SIZE (16 * 1024 * 1024) // 16mb
 
 // fifo
-#define FIFO_HEADER_NUMBYTES   (8)
+#define FIFO_HEADER_NUMBYTES   (16)
 #define FIFO_DATASIZE_NUMBYTES (4)
 #define FIFO_PADDING_NUMBYTES                                                  \
     (4) // for 8 byte alignment due to sls_receiver_header structure

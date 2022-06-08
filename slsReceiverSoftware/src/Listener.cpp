@@ -521,7 +521,6 @@ uint32_t Listener::ListenToAnImage(char *buf) {
         // future packet	by looking at image number  (all other
         // detectors)
         if (fnum != currentFrameIndex) {
-            LOG(logINFORED) << "not equal. fnum:" << fnum << " currentfnum:" << currentFrameIndex;
             carryOverFlag = true;
             memcpy(carryOverPacket.get(), &listeningPacket[0], packetSize);
 

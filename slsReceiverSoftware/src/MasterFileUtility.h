@@ -25,10 +25,10 @@ std::string CreateMasterBinaryFile(const std::string &filePath,
                                    MasterAttributes *attr);
 
 #ifdef HDF5C
-void LinkHDF5FileInMaster(const std::string &masterFileName,
-                          const std::string &dataFilename,
-                          const std::string &dataSetname,
-                          const std::vector<std::string> parameterNames,
+void LinkHDF5FileInMaster(std::string &masterFileName,
+                          std::string &dataFilename,
+                          std::string &dataSetname,
+                          std::vector<std::string> parameterNames,
                           const bool silentMode, std::mutex *hdf5LibMutex);
 
 std::string CreateMasterHDF5File(const std::string &filePath,

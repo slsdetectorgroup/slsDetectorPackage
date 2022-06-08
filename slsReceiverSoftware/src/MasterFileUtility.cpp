@@ -47,10 +47,10 @@ std::string CreateMasterBinaryFile(const std::string &filePath,
 }
 
 #ifdef HDF5C
-void LinkHDF5FileInMaster(const std::string &masterFileName,
-                          const std::string &dataFilename,
-                          const std::string &dataSetname,
-                          const std::vector<std::string> parameterNames,
+void LinkHDF5FileInMaster(std::string &masterFileName,
+                          std::string &dataFilename,
+                          std::string &dataSetname,
+                          std::vector<std::string> parameterNames,
                           const bool silentMode, std::mutex *hdf5LibMutex) {
 
     std::lock_guard<std::mutex> lock(*hdf5LibMutex);

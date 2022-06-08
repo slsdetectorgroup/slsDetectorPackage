@@ -244,39 +244,25 @@ void Listener::ThreadExecution() {
         // end of acquisition or not activated
         if ((*status == TRANSMITTING || !udpSocketAlive) && !carryOverFlag) {
             (*((uint32_t *)tempBuffer)) = DUMMY_PACKET_VALUE;
-            LOG(logDEBUG1) << iFrame << ": dummy=" << DUMMY_PACKET_VALUE;
             StopListening(buffer);
             return;
         }
-        LOG(logDEBUG1) << "iframe:" << iFrame << " currentframeindex:" << currentFrameIndex;
         int rc = ListenToAnImage(tempBuffer);
 
         // socket closed or discarding image (free retake)
             // weird frame numbers (print and rc = 0), then retake
         if (rc <= 0) {
             if (udpSocketAlive) {
-                LOG(logDEBUG1) << iFrame << ": rc<=0" << std::hex << static_cast<void *>(tempBuffer)  << std::dec;
                 --iFrame;
             }
         } else {
             (*((uint32_t *)tempBuffer)) = rc;
-            LOG(logDEBUG1) << iFrame << ": rc=" << rc <<  " addr:" << std::hex << static_cast<void *>(tempBuffer)  << std::dec;
             tempBuffer += fifoBunchSizeBytes;
         }
     }
 
-    // last check
-   /* if ((*status != TRANSMITTING || !udpSocketAlive) && !carryOverFlag) {
-        LOG(logINFOBLUE) << "Last check " << std::hex << static_cast<void *>(tempBuffer)  << std::dec;
-        (*((uint32_t *)tempBuffer)) = DUMMY_PACKET_VALUE;
-            LOG(logINFOBLUE) << ": dummy=" << DUMMY_PACKET_VALUE;
-        StopListening(buffer);
-        return;
-    }*/
-
     // push into fifo
     fifo->PushAddress(buffer);
-    LOG(logDEBUG1) << "Pushed Listening bunch " << std::hex << static_cast<void *>(tempBuffer)  << std::dec;
 
     // Statistics
     if (!(*silentMode)) {
@@ -291,11 +277,9 @@ void Listener::ThreadExecution() {
 
 void Listener::StopListening(char *buf) {
     fifo->PushAddress(buf);
-    LOG(logDEBUG1) << "Pushed Listening bunch (EOA) " << std::hex << static_cast<void *>(buf)  << std::dec;
     StopRunning();
-    LOG(logDEBUG1) << index << ": Listening Packets (" << *udpPortNumber
+    LOG(logDEBUG1) << index << ": Listening Completed (" << *udpPortNumber
                    << ") : " << numPacketsCaught;
-    LOG(logDEBUG1) << index << ": Listening Completed";
 }
 
 /* buf includes the fifo header and packet header */

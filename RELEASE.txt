@@ -80,6 +80,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - g2 system frequency is the same irrespective of timing source
 - (apparently) rxr doesnt get stuck anymore from 6.1.1
 - rxr mem size changed (fifo header size from 8 to 16) due to sls rxr header = 112.. 112+ 16=128 (reduces packet losss especially for g2)
+-udp_srcip and udp_Srcip2: can set to auto (for virtual or 1g data networks)
 
 2. Resolved Issues
 ==================

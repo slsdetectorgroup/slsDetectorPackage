@@ -18,6 +18,7 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
     void SetExportMode(bool exportMode);
 
   private slots:
+    void SetHighVoltage();
     void SetSettings(int index);
     void SetGainMode(int index);
     void SetDynamicRange(int index);
@@ -32,6 +33,7 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
     void ShowFixG0(bool expertMode);
     void Initialization();
 
+    void GetHighVoltage();
     void GetSettings();
     void GetGainMode();
     void GetDynamicRange();
@@ -41,6 +43,12 @@ class qTabSettings : public QWidget, private Ui::TabSettingsObject {
 
     Detector *det;
     std::vector<QCheckBox *> counters;
+
+    enum hvVals { HV_0, HV_90, HV_110, HV_120, HV_150, HV_180, HV_200 };
+
+    int hvmin;
+    static const int HV_MIN = 60;
+    static const int HV_MAX = 200;
 
     enum {
         STANDARD,

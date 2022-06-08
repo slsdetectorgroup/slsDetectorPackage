@@ -44,7 +44,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetReceiverROI(ROI roi);
     void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *generalData);
-    void SetBunchSize(uint32_t value);
+    void SetBunchSize(size_t value);
 
     void CloseFiles();
     void DeleteFiles();
@@ -187,9 +187,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     File *dataFile_{nullptr};
 
-    uint32_t fifoBunchSize{0};
+    size_t fifoBunchSize{0};
     /** size in memory including headers */
-    uint32_t fifoBunchSizeBytes{0};
+    size_t fifoBunchSizeBytes{0};
 
     // call back
     /**

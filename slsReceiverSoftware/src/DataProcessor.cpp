@@ -60,7 +60,7 @@ void DataProcessor::SetReceiverROI(ROI roi) {
     receiverRoiEnabled_ = receiverRoi_.completeRoi() ? false : true;
 }
 
-void DataProcessor::SetBunchSize(uint32_t value) {
+void DataProcessor::SetBunchSize(size_t value) {
     fifoBunchSize = value;
 }
 
@@ -267,7 +267,8 @@ void DataProcessor::ThreadExecution() {
                    << static_cast<void *>(buffer) << std::dec;
 
     char* tempBuffer = buffer;
-    for (uint32_t iFrame = 0; iFrame != fifoBunchSize; iFrame ++) {
+    for (size_t iFrame = 0; iFrame != fifoBunchSize; iFrame ++) {
+        LOG(logDEBUG1) << "iFrame:" << iFrame;
 
         // end of acquisition (check dummy)
         auto numBytes = *reinterpret_cast<uint32_t *>(tempBuffer);
@@ -295,19 +296,26 @@ void DataProcessor::ThreadExecution() {
             memcpy(buffer + generalData_->fifoBufferHeaderSize, &completeImageToStreamBeforeCropping[0], generalData_->imageSize);
         }
         fifo_->PushAddressToStream(buffer);
+        LOG(logINFORED) << "push to stream!??";
+
     } else {
         fifo_->FreeAddress(buffer);
+        LOG(logDEBUG1) << "Pushed (free) dataprocessing bunch (EOA) " << std::hex << static_cast<void *>(buffer)  << std::dec;
     }
 }
 
 void DataProcessor::StopProcessing(char *buf) {
-    LOG(logINFORED) << "DataProcessing " << index << ": Dummy";
+    LOG(logDEBUG1) << "DataProcessing " << index << ": Dummy";
 
     // stream dummy or free
-    if (*dataStreamEnable_)
+    if (*dataStreamEnable_) {
+        LOG(logINFORED) << "push to stream!??";
         fifo_->PushAddressToStream(buf);
-    else
+    }
+    else {
         fifo_->FreeAddress(buf);
+        LOG(logDEBUG1) << "Pushed (free) stop proc dataprocessing bunch (EOA) " << std::hex << static_cast<void *>(buf)  << std::dec;
+    }
 
     CloseFiles();
     StopRunning();

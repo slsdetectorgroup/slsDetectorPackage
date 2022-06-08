@@ -56,7 +56,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     void SetFlipRows(bool fd);
     void
     SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);
-    void SetBunchSize(uint32_t value);
+    void SetBunchSize(size_t value);
 
     /**
      * Creates Zmq Sockets
@@ -137,9 +137,9 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     bool *quadEnable;
     uint64_t *totalNumFrames;
 
-    uint32_t fifoBunchSize{0};
+    size_t fifoBunchSize{0};
     /** size in memory including headers */
-    uint32_t fifoBunchSizeBytes{0};
+    size_t fifoBunchSizeBytes{0};
 };
 
 } // namespace sls

@@ -81,7 +81,7 @@ void DataStreamer::SetAdditionalJsonHeader(
     isAdditionalJsonUpdated = true;
 }
 
-void DataStreamer::SetBunchSize(uint32_t value) {
+void DataStreamer::SetBunchSize(size_t value) {
     fifoBunchSize = value;
 }
 
@@ -126,7 +126,7 @@ void DataStreamer::ThreadExecution() {
                    << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
 
      char* tempBuffer = buffer;
-    for (uint32_t iFrame = 0; iFrame != fifoBunchSize; iFrame ++) {
+    for (size_t iFrame = 0; iFrame != fifoBunchSize; iFrame ++) {
 
         //  end of acquisition (check dummy)
         auto numBytes = *reinterpret_cast<uint32_t *>(tempBuffer);

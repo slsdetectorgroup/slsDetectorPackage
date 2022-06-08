@@ -1783,7 +1783,7 @@ int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
 }
 
 int ClientInterface::get_bunch_size(Interface &socket) {
-    int retval = impl()->getBunchSize();
+    int retval = static_cast<int>(impl()->getBunchSize());
     LOG(logDEBUG1) << "bunch size retval:" << retval;
     return socket.sendResult(retval);
 }
@@ -1796,7 +1796,7 @@ int ClientInterface::set_bunch_size(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting bunch size:" << value;
     try {
-        impl()->setBunchSize(value);
+        impl()->setBunchSize(static_cast<size_t>(value));
     } catch (const RuntimeError &e) {
         throw RuntimeError("Could not set rx bunch size due to fifo structure memory allocation.");
     }

@@ -455,9 +455,9 @@ void Implementation::setReceiverROIMetadata(const ROI arg) {
     LOG(logINFO) << "receiver roi Metadata: " << ToString(receiverRoiMetadata);
 }
 
-uint32_t Implementation::getBunchSize() const { return bunchSize; }
+size_t Implementation::getBunchSize() const { return bunchSize; }
 
-void Implementation::setBunchSize(const uint32_t i) {
+void Implementation::setBunchSize(const size_t i) {
     if (bunchSize != i) {
         bunchSize = i;
         for (const auto &it : listener)

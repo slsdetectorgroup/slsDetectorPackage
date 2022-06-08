@@ -126,7 +126,7 @@ void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
 
 void Listener::SetActivate(bool enable) { activated = enable; }
 
-void Listener::SetBunchSize(uint32_t value) {
+void Listener::SetBunchSize(size_t value) {
     fifoBunchSize = value;
 }
 
@@ -232,47 +232,51 @@ void Listener::SetHardCodedPosition(uint16_t r, uint16_t c) {
 void Listener::ThreadExecution() {
     char *buffer;
     fifo->GetNewAddress(buffer);
-    LOG(logDEBUG5) << "Listener " << index
+    LOG(logDEBUG1) << "Listener " << index
                    << ", "
                       "pop 0x"
                    << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
 
     // get data
     char* tempBuffer = buffer;
-    for (uint32_t iFrame = 0; iFrame != fifoBunchSize; iFrame ++) {
+    for (size_t iFrame = 0; iFrame != fifoBunchSize; iFrame ++) {
      
         // end of acquisition or not activated
         if ((*status == TRANSMITTING || !udpSocketAlive) && !carryOverFlag) {
             (*((uint32_t *)tempBuffer)) = DUMMY_PACKET_VALUE;
+            LOG(logDEBUG1) << iFrame << ": dummy=" << DUMMY_PACKET_VALUE;
             StopListening(buffer);
             return;
         }
-        LOG(logDEBUG) << "iframe:" << iFrame << " currentframeindex:" << currentFrameIndex;
+        LOG(logDEBUG1) << "iframe:" << iFrame << " currentframeindex:" << currentFrameIndex;
         int rc = ListenToAnImage(tempBuffer);
 
         // socket closed or discarding image (free retake)
             // weird frame numbers (print and rc = 0), then retake
         if (rc <= 0) {
             if (udpSocketAlive) {
+                LOG(logDEBUG1) << iFrame << ": rc<=0" << std::hex << static_cast<void *>(tempBuffer)  << std::dec;
                 --iFrame;
             }
         } else {
             (*((uint32_t *)tempBuffer)) = rc;
+            LOG(logDEBUG1) << iFrame << ": rc=" << rc <<  " addr:" << std::hex << static_cast<void *>(tempBuffer)  << std::dec;
             tempBuffer += fifoBunchSizeBytes;
         }
     }
 
     // last check
-    if ((*status != TRANSMITTING || !udpSocketAlive) && !carryOverFlag) {
+   /* if ((*status != TRANSMITTING || !udpSocketAlive) && !carryOverFlag) {
         LOG(logINFOBLUE) << "Last check " << std::hex << static_cast<void *>(tempBuffer)  << std::dec;
         (*((uint32_t *)tempBuffer)) = DUMMY_PACKET_VALUE;
+            LOG(logINFOBLUE) << ": dummy=" << DUMMY_PACKET_VALUE;
         StopListening(buffer);
         return;
-    }
+    }*/
 
     // push into fifo
     fifo->PushAddress(buffer);
-    LOG(logINFOBLUE) << "Pushed Listening bunch " << (void*)(buffer);
+    LOG(logDEBUG1) << "Pushed Listening bunch " << std::hex << static_cast<void *>(tempBuffer)  << std::dec;
 
     // Statistics
     if (!(*silentMode)) {
@@ -287,7 +291,7 @@ void Listener::ThreadExecution() {
 
 void Listener::StopListening(char *buf) {
     fifo->PushAddress(buf);
-    LOG(logINFOBLUE) << "Pushed Listening bunch (EOA) " << (void*)(buf);
+    LOG(logDEBUG1) << "Pushed Listening bunch (EOA) " << std::hex << static_cast<void *>(buf)  << std::dec;
     StopRunning();
     LOG(logDEBUG1) << index << ": Listening Packets (" << *udpPortNumber
                    << ") : " << numPacketsCaught;

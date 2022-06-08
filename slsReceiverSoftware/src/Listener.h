@@ -65,7 +65,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *g);
     void SetActivate(bool enable);
-    void SetBunchSize(uint32_t value);
+    void SetBunchSize(size_t value);
 
     void CreateUDPSockets();
     void ShutDownUDPSocket();
@@ -167,9 +167,9 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     std::unique_ptr<char[]> listeningPacket;
     std::atomic<bool> udpSocketAlive{false};
 
-    uint32_t fifoBunchSize{0};
+    size_t fifoBunchSize{0};
     /** size in memory including headers */
-    uint32_t fifoBunchSizeBytes{0};
+    size_t fifoBunchSizeBytes{0};
 
     // for print progress during acquisition*/
     uint32_t numPacketsStatistic{0};

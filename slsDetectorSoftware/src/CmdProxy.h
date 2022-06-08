@@ -877,8 +877,8 @@ class CmdProxy {
         {"udp_numdst", &CmdProxy::udp_numdst},
         {"udp_cleardst", &CmdProxy::udp_cleardst},
         {"udp_firstdst", &CmdProxy::udp_firstdst},
-        {"udp_srcip", &CmdProxy::udp_srcip},
-        {"udp_srcip2", &CmdProxy::udp_srcip2},
+        {"udp_srcip", &CmdProxy::UDPSourceIP},
+        {"udp_srcip2", &CmdProxy::UDPSourceIP2},
         {"udp_dstip", &CmdProxy::UDPDestinationIP},
         {"udp_dstip2", &CmdProxy::UDPDestinationIP2},
         {"udp_srcmac", &CmdProxy::udp_srcmac},
@@ -1148,6 +1148,8 @@ class CmdProxy {
     IpAddr getIpFromAuto();
     UdpDestination getUdpEntry();
     std::string UDPDestinationList(int action);
+    std::string UDPSourceIP(int action);
+    std::string UDPSourceIP2(int action);
     std::string UDPDestinationIP(int action);
     std::string UDPDestinationIP2(int action);
     /* Receiver Config */

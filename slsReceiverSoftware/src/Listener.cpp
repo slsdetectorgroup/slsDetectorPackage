@@ -258,6 +258,7 @@ void Listener::ThreadExecution() {
         } else {
             (*((uint32_t *)tempBuffer)) = rc;
             tempBuffer += fifoBunchSizeBytes;
+            numFramesStatistic++;
         }
     }
 
@@ -266,7 +267,6 @@ void Listener::ThreadExecution() {
 
     // Statistics
     if (!(*silentMode)) {
-        numFramesStatistic++;
         if (numFramesStatistic >=
             // second condition also for infinite #number of frames
             (((*framesPerFile) == 0) ? STATISTIC_FRAMENUMBER_INFINITE

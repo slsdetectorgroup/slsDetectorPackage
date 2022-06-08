@@ -1599,19 +1599,6 @@ class CmdProxy {
         "out from in a round robin fashion. The entry must not have been "
         "empty. Default: 0");
 
-    INTEGER_COMMAND_VEC_ID(
-        udp_srcip, getSourceUDPIP, setSourceUDPIP, IpAddr,
-        "[x.x.x.x]\n\tIp address of the detector (source) udp "
-        "interface. Must be same subnet as destination udp "
-        "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will "
-        "replace with its own DHCP IP address.");
-
-    INTEGER_COMMAND_VEC_ID(
-        udp_srcip2, getSourceUDPIP2, setSourceUDPIP2, IpAddr,
-        "[x.x.x.x]\n\t[Jungfrau][Gotthard2] Ip address of the detector "
-        "(source) udp interface 2. Must be same subnet as destination udp "
-        "ip2.\n\t [Jungfrau] top half or inner interface\n\t [Gotthard2] veto "
-        "debugging.");
 
     INTEGER_COMMAND_VEC_ID(
         udp_srcmac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,

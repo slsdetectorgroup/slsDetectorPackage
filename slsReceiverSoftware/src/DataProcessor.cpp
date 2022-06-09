@@ -263,6 +263,7 @@ void DataProcessor::ThreadExecution() {
     LOG(logDEBUG1) << "DataProcessor " << index << ", " << std::hex
                    << static_cast<void *>(buffer) << std::dec;
 
+    bool streamImageInBunch = false;
     char* tempBuffer = buffer;
     for (size_t iFrame = 0; iFrame != fifoBunchSize; iFrame ++) {
 
@@ -276,6 +277,9 @@ void DataProcessor::ThreadExecution() {
 
         try {
             ProcessAnImage(tempBuffer);
+            if (streamCurrentFrame_) {
+                streamImageInBunch = true;
+            }
         } 
         // exception from callback
         catch (const std::exception &e) {
@@ -284,13 +288,8 @@ void DataProcessor::ThreadExecution() {
         tempBuffer += fifoBunchSizeBytes;
     }
     
-    // stream (if time/freq to stream) or free
-    if (streamCurrentFrame_) {
-        // copy the complete image back if roi enabled
-        if (receiverRoiEnabled_) {
-            (*((uint32_t *)buffer)) = generalData_->imageSize;
-            memcpy(buffer + generalData_->fifoBufferHeaderSize, &completeImageToStreamBeforeCropping[0], generalData_->imageSize);
-        }
+    // stream or free
+    if (streamImageInBunch) {
         fifo_->PushAddressToStream(buffer);
     } else {
         fifo_->FreeAddress(buffer);
@@ -356,8 +355,13 @@ void DataProcessor::ProcessAnImage(char *buf) {
                 (uint32_t)(fnum - firstIndex_);
         }
         streamCurrentFrame_ = true;
+        // needed to know which one to stream from the bunch
+        (*((uint32_t *)(buf + FIFO_HEADER_STREAM_ENABLE))) = 1;
+        
     } else {
         streamCurrentFrame_ = false;
+        // needed to know which one not to stream from the bunch
+        (*((uint32_t *)(buf + FIFO_HEADER_STREAM_ENABLE))) = 0;
     }
 
 
@@ -407,6 +411,15 @@ void DataProcessor::ProcessAnImage(char *buf) {
               // via stopReceiver tcp)
         }
     }
+
+
+    // copy the complete image back if roi enabled
+    if (streamCurrentFrame_) {
+        if (receiverRoiEnabled_) {
+            (*((uint32_t *)buf)) = generalData_->imageSize;
+            memcpy(buf + generalData_->fifoBufferHeaderSize, &completeImageToStreamBeforeCropping[0], generalData_->imageSize);
+        }
+    }
 }
 
 bool DataProcessor::SendToStreamer() {
@@ -446,7 +459,7 @@ bool DataProcessor::CheckCount() {
         currentFreqCount_ = 1;
         return true;
     }
-    currentFreqCount_ += fifoBunchSize;
+    ++currentFreqCount_;
     return false;
 }
 

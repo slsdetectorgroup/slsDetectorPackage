@@ -135,8 +135,11 @@ void DataStreamer::ThreadExecution() {
             StopProcessing(buffer);
             return;
         }
-
-        ProcessAnImage(tempBuffer);
+    
+        // process only if it needs to be streamed
+        if (*((uint32_t *)(tempBuffer + FIFO_HEADER_STREAM_ENABLE))) {
+            ProcessAnImage(tempBuffer);
+        }       
         tempBuffer += fifoBunchSizeBytes;
     }
 

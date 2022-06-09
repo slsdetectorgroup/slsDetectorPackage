@@ -39,6 +39,7 @@ namespace sls {
 // fifo
 #define FIFO_HEADER_NUMBYTES   (16)
 #define FIFO_DATASIZE_NUMBYTES (4)
+#define FIFO_HEADER_STREAM_ENABLE (8)
 
 // hdf5
 #define MAX_CHUNKED_IMAGES (1)

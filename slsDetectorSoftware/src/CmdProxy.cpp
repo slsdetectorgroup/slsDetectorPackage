@@ -1539,6 +1539,72 @@ std::string CmdProxy::UDPDestinationList(int action) {
     return os.str();
 }
 
+std::string CmdProxy::UDPSourceIP(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[x.x.x.x] or auto\n\tIp address of the detector (source) udp interface. Must be same subnet as destination udp ip.\n\t[Eiger] Set only for 10G. For 1G, detector will replace with its own DHCP IP address. If 'auto' used, then ip is set to ip of rx_hostname."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        auto t = det->getSourceUDPIP(std::vector<int>{det_id});
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        IpAddr val;
+        if (args[0] == "auto") {
+            val = getIpFromAuto();
+            LOG(logINFO) << "Setting udp_srcip of detector " << det_id << " to "
+                         << val;
+        } else {
+            val = IpAddr(args[0]);
+        }
+        det->setSourceUDPIP(val, std::vector<int>{det_id});
+        os << val << '\n';
+        
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::UDPSourceIP2(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[x.x.x.x] or auto\n\t[Jungfrau][Gotthard2] Ip address of the detector (source) udp interface 2. Must be same subnet as destination udp ip2.\n\t [Jungfrau] top half or inner interface\n\t [Gotthard2] veto debugging. If 'auto' used, then ip is set to ip of rx_hostname."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        auto t = det->getSourceUDPIP2(std::vector<int>{det_id});
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        IpAddr val;
+        if (args[0] == "auto") {
+            val = getIpFromAuto();
+            LOG(logINFO) << "Setting udp_srcip2 of detector " << det_id << " to "
+                         << val;
+        } else {
+            val = IpAddr(args[0]);
+        }
+        det->setSourceUDPIP2(val, std::vector<int>{det_id});
+        os << val << '\n';
+        
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::UDPDestinationIP(int action) {
     std::ostringstream os;
     os << cmd << ' ';

@@ -877,8 +877,8 @@ class CmdProxy {
         {"udp_numdst", &CmdProxy::udp_numdst},
         {"udp_cleardst", &CmdProxy::udp_cleardst},
         {"udp_firstdst", &CmdProxy::udp_firstdst},
-        {"udp_srcip", &CmdProxy::udp_srcip},
-        {"udp_srcip2", &CmdProxy::udp_srcip2},
+        {"udp_srcip", &CmdProxy::UDPSourceIP},
+        {"udp_srcip2", &CmdProxy::UDPSourceIP2},
         {"udp_dstip", &CmdProxy::UDPDestinationIP},
         {"udp_dstip2", &CmdProxy::UDPDestinationIP2},
         {"udp_srcmac", &CmdProxy::udp_srcmac},
@@ -1149,6 +1149,8 @@ class CmdProxy {
     IpAddr getIpFromAuto();
     UdpDestination getUdpEntry();
     std::string UDPDestinationList(int action);
+    std::string UDPSourceIP(int action);
+    std::string UDPSourceIP2(int action);
     std::string UDPDestinationIP(int action);
     std::string UDPDestinationIP2(int action);
     /* Receiver Config */
@@ -1598,19 +1600,6 @@ class CmdProxy {
         "out from in a round robin fashion. The entry must not have been "
         "empty. Default: 0");
 
-    INTEGER_COMMAND_VEC_ID(
-        udp_srcip, getSourceUDPIP, setSourceUDPIP, IpAddr,
-        "[x.x.x.x]\n\tIp address of the detector (source) udp "
-        "interface. Must be same subnet as destination udp "
-        "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will "
-        "replace with its own DHCP IP address.");
-
-    INTEGER_COMMAND_VEC_ID(
-        udp_srcip2, getSourceUDPIP2, setSourceUDPIP2, IpAddr,
-        "[x.x.x.x]\n\t[Jungfrau][Gotthard2] Ip address of the detector "
-        "(source) udp interface 2. Must be same subnet as destination udp "
-        "ip2.\n\t [Jungfrau] top half or inner interface\n\t [Gotthard2] veto "
-        "debugging.");
 
     INTEGER_COMMAND_VEC_ID(
         udp_srcmac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,

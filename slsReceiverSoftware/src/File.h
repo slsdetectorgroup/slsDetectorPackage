@@ -7,14 +7,11 @@
 
 #include <array>
 
-namespace sls {
-
 #ifdef HDF5C
 #include "H5Cpp.h"
-#ifndef H5_NO_NAMESPACE
-using namespace H5;
 #endif
-#endif
+
+namespace sls {
 
 struct MasterAttributes;
 
@@ -42,10 +39,10 @@ class File : private virtual slsDetectorDefs {
         return 0;
     };
 
-    virtual DataType GetPDataType() const {
+    virtual H5::DataType GetPDataType() const {
         LOG(logERROR) << "This is a generic function GetPDataType that "
                          "should be overloaded by a derived class";
-        return PredType::STD_U16LE;
+        return H5::PredType::STD_U16LE;
     }
 
     virtual std::vector<std::string> GetParameterNames() const {
@@ -55,11 +52,11 @@ class File : private virtual slsDetectorDefs {
         return std::vector<std::string>{};
     };
 
-    virtual std::vector<DataType> GetParameterDataTypes() const {
+    virtual std::vector<H5::DataType> GetParameterDataTypes() const {
         LOG(logERROR)
             << "This is a generic function GetFilesInAcquisition that "
                "should be overloaded by a derived class";
-        return std::vector<DataType>{};
+        return std::vector<H5::DataType>{};
     };
 
     virtual void CreateFirstHDF5DataFile(

@@ -1768,6 +1768,9 @@ int Module::getNumberOfAdditionalStorageCells() const {
 
 void Module::setNumberOfAdditionalStorageCells(int value) {
     sendToDetector(F_SET_NUM_ADDITIONAL_STORAGE_CELLS, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_SET_RECEIVER_NUM_ADD_STORAGE_CELLS, value, nullptr);
+    }
 }
 
 int Module::getStorageCellStart() const {

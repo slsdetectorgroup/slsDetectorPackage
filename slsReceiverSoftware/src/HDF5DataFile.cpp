@@ -26,13 +26,13 @@ HDF5DataFile::HDF5DataFile(int index, std::mutex *hdf5Lib)
         "detector header version",
         "packets caught bit mask",
     };
-    StrType strdatatype(PredType::C_S1, sizeof(bitset_storage));
-    parameterDataTypes_ = std::vector<DataType>{
-        PredType::STD_U64LE, PredType::STD_U32LE, PredType::STD_U32LE,
-        PredType::STD_U64LE, PredType::STD_U64LE, PredType::STD_U16LE,
-        PredType::STD_U16LE, PredType::STD_U16LE, PredType::STD_U16LE,
-        PredType::STD_U32LE, PredType::STD_U16LE, PredType::STD_U8LE,
-        PredType::STD_U8LE,  strdatatype};
+    ::H5::StrType strdatatype(::H5::PredType::C_S1, sizeof(bitset_storage));
+    parameterDataTypes_ = std::vector<::H5::DataType>{
+        ::H5::PredType::STD_U64LE, ::H5::PredType::STD_U32LE, ::H5::PredType::STD_U32LE,
+        ::H5::PredType::STD_U64LE, ::H5::PredType::STD_U64LE, ::H5::PredType::STD_U16LE,
+        ::H5::PredType::STD_U16LE, ::H5::PredType::STD_U16LE, ::H5::PredType::STD_U16LE,
+        ::H5::PredType::STD_U32LE, ::H5::PredType::STD_U16LE, ::H5::PredType::STD_U8LE,
+        ::H5::PredType::STD_U8LE,  strdatatype};
 }
 
 HDF5DataFile::~HDF5DataFile() { CloseFile(); }
@@ -45,25 +45,25 @@ uint32_t HDF5DataFile::GetFilesInAcquisition() const {
     return numFilesInAcquisition_;
 }
 
-DataType HDF5DataFile::GetPDataType() const { return dataType_; }
+::H5::DataType HDF5DataFile::GetPDataType() const { return dataType_; }
 
 std::vector<std::string> HDF5DataFile::GetParameterNames() const {
     return parameterNames_;
 }
-std::vector<DataType> HDF5DataFile::GetParameterDataTypes() const {
+std::vector<::H5::DataType> HDF5DataFile::GetParameterDataTypes() const {
     return parameterDataTypes_;
 }
 
 void HDF5DataFile::CloseFile() {
     std::lock_guard<std::mutex> lock(*hdf5Lib_);
     try {
-        Exception::dontPrint(); // to handle errors
+        ::H5::Exception::dontPrint(); // to handle errors
         if (fd_) {
             fd_->close();
             delete fd_;
             fd_ = nullptr;
         }
-    } catch (const Exception &error) {
+    } catch (const ::H5::Exception &error) {
         LOG(logERROR) << "Could not close data HDF5 handles of index "
                       << index_;
         error.printErrorStack();
@@ -116,13 +116,13 @@ void HDF5DataFile::CreateFirstHDF5DataFile(
     switch (dynamicRange_) {
     case 12:
     case 16:
-        dataType_ = PredType::STD_U16LE;
+        dataType_ = ::H5::PredType::STD_U16LE;
         break;
     case 32:
-        dataType_ = PredType::STD_U32LE;
+        dataType_ = ::H5::PredType::STD_U32LE;
         break;
     default:
-        dataType_ = PredType::STD_U8LE;
+        dataType_ = ::H5::PredType::STD_U8LE;
         break;
     }
 
@@ -153,31 +153,31 @@ void HDF5DataFile::CreateFile() {
     uint32_t nDimz = ((dynamicRange_ == 4) ? (nPixelsX_ / 2) : nPixelsX_);
 
     try {
-        Exception::dontPrint(); // to handle errors
+        ::H5::Exception::dontPrint(); // to handle errors
 
         // file
-        FileAccPropList fapl;
+        ::H5::FileAccPropList fapl;
         fapl.setFcloseDegree(H5F_CLOSE_STRONG);
         fd_ = nullptr;
         if (!overWriteEnable_)
-            fd_ = new H5File(fileName_.c_str(), H5F_ACC_EXCL,
-                             FileCreatPropList::DEFAULT, fapl);
+            fd_ = new ::H5::H5File(fileName_.c_str(), H5F_ACC_EXCL,
+                             ::H5::FileCreatPropList::DEFAULT, fapl);
         else
-            fd_ = new H5File(fileName_.c_str(), H5F_ACC_TRUNC,
-                             FileCreatPropList::DEFAULT, fapl);
+            fd_ = new ::H5::H5File(fileName_.c_str(), H5F_ACC_TRUNC,
+                             ::H5::FileCreatPropList::DEFAULT, fapl);
 
         // attributes - version
         double dValue = HDF5_WRITER_VERSION;
-        DataSpace dataspace_attr = DataSpace(H5S_SCALAR);
-        Attribute attribute = fd_->createAttribute(
-            "version", PredType::NATIVE_DOUBLE, dataspace_attr);
-        attribute.write(PredType::NATIVE_DOUBLE, &dValue);
+        ::H5::DataSpace dataspace_attr = ::H5::DataSpace(H5S_SCALAR);
+        ::H5::Attribute attribute = fd_->createAttribute(
+            "version", ::H5::PredType::NATIVE_DOUBLE, dataspace_attr);
+        attribute.write(::H5::PredType::NATIVE_DOUBLE, &dValue);
 
         // dataspace
         hsize_t srcdims[3] = {nDimx, nDimy, nDimz};
         hsize_t srcdimsmax[3] = {H5S_UNLIMITED, nDimy, nDimz};
         dataSpace_ = nullptr;
-        dataSpace_ = new DataSpace(3, srcdims, srcdimsmax);
+        dataSpace_ = new ::H5::DataSpace(3, srcdims, srcdimsmax);
 
         // dataset name
         std::ostringstream osfn;
@@ -188,7 +188,7 @@ void HDF5DataFile::CreateFile() {
 
         // dataset
         // fill value
-        DSetCreatPropList plist;
+        ::H5::DSetCreatPropList plist;
         int fill_value = -1;
         plist.setFillValue(dataType_, &fill_value);
         // always create chunked dataset as unlimited is only
@@ -196,28 +196,28 @@ void HDF5DataFile::CreateFile() {
         hsize_t chunk_dims[3] = {MAX_CHUNKED_IMAGES, nDimy, nDimz};
         plist.setChunk(3, chunk_dims);
         dataSet_ = nullptr;
-        dataSet_ = new DataSet(fd_->createDataSet(
+        dataSet_ = new ::H5::DataSet(fd_->createDataSet(
             dataSetName_.c_str(), dataType_, *dataSpace_, plist));
 
         // create parameter datasets
         hsize_t dims[1] = {nDimx};
         hsize_t dimsmax[1] = {H5S_UNLIMITED};
         dataSpacePara_ = nullptr;
-        dataSpacePara_ = new DataSpace(1, dims, dimsmax);
+        dataSpacePara_ = new ::H5::DataSpace(1, dims, dimsmax);
 
         // always create chunked dataset as unlimited is only
         // supported with chunked layout
-        DSetCreatPropList paralist;
+        ::H5::DSetCreatPropList paralist;
         hsize_t chunkpara_dims[3] = {MAX_CHUNKED_IMAGES};
         paralist.setChunk(1, chunkpara_dims);
 
         for (unsigned int i = 0; i < parameterNames_.size(); ++i) {
-            DataSet *ds = new DataSet(fd_->createDataSet(
+            ::H5::DataSet *ds = new ::H5::DataSet(fd_->createDataSet(
                 parameterNames_[i].c_str(), parameterDataTypes_[i],
                 *dataSpacePara_, paralist));
             dataSetPara_.push_back(ds);
         }
-    } catch (const Exception &error) {
+    } catch (const ::H5::Exception &error) {
         error.printErrorStack();
         CloseFile();
         throw RuntimeError("Could not create HDF5 handles in object " +
@@ -287,16 +287,16 @@ void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
     hsize_t start[3] = {nDimx, 0, 0};
     hsize_t dims2[2] = {nDimy, nDimz};
     try {
-        Exception::dontPrint(); // to handle errors
+        ::H5::Exception::dontPrint(); // to handle errors
 
         dataSpace_->selectHyperslab(H5S_SELECT_SET, count, start);
-        DataSpace memspace(2, dims2);
+        ::H5::DataSpace memspace(2, dims2);
         dataSet_->write(revBuffer, dataType_, memspace, *dataSpace_);
         memspace.close();
         if (dynamicRange_ == 12) {
             free(revBuffer);
         }
-    } catch (const Exception &error) {
+    } catch (const ::H5::Exception &error) {
         if (dynamicRange_ == 12) {
             free(revBuffer);
         }
@@ -320,9 +320,9 @@ void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
     hsize_t start[1] = {fnum};
     int i = 0;
     try {
-        Exception::dontPrint(); // to handle errors
+        ::H5::Exception::dontPrint(); // to handle errors
         dataSpacePara_->selectHyperslab(H5S_SELECT_SET, count, start);
-        DataSpace memspace(H5S_SCALAR);
+        ::H5::DataSpace memspace(H5S_SCALAR);
         dataSetPara_[0]->write(&header.frameNumber, parameterDataTypes_[0],
                                memspace, *dataSpacePara_);
         i = 1;
@@ -383,7 +383,7 @@ void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
                                     memspace, *dataSpacePara_);
         }
         i = 14;
-    } catch (const Exception &error) {
+    } catch (const ::H5::Exception &error) {
         error.printErrorStack();
         throw RuntimeError(
             "Could not write parameters (index:" + std::to_string(i) +
@@ -395,7 +395,7 @@ void HDF5DataFile::ExtendDataset() {
     std::lock_guard<std::mutex> lock(*hdf5Lib_);
 
     try {
-        Exception::dontPrint(); // to handle errors
+        ::H5::Exception::dontPrint(); // to handle errors
 
         hsize_t dims[3];
         dataSpace_->getSimpleExtentDims(dims);
@@ -404,16 +404,16 @@ void HDF5DataFile::ExtendDataset() {
         dataSet_->extend(dims);
         delete dataSpace_;
         dataSpace_ = nullptr;
-        dataSpace_ = new DataSpace(dataSet_->getSpace());
+        dataSpace_ = new ::H5::DataSpace(dataSet_->getSpace());
 
         hsize_t dims_para[1] = {dims[0]};
         for (unsigned int i = 0; i < dataSetPara_.size(); ++i)
             dataSetPara_[i]->extend(dims_para);
         delete dataSpacePara_;
         dataSpacePara_ = nullptr;
-        dataSpacePara_ = new DataSpace(dataSetPara_[0]->getSpace());
+        dataSpacePara_ = new ::H5::DataSpace(dataSetPara_[0]->getSpace());
 
-    } catch (const Exception &error) {
+    } catch (const ::H5::Exception &error) {
         error.printErrorStack();
         throw RuntimeError("Could not extend dataset in object " +
                                 std::to_string(index_));

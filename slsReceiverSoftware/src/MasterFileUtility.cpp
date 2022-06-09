@@ -54,23 +54,23 @@ void LinkHDF5FileInMaster(std::string &masterFileName,
                           const bool silentMode, std::mutex *hdf5LibMutex) {
 
     std::lock_guard<std::mutex> lock(*hdf5LibMutex);
-    std::unique_ptr<H5File> fd{nullptr};
+    std::unique_ptr<::H5::H5File> fd{nullptr};
     try {
-        Exception::dontPrint(); // to handle errors
+        ::H5::Exception::dontPrint(); // to handle errors
 
-        FileAccPropList flist;
+        ::H5::FileAccPropList flist;
         flist.setFcloseDegree(H5F_CLOSE_STRONG);
 
         // open master file
-        H5File masterfd(masterFileName.c_str(), H5F_ACC_RDWR,
-                        FileCreatPropList::DEFAULT, flist);
+        ::H5::H5File masterfd(masterFileName.c_str(), H5F_ACC_RDWR,
+                        ::H5::FileCreatPropList::DEFAULT, flist);
 
         // open data file
-        fd = make_unique<H5File>(dataFilename.c_str(), H5F_ACC_RDONLY,
-                                      FileCreatPropList::DEFAULT, flist);
+        fd = make_unique<::H5::H5File>(dataFilename.c_str(), H5F_ACC_RDONLY,
+                                      ::H5::FileCreatPropList::DEFAULT, flist);
 
         // create link for data dataset
-        DataSet dset = fd->openDataSet(dataSetname.c_str());
+        ::H5::DataSet dset = fd->openDataSet(dataSetname.c_str());
         std::string linkname = std::string("/entry/data/") + dataSetname;
         if (H5Lcreate_external(dataFilename.c_str(), dataSetname.c_str(),
                                masterfd.getLocId(), linkname.c_str(),
@@ -81,7 +81,7 @@ void LinkHDF5FileInMaster(std::string &masterFileName,
 
         // create link for parameter datasets
         for (unsigned int i = 0; i < parameterNames.size(); ++i) {
-            DataSet pDset = fd->openDataSet(parameterNames[i].c_str());
+            ::H5::DataSet pDset = fd->openDataSet(parameterNames[i].c_str());
             linkname = std::string("/entry/data/") + parameterNames[i];
             if (H5Lcreate_external(dataFilename.c_str(),
                                    parameterNames[i].c_str(),
@@ -93,7 +93,7 @@ void LinkHDF5FileInMaster(std::string &masterFileName,
         }
         fd->close();
         masterfd.close();
-    } catch (const Exception &error) {
+    } catch (const ::H5::Exception &error) {
         error.printErrorStack();
         if (fd != nullptr)
             fd->close();
@@ -118,38 +118,38 @@ std::string CreateMasterHDF5File(const std::string &filePath,
 
     std::lock_guard<std::mutex> lock(*hdf5LibMutex);
 
-    std::unique_ptr<H5File> fd{nullptr};
+    std::unique_ptr<::H5::H5File> fd{nullptr};
     try {
-        Exception::dontPrint(); // to handle errors
+        ::H5::Exception::dontPrint(); // to handle errors
 
-        FileAccPropList flist;
+        ::H5::FileAccPropList flist;
         flist.setFcloseDegree(H5F_CLOSE_STRONG);
 
         unsigned int createFlags = H5F_ACC_EXCL;
         if (overWriteEnable) {
             createFlags = H5F_ACC_TRUNC;
         }
-        fd = make_unique<H5File>(fileName.c_str(), createFlags,
-                                      FileCreatPropList::DEFAULT, flist);
+        fd = make_unique<::H5::H5File>(fileName.c_str(), createFlags,
+                                      ::H5::FileCreatPropList::DEFAULT, flist);
 
         // attributes - version
         double dValue = HDF5_WRITER_VERSION;
-        DataSpace dataspace_attr = DataSpace(H5S_SCALAR);
-        Attribute attribute = fd->createAttribute(
-            "version", PredType::NATIVE_DOUBLE, dataspace_attr);
-        attribute.write(PredType::NATIVE_DOUBLE, &dValue);
+        ::H5::DataSpace dataspace_attr = ::H5::DataSpace(H5S_SCALAR);
+        ::H5::Attribute attribute = fd->createAttribute(
+            "version", ::H5::PredType::NATIVE_DOUBLE, dataspace_attr);
+        attribute.write(::H5::PredType::NATIVE_DOUBLE, &dValue);
 
         // Create a group in the file
-        Group group1(fd->createGroup("entry"));
-        Group group2(group1.createGroup("data"));
-        Group group3(group1.createGroup("instrument"));
-        Group group4(group3.createGroup("beam"));
-        Group group5(group3.createGroup("detector"));
-        Group group6(group1.createGroup("sample"));
+        ::H5::Group group1(fd->createGroup("entry"));
+        ::H5::Group group2(group1.createGroup("data"));
+        ::H5::Group group3(group1.createGroup("instrument"));
+        ::H5::Group group4(group3.createGroup("beam"));
+        ::H5::Group group5(group3.createGroup("detector"));
+        ::H5::Group group6(group1.createGroup("sample"));
 
         attr->WriteHDF5Attributes(fd.get(), &group5);
         fd->close();
-    } catch (const Exception &error) {
+    } catch (const ::H5::Exception &error) {
         error.printErrorStack();
         if (fd != nullptr)
             fd->close();
@@ -169,9 +169,9 @@ std::array<std::string, 2> CreateVirtualHDF5File(
     const uint32_t maxFramesPerFile, const uint64_t numImages,
     const uint32_t nPixelsX, const uint32_t nPixelsY,
     const uint32_t dynamicRange, const uint64_t numImagesCaught,
-    const int numModX, const int numModY, const DataType dataType,
+    const int numModX, const int numModY, const ::H5::DataType dataType,
     const std::vector<std::string> parameterNames,
-    const std::vector<DataType> parameterDataTypes, std::mutex *hdf5LibMutex,
+    const std::vector<::H5::DataType> parameterDataTypes, std::mutex *hdf5LibMutex,
     bool gotthard25um) {
 
     // virtual file name
@@ -189,42 +189,42 @@ std::array<std::string, 2> CreateVirtualHDF5File(
 
     std::lock_guard<std::mutex> lock(*hdf5LibMutex);
 
-    std::unique_ptr<H5File> fd{nullptr};
+    std::unique_ptr<::H5::H5File> fd{nullptr};
     try {
-        Exception::dontPrint(); // to handle errors
+        ::H5::Exception::dontPrint(); // to handle errors
 
         // file
-        FileAccPropList fapl;
+        ::H5::FileAccPropList fapl;
         fapl.setFcloseDegree(H5F_CLOSE_STRONG);
         if (!overWriteEnable)
-            fd = make_unique<H5File>(fileName.c_str(), H5F_ACC_EXCL,
-                                          FileCreatPropList::DEFAULT, fapl);
+            fd = make_unique<::H5::H5File>(fileName.c_str(), H5F_ACC_EXCL,
+                                          ::H5::FileCreatPropList::DEFAULT, fapl);
         else
-            fd = make_unique<H5File>(fileName.c_str(), H5F_ACC_TRUNC,
-                                          FileCreatPropList::DEFAULT, fapl);
+            fd = make_unique<::H5::H5File>(fileName.c_str(), H5F_ACC_TRUNC,
+                                          ::H5::FileCreatPropList::DEFAULT, fapl);
 
         // attributes - version
         double dValue = HDF5_WRITER_VERSION;
-        DataSpace dataspace_attr = DataSpace(H5S_SCALAR);
-        Attribute attribute = fd->createAttribute(
-            "version", PredType::NATIVE_DOUBLE, dataspace_attr);
-        attribute.write(PredType::NATIVE_DOUBLE, &dValue);
+        ::H5::DataSpace dataspace_attr = ::H5::DataSpace(H5S_SCALAR);
+        ::H5::Attribute attribute = fd->createAttribute(
+            "version", ::H5::PredType::NATIVE_DOUBLE, dataspace_attr);
+        attribute.write(::H5::PredType::NATIVE_DOUBLE, &dValue);
 
         // virtual dataspace
         hsize_t vdsDims[3] = {numImagesCaught, numModY * nDimy,
                               numModZ * nDimz};
-        DataSpace vdsDataSpace(3, vdsDims, nullptr);
+        ::H5::DataSpace vdsDataSpace(3, vdsDims, nullptr);
         hsize_t vdsDimsPara[2] = {numImagesCaught,
                                   (unsigned int)numModY * numModZ};
-        DataSpace vdsDataSpacePara(2, vdsDimsPara, nullptr);
+        ::H5::DataSpace vdsDataSpacePara(2, vdsDimsPara, nullptr);
 
         // property list (fill value and datatype)
         int fill_value = -1;
-        DSetCreatPropList plist;
+        ::H5::DSetCreatPropList plist;
         plist.setFillValue(dataType, &fill_value);
 
         // property list for parameters (datatype)
-        std::vector<DSetCreatPropList> plistPara(paraSize);
+        std::vector<::H5::DSetCreatPropList> plistPara(paraSize);
 
         // hyperslab (files)
         int numFiles = numImagesCaught / maxFramesPerFile;
@@ -296,10 +296,10 @@ std::array<std::string, 2> CreateVirtualHDF5File(
                 // source dataspace
                 hsize_t srcDims[3] = {nDimx, nDimy, nDimz};
                 hsize_t srcDimsMax[3] = {H5S_UNLIMITED, nDimy, nDimz};
-                DataSpace srcDataSpace(3, srcDims, srcDimsMax);
+                ::H5::DataSpace srcDataSpace(3, srcDims, srcDimsMax);
                 hsize_t srcDimsPara[1] = {nDimx};
                 hsize_t srcDimsMaxPara[1] = {H5S_UNLIMITED};
-                DataSpace srcDataSpacePara(1, srcDimsPara, srcDimsMaxPara);
+                ::H5::DataSpace srcDataSpacePara(1, srcDimsPara, srcDimsMaxPara);
 
                 // mapping of property list
                 plist.setVirtual(vdsDataSpace, relative_srcFileName.c_str(),
@@ -325,17 +325,17 @@ std::array<std::string, 2> CreateVirtualHDF5File(
             framesSaved += nDimx;
         }
         // datasets
-        DataSet vdsDataSet(fd->createDataSet(dataSetName.c_str(), dataType,
+        ::H5::DataSet vdsDataSet(fd->createDataSet(dataSetName.c_str(), dataType,
                                              vdsDataSpace, plist));
 
         for (unsigned int p = 0; p < paraSize; ++p) {
-            DataSet vdsDataSetPara(fd->createDataSet(
+            ::H5::DataSet vdsDataSetPara(fd->createDataSet(
                 parameterNames[p].c_str(), parameterDataTypes[p],
                 vdsDataSpacePara, plistPara[p]));
         }
 
         fd->close();
-    } catch (const Exception &error) {
+    } catch (const ::H5::Exception &error) {
         error.printErrorStack();
         if (fd) {
             fd->close();

@@ -4,17 +4,13 @@
 
 #include "MasterAttributes.h"
 
+#include <mutex>
+
 namespace sls {
 
 namespace masterFileUtility {
 
-#ifdef HDF5C
-#include "H5Cpp.h"
-#include <mutex>
-#ifndef H5_NO_NAMESPACE
-using namespace H5;
-#endif
-#endif
+
 
 
 std::string CreateMasterBinaryFile(const std::string &filePath,
@@ -45,9 +41,9 @@ std::array<std::string, 2> CreateVirtualHDF5File(
     const uint32_t maxFramesPerFile, const uint64_t numImages,
     const uint32_t nPixelsX, const uint32_t nPixelsY,
     const uint32_t dynamicRange, const uint64_t numImagesCaught,
-    const int numModX, const int numModY, const DataType dataType,
+    const int numModX, const int numModY, const ::H5::DataType dataType,
     const std::vector<std::string> parameterNames,
-    const std::vector<DataType> parameterDataTypes, std::mutex *hdf5LibMutex,
+    const std::vector<::H5::DataType> parameterDataTypes, std::mutex *hdf5LibMutex,
     bool gotthard25um);
 #endif
 } // namespace masterFileUtility

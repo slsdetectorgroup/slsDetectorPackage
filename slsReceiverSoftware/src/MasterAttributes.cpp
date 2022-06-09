@@ -41,7 +41,7 @@ void MasterAttributes::GetBinaryAttributes(
 }
 
 #ifdef HDF5C
-void MasterAttributes::WriteHDF5Attributes(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteHDF5Attributes(H5::H5File *fd, H5::Group *group) {
     WriteCommonHDF5Attributes(fd, group);
     switch (detType) {
     case slsDetectorDefs::GOTTHARD:
@@ -169,40 +169,40 @@ void MasterAttributes::GetFinalBinaryAttributes(
 }
 
 #ifdef HDF5C
-void MasterAttributes::WriteCommonHDF5Attributes(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteCommonHDF5Attributes(H5::H5File *fd, H5::Group *group) {
     char c[1024]{};
     // version
     {
         double version = BINARY_WRITER_VERSION;
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::Attribute attribute =
-            fd->createAttribute("Version", ::H5::PredType::NATIVE_DOUBLE, dataspace);
-        attribute.write(::H5::PredType::NATIVE_DOUBLE, &version);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::Attribute attribute =
+            fd->createAttribute("Version", H5::PredType::NATIVE_DOUBLE, dataspace);
+        attribute.write(H5::PredType::NATIVE_DOUBLE, &version);
     }
     // timestamp
     {
         time_t t = std::time(nullptr);
-        ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset =
+        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset =
             group->createDataSet("Timestamp", strdatatype, dataspace);
         strcpy_safe(c, std::string(ctime(&t)));
         dataset.write(c, strdatatype);
     }
     // detector type
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-        ::H5::DataSet dataset =
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::DataSet dataset =
             group->createDataSet("Detector Type", strdatatype, dataspace);
         strcpy_safe(c, ToString(detType));
         dataset.write(c, strdatatype);
     }
     // timing mode
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-        ::H5::DataSet dataset =
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::DataSet dataset =
             group->createDataSet("Timing Mode", strdatatype, dataspace);
         strcpy_safe(c, ToString(timingMode));
         dataset.write(c, strdatatype);
@@ -210,27 +210,27 @@ void MasterAttributes::WriteCommonHDF5Attributes(::H5::H5File *fd, ::H5::Group *
     // TODO: make this into an array?
     // geometry x
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("Geometry in x axis",
-                                               ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&geometry.x, ::H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("Geometry in x axis",
+                                               H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&geometry.x, H5::PredType::NATIVE_INT);
     }
     // geometry y
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("Geometry in y axis",
-                                               ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&geometry.y, ::H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("Geometry in y axis",
+                                               H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&geometry.y, H5::PredType::NATIVE_INT);
     }
     // Image Size
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset =
-            group->createDataSet("Image Size", ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&imageSize, ::H5::PredType::NATIVE_INT);
-        ::H5::DataSpace dataspaceAttr = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-        ::H5::Attribute attribute =
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset =
+            group->createDataSet("Image Size", H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&imageSize, H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspaceAttr = H5::DataSpace(H5S_SCALAR);
+        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::Attribute attribute =
             dataset.createAttribute("Unit", strdatatype, dataspaceAttr);
         strcpy_safe(c, "bytes");
         attribute.write(strdatatype, c);
@@ -238,335 +238,335 @@ void MasterAttributes::WriteCommonHDF5Attributes(::H5::H5File *fd, ::H5::Group *
     // TODO: make this into an array?
     // npixels x
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("Number of pixels in x axis",
-                                               ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&nPixels.x, ::H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("Number of pixels in x axis",
+                                               H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&nPixels.x, H5::PredType::NATIVE_INT);
     }
     // npixels y
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("Number of pixels in y axis",
-                                               ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&nPixels.y, ::H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("Number of pixels in y axis",
+                                               H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&nPixels.y, H5::PredType::NATIVE_INT);
     }
     // Maximum frames per file
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("Maximum frames per file",
-                                               ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&maxFramesPerFile, ::H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("Maximum frames per file",
+                                               H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&maxFramesPerFile, H5::PredType::NATIVE_INT);
     }
     // Frame Discard Policy
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-        ::H5::DataSet dataset = group->createDataSet("Frame Discard Policy",
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::DataSet dataset = group->createDataSet("Frame Discard Policy",
                                                strdatatype, dataspace);
         strcpy_safe(c, ToString(frameDiscardMode));
         dataset.write(c, strdatatype);
     }
     // Frame Padding
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("Frame Padding",
-                                               ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&framePadding, ::H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("Frame Padding",
+                                               H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&framePadding, H5::PredType::NATIVE_INT);
     }
     // Scan Parameters
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-        ::H5::DataSet dataset =
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::DataSet dataset =
             group->createDataSet("Scan Parameters", strdatatype, dataspace);
         strcpy_safe(c, ToString(scanParams));
         dataset.write(c, strdatatype);
     }
     // Total Frames
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("Total Frames",
-                                               ::H5::PredType::STD_U64LE, dataspace);
-        dataset.write(&totalFrames, ::H5::PredType::STD_U64LE);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("Total Frames",
+                                               H5::PredType::STD_U64LE, dataspace);
+        dataset.write(&totalFrames, H5::PredType::STD_U64LE);
     }
     // Receiver Roi xmin
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("receiver roi xmin",
-                                               ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&receiverRoi.xmin, ::H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("receiver roi xmin",
+                                               H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&receiverRoi.xmin, H5::PredType::NATIVE_INT);
     }
     // Receiver Roi xmax
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("receiver roi xmax",
-                                               ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&receiverRoi.xmax, ::H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("receiver roi xmax",
+                                               H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&receiverRoi.xmax, H5::PredType::NATIVE_INT);
     }
     // Receiver Roi ymin
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("receiver roi ymin",
-                                               ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&receiverRoi.ymin, ::H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("receiver roi ymin",
+                                               H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&receiverRoi.ymin, H5::PredType::NATIVE_INT);
     }
     // Receiver Roi ymax
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("receiver roi ymax",
-                                               ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&receiverRoi.ymax, ::H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("receiver roi ymax",
+                                               H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&receiverRoi.ymax, H5::PredType::NATIVE_INT);
     }
 }
 
-void MasterAttributes::WriteFinalHDF5Attributes(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteFinalHDF5Attributes(H5::H5File *fd, H5::Group *group) {
     char c[1024]{};
     // Total Frames in file
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("Frames in File",
-                                               ::H5::PredType::STD_U64LE, dataspace);
-        dataset.write(&framesInFile, ::H5::PredType::STD_U64LE);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("Frames in File",
+                                               H5::PredType::STD_U64LE, dataspace);
+        dataset.write(&framesInFile, H5::PredType::STD_U64LE);
     }
     // additional json header
     if (!additionalJsonHeader.empty()) {
         std::string json = ToString(additionalJsonHeader);
-        ::H5::StrType strdatatype(::H5::PredType::C_S1, json.length());
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset = group->createDataSet("Additional JSON Header",
+        H5::StrType strdatatype(H5::PredType::C_S1, json.length());
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset = group->createDataSet("Additional JSON Header",
                                                strdatatype, dataspace);
         strcpy_safe(c, ToString(additionalJsonHeader));
         dataset.write(c, strdatatype);
     }
 }
 
-void MasterAttributes::WriteHDF5Exptime(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-    ::H5::DataSet dataset =
+void MasterAttributes::WriteHDF5Exptime(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::DataSet dataset =
         group->createDataSet("Exposure Time", strdatatype, dataspace);
     char c[1024]{};
     strcpy_safe(c, ToString(exptime));
     dataset.write(c, strdatatype);
 }
 
-void MasterAttributes::WriteHDF5Period(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-    ::H5::DataSet dataset =
+void MasterAttributes::WriteHDF5Period(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::DataSet dataset =
         group->createDataSet("Acquisition Period", strdatatype, dataspace);
     char c[1024]{};
     strcpy_safe(c, ToString(period));
     dataset.write(c, strdatatype);
 }
 
-void MasterAttributes::WriteHDF5DynamicRange(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset =
-        group->createDataSet("Dynamic Range", ::H5::PredType::NATIVE_INT, dataspace);
-    dataset.write(&dynamicRange, ::H5::PredType::NATIVE_INT);
-    ::H5::DataSpace dataspaceAttr = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-    ::H5::Attribute attribute =
+void MasterAttributes::WriteHDF5DynamicRange(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset =
+        group->createDataSet("Dynamic Range", H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&dynamicRange, H5::PredType::NATIVE_INT);
+    H5::DataSpace dataspaceAttr = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::Attribute attribute =
         dataset.createAttribute("Unit", strdatatype, dataspaceAttr);
     char c[1024] = "bits";
     attribute.write(strdatatype, c);
 }
 
-void MasterAttributes::WriteHDF5TenGiga(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset = group->createDataSet("Ten Giga Enable",
-                                           ::H5::PredType::NATIVE_INT, dataspace);
-    dataset.write(&tenGiga, ::H5::PredType::NATIVE_INT);
+void MasterAttributes::WriteHDF5TenGiga(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset = group->createDataSet("Ten Giga Enable",
+                                           H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&tenGiga, H5::PredType::NATIVE_INT);
 }
 
-void MasterAttributes::WriteHDF5ROI(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteHDF5ROI(H5::H5File *fd, H5::Group *group) {
     // Roi xmin
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset =
-            group->createDataSet("roi xmin", ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&detectorRoi.xmin, ::H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset =
+            group->createDataSet("roi xmin", H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&detectorRoi.xmin, H5::PredType::NATIVE_INT);
     }
     // Roi xmax
     {
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::DataSet dataset =
-            group->createDataSet("roi xmax", ::H5::PredType::NATIVE_INT, dataspace);
-        dataset.write(&detectorRoi.xmax, ::H5::PredType::NATIVE_INT);
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::DataSet dataset =
+            group->createDataSet("roi xmax", H5::PredType::NATIVE_INT, dataspace);
+        dataset.write(&detectorRoi.xmax, H5::PredType::NATIVE_INT);
     }
 }
 
-void MasterAttributes::WriteHDF5NumUDPInterfaces(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset = group->createDataSet("Number of UDP Interfaces",
-                                           ::H5::PredType::NATIVE_INT, dataspace);
-    dataset.write(&numUDPInterfaces, ::H5::PredType::NATIVE_INT);
+void MasterAttributes::WriteHDF5NumUDPInterfaces(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset = group->createDataSet("Number of UDP Interfaces",
+                                           H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&numUDPInterfaces, H5::PredType::NATIVE_INT);
 }
 
-void MasterAttributes::WriteHDF5ReadNRows(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset =
-        group->createDataSet("Number of rows", ::H5::PredType::NATIVE_INT, dataspace);
-    dataset.write(&readNRows, ::H5::PredType::NATIVE_INT);
+void MasterAttributes::WriteHDF5ReadNRows(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset =
+        group->createDataSet("Number of rows", H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&readNRows, H5::PredType::NATIVE_INT);
 }
 
-void MasterAttributes::WriteHDF5ThresholdEnergy(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteHDF5ThresholdEnergy(H5::H5File *fd, H5::Group *group) {
     char c[1024]{};
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset = group->createDataSet("Threshold Energy",
-                                           ::H5::PredType::NATIVE_INT, dataspace);
-    dataset.write(&thresholdEnergyeV, ::H5::PredType::NATIVE_INT);
-    ::H5::DataSpace dataspaceAttr = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-    ::H5::Attribute attribute =
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset = group->createDataSet("Threshold Energy",
+                                           H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&thresholdEnergyeV, H5::PredType::NATIVE_INT);
+    H5::DataSpace dataspaceAttr = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::Attribute attribute =
         dataset.createAttribute("Unit", strdatatype, dataspaceAttr);
     strcpy_safe(c, "eV");
     attribute.write(strdatatype, c);
 }
 
-void MasterAttributes::WriteHDF5ThresholdEnergies(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteHDF5ThresholdEnergies(H5::H5File *fd, H5::Group *group) {
     char c[1024]{};
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::StrType strdatatype(::H5::PredType::C_S1, 1024);
-    ::H5::DataSet dataset =
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, 1024);
+    H5::DataSet dataset =
         group->createDataSet("Threshold Energies", strdatatype, dataspace);
     strcpy_safe(c, ToString(thresholdAllEnergyeV));
     dataset.write(c, strdatatype);
 }
 
-void MasterAttributes::WriteHDF5SubExpTime(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteHDF5SubExpTime(H5::H5File *fd, H5::Group *group) {
     char c[1024]{};
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-    ::H5::DataSet dataset =
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::DataSet dataset =
         group->createDataSet("Sub Exposure Time", strdatatype, dataspace);
     strcpy_safe(c, ToString(subExptime));
     dataset.write(c, strdatatype);
 }
 
-void MasterAttributes::WriteHDF5SubPeriod(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteHDF5SubPeriod(H5::H5File *fd, H5::Group *group) {
     char c[1024]{};
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-    ::H5::DataSet dataset =
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::DataSet dataset =
         group->createDataSet("Sub Period", strdatatype, dataspace);
     strcpy_safe(c, ToString(subPeriod));
     dataset.write(c, strdatatype);
 }
 
-void MasterAttributes::WriteHDF5SubQuad(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset =
-        group->createDataSet("Quad", ::H5::PredType::NATIVE_INT, dataspace);
-    dataset.write(&quad, ::H5::PredType::NATIVE_INT);
+void MasterAttributes::WriteHDF5SubQuad(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset =
+        group->createDataSet("Quad", H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&quad, H5::PredType::NATIVE_INT);
 }
 
-void MasterAttributes::WriteHDF5RateCorrections(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteHDF5RateCorrections(H5::H5File *fd, H5::Group *group) {
     char c[1024]{};
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::StrType strdatatype(::H5::PredType::C_S1, 1024);
-    ::H5::DataSet dataset =
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, 1024);
+    H5::DataSet dataset =
         group->createDataSet("Rate Corrections", strdatatype, dataspace);
     strcpy_safe(c, ToString(ratecorr));
     dataset.write(c, strdatatype);
 }
 
-void MasterAttributes::WriteHDF5CounterMask(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset =
-        group->createDataSet("Counter Mask", ::H5::PredType::STD_U32LE, dataspace);
-    dataset.write(&counterMask, ::H5::PredType::STD_U32LE);
+void MasterAttributes::WriteHDF5CounterMask(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset =
+        group->createDataSet("Counter Mask", H5::PredType::STD_U32LE, dataspace);
+    dataset.write(&counterMask, H5::PredType::STD_U32LE);
 }
 
-void MasterAttributes::WriteHDF5ExptimeArray(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteHDF5ExptimeArray(H5::H5File *fd, H5::Group *group) {
     for (int i = 0; i != 3; ++i) {
         char c[1024]{};
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-        ::H5::DataSet dataset =
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::DataSet dataset =
             group->createDataSet("Exposure Time1", strdatatype, dataspace);
         strcpy_safe(c, ToString(exptimeArray[i]));
         dataset.write(c, strdatatype);
     }
 }
 
-void MasterAttributes::WriteHDF5GateDelayArray(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteHDF5GateDelayArray(H5::H5File *fd, H5::Group *group) {
     for (int i = 0; i != 3; ++i) {
         char c[1024]{};
-        ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-        ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-        ::H5::DataSet dataset =
+        H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+        H5::StrType strdatatype(H5::PredType::C_S1, 256);
+        H5::DataSet dataset =
             group->createDataSet("Gate Delay1", strdatatype, dataspace);
         strcpy_safe(c, ToString(gateDelayArray[i]));
         dataset.write(c, strdatatype);
     }
 }
 
-void MasterAttributes::WriteHDF5Gates(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset =
-        group->createDataSet("Gates", ::H5::PredType::STD_U32LE, dataspace);
-    dataset.write(&gates, ::H5::PredType::STD_U32LE);
+void MasterAttributes::WriteHDF5Gates(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset =
+        group->createDataSet("Gates", H5::PredType::STD_U32LE, dataspace);
+    dataset.write(&gates, H5::PredType::STD_U32LE);
 }
 
-void MasterAttributes::WriteHDF5BurstMode(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::StrType strdatatype(::H5::PredType::C_S1, 256);
-    ::H5::DataSet dataset =
+void MasterAttributes::WriteHDF5BurstMode(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::StrType strdatatype(H5::PredType::C_S1, 256);
+    H5::DataSet dataset =
         group->createDataSet("Burst Mode", strdatatype, dataspace);
     char c[1024]{};
     strcpy_safe(c, ToString(burstMode));
     dataset.write(c, strdatatype);
 }
 
-void MasterAttributes::WriteHDF5AdcMask(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset =
-        group->createDataSet("ADC Mask", ::H5::PredType::NATIVE_INT, dataspace);
-    dataset.write(&adcmask, ::H5::PredType::NATIVE_INT);
+void MasterAttributes::WriteHDF5AdcMask(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset =
+        group->createDataSet("ADC Mask", H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&adcmask, H5::PredType::NATIVE_INT);
 }
 
-void MasterAttributes::WriteHDF5AnalogFlag(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset =
-        group->createDataSet("Analog Flag", ::H5::PredType::NATIVE_INT, dataspace);
-    dataset.write(&analog, ::H5::PredType::NATIVE_INT);
+void MasterAttributes::WriteHDF5AnalogFlag(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset =
+        group->createDataSet("Analog Flag", H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&analog, H5::PredType::NATIVE_INT);
 }
 
-void MasterAttributes::WriteHDF5AnalogSamples(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset =
-        group->createDataSet("Analog Samples", ::H5::PredType::NATIVE_INT, dataspace);
-    dataset.write(&analogSamples, ::H5::PredType::NATIVE_INT);
+void MasterAttributes::WriteHDF5AnalogSamples(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset =
+        group->createDataSet("Analog Samples", H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&analogSamples, H5::PredType::NATIVE_INT);
 }
 
-void MasterAttributes::WriteHDF5DigitalFlag(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset =
-        group->createDataSet("Digital Flag", ::H5::PredType::NATIVE_INT, dataspace);
-    dataset.write(&digital, ::H5::PredType::NATIVE_INT);
+void MasterAttributes::WriteHDF5DigitalFlag(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset =
+        group->createDataSet("Digital Flag", H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&digital, H5::PredType::NATIVE_INT);
 }
 
-void MasterAttributes::WriteHDF5DigitalSamples(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset = group->createDataSet("Digital Samples",
-                                           ::H5::PredType::NATIVE_INT, dataspace);
-    dataset.write(&digitalSamples, ::H5::PredType::NATIVE_INT);
+void MasterAttributes::WriteHDF5DigitalSamples(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset = group->createDataSet("Digital Samples",
+                                           H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&digitalSamples, H5::PredType::NATIVE_INT);
 }
 
-void MasterAttributes::WriteHDF5DbitOffset(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset =
-        group->createDataSet("Dbit Offset", ::H5::PredType::NATIVE_INT, dataspace);
-    dataset.write(&dbitoffset, ::H5::PredType::NATIVE_INT);
+void MasterAttributes::WriteHDF5DbitOffset(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset =
+        group->createDataSet("Dbit Offset", H5::PredType::NATIVE_INT, dataspace);
+    dataset.write(&dbitoffset, H5::PredType::NATIVE_INT);
 }
 
-void MasterAttributes::WriteHDF5DbitList(::H5::H5File *fd, ::H5::Group *group) {
-    ::H5::DataSpace dataspace = ::H5::DataSpace(H5S_SCALAR);
-    ::H5::DataSet dataset = group->createDataSet("Dbit Bitset List",
-                                           ::H5::PredType::STD_U64LE, dataspace);
-    dataset.write(&dbitlist, ::H5::PredType::STD_U64LE);
+void MasterAttributes::WriteHDF5DbitList(H5::H5File *fd, H5::Group *group) {
+    H5::DataSpace dataspace = H5::DataSpace(H5S_SCALAR);
+    H5::DataSet dataset = group->createDataSet("Dbit Bitset List",
+                                           H5::PredType::STD_U64LE, dataspace);
+    dataset.write(&dbitlist, H5::PredType::STD_U64LE);
 }
 #endif
 
@@ -586,7 +586,7 @@ void MasterAttributes::GetGotthardBinaryAttributes(
 };
 
 #ifdef HDF5C
-void MasterAttributes::WriteGotthardHDF5Attributes(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteGotthardHDF5Attributes(H5::H5File *fd, H5::Group *group) {
     MasterAttributes::WriteHDF5Exptime(fd, group);
     MasterAttributes::WriteHDF5Period(fd, group);
     MasterAttributes::WriteHDF5ROI(fd, group);
@@ -606,7 +606,7 @@ void MasterAttributes::GetJungfrauBinaryAttributes(
 }
 
 #ifdef HDF5C
-void MasterAttributes::WriteJungfrauHDF5Attributes(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteJungfrauHDF5Attributes(H5::H5File *fd, H5::Group *group) {
     MasterAttributes::WriteHDF5Exptime(fd, group);
     MasterAttributes::WriteHDF5Period(fd, group);
     MasterAttributes::WriteHDF5NumUDPInterfaces(fd, group);
@@ -639,7 +639,7 @@ void MasterAttributes::GetEigerBinaryAttributes(
 }
 
 #ifdef HDF5C
-void MasterAttributes::WriteEigerHDF5Attributes(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteEigerHDF5Attributes(H5::H5File *fd, H5::Group *group) {
     MasterAttributes::WriteHDF5DynamicRange(fd, group);
     MasterAttributes::WriteHDF5TenGiga(fd, group);
     MasterAttributes::WriteHDF5Exptime(fd, group);
@@ -678,7 +678,7 @@ void MasterAttributes::GetMythen3BinaryAttributes(
 }
 
 #ifdef HDF5C
-void MasterAttributes::WriteMythen3HDF5Attributes(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteMythen3HDF5Attributes(H5::H5File *fd, H5::Group *group) {
     MasterAttributes::WriteHDF5DynamicRange(fd, group);
     MasterAttributes::WriteHDF5TenGiga(fd, group);
     MasterAttributes::WriteHDF5Period(fd, group);
@@ -701,7 +701,7 @@ void MasterAttributes::GetGotthard2BinaryAttributes(
 }
 
 #ifdef HDF5C
-void MasterAttributes::WriteGotthard2HDF5Attributes(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteGotthard2HDF5Attributes(H5::H5File *fd, H5::Group *group) {
     MasterAttributes::WriteHDF5Exptime(fd, group);
     MasterAttributes::WriteHDF5Period(fd, group);
     MasterAttributes::WriteHDF5BurstMode(fd, group);
@@ -723,7 +723,7 @@ void MasterAttributes::GetMoenchBinaryAttributes(
 }
 
 #ifdef HDF5C
-void MasterAttributes::WriteMoenchHDF5Attributes(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteMoenchHDF5Attributes(H5::H5File *fd, H5::Group *group) {
     MasterAttributes::WriteHDF5Exptime(fd, group);
     MasterAttributes::WriteHDF5Period(fd, group);
     MasterAttributes::WriteHDF5TenGiga(fd, group);
@@ -757,7 +757,7 @@ void MasterAttributes::GetCtbBinaryAttributes(
 }
 
 #ifdef HDF5C
-void MasterAttributes::WriteCtbHDF5Attributes(::H5::H5File *fd, ::H5::Group *group) {
+void MasterAttributes::WriteCtbHDF5Attributes(H5::H5File *fd, H5::Group *group) {
     MasterAttributes::WriteHDF5Exptime(fd, group);
     MasterAttributes::WriteHDF5Period(fd, group);
     MasterAttributes::WriteHDF5TenGiga(fd, group);

@@ -40,9 +40,9 @@ std::string CreateVirtualHDF5File(
     const uint32_t maxFramesPerFile, 
     const uint32_t nPixelsX, const uint32_t nPixelsY,
     const uint32_t dynamicRange, const uint64_t numImagesCaught,
-    const int numModX, const int numModY, const ::H5::DataType dataType,
+    const int numModX, const int numModY, const H5::DataType dataType,
     const std::vector<std::string> parameterNames,
-    const std::vector<::H5::DataType> parameterDataTypes, std::mutex *hdf5LibMutex,
+    const std::vector<H5::DataType> parameterDataTypes, std::mutex *hdf5LibMutex,
     bool gotthard25um);
 #endif
 } // namespace masterFileUtility

@@ -581,7 +581,7 @@ int ClientInterface::set_num_add_storage_cells(Interface &socket) {
         throw RuntimeError("Invalid number of additional storage cells " +
                            std::to_string(value));
     }
-    verifyIdle(socket);
+    // allowing this to be done even when receiver not idle
     LOG(logDEBUG1) << "Setting num additional storage cells to " << value;
     impl()->setNumberOfAdditionalStorageCells(value);
     return socket.Send(OK);

@@ -59,4 +59,7 @@ namespace sls {
 #define TCP_PRIORITY       (10)
 
 
+#ifdef HDF5C
+#define DATASET_NAME "/data"
+#endif
 } // namespace sls

@@ -37,8 +37,8 @@ HDF5DataFile::HDF5DataFile(int index, std::mutex *hdf5Lib)
 
 HDF5DataFile::~HDF5DataFile() { CloseFile(); }
 
-std::array<std::string, 2> HDF5DataFile::GetFileAndDatasetName() const {
-    return std::array<std::string, 2>{fileName_, dataSetName_};
+std::string HDF5DataFile::GetFileName() const {
+    return fileName_;
 }
 
 uint32_t HDF5DataFile::GetFilesInAcquisition() const {
@@ -179,13 +179,6 @@ void HDF5DataFile::CreateFile() {
         dataSpace_ = nullptr;
         dataSpace_ = new ::H5::DataSpace(3, srcdims, srcdimsmax);
 
-        // dataset name
-        std::ostringstream osfn;
-        osfn << "/data";
-        if (numImages_ > 1)
-            osfn << "_f" << std::setfill('0') << std::setw(12) << subFileIndex_;
-        dataSetName_ = osfn.str();
-
         // dataset
         // fill value
         ::H5::DSetCreatPropList plist;
@@ -197,7 +190,7 @@ void HDF5DataFile::CreateFile() {
         plist.setChunk(3, chunk_dims);
         dataSet_ = nullptr;
         dataSet_ = new ::H5::DataSet(fd_->createDataSet(
-            dataSetName_.c_str(), dataType_, *dataSpace_, plist));
+            DATASET_NAME, dataType_, *dataSpace_, plist));
 
         // create parameter datasets
         hsize_t dims[1] = {nDimx};

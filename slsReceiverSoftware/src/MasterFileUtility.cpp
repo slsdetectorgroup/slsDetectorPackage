@@ -49,7 +49,6 @@ std::string CreateMasterBinaryFile(const std::string &filePath,
 #ifdef HDF5C
 void LinkHDF5FileInMaster(std::string &masterFileName,
                           std::string &dataFilename,
-                          std::string &dataSetname,
                           std::vector<std::string> parameterNames,
                           const bool silentMode, std::mutex *hdf5LibMutex) {
 
@@ -70,9 +69,9 @@ void LinkHDF5FileInMaster(std::string &masterFileName,
                                       ::H5::FileCreatPropList::DEFAULT, flist);
 
         // create link for data dataset
-        ::H5::DataSet dset = fd->openDataSet(dataSetname.c_str());
-        std::string linkname = std::string("/entry/data/") + dataSetname;
-        if (H5Lcreate_external(dataFilename.c_str(), dataSetname.c_str(),
+        ::H5::DataSet dset = fd->openDataSet(DATASET_NAME);
+        std::string linkname = std::string("/entry/data/") + std::string(DATASET_NAME);
+        if (H5Lcreate_external(dataFilename.c_str(), DATASET_NAME,
                                masterfd.getLocId(), linkname.c_str(),
                                H5P_DEFAULT, H5P_DEFAULT) < 0) {
             throw RuntimeError(
@@ -162,11 +161,11 @@ std::string CreateMasterHDF5File(const std::string &filePath,
     return fileName;
 }
 
-std::array<std::string, 2> CreateVirtualHDF5File(
+std::string CreateVirtualHDF5File(
     const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
-    const uint32_t maxFramesPerFile, const uint64_t numImages,
+    const uint32_t maxFramesPerFile,
     const uint32_t nPixelsX, const uint32_t nPixelsY,
     const uint32_t dynamicRange, const uint64_t numImagesCaught,
     const int numModX, const int numModY, const ::H5::DataType dataType,
@@ -179,8 +178,6 @@ std::array<std::string, 2> CreateVirtualHDF5File(
     osfn << filePath << "/" << fileNamePrefix << "_virtual"
          << "_" << fileIndex << ".h5";
     std::string fileName = osfn.str();
-
-    std::string dataSetName = "data";
 
     unsigned int paraSize = parameterNames.size();
     uint64_t numModZ = numModX;
@@ -286,13 +283,6 @@ std::array<std::string, 2> CreateVirtualHDF5File(
                             p + 1, srcFileName.length() - p));
                 }
 
-                // source dataset name
-                std::ostringstream osfn;
-                osfn << "/data";
-                if (numImages > 1)
-                    osfn << "_f" << std::setfill('0') << std::setw(12) << iFile;
-                std::string srcDatasetName = osfn.str();
-
                 // source dataspace
                 hsize_t srcDims[3] = {nDimx, nDimy, nDimz};
                 hsize_t srcDimsMax[3] = {H5S_UNLIMITED, nDimy, nDimz};
@@ -303,7 +293,7 @@ std::array<std::string, 2> CreateVirtualHDF5File(
 
                 // mapping of property list
                 plist.setVirtual(vdsDataSpace, relative_srcFileName.c_str(),
-                                 srcDatasetName.c_str(), srcDataSpace);
+                                 DATASET_NAME, srcDataSpace);
                 for (unsigned int p = 0; p < paraSize; ++p) {
                     plistPara[p].setVirtual(
                         vdsDataSpacePara, relative_srcFileName.c_str(),
@@ -325,7 +315,7 @@ std::array<std::string, 2> CreateVirtualHDF5File(
             framesSaved += nDimx;
         }
         // datasets
-        ::H5::DataSet vdsDataSet(fd->createDataSet(dataSetName.c_str(), dataType,
+        ::H5::DataSet vdsDataSet(fd->createDataSet(DATASET_NAME, dataType,
                                              vdsDataSpace, plist));
 
         for (unsigned int p = 0; p < paraSize; ++p) {
@@ -346,7 +336,7 @@ std::array<std::string, 2> CreateVirtualHDF5File(
     if (!silentMode) {
         LOG(logINFO) << "Virtual File: " << fileName;
     }
-    return std::array<std::string, 2>{fileName, dataSetName};
+    return fileName;
 }
 #endif
 

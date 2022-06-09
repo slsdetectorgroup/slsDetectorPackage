@@ -211,14 +211,14 @@ void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
     if (receiverRoiEnabled_) {
         throw std::runtime_error("Should not be here, roi with hdf5 virtual should throw.");
     }
-    std::string fname{virtualFileName}, datasetName{virtualDatasetName};
+    std::string fname{virtualFileName}, datasetName{virtualDatasetName}, masterfname{masterFileName};
     // if no virtual file, link data file
     if (virtualFileName.empty()) {
         auto res = dataFile_->GetFileAndDatasetName();
         fname = res[0];
         datasetName = res[1];
     }
-    masterFileUtility::LinkHDF5FileInMaster(masterFileName, fname, datasetName,
+    masterFileUtility::LinkHDF5FileInMaster(masterfname, fname, datasetName,
                                             dataFile_->GetParameterNames(),
                                             silentMode, hdf5LibMutex);
 }

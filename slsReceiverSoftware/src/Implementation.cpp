@@ -936,11 +936,11 @@ void Implementation::StartMasterWriter() {
         }
 #ifdef HDF5C
         if (fileFormatType == HDF5) {
-            std::array<std::string, 2> virtualFileAndDatasetNames;
+            std::string virtualFileName;
             // create virtual hdf5 file (if multiple files)
             if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
                 (numPorts.x * numPorts.y) > 1) {
-                virtualFileAndDatasetNames =
+                virtualFileName =
                     dataProcessor[0]->CreateVirtualFile(
                         filePath, fileName, fileIndex, overwriteEnable,
                         silentMode, modulePos, numUDPInterfaces, framesPerFile,
@@ -950,8 +950,7 @@ void Implementation::StartMasterWriter() {
             // link file in master
             if (masterFileWriteEnable) {
                 dataProcessor[0]->LinkFileInMaster(
-                    masterFileName, virtualFileAndDatasetNames[0],
-                    virtualFileAndDatasetNames[1], silentMode, &hdf5LibMutex);
+                    masterFileName, virtualFileName, silentMode, &hdf5LibMutex);
             }
         }
 #endif

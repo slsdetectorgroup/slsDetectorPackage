@@ -180,7 +180,7 @@ uint32_t DataProcessor::GetFilesInAcquisition() const {
     return dataFile_->GetFilesInAcquisition();
 }
 
-std::array<std::string, 2> DataProcessor::CreateVirtualFile(
+std::string DataProcessor::CreateVirtualFile(
     const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
@@ -206,7 +206,7 @@ std::array<std::string, 2> DataProcessor::CreateVirtualFile(
     // stop acquisition)
     return masterFileUtility::CreateVirtualHDF5File(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
-        modulePos, numUnitsPerReadout, framesPerFile, numImages, 
+        modulePos, numUnitsPerReadout, framesPerFile,  
         generalData_->nPixelsX, generalData_->nPixelsY, dynamicRange, 
         numFramesCaught_, numModX, numModY, dataFile_->GetPDataType(), 
         dataFile_->GetParameterNames(), dataFile_->GetParameterDataTypes(), 
@@ -215,21 +215,18 @@ std::array<std::string, 2> DataProcessor::CreateVirtualFile(
 
 void DataProcessor::LinkFileInMaster(const std::string &masterFileName,
                                      const std::string &virtualFileName,
-                                     const std::string &virtualDatasetName,
                                      const bool silentMode,
                                      std::mutex *hdf5LibMutex) {
 
     if (receiverRoiEnabled_) {
         throw std::runtime_error("Should not be here, roi with hdf5 virtual should throw.");
     }
-    std::string fname{virtualFileName}, datasetName{virtualDatasetName}, masterfname{masterFileName};
+    std::string fname{virtualFileName}, masterfname{masterFileName};
     // if no virtual file, link data file
     if (virtualFileName.empty()) {
-        auto res = dataFile_->GetFileAndDatasetName();
-        fname = res[0];
-        datasetName = res[1];
+        fname = dataFile_->GetFileName();
     }
-    masterFileUtility::LinkHDF5FileInMaster(masterfname, fname, datasetName,
+    masterFileUtility::LinkHDF5FileInMaster(masterfname, fname,
                                             dataFile_->GetParameterNames(),
                                             silentMode, hdf5LibMutex);
 }

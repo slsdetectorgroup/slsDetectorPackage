@@ -14,11 +14,11 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
     HDF5DataFile(const int index, std::mutex *hdf5Lib);
     ~HDF5DataFile();
 
-    std::array<std::string, 2> GetFileAndDatasetName() const override;
+    std::string GetFileName() const override;
     uint32_t GetFilesInAcquisition() const override;
-    ::H5::DataType GetPDataType() const override;
+    H5::DataType GetPDataType() const override;
     std::vector<std::string> GetParameterNames() const override;
-    std::vector<::H5::DataType> GetParameterDataTypes() const override;
+    std::vector<H5::DataType> GetParameterDataTypes() const override;
 
     void CloseFile() override;
 
@@ -45,17 +45,17 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
 
     int index_;
     std::mutex *hdf5Lib_;
-    ::H5::H5File *fd_{nullptr};
+    H5::H5File *fd_{nullptr};
     std::string fileName_;
     std::string dataSetName_;
-    ::H5::DataSpace *dataSpace_{nullptr};
-    ::H5::DataSet *dataSet_{nullptr};
-    ::H5::DataType dataType_{::H5::PredType::STD_U16LE};
+    H5::DataSpace *dataSpace_{nullptr};
+    H5::DataSet *dataSet_{nullptr};
+    H5::DataType dataType_{H5::PredType::STD_U16LE};
 
-    ::H5::DataSpace *dataSpacePara_{nullptr};
-    std::vector<::H5::DataSet *> dataSetPara_{nullptr};
+    H5::DataSpace *dataSpacePara_{nullptr};
+    std::vector<H5::DataSet *> dataSetPara_{nullptr};
     std::vector<std::string> parameterNames_;
-    std::vector<::H5::DataType> parameterDataTypes_;
+    std::vector<H5::DataType> parameterDataTypes_;
 
     uint32_t subFileIndex_{0};
     uint32_t numFramesInFile_{0};

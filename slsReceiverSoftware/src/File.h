@@ -25,11 +25,11 @@ class File : private virtual slsDetectorDefs {
     virtual void CloseFile() = 0;
 
 #ifdef HDF5C
-    virtual std::array<std::string, 2> GetFileAndDatasetName() const {
+    virtual std::string GetFileName() const {
         LOG(logERROR)
-            << "This is a generic function GetFilesInAcquisition that "
+            << "This is a generic function GetFileName that "
                "should be overloaded by a derived class";
-        return std::array<std::string, 2>{};
+        return std::string{};
     }
 
     virtual uint32_t GetFilesInAcquisition() const {
@@ -47,14 +47,14 @@ class File : private virtual slsDetectorDefs {
 
     virtual std::vector<std::string> GetParameterNames() const {
         LOG(logERROR)
-            << "This is a generic function GetFilesInAcquisition that "
+            << "This is a generic function GetParameterNames that "
                "should be overloaded by a derived class";
         return std::vector<std::string>{};
     };
 
     virtual std::vector<H5::DataType> GetParameterDataTypes() const {
         LOG(logERROR)
-            << "This is a generic function GetFilesInAcquisition that "
+            << "This is a generic function GetParameterDataTypes that "
                "should be overloaded by a derived class";
         return std::vector<H5::DataType>{};
     };
@@ -67,7 +67,7 @@ class File : private virtual slsDetectorDefs {
         const uint32_t maxFramesPerFile, const uint64_t numImages,
         const uint32_t nPixelsX, const uint32_t nPixelsY,
         const uint32_t dynamicRange) {
-        LOG(logERROR) << "This is a generic function CreateFirstDataFile that "
+        LOG(logERROR) << "This is a generic function CreateFirstHDF5DataFile that "
                          "should be overloaded by a derived class";
     };
 #endif
@@ -77,7 +77,7 @@ class File : private virtual slsDetectorDefs {
         const bool silentMode, const int modulePos,
         const int numUnitsPerReadout, const uint32_t udpPortNumber,
         const uint32_t maxFramesPerFile) {
-        LOG(logERROR) << "This is a generic function CreateFirstDataFile that "
+        LOG(logERROR) << "This is a generic function CreateFirstBinaryDataFile that "
                          "should be overloaded by a derived class";
     };
 

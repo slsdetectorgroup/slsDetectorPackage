@@ -62,7 +62,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                           const bool detectorDataStream);
 #ifdef HDF5C
     uint32_t GetFilesInAcquisition() const;
-    std::array<std::string, 2> CreateVirtualFile(
+    std::string CreateVirtualFile(
         const std::string &filePath, const std::string &fileNamePrefix,
         const uint64_t fileIndex, const bool overWriteEnable,
         const bool silentMode, const int modulePos,
@@ -71,7 +71,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
         const uint32_t dynamicRange, std::mutex *hdf5LibMutex);
     void LinkFileInMaster(const std::string &masterFileName,
                           const std::string &virtualFileName,
-                          const std::string &virtualDatasetName,
                           const bool silentMode, std::mutex *hdf5LibMutex);
 #endif
 

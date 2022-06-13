@@ -1834,13 +1834,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def threshold(self):
-        """[Eiger] Threshold in eV
+        """[Eiger][Mythen3] Threshold in eV
         
         Note
         ----
         To change settings as well or set threshold without trimbits, use setThresholdEnergy.
 
-        :setter: It loads trim files from settingspath.
+        :setter: It loads trim files from settingspath.\n [Mythen3] An energy of -1 will pick up values from detector.
         """
         if self.type == detectorType.MYTHEN3:
             return self.getAllThresholdEnergy()
@@ -3516,7 +3516,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def interpolation(self):
-        """[Mythen3] Enable or disable interpolation.  Enabling also enables all counters """
+        """[Mythen3] Enable or disable interpolation.  interpolation mode enables all counters and disables vth3. Disabling sets back counter mask and vth3. """
         return self.getInterpolation()
 
     @interpolation.setter
@@ -3526,7 +3526,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def pumpprobe(self):
-        """[Mythen3] Enable or disable pump probe mode. """
+        """[Mythen3] Enable or disable pump probe mode. Pump probe mode only enables vth2. Disabling sets back to previous value """
         return self.getPumpProbe()
 
     @pumpprobe.setter

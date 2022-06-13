@@ -21,9 +21,9 @@ class commonModeSubtractionColumn : public commonModeSubtraction {
                 nCm[iroi]++;
                 if (nCm[iroi] > rows)
                     std::cout << "Too many pixels added " << nCm[iroi] << std::endl;
-                /* if (ix==10 && iy<20) */
-                /*   cout << " ** "<<val << " " << mean[iroi] << " " <<
-                 * nCm[iroi] << " " << getCommonMode(ix, iy) << endl; */
+                /* if (ix==10 && iy==20) */
+		/*   std::cout << " ** "<<val << " " << mean[iroi] << " " << */
+		/*     nCm[iroi] << " " << getCommonMode(ix, iy) << std::endl; */
             }
         }
     };
@@ -34,6 +34,40 @@ class commonModeSubtractionColumn : public commonModeSubtraction {
 
   private:
     int rows;
+};
+
+class commonModeSubtractionRow : public commonModeSubtraction {
+  public:
+    commonModeSubtractionRow(int nc = 400)
+        : commonModeSubtraction(200), cols(nc){};
+  virtual int getROI(int ix, int iy) { 
+    if (iy/200<1) return 199-iy%200; 
+    else return iy%200;
+  } 
+
+    virtual void addToCommonMode(double val, int ix = 0, int iy = 0) {
+        if (ix < cols || ix > 399 - cols) {
+            int iroi = getROI(ix, iy);
+            // cout << iy << " " << ix << " " << iroi ;
+            if (iroi >= 0 && iroi < nROI) {
+	      mean[iroi] += val;
+	      mean2[iroi] += val * val;
+	      nCm[iroi]++;
+	      if (nCm[iroi] > 4*cols)
+		std::cout << "Too many pixels added " << nCm[iroi] << std::endl;
+                /* if (ix==10 && iy==20) */
+		/*   std::cout << " ** "<<val << " " << mean[iroi] << " " << */
+		/*     nCm[iroi] << " " << getCommonMode(ix, iy) << std::endl; */
+            }
+        }
+    };
+
+    virtual commonModeSubtractionRow *Clone() {
+        return new commonModeSubtractionRow(this->cols);
+    };
+
+  private:
+    int cols;
 };
 
 class commonModeSubtractionSuperColumn : public commonModeSubtraction {
@@ -51,14 +85,15 @@ class commonModeSubtractionHalf : public commonModeSubtraction {
     };
 };
 
-class moench03CommonMode : public commonModeSubtractionColumn {
+class moench03CommonMode : public commonModeSubtractionRow {
     /** @short class to calculate the common mode noise for moench02 i.e. on 4
      * supercolumns separately */
   public:
     /** constructor -  initalizes a commonModeSubtraction with 4 different
        regions of interest \param nn number of samples for the moving average
     */
-    moench03CommonMode(int nr = 20) : commonModeSubtractionColumn(nr){};
+    //moench03CommonMode(int nr = 20) : commonModeSubtractionColumn(nr){};
+    moench03CommonMode(int nr = 20) : commonModeSubtractionRow(nr){};
 };
 
 #endif

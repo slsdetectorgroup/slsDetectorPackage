@@ -58,7 +58,10 @@ int main(int argc, char *argv[]) {
     // if we have an option for verify in the detector constructor
     // we could avoid this but clutter the code
     if (parser.command() == "free" && action != slsDetectorDefs::HELP_ACTION) {
-        sls::freeSharedMemory(parser.multi_id(), parser.detector_id());
+        if (parser.detector_id() != -1)
+            std::cout << "Cannot free shared memory of sub-detector\n";
+        else
+            sls::freeSharedMemory(parser.multi_id());
         return 0;
     }
 

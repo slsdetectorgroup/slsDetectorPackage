@@ -9262,7 +9262,11 @@ int clear_all_udp_dst(int file_des) {
                 numUdpDestinations = numdest;
                 LOG(logINFOBLUE, ("Number of UDP Destinations: %d\n",
                                     numUdpDestinations));
-                configure_mac();
+                ret = configureMAC();
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not clear all destinations in the fpga.\n");
+                    LOG(logERROR, (mess));
+                }
             }
         }
     }

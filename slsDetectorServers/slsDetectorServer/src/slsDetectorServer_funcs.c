@@ -9220,8 +9220,25 @@ int clear_all_udp_dst(int file_des) {
         if (check_detector_idle("clear all udp destinations") == OK) {
             memset(udpDetails, 0, sizeof(udpDetails));
             // minimum 1 destination in fpga
-            numUdpDestinations = 1;
-            configure_mac();
+            int numdest = 1;
+            // set number of destinations
+#if defined(JUNGFRAUD) || defined(EIGERD)
+            if (setNumberofDestinations(numdest) == FAIL) {
+                ret = FAIL;
+                strcpy(mess, "Could not clear udp destinations to 1 entry.\n");
+                LOG(logERROR, (mess));
+            } else
+#endif
+            {
+                numUdpDestinations = numdest;
+                LOG(logINFOBLUE, ("Number of UDP Destinations: %d\n",
+                                    numUdpDestinations));
+                ret = configureMAC();
+                if (ret == FAIL) {
+                    strcpy(mess, "Could not clear all destinations in the fpga.\n");
+                    LOG(logERROR, (mess));
+                }
+            }
         }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);

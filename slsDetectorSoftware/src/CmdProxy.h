@@ -742,6 +742,20 @@ class CmdProxy {
         {"i_io", "im_io"},
 
         /* Pattern */
+        {"patloop0", "patloop"},
+        {"patloop1", "patloop"},
+        {"patloop2", "patloop"},
+        {"patnloop0", "patnloop"},
+        {"patnloop1", "patnloop"},
+        {"patnloop2", "patnloop"},
+        {"patwait0", "patwait"},
+        {"patwait1", "patwait"},
+        {"patwait2", "patwait"},
+        {"patwaittime0", "patwaittime"},
+        {"patwaittime1", "patwaittime"},
+        {"patwaittime2", "patwaittime"},
+
+
         /* Moench */
 
         /* Advanced */
@@ -1049,18 +1063,10 @@ class CmdProxy {
         {"patioctrl", &CmdProxy::patioctrl},
         {"patword", &CmdProxy::PatternWord},
         {"patlimits", &CmdProxy::PatternLoopAddresses},
-        {"patloop0", &CmdProxy::PatternLoopAddresses},
-        {"patloop1", &CmdProxy::PatternLoopAddresses},
-        {"patloop2", &CmdProxy::PatternLoopAddresses},
-        {"patnloop0", &CmdProxy::PatternLoopCycles},
-        {"patnloop1", &CmdProxy::PatternLoopCycles},
-        {"patnloop2", &CmdProxy::PatternLoopCycles},
-        {"patwait0", &CmdProxy::PatternWaitAddress},
-        {"patwait1", &CmdProxy::PatternWaitAddress},
-        {"patwait2", &CmdProxy::PatternWaitAddress},
-        {"patwaittime0", &CmdProxy::PatternWaitTime},
-        {"patwaittime1", &CmdProxy::PatternWaitTime},
-        {"patwaittime2", &CmdProxy::PatternWaitTime},
+        {"patloop", &CmdProxy::PatternLoopAddresses},
+        {"patnloop", &CmdProxy::PatternLoopCycles},
+        {"patwait", &CmdProxy::PatternWaitAddress},
+        {"patwaittime", &CmdProxy::PatternWaitTime},
         {"patmask", &CmdProxy::patmask},
         {"patsetbit", &CmdProxy::patsetbit},
         {"patternstart", &CmdProxy::patternstart},

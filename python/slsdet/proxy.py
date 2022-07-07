@@ -128,3 +128,27 @@ class ClkFreqProxy:
                 rstr += f'{i}: {r}\n'
         
         return rstr.strip('\n')
+
+class PatNLoopProxy:
+    """
+    Proxy class to allow for more intuitive reading patnloop
+    """
+    def __init__(self, det):
+        self.det = det
+
+    def __getitem__(self, key):
+        return element_if_equal(self.det.getPatternLoopCycles(key))
+
+    def __setitem__(self, key, value):
+        set_proxy_using_dict(self.det.setPatternLoopCycles, key, value)
+
+    def __repr__(self):
+        rstr = ''
+        for i in range(3):
+            r = element_if_equal(self.__getitem__(i))
+            if isinstance(r, list):
+                rstr += ' '.join(f'{item}' for item in r)
+            else:
+                rstr += f'{i}: {r}\n'
+        
+        return rstr.strip('\n')

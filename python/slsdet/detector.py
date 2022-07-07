@@ -17,7 +17,7 @@ from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
 from _slsdet import xy
 from . import utils as ut
-from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy
+from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatNLoopProxy
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -3253,6 +3253,25 @@ class Detector(CppDetectorApi):
     def patloop2(self, addr):
         addr = ut.merge_args(2, addr)
         ut.set_using_dict(self.setPatternLoopAddresses, *addr)
+
+
+    @property
+    @element
+    def patnloop(self):
+        """
+        [Ctb][Moench][Mythen3] Number of cycles of the loop provided.
+        
+        Example
+        -------
+        >>> d.patnloop[0] = 5
+        >>> d.patnloop[0]
+        5
+        >>> d.patnloop
+        0: 5
+        1: 20
+        2: 30
+        """
+        return PatNLoopProxy(self)
 
     @property
     @element

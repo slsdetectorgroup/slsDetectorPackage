@@ -125,41 +125,94 @@ void Pattern::load(const std::string &fname) {
                 }
                 pat->limits[0] = StringTo<uint32_t>(args[1]);
                 pat->limits[1] = StringTo<uint32_t>(args[2]);
-            } else if (cmd == "patloop0" || cmd == "patloop1" ||
-                       cmd == "patloop2") {
-                if (nargs != 2) {
-                    throw RuntimeError("Invalid arguments for " +
-                                       ToString(args));
+            } 
+            else if (cmd == "patloop0" || cmd == "patloop1" ||
+                       cmd == "patloop2" || cmd == "patloop") {
+                int level = -1, iArg = 1;
+                if (cmd == "patloop") {
+                    if (nargs != 3) {
+                        throw RuntimeError("Invalid arguments for " +
+                                        ToString(args));
+                    }
+                    level = StringTo<int>(args[iArg++]);
+                } else {
+                    LOG(logWARNING) << "Depreciated command. Please use patloop next time.";
+                    if (nargs != 2) {
+                        throw RuntimeError("Invalid arguments for " +
+                                        ToString(args));
+                    }
+                    level = cmd[cmd.find_first_of("012")] - '0';
                 }
-                int level = cmd[cmd.find_first_of("012")] - '0';
-                int loop1 = StringTo<uint32_t>(args[1]);
-                int loop2 = StringTo<uint32_t>(args[2]);
+                if (level < 0 || level > 2) {
+                    throw RuntimeError("Invalid Pattern level. Options 0-2.");
+                }
+                int loop1 = StringTo<uint32_t>(args[iArg++]);
+                int loop2 = StringTo<uint32_t>(args[iArg++]);
                 pat->loop[level * 2 + 0] = loop1;
                 pat->loop[level * 2 + 1] = loop2;
             } else if (cmd == "patnloop0" || cmd == "patnloop1" ||
-                       cmd == "patnloop2") {
-                if (nargs != 1) {
-                    throw RuntimeError("Invalid arguments for " +
-                                       ToString(args));
+                       cmd == "patnloop2" || cmd == "patnloop") {
+                int level = -1, iArg = 1;
+                if (cmd == "patnloop") {
+                    if (nargs != 2) {
+                        throw RuntimeError("Invalid arguments for " +
+                                        ToString(args));
+                    }
+                    level = StringTo<int>(args[iArg++]);
+                } else {
+                    LOG(logWARNING) << "Depreciated command. Please use patnloop next time.";
+                    if (nargs != 1) {
+                        throw RuntimeError("Invalid arguments for " +
+                                        ToString(args));
+                    }
+                    level = cmd[cmd.find_first_of("012")] - '0';
                 }
-                int level = cmd[cmd.find_first_of("012")] - '0';
-                pat->nloop[level] = StringTo<uint32_t>(args[1]);
+                if (level < 0 || level > 2) {
+                    throw RuntimeError("Invalid Pattern level. Options 0-2.");
+                }
+                pat->nloop[level] = StringTo<uint32_t>(args[iArg++]);
             } else if (cmd == "patwait0" || cmd == "patwait1" ||
-                       cmd == "patwait2") {
-                if (nargs != 1) {
-                    throw RuntimeError("Invalid arguments for " +
-                                       ToString(args));
+                       cmd == "patwait2" || cmd == "patwait") {
+                int level = -1, iArg = 1;
+                if (cmd == "patwait") {
+                    if (nargs != 2) {
+                        throw RuntimeError("Invalid arguments for " +
+                                        ToString(args));
+                    }
+                    level = StringTo<int>(args[iArg++]);
+                } else {
+                    LOG(logWARNING) << "Depreciated command. Please use patwait next time.";
+                    if (nargs != 1) {
+                        throw RuntimeError("Invalid arguments for " +
+                                        ToString(args));
+                    }
+                    level = cmd[cmd.find_first_of("012")] - '0';
                 }
-                int level = cmd[cmd.find_first_of("012")] - '0';
-                pat->wait[level] = StringTo<uint32_t>(args[1]);
+                if (level < 0 || level > 2) {
+                    throw RuntimeError("Invalid Pattern level. Options 0-2.");
+                }
+                pat->wait[level] = StringTo<uint32_t>(args[iArg++]);
             } else if (cmd == "patwaittime0" || cmd == "patwaittime1" ||
-                       cmd == "patwaittime2") {
-                if (nargs != 1) {
-                    throw RuntimeError("Invalid arguments for " +
-                                       ToString(args));
+                       cmd == "patwaittime2" || cmd == "patwaittime") {
+                int level = -1, iArg = 1;
+                if (cmd == "patwaittime") {
+                    if (nargs != 2) {
+                        throw RuntimeError("Invalid arguments for " +
+                                        ToString(args));
+                    }
+                    level = StringTo<int>(args[iArg++]);
+                } else {
+                    LOG(logWARNING) << "Depreciated command. Please use patwaittime next time.";
+                    if (nargs != 1) {
+                        throw RuntimeError("Invalid arguments for " +
+                                        ToString(args));
+                    }
+                    level = cmd[cmd.find_first_of("012")] - '0';
                 }
-                int level = cmd[cmd.find_first_of("012")] - '0';
-                pat->waittime[level] = StringTo<uint64_t>(args[1]);
+                if (level < 0 || level > 2) {
+                    throw RuntimeError("Invalid Pattern level. Options 0-2.");
+                }
+                pat->waittime[level] = StringTo<uint64_t>(args[iArg++]);
             } else {
                 throw RuntimeError("Unknown command in pattern file " + cmd);
             }
@@ -189,19 +242,19 @@ void Pattern::save(const std::string &fname) {
 
     for (size_t i = 0; i < 3; ++i) {
         // patloop
-        output_file << "patloop" << i << " "
+        output_file << "patloop " << i << " "
                     << ToStringHex(pat->loop[i * 2 + 0], 4) << " "
                     << ToStringHex(pat->loop[i * 2 + 1], 4) << std::endl;
         // patnloop
-        output_file << "patnloop" << i << " " << pat->nloop[i] << std::endl;
+        output_file << "patnloop " << i << " " << pat->nloop[i] << std::endl;
     }
 
     for (size_t i = 0; i < 3; ++i) {
         // patwait
-        output_file << "patwait" << i << " " << ToStringHex(pat->wait[i], 4)
+        output_file << "patwait " << i << " " << ToStringHex(pat->wait[i], 4)
                     << std::endl;
         // patwaittime
-        output_file << "patwaittime" << i << " " << pat->waittime[i]
+        output_file << "patwaittime " << i << " " << pat->waittime[i]
                     << std::endl;
     }
 }
@@ -219,23 +272,19 @@ std::string Pattern::str() const {
     }
     oss << "patioctrl " << ToStringHex(pat->ioctrl, word_width) << std::endl
         << "patlimits " << ToStringHex(pat->limits[0], addr_width) << " "
-        << ToStringHex(pat->limits[1], addr_width) << std::endl
-        << "patloop0 " << ToStringHex(pat->loop[0], addr_width) << " "
-        << ToStringHex(pat->loop[1], addr_width) << std::endl
-        << "patnloop0 " << pat->nloop[0] << std::endl
-        << "patloop1 " << ToStringHex(pat->loop[2], addr_width) << " "
-        << ToStringHex(pat->loop[3], addr_width) << std::endl
-        << "patnloop1 " << pat->nloop[1] << std::endl
-        << "patloop2 " << ToStringHex(pat->loop[4], addr_width) << " "
-        << ToStringHex(pat->loop[5], addr_width) << std::endl
-        << "patnloop2 " << pat->nloop[2] << std::endl
-        << "patwait0 " << ToStringHex(pat->wait[0], addr_width) << std::endl
-        << "patwaittime0 " << pat->waittime[0] << std::endl
-        << "patwait1 " << ToStringHex(pat->wait[1], addr_width) << std::endl
-        << "patwaittime1 " << pat->waittime[1] << std::endl
-        << "patwait2 " << ToStringHex(pat->wait[2], addr_width) << std::endl
-        << "patwaittime2 " << pat->waittime[2] << std::endl
-        << ']';
+        << ToStringHex(pat->limits[1], addr_width) << std::endl;
+
+    for (int i = 0; i != 3; ++i) {
+        oss << "patloop " << i << ' ' << ToStringHex(pat->loop[i * 2], addr_width) << " "
+            << ToStringHex(pat->loop[i * 2 + 1], addr_width) << std::endl
+            << "patnloop " << pat->nloop[i] << std::endl;
+    }
+    for (int i = 0; i != 3; ++i) {
+        oss << "patwait " << i << ' ' << ToStringHex(pat->wait[i], addr_width) << std::endl
+            << "patwaittime " << i << ' ' << pat->waittime[i] << std::endl;
+    }
+
+    oss << ']';
     return oss.str();
 }
 

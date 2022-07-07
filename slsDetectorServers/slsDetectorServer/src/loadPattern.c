@@ -846,26 +846,14 @@ int loadPatternFile(char *patFname, char *errMessage) {
         }
 
         // patloop
-        if ((!strncmp(line, "patloop0", strlen("patloop0"))) ||
-            (!strncmp(line, "patloop1", strlen("patloop1"))) ||
-            (!strncmp(line, "patloop2", strlen("patloop2")))) {
-
-            // level
+        if (!strncmp(line, "patloop", strlen("patloop"))){
             int level = -1;
-            if (!strncmp(line, "patloop0", strlen("patloop0"))) {
-                level = 0;
-            } else if (!strncmp(line, "patloop1", strlen("patloop1"))) {
-                level = 1;
-            } else {
-                level = 2;
-            }
-
             int startAddr = 0;
             int stopAddr = 0;
             // cannot scan values
-            if (sscanf(line, "%s 0x%x 0x%x", command, &startAddr, &stopAddr) !=
-                3) {
-                sprintf(temp, "Could not scan patloop%d arguments.\n", level);
+            if (sscanf(line, "%s %d 0x%x 0x%x", command, &level, &startAddr, &stopAddr) !=
+                4) {
+                strcpy(temp, "Could not scan patloop arguments.\n");
                 break;
             }
 
@@ -876,24 +864,12 @@ int loadPatternFile(char *patFname, char *errMessage) {
         }
 
         // patnloop
-        if ((!strncmp(line, "patnloop0", strlen("patnloop0"))) ||
-            (!strncmp(line, "patnloop1", strlen("patnloop1"))) ||
-            (!strncmp(line, "patnloop2", strlen("patnloop2")))) {
-
-            // level
+        if (!strncmp(line, "patnloop", strlen("patnloop"))) {
             int level = -1;
-            if (!strncmp(line, "patnloop0", strlen("patnloop0"))) {
-                level = 0;
-            } else if (!strncmp(line, "patnloop1", strlen("patnloop1"))) {
-                level = 1;
-            } else {
-                level = 2;
-            }
-
             int numLoops = -1;
             // cannot scan values
-            if (sscanf(line, "%s %d", command, &numLoops) != 2) {
-                sprintf(temp, "Could not scan patnloop %d arguments.\n", level);
+            if (sscanf(line, "%s %d  %d", command, &level, &numLoops) != 3) {
+                strcpy(temp, "Could not scan patnloop arguments.\n");
                 break;
             }
 
@@ -903,24 +879,12 @@ int loadPatternFile(char *patFname, char *errMessage) {
         }
 
         // patwait
-        if ((!strncmp(line, "patwait0", strlen("patwait0"))) ||
-            (!strncmp(line, "patwait1", strlen("patwait1"))) ||
-            (!strncmp(line, "patwait2", strlen("patwait2")))) {
-
-            // level
+        if (!strncmp(line, "patwait ", strlen("patwait "))) {
             int level = -1;
-            if (!strncmp(line, "patwait0", strlen("patwait0"))) {
-                level = 0;
-            } else if (!strncmp(line, "patwait1", strlen("patwait1"))) {
-                level = 1;
-            } else {
-                level = 2;
-            }
-
             int addr = 0;
             // cannot scan values
-            if (sscanf(line, "%s 0x%x", command, &addr) != 2) {
-                sprintf(temp, "Could not scan patwait%d arguments.\n", level);
+            if (sscanf(line, "%s %d 0x%x", command, &level, &addr) != 3) {
+                strcpy(temp, "Could not scan patwait arguments.\n");
                 break;
             }
 
@@ -930,27 +894,15 @@ int loadPatternFile(char *patFname, char *errMessage) {
         }
 
         // patwaittime
-        if ((!strncmp(line, "patwaittime0", strlen("patwaittime0"))) ||
-            (!strncmp(line, "patwaittime1", strlen("patwaittime1"))) ||
-            (!strncmp(line, "patwaittime2", strlen("patwaittime2")))) {
-
-            // level
+        if (!strncmp(line, "patwaittime", strlen("patwaittime"))) {
             int level = -1;
-            if (!strncmp(line, "patwaittime0", strlen("patwaittime0"))) {
-                level = 0;
-            } else if (!strncmp(line, "patwaittime1", strlen("patwaittime1"))) {
-                level = 1;
-            } else {
-                level = 2;
-            }
-
             uint64_t waittime = 0;
 
             // cannot scan values
 #ifdef VIRTUAL
-            if (sscanf(line, "%s %ld", command, &waittime) != 2) {
+            if (sscanf(line, "%s %d %ld", command, &level, &waittime) != 3) {
 #else
-            if (sscanf(line, "%s %lld", command, &waittime) != 2) {
+            if (sscanf(line, "%s %d %lld", command, &level, &waittime) != 3) {
 #endif
                 sprintf(temp, "Could not scan patwaittime%d arguments.\n",
                         level);

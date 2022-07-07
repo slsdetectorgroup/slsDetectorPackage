@@ -2705,7 +2705,33 @@ std::string CmdProxy::PatternWord(int action) {
     return os.str();
 }
 
+void CmdProxy::GetLevelAndUpdateArgIndex(int action, std::string levelSeparatedCommand, int& level, int& iArg, size_t nGetArgs, size_t nPutArgs) {
+    if (cmd == levelSeparatedCommand) {
+        ++nGetArgs;
+        ++nPutArgs;
+    } else {
+        LOG(logWARNING) << "This command is deprecated and will be removed. Please migrate to " << levelSeparatedCommand;
+    }
+    if (action == defs::GET_ACTION && args.size() != nGetArgs) {
+        WrongNumberOfParameters(nGetArgs);
+    } else if (action == defs::PUT_ACTION && args.size() != nPutArgs) {
+        WrongNumberOfParameters(nPutArgs);
+    } 
+    if (cmd == levelSeparatedCommand) {
+        level = StringTo<int>(args[iArg++]);   
+    } else {
+        level = cmd[cmd.find_first_of("012")] - '0';
+    }
+    if (level < 0 || level > 2) {
+        throw RuntimeError("Invalid pattern level. Options 0-2.");
+    }
+}
+
 std::string CmdProxy::PatternLoopAddresses(int action) {
+   if (cmd != "patlimits" && cmd != "patloop0" && cmd != "patloop1" && cmd != "patloop2" && cmd != "patloop") { 
+        throw RuntimeError(
+                "Unknown command, use list to list all commands");
+   }
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -2716,67 +2742,38 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
         } else if (cmd == "patloop") {
             os << "[0|1|2] [start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] Limits of the loop level provided."
                << '\n';
-        } else if (cmd == "patloop0" || cmd == "patloop1" || cmd == "patloop2") {
+        } else {
             os << "Depreciated command. Use patloop."
                << '\n';
-        } else {
-            throw RuntimeError(
-                "Unknown command, use list to list all commands");
-        }
-        return os.str();
-    } 
-    
-    int level = -1;
-    int start = 0, stop = 0;
-    if (cmd == "patlimits" || cmd == "patloop0" || cmd == "patloop1" || cmd == "patloop2") {
-        if (action == defs::GET_ACTION && !args.empty()) {
-            WrongNumberOfParameters(0);
-        } else if (action == defs::PUT_ACTION) {
-            if (args.size() != 2) {
-                WrongNumberOfParameters(2);
-            }
-            start = StringTo<int>(args[0]);
-            stop = StringTo<int>(args[1]);
-        }
-        if (cmd == "patloop0") {
-            level = 0;
-        } else if (cmd == "patloop1") {
-            level = 1;
-        } else if (cmd == "patloop2") {
-            level = 2;
         } 
-    } else if (cmd == "patloop") {
-        if (action == defs::GET_ACTION && args.size() != 1) {
-            WrongNumberOfParameters(1);
+    } else {
+        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
+        if (cmd != "patlimits") {
+            GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs, nPutArgs);
+        }
+        if (action == defs::GET_ACTION) {
+            auto t =
+                det->getPatternLoopAddresses(level, std::vector<int>{det_id});
+            os << OutStringHex(t, 4) << '\n';
         } else if (action == defs::PUT_ACTION) {
-            if (args.size() != 3) {
-                WrongNumberOfParameters(3);
-            }
-            start = StringTo<int>(args[1]);
-            stop = StringTo<int>(args[2]);
-        }     
-        level = StringTo<int>(args[0]);   
-    } else {
-        throw RuntimeError(
-            "Unknown command, use list to list all commands");
-    }
-
-    if (action == defs::GET_ACTION) {
-        auto t =
-            det->getPatternLoopAddresses(level, std::vector<int>{det_id});
-        os << OutStringHex(t, 4) << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        det->setPatternLoopAddresses(level, start, stop,
-                                        std::vector<int>{det_id});
-        os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
-            << "]\n";
-    } else {
-        throw RuntimeError("Unknown action");
+            int start = StringTo<int>(args[iArg++]);
+            int stop = StringTo<int>(args[iArg++]);            
+            det->setPatternLoopAddresses(level, start, stop,
+                                            std::vector<int>{det_id});
+            os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
+                << "]\n";
+        } else {
+            throw RuntimeError("Unknown action");
+        }
     }
     return os.str();
 }
 
 std::string CmdProxy::PatternLoopCycles(int action) {
+   if (cmd != "patnloop0" && cmd != "patnloop1" && cmd != "patnloop2" && cmd != "patnloop") { 
+        throw RuntimeError(
+                "Unknown command, use list to list all commands");
+   }
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -2784,123 +2781,63 @@ std::string CmdProxy::PatternLoopCycles(int action) {
             os << "[0|1|2] [n_cycles] \n\t[Ctb][Moench][Mythen3] Number of cycles of "
                   "the loop level provided."
                << '\n';
-        } else if (cmd == "patnloop0" || cmd == "patnloop1" || cmd == "patnloop2") {
+        } else {
             os << "Depreciated command. Use patnloop."
                << '\n';
-        } else {
-            throw RuntimeError(
-                "Unknown command, use list to list all commands");
-        }
-        return os.str();
-    } 
-    int level = -1;
-    int nloops = 0;
-    if (cmd == "patnloop0" || cmd == "patnloop1" || cmd == "patnloop2") {
-        if (action == defs::GET_ACTION && !args.empty()) {
-            WrongNumberOfParameters(0);
-        } else if (action == defs::PUT_ACTION) {
-            if (args.size() != 1) {
-                WrongNumberOfParameters(1);
-            }
-            nloops = StringTo<int>(args[0]);
-        }
-        if (cmd == "patnloop0") {
-            level = 0;
-        } else if (cmd == "patnloop1") {
-            level = 1;
-        } else if (cmd == "patnloop2") {
-            level = 2;
         } 
-    } else if (cmd == "patnloop") {
-        if (action == defs::GET_ACTION && args.size() != 1) {
-            WrongNumberOfParameters(1);
+    } else {
+        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
+        GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs, nPutArgs);
+        if (action == defs::GET_ACTION) {
+            auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
-            if (args.size() != 2) {
-                WrongNumberOfParameters(2);
-            }
-            nloops = StringTo<int>(args[1]);
-        }     
-        level = StringTo<int>(args[0]);   
-    } else {
-        throw RuntimeError(
-            "Unknown command, use list to list all commands");
+            int nloops = StringTo<int>(args[iArg++]);
+            det->setPatternLoopCycles(level, nloops, std::vector<int>{det_id});
+            os << nloops << '\n';
+        } else {
+            throw RuntimeError("Unknown action");
+        }
     }
-
-    if (action == defs::GET_ACTION) {
-        auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
-        os << OutString(t) << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        det->setPatternLoopCycles(level, nloops, std::vector<int>{det_id});
-        os << nloops << '\n';
-    } else {
-        throw RuntimeError("Unknown action");
-    }
-    
     return os.str();
 }
 
 std::string CmdProxy::PatternWaitAddress(int action) {
+   if (cmd != "patwait0" && cmd != "patwait1" && cmd != "patwait2" && cmd != "patwait") { 
+        throw RuntimeError(
+                "Unknown command, use list to list all commands");
+   }
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patwait") {
             os << "[0|1|2] [addr] \n\t[Ctb][Moench][Mythen3] Wait address for loop level provided." << '\n';
-        } else if (cmd == "patwait0" || cmd == "patwait1" || cmd == "patwait2") {
+        } else {
             os << "Depreciated command. Use patwait."
                << '\n';
+        }
+    } else {
+        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
+        GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs, nPutArgs);
+        if (action == defs::GET_ACTION) {
+            auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
+            os << OutStringHex(t, 4) << '\n';
+        } else if (action == defs::PUT_ACTION) {
+            int addr = StringTo<int>(args[iArg++]);
+            det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
+            os << ToStringHex(addr, 4) << '\n';
         } else {
-            throw RuntimeError(
-                "Unknown command, use list to list all commands");
+            throw RuntimeError("Unknown action");
         }
-        return os.str();
-    }
-
-    int level = -1;
-    int addr = 0;
-    if (cmd == "patwait0" || cmd == "patwait1" || cmd == "patwait2") {
-        if (action == defs::GET_ACTION && !args.empty()) {
-            WrongNumberOfParameters(0);
-        } else if (action == defs::PUT_ACTION) {
-            if (args.size() != 1) {
-                WrongNumberOfParameters(1);
-            }
-            addr = StringTo<int>(args[0]);
-        }
-        if (cmd == "patwait0") {
-            level = 0;
-        } else if (cmd == "patwait1") {
-            level = 1;
-        } else if (cmd == "patwait2") {
-            level = 2;
-        } 
-    } else if (cmd == "patnloop") {
-        if (action == defs::GET_ACTION && args.size() != 1) {
-            WrongNumberOfParameters(1);
-        } else if (action == defs::PUT_ACTION) {
-            if (args.size() != 2) {
-                WrongNumberOfParameters(2);
-            }
-            addr = StringTo<int>(args[1]);
-        }     
-        level = StringTo<int>(args[0]);   
-    } else {
-        throw RuntimeError(
-            "Unknown command, use list to list all commands");
-    }
-
-    if (action == defs::GET_ACTION) {
-        auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
-        os << OutStringHex(t, 4) << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        det->setPatternWaitAddr(level, addr, std::vector<int>{det_id});
-        os << ToStringHex(addr, 4) << '\n';
-    } else {
-        throw RuntimeError("Unknown action");
     }
     return os.str();
 }
 
 std::string CmdProxy::PatternWaitTime(int action) {
+    if (cmd != "patwaittime0" && cmd != "patwaittime1" && cmd != "patwaittime2" && cmd != "patwaittime") { 
+        throw RuntimeError(
+                "Unknown command, use list to list all commands");
+    }
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -2908,56 +2845,23 @@ std::string CmdProxy::PatternWaitTime(int action) {
             os << "[0|1|2] [n_clk] \n\t[Ctb][Moench][Mythen3] Wait time in clock "
                   "cycles for the loop provided."
                << '\n';
-        } else if (cmd == "patwaittime0" || cmd == "patwaittime1" || cmd == "patwaittime2") {
+        } else {
             os << "Depreciated command. Use patwaittime."
                << '\n';
-        }  else {
-            throw RuntimeError(
-                "Unknown command, use list to list all commands");
-        }
-        return os.str();
-    } 
-    int level = -1;
-    uint64_t waittime = 0;
-    if (cmd == "patwaittime0" || cmd == "patwaittime1" || cmd == "patwaittime2") {
-        if (action == defs::GET_ACTION && !args.empty()) {
-            WrongNumberOfParameters(0);
-        } else if (action == defs::PUT_ACTION) {
-            if (args.size() != 1) {
-                WrongNumberOfParameters(1);
-            }
-            waittime = StringTo<uint64_t>(args[0]);
-        }
-        if (cmd == "patwaittime0") {
-            level = 0;
-        } else if (cmd == "patwaittime1") {
-            level = 1;
-        } else if (cmd == "patwaittime2") {
-            level = 2;
         } 
-    } else if (cmd == "patnloop") {
-        if (action == defs::GET_ACTION && args.size() != 1) {
-            WrongNumberOfParameters(1);
+    } else {
+        int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
+        GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs, nPutArgs);
+        if (action == defs::GET_ACTION) {
+            auto t = det->getPatternWaitTime(level, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
-            if (args.size() != 2) {
-                WrongNumberOfParameters(2);
-            }
-            waittime = StringTo<uint64_t>(args[1]);
-        }     
-        level = StringTo<int>(args[0]);   
-    } else {
-        throw RuntimeError(
-            "Unknown command, use list to list all commands");
-    }
-
-    if (action == defs::GET_ACTION) {
-        auto t = det->getPatternWaitTime(level, std::vector<int>{det_id});
-        os << OutString(t) << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        det->setPatternWaitTime(level, waittime, {det_id});
-        os << args.front() << '\n';
-    } else {
-        throw RuntimeError("Unknown action");
+            uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
+            det->setPatternWaitTime(level, waittime, {det_id});
+            os << args.front() << '\n';
+        } else {
+            throw RuntimeError("Unknown action");
+        }
     }
     return os.str();
 }

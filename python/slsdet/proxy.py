@@ -11,6 +11,44 @@ def set_proxy_using_dict(func, key, value):
     else:
         func(key, value)
 
+"""
+#TODO: No idea if this is needed
+def set_proxy_merge_args(*value):
+    ret = []
+    for a in value:
+        if isinstance(a, tuple):
+            ret.extend(a)
+        else:
+            ret.append(a)
+    return tuple(ret)
+"""    
+
+def set_proxy_merge_args(*args):
+    n_dict = sum(isinstance(a, dict) for a in args)
+    
+    if n_dict == 0: #no dict just make a tuple of arguments
+        ret = []
+        for a in args:
+            if isinstance(a, tuple):
+                ret.extend(a)
+            else:
+                ret.append(a)
+        return tuple(ret)
+
+    elif n_dict == 1:
+        args = [a for a in args] #these are the args to be added
+        values,pos = pop_dict(args)
+        ret = {}
+        for k, v in values.items():
+            v = tuplify(v)
+            items = [a for a in args]
+            items[pos:pos] = v
+            ret[k] = tuple(items)
+        return (ret,)
+
+    else:
+        raise ValueError("Multiple dictionaries passes cannot merge args")
+
 class JsonProxy:
     """
     Proxy class to allow for intuitive setting and getting of rx_jsonpara
@@ -129,6 +167,34 @@ class ClkFreqProxy:
         
         return rstr.strip('\n')
 
+class PatLoopProxy:
+    """
+    Proxy class to allow for more intuitive reading patloop
+    """
+    def __init__(self, det):
+        self.det = det
+
+    def __getitem__(self, key):
+        return self.det.getPatternLoopAddresses(key)
+
+    #TODO: does not work
+    def __setitem__(self, key, value):
+        value = set_proxy_merge_args(value)
+        set_proxy_using_dict(self.det.setPatternLoopAddresses, key, *value)
+
+    def __repr__(self):
+        #TODO: Need to fix this, does not print levels
+        rstr = ''
+        for i in range(3):
+            r = self.__getitem__(i)
+            if isinstance(r, list):
+                rstr += ' '.join(f'{item}' for item in r)
+            else:
+                rstr += f'{i}: {r}\n'
+        
+        return rstr.strip('\n')
+
+
 class PatNLoopProxy:
     """
     Proxy class to allow for more intuitive reading patnloop
@@ -141,6 +207,55 @@ class PatNLoopProxy:
 
     def __setitem__(self, key, value):
         set_proxy_using_dict(self.det.setPatternLoopCycles, key, value)
+
+    def __repr__(self):
+        rstr = ''
+        for i in range(3):
+            r = element_if_equal(self.__getitem__(i))
+            if isinstance(r, list):
+                rstr += ' '.join(f'{item}' for item in r)
+            else:
+                rstr += f'{i}: {r}\n'
+        
+        return rstr.strip('\n')
+
+
+class PatWaitProxy:
+    """
+    Proxy class to allow for more intuitive reading patwait
+    """
+    def __init__(self, det):
+        self.det = det
+
+    def __getitem__(self, key):
+        return element_if_equal(self.det.getPatternWaitAddr(key))
+
+    def __setitem__(self, key, value):
+        set_proxy_using_dict(self.det.setPatternWaitAddr, key, value)
+
+    def __repr__(self):
+        rstr = ''
+        for i in range(3):
+            r = element_if_equal(self.__getitem__(i))
+            if isinstance(r, list):
+                rstr += ' '.join(f'{item}' for item in r)
+            else:
+                rstr += f'{i}: {r}\n'
+        
+        return rstr.strip('\n')
+
+class PatWaitTimeProxy:
+    """
+    Proxy class to allow for more intuitive reading patwaittime
+    """
+    def __init__(self, det):
+        self.det = det
+
+    def __getitem__(self, key):
+        return element_if_equal(self.det.getPatternWaitTime(key))
+
+    def __setitem__(self, key, value):
+        set_proxy_using_dict(self.det.setPatternWaitTime, key, value)
 
     def __repr__(self):
         rstr = ''

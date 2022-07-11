@@ -87,63 +87,44 @@ while getopts ":bpchd:k:l:j:trgeisumnz" opt ; do
 		echo "Building of CMake files Required"
 		REBUILD=1
 		;;
-	p)
-    	echo "Compiling Options: Python" 
-		PYTHON=1
-		REBUILD=1
-		;;   
 	c) 
 		echo "Clean Required"
 		CLEAN=1
-		;;
-	h) 
-		echo "Building of CMake files with HDF5 option Required"
-		HDF5=1
-		REBUILD=1
 		;;
 	d) 
 		echo "New HDF5 directory: $OPTARG" 
 		HDF5DIR=$OPTARG
 		;;
-	l)
-		echo "CMake install directory: $OPTARG"
-		INSTALLDIR="$OPTARG"
+	e)
+		echo "Compiling Options: Debug" 
+		DEBUG=1
+		;;  
+	g) 
+		echo "Compiling Options: GUI" 
+		GUI=1
+		REBUILD=1
+		;; 
+	h) 
+		echo "Building of CMake files with HDF5 option Required"
+		HDF5=1
+		REBUILD=1
+		;;
+	i)
+		echo "Compiling Options: Tests" 
+		TESTS=1
+		;;   
+	j) 
+		echo "Number of compiler threads: $OPTARG" 
+		COMPILERTHREADS=$OPTARG
 		;;
 	k)
 		echo "CMake command: $OPTARG"
 		CMAKE="$OPTARG"
 		;;
-	j) 
-		echo "Number of compiler threads: $OPTARG" 
-		COMPILERTHREADS=$OPTARG
+	l)
+		echo "CMake install directory: $OPTARG"
+		INSTALLDIR="$OPTARG"
 		;;
-	t) 
-    	echo "Compiling Options: Text Client" 
-		TEXTCLIENT=1
-		REBUILD=1
-		;;      
-	r) 
-		echo "Compiling Options: Receiver" 
-		RECEIVER=1
-		REBUILD=1
-		;;      
-	g) 
-		echo "Compiling Options: GUI" 
-		GUI=1
-		REBUILD=1
-		;;  
-	e)
-		echo "Compiling Options: Debug" 
-		DEBUG=1
-		;;   
-	i)
-		echo "Compiling Options: Tests" 
-		TESTS=1
-		;;   
-	s)
-		echo "Compiling Options: Simulator" 
-		SIMULATOR=1
-		;; 
 	m)	
 		echo "Compiling Manuals"
 		MANUALS=1
@@ -152,13 +133,32 @@ while getopts ":bpchd:k:l:j:trgeisumnz" opt ; do
 		echo "Compiling Manuals (Only RST)"
 		MANUALS_ONLY_RST=1
 		;;
-	z)	
-		echo "Compiling Moench Zmq Processor"
-		MOENCHZMQ=1
+	p)
+    	echo "Compiling Options: Python" 
+		PYTHON=1
+		REBUILD=1
+		;;   
+	r) 
+		echo "Compiling Options: Receiver" 
+		RECEIVER=1
+		REBUILD=1
+		;;      
+	s)
+		echo "Compiling Options: Simulator" 
+		SIMULATOR=1
+		;; 
+	t) 
+    	echo "Compiling Options: Text Client" 
+		TEXTCLIENT=1
+		REBUILD=1
 		;;
 	u)
 		echo "Compiling Options: Chip Test Gui"
 		CTBGUI=1
+		;;
+	z)	
+		echo "Compiling Moench Zmq Processor"
+		MOENCHZMQ=1
 		;;
   \?)
     echo "Invalid option: -$OPTARG" 

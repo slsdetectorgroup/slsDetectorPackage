@@ -29,8 +29,12 @@ bool Pattern::operator==(const Pattern &other) const {
         if (pat->limits[i] != other.pat->limits[i])
             return false;
     }
-    for (size_t i = 0; i < (sizeof(pat->loop) / sizeof(pat->loop[0])); ++i) {
-        if (pat->loop[i] != other.pat->loop[i])
+    for (size_t i = 0; i < (sizeof(pat->startloop) / sizeof(pat->startloop[0])); ++i) {
+        if (pat->startloop[i] != other.pat->startloop[i])
+            return false;
+    }
+    for (size_t i = 0; i < (sizeof(pat->stoploop) / sizeof(pat->stoploop[0])); ++i) {
+        if (pat->stoploop[i] != other.pat->stoploop[i])
             return false;
     }
     for (size_t i = 0; i < (sizeof(pat->nloop) / sizeof(pat->nloop[0])); ++i) {
@@ -63,13 +67,13 @@ void Pattern::validate() const {
                            ToString(pat->limits[0]) + std::string(", ") +
                            ToString(pat->limits[1]) + std::string("]"));
     }
-    for (int i = 0; i != 3; ++i) {
-        if (pat->loop[i * 2 + 0] >= MAX_PATTERN_LENGTH ||
-            pat->loop[i * 2 + 1] >= MAX_PATTERN_LENGTH) {
+    for (int i = 0; i != MAX_PATTERN_LEVELS; ++i) {
+        if (pat->startloop[i] >= MAX_PATTERN_LENGTH ||
+            pat->stoploop[i] >= MAX_PATTERN_LENGTH) {
             throw RuntimeError(
                 "Invalid Pattern loop address for level " + ToString(i) +
-                std::string(" [") + ToString(pat->loop[i * 2 + 0]) +
-                std::string(", ") + ToString(pat->loop[i * 2 + 1]) +
+                std::string(" [") + ToString(pat->startloop[i]) +
+                std::string(", ") + ToString(pat->stoploop[i]) +
                 std::string("]"));
         }
         if (pat->wait[i] >= MAX_PATTERN_LENGTH) {
@@ -148,8 +152,8 @@ void Pattern::load(const std::string &fname) {
                 }
                 int loop1 = StringTo<uint32_t>(args[iArg++]);
                 int loop2 = StringTo<uint32_t>(args[iArg++]);
-                pat->loop[level * 2 + 0] = loop1;
-                pat->loop[level * 2 + 1] = loop2;
+                pat->startloop[level] = loop1;
+                pat->stoploop[level] = loop2;
             } else if (cmd == "patnloop0" || cmd == "patnloop1" ||
                        cmd == "patnloop2" || cmd == "patnloop") {
                 int level = -1, iArg = 1;
@@ -240,16 +244,16 @@ void Pattern::save(const std::string &fname) {
     output_file << "patlimits " << ToStringHex(pat->limits[0], 4) << " "
                 << ToStringHex(pat->limits[1], 4) << std::endl;
 
-    for (size_t i = 0; i < 3; ++i) {
+    for (size_t i = 0; i < MAX_PATTERN_LEVELS; ++i) {
         // patloop
         output_file << "patloop " << i << " "
-                    << ToStringHex(pat->loop[i * 2 + 0], 4) << " "
-                    << ToStringHex(pat->loop[i * 2 + 1], 4) << std::endl;
+                    << ToStringHex(pat->startloop[i], 4) << " "
+                    << ToStringHex(pat->stoploop[i], 4) << std::endl;
         // patnloop
         output_file << "patnloop " << i << " " << pat->nloop[i] << std::endl;
     }
 
-    for (size_t i = 0; i < 3; ++i) {
+    for (size_t i = 0; i < MAX_PATTERN_LEVELS; ++i) {
         // patwait
         output_file << "patwait " << i << " " << ToStringHex(pat->wait[i], 4)
                     << std::endl;
@@ -274,12 +278,12 @@ std::string Pattern::str() const {
         << "patlimits " << ToStringHex(pat->limits[0], addr_width) << " "
         << ToStringHex(pat->limits[1], addr_width) << std::endl;
 
-    for (int i = 0; i != 3; ++i) {
-        oss << "patloop " << i << ' ' << ToStringHex(pat->loop[i * 2], addr_width) << " "
-            << ToStringHex(pat->loop[i * 2 + 1], addr_width) << std::endl
+    for (int i = 0; i != MAX_PATTERN_LEVELS; ++i) {
+        oss << "patloop " << i << ' ' << ToStringHex(pat->startloop[i], addr_width) << " "
+            << ToStringHex(pat->stoploop[i], addr_width) << std::endl
             << "patnloop " << pat->nloop[i] << std::endl;
     }
-    for (int i = 0; i != 3; ++i) {
+    for (int i = 0; i != MAX_PATTERN_LEVELS; ++i) {
         oss << "patwait " << i << ' ' << ToStringHex(pat->wait[i], addr_width) << std::endl
             << "patwaittime " << i << ' ' << pat->waittime[i] << std::endl;
     }

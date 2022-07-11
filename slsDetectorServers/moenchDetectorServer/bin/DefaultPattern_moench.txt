@@ -286,3 +286,16 @@ patwait 1 0x0400
 patwaittime 1 0
 patwait 2 0x0400
 patwaittime 2 0
+
+patloop 3 0x0000 0x0000
+patnloop 3 0
+patloop 4 0x0000 0x0000
+patnloop 4 0
+patloop 5 0x0000 0x0000
+patnloop 5 0
+patwait 3 0x0000
+patwaittime 3 0
+patwait 4 0x0000
+patwaittime 4 0
+patwait 5 0x0000
+patwaittime 5 0

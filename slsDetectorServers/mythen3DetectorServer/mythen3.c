@@ -73,13 +73,13 @@ patternParameters *setChipStatusRegisterPattern(int csr) {
         error = 1;
     }
     // set pattern wait address
-    for (int i = 0; i <= 2; i++)
+    for (int i = 0; i < M3_MAX_PATTERN_LEVELS; i++)
         pat->wait[i] = MAX_PATTERN_LENGTH - 1;
     // pattern loop
-    for (int i = 0; i <= 2; i++) {
+    for (int i = 0; i < M3_MAX_PATTERN_LEVELS; i++) {
         // int stop = MAX_PATTERN_LENGTH - 1, nloop = 0;
-        pat->loop[i * 2 + 0] = MAX_PATTERN_LENGTH - 1;
-        pat->loop[i * 2 + 1] = MAX_PATTERN_LENGTH - 1;
+        pat->startloop[i] = MAX_PATTERN_LENGTH - 1;
+        pat->stoploop[i] = MAX_PATTERN_LENGTH - 1;
         pat->nloop[i] = 0;
     }
 
@@ -349,13 +349,13 @@ patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits) {
         error = 1;
     }
     // set pattern wait address
-    for (int i = 0; i <= 2; i++)
+    for (int i = 0; i < M3_MAX_PATTERN_LEVELS; i++)
         pat->wait[i] = MAX_PATTERN_LENGTH - 1;
     // pattern loop
-    for (int i = 0; i <= 2; i++) {
+    for (int i = 0; i < M3_MAX_PATTERN_LEVELS; i++) {
         // int stop = MAX_PATTERN_LENGTH - 1, nloop = 0;
-        pat->loop[i * 2 + 0] = MAX_PATTERN_LENGTH - 1;
-        pat->loop[i * 2 + 1] = MAX_PATTERN_LENGTH - 1;
+        pat->startloop[i] = MAX_PATTERN_LENGTH - 1;
+        pat->stoploop[i] = MAX_PATTERN_LENGTH - 1;
         pat->nloop[i] = 0;
     }
 

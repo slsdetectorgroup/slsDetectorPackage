@@ -2,6 +2,7 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 from .utils import element_if_equal
 from .enums import dacIndex
+from _slsdet import slsDetectorDefs
 
 
 def set_proxy_using_dict(func, key, value):
@@ -158,8 +159,11 @@ class PatLoopProxy:
 
     def __repr__(self):
         #TODO: Need to fix this, does not print levels
+        max_levels = MAX_PATTERN_LEVELS
+        if self.det.type == slsDetectorDefs.detectorType.MYTHEN3:
+            max_levels = M3_MAX_PATTERN_LEVELS
         rstr = ''
-        for i in range(3):
+        for i in range(max_levels):
             r = self.__getitem__(i)
             if isinstance(r, list):
                 rstr += ' '.join(f'{item}' for item in r)
@@ -183,8 +187,11 @@ class PatNLoopProxy:
         set_proxy_using_dict(self.det.setPatternLoopCycles, key, value)
 
     def __repr__(self):
+        max_levels = MAX_PATTERN_LEVELS
+        if self.det.type == slsDetectorDefs.detectorType.MYTHEN3:
+            max_levels = M3_MAX_PATTERN_LEVELS
         rstr = ''
-        for i in range(3):
+        for i in range(max_levels):
             r = element_if_equal(self.__getitem__(i))
             if isinstance(r, list):
                 rstr += ' '.join(f'{item}' for item in r)
@@ -208,8 +215,11 @@ class PatWaitProxy:
         set_proxy_using_dict(self.det.setPatternWaitAddr, key, value)
 
     def __repr__(self):
+        max_levels = MAX_PATTERN_LEVELS
+        if self.det.type == slsDetectorDefs.detectorType.MYTHEN3:
+            max_levels = M3_MAX_PATTERN_LEVELS
         rstr = ''
-        for i in range(3):
+        for i in range(max_levels):
             r = element_if_equal(self.__getitem__(i))
             if isinstance(r, list):
                 rstr += ' '.join(f'{item}' for item in r)
@@ -232,8 +242,11 @@ class PatWaitTimeProxy:
         set_proxy_using_dict(self.det.setPatternWaitTime, key, value)
 
     def __repr__(self):
+        max_levels = MAX_PATTERN_LEVELS
+        if self.det.type == slsDetectorDefs.detectorType.MYTHEN3:
+            max_levels = M3_MAX_PATTERN_LEVELS
         rstr = ''
-        for i in range(3):
+        for i in range(max_levels):
             r = element_if_equal(self.__getitem__(i))
             if isinstance(r, list):
                 rstr += ' '.join(f'{item}' for item in r)

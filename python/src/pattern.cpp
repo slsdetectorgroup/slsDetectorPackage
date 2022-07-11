@@ -14,7 +14,7 @@ void init_pattern(py::module &m) {
     using pat = sls::patternParameters;
     py::class_<pat> patternParameters(m, "patternParameters");
 
-    PYBIND11_NUMPY_DTYPE(pat, word, ioctrl, limits, loop, nloop, wait,
+    PYBIND11_NUMPY_DTYPE(pat, word, ioctrl, limits, startloop, stoploop, nloop, wait,
                          waittime);
 
     patternParameters.def(py::init());

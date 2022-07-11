@@ -13,11 +13,11 @@ typedef struct __attribute__((packed)) {
     uint64_t word[MAX_PATTERN_LENGTH];
     uint64_t ioctrl;
     uint32_t limits[2];
-    // loop0 start, loop0 stop .. loop2 start, loop2 stop
-    uint32_t loop[6];
-    uint32_t nloop[3];
-    uint32_t wait[3];
-    uint64_t waittime[3];
+    uint32_t startloop[MAX_PATTERN_LEVELS];
+    uint32_t stoploop[MAX_PATTERN_LEVELS];
+    uint32_t nloop[MAX_PATTERN_LEVELS];
+    uint32_t wait[MAX_PATTERN_LEVELS];
+    uint64_t waittime[MAX_PATTERN_LEVELS];
 } patternParameters;
 
 #ifdef __cplusplus

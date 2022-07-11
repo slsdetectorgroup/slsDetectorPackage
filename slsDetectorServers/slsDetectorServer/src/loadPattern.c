@@ -165,7 +165,7 @@ int validate_getPatternWaitAddresses(char *message, int level, int *addr) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot get patwait address. Level must be between 0 and %d.\n", MAX_LEVELS);
+                "Cannot get patwait address. Level %d must be between 0 and %d.\n", level, MAX_LEVELS);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -204,7 +204,7 @@ int validate_setPatternWaitAddresses(char *message, int level, int addr) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot set patwait address. Level must be between 0 and %d.\n", MAX_LEVELS);
+                "Cannot set patwait address. Level %d must be between 0 and %d.\n", level, MAX_LEVELS);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -274,7 +274,7 @@ int validate_getPatternWaitTime(char *message, int level, uint64_t *waittime) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot get patwaittime. Level must be between 0 and %d.\n", MAX_LEVELS);
+                "Cannot get patwaittime. Level %d must be between 0 and %d.\n", level, MAX_LEVELS);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -313,7 +313,7 @@ int validate_setPatternWaitTime(char *message, int level, uint64_t waittime) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot set patwaittime. Level must be between 0 and %d.\n", MAX_LEVELS);
+                "Cannot set patwaittime. Level %d must be between 0 and %d.\n", level, MAX_LEVELS);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -376,7 +376,7 @@ int validate_getPatternLoopCycles(char *message, int level, int *numLoops) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot get patnloop. Level must be between 0 and %d.\n", MAX_LEVELS);
+                "Cannot get patnloop. Level %d must be between 0 and %d.\n", level, MAX_LEVELS);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -409,7 +409,7 @@ int validate_setPatternLoopCycles(char *message, int level, int numLoops) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot set patnloop. Level must be between 0 and %d.\n", MAX_LEVELS);
+                "Cannot set patnloop. Level %d must be between 0 and %d.\n", level, MAX_LEVELS);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -521,7 +521,7 @@ int validate_getPatternLoopAddresses(char *message, int level, int *startAddr,
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(
             message,
-            "Cannot get patloop addresses. Level must be between 0 and %d.\n", MAX_LEVELS);
+            "Cannot get patloop addresses. Level %d must be between 0 and %d.\n", level, MAX_LEVELS);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -593,7 +593,7 @@ int validate_setPatternLoopAddresses(char *message, int level, int startAddr,
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(
             message,
-            "Cannot set patloop addresses. Level must be between 0 and %d.\n", MAX_LEVELS);
+            "Cannot set patloop addresses. Level %d must be between 0 and %d.\n", level, MAX_LEVELS);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -752,7 +752,7 @@ int loadPattern(char *message, enum TLogLevel printLevel,
         for (int i = 0; i < MAX_LEVELS; ++i) {
             // loop addr
             ret = validate_setPatternLoopAddresses(
-                message, i, pat->loop[i * 2 + 0], pat->loop[i * 2 + 1]);
+                message, i, pat->startloop[i], pat->stoploop[i]);
             if (ret == FAIL) {
                 break;
             }
@@ -816,8 +816,8 @@ int getPattern(char *message, patternParameters *pat) {
             if (ret == FAIL) {
                 break;
             }
-            pat->loop[i * 2 + 0] = retval1;
-            pat->loop[i * 2 + 1] = retval2;
+            pat->startloop[i] = retval1;
+            pat->stoploop[i] = retval2;
 
             // num loops
             ret = validate_getPatternLoopCycles(message, i, &retval1);

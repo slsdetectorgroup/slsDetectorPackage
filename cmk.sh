@@ -81,7 +81,7 @@ For rebuilding only certain sections
  
  " ; exit 1; }
 
-while getopts ":bpchd:k:l:j:trgeisumnz" opt ; do
+while getopts ":bcd:eghij:k:l:mnprstuz" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"

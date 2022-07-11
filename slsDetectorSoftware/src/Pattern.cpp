@@ -147,8 +147,8 @@ void Pattern::load(const std::string &fname) {
                     }
                     level = cmd[cmd.find_first_of("012")] - '0';
                 }
-                if (level < 0 || level > 2) {
-                    throw RuntimeError("Invalid Pattern level. Options 0-2.");
+                if (level < 0 || level >= MAX_PATTERN_LEVELS) {
+                    throw RuntimeError("Invalid Pattern level. Options 0-" + std::to_string(MAX_PATTERN_LEVELS - 1));
                 }
                 int loop1 = StringTo<uint32_t>(args[iArg++]);
                 int loop2 = StringTo<uint32_t>(args[iArg++]);
@@ -171,8 +171,8 @@ void Pattern::load(const std::string &fname) {
                     }
                     level = cmd[cmd.find_first_of("012")] - '0';
                 }
-                if (level < 0 || level > 2) {
-                    throw RuntimeError("Invalid Pattern level. Options 0-2.");
+                if (level < 0 || level >= MAX_PATTERN_LEVELS) {
+                    throw RuntimeError("Invalid Pattern level. Options 0-" + std::to_string(MAX_PATTERN_LEVELS - 1));
                 }
                 pat->nloop[level] = StringTo<uint32_t>(args[iArg++]);
             } else if (cmd == "patwait0" || cmd == "patwait1" ||
@@ -192,8 +192,8 @@ void Pattern::load(const std::string &fname) {
                     }
                     level = cmd[cmd.find_first_of("012")] - '0';
                 }
-                if (level < 0 || level > 2) {
-                    throw RuntimeError("Invalid Pattern level. Options 0-2.");
+                if (level < 0 || level >= MAX_PATTERN_LEVELS) {
+                    throw RuntimeError("Invalid Pattern level. Options 0-" + std::to_string(MAX_PATTERN_LEVELS - 1));
                 }
                 pat->wait[level] = StringTo<uint32_t>(args[iArg++]);
             } else if (cmd == "patwaittime0" || cmd == "patwaittime1" ||
@@ -213,8 +213,8 @@ void Pattern::load(const std::string &fname) {
                     }
                     level = cmd[cmd.find_first_of("012")] - '0';
                 }
-                if (level < 0 || level > 2) {
-                    throw RuntimeError("Invalid Pattern level. Options 0-2.");
+                if (level < 0 || level >= MAX_PATTERN_LEVELS) {
+                    throw RuntimeError("Invalid Pattern level. Options 0-" + std::to_string(MAX_PATTERN_LEVELS - 1));
                 }
                 pat->waittime[level] = StringTo<uint64_t>(args[iArg++]);
             } else {

@@ -2722,9 +2722,6 @@ void CmdProxy::GetLevelAndUpdateArgIndex(int action, std::string levelSeparatedC
     } else {
         level = cmd[cmd.find_first_of("012")] - '0';
     }
-    if (level < 0 || level > 2) {
-        throw RuntimeError("Invalid pattern level. Options 0-2.");
-    }
 }
 
 std::string CmdProxy::PatternLoopAddresses(int action) {
@@ -2740,7 +2737,8 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
                   "of complete pattern."
                << '\n';
         } else if (cmd == "patloop") {
-            os << "[0|1|2] [start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] Limits of the loop level provided."
+            os << "[0-6] [start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] Limits of the loop level provided."
+                << "\n\t[Mythen3] Level options: 0-3 only."
                << '\n';
         } else {
             os << "Depreciated command. Use patloop."
@@ -2778,8 +2776,9 @@ std::string CmdProxy::PatternLoopCycles(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patnloop") {
-            os << "[0|1|2] [n_cycles] \n\t[Ctb][Moench][Mythen3] Number of cycles of "
+            os << "[0-6] [n_cycles] \n\t[Ctb][Moench][Mythen3] Number of cycles of "
                   "the loop level provided."
+                << "\n\t[Mythen3] Level options: 0-3 only."
                << '\n';
         } else {
             os << "Depreciated command. Use patnloop."
@@ -2811,11 +2810,12 @@ std::string CmdProxy::PatternWaitAddress(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patwait") {
-            os << "[0|1|2] [addr] \n\t[Ctb][Moench][Mythen3] Wait address for loop level provided." << '\n';
+            os << "[0-6] [addr] \n\t[Ctb][Moench][Mythen3] Wait address for loop level provided." 
+                << "\n\t[Mythen3] Level options: 0-3 only.";
         } else {
-            os << "Depreciated command. Use patwait."
-               << '\n';
+            os << "Depreciated command. Use patwait.";
         }
+        os << '\n';
     } else {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
         GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs, nPutArgs);
@@ -2842,8 +2842,9 @@ std::string CmdProxy::PatternWaitTime(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patwaittime") {
-            os << "[0|1|2] [n_clk] \n\t[Ctb][Moench][Mythen3] Wait time in clock "
+            os << "[0-6] [n_clk] \n\t[Ctb][Moench][Mythen3] Wait time in clock "
                   "cycles for the loop provided."
+                << "\n\t[Mythen3] Level options: 0-3 only."
                << '\n';
         } else {
             os << "Depreciated command. Use patwaittime."
@@ -2858,7 +2859,7 @@ std::string CmdProxy::PatternWaitTime(int action) {
         } else if (action == defs::PUT_ACTION) {
             uint64_t waittime = StringTo<uint64_t>(args[iArg++]);
             det->setPatternWaitTime(level, waittime, {det_id});
-            os << args.front() << '\n';
+            os << waittime << '\n';
         } else {
             throw RuntimeError("Unknown action");
         }

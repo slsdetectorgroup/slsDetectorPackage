@@ -281,10 +281,8 @@ std::string Pattern::str() const {
     for (int i = 0; i != MAX_PATTERN_LEVELS; ++i) {
         oss << "patloop " << i << ' ' << ToStringHex(pat->startloop[i], addr_width) << " "
             << ToStringHex(pat->stoploop[i], addr_width) << std::endl
-            << "patnloop " << pat->nloop[i] << std::endl;
-    }
-    for (int i = 0; i != MAX_PATTERN_LEVELS; ++i) {
-        oss << "patwait " << i << ' ' << ToStringHex(pat->wait[i], addr_width) << std::endl
+            << "patnloop " << pat->nloop[i] << std::endl
+            << "patwait " << i << ' ' << ToStringHex(pat->wait[i], addr_width) << std::endl
             << "patwaittime " << i << ' ' << pat->waittime[i] << std::endl;
     }
 

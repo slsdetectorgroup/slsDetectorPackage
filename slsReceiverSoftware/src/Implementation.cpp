@@ -67,16 +67,16 @@ void Implementation::SetThreadPriorities() {
 void Implementation::SetupFifoStructure() {
     fifo.clear();
     for (int i = 0; i < numUDPInterfaces; ++i) {
-        uint32_t datasize = generalData->imageSize;
+        size_t datasize = generalData->imageSize;
         // veto data size
         if (detType == GOTTHARD2 && i != 0) {
             datasize = generalData->vetoImageSize;
         }
+        datasize +=generalData->fifoBufferHeaderSize;
 
         // create fifo structure
         try {
-            fifo.push_back(sls::make_unique<Fifo>(
-                i, datasize + (generalData->fifoBufferHeaderSize), fifoDepth));
+            fifo.push_back(sls::make_unique<Fifo>(i, datasize, fifoDepth));
         } catch (...) {
             fifo.clear();
             fifoDepth = 0;
@@ -93,9 +93,7 @@ void Implementation::SetupFifoStructure() {
             dataStreamer[i]->SetFifo(fifo[i].get());
 
         LOG(logINFO) << "Memory Allocated for Fifo " << i << ": "
-                     << (double)(((size_t)(datasize) +
-                                  (size_t)(generalData->fifoBufferHeaderSize)) *
-                                 (size_t)fifoDepth) /
+                     << (double)(datasize * (size_t)fifoDepth) /
                             (double)(1024 * 1024)
                      << " MB";
     }

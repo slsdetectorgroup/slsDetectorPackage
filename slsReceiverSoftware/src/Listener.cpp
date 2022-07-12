@@ -161,6 +161,7 @@ void Listener::CreateUDPSockets() {
 void Listener::ShutDownUDPSocket() {
     if (udpSocket) {
         udpSocketAlive = false;
+        usleep(0);
         udpSocket->Shutdown();
         LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
     }
@@ -220,8 +221,6 @@ void Listener::SetHardCodedPosition(uint16_t r, uint16_t c) {
 
 void Listener::ThreadExecution() {
     char *buffer;
-    int rc = 0;
-
     fifo->GetNewAddress(buffer);
     LOG(logDEBUG5) << "Listener " << index
                    << ", "
@@ -229,41 +228,22 @@ void Listener::ThreadExecution() {
                    << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
 
     // udpsocket doesnt exist
-    if (activated && *detectorDataStream && !udpSocketAlive && !carryOverFlag) {
-        // LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not
-        // created or shut down earlier";
-        (*((uint32_t *)buffer)) = 0;
+    if ((*status == TRANSMITTING || !udpSocketAlive) && !carryOverFlag) {
         StopListening(buffer);
         return;
     }
 
     // get data
-    if ((*status != TRANSMITTING &&
-         (!activated || !(*detectorDataStream) || udpSocketAlive)) ||
-        carryOverFlag) {
-        rc = ListenToAnImage(buffer);
+    int rc = ListenToAnImage(buffer);
+
+    // end of acquisition or discarding image
+    if (rc <= 0) {
+       fifo->FreeAddress(buffer);
+       return;
     }
 
-    // error check, (should not be here) if not transmitting yet (previous if)
-    // rc should be > 0
-    if (rc == 0) {
-        if (!udpSocketAlive) {
-            (*((uint32_t *)buffer)) = 0;
-            StopListening(buffer);
-        } else
-            fifo->FreeAddress(buffer);
-        return;
-    }
-
-    // discarding image
-    else if (rc < 0) {
-        fifo->FreeAddress(buffer);
-        return;
-    }
-
+    // valid image, set size and push into fifo
     (*((uint32_t *)buffer)) = rc;
-
-    // push into fifo
     fifo->PushAddress(buffer);
 
     // Statistics
@@ -316,15 +296,6 @@ uint32_t Listener::ListenToAnImage(char *buf) {
     // reset to -1
     memset(buf, 0, fifohsize);
     new_header = (sls_receiver_header *)(buf + FIFO_HEADER_NUMBYTES);
-
-    // deactivated port (eiger)
-    if (!(*detectorDataStream)) {
-        return 0;
-    }
-    // deactivated (eiger)
-    if (!activated) {
-        return 0;
-    }
 
     // look for carry over
     if (carryOverFlag) {

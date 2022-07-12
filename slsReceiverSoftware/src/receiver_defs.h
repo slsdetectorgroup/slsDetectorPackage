@@ -36,11 +36,22 @@ namespace sls {
 // binary
 #define FILE_BUFFER_SIZE (16 * 1024 * 1024) // 16mb
 
-// fifo
+// fifo    
+struct fifo_image_structure {
+  uint8_t imageSize;
+  uint8_t unused;
+  sls_receiver_header header;
+  char* data;
+} __attribute__((packed));
+
+
+struct listening_packet_structure {
+    sls_detector_header header;
+    char* data;
+}
+
 #define FIFO_HEADER_NUMBYTES   (16)
 #define FIFO_DATASIZE_NUMBYTES (4)
-#define FIFO_PADDING_NUMBYTES                                                  \
-    (4) // for 8 byte alignment due to sls_receiver_header structure
 
 // hdf5
 #define MAX_CHUNKED_IMAGES (1)

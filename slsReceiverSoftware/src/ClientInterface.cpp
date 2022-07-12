@@ -1176,7 +1176,7 @@ int ClientInterface::get_additional_json_header(Interface &socket) {
 int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
     auto size = socket.Receive<int>();
     if (size == 0) {
-        throw RuntimeError("Receiver socket buffer size must be > 0.");
+        throw RuntimeError("Receiver socket buffer size must be greater than 0.");
     }
     if (size > 0) {
         verifyIdle(socket);

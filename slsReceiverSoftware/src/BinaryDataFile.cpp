@@ -79,7 +79,7 @@ void BinaryDataFile::WriteToFile(char *data, sls_receiver_header* header, const 
 
     // contiguous bitset
     if (sizeof(sls_bitset) == sizeof(bitset_storage)) {
-        ret = fwrite(data, 1, dataSize + sizeof(sls_receiver_header), fd_);
+        ret = fwrite((char*)header, 1, sizeof(sls_receiver_header) + dataSize, fd_);
     }
 
     // not contiguous bitset

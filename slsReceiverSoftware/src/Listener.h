@@ -110,6 +110,12 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      */
     uint32_t ListenToAnImage(char *buf);
 
+    size_t HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum, bool isHeaderEmpty, size_t imageSize, sls_receiver_header* rxHeader);
+
+    void CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detHeaderSize, uint32_t correctedDataSize, uint32_t &numpackets, bool &isHeaderEmpty, bool standardHeader, sls_receiver_header* rxHeader, sls_detector_header* detHeader, uint32_t pnum, uint64_t bnum);
+
+    void GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum, bool standardHeader, char* packet, sls_detector_header* header);
+
     void PrintFifoStatistics();
 
     static const std::string TypeName;

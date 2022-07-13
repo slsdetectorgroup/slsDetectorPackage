@@ -53,9 +53,12 @@ void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
 }
 
 void DataStreamer::RecordFirstIndex(uint64_t fnum, char *buf) {
+
     startedFlag = true;
+
     // streamer first index needn't be
-    uint64_t firstVal = fnum - (*((uint32_t *)(buf + FIFO_DATASIZE_NUMBYTES)));
+    auto *memImage = reinterpret_cast<fifo_image_structure *>(buf);
+    uint64_t firstVal = fnum - memImage->firstStreamerIndex;
 
     firstIndex = firstVal;
     LOG(logDEBUG1) << index << " First Index: " << firstIndex
@@ -116,9 +119,9 @@ void DataStreamer::ThreadExecution() {
                    << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
 
     // check dummy
-    auto numBytes = *reinterpret_cast<uint32_t *>(buffer);
-    LOG(logDEBUG1) << "DataStreamer " << index << ", Numbytes:" << numBytes;
-    if (numBytes == DUMMY_PACKET_VALUE) {
+    auto *memImage = reinterpret_cast<fifo_image_structure *>(buffer);
+    LOG(logDEBUG1) << "DataStreamer " << index << ", Numbytes:" << memImage->imageSize ;
+    if (memImage->imageSize == DUMMY_PACKET_VALUE) {
         StopProcessing(buffer);
         return;
     }
@@ -132,9 +135,9 @@ void DataStreamer::ThreadExecution() {
 void DataStreamer::StopProcessing(char *buf) {
     LOG(logDEBUG1) << "DataStreamer " << index << ": Dummy";
 
-    sls_receiver_header *header = (sls_receiver_header *)(buf);
+    auto *memImage = reinterpret_cast<fifo_image_structure *>(buf);
     // send dummy header and data
-    if (!SendHeader(header, 0, 0, 0, true)) {
+    if (!SendHeader(memImage->header.detHeader, 0, 0, 0, true)) {
         LOG(logERROR) << "Could not send zmq dummy header for streamer "
                       << index;
     }
@@ -146,16 +149,14 @@ void DataStreamer::StopProcessing(char *buf) {
 
 /** buf includes only the standard header */
 void DataStreamer::ProcessAnImage(char *buf) {
-
-    sls_receiver_header *header =
-        (sls_receiver_header *)(buf + FIFO_HEADER_NUMBYTES);
-    uint64_t fnum = header->detHeader.frameNumber;
+    auto *memImage = reinterpret_cast<fifo_image_structure *>(buf);
+    uint64_t fnum = memImage->header.detHeader.frameNumber;
     LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
 
     if (!startedFlag) {
         RecordFirstIndex(fnum, buf);
     }
-    auto numBytes = *reinterpret_cast<uint32_t *>(buf);
+    auto numBytes = memImage->imageSize;
 
     // shortframe gotthard
     if (completeBuffer) {
@@ -165,18 +166,16 @@ void DataStreamer::ProcessAnImage(char *buf) {
         // listener
         // write imagesize
 
-        if (!SendHeader(header, generalData->imageSizeComplete,
+        if (!SendHeader(memImage->header.detHeader, generalData->imageSizeComplete,
                         generalData->nPixelsXComplete,
                         generalData->nPixelsYComplete, false)) {
             LOG(logERROR) << "Could not send zmq header for fnum " << fnum
                           << " and streamer " << index;
         }
         memcpy(completeBuffer + ((generalData->imageSize) * adcConfigured),
-               buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
-               numBytes);
+               memImage->data, numBytes);
 
-        if (!zmqSocket->SendData(completeBuffer,
-                                 generalData->imageSizeComplete)) {
+        if (!zmqSocket->SendData(completeBuffer, generalData->imageSizeComplete)) {
             LOG(logERROR) << "Could not send zmq data for fnum " << fnum
                           << " and streamer " << index;
         }
@@ -185,22 +184,19 @@ void DataStreamer::ProcessAnImage(char *buf) {
     // normal
     else {
 
-        if (!SendHeader(header, numBytes, generalData->nPixelsX,
-                        generalData->nPixelsY,
-                        false)) { // new size possibly from callback
+        if (!SendHeader(memImage->header.detHeader, numBytes, generalData->nPixelsX,
+                        generalData->nPixelsY, false)) {
             LOG(logERROR) << "Could not send zmq header for fnum " << fnum
                           << " and streamer " << index;
         }
-        if (!zmqSocket->SendData(buf + FIFO_HEADER_NUMBYTES +
-                                     sizeof(sls_receiver_header),
-                                 numBytes)) { // new size possibly from callback
+        if (!zmqSocket->SendData(memImage->data, numBytes)) {
             LOG(logERROR) << "Could not send zmq data for fnum " << fnum
                           << " and streamer " << index;
         }
     }
 }
 
-int DataStreamer::SendHeader(sls_receiver_header *rheader, uint32_t size,
+int DataStreamer::SendHeader(sls_detector_header header, uint32_t size,
                              uint32_t nx, uint32_t ny, bool dummy) {
 
     zmqHeader zHeader;
@@ -210,8 +206,6 @@ int DataStreamer::SendHeader(sls_receiver_header *rheader, uint32_t size,
     if (dummy) {
         return zmqSocket->SendHeader(index, zHeader);
     }
-
-    sls_detector_header header = rheader->detHeader;
 
     uint64_t frameIndex = header.frameNumber - firstIndex;
     uint64_t acquisitionIndex = header.frameNumber;

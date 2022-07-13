@@ -38,17 +38,12 @@ namespace sls {
 
 // fifo    
 struct fifo_image_structure {
-  uint8_t imageSize;
-  uint8_t unused;
-  sls_receiver_header header;
+  size_t imageSize;
+  size_t firstStreamerIndex;
+  slsDetectorDefs::sls_receiver_header header;
   char* data;
-} __attribute__((packed));
+};
 
-
-struct listening_packet_structure {
-    sls_detector_header header;
-    char* data;
-}
 
 #define FIFO_HEADER_NUMBYTES   (16)
 #define FIFO_DATASIZE_NUMBYTES (4)

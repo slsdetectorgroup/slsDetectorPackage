@@ -222,9 +222,7 @@ void HDF5DataFile::CreateFile() {
     }
 }
 
-void HDF5DataFile::WriteToFile(char *buffer, const int buffersize,
-                               const uint64_t currentFrameNumber,
-                               const uint32_t numPacketsCaught) {
+void HDF5DataFile::WriteToFile(char *data, sls_receiver_header* header, const int dataSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) {
 
     // check if maxframesperfile = 0 for infinite
     if (maxFramesPerFile_ && (numFramesInFile_ >= maxFramesPerFile_)) {
@@ -240,8 +238,8 @@ void HDF5DataFile::WriteToFile(char *buffer, const int buffersize,
         ExtendDataset();
     }
 
-    WriteDataFile(currentFrameNumber, buffer + sizeof(sls_receiver_header));
-    WriteParameterDatasets(currentFrameNumber, (sls_receiver_header *)(buffer));
+    WriteDataFile(currentFrameNumber, data);
+    WriteParameterDatasets(currentFrameNumber, header);
 }
 
 void HDF5DataFile::Convert12to16Bit(uint16_t *dst, uint8_t *src) {

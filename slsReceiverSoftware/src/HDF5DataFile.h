@@ -31,9 +31,7 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
         const uint32_t nPixelsX, const uint32_t nPixelsY,
         const uint32_t dynamicRange) override;
 
-    void WriteToFile(char *buffer, const int buffersize,
-                     const uint64_t currentFrameNumber,
-                     const uint32_t numPacketsCaught) override;
+    void WriteToFile(char *data, sls_receiver_header* header, const int dataSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) override;
 
   private:
     void CreateFile();

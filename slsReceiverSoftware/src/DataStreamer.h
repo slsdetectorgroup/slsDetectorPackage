@@ -99,7 +99,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param dummy true if its a dummy header
      * @returns 0 if error, else 1
      */
-    int SendHeader(sls_receiver_header *rheader, uint32_t size = 0,
+    int SendHeader(sls_detector_header header, uint32_t size = 0,
                    uint32_t nx = 0, uint32_t ny = 0, bool dummy = true);
 
     static const std::string TypeName;

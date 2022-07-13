@@ -29,11 +29,11 @@ struct MasterAttributes;
 class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    DataProcessor(int index, detectorType detectorType, Fifo *fifo,
-                  bool *dataStreamEnable, uint32_t *streamingFrequency,
-                  uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum,
-                  bool *framePadding, std::vector<int> *ctbDbitList,
-                  int *ctbDbitOffset, int *ctbAnalogDataBytes);
+    DataProcessor(int index, detectorType dType, Fifo *f,
+                  bool *dse, uint32_t *sf,
+                  uint32_t *st, uint32_t *sfnum,
+                  bool *fp, std::vector<int> *ctblist,
+                  int *ctboff, int *ctbad);
 
     ~DataProcessor() override;
 
@@ -147,41 +147,41 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     void CropImage(char *buf);
 
-    static const std::string typeName_;
+    static const std::string typeName;
 
-    const GeneralData *generalData_{nullptr};
-    Fifo *fifo_;
-    detectorType detectorType_;
-    bool *dataStreamEnable_;
-    bool activated_{false};
-    ROI receiverRoi_{};
-    bool receiverRoiEnabled_{false};
+    const GeneralData *generalData{nullptr};
+    Fifo *fifo;
+    detectorType detType;
+    bool *dataStreamEnable;
+    bool activated{false};
+    ROI receiverRoi{};
+    bool receiverRoiEnabled{false};
     std::unique_ptr<char[]> completeImageToStreamBeforeCropping;
     /** if 0, sending random images with a timer */
-    uint32_t *streamingFrequency_;
-    uint32_t *streamingTimerInMs_;
-    uint32_t *streamingStartFnum_;
-    uint32_t currentFreqCount_{0};
-    struct timespec timerbegin_ {};
-    bool *framePadding_;
-    std::vector<int> *ctbDbitList_;
-    int *ctbDbitOffset_;
-    int *ctbAnalogDataBytes_;
-    std::atomic<bool> startedFlag_{false};
-    std::atomic<uint64_t> firstIndex_{0};
+    uint32_t *streamingFrequency;
+    uint32_t *streamingTimerInMs;
+    uint32_t *streamingStartFnum;
+    uint32_t currentFreqCount{0};
+    struct timespec timerbegin {};
+    bool *framePadding;
+    std::vector<int> *ctbDbitList;
+    int *ctbDbitOffset;
+    int *ctbAnalogDataBytes;
+    std::atomic<bool> startedFlag{false};
+    std::atomic<uint64_t> firstIndex{0};
 
     // for statistics
-    uint64_t numFramesCaught_{0};
+    uint64_t numFramesCaught{0};
 
     /** Frame Number of latest processed frame number */
-    std::atomic<uint64_t> currentFrameIndex_{0};
+    std::atomic<uint64_t> currentFrameIndex{0};
 
     /** first streamer frame to add frame index in fifo header */
-    bool firstStreamerFrame_{false};
+    bool firstStreamerFrame{false};
 
-    bool streamCurrentFrame_{false};
+    bool streamCurrentFrame{false};
 
-    File *dataFile_{nullptr};
+    File *dataFile{nullptr};
 
     // call back
     /**

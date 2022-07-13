@@ -245,8 +245,8 @@ void Listener::ThreadExecution() {
     }
 
     // valid image, set size and push into fifo
-    auto *memImage = reinterpret_cast<fifo_image_structure *>(buffer);
-    memImage->imageSize = rc;
+    auto *memImage = reinterpret_cast<image_structure *>(buffer);
+    memImage->size = rc;
     fifo->PushAddress(buffer);
 
     // Statistics
@@ -261,8 +261,8 @@ void Listener::ThreadExecution() {
 }
 
 void Listener::StopListening(char *buf) {
-    auto *memImage = reinterpret_cast<fifo_image_structure *>(buf);
-    memImage->imageSize = DUMMY_PACKET_VALUE;
+    auto *memImage = reinterpret_cast<image_structure *>(buf);
+    memImage->size = DUMMY_PACKET_VALUE;
     fifo->PushAddress(buf);
     StopRunning();
     LOG(logDEBUG1) << index << ": Listening Completed. Packets (" << *udpPortNumber
@@ -292,13 +292,13 @@ uint32_t Listener::ListenToAnImage(char *buf) {
     bool isHeaderEmpty = true;
     uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - imageSize);
 
-    auto *memImage = reinterpret_cast<fifo_image_structure *>(buf);
+    auto *memImage = reinterpret_cast<image_structure *>(buf);
     auto rxHeader = &memImage->header;
     auto data = memImage->data;
     sls_detector_header *detHeader = nullptr;
 
     // reset header to 0
-    memset(&memImage, 0, sizeof(memImage->header) + sizeof(memImage->imageSize) + sizeof(memImage->firstStreamerIndex));
+    memset(&memImage, 0, sizeof(memImage->header) + sizeof(memImage->size) + sizeof(memImage->firstStreamerIndex));
 
     // carry over packet
     if (carryOverFlag) {

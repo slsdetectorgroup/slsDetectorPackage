@@ -81,7 +81,7 @@ class File : private virtual slsDetectorDefs {
                          "should be overloaded by a derived class";
     };
 
-    virtual void WriteToFile(char *data, sls_receiver_header* header, const int dataSize, const uint64_t currentFrameNumber,const uint32_t numPacketsCaught) = 0;
+    virtual void WriteToFile(char *imageData, sls_receiver_header* header, const int imageSize, const uint64_t currentFrameNumber,const uint32_t numPacketsCaught) = 0;
 
   protected:
     slsDetectorDefs::fileFormat format_;

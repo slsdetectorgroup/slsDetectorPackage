@@ -57,7 +57,7 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum, char *buf) {
     startedFlag = true;
 
     // streamer first index needn't be
-    auto *memImage = reinterpret_cast<fifo_image_structure *>(buf);
+    auto *memImage = reinterpret_cast<image_structure *>(buf);
     uint64_t firstVal = fnum - memImage->firstStreamerIndex;
 
     firstIndex = firstVal;
@@ -119,9 +119,9 @@ void DataStreamer::ThreadExecution() {
                    << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
 
     // check dummy
-    auto *memImage = reinterpret_cast<fifo_image_structure *>(buffer);
-    LOG(logDEBUG1) << "DataStreamer " << index << ", Numbytes:" << memImage->imageSize ;
-    if (memImage->imageSize == DUMMY_PACKET_VALUE) {
+    auto *memImage = reinterpret_cast<image_structure *>(buffer);
+    LOG(logDEBUG1) << "DataStreamer " << index << ", Numbytes:" << memImage->size ;
+    if (memImage->size == DUMMY_PACKET_VALUE) {
         StopProcessing(buffer);
         return;
     }
@@ -135,7 +135,7 @@ void DataStreamer::ThreadExecution() {
 void DataStreamer::StopProcessing(char *buf) {
     LOG(logDEBUG1) << "DataStreamer " << index << ": Dummy";
 
-    auto *memImage = reinterpret_cast<fifo_image_structure *>(buf);
+    auto *memImage = reinterpret_cast<image_structure *>(buf);
     // send dummy header and data
     if (!SendHeader(memImage->header.detHeader, 0, 0, 0, true)) {
         LOG(logERROR) << "Could not send zmq dummy header for streamer "
@@ -149,14 +149,14 @@ void DataStreamer::StopProcessing(char *buf) {
 
 /** buf includes only the standard header */
 void DataStreamer::ProcessAnImage(char *buf) {
-    auto *memImage = reinterpret_cast<fifo_image_structure *>(buf);
+    auto *memImage = reinterpret_cast<image_structure *>(buf);
     uint64_t fnum = memImage->header.detHeader.frameNumber;
     LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
 
     if (!startedFlag) {
         RecordFirstIndex(fnum, buf);
     }
-    auto numBytes = memImage->imageSize;
+    auto numBytes = memImage->size;
 
     // shortframe gotthard
     if (completeBuffer) {

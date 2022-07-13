@@ -253,9 +253,9 @@ void DataProcessor::ThreadExecution() {
                    << static_cast<void *>(buffer) << std::dec << ":" << buffer;
 
     // check dummy
-    auto *memImage = reinterpret_cast<fifo_image_structure *>(buffer);
-    LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << memImage->imageSize;
-    if (memImage->imageSize == DUMMY_PACKET_VALUE) {
+    auto *memImage = reinterpret_cast<image_structure *>(buffer);
+    LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << memImage->size;
+    if (memImage->size == DUMMY_PACKET_VALUE) {
         StopProcessing(buffer);
         return;
     }
@@ -295,7 +295,7 @@ void DataProcessor::StopProcessing(char *buf) {
 }
 
 void DataProcessor::ProcessAnImage(char *buf) {
-    auto *memImage = reinterpret_cast<fifo_image_structure *>(buf);
+    auto *memImage = reinterpret_cast<image_structure *>(buf);
     auto rheader = memImage->header;
     uint64_t fnum = rheader.detHeader.frameNumber;
     LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
@@ -317,7 +317,7 @@ void DataProcessor::ProcessAnImage(char *buf) {
     }
 
     // frame padding
-    if (activated && *framePadding && nump < generalData->packetsPerFrame)
+    if (*framePadding && nump < generalData->packetsPerFrame)
         PadMissingPackets(buf);
 
     // rearrange ctb digital bits (if ctbDbitlist is not empty)
@@ -352,12 +352,12 @@ void DataProcessor::ProcessAnImage(char *buf) {
     try {
         // normal call back
         if (rawDataReadyCallBack != nullptr) {
-            rawDataReadyCallBack(&rheader, memImage->data, memImage->imageSize, pRawDataReady);
+            rawDataReadyCallBack(&rheader, memImage->data, memImage->size, pRawDataReady);
         }
 
         // call back with modified size
         else if (rawDataModifyReadyCallBack != nullptr) {
-            rawDataModifyReadyCallBack(&rheader, memImage->data, memImage->imageSize, pRawDataReady);
+            rawDataModifyReadyCallBack(&rheader, memImage->data, memImage->size, pRawDataReady);
         }
     } catch (const std::exception &e) {
         throw RuntimeError("Get Data Callback Error: " +
@@ -367,7 +367,7 @@ void DataProcessor::ProcessAnImage(char *buf) {
     // write to file
     if (dataFile) {
         try {
-            dataFile->WriteToFile(memImage->data, &memImage->header, memImage->imageSize, fnum - firstIndex, nump);
+            dataFile->WriteToFile(memImage->data, &memImage->header, memImage->size, fnum - firstIndex, nump);
         } catch (const RuntimeError &e) {
             ; // ignore write exception for now (TODO: send error message
               // via stopReceiver tcp)
@@ -433,7 +433,7 @@ void DataProcessor::PadMissingPackets(char *buf) {
 
     uint32_t pperFrame = generalData->packetsPerFrame;
 
-    auto *memImage = reinterpret_cast<fifo_image_structure *>(buf);
+    auto *memImage = reinterpret_cast<image_structure *>(buf);
     uint32_t nmissing = pperFrame - memImage->header.detHeader.packetNumber;
     sls_bitset pmask = memImage->header.packetsMask;
 
@@ -488,9 +488,9 @@ void DataProcessor::PadMissingPackets(char *buf) {
 /** ctb specific */
 void DataProcessor::RearrangeDbitData(char *buf) {
     // TODO! (Erik) Refactor and add tests
-    auto *memImage = reinterpret_cast<fifo_image_structure *>(buf);
+    auto *memImage = reinterpret_cast<image_structure *>(buf);
     int ctbDigitalDataBytes =
-        memImage->imageSize - (*ctbAnalogDataBytes) - (*ctbDbitOffset);
+        memImage->size - (*ctbAnalogDataBytes) - (*ctbDbitOffset);
 
     // no digital data
     if (ctbDigitalDataBytes == 0) {
@@ -534,7 +534,7 @@ void DataProcessor::RearrangeDbitData(char *buf) {
 
     // copy back to memory and update size
     memcpy(memImage->data + (*ctbAnalogDataBytes), result.data(), numResult8Bits * sizeof(uint8_t));
-    memImage->imageSize = numResult8Bits * sizeof(uint8_t);
+    memImage->size = numResult8Bits * sizeof(uint8_t);
 }
 
 void DataProcessor::CropImage(char *buf) {
@@ -558,8 +558,8 @@ void DataProcessor::CropImage(char *buf) {
     // write size into memory
     std::size_t roiImageSize = xwidth * ywidth * bytesPerPixel;
     LOG(logDEBUG) << "roiImageSize:" << roiImageSize;
-    auto *memImage = reinterpret_cast<fifo_image_structure *>(buf);
-    memImage->imageSize = roiImageSize;
+    auto *memImage = reinterpret_cast<image_structure *>(buf);
+    memImage->size = roiImageSize;
 
     // copy the roi to the beginning of the image
     char *dstOffset = memImage->data;

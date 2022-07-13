@@ -37,8 +37,8 @@ namespace sls {
 #define FILE_BUFFER_SIZE (16 * 1024 * 1024) // 16mb
 
 // fifo    
-struct fifo_image_structure {
-  size_t imageSize;
+struct image_structure {
+  size_t size;
   size_t firstStreamerIndex;
   slsDetectorDefs::sls_receiver_header header;
   char* data;

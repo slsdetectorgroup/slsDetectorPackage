@@ -3099,7 +3099,7 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setPatternMask, mask)
 
     @property
-    @element
+    # @element
     def patwait(self):
         """
         [Ctb][Moench][Mythen3] Wait address of loop level provided.
@@ -3177,7 +3177,6 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setPatternWaitAddr, *addr)
 
     @property
-    @element
     def patwaittime(self):
         """
         [Ctb][Moench][Mythen3] Wait time in clock cycles of loop level provided.
@@ -3229,7 +3228,6 @@ class Detector(CppDetectorApi):
 
 
     @property
-    @element
     def patloop(self):
         """
         [Ctb][Moench][Mythen3] Limits (start and stop address) of the loop provided.
@@ -3310,7 +3308,6 @@ class Detector(CppDetectorApi):
 
 
     @property
-    @element
     def patnloop(self):
         """
         [Ctb][Moench][Mythen3] Number of cycles of the loop provided.

@@ -1,28 +1,26 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
+from asyncore import loop
 from .utils import element_if_equal
 from .enums import dacIndex
+from .defines import M3_MAX_PATTERN_LEVELS, MAX_PATTERN_LEVELS
 from _slsdet import slsDetectorDefs
 
 
-def set_proxy_using_dict(func, key, value):
+def set_proxy_using_dict(func, key, value, unpack = False):
     if isinstance(value, dict) and all(isinstance(k, int) for k in value.keys()):
-        for dkey, dvalue in value.items():
-            func(key, dvalue, [dkey])
-    else:
-        func(key, value)
-
-
-#TODO: No idea if this is needed
-def set_proxy_merge_args(*value):
-    ret = []
-    for a in value:
-        if isinstance(a, tuple):
-            ret.extend(a)
+        if unpack:
+            for dkey, dvalue in value.items():
+                func(key, *dvalue, [dkey])
         else:
-            ret.append(a)
-    return tuple(ret)
-   
+            for dkey, dvalue in value.items():
+                func(key, dvalue, [dkey])
+    else:
+        if unpack:
+            func(key, *value)
+        else:
+            func(key, value)
+
 
 class JsonProxy:
     """
@@ -150,23 +148,21 @@ class PatLoopProxy:
         self.det = det
 
     def __getitem__(self, key):
-        return self.det.getPatternLoopAddresses(key)
+        return element_if_equal(self.det.getPatternLoopAddresses(key))
 
-    #TODO: does not work
     def __setitem__(self, key, value):
-        value = set_proxy_merge_args(value)
-        set_proxy_using_dict(self.det.setPatternLoopAddresses, key, *value)
+        set_proxy_using_dict(self.det.setPatternLoopAddresses, key, value, unpack = True)
 
     def __repr__(self):
-        #TODO: Need to fix this, does not print levels
         max_levels = MAX_PATTERN_LEVELS
         if self.det.type == slsDetectorDefs.detectorType.MYTHEN3:
             max_levels = M3_MAX_PATTERN_LEVELS
         rstr = ''
         for i in range(max_levels):
             r = self.__getitem__(i)
-            if isinstance(r, list):
-                rstr += ' '.join(f'{item}' for item in r)
+            if isinstance(r[0], list):
+                part = ' '.join(f'{item}' for item in r)
+                rstr += f'{i}: {part}\n'
             else:
                 rstr += f'{i}: {r}\n'
         
@@ -194,7 +190,8 @@ class PatNLoopProxy:
         for i in range(max_levels):
             r = element_if_equal(self.__getitem__(i))
             if isinstance(r, list):
-                rstr += ' '.join(f'{item}' for item in r)
+                part = ', '.join(f'{item}' for item in r)
+                rstr += f'{i}: {part}\n'
             else:
                 rstr += f'{i}: {r}\n'
         
@@ -222,7 +219,8 @@ class PatWaitProxy:
         for i in range(max_levels):
             r = element_if_equal(self.__getitem__(i))
             if isinstance(r, list):
-                rstr += ' '.join(f'{item}' for item in r)
+                part = ', '.join(f'{item}' for item in r)
+                rstr += f'{i}: {part}\n'
             else:
                 rstr += f'{i}: {r}\n'
         
@@ -249,7 +247,8 @@ class PatWaitTimeProxy:
         for i in range(max_levels):
             r = element_if_equal(self.__getitem__(i))
             if isinstance(r, list):
-                rstr += ' '.join(f'{item}' for item in r)
+                part = ', '.join(f'{item}' for item in r)
+                rstr += f'{i}: {part}\n'
             else:
                 rstr += f'{i}: {r}\n'
         

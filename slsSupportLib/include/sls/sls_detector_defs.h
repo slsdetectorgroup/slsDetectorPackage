@@ -20,6 +20,7 @@
 // C++ includes
 #include "sls/sls_detector_exceptions.h"
 #include <algorithm>
+#include <array>
 #include <bitset>
 #include <chrono>
 #include <cstdint>

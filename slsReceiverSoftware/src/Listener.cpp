@@ -370,8 +370,8 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
     }
 
     // complete image
-    dstHeader->detHeader.packetNumber = numpackets; // number of packets caught
-    dstHeader->detHeader.frameNumber = currentFrameIndex;
+    dstHeader.detHeader.packetNumber = numpackets; // number of packets caught
+    dstHeader.detHeader.frameNumber = currentFrameIndex;
     if (numpackets == pperFrame) {
         ++numCompleteFramesCaught;
     }
@@ -379,7 +379,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
     return imageSize;
 }
 
-size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum, bool isHeaderEmpty, size_t imageSize, sls_receiver_header* dstHeader) {
+size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum, bool isHeaderEmpty, size_t imageSize, sls_receiver_header& dstHeader) {
     switch (*frameDiscardMode) {
     case DISCARD_EMPTY_FRAMES:
         if (!numpackets) {
@@ -400,19 +400,19 @@ size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum
         break;
     }
     // replacing with number of packets caught
-    dstHeader->detHeader.packetNumber = numpackets; 
+    dstHeader.detHeader.packetNumber = numpackets; 
     if (isHeaderEmpty) {
-        dstHeader->detHeader.row = row;
-        dstHeader->detHeader.column = column;
+        dstHeader.detHeader.row = row;
+        dstHeader.detHeader.column = column;
     }
-    dstHeader->detHeader.frameNumber = currentFrameIndex;
+    dstHeader.detHeader.frameNumber = currentFrameIndex;
     if (!EOA) {
         ++currentFrameIndex;
     }
     return imageSize;
 }
 
-void Listener::CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detHeaderSize, uint32_t correctedDataSize, uint32_t &numpackets, bool &isHeaderEmpty, bool standardHeader, sls_receiver_header* dstHeader, sls_detector_header* srcDetHeader, uint32_t pnum, uint64_t bnum) {
+void Listener::CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detHeaderSize, uint32_t correctedDataSize, uint32_t &numpackets, bool &isHeaderEmpty, bool standardHeader, sls_receiver_header& dstHeader, sls_detector_header * srcDetHeader, uint32_t pnum, uint64_t bnum) {
 
     // copy packet data
     switch (myDetectorType) {
@@ -438,20 +438,20 @@ void Listener::CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detH
     }
 
     ++numpackets; 
-    dstHeader->packetsMask[(
+    dstHeader.packetsMask[(
         (pnum < MAX_NUM_PACKETS) ? pnum : MAX_NUM_PACKETS - 1)] = 1;
 
     // writer header
     if (isHeaderEmpty) {
         if (standardHeader) {
-            memcpy((char *)dstHeader, (char *)srcDetHeader, sizeof(sls_detector_header));
+            memcpy((char *)&dstHeader, (char *)srcDetHeader, sizeof(sls_detector_header));
         } else {
-            dstHeader->detHeader.frameNumber = currentFrameIndex;
-            dstHeader->detHeader.bunchId = bnum;
-            dstHeader->detHeader.row = row;
-            dstHeader->detHeader.column = column;
-            dstHeader->detHeader.detType = (uint8_t)generalData->myDetectorType;
-            dstHeader->detHeader.version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
+            dstHeader.detHeader.frameNumber = currentFrameIndex;
+            dstHeader.detHeader.bunchId = bnum;
+            dstHeader.detHeader.row = row;
+            dstHeader.detHeader.column = column;
+            dstHeader.detHeader.detType = (uint8_t)generalData->myDetectorType;
+            dstHeader.detHeader.version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
         }
         isHeaderEmpty = false;
     }

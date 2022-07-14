@@ -295,8 +295,8 @@ void DataProcessor::StopProcessing(char *buf) {
     LOG(logDEBUG1) << index << ": Processing Completed";
 }
 
-void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, size_t &firstStreamerIndex, size_t& data) {
-    uint64_t fnum = header->detHeader.frameNumber;
+void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, size_t &firstStreamerIndex, char* data) {
+    uint64_t fnum = header.detHeader.frameNumber;
     LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
     currentFrameIndex = fnum;
     numFramesCaught++;
@@ -317,7 +317,7 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
 
     // frame padding
     if (*framePadding && nump < generalData->packetsPerFrame)
-        PadMissingPackets(*header, data);
+        PadMissingPackets(header, data);
 
     // rearrange ctb digital bits (if ctbDbitlist is not empty)
     if (!(*ctbDbitList).empty()) {
@@ -331,8 +331,7 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
         // not be the first)
         if (firstStreamerFrame) {
             firstStreamerFrame = false;
-            (*((uint32_t *)(buf + FIFO_DATASIZE_NUMBYTES))) =
-                (uint32_t)(fnum - firstIndex);
+            firstStreamerIndex = (size_t)(fnum - firstIndex);
         }
         streamCurrentFrame = true;
     } else {
@@ -351,12 +350,12 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
     try {
         // normal call back
         if (rawDataReadyCallBack != nullptr) {
-            rawDataReadyCallBack(header, data, memImage->size, pRawDataReady);
+            rawDataReadyCallBack(&header, data, size, pRawDataReady);
         }
 
         // call back with modified size
         else if (rawDataModifyReadyCallBack != nullptr) {
-            rawDataModifyReadyCallBack(header, data, memImage->size, pRawDataReady);
+            rawDataModifyReadyCallBack(&header, data, size, pRawDataReady);
         }
     } catch (const std::exception &e) {
         throw RuntimeError("Get Data Callback Error: " +
@@ -366,7 +365,7 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
     // write to file
     if (dataFile) {
         try {
-            dataFile->WriteToFile(data, &memImage->header, memImage->size, fnum - firstIndex, nump);
+            dataFile->WriteToFile(data, &header, size, fnum - firstIndex, nump);
         } catch (const RuntimeError &e) {
             ; // ignore write exception for now (TODO: send error message
               // via stopReceiver tcp)

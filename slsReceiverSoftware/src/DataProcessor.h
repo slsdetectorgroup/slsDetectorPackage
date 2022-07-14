@@ -114,7 +114,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
      */
-    void ProcessAnImage(char *buf);
+    void ProcessAnImage(sls_receiver_header & header, size_t &size, size_t &firstStreamerIndex, char* data);
 
     /**
      * Calls CheckTimer and CheckCount for streaming frequency and timer
@@ -137,15 +137,15 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      */
     bool CheckCount();
 
-    void PadMissingPackets(char *buf);
+    void PadMissingPackets(sls_receiver_header header, char* data);
 
     /**
      * Align corresponding digital bits together (CTB only if ctbDbitlist is not
      * empty)
      */
-    void RearrangeDbitData(char *buf);
+    void RearrangeDbitData(size_t & size, char *data);
 
-    void CropImage(char *buf);
+    void CropImage(size_t & size, char *data);
 
     static const std::string typeName;
 

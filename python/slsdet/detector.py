@@ -17,7 +17,7 @@ from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
 from _slsdet import xy
 from . import utils as ut
-from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy
+from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -3099,6 +3099,24 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setPatternMask, mask)
 
     @property
+    # @element
+    def patwait(self):
+        """
+        [Ctb][Moench][Mythen3] Wait address of loop level provided.
+        
+        Example
+        -------
+        >>> d.patwait[0] = 5
+        >>> d.patwait[0]
+        5
+        >>> d.patwait
+        0: 5
+        1: 20
+        2: 30
+        """
+        return PatWaitProxy(self)
+
+    @property
     @element
     def patwait0(self):
         """[Ctb][Moench][Mythen3] Wait 0 address.
@@ -3159,6 +3177,23 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setPatternWaitAddr, *addr)
 
     @property
+    def patwaittime(self):
+        """
+        [Ctb][Moench][Mythen3] Wait time in clock cycles of loop level provided.
+        
+        Example
+        -------
+        >>> d.patwaittime[0] = 5
+        >>> d.patwaittime[0]
+        5
+        >>> d.patwaittime
+        0: 5
+        1: 20
+        2: 30
+        """
+        return PatWaitTimeProxy(self)
+
+    @property
     @element
     def patwaittime0(self):
         """[Ctb][Moench][Mythen3] Wait 0 time in clock cycles."""
@@ -3191,6 +3226,23 @@ class Detector(CppDetectorApi):
         nclk = ut.merge_args(2, nclk)
         ut.set_using_dict(self.setPatternWaitTime, *nclk)
 
+
+    @property
+    def patloop(self):
+        """
+        [Ctb][Moench][Mythen3] Limits (start and stop address) of the loop provided.
+        
+        Example
+        -------
+        >>> d.patloop[0] = [5, 20]
+        >>> d.patloop[0]
+        [5, 20]
+        >>> d.patloop
+        0: [5, 20]
+        1: [20, 4]
+        2: [30, 5]
+        """
+        return PatLoopProxy(self)
 
     @property
     @element
@@ -3253,6 +3305,24 @@ class Detector(CppDetectorApi):
     def patloop2(self, addr):
         addr = ut.merge_args(2, addr)
         ut.set_using_dict(self.setPatternLoopAddresses, *addr)
+
+
+    @property
+    def patnloop(self):
+        """
+        [Ctb][Moench][Mythen3] Number of cycles of the loop provided.
+        
+        Example
+        -------
+        >>> d.patnloop[0] = 5
+        >>> d.patnloop[0]
+        5
+        >>> d.patnloop
+        0: 5
+        1: 20
+        2: 30
+        """
+        return PatNLoopProxy(self)
 
     @property
     @element

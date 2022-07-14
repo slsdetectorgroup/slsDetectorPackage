@@ -105,11 +105,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     /**
      * Listen to the UDP Socket for an image,
      * place them in the right order
-     * @param buf address of buffer
      * @returns number of bytes of relevant data, can be image size or 0 (stop
      * acquisition) or -1 to discard image
      */
-    uint32_t ListenToAnImage(char *buf);
+    uint32_t ListenToAnImage(sls_receiver_header & dstHeader, char *dstData);
 
     size_t HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum, bool isHeaderEmpty, size_t imageSize, sls_receiver_header* rxHeader);
 

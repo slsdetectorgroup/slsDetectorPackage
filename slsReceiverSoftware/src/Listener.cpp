@@ -234,8 +234,10 @@ void Listener::ThreadExecution() {
         return;
     }
 
-    // get data
-    int rc = ListenToAnImage(buffer);
+    // reset header and size and get data
+    auto *memImage = reinterpret_cast<image_structure *>(buffer);
+    memset(memImage, 0, sizeof(memImage->size) + sizeof(memImage->firstStreamerIndex + sizeof(memImage->header)));
+    int rc = ListenToAnImage(memImage->header, memImage->data);
 
     // end of acquisition or discarding image
     if (rc <= 0) {
@@ -244,7 +246,6 @@ void Listener::ThreadExecution() {
     }
 
     // valid image, set size and push into fifo
-    auto *memImage = reinterpret_cast<image_structure *>(buffer);
     memImage->size = rc;
     fifo->PushAddress(buffer);
 
@@ -269,12 +270,13 @@ void Listener::StopListening(char *buf) {
 }
 
 /* buf includes the fifo header and packet header */
-uint32_t Listener::ListenToAnImage(char *buf) {
+uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstData) {
 
     uint64_t fnum = 0;
     uint32_t pnum = 0;
     uint64_t bnum = 0;
     uint32_t numpackets = 0;
+    
     uint32_t dsize = generalData->dataSize;
     uint32_t imageSize = generalData->imageSize;
     uint32_t packetSize = generalData->packetSize;
@@ -290,14 +292,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
     uint32_t pperFrame = generalData->packetsPerFrame;
     bool isHeaderEmpty = true;
     uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - imageSize);
-
-    auto *memImage = reinterpret_cast<image_structure *>(buf);
-    auto rxHeader = &memImage->header;
-    auto data = memImage->data;
     sls_detector_header *detHeader = nullptr;
-
-    // reset header to 0
-    memset(&memImage, 0, sizeof(memImage->header) + sizeof(memImage->size) + sizeof(memImage->firstStreamerIndex));
 
     // carry over packet
     if (carryOverFlag) {
@@ -313,10 +308,10 @@ uint32_t Listener::ListenToAnImage(char *buf) {
                 carryOverFlag = false;
                 return 0;
             }
-            return HandleFuturePacket(false, numpackets, fnum, isHeaderEmpty, imageSize, rxHeader);
+            return HandleFuturePacket(false, numpackets, fnum, isHeaderEmpty, imageSize, dstHeader);
         }
 
-        CopyPacket(data, carryOverPacket.get(), dsize, hsize, corrected_dsize, numpackets, isHeaderEmpty, standardHeader, rxHeader, detHeader, pnum, bnum);
+        CopyPacket(dstData, carryOverPacket.get(), dsize, hsize, corrected_dsize, numpackets, isHeaderEmpty, standardHeader, dstHeader, detHeader, pnum, bnum);
         carryOverFlag = false;
     }
 
@@ -332,7 +327,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
         if (rc <= 0) {
             if (numpackets == 0)
                 return 0; 
-            return HandleFuturePacket(true, numpackets, fnum, isHeaderEmpty, imageSize, rxHeader);
+            return HandleFuturePacket(true, numpackets, fnum, isHeaderEmpty, imageSize, dstHeader);
         }
 
         numPacketsCaught++; 
@@ -369,14 +364,14 @@ uint32_t Listener::ListenToAnImage(char *buf) {
         if (fnum != currentFrameIndex) {
             carryOverFlag = true;
             memcpy(carryOverPacket.get(), &listeningPacket[0], packetSize);
-            return HandleFuturePacket(false, numpackets, fnum, isHeaderEmpty, imageSize, rxHeader);
+            return HandleFuturePacket(false, numpackets, fnum, isHeaderEmpty, imageSize, dstHeader);
         }
-        CopyPacket(data, listeningPacket.get(), dsize, hsize, corrected_dsize, numpackets, isHeaderEmpty, standardHeader, rxHeader, detHeader, pnum, bnum);
+        CopyPacket(dstData, listeningPacket.get(), dsize, hsize, corrected_dsize, numpackets, isHeaderEmpty, standardHeader, dstHeader, detHeader, pnum, bnum);
     }
 
     // complete image
-    rxHeader->detHeader.packetNumber = numpackets; // number of packets caught
-    rxHeader->detHeader.frameNumber = currentFrameIndex;
+    dstHeader->detHeader.packetNumber = numpackets; // number of packets caught
+    dstHeader->detHeader.frameNumber = currentFrameIndex;
     if (numpackets == pperFrame) {
         ++numCompleteFramesCaught;
     }
@@ -384,7 +379,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
     return imageSize;
 }
 
-size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum, bool isHeaderEmpty, size_t imageSize, sls_receiver_header* rxHeader) {
+size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum, bool isHeaderEmpty, size_t imageSize, sls_receiver_header* dstHeader) {
     switch (*frameDiscardMode) {
     case DISCARD_EMPTY_FRAMES:
         if (!numpackets) {
@@ -405,19 +400,19 @@ size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum
         break;
     }
     // replacing with number of packets caught
-    rxHeader->detHeader.packetNumber = numpackets; 
+    dstHeader->detHeader.packetNumber = numpackets; 
     if (isHeaderEmpty) {
-        rxHeader->detHeader.row = row;
-        rxHeader->detHeader.column = column;
+        dstHeader->detHeader.row = row;
+        dstHeader->detHeader.column = column;
     }
-    rxHeader->detHeader.frameNumber = currentFrameIndex;
+    dstHeader->detHeader.frameNumber = currentFrameIndex;
     if (!EOA) {
         ++currentFrameIndex;
     }
     return imageSize;
 }
 
-void Listener::CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detHeaderSize, uint32_t correctedDataSize, uint32_t &numpackets, bool &isHeaderEmpty, bool standardHeader, sls_receiver_header* rxHeader, sls_detector_header* srcDetHeader, uint32_t pnum, uint64_t bnum) {
+void Listener::CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detHeaderSize, uint32_t correctedDataSize, uint32_t &numpackets, bool &isHeaderEmpty, bool standardHeader, sls_receiver_header* dstHeader, sls_detector_header* srcDetHeader, uint32_t pnum, uint64_t bnum) {
 
     // copy packet data
     switch (myDetectorType) {
@@ -443,20 +438,20 @@ void Listener::CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detH
     }
 
     ++numpackets; 
-    rxHeader->packetsMask[(
+    dstHeader->packetsMask[(
         (pnum < MAX_NUM_PACKETS) ? pnum : MAX_NUM_PACKETS - 1)] = 1;
 
     // writer header
     if (isHeaderEmpty) {
         if (standardHeader) {
-            memcpy((char *)rxHeader, (char *)srcDetHeader, sizeof(sls_detector_header));
+            memcpy((char *)dstHeader, (char *)srcDetHeader, sizeof(sls_detector_header));
         } else {
-            rxHeader->detHeader.frameNumber = currentFrameIndex;
-            rxHeader->detHeader.bunchId = bnum;
-            rxHeader->detHeader.row = row;
-            rxHeader->detHeader.column = column;
-            rxHeader->detHeader.detType = (uint8_t)generalData->myDetectorType;
-            rxHeader->detHeader.version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
+            dstHeader->detHeader.frameNumber = currentFrameIndex;
+            dstHeader->detHeader.bunchId = bnum;
+            dstHeader->detHeader.row = row;
+            dstHeader->detHeader.column = column;
+            dstHeader->detHeader.detType = (uint8_t)generalData->myDetectorType;
+            dstHeader->detHeader.version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
         }
         isHeaderEmpty = false;
     }

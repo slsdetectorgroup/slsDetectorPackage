@@ -262,7 +262,7 @@ void DataProcessor::ThreadExecution() {
     }
 
     try {
-        ProcessAnImage(buffer);
+        ProcessAnImage(memImage->header, memImage->size, memImage->firstStreamerIndex, memImage->data);
     } catch (const std::exception &e) {
         fifo->FreeAddress(buffer);
         return;
@@ -272,8 +272,8 @@ void DataProcessor::ThreadExecution() {
     if (streamCurrentFrame) {
         // copy the complete image back if roi enabled
         if (receiverRoiEnabled) {
-            (*((uint32_t *)buffer)) = generalData->imageSize;
-            memcpy(buffer + generalData->fifoBufferHeaderSize, &completeImageToStreamBeforeCropping[0], generalData->imageSize);
+            memImage->size = generalData->imageSize;
+            memcpy(memImage->data, &completeImageToStreamBeforeCropping[0], generalData->imageSize);
         }
         fifo->PushAddressToStream(buffer);
     } else {
@@ -295,14 +295,12 @@ void DataProcessor::StopProcessing(char *buf) {
     LOG(logDEBUG1) << index << ": Processing Completed";
 }
 
-void DataProcessor::ProcessAnImage(char *buf) {
-    auto *memImage = reinterpret_cast<image_structure *>(buf);
-    auto rheader = memImage->header;
-    uint64_t fnum = rheader.detHeader.frameNumber;
+void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, size_t &firstStreamerIndex, size_t& data) {
+    uint64_t fnum = header->detHeader.frameNumber;
     LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
     currentFrameIndex = fnum;
     numFramesCaught++;
-    uint32_t nump = rheader.detHeader.packetNumber;
+    uint32_t nump = header.detHeader.packetNumber;
 
     if (!startedFlag) {
         RecordFirstIndex(fnum);
@@ -353,12 +351,12 @@ void DataProcessor::ProcessAnImage(char *buf) {
     try {
         // normal call back
         if (rawDataReadyCallBack != nullptr) {
-            rawDataReadyCallBack(&rheader, memImage->data, memImage->size, pRawDataReady);
+            rawDataReadyCallBack(header, memImage->data, memImage->size, pRawDataReady);
         }
 
         // call back with modified size
         else if (rawDataModifyReadyCallBack != nullptr) {
-            rawDataModifyReadyCallBack(&rheader, memImage->data, memImage->size, pRawDataReady);
+            rawDataModifyReadyCallBack(header, memImage->data, memImage->size, pRawDataReady);
         }
     } catch (const std::exception &e) {
         throw RuntimeError("Get Data Callback Error: " +

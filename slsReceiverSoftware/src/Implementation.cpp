@@ -438,6 +438,8 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
             portRois[iPort] = portRoi;
         }
     }
+    for (size_t i = 0; i != listener.size(); ++i)
+        listener[i]->SetNoRoi(portRois[i].noRoi());
     for (size_t i = 0; i != dataProcessor.size(); ++i)
         dataProcessor[i]->SetReceiverROI(portRois[i]);
     LOG(logINFO) << "receiver roi: " << ToString(receiverRoi);
@@ -719,7 +721,10 @@ void Implementation::stopReceiver() {
             } else if (!detectorDataStream[i]) {
                 summary = (i == 0 ? "\n\tDeactivated Left Port"
                                   : "\n\tDeactivated Right Port");
-            } else {
+            } else if (portRois[i].noRoi()) {
+                summary = (i == 0 ? "\n\tNo Roi on Left Port"
+                                  : "\n\tNo Roi on Right Port");
+            }  else {
                 std::ostringstream os;
                 os << "\n\tMissing Packets\t\t: " << mpMessage
                    << "\n\tComplete Frames\t\t: " << nf
@@ -1000,6 +1005,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     &silentMode));
                 listener[i]->SetGeneralData(generalData);
                 listener[i]->SetActivate(activated);
+                listener[i]->SetNoRoi(portRois[i].noRoi());
 
                 int ctbAnalogDataBytes = 0;
                 if (detType == CHIPTESTBOARD) {

@@ -50,10 +50,7 @@ uint64_t Listener::GetLastFrameIndexCaught() const {
 
 int64_t Listener::GetNumMissingPacket(bool stoppedFlag,
                                       uint64_t numPackets) const {
-    if (!activated) {
-        return 0;
-    }
-    if (!(*detectorDataStream)) {
+    if (!activated || !(*detectorDataStream) || noRoi) {
         return 0;
     }
     if (!stoppedFlag) {
@@ -121,8 +118,10 @@ void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
 
 void Listener::SetActivate(bool enable) { activated = enable; }
 
+void Listener::SetNoRoi(bool enable) {noRoi = enable; }
+
 void Listener::CreateUDPSockets() {
-    if (!activated || !(*detectorDataStream)) {
+    if (!activated || !(*detectorDataStream) || noRoi) {
         return;
     }
 
@@ -173,7 +172,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
     LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port "
                  << *udpPortNumber;
 
-    if (!activated || !(*detectorDataStream)) {
+    if (!activated || !(*detectorDataStream) || noRoi) {
         *actualUDPSocketBufferSize = (s * 2);
         return;
     }

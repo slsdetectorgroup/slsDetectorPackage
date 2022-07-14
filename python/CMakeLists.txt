@@ -29,6 +29,7 @@ set( PYTHON_FILES
     decorators.py
     detector_property.py
     detector.py
+    defines.py
     eiger.py
     enums.py
     errors.py

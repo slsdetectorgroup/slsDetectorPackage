@@ -65,6 +65,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *g);
     void SetActivate(bool enable);
+    void SetNoRoi(bool enable);
     void CreateUDPSockets();
     void ShutDownUDPSocket();
 
@@ -135,6 +136,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     frameDiscardPolicy *frameDiscardMode;
     bool activated{false};
     bool *detectorDataStream;
+    bool noRoi{false};
     bool *silentMode;
 
     /** row hardcoded as 1D or 2d,

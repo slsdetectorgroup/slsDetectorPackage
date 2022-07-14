@@ -156,6 +156,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     bool activated_{false};
     ROI receiverRoi_{};
     bool receiverRoiEnabled_{false};
+    bool receiverNoRoi_{false};
     std::unique_ptr<char[]> completeImageToStreamBeforeCropping;
     /** if 0, sending random images with a timer */
     uint32_t *streamingFrequency_;

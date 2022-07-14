@@ -317,11 +317,11 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
 
     // frame padding
     if (*framePadding && nump < generalData->packetsPerFrame)
-        PadMissingPackets(buf);
+        PadMissingPackets(*header, data);
 
     // rearrange ctb digital bits (if ctbDbitlist is not empty)
     if (!(*ctbDbitList).empty()) {
-        RearrangeDbitData(buf);
+        RearrangeDbitData(size, data);
     }
 
     // 'stream Image' check has to be done here before crop image 
@@ -343,20 +343,20 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
     if (receiverRoiEnabled) {
         // copy the complete image to stream before cropping
         if (streamCurrentFrame) {
-            memcpy(&completeImageToStreamBeforeCropping[0], memImage->data, generalData->imageSize);
+            memcpy(&completeImageToStreamBeforeCropping[0], data, generalData->imageSize);
         }
-        CropImage(buf);
+        CropImage(size, data);
     }
 
     try {
         // normal call back
         if (rawDataReadyCallBack != nullptr) {
-            rawDataReadyCallBack(header, memImage->data, memImage->size, pRawDataReady);
+            rawDataReadyCallBack(header, data, memImage->size, pRawDataReady);
         }
 
         // call back with modified size
         else if (rawDataModifyReadyCallBack != nullptr) {
-            rawDataModifyReadyCallBack(header, memImage->data, memImage->size, pRawDataReady);
+            rawDataModifyReadyCallBack(header, data, memImage->size, pRawDataReady);
         }
     } catch (const std::exception &e) {
         throw RuntimeError("Get Data Callback Error: " +
@@ -366,7 +366,7 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
     // write to file
     if (dataFile) {
         try {
-            dataFile->WriteToFile(memImage->data, &memImage->header, memImage->size, fnum - firstIndex, nump);
+            dataFile->WriteToFile(data, &memImage->header, memImage->size, fnum - firstIndex, nump);
         } catch (const RuntimeError &e) {
             ; // ignore write exception for now (TODO: send error message
               // via stopReceiver tcp)
@@ -427,14 +427,13 @@ void DataProcessor::registerCallBackRawDataModifyReady(
     pRawDataReady = arg;
 }
 
-void DataProcessor::PadMissingPackets(char *buf) {
+void DataProcessor::PadMissingPackets(sls_receiver_header header, char* data) {
     LOG(logDEBUG) << index << ": Padding Missing Packets";
 
     uint32_t pperFrame = generalData->packetsPerFrame;
 
-    auto *memImage = reinterpret_cast<image_structure *>(buf);
-    uint32_t nmissing = pperFrame - memImage->header.detHeader.packetNumber;
-    sls_bitset pmask = memImage->header.packetsMask;
+    uint32_t nmissing = pperFrame - header.detHeader.packetNumber;
+    sls_bitset pmask = header.packetsMask;
 
     uint32_t dsize = generalData->dataSize;
     if (detType == GOTTHARD2 && index != 0) {
@@ -465,19 +464,19 @@ void DataProcessor::PadMissingPackets(char *buf) {
         //              640*2 bytes data !!
         case GOTTHARD:
             if (pnum == 0u)
-                memset(memImage->data + (pnum * dsize), 0xFF, dsize - 2);
+                memset(data + (pnum * dsize), 0xFF, dsize - 2);
             else
-                memset(memImage->data + (pnum * dsize), 0xFF, dsize + 2);
+                memset(data + (pnum * dsize), 0xFF, dsize + 2);
             break;
         case CHIPTESTBOARD:
         case MOENCH:
             if (pnum == (pperFrame - 1))
-                memset(memImage->data + (pnum * dsize), 0xFF, corrected_dsize);
+                memset(data + (pnum * dsize), 0xFF, corrected_dsize);
             else
-                memset(memImage->data + (pnum * dsize), 0xFF, dsize);
+                memset(data + (pnum * dsize), 0xFF, dsize);
             break;
         default:
-            memset(memImage->data + (pnum * dsize), 0xFF, dsize);
+            memset(data + (pnum * dsize), 0xFF, dsize);
             break;
         }
         --nmissing;
@@ -485,11 +484,9 @@ void DataProcessor::PadMissingPackets(char *buf) {
 }
 
 /** ctb specific */
-void DataProcessor::RearrangeDbitData(char *buf) {
+void DataProcessor::RearrangeDbitData(size_t & size, char *data) {
     // TODO! (Erik) Refactor and add tests
-    auto *memImage = reinterpret_cast<image_structure *>(buf);
-    int ctbDigitalDataBytes =
-        memImage->size - (*ctbAnalogDataBytes) - (*ctbDbitOffset);
+    int ctbDigitalDataBytes = size - (*ctbAnalogDataBytes) - (*ctbDbitOffset);
 
     // no digital data
     if (ctbDigitalDataBytes == 0) {
@@ -506,7 +503,7 @@ void DataProcessor::RearrangeDbitData(char *buf) {
     std::vector<uint8_t> result(numResult8Bits);
     uint8_t *dest = &result[0];
 
-    auto *source = (uint64_t *)(memImage->data + (*ctbAnalogDataBytes) + (*ctbDbitOffset));
+    auto *source = (uint64_t *)(data + (*ctbAnalogDataBytes) + (*ctbDbitOffset));
 
     // loop through digital bit enable vector
     int bitoffset = 0;
@@ -532,11 +529,11 @@ void DataProcessor::RearrangeDbitData(char *buf) {
     }
 
     // copy back to memory and update size
-    memcpy(memImage->data + (*ctbAnalogDataBytes), result.data(), numResult8Bits * sizeof(uint8_t));
-    memImage->size = numResult8Bits * sizeof(uint8_t);
+    memcpy(data + (*ctbAnalogDataBytes), result.data(), numResult8Bits * sizeof(uint8_t));
+    size = numResult8Bits * sizeof(uint8_t);
 }
 
-void DataProcessor::CropImage(char *buf) {
+void DataProcessor::CropImage(size_t & size, char *data) {
     LOG(logDEBUG) << "Cropping Image to ROI " << ToString(receiverRoi);
     int nPixelsX = generalData->nPixelsX;
     int xmin = receiverRoi.xmin;
@@ -557,11 +554,10 @@ void DataProcessor::CropImage(char *buf) {
     // write size into memory
     std::size_t roiImageSize = xwidth * ywidth * bytesPerPixel;
     LOG(logDEBUG) << "roiImageSize:" << roiImageSize;
-    auto *memImage = reinterpret_cast<image_structure *>(buf);
-    memImage->size = roiImageSize;
+    size = roiImageSize;
 
     // copy the roi to the beginning of the image
-    char *dstOffset = memImage->data;
+    char *dstOffset = data;
     char *srcOffset = dstOffset + startOffset;
 
     // entire width

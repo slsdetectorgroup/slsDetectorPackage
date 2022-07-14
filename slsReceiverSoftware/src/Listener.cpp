@@ -48,10 +48,7 @@ uint64_t Listener::GetLastFrameIndexCaught() const {
 
 int64_t Listener::GetNumMissingPacket(bool stoppedFlag,
                                       uint64_t numPackets) const {
-    if (!activated) {
-        return 0;
-    }
-    if (!(*detectorDataStream)) {
+    if (!activated || !(*detectorDataStream) || noRoi) {
         return 0;
     }
     if (!stoppedFlag) {
@@ -119,8 +116,10 @@ void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
 
 void Listener::SetActivate(bool enable) { activated = enable; }
 
+void Listener::SetNoRoi(bool enable) {noRoi = enable; }
+
 void Listener::CreateUDPSockets() {
-    if (!activated || !(*detectorDataStream)) {
+    if (!activated || !(*detectorDataStream) || noRoi) {
         return;
     }
 
@@ -170,7 +169,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
     LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port "
                  << *udpPortNumber;
 
-    if (!activated || !(*detectorDataStream)) {
+    if (!activated || !(*detectorDataStream) || noRoi) {
         *actualUDPSocketBufferSize = (s * 2);
         return;
     }
@@ -229,7 +228,7 @@ void Listener::ThreadExecution() {
                    << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
 
     // udpsocket doesnt exist
-    if (activated && *detectorDataStream && !udpSocketAlive && !carryOverFlag) {
+    if (activated && *detectorDataStream && !noRoi &&!udpSocketAlive && !carryOverFlag) {
         // LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not
         // created or shut down earlier";
         (*((uint32_t *)buffer)) = 0;
@@ -239,7 +238,7 @@ void Listener::ThreadExecution() {
 
     // get data
     if ((*status != TRANSMITTING &&
-         (!activated || !(*detectorDataStream) || udpSocketAlive)) ||
+         (!activated || !(*detectorDataStream) || noRoi || udpSocketAlive)) ||
         carryOverFlag) {
         rc = ListenToAnImage(buffer);
     }
@@ -317,12 +316,8 @@ uint32_t Listener::ListenToAnImage(char *buf) {
     memset(buf, 0, fifohsize);
     new_header = (sls_receiver_header *)(buf + FIFO_HEADER_NUMBYTES);
 
-    // deactivated port (eiger)
-    if (!(*detectorDataStream)) {
-        return 0;
-    }
-    // deactivated (eiger)
-    if (!activated) {
+    // deactivated port (eiger) or deactivated (eiger)
+    if (!(*detectorDataStream) || !activated || noRoi) {
         return 0;
     }
 

@@ -20,6 +20,7 @@
 // C++ includes
 #include "sls/sls_detector_exceptions.h"
 #include <algorithm>
+#include <array>
 #include <bitset>
 #include <chrono>
 #include <cstdint>
@@ -69,6 +70,8 @@
 #define SHORT_STR_LENGTH 20
 
 #define MAX_PATTERN_LENGTH 0x2000
+#define MAX_PATTERN_LEVELS 6
+#define M3_MAX_PATTERN_LEVELS 3
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 500
 

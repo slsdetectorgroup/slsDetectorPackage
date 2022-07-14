@@ -11,7 +11,7 @@ enums.cpp
 import re
 import subprocess
 
-from parse import remove_comments
+from parse import remove_comments, remove_ifdefs
 
 
 allow_bitwise_op = ["streamingInterface", "M3_GainCaps"]
@@ -98,25 +98,25 @@ def generate_enum_string(enums):
     return ''.join(data)
 
 
-def remove_ifdefs(lines):
-    """Keeps C++ version of the code"""
-    out = []
-    it = iter(lines)
-    skip = False
-    for line in it:
+# def remove_ifdefs(lines):
+#     """Keeps C++ version of the code"""
+#     out = []
+#     it = iter(lines)
+#     skip = False
+#     for line in it:
         
-        if "#ifdef __cplusplus" in line:
-            line = next(it)
+#         if "#ifdef __cplusplus" in line:
+#             line = next(it)
 
-        if "#else" in line:
-            skip = True
+#         if "#else" in line:
+#             skip = True
 
-        if "#endif" in line:
-            skip = False
+#         if "#endif" in line:
+#             skip = False
 
-        if not skip and "#endif" not in line:    
-            out.append(line)
-    return out
+#         if not skip and "#endif" not in line:    
+#             out.append(line)
+#     return out
     
 
 with open('../../slsSupportLib/include/sls/sls_detector_defs.h') as f:

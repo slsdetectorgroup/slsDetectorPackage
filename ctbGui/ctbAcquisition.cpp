@@ -828,14 +828,14 @@ void ctbAcquisition::setCanvas(TCanvas* c) {
   myCanvas->AddExec("dynamic",Form("((ctbAcquisition*)%p)->canvasClicked()",this));
   // myCanvas->AddExec("ex","canvasClicked()");
 }
-void ctbAcquisition::dataCallback(detectorData *data, long unsigned int index, unsigned int dum, void* pArgs) {
+void ctbAcquisition::dataCallback(sls::detectorData *data, long unsigned int index, unsigned int dum, void* pArgs) {
 
   // return 
   ((ctbAcquisition*)pArgs)->plotData(data,index);
 }
 
 
-int ctbAcquisition::plotData(detectorData *data, int index) {
+int ctbAcquisition::plotData(sls::detectorData *data, int index) {
 
   /*
 ******************************************************************

@@ -57,6 +57,7 @@ void DataProcessor::SetActivate(bool enable) { activated_ = enable; }
 void DataProcessor::SetReceiverROI(ROI roi) { 
     receiverRoi_ = roi; 
     receiverRoiEnabled_ = receiverRoi_.completeRoi() ? false : true;
+    receiverNoRoi_ = receiverRoi_.noRoi();
 }
 
 void DataProcessor::ResetParametersforNewAcquisition() {
@@ -125,8 +126,8 @@ void DataProcessor::CreateFirstFiles(
     }
     CloseFiles();
 
-    // deactivated (half module/ single port), dont write file
-    if (!activated_ || !detectorDataStream) {
+    // deactivated (half module/ single port or no roi), dont write file
+    if (!activated_ || !detectorDataStream || receiverNoRoi_) {
         return;
     }
 

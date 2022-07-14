@@ -18,6 +18,7 @@ CTBGUI=0
 MANUALS=0
 MANUALS_ONLY_RST=0
 MOENCHZMQ=0
+ZMQ_HINT_DIR=""
 
 
 CLEAN=0
@@ -26,25 +27,26 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [n] [-h] [z] [-d <HDF5 directory>] [-l Install directory] [-k <CMake command>] [-j <Number of threads>]
+Usage: $0 [-b] [-c] [-d <HDF5 directory>] [e] [g] [-h] [i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [m] [n] [-p] [-q <Zmq hint directory>] [r] [s] [t] [u] [z]  
  -[no option]: only make
- -c: Clean
  -b: Builds/Rebuilds CMake files normal mode
- -p: Builds/Rebuilds Python API
- -h: Builds/Rebuilds Cmake files with HDF5 package
+ -c: Clean
  -d: HDF5 Custom Directory
+ -e: Debug mode
+ -g: Build/Rebuilds only gui
+ -h: Builds/Rebuilds Cmake files with HDF5 package
+ -i: Builds tests
+ -j: Number of threads to compile through
  -k: CMake command
  -l: Install directory
- -t: Build/Rebuilds only text client
- -r: Build/Rebuilds only receiver
- -g: Build/Rebuilds only gui
- -s: Simulator
- -u: Chip Test Gui
- -j: Number of threads to compile through
- -e: Debug mode
- -i: Builds tests
  -m: Manuals
  -n: Manuals without compiling doxygen (only rst)
+ -p: Builds/Rebuilds Python API
+ -q: Zmq hint directory
+ -r: Build/Rebuilds only receiver
+ -s: Simulator
+ -t: Build/Rebuilds only text client
+ -u: Chip Test Gui
  -z: Moench zmq processor
 
 Rebuild when you switch to a new build and compile in parallel:
@@ -81,69 +83,50 @@ For rebuilding only certain sections
  
  " ; exit 1; }
 
-while getopts ":bpchd:k:l:j:trgeisumnz" opt ; do
+while getopts ":bcd:eghij:k:l:mnpq:rstuz" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
 		REBUILD=1
 		;;
-	p)
-    	echo "Compiling Options: Python" 
-		PYTHON=1
-		REBUILD=1
-		;;   
 	c) 
 		echo "Clean Required"
 		CLEAN=1
-		;;
-	h) 
-		echo "Building of CMake files with HDF5 option Required"
-		HDF5=1
-		REBUILD=1
 		;;
 	d) 
 		echo "New HDF5 directory: $OPTARG" 
 		HDF5DIR=$OPTARG
 		;;
-	l)
-		echo "CMake install directory: $OPTARG"
-		INSTALLDIR="$OPTARG"
+	e)
+		echo "Compiling Options: Debug" 
+		DEBUG=1
+		;;  
+	g) 
+		echo "Compiling Options: GUI" 
+		GUI=1
+		REBUILD=1
+		;; 
+	h) 
+		echo "Building of CMake files with HDF5 option Required"
+		HDF5=1
+		REBUILD=1
+		;;
+	i)
+		echo "Compiling Options: Tests" 
+		TESTS=1
+		;;   
+	j) 
+		echo "Number of compiler threads: $OPTARG" 
+		COMPILERTHREADS=$OPTARG
 		;;
 	k)
 		echo "CMake command: $OPTARG"
 		CMAKE="$OPTARG"
 		;;
-	j) 
-		echo "Number of compiler threads: $OPTARG" 
-		COMPILERTHREADS=$OPTARG
+	l)
+		echo "CMake install directory: $OPTARG"
+		INSTALLDIR="$OPTARG"
 		;;
-	t) 
-    	echo "Compiling Options: Text Client" 
-		TEXTCLIENT=1
-		REBUILD=1
-		;;      
-	r) 
-		echo "Compiling Options: Receiver" 
-		RECEIVER=1
-		REBUILD=1
-		;;      
-	g) 
-		echo "Compiling Options: GUI" 
-		GUI=1
-		REBUILD=1
-		;;  
-	e)
-		echo "Compiling Options: Debug" 
-		DEBUG=1
-		;;   
-	i)
-		echo "Compiling Options: Tests" 
-		TESTS=1
-		;;   
-	s)
-		echo "Compiling Options: Simulator" 
-		SIMULATOR=1
-		;; 
 	m)	
 		echo "Compiling Manuals"
 		MANUALS=1
@@ -152,13 +135,36 @@ while getopts ":bpchd:k:l:j:trgeisumnz" opt ; do
 		echo "Compiling Manuals (Only RST)"
 		MANUALS_ONLY_RST=1
 		;;
-	z)	
-		echo "Compiling Moench Zmq Processor"
-		MOENCHZMQ=1
+	p)
+    	echo "Compiling Options: Python" 
+		PYTHON=1
+		REBUILD=1
+		;;   
+	q) 
+		echo "Zmq hint directory: $OPTARG" 
+		ZMQ_HINT_DIR=$OPTARG
+		;;
+	r) 
+		echo "Compiling Options: Receiver" 
+		RECEIVER=1
+		REBUILD=1
+		;;      
+	s)
+		echo "Compiling Options: Simulator" 
+		SIMULATOR=1
+		;; 
+	t) 
+    	echo "Compiling Options: Text Client" 
+		TEXTCLIENT=1
+		REBUILD=1
 		;;
 	u)
 		echo "Compiling Options: Chip Test Gui"
 		CTBGUI=1
+		;;
+	z)	
+		echo "Compiling Moench Zmq Processor"
+		MOENCHZMQ=1
 		;;
   \?)
     echo "Invalid option: -$OPTARG" 
@@ -254,6 +260,12 @@ if [ $TESTS -eq 1 ]; then
 	echo "Tests Option enabled"
 fi 
 
+#zmq hint dir
+if [ -n "$ZMQ_HINT_DIR" ]; then
+	CMAKE_POST+=" -DZeroMQ_HINT="$ZMQ_HINT_DIR
+	CMAKE_POST+=" -DZeroMQ_DIR="
+#	echo "Enabling Zmq Hint Directory: $ZMQ_HINT_DIR"
+fi 
 
 #hdf5 rebuild
 if [ $HDF5 -eq 1 ]; then

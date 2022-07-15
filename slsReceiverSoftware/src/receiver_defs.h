@@ -43,10 +43,7 @@ struct image_structure {
   slsDetectorDefs::sls_receiver_header header;
   char* data;
 };
-
-
-#define FIFO_HEADER_NUMBYTES   (16)
-#define FIFO_DATASIZE_NUMBYTES (4)
+#define IMAGE_STRUCTURE_HEADER_SIZE (sizeof(size_t) + sizeof(size_t) + sizeof(slsDetectorDefs::sls_receiver_header))
 
 // hdf5
 #define MAX_CHUNKED_IMAGES (1)

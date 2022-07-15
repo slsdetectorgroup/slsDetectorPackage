@@ -11,7 +11,6 @@
 #include "Fifo.h"
 #include "GeneralData.h"
 #include "sls/UdpRxSocket.h"
-//#include "receiver_defs.h"
 #include "sls/container_utils.h" // For make_unique<>
 #include "sls/network_utils.h"
 #include "sls/sls_detector_exceptions.h"
@@ -161,6 +160,7 @@ void Listener::CreateUDPSockets() {
 void Listener::ShutDownUDPSocket() {
     if (udpSocket) {
         udpSocketAlive = false;
+        // give other thread time after udpSocketAlive is changed
         usleep(0);
         udpSocket->Shutdown();
         LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;

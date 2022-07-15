@@ -72,7 +72,7 @@ void Implementation::SetupFifoStructure() {
         if (detType == GOTTHARD2 && i != 0) {
             datasize = generalData->vetoImageSize;
         }
-        datasize +=generalData->fifoBufferHeaderSize;
+        datasize += IMAGE_STRUCTURE_HEADER_SIZE;
 
         // create fifo structure
         try {

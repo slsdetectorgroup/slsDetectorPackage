@@ -27,15 +27,19 @@ const std::string Listener::TypeName = "Listener";
 Listener::Listener(int ind, detectorType dtype, Fifo *f,
                    std::atomic<runStatus> *s, uint32_t *portno, std::string *e,
                    int *us, int *as, uint32_t *fpf, frameDiscardPolicy *fdp,
-                   bool *detds, bool *sm)
+                   bool *sm)
     : ThreadObject(ind, TypeName), fifo(f), myDetectorType(dtype), status(s),
       udpPortNumber(portno), eth(e), udpSocketBufferSize(us),
-      actualUDPSocketBufferSize(as), framesPerFile(fpf), frameDiscardMode(fdp),
-      detectorDataStream(detds), silentMode(sm) {
+      actualUDPSocketBufferSize(as), framesPerFile(fpf), frameDiscardMode(fdp), silentMode(sm) {
     LOG(logDEBUG) << "Listener " << ind << " created";
 }
 
 Listener::~Listener() = default;
+
+bool Listener::isPortDisabled() const {
+    return disabledPort;
+}
+
 
 uint64_t Listener::GetPacketsCaught() const { return numPacketsCaught; }
 
@@ -49,7 +53,7 @@ uint64_t Listener::GetLastFrameIndexCaught() const {
 
 int64_t Listener::GetNumMissingPacket(bool stoppedFlag,
                                       uint64_t numPackets) const {
-    if (!activated || !(*detectorDataStream) || noRoi) {
+    if (disabledPort) {
         return 0;
     }
     if (!stoppedFlag) {
@@ -114,12 +118,23 @@ void Listener::RecordFirstIndex(uint64_t fnum) {
 
 void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
 
-void Listener::SetActivate(bool enable) { activated = enable; }
+void Listener::SetActivate(bool enable) { 
+    activated = enable;
+    disabledPort = (!activated || !detectorDataStream || noRoi);
+}
 
-void Listener::SetNoRoi(bool enable) {noRoi = enable; }
+void Listener::SetDetectorDatastream(bool enable) { 
+    detectorDataStream = enable;
+    disabledPort = (!activated || !detectorDataStream || noRoi);
+}
+
+void Listener::SetNoRoi(bool enable) {
+    noRoi = enable; 
+    disabledPort = (!activated || !detectorDataStream || noRoi);
+}
 
 void Listener::CreateUDPSockets() {
-    if (!activated || !(*detectorDataStream) || noRoi) {
+    if (disabledPort) {
         return;
     }
 
@@ -171,7 +186,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
     LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port "
                  << *udpPortNumber;
 
-    if (!activated || !(*detectorDataStream) || noRoi) {
+    if (disabledPort) {
         *actualUDPSocketBufferSize = (s * 2);
         return;
     }

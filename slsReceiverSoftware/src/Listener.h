@@ -39,12 +39,11 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * @param as pointer to actual udp socket buffer size
      * @param fpf pointer to frames per file
      * @param fdp frame discard policy
-     * @param detds pointer to detector data stream
      * @param sm pointer to silent mode
      */
     Listener(int ind, detectorType dtype, Fifo *f, std::atomic<runStatus> *s,
              uint32_t *portno, std::string *e, int *us, int *as, uint32_t *fpf,
-             frameDiscardPolicy *fdp, bool *detds, bool *sm);
+             frameDiscardPolicy *fdp, bool *sm);
 
     /**
      * Destructor
@@ -52,6 +51,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      */
     ~Listener();
 
+    bool isPortDisabled() const;
     uint64_t GetPacketsCaught() const;
     uint64_t GetNumCompleteFramesCaught() const;
     uint64_t GetLastFrameIndexCaught() const;
@@ -65,6 +65,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *g);
     void SetActivate(bool enable);
+    void SetDetectorDatastream(bool enable);
     void SetNoRoi(bool enable);
     void CreateUDPSockets();
     void ShutDownUDPSocket();
@@ -133,9 +134,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     uint32_t *framesPerFile;
     frameDiscardPolicy *frameDiscardMode;
     bool activated{false};
-    bool *detectorDataStream;
+    bool detectorDataStream{true};
     bool noRoi{false};
     bool *silentMode;
+    bool disabledPort{false};
 
     /** row hardcoded as 1D or 2d,
      * if detector does not send them yet or

@@ -119,7 +119,7 @@ void DataStreamer::ThreadExecution() {
         return;
     }
 
-    ProcessAnImage(memImage->header, memImage->size, memImage->firstStreamerIndex, memImage->data);
+    ProcessAnImage(memImage->header.detHeader, memImage->size, memImage->firstStreamerIndex, memImage->data);
 
     // free
     fifo->FreeAddress(buffer);
@@ -139,9 +139,9 @@ void DataStreamer::StopProcessing(char *buf) {
 }
 
 /** buf includes only the standard header */
-void DataStreamer::ProcessAnImage(sls_receiver_header header, size_t size, size_t firstStreamerIndex, char* data) {
+void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size, size_t firstStreamerIndex, char* data) {
     
-    uint64_t fnum = header.detHeader.frameNumber;
+    uint64_t fnum = header.frameNumber;
     LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
     if (!startedFlag) {
         RecordFirstIndex(fnum, firstStreamerIndex);
@@ -149,14 +149,11 @@ void DataStreamer::ProcessAnImage(sls_receiver_header header, size_t size, size_
     // shortframe gotthard
     if (completeBuffer) {
         // disregarding the size modified from callback (always using
-        // imageSizeComplete
-        // instead of buf (32 bit) because gui needs imagesizecomplete and
-        // listener
-        // write imagesize
+        // imageSizeComplete instead of size because gui needs 
+        // imagesizecomplete and listener writes imagesize to size
 
-        if (!SendDataHeader(header.detHeader, generalData->imageSizeComplete,
-                        generalData->nPixelsXComplete,
-                        generalData->nPixelsYComplete)) {
+        if (!SendDataHeader(header, generalData->imageSizeComplete,
+                        generalData->nPixelsXComplete, generalData->nPixelsYComplete)) {
             LOG(logERROR) << "Could not send zmq header for fnum " << fnum
                           << " and streamer " << index;
         }
@@ -172,8 +169,7 @@ void DataStreamer::ProcessAnImage(sls_receiver_header header, size_t size, size_
     // normal
     else {
 
-        if (!SendDataHeader(header.detHeader, size, generalData->nPixelsX,
-                        generalData->nPixelsY)) {
+        if (!SendDataHeader(header, size, generalData->nPixelsX, generalData->nPixelsY)) {
             LOG(logERROR) << "Could not send zmq header for fnum " << fnum
                           << " and streamer " << index;
         }

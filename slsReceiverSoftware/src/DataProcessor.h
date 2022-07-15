@@ -114,7 +114,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
      */
-    void ProcessAnImage(sls_receiver_header & header, size_t &size, size_t &firstStreamerIndex, char* data);
+    void ProcessAnImage(sls_receiver_header & header, size_t &size, size_t &firstImageIndex, char* data);
 
     /**
      * Calls CheckTimer and CheckCount for streaming frequency and timer

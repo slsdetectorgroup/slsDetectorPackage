@@ -52,8 +52,9 @@ void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
     }
 }
 
-void DataStreamer::RecordFirstIndex(uint64_t fnum) {
+void DataStreamer::RecordFirstIndex(uint64_t fnum, size_t firstImageIndex) {
     startedFlag = true;
+    firstIndex = firstImageIndex;
     LOG(logDEBUG1) << index << " First Index: " << firstIndex
                    << ", First Streamer Index:" << fnum;
 }
@@ -119,7 +120,7 @@ void DataStreamer::ThreadExecution() {
 
     // streamer first index needn't be the very first index
     if (!startedFlag) {
-        firstIndex = memImage->firstStreamerIndex;
+        RecordFirstIndex(memImage->header.detHeader.frameNumber, memImage->firstIndex);
     }
 
     ProcessAnImage(memImage->header.detHeader, memImage->size, memImage->data);
@@ -130,7 +131,6 @@ void DataStreamer::ThreadExecution() {
 
 void DataStreamer::StopProcessing(char *buf) {
     LOG(logDEBUG1) << "DataStreamer " << index << ": Dummy";
-    // send dummy header and data
     if (!SendDummyHeader()) {
         LOG(logERROR) << "Could not send zmq dummy header for streamer for port " 
                     << zmqSocket->GetPortNumber();
@@ -146,9 +146,7 @@ void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size, char*
     
     uint64_t fnum = header.frameNumber;
     LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
-    if (!startedFlag) {
-        RecordFirstIndex(fnum);
-    }
+
     // shortframe gotthard
     if (completeBuffer) {
         // disregarding the size modified from callback (always using

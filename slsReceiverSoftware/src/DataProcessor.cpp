@@ -262,7 +262,7 @@ void DataProcessor::ThreadExecution() {
     }
 
     try {
-        ProcessAnImage(memImage->header, memImage->size, memImage->firstStreamerIndex, memImage->data);
+        ProcessAnImage(memImage->header, memImage->size, memImage->firstIndex, memImage->data);
     } catch (const std::exception &e) {
         fifo->FreeAddress(buffer);
         return;
@@ -295,7 +295,7 @@ void DataProcessor::StopProcessing(char *buf) {
     LOG(logDEBUG1) << index << ": Processing Completed";
 }
 
-void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, size_t &firstStreamerIndex, char* data) {
+void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, size_t &firstImageIndex, char* data) {
     uint64_t fnum = header.detHeader.frameNumber;
     LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
     currentFrameIndex = fnum;
@@ -327,11 +327,10 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
     // 'stream Image' check has to be done here before crop image 
     // stream (if time/freq to stream) or free
     if (*dataStreamEnable && SendToStreamer()) {
-        // if first frame to stream, add frame index to fifo header (might
-        // not be the first)
         if (firstStreamerFrame) {
             firstStreamerFrame = false;
-            firstStreamerIndex = firstIndex;
+            // write to memory structure of first streamer frame
+            firstImageIndex = firstIndex;
         }
         streamCurrentFrame = true;
     } else {

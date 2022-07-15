@@ -72,9 +72,9 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
   private:
     /**
      * Record First Index
-     * @param fnum current frame number
      */
-    void RecordFirstIndex(uint64_t fnum);
+    void RecordFirstIndex(uint64_t fnum, size_t firstImageIndex);
+    
     void ThreadExecution();
 
     /**

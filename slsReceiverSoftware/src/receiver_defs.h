@@ -39,7 +39,7 @@ namespace sls {
 // fifo    
 struct image_structure {
   size_t size;
-  size_t firstStreamerIndex;
+  size_t firstIndex;
   slsDetectorDefs::sls_receiver_header header;
   char* data;
 };

@@ -103,7 +103,6 @@ void Listener::RecordFirstIndex(uint64_t fnum) {
     // listen to this fnum, later +1
     currentFrameIndex = fnum;
     lastCaughtFrameIndex = fnum;
-
     startedFlag = true;
     firstIndex = fnum;
 
@@ -234,7 +233,7 @@ void Listener::ThreadExecution() {
     }
 
     // reset header and size and get data
-    memset(memImage, 0, sizeof(memImage->size) + sizeof(memImage->firstStreamerIndex + sizeof(memImage->header)));
+    memset(memImage, 0, sizeof(memImage->size) + sizeof(memImage->firstIndex + sizeof(memImage->header)));
     int rc = ListenToAnImage(memImage->header, memImage->data);
 
     // end of acquisition or discarding image

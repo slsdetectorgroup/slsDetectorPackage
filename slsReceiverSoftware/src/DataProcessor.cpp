@@ -331,7 +331,7 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
         // not be the first)
         if (firstStreamerFrame) {
             firstStreamerFrame = false;
-            firstStreamerIndex = (size_t)(fnum - firstIndex);
+            firstStreamerIndex = firstIndex;
         }
         streamCurrentFrame = true;
     } else {

@@ -52,10 +52,8 @@ void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
     }
 }
 
-void DataStreamer::RecordFirstIndex(uint64_t fnum, size_t firstStreamerIndex) {
+void DataStreamer::RecordFirstIndex(uint64_t fnum) {
     startedFlag = true;
-    // streamer first index needn't be the very first index
-    firstIndex = fnum - firstStreamerIndex;
     LOG(logDEBUG1) << index << " First Index: " << firstIndex
                    << ", First Streamer Index:" << fnum;
 }
@@ -119,7 +117,12 @@ void DataStreamer::ThreadExecution() {
         return;
     }
 
-    ProcessAnImage(memImage->header.detHeader, memImage->size, memImage->firstStreamerIndex, memImage->data);
+    // streamer first index needn't be the very first index
+    if (!startedFlag) {
+        firstIndex = memImage->firstStreamerIndex;
+    }
+
+    ProcessAnImage(memImage->header.detHeader, memImage->size, memImage->data);
 
     // free
     fifo->FreeAddress(buffer);
@@ -139,12 +142,12 @@ void DataStreamer::StopProcessing(char *buf) {
 }
 
 /** buf includes only the standard header */
-void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size, size_t firstStreamerIndex, char* data) {
+void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size, char* data) {
     
     uint64_t fnum = header.frameNumber;
     LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
     if (!startedFlag) {
-        RecordFirstIndex(fnum, firstStreamerIndex);
+        RecordFirstIndex(fnum);
     }
     // shortframe gotthard
     if (completeBuffer) {

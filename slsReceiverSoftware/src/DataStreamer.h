@@ -73,9 +73,8 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     /**
      * Record First Index
      * @param fnum current frame number
-     * @param buf get frame index from buffer to calculate first index to record
      */
-    void RecordFirstIndex(uint64_t fnum, size_t firstStreamerIndex);
+    void RecordFirstIndex(uint64_t fnum);
     void ThreadExecution();
 
     /**
@@ -88,7 +87,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
      */
-    void ProcessAnImage(sls_detector_header header, size_t size, size_t firstStreamerIndex, char* data);
+    void ProcessAnImage(sls_detector_header header, size_t size, char* data);
 
     int SendDummyHeader();
     

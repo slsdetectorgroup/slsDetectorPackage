@@ -578,7 +578,7 @@ std::vector<int64_t> Implementation::getCurrentFrameIndex() const {
 }
 
 double Implementation::getProgress() const {
-    if (!activated || (!detectorDataStream[0] && !detectorDataStream[1])) {
+    if (!activated || (!detectorDataStream[0] && !detectorDataStream[1]) || portRois[0].noRoi() || portRois[1].noRoi()) {
         return 100.00;
     }
 

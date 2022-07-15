@@ -98,9 +98,8 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * Pushes non empty buffers into fifo/ frees empty buffer,
      * pushes dummy buffer into fifo
      * and reset running mask by calling StopRunning()
-     * @param buf address of buffer
      */
-    void StopListening(char *buf);
+    void StopListening(char *buf, size_t& size);
 
     /**
      * Listen to the UDP Socket for an image,
@@ -114,7 +113,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
     void CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detHeaderSize, uint32_t correctedDataSize, uint32_t &numpackets, bool &isHeaderEmpty, bool standardHeader, sls_receiver_header& rxHeader, sls_detector_header* detHeader, uint32_t pnum, uint64_t bnum);
 
-    void GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum, bool standardHeader, char* packet, sls_detector_header* header);
+    void GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum, bool standardHeader, char* packet, sls_detector_header*& header);
 
     void PrintFifoStatistics();
 

@@ -31,14 +31,14 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
         const uint32_t nPixelsX, const uint32_t nPixelsY,
         const uint32_t dynamicRange) override;
 
-    void WriteToFile(char *imageData, sls_receiver_header* header, const int imageSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) override;
+    void WriteToFile(char *imageData, sls_receiver_header header, const int imageSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) override;
 
   private:
     void CreateFile();
     void Convert12to16Bit(uint16_t *dst, uint8_t *src);
     void WriteDataFile(const uint64_t currentFrameNumber, char *buffer);
     void WriteParameterDatasets(const uint64_t currentFrameNumber,
-                                sls_receiver_header *rheader);
+                                sls_receiver_header rheader);
     void ExtendDataset();
 
     int index_;

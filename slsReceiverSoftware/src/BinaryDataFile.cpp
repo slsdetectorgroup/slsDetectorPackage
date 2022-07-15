@@ -65,7 +65,7 @@ void BinaryDataFile::CreateFile() {
     }
 }
 
-void BinaryDataFile::WriteToFile(char *imageData, sls_receiver_header* header, const int imageSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) {
+void BinaryDataFile::WriteToFile(char *imageData, sls_receiver_header header, const int imageSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) {
     // check if maxframesperfile = 0 for infinite
     if (maxFramesPerFile_ && (numFramesInFile_ >= maxFramesPerFile_)) {
         CloseFile();
@@ -79,18 +79,18 @@ void BinaryDataFile::WriteToFile(char *imageData, sls_receiver_header* header, c
 
     // contiguous bitset (write header + image)
     if (sizeof(sls_bitset) == sizeof(bitset_storage)) {
-        ret = fwrite((char*)header, 1, sizeof(sls_receiver_header) + imageSize, fd_);
+        ret = fwrite((char*)&header, 1, sizeof(sls_receiver_header) + imageSize, fd_);
     }
 
     // not contiguous bitset
     else {
         // write detector header
-        ret = fwrite((char*)header, 1, sizeof(sls_detector_header), fd_);
+        ret = fwrite((char*)&header, 1, sizeof(sls_detector_header), fd_);
 
         // get contiguous representation of bit mask
         bitset_storage storage;
         memset(storage, 0, sizeof(bitset_storage));
-        sls_bitset bits = header->packetsMask;
+        sls_bitset bits = header.packetsMask;
         for (int i = 0; i < MAX_NUM_PACKETS; ++i)
             storage[i >> 3] |= (bits[i] << (i & 7));
         // write bitmask

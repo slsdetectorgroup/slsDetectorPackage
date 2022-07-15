@@ -252,9 +252,9 @@ void DataProcessor::ThreadExecution() {
     fifo->PopAddress(buffer);
     LOG(logDEBUG5) << "DataProcessor " << index << ", " << std::hex
                    << static_cast<void *>(buffer) << std::dec << ":" << buffer;
+    auto *memImage = reinterpret_cast<image_structure *>(buffer);
 
     // check dummy
-    auto *memImage = reinterpret_cast<image_structure *>(buffer);
     LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << memImage->size;
     if (memImage->size == DUMMY_PACKET_VALUE) {
         StopProcessing(buffer);
@@ -365,7 +365,7 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
     // write to file
     if (dataFile) {
         try {
-            dataFile->WriteToFile(data, &header, size, fnum - firstIndex, nump);
+            dataFile->WriteToFile(data, header, size, fnum - firstIndex, nump);
         } catch (const RuntimeError &e) {
             ; // ignore write exception for now (TODO: send error message
               // via stopReceiver tcp)

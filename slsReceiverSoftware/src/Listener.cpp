@@ -223,19 +223,17 @@ void Listener::SetHardCodedPosition(uint16_t r, uint16_t c) {
 void Listener::ThreadExecution() {
     char *buffer;
     fifo->GetNewAddress(buffer);
-    LOG(logDEBUG5) << "Listener " << index
-                   << ", "
-                      "pop 0x"
+    LOG(logDEBUG5) << "Listener " << index << ", pop 0x"
                    << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
+    auto *memImage = reinterpret_cast<image_structure *>(buffer);
 
     // udpsocket doesnt exist
     if ((*status == TRANSMITTING || !udpSocketAlive) && !carryOverFlag) {
-        StopListening(buffer);
+        StopListening(buffer, memImage->size);
         return;
     }
 
     // reset header and size and get data
-    auto *memImage = reinterpret_cast<image_structure *>(buffer);
     memset(memImage, 0, sizeof(memImage->size) + sizeof(memImage->firstStreamerIndex + sizeof(memImage->header)));
     int rc = ListenToAnImage(memImage->header, memImage->data);
 
@@ -260,9 +258,8 @@ void Listener::ThreadExecution() {
     }
 }
 
-void Listener::StopListening(char *buf) {
-    auto *memImage = reinterpret_cast<image_structure *>(buf);
-    memImage->size = DUMMY_PACKET_VALUE;
+void Listener::StopListening(char *buf, size_t & size) {
+    size = DUMMY_PACKET_VALUE;
     fifo->PushAddress(buf);
     StopRunning();
     LOG(logDEBUG1) << index << ": Listening Completed. Packets (" << *udpPortNumber
@@ -292,12 +289,12 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
     uint32_t pperFrame = generalData->packetsPerFrame;
     bool isHeaderEmpty = true;
     uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - imageSize);
-    sls_detector_header *detHeader = nullptr;
+    sls_detector_header *srcDetHeader = nullptr;
 
     // carry over packet
     if (carryOverFlag) {
         LOG(logDEBUG3) << index << "carry flag";
-        GetPacketIndices(fnum, pnum, bnum, standardHeader, carryOverPacket.get(), detHeader);    
+        GetPacketIndices(fnum, pnum, bnum, standardHeader, carryOverPacket.get(), srcDetHeader);    
 
         // future packet
         if (fnum != currentFrameIndex) {
@@ -311,7 +308,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
             return HandleFuturePacket(false, numpackets, fnum, isHeaderEmpty, imageSize, dstHeader);
         }
 
-        CopyPacket(dstData, carryOverPacket.get(), dsize, hsize, corrected_dsize, numpackets, isHeaderEmpty, standardHeader, dstHeader, detHeader, pnum, bnum);
+        CopyPacket(dstData, carryOverPacket.get(), dsize, hsize, corrected_dsize, numpackets, isHeaderEmpty, standardHeader, dstHeader, srcDetHeader, pnum, bnum);
         carryOverFlag = false;
     }
 
@@ -332,7 +329,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
 
         numPacketsCaught++; 
         numPacketsStatistic++;
-        GetPacketIndices(fnum, pnum, bnum, standardHeader, listeningPacket.get(), detHeader);    
+        GetPacketIndices(fnum, pnum, bnum, standardHeader, listeningPacket.get(), srcDetHeader);    
 
         // Eiger Firmware in a weird state
         if (myDetectorType == EIGER && fnum == 0) {
@@ -366,7 +363,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
             memcpy(carryOverPacket.get(), &listeningPacket[0], packetSize);
             return HandleFuturePacket(false, numpackets, fnum, isHeaderEmpty, imageSize, dstHeader);
         }
-        CopyPacket(dstData, listeningPacket.get(), dsize, hsize, corrected_dsize, numpackets, isHeaderEmpty, standardHeader, dstHeader, detHeader, pnum, bnum);
+        CopyPacket(dstData, listeningPacket.get(), dsize, hsize, corrected_dsize, numpackets, isHeaderEmpty, standardHeader, dstHeader, srcDetHeader, pnum, bnum);
     }
 
     // complete image
@@ -457,7 +454,7 @@ void Listener::CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detH
     }
 }
 
-void Listener::GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum, bool standardHeader, char* packet, sls_detector_header* header) {
+void Listener::GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum, bool standardHeader, char* packet, sls_detector_header*& header) {
     if (standardHeader) {
         header = (sls_detector_header *)(&packet[0]);
         fnum = header->frameNumber;

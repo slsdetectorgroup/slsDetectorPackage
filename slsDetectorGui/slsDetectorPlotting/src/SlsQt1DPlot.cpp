@@ -15,6 +15,8 @@
 #include <qwt_symbol.h>
 #include <stdlib.h>
 
+#include <array>
+
 namespace sls {
 
 #define QwtLog10ScaleEngine QwtLogScaleEngine // hmm

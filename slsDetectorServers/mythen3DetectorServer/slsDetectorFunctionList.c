@@ -2460,17 +2460,19 @@ void *start_timer(void *arg) {
         const int nchannels = NCHAN_1_COUNTER * NCHIP * ncounters;
 
         for (int i = 0; i < nchannels; ++i) {
+            int j = rand();
             switch (dr) {
             //case 1: // TODO: Not implemented in firmware yet 
             // break;
+            
             case 8:
-                *((uint8_t *)(imageData + i)) = (uint8_t)i;
+                *((uint8_t *)(imageData + i)) = (uint8_t)j;
                 break;
             case 16:
-                *((uint16_t *)(imageData + i * sizeof(uint16_t))) = (uint16_t)i;
+                *((uint16_t *)(imageData + i * sizeof(uint16_t))) = (uint16_t)j;
                 break;
             case 32:
-                *((uint32_t *)(imageData + i * sizeof(uint32_t))) = ((uint32_t)i & 0xFFFFFF); // 24 bit
+                *((uint32_t *)(imageData + i * sizeof(uint32_t))) = ((uint32_t)j & 0xFFFFFF); // 24 bit
                 break;
             default:
                 break;

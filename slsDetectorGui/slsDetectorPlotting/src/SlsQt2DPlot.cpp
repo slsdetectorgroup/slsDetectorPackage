@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "SlsQt2DPlot.h"
 // #include "sls/ansi.h"
+#include <array>
 
 #include <qlist.h>
 #include <qprinter.h>

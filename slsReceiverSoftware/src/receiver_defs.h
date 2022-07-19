@@ -41,7 +41,7 @@ struct image_structure {
   size_t size;
   size_t firstIndex;
   slsDetectorDefs::sls_receiver_header header;
-  char* data;
+  char data[];
 };
 #define IMAGE_STRUCTURE_HEADER_SIZE (sizeof(size_t) + sizeof(size_t) + sizeof(slsDetectorDefs::sls_receiver_header))
 

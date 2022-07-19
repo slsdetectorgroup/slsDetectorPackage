@@ -65,7 +65,7 @@ void BinaryDataFile::CreateFile() {
     }
 }
 
-void BinaryDataFile::WriteToFile(char *imageData, sls_receiver_header header, const int imageSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) {
+void BinaryDataFile::WriteToFile(char *imageData, sls_receiver_header& header, const int imageSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) {
     // check if maxframesperfile = 0 for infinite
     if (maxFramesPerFile_ && (numFramesInFile_ >= maxFramesPerFile_)) {
         CloseFile();
@@ -102,7 +102,7 @@ void BinaryDataFile::WriteToFile(char *imageData, sls_receiver_header header, co
 
     // if write error
     if (ret != imageSize + sizeof(sls_receiver_header)) {
-        throw RuntimeError(std::to_string(index_) + " : Write to file failed for image number " + std::to_string(currentFrameNumber));
+        throw RuntimeError(std::to_string(index_) + " : Write to file failed for image number " + std::to_string(currentFrameNumber) + ". Wrote " + std::to_string(ret) + " bytes instead of " + std::to_string(imageSize + sizeof(sls_receiver_header)));
     }
 }
 

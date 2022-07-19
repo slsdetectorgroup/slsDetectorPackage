@@ -222,7 +222,7 @@ void HDF5DataFile::CreateFile() {
     }
 }
 
-void HDF5DataFile::WriteToFile(char *imageData, sls_receiver_header header, const int imageSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) {
+void HDF5DataFile::WriteToFile(char *imageData, sls_receiver_header& header, const int imageSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) {
 
     // check if maxframesperfile = 0 for infinite
     if (maxFramesPerFile_ && (numFramesInFile_ >= maxFramesPerFile_)) {

@@ -349,12 +349,12 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
     try {
         // normal call back
         if (rawDataReadyCallBack != nullptr) {
-            rawDataReadyCallBack(&header, data, size, pRawDataReady);
+            rawDataReadyCallBack(header, data, size, pRawDataReady);
         }
 
         // call back with modified size
         else if (rawDataModifyReadyCallBack != nullptr) {
-            rawDataModifyReadyCallBack(&header, data, size, pRawDataReady);
+            rawDataModifyReadyCallBack(header, data, size, pRawDataReady);
         }
     } catch (const std::exception &e) {
         throw RuntimeError("Get Data Callback Error: " +
@@ -414,13 +414,13 @@ bool DataProcessor::CheckCount() {
 }
 
 void DataProcessor::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header *, char *, size_t, void *), void *arg) {
+    void (*func)(sls_receiver_header, char *, size_t, void *), void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
 
 void DataProcessor::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header *, char *, size_t &, void *), void *arg) {
+    void (*func)(sls_receiver_header, char *, size_t &, void *), void *arg) {
     rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
 }

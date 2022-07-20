@@ -381,8 +381,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
     }
 
     // complete image
-    dstHeader.detHeader.packetNumber = numpackets; // number of packets caught
-    dstHeader.detHeader.frameNumber = currentFrameIndex;
+    dstHeader.detHeader.packetNumber = numpackets;
     if (numpackets == pperFrame) {
         ++numCompleteFramesCaught;
     }
@@ -410,13 +409,16 @@ size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum
     default:
         break;
     }
-    // replacing with number of packets caught
     dstHeader.detHeader.packetNumber = numpackets; 
+    // for empty frames (padded)
     if (isHeaderEmpty) {
+        dstHeader.detHeader.frameNumber = currentFrameIndex;
+        // no packet to get bnum
         dstHeader.detHeader.row = row;
         dstHeader.detHeader.column = column;
+        dstHeader.detHeader.detType = (uint8_t)generalData->myDetectorType;
+        dstHeader.detHeader.version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
     }
-    dstHeader.detHeader.frameNumber = currentFrameIndex;
     if (!EOA) {
         ++currentFrameIndex;
     }

@@ -8,7 +8,7 @@
 namespace sls {
 
 HDF5DataFile::HDF5DataFile(int index, std::mutex *hdf5Lib)
-    : File(HDF5), index_(index), hdf5Lib_(hdf5Lib) {
+    : index_(index), hdf5Lib_(hdf5Lib) {
 
     parameterNames_ = std::vector<std::string>{
         "frame number",
@@ -52,6 +52,10 @@ std::vector<std::string> HDF5DataFile::GetParameterNames() const {
 }
 std::vector<H5::DataType> HDF5DataFile::GetParameterDataTypes() const {
     return parameterDataTypes_;
+}
+
+slsDetectorDefs::fileFormat HDF5DataFile::GetFileFormat() const {
+    return HDF5;
 }
 
 void HDF5DataFile::CloseFile() {

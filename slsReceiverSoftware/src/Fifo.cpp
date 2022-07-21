@@ -17,10 +17,10 @@
 
 namespace sls {
 
-Fifo::Fifo(int ind, size_t fifoItemSize, uint32_t depth)
-    : index(ind), memory(nullptr), fifoBound(nullptr), fifoFree(nullptr),
-      fifoStream(nullptr), fifoDepth(depth), status_fifoBound(0),
-      status_fifoFree(depth) {
+Fifo::Fifo(int index, size_t fifoItemSize, uint32_t fifoDepth)
+    : index(index), memory(nullptr), fifoBound(nullptr), fifoFree(nullptr),
+      fifoStream(nullptr), fifoDepth(fifoDepth), status_fifoBound(0),
+      status_fifoFree(fifoDepth) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     CreateFifos(fifoItemSize);
 }

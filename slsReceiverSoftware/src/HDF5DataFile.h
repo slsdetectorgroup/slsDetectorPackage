@@ -14,6 +14,7 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
     HDF5DataFile(const int index, std::mutex *hdf5Lib);
     ~HDF5DataFile();
 
+    fileFormat GetFileFormat() const override;
     std::string GetFileName() const override;
     uint32_t GetFilesInAcquisition() const override;
     H5::DataType GetPDataType() const override;

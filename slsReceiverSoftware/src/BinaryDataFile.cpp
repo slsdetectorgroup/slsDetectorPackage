@@ -4,9 +4,13 @@
 
 namespace sls {
 
-BinaryDataFile::BinaryDataFile(const int index) : File(BINARY), index_(index) {}
+BinaryDataFile::BinaryDataFile(const int index) : index_(index) {}
 
 BinaryDataFile::~BinaryDataFile() { CloseFile(); }
+
+slsDetectorDefs::fileFormat BinaryDataFile::GetFileFormat() const {
+    return BINARY;
+}
 
 void BinaryDataFile::CloseFile() {
     if (fd_) {

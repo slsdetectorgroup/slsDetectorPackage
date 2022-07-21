@@ -12,6 +12,7 @@ class BinaryDataFile : private virtual slsDetectorDefs, public File {
     BinaryDataFile(const int index);
     ~BinaryDataFile();
 
+    fileFormat GetFileFormat() const override;
     void CloseFile() override;
     void CreateFirstBinaryDataFile(const std::string filePath,
                                    const std::string fileNamePrefix,

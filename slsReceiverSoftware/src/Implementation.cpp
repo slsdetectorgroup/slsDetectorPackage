@@ -177,7 +177,7 @@ void Implementation::setDetectorType(const detectorType d) {
         try {
             auto fifo_ptr = fifo[i].get();
             listener.push_back(sls::make_unique<Listener>(
-                i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
+                i, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                 &udpSocketBufferSize, &actualUDPSocketBufferSize,
                 &framesPerFile, &frameDiscardMode, &silentMode));
             int ctbAnalogDataBytes = 0;
@@ -1009,7 +1009,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             try {
                 auto fifo_ptr = fifo[i].get();
                 listener.push_back(sls::make_unique<Listener>(
-                    i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
+                    i, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                     &udpSocketBufferSize, &actualUDPSocketBufferSize,
                     &framesPerFile, &frameDiscardMode, &silentMode));
                 listener[i]->SetGeneralData(generalData);

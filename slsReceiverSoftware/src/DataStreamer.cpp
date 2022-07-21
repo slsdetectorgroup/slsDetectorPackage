@@ -18,14 +18,10 @@ namespace sls {
 
 const std::string DataStreamer::TypeName = "DataStreamer";
 
-DataStreamer::DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi,
-                           bool fr, slsDetectorDefs::xy np, bool *qe,
-                           uint64_t *tot)
-    : ThreadObject(ind, TypeName), fifo(f), dynamicRange(dr), detectorRoi(r),
-      fileIndex(fi), flipRows(fr), numPorts(np), quadEnable(qe),
-      totalNumFrames(tot) {
+DataStreamer::DataStreamer(int index, Fifo *fifo, uint32_t *dynamicRange, ROI *detectorRoi, uint64_t *fileIndex, bool flipRows, slsDetectorDefs::xy numPorts, bool *quadEnable, uint64_t *totalNumFrames)
+    : ThreadObject(index, TypeName), fifo(fifo), dynamicRange(dynamicRange), detectorRoi(detectorRoi), fileIndex(fileIndex), flipRows(flipRows), numPorts(numPorts), quadEnable(quadEnable), totalNumFrames(totalNumFrames) {
 
-    LOG(logDEBUG) << "DataStreamer " << ind << " created";
+    LOG(logDEBUG) << "DataStreamer " << index << " created";
 }
 
 DataStreamer::~DataStreamer() {
@@ -45,7 +41,7 @@ void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
         delete[] completeBuffer;
         completeBuffer = nullptr;
     }
-    if (generalData->myDetectorType == GOTTHARD && detectorRoi->xmin != -1) {
+    if (generalData->detType == GOTTHARD && detectorRoi->xmin != -1) {
         adcConfigured = generalData->GetAdcConfigured(index, *detectorRoi);
         completeBuffer = new char[generalData->imageSizeComplete];
         memset(completeBuffer, 0, generalData->imageSizeComplete);

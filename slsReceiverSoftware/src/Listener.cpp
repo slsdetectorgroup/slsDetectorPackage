@@ -24,14 +24,10 @@ namespace sls {
 
 const std::string Listener::TypeName = "Listener";
 
-Listener::Listener(int ind, detectorType dtype, Fifo *f,
-                   std::atomic<runStatus> *s, uint32_t *portno, std::string *e,
-                   int *us, int *as, uint32_t *fpf, frameDiscardPolicy *fdp,
-                   bool *sm)
-    : ThreadObject(ind, TypeName), fifo(f), myDetectorType(dtype), status(s),
-      udpPortNumber(portno), eth(e), udpSocketBufferSize(us),
-      actualUDPSocketBufferSize(as), framesPerFile(fpf), frameDiscardMode(fdp), silentMode(sm) {
-    LOG(logDEBUG) << "Listener " << ind << " created";
+Listener::Listener(int index, Fifo *fifo, std::atomic<runStatus> *status, uint32_t *udpPortNumber, std::string *eth, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode)
+    : ThreadObject(index, TypeName), fifo(fifo), status(status),
+      udpPortNumber(udpPortNumber), eth(eth), udpSocketBufferSize(udpSocketBufferSize), actualUDPSocketBufferSize(actualUDPSocketBufferSize), framesPerFile(framesPerFile), frameDiscardMode(frameDiscardMode), silentMode(silentMode) {
+    LOG(logDEBUG) << "Listener " << index << " created";
 }
 
 Listener::~Listener() = default;
@@ -87,7 +83,7 @@ void Listener::ResetParametersforNewAcquisition() {
     lastCaughtFrameIndex = 0;
     carryOverFlag = false;
     uint32_t packetSize = generalData->packetSize;
-    if (myDetectorType == GOTTHARD2 && index != 0) {
+    if (generalData->detType == GOTTHARD2 && index != 0) {
         packetSize = generalData->vetoPacketSize;
     }
     carryOverPacket = make_unique<char[]>(packetSize);
@@ -149,7 +145,7 @@ void Listener::CreateUDPSockets() {
     ShutDownUDPSocket();
 
     uint32_t packetSize = generalData->packetSize;
-    if (myDetectorType == GOTTHARD2 && index != 0) {
+    if (generalData->detType == GOTTHARD2 && index != 0) {
         packetSize = generalData->vetoPacketSize;
     }
 
@@ -200,7 +196,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
     }
 
     uint32_t packetSize = generalData->packetSize;
-    if (myDetectorType == GOTTHARD2 && index != 0) {
+    if (generalData->detType == GOTTHARD2 && index != 0) {
         packetSize = generalData->vetoPacketSize;
     }
 
@@ -293,7 +289,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
     uint32_t packetSize = generalData->packetSize;
     uint32_t hsize = generalData->headerSizeinPacket;
     bool standardHeader = generalData->standardheader;
-    if (myDetectorType == GOTTHARD2 && index != 0) {
+    if (generalData->detType == GOTTHARD2 && index != 0) {
         dsize = generalData->vetoDataSize;
         imageSize = generalData->vetoImageSize;
         packetSize = generalData->vetoPacketSize;
@@ -346,7 +342,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
         GetPacketIndices(fnum, pnum, bnum, standardHeader, listeningPacket.get(), srcDetHeader);    
 
         // Eiger Firmware in a weird state
-        if (myDetectorType == EIGER && fnum == 0) {
+        if (generalData->detType == EIGER && fnum == 0) {
             LOG(logERROR) << "[" << *udpPortNumber
                           << "]: Got Frame Number "
                              "Zero from Firmware. Discarding Packet";
@@ -416,7 +412,7 @@ size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum
         // no packet to get bnum
         dstHeader.detHeader.row = row;
         dstHeader.detHeader.column = column;
-        dstHeader.detHeader.detType = (uint8_t)generalData->myDetectorType;
+        dstHeader.detHeader.detType = (uint8_t)generalData->detType;
         dstHeader.detHeader.version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
     }
     if (!EOA) {
@@ -428,7 +424,7 @@ size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum
 void Listener::CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detHeaderSize, uint32_t correctedDataSize, uint32_t &numpackets, bool &isHeaderEmpty, bool standardHeader, sls_receiver_header& dstHeader, sls_detector_header * srcDetHeader, uint32_t pnum, uint64_t bnum) {
 
     // copy packet data
-    switch (myDetectorType) {
+    switch (generalData->detType) {
     // for gotthard, 1st packet: 4 bytes fnum, CACA
     // + CACA, 639*2 bytes data 				2nd packet: 4
     // bytes fnum, previous 1*2 bytes data  + 640*2 bytes data !!
@@ -463,7 +459,7 @@ void Listener::CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detH
             dstHeader.detHeader.bunchId = bnum;
             dstHeader.detHeader.row = row;
             dstHeader.detHeader.column = column;
-            dstHeader.detHeader.detType = (uint8_t)generalData->myDetectorType;
+            dstHeader.detHeader.detType = (uint8_t)generalData->detType;
             dstHeader.detHeader.version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
         }
         isHeaderEmpty = false;
@@ -478,7 +474,7 @@ void Listener::GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum, 
     } else {
         // set first packet to be odd or even (check required when switching
         // from roi to no roi)
-        if (myDetectorType == GOTTHARD && !startedFlag) {
+        if (generalData->detType == GOTTHARD && !startedFlag) {
             oddStartingPacket = generalData->SetOddStartingPacket(index, &packet[0]);
         }
         generalData->GetHeaderInfo(index, &packet[0], oddStartingPacket, fnum, pnum, bnum);

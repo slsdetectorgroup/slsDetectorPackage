@@ -25,27 +25,7 @@ class ZmqSocket;
 class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    /**
-     * Constructor
-     * Calls Base Class CreateThread(), sets ErrorMask if error and increments
-     * NumberofDataStreamers
-     * @param ind self index
-     * @param f address of Fifo pointer
-     * @param dr pointer to dynamic range
-     * @param r detectorRoi
-     * @param fi pointer to file index
-     * @param fr flip rows
-     * @param nm number of ports in each dimension
-     * @param qe pointer to quad Enable
-     * @param tot pointer to total number of frames
-     */
-    DataStreamer(int ind, Fifo *f, uint32_t *dr, ROI *r, uint64_t *fi, bool fr,
-                 xy np, bool *qe, uint64_t *tot);
-
-    /**
-     * Destructor
-     * Calls Base Class DestroyThread() and decrements NumberofDataStreamers
-     */
+    DataStreamer(int index, Fifo *fifo, uint32_t *dynamicRange, ROI *detectorRoi, uint64_t *fileIndex, bool flipRows, slsDetectorDefs::xy numPorts, bool *quadEnable, uint64_t *totalNumFrames);
     ~DataStreamer();
 
     void SetFifo(Fifo *f);

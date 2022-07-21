@@ -24,31 +24,7 @@ class Fifo;
 class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    /**
-     * Constructor
-     * Calls Base Class CreateThread(), sets ErrorMask if error and increments
-     * NumberofListerners
-     * @param ind self index
-     * @param dtype detector type
-     * @param f address of Fifo pointer
-     * @param s pointer to receiver status
-     * @param portno pointer to udp port number
-     * @param e ethernet interface
-     * @param dr pointer to dynamic range
-     * @param us pointer to udp socket buffer size
-     * @param as pointer to actual udp socket buffer size
-     * @param fpf pointer to frames per file
-     * @param fdp frame discard policy
-     * @param sm pointer to silent mode
-     */
-    Listener(int ind, detectorType dtype, Fifo *f, std::atomic<runStatus> *s,
-             uint32_t *portno, std::string *e, int *us, int *as, uint32_t *fpf,
-             frameDiscardPolicy *fdp, bool *sm);
-
-    /**
-     * Destructor
-     * Calls Base Class DestroyThread() and decrements NumberofListerners
-     */
+    Listener(int index, Fifo *fifo, std::atomic<runStatus> *status, uint32_t *udpPortNumber, std::string *eth, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode);
     ~Listener();
 
     bool isPortDisabled() const;
@@ -123,7 +99,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     Fifo *fifo;
 
     // individual members
-    detectorType myDetectorType;
     std::atomic<runStatus> *status;
     std::unique_ptr<UdpRxSocket> udpSocket{nullptr};
     uint32_t *udpPortNumber;

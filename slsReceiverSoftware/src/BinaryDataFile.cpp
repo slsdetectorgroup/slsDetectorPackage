@@ -83,13 +83,13 @@ void BinaryDataFile::WriteToFile(char *imageData, sls_receiver_header& header, c
 
     // contiguous bitset (write header + image)
     if (sizeof(sls_bitset) == sizeof(bitset_storage)) {
-        ret = fwrite((char*)&header, 1, sizeof(sls_receiver_header) + imageSize, fd);
+        ret = fwrite(&header, sizeof(sls_receiver_header) + imageSize, 1, fd);
     }
 
     // not contiguous bitset
     else {
         // write detector header
-        ret = fwrite((char*)&header, 1, sizeof(sls_detector_header), fd);
+        ret = fwrite(&header, sizeof(sls_detector_header), 1, fd);
 
         // get contiguous representation of bit mask
         bitset_storage storage;
@@ -98,10 +98,10 @@ void BinaryDataFile::WriteToFile(char *imageData, sls_receiver_header& header, c
         for (int i = 0; i < MAX_NUM_PACKETS; ++i)
             storage[i >> 3] |= (bits[i] << (i & 7));
         // write bitmask
-        ret += fwrite((char *)storage, 1, sizeof(bitset_storage), fd);
+        ret += fwrite(storage, sizeof(bitset_storage), 1, fd);
 
         // write data
-        ret += fwrite(imageData, 1, imageSize, fd);
+        ret += fwrite(imageData, imageSize, 1, fd);
     }
 
     // if write error

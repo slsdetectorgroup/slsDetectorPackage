@@ -68,7 +68,7 @@ class Receiver : private virtual slsDetectorDefs {
      * - pointer to data
      * - image size in bytes 
      */
-    void registerCallBackRawDataReady(void (*func)(sls_receiver_header,
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header&,
                                                    char *, size_t, void *),
                                       void *arg);
 
@@ -81,7 +81,7 @@ class Receiver : private virtual slsDetectorDefs {
      * Can be modified to the new size to be written/streamed. (only smaller
      * value allowed).
      */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header,
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header&,
                                                          char *, size_t &,
                                                          void *),
                                             void *arg);

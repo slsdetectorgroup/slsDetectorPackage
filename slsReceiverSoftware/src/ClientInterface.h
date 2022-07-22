@@ -43,12 +43,20 @@ class ClientInterface : private virtual slsDetectorDefs {
                                              void *arg);
 
     /** params: sls_receiver_header, pointer to data, image size */
+<<<<<<< HEAD
     void registerCallBackRawDataReady(void (*func)(sls_receiver_header,
+=======
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header&,
+>>>>>>> developer
                                                    char *, size_t, void *),
                                       void *arg);
 
     /** params: sls_receiver_header, pointer to data, reference to image size */
+<<<<<<< HEAD
     void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header,
+=======
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header&,
+>>>>>>> developer
                                                          char *, size_t &,
                                                          void *),
                                             void *arg);
@@ -190,9 +198,9 @@ class ClientInterface : private virtual slsDetectorDefs {
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(uint64_t, void *) = nullptr;
     void *pAcquisitionFinished{nullptr};
-    void (*rawDataReadyCallBack)(sls_receiver_header, char *, size_t,
+    void (*rawDataReadyCallBack)(sls_receiver_header&, char *, size_t,
                                  void *) = nullptr;
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header, char *, size_t &,
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header&, char *, size_t &,
                                        void *) = nullptr;
     void *pRawDataReady{nullptr};
 

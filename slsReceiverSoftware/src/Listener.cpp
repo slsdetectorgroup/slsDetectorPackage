@@ -416,8 +416,8 @@ size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum
         // no packet to get bnum
         dstHeader.detHeader.row = row;
         dstHeader.detHeader.column = column;
-        dstHeader.detHeader.detType = (uint8_t)generalData->myDetectorType;
-        dstHeader.detHeader.version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
+        dstHeader.detHeader.detType = static_cast<uint8_t>(generalData->myDetectorType);
+        dstHeader.detHeader.version = static_cast<uint8_t>(SLS_DETECTOR_HEADER_VERSION);
     }
     if (!EOA) {
         ++currentFrameIndex;
@@ -463,8 +463,8 @@ void Listener::CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detH
             dstHeader.detHeader.bunchId = bnum;
             dstHeader.detHeader.row = row;
             dstHeader.detHeader.column = column;
-            dstHeader.detHeader.detType = (uint8_t)generalData->myDetectorType;
-            dstHeader.detHeader.version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
+            dstHeader.detHeader.detType = static_cast<uint8_t>(generalData->myDetectorType);
+            dstHeader.detHeader.version = static_cast<uint8_t>(SLS_DETECTOR_HEADER_VERSION);
         }
         isHeaderEmpty = false;
     }

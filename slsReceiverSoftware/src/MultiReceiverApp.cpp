@@ -70,7 +70,7 @@ void AcquisitionFinished(uint64_t framesCaught, void *objectPointer) {
  * Prints in different colors(for each receiver process) the different headers
  * for each image call back.
  */
-void GetData(slsDetectorDefs::sls_receiver_header header, char *dataPointer,
+void GetData(slsDetectorDefs::sls_receiver_header& header, char *dataPointer,
              size_t imageSize, void *objectPointer) {
     slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
 
@@ -101,7 +101,7 @@ void GetData(slsDetectorDefs::sls_receiver_header header, char *dataPointer,
  * @param modifiedImageSize new data size in bytes after the callback.
  * This will be the size written/streamed. (only smaller value is allowed).
  */
-void GetData(slsDetectorDefs::sls_receiver_header header, char *dataPointer,
+void GetData(slsDetectorDefs::sls_receiver_header& header, char *dataPointer,
              size_t &modifiedImageSize, void *objectPointer) {
     slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
 

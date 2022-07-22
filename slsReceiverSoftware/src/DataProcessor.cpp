@@ -28,8 +28,8 @@ namespace sls {
 
 const std::string DataProcessor::typeName = "DataProcessor";
 
-DataProcessor::DataProcessor(int index, detectorType detType, Fifo *fifo, bool *dataStreamEnable, uint32_t *streamingFrequency, uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum, bool *framePadding, std::vector<int> *ctbDbitList, int *ctbDbitOffset, int *ctbAnalogDataBytes)
-    : ThreadObject(index, typeName), fifo(fifo), detType(detType), dataStreamEnable(dataStreamEnable), streamingFrequency(streamingFrequency), streamingTimerInMs(streamingTimerInMs), streamingStartFnum(streamingStartFnum), framePadding(framePadding), ctbDbitList(ctbDbitList), ctbDbitOffset(ctbDbitOffset), ctbAnalogDataBytes(ctbAnalogDataBytes) {
+DataProcessor::DataProcessor(int index, bool *dataStreamEnable, uint32_t *streamingFrequency, uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum, bool *framePadding, std::vector<int> *ctbDbitList, int *ctbDbitOffset, int *ctbAnalogDataBytes)
+    : ThreadObject(index, typeName), dataStreamEnable(dataStreamEnable), streamingFrequency(streamingFrequency), streamingTimerInMs(streamingTimerInMs), streamingStartFnum(streamingStartFnum), framePadding(framePadding), ctbDbitList(ctbDbitList), ctbDbitOffset(ctbDbitOffset), ctbAnalogDataBytes(ctbAnalogDataBytes) {
 
     LOG(logDEBUG) << "DataProcessor " << index << " created";
 }
@@ -171,7 +171,7 @@ std::string DataProcessor::CreateVirtualFile(
     }
 
     bool gotthard25um =
-        ((detType == GOTTHARD || detType == GOTTHARD2) &&
+        ((generalData->detType == GOTTHARD || generalData->detType == GOTTHARD2) &&
          (numModX * numModY) == 2);
 
     // maxframesperfile = 0 for infinite files
@@ -422,7 +422,7 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char* data) {
     sls_bitset pmask = header.packetsMask;
 
     uint32_t dsize = generalData->dataSize;
-    if (detType == GOTTHARD2 && index != 0) {
+    if (generalData->detType == GOTTHARD2 && index != 0) {
         dsize = generalData->vetoDataSize;
     }
     uint32_t corrected_dsize =
@@ -443,7 +443,7 @@ void DataProcessor::PadMissingPackets(sls_receiver_header header, char* data) {
                       << std::endl;
 
         // missing packet
-        switch (detType) {
+        switch (generalData->detType) {
         // for gotthard, 1st packet: 4 bytes fnum, CACA + CACA, 639*2 bytes
         // data
         //              2nd packet: 4 bytes fnum, previous 1*2 bytes data  +

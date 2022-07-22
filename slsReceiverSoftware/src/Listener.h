@@ -24,7 +24,7 @@ class Fifo;
 class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    Listener(int index, Fifo *fifo, std::atomic<runStatus> *status, uint32_t *udpPortNumber, std::string *eth, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode);
+    Listener(int index, std::atomic<runStatus> *status, std::string *eth, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode);
     ~Listener();
 
     bool isPortDisabled() const;
@@ -38,20 +38,18 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     uint64_t GetListenedIndex() const;
 
     void SetFifo(Fifo *f);
-    void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *g);
+    void SetUdpPortNumber(const uint32_t portNumber);
     void SetActivate(bool enable);
     void SetDetectorDatastream(bool enable);
     void SetNoRoi(bool enable);
-    void CreateUDPSockets();
-    void ShutDownUDPSocket();
 
-    /**
-     * Create & closes a dummy UDP socket
-     * to set & get actual buffer size
-     * @param s UDP socket buffer size to be set
-     */
-    void CreateDummySocketForUDPSocketBufferSize(int s);
+
+    void ResetParametersforNewAcquisition();
+    void CreateUDPSocket();
+    void ShutDownUDPSocket();
+    /** to set & get actual buffer size */
+    void CreateDummySocketForUDPSocketBufferSize(int size);
 
     /**
      * Set hard coded (calculated but not from detector) row and column
@@ -101,7 +99,8 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     // individual members
     std::atomic<runStatus> *status;
     std::unique_ptr<UdpRxSocket> udpSocket{nullptr};
-    uint32_t *udpPortNumber;
+
+    uint32_t udpPortNumber{0};
     std::string *eth;
     int *udpSocketBufferSize;
     /** double due to kernel bookkeeping */

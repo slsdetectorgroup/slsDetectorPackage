@@ -18,7 +18,7 @@ namespace sls {
 
 const std::string DataStreamer::TypeName = "DataStreamer";
 
-DataStreamer::DataStreamer(int index, Fifo *fifo, uint32_t *dynamicRange, ROI *detectorRoi, uint64_t *fileIndex, bool flipRows, slsDetectorDefs::xy numPorts, bool *quadEnable, uint64_t *totalNumFrames)
+DataStreamer::DataStreamer(int index, uint32_t *dynamicRange, ROI *detectorRoi, uint64_t *fileIndex, bool flipRows, slsDetectorDefs::xy numPorts, bool *quadEnable, uint64_t *totalNumFrames)
     : ThreadObject(index, TypeName), fifo(fifo), dynamicRange(dynamicRange), detectorRoi(detectorRoi), fileIndex(fileIndex), flipRows(flipRows), numPorts(numPorts), quadEnable(quadEnable), totalNumFrames(totalNumFrames) {
 
     LOG(logDEBUG) << "DataStreamer " << index << " created";

@@ -24,9 +24,9 @@ namespace sls {
 
 const std::string Listener::TypeName = "Listener";
 
-Listener::Listener(int index, Fifo *fifo, std::atomic<runStatus> *status, uint32_t *udpPortNumber, std::string *eth, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode)
-    : ThreadObject(index, TypeName), fifo(fifo), status(status),
-      udpPortNumber(udpPortNumber), eth(eth), udpSocketBufferSize(udpSocketBufferSize), actualUDPSocketBufferSize(actualUDPSocketBufferSize), framesPerFile(framesPerFile), frameDiscardMode(frameDiscardMode), silentMode(silentMode) {
+Listener::Listener(int index, std::atomic<runStatus> *status, std::string *eth, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode)
+    : ThreadObject(index, TypeName), status(status),
+      eth(eth), udpSocketBufferSize(udpSocketBufferSize), actualUDPSocketBufferSize(actualUDPSocketBufferSize), framesPerFile(framesPerFile), frameDiscardMode(frameDiscardMode), silentMode(silentMode) {
     LOG(logDEBUG) << "Listener " << index << " created";
 }
 
@@ -73,6 +73,27 @@ uint64_t Listener::GetListenedIndex() const {
 
 void Listener::SetFifo(Fifo *f) { fifo = f; }
 
+void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
+
+void Listener::SetUdpPortNumber(const uint32_t portNumber) {
+    udpPortNumber = portNumber;
+}
+
+void Listener::SetActivate(bool enable) { 
+    activated = enable;
+    disabledPort = (!activated || !detectorDataStream || noRoi);
+}
+
+void Listener::SetDetectorDatastream(bool enable) { 
+    detectorDataStream = enable;
+    disabledPort = (!activated || !detectorDataStream || noRoi);
+}
+
+void Listener::SetNoRoi(bool enable) {
+    noRoi = enable; 
+    disabledPort = (!activated || !detectorDataStream || noRoi);
+}
+
 void Listener::ResetParametersforNewAcquisition() {
     StopRunning();
     startedFlag = false;
@@ -112,24 +133,7 @@ void Listener::RecordFirstIndex(uint64_t fnum) {
     }
 }
 
-void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
-
-void Listener::SetActivate(bool enable) { 
-    activated = enable;
-    disabledPort = (!activated || !detectorDataStream || noRoi);
-}
-
-void Listener::SetDetectorDatastream(bool enable) { 
-    detectorDataStream = enable;
-    disabledPort = (!activated || !detectorDataStream || noRoi);
-}
-
-void Listener::SetNoRoi(bool enable) {
-    noRoi = enable; 
-    disabledPort = (!activated || !detectorDataStream || noRoi);
-}
-
-void Listener::CreateUDPSockets() {
+void Listener::CreateUDPSocket() {
     if (disabledPort) {
         return;
     }
@@ -151,15 +155,14 @@ void Listener::CreateUDPSockets() {
 
     // InterfaceNameToIp(eth).str().c_str()
     try {
-        udpSocket = make_unique<UdpRxSocket>(
-            *udpPortNumber, packetSize,
+        udpSocket = make_unique<UdpRxSocket>(udpPortNumber, packetSize,
             ((*eth).length() ? InterfaceNameToIp(*eth).str().c_str()
                              : nullptr),
             *udpSocketBufferSize);
-        LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
+        LOG(logINFO) << index << ": UDP port opened at port " << udpPortNumber;
     } catch (...) {
         throw RuntimeError("Could not create UDP socket on port " +
-                                std::to_string(*udpPortNumber));
+                                std::to_string(udpPortNumber));
     }
 
     udpSocketAlive = true;
@@ -174,21 +177,21 @@ void Listener::ShutDownUDPSocket() {
         // give other thread time after udpSocketAlive is changed
         usleep(0);
         udpSocket->Shutdown();
-        LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
+        LOG(logINFO) << "Shut down of UDP port " << udpPortNumber;
     }
 }
 
-void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
-    LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port "
-                 << *udpPortNumber;
+void Listener::CreateDummySocketForUDPSocketBufferSize(int size) {
+    LOG(logINFO) << "Testing UDP Socket Buffer size " << size << " with test port "
+                 << udpPortNumber;
 
     if (disabledPort) {
-        *actualUDPSocketBufferSize = (s * 2);
+        *actualUDPSocketBufferSize = (size * 2);
         return;
     }
 
     int temp = *udpSocketBufferSize;
-    *udpSocketBufferSize = s;
+    *udpSocketBufferSize = size;
 
     // if eth is mistaken with ip address
     if ((*eth).find('.') != std::string::npos) {
@@ -202,7 +205,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
 
     // create dummy socket
     try {
-        UdpRxSocket g(*udpPortNumber, packetSize,
+        UdpRxSocket g(udpPortNumber, packetSize,
                            ((*eth).length()
                                 ? InterfaceNameToIp(*eth).str().c_str()
                                 : nullptr),
@@ -219,7 +222,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
 
     } catch (...) {
         throw RuntimeError("Could not create a test UDP socket on port " +
-                                std::to_string(*udpPortNumber));
+                                std::to_string(udpPortNumber));
     }
 }
 
@@ -272,7 +275,7 @@ void Listener::StopListening(char *buf, size_t & size) {
     size = DUMMY_PACKET_VALUE;
     fifo->PushAddress(buf);
     StopRunning();
-    LOG(logDEBUG1) << index << ": Listening Completed. Packets (" << *udpPortNumber
+    LOG(logDEBUG1) << index << ": Listening Completed. Packets (" << udpPortNumber
                    << ") : " << numPacketsCaught;
 }
 
@@ -343,7 +346,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
 
         // Eiger Firmware in a weird state
         if (generalData->detType == EIGER && fnum == 0) {
-            LOG(logERROR) << "[" << *udpPortNumber
+            LOG(logERROR) << "[" << udpPortNumber
                           << "]: Got Frame Number "
                              "Zero from Firmware. Discarding Packet";
             numPacketsCaught--;
@@ -496,7 +499,7 @@ void Listener::PrintFifoStatistics() {
     numFramesStatistic = 0;
 
     const auto color = loss ? logINFORED : logINFOGREEN;
-    LOG(color) << "[" << *udpPortNumber
+    LOG(color) << "[" << udpPortNumber
                << "]:  "
                   "Packet_Loss:"
                << loss << " (" << lossPercent << "%)"

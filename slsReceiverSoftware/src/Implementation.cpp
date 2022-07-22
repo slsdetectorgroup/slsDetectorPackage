@@ -175,19 +175,20 @@ void Implementation::setDetectorType(const detectorType d) {
     for (int i = 0; i < numUDPInterfaces; ++i) {
 
         try {
-            auto fifo_ptr = fifo[i].get();
             listener.push_back(sls::make_unique<Listener>(
-                i, fifo_ptr, &status, &udpPortNum[i], &eth[i],
+                i, &status, &udpPortNum[i], &eth[i],
                 &udpSocketBufferSize, &actualUDPSocketBufferSize,
                 &framesPerFile, &frameDiscardMode, &silentMode));
+            SetupListener(i);
             int ctbAnalogDataBytes = 0;
             if (detType == CHIPTESTBOARD) {
                 ctbAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
             }
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                i, detType, fifo_ptr, &dataStreamEnable, &streamingFrequency,
+                i, &dataStreamEnable, &streamingFrequency,
                 &streamingTimerInMs, &streamingStartFnum, &framePadding,
                 &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
+            SetupDataProcessor(i);
         } catch (...) {
             listener.clear();
             dataProcessor.clear();
@@ -197,19 +198,31 @@ void Implementation::setDetectorType(const detectorType d) {
         }
     }
 
-    // set up writer and callbacks
-    for (int i = 0; i != (int)listener.size(); ++i) {
-        listener[i]->SetGeneralData(generalData);
-        listener[i]->SetActivate(activated);
-        listener[i]->SetDetectorDatastream(detectorDataStream[i]);
-    }
-    for (const auto &it : dataProcessor) {
-        it->SetGeneralData(generalData);
-        it->SetActivate(activated);
-    }
     SetThreadPriorities();
 
     LOG(logDEBUG) << " Detector type set to " << ToString(d);
+}
+
+void Implementation::SetupListener(int i) {
+    listener[i]->SetFifo(fifo[i].get());
+    listener[i]->SetGeneralData(generalData);
+    listener[i]->SetActivate(activated);
+    listener[i]->SetNoRoi(portRois[i].noRoi());
+    listener[i]->SetDetectorDatastream(detectorDataStream[i]);
+}
+
+void Implementation::SetupDataProcessor(int i) {
+    dataProcessor[i]->SetFifo(fifo[i].get());
+    dataProcessor[i]->SetGeneralData(generalData);
+    dataProcessor[i]->SetActivate(activated);
+    dataProcessor[i]->SetReceiverROI(portRois[i]);
+}
+
+void Implementation::SetupDataStreamer(int i) {
+    dataStreamer[i]->SetFifo(fifo[i].get());
+    dataStreamer[i]->SetGeneralData(generalData);
+    dataStreamer[i]->CreateZmqSockets(&numUDPInterfaces, streamingPort, streamingSrcIP, streamingHwm);
+    dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
 }
 
 slsDetectorDefs::xy Implementation::getDetectorSize() const {
@@ -1007,15 +1020,11 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         for (int i = 0; i < numUDPInterfaces; ++i) {
             // listener and dataprocessor threads
             try {
-                auto fifo_ptr = fifo[i].get();
                 listener.push_back(sls::make_unique<Listener>(
-                    i, fifo_ptr, &status, &udpPortNum[i], &eth[i],
+                    i, &status, &udpPortNum[i], &eth[i],
                     &udpSocketBufferSize, &actualUDPSocketBufferSize,
                     &framesPerFile, &frameDiscardMode, &silentMode));
-                listener[i]->SetGeneralData(generalData);
-                listener[i]->SetActivate(activated);
-                listener[i]->SetNoRoi(portRois[i].noRoi());
-                listener[i]->SetDetectorDatastream(detectorDataStream[i]);
+                SetupListener(i);
 
                 int ctbAnalogDataBytes = 0;
                 if (detType == CHIPTESTBOARD) {
@@ -1023,13 +1032,11 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         generalData->GetNumberOfAnalogDatabytes();
                 }
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                    i, detType, fifo_ptr, &dataStreamEnable,
+                    i, &dataStreamEnable,
                     &streamingFrequency, &streamingTimerInMs,
                     &streamingStartFnum, &framePadding, &ctbDbitList,
                     &ctbDbitOffset, &ctbAnalogDataBytes));
-                dataProcessor[i]->SetGeneralData(generalData);
-                dataProcessor[i]->SetActivate(activated);
-                dataProcessor[i]->SetReceiverROI(portRois[i]);
+                SetupDataProcessor(i);
             } catch (...) {
                 listener.clear();
                 dataProcessor.clear();
@@ -1037,6 +1044,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     "Could not create listener/dataprocessor threads (index:" +
                     std::to_string(i) + ")");
             }
+
             // streamer threads
             if (dataStreamEnable) {
                 try {
@@ -1045,15 +1053,10 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         flip = (i == 1 ? true : false);
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, fifo[i].get(), &dynamicRange, &detectorRoi,
+                        i, &dynamicRange, &detectorRoi,
                         &fileIndex, flip, numPorts, &quadEnable,
                         &numberOfTotalFrames));
-                    dataStreamer[i]->SetGeneralData(generalData);
-                    dataStreamer[i]->CreateZmqSockets(
-                        &numUDPInterfaces, streamingPort, streamingSrcIP,
-                        streamingHwm);
-                    dataStreamer[i]->SetAdditionalJsonHeader(
-                        additionalJsonHeader);
+                    SetupDataStreamer(i);
                 } catch (...) {
                     if (dataStreamEnable) {
                         dataStreamer.clear();
@@ -1110,6 +1113,7 @@ uint32_t Implementation::getUDPPortNumber() const { return udpPortNum[0]; }
 
 void Implementation::setUDPPortNumber(const uint32_t i) {
     udpPortNum[0] = i;
+    listener[0]->SetUdpPortNumber(i);
     LOG(logINFO) << "UDP Port Number[0]: " << udpPortNum[0];
 }
 
@@ -1117,6 +1121,9 @@ uint32_t Implementation::getUDPPortNumber2() const { return udpPortNum[1]; }
 
 void Implementation::setUDPPortNumber2(const uint32_t i) {
     udpPortNum[1] = i;
+    if (listener.size() > 1) {
+        listener[1]->SetUdpPortNumber(i);
+    }
     LOG(logINFO) << "UDP Port Number[1]: " << udpPortNum[1];
 }
 
@@ -1172,15 +1179,10 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         flip = (i == 1 ? true : false);
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, fifo[i].get(), &dynamicRange, &detectorRoi,
+                        i, &dynamicRange, &detectorRoi,
                         &fileIndex, flip, numPorts, &quadEnable,
                         &numberOfTotalFrames));
-                    dataStreamer[i]->SetGeneralData(generalData);
-                    dataStreamer[i]->CreateZmqSockets(
-                        &numUDPInterfaces, streamingPort, streamingSrcIP,
-                        streamingHwm);
-                    dataStreamer[i]->SetAdditionalJsonHeader(
-                        additionalJsonHeader);
+                    SetupDataStreamer(i);
                 } catch (...) {
                     dataStreamer.clear();
                     dataStreamEnable = false;

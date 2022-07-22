@@ -29,7 +29,7 @@ struct MasterAttributes;
 class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    DataProcessor(int index, detectorType detType, Fifo *fifo, bool *dataStreamEnable, uint32_t *streamingFrequency, uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum, bool *framePadding, std::vector<int> *ctbDbitList, int *ctbDbitOffset, int *ctbAnalogDataBytes);
+    DataProcessor(int index, bool *dataStreamEnable, uint32_t *streamingFrequency, uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum, bool *framePadding, std::vector<int> *ctbDbitList, int *ctbDbitOffset, int *ctbAnalogDataBytes);
     ~DataProcessor() override;
 
     bool GetStartedFlag() const;
@@ -146,7 +146,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     const GeneralData *generalData{nullptr};
     Fifo *fifo;
-    detectorType detType;
     bool *dataStreamEnable;
     bool activated{false};
     ROI receiverRoi{};

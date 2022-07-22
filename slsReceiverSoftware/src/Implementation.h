@@ -287,6 +287,9 @@ class Implementation : private virtual slsDetectorDefs {
     void SetupWriter();
     void StartMasterWriter();
     void StartRunning();
+    void SetupListener(int i);
+    void SetupDataProcessor(int i);
+    void SetupDataStreamer(int i);
 
     /**************************************************
      *                                                *

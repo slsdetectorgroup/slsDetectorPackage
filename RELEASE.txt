@@ -83,6 +83,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 -udp_srcip and udp_Srcip2: can set to auto (for virtual or 1g data networks)
 - set dataset name for all hdf5 files to "data" only
 - number of storage cells is not updated in teh receiver. done. and also allowing it to be modified in running status
+- refactored memory structure in receiver and listener code (maybe resolves stuck issue, need to check)
 
 2. Resolved Issues
 ==================

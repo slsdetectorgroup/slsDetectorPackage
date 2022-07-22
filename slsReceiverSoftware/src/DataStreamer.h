@@ -72,10 +72,9 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
   private:
     /**
      * Record First Index
-     * @param fnum current frame number
-     * @param buf get frame index from buffer to calculate first index to record
      */
-    void RecordFirstIndex(uint64_t fnum, char *buf);
+    void RecordFirstIndex(uint64_t fnum, size_t firstImageIndex);
+    
     void ThreadExecution();
 
     /**
@@ -88,19 +87,21 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
      */
-    void ProcessAnImage(char *buf);
+    void ProcessAnImage(sls_detector_header header, size_t size, char* data);
 
+    int SendDummyHeader();
+    
     /**
      * Create and send Json Header
      * @param rheader header of image
      * @param size data size (could have been modified in call back)
      * @param nx number of pixels in x dim
      * @param ny number of pixels in y dim
-     * @param dummy true if its a dummy header
      * @returns 0 if error, else 1
      */
-    int SendHeader(sls_receiver_header *rheader, uint32_t size = 0,
-                   uint32_t nx = 0, uint32_t ny = 0, bool dummy = true);
+    int SendDataHeader(sls_detector_header header, uint32_t size = 0,
+                   uint32_t nx = 0, uint32_t ny = 0);
+
 
     static const std::string TypeName;
     const GeneralData *generalData{nullptr};

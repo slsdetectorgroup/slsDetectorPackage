@@ -28,7 +28,7 @@ class Fifo : private virtual slsDetectorDefs {
      * @param fifoItemSize size of each fifo item
      * @param depth fifo depth
      */
-    Fifo(int ind, uint32_t fifoItemSize, uint32_t depth);
+    Fifo(int ind, size_t fifoItemSize, uint32_t depth);
 
     /**
      * Destructor
@@ -82,7 +82,7 @@ class Fifo : private virtual slsDetectorDefs {
      * Create Fifos, allocate memory & push addresses into fifo
      * @param fifoItemSize size of each fifo item
      */
-    void CreateFifos(uint32_t fifoItemSize);
+    void CreateFifos(size_t fifoItemSize);
 
     /**
      * Destroy Fifos and deallocate memory

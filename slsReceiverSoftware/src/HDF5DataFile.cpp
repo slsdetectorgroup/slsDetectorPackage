@@ -222,9 +222,7 @@ void HDF5DataFile::CreateFile() {
     }
 }
 
-void HDF5DataFile::WriteToFile(char *buffer, const int buffersize,
-                               const uint64_t currentFrameNumber,
-                               const uint32_t numPacketsCaught) {
+void HDF5DataFile::WriteToFile(char *imageData, sls_receiver_header& header, const int imageSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) {
 
     // check if maxframesperfile = 0 for infinite
     if (maxFramesPerFile_ && (numFramesInFile_ >= maxFramesPerFile_)) {
@@ -240,8 +238,8 @@ void HDF5DataFile::WriteToFile(char *buffer, const int buffersize,
         ExtendDataset();
     }
 
-    WriteDataFile(currentFrameNumber, buffer + sizeof(sls_receiver_header));
-    WriteParameterDatasets(currentFrameNumber, (sls_receiver_header *)(buffer));
+    WriteDataFile(currentFrameNumber, imageData);
+    WriteParameterDatasets(currentFrameNumber, header);
 }
 
 void HDF5DataFile::Convert12to16Bit(uint16_t *dst, uint8_t *src) {
@@ -301,14 +299,14 @@ void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
 }
 
 void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
-                                          sls_receiver_header *rheader) {
+                                          sls_receiver_header rheader) {
     std::lock_guard<std::mutex> lock(*hdf5Lib_);
 
     uint64_t fnum =
         ((maxFramesPerFile_ == 0) ? currentFrameNumber
                                   : currentFrameNumber % maxFramesPerFile_);
 
-    sls_detector_header header = rheader->detHeader;
+    sls_detector_header header = rheader.detHeader;
     hsize_t count[1] = {1};
     hsize_t start[1] = {fnum};
     int i = 0;
@@ -358,7 +356,7 @@ void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
 
         // contiguous bitset
         if (sizeof(sls_bitset) == sizeof(bitset_storage)) {
-            dataSetPara_[13]->write((char *)&(rheader->packetsMask),
+            dataSetPara_[13]->write((char *)&(rheader.packetsMask),
                                     parameterDataTypes_[13], memspace,
                                     *dataSpacePara_);
         }
@@ -368,7 +366,7 @@ void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
             // get contiguous representation of bit mask
             bitset_storage storage;
             memset(storage, 0, sizeof(bitset_storage));
-            sls_bitset bits = rheader->packetsMask;
+            sls_bitset bits = rheader.packetsMask;
             for (int i = 0; i < MAX_NUM_PACKETS; ++i)
                 storage[i >> 3] |= (bits[i] << (i & 7));
             // write bitmask

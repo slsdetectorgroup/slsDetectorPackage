@@ -67,16 +67,16 @@ void Implementation::SetThreadPriorities() {
 void Implementation::SetupFifoStructure() {
     fifo.clear();
     for (int i = 0; i < numUDPInterfaces; ++i) {
-        uint32_t datasize = generalData->imageSize;
+        size_t datasize = generalData->imageSize;
         // veto data size
         if (detType == GOTTHARD2 && i != 0) {
             datasize = generalData->vetoImageSize;
         }
+        datasize += IMAGE_STRUCTURE_HEADER_SIZE;
 
         // create fifo structure
         try {
-            fifo.push_back(sls::make_unique<Fifo>(
-                i, datasize + (generalData->fifoBufferHeaderSize), fifoDepth));
+            fifo.push_back(sls::make_unique<Fifo>(i, datasize, fifoDepth));
         } catch (...) {
             fifo.clear();
             fifoDepth = 0;
@@ -93,9 +93,7 @@ void Implementation::SetupFifoStructure() {
             dataStreamer[i]->SetFifo(fifo[i].get());
 
         LOG(logINFO) << "Memory Allocated for Fifo " << i << ": "
-                     << (double)(((size_t)(datasize) +
-                                  (size_t)(generalData->fifoBufferHeaderSize)) *
-                                 (size_t)fifoDepth) /
+                     << (double)(datasize * (size_t)fifoDepth) /
                             (double)(1024 * 1024)
                      << " MB";
     }
@@ -181,8 +179,7 @@ void Implementation::setDetectorType(const detectorType d) {
             listener.push_back(sls::make_unique<Listener>(
                 i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                 &udpSocketBufferSize, &actualUDPSocketBufferSize,
-                &framesPerFile, &frameDiscardMode, &detectorDataStream[i],
-                &silentMode));
+                &framesPerFile, &frameDiscardMode, &silentMode));
             int ctbAnalogDataBytes = 0;
             if (detType == CHIPTESTBOARD) {
                 ctbAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
@@ -201,9 +198,10 @@ void Implementation::setDetectorType(const detectorType d) {
     }
 
     // set up writer and callbacks
-    for (const auto &it : listener) {
-        it->SetGeneralData(generalData);
-        it->SetActivate(activated);
+    for (int i = 0; i != (int)listener.size(); ++i) {
+        listener[i]->SetGeneralData(generalData);
+        listener[i]->SetActivate(activated);
+        listener[i]->SetDetectorDatastream(detectorDataStream[i]);
     }
     for (const auto &it : dataProcessor) {
         it->SetGeneralData(generalData);
@@ -580,15 +578,25 @@ std::vector<int64_t> Implementation::getCurrentFrameIndex() const {
 }
 
 double Implementation::getProgress() const {
-    if (!activated || (!detectorDataStream[0] && !detectorDataStream[1])) {
+    std::vector<bool> disabledPort;
+    for (auto &it : listener) {
+        disabledPort.push_back(it->isPortDisabled());
+    }
+
+    // all ports disabled
+    if (allEqualTo<bool>(disabledPort, true)) {
         return 100.00;
     }
 
-    // if disabled, considering only 1 port
+    // any disabled
     double totalFrames = (double)(numberOfTotalFrames * listener.size());
-    if (!detectorDataStream[0] || !detectorDataStream[1]) {
-        totalFrames /= 2;
-    }
+    if (anyEqualTo<bool>(disabledPort, true)) {
+        for (auto it : disabledPort) {
+            if (it) {
+                totalFrames /= 2;
+            }
+        }
+    }    
 
     double progress = 0;
     int index = 0;
@@ -1003,11 +1011,11 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 listener.push_back(sls::make_unique<Listener>(
                     i, detType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
                     &udpSocketBufferSize, &actualUDPSocketBufferSize,
-                    &framesPerFile, &frameDiscardMode, &detectorDataStream[i],
-                    &silentMode));
+                    &framesPerFile, &frameDiscardMode, &silentMode));
                 listener[i]->SetGeneralData(generalData);
                 listener[i]->SetActivate(activated);
                 listener[i]->SetNoRoi(portRois[i].noRoi());
+                listener[i]->SetDetectorDatastream(detectorDataStream[i]);
 
                 int ctbAnalogDataBytes = 0;
                 if (detType == CHIPTESTBOARD) {

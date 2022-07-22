@@ -391,15 +391,9 @@ class Implementation : private virtual slsDetectorDefs {
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(uint64_t, void *){nullptr};
     void *pAcquisitionFinished{nullptr};
-<<<<<<< HEAD
-    void (*rawDataReadyCallBack)(sls_receiver_header, char *, size_t,
-                                 void *){nullptr};
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header, char *, size_t &,
-=======
     void (*rawDataReadyCallBack)(sls_receiver_header&, char *, size_t,
                                  void *){nullptr};
     void (*rawDataModifyReadyCallBack)(sls_receiver_header&, char *, size_t &,
->>>>>>> developer
                                        void *){nullptr};
     void *pRawDataReady{nullptr};
 

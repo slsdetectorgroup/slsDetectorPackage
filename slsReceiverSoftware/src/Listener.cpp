@@ -24,9 +24,9 @@ namespace sls {
 
 const std::string Listener::TypeName = "Listener";
 
-Listener::Listener(int index, std::atomic<runStatus> *status, std::string *eth, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode)
+Listener::Listener(int index, std::atomic<runStatus> *status, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode)
     : ThreadObject(index, TypeName), status(status),
-      eth(eth), udpSocketBufferSize(udpSocketBufferSize), actualUDPSocketBufferSize(actualUDPSocketBufferSize), framesPerFile(framesPerFile), frameDiscardMode(frameDiscardMode), silentMode(silentMode) {
+      udpSocketBufferSize(udpSocketBufferSize), actualUDPSocketBufferSize(actualUDPSocketBufferSize), framesPerFile(framesPerFile), frameDiscardMode(frameDiscardMode), silentMode(silentMode) {
     LOG(logDEBUG) << "Listener " << index << " created";
 }
 
@@ -77,6 +77,17 @@ void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
 
 void Listener::SetUdpPortNumber(const uint32_t portNumber) {
     udpPortNumber = portNumber;
+}
+
+void Listener::SetEthernetInterface(const std::string e) {
+    eth = e;
+    // if eth is mistaken with ip address
+    if (eth.find('.') != std::string::npos) {
+        eth = "";
+    }
+    if (!eth.length()) {
+        LOG(logWARNING) << "ethernet interface for udp port " << udpPortNumber << " is empty. Listening to all";
+    }
 }
 
 void Listener::SetActivate(bool enable) { 
@@ -137,15 +148,6 @@ void Listener::CreateUDPSocket() {
     if (disabledPort) {
         return;
     }
-
-    // if eth is mistaken with ip address
-    if ((*eth).find('.') != std::string::npos) {
-        (*eth) = "";
-    }
-    if (!(*eth).length()) {
-        LOG(logWARNING) << "eth is empty. Listening to all";
-    }
-
     ShutDownUDPSocket();
 
     uint32_t packetSize = generalData->packetSize;
@@ -153,10 +155,9 @@ void Listener::CreateUDPSocket() {
         packetSize = generalData->vetoPacketSize;
     }
 
-    // InterfaceNameToIp(eth).str().c_str()
     try {
         udpSocket = make_unique<UdpRxSocket>(udpPortNumber, packetSize,
-            ((*eth).length() ? InterfaceNameToIp(*eth).str().c_str()
+            (eth.length() ? InterfaceNameToIp(eth).str().c_str()
                              : nullptr),
             *udpSocketBufferSize);
         LOG(logINFO) << index << ": UDP port opened at port " << udpPortNumber;
@@ -192,12 +193,6 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int size) {
 
     int temp = *udpSocketBufferSize;
     *udpSocketBufferSize = size;
-
-    // if eth is mistaken with ip address
-    if ((*eth).find('.') != std::string::npos) {
-        (*eth) = "";
-    }
-
     uint32_t packetSize = generalData->packetSize;
     if (generalData->detType == GOTTHARD2 && index != 0) {
         packetSize = generalData->vetoPacketSize;
@@ -206,8 +201,8 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int size) {
     // create dummy socket
     try {
         UdpRxSocket g(udpPortNumber, packetSize,
-                           ((*eth).length()
-                                ? InterfaceNameToIp(*eth).str().c_str()
+                           (eth.length()
+                                ? InterfaceNameToIp(eth).str().c_str()
                                 : nullptr),
                            *udpSocketBufferSize);
 

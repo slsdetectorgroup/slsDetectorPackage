@@ -176,7 +176,7 @@ void Implementation::setDetectorType(const detectorType d) {
 
         try {
             listener.push_back(sls::make_unique<Listener>(
-                i, &status, &eth[i], &udpSocketBufferSize, &actualUDPSocketBufferSize,
+                i, &status, &udpSocketBufferSize, &actualUDPSocketBufferSize,
                 &framesPerFile, &frameDiscardMode, &silentMode));
             SetupListener(i);
             int ctbAnalogDataBytes = 0;
@@ -205,6 +205,10 @@ void Implementation::setDetectorType(const detectorType d) {
 void Implementation::SetupListener(int i) {
     listener[i]->SetFifo(fifo[i].get());
     listener[i]->SetGeneralData(generalData);
+
+    listener[i]->SetUdpPortNumber(udpPortNum[i]);
+    listener[i]->SetEthernetInterface(eth[i]);
+
     listener[i]->SetActivate(activated);
     listener[i]->SetNoRoi(portRois[i].noRoi());
     listener[i]->SetDetectorDatastream(detectorDataStream[i]);
@@ -1020,7 +1024,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             // listener and dataprocessor threads
             try {
                 listener.push_back(sls::make_unique<Listener>(
-                    i, &status, &eth[i], &udpSocketBufferSize, &actualUDPSocketBufferSize,
+                    i, &status, &udpSocketBufferSize, &actualUDPSocketBufferSize,
                     &framesPerFile, &frameDiscardMode, &silentMode));
                 SetupListener(i);
 
@@ -1097,6 +1101,7 @@ std::string Implementation::getEthernetInterface() const { return eth[0]; }
 
 void Implementation::setEthernetInterface(const std::string &c) {
     eth[0] = c;
+    listener[0]->SetEthernetInterface(c);
     LOG(logINFO) << "Ethernet Interface: " << eth[0];
 }
 
@@ -1104,6 +1109,7 @@ std::string Implementation::getEthernetInterface2() const { return eth[1]; }
 
 void Implementation::setEthernetInterface2(const std::string &c) {
     eth[1] = c;
+    listener[1]->SetEthernetInterface(c);
     LOG(logINFO) << "Ethernet Interface 2: " << eth[1];
 }
 

@@ -156,7 +156,7 @@ void Implementation::setDetectorType(const detectorType d) {
 
     framesPerFile = generalData->maxFramesPerFile;
     fifoDepth = generalData->defaultFifoDepth;
-    numUDPInterfaces = generalData->numUDPInterfaces;
+    numUDPInterfaces = static_cast<int>(generalData->numUDPInterfaces);
     udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
     dynamicRange = generalData->dynamicRange;
     tengigaEnable = generalData->tengigaEnable;
@@ -176,8 +176,7 @@ void Implementation::setDetectorType(const detectorType d) {
 
         try {
             listener.push_back(sls::make_unique<Listener>(
-                i, &status, &udpSocketBufferSize, &actualUDPSocketBufferSize,
-                &framesPerFile, &frameDiscardMode, &silentMode));
+                i, &status, &framesPerFile, &frameDiscardMode, &silentMode));
             SetupListener(i);
             int ctbAnalogDataBytes = 0;
             if (detType == CHIPTESTBOARD) {
@@ -852,7 +851,7 @@ void Implementation::ResetParametersforNewAcquisition() {
 void Implementation::CreateUDPSockets() {
     try {
         for (unsigned int i = 0; i < listener.size(); ++i) {
-            listener[i]->CreateUDPSocket();
+            listener[i]->CreateUDPSocket(udpSocketBufferSize, actualUDPSocketBufferSize);
         }
     } catch (const RuntimeError &e) {
         shutDownUDPSockets();
@@ -1024,8 +1023,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             // listener and dataprocessor threads
             try {
                 listener.push_back(sls::make_unique<Listener>(
-                    i, &status, &udpSocketBufferSize, &actualUDPSocketBufferSize,
-                    &framesPerFile, &frameDiscardMode, &silentMode));
+                    i, &status, &framesPerFile, &frameDiscardMode, &silentMode));
                 SetupListener(i);
 
                 int ctbAnalogDataBytes = 0;
@@ -1138,7 +1136,10 @@ int Implementation::getUDPSocketBufferSize() const {
 void Implementation::setUDPSocketBufferSize(const int s) {
     // custom setup is not 0 (must complain if set up didnt work)
     // testing default setup at startup, argument is 0 to use default values
-    int size = (s == 0) ? udpSocketBufferSize : s;
+    int previousSize = udpSocketBufferSize;
+    if (s != 0) {
+        udpSocketBufferSize = s;
+    }
     size_t listSize = listener.size();
     if ((detType == JUNGFRAU || detType == GOTTHARD2) &&
         (int)listSize != numUDPInterfaces) {
@@ -1148,7 +1149,7 @@ void Implementation::setUDPSocketBufferSize(const int s) {
     }
 
     for (auto &l : listener) {
-        l->CreateDummySocketForUDPSocketBufferSize(size);
+        l->CreateDummySocketForUDPSocketBufferSize(udpSocketBufferSize, previousSize, actualUDPSocketBufferSize);
     }
     // custom and didnt set, throw error
     if (s != 0 && udpSocketBufferSize != s) {

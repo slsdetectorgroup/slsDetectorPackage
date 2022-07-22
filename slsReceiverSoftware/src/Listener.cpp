@@ -24,9 +24,9 @@ namespace sls {
 
 const std::string Listener::TypeName = "Listener";
 
-Listener::Listener(int index, std::atomic<runStatus> *status, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode)
+Listener::Listener(int index, std::atomic<runStatus> *status, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode)
     : ThreadObject(index, TypeName), status(status),
-      udpSocketBufferSize(udpSocketBufferSize), actualUDPSocketBufferSize(actualUDPSocketBufferSize), framesPerFile(framesPerFile), frameDiscardMode(frameDiscardMode), silentMode(silentMode) {
+      framesPerFile(framesPerFile), frameDiscardMode(frameDiscardMode), silentMode(silentMode) {
     LOG(logDEBUG) << "Listener " << index << " created";
 }
 
@@ -144,7 +144,7 @@ void Listener::RecordFirstIndex(uint64_t fnum) {
     }
 }
 
-void Listener::CreateUDPSocket() {
+void Listener::CreateUDPSocket(int udpSocketBufferSize, int& actualSize) {
     if (disabledPort) {
         return;
     }
@@ -158,8 +158,7 @@ void Listener::CreateUDPSocket() {
     try {
         udpSocket = make_unique<UdpRxSocket>(udpPortNumber, packetSize,
             (eth.length() ? InterfaceNameToIp(eth).str().c_str()
-                             : nullptr),
-            *udpSocketBufferSize);
+                             : nullptr), udpSocketBufferSize);
         LOG(logINFO) << index << ": UDP port opened at port " << udpPortNumber;
     } catch (...) {
         throw RuntimeError("Could not create UDP socket on port " +
@@ -169,7 +168,7 @@ void Listener::CreateUDPSocket() {
     udpSocketAlive = true;
 
     // doubled due to kernel bookkeeping (could also be less due to permissions)
-    *actualUDPSocketBufferSize = udpSocket->getBufferSize();
+    actualSize = udpSocket->getBufferSize();
 }
 
 void Listener::ShutDownUDPSocket() {
@@ -182,17 +181,15 @@ void Listener::ShutDownUDPSocket() {
     }
 }
 
-void Listener::CreateDummySocketForUDPSocketBufferSize(int size) {
+void Listener::CreateDummySocketForUDPSocketBufferSize(int& size, int previousSize, int& actualSize) {
     LOG(logINFO) << "Testing UDP Socket Buffer size " << size << " with test port "
                  << udpPortNumber;
 
     if (disabledPort) {
-        *actualUDPSocketBufferSize = (size * 2);
+        actualSize = (size * 2);
         return;
     }
 
-    int temp = *udpSocketBufferSize;
-    *udpSocketBufferSize = size;
     uint32_t packetSize = generalData->packetSize;
     if (generalData->detType == GOTTHARD2 && index != 0) {
         packetSize = generalData->vetoPacketSize;
@@ -203,16 +200,15 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int size) {
         UdpRxSocket g(udpPortNumber, packetSize,
                            (eth.length()
                                 ? InterfaceNameToIp(eth).str().c_str()
-                                : nullptr),
-                           *udpSocketBufferSize);
+                                : nullptr), size);
 
         // doubled due to kernel bookkeeping (could also be less due to
         // permissions)
-        *actualUDPSocketBufferSize = g.getBufferSize();
-        if (*actualUDPSocketBufferSize == -1) {
-            *udpSocketBufferSize = temp;
+        actualSize = g.getBufferSize();
+        if (actualSize == -1) {
+            size = previousSize;
         } else {
-            *udpSocketBufferSize = (*actualUDPSocketBufferSize) / 2;
+            size = actualSize / 2;
         }
 
     } catch (...) {

@@ -24,7 +24,7 @@ class Fifo;
 class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    Listener(int index, std::atomic<runStatus> *status, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode);
+    Listener(int index, std::atomic<runStatus> *status, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode);
     ~Listener();
 
     bool isPortDisabled() const;
@@ -47,10 +47,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
 
     void ResetParametersforNewAcquisition();
-    void CreateUDPSocket();
+    void CreateUDPSocket(int udpSocketBufferSize, int& actualSize);
     void ShutDownUDPSocket();
     /** to set & get actual buffer size */
-    void CreateDummySocketForUDPSocketBufferSize(int size);
+    void CreateDummySocketForUDPSocketBufferSize(int& size, int previousSize, int & actualSize);
 
     /**
      * Set hard coded (calculated but not from detector) row and column
@@ -103,9 +103,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
     uint32_t udpPortNumber{0};
     std::string eth;
-    int *udpSocketBufferSize;
-    /** double due to kernel bookkeeping */
-    int *actualUDPSocketBufferSize;
     uint32_t *framesPerFile;
     frameDiscardPolicy *frameDiscardMode;
     bool activated{false};

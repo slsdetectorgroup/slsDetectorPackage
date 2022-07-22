@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
     char *socketip2 = 0;
     uint32_t portnum2 = 0;
 
-    zmqHeader zHeader, outHeader;
+    sls::zmqHeader zHeader, outHeader;
     zHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
     outHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
 
@@ -219,14 +219,14 @@ int main(int argc, char *argv[]) {
     mt->StartThreads();
     mt->popFree(buff);
 
-    ZmqSocket *zmqsocket = NULL;
+    sls::ZmqSocket *zmqsocket = NULL;
 
 #ifdef NEWZMQ
     // receive socket
     try {
 #endif
 
-        zmqsocket = new ZmqSocket(socketip, portnum);
+      zmqsocket = new sls::ZmqSocket(socketip, portnum);
 
 #ifdef NEWZMQ
     } catch (...) {
@@ -256,14 +256,14 @@ int main(int argc, char *argv[]) {
         printf("Zmq Client at %s\n", zmqsocket->GetZmqServerAddress().c_str());
 
     // send socket
-    ZmqSocket *zmqsocket2 = 0;
+    sls::ZmqSocket *zmqsocket2 = 0;
     // cout << "zmq2 " << endl;
     if (send) {
 #ifdef NEWZMQ
         // receive socket
         try {
 #endif
-            zmqsocket2 = new ZmqSocket(portnum2, socketip2);
+	  zmqsocket2 = new sls::ZmqSocket(portnum2, socketip2);
 
 #ifdef NEWZMQ
         } catch (...) {

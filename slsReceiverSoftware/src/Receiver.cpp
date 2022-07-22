@@ -141,12 +141,12 @@ void Receiver::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
 }
 
 void Receiver::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header *, char *, size_t, void *), void *arg) {
+    void (*func)(sls_receiver_header&, char *, size_t, void *), void *arg) {
     tcpipInterface->registerCallBackRawDataReady(func, arg);
 }
 
 void Receiver::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header *, char *, size_t &, void *), void *arg) {
+    void (*func)(sls_receiver_header&, char *, size_t &, void *), void *arg) {
     tcpipInterface->registerCallBackRawDataModifyReady(func, arg);
 }
 

@@ -85,13 +85,13 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
     static const std::string TypeName;
     const GeneralData *generalData{nullptr};
-    Fifo *fifo;
+    Fifo *fifo{nullptr};
     ZmqSocket *zmqSocket{nullptr};
     uint32_t *dynamicRange;
     ROI *detectorRoi;
     int adcConfigured{-1};
     uint64_t *fileIndex;
-    bool flipRows;
+    bool flipRows{false};
     std::map<std::string, std::string> additionalJsonHeader;
 
     /** Used by streamer thread to update local copy (reduce number of locks

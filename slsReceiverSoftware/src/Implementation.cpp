@@ -176,8 +176,7 @@ void Implementation::setDetectorType(const detectorType d) {
 
         try {
             listener.push_back(sls::make_unique<Listener>(
-                i, &status, &udpPortNum[i], &eth[i],
-                &udpSocketBufferSize, &actualUDPSocketBufferSize,
+                i, &status, &eth[i], &udpSocketBufferSize, &actualUDPSocketBufferSize,
                 &framesPerFile, &frameDiscardMode, &silentMode));
             SetupListener(i);
             int ctbAnalogDataBytes = 0;
@@ -849,7 +848,7 @@ void Implementation::ResetParametersforNewAcquisition() {
 void Implementation::CreateUDPSockets() {
     try {
         for (unsigned int i = 0; i < listener.size(); ++i) {
-            listener[i]->CreateUDPSockets();
+            listener[i]->CreateUDPSocket();
         }
     } catch (const RuntimeError &e) {
         shutDownUDPSockets();
@@ -1021,8 +1020,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             // listener and dataprocessor threads
             try {
                 listener.push_back(sls::make_unique<Listener>(
-                    i, &status, &udpPortNum[i], &eth[i],
-                    &udpSocketBufferSize, &actualUDPSocketBufferSize,
+                    i, &status, &eth[i], &udpSocketBufferSize, &actualUDPSocketBufferSize,
                     &framesPerFile, &frameDiscardMode, &silentMode));
                 SetupListener(i);
 

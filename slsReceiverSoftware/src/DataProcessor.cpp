@@ -40,6 +40,9 @@ bool DataProcessor::GetStartedFlag() const { return startedFlag; }
 
 void DataProcessor::SetFifo(Fifo *fifo) { fifo = fifo; }
 
+void DataProcessor::SetGeneralData(GeneralData *g) {
+    generalData = g;
+}
 void DataProcessor::SetActivate(bool enable) { activated = enable; }
 
 void DataProcessor::SetReceiverROI(ROI roi) { 
@@ -65,10 +68,6 @@ void DataProcessor::RecordFirstIndex(uint64_t fnum) {
     startedFlag = true;
     firstIndex = fnum;
     LOG(logDEBUG1) << index << " First Index:" << firstIndex;
-}
-
-void DataProcessor::SetGeneralData(GeneralData *g) {
-    generalData = g;
 }
 
 void DataProcessor::CloseFiles() {

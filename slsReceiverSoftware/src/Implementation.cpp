@@ -176,7 +176,7 @@ void Implementation::setDetectorType(const detectorType d) {
 
         try {
             listener.push_back(sls::make_unique<Listener>(
-                i, &status, &framesPerFile, &frameDiscardMode, &silentMode));
+                i, &status));
             SetupListener(i);
             int ctbAnalogDataBytes = 0;
             if (detType == CHIPTESTBOARD) {
@@ -207,10 +207,12 @@ void Implementation::SetupListener(int i) {
 
     listener[i]->SetUdpPortNumber(udpPortNum[i]);
     listener[i]->SetEthernetInterface(eth[i]);
-
     listener[i]->SetActivate(activated);
     listener[i]->SetNoRoi(portRois[i].noRoi());
     listener[i]->SetDetectorDatastream(detectorDataStream[i]);
+    listener[i]->SetFramesPerFile(framesPerFile);
+    listener[i]->SetFrameDiscardPolicy(frameDiscardMode);
+    listener[i]->SetSilentMode(silentMode);
 }
 
 void Implementation::SetupDataProcessor(int i) {
@@ -298,6 +300,8 @@ bool Implementation::getSilentMode() const { return silentMode; }
 
 void Implementation::setSilentMode(const bool i) {
     silentMode = i;
+    for (const auto &it : listener) 
+        it->SetSilentMode(silentMode);    
     LOG(logINFO) << "Silent Mode: " << i;
 }
 
@@ -318,6 +322,8 @@ Implementation::getFrameDiscardPolicy() const {
 
 void Implementation::setFrameDiscardPolicy(const frameDiscardPolicy i) {
     frameDiscardMode = i;
+    for (const auto &it : listener) 
+        it->SetFrameDiscardPolicy(frameDiscardMode);
     LOG(logINFO) << "Frame Discard Policy: " << ToString(frameDiscardMode);
 }
 
@@ -558,6 +564,8 @@ uint32_t Implementation::getFramesPerFile() const { return framesPerFile; }
 
 void Implementation::setFramesPerFile(const uint32_t i) {
     framesPerFile = i;
+    for (const auto &it : listener) 
+        it->SetFramesPerFile(framesPerFile);
     LOG(logINFO) << "Frames per file: " << framesPerFile;
 }
 
@@ -1023,7 +1031,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             // listener and dataprocessor threads
             try {
                 listener.push_back(sls::make_unique<Listener>(
-                    i, &status, &framesPerFile, &frameDiscardMode, &silentMode));
+                    i, &status));
                 SetupListener(i);
 
                 int ctbAnalogDataBytes = 0;
@@ -1548,7 +1556,7 @@ void Implementation::setDetectorROI(slsDetectorDefs::ROI arg) {
 
         // only for gotthard
         generalData->SetDetectorROI(arg);
-        framesPerFile = generalData->maxFramesPerFile;
+        setFramesPerFile(generalData->maxFramesPerFile);
         SetupFifoStructure();
     }
 

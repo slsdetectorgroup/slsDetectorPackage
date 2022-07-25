@@ -24,7 +24,7 @@ class Fifo;
 class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    Listener(int index, std::atomic<runStatus> *status, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode);
+    Listener(int index, std::atomic<runStatus> *status);
     ~Listener();
 
     bool isPortDisabled() const;
@@ -44,6 +44,9 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void SetActivate(bool enable);
     void SetDetectorDatastream(bool enable);
     void SetNoRoi(bool enable);
+    void SetFramesPerFile(uint32_t value);
+    void SetFrameDiscardPolicy(frameDiscardPolicy value);
+    void SetSilentMode(bool enable);
 
 
     void ResetParametersforNewAcquisition();
@@ -103,12 +106,12 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
     uint32_t udpPortNumber{0};
     std::string eth;
-    uint32_t *framesPerFile;
-    frameDiscardPolicy *frameDiscardMode;
+    uint32_t framesPerFile{0};
+    frameDiscardPolicy frameDiscardMode;
     bool activated{false};
     bool detectorDataStream{true};
     bool noRoi{false};
-    bool *silentMode;
+    bool silentMode;
     bool disabledPort{false};
 
     /** row hardcoded as 1D or 2d,

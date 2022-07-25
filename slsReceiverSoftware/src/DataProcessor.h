@@ -35,11 +35,12 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     bool GetStartedFlag() const;
 
     void SetFifo(Fifo *f);
-    void SetActivate(bool enable);
-    void SetReceiverROI(ROI roi);
-    void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *generalData);
 
+    void SetActivate(bool enable);
+    void SetReceiverROI(ROI roi);
+
+    void ResetParametersforNewAcquisition();
     void CloseFiles();
     void DeleteFiles();
     void SetupFileWriter(const bool filewriteEnable,

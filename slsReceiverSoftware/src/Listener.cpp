@@ -24,8 +24,8 @@ namespace sls {
 
 const std::string Listener::TypeName = "Listener";
 
-Listener::Listener(int index, std::atomic<runStatus> *status, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode)
-    : ThreadObject(index, TypeName), status(status), framesPerFile(framesPerFile), frameDiscardMode(frameDiscardMode), silentMode(silentMode) {
+Listener::Listener(int index, std::atomic<runStatus> *status)
+    : ThreadObject(index, TypeName), status(status) {
     LOG(logDEBUG) << "Listener " << index << " created";
 }
 
@@ -103,6 +103,19 @@ void Listener::SetNoRoi(bool enable) {
     disabledPort = (!activated || !detectorDataStream || noRoi);
 }
 
+void Listener::SetFramesPerFile(uint32_t value) {
+    framesPerFile = value;
+}
+
+void Listener::SetFrameDiscardPolicy(frameDiscardPolicy value) {
+    frameDiscardMode = value;
+}
+
+void Listener::SetSilentMode(bool enable) {
+    silentMode = enable;
+}
+
+
 void Listener::ResetParametersforNewAcquisition() {
     StopRunning();
     startedFlag = false;
@@ -135,7 +148,7 @@ void Listener::RecordFirstIndex(uint64_t fnum) {
     startedFlag = true;
     firstIndex = fnum;
 
-    if (!(*silentMode)) {
+    if (!silentMode) {
         if (!index) {
             LOG(logINFOBLUE) << index << " First Index: " << firstIndex;
         }
@@ -250,12 +263,12 @@ void Listener::ThreadExecution() {
     fifo->PushAddress(buffer);
 
     // Statistics
-    if (!(*silentMode)) {
+    if (!silentMode) {
         numFramesStatistic++;
         if (numFramesStatistic >=
             // second condition also for infinite #number of frames
-            (((*framesPerFile) == 0) ? STATISTIC_FRAMENUMBER_INFINITE
-                                     : (*framesPerFile)))
+            (framesPerFile == 0 ? STATISTIC_FRAMENUMBER_INFINITE
+                                     : framesPerFile))
             PrintFifoStatistics();
     }
 }
@@ -378,7 +391,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
 }
 
 size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum, bool isHeaderEmpty, size_t imageSize, sls_receiver_header& dstHeader) {
-    switch (*frameDiscardMode) {
+    switch (frameDiscardMode) {
     case DISCARD_EMPTY_FRAMES:
         if (!numpackets) {
             if (!EOA) {

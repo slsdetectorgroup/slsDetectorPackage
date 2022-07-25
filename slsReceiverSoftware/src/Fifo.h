@@ -21,7 +21,22 @@ namespace sls {
 class Fifo : private virtual slsDetectorDefs {
 
   public:
+    Fifo(int index, size_t fifoItemSize, uint32_t fifoDepth);
     ~Fifo();
+    
+    void FreeAddress(char *&address);
+    void GetNewAddress(char *&address);
+
+    /** to process data */
+    void PushAddress(char *&address);
+    void PopAddress(char *&address);
+
+    void PushAddressToStream(char *&address);
+    void PopAddressToStream(char *&address);
+
+    int GetMaxLevelForFifoBound();
+    int GetMinLevelForFifoFree();
+    
   private:
     /** also allocate memory & push addresses into free fifo */
     void CreateFifos(size_t fifoItemSize);

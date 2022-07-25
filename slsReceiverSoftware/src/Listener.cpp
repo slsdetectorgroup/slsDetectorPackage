@@ -24,10 +24,20 @@ namespace sls {
 
 const std::string Listener::TypeName = "Listener";
 
+Listener::Listener(int index, Fifo *fifo, std::atomic<runStatus> *status, uint32_t *udpPortNumber, std::string *eth, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode)
     : ThreadObject(index, TypeName), fifo(fifo), status(status),
       udpPortNumber(udpPortNumber), eth(eth), udpSocketBufferSize(udpSocketBufferSize), actualUDPSocketBufferSize(actualUDPSocketBufferSize), framesPerFile(framesPerFile), frameDiscardMode(frameDiscardMode), silentMode(silentMode) {
     LOG(logDEBUG) << "Listener " << index << " created";
 }
+
+Listener::~Listener() = default;
+
+bool Listener::isPortDisabled() const {		
+    return disabledPort;		
+}
+
+uint64_t Listener::GetPacketsCaught() const { return numPacketsCaught; }
+
 uint64_t Listener::GetNumCompleteFramesCaught() const {
     return numCompleteFramesCaught;
 }
@@ -401,7 +411,7 @@ size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum
         // no packet to get bnum
         dstHeader.detHeader.row = row;
         dstHeader.detHeader.column = column;
-        dstHeader.detHeader.detType = static_cast<uint8_t>(generalData->myDetectorType);
+        dstHeader.detHeader.detType = static_cast<uint8_t>(generalData->detType);
         dstHeader.detHeader.version = static_cast<uint8_t>(SLS_DETECTOR_HEADER_VERSION);
     }
     if (!EOA) {
@@ -448,7 +458,7 @@ void Listener::CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detH
             dstHeader.detHeader.bunchId = bnum;
             dstHeader.detHeader.row = row;
             dstHeader.detHeader.column = column;
-            dstHeader.detHeader.detType = static_cast<uint8_t>(generalData->myDetectorType);
+            dstHeader.detHeader.detType = static_cast<uint8_t>(generalData->detType);
             dstHeader.detHeader.version = static_cast<uint8_t>(SLS_DETECTOR_HEADER_VERSION);
         }
         isHeaderEmpty = false;

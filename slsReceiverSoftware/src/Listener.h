@@ -24,7 +24,36 @@ class Fifo;
 class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
+
+    Listener(int index, Fifo *fifo, std::atomic<runStatus> *status, uint32_t *udpPortNumber, std::string *eth, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode);
     ~Listener();
+
+    bool isPortDisabled() const;		
+    uint64_t GetPacketsCaught() const;		
+    uint64_t GetNumCompleteFramesCaught() const;		
+    uint64_t GetLastFrameIndexCaught() const;		
+    /**  negative values in case of extra packets */		
+    int64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) const;		
+    bool GetStartedFlag() const;		
+    uint64_t GetCurrentFrameIndex() const;		
+    uint64_t GetListenedIndex() const;		
+
+    void SetFifo(Fifo *f);		
+    void ResetParametersforNewAcquisition();		
+    void SetGeneralData(GeneralData *g);		
+    void SetActivate(bool enable);		
+    void SetDetectorDatastream(bool enable);		
+    void SetNoRoi(bool enable);		
+    void CreateUDPSockets();		
+    void ShutDownUDPSocket();		
+
+    /**		
+     * Create & closes a dummy UDP socket		
+     * to set & get actual buffer size		
+     * @param s UDP socket buffer size to be set		
+     */		
+    void CreateDummySocketForUDPSocketBufferSize(int s);		
+
     /**
      * Set hard coded (calculated but not from detector) row and column
      * r is in row index if detector has not send them yet in firmware,

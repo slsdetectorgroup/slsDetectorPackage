@@ -28,8 +28,8 @@ namespace sls {
 
 const std::string DataProcessor::typeName = "DataProcessor";
 
-DataProcessor::DataProcessor(int index, bool *dataStreamEnable, uint32_t *streamingFrequency, uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum, bool *framePadding, std::vector<int> *ctbDbitList, int *ctbDbitOffset, int *ctbAnalogDataBytes)
-    : ThreadObject(index, typeName), dataStreamEnable(dataStreamEnable), streamingFrequency(streamingFrequency), streamingTimerInMs(streamingTimerInMs), streamingStartFnum(streamingStartFnum), framePadding(framePadding), ctbDbitList(ctbDbitList), ctbDbitOffset(ctbDbitOffset), ctbAnalogDataBytes(ctbAnalogDataBytes) {
+DataProcessor::DataProcessor(int index, uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum, bool *framePadding, std::vector<int> *ctbDbitList, int *ctbDbitOffset, int *ctbAnalogDataBytes)
+    : ThreadObject(index, typeName), streamingTimerInMs(streamingTimerInMs), streamingStartFnum(streamingStartFnum), framePadding(framePadding), ctbDbitList(ctbDbitList), ctbDbitOffset(ctbDbitOffset), ctbAnalogDataBytes(ctbAnalogDataBytes) {
 
     LOG(logDEBUG) << "DataProcessor " << index << " created";
 }
@@ -43,12 +43,19 @@ void DataProcessor::SetFifo(Fifo *fifo) { fifo = fifo; }
 void DataProcessor::SetGeneralData(GeneralData *g) {
     generalData = g;
 }
+
 void DataProcessor::SetActivate(bool enable) { activated = enable; }
 
 void DataProcessor::SetReceiverROI(ROI roi) { 
     receiverRoi = roi; 
     receiverRoiEnabled = receiverRoi.completeRoi() ? false : true;
     receiverNoRoi = receiverRoi.noRoi();
+}
+
+void DataProcessor::SetDataStreamEnable(bool enable) { dataStreamEnable = enable; }
+
+void DataProcessor::SetStreamingFrequency(uint32_t value) { 
+    streamingFrequency = value;
 }
 
 void DataProcessor::ResetParametersforNewAcquisition() {
@@ -272,7 +279,7 @@ void DataProcessor::StopProcessing(char *buf) {
     LOG(logDEBUG1) << "DataProcessing " << index << ": Dummy";
 
     // stream or free
-    if (*dataStreamEnable)
+    if (dataStreamEnable)
         fifo->PushAddressToStream(buf);
     else
         fifo->FreeAddress(buf);
@@ -291,14 +298,14 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
 
     if (!startedFlag) {
         RecordFirstIndex(fnum);
-        if (*dataStreamEnable) {
+        if (dataStreamEnable) {
             // restart timer
             clock_gettime(CLOCK_REALTIME, &timerbegin);
             timerbegin.tv_sec -= (*streamingTimerInMs) / 1000;
             timerbegin.tv_nsec -= ((*streamingTimerInMs) % 1000) * 1000000;
 
             // to send first image
-            currentFreqCount = *streamingFrequency - *streamingStartFnum;
+            currentFreqCount = streamingFrequency - *streamingStartFnum;
         }
     }
 
@@ -313,7 +320,7 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
 
     // 'stream Image' check has to be done here before crop image 
     // stream (if time/freq to stream) or free
-    if (*dataStreamEnable && SendToStreamer()) {
+    if (dataStreamEnable && SendToStreamer()) {
         if (firstStreamerFrame) {
             firstStreamerFrame = false;
             // write to memory structure of first streamer frame
@@ -361,7 +368,7 @@ void DataProcessor::ProcessAnImage(sls_receiver_header & header, size_t &size, s
 
 bool DataProcessor::SendToStreamer() {
     // skip
-    if ((*streamingFrequency) == 0u) {
+    if (streamingFrequency == 0u) {
         if (!CheckTimer())
             return false;
     } else {
@@ -392,7 +399,7 @@ bool DataProcessor::CheckTimer() {
 }
 
 bool DataProcessor::CheckCount() {
-    if (currentFreqCount == *streamingFrequency) {
+    if (currentFreqCount == streamingFrequency) {
         currentFreqCount = 1;
         return true;
     }

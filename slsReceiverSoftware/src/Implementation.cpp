@@ -183,8 +183,7 @@ void Implementation::setDetectorType(const detectorType d) {
                 ctbAnalogDataBytes = generalData->GetNumberOfAnalogDatabytes();
             }
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                i, &dataStreamEnable, &streamingFrequency,
-                &streamingTimerInMs, &streamingStartFnum, &framePadding,
+                i, &streamingTimerInMs, &streamingStartFnum, &framePadding,
                 &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
             SetupDataProcessor(i);
         } catch (...) {
@@ -204,7 +203,6 @@ void Implementation::setDetectorType(const detectorType d) {
 void Implementation::SetupListener(int i) {
     listener[i]->SetFifo(fifo[i].get());
     listener[i]->SetGeneralData(generalData);
-
     listener[i]->SetUdpPortNumber(udpPortNum[i]);
     listener[i]->SetEthernetInterface(eth[i]);
     listener[i]->SetActivate(activated);
@@ -220,6 +218,8 @@ void Implementation::SetupDataProcessor(int i) {
     dataProcessor[i]->SetGeneralData(generalData);
     dataProcessor[i]->SetActivate(activated);
     dataProcessor[i]->SetReceiverROI(portRois[i]);
+    dataProcessor[i]->SetDataStreamEnable(dataStreamEnable);
+    dataProcessor[i]->SetStreamingFrequency(streamingFrequency);   
 }
 
 void Implementation::SetupDataStreamer(int i) {
@@ -1040,8 +1040,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         generalData->GetNumberOfAnalogDatabytes();
                 }
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
-                    i, &dataStreamEnable,
-                    &streamingFrequency, &streamingTimerInMs,
+                    i, &streamingTimerInMs,
                     &streamingStartFnum, &framePadding, &ctbDbitList,
                     &ctbDbitOffset, &ctbAnalogDataBytes));
                 SetupDataProcessor(i);
@@ -1069,6 +1068,8 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     if (dataStreamEnable) {
                         dataStreamer.clear();
                         dataStreamEnable = false;
+                        for (const auto &it : dataProcessor) 
+                            it->SetDataStreamEnable(dataStreamEnable);
                     }
                     throw RuntimeError(
                         "Could not create datastreamer threads (index:" +
@@ -1199,12 +1200,16 @@ void Implementation::setDataStreamEnable(const bool enable) {
                 } catch (...) {
                     dataStreamer.clear();
                     dataStreamEnable = false;
+                    for (const auto &it : dataProcessor) 
+                        it->SetDataStreamEnable(dataStreamEnable); 
                     throw RuntimeError(
                         "Could not set data stream enable.");
                 }
             }
             SetThreadPriorities();
         }
+        for (const auto &it : dataProcessor)
+            it->SetDataStreamEnable(dataStreamEnable); 
     }
     LOG(logINFO) << "Data Send to Gui: " << dataStreamEnable;
 }
@@ -1215,6 +1220,8 @@ uint32_t Implementation::getStreamingFrequency() const {
 
 void Implementation::setStreamingFrequency(const uint32_t freq) {
     streamingFrequency = freq;
+    for (const auto &it : dataProcessor)
+        it->SetStreamingFrequency(streamingFrequency); 
     LOG(logINFO) << "Streaming Frequency: " << streamingFrequency;
 }
 

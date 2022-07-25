@@ -29,7 +29,7 @@ struct MasterAttributes;
 class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    DataProcessor(int index, bool *dataStreamEnable, uint32_t *streamingFrequency, uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum, bool *framePadding, std::vector<int> *ctbDbitList, int *ctbDbitOffset, int *ctbAnalogDataBytes);
+    DataProcessor(int index, uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum, bool *framePadding, std::vector<int> *ctbDbitList, int *ctbDbitOffset, int *ctbAnalogDataBytes);
     ~DataProcessor() override;
 
     bool GetStartedFlag() const;
@@ -39,6 +39,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     void SetActivate(bool enable);
     void SetReceiverROI(ROI roi);
+    void SetDataStreamEnable(bool enable);
+    void SetStreamingFrequency(uint32_t value);
 
     void ResetParametersforNewAcquisition();
     void CloseFiles();
@@ -140,14 +142,14 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     const GeneralData *generalData{nullptr};
     Fifo *fifo;
-    bool *dataStreamEnable;
+    bool dataStreamEnable;
     bool activated{false};
     ROI receiverRoi{};
     bool receiverRoiEnabled{false};
     bool receiverNoRoi{false};
     std::unique_ptr<char[]> completeImageToStreamBeforeCropping;
     /** if 0, sending random images with a timer */
-    uint32_t *streamingFrequency;
+    uint32_t streamingFrequency;
     uint32_t *streamingTimerInMs;
     uint32_t *streamingStartFnum;
     uint32_t currentFreqCount{0};

@@ -32,6 +32,7 @@ void BinaryDataFile::CreateFirstBinaryDataFile(
     fileNamePrefix = fNamePrefix;
     fileIndex = fIndex;
     overWriteEnable = ovEnable;
+    
     silentMode = sMode;
     detIndex = modulePos;
     numUnitsPerReadout = nUnitsPerReadout;
@@ -51,12 +52,12 @@ void BinaryDataFile::CreateFile() {
     fileName = os.str();
 
     if (!overWriteEnable) {
-        if (nullptr == (fd = fopen((const char *)fileName.c_str(), "wx"))) {
+        if (nullptr == (fd = fopen(fileName.c_str(), "wx"))) {
             fd = nullptr;
             throw RuntimeError("Could not create/overwrite file " +
                                     fileName);
         }
-    } else if (nullptr == (fd = fopen((const char *)fileName.c_str(), "w"))) {
+    } else if (nullptr == (fd = fopen(fileName.c_str(), "w"))) {
         fd = nullptr;
         throw RuntimeError("Could not create file " + fileName);
     }

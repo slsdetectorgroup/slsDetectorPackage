@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 #module add CBFlib/0.9.5
-INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures  -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ 
+INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures  -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ -I../tiffio/include/ 
 
-LDFLAG= ../tiffIO.cpp -L/usr/lib64/ -lpthread -lm  -lstdc++   -pthread -lrt    -ltiff -O3  -std=c++11
+LDFLAG= ../tiffio/src/tiffIO.cpp -L/usr/lib64/ -lpthread -lm  -lstdc++   -pthread -lrt    -ltiff -O3  -std=c++11
 
 MAIN=jungfrauClusterFinder.cpp
 
@@ -18,6 +18,10 @@ jungfrauClusterFinder:  jungfrauClusterFinder.cpp  $(INCS) clean
 
 jungfrauClusterFinderHighZ:  jungfrauClusterFinder.cpp  $(INCS) clean
 			 g++ -o jungfrauClusterFinderHighZ  jungfrauClusterFinder.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL  -DHIGHZ 
+
+
+jungfrauClusterFinderStrx:  jungfrauClusterFinder.cpp  $(INCS) clean
+			 g++ -o jungfrauClusterFinderStrx  jungfrauClusterFinder.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL  -DJFSTRX 
 
 
 

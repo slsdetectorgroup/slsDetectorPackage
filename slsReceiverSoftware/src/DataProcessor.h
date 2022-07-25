@@ -29,12 +29,7 @@ struct MasterAttributes;
 class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    DataProcessor(int index, detectorType dType, Fifo *f,
-                  bool *dse, uint32_t *sf,
-                  uint32_t *st, uint32_t *sfnum,
-                  bool *fp, std::vector<int> *ctblist,
-                  int *ctboff, int *ctbad);
-
+    DataProcessor(int index, detectorType detType, Fifo *fifo, bool *dataStreamEnable, uint32_t *streamingFrequency, uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum, bool *framePadding, std::vector<int> *ctbDbitList, int *ctbDbitOffset, int *ctbAnalogDataBytes);
     ~DataProcessor() override;
 
     bool GetStartedFlag() const;
@@ -83,17 +78,10 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                  std::mutex *hdf5LibMutex);
 
     /** params: sls_receiver_header, pointer to data, image size */
-    void registerCallBackRawDataReady(void (*func)(sls_receiver_header&,
-                                                   char *, size_t, void *),
-                                      void *arg);
-
-    /** params: sls_receiver_header, pointer to data, reference to image
-     * size */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header&,
-                                                         char *, size_t &,
-                                                         void *),
-                                            void *arg);
-
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header&, char *, size_t, void *), void *arg);
+    
+    /** params: sls_receiver_header, pointer to data, reference to image size */
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header&, char *, size_t &, void *), void *arg);
   private:
     void RecordFirstIndex(uint64_t fnum);
 

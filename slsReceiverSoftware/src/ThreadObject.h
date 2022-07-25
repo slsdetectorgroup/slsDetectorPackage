@@ -24,7 +24,7 @@ class ThreadObject : private virtual slsDetectorDefs {
     const int index{0};
 
   public:
-    ThreadObject(int threadIndex, std::string threadType);
+    ThreadObject(int index, std::string type);
     virtual ~ThreadObject();
     pid_t GetThreadId() const;
     bool IsRunning() const;

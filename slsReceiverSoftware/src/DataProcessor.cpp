@@ -28,20 +28,8 @@ namespace sls {
 
 const std::string DataProcessor::typeName = "DataProcessor";
 
-DataProcessor::DataProcessor(int index, detectorType dType, Fifo *f,
-                             bool *dse,
-                             uint32_t *sf,
-                             uint32_t *st,
-                             uint32_t *sfnum, bool *fp,
-                             std::vector<int> *ctblist, int *ctboff,
-                             int *ctbad)
-    : ThreadObject(index, typeName), fifo(f), detType(dType),
-      dataStreamEnable(dse),
-      streamingFrequency(sf),
-      streamingTimerInMs(st),
-      streamingStartFnum(sfnum), framePadding(fp),
-      ctbDbitList(ctblist), ctbDbitOffset(ctboff),
-      ctbAnalogDataBytes(ctbad) {
+DataProcessor::DataProcessor(int index, detectorType detType, Fifo *fifo, bool *dataStreamEnable, uint32_t *streamingFrequency, uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum, bool *framePadding, std::vector<int> *ctbDbitList, int *ctbDbitOffset, int *ctbAnalogDataBytes)
+    : ThreadObject(index, typeName), fifo(fifo), detType(detType), dataStreamEnable(dataStreamEnable), streamingFrequency(streamingFrequency), streamingTimerInMs(streamingTimerInMs), streamingStartFnum(streamingStartFnum), framePadding(framePadding), ctbDbitList(ctbDbitList), ctbDbitOffset(ctbDbitOffset), ctbAnalogDataBytes(ctbAnalogDataBytes) {
 
     LOG(logDEBUG) << "DataProcessor " << index << " created";
 }

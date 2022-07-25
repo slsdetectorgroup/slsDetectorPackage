@@ -18,10 +18,10 @@ struct MasterAttributes;
 class File : private virtual slsDetectorDefs {
 
   public:
-    File(const slsDetectorDefs::fileFormat format);
-    virtual ~File();
+    File(){};
+    virtual ~File(){};
 
-    fileFormat GetFileFormat() const;
+    virtual fileFormat GetFileFormat() const = 0;
     virtual void CloseFile() = 0;
 
 #ifdef HDF5C
@@ -82,9 +82,6 @@ class File : private virtual slsDetectorDefs {
     };
 
     virtual void WriteToFile(char *imageData, sls_receiver_header& header, const int imageSize, const uint64_t currentFrameNumber,const uint32_t numPacketsCaught) = 0;
-
-  protected:
-    slsDetectorDefs::fileFormat format_;
 };
 
 } // namespace sls

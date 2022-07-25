@@ -21,7 +21,7 @@ namespace sls {
 class GeneralData {
 
   public:
-    slsDetectorDefs::detectorType myDetectorType{slsDetectorDefs::GENERIC};
+    slsDetectorDefs::detectorType detType{slsDetectorDefs::GENERIC};
     uint32_t nPixelsX{0};
     uint32_t nPixelsY{0};
     uint32_t headerSizeinPacket{0};
@@ -161,7 +161,7 @@ class GotthardData : public GeneralData {
 
   public:
     GotthardData() {
-        myDetectorType = slsDetectorDefs::GOTTHARD;
+        detType = slsDetectorDefs::GOTTHARD;
         nPixelsY = 1;
         headerSizeinPacket = 6;
         maxFramesPerFile = MAX_FRAMES_PER_FILE;
@@ -290,7 +290,7 @@ class EigerData : public GeneralData {
 
   public:
     EigerData() {
-        myDetectorType = slsDetectorDefs::EIGER;
+        detType = slsDetectorDefs::EIGER;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         maxFramesPerFile = EIGER_MAX_FRAMES_PER_FILE;
         numUDPInterfaces = 2;
@@ -326,7 +326,7 @@ class JungfrauData : public GeneralData {
 
   public:
     JungfrauData() {
-        myDetectorType = slsDetectorDefs::JUNGFRAU;
+        detType = slsDetectorDefs::JUNGFRAU;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         dataSize = 8192;
         packetSize = headerSizeinPacket + dataSize;
@@ -359,7 +359,7 @@ class Mythen3Data : public GeneralData {
 
   public:
     Mythen3Data() {
-        myDetectorType = slsDetectorDefs::MYTHEN3;
+        detType = slsDetectorDefs::MYTHEN3;
         nPixelsY = 1;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         maxFramesPerFile = MYTHEN3_MAX_FRAMES_PER_FILE;
@@ -427,7 +427,7 @@ class Mythen3Data : public GeneralData {
 class Gotthard2Data : public GeneralData {
   public:
     Gotthard2Data() {
-        myDetectorType = slsDetectorDefs::GOTTHARD2;
+        detType = slsDetectorDefs::GOTTHARD2;
         nPixelsX = 128 * 10;
         nPixelsY = 1;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
@@ -482,7 +482,7 @@ class ChipTestBoardData : public GeneralData {
   public:
     /** Constructor */
     ChipTestBoardData() {
-        myDetectorType = slsDetectorDefs::CHIPTESTBOARD;
+        detType = slsDetectorDefs::CHIPTESTBOARD;
         nPixelsY = 1; // number of samples
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         frameIndexMask = 0xFFFFFF; // 10g
@@ -572,7 +572,7 @@ class MoenchData : public GeneralData {
 
   public:
     MoenchData() {
-        myDetectorType = slsDetectorDefs::MOENCH;
+        detType = slsDetectorDefs::MOENCH;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         frameIndexMask = 0xFFFFFF;
         maxFramesPerFile = MOENCH_MAX_FRAMES_PER_FILE;

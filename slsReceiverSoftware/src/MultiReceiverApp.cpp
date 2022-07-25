@@ -101,8 +101,7 @@ void GetData(slsDetectorDefs::sls_receiver_header& header, char *dataPointer,
  * @param modifiedImageSize new data size in bytes after the callback.
  * This will be the size written/streamed. (only smaller value is allowed).
  */
-void GetData(slsDetectorDefs::sls_receiver_header& header, char *dataPointer,
-             size_t &modifiedImageSize, void *objectPointer) {
+void GetData(slsDetectorDefs::sls_receiver_header& header, char *dataPointer, size_t &modifiedImageSize, void *objectPointer) {
     slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
 
     PRINT_IN_COLOR(
@@ -123,7 +122,7 @@ void GetData(slsDetectorDefs::sls_receiver_header& header, char *dataPointer,
         detectorHeader.debug, detectorHeader.roundRNumber,
         detectorHeader.detType, detectorHeader.version,
         // header->packetsMask.to_string().c_str(),
-        ((uint8_t)(*((uint8_t *)(dataPointer)))), modifiedImageSize);
+        *reinterpret_cast<uint8_t *>(dataPointer), modifiedImageSize);
 
     // if data is modified, eg ROI and size is reduced
     modifiedImageSize = 26000;

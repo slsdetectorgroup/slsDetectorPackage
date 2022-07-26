@@ -25,7 +25,7 @@ class ZmqSocket;
 class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    DataStreamer(int index, uint32_t *dynamicRange, ROI *detectorRoi, uint64_t *fileIndex, bool flipRows, slsDetectorDefs::xy numPorts, bool *quadEnable, uint64_t *totalNumFrames);
+    DataStreamer(int index, ROI *detectorRoi, uint64_t *fileIndex, bool flipRows, slsDetectorDefs::xy numPorts, bool *quadEnable, uint64_t *totalNumFrames);
     ~DataStreamer();
 
     void SetFifo(Fifo *f);
@@ -86,7 +86,6 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     const GeneralData *generalData{nullptr};
     Fifo *fifo{nullptr};
     ZmqSocket *zmqSocket{nullptr};
-    uint32_t *dynamicRange;
     ROI *detectorRoi;
     int adcConfigured{-1};
     uint64_t *fileIndex;

@@ -365,7 +365,6 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t numberOfAnalogSamples{0};
     uint32_t numberOfDigitalSamples{0};
     uint32_t counterMask{0};
-    uint32_t dynamicRange{16};
     ROI detectorRoi{};
     bool tengigaEnable{false};
     bool flipRows{false};

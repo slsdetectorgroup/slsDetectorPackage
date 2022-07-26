@@ -154,7 +154,6 @@ void Implementation::setDetectorType(const detectorType d) {
         break;
     }
 
-    dynamicRange = generalData->dynamicRange;
     tengigaEnable = generalData->tengigaEnable;
     numberOfAnalogSamples = generalData->nAnalogSamples;
     numberOfDigitalSamples = generalData->nDigitalSamples;
@@ -868,7 +867,7 @@ void Implementation::SetupWriter() {
             dataProcessor[i]->CreateFirstFiles(
                 filePath, fileName, fileIndex, overwriteEnable, silentMode,
                 modulePos, udpPortNum[i], 
-                numberOfTotalFrames, dynamicRange, detectorDataStream[i]);
+                numberOfTotalFrames, detectorDataStream[i]);
         }
     } catch (const RuntimeError &e) {
         shutDownUDPSockets();
@@ -901,7 +900,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.period = acquisitionPeriod;
             masterAttributes.burstMode = burstMode;
             masterAttributes.numUDPInterfaces = generalData->numUDPInterfaces;
-            masterAttributes.dynamicRange = dynamicRange;
+            masterAttributes.dynamicRange = generalData->dynamicRange;
             masterAttributes.tenGiga = tengigaEnable;
             masterAttributes.thresholdEnergyeV = thresholdEnergyeV;
             masterAttributes.thresholdAllEnergyeV = thresholdAllEnergyeV;
@@ -953,7 +952,7 @@ void Implementation::StartMasterWriter() {
                     dataProcessor[0]->CreateVirtualFile(
                         filePath, fileName, fileIndex, overwriteEnable,
                         silentMode, modulePos, numberOfTotalFrames, numPorts.x, numPorts.y,
-                        dynamicRange, &hdf5LibMutex);
+                        &hdf5LibMutex);
             }
             // link file in master
             if (masterFileWriteEnable) {
@@ -1043,7 +1042,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         flip = (i == 1 ? true : false);
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, &dynamicRange, &detectorRoi,
+                        i, &detectorRoi,
                         &fileIndex, flip, numPorts, &quadEnable,
                         &numberOfTotalFrames));
                     SetupDataStreamer(i);
@@ -1165,7 +1164,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         flip = (i == 1 ? true : false);
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, &dynamicRange, &detectorRoi,
+                        i, &detectorRoi,
                         &fileIndex, flip, numPorts, &quadEnable,
                         &numberOfTotalFrames));
                     SetupDataStreamer(i);
@@ -1515,18 +1514,16 @@ void Implementation::setCounterMask(const uint32_t i) {
     LOG(logINFO) << "Number of counters: " << ncounters;
 }
 
-uint32_t Implementation::getDynamicRange() const { return dynamicRange; }
+uint32_t Implementation::getDynamicRange() const { return generalData->dynamicRange; }
 
 void Implementation::setDynamicRange(const uint32_t i) {
-    if (dynamicRange != i) {
-        dynamicRange = i;
-
+    if (generalData->dynamicRange != i) {
         if (detType == EIGER || detType == MYTHEN3) {
             generalData->SetDynamicRange(i);
             SetupFifoStructure();
         }
     }
-    LOG(logINFO) << "Dynamic Range: " << dynamicRange;
+    LOG(logINFO) << "Dynamic Range: " << generalData->dynamicRange;
 }
 
 slsDetectorDefs::ROI Implementation::getROI() const { return detectorRoi; }

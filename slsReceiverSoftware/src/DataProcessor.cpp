@@ -131,7 +131,7 @@ void DataProcessor::CreateFirstFiles(
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, 
     const uint32_t udpPortNumber, 
-    const uint64_t numImages, const uint32_t dynamicRange,
+    const uint64_t numImages,
     const bool detectorDataStream) {
     if (dataFile == nullptr) {
         throw RuntimeError("file object not contstructed");
@@ -160,7 +160,7 @@ void DataProcessor::CreateFirstFiles(
         dataFile->CreateFirstHDF5DataFile(
             filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
             modulePos, generalData->numUDPInterfaces, udpPortNumber, generalData->framesPerFile,
-            numImages, nx, ny, dynamicRange);
+            numImages, nx, ny, generalData->dynamicRange);
         break;
 #endif
     case BINARY:
@@ -187,7 +187,7 @@ std::string DataProcessor::CreateVirtualFile(
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, 
     const uint64_t numImages,
-    const int numModX, const int numModY, const uint32_t dynamicRange,
+    const int numModX, const int numModY,
     std::mutex *hdf5LibMutex) {
 
     if (receiverRoiEnabled) {
@@ -209,7 +209,7 @@ std::string DataProcessor::CreateVirtualFile(
     return masterFileUtility::CreateVirtualHDF5File(
         filePath, fileNamePrefix, fileIndex, overWriteEnable, silentMode,
         modulePos, generalData->numUDPInterfaces, framesPerFile,  
-        generalData->nPixelsX, generalData->nPixelsY, dynamicRange, 
+        generalData->nPixelsX, generalData->nPixelsY, generalData->dynamicRange, 
         numFramesCaught, numModX, numModY, dataFile->GetPDataType(), 
         dataFile->GetParameterNames(), dataFile->GetParameterDataTypes(), 
         hdf5LibMutex, gotthard25um);

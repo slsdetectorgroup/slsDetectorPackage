@@ -18,8 +18,8 @@ namespace sls {
 
 const std::string DataStreamer::TypeName = "DataStreamer";
 
-DataStreamer::DataStreamer(int index, uint32_t *dynamicRange, ROI *detectorRoi, uint64_t *fileIndex, bool flipRows, slsDetectorDefs::xy numPorts, bool *quadEnable, uint64_t *totalNumFrames)
-    : ThreadObject(index, TypeName), dynamicRange(dynamicRange), detectorRoi(detectorRoi), fileIndex(fileIndex), flipRows(flipRows), numPorts(numPorts), quadEnable(quadEnable), totalNumFrames(totalNumFrames) {
+DataStreamer::DataStreamer(int index, ROI *detectorRoi, uint64_t *fileIndex, bool flipRows, slsDetectorDefs::xy numPorts, bool *quadEnable, uint64_t *totalNumFrames)
+    : ThreadObject(index, TypeName), detectorRoi(detectorRoi), fileIndex(fileIndex), flipRows(flipRows), numPorts(numPorts), quadEnable(quadEnable), totalNumFrames(totalNumFrames) {
 
     LOG(logDEBUG) << "DataStreamer " << index << " created";
 }
@@ -193,7 +193,7 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
     uint64_t frameIndex = header.frameNumber - firstIndex;
     uint64_t acquisitionIndex = header.frameNumber;
 
-    zHeader.dynamicRange = *dynamicRange;
+    zHeader.dynamicRange = generalData->dynamicRange;
     zHeader.fileIndex = *fileIndex;
     zHeader.ndetx = numPorts.x;
     zHeader.ndety = numPorts.y;

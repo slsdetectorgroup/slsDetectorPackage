@@ -304,7 +304,6 @@ class Implementation : private virtual slsDetectorDefs {
     int modulePos{0};
     std::string detHostname;
     bool silentMode{false};
-    uint32_t fifoDepth{0};
     frameDiscardPolicy frameDiscardMode{NO_DISCARD};
     bool framePadding{true};
     pid_t parentThreadId;
@@ -322,7 +321,6 @@ class Implementation : private virtual slsDetectorDefs {
     bool fileWriteEnable{false};
     bool masterFileWriteEnable{true};
     bool overwriteEnable{true};
-    uint32_t framesPerFile{0};
 
     // acquisition
     std::atomic<runStatus> status{IDLE};
@@ -330,11 +328,9 @@ class Implementation : private virtual slsDetectorDefs {
     scanParameters scanParams{};
 
     // network configuration (UDP)
-    int numUDPInterfaces{1};
     std::array<std::string, MAX_NUMBER_OF_LISTENING_THREADS> eth;
     std::array<uint32_t, MAX_NUMBER_OF_LISTENING_THREADS> udpPortNum{
         {DEFAULT_UDP_PORTNO, DEFAULT_UDP_PORTNO + 1}};
-    int udpSocketBufferSize{0};
     int actualUDPSocketBufferSize{0};
 
     // zmq parameters

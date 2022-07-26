@@ -44,16 +44,15 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void SetActivate(bool enable);
     void SetDetectorDatastream(bool enable);
     void SetNoRoi(bool enable);
-    void SetFramesPerFile(uint32_t value);
     void SetFrameDiscardPolicy(frameDiscardPolicy value);
     void SetSilentMode(bool enable);
 
 
     void ResetParametersforNewAcquisition();
-    void CreateUDPSocket(int udpSocketBufferSize, int& actualSize);
+    void CreateUDPSocket(int& actualSize);
     void ShutDownUDPSocket();
     /** to set & get actual buffer size */
-    void CreateDummySocketForUDPSocketBufferSize(int& size, int previousSize, int & actualSize);
+    void CreateDummySocketForUDPSocketBufferSize(int s, int & actualSize);
 
     /**
      * Set hard coded (calculated but not from detector) row and column
@@ -106,7 +105,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
     uint32_t udpPortNumber{0};
     std::string eth;
-    uint32_t framesPerFile{0};
     frameDiscardPolicy frameDiscardMode;
     bool activated{false};
     bool detectorDataStream{true};

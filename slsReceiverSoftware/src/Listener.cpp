@@ -103,10 +103,6 @@ void Listener::SetNoRoi(bool enable) {
     disabledPort = (!activated || !detectorDataStream || noRoi);
 }
 
-void Listener::SetFramesPerFile(uint32_t value) {
-    framesPerFile = value;
-}
-
 void Listener::SetFrameDiscardPolicy(frameDiscardPolicy value) {
     frameDiscardMode = value;
 }
@@ -155,7 +151,7 @@ void Listener::RecordFirstIndex(uint64_t fnum) {
     }
 }
 
-void Listener::CreateUDPSocket(int udpSocketBufferSize, int& actualSize) {
+void Listener::CreateUDPSocket(int& actualSize) {
     if (disabledPort) {
         return;
     }
@@ -169,7 +165,7 @@ void Listener::CreateUDPSocket(int udpSocketBufferSize, int& actualSize) {
     try {
         udpSocket = make_unique<UdpRxSocket>(udpPortNumber, packetSize,
             (eth.length() ? InterfaceNameToIp(eth).str().c_str()
-                             : nullptr), udpSocketBufferSize);
+                             : nullptr), generalData->udpSocketBufferSize);
         LOG(logINFO) << index << ": UDP port opened at port " << udpPortNumber;
     } catch (...) {
         throw RuntimeError("Could not create UDP socket on port " +
@@ -192,12 +188,19 @@ void Listener::ShutDownUDPSocket() {
     }
 }
 
-void Listener::CreateDummySocketForUDPSocketBufferSize(int& size, int previousSize, int& actualSize) {
-    LOG(logINFO) << "Testing UDP Socket Buffer size " << size << " with test port "
+void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int& actualSize) {
+    // custom setup (s != 0)
+    // default setup at startup (s = 0)
+    if (s == 0) {
+        s = generalData->udpSocketBufferSize;
+    }
+    LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port "
                  << udpPortNumber;
+    int previousSize = generalData->udpSocketBufferSize;
+    generalData->udpSocketBufferSize = s;
 
     if (disabledPort) {
-        actualSize = (size * 2);
+        actualSize = (generalData->udpSocketBufferSize * 2);
         return;
     }
 
@@ -211,20 +214,26 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int& size, int previousSi
         UdpRxSocket g(udpPortNumber, packetSize,
                            (eth.length()
                                 ? InterfaceNameToIp(eth).str().c_str()
-                                : nullptr), size);
+                                : nullptr), generalData->udpSocketBufferSize);
 
         // doubled due to kernel bookkeeping (could also be less due to
         // permissions)
         actualSize = g.getBufferSize();
         if (actualSize == -1) {
-            size = previousSize;
+            generalData->udpSocketBufferSize = previousSize;
         } else {
-            size = actualSize / 2;
+            generalData->udpSocketBufferSize = actualSize / 2;
         }
 
     } catch (...) {
         throw RuntimeError("Could not create a test UDP socket on port " +
                                 std::to_string(udpPortNumber));
+    }
+
+    // custom and didnt set, throw error
+    if (s != 0 && generalData->udpSocketBufferSize != s) {
+        throw RuntimeError("Could not set udp socket buffer size. (No "
+                                "CAP_NET_ADMIN privileges?)");
     }
 }
 
@@ -267,8 +276,8 @@ void Listener::ThreadExecution() {
         numFramesStatistic++;
         if (numFramesStatistic >=
             // second condition also for infinite #number of frames
-            (framesPerFile == 0 ? STATISTIC_FRAMENUMBER_INFINITE
-                                     : framesPerFile))
+            (generalData->framesPerFile == 0 ? STATISTIC_FRAMENUMBER_INFINITE
+                                     : generalData->framesPerFile))
             PrintFifoStatistics();
     }
 }

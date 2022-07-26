@@ -29,7 +29,7 @@ struct MasterAttributes;
 class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    DataProcessor(int index, uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum, bool *framePadding, std::vector<int> *ctbDbitList, int *ctbDbitOffset, int *ctbAnalogDataBytes);
+    DataProcessor(int index);
     ~DataProcessor() override;
 
     bool GetStartedFlag() const;
@@ -41,6 +41,11 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     void SetReceiverROI(ROI roi);
     void SetDataStreamEnable(bool enable);
     void SetStreamingFrequency(uint32_t value);
+    void SetStreamingTimerInMs(uint32_t value);
+    void SetStreamingStartFnum(uint32_t value);
+    void SetFramePadding(bool enable);
+    void SetCtbDbitList(std::vector<int> value);
+    void SetCtbDbitOffset(int value);
 
     void ResetParametersforNewAcquisition();
     void CloseFiles();
@@ -53,9 +58,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                           const std::string &fileNamePrefix,
                           const uint64_t fileIndex, const bool overWriteEnable,
                           const bool silentMode, const int modulePos,
-                          const int numUnitsPerReadout,
                           const uint32_t udpPortNumber,
-                          const uint32_t maxFramesPerFile,
                           const uint64_t numImages, const uint32_t dynamicRange,
                           const bool detectorDataStream);
 #ifdef HDF5C
@@ -64,7 +67,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
         const std::string &filePath, const std::string &fileNamePrefix,
         const uint64_t fileIndex, const bool overWriteEnable,
         const bool silentMode, const int modulePos,
-        const int numUnitsPerReadout, const uint32_t maxFramesPerFile,
         const uint64_t numImages, const int numModX, const int numModY,
         const uint32_t dynamicRange, std::mutex *hdf5LibMutex);
     void LinkFileInMaster(const std::string &masterFileName,
@@ -140,7 +142,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     static const std::string typeName;
 
-    const GeneralData *generalData{nullptr};
+    GeneralData *generalData{nullptr};
     Fifo *fifo;
     bool dataStreamEnable;
     bool activated{false};
@@ -150,14 +152,13 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     std::unique_ptr<char[]> completeImageToStreamBeforeCropping;
     /** if 0, sending random images with a timer */
     uint32_t streamingFrequency;
-    uint32_t *streamingTimerInMs;
-    uint32_t *streamingStartFnum;
+    uint32_t streamingTimerInMs;
+    uint32_t streamingStartFnum;
     uint32_t currentFreqCount{0};
     struct timespec timerbegin {};
-    bool *framePadding;
-    std::vector<int> *ctbDbitList;
-    int *ctbDbitOffset;
-    int *ctbAnalogDataBytes;
+    bool framePadding;
+    std::vector<int> ctbDbitList;
+    int ctbDbitOffset;
     std::atomic<bool> startedFlag{false};
     std::atomic<uint64_t> firstIndex{0};
 

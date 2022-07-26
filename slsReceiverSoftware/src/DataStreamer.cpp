@@ -68,7 +68,7 @@ void DataStreamer::SetAdditionalJsonHeader(
     isAdditionalJsonUpdated = true;
 }
 
-void DataStreamer::CreateZmqSockets(int *nunits, uint32_t port,
+void DataStreamer::CreateZmqSockets(uint32_t port,
                                     const IpAddr ip, int hwm) {
     uint32_t portnum = port + index;
     std::string sip = ip.str();

@@ -49,14 +49,17 @@ class Receiver : private virtual slsDetectorDefs {
      * - file index
      * - image size in bytes
      */
-    void registerCallBackStartAcquisition(int (*func)(const std::string &, const std::string &, uint64_t, size_t, void *), void *arg);
+    void registerCallBackStartAcquisition(int (*func)(const std::string &, const std::string &,
+                                                      uint64_t, size_t, void *),
+                                          void *arg);
 
     /**
      * Call back for acquisition finished
      * callback argument is:
      * - total frames caught
      */
-    void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *), void *arg);
+    void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
+                                             void *arg);
 
     /**
      * Call back for raw data
@@ -65,7 +68,9 @@ class Receiver : private virtual slsDetectorDefs {
      * - pointer to data
      * - image size in bytes 
      */
-    void registerCallBackRawDataReady(void (*func)(sls_receiver_header&, char *, size_t, void *), void *arg);
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header&,
+                                                   char *, size_t, void *),
+                                      void *arg);
 
     /**
      * Call back for raw data (modified)
@@ -76,7 +81,10 @@ class Receiver : private virtual slsDetectorDefs {
      * Can be modified to the new size to be written/streamed. (only smaller
      * value allowed).
      */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header&, char *, size_t &, void *), void *arg);
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header&,
+                                                         char *, size_t &,
+                                                         void *),
+                                            void *arg);
 
   private:
     std::unique_ptr<ClientInterface> tcpipInterface;

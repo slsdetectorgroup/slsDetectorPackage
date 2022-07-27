@@ -25,17 +25,21 @@ class ZmqSocket;
 class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    DataStreamer(int index, uint64_t *fileIndex, bool flipRows, slsDetectorDefs::xy numPorts, bool *quadEnable, uint64_t *totalNumFrames);
+    DataStreamer(int index);
     ~DataStreamer();
 
     void SetFifo(Fifo *f);
-    void ResetParametersforNewAcquisition(const std::string &fname);
     void SetGeneralData(GeneralData *g);
+
+    void SetFileIndex(uint64_t value);
     void SetNumberofPorts(xy np);
     void SetFlipRows(bool fd);
+    void SetQuadEnable(bool value);
+    void SetNumberofTotalFrames(uint64_t value);
     void
     SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);
 
+    void ResetParametersforNewAcquisition(const std::string &fname);
     /**
      * Creates Zmq Sockets
      * (throws an exception if it couldnt create zmq sockets)
@@ -87,7 +91,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     Fifo *fifo{nullptr};
     ZmqSocket *zmqSocket{nullptr};
     int adcConfigured{-1};
-    uint64_t *fileIndex;
+    uint64_t fileIndex{0};
     bool flipRows{false};
     std::map<std::string, std::string> additionalJsonHeader;
 
@@ -108,8 +112,8 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     char *completeBuffer{nullptr};
 
     xy numPorts{1, 1};
-    bool *quadEnable;
-    uint64_t *totalNumFrames;
+    bool quadEnable{false};
+    uint64_t nTotalFrames{0};
 };
 
 } // namespace sls

@@ -72,10 +72,9 @@ class File : private virtual slsDetectorDefs {
     };
 #endif
     virtual void CreateFirstBinaryDataFile(
-        const std::string filePath, const std::string fileNamePrefix,
+        const std::string fileNamePrefix,
         const uint64_t fileIndex, const bool overWriteEnable,
-        const bool silentMode, const int modulePos,
-        const int numUnitsPerReadout, const uint32_t udpPortNumber,
+        const bool silentMode, const uint32_t udpPortNumber,
         const uint32_t maxFramesPerFile) {
         LOG(logERROR) << "This is a generic function CreateFirstBinaryDataFile that "
                          "should be overloaded by a derived class";

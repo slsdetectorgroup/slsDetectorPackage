@@ -69,7 +69,7 @@ void Implementation::SetupFifoStructure() {
     for (int i = 0; i < generalData->numUDPInterfaces; ++i) {
         size_t datasize = generalData->imageSize;
         // veto data size
-        if (detType == GOTTHARD2 && i != 0) {
+        if (generalData->detType == GOTTHARD2 && i != 0) {
             datasize = generalData->vetoImageSize;
         }
         datasize += IMAGE_STRUCTURE_HEADER_SIZE;
@@ -108,8 +108,7 @@ void Implementation::SetupFifoStructure() {
 
 void Implementation::setDetectorType(const detectorType d) {
 
-    detType = d;
-    switch (detType) {
+    switch (d) {
     case GOTTHARD:
     case EIGER:
     case JUNGFRAU:
@@ -128,7 +127,7 @@ void Implementation::setDetectorType(const detectorType d) {
     generalData = nullptr;
 
     // set detector specific variables
-    switch (detType) {
+    switch (d) {
     case GOTTHARD:
         generalData = new GotthardData();
         break;
@@ -211,6 +210,11 @@ void Implementation::SetupDataStreamer(int i) {
     dataStreamer[i]->SetGeneralData(generalData);
     dataStreamer[i]->CreateZmqSockets(streamingPort, streamingSrcIP, streamingHwm);
     dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
+    dataStreamer[i]->SetFileIndex(fileIndex);
+    dataStreamer[i]->SetFlipRows(flipRows);
+    dataStreamer[i]->SetNumberofPorts(numPorts);
+    dataStreamer[i]->SetQuadEnable(quadEnable);
+    dataStreamer[i]->SetNumberofTotalFrames(numberOfTotalFrames);
 }
 
 slsDetectorDefs::xy Implementation::getDetectorSize() const {
@@ -219,9 +223,9 @@ slsDetectorDefs::xy Implementation::getDetectorSize() const {
 
 const slsDetectorDefs::xy Implementation::GetPortGeometry() const {
     xy portGeometry{1, 1};
-    if (detType == EIGER)
+    if (generalData->detType == EIGER)
         portGeometry.x = generalData->numUDPInterfaces;
-    else if (detType == JUNGFRAU)
+    else if (generalData->detType == JUNGFRAU)
         portGeometry.y = generalData->numUDPInterfaces;
     return portGeometry;
 }
@@ -363,7 +367,7 @@ void Implementation::setArping(const bool i,
             // setup interface
             for (int i = 0; i != generalData->numUDPInterfaces; ++i) {
                 // ignore eiger with 2 interfaces (only udp port)
-                if (i == 1 && (generalData->numUDPInterfaces == 1 || detType == EIGER)) {
+                if (i == 1 && (generalData->numUDPInterfaces == 1 || generalData->detType == EIGER)) {
                     break;
                 }
                 arping.SetInterfacesAndIps(i, eth[i], ips[i]);
@@ -380,7 +384,7 @@ slsDetectorDefs::ROI Implementation::getReceiverROI() const {
 void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
     receiverRoi = arg;
 
-    if (generalData->numUDPInterfaces == 1 || detType == slsDetectorDefs::GOTTHARD2) {
+    if (generalData->numUDPInterfaces == 1 || generalData->detType == slsDetectorDefs::GOTTHARD2) {
         portRois[0] = arg;
     } else {
         slsDetectorDefs::xy nPortDim(generalData->nPixelsX,
@@ -450,7 +454,7 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
     for (size_t i = 0; i != dataProcessor.size(); ++i)
         dataProcessor[i]->SetReceiverROI(portRois[i]);
     LOG(logINFO) << "receiver roi: " << ToString(receiverRoi);
-    if (generalData->numUDPInterfaces == 2 && detType != slsDetectorDefs::GOTTHARD2) {
+    if (generalData->numUDPInterfaces == 2 && generalData->detType != slsDetectorDefs::GOTTHARD2) {
         LOG(logINFO) << "port rois: " << ToString(portRois);
     }
 }
@@ -511,6 +515,8 @@ uint64_t Implementation::getFileIndex() const { return fileIndex; }
 
 void Implementation::setFileIndex(const uint64_t i) {
     fileIndex = i;
+    for (const auto &it : dataStreamer)
+        it->SetFileIndex(fileIndex);
     LOG(logINFO) << "File Index: " << fileIndex;
 }
 
@@ -855,10 +861,12 @@ void Implementation::CreateUDPSockets() {
 void Implementation::SetupWriter() {
     try {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
+            std::ostringstream os;
+            os << filePath << "/" << fileName << "_d" << (modulePos * generalData->numUDPInterfaces + i);
+            std::string fileNamePrefix = os.str();
             dataProcessor[i]->CreateFirstFiles(
-                filePath, fileName, fileIndex, overwriteEnable, silentMode,
-                modulePos, udpPortNum[i], 
-                numberOfTotalFrames, detectorDataStream[i]);
+                fileNamePrefix, fileIndex, overwriteEnable, silentMode,
+                udpPortNum[i], numberOfTotalFrames, detectorDataStream[i]);
         }
     } catch (const RuntimeError &e) {
         shutDownUDPSockets();
@@ -874,7 +882,7 @@ void Implementation::StartMasterWriter() {
         // master file
         if (masterFileWriteEnable) {
             MasterAttributes masterAttributes;
-            masterAttributes.detType = detType;
+            masterAttributes.detType = generalData->detType;
             masterAttributes.timingMode = timingMode;
             masterAttributes.geometry = numPorts;
             masterAttributes.imageSize = generalData->imageSize;
@@ -987,7 +995,7 @@ int Implementation::getNumberofUDPInterfaces() const {
 
 // not Eiger
 void Implementation::setNumberofUDPInterfaces(const int n) {
-    if (detType == EIGER) {
+    if (generalData->detType == EIGER) {
         throw RuntimeError(
             "Cannot set number of UDP interfaces for Eiger");
     }
@@ -1028,13 +1036,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
             // streamer threads
             if (dataStreamEnable) {
                 try {
-                    bool flip = flipRows;
-                    if (quadEnable) {
-                        flip = (i == 1 ? true : false);
-                    }
-                    dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, &fileIndex, flip, numPorts, &quadEnable,
-                        &numberOfTotalFrames));
+                    dataStreamer.push_back(sls::make_unique<DataStreamer>(i));
                     SetupDataStreamer(i);
                 } catch (...) {
                     if (dataStreamEnable) {
@@ -1116,7 +1118,7 @@ int Implementation::getUDPSocketBufferSize() const {
 
 void Implementation::setUDPSocketBufferSize(const int s) {
     size_t listSize = listener.size();
-    if ((detType == JUNGFRAU || detType == GOTTHARD2) &&
+    if ((generalData->detType == JUNGFRAU || generalData->detType == GOTTHARD2) &&
         (int)listSize != generalData->numUDPInterfaces) {
         throw RuntimeError(
             "Number of Interfaces " + std::to_string(generalData->numUDPInterfaces) +
@@ -1149,13 +1151,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
         if (enable) {
             for (int i = 0; i < generalData->numUDPInterfaces; ++i) {
                 try {
-                    bool flip = flipRows;
-                    if (quadEnable) {
-                        flip = (i == 1 ? true : false);
-                    }
-                    dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, &fileIndex, flip, numPorts, &quadEnable,
-                        &numberOfTotalFrames));
+                    dataStreamer.push_back(sls::make_unique<DataStreamer>(i));
                     SetupDataStreamer(i);
                 } catch (...) {
                     dataStreamer.clear();
@@ -1299,7 +1295,7 @@ void Implementation::updateTotalNumberOfFrames() {
     int64_t repeats = numberOfTriggers;
     int64_t numFrames = numberOfFrames;
     // gotthard2
-    if (detType == GOTTHARD2) {
+    if (generalData->detType == GOTTHARD2) {
         // auto
         if (timingMode == AUTO_TIMING) {
             // burst mode, repeats = #bursts
@@ -1322,6 +1318,8 @@ void Implementation::updateTotalNumberOfFrames() {
     }
     numberOfTotalFrames =
         numFrames * repeats * (int64_t)(numberOfAdditionalStorageCells + 1);
+    for (const auto &it : dataStreamer)
+        it->SetNumberofTotalFrames(numberOfTotalFrames);
     if (numberOfTotalFrames == 0) {
         throw RuntimeError("Invalid total number of frames to receive: 0");
     }
@@ -1502,7 +1500,7 @@ uint32_t Implementation::getDynamicRange() const { return generalData->dynamicRa
 
 void Implementation::setDynamicRange(const uint32_t i) {
     if (generalData->dynamicRange != i) {
-        if (detType == EIGER || detType == MYTHEN3) {
+        if (generalData->detType == EIGER || generalData->detType == MYTHEN3) {
             generalData->SetDynamicRange(i);
             SetupFifoStructure();
         }
@@ -1531,7 +1529,7 @@ void Implementation::setTenGigaEnable(const bool b) {
         SetupFifoStructure();
 
         // datastream can be disabled/enabled only for Eiger 10GbE
-        if (detType == EIGER) {
+        if (generalData->detType == EIGER) {
             if (!b) {
                 detectorDataStream[LEFT] = 1;
                 detectorDataStream[RIGHT] = 1;
@@ -1553,19 +1551,8 @@ bool Implementation::getFlipRows() const { return flipRows; }
 
 void Implementation::setFlipRows(bool enable) {
     flipRows = enable;
-
-    if (!quadEnable) {
-        for (const auto &it : dataStreamer) {
-            it->SetFlipRows(flipRows);
-        }
-    }
-    // quad
-    else {
-        if (dataStreamer.size() == 2) {
-            dataStreamer[0]->SetFlipRows(false);
-            dataStreamer[1]->SetFlipRows(true);
-        }
-    }
+    for (const auto &it : dataStreamer)
+        it->SetFlipRows(flipRows);
     LOG(logINFO) << "Flip Rows: " << flipRows;
 }
 
@@ -1575,15 +1562,9 @@ void Implementation::setQuad(const bool b) {
     if (quadEnable != b) {
         quadEnable = b;
         setDetectorSize(numModules);
-        if (!quadEnable) {
-            for (const auto &it : dataStreamer) {
-                it->SetFlipRows(flipRows);
-            }
-        } else {
-            if (dataStreamer.size() == 2) {
-                dataStreamer[0]->SetFlipRows(false);
-                dataStreamer[1]->SetFlipRows(true);
-            }
+        for (const auto &it : dataStreamer) {
+            it->SetQuadEnable(quadEnable);
+            it->SetFlipRows(flipRows);
         }
     }
     LOG(logINFO) << "Quad Enable: " << quadEnable;

@@ -24,10 +24,9 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
     void CloseFile() override;
 
     void CreateFirstHDF5DataFile(
-        const std::string fPath, const std::string fNamePrefix,
+        const std::string fNamePrefix,
         const uint64_t fIndex, const bool owEnable,
-        const bool sMode, const int modulePos,
-        const int nUnitsPerReadout, const uint32_t uPortNumber,
+        const bool sMode, const uint32_t uPortNumber,
         const uint32_t mFramesPerFile, const uint64_t nImages,
         const uint32_t nX, const uint32_t nY,
         const uint32_t dr) override;
@@ -65,13 +64,10 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
     uint32_t nPixelsY{0};
     uint32_t dynamicRange{0};
 
-    std::string filePath;
     std::string fileNamePrefix;
     uint64_t fileIndex{0};
     bool overWriteEnable{false};
     bool silentMode{false};
-    int detIndex{0};
-    int numUnitsPerReadout{0};
     uint32_t udpPortNumber{0};
 
     static const int EIGER_NUM_PIXELS{256 * 2 * 256};

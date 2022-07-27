@@ -298,7 +298,6 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
 
     // config parameters
-    detectorType detType{GENERIC};
     xy numModules{1, 1};
     xy numPorts{1, 1};
     int modulePos{0};

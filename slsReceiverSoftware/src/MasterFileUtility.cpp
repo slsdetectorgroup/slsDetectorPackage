@@ -241,9 +241,9 @@ std::string CreateVirtualHDF5File(
             hsize_t blockSize[3] = {1, 1, 1};
 
             hsize_t startLocationPara[2] = {framesSaved, 0};
-            hsize_t strideBetweenBlocksPara[3] = {1, 1};
-            hsize_t numBlocksPara[2] = {1, 1};
-            hsize_t blockSizePara[3] = {nDimx, 1};
+            hsize_t strideBetweenBlocksPara[2] = {1, 1};
+            hsize_t numBlocksPara[2] = {nDimx, 1};
+            hsize_t blockSizePara[2] = {1, 1};
 
             // interleaving for g2
             if (gotthard25um) {
@@ -310,7 +310,7 @@ std::string CreateVirtualHDF5File(
                         startLocation[1] += nDimy;
                     }
                 }
-                startLocationPara[1]++;
+                ++startLocationPara[1];
             }
             framesSaved += nDimx;
         }

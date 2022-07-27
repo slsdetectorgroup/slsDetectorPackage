@@ -154,15 +154,6 @@ void Implementation::setDetectorType(const detectorType d) {
         break;
     }
 
-    tengigaEnable = generalData->tengigaEnable;
-    numberOfAnalogSamples = generalData->nAnalogSamples;
-    numberOfDigitalSamples = generalData->nDigitalSamples;
-    readoutType = generalData->readoutType;
-    adcEnableMaskOneGiga = generalData->adcEnableMaskOneGiga;
-    adcEnableMaskTenGiga = generalData->adcEnableMaskTenGiga;
-    detectorRoi = generalData->roi;
-    counterMask = generalData->counterMask;
-
     SetLocalNetworkParameters();
     SetupFifoStructure();
 
@@ -901,7 +892,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.burstMode = burstMode;
             masterAttributes.numUDPInterfaces = generalData->numUDPInterfaces;
             masterAttributes.dynamicRange = generalData->dynamicRange;
-            masterAttributes.tenGiga = tengigaEnable;
+            masterAttributes.tenGiga = generalData->tengigaEnable;
             masterAttributes.thresholdEnergyeV = thresholdEnergyeV;
             masterAttributes.thresholdAllEnergyeV = thresholdAllEnergyeV;
             masterAttributes.subExptime = subExpTime;
@@ -910,24 +901,24 @@ void Implementation::StartMasterWriter() {
             masterAttributes.readNRows = readNRows;
             masterAttributes.ratecorr = rateCorrections;
             masterAttributes.adcmask =
-                tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
-            masterAttributes.analog = (readoutType == ANALOG_ONLY ||
-                                       readoutType == ANALOG_AND_DIGITAL)
+                 generalData->tengigaEnable ? generalData->adcEnableMaskTenGiga : generalData->adcEnableMaskOneGiga;
+            masterAttributes.analog = (generalData->readoutType == ANALOG_ONLY ||
+                                       generalData->readoutType == ANALOG_AND_DIGITAL)
                                           ? 1
                                           : 0;
-            masterAttributes.analogSamples = numberOfAnalogSamples;
-            masterAttributes.digital = (readoutType == DIGITAL_ONLY ||
-                                        readoutType == ANALOG_AND_DIGITAL)
+            masterAttributes.analogSamples =  generalData->nAnalogSamples;
+            masterAttributes.digital = (generalData->readoutType == DIGITAL_ONLY ||
+                                        generalData->readoutType == ANALOG_AND_DIGITAL)
                                            ? 1
                                            : 0;
-            masterAttributes.digitalSamples = numberOfDigitalSamples;
+            masterAttributes.digitalSamples =  generalData->nDigitalSamples;
             masterAttributes.dbitoffset = ctbDbitOffset;
             masterAttributes.dbitlist = 0;
             for (auto &i : ctbDbitList) {
                 masterAttributes.dbitlist |= (1 << i);
             }
-            masterAttributes.detectorRoi = detectorRoi;
-            masterAttributes.counterMask = counterMask;
+            masterAttributes.detectorRoi = generalData->detectorRoi;
+            masterAttributes.counterMask = generalData->counterMask;
             masterAttributes.exptimeArray[0] = acquisitionTime1;
             masterAttributes.exptimeArray[1] = acquisitionTime2;
             masterAttributes.exptimeArray[2] = acquisitionTime3;
@@ -1042,8 +1033,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         flip = (i == 1 ? true : false);
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, &detectorRoi,
-                        &fileIndex, flip, numPorts, &quadEnable,
+                        i, &fileIndex, flip, numPorts, &quadEnable,
                         &numberOfTotalFrames));
                     SetupDataStreamer(i);
                 } catch (...) {
@@ -1164,8 +1154,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         flip = (i == 1 ? true : false);
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, &detectorRoi,
-                        &fileIndex, flip, numPorts, &quadEnable,
+                        i, &fileIndex, flip, numPorts, &quadEnable,
                         &numberOfTotalFrames));
                     SetupDataStreamer(i);
                 } catch (...) {
@@ -1472,45 +1461,40 @@ void Implementation::setSubPeriod(const ns i) {
 }
 
 uint32_t Implementation::getNumberofAnalogSamples() const {
-    return numberOfAnalogSamples;
+    return  generalData->nAnalogSamples;
 }
 
 void Implementation::setNumberofAnalogSamples(const uint32_t i) {
-    if (numberOfAnalogSamples != i) {
-        numberOfAnalogSamples = i;
-
+    if ( generalData->nAnalogSamples != i) {
         generalData->SetNumberOfAnalogSamples(i);
         SetupFifoStructure();
     }
-    LOG(logINFO) << "Number of Analog Samples: " << numberOfAnalogSamples;
+    LOG(logINFO) << "Number of Analog Samples: " <<  generalData->nAnalogSamples;
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 uint32_t Implementation::getNumberofDigitalSamples() const {
-    return numberOfDigitalSamples;
+    return  generalData->nDigitalSamples;
 }
 
 void Implementation::setNumberofDigitalSamples(const uint32_t i) {
-    if (numberOfDigitalSamples != i) {
-        numberOfDigitalSamples = i;
-
+    if ( generalData->nDigitalSamples != i) {
         generalData->SetNumberOfDigitalSamples(i);
         SetupFifoStructure();
     }
-    LOG(logINFO) << "Number of Digital Samples: " << numberOfDigitalSamples;
+    LOG(logINFO) << "Number of Digital Samples: " << generalData->nDigitalSamples;
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
-uint32_t Implementation::getCounterMask() const { return counterMask; }
+uint32_t Implementation::getCounterMask() const { return generalData->counterMask; }
 
 void Implementation::setCounterMask(const uint32_t i) {
-    if (counterMask != i) {
+    if (generalData->counterMask != i) {
         generalData->SetCounterMask(i);
-        counterMask = i;
         SetupFifoStructure();
     }
-    LOG(logINFO) << "Counter mask: " << ToStringHex(counterMask);
-    int ncounters = __builtin_popcount(counterMask);
+    LOG(logINFO) << "Counter mask: " << ToStringHex(generalData->counterMask);
+    int ncounters = __builtin_popcount(generalData->counterMask);
     LOG(logINFO) << "Number of counters: " << ncounters;
 }
 
@@ -1526,28 +1510,23 @@ void Implementation::setDynamicRange(const uint32_t i) {
     LOG(logINFO) << "Dynamic Range: " << generalData->dynamicRange;
 }
 
-slsDetectorDefs::ROI Implementation::getROI() const { return detectorRoi; }
+slsDetectorDefs::ROI Implementation::getROI() const { return generalData->detectorRoi; }
 
 void Implementation::setDetectorROI(slsDetectorDefs::ROI arg) {
-    if (detectorRoi.xmin != arg.xmin || detectorRoi.xmax != arg.xmax) {
-        detectorRoi.xmin = arg.xmin;
-        detectorRoi.xmax = arg.xmax;
-
+    if (generalData->detectorRoi.xmin != arg.xmin || generalData->detectorRoi.xmax != arg.xmax) {
         // only for gotthard
         generalData->SetDetectorROI(arg);
         SetupFifoStructure();
     }
 
-    LOG(logINFO) << "Detector ROI: " << ToString(detectorRoi);
+    LOG(logINFO) << "Detector ROI: " << ToString(generalData->detectorRoi);
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
-bool Implementation::getTenGigaEnable() const { return tengigaEnable; }
+bool Implementation::getTenGigaEnable() const { return  generalData->tengigaEnable; }
 
 void Implementation::setTenGigaEnable(const bool b) {
-    if (tengigaEnable != b) {
-        tengigaEnable = b;
-
+    if ( generalData->tengigaEnable != b) {
         generalData->SetTenGigaEnable(b);
         SetupFifoStructure();
 
@@ -1566,7 +1545,7 @@ void Implementation::setTenGigaEnable(const bool b) {
                           << ToString(detectorDataStream[RIGHT]) << "]";
         }
     }
-    LOG(logINFO) << "Ten Giga: " << (tengigaEnable ? "enabled" : "disabled");
+    LOG(logINFO) << "Ten Giga: " << ( generalData->tengigaEnable ? "enabled" : "disabled");
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
@@ -1634,7 +1613,7 @@ void Implementation::setDetectorDataStream(const portPosition port,
     LOG(logINFO) << "Detector 10GbE datastream (" << ToString(port)
                  << " Port): " << ToString(detectorDataStream10GbE[index]);
     // update datastream for 10g
-    if (tengigaEnable) {
+    if ( generalData->tengigaEnable) {
         detectorDataStream[index] = detectorDataStream10GbE[index];
         LOG(logDEBUG) << "Detector datastream updated ["
                       << (index == 0 ? "Left" : "Right")
@@ -1666,49 +1645,43 @@ void Implementation::setRateCorrections(const std::vector<int64_t> &t) {
 }
 
 slsDetectorDefs::readoutMode Implementation::getReadoutMode() const {
-    return readoutType;
+    return generalData->readoutType;
 }
 
 void Implementation::setReadoutMode(const readoutMode f) {
-    if (readoutType != f) {
-        readoutType = f;
-
+    if (generalData->readoutType != f) {
         generalData->SetReadoutMode(f);
         SetupFifoStructure();
     }
-    LOG(logINFO) << "Readout Mode: " << ToString(f);
+    LOG(logINFO) << "Readout Mode: " << ToString(generalData->readoutType);
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 uint32_t Implementation::getADCEnableMask() const {
-    return adcEnableMaskOneGiga;
+    return generalData->adcEnableMaskOneGiga;
 }
 
 void Implementation::setADCEnableMask(uint32_t mask) {
-    if (adcEnableMaskOneGiga != mask) {
-        adcEnableMaskOneGiga = mask;
-
+    if (generalData->adcEnableMaskOneGiga != mask) {
         generalData->SetOneGigaAdcEnableMask(mask);
         SetupFifoStructure();
     }
     LOG(logINFO) << "ADC Enable Mask for 1Gb mode: 0x" << std::hex
-                 << adcEnableMaskOneGiga << std::dec;
+                 << generalData->adcEnableMaskOneGiga << std::dec;
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 uint32_t Implementation::getTenGigaADCEnableMask() const {
-    return adcEnableMaskTenGiga;
+    return generalData->adcEnableMaskTenGiga;
 }
 
 void Implementation::setTenGigaADCEnableMask(uint32_t mask) {
-    if (adcEnableMaskTenGiga != mask) {
-        adcEnableMaskTenGiga = mask;
-
+    if (generalData->adcEnableMaskTenGiga != mask) {
         generalData->SetTenGigaAdcEnableMask(mask);
         SetupFifoStructure();
     }
     LOG(logINFO) << "ADC Enable Mask for 10Gb mode: 0x" << std::hex
-                 << adcEnableMaskTenGiga << std::dec;
+                 << generalData->adcEnableMaskTenGiga << std::dec;
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 

@@ -61,7 +61,7 @@ class GeneralData {
     slsDetectorDefs::readoutMode readoutType{slsDetectorDefs::ANALOG_ONLY};
     uint32_t adcEnableMaskOneGiga{BIT32_MASK};
     uint32_t adcEnableMaskTenGiga{BIT32_MASK};
-    slsDetectorDefs::ROI roi{};
+    slsDetectorDefs::ROI detectorRoi{};
     uint32_t counterMask{0};
 
     GeneralData(){};
@@ -247,7 +247,7 @@ class GotthardData : public GeneralData {
     };
 
     void SetDetectorROI(slsDetectorDefs::ROI i) {
-        roi = i;
+        detectorRoi = i;
         UpdateImageSize();
     };
 
@@ -255,7 +255,7 @@ class GotthardData : public GeneralData {
     void UpdateImageSize() {
 
         // all adcs
-        if (roi.xmin == -1) {
+        if (detectorRoi.xmin == -1) {
             nPixelsX = 1280;
             dataSize = 1280;
             packetsPerFrame = 2;

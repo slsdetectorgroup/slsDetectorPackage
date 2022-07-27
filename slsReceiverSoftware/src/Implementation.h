@@ -362,11 +362,6 @@ class Implementation : private virtual slsDetectorDefs {
     ns gateDelay3 = std::chrono::nanoseconds(0);
     ns subExpTime = std::chrono::nanoseconds(0);
     ns subPeriod = std::chrono::nanoseconds(0);
-    uint32_t numberOfAnalogSamples{0};
-    uint32_t numberOfDigitalSamples{0};
-    uint32_t counterMask{0};
-    ROI detectorRoi{};
-    bool tengigaEnable{false};
     bool flipRows{false};
     bool quadEnable{false};
     bool activated{true};
@@ -377,9 +372,6 @@ class Implementation : private virtual slsDetectorDefs {
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};
     std::vector<int64_t> rateCorrections;
-    readoutMode readoutType{ANALOG_ONLY};
-    uint32_t adcEnableMaskOneGiga{BIT32_MASK};
-    uint32_t adcEnableMaskTenGiga{BIT32_MASK};
     std::vector<int> ctbDbitList;
     int ctbDbitOffset{0};
 

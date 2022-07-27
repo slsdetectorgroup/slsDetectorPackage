@@ -231,7 +231,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int& actualSize) {
     }
 
     // custom and didnt set, throw error
-    if (s != 0 && generalData->udpSocketBufferSize != s) {
+    if (s != 0 && static_cast<int>(generalData->udpSocketBufferSize) != s) {
         throw RuntimeError("Could not set udp socket buffer size. (No "
                                 "CAP_NET_ADMIN privileges?)");
     }

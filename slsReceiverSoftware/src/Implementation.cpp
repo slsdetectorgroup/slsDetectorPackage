@@ -1090,7 +1090,9 @@ std::string Implementation::getEthernetInterface2() const { return eth[1]; }
 
 void Implementation::setEthernetInterface2(const std::string &c) {
     eth[1] = c;
-    listener[1]->SetEthernetInterface(c);
+    if (listener.size() > 1) {
+        listener[1]->SetEthernetInterface(c);
+    }
     LOG(logINFO) << "Ethernet Interface 2: " << eth[1];
 }
 

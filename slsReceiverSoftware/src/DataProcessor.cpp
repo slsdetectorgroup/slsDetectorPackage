@@ -38,7 +38,7 @@ DataProcessor::~DataProcessor() { DeleteFiles(); }
 
 bool DataProcessor::GetStartedFlag() const { return startedFlag; }
 
-void DataProcessor::SetFifo(Fifo *fifo) { fifo = fifo; }
+void DataProcessor::SetFifo(Fifo *f) { fifo = f; }
 
 void DataProcessor::SetGeneralData(GeneralData *g) {
     generalData = g;

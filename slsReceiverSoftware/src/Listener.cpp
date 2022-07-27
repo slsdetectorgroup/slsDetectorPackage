@@ -191,13 +191,11 @@ void Listener::ShutDownUDPSocket() {
 void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int& actualSize) {
     // custom setup (s != 0)
     // default setup at startup (s = 0)
-    if (s == 0) {
-        s = generalData->udpSocketBufferSize;
-    }
-    LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port "
+    int size = (s == 0 ? generalData->udpSocketBufferSize : s);
+    LOG(logINFO) << "Testing UDP Socket Buffer size " << size << " with test port "
                  << udpPortNumber;
     int previousSize = generalData->udpSocketBufferSize;
-    generalData->udpSocketBufferSize = s;
+    generalData->udpSocketBufferSize = size;
 
     if (disabledPort) {
         actualSize = (generalData->udpSocketBufferSize * 2);

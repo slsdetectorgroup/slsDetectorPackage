@@ -295,8 +295,8 @@ std::string CreateVirtualHDF5File(
                 // (framescaught not multiple of framesperfile, 
                 // virtual parameter datasets error loading (bad scalar value))
                 if (nDimx != maxFramesPerFile) {
-                    hsize_t count[2] = {nDimx, 1};
-                    hsize_t start[2] = {0, 0};
+                    hsize_t count[1] = {nDimx};
+                    hsize_t start[1] = {0};
                     srcDataSpacePara.selectHyperslab(H5S_SELECT_SET, count, start, strideBetweenBlocksPara, blockSizePara);
                 }
 

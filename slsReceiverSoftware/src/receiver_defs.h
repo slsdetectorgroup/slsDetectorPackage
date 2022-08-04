@@ -47,6 +47,9 @@ struct image_structure {
 
 // hdf5
 #define MAX_CHUNKED_IMAGES (1)
+#define DATA_RANK (3)
+#define PARA_RANK (1)
+#define VDS_PARA_RANK (2)
 
 // parameters to calculate fifo depth
 #define SAMPLE_TIME_IN_NS (100000000) // 100ms

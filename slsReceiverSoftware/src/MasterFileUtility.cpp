@@ -207,21 +207,22 @@ std::string CreateVirtualHDF5File(
             "version", H5::PredType::NATIVE_DOUBLE, dataspace_attr);
         attribute.write(H5::PredType::NATIVE_DOUBLE, &dValue);
 
-        // virtual dataspace
-        hsize_t vdsDims[3] = {numImagesCaught, numModY * nDimy,
+        // dataspace
+        hsize_t vdsDims[DATA_RANK] = {numImagesCaught, numModY * nDimy,
                               numModZ * nDimz};
-        H5::DataSpace vdsDataSpace(3, vdsDims, nullptr);
-        hsize_t vdsDimsPara[2] = {numImagesCaught,
-                                  (unsigned int)numModY * numModZ};
-        H5::DataSpace vdsDataSpacePara(2, vdsDimsPara, nullptr);
+        hsize_t vdsDimsPara[VDS_PARA_RANK] = {numImagesCaught, numModY * numModZ};
+        H5::DataSpace vdsDataSpace(DATA_RANK, vdsDims, nullptr);
+        H5::DataSpace vdsDataSpacePara(VDS_PARA_RANK, vdsDimsPara, nullptr);
 
-        // property list (fill value and datatype)
-        int fill_value = -1;
+        // property list
         H5::DSetCreatPropList plist;
+        int fill_value = -1;
         plist.setFillValue(dataType, &fill_value);
-
-        // property list for parameters (datatype)
         std::vector<H5::DSetCreatPropList> plistPara(paraSize);
+        // ignoring last fill (string)
+        for (unsigned int i = 0; i != plistPara.size() - 1; ++i) {
+            plistPara[i].setFillValue(dataType, &fill_value);
+        }
 
         // hyperslab (files)
         int numFiles = numImagesCaught / maxFramesPerFile;
@@ -235,15 +236,15 @@ std::string CreateVirtualHDF5File(
                     ? maxFramesPerFile
                     : (numImagesCaught - framesSaved);
 
-            hsize_t startLocation[3] = {framesSaved, 0, 0};
-            hsize_t strideBetweenBlocks[3] = {1, 1, 1};
-            hsize_t numBlocks[3] = {nDimx, nDimy, nDimz};
-            hsize_t blockSize[3] = {1, 1, 1};
+            hsize_t startLocation[DATA_RANK] = {framesSaved, 0, 0};
+            hsize_t strideBetweenBlocks[DATA_RANK] = {1, 1, 1};
+            hsize_t numBlocks[DATA_RANK] = {nDimx, nDimy, nDimz};
+            hsize_t blockSize[DATA_RANK] = {1, 1, 1};
 
-            hsize_t startLocationPara[2] = {framesSaved, 0};
-            hsize_t strideBetweenBlocksPara[2] = {1, 1};
-            hsize_t numBlocksPara[2] = {nDimx, 1};
-            hsize_t blockSizePara[2] = {1, 1};
+            hsize_t startLocationPara[VDS_PARA_RANK] = {framesSaved, 0};
+            hsize_t strideBetweenBlocksPara[VDS_PARA_RANK] = {1, 1};
+            hsize_t numBlocksPara[VDS_PARA_RANK] = {nDimx, 1};
+            hsize_t blockSizePara[VDS_PARA_RANK] = {1, 1};
 
             // interleaving for g2
             if (gotthard25um) {
@@ -284,12 +285,12 @@ std::string CreateVirtualHDF5File(
                 }
 
                 // source dataspace
-                hsize_t srcDims[3] = {nDimx, nDimy, nDimz};
-                hsize_t srcDimsMax[3] = {H5S_UNLIMITED, nDimy, nDimz};
-                H5::DataSpace srcDataSpace(3, srcDims, srcDimsMax);
-                hsize_t srcDimsPara[1] = {nDimx};
-                hsize_t srcDimsMaxPara[1] = {H5S_UNLIMITED};
-                H5::DataSpace srcDataSpacePara(1, srcDimsPara, srcDimsMaxPara);
+                hsize_t srcDims[DATA_RANK] = {nDimx, nDimy, nDimz};
+                hsize_t srcDimsMax[DATA_RANK] = {H5S_UNLIMITED, nDimy, nDimz};
+                H5::DataSpace srcDataSpace(DATA_RANK, srcDims, srcDimsMax);
+                hsize_t srcDimsPara[PARA_RANK] = {nDimx};
+                hsize_t srcDimsMaxPara[PARA_RANK] = {H5S_UNLIMITED};
+                H5::DataSpace srcDataSpacePara(PARA_RANK, srcDimsPara, srcDimsMaxPara);
                 // temporary fixfor corner case bug:
                 // (framescaught not multiple of framesperfile, 
                 // virtual parameter datasets error loading (bad scalar value))

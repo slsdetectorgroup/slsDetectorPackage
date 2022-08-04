@@ -37,7 +37,7 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
   private:
     void CreateFile();
     void Convert12to16Bit(uint16_t *dst, uint8_t *src);
-    void WriteDataFile(const uint64_t currentFrameNumber, char *buffer);
+    void WriteImageDatasets(const uint64_t currentFrameNumber, char *buffer);
     void WriteParameterDatasets(const uint64_t currentFrameNumber,
                                 sls_receiver_header rheader);
     void ExtendDataset();

@@ -221,7 +221,7 @@ std::string CreateVirtualHDF5File(
         std::vector<H5::DSetCreatPropList> plistPara(paraSize);
         // ignoring last fill (string)
         for (unsigned int i = 0; i != plistPara.size() - 1; ++i) {
-            plistPara[i].setFillValue(dataType, &fill_value);
+            plistPara[i].setFillValue(parameterDataTypes[i], &fill_value);
         }
 
         // hyperslab (files)

@@ -198,7 +198,7 @@ void HDF5DataFile::CreateFile() {
         H5::DSetCreatPropList plistPara;
         int fill_value = -1;
         plist.setFillValue(dataType, &fill_value);
-        plistPara.setFillValue(dataType, &fill_value);
+        //plistPara.setFillValue(dataType, &fill_value);
         plist.setChunk(DATA_RANK, chunk_dims);
         plistPara.setChunk(PARA_RANK, chunkpara_dims);
 

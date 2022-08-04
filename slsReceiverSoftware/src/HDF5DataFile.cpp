@@ -184,8 +184,8 @@ void HDF5DataFile::CreateFile() {
         hsize_t dimsMaxPara[PARA_RANK] = {H5S_UNLIMITED};
         // always create chunked dataset as unlimited is only
         // supported with chunked layout
-        hsize_t chunk_dims[DATA_RANK] = {MAX_CHUNKED_IMAGES, nDimy, nDimz};
-        hsize_t chunkpara_dims[PARA_RANK] = {MAX_CHUNKED_IMAGES};
+        hsize_t dimsChunk[DATA_RANK] = {MAX_CHUNKED_IMAGES, nDimy, nDimz};
+        hsize_t dimsChunkPara[PARA_RANK] = {MAX_CHUNKED_IMAGES};
 
         // dataspace
         dataSpace = nullptr;
@@ -199,8 +199,8 @@ void HDF5DataFile::CreateFile() {
         int fill_value = -1;
         plist.setFillValue(dataType, &fill_value);
         //plistPara.setFillValue(dataType, &fill_value);
-        plist.setChunk(DATA_RANK, chunk_dims);
-        plistPara.setChunk(PARA_RANK, chunkpara_dims);
+        plist.setChunk(DATA_RANK, dimsChunk);
+        plistPara.setChunk(PARA_RANK, dimsChunkPara);
 
         // dataset
         dataSet = nullptr;

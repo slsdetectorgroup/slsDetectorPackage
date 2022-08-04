@@ -60,7 +60,7 @@ class File : private virtual slsDetectorDefs {
     };
 
     virtual void CreateFirstHDF5DataFile(
-        const std::string fileNamePrefix,
+        const std::string& fileNamePrefix,
         const uint64_t fileIndex, const bool overWriteEnable,
         const bool silentMode, const uint32_t udpPortNumber,
         const uint32_t maxFramesPerFile, const uint64_t numImages,
@@ -71,7 +71,7 @@ class File : private virtual slsDetectorDefs {
     };
 #endif
     virtual void CreateFirstBinaryDataFile(
-        const std::string fileNamePrefix,
+        const std::string& fileNamePrefix,
         const uint64_t fileIndex, const bool overWriteEnable,
         const bool silentMode, const uint32_t udpPortNumber,
         const uint32_t maxFramesPerFile) {

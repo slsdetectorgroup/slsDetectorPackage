@@ -90,7 +90,7 @@ void HDF5DataFile::CloseFile() {
 }
 
 void HDF5DataFile::CreateFirstHDF5DataFile(
-    const std::string fNamePrefix,
+    const std::string& fNamePrefix,
     const uint64_t fIndex, const bool owEnable, const bool sMode,
     const uint32_t uPortNumber, const uint32_t mFramesPerFile,
     const uint64_t nImages, const uint32_t nX, const uint32_t nY,

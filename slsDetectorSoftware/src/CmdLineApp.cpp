@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     // prevent mem size check
     if (parser.command() == "config" && action == slsDetectorDefs::PUT_ACTION) {
         sls::freeSharedMemory(parser.multi_id());
-    }    
+    }
 
     try {
         sls::Detector det(parser.multi_id());

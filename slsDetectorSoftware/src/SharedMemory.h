@@ -13,17 +13,16 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 
+#include <cerrno> // errno
 #include <cstdlib>
-#include <cerrno>  // errno
 #include <cstring> // strerror
 #include <fcntl.h> // O_CREAT, O_TRUNC..
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <sys/mman.h> // shared memory
 #include <sys/stat.h> // fstat
 #include <unistd.h>
-#include <iostream>
-#include <string>
 
 namespace sls {
 

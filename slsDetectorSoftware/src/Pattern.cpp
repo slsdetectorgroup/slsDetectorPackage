@@ -29,11 +29,13 @@ bool Pattern::operator==(const Pattern &other) const {
         if (pat->limits[i] != other.pat->limits[i])
             return false;
     }
-    for (size_t i = 0; i < (sizeof(pat->startloop) / sizeof(pat->startloop[0])); ++i) {
+    for (size_t i = 0; i < (sizeof(pat->startloop) / sizeof(pat->startloop[0]));
+         ++i) {
         if (pat->startloop[i] != other.pat->startloop[i])
             return false;
     }
-    for (size_t i = 0; i < (sizeof(pat->stoploop) / sizeof(pat->stoploop[0])); ++i) {
+    for (size_t i = 0; i < (sizeof(pat->stoploop) / sizeof(pat->stoploop[0]));
+         ++i) {
         if (pat->stoploop[i] != other.pat->stoploop[i])
             return false;
     }
@@ -70,11 +72,10 @@ void Pattern::validate() const {
     for (int i = 0; i != MAX_PATTERN_LEVELS; ++i) {
         if (pat->startloop[i] >= MAX_PATTERN_LENGTH ||
             pat->stoploop[i] >= MAX_PATTERN_LENGTH) {
-            throw RuntimeError(
-                "Invalid Pattern loop address for level " + ToString(i) +
-                std::string(" [") + ToString(pat->startloop[i]) +
-                std::string(", ") + ToString(pat->stoploop[i]) +
-                std::string("]"));
+            throw RuntimeError("Invalid Pattern loop address for level " +
+                               ToString(i) + std::string(" [") +
+                               ToString(pat->startloop[i]) + std::string(", ") +
+                               ToString(pat->stoploop[i]) + std::string("]"));
         }
         if (pat->wait[i] >= MAX_PATTERN_LENGTH) {
             throw RuntimeError("Invalid Pattern wait address for level " +
@@ -129,26 +130,27 @@ void Pattern::load(const std::string &fname) {
                 }
                 pat->limits[0] = StringTo<uint32_t>(args[1]);
                 pat->limits[1] = StringTo<uint32_t>(args[2]);
-            } 
-            else if (cmd == "patloop0" || cmd == "patloop1" ||
+            } else if (cmd == "patloop0" || cmd == "patloop1" ||
                        cmd == "patloop2" || cmd == "patloop") {
                 int level = -1, iArg = 1;
                 if (cmd == "patloop") {
                     if (nargs != 3) {
                         throw RuntimeError("Invalid arguments for " +
-                                        ToString(args));
+                                           ToString(args));
                     }
                     level = StringTo<int>(args[iArg++]);
                 } else {
-                    LOG(logWARNING) << "Depreciated command. Please use patloop next time.";
+                    LOG(logWARNING)
+                        << "Depreciated command. Please use patloop next time.";
                     if (nargs != 2) {
                         throw RuntimeError("Invalid arguments for " +
-                                        ToString(args));
+                                           ToString(args));
                     }
                     level = cmd[cmd.find_first_of("012")] - '0';
                 }
                 if (level < 0 || level >= MAX_PATTERN_LEVELS) {
-                    throw RuntimeError("Invalid Pattern level. Options 0-" + std::to_string(MAX_PATTERN_LEVELS - 1));
+                    throw RuntimeError("Invalid Pattern level. Options 0-" +
+                                       std::to_string(MAX_PATTERN_LEVELS - 1));
                 }
                 int loop1 = StringTo<uint32_t>(args[iArg++]);
                 int loop2 = StringTo<uint32_t>(args[iArg++]);
@@ -160,19 +162,21 @@ void Pattern::load(const std::string &fname) {
                 if (cmd == "patnloop") {
                     if (nargs != 2) {
                         throw RuntimeError("Invalid arguments for " +
-                                        ToString(args));
+                                           ToString(args));
                     }
                     level = StringTo<int>(args[iArg++]);
                 } else {
-                    LOG(logWARNING) << "Depreciated command. Please use patnloop next time.";
+                    LOG(logWARNING) << "Depreciated command. Please use "
+                                       "patnloop next time.";
                     if (nargs != 1) {
                         throw RuntimeError("Invalid arguments for " +
-                                        ToString(args));
+                                           ToString(args));
                     }
                     level = cmd[cmd.find_first_of("012")] - '0';
                 }
                 if (level < 0 || level >= MAX_PATTERN_LEVELS) {
-                    throw RuntimeError("Invalid Pattern level. Options 0-" + std::to_string(MAX_PATTERN_LEVELS - 1));
+                    throw RuntimeError("Invalid Pattern level. Options 0-" +
+                                       std::to_string(MAX_PATTERN_LEVELS - 1));
                 }
                 pat->nloop[level] = StringTo<uint32_t>(args[iArg++]);
             } else if (cmd == "patwait0" || cmd == "patwait1" ||
@@ -181,19 +185,21 @@ void Pattern::load(const std::string &fname) {
                 if (cmd == "patwait") {
                     if (nargs != 2) {
                         throw RuntimeError("Invalid arguments for " +
-                                        ToString(args));
+                                           ToString(args));
                     }
                     level = StringTo<int>(args[iArg++]);
                 } else {
-                    LOG(logWARNING) << "Depreciated command. Please use patwait next time.";
+                    LOG(logWARNING)
+                        << "Depreciated command. Please use patwait next time.";
                     if (nargs != 1) {
                         throw RuntimeError("Invalid arguments for " +
-                                        ToString(args));
+                                           ToString(args));
                     }
                     level = cmd[cmd.find_first_of("012")] - '0';
                 }
                 if (level < 0 || level >= MAX_PATTERN_LEVELS) {
-                    throw RuntimeError("Invalid Pattern level. Options 0-" + std::to_string(MAX_PATTERN_LEVELS - 1));
+                    throw RuntimeError("Invalid Pattern level. Options 0-" +
+                                       std::to_string(MAX_PATTERN_LEVELS - 1));
                 }
                 pat->wait[level] = StringTo<uint32_t>(args[iArg++]);
             } else if (cmd == "patwaittime0" || cmd == "patwaittime1" ||
@@ -202,19 +208,21 @@ void Pattern::load(const std::string &fname) {
                 if (cmd == "patwaittime") {
                     if (nargs != 2) {
                         throw RuntimeError("Invalid arguments for " +
-                                        ToString(args));
+                                           ToString(args));
                     }
                     level = StringTo<int>(args[iArg++]);
                 } else {
-                    LOG(logWARNING) << "Depreciated command. Please use patwaittime next time.";
+                    LOG(logWARNING) << "Depreciated command. Please use "
+                                       "patwaittime next time.";
                     if (nargs != 1) {
                         throw RuntimeError("Invalid arguments for " +
-                                        ToString(args));
+                                           ToString(args));
                     }
                     level = cmd[cmd.find_first_of("012")] - '0';
                 }
                 if (level < 0 || level >= MAX_PATTERN_LEVELS) {
-                    throw RuntimeError("Invalid Pattern level. Options 0-" + std::to_string(MAX_PATTERN_LEVELS - 1));
+                    throw RuntimeError("Invalid Pattern level. Options 0-" +
+                                       std::to_string(MAX_PATTERN_LEVELS - 1));
                 }
                 pat->waittime[level] = StringTo<uint64_t>(args[iArg++]);
             } else {
@@ -279,10 +287,12 @@ std::string Pattern::str() const {
         << ToStringHex(pat->limits[1], addr_width) << std::endl;
 
     for (int i = 0; i != MAX_PATTERN_LEVELS; ++i) {
-        oss << "patloop " << i << ' ' << ToStringHex(pat->startloop[i], addr_width) << " "
+        oss << "patloop " << i << ' '
+            << ToStringHex(pat->startloop[i], addr_width) << " "
             << ToStringHex(pat->stoploop[i], addr_width) << std::endl
             << "patnloop " << pat->nloop[i] << std::endl
-            << "patwait " << i << ' ' << ToStringHex(pat->wait[i], addr_width) << std::endl
+            << "patwait " << i << ' ' << ToStringHex(pat->wait[i], addr_width)
+            << std::endl
             << "patwaittime " << i << ' ' << pat->waittime[i] << std::endl;
     }
 

@@ -7,8 +7,7 @@
 
 namespace sls {
 
-qTabAdvanced::qTabAdvanced(QWidget *parent, Detector *detector,
-                           qDrawPlot *p)
+qTabAdvanced::qTabAdvanced(QWidget *parent, Detector *detector, qDrawPlot *p)
     : QWidget(parent), det(detector), plot(p) {
     setupUi(this);
     SetupWidgetWindow();
@@ -445,8 +444,7 @@ void qTabAdvanced::SetDetectorUDPIP(bool force) {
         std::string s = dispDetectorUDPIP->text().toAscii().constData();
         LOG(logINFO) << "Setting Detector UDP IP:" << s;
         try {
-            det->setSourceUDPIP(IpAddr{s},
-                                {comboDetector->currentIndex()});
+            det->setSourceUDPIP(IpAddr{s}, {comboDetector->currentIndex()});
         }
         CATCH_HANDLE("Could not set Detector UDP IP.",
                      "qTabAdvanced::SetDetectorUDPIP", this,
@@ -463,8 +461,7 @@ void qTabAdvanced::SetDetectorUDPMAC(bool force) {
         std::string s = dispDetectorUDPMAC->text().toAscii().constData();
         LOG(logINFO) << "Setting Detector UDP MAC:" << s;
         try {
-            det->setSourceUDPMAC(MacAddr{s},
-                                 {comboDetector->currentIndex()});
+            det->setSourceUDPMAC(MacAddr{s}, {comboDetector->currentIndex()});
         }
         CATCH_HANDLE("Could not set Detector UDP MAC.",
                      "qTabAdvanced::SetDetectorUDPMAC", this,
@@ -491,8 +488,7 @@ void qTabAdvanced::SetCltZMQIP(bool force) {
         std::string s = dispZMQIP->text().toAscii().constData();
         LOG(logINFO) << "Setting Client ZMQ IP:" << s;
         try {
-            det->setClientZmqIp(IpAddr{s},
-                                {comboDetector->currentIndex()});
+            det->setClientZmqIp(IpAddr{s}, {comboDetector->currentIndex()});
         }
         CATCH_HANDLE("Could not set Client ZMQ IP.",
                      "qTabAdvanced::SetCltZMQIP", this,

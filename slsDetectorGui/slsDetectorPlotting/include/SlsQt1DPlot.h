@@ -8,8 +8,8 @@
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_marker.h>
-#include <qwt_scale_div.h>
 #include <qwt_plot_shapeitem.h>
+#include <qwt_scale_div.h>
 
 class QPen;
 class QwtSymbol;
@@ -140,7 +140,7 @@ class SlsQt1DPlot : public QwtPlot {
     void SetLogX(bool yes = 1);
     void SetLogY(bool yes = 1);
 
-    void EnableRoiBox(std::array<int, 4> roi);  
+    void EnableRoiBox(std::array<int, 4> roi);
     void DisableRoiBox();
 
   private:
@@ -176,5 +176,3 @@ class SlsQt1DPlot : public QwtPlot {
 } // namespace sls
 
 #endif
-
-

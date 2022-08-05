@@ -235,7 +235,7 @@ void qTabDataOutput::GetFileFormat() {
             break;
         default:
             throw RuntimeError(std::string("Unknown file format: ") +
-                                    std::to_string(static_cast<int>(retval)));
+                               std::to_string(static_cast<int>(retval)));
         }
     }
     CATCH_DISPLAY("Could not get file format.", "qTabDataOutput::GetFileFormat")

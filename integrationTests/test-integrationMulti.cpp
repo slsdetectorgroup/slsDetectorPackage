@@ -106,4 +106,3 @@ TEST_CASE("Set and read timers", "[.integration][.multi]") {
 }
 
 } // namespace sls
-

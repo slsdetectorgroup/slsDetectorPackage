@@ -97,7 +97,6 @@ TEST_CASE("Move SharedMemory", "[detector]") {
     shm.createSharedMemory();
     shm()->x = 9;
 
-
     SharedMemory<Data> shm2(shm_id + 1, -1);
     shm2 = std::move(shm); // shm is now a moved from object!
 
@@ -132,13 +131,12 @@ TEST_CASE("Create several shared memories", "[detector]") {
     }
 }
 
-TEST_CASE("Create create a shared memory with a tag"){
+TEST_CASE("Create create a shared memory with a tag") {
     SharedMemory<int> shm(0, -1, "ctbdacs");
     REQUIRE(shm.getName() == "/slsDetectorPackage_detector_0_ctbdacs");
-
 }
 
-TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set"){
+TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set") {
 
     // if SLSDETNAME is already set we unset it but
     // save the value
@@ -156,10 +154,9 @@ TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set"){
         unsetenv(SHM_ENV_NAME);
     else
         setenv(SHM_ENV_NAME, old_slsdetname.c_str(), 1);
-
 }
 
-TEST_CASE("map int64 to int32 throws"){
+TEST_CASE("map int64 to int32 throws") {
     SharedMemory<int32_t> shm(shm_id, -1);
     shm.createSharedMemory();
     *shm() = 7;

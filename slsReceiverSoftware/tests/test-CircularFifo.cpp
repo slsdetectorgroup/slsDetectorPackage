@@ -6,7 +6,6 @@
 
 namespace sls {
 
-
 TEST_CASE("Empty buffer") {
     CircularFifo<char> fifo(0);
 

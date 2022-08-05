@@ -55,8 +55,7 @@ void freeSharedMemory(int detectorIndex, int moduleIndex) {
 
 using defs = slsDetectorDefs;
 
-Detector::Detector(int shm_id)
-    : pimpl(make_unique<DetectorImpl>(shm_id)) {}
+Detector::Detector(int shm_id) : pimpl(make_unique<DetectorImpl>(shm_id)) {}
 
 Detector::~Detector() = default;
 
@@ -1795,7 +1794,7 @@ void Detector::setVetoAlgorithm(const defs::vetoAlgorithm alg,
                                 defs::streamingInterface interface,
                                 Positions pos) {
     LOG(logDEBUG) << "alg:" << ToString(alg)
-                     << " interface:" << ToString(interface);
+                  << " interface:" << ToString(interface);
     pimpl->Parallel(&Module::setVetoAlgorithm, pos, alg, interface);
 }
 

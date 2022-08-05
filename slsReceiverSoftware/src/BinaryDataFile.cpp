@@ -19,10 +19,12 @@ void BinaryDataFile::CloseFile() {
     fd = nullptr;
 }
 
-void BinaryDataFile::CreateFirstBinaryDataFile(
-    const std::string& fNamePrefix,
-    const uint64_t fIndex, const bool ovEnable, const bool sMode,
-    const uint32_t uPortNumber, const uint32_t mFramesPerFile) {
+void BinaryDataFile::CreateFirstBinaryDataFile(const std::string &fNamePrefix,
+                                               const uint64_t fIndex,
+                                               const bool ovEnable,
+                                               const bool sMode,
+                                               const uint32_t uPortNumber,
+                                               const uint32_t mFramesPerFile) {
 
     subFileIndex = 0;
     numFramesInFile = 0;
@@ -41,15 +43,13 @@ void BinaryDataFile::CreateFile() {
     numFramesInFile = 0;
 
     std::ostringstream os;
-    os << fileNamePrefix << "_f" << subFileIndex
-       << '_' << fileIndex << ".raw";
+    os << fileNamePrefix << "_f" << subFileIndex << '_' << fileIndex << ".raw";
     fileName = os.str();
 
     if (!overWriteEnable) {
         if (nullptr == (fd = fopen(fileName.c_str(), "wx"))) {
             fd = nullptr;
-            throw RuntimeError("Could not create/overwrite file " +
-                                    fileName);
+            throw RuntimeError("Could not create/overwrite file " + fileName);
         }
     } else if (nullptr == (fd = fopen(fileName.c_str(), "w"))) {
         fd = nullptr;
@@ -64,7 +64,10 @@ void BinaryDataFile::CreateFile() {
     }
 }
 
-void BinaryDataFile::WriteToFile(char *imageData, sls_receiver_header& header, const int imageSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) {
+void BinaryDataFile::WriteToFile(char *imageData, sls_receiver_header &header,
+                                 const int imageSize,
+                                 const uint64_t currentFrameNumber,
+                                 const uint32_t numPacketsCaught) {
     // check if maxframesperfile = 0 for infinite
     if (maxFramesPerFile && (numFramesInFile >= maxFramesPerFile)) {
         CloseFile();
@@ -101,7 +104,12 @@ void BinaryDataFile::WriteToFile(char *imageData, sls_receiver_header& header, c
 
     // if write error
     if (ret != imageSize + sizeof(sls_receiver_header)) {
-        throw RuntimeError(std::to_string(index) + " : Write to file failed for image number " + std::to_string(currentFrameNumber) + ". Wrote " + std::to_string(ret) + " bytes instead of " + std::to_string(imageSize + sizeof(sls_receiver_header)));
+        throw RuntimeError(
+            std::to_string(index) +
+            " : Write to file failed for image number " +
+            std::to_string(currentFrameNumber) + ". Wrote " +
+            std::to_string(ret) + " bytes instead of " +
+            std::to_string(imageSize + sizeof(sls_receiver_header)));
     }
 }
 

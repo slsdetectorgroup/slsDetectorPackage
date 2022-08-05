@@ -164,8 +164,10 @@ void writePatternWord(int addr, uint64_t word) {
 int validate_getPatternWaitAddresses(char *message, int level, int *addr) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
-        sprintf(message,
-                "Cannot get patwait address. Level %d must be between 0 and %d.\n", level, MAX_LEVELS - 1);
+        sprintf(
+            message,
+            "Cannot get patwait address. Level %d must be between 0 and %d.\n",
+            level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -203,8 +205,10 @@ int getPatternWaitAddress(int level) {
 int validate_setPatternWaitAddresses(char *message, int level, int addr) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
-        sprintf(message,
-                "Cannot set patwait address. Level %d must be between 0 and %d.\n", level, MAX_LEVELS - 1);
+        sprintf(
+            message,
+            "Cannot set patwait address. Level %d must be between 0 and %d.\n",
+            level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -274,7 +278,8 @@ int validate_getPatternWaitTime(char *message, int level, uint64_t *waittime) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot get patwaittime. Level %d must be between 0 and %d.\n", level, MAX_LEVELS - 1);
+                "Cannot get patwaittime. Level %d must be between 0 and %d.\n",
+                level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -313,7 +318,8 @@ int validate_setPatternWaitTime(char *message, int level, uint64_t waittime) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot set patwaittime. Level %d must be between 0 and %d.\n", level, MAX_LEVELS - 1);
+                "Cannot set patwaittime. Level %d must be between 0 and %d.\n",
+                level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -376,7 +382,8 @@ int validate_getPatternLoopCycles(char *message, int level, int *numLoops) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot get patnloop. Level %d must be between 0 and %d.\n", level, MAX_LEVELS - 1);
+                "Cannot get patnloop. Level %d must be between 0 and %d.\n",
+                level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -409,7 +416,8 @@ int validate_setPatternLoopCycles(char *message, int level, int numLoops) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot set patnloop. Level %d must be between 0 and %d.\n", level, MAX_LEVELS);
+                "Cannot set patnloop. Level %d must be between 0 and %d.\n",
+                level, MAX_LEVELS);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -519,9 +527,10 @@ int validate_getPatternLoopAddresses(char *message, int level, int *startAddr,
                                      int *stopAddr) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
-        sprintf(
-            message,
-            "Cannot get patloop addresses. Level %d must be between 0 and %d.\n", level, MAX_LEVELS - 1);
+        sprintf(message,
+                "Cannot get patloop addresses. Level %d must be between 0 and "
+                "%d.\n",
+                level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -591,9 +600,10 @@ int validate_setPatternLoopAddresses(char *message, int level, int startAddr,
                                      int stopAddr) {
     // validate input
     if (level < 0 || level >= MAX_LEVELS) {
-        sprintf(
-            message,
-            "Cannot set patloop addresses. Level %d must be between 0 and %d.\n", level, MAX_LEVELS - 1);
+        sprintf(message,
+                "Cannot set patloop addresses. Level %d must be between 0 and "
+                "%d.\n",
+                level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -970,13 +980,13 @@ int loadPatternFile(char *patFname, char *errMessage) {
         }
 
         // patloop
-        if (!strncmp(line, "patloop", strlen("patloop"))){
+        if (!strncmp(line, "patloop", strlen("patloop"))) {
             int level = -1;
             int startAddr = 0;
             int stopAddr = 0;
             // cannot scan values
-            if (sscanf(line, "%s %d 0x%x 0x%x", command, &level, &startAddr, &stopAddr) !=
-                4) {
+            if (sscanf(line, "%s %d 0x%x 0x%x", command, &level, &startAddr,
+                       &stopAddr) != 4) {
                 strcpy(temp, "Could not scan patloop arguments.\n");
                 break;
             }

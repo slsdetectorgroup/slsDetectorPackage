@@ -16,15 +16,14 @@ namespace sls {
 using test::GET;
 using test::PUT;
 
-TEST_CASE("Calling help doesn't throw or cause segfault"){
-    //Dont add [.cmd] tag this should run with normal tests
+TEST_CASE("Calling help doesn't throw or cause segfault") {
+    // Dont add [.cmd] tag this should run with normal tests
     CmdProxy proxy(nullptr);
     auto commands = proxy.GetProxyCommands();
     std::ostringstream os;
     for (const auto &cmd : commands)
-        REQUIRE_NOTHROW(proxy.Call(cmd, {}, -1, slsDetectorDefs::HELP_ACTION, os));
-    
-    
+        REQUIRE_NOTHROW(
+            proxy.Call(cmd, {}, -1, slsDetectorDefs::HELP_ACTION, os));
 }
 
 TEST_CASE("Unknown command", "[.cmd]") {
@@ -338,9 +337,8 @@ TEST_CASE("threshold", "[.cmd]") {
             det.setTrimEnergies(prev_energies);
             for (int i = 0; i != det.size(); ++i) {
                 if (prev_threshold[i][0] >= 0) {
-                    std::cout
-                        << "prev cvalues:" << ToString(prev_threshold[i])
-                        << std::endl;
+                    std::cout << "prev cvalues:" << ToString(prev_threshold[i])
+                              << std::endl;
                     det.setThresholdEnergy(prev_threshold[i], prev_settings,
                                            true, {i});
                 }
@@ -585,7 +583,8 @@ TEST_CASE("master", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2) {
+    if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2) {
         REQUIRE_NOTHROW(proxy.Call("master", {}, -1, GET));
         if (det_type == defs::EIGER) {
             // get previous master
@@ -2265,10 +2264,8 @@ TEST_CASE("scan", "[.cmd]") {
 
     {
         std::ostringstream oss;
-        proxy.Call("scan", {ToString(ind), "500", "1500", "500"}, -1, PUT,
-                   oss);
-        CHECK(oss.str() ==
-              "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
+        proxy.Call("scan", {ToString(ind), "500", "1500", "500"}, -1, PUT, oss);
+        CHECK(oss.str() == "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
     }
     {
         std::ostringstream oss;
@@ -2279,8 +2276,8 @@ TEST_CASE("scan", "[.cmd]") {
     }
     {
         std::ostringstream oss;
-        proxy.Call("scan", {ToString(ind), "500", "1500", "500", "2s"}, -1,
-                   PUT, oss);
+        proxy.Call("scan", {ToString(ind), "500", "1500", "500", "2s"}, -1, PUT,
+                   oss);
         CHECK(oss.str() ==
               "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
     }
@@ -2305,16 +2302,14 @@ TEST_CASE("scan", "[.cmd]") {
         std::ostringstream oss;
         proxy.Call("scan", {ToString(ind), "1500", "500", "-500"}, -1, PUT,
                    oss);
-        CHECK(oss.str() ==
-              "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
+        CHECK(oss.str() == "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
     }
     CHECK_THROWS(proxy.Call(
-        "scan", {ToString(notImplementedInd), "500", "1500", "500"}, -1,
-        PUT));
-    CHECK_THROWS(proxy.Call("scan", {ToString(ind), "500", "1500", "-500"},
-                            -1, PUT));
-    CHECK_THROWS(proxy.Call("scan", {ToString(ind), "1500", "500", "500"},
-                            -1, PUT));
+        "scan", {ToString(notImplementedInd), "500", "1500", "500"}, -1, PUT));
+    CHECK_THROWS(
+        proxy.Call("scan", {ToString(ind), "500", "1500", "-500"}, -1, PUT));
+    CHECK_THROWS(
+        proxy.Call("scan", {ToString(ind), "1500", "500", "500"}, -1, PUT));
 
     if (det_type == defs::MYTHEN3 || defs::EIGER) {
         {

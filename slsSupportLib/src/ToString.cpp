@@ -123,8 +123,7 @@ std::ostream &operator<<(std::ostream &os,
 std::string ToString(const slsDetectorDefs::currentSrcParameters &r) {
     std::ostringstream oss;
     if (r.fix < -1 || r.fix > 1 || r.normal < -1 || r.normal > 1) {
-        throw RuntimeError(
-            "Invalid current source parameters. Cannot print.");
+        throw RuntimeError("Invalid current source parameters. Cannot print.");
     }
     oss << '[';
     if (r.enable) {

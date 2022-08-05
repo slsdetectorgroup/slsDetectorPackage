@@ -7,20 +7,17 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
+#include <chrono>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
-#include <chrono>
 
 #ifdef HDF5C
 #include "H5Cpp.h"
 #endif
 
-
 namespace sls {
 
 using ns = std::chrono::nanoseconds;
-
-
 
 class MasterAttributes {
   public:

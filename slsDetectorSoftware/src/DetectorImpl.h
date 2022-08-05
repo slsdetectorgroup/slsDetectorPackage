@@ -2,20 +2,20 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
+#include "CtbConfig.h"
 #include "SharedMemory.h"
 #include "sls/Result.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
-#include "CtbConfig.h"
 
+#include <future>
 #include <memory>
 #include <mutex>
+#include <numeric>
 #include <semaphore.h>
 #include <string>
 #include <thread>
 #include <vector>
-#include <future>
-#include <numeric>
 
 namespace sls {
 
@@ -87,8 +87,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
     Result<RT> Parallel(RT (Module::*somefunc)(CT...),
-                             std::vector<int> positions,
-                             typename NonDeduced<CT>::type... Args) {
+                        std::vector<int> positions,
+                        typename NonDeduced<CT>::type... Args) {
 
         if (modules.empty())
             throw RuntimeError("No modules added");
@@ -115,8 +115,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     template <typename RT, typename... CT>
     Result<RT> Parallel(RT (Module::*somefunc)(CT...) const,
-                             std::vector<int> positions,
-                             typename NonDeduced<CT>::type... Args) const {
+                        std::vector<int> positions,
+                        typename NonDeduced<CT>::type... Args) const {
 
         if (modules.empty())
             throw RuntimeError("No modules added");
@@ -142,8 +142,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename... CT>
-    void Parallel(void (Module::*somefunc)(CT...),
-                  std::vector<int> positions,
+    void Parallel(void (Module::*somefunc)(CT...), std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) {
 
         if (modules.empty())
@@ -296,9 +295,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::vector<char> readProgrammingFile(const std::string &fname);
 
     void setNumberofUDPInterfaces(int n, Positions pos);
-    Result<int> getDefaultDac(defs::dacIndex index,
-                                   defs::detectorSettings sett,
-                                   Positions pos = {});
+    Result<int> getDefaultDac(defs::dacIndex index, defs::detectorSettings sett,
+                              Positions pos = {});
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos);
     defs::ROI getRxROI() const;

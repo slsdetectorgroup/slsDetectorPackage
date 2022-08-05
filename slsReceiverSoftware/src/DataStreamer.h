@@ -47,8 +47,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @param ip streaming source ip
      * @param hwm streaming high water mark
      */
-    void CreateZmqSockets(uint32_t port, const IpAddr ip,
-                          int hwm);
+    void CreateZmqSockets(uint32_t port, const IpAddr ip, int hwm);
     void CloseZmqSocket();
     void RestreamStop();
 
@@ -57,7 +56,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * Record First Index
      */
     void RecordFirstIndex(uint64_t fnum, size_t firstImageIndex);
-    
+
     void ThreadExecution();
 
     /**
@@ -70,10 +69,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
      */
-    void ProcessAnImage(sls_detector_header header, size_t size, char* data);
+    void ProcessAnImage(sls_detector_header header, size_t size, char *data);
 
     int SendDummyHeader();
-    
+
     /**
      * Create and send Json Header
      * @param rheader header of image
@@ -83,8 +82,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
      * @returns 0 if error, else 1
      */
     int SendDataHeader(sls_detector_header header, uint32_t size = 0,
-                   uint32_t nx = 0, uint32_t ny = 0);
-
+                       uint32_t nx = 0, uint32_t ny = 0);
 
     static const std::string TypeName;
     const GeneralData *generalData{nullptr};

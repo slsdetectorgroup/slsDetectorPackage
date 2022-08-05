@@ -56,18 +56,18 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     void CreateFirstFiles(const std::string &fileNamePrefix,
                           const uint64_t fileIndex, const bool overWriteEnable,
-                          const bool silentMode,
-                          const uint32_t udpPortNumber,
+                          const bool silentMode, const uint32_t udpPortNumber,
                           const uint64_t numImages,
                           const bool detectorDataStream);
 #ifdef HDF5C
     uint32_t GetFilesInAcquisition() const;
-    std::string CreateVirtualFile(
-        const std::string &filePath, const std::string &fileNamePrefix,
-        const uint64_t fileIndex, const bool overWriteEnable,
-        const bool silentMode, const int modulePos,
-        const uint64_t numImages, const int numModX, const int numModY,
-        std::mutex *hdf5LibMutex);
+    std::string CreateVirtualFile(const std::string &filePath,
+                                  const std::string &fileNamePrefix,
+                                  const uint64_t fileIndex,
+                                  const bool overWriteEnable,
+                                  const bool silentMode, const int modulePos,
+                                  const uint64_t numImages, const int numModX,
+                                  const int numModY, std::mutex *hdf5LibMutex);
     void LinkFileInMaster(const std::string &masterFileName,
                           const std::string &virtualFileName,
                           const bool silentMode, std::mutex *hdf5LibMutex);
@@ -82,10 +82,16 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                  std::mutex *hdf5LibMutex);
 
     /** params: sls_receiver_header, pointer to data, image size */
-    void registerCallBackRawDataReady(void (*func)(sls_receiver_header&, char *, size_t, void *), void *arg);
-    
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
+                                                   char *, size_t, void *),
+                                      void *arg);
+
     /** params: sls_receiver_header, pointer to data, reference to image size */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header&, char *, size_t &, void *), void *arg);
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &,
+                                                         char *, size_t &,
+                                                         void *),
+                                            void *arg);
+
   private:
     void RecordFirstIndex(uint64_t fnum);
 
@@ -106,7 +112,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
      */
-    void ProcessAnImage(sls_receiver_header & header, size_t &size, size_t &firstImageIndex, char* data);
+    void ProcessAnImage(sls_receiver_header &header, size_t &size,
+                        size_t &firstImageIndex, char *data);
 
     /**
      * Calls CheckTimer and CheckCount for streaming frequency and timer
@@ -129,15 +136,15 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      */
     bool CheckCount();
 
-    void PadMissingPackets(sls_receiver_header header, char* data);
+    void PadMissingPackets(sls_receiver_header header, char *data);
 
     /**
      * Align corresponding digital bits together (CTB only if ctbDbitlist is not
      * empty)
      */
-    void RearrangeDbitData(size_t & size, char *data);
+    void RearrangeDbitData(size_t &size, char *data);
 
-    void CropImage(size_t & size, char *data);
+    void CropImage(size_t &size, char *data);
 
     static const std::string typeName;
 
@@ -182,7 +189,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * dataPointer is the pointer to the data
      * dataSize in bytes is the size of the data in bytes.
      */
-    void (*rawDataReadyCallBack)(sls_receiver_header&, char *, size_t,
+    void (*rawDataReadyCallBack)(sls_receiver_header &, char *, size_t,
                                  void *) = nullptr;
 
     /**
@@ -193,7 +200,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * revDatasize is the reference of data size in bytes. Can be modified to
      * the new size to be written/streamed. (only smaller value).
      */
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header&, char *, size_t &,
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header &, char *, size_t &,
                                        void *) = nullptr;
 
     void *pRawDataReady{nullptr};

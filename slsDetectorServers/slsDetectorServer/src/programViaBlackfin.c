@@ -110,7 +110,8 @@ int defineGPIOpins(char *mess) {
     if (access(CMD_GPIO9_EXIST, F_OK) != 0) {
         if (executeCommand(CMD_GPIO9_DEFINE, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not define gpio9 (nConfig) for fpga (%s)\n", retvals);
+                     "Could not define gpio9 (nConfig) for fpga (%s)\n",
+                     retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -146,7 +147,8 @@ int FPGAdontTouchFlash(char *mess, int programming) {
     // define gpio9 as output
     if (executeCommand(CMD_GPIO9_DEFINE_OUT, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not set gpio9 (nConfig) as output for fpga (%s)\n", retvals);
+                 "Could not set gpio9 (nConfig) as output for fpga (%s)\n",
+                 retvals);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -156,7 +158,8 @@ int FPGAdontTouchFlash(char *mess, int programming) {
     if (programming && latestKernelVerified == 1) {
         if (executeCommand(CMD_GPIO3_DEFINE_OUT, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not set gpio3 (nCE) as output for fpga (%s)\n", retvals);
+                     "Could not set gpio3 (nCE) as output for fpga (%s)\n",
+                     retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -166,9 +169,10 @@ int FPGAdontTouchFlash(char *mess, int programming) {
     // tell FPGA to not: gpio9
     if (executeCommand(CMD_GPIO9_DONT_TOUCH_FLASH, retvals, logDEBUG1) ==
         FAIL) {
-        snprintf(mess, MAX_STR_LENGTH,
-                 "Could not set gpio9 (nConfig) to not touch flash for fpga (%s)\n",
-                 retvals);
+        snprintf(
+            mess, MAX_STR_LENGTH,
+            "Could not set gpio9 (nConfig) to not touch flash for fpga (%s)\n",
+            retvals);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -178,9 +182,10 @@ int FPGAdontTouchFlash(char *mess, int programming) {
     if (programming && latestKernelVerified == 1) {
         if (executeCommand(CMD_GPIO3_DONT_TOUCH_FLASH, retvals, logDEBUG1) ==
             FAIL) {
-            snprintf(mess, MAX_STR_LENGTH,
-                     "Could not set gpio3 (nCE) to not touch flash for fpga (%s)\n",
-                     retvals);
+            snprintf(
+                mess, MAX_STR_LENGTH,
+                "Could not set gpio3 (nCE) to not touch flash for fpga (%s)\n",
+                retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -198,7 +203,8 @@ int FPGATouchFlash(char *mess, int programming) {
     // tell FPGA to touch flash to program itself
     if (executeCommand(CMD_GPIO9_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
         snprintf(mess, MAX_STR_LENGTH,
-                 "Could not set gpio9 (nConfig) as input for fpga (%s)\n", retvals);
+                 "Could not set gpio9 (nConfig) as input for fpga (%s)\n",
+                 retvals);
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -207,7 +213,8 @@ int FPGATouchFlash(char *mess, int programming) {
     if (programming && latestKernelVerified == 1) {
         if (executeCommand(CMD_GPIO3_DEFINE_IN, retvals, logDEBUG1) == FAIL) {
             snprintf(mess, MAX_STR_LENGTH,
-                     "Could not set gpio3 (nCE) as input for fpga (%s)\n", retvals);
+                     "Could not set gpio3 (nCE) as input for fpga (%s)\n",
+                     retvals);
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -341,8 +348,8 @@ int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
 
     FILE *flashfd = NULL;
     FILE *srcfd = NULL;
-    if (openFileForFlash(mess, index, &flashfd, &srcfd, forceDeleteNormalFile) ==
-        FAIL) {
+    if (openFileForFlash(mess, index, &flashfd, &srcfd,
+                         forceDeleteNormalFile) == FAIL) {
         return FAIL;
     }
 
@@ -446,8 +453,8 @@ int getDrive(char *mess, enum PROGRAM_INDEX index) {
     return OK;
 }
 
-int openFileForFlash(char *mess, enum PROGRAM_INDEX index, FILE **flashfd, FILE **srcfd,
-                     int forceDeleteNormalFile) {
+int openFileForFlash(char *mess, enum PROGRAM_INDEX index, FILE **flashfd,
+                     FILE **srcfd, int forceDeleteNormalFile) {
     // open src file
     *srcfd = fopen(TEMP_PROG_FILE_NAME, "r");
     if (*srcfd == NULL) {
@@ -480,13 +487,13 @@ int openFileForFlash(char *mess, enum PROGRAM_INDEX index, FILE **flashfd, FILE 
     return OK;
 }
 
-int checkNormalFile(char *mess, enum PROGRAM_INDEX index, int forceDeleteNormalFile) {
+int checkNormalFile(char *mess, enum PROGRAM_INDEX index,
+                    int forceDeleteNormalFile) {
 #ifndef VIRTUAL
     // check if its a normal file or special file
     struct stat buf;
     if (stat(flashDriveName, &buf) == -1) {
-        sprintf(mess,
-                "Could not %s. Unable to find the flash drive %s\n",
+        sprintf(mess, "Could not %s. Unable to find the flash drive %s\n",
                 messageType, flashDriveName);
         LOG(logERROR, (mess));
         return FAIL;
@@ -507,17 +514,21 @@ int checkNormalFile(char *mess, enum PROGRAM_INDEX index, int forceDeleteNormalF
         // user does not allow to fix it (default)
         if (forceDeleteNormalFile == 0) {
             sprintf(mess,
-                "Could not %s. The flash drive %s found for fpga programming is a normal file. To "
-                "fix this (by deleting this file, creating the flash drive and proceeding with "
-                "programming), re-run the programming command 'programfpga' with parameter "
-                "'--force-delete-normal-file'\n",
-                messageType, flashDriveName);
+                    "Could not %s. The flash drive %s found for fpga "
+                    "programming is a normal file. To "
+                    "fix this (by deleting this file, creating the flash drive "
+                    "and proceeding with "
+                    "programming), re-run the programming command "
+                    "'programfpga' with parameter "
+                    "'--force-delete-normal-file'\n",
+                    messageType, flashDriveName);
             LOG(logERROR, (mess));
             return FAIL;
         }
-        
+
         // fpga memory stays after a reboot, user allowed to fix it
-        LOG(logWARNING, ("Flash drive invalidated (normal file). Fixing it...\n"));
+        LOG(logWARNING,
+            ("Flash drive invalidated (normal file). Fixing it...\n"));
 
         // user allows to fix it, so force delete normal file
         char cmd[MAX_STR_LENGTH] = {0};
@@ -678,7 +689,8 @@ int waitForFPGAtoTouchFlash(char *mess) {
 #ifdef VIRTUAL
     return OK;
 #endif
-    LOG(logINFO, ("\tWaiting for FPGA to program from flash... \n\t[gpio7 (CD) should be High when done]\n"));
+    LOG(logINFO, ("\tWaiting for FPGA to program from flash... \n\t[gpio7 (CD) "
+                  "should be High when done]\n"));
     int timeSpent = 0;
 
     int result = 0;
@@ -718,6 +730,7 @@ int waitForFPGAtoTouchFlash(char *mess) {
         }
         LOG(logDEBUG1, ("gpi07 (CD)returned %d\n", result));
     }
-    LOG(logINFO, ("\tFPGA has picked up the program from flash. gpio7 (CD) is High\n"));
+    LOG(logINFO,
+        ("\tFPGA has picked up the program from flash. gpio7 (CD) is High\n"));
     return OK;
 }

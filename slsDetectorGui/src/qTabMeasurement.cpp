@@ -339,7 +339,7 @@ void qTabMeasurement::GetTimingMode() {
     disconnect(comboTimingMode, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetTimingMode(int)));
     try {
-        
+
         slsDetectorDefs::timingMode retval{slsDetectorDefs::AUTO_TIMING};
         // m3: remove slave modes (always trigger) before squashing
         if (det->getDetectorType().squash() == slsDetectorDefs::MYTHEN3) {
@@ -373,7 +373,7 @@ void qTabMeasurement::GetTimingMode() {
             break;
         default:
             throw RuntimeError(std::string("Unknown timing mode: ") +
-                                    std::to_string(retval));
+                               std::to_string(retval));
         }
     }
     CATCH_DISPLAY("Could not get timing mode.",
@@ -410,7 +410,7 @@ void qTabMeasurement::GetBurstMode() {
             break;
         default:
             throw RuntimeError(std::string("Unknown burst mode: ") +
-                                    std::to_string(retval));
+                               std::to_string(retval));
         }
     }
     CATCH_DISPLAY("Could not get burst mode.", "qTabMeasurement::GetBurstMode")

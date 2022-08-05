@@ -22,7 +22,6 @@
 #include <unistd.h>
 #include <vector>
 
-
 namespace sls {
 
 using ns = std::chrono::nanoseconds;
@@ -33,7 +32,6 @@ using Interface = ServerInterface;
 #include <sys/syscall.h>
 #define gettid() syscall(SYS_gettid)
 #endif
-
 
 ClientInterface::~ClientInterface() {
     killTcpThread = true;
@@ -72,13 +70,13 @@ void ClientInterface::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
 }
 
 void ClientInterface::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header&, char *, size_t, void *), void *arg) {
+    void (*func)(sls_receiver_header &, char *, size_t, void *), void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
 
 void ClientInterface::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header&, char *, size_t &, void *), void *arg) {
+    void (*func)(sls_receiver_header &, char *, size_t &, void *), void *arg) {
     rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
 }
@@ -1176,7 +1174,8 @@ int ClientInterface::get_additional_json_header(Interface &socket) {
 int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
     auto size = socket.Receive<int>();
     if (size == 0) {
-        throw RuntimeError("Receiver socket buffer size must be greater than 0.");
+        throw RuntimeError(
+            "Receiver socket buffer size must be greater than 0.");
     }
     if (size > 0) {
         verifyIdle(socket);

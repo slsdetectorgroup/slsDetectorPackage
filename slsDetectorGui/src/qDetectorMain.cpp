@@ -59,7 +59,8 @@ int main(int argc, char **argv) {
 
         case 'f':
             fname = optarg;
-            LOG(sls::logDEBUG) << long_options[option_index].name << " " << optarg;
+            LOG(sls::logDEBUG)
+                << long_options[option_index].name << " " << optarg;
             break;
 
         case 'd':
@@ -73,7 +74,7 @@ int main(int argc, char **argv) {
         case 'v':
             tempval = APIGUI;
             LOG(sls::logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x"
-                         << std::hex << tempval << ")";
+                              << std::hex << tempval << ")";
             return 0;
 
         case 'h':
@@ -101,7 +102,8 @@ int main(int argc, char **argv) {
         app.exec();
     } catch (const std::exception &e) {
         sls::qDefs::Message(sls::qDefs::CRITICAL,
-                       std::string(e.what()) + "\nExiting Gui :'( ", "main");
+                            std::string(e.what()) + "\nExiting Gui :'( ",
+                            "main");
     }
     return 0;
 }
@@ -243,16 +245,14 @@ void qDetectorMain::SetUpDetector(const std::string &config_file, int multiID) {
     default:
         std::ostringstream os;
         os << det->getHostname() << " has "
-           << ToString(det->getDetectorType().squash())
-           << " detector type (" << std::to_string(detType)
-           << "). Exiting GUI.";
+           << ToString(det->getDetectorType().squash()) << " detector type ("
+           << std::to_string(detType) << "). Exiting GUI.";
         std::string errorMess = os.str();
         throw RuntimeError(errorMess.c_str());
     }
     std::ostringstream os;
-    os << "SLS Detector GUI : "
-       << ToString(det->getDetectorType().squash()) << " - "
-       << det->getHostname();
+    os << "SLS Detector GUI : " << ToString(det->getDetectorType().squash())
+       << " - " << det->getHostname();
     std::string title = os.str();
     LOG(logINFO) << title;
     setWindowTitle(QString(title.c_str()));
@@ -344,7 +344,8 @@ void qDetectorMain::EnableModes(QAction *action) {
         enable = actionExpert->isChecked();
 
         tabs->setTabEnabled(ADVANCED, enable);
-        bool visible = enable && (detType == slsDetectorDefs::EIGER || detType == slsDetectorDefs::MYTHEN3);
+        bool visible = enable && (detType == slsDetectorDefs::EIGER ||
+                                  detType == slsDetectorDefs::MYTHEN3);
         actionLoadTrimbits->setVisible(visible);
         actionSaveTrimbits->setVisible(visible);
         tabSettings->SetExportMode(enable);

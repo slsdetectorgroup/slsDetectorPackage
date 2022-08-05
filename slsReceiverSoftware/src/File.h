@@ -26,9 +26,8 @@ class File : private virtual slsDetectorDefs {
 
 #ifdef HDF5C
     virtual std::string GetFileName() const {
-        LOG(logERROR)
-            << "This is a generic function GetFileName that "
-               "should be overloaded by a derived class";
+        LOG(logERROR) << "This is a generic function GetFileName that "
+                         "should be overloaded by a derived class";
         return std::string{};
     }
 
@@ -46,9 +45,8 @@ class File : private virtual slsDetectorDefs {
     }
 
     virtual std::vector<std::string> GetParameterNames() const {
-        LOG(logERROR)
-            << "This is a generic function GetParameterNames that "
-               "should be overloaded by a derived class";
+        LOG(logERROR) << "This is a generic function GetParameterNames that "
+                         "should be overloaded by a derived class";
         return std::vector<std::string>{};
     };
 
@@ -60,26 +58,31 @@ class File : private virtual slsDetectorDefs {
     };
 
     virtual void CreateFirstHDF5DataFile(
-        const std::string& fileNamePrefix,
-        const uint64_t fileIndex, const bool overWriteEnable,
-        const bool silentMode, const uint32_t udpPortNumber,
-        const uint32_t maxFramesPerFile, const uint64_t numImages,
-        const uint32_t nPixelsX, const uint32_t nPixelsY,
-        const uint32_t dynamicRange) {
-        LOG(logERROR) << "This is a generic function CreateFirstHDF5DataFile that "
-                         "should be overloaded by a derived class";
+        const std::string &fileNamePrefix, const uint64_t fileIndex,
+        const bool overWriteEnable, const bool silentMode,
+        const uint32_t udpPortNumber, const uint32_t maxFramesPerFile,
+        const uint64_t numImages, const uint32_t nPixelsX,
+        const uint32_t nPixelsY, const uint32_t dynamicRange) {
+        LOG(logERROR)
+            << "This is a generic function CreateFirstHDF5DataFile that "
+               "should be overloaded by a derived class";
     };
 #endif
-    virtual void CreateFirstBinaryDataFile(
-        const std::string& fileNamePrefix,
-        const uint64_t fileIndex, const bool overWriteEnable,
-        const bool silentMode, const uint32_t udpPortNumber,
-        const uint32_t maxFramesPerFile) {
-        LOG(logERROR) << "This is a generic function CreateFirstBinaryDataFile that "
-                         "should be overloaded by a derived class";
+    virtual void CreateFirstBinaryDataFile(const std::string &fileNamePrefix,
+                                           const uint64_t fileIndex,
+                                           const bool overWriteEnable,
+                                           const bool silentMode,
+                                           const uint32_t udpPortNumber,
+                                           const uint32_t maxFramesPerFile) {
+        LOG(logERROR)
+            << "This is a generic function CreateFirstBinaryDataFile that "
+               "should be overloaded by a derived class";
     };
 
-    virtual void WriteToFile(char *imageData, sls_receiver_header& header, const int imageSize, const uint64_t currentFrameNumber,const uint32_t numPacketsCaught) = 0;
+    virtual void WriteToFile(char *imageData, sls_receiver_header &header,
+                             const int imageSize,
+                             const uint64_t currentFrameNumber,
+                             const uint32_t numPacketsCaught) = 0;
 };
 
 } // namespace sls

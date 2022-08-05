@@ -28,18 +28,18 @@ HDF5DataFile::HDF5DataFile(int index, std::mutex *hdf5Lib)
     };
     H5::StrType strdatatype(H5::PredType::C_S1, sizeof(bitset_storage));
     parameterDataTypes = std::vector<H5::DataType>{
-        H5::PredType::STD_U64LE, H5::PredType::STD_U32LE, H5::PredType::STD_U32LE,
-        H5::PredType::STD_U64LE, H5::PredType::STD_U64LE, H5::PredType::STD_U16LE,
-        H5::PredType::STD_U16LE, H5::PredType::STD_U16LE, H5::PredType::STD_U16LE,
-        H5::PredType::STD_U32LE, H5::PredType::STD_U16LE, H5::PredType::STD_U8LE,
+        H5::PredType::STD_U64LE, H5::PredType::STD_U32LE,
+        H5::PredType::STD_U32LE, H5::PredType::STD_U64LE,
+        H5::PredType::STD_U64LE, H5::PredType::STD_U16LE,
+        H5::PredType::STD_U16LE, H5::PredType::STD_U16LE,
+        H5::PredType::STD_U16LE, H5::PredType::STD_U32LE,
+        H5::PredType::STD_U16LE, H5::PredType::STD_U8LE,
         H5::PredType::STD_U8LE,  strdatatype};
 }
 
 HDF5DataFile::~HDF5DataFile() { CloseFile(); }
 
-std::string HDF5DataFile::GetFileName() const {
-    return fileName;
-}
+std::string HDF5DataFile::GetFileName() const { return fileName; }
 
 uint32_t HDF5DataFile::GetFilesInAcquisition() const {
     return numFilesInAcquisition;
@@ -54,9 +54,7 @@ std::vector<H5::DataType> HDF5DataFile::GetParameterDataTypes() const {
     return parameterDataTypes;
 }
 
-slsDetectorDefs::fileFormat HDF5DataFile::GetFileFormat() const {
-    return HDF5;
-}
+slsDetectorDefs::fileFormat HDF5DataFile::GetFileFormat() const { return HDF5; }
 
 void HDF5DataFile::CloseFile() {
     std::lock_guard<std::mutex> lock(*hdf5Lib);
@@ -68,8 +66,7 @@ void HDF5DataFile::CloseFile() {
             fd = nullptr;
         }
     } catch (const H5::Exception &error) {
-        LOG(logERROR) << "Could not close data HDF5 handles of index "
-                      << index;
+        LOG(logERROR) << "Could not close data HDF5 handles of index " << index;
         error.printErrorStack();
     }
     if (dataSpace) {
@@ -90,9 +87,8 @@ void HDF5DataFile::CloseFile() {
 }
 
 void HDF5DataFile::CreateFirstHDF5DataFile(
-    const std::string& fNamePrefix,
-    const uint64_t fIndex, const bool owEnable, const bool sMode,
-    const uint32_t uPortNumber, const uint32_t mFramesPerFile,
+    const std::string &fNamePrefix, const uint64_t fIndex, const bool owEnable,
+    const bool sMode, const uint32_t uPortNumber, const uint32_t mFramesPerFile,
     const uint64_t nImages, const uint32_t nX, const uint32_t nY,
     const uint32_t dr) {
 
@@ -134,8 +130,7 @@ void HDF5DataFile::CreateFile() {
     numFilesInAcquisition++;
 
     std::ostringstream os;
-    os << fileNamePrefix << "_f" << subFileIndex
-       << '_' << fileIndex << ".h5";
+    os << fileNamePrefix << "_f" << subFileIndex << '_' << fileIndex << ".h5";
     fileName = os.str();
 
     std::lock_guard<std::mutex> lock(*hdf5Lib);
@@ -160,10 +155,10 @@ void HDF5DataFile::CreateFile() {
         fd = nullptr;
         if (!overWriteEnable)
             fd = new H5::H5File(fileName.c_str(), H5F_ACC_EXCL,
-                             H5::FileCreatPropList::DEFAULT, fapl);
+                                H5::FileCreatPropList::DEFAULT, fapl);
         else
             fd = new H5::H5File(fileName.c_str(), H5F_ACC_TRUNC,
-                             H5::FileCreatPropList::DEFAULT, fapl);
+                                H5::FileCreatPropList::DEFAULT, fapl);
 
         // attributes - version
         double dValue = HDF5_WRITER_VERSION;
@@ -193,14 +188,14 @@ void HDF5DataFile::CreateFile() {
         H5::DSetCreatPropList plistPara;
         int fill_value = -1;
         plist.setFillValue(dataType, &fill_value);
-        //plistPara.setFillValue(dataType, &fill_value);
+        // plistPara.setFillValue(dataType, &fill_value);
         plist.setChunk(DATA_RANK, dimsChunk);
         plistPara.setChunk(PARA_RANK, dimsChunkPara);
 
         // dataset
         dataSet = nullptr;
-        dataSet = new H5::DataSet(fd->createDataSet(
-            DATASET_NAME, dataType, *dataSpace, plist));
+        dataSet = new H5::DataSet(
+            fd->createDataSet(DATASET_NAME, dataType, *dataSpace, plist));
         for (unsigned int i = 0; i < parameterNames.size(); ++i) {
             H5::DataSet *ds = new H5::DataSet(fd->createDataSet(
                 parameterNames[i].c_str(), parameterDataTypes[i],
@@ -210,8 +205,7 @@ void HDF5DataFile::CreateFile() {
     } catch (const H5::Exception &error) {
         error.printErrorStack();
         CloseFile();
-        throw RuntimeError("Could not create HDF5 handles in object " +
-                                index);
+        throw RuntimeError("Could not create HDF5 handles in object " + index);
     }
     if (!silentMode) {
         LOG(logINFO) << "[" << udpPortNumber
@@ -219,7 +213,10 @@ void HDF5DataFile::CreateFile() {
     }
 }
 
-void HDF5DataFile::WriteToFile(char *imageData, sls_receiver_header& header, const int imageSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) {
+void HDF5DataFile::WriteToFile(char *imageData, sls_receiver_header &header,
+                               const int imageSize,
+                               const uint64_t currentFrameNumber,
+                               const uint32_t numPacketsCaught) {
 
     // check if maxframesperfile = 0 for infinite
     if (maxFramesPerFile && (numFramesInFile >= maxFramesPerFile)) {
@@ -250,15 +247,15 @@ void HDF5DataFile::Convert12to16Bit(uint16_t *dst, uint8_t *src) {
 }
 
 void HDF5DataFile::WriteImageDatasets(const uint64_t currentFrameNumber,
-                                 char *buffer) {
+                                      char *buffer) {
     // expand 12 bit to 16 bits
     char *revBuffer = buffer;
     if (dynamicRange == 12) {
         revBuffer = (char *)malloc(EIGER_16_BIT_IMAGE_SIZE);
         if (revBuffer == nullptr) {
             throw RuntimeError("Could not allocate memory for 12 bit to "
-                                    "16 bit conversion in object " +
-                                    std::to_string(index));
+                               "16 bit conversion in object " +
+                               std::to_string(index));
         }
         Convert12to16Bit((uint16_t *)revBuffer, (uint8_t *)buffer);
     }
@@ -267,7 +264,7 @@ void HDF5DataFile::WriteImageDatasets(const uint64_t currentFrameNumber,
 
     uint64_t nDimx =
         ((maxFramesPerFile == 0) ? currentFrameNumber
-                                  : currentFrameNumber % maxFramesPerFile);
+                                 : currentFrameNumber % maxFramesPerFile);
     uint32_t nDimy = nPixelsY;
     uint32_t nDimz = ((dynamicRange == 4) ? (nPixelsX / 2) : nPixelsX);
 
@@ -291,7 +288,7 @@ void HDF5DataFile::WriteImageDatasets(const uint64_t currentFrameNumber,
         LOG(logERROR) << "Could not write to file in object " << index;
         error.printErrorStack();
         throw RuntimeError("Could not write to file in object " +
-                                std::to_string(index));
+                           std::to_string(index));
     }
 }
 
@@ -301,7 +298,7 @@ void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
 
     uint64_t fnum =
         ((maxFramesPerFile == 0) ? currentFrameNumber
-                                  : currentFrameNumber % maxFramesPerFile);
+                                 : currentFrameNumber % maxFramesPerFile);
 
     sls_detector_header header = rheader.detHeader;
     hsize_t count[PARA_RANK] = {1};
@@ -312,50 +309,50 @@ void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
         dataSpacePara->selectHyperslab(H5S_SELECT_SET, count, start);
         H5::DataSpace memspace(H5S_SCALAR);
         dataSetPara[0]->write(&header.frameNumber, parameterDataTypes[0],
-                               memspace, *dataSpacePara);
+                              memspace, *dataSpacePara);
         i = 1;
         dataSetPara[1]->write(&header.expLength, parameterDataTypes[1],
-                               memspace, *dataSpacePara);
+                              memspace, *dataSpacePara);
         i = 2;
         dataSetPara[2]->write(&header.packetNumber, parameterDataTypes[2],
-                               memspace, *dataSpacePara);
+                              memspace, *dataSpacePara);
         i = 3;
-        dataSetPara[3]->write(&header.bunchId, parameterDataTypes[3],
-                               memspace, *dataSpacePara);
+        dataSetPara[3]->write(&header.bunchId, parameterDataTypes[3], memspace,
+                              *dataSpacePara);
         i = 4;
         dataSetPara[4]->write(&header.timestamp, parameterDataTypes[4],
-                               memspace, *dataSpacePara);
+                              memspace, *dataSpacePara);
         i = 5;
         dataSetPara[5]->write(&header.modId, parameterDataTypes[5], memspace,
-                               *dataSpacePara);
+                              *dataSpacePara);
         i = 6;
         dataSetPara[6]->write(&header.row, parameterDataTypes[6], memspace,
-                               *dataSpacePara);
+                              *dataSpacePara);
         i = 7;
         dataSetPara[7]->write(&header.column, parameterDataTypes[7], memspace,
-                               *dataSpacePara);
+                              *dataSpacePara);
         i = 8;
-        dataSetPara[8]->write(&header.reserved, parameterDataTypes[8],
-                               memspace, *dataSpacePara);
+        dataSetPara[8]->write(&header.reserved, parameterDataTypes[8], memspace,
+                              *dataSpacePara);
         i = 9;
         dataSetPara[9]->write(&header.debug, parameterDataTypes[9], memspace,
-                               *dataSpacePara);
+                              *dataSpacePara);
         i = 10;
         dataSetPara[10]->write(&header.roundRNumber, parameterDataTypes[10],
-                                memspace, *dataSpacePara);
+                               memspace, *dataSpacePara);
         i = 11;
         dataSetPara[11]->write(&header.detType, parameterDataTypes[11],
-                                memspace, *dataSpacePara);
+                               memspace, *dataSpacePara);
         i = 12;
         dataSetPara[12]->write(&header.version, parameterDataTypes[12],
-                                memspace, *dataSpacePara);
+                               memspace, *dataSpacePara);
         i = 13;
 
         // contiguous bitset
         if (sizeof(sls_bitset) == sizeof(bitset_storage)) {
             dataSetPara[13]->write((char *)&(rheader.packetsMask),
-                                    parameterDataTypes[13], memspace,
-                                    *dataSpacePara);
+                                   parameterDataTypes[13], memspace,
+                                   *dataSpacePara);
         }
 
         // not contiguous bitset
@@ -368,7 +365,7 @@ void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
                 storage[i >> 3] |= (bits[i] << (i & 7));
             // write bitmask
             dataSetPara[13]->write((char *)storage, parameterDataTypes[13],
-                                    memspace, *dataSpacePara);
+                                   memspace, *dataSpacePara);
         }
         i = 14;
     } catch (const H5::Exception &error) {
@@ -403,7 +400,7 @@ void HDF5DataFile::ExtendDataset() {
     } catch (const H5::Exception &error) {
         error.printErrorStack();
         throw RuntimeError("Could not extend dataset in object " +
-                                std::to_string(index));
+                           std::to_string(index));
     }
     if (!silentMode) {
         LOG(logINFO) << index << " Extending HDF5 dataset by " << extNumImages

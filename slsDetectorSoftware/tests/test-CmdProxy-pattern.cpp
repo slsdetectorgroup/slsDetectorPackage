@@ -170,12 +170,12 @@ TEST_CASE("patloop", "[.cmd]") {
             std::string sLoop = ToString(iLoop);
             if (iLoop < 3) {
                 std::string deprecatedCmd = "patloop" + sLoop;
-                {// depreciated
+                { // depreciated
                     std::ostringstream oss;
                     proxy.Call(deprecatedCmd, {"0x20", "0x5c"}, -1, PUT, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " [0x0020, 0x005c]\n");
                 }
-                {// depreciated
+                { // depreciated
                     std::ostringstream oss;
                     proxy.Call(deprecatedCmd, {}, -1, GET, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " [0x0020, 0x005c]\n");
@@ -190,9 +190,10 @@ TEST_CASE("patloop", "[.cmd]") {
                 std::ostringstream oss;
                 proxy.Call("patloop", {sLoop}, -1, GET, oss);
                 REQUIRE(oss.str() == "patloop [0x0020, 0x005c]\n");
-            }            
+            }
             for (int iDet = 0; iDet != det.size(); ++iDet) {
-                det.setPatternLoopAddresses(iLoop, prev_val[iDet][0], prev_val[iDet][1], {iDet});
+                det.setPatternLoopAddresses(iLoop, prev_val[iDet][0],
+                                            prev_val[iDet][1], {iDet});
             }
         }
     } else {
@@ -216,12 +217,12 @@ TEST_CASE("patnloop", "[.cmd]") {
             std::string sLoop = ToString(iLoop);
             if (iLoop < 3) {
                 std::string deprecatedCmd = "patnloop" + sLoop;
-                {// depreciated
+                { // depreciated
                     std::ostringstream oss;
                     proxy.Call(deprecatedCmd, {"5"}, -1, PUT, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " 5\n");
                 }
-                {// depreciated
+                { // depreciated
                     std::ostringstream oss;
                     proxy.Call(deprecatedCmd, {}, -1, GET, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " 5\n");
@@ -262,12 +263,12 @@ TEST_CASE("patwait", "[.cmd]") {
             std::string sLoop = ToString(iLoop);
             if (iLoop < 3) {
                 std::string deprecatedCmd = "patwait" + sLoop;
-                {// depreciated
+                { // depreciated
                     std::ostringstream oss;
                     proxy.Call(deprecatedCmd, {"0x5c"}, -1, PUT, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " 0x005c\n");
                 }
-                {// depreciated
+                { // depreciated
                     std::ostringstream oss;
                     proxy.Call(deprecatedCmd, {}, -1, GET, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " 0x005c\n");
@@ -308,12 +309,12 @@ TEST_CASE("patwaittime", "[.cmd]") {
             std::string sLoop = ToString(iLoop);
             if (iLoop < 3) {
                 std::string deprecatedCmd = "patwaittime" + sLoop;
-                {// depreciated
+                { // depreciated
                     std::ostringstream oss;
                     proxy.Call(deprecatedCmd, {"8589936640"}, -1, PUT, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " 8589936640\n");
                 }
-                {// depreciated
+                { // depreciated
                     std::ostringstream oss;
                     proxy.Call(deprecatedCmd, {}, -1, GET, oss);
                     REQUIRE(oss.str() == deprecatedCmd + " 8589936640\n");

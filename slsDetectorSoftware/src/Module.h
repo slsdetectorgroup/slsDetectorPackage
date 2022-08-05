@@ -791,22 +791,22 @@ class Module : public virtual slsDetectorDefs {
     static const int NIOS_WRITE_TO_FLASH_TIME_KERNEL = 40;
 
     enum mythen3_DacIndex {
-      M_VCASSH,
-      M_VTH2,
-      M_VRSHAPER,
-      M_VRSHAPER_N,
-      M_VIPRE_OUT,
-      M_VTH3,
-      M_VTH1,
-      M_VICIN,
-      M_VCAS,
-      M_VRPREAMP,
-      M_VCAL_N,
-      M_VIPRE,
-      M_VISHAPER,
-      M_VCAL_P,
-      M_VTRIM,
-      M_VDCSH
+        M_VCASSH,
+        M_VTH2,
+        M_VRSHAPER,
+        M_VRSHAPER_N,
+        M_VIPRE_OUT,
+        M_VTH3,
+        M_VTH1,
+        M_VICIN,
+        M_VCAS,
+        M_VRPREAMP,
+        M_VCAL_N,
+        M_VIPRE,
+        M_VISHAPER,
+        M_VCAL_P,
+        M_VTRIM,
+        M_VDCSH
     };
 
     enum eiger_DacIndex {

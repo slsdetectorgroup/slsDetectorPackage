@@ -23,15 +23,16 @@ class HDF5DataFile : private virtual slsDetectorDefs, public File {
 
     void CloseFile() override;
 
-    void CreateFirstHDF5DataFile(
-        const std::string& fNamePrefix,
-        const uint64_t fIndex, const bool owEnable,
-        const bool sMode, const uint32_t uPortNumber,
-        const uint32_t mFramesPerFile, const uint64_t nImages,
-        const uint32_t nX, const uint32_t nY,
-        const uint32_t dr) override;
+    void CreateFirstHDF5DataFile(const std::string &fNamePrefix,
+                                 const uint64_t fIndex, const bool owEnable,
+                                 const bool sMode, const uint32_t uPortNumber,
+                                 const uint32_t mFramesPerFile,
+                                 const uint64_t nImages, const uint32_t nX,
+                                 const uint32_t nY, const uint32_t dr) override;
 
-    void WriteToFile(char *imageData, sls_receiver_header& header, const int imageSize, const uint64_t currentFrameNumber, const uint32_t numPacketsCaught) override;
+    void WriteToFile(char *imageData, sls_receiver_header &header,
+                     const int imageSize, const uint64_t currentFrameNumber,
+                     const uint32_t numPacketsCaught) override;
 
   private:
     void CreateFile();

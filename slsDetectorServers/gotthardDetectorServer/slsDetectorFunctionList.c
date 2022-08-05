@@ -862,7 +862,8 @@ int setROI(ROI arg) {
         rois.ymin = -1;
         rois.ymax = -1;
     } else {
-        LOG(logINFO, ("Setting ROI:(%d, %d, %d, %d)\n", arg.xmin, arg.xmax, arg.ymin, arg.ymax));
+        LOG(logINFO, ("Setting ROI:(%d, %d, %d, %d)\n", arg.xmin, arg.xmax,
+                      arg.ymin, arg.ymax));
         // validation
         // xmin divisible by 256 and less than 1280
         if (((arg.xmin % NCHAN_PER_ADC) != 0) ||
@@ -896,7 +897,8 @@ ROI getROI() {
     if (rois.xmin == -1) {
         LOG(logINFO, ("\tROI: None\n"));
     } else {
-        LOG(logINFO, ("ROI: (%d,%d,%d,%d)\n", rois.xmin, rois.xmax, rois.ymin, rois.ymax));
+        LOG(logINFO, ("ROI: (%d,%d,%d,%d)\n", rois.xmin, rois.xmax, rois.ymin,
+                      rois.ymax));
     }
     return rois;
 }

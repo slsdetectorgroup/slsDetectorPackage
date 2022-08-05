@@ -69,8 +69,8 @@
 #define MAX_STR_LENGTH   1000
 #define SHORT_STR_LENGTH 20
 
-#define MAX_PATTERN_LENGTH 0x2000
-#define MAX_PATTERN_LEVELS 6
+#define MAX_PATTERN_LENGTH    0x2000
+#define MAX_PATTERN_LEVELS    6
 #define M3_MAX_PATTERN_LEVELS 3
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 500
@@ -179,8 +179,8 @@ class slsDetectorDefs {
         ROI(int xmin, int xmax, int ymin, int ymax)
             : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax){};
         constexpr std::array<int, 4> getIntArray() const {
-            return std::array<int, 4> ({xmin, xmax, ymin, ymax});
-        }    
+            return std::array<int, 4>({xmin, xmax, ymin, ymax});
+        }
         constexpr bool completeRoi() const {
             return (xmin == -1 && xmax == -1 && ymin == -1 && ymax == -1);
         }

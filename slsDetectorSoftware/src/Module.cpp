@@ -237,15 +237,16 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
         throw RuntimeError("This detector should have called with 3 energies");
     }
     if (shm()->trimEnergies.empty()) {
-        throw RuntimeError(
-            "Trim energies have not been defined for this module yet! Use trimen.");
+        throw RuntimeError("Trim energies have not been defined for this "
+                           "module yet! Use trimen.");
     }
 
     std::vector<int> energy(e_eV.begin(), e_eV.end());
     // if all energies are same
     if (allEqualTo(energy, energy[0])) {
         if (energy[0] == -1) {
-           throw RuntimeError("Every energy provided to set threshold energy is -1. Typo?"); 
+            throw RuntimeError(
+                "Every energy provided to set threshold energy is -1. Typo?");
         }
         energy.resize(1);
     }
@@ -309,8 +310,10 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
                                         trim2, trimbits);
             // csr
             if (myMod1.reg != myMod2.reg) {
-                throw RuntimeError("setAllThresholdEnergy: chip shift register values do not match between files for energy (eV) " +
-                                   std::to_string(energy[i]));
+                throw RuntimeError(
+                    "setAllThresholdEnergy: chip shift register values do not "
+                    "match between files for energy (eV) " +
+                    std::to_string(energy[i]));
             }
             myMods[i].reg = myMod1.reg;
         }
@@ -319,11 +322,9 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
     sls_detector_module myMod{shm()->detType};
     myMod = myMods[0];
 
-    
     // if multiple thresholds, combine
     if (myMods.size() > 1) {
         auto counters = getSetBits(getCounterMask());
-
 
         // average vtrim of enabled counters
         int sum = 0;
@@ -364,7 +365,9 @@ void Module::setAllThresholdEnergy(std::array<int, 3> e_eV,
         }
         // csr
         if (myMods[0].reg != myMods[1].reg || myMods[1].reg != myMods[2].reg) {
-            throw RuntimeError("setAllThresholdEnergy: chip shift register values do not match between files for all energies");
+            throw RuntimeError(
+                "setAllThresholdEnergy: chip shift register values do not "
+                "match between files for all energies");
         }
     }
 
@@ -2397,8 +2400,7 @@ void Module::setReceiverDbitList(std::vector<int> list) {
     }
     for (auto &it : list) {
         if (it < 0 || it > 63) {
-            throw RuntimeError(
-                "Dbit list value must be between 0 and 63\n");
+            throw RuntimeError("Dbit list value must be between 0 and 63\n");
         }
     }
     std::sort(begin(list), end(list));
@@ -3297,8 +3299,8 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
             }
         }
         if (out_of_range) {
-            LOG(logWARNING)
-                << "Some trimbits were out of range, these have been replaced with 0 or 63.";
+            LOG(logWARNING) << "Some trimbits were out of range, these have "
+                               "been replaced with 0 or 63.";
         }
         // check dacs
         out_of_range = false;
@@ -3318,8 +3320,9 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
             }
         }
         if (out_of_range) {
-            LOG(logWARNING) << "Some dacs were out of range, "
-                            "these have been replaced with 0/200 or 2800/2400.";
+            LOG(logWARNING)
+                << "Some dacs were out of range, "
+                   "these have been replaced with 0/200 or 2800/2400.";
         }
     }
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
@@ -3391,13 +3394,17 @@ void Module::sendModule(sls_detector_module *myMod, ClientSocket &client) {
     ts += n;
     LOG(level) << "channels sent. " << n << " bytes";
 
-    int expectedBytesSent = sizeof(sls_detector_module) - sizeof(myMod->dacs) - sizeof(myMod->chanregs) + (myMod->ndac * sizeof(int)) + (myMod->nchan * sizeof(int));
+    int expectedBytesSent = sizeof(sls_detector_module) - sizeof(myMod->dacs) -
+                            sizeof(myMod->chanregs) +
+                            (myMod->ndac * sizeof(int)) +
+                            (myMod->nchan * sizeof(int));
 
     if (expectedBytesSent != ts) {
-        throw RuntimeError("Module size "  + std::to_string(ts) + " sent does not match expected size to be sent " + std::to_string(expectedBytesSent));
+        throw RuntimeError("Module size " + std::to_string(ts) +
+                           " sent does not match expected size to be sent " +
+                           std::to_string(expectedBytesSent));
     }
 }
-
 
 void Module::receiveModule(sls_detector_module *myMod, ClientSocket &client) {
     constexpr TLogLevel level = logDEBUG1;
@@ -3630,33 +3637,36 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
     return myMod;
 }
 
-void Module::saveSettingsFile(sls_detector_module &myMod, const std::string &fname) {
+void Module::saveSettingsFile(sls_detector_module &myMod,
+                              const std::string &fname) {
     LOG(logDEBUG1) << moduleIndex << ": Saving settings to " << fname;
     std::ofstream outfile(fname);
     if (!outfile) {
         throw RuntimeError("Could not write settings file: " + fname);
     }
     switch (shm()->detType) {
-        case MYTHEN3:
-            outfile.write(reinterpret_cast<char *>(&myMod.reg), sizeof(myMod.reg));
-            outfile.write(reinterpret_cast<char *>(myMod.dacs),
-                    sizeof(int) * (myMod.ndac));
-            outfile.write(reinterpret_cast<char *>(myMod.chanregs),
-                        sizeof(int) * (myMod.nchan));
-            break;
-        case EIGER:
-            outfile.write(reinterpret_cast<char *>(myMod.dacs),
-                        sizeof(int) * (myMod.ndac));
-            outfile.write(reinterpret_cast<char *>(&myMod.iodelay),
-                        sizeof(myMod.iodelay));
-            outfile.write(reinterpret_cast<char *>(&myMod.tau), sizeof(myMod.tau));  
-            outfile.write(reinterpret_cast<char *>(myMod.chanregs),
-                            sizeof(int) * (myMod.nchan));   
-            break;   
-        default:
-            throw RuntimeError("Saving settings file is not implemented for this detector.");
+    case MYTHEN3:
+        outfile.write(reinterpret_cast<char *>(&myMod.reg), sizeof(myMod.reg));
+        outfile.write(reinterpret_cast<char *>(myMod.dacs),
+                      sizeof(int) * (myMod.ndac));
+        outfile.write(reinterpret_cast<char *>(myMod.chanregs),
+                      sizeof(int) * (myMod.nchan));
+        break;
+    case EIGER:
+        outfile.write(reinterpret_cast<char *>(myMod.dacs),
+                      sizeof(int) * (myMod.ndac));
+        outfile.write(reinterpret_cast<char *>(&myMod.iodelay),
+                      sizeof(myMod.iodelay));
+        outfile.write(reinterpret_cast<char *>(&myMod.tau), sizeof(myMod.tau));
+        outfile.write(reinterpret_cast<char *>(myMod.chanregs),
+                      sizeof(int) * (myMod.nchan));
+        break;
+    default:
+        throw RuntimeError(
+            "Saving settings file is not implemented for this detector.");
     }
-    LOG(logINFO) << "Settings for " << shm()->hostname << " written to " << fname; 
+    LOG(logINFO) << "Settings for " << shm()->hostname << " written to "
+                 << fname;
 }
 
 void Module::sendProgram(bool blackfin, std::vector<char> buffer,

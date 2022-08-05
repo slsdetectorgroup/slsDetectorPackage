@@ -24,9 +24,9 @@ std::string CreateMasterBinaryFile(const std::string &filePath,
     if (!overWriteEnable)
         mode = "wx";
     FILE *fd = fopen(fileName.c_str(), mode.c_str());
-    if(!fd) {
+    if (!fd) {
         throw RuntimeError("Could not create/overwrite binary master file " +
-                                    fileName);
+                           fileName);
     }
 
     rapidjson::StringBuffer s;
@@ -62,15 +62,16 @@ void LinkHDF5FileInMaster(std::string &masterFileName,
 
         // open master file
         H5::H5File masterfd(masterFileName.c_str(), H5F_ACC_RDWR,
-                        H5::FileCreatPropList::DEFAULT, flist);
+                            H5::FileCreatPropList::DEFAULT, flist);
 
         // open data file
         fd = make_unique<H5::H5File>(dataFilename.c_str(), H5F_ACC_RDONLY,
-                                      H5::FileCreatPropList::DEFAULT, flist);
+                                     H5::FileCreatPropList::DEFAULT, flist);
 
         // create link for data dataset
         H5::DataSet dset = fd->openDataSet(DATASET_NAME);
-        std::string linkname = std::string("/entry/data/") + std::string(DATASET_NAME);
+        std::string linkname =
+            std::string("/entry/data/") + std::string(DATASET_NAME);
         if (H5Lcreate_external(dataFilename.c_str(), DATASET_NAME,
                                masterfd.getLocId(), linkname.c_str(),
                                H5P_DEFAULT, H5P_DEFAULT) < 0) {
@@ -129,7 +130,7 @@ std::string CreateMasterHDF5File(const std::string &filePath,
             createFlags = H5F_ACC_TRUNC;
         }
         fd = make_unique<H5::H5File>(fileName.c_str(), createFlags,
-                                      H5::FileCreatPropList::DEFAULT, flist);
+                                     H5::FileCreatPropList::DEFAULT, flist);
 
         // attributes - version
         double dValue = HDF5_WRITER_VERSION;
@@ -152,8 +153,7 @@ std::string CreateMasterHDF5File(const std::string &filePath,
         error.printErrorStack();
         if (fd != nullptr)
             fd->close();
-        throw RuntimeError(
-            "Could not create/overwrite master HDF5 handles");
+        throw RuntimeError("Could not create/overwrite master HDF5 handles");
     }
     if (!silentMode) {
         LOG(logINFO) << "Master File: " << fileName;
@@ -165,13 +165,12 @@ std::string CreateVirtualHDF5File(
     const std::string &filePath, const std::string &fileNamePrefix,
     const uint64_t fileIndex, const bool overWriteEnable, const bool silentMode,
     const int modulePos, const int numUnitsPerReadout,
-    const uint32_t maxFramesPerFile,
-    const uint32_t nPixelsX, const uint32_t nPixelsY,
-    const uint32_t dynamicRange, const uint64_t numImagesCaught,
-    const int numModX, const int numModY, const H5::DataType dataType,
-    const std::vector<std::string> parameterNames,
-    const std::vector<H5::DataType> parameterDataTypes, std::mutex *hdf5LibMutex,
-    bool gotthard25um) {
+    const uint32_t maxFramesPerFile, const uint32_t nPixelsX,
+    const uint32_t nPixelsY, const uint32_t dynamicRange,
+    const uint64_t numImagesCaught, const int numModX, const int numModY,
+    const H5::DataType dataType, const std::vector<std::string> parameterNames,
+    const std::vector<H5::DataType> parameterDataTypes,
+    std::mutex *hdf5LibMutex, bool gotthard25um) {
 
     // virtual file name
     std::ostringstream osfn;
@@ -195,10 +194,10 @@ std::string CreateVirtualHDF5File(
         fapl.setFcloseDegree(H5F_CLOSE_STRONG);
         if (!overWriteEnable)
             fd = make_unique<H5::H5File>(fileName.c_str(), H5F_ACC_EXCL,
-                                          H5::FileCreatPropList::DEFAULT, fapl);
+                                         H5::FileCreatPropList::DEFAULT, fapl);
         else
             fd = make_unique<H5::H5File>(fileName.c_str(), H5F_ACC_TRUNC,
-                                          H5::FileCreatPropList::DEFAULT, fapl);
+                                         H5::FileCreatPropList::DEFAULT, fapl);
 
         // attributes - version
         double dValue = HDF5_WRITER_VERSION;
@@ -209,8 +208,9 @@ std::string CreateVirtualHDF5File(
 
         // dataspace
         hsize_t vdsDims[DATA_RANK] = {numImagesCaught, numModY * nDimy,
-                              numModZ * nDimz};
-        hsize_t vdsDimsPara[VDS_PARA_RANK] = {numImagesCaught, numModY * numModZ};
+                                      numModZ * nDimz};
+        hsize_t vdsDimsPara[VDS_PARA_RANK] = {numImagesCaught,
+                                              numModY * numModZ};
         H5::DataSpace vdsDataSpace(DATA_RANK, vdsDims, nullptr);
         H5::DataSpace vdsDataSpacePara(VDS_PARA_RANK, vdsDimsPara, nullptr);
 
@@ -290,16 +290,18 @@ std::string CreateVirtualHDF5File(
                 H5::DataSpace srcDataSpace(DATA_RANK, srcDims, srcDimsMax);
                 hsize_t srcDimsPara[PARA_RANK] = {nDimx};
                 hsize_t srcDimsMaxPara[PARA_RANK] = {H5S_UNLIMITED};
-                H5::DataSpace srcDataSpacePara(PARA_RANK, srcDimsPara, srcDimsMaxPara);
+                H5::DataSpace srcDataSpacePara(PARA_RANK, srcDimsPara,
+                                               srcDimsMaxPara);
                 // temporary fixfor corner case bug:
-                // (framescaught not multiple of framesperfile, 
+                // (framescaught not multiple of framesperfile,
                 // virtual parameter datasets error loading (bad scalar value))
                 if (nDimx != maxFramesPerFile) {
                     hsize_t count[1] = {nDimx};
                     hsize_t start[1] = {0};
-                    srcDataSpacePara.selectHyperslab(H5S_SELECT_SET, count, start, strideBetweenBlocksPara, blockSizePara);
+                    srcDataSpacePara.selectHyperslab(
+                        H5S_SELECT_SET, count, start, strideBetweenBlocksPara,
+                        blockSizePara);
                 }
-
 
                 // mapping of property list
                 plist.setVirtual(vdsDataSpace, relative_srcFileName.c_str(),
@@ -325,8 +327,8 @@ std::string CreateVirtualHDF5File(
             framesSaved += nDimx;
         }
         // datasets
-        H5::DataSet vdsDataSet(fd->createDataSet(DATASET_NAME, dataType,
-                                             vdsDataSpace, plist));
+        H5::DataSet vdsDataSet(
+            fd->createDataSet(DATASET_NAME, dataType, vdsDataSpace, plist));
 
         for (unsigned int p = 0; p < paraSize; ++p) {
             H5::DataSet vdsDataSetPara(fd->createDataSet(
@@ -340,8 +342,7 @@ std::string CreateVirtualHDF5File(
         if (fd) {
             fd->close();
         }
-        throw RuntimeError(
-            "Could not create/overwrite virtual HDF5 handles");
+        throw RuntimeError("Could not create/overwrite virtual HDF5 handles");
     }
     if (!silentMode) {
         LOG(logINFO) << "Virtual File: " << fileName;

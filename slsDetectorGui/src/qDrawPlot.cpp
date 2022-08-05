@@ -628,7 +628,6 @@ void qDrawPlot::SetGapPixels(bool enable) {
     isGapPixels = enable;
 }
 
-
 void qDrawPlot::GetStatistics(double &min, double &max, double &sum) {
     LOG(logDEBUG) << "Calculating Statistics";
     double *array = data2d;
@@ -778,15 +777,15 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
         rxRoi.ymax = data->rxRoi[3];
         // only for 2d anyway
         if (isGapPixels) {
-            rxRoi.xmin += ((rxRoi.xmin/1024) * 6 + (rxRoi.xmin/256) * 2);
-            rxRoi.xmax += ((rxRoi.xmax/1024) * 6 + (rxRoi.xmax/256) * 2);
-            rxRoi.ymin += ((rxRoi.ymin/512) * 34 + (rxRoi.ymin/256) * 2);
-            rxRoi.ymax += ((rxRoi.ymax/512) * 34 + (rxRoi.ymax/256) * 2);
-            LOG(logINFO) << "Rx_roi recalculated with gap pixels: " << ToString(rxRoi);
+            rxRoi.xmin += ((rxRoi.xmin / 1024) * 6 + (rxRoi.xmin / 256) * 2);
+            rxRoi.xmax += ((rxRoi.xmax / 1024) * 6 + (rxRoi.xmax / 256) * 2);
+            rxRoi.ymin += ((rxRoi.ymin / 512) * 34 + (rxRoi.ymin / 256) * 2);
+            rxRoi.ymax += ((rxRoi.ymax / 512) * 34 + (rxRoi.ymax / 256) * 2);
+            LOG(logINFO) << "Rx_roi recalculated with gap pixels: "
+                         << ToString(rxRoi);
         }
         LOG(logDEBUG) << "Rx_roi: " << ToString(rxRoi);
     }
-    
 
     // 1d check if npixelX has changed (m3 for different counters enabled)
     if (is1d && static_cast<int>(nPixelsX) != data->nx) {
@@ -1034,17 +1033,22 @@ void qDrawPlot::Update1dPlot() {
             }
             lblRxRoiEnabled->hide();
         } else {
-            plot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, (int)plot1d->GetYMinimum(), (int)plot1d->GetYMaximum()});
+            plot1d->EnableRoiBox(std::array<int, 4>{
+                rxRoi.xmin, rxRoi.xmax, (int)plot1d->GetYMinimum(),
+                (int)plot1d->GetYMaximum()});
             if (isGainDataExtracted) {
-                gainplot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, 0, 3});
+                gainplot1d->EnableRoiBox(
+                    std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, 0, 3});
             }
             lblRxRoiEnabled->show();
         }
     }
     // ymin and ymax could change (so replot roi every time)
     if (!rxRoi.completeRoi()) {
-        plot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax, (int)plot1d->GetYMinimum(), (int)plot1d->GetYMaximum()});
-    } 
+        plot1d->EnableRoiBox(std::array<int, 4>{rxRoi.xmin, rxRoi.xmax,
+                                                (int)plot1d->GetYMinimum(),
+                                                (int)plot1d->GetYMaximum()});
+    }
 }
 
 void qDrawPlot::Update2dPlot() {

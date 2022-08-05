@@ -48,8 +48,8 @@ void CmdProxy::Call(const std::string &command,
     if (it != functions.end()) {
         os << ((*this).*(it->second))(action);
     } else {
-        throw RuntimeError(
-            cmd + " Unknown command, use list to list all commands");
+        throw RuntimeError(cmd +
+                           " Unknown command, use list to list all commands");
     }
 }
 
@@ -219,12 +219,10 @@ std::string CmdProxy::Acquire(int action) {
            << '\n';
     } else {
         if (det->empty()) {
-            throw RuntimeError(
-                "This shared memory has no detectors added.");
+            throw RuntimeError("This shared memory has no detectors added.");
         }
         if (det_id >= 0) {
-            throw RuntimeError(
-                "Individual detectors not allowed for readout.");
+            throw RuntimeError("Individual detectors not allowed for readout.");
         }
 
         det->acquire();
@@ -456,26 +454,28 @@ std::string CmdProxy::Trimbits(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Eiger][Mythen3] Put will load the trimbit file to detector. If no extension specified, serial number of each module is attached. Get will save the trimbits from the detector to file with serial number added to file name."
+        os << "[fname]\n\t[Eiger][Mythen3] Put will load the trimbit file to "
+              "detector. If no extension specified, serial number of each "
+              "module is attached. Get will save the trimbits from the "
+              "detector to file with serial number added to file name."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
         det->saveTrimbits(args[0], std::vector<int>{det_id});
-        os << args << '\n'; 
+        os << args << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
         det->loadTrimbits(args[0], std::vector<int>{det_id});
-        os << args << '\n'; 
+        os << args << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }
     return os.str();
 }
-
 
 std::string CmdProxy::TrimEnergies(int action) {
     std::ostringstream os;
@@ -553,8 +553,7 @@ std::string CmdProxy::Exptime(int action) {
     } else if (cmd == "exptime3") {
         gateIndex = 2;
     } else {
-        throw RuntimeError(
-            "Unknown command, use list to list all commands");
+        throw RuntimeError("Unknown command, use list to list all commands");
     }
 
     std::ostringstream os;
@@ -699,8 +698,7 @@ std::string CmdProxy::Adcphase(int action) {
         auto det_type = det->getDetectorType().squash(defs::GENERIC);
         if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
             det_type == defs::GOTTHARD2) {
-            throw RuntimeError(
-                "adcphase not implemented for this detector");
+            throw RuntimeError("adcphase not implemented for this detector");
         }
         if (action == defs::GET_ACTION) {
             Result<int> t;
@@ -710,8 +708,7 @@ std::string CmdProxy::Adcphase(int action) {
             } else if (args.size() == 1) {
                 if (args[0] != "deg") {
                     throw RuntimeError("Unknown adcphase   argument " +
-                                            args[0] +
-                                            ". Did you mean deg?    ");
+                                       args[0] + ". Did you mean deg?    ");
                 }
                 t = det->getADCPhaseInDegrees(std::vector<int>{det_id});
                 os << OutString(t) << " deg\n";
@@ -726,7 +723,7 @@ std::string CmdProxy::Adcphase(int action) {
             } else if (args.size() == 2) {
                 if (args[1] != "deg") {
                     throw RuntimeError("Unknown adcphase   2nd argument " +
-                                            args[1] + ". Did you    mean deg?");
+                                       args[1] + ". Did you    mean deg?");
                 }
                 det->setADCPhaseInDegrees(StringTo<int>(args[0]),
                                           std::vector<int>{det_id});
@@ -754,8 +751,7 @@ std::string CmdProxy::Dbitphase(int action) {
         auto det_type = det->getDetectorType().squash(defs::GENERIC);
         if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
             det_type == defs::GOTTHARD2) {
-            throw RuntimeError(
-                "dbitphase not implemented for this detector");
+            throw RuntimeError("dbitphase not implemented for this detector");
         }
         if (action == defs::GET_ACTION) {
             Result<int> t;
@@ -764,8 +760,8 @@ std::string CmdProxy::Dbitphase(int action) {
                 os << OutString(t) << '\n';
             } else if (args.size() == 1) {
                 if (args[0] != "deg") {
-                    throw RuntimeError("Unknown dbitphase argument " +
-                                            args[0] + ". Did you mean deg?  ");
+                    throw RuntimeError("Unknown dbitphase argument " + args[0] +
+                                       ". Did you mean deg?  ");
                 }
                 t = det->getDBITPhaseInDegrees(std::vector<int>{det_id});
                 os << OutString(t) << " deg\n";
@@ -780,7 +776,7 @@ std::string CmdProxy::Dbitphase(int action) {
             } else if (args.size() == 2) {
                 if (args[1] != "deg") {
                     throw RuntimeError("Unknown dbitphase 2nd  argument " +
-                                            args[1] + ". Did you mean deg?  ");
+                                       args[1] + ". Did you mean deg?  ");
                 }
                 det->setDBITPhaseInDegrees(StringTo<int>(args[0]),
                                            std::vector<int>{det_id});
@@ -805,8 +801,7 @@ std::string CmdProxy::ClockFrequency(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw RuntimeError(
-                "clkfreq not implemented for this detector.");
+            throw RuntimeError("clkfreq not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
             if (args.size() != 1) {
@@ -836,8 +831,7 @@ std::string CmdProxy::ClockPhase(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw RuntimeError(
-                "clkphase not implemented for this detector.");
+            throw RuntimeError("clkphase not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
             if (args.size() == 1) {
@@ -847,7 +841,7 @@ std::string CmdProxy::ClockPhase(int action) {
             } else if (args.size() == 2) {
                 if (args[1] != "deg") {
                     throw RuntimeError("Cannot scan argument" + args[1] +
-                                            ". Did you mean deg?");
+                                       ". Did you mean deg?");
                 }
                 auto t = det->getClockPhaseinDegrees(StringTo<int>(args[0]),
                                                      {det_id});
@@ -864,7 +858,7 @@ std::string CmdProxy::ClockPhase(int action) {
             } else if (args.size() == 3) {
                 if (args[2] != "deg") {
                     throw RuntimeError("Cannot scan argument" + args[2] +
-                                            ". Did you mean deg?");
+                                       ". Did you mean deg?");
                 }
                 det->setClockPhaseinDegrees(StringTo<int>(args[0]),
                                             StringTo<int>(args[1]),
@@ -919,8 +913,7 @@ std::string CmdProxy::ClockDivider(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw RuntimeError(
-                "clkdiv not implemented for this detector.");
+            throw RuntimeError("clkdiv not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
             if (args.size() != 1) {
@@ -1010,7 +1003,7 @@ std::string CmdProxy::CurrentSource(int action) {
                 fix = false;
             } else {
                 throw RuntimeError("Invalid argument: " + args[1] +
-                                        ". Did you mean fix or nofix?");
+                                   ". Did you mean fix or nofix?");
             }
             if (args.size() == 3) {
                 det->setCurrentSource(defs::currentSrcParameters(
@@ -1023,7 +1016,7 @@ std::string CmdProxy::CurrentSource(int action) {
                     normalCurrent = false;
                 } else {
                     throw RuntimeError("Invalid argument: " + args[3] +
-                                            ". Did you mean normal or low?");
+                                       ". Did you mean normal or low?");
                 }
                 det->setCurrentSource(defs::currentSrcParameters(
                     fix, StringTo<uint64_t>(args[2]), normalCurrent));
@@ -1119,7 +1112,7 @@ std::string CmdProxy::Dac(int action) {
         if (args.size() == 2) {
             if ((args[1] != "mv") && (args[1] != "mV")) {
                 throw RuntimeError("Unknown argument " + args[1] +
-                                        ". Did you mean mV?");
+                                   ". Did you mean mV?");
             }
             mV = true;
         } else if (args.size() > 2) {
@@ -1140,7 +1133,7 @@ std::string CmdProxy::Dac(int action) {
         if (args.size() == 3) {
             if ((args[2] != "mv") && (args[2] != "mV")) {
                 throw RuntimeError("Unknown argument " + args[2] +
-                                        ". Did you mean mV?");
+                                   ". Did you mean mV?");
             }
             mV = true;
         } else if (args.size() > 3 || args.size() < 2) {
@@ -1174,11 +1167,10 @@ std::string CmdProxy::DacList(const int action) {
     } else if (action == slsDetectorDefs::PUT_ACTION) {
         if (det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
             throw RuntimeError("This detector already has fixed dac "
-                                    "names. Cannot change them.");
+                               "names. Cannot change them.");
         }
         if (det_id != -1) {
-            throw RuntimeError(
-                "Cannot configure dacnames at module level");
+            throw RuntimeError("Cannot configure dacnames at module level");
         }
         if (args.size() != 18) {
             WrongNumberOfParameters(18);
@@ -1203,7 +1195,7 @@ std::string CmdProxy::DacValues(int action) {
         if (args.size() == 1) {
             if ((args[0] != "mv") && (args[0] != "mV")) {
                 throw RuntimeError("Unknown argument " + args[0] +
-                                        ". Did you mean mV?");
+                                   ". Did you mean mV?");
             }
             mv = true;
         } else if (args.size() > 1) {
@@ -1248,7 +1240,7 @@ std::string CmdProxy::ResetDacs(int action) {
         if (args.size() == 1) {
             if (args[0] != "hard") {
                 throw RuntimeError("Unknown argument " + args[0] +
-                                        ". Did you mean hard?");
+                                   ". Did you mean hard?");
             }
             hardReset = true;
         } else if (args.size() > 1) {
@@ -1514,8 +1506,8 @@ std::string CmdProxy::UDPDestinationList(int action) {
         }
         if (rx_id < 0 || rx_id >= MAX_UDP_DESTINATION) {
             throw RuntimeError(std::string("Invalid receiver index ") +
-                                    std::to_string(rx_id) +
-                                    std::string(" to set round robin entry."));
+                               std::to_string(rx_id) +
+                               std::string(" to set round robin entry."));
         }
         auto t = det->getDestinationUDPList(rx_id, std::vector<int>{det_id});
         os << OutString(t) << '\n';
@@ -1543,7 +1535,11 @@ std::string CmdProxy::UDPSourceIP(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[x.x.x.x] or auto\n\tIp address of the detector (source) udp interface. Must be same subnet as destination udp ip.\n\t[Eiger] Set only for 10G. For 1G, detector will replace with its own DHCP IP address. If 'auto' used, then ip is set to ip of rx_hostname."
+        os << "[x.x.x.x] or auto\n\tIp address of the detector (source) udp "
+              "interface. Must be same subnet as destination udp "
+              "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will replace "
+              "with its own DHCP IP address. If 'auto' used, then ip is set to "
+              "ip of rx_hostname."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getSourceUDPIP(std::vector<int>{det_id});
@@ -1565,7 +1561,7 @@ std::string CmdProxy::UDPSourceIP(int action) {
         }
         det->setSourceUDPIP(val, std::vector<int>{det_id});
         os << val << '\n';
-        
+
     } else {
         throw RuntimeError("Unknown action");
     }
@@ -1576,7 +1572,11 @@ std::string CmdProxy::UDPSourceIP2(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[x.x.x.x] or auto\n\t[Jungfrau][Gotthard2] Ip address of the detector (source) udp interface 2. Must be same subnet as destination udp ip2.\n\t [Jungfrau] top half or inner interface\n\t [Gotthard2] veto debugging. If 'auto' used, then ip is set to ip of rx_hostname."
+        os << "[x.x.x.x] or auto\n\t[Jungfrau][Gotthard2] Ip address of the "
+              "detector (source) udp interface 2. Must be same subnet as "
+              "destination udp ip2.\n\t [Jungfrau] top half or inner "
+              "interface\n\t [Gotthard2] veto debugging. If 'auto' used, then "
+              "ip is set to ip of rx_hostname."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getSourceUDPIP2(std::vector<int>{det_id});
@@ -1591,14 +1591,14 @@ std::string CmdProxy::UDPSourceIP2(int action) {
         IpAddr val;
         if (args[0] == "auto") {
             val = getIpFromAuto();
-            LOG(logINFO) << "Setting udp_srcip2 of detector " << det_id << " to "
-                         << val;
+            LOG(logINFO) << "Setting udp_srcip2 of detector " << det_id
+                         << " to " << val;
         } else {
             val = IpAddr(args[0]);
         }
         det->setSourceUDPIP2(val, std::vector<int>{det_id});
         os << val << '\n';
-        
+
     } else {
         throw RuntimeError("Unknown action");
     }
@@ -1744,7 +1744,8 @@ std::string CmdProxy::Rx_ROI(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[xmin] [xmax] [ymin] [ymax]\n\tRegion of interest in "
-              "receiver.\n\tOnly allowed at multi module level and without gap pixels."
+              "receiver.\n\tOnly allowed at multi module level and without gap "
+              "pixels."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -2009,7 +2010,7 @@ std::string CmdProxy::TemperatureEvent(int action) {
         }
         if (StringTo<int>(args[0]) != 0) {
             throw RuntimeError("Unknown argument for temp event. Did you "
-                                    "mean 0 to reset event?");
+                               "mean 0 to reset event?");
         }
         det->resetTemperatureEvent(std::vector<int>{det_id});
         os << "cleared" << '\n';
@@ -2144,8 +2145,7 @@ std::string CmdProxy::VetoFile(int action) {
               "file should have 128 rows of gain index and 12 bit value in dec"
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        throw RuntimeError(
-            "cannot get vetofile. Did you mean vetophoton?");
+        throw RuntimeError("cannot get vetofile. Did you mean vetophoton?");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
@@ -2266,8 +2266,7 @@ std::string CmdProxy::VetoAlgorithm(int action) {
         defs::streamingInterface interface =
             StringTo<defs::streamingInterface>(args[0]);
         if (interface == defs::streamingInterface::NONE) {
-            throw RuntimeError(
-                "Must specify an interface to set algorithm");
+            throw RuntimeError("Must specify an interface to set algorithm");
         }
         auto t = det->getVetoAlgorithm(interface, std::vector<int>{det_id});
         os << OutString(t) << ' ' << ToString(interface) << '\n';
@@ -2279,8 +2278,7 @@ std::string CmdProxy::VetoAlgorithm(int action) {
         defs::streamingInterface interface =
             StringTo<defs::streamingInterface>(args[1]);
         if (interface == defs::streamingInterface::NONE) {
-            throw RuntimeError(
-                "Must specify an interface to set algorithm");
+            throw RuntimeError("Must specify an interface to set algorithm");
         }
         det->setVetoAlgorithm(alg, interface, std::vector<int>{det_id});
         os << ToString(alg) << ' ' << ToString(interface) << '\n';
@@ -2368,7 +2366,9 @@ std::string CmdProxy::Counters(int action) {
         if (args.empty()) {
             WrongNumberOfParameters(1);
         }
-        if (std::any_of(args.cbegin(), args.cend(), [](std::string s){ return (StringTo<int>(s) < 0 ||  StringTo<int>(s) > 2); })) {
+        if (std::any_of(args.cbegin(), args.cend(), [](std::string s) {
+                return (StringTo<int>(s) < 0 || StringTo<int>(s) > 2);
+            })) {
             throw RuntimeError("Invalid counter indices list. Example: 0 1 2");
         }
         // convert vector to counter enable mask
@@ -2402,8 +2402,7 @@ std::string CmdProxy::GateDelay(int action) {
     } else if (cmd == "gatedelay3") {
         gateIndex = 2;
     } else {
-        throw RuntimeError(
-            "Unknown command, use list to list all commands");
+        throw RuntimeError("Unknown command, use list to list all commands");
     }
 
     std::ostringstream os;
@@ -2705,30 +2704,35 @@ std::string CmdProxy::PatternWord(int action) {
     return os.str();
 }
 
-void CmdProxy::GetLevelAndUpdateArgIndex(int action, std::string levelSeparatedCommand, int& level, int& iArg, size_t nGetArgs, size_t nPutArgs) {
+void CmdProxy::GetLevelAndUpdateArgIndex(int action,
+                                         std::string levelSeparatedCommand,
+                                         int &level, int &iArg, size_t nGetArgs,
+                                         size_t nPutArgs) {
     if (cmd == levelSeparatedCommand) {
         ++nGetArgs;
         ++nPutArgs;
     } else {
-        LOG(logWARNING) << "This command is deprecated and will be removed. Please migrate to " << levelSeparatedCommand;
+        LOG(logWARNING) << "This command is deprecated and will be removed. "
+                           "Please migrate to "
+                        << levelSeparatedCommand;
     }
     if (action == defs::GET_ACTION && args.size() != nGetArgs) {
         WrongNumberOfParameters(nGetArgs);
     } else if (action == defs::PUT_ACTION && args.size() != nPutArgs) {
         WrongNumberOfParameters(nPutArgs);
-    } 
+    }
     if (cmd == levelSeparatedCommand) {
-        level = StringTo<int>(args[iArg++]);   
+        level = StringTo<int>(args[iArg++]);
     } else {
         level = cmd[cmd.find_first_of("012")] - '0';
     }
 }
 
 std::string CmdProxy::PatternLoopAddresses(int action) {
-   if (cmd != "patlimits" && cmd != "patloop0" && cmd != "patloop1" && cmd != "patloop2" && cmd != "patloop") { 
-        throw RuntimeError(
-                "Unknown command, use list to list all commands");
-   }
+    if (cmd != "patlimits" && cmd != "patloop0" && cmd != "patloop1" &&
+        cmd != "patloop2" && cmd != "patloop") {
+        throw RuntimeError("Unknown command, use list to list all commands");
+    }
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -2737,17 +2741,17 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
                   "of complete pattern."
                << '\n';
         } else if (cmd == "patloop") {
-            os << "[0-6] [start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] Limits of the loop level provided."
-                << "\n\t[Mythen3] Level options: 0-3 only."
-               << '\n';
+            os << "[0-6] [start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] "
+                  "Limits of the loop level provided."
+               << "\n\t[Mythen3] Level options: 0-3 only." << '\n';
         } else {
-            os << "Depreciated command. Use patloop."
-               << '\n';
-        } 
+            os << "Depreciated command. Use patloop." << '\n';
+        }
     } else {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 2;
         if (cmd != "patlimits") {
-            GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs, nPutArgs);
+            GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
+                                      nPutArgs);
         }
         if (action == defs::GET_ACTION) {
             auto t =
@@ -2755,11 +2759,11 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
             os << OutStringHex(t, 4) << '\n';
         } else if (action == defs::PUT_ACTION) {
             int start = StringTo<int>(args[iArg++]);
-            int stop = StringTo<int>(args[iArg++]);            
+            int stop = StringTo<int>(args[iArg++]);
             det->setPatternLoopAddresses(level, start, stop,
-                                            std::vector<int>{det_id});
+                                         std::vector<int>{det_id});
             os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
-                << "]\n";
+               << "]\n";
         } else {
             throw RuntimeError("Unknown action");
         }
@@ -2768,25 +2772,25 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
 }
 
 std::string CmdProxy::PatternLoopCycles(int action) {
-   if (cmd != "patnloop0" && cmd != "patnloop1" && cmd != "patnloop2" && cmd != "patnloop") { 
-        throw RuntimeError(
-                "Unknown command, use list to list all commands");
-   }
+    if (cmd != "patnloop0" && cmd != "patnloop1" && cmd != "patnloop2" &&
+        cmd != "patnloop") {
+        throw RuntimeError("Unknown command, use list to list all commands");
+    }
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patnloop") {
-            os << "[0-6] [n_cycles] \n\t[Ctb][Moench][Mythen3] Number of cycles of "
+            os << "[0-6] [n_cycles] \n\t[Ctb][Moench][Mythen3] Number of "
+                  "cycles of "
                   "the loop level provided."
-                << "\n\t[Mythen3] Level options: 0-3 only."
-               << '\n';
+               << "\n\t[Mythen3] Level options: 0-3 only." << '\n';
         } else {
-            os << "Depreciated command. Use patnloop."
-               << '\n';
-        } 
+            os << "Depreciated command. Use patnloop." << '\n';
+        }
     } else {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs, nPutArgs);
+        GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
+                                  nPutArgs);
         if (action == defs::GET_ACTION) {
             auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
             os << OutString(t) << '\n';
@@ -2802,23 +2806,25 @@ std::string CmdProxy::PatternLoopCycles(int action) {
 }
 
 std::string CmdProxy::PatternWaitAddress(int action) {
-   if (cmd != "patwait0" && cmd != "patwait1" && cmd != "patwait2" && cmd != "patwait") { 
-        throw RuntimeError(
-                "Unknown command, use list to list all commands");
-   }
+    if (cmd != "patwait0" && cmd != "patwait1" && cmd != "patwait2" &&
+        cmd != "patwait") {
+        throw RuntimeError("Unknown command, use list to list all commands");
+    }
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patwait") {
-            os << "[0-6] [addr] \n\t[Ctb][Moench][Mythen3] Wait address for loop level provided." 
-                << "\n\t[Mythen3] Level options: 0-3 only.";
+            os << "[0-6] [addr] \n\t[Ctb][Moench][Mythen3] Wait address for "
+                  "loop level provided."
+               << "\n\t[Mythen3] Level options: 0-3 only.";
         } else {
             os << "Depreciated command. Use patwait.";
         }
         os << '\n';
     } else {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs, nPutArgs);
+        GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
+                                  nPutArgs);
         if (action == defs::GET_ACTION) {
             auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
             os << OutStringHex(t, 4) << '\n';
@@ -2834,9 +2840,9 @@ std::string CmdProxy::PatternWaitAddress(int action) {
 }
 
 std::string CmdProxy::PatternWaitTime(int action) {
-    if (cmd != "patwaittime0" && cmd != "patwaittime1" && cmd != "patwaittime2" && cmd != "patwaittime") { 
-        throw RuntimeError(
-                "Unknown command, use list to list all commands");
+    if (cmd != "patwaittime0" && cmd != "patwaittime1" &&
+        cmd != "patwaittime2" && cmd != "patwaittime") {
+        throw RuntimeError("Unknown command, use list to list all commands");
     }
     std::ostringstream os;
     os << cmd << ' ';
@@ -2844,15 +2850,14 @@ std::string CmdProxy::PatternWaitTime(int action) {
         if (cmd == "patwaittime") {
             os << "[0-6] [n_clk] \n\t[Ctb][Moench][Mythen3] Wait time in clock "
                   "cycles for the loop provided."
-                << "\n\t[Mythen3] Level options: 0-3 only."
-               << '\n';
+               << "\n\t[Mythen3] Level options: 0-3 only." << '\n';
         } else {
-            os << "Depreciated command. Use patwaittime."
-               << '\n';
-        } 
+            os << "Depreciated command. Use patwaittime." << '\n';
+        }
     } else {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
-        GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs, nPutArgs);
+        GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
+                                  nPutArgs);
         if (action == defs::GET_ACTION) {
             auto t = det->getPatternWaitTime(level, std::vector<int>{det_id});
             os << OutString(t) << '\n';
@@ -2965,9 +2970,8 @@ std::string CmdProxy::ProgramFpga(int action) {
         bool forceDeteleNormalFile = false;
         if (args.size() == 2) {
             if (args[1] != "--force-delete-normal-file") {
-                throw RuntimeError(
-                    "Could not scan second argument. Did you "
-                    "mean --force-delete-normal-file?");
+                throw RuntimeError("Could not scan second argument. Did you "
+                                   "mean --force-delete-normal-file?");
             }
             forceDeteleNormalFile = true;
         } else if (args.size() != 1) {

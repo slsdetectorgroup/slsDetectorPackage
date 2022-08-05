@@ -344,7 +344,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
             return slsDetectorDefs::TEMPERATURE_FPGA;
         default:
             throw RuntimeError(std::string("Unknown dac/adc index") +
-                                    std::to_string(index));
+                               std::to_string(index));
         }
         break;
     case slsDetectorDefs::GOTTHARD:
@@ -371,7 +371,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
             return slsDetectorDefs::TEMPERATURE_FPGA;
         default:
             throw RuntimeError(std::string("Unknown dac/adc index") +
-                                    std::to_string(index));
+                               std::to_string(index));
         }
         break;
 
@@ -397,7 +397,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
             return slsDetectorDefs::TEMPERATURE_ADC;
         default:
             throw RuntimeError(std::string("Unknown dac/adc index") +
-                                    std::to_string(index));
+                               std::to_string(index));
         }
         break;
 
@@ -421,7 +421,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
             return slsDetectorDefs::IBIAS_SFP;
         default:
             throw RuntimeError(std::string("Unknown dac/adc index") +
-                                    std::to_string(index));
+                               std::to_string(index));
         }
         break;
 
@@ -463,7 +463,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
             return slsDetectorDefs::VTHRESHOLD;
         default:
             throw RuntimeError(std::string("Unknown dac/adc index") +
-                                    std::to_string(index));
+                               std::to_string(index));
         }
         break;
 
@@ -499,7 +499,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
             return slsDetectorDefs::VCOM_ADC2;
         default:
             throw RuntimeError(std::string("Unknown dac/adc index") +
-                                    std::to_string(index));
+                               std::to_string(index));
         }
         break;
 

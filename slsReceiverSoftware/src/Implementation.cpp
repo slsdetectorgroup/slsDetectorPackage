@@ -76,13 +76,13 @@ void Implementation::SetupFifoStructure() {
 
         // create fifo structure
         try {
-            fifo.push_back(sls::make_unique<Fifo>(i, datasize, generalData->fifoDepth));
+            fifo.push_back(
+                sls::make_unique<Fifo>(i, datasize, generalData->fifoDepth));
         } catch (...) {
             fifo.clear();
             generalData->fifoDepth = 0;
-            throw RuntimeError(
-                "Could not allocate memory for fifo structure " +
-                std::to_string(i) + ". FifoDepth is now 0.");
+            throw RuntimeError("Could not allocate memory for fifo structure " +
+                               std::to_string(i) + ". FifoDepth is now 0.");
         }
         // set the listener & dataprocessor threads to point to the right fifo
         if (listener.size())
@@ -97,7 +97,8 @@ void Implementation::SetupFifoStructure() {
                             (double)(1024 * 1024)
                      << " MB";
     }
-    LOG(logINFO) << generalData->numUDPInterfaces << " Fifo structure(s) reconstructed";
+    LOG(logINFO) << generalData->numUDPInterfaces
+                 << " Fifo structure(s) reconstructed";
 }
 
 /**************************************************
@@ -120,7 +121,7 @@ void Implementation::setDetectorType(const detectorType d) {
         break;
     default:
         throw RuntimeError("This is an unknown receiver type " +
-                                std::to_string(static_cast<int>(d)));
+                           std::to_string(static_cast<int>(d)));
     }
 
     delete generalData;
@@ -160,8 +161,7 @@ void Implementation::setDetectorType(const detectorType d) {
     for (int i = 0; i < generalData->numUDPInterfaces; ++i) {
 
         try {
-            listener.push_back(sls::make_unique<Listener>(
-                i, &status));
+            listener.push_back(sls::make_unique<Listener>(i, &status));
             SetupListener(i);
             dataProcessor.push_back(sls::make_unique<DataProcessor>(i));
             SetupDataProcessor(i);
@@ -197,7 +197,7 @@ void Implementation::SetupDataProcessor(int i) {
     dataProcessor[i]->SetActivate(activated);
     dataProcessor[i]->SetReceiverROI(portRois[i]);
     dataProcessor[i]->SetDataStreamEnable(dataStreamEnable);
-    dataProcessor[i]->SetStreamingFrequency(streamingFrequency);   
+    dataProcessor[i]->SetStreamingFrequency(streamingFrequency);
     dataProcessor[i]->SetStreamingTimerInMs(streamingTimerInMs);
     dataProcessor[i]->SetStreamingStartFnum(streamingStartFnum);
     dataProcessor[i]->SetFramePadding(framePadding);
@@ -208,7 +208,8 @@ void Implementation::SetupDataProcessor(int i) {
 void Implementation::SetupDataStreamer(int i) {
     dataStreamer[i]->SetFifo(fifo[i].get());
     dataStreamer[i]->SetGeneralData(generalData);
-    dataStreamer[i]->CreateZmqSockets(streamingPort, streamingSrcIP, streamingHwm);
+    dataStreamer[i]->CreateZmqSockets(streamingPort, streamingSrcIP,
+                                      streamingHwm);
     dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
     dataStreamer[i]->SetFileIndex(fileIndex);
     dataStreamer[i]->SetFlipRows(flipRows);
@@ -288,8 +289,8 @@ bool Implementation::getSilentMode() const { return silentMode; }
 
 void Implementation::setSilentMode(const bool i) {
     silentMode = i;
-    for (const auto &it : listener) 
-        it->SetSilentMode(silentMode);    
+    for (const auto &it : listener)
+        it->SetSilentMode(silentMode);
     LOG(logINFO) << "Silent Mode: " << i;
 }
 
@@ -310,7 +311,7 @@ Implementation::getFrameDiscardPolicy() const {
 
 void Implementation::setFrameDiscardPolicy(const frameDiscardPolicy i) {
     frameDiscardMode = i;
-    for (const auto &it : listener) 
+    for (const auto &it : listener)
         it->SetFrameDiscardPolicy(frameDiscardMode);
     LOG(logINFO) << "Frame Discard Policy: " << ToString(frameDiscardMode);
 }
@@ -367,7 +368,8 @@ void Implementation::setArping(const bool i,
             // setup interface
             for (int i = 0; i != generalData->numUDPInterfaces; ++i) {
                 // ignore eiger with 2 interfaces (only udp port)
-                if (i == 1 && (generalData->numUDPInterfaces == 1 || generalData->detType == EIGER)) {
+                if (i == 1 && (generalData->numUDPInterfaces == 1 ||
+                               generalData->detType == EIGER)) {
                     break;
                 }
                 arping.SetInterfacesAndIps(i, eth[i], ips[i]);
@@ -384,7 +386,8 @@ slsDetectorDefs::ROI Implementation::getReceiverROI() const {
 void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
     receiverRoi = arg;
 
-    if (generalData->numUDPInterfaces == 1 || generalData->detType == slsDetectorDefs::GOTTHARD2) {
+    if (generalData->numUDPInterfaces == 1 ||
+        generalData->detType == slsDetectorDefs::GOTTHARD2) {
         portRois[0] = arg;
     } else {
         slsDetectorDefs::xy nPortDim(generalData->nPixelsX,
@@ -454,7 +457,8 @@ void Implementation::setReceiverROI(const slsDetectorDefs::ROI arg) {
     for (size_t i = 0; i != dataProcessor.size(); ++i)
         dataProcessor[i]->SetReceiverROI(portRois[i]);
     LOG(logINFO) << "receiver roi: " << ToString(receiverRoi);
-    if (generalData->numUDPInterfaces == 2 && generalData->detType != slsDetectorDefs::GOTTHARD2) {
+    if (generalData->numUDPInterfaces == 2 &&
+        generalData->detType != slsDetectorDefs::GOTTHARD2) {
         LOG(logINFO) << "port rois: " << ToString(portRois);
     }
 }
@@ -552,7 +556,9 @@ void Implementation::setOverwriteEnable(const bool b) {
                  << (overwriteEnable ? "enabled" : "disabled");
 }
 
-uint32_t Implementation::getFramesPerFile() const { return generalData->framesPerFile; }
+uint32_t Implementation::getFramesPerFile() const {
+    return generalData->framesPerFile;
+}
 
 void Implementation::setFramesPerFile(const uint32_t i) {
     generalData->framesPerFile = i;
@@ -609,7 +615,7 @@ double Implementation::getProgress() const {
                 totalFrames /= 2;
             }
         }
-    }    
+    }
 
     double progress = 0;
     int index = 0;
@@ -660,7 +666,7 @@ void Implementation::startReceiver() {
                                      pStartAcquisition);
         } catch (const std::exception &e) {
             throw RuntimeError("Start Acquisition Callback Error: " +
-                                    std::string(e.what()));
+                               std::string(e.what()));
         }
         if (rawDataReadyCallBack != nullptr) {
             LOG(logINFO) << "Data Write has been defined externally";
@@ -747,7 +753,7 @@ void Implementation::stopReceiver() {
             } else if (portRois[i].noRoi()) {
                 summary = (i == 0 ? "\n\tNo Roi on Left Port"
                                   : "\n\tNo Roi on Right Port");
-            }  else {
+            } else {
                 std::ostringstream os;
                 os << "\n\tMissing Packets\t\t: " << mpMessage
                    << "\n\tComplete Frames\t\t: " << nf
@@ -763,16 +769,16 @@ void Implementation::stopReceiver() {
         // callback
         if (acquisitionFinishedCallBack) {
             try {
-                acquisitionFinishedCallBack((tot / generalData->numUDPInterfaces),
-                                            pAcquisitionFinished);
+                acquisitionFinishedCallBack(
+                    (tot / generalData->numUDPInterfaces),
+                    pAcquisitionFinished);
             } catch (const std::exception &e) {
                 // change status
                 status = IDLE;
                 LOG(logINFO) << "Receiver Stopped";
                 LOG(logINFO) << "Status: " << ToString(status);
-                throw RuntimeError(
-                    "Acquisition Finished Callback Error: " +
-                    std::string(e.what()));
+                throw RuntimeError("Acquisition Finished Callback Error: " +
+                                   std::string(e.what()));
             }
         }
     }
@@ -862,7 +868,8 @@ void Implementation::SetupWriter() {
     try {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             std::ostringstream os;
-            os << filePath << "/" << fileName << "_d" << (modulePos * generalData->numUDPInterfaces + i);
+            os << filePath << "/" << fileName << "_d"
+               << (modulePos * generalData->numUDPInterfaces + i);
             std::string fileNamePrefix = os.str();
             dataProcessor[i]->CreateFirstFiles(
                 fileNamePrefix, fileIndex, overwriteEnable, silentMode,
@@ -893,8 +900,7 @@ void Implementation::StartMasterWriter() {
             masterAttributes.framePadding = framePadding;
             masterAttributes.scanParams = scanParams;
             masterAttributes.totalFrames = numberOfTotalFrames;
-            masterAttributes.receiverRoi =
-                receiverRoiMetadata;
+            masterAttributes.receiverRoi = receiverRoiMetadata;
             masterAttributes.exptime = acquisitionTime;
             masterAttributes.period = acquisitionPeriod;
             masterAttributes.burstMode = burstMode;
@@ -908,18 +914,21 @@ void Implementation::StartMasterWriter() {
             masterAttributes.quad = quadEnable;
             masterAttributes.readNRows = readNRows;
             masterAttributes.ratecorr = rateCorrections;
-            masterAttributes.adcmask =
-                 generalData->tengigaEnable ? generalData->adcEnableMaskTenGiga : generalData->adcEnableMaskOneGiga;
-            masterAttributes.analog = (generalData->readoutType == ANALOG_ONLY ||
-                                       generalData->readoutType == ANALOG_AND_DIGITAL)
-                                          ? 1
-                                          : 0;
-            masterAttributes.analogSamples =  generalData->nAnalogSamples;
-            masterAttributes.digital = (generalData->readoutType == DIGITAL_ONLY ||
-                                        generalData->readoutType == ANALOG_AND_DIGITAL)
-                                           ? 1
-                                           : 0;
-            masterAttributes.digitalSamples =  generalData->nDigitalSamples;
+            masterAttributes.adcmask = generalData->tengigaEnable
+                                           ? generalData->adcEnableMaskTenGiga
+                                           : generalData->adcEnableMaskOneGiga;
+            masterAttributes.analog =
+                (generalData->readoutType == ANALOG_ONLY ||
+                 generalData->readoutType == ANALOG_AND_DIGITAL)
+                    ? 1
+                    : 0;
+            masterAttributes.analogSamples = generalData->nAnalogSamples;
+            masterAttributes.digital =
+                (generalData->readoutType == DIGITAL_ONLY ||
+                 generalData->readoutType == ANALOG_AND_DIGITAL)
+                    ? 1
+                    : 0;
+            masterAttributes.digitalSamples = generalData->nDigitalSamples;
             masterAttributes.dbitoffset = ctbDbitOffset;
             masterAttributes.dbitlist = 0;
             for (auto &i : ctbDbitList) {
@@ -947,11 +956,10 @@ void Implementation::StartMasterWriter() {
             // create virtual hdf5 file (if multiple files)
             if (dataProcessor[0]->GetFilesInAcquisition() > 1 ||
                 (numPorts.x * numPorts.y) > 1) {
-                virtualFileName =
-                    dataProcessor[0]->CreateVirtualFile(
-                        filePath, fileName, fileIndex, overwriteEnable,
-                        silentMode, modulePos, numberOfTotalFrames, numPorts.x, numPorts.y,
-                        &hdf5LibMutex);
+                virtualFileName = dataProcessor[0]->CreateVirtualFile(
+                    filePath, fileName, fileIndex, overwriteEnable, silentMode,
+                    modulePos, numberOfTotalFrames, numPorts.x, numPorts.y,
+                    &hdf5LibMutex);
             }
             // link file in master
             if (masterFileWriteEnable) {
@@ -962,7 +970,8 @@ void Implementation::StartMasterWriter() {
 #endif
     } catch (std::exception &e) {
         // ignore it and just print it
-        LOG(logWARNING) << "Caught exception when handling virtual hdf5 file [" << e.what() << "]";
+        LOG(logWARNING) << "Caught exception when handling virtual hdf5 file ["
+                        << e.what() << "]";
     }
 }
 
@@ -996,8 +1005,7 @@ int Implementation::getNumberofUDPInterfaces() const {
 // not Eiger
 void Implementation::setNumberofUDPInterfaces(const int n) {
     if (generalData->detType == EIGER) {
-        throw RuntimeError(
-            "Cannot set number of UDP interfaces for Eiger");
+        throw RuntimeError("Cannot set number of UDP interfaces for Eiger");
     }
 
     if (generalData->numUDPInterfaces != n) {
@@ -1020,8 +1028,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         for (int i = 0; i < generalData->numUDPInterfaces; ++i) {
             // listener and dataprocessor threads
             try {
-                listener.push_back(sls::make_unique<Listener>(
-                    i, &status));
+                listener.push_back(sls::make_unique<Listener>(i, &status));
                 SetupListener(i);
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(i));
                 SetupDataProcessor(i);
@@ -1042,7 +1049,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     if (dataStreamEnable) {
                         dataStreamer.clear();
                         dataStreamEnable = false;
-                        for (const auto &it : dataProcessor) 
+                        for (const auto &it : dataProcessor)
                             it->SetDataStreamEnable(dataStreamEnable);
                     }
                     throw RuntimeError(
@@ -1120,15 +1127,18 @@ int Implementation::getUDPSocketBufferSize() const {
 
 void Implementation::setUDPSocketBufferSize(const int s) {
     size_t listSize = listener.size();
-    if ((generalData->detType == JUNGFRAU || generalData->detType == GOTTHARD2) &&
+    if ((generalData->detType == JUNGFRAU ||
+         generalData->detType == GOTTHARD2) &&
         (int)listSize != generalData->numUDPInterfaces) {
-        throw RuntimeError(
-            "Number of Interfaces " + std::to_string(generalData->numUDPInterfaces) +
-            " do not match listener size " + std::to_string(listSize));
+        throw RuntimeError("Number of Interfaces " +
+                           std::to_string(generalData->numUDPInterfaces) +
+                           " do not match listener size " +
+                           std::to_string(listSize));
     }
 
     for (auto &l : listener) {
-        l->CreateDummySocketForUDPSocketBufferSize(s, actualUDPSocketBufferSize);
+        l->CreateDummySocketForUDPSocketBufferSize(s,
+                                                   actualUDPSocketBufferSize);
     }
 }
 
@@ -1158,16 +1168,15 @@ void Implementation::setDataStreamEnable(const bool enable) {
                 } catch (...) {
                     dataStreamer.clear();
                     dataStreamEnable = false;
-                    for (const auto &it : dataProcessor) 
-                        it->SetDataStreamEnable(dataStreamEnable); 
-                    throw RuntimeError(
-                        "Could not set data stream enable.");
+                    for (const auto &it : dataProcessor)
+                        it->SetDataStreamEnable(dataStreamEnable);
+                    throw RuntimeError("Could not set data stream enable.");
                 }
             }
             SetThreadPriorities();
         }
         for (const auto &it : dataProcessor)
-            it->SetDataStreamEnable(dataStreamEnable); 
+            it->SetDataStreamEnable(dataStreamEnable);
     }
     LOG(logINFO) << "Data Send to Gui: " << dataStreamEnable;
 }
@@ -1179,7 +1188,7 @@ uint32_t Implementation::getStreamingFrequency() const {
 void Implementation::setStreamingFrequency(const uint32_t freq) {
     streamingFrequency = freq;
     for (const auto &it : dataProcessor)
-        it->SetStreamingFrequency(streamingFrequency); 
+        it->SetStreamingFrequency(streamingFrequency);
     LOG(logINFO) << "Streaming Frequency: " << streamingFrequency;
 }
 
@@ -1212,9 +1221,7 @@ void Implementation::setStreamingPort(const uint32_t i) {
     LOG(logINFO) << "Streaming Port: " << streamingPort;
 }
 
-IpAddr Implementation::getStreamingSourceIP() const {
-    return streamingSrcIP;
-}
+IpAddr Implementation::getStreamingSourceIP() const { return streamingSrcIP; }
 
 void Implementation::setStreamingSourceIP(const IpAddr ip) {
     streamingSrcIP = ip;
@@ -1250,8 +1257,7 @@ Implementation::getAdditionalJsonParameter(const std::string &key) const {
     if (additionalJsonHeader.find(key) != additionalJsonHeader.end()) {
         return additionalJsonHeader.at(key);
     }
-    throw RuntimeError("No key " + key +
-                            " found in additional json header");
+    throw RuntimeError("No key " + key + " found in additional json header");
 }
 
 void Implementation::setAdditionalJsonParameter(const std::string &key,
@@ -1461,32 +1467,35 @@ void Implementation::setSubPeriod(const ns i) {
 }
 
 uint32_t Implementation::getNumberofAnalogSamples() const {
-    return  generalData->nAnalogSamples;
+    return generalData->nAnalogSamples;
 }
 
 void Implementation::setNumberofAnalogSamples(const uint32_t i) {
-    if ( generalData->nAnalogSamples != i) {
+    if (generalData->nAnalogSamples != i) {
         generalData->SetNumberOfAnalogSamples(i);
         SetupFifoStructure();
     }
-    LOG(logINFO) << "Number of Analog Samples: " <<  generalData->nAnalogSamples;
+    LOG(logINFO) << "Number of Analog Samples: " << generalData->nAnalogSamples;
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 uint32_t Implementation::getNumberofDigitalSamples() const {
-    return  generalData->nDigitalSamples;
+    return generalData->nDigitalSamples;
 }
 
 void Implementation::setNumberofDigitalSamples(const uint32_t i) {
-    if ( generalData->nDigitalSamples != i) {
+    if (generalData->nDigitalSamples != i) {
         generalData->SetNumberOfDigitalSamples(i);
         SetupFifoStructure();
     }
-    LOG(logINFO) << "Number of Digital Samples: " << generalData->nDigitalSamples;
+    LOG(logINFO) << "Number of Digital Samples: "
+                 << generalData->nDigitalSamples;
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
-uint32_t Implementation::getCounterMask() const { return generalData->counterMask; }
+uint32_t Implementation::getCounterMask() const {
+    return generalData->counterMask;
+}
 
 void Implementation::setCounterMask(const uint32_t i) {
     if (generalData->counterMask != i) {
@@ -1498,7 +1507,9 @@ void Implementation::setCounterMask(const uint32_t i) {
     LOG(logINFO) << "Number of counters: " << ncounters;
 }
 
-uint32_t Implementation::getDynamicRange() const { return generalData->dynamicRange; }
+uint32_t Implementation::getDynamicRange() const {
+    return generalData->dynamicRange;
+}
 
 void Implementation::setDynamicRange(const uint32_t i) {
     if (generalData->dynamicRange != i) {
@@ -1510,10 +1521,13 @@ void Implementation::setDynamicRange(const uint32_t i) {
     LOG(logINFO) << "Dynamic Range: " << generalData->dynamicRange;
 }
 
-slsDetectorDefs::ROI Implementation::getROI() const { return generalData->detectorRoi; }
+slsDetectorDefs::ROI Implementation::getROI() const {
+    return generalData->detectorRoi;
+}
 
 void Implementation::setDetectorROI(slsDetectorDefs::ROI arg) {
-    if (generalData->detectorRoi.xmin != arg.xmin || generalData->detectorRoi.xmax != arg.xmax) {
+    if (generalData->detectorRoi.xmin != arg.xmin ||
+        generalData->detectorRoi.xmax != arg.xmax) {
         // only for gotthard
         generalData->SetDetectorROI(arg);
         SetupFifoStructure();
@@ -1523,10 +1537,12 @@ void Implementation::setDetectorROI(slsDetectorDefs::ROI arg) {
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
-bool Implementation::getTenGigaEnable() const { return  generalData->tengigaEnable; }
+bool Implementation::getTenGigaEnable() const {
+    return generalData->tengigaEnable;
+}
 
 void Implementation::setTenGigaEnable(const bool b) {
-    if ( generalData->tengigaEnable != b) {
+    if (generalData->tengigaEnable != b) {
         generalData->SetTenGigaEnable(b);
         SetupFifoStructure();
 
@@ -1541,11 +1557,12 @@ void Implementation::setTenGigaEnable(const bool b) {
             }
             LOG(logDEBUG) << "Detector datastream updated [Left: "
                           << ToString(detectorDataStream[LEFT])
-                          << ", Right: "
-                          << ToString(detectorDataStream[RIGHT]) << "]";
+                          << ", Right: " << ToString(detectorDataStream[RIGHT])
+                          << "]";
         }
     }
-    LOG(logINFO) << "Ten Giga: " << ( generalData->tengigaEnable ? "enabled" : "disabled");
+    LOG(logINFO) << "Ten Giga: "
+                 << (generalData->tengigaEnable ? "enabled" : "disabled");
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
@@ -1596,7 +1613,7 @@ void Implementation::setDetectorDataStream(const portPosition port,
     LOG(logINFO) << "Detector 10GbE datastream (" << ToString(port)
                  << " Port): " << ToString(detectorDataStream10GbE[index]);
     // update datastream for 10g
-    if ( generalData->tengigaEnable) {
+    if (generalData->tengigaEnable) {
         detectorDataStream[index] = detectorDataStream10GbE[index];
         LOG(logDEBUG) << "Detector datastream updated ["
                       << (index == 0 ? "Left" : "Right")
@@ -1618,8 +1635,7 @@ void Implementation::setThresholdEnergy(const int value) {
 
 void Implementation::setThresholdEnergy(const std::array<int, 3> value) {
     thresholdAllEnergyeV = value;
-    LOG(logINFO) << "Threshold Energy (eV): "
-                 << ToString(thresholdAllEnergyeV);
+    LOG(logINFO) << "Threshold Energy (eV): " << ToString(thresholdAllEnergyeV);
 }
 
 void Implementation::setRateCorrections(const std::vector<int64_t> &t) {
@@ -1670,8 +1686,8 @@ void Implementation::setTenGigaADCEnableMask(uint32_t mask) {
 
 std::vector<int> Implementation::getDbitList() const { return ctbDbitList; }
 
-void Implementation::setDbitList(const std::vector<int> &v) { 
-    ctbDbitList = v; 
+void Implementation::setDbitList(const std::vector<int> &v) {
+    ctbDbitList = v;
     for (const auto &it : dataProcessor)
         it->SetCtbDbitList(ctbDbitList);
     LOG(logINFO) << "Dbit list: " << ToString(ctbDbitList);
@@ -1679,8 +1695,8 @@ void Implementation::setDbitList(const std::vector<int> &v) {
 
 int Implementation::getDbitOffset() const { return ctbDbitOffset; }
 
-void Implementation::setDbitOffset(const int s) { 
-    ctbDbitOffset = s; 
+void Implementation::setDbitOffset(const int s) {
+    ctbDbitOffset = s;
     for (const auto &it : dataProcessor)
         it->SetCtbDbitOffset(ctbDbitOffset);
     LOG(logINFO) << "Dbit offset: " << ctbDbitOffset;
@@ -1707,7 +1723,7 @@ void Implementation::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
 }
 
 void Implementation::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header&, char *, size_t, void *), void *arg) {
+    void (*func)(sls_receiver_header &, char *, size_t, void *), void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
     for (const auto &it : dataProcessor)
@@ -1715,7 +1731,7 @@ void Implementation::registerCallBackRawDataReady(
 }
 
 void Implementation::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header&, char *, size_t &, void *), void *arg) {
+    void (*func)(sls_receiver_header &, char *, size_t &, void *), void *arg) {
     rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
     for (const auto &it : dataProcessor)

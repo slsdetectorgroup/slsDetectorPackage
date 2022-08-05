@@ -31,14 +31,12 @@ void DataStreamer::SetFifo(Fifo *f) { fifo = f; }
 
 void DataStreamer::SetGeneralData(GeneralData *g) { generalData = g; }
 
-void DataStreamer::SetFileIndex(uint64_t value) {
-    fileIndex = value;
-}
+void DataStreamer::SetFileIndex(uint64_t value) { fileIndex = value; }
 
 void DataStreamer::SetNumberofPorts(xy np) { numPorts = np; }
 
-void DataStreamer::SetFlipRows(bool fd) { 
-    flipRows = fd; 
+void DataStreamer::SetFlipRows(bool fd) {
+    flipRows = fd;
     // flip only right port of quad
     if (quadEnable) {
         flipRows = (index == 1 ? true : false);
@@ -68,8 +66,10 @@ void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
         delete[] completeBuffer;
         completeBuffer = nullptr;
     }
-    if (generalData->detType == GOTTHARD && generalData->detectorRoi.xmin != -1) {
-        adcConfigured = generalData->GetAdcConfigured(index, generalData->detectorRoi);
+    if (generalData->detType == GOTTHARD &&
+        generalData->detectorRoi.xmin != -1) {
+        adcConfigured =
+            generalData->GetAdcConfigured(index, generalData->detectorRoi);
         completeBuffer = new char[generalData->imageSizeComplete];
         memset(completeBuffer, 0, generalData->imageSizeComplete);
     }
@@ -82,8 +82,7 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum, size_t firstImageIndex) {
                    << ", First Streamer Index:" << fnum;
 }
 
-void DataStreamer::CreateZmqSockets(uint32_t port,
-                                    const IpAddr ip, int hwm) {
+void DataStreamer::CreateZmqSockets(uint32_t port, const IpAddr ip, int hwm) {
     uint32_t portnum = port + index;
     std::string sip = ip.str();
     try {
@@ -117,12 +116,13 @@ void DataStreamer::CloseZmqSocket() {
 void DataStreamer::ThreadExecution() {
     char *buffer = nullptr;
     fifo->PopAddressToStream(buffer);
-    LOG(logDEBUG5) << "DataStreamer " << index << ", pop 0x"
-                   << std::hex << (void *)(buffer) << std::dec << ":" << buffer;
+    LOG(logDEBUG5) << "DataStreamer " << index << ", pop 0x" << std::hex
+                   << (void *)(buffer) << std::dec << ":" << buffer;
     auto *memImage = reinterpret_cast<image_structure *>(buffer);
 
     // check dummy
-    LOG(logDEBUG1) << "DataStreamer " << index << ", Numbytes:" << memImage->size ;
+    LOG(logDEBUG1) << "DataStreamer " << index
+                   << ", Numbytes:" << memImage->size;
     if (memImage->size == DUMMY_PACKET_VALUE) {
         StopProcessing(buffer);
         return;
@@ -130,7 +130,8 @@ void DataStreamer::ThreadExecution() {
 
     // streamer first index needn't be the very first index
     if (!startedFlag) {
-        RecordFirstIndex(memImage->header.detHeader.frameNumber, memImage->firstIndex);
+        RecordFirstIndex(memImage->header.detHeader.frameNumber,
+                         memImage->firstIndex);
     }
 
     ProcessAnImage(memImage->header.detHeader, memImage->size, memImage->data);
@@ -142,8 +143,9 @@ void DataStreamer::ThreadExecution() {
 void DataStreamer::StopProcessing(char *buf) {
     LOG(logDEBUG1) << "DataStreamer " << index << ": Dummy";
     if (!SendDummyHeader()) {
-        LOG(logERROR) << "Could not send zmq dummy header for streamer for port " 
-                    << zmqSocket->GetPortNumber();
+        LOG(logERROR)
+            << "Could not send zmq dummy header for streamer for port "
+            << zmqSocket->GetPortNumber();
     }
 
     fifo->FreeAddress(buf);
@@ -152,26 +154,29 @@ void DataStreamer::StopProcessing(char *buf) {
 }
 
 /** buf includes only the standard header */
-void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size, char* data) {
-    
+void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size,
+                                  char *data) {
+
     uint64_t fnum = header.frameNumber;
     LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
 
     // shortframe gotthard
     if (completeBuffer) {
         // disregarding the size modified from callback (always using
-        // imageSizeComplete instead of size because gui needs 
+        // imageSizeComplete instead of size because gui needs
         // imagesizecomplete and listener writes imagesize to size
 
         if (!SendDataHeader(header, generalData->imageSizeComplete,
-                        generalData->nPixelsXComplete, generalData->nPixelsYComplete)) {
+                            generalData->nPixelsXComplete,
+                            generalData->nPixelsYComplete)) {
             LOG(logERROR) << "Could not send zmq header for fnum " << fnum
                           << " and streamer " << index;
         }
         memcpy(completeBuffer + ((generalData->imageSize) * adcConfigured),
                data, size);
 
-        if (!zmqSocket->SendData(completeBuffer, generalData->imageSizeComplete)) {
+        if (!zmqSocket->SendData(completeBuffer,
+                                 generalData->imageSizeComplete)) {
             LOG(logERROR) << "Could not send zmq data for fnum " << fnum
                           << " and streamer " << index;
         }
@@ -180,7 +185,8 @@ void DataStreamer::ProcessAnImage(sls_detector_header header, size_t size, char*
     // normal
     else {
 
-        if (!SendDataHeader(header, size, generalData->nPixelsX, generalData->nPixelsY)) {
+        if (!SendDataHeader(header, size, generalData->nPixelsX,
+                            generalData->nPixelsY)) {
             LOG(logERROR) << "Could not send zmq header for fnum " << fnum
                           << " and streamer " << index;
         }
@@ -199,7 +205,7 @@ int DataStreamer::SendDummyHeader() {
 }
 
 int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
-                             uint32_t nx, uint32_t ny) {
+                                 uint32_t nx, uint32_t ny) {
     zmqHeader zHeader;
     zHeader.data = true;
     zHeader.jsonversion = SLS_DETECTOR_JSON_HEADER_VERSION;
@@ -250,9 +256,8 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
 
 void DataStreamer::RestreamStop() {
     if (!SendDummyHeader()) {
-        throw RuntimeError(
-            "Could not restream Dummy Header via ZMQ for port " +
-            std::to_string(zmqSocket->GetPortNumber()));
+        throw RuntimeError("Could not restream Dummy Header via ZMQ for port " +
+                           std::to_string(zmqSocket->GetPortNumber()));
     }
 }
 

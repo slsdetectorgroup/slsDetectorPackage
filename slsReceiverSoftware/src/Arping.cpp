@@ -19,8 +19,8 @@ void Arping::SetInterfacesAndIps(const int index, const std::string &interface,
 
     if (interface.empty() || ip.empty()) {
         throw RuntimeError("Could not arping. Interface name and ip not "
-                                "set up for interface " +
-                                std::to_string(index));
+                           "set up for interface " +
+                           std::to_string(index));
     }
     // create commands to arping
     std::ostringstream os;

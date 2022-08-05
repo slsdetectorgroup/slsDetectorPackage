@@ -386,7 +386,7 @@ class Mythen3Data : public GeneralData {
         int n = __builtin_popcount(mask);
         if (n < 1 || n > 3) {
             throw RuntimeError("Invalid number of counters " +
-                                    std::to_string(n) + ". Expected 1-3.");
+                               std::to_string(n) + ". Expected 1-3.");
         }
         counterMask = mask;
         ncounters = n;

@@ -25,8 +25,8 @@ ThreadObject::ThreadObject(int index, std::string type)
     try {
         threadObject = std::thread(&ThreadObject::RunningThread, this);
     } catch (...) {
-        throw RuntimeError("Could not create " + type +
-                                " thread with index " + std::to_string(index));
+        throw RuntimeError("Could not create " + type + " thread with index " +
+                           std::to_string(index));
     }
 }
 

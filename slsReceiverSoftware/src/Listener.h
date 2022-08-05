@@ -47,12 +47,11 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void SetFrameDiscardPolicy(frameDiscardPolicy value);
     void SetSilentMode(bool enable);
 
-
     void ResetParametersforNewAcquisition();
-    void CreateUDPSocket(int& actualSize);
+    void CreateUDPSocket(int &actualSize);
     void ShutDownUDPSocket();
     /** to set & get actual buffer size */
-    void CreateDummySocketForUDPSocketBufferSize(int s, int & actualSize);
+    void CreateDummySocketForUDPSocketBufferSize(int s, int &actualSize);
 
     /**
      * Set hard coded (calculated but not from detector) row and column
@@ -77,7 +76,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * pushes dummy buffer into fifo
      * and reset running mask by calling StopRunning()
      */
-    void StopListening(char *buf, size_t& size);
+    void StopListening(char *buf, size_t &size);
 
     /**
      * Listen to the UDP Socket for an image,
@@ -85,13 +84,22 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * @returns number of bytes of relevant data, can be image size or 0 (stop
      * acquisition) or -1 to discard image
      */
-    uint32_t ListenToAnImage(sls_receiver_header & dstHeader, char *dstData);
+    uint32_t ListenToAnImage(sls_receiver_header &dstHeader, char *dstData);
 
-    size_t HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum, bool isHeaderEmpty, size_t imageSize, sls_receiver_header& rxHeader);
+    size_t HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum,
+                              bool isHeaderEmpty, size_t imageSize,
+                              sls_receiver_header &rxHeader);
 
-    void CopyPacket(char* dst, char* src, uint32_t dataSize, uint32_t detHeaderSize, uint32_t correctedDataSize, uint32_t &numpackets, bool &isHeaderEmpty, bool standardHeader, sls_receiver_header& rxHeader, sls_detector_header* detHeader, uint32_t pnum, uint64_t bnum);
+    void CopyPacket(char *dst, char *src, uint32_t dataSize,
+                    uint32_t detHeaderSize, uint32_t correctedDataSize,
+                    uint32_t &numpackets, bool &isHeaderEmpty,
+                    bool standardHeader, sls_receiver_header &rxHeader,
+                    sls_detector_header *detHeader, uint32_t pnum,
+                    uint64_t bnum);
 
-    void GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum, bool standardHeader, char* packet, sls_detector_header*& header);
+    void GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum,
+                          bool standardHeader, char *packet,
+                          sls_detector_header *&header);
 
     void PrintFifoStatistics();
 

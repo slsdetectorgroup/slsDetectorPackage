@@ -25,26 +25,29 @@ class ZmqSocket;
 class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    DataStreamer(int index, Fifo *fifo, uint32_t *dynamicRange, ROI *detectorRoi, uint64_t *fileIndex, bool flipRows, slsDetectorDefs::xy numPorts, bool *quadEnable, uint64_t *totalNumFrames);
+    DataStreamer(int index);
     ~DataStreamer();
 
     void SetFifo(Fifo *f);
-    void ResetParametersforNewAcquisition(const std::string &fname);
     void SetGeneralData(GeneralData *g);
+
+    void SetFileIndex(uint64_t value);
     void SetNumberofPorts(xy np);
     void SetFlipRows(bool fd);
+    void SetQuadEnable(bool value);
+    void SetNumberofTotalFrames(uint64_t value);
     void
     SetAdditionalJsonHeader(const std::map<std::string, std::string> &json);
 
+    void ResetParametersforNewAcquisition(const std::string &fname);
     /**
      * Creates Zmq Sockets
      * (throws an exception if it couldnt create zmq sockets)
-     * @param nunits pointer to number of theads/ units per detector
      * @param port streaming port start index
      * @param ip streaming source ip
      * @param hwm streaming high water mark
      */
-    void CreateZmqSockets(int *nunits, uint32_t port, const IpAddr ip,
+    void CreateZmqSockets(uint32_t port, const IpAddr ip,
                           int hwm);
     void CloseZmqSocket();
     void RestreamStop();
@@ -85,13 +88,11 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
     static const std::string TypeName;
     const GeneralData *generalData{nullptr};
-    Fifo *fifo;
+    Fifo *fifo{nullptr};
     ZmqSocket *zmqSocket{nullptr};
-    uint32_t *dynamicRange;
-    ROI *detectorRoi;
     int adcConfigured{-1};
-    uint64_t *fileIndex;
-    bool flipRows;
+    uint64_t fileIndex{0};
+    bool flipRows{false};
     std::map<std::string, std::string> additionalJsonHeader;
 
     /** Used by streamer thread to update local copy (reduce number of locks
@@ -111,8 +112,8 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     char *completeBuffer{nullptr};
 
     xy numPorts{1, 1};
-    bool *quadEnable;
-    uint64_t *totalNumFrames;
+    bool quadEnable{false};
+    uint64_t nTotalFrames{0};
 };
 
 } // namespace sls

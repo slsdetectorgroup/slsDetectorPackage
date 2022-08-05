@@ -24,35 +24,35 @@ class Fifo;
 class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-
-    Listener(int index, Fifo *fifo, std::atomic<runStatus> *status, uint32_t *udpPortNumber, std::string *eth, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode);
+    Listener(int index, std::atomic<runStatus> *status);
     ~Listener();
 
-    bool isPortDisabled() const;		
-    uint64_t GetPacketsCaught() const;		
-    uint64_t GetNumCompleteFramesCaught() const;		
-    uint64_t GetLastFrameIndexCaught() const;		
-    /**  negative values in case of extra packets */		
-    int64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) const;		
-    bool GetStartedFlag() const;		
-    uint64_t GetCurrentFrameIndex() const;		
-    uint64_t GetListenedIndex() const;		
+    bool isPortDisabled() const;
+    uint64_t GetPacketsCaught() const;
+    uint64_t GetNumCompleteFramesCaught() const;
+    uint64_t GetLastFrameIndexCaught() const;
+    /**  negative values in case of extra packets */
+    int64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) const;
+    bool GetStartedFlag() const;
+    uint64_t GetCurrentFrameIndex() const;
+    uint64_t GetListenedIndex() const;
 
-    void SetFifo(Fifo *f);		
-    void ResetParametersforNewAcquisition();		
-    void SetGeneralData(GeneralData *g);		
-    void SetActivate(bool enable);		
-    void SetDetectorDatastream(bool enable);		
-    void SetNoRoi(bool enable);		
-    void CreateUDPSockets();		
-    void ShutDownUDPSocket();		
+    void SetFifo(Fifo *f);
+    void SetGeneralData(GeneralData *g);
+    void SetUdpPortNumber(const uint32_t portNumber);
+    void SetEthernetInterface(const std::string e);
+    void SetActivate(bool enable);
+    void SetDetectorDatastream(bool enable);
+    void SetNoRoi(bool enable);
+    void SetFrameDiscardPolicy(frameDiscardPolicy value);
+    void SetSilentMode(bool enable);
 
-    /**		
-     * Create & closes a dummy UDP socket		
-     * to set & get actual buffer size		
-     * @param s UDP socket buffer size to be set		
-     */		
-    void CreateDummySocketForUDPSocketBufferSize(int s);		
+
+    void ResetParametersforNewAcquisition();
+    void CreateUDPSocket(int& actualSize);
+    void ShutDownUDPSocket();
+    /** to set & get actual buffer size */
+    void CreateDummySocketForUDPSocketBufferSize(int s, int & actualSize);
 
     /**
      * Set hard coded (calculated but not from detector) row and column
@@ -102,17 +102,14 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     // individual members
     std::atomic<runStatus> *status;
     std::unique_ptr<UdpRxSocket> udpSocket{nullptr};
-    uint32_t *udpPortNumber;
-    std::string *eth;
-    int *udpSocketBufferSize;
-    /** double due to kernel bookkeeping */
-    int *actualUDPSocketBufferSize;
-    uint32_t *framesPerFile;
-    frameDiscardPolicy *frameDiscardMode;
+
+    uint32_t udpPortNumber{0};
+    std::string eth;
+    frameDiscardPolicy frameDiscardMode;
     bool activated{false};
     bool detectorDataStream{true};
     bool noRoi{false};
-    bool *silentMode;
+    bool silentMode;
     bool disabledPort{false};
 
     /** row hardcoded as 1D or 2d,

@@ -90,9 +90,8 @@ void HDF5DataFile::CloseFile() {
 }
 
 void HDF5DataFile::CreateFirstHDF5DataFile(
-    const std::string fPath, const std::string fNamePrefix,
+    const std::string& fNamePrefix,
     const uint64_t fIndex, const bool owEnable, const bool sMode,
-    const int modulePos, const int nUnitsPerReadout,
     const uint32_t uPortNumber, const uint32_t mFramesPerFile,
     const uint64_t nImages, const uint32_t nX, const uint32_t nY,
     const uint32_t dr) {
@@ -108,13 +107,10 @@ void HDF5DataFile::CreateFirstHDF5DataFile(
     nPixelsY = nY;
     dynamicRange = dr;
 
-    filePath = fPath;
     fileNamePrefix = fNamePrefix;
     fileIndex = fIndex;
     overWriteEnable = owEnable;
     silentMode = sMode;
-    detIndex = modulePos;
-    numUnitsPerReadout = nUnitsPerReadout;
     udpPortNumber = uPortNumber;
 
     switch (dynamicRange) {
@@ -138,8 +134,7 @@ void HDF5DataFile::CreateFile() {
     numFilesInAcquisition++;
 
     std::ostringstream os;
-    os << filePath << "/" << fileNamePrefix << "_d"
-       << (detIndex * numUnitsPerReadout + index) << "_f" << subFileIndex
+    os << fileNamePrefix << "_f" << subFileIndex
        << '_' << fileIndex << ".h5";
     fileName = os.str();
 

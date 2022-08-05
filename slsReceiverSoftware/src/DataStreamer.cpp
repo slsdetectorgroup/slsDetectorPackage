@@ -18,9 +18,7 @@ namespace sls {
 
 const std::string DataStreamer::TypeName = "DataStreamer";
 
-DataStreamer::DataStreamer(int index, Fifo *fifo, uint32_t *dynamicRange, ROI *detectorRoi, uint64_t *fileIndex, bool flipRows, slsDetectorDefs::xy numPorts, bool *quadEnable, uint64_t *totalNumFrames)
-    : ThreadObject(index, TypeName), fifo(fifo), dynamicRange(dynamicRange), detectorRoi(detectorRoi), fileIndex(fileIndex), flipRows(flipRows), numPorts(numPorts), quadEnable(quadEnable), totalNumFrames(totalNumFrames) {
-
+DataStreamer::DataStreamer(int index) : ThreadObject(index, TypeName) {
     LOG(logDEBUG) << "DataStreamer " << index << " created";
 }
 
@@ -30,6 +28,35 @@ DataStreamer::~DataStreamer() {
 }
 
 void DataStreamer::SetFifo(Fifo *f) { fifo = f; }
+
+void DataStreamer::SetGeneralData(GeneralData *g) { generalData = g; }
+
+void DataStreamer::SetFileIndex(uint64_t value) {
+    fileIndex = value;
+}
+
+void DataStreamer::SetNumberofPorts(xy np) { numPorts = np; }
+
+void DataStreamer::SetFlipRows(bool fd) { 
+    flipRows = fd; 
+    // flip only right port of quad
+    if (quadEnable) {
+        flipRows = (index == 1 ? true : false);
+    }
+}
+
+void DataStreamer::SetQuadEnable(bool value) { quadEnable = value; }
+
+void DataStreamer::SetNumberofTotalFrames(uint64_t value) {
+    nTotalFrames = value;
+}
+
+void DataStreamer::SetAdditionalJsonHeader(
+    const std::map<std::string, std::string> &json) {
+    std::lock_guard<std::mutex> lock(additionalJsonMutex);
+    additionalJsonHeader = json;
+    isAdditionalJsonUpdated = true;
+}
 
 void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
     StopRunning();
@@ -41,8 +68,8 @@ void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
         delete[] completeBuffer;
         completeBuffer = nullptr;
     }
-    if (generalData->detType == GOTTHARD && detectorRoi->xmin != -1) {
-        adcConfigured = generalData->GetAdcConfigured(index, *detectorRoi);
+    if (generalData->detType == GOTTHARD && generalData->detectorRoi.xmin != -1) {
+        adcConfigured = generalData->GetAdcConfigured(index, generalData->detectorRoi);
         completeBuffer = new char[generalData->imageSizeComplete];
         memset(completeBuffer, 0, generalData->imageSizeComplete);
     }
@@ -55,20 +82,7 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum, size_t firstImageIndex) {
                    << ", First Streamer Index:" << fnum;
 }
 
-void DataStreamer::SetGeneralData(GeneralData *g) { generalData = g; }
-
-void DataStreamer::SetNumberofPorts(xy np) { numPorts = np; }
-
-void DataStreamer::SetFlipRows(bool fd) { flipRows = fd; }
-
-void DataStreamer::SetAdditionalJsonHeader(
-    const std::map<std::string, std::string> &json) {
-    std::lock_guard<std::mutex> lock(additionalJsonMutex);
-    additionalJsonHeader = json;
-    isAdditionalJsonUpdated = true;
-}
-
-void DataStreamer::CreateZmqSockets(int *nunits, uint32_t port,
+void DataStreamer::CreateZmqSockets(uint32_t port,
                                     const IpAddr ip, int hwm) {
     uint32_t portnum = port + index;
     std::string sip = ip.str();
@@ -193,8 +207,8 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
     uint64_t frameIndex = header.frameNumber - firstIndex;
     uint64_t acquisitionIndex = header.frameNumber;
 
-    zHeader.dynamicRange = *dynamicRange;
-    zHeader.fileIndex = *fileIndex;
+    zHeader.dynamicRange = generalData->dynamicRange;
+    zHeader.fileIndex = fileIndex;
     zHeader.ndetx = numPorts.x;
     zHeader.ndety = numPorts.y;
     zHeader.npixelsx = nx;
@@ -203,7 +217,7 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
     zHeader.acqIndex = acquisitionIndex;
     zHeader.frameIndex = frameIndex;
     zHeader.progress =
-        100 * ((double)(frameIndex + 1) / (double)(*totalNumFrames));
+        100 * ((double)(frameIndex + 1) / (double)(nTotalFrames));
     zHeader.fname = fileNametoStream;
     zHeader.frameNumber = header.frameNumber;
     zHeader.expLength = header.expLength;
@@ -219,7 +233,7 @@ int DataStreamer::SendDataHeader(sls_detector_header header, uint32_t size,
     zHeader.detType = header.detType;
     zHeader.version = header.version;
     zHeader.flipRows = static_cast<int>(flipRows);
-    zHeader.quad = *quadEnable;
+    zHeader.quad = quadEnable;
     zHeader.completeImage =
         (header.packetNumber < generalData->packetsPerFrame ? false : true);
 

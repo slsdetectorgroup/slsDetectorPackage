@@ -29,31 +29,36 @@ struct MasterAttributes;
 class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    DataProcessor(int index, detectorType detType, Fifo *fifo, bool *dataStreamEnable, uint32_t *streamingFrequency, uint32_t *streamingTimerInMs, uint32_t *streamingStartFnum, bool *framePadding, std::vector<int> *ctbDbitList, int *ctbDbitOffset, int *ctbAnalogDataBytes);
+    DataProcessor(int index);
     ~DataProcessor() override;
 
     bool GetStartedFlag() const;
 
     void SetFifo(Fifo *f);
-    void SetActivate(bool enable);
-    void SetReceiverROI(ROI roi);
-    void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *generalData);
 
+    void SetActivate(bool enable);
+    void SetReceiverROI(ROI roi);
+    void SetDataStreamEnable(bool enable);
+    void SetStreamingFrequency(uint32_t value);
+    void SetStreamingTimerInMs(uint32_t value);
+    void SetStreamingStartFnum(uint32_t value);
+    void SetFramePadding(bool enable);
+    void SetCtbDbitList(std::vector<int> value);
+    void SetCtbDbitOffset(int value);
+
+    void ResetParametersforNewAcquisition();
     void CloseFiles();
     void DeleteFiles();
     void SetupFileWriter(const bool filewriteEnable,
                          const fileFormat fileFormatType,
                          std::mutex *hdf5LibMutex);
 
-    void CreateFirstFiles(const std::string &filePath,
-                          const std::string &fileNamePrefix,
+    void CreateFirstFiles(const std::string &fileNamePrefix,
                           const uint64_t fileIndex, const bool overWriteEnable,
-                          const bool silentMode, const int modulePos,
-                          const int numUnitsPerReadout,
+                          const bool silentMode,
                           const uint32_t udpPortNumber,
-                          const uint32_t maxFramesPerFile,
-                          const uint64_t numImages, const uint32_t dynamicRange,
+                          const uint64_t numImages,
                           const bool detectorDataStream);
 #ifdef HDF5C
     uint32_t GetFilesInAcquisition() const;
@@ -61,9 +66,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
         const std::string &filePath, const std::string &fileNamePrefix,
         const uint64_t fileIndex, const bool overWriteEnable,
         const bool silentMode, const int modulePos,
-        const int numUnitsPerReadout, const uint32_t maxFramesPerFile,
         const uint64_t numImages, const int numModX, const int numModY,
-        const uint32_t dynamicRange, std::mutex *hdf5LibMutex);
+        std::mutex *hdf5LibMutex);
     void LinkFileInMaster(const std::string &masterFileName,
                           const std::string &virtualFileName,
                           const bool silentMode, std::mutex *hdf5LibMutex);
@@ -137,25 +141,23 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     static const std::string typeName;
 
-    const GeneralData *generalData{nullptr};
+    GeneralData *generalData{nullptr};
     Fifo *fifo;
-    detectorType detType;
-    bool *dataStreamEnable;
+    bool dataStreamEnable;
     bool activated{false};
     ROI receiverRoi{};
     bool receiverRoiEnabled{false};
     bool receiverNoRoi{false};
     std::unique_ptr<char[]> completeImageToStreamBeforeCropping;
     /** if 0, sending random images with a timer */
-    uint32_t *streamingFrequency;
-    uint32_t *streamingTimerInMs;
-    uint32_t *streamingStartFnum;
+    uint32_t streamingFrequency;
+    uint32_t streamingTimerInMs;
+    uint32_t streamingStartFnum;
     uint32_t currentFreqCount{0};
     struct timespec timerbegin {};
-    bool *framePadding;
-    std::vector<int> *ctbDbitList;
-    int *ctbDbitOffset;
-    int *ctbAnalogDataBytes;
+    bool framePadding;
+    std::vector<int> ctbDbitList;
+    int ctbDbitOffset;
     std::atomic<bool> startedFlag{false};
     std::atomic<uint64_t> firstIndex{0};
 

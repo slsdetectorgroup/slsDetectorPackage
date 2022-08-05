@@ -24,16 +24,15 @@ namespace sls {
 
 const std::string Listener::TypeName = "Listener";
 
-Listener::Listener(int index, Fifo *fifo, std::atomic<runStatus> *status, uint32_t *udpPortNumber, std::string *eth, int *udpSocketBufferSize, int *actualUDPSocketBufferSize, uint32_t *framesPerFile, frameDiscardPolicy *frameDiscardMode, bool *silentMode)
-    : ThreadObject(index, TypeName), fifo(fifo), status(status),
-      udpPortNumber(udpPortNumber), eth(eth), udpSocketBufferSize(udpSocketBufferSize), actualUDPSocketBufferSize(actualUDPSocketBufferSize), framesPerFile(framesPerFile), frameDiscardMode(frameDiscardMode), silentMode(silentMode) {
+Listener::Listener(int index, std::atomic<runStatus> *status)
+    : ThreadObject(index, TypeName), status(status) {
     LOG(logDEBUG) << "Listener " << index << " created";
 }
 
 Listener::~Listener() = default;
 
-bool Listener::isPortDisabled() const {		
-    return disabledPort;		
+bool Listener::isPortDisabled() const {
+    return disabledPort;
 }
 
 uint64_t Listener::GetPacketsCaught() const { return numPacketsCaught; }
@@ -72,6 +71,47 @@ uint64_t Listener::GetListenedIndex() const {
 
 void Listener::SetFifo(Fifo *f) { fifo = f; }
 
+void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
+
+void Listener::SetUdpPortNumber(const uint32_t portNumber) {
+    udpPortNumber = portNumber;
+}
+
+void Listener::SetEthernetInterface(const std::string e) {
+    eth = e;
+    // if eth is mistaken with ip address
+    if (eth.find('.') != std::string::npos) {
+        eth = "";
+    }
+    if (!eth.length()) {
+        LOG(logWARNING) << "ethernet interface for udp port " << udpPortNumber << " is empty. Listening to all";
+    }
+}
+
+void Listener::SetActivate(bool enable) { 
+    activated = enable;
+    disabledPort = (!activated || !detectorDataStream || noRoi);
+}
+
+void Listener::SetDetectorDatastream(bool enable) { 
+    detectorDataStream = enable;
+    disabledPort = (!activated || !detectorDataStream || noRoi);
+}
+
+void Listener::SetNoRoi(bool enable) {
+    noRoi = enable; 
+    disabledPort = (!activated || !detectorDataStream || noRoi);
+}
+
+void Listener::SetFrameDiscardPolicy(frameDiscardPolicy value) {
+    frameDiscardMode = value;
+}
+
+void Listener::SetSilentMode(bool enable) {
+    silentMode = enable;
+}
+
+
 void Listener::ResetParametersforNewAcquisition() {
     StopRunning();
     startedFlag = false;
@@ -104,43 +144,17 @@ void Listener::RecordFirstIndex(uint64_t fnum) {
     startedFlag = true;
     firstIndex = fnum;
 
-    if (!(*silentMode)) {
+    if (!silentMode) {
         if (!index) {
             LOG(logINFOBLUE) << index << " First Index: " << firstIndex;
         }
     }
 }
 
-void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
-
-void Listener::SetActivate(bool enable) { 
-    activated = enable;
-    disabledPort = (!activated || !detectorDataStream || noRoi);
-}
-
-void Listener::SetDetectorDatastream(bool enable) { 
-    detectorDataStream = enable;
-    disabledPort = (!activated || !detectorDataStream || noRoi);
-}
-
-void Listener::SetNoRoi(bool enable) {
-    noRoi = enable; 
-    disabledPort = (!activated || !detectorDataStream || noRoi);
-}
-
-void Listener::CreateUDPSockets() {
+void Listener::CreateUDPSocket(int& actualSize) {
     if (disabledPort) {
         return;
     }
-
-    // if eth is mistaken with ip address
-    if ((*eth).find('.') != std::string::npos) {
-        (*eth) = "";
-    }
-    if (!(*eth).length()) {
-        LOG(logWARNING) << "eth is empty. Listening to all";
-    }
-
     ShutDownUDPSocket();
 
     uint32_t packetSize = generalData->packetSize;
@@ -148,23 +162,20 @@ void Listener::CreateUDPSockets() {
         packetSize = generalData->vetoPacketSize;
     }
 
-    // InterfaceNameToIp(eth).str().c_str()
     try {
-        udpSocket = make_unique<UdpRxSocket>(
-            *udpPortNumber, packetSize,
-            ((*eth).length() ? InterfaceNameToIp(*eth).str().c_str()
-                             : nullptr),
-            *udpSocketBufferSize);
-        LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
+        udpSocket = make_unique<UdpRxSocket>(udpPortNumber, packetSize,
+            (eth.length() ? InterfaceNameToIp(eth).str().c_str()
+                             : nullptr), generalData->udpSocketBufferSize);
+        LOG(logINFO) << index << ": UDP port opened at port " << udpPortNumber;
     } catch (...) {
         throw RuntimeError("Could not create UDP socket on port " +
-                                std::to_string(*udpPortNumber));
+                                std::to_string(udpPortNumber));
     }
 
     udpSocketAlive = true;
 
     // doubled due to kernel bookkeeping (could also be less due to permissions)
-    *actualUDPSocketBufferSize = udpSocket->getBufferSize();
+    actualSize = udpSocket->getBufferSize();
 }
 
 void Listener::ShutDownUDPSocket() {
@@ -173,25 +184,22 @@ void Listener::ShutDownUDPSocket() {
         // give other thread time after udpSocketAlive is changed
         usleep(0);
         udpSocket->Shutdown();
-        LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
+        LOG(logINFO) << "Shut down of UDP port " << udpPortNumber;
     }
 }
 
-void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
-    LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port "
-                 << *udpPortNumber;
+void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int& actualSize) {
+    // custom setup (s != 0)
+    // default setup at startup (s = 0)
+    int size = (s == 0 ? generalData->udpSocketBufferSize : s);
+    LOG(logINFO) << "Testing UDP Socket Buffer size " << size << " with test port "
+                 << udpPortNumber;
+    int previousSize = generalData->udpSocketBufferSize;
+    generalData->udpSocketBufferSize = size;
 
     if (disabledPort) {
-        *actualUDPSocketBufferSize = (s * 2);
+        actualSize = (generalData->udpSocketBufferSize * 2);
         return;
-    }
-
-    int temp = *udpSocketBufferSize;
-    *udpSocketBufferSize = s;
-
-    // if eth is mistaken with ip address
-    if ((*eth).find('.') != std::string::npos) {
-        (*eth) = "";
     }
 
     uint32_t packetSize = generalData->packetSize;
@@ -201,24 +209,29 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s) {
 
     // create dummy socket
     try {
-        UdpRxSocket g(*udpPortNumber, packetSize,
-                           ((*eth).length()
-                                ? InterfaceNameToIp(*eth).str().c_str()
-                                : nullptr),
-                           *udpSocketBufferSize);
+        UdpRxSocket g(udpPortNumber, packetSize,
+                           (eth.length()
+                                ? InterfaceNameToIp(eth).str().c_str()
+                                : nullptr), generalData->udpSocketBufferSize);
 
         // doubled due to kernel bookkeeping (could also be less due to
         // permissions)
-        *actualUDPSocketBufferSize = g.getBufferSize();
-        if (*actualUDPSocketBufferSize == -1) {
-            *udpSocketBufferSize = temp;
+        actualSize = g.getBufferSize();
+        if (actualSize == -1) {
+            generalData->udpSocketBufferSize = previousSize;
         } else {
-            *udpSocketBufferSize = (*actualUDPSocketBufferSize) / 2;
+            generalData->udpSocketBufferSize = actualSize / 2;
         }
 
     } catch (...) {
         throw RuntimeError("Could not create a test UDP socket on port " +
-                                std::to_string(*udpPortNumber));
+                                std::to_string(udpPortNumber));
+    }
+
+    // custom and didnt set, throw error
+    if (s != 0 && static_cast<int>(generalData->udpSocketBufferSize) != s) {
+        throw RuntimeError("Could not set udp socket buffer size. (No "
+                                "CAP_NET_ADMIN privileges?)");
     }
 }
 
@@ -257,12 +270,12 @@ void Listener::ThreadExecution() {
     fifo->PushAddress(buffer);
 
     // Statistics
-    if (!(*silentMode)) {
+    if (!silentMode) {
         numFramesStatistic++;
         if (numFramesStatistic >=
             // second condition also for infinite #number of frames
-            (((*framesPerFile) == 0) ? STATISTIC_FRAMENUMBER_INFINITE
-                                     : (*framesPerFile)))
+            (generalData->framesPerFile == 0 ? STATISTIC_FRAMENUMBER_INFINITE
+                                     : generalData->framesPerFile))
             PrintFifoStatistics();
     }
 }
@@ -271,7 +284,7 @@ void Listener::StopListening(char *buf, size_t & size) {
     size = DUMMY_PACKET_VALUE;
     fifo->PushAddress(buf);
     StopRunning();
-    LOG(logDEBUG1) << index << ": Listening Completed. Packets (" << *udpPortNumber
+    LOG(logDEBUG1) << index << ": Listening Completed. Packets (" << udpPortNumber
                    << ") : " << numPacketsCaught;
 }
 
@@ -342,7 +355,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
 
         // Eiger Firmware in a weird state
         if (generalData->detType == EIGER && fnum == 0) {
-            LOG(logERROR) << "[" << *udpPortNumber
+            LOG(logERROR) << "[" << udpPortNumber
                           << "]: Got Frame Number "
                              "Zero from Firmware. Discarding Packet";
             numPacketsCaught--;
@@ -385,7 +398,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header & dstHeader, char *dstDat
 }
 
 size_t Listener::HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum, bool isHeaderEmpty, size_t imageSize, sls_receiver_header& dstHeader) {
-    switch (*frameDiscardMode) {
+    switch (frameDiscardMode) {
     case DISCARD_EMPTY_FRAMES:
         if (!numpackets) {
             if (!EOA) {
@@ -495,7 +508,7 @@ void Listener::PrintFifoStatistics() {
     numFramesStatistic = 0;
 
     const auto color = loss ? logINFORED : logINFOGREEN;
-    LOG(color) << "[" << *udpPortNumber
+    LOG(color) << "[" << udpPortNumber
                << "]:  "
                   "Packet_Loss:"
                << loss << " (" << lossPercent << "%)"

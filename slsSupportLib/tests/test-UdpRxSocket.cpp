@@ -33,8 +33,7 @@ int open_socket(int port) {
 
     const std::string portname = std::to_string(port);
     if (getaddrinfo(host, portname.c_str(), &hints, &res)) {
-        throw RuntimeError("Failed at getaddrinfo with " +
-                                std::string(host));
+        throw RuntimeError("Failed at getaddrinfo with " + std::string(host));
     }
     int fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (fd == -1) {

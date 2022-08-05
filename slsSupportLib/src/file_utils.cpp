@@ -60,15 +60,14 @@ std::vector<char> readBinaryFile(const std::string &fname,
     // check if it exists
     struct stat st;
     if (stat(fname.c_str(), &st) != 0) {
-        throw RuntimeError(errorPrefix +
-                                std::string(" (file does not exist)"));
+        throw RuntimeError(errorPrefix + std::string(" (file does not exist)"));
     }
 
     FILE *fp = fopen(fname.c_str(), "rb");
     if (fp == nullptr) {
         throw RuntimeError(errorPrefix +
-                                std::string(" (Could not open file: ") + fname +
-                                std::string(")"));
+                           std::string(" (Could not open file: ") + fname +
+                           std::string(")"));
     }
 
     // get file size to print progress
@@ -76,13 +75,12 @@ std::vector<char> readBinaryFile(const std::string &fname,
 
     std::vector<char> buffer(filesize, 0);
     if ((ssize_t)fread(buffer.data(), sizeof(char), filesize, fp) != filesize) {
-        throw RuntimeError(errorPrefix +
-                                std::string(" (Could not read file)"));
+        throw RuntimeError(errorPrefix + std::string(" (Could not read file)"));
     }
 
     if (fclose(fp) != 0) {
         throw RuntimeError(errorPrefix +
-                                std::string(" (Could not close file)"));
+                           std::string(" (Could not close file)"));
     }
 
     LOG(logDEBUG1) << "Read file into memory";

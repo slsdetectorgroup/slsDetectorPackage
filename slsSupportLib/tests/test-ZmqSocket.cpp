@@ -5,7 +5,6 @@
 
 namespace sls {
 
-
 TEST_CASE("Throws when cannot create socket") {
     REQUIRE_THROWS(ZmqSocket("sdiasodjajpvv", 5076001));
 }
@@ -118,4 +117,4 @@ TEST_CASE("Send header and data") {
     }
 }
 
-} //namespace
+} // namespace sls

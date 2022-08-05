@@ -422,7 +422,7 @@ void allocateDetectorStructureMemory() {
         detectorDacs[idac] = 0;
     }
 
-    // trimbits start at 0 
+    // trimbits start at 0
     for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
         *((detectorModules->chanregs) + ichan) = 0;
     }
@@ -487,7 +487,6 @@ void setupDetector() {
 
     // dynamic range
     setDynamicRange(DEFAULT_DYNAMIC_RANGE);
-
 
     // Initialization of acquistion parameters
     setNumFrames(DEFAULT_NUM_FRAMES);
@@ -1102,7 +1101,7 @@ void updateVthAndCounterMask() {
         setVthDac(2, 0);
     } else {
         // previous counter values
-        setCounterMaskWithUpdateFlag(counterMask, 0);        
+        setCounterMaskWithUpdateFlag(counterMask, 0);
     }
     if (pumpProbe) {
         // enable only vth2
@@ -1280,7 +1279,7 @@ int setDACS(int *dacs) {
     return OK;
 }
 
-void getModule(sls_detector_module* myMod) {
+void getModule(sls_detector_module *myMod) {
     // serial number
     myMod->serialnumber = detectorModules->serialnumber;
     // csr reg
@@ -1302,8 +1301,10 @@ void getModule(sls_detector_module* myMod) {
 int setModule(sls_detector_module myMod, char *mess) {
     LOG(logINFO, ("Setting module\n"));
 
-    if (((myMod.nchan) > (detectorModules->nchan)) || ((myMod.ndac) > (detectorModules->ndac))) {
-        strcpy(mess, "Could not set module as the number of channels or dacs do not match to the one in the detector server\n");
+    if (((myMod.nchan) > (detectorModules->nchan)) ||
+        ((myMod.ndac) > (detectorModules->ndac))) {
+        strcpy(mess, "Could not set module as the number of channels or dacs "
+                     "do not match to the one in the detector server\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -1359,7 +1360,8 @@ int setTrimbits(int *trimbits) {
     uint32_t prevRunClk = clkDivider[SYSTEM_C0];
 
     // set to trimming clock
-    if (setClockDividerWithTimeUpdateOption(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV, 0) == FAIL) {
+    if (setClockDividerWithTimeUpdateOption(
+            SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV, 0) == FAIL) {
         LOG(logERROR,
             ("Could not start trimming. Could not set to trimming clock\n"));
         return FAIL;
@@ -1479,7 +1481,7 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
 void validateSettings() {
     LOG(logWARNING, ("Not validating dac settings temporarily"));
     return;
-    
+
     // if any special dac value is changed individually => undefined
     const int specialDacs[NSPECIALDACS] = SPECIALDACINDEX;
     int *specialDacValues[] = {defaultDacValue_standard, defaultDacValue_fast,
@@ -1541,7 +1543,7 @@ void setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck) {
         return;
     }
 
-    // threshold dacs 
+    // threshold dacs
     // remember value, vthreshold: skip disabled,
     // others: disable or enable dac if counter mask
     // setDAC called directly: will set independent of counter enable
@@ -1569,8 +1571,8 @@ void setDAC(enum DACINDEX ind, int val, int mV, int counterEnableCheck) {
                     // skip setting vthx dac (value remembered anyway)
                     if (ind == M_VTHRESHOLD) {
                         continue;
-                    }          
-                    // disable dac (except when setting dac directly) 
+                    }
+                    // disable dac (except when setting dac directly)
                     if (counterEnableCheck) {
                         val = DEFAULT_COUNTER_DISABLED_VTH_VAL;
                     }
@@ -1624,7 +1626,7 @@ void setVthDac(int index, int enable) {
     if (enable) {
         value = vthEnabledVals[index];
     }
-    setGeneralDAC(vthdacs[index], value, 0);   
+    setGeneralDAC(vthdacs[index], value, 0);
 }
 
 int getDAC(enum DACINDEX ind, int mV) {
@@ -1790,11 +1792,11 @@ int setGainCaps(int caps) {
 int setInterpolation(int enable) {
     LOG(logINFO,
         ("%s Interpolation\n", enable == 0 ? "Disabling" : "Enabling"));
-    
+
     int csr = M3SetInterpolation(enable);
     int ret = setChipStatusRegister(csr);
     if (ret == OK) {
-        updateVthAndCounterMask();  
+        updateVthAndCounterMask();
     }
     return ret;
 }
@@ -2271,7 +2273,8 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     return setClockDividerWithTimeUpdateOption(ind, val, 1);
 }
 
-int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val, int timeUpdate) {
+int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val,
+                                        int timeUpdate) {
     if (ind < 0 || ind >= NUM_CLOCKS) {
         LOG(logERROR, ("Unknown clock index %d to set clock divider\n", ind));
         return FAIL;
@@ -2310,7 +2313,7 @@ int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val, int timeUpda
         }
         int64_t period = getPeriod();
         int64_t delayAfterTrigger = getDelayAfterTrigger();
-        
+
         clkDivider[ind] = val;
 
         for (int i = 0; i != 3; ++i) {
@@ -2461,8 +2464,8 @@ void *start_timer(void *arg) {
 
         for (int i = 0; i < nchannels; ++i) {
             switch (dr) {
-            //case 1: // TODO: Not implemented in firmware yet 
-            // break;
+            // case 1: // TODO: Not implemented in firmware yet
+            //  break;
             case 8:
                 *((uint8_t *)(imageData + i)) = (uint8_t)i;
                 break;
@@ -2470,7 +2473,8 @@ void *start_timer(void *arg) {
                 *((uint16_t *)(imageData + i * sizeof(uint16_t))) = (uint16_t)i;
                 break;
             case 32:
-                *((uint32_t *)(imageData + i * sizeof(uint32_t))) = ((uint32_t)i & 0xFFFFFF); // 24 bit
+                *((uint32_t *)(imageData + i * sizeof(uint32_t))) =
+                    ((uint32_t)i & 0xFFFFFF); // 24 bit
                 break;
             default:
                 break;
@@ -2491,8 +2495,7 @@ void *start_timer(void *arg) {
         struct timespec begin, end;
         clock_gettime(CLOCK_REALTIME, &begin);
         usleep(expUs);
-        
-        
+
         int srcOffset = 0;
         // loop packet
         for (int i = 0; i != packetsPerFrame; ++i) {
@@ -2712,7 +2715,8 @@ int setChipStatusRegister(int csr) {
     uint32_t prevRunClk = clkDivider[SYSTEM_C0];
 
     // set to trimming clock
-    if (setClockDividerWithTimeUpdateOption(SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV, 0) == FAIL) {
+    if (setClockDividerWithTimeUpdateOption(
+            SYSTEM_C0, DEFAULT_TRIMMING_RUN_CLKDIV, 0) == FAIL) {
         LOG(logERROR,
             ("Could not set to trimming clock in order to change CSR\n"));
         return FAIL;

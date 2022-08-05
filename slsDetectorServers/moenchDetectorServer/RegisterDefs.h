@@ -572,7 +572,6 @@
 #define PATTERN_SET_LSB_REG (0x82 << MEM_MAP_SHIFT)
 #define PATTERN_SET_MSB_REG (0x83 << MEM_MAP_SHIFT)
 
-
 /* Pattern Loop 3 Address RW regiser */
 #define PATTERN_LOOP_3_ADDR_REG (0x84 << MEM_MAP_SHIFT)
 

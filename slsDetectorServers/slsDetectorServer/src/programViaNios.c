@@ -7,8 +7,8 @@
 #include "slsDetectorServer_defs.h"
 
 #include <string.h>
-#include <unistd.h> // usleep
 #include <sys/stat.h>
+#include <unistd.h> // usleep
 
 /* global variables */
 
@@ -151,8 +151,7 @@ int openFileForFlash(char *mess, FILE **flashfd) {
     // check if its a normal file or special file
     struct stat buf;
     if (stat(flashDriveName, &buf) == -1) {
-        sprintf(mess,
-                "Could not %s. Unable to find the flash drive %s\n",
+        sprintf(mess, "Could not %s. Unable to find the flash drive %s\n",
                 messageType, flashDriveName);
         LOG(logERROR, (mess));
         return FAIL;

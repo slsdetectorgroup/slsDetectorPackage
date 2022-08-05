@@ -411,14 +411,14 @@ int sendModule(int file_des, sls_detector_module *myMod) {
     LOG(level, ("Sending Module\n"));
     int ts = 0, n = 0;
 
-    n = sendData(file_des, &(myMod->serialnumber),
-                    sizeof(myMod->serialnumber), INT32);
+    n = sendData(file_des, &(myMod->serialnumber), sizeof(myMod->serialnumber),
+                 INT32);
     if (!n) {
         return -1;
     }
     ts += n;
-    LOG(level, ("serialno sent %d bytes. serialno: %d\n", n,
-                myMod->serialnumber));
+    LOG(level,
+        ("serialno sent %d bytes. serialno: %d\n", n, myMod->serialnumber));
     n = sendData(file_des, &(myMod->nchan), sizeof(myMod->nchan), INT32);
     if (!n) {
         return -1;
@@ -448,8 +448,7 @@ int sendModule(int file_des, sls_detector_module *myMod) {
         return -1;
     }
     ts += n;
-    LOG(level,
-        ("iodelay sent %d bytes. iodelay: %d\n", n, myMod->iodelay));
+    LOG(level, ("iodelay sent %d bytes. iodelay: %d\n", n, myMod->iodelay));
     n = sendData(file_des, &(myMod->tau), sizeof(myMod->tau), INT32);
     if (!n) {
         return -1;
@@ -471,7 +470,7 @@ int sendModule(int file_des, sls_detector_module *myMod) {
     LOG(level, ("dacs sent %d bytes.\n", n));
     // channels
     n = sendData(file_des, myMod->chanregs, sizeof(int) * (myMod->nchan),
-                    INT32);
+                 INT32);
     LOG(level, ("chanregs sent %d bytes.\n", n));
     if (!n) {
         return -1;
@@ -494,8 +493,8 @@ int receiveModule(int file_des, sls_detector_module *myMod) {
         return -1;
     }
     ts += n;
-    LOG(level, ("serialno received %d bytes. serialno: %d\n", n,
-                myMod->serialnumber));
+    LOG(level,
+        ("serialno received %d bytes. serialno: %d\n", n, myMod->serialnumber));
     n = receiveData(file_des, &(myMod->nchan), sizeof(myMod->nchan), INT32);
     if (!n) {
         return -1;
@@ -525,8 +524,7 @@ int receiveModule(int file_des, sls_detector_module *myMod) {
         return -1;
     }
     ts += n;
-    LOG(level,
-        ("iodelay received %d bytes. iodelay: %d\n", n, myMod->iodelay));
+    LOG(level, ("iodelay received %d bytes. iodelay: %d\n", n, myMod->iodelay));
     n = receiveData(file_des, &(myMod->tau), sizeof(myMod->tau), INT32);
     if (!n) {
         return -1;

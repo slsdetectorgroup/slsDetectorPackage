@@ -2305,9 +2305,9 @@ int setClockDivider(enum CLKINDEX ind, int val) {
         int64_t period = getPeriod();
         int64_t delayAfterTrigger = getDelayAfterTrigger();
         int64_t burstPeriod = getBurstPeriod();
-        
+
         systemFrequency = ((double)getVCOFrequency(SYSTEM_C0) /
-                        (double)clkDivider[SYSTEM_C0]);
+                           (double)clkDivider[SYSTEM_C0]);
 
         setExpTime(exptime);
         setPeriod(period);

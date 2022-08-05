@@ -1292,7 +1292,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                 // ignore counter enable to force vth dac values
                 setDAC(serverDacIndex, val, mV, 0);
 #else
-                setDAC(serverDacIndex, val, mV);
+            setDAC(serverDacIndex, val, mV);
 #endif
             retval = getDAC(serverDacIndex, mV);
         }
@@ -1573,7 +1573,7 @@ int get_module(int file_des) {
 
 #if !defined(MYTHEN3D) && !defined(EIGERD)
     functionNotImplemented();
-#else 
+#else
 
     // allocate to receive module structure
     // allocate dacs
@@ -1605,7 +1605,8 @@ int get_module(int file_des) {
 
         // ensure nchan is not 0, else trimbits not copied
         if (module.nchan == 0) {
-            strcpy(mess, "Could not get module as the number of channels to copy is 0\n");
+            strcpy(mess, "Could not get module as the number of channels to "
+                         "copy is 0\n");
             LOG(logERROR, (mess));
             return FAIL;
         }
@@ -1624,7 +1625,6 @@ int get_module(int file_des) {
         free(myDac);
     return ret;
 }
-
 
 int set_module(int file_des) {
     ret = OK;
@@ -1881,55 +1881,57 @@ int acquire(int blocking, int file_des) {
 #ifdef EIGERD
             // check for hardware mac and hardware ip
             if (udpDetails[0].srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[MAC_ADDRESS_SIZE];
-            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-            sprintf(mess,
+                ret = FAIL;
+                uint64_t sourcemac = getDetectorMAC();
+                char src_mac[MAC_ADDRESS_SIZE];
+                getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                sprintf(
+                    mess,
                     "Invalid udp source mac address for this detector. Must be "
                     "same as hardware detector mac address %s\n",
                     src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails[0].srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(
-                mess,
-                "Invalid udp source ip address for this detector. Must be same "
-                "as hardware detector ip address %s in 1G readout mode \n",
-                src_ip);
-            LOG(logERROR, (mess));
-        } else
-#endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else if (sharedMemory_getScanStatus() == RUNNING) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because a scan is "
-                         "already running!\n");
-            LOG(logERROR, (mess));
-        } else {
-            memset(scanErrMessage, 0, MAX_STR_LENGTH);
-            sharedMemory_setScanStop(0);
-            sharedMemory_setScanStatus(IDLE); // if it was error
-            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                               &blocking)) {
+                LOG(logERROR, (mess));
+            } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                       (udpDetails[0].srcip != getDetectorIP())) {
                 ret = FAIL;
-                strcpy(mess, "Could not start acquisition thread!\n");
+                uint32_t sourceip = getDetectorIP();
+                char src_ip[INET_ADDRSTRLEN];
+                getIpAddressinString(src_ip, sourceip);
+                sprintf(
+                    mess,
+                    "Invalid udp source ip address for this detector. Must be "
+                    "same "
+                    "as hardware detector ip address %s in 1G readout mode \n",
+                    src_ip);
+                LOG(logERROR, (mess));
+            } else
+#endif
+                if (configured == FAIL) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition because ");
+                strcat(mess, configureMessage);
+                LOG(logERROR, (mess));
+            } else if (sharedMemory_getScanStatus() == RUNNING) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition because a scan is "
+                             "already running!\n");
                 LOG(logERROR, (mess));
             } else {
-                // only does not wait for non blocking and scan
-                if (blocking || !scan) {
-                    pthread_join(pthread_tid, NULL);
+                memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                sharedMemory_setScanStop(0);
+                sharedMemory_setScanStatus(IDLE); // if it was error
+                if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                   &blocking)) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start acquisition thread!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    // only does not wait for non blocking and scan
+                    if (blocking || !scan) {
+                        pthread_join(pthread_tid, NULL);
+                    }
                 }
             }
-        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -2118,7 +2120,8 @@ int set_num_frames(int file_des) {
                 arg > MAX_FRAMES_IN_BURST_MODE) {
                 ret = FAIL;
                 sprintf(mess,
-                        "Could not set number of frames %lld. Must be less than equal to %d in "
+                        "Could not set number of frames %lld. Must be less "
+                        "than equal to %d in "
                         "burst mode.\n",
                         (long long unsigned int)arg, MAX_FRAMES_IN_BURST_MODE);
                 LOG(logERROR, (mess));
@@ -9260,11 +9263,12 @@ int clear_all_udp_dst(int file_des) {
 #endif
             {
                 numUdpDestinations = numdest;
-                LOG(logINFOBLUE, ("Number of UDP Destinations: %d\n",
-                                    numUdpDestinations));
+                LOG(logINFOBLUE,
+                    ("Number of UDP Destinations: %d\n", numUdpDestinations));
                 ret = configureMAC();
                 if (ret == FAIL) {
-                    strcpy(mess, "Could not clear all destinations in the fpga.\n");
+                    strcpy(mess,
+                           "Could not clear all destinations in the fpga.\n");
                     LOG(logERROR, (mess));
                 }
             }
@@ -9968,21 +9972,22 @@ int set_interpolation(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (getPumpProbe() && arg) {
             ret = FAIL;
-            sprintf(mess, "Could not set interpolation. Disable pump probe mode first.\n");
+            sprintf(mess, "Could not set interpolation. Disable pump probe "
+                          "mode first.\n");
             LOG(logERROR, (mess));
-        } else {        
+        } else {
             ret = setInterpolation(arg);
             if (ret == FAIL) {
                 if (arg)
                     sprintf(mess, "Could not set interpolation or enable all "
-                                "counters for it.\n");
+                                  "counters for it.\n");
                 else
                     sprintf(mess, "Could not set interpolation\n");
                 LOG(logERROR, (mess));
             } else {
                 int retval = getInterpolation();
                 validate(&ret, mess, (int)arg, (int)retval, "set interpolation",
-                        DEC);
+                         DEC);
                 LOG(logDEBUG1, ("interpolation retval: %u\n", retval));
             }
         }
@@ -10024,16 +10029,18 @@ int set_pump_probe(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (getInterpolation() && arg) {
             ret = FAIL;
-            sprintf(mess, "Could not set pump probe mode. Disable interpolation mode first.\n");
+            sprintf(mess, "Could not set pump probe mode. Disable "
+                          "interpolation mode first.\n");
             LOG(logERROR, (mess));
-        } else { 
+        } else {
             ret = setPumpProbe(arg);
             if (ret == FAIL) {
                 sprintf(mess, "Could not set pump probe\n");
                 LOG(logERROR, (mess));
             } else {
                 int retval = getPumpProbe();
-                validate(&ret, mess, (int)arg, (int)retval, "set pump probe", DEC);
+                validate(&ret, mess, (int)arg, (int)retval, "set pump probe",
+                         DEC);
                 LOG(logDEBUG1, ("pump probe retval: %u\n", retval));
             }
         }

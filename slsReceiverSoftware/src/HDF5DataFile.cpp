@@ -172,41 +172,39 @@ void HDF5DataFile::CreateFile() {
             "version", H5::PredType::NATIVE_DOUBLE, dataspace_attr);
         attribute.write(H5::PredType::NATIVE_DOUBLE, &dValue);
 
-        // dataspace
-        hsize_t srcdims[3] = {nDimx, nDimy, nDimz};
-        hsize_t srcdimsmax[3] = {H5S_UNLIMITED, nDimy, nDimz};
-        dataSpace = nullptr;
-        dataSpace = new H5::DataSpace(3, srcdims, srcdimsmax);
-
-        // dataset
-        // fill value
-        H5::DSetCreatPropList plist;
-        int fill_value = -1;
-        plist.setFillValue(dataType, &fill_value);
+        // dimensions
+        hsize_t dims[DATA_RANK] = {nDimx, nDimy, nDimz};
+        hsize_t dimsMax[DATA_RANK] = {H5S_UNLIMITED, nDimy, nDimz};
+        hsize_t dimsPara[PARA_RANK] = {nDimx};
+        hsize_t dimsMaxPara[PARA_RANK] = {H5S_UNLIMITED};
         // always create chunked dataset as unlimited is only
         // supported with chunked layout
-        hsize_t chunk_dims[3] = {MAX_CHUNKED_IMAGES, nDimy, nDimz};
-        plist.setChunk(3, chunk_dims);
+        hsize_t dimsChunk[DATA_RANK] = {MAX_CHUNKED_IMAGES, nDimy, nDimz};
+        hsize_t dimsChunkPara[PARA_RANK] = {MAX_CHUNKED_IMAGES};
+
+        // dataspace
+        dataSpace = nullptr;
+        dataSpace = new H5::DataSpace(DATA_RANK, dims, dimsMax);
+        dataSpacePara = nullptr;
+        dataSpacePara = new H5::DataSpace(PARA_RANK, dimsPara, dimsMaxPara);
+
+        // property list
+        H5::DSetCreatPropList plist;
+        H5::DSetCreatPropList plistPara;
+        int fill_value = -1;
+        plist.setFillValue(dataType, &fill_value);
+        //plistPara.setFillValue(dataType, &fill_value);
+        plist.setChunk(DATA_RANK, dimsChunk);
+        plistPara.setChunk(PARA_RANK, dimsChunkPara);
+
+        // dataset
         dataSet = nullptr;
         dataSet = new H5::DataSet(fd->createDataSet(
             DATASET_NAME, dataType, *dataSpace, plist));
-
-        // create parameter datasets
-        hsize_t dims[1] = {nDimx};
-        hsize_t dimsmax[1] = {H5S_UNLIMITED};
-        dataSpacePara = nullptr;
-        dataSpacePara = new H5::DataSpace(1, dims, dimsmax);
-
-        // always create chunked dataset as unlimited is only
-        // supported with chunked layout
-        H5::DSetCreatPropList paralist;
-        hsize_t chunkpara_dims[3] = {MAX_CHUNKED_IMAGES};
-        paralist.setChunk(1, chunkpara_dims);
-
         for (unsigned int i = 0; i < parameterNames.size(); ++i) {
             H5::DataSet *ds = new H5::DataSet(fd->createDataSet(
                 parameterNames[i].c_str(), parameterDataTypes[i],
-                *dataSpacePara, paralist));
+                *dataSpacePara, plistPara));
             dataSetPara.push_back(ds);
         }
     } catch (const H5::Exception &error) {
@@ -237,7 +235,7 @@ void HDF5DataFile::WriteToFile(char *imageData, sls_receiver_header& header, con
         ExtendDataset();
     }
 
-    WriteDataFile(currentFrameNumber, imageData);
+    WriteImageDatasets(currentFrameNumber, imageData);
     WriteParameterDatasets(currentFrameNumber, header);
 }
 
@@ -251,7 +249,7 @@ void HDF5DataFile::Convert12to16Bit(uint16_t *dst, uint8_t *src) {
     }
 }
 
-void HDF5DataFile::WriteDataFile(const uint64_t currentFrameNumber,
+void HDF5DataFile::WriteImageDatasets(const uint64_t currentFrameNumber,
                                  char *buffer) {
     // expand 12 bit to 16 bits
     char *revBuffer = buffer;
@@ -306,8 +304,8 @@ void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
                                   : currentFrameNumber % maxFramesPerFile);
 
     sls_detector_header header = rheader.detHeader;
-    hsize_t count[1] = {1};
-    hsize_t start[1] = {fnum};
+    hsize_t count[PARA_RANK] = {1};
+    hsize_t start[PARA_RANK] = {fnum};
     int i = 0;
     try {
         H5::Exception::dontPrint(); // to handle errors
@@ -387,18 +385,17 @@ void HDF5DataFile::ExtendDataset() {
     try {
         H5::Exception::dontPrint(); // to handle errors
 
-        hsize_t dims[3];
+        hsize_t dims[DATA_RANK];
         dataSpace->getSimpleExtentDims(dims);
         dims[0] += numImages;
-
         dataSet->extend(dims);
         delete dataSpace;
         dataSpace = nullptr;
         dataSpace = new H5::DataSpace(dataSet->getSpace());
 
-        hsize_t dims_para[1] = {dims[0]};
+        hsize_t dimsPara[PARA_RANK] = {dims[0]};
         for (unsigned int i = 0; i < dataSetPara.size(); ++i)
-            dataSetPara[i]->extend(dims_para);
+            dataSetPara[i]->extend(dimsPara);
         delete dataSpacePara;
         dataSpacePara = nullptr;
         dataSpacePara = new H5::DataSpace(dataSetPara[0]->getSpace());

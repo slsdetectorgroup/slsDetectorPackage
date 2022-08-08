@@ -67,11 +67,8 @@ ssize_t UdpRxSocket::getPacketSize() const noexcept { return packet_size_; }
 bool UdpRxSocket::ReceivePacket(char *dst) noexcept {
     auto bytes_received =
         recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
-    return bytes_received == packet_size_;
-}
 
-ssize_t UdpRxSocket::ReceiveDataOnly(char *dst) noexcept {
-    return recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
+    return bytes_received == packet_size_;
 }
 
 int UdpRxSocket::getBufferSize() const {

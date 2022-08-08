@@ -340,18 +340,13 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
     // never entering this loop)
     while (numpackets < pperFrame) {
         // listen to new packet
-        int rc = 0;
-        if (udpSocketAlive) {
-            rc = udpSocket->ReceiveDataOnly(&listeningPacket[0]);
-        }
-        // end of acquisition
-        if (rc <= 0) {
+        if (!udpSocketAlive || !udpSocket->ReceivePacket(&listeningPacket[0])) {
+            // end of acquisition
             if (numpackets == 0)
                 return 0;
             return HandleFuturePacket(true, numpackets, fnum, isHeaderEmpty,
                                       imageSize, dstHeader);
         }
-
         numPacketsCaught++;
         numPacketsStatistic++;
         GetPacketIndices(fnum, pnum, bnum, standardHeader,

@@ -151,14 +151,13 @@ void Listener::CreateUDPSocket(int &actualSize) {
     if (disabledPort) {
         return;
     }
-    ShutDownUDPSocket();
-
     uint32_t packetSize = generalData->packetSize;
     if (generalData->detType == GOTTHARD2 && index != 0) {
         packetSize = generalData->vetoPacketSize;
     }
 
     try {
+        udpSocket = nullptr;
         udpSocket = make_unique<UdpRxSocket>(
             udpPortNumber, packetSize,
             (eth.length() ? InterfaceNameToIp(eth).str().c_str() : nullptr),

@@ -57,11 +57,10 @@ UdpRxSocket::UdpRxSocket(int port, ssize_t packet_size, const char *hostname,
 
 UdpRxSocket::~UdpRxSocket() {
     Shutdown();
-    if (sockfd_ >= 0) {
-        close(sockfd_);
-        sockfd_ = -1;
-    }
+    close(sockfd_);
+    sockfd_ = -1;
 }
+
 ssize_t UdpRxSocket::getPacketSize() const noexcept { return packet_size_; }
 
 bool UdpRxSocket::ReceivePacket(char *dst) noexcept {

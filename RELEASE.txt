@@ -85,6 +85,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - number of storage cells is not updated in teh receiver. done. and also allowing it to be modified in running status
 - refactored memory structure in receiver and listener code (maybe resolves stuck issue, need to check)
 - callback modified to have rx header and not rx header pointer
+- rx udp socket refactored (maybe resolves getting stuck?)
 
 2. Resolved Issues
 ==================

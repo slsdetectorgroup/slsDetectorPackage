@@ -73,13 +73,12 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        std::unique_ptr<sls::CmdProxy> proxy{nullptr};
         std::unique_ptr<sls::Detector> det{nullptr};
         if (action != slsDetectorDefs::HELP_ACTION) {
             det = sls::make_unique<sls::Detector>(parser.multi_id());
         }
-        proxy = sls::make_unique<sls::CmdProxy>(det.get());
-        proxy->Call(parser.command(), parser.arguments(), parser.detector_id(), action, std::cout, parser.receiver_id());
+        sls::CmdProxy proxy(det.get());
+        proxy.Call(parser.command(), parser.arguments(), parser.detector_id(), action, std::cout, parser.receiver_id());
     } catch (const sls::RuntimeError &e) {
         exit(EXIT_FAILURE);
     }

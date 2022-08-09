@@ -73,7 +73,6 @@ int64_t burstPeriodReg = 0;
 int filterResistor = 0;
 int cdsGain = 0;
 int detPos[2] = {};
-int master = 1;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -1497,8 +1496,32 @@ int setHighVoltage(int val) {
 
 /* parameters - timing */
 
+int setMaster(enum MASTERINDEX m) {
+    char *master_names[] = {MASTER_NAMES};
+    LOG(logINFOBLUE, ("Setting up Master flag as %s\n", master_names[m]));
+    switch (m) {
+    case OW_MASTER:
+        bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_SLAVE_MSK);
+        break;
+    case OW_SLAVE:
+        bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_SLAVE_MSK);
+        break;
+    default:
+        // hardware settings (do nothing)
+        break;
+    }
+    int retval = 0;
+    isMaster(&retval);
+    if (retval != m) {
+        LOG(logERROR, ("Could not set master/slave flag\n"));
+        return FAIL;
+    }
+    return OK;
+}
+
 int isMaster(int *retval) {
-    *retval = master;
+    int slave = ((bus_r(CONFIG_REG) | CONFIG_SLAVE_MSK) >> CONFIG_SLAVE_OFST);
+    *retval = (slave == 1 ? 0 : 1);
     return OK;
 }
 
@@ -1973,33 +1996,43 @@ int checkDetectorType() {
         return -1;
     }
     int type = atoi(buffer);
-    if (type > TYPE_NO_MODULE_STARTING_VAL) {
-        LOG(logERROR,
-            ("No Module attached! Expected %d, %d or %d for Gotthard2, got "
-             "%d\n",
-             TYPE_GOTTHARD2_MODULE_VAL, TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL,
-             TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL, type));
-        return -2;
-    }
-
-    if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL) <= TYPE_TOLERANCE) {
-        LOG(logINFOBLUE, ("MASTER 25um Module\n"));
-        master = 1;
-    } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL) <=
+    if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL) <= TYPE_TOLERANCE) {
+        LOG(logINFOBLUE, ("MASTER 25um Module (HDI v1.0)\n"));
+        setMaster(OW_MASTER);
+    } else if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL) <=
                TYPE_TOLERANCE) {
-        master = 0;
-        LOG(logINFOBLUE, ("SLAVE 25um Module\n"));
+        LOG(logINFOBLUE, ("MASTER 25um Module (HDI v2.0)\n"));
+        setMaster(OW_MASTER);
+    } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL) <=
+               TYPE_TOLERANCE) {
+        LOG(logINFOBLUE, ("SLAVE 25um Module (HDI v1.0)\n"));
+        setMaster(OW_SLAVE);
+    } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL) <=
+               TYPE_TOLERANCE) {
+        LOG(logINFOBLUE, ("SLAVE 25um Module (HDI v2.0)\n"));
+        setMaster(OW_SLAVE);
     } else if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) <= TYPE_TOLERANCE) {
-        master = -1;
         LOG(logINFOBLUE, ("50um Module\n"));
+        setMaster(OW_MASTER);
+    }
+    // no module or invalid module
+    else if (type > TYPE_NO_MODULE_STARTING_VAL) {
+        LOG(logERROR, ("No Module attached!\n"));
+        return -2;
     } else {
         LOG(logERROR,
-            ("Wrong Module attached! Expected %d, %d or %d for Gotthard2, got "
-             "%d\n",
-             TYPE_GOTTHARD2_MODULE_VAL, TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL,
-             TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL, type));
+            ("Wrong Module attached! Expected %d, %d, %d, %d or %d for "
+             "Gotthard2, "
+             "got %d\n",
+             TYPE_GOTTHARD2_MODULE_VAL, TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL,
+             TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL, type,
+             TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL,
+             TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL, type));
         return FAIL;
     }
+    bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_HDI_MOD_ID_MSK);
+    bus_w(CONFIG_REG, bus_r(CONFIG_REG) | ((type << CONFIG_HDI_MOD_ID_OFST) &
+                                           CONFIG_HDI_MOD_ID_MSK));
     return OK;
 }
 

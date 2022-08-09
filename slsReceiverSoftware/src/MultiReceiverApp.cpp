@@ -22,6 +22,15 @@
 
 sem_t semaphore;
 
+constexpr int XMIN = 256;
+constexpr int YMIN = 128;
+constexpr int WIDTH = 100;
+constexpr int HEIGHT = 200;
+constexpr int BYTES_PER_PIXEL = 2;
+constexpr int WIDTH_BYTES = WIDTH * BYTES_PER_PIXEL;
+constexpr int ONE_ROW_DATA_BYTES = 1024 * BYTES_PER_PIXEL;
+constexpr int DATA_BYTES = WIDTH_BYTES * HEIGHT;
+
 /**
  * Control+C Interrupt Handler
  * to let all the processes know to exit properly
@@ -117,10 +126,10 @@ void GetData(char *metadata, char *datapointer, uint32_t datasize, void *p) {
  */
 void GetData(char *metadata, char *datapointer, uint32_t &revDatasize,
              void *p) {
+/*
     slsDetectorDefs::sls_receiver_header *header =
         (slsDetectorDefs::sls_receiver_header *)metadata;
     slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
-
     PRINT_IN_COLOR(
         detectorHeader.modId ? detectorHeader.modId : detectorHeader.row,
         "#### %d GetData: ####\n"
@@ -139,10 +148,19 @@ void GetData(char *metadata, char *datapointer, uint32_t &revDatasize,
         detectorHeader.debug, detectorHeader.roundRNumber,
         detectorHeader.detType, detectorHeader.version,
         // header->packetsMask.to_string().c_str(),
-        ((uint8_t)(*((uint8_t *)(datapointer)))), revDatasize);
+        *reinterpret_cast<uint8_t *>(dataPointer), revDatasize);
+*/
 
-    // if data is modified, eg ROI and size is reduced
-    revDatasize = 26000;
+    char* dst = new char[DATA_BYTES];
+    char* src = datapointer + ONE_ROW_DATA_BYTES * YMIN + BYTES_PER_PIXEL * XMIN;
+    for (int y = 0; y != HEIGHT; ++y) {
+        memcpy(dst, src, WIDTH_BYTES);
+        dst += WIDTH_BYTES;
+        src += ONE_ROW_DATA_BYTES;
+    }
+
+    memcpy(datapointer, dst, DATA_BYTES);
+    revDatasize = DATA_BYTES;
 }
 
 /**

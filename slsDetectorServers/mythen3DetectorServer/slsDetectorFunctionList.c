@@ -506,35 +506,14 @@ void setupDetector() {
     setSettings(DEFAULT_SETTINGS);
 
     // check module type attached if not in debug mode
-    {
-        int ret = checkDetectorType();
-        if (checkModuleFlag) {
-            switch (ret) {
-            case -1:
-                sprintf(initErrorMessage,
-                        "Could not get the module type attached.\n");
-                initError = FAIL;
-                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
-                return;
-            case -2:
-                sprintf(initErrorMessage,
-                        "No Module attached! Run server with -nomodule.\n");
-                initError = FAIL;
-                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
-                return;
-            case FAIL:
-                sprintf(initErrorMessage,
-                        "Wrong Module (Not Mythen3) attached!\n");
-                initError = FAIL;
-                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
-                return;
-            default:
-                break;
-            }
-        } else {
-            LOG(logINFOBLUE,
-                ("In No-Module mode: Ignoring module type. Continuing.\n"));
-        }
+    if (initError == FAIL)
+        return;
+    if (!checkModuleFlag) {
+        LOG(logINFOBLUE, ("In No-Module mode: Ignoring module type...\n"));
+    } else {
+        initError = checkDetectorType(initErrorMessage);
+        LOG(logERROR, ("Aborting startup!\n\n"));
+        return;
     }
 
     powerChip(1);
@@ -2095,39 +2074,40 @@ int enableTenGigabitEthernet(int val) {
     return oneG ? 0 : 1;
 }
 
-int checkDetectorType() {
+int checkDetectorType(char *mess) {
 #ifdef VIRTUAL
     return OK;
 #endif
     LOG(logINFO, ("Checking type of module\n"));
     FILE *fd = fopen(TYPE_FILE_NAME, "r");
     if (fd == NULL) {
-        LOG(logERROR,
-            ("Could not open file %s to get type of the module attached\n",
-             TYPE_FILE_NAME));
-        return -1;
+        sprintf(mess,
+                "Could not open file %s to get type of the module attached\n",
+                TYPE_FILE_NAME);
+        return FAIL;
     }
     char buffer[MAX_STR_LENGTH];
     memset(buffer, 0, sizeof(buffer));
     fread(buffer, MAX_STR_LENGTH, sizeof(char), fd);
     fclose(fd);
     if (strlen(buffer) == 0) {
-        LOG(logERROR,
-            ("Could not read file %s to get type of the module attached\n",
-             TYPE_FILE_NAME));
-        return -1;
+        sprintf(mess,
+                "Could not read file %s to get type of the module attached\n",
+                TYPE_FILE_NAME);
+        return FAIL;
     }
     int type = atoi(buffer);
     if (type > TYPE_NO_MODULE_STARTING_VAL) {
-        LOG(logERROR, ("No Module attached! Expected %d for Mythen, got %d\n",
-                       TYPE_MYTHEN3_MODULE_VAL, type));
-        return -2;
+        sprintf(mess, "No Module attached! Run server with -nomodule.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 
     if (abs(type - TYPE_MYTHEN3_MODULE_VAL) > TYPE_TOLERANCE) {
-        LOG(logERROR,
-            ("Wrong Module attached! Expected %d for Mythen3, got %d\n",
-             TYPE_MYTHEN3_MODULE_VAL, type));
+        sprintf(mess,
+                "Wrong Module attached! Expected %d for Mythen3, got %d\n",
+                TYPE_MYTHEN3_MODULE_VAL, type);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     return OK;

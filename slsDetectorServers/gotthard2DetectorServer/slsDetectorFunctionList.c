@@ -463,35 +463,14 @@ void setupDetector() {
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
     // check module type attached if not in debug mode
-    {
-        int ret = checkDetectorType();
-        if (checkModuleFlag) {
-            switch (ret) {
-            case -1:
-                sprintf(initErrorMessage,
-                        "Could not get the module type attached.\n");
-                initError = FAIL;
-                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
-                return;
-            case -2:
-                sprintf(initErrorMessage,
-                        "No Module attached! Run server with -nomodule.\n");
-                initError = FAIL;
-                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
-                return;
-            case FAIL:
-                sprintf(initErrorMessage,
-                        "Wrong Module (Not Gotthard2) attached!\n");
-                initError = FAIL;
-                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
-                return;
-            default:
-                break;
-            }
-        } else {
-            LOG(logINFOBLUE,
-                ("In No-Module mode: Ignoring module type. Continuing.\n"));
-        }
+    if (initError == FAIL)
+        return;
+    if (!checkModuleFlag) {
+        LOG(logINFOBLUE, ("In No-Module mode: Ignoring module type...\n"));
+    } else {
+        initError = checkDetectorType(initErrorMessage);
+        LOG(logERROR, ("Aborting startup!\n\n"));
+        return;
     }
 
     // power on chip
@@ -709,8 +688,35 @@ int readConfigFile() {
                         strlen(line) - 1, line));
         memset(command, 0, LZ);
 
+        // master command
+        if (!strncmp(line, "master", strlen("master"))) {
+            int m = -1;
+            // cannot scan values
+            if (sscanf(line, "%s %d", command, &m) != 2) {
+                sprintf(initErrorMessage,
+                        "Could not scan master commands from on-board server "
+                        "config file. Line:[%s].\n",
+                        line);
+                break;
+            }
+            // validations
+            if (m != 0 && m != 1) {
+                sprintf(initErrorMessage,
+                        "Invalid master argument from on-board server "
+                        "config file. Line:[%s].\n",
+                        line);
+                break;
+            }
+            if (setMaster(m == 1 ? OW_MASTER : OW_SLAVE) == FAIL) {
+                sprintf(initErrorMessage,
+                        "Could not set master from config file. Line:[%s].\n",
+                        line);
+                break;
+            }
+        }
+
         // vetoref command
-        if (!strncmp(line, "vetoref", strlen("vetoref"))) {
+        else if (!strncmp(line, "vetoref", strlen("vetoref"))) {
             int igain = 0;
             int value = 0;
 
@@ -956,15 +962,15 @@ int readConfigFile() {
 
 int checkCommandLineConfiguration() {
     if (masterCommandLine != -1) {
-#ifdef VIRTUAL
-        master = masterCommandLine;
-#else
-        initError = FAIL;
-        strcpy(initErrorMessage,
-               "Cannot set Master from command line for this detector. "
-               "Should have been caught before!\n");
-        return FAIL;
-#endif
+        LOG(logINFO, ("Setting %s from Command Line\n",
+                      (masterCommandLine == 1 ? "Master" : "Slave")));
+        if (setMaster(masterCommandLine == 1 ? OW_MASTER : OW_SLAVE) == FAIL) {
+            initError = FAIL;
+            sprintf(initErrorMessage, "Could not set %s from command line.\n",
+                    (masterCommandLine == 1 ? "Master" : "Slave"));
+            LOG(logERROR, (initErrorMessage));
+            return FAIL;
+        }
     }
     return OK;
 }
@@ -1499,22 +1505,27 @@ int setHighVoltage(int val) {
 int setMaster(enum MASTERINDEX m) {
     char *master_names[] = {MASTER_NAMES};
     LOG(logINFOBLUE, ("Setting up Master flag as %s\n", master_names[m]));
+    int retval = -1;
     switch (m) {
     case OW_MASTER:
         bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_SLAVE_MSK);
+        isMaster(&retval);
+        if (retval != 1) {
+            LOG(logERROR, ("Could not set master\n"));
+            return FAIL;
+        }
         break;
     case OW_SLAVE:
         bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_SLAVE_MSK);
+        isMaster(&retval);
+        if (retval != 0) {
+            LOG(logERROR, ("Could not set slave\n"));
+            return FAIL;
+        }
         break;
     default:
         // hardware settings (do nothing)
         break;
-    }
-    int retval = 0;
-    isMaster(&retval);
-    if (retval != m) {
-        LOG(logERROR, ("Could not set master/slave flag\n"));
-        return FAIL;
     }
     return OK;
 }
@@ -1973,66 +1984,72 @@ int *getDetectorPosition() { return detPos; }
 
 // Detector Specific
 
-int checkDetectorType() {
+int checkDetectorType(char *mess) {
 #ifdef VIRTUAL
     return OK;
 #endif
-    LOG(logINFO, ("Checking type of module\n"));
+    LOG(logINFO, ("Checking module type\n"));
     FILE *fd = fopen(TYPE_FILE_NAME, "r");
     if (fd == NULL) {
-        LOG(logERROR,
-            ("Could not open file %s to get type of the module attached\n",
-             TYPE_FILE_NAME));
-        return -1;
+        sprintf(mess,
+                "Could not open file %s to get type of the module attached\n",
+                TYPE_FILE_NAME);
+        return FAIL;
     }
     char buffer[MAX_STR_LENGTH];
     memset(buffer, 0, sizeof(buffer));
     fread(buffer, MAX_STR_LENGTH, sizeof(char), fd);
     fclose(fd);
     if (strlen(buffer) == 0) {
-        LOG(logERROR,
-            ("Could not read file %s to get type of the module attached\n",
-             TYPE_FILE_NAME));
-        return -1;
+        sprintf(mess,
+                "Could not read file %s to get type of the module attached\n",
+                TYPE_FILE_NAME);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
     int type = atoi(buffer);
+    enum MASTERINDEX master = OW_MASTER;
     if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL) <= TYPE_TOLERANCE) {
         LOG(logINFOBLUE, ("MASTER 25um Module (HDI v1.0)\n"));
-        setMaster(OW_MASTER);
     } else if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL) <=
                TYPE_TOLERANCE) {
         LOG(logINFOBLUE, ("MASTER 25um Module (HDI v2.0)\n"));
-        setMaster(OW_MASTER);
     } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL) <=
                TYPE_TOLERANCE) {
         LOG(logINFOBLUE, ("SLAVE 25um Module (HDI v1.0)\n"));
-        setMaster(OW_SLAVE);
+        master = OW_SLAVE;
     } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL) <=
                TYPE_TOLERANCE) {
         LOG(logINFOBLUE, ("SLAVE 25um Module (HDI v2.0)\n"));
-        setMaster(OW_SLAVE);
+        master = OW_SLAVE;
     } else if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) <= TYPE_TOLERANCE) {
         LOG(logINFOBLUE, ("50um Module\n"));
-        setMaster(OW_MASTER);
     }
     // no module or invalid module
     else if (type > TYPE_NO_MODULE_STARTING_VAL) {
-        LOG(logERROR, ("No Module attached!\n"));
-        return -2;
+        sprintf(mess, "No Module attached! Run server with -nomodule.\n");
+        LOG(logERROR, (mess));
+        return FAIL;
     } else {
-        LOG(logERROR,
-            ("Wrong Module attached! Expected %d, %d, %d, %d or %d for "
-             "Gotthard2, "
-             "got %d\n",
-             TYPE_GOTTHARD2_MODULE_VAL, TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL,
-             TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL, type,
-             TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL,
-             TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL, type));
+        sprintf(mess,
+                "Wrong Module attached! Expected %d, %d, %d, %d or %d for "
+                "Gotthard2, got %d\n",
+                TYPE_GOTTHARD2_MODULE_VAL,
+                TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL,
+                TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL, type,
+                TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL,
+                TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL, type);
+        LOG(logERROR, (mess));
         return FAIL;
     }
     bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_HDI_MOD_ID_MSK);
     bus_w(CONFIG_REG, bus_r(CONFIG_REG) | ((type << CONFIG_HDI_MOD_ID_OFST) &
                                            CONFIG_HDI_MOD_ID_MSK));
+    if (setMaster(master) == FAIL) {
+        strcpy(mess, "Could not set to master/slave.");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
     return OK;
 }
 

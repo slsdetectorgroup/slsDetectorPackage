@@ -560,7 +560,7 @@ int setDataStream(enum portPosition port, int enable);
 int setPhase(enum CLKINDEX ind, int val, int degrees);
 
 #elif MYTHEN3D
-int checkDetectorType();
+int checkDetectorType(char *mess);
 int powerChip(int on);
 int setPhase(enum CLKINDEX ind, int val, int degrees);
 int getPhase(enum CLKINDEX ind, int degrees);
@@ -576,7 +576,7 @@ int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val,
 int getClockDivider(enum CLKINDEX ind);
 
 #elif GOTTHARD2D
-int checkDetectorType();
+int checkDetectorType(char *mess);
 int powerChip(int on);
 void setDBITPipeline(int val);
 int getDBITPipeline();

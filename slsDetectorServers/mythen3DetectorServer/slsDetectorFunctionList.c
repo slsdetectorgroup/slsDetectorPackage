@@ -512,7 +512,8 @@ void setupDetector() {
         LOG(logINFOBLUE, ("In No-Module mode: Ignoring module type...\n"));
     } else {
         initError = checkDetectorType(initErrorMessage);
-        LOG(logERROR, ("Aborting startup!\n\n"));
+    }
+    if (initError == FAIL) {
         return;
     }
 

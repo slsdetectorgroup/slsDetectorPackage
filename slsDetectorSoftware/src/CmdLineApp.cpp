@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     if (action == slsDetectorDefs::READOUT_ACTION)
         parser.setCommand("acquire");
 
-    if (parser.isHelp()) 
+    if (parser.isHelp())
         action = slsDetectorDefs::HELP_ACTION;
     else {
 
@@ -78,7 +78,8 @@ int main(int argc, char *argv[]) {
             det = sls::make_unique<sls::Detector>(parser.multi_id());
         }
         sls::CmdProxy proxy(det.get());
-        proxy.Call(parser.command(), parser.arguments(), parser.detector_id(), action, std::cout, parser.receiver_id());
+        proxy.Call(parser.command(), parser.arguments(), parser.detector_id(),
+                   action, std::cout, parser.receiver_id());
     } catch (const sls::RuntimeError &e) {
         exit(EXIT_FAILURE);
     }

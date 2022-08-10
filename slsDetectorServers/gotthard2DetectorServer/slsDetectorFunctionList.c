@@ -87,6 +87,9 @@ void basictests() {
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
     LOG(logINFOBLUE, ("******** Gotthard2 Virtual Server *****************\n"));
+#else
+    LOG(logINFOBLUE, ("************ Gotthard2 Server *********************\n"));
+#endif
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Dangerous to continue.\n");
@@ -94,15 +97,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-#else
-    LOG(logINFOBLUE, ("************ Gotthard2 Server *********************\n"));
-    if (mapCSP0() == FAIL) {
-        strcpy(initErrorMessage,
-               "Could not map to memory. Dangerous to continue.\n");
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
-        initError = FAIL;
-        return;
-    }
+#ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
         ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) ||
@@ -233,6 +228,7 @@ int testBus() {
 
     int ret = OK;
     u_int32_t addr = DTA_OFFSET_REG;
+    u_int32_t prevValue = bus_r(addr);
     u_int32_t times = 1000 * 1000;
 
     for (u_int32_t i = 0; i < times; ++i) {
@@ -244,7 +240,7 @@ int testBus() {
         }
     }
 
-    bus_w(addr, 0);
+    bus_w(addr, prevValue);
 
     if (ret == OK) {
         LOG(logINFO, ("Successfully tested bus %d times\n", times));

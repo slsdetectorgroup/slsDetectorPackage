@@ -90,14 +90,9 @@ void basictests() {
 #ifdef VIRTUAL
     LOG(logINFOBLUE,
         ("******** Moench Detector Virtual Server *****************\n"));
-    if (mapCSP0() == FAIL) {
-        strcpy(initErrorMessage,
-               "Could not map to memory. Dangerous to continue.\n");
-        LOG(logERROR, (initErrorMessage));
-        initError = FAIL;
-    }
-    return;
 #else
+    LOG(logINFOBLUE,
+        ("************ Moench Detector Server *********************\n"));
 
     initError = defineGPIOpins(initErrorMessage);
     if (initError == FAIL) {
@@ -107,6 +102,7 @@ void basictests() {
     if (initError == FAIL) {
         return;
     }
+#endif
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Dangerous to continue.\n");
@@ -114,7 +110,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-
+#ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
         ((checkType() == FAIL) || (testFpga() == FAIL) ||
@@ -125,7 +121,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-
+#endif
     uint16_t hversion = getHardwareVersionNumber();
     uint16_t hsnumber = getHardwareSerialNumber();
     uint32_t ipadd = getDetectorIP();
@@ -156,6 +152,7 @@ void basictests() {
          (long long int)sw_fw_apiversion, REQRD_FRMWR_VRSN,
          (long long int)client_sw_apiversion));
 
+#ifndef VIRTUAL
     // return if flag is not zero, debug mode
     if (debugflag || updateFlag) {
         return;

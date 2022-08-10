@@ -110,6 +110,9 @@ void basictests() {
 #ifdef VIRTUAL
     LOG(logINFOBLUE,
         ("************ EIGER Virtual Server *****************\n\n"));
+#else
+    LOG(logINFOBLUE,
+        ("**************** EIGER Server *********************\n\n"));
 #endif
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
@@ -119,7 +122,7 @@ void basictests() {
     int64_t client_sw_apiversion = getClientServerAPIVersion();
 
     LOG(logINFOBLUE,
-        ("**************** EIGER Server *********************\n\n"
+        ("********************************************************\n"
          "Detector IP Addr:\t\t 0x%x\n"
          "Detector MAC Addr:\t\t 0x%llx\n"
 
@@ -142,9 +145,7 @@ void basictests() {
         udpDetails[iRxEntry].srcmac = macadd;
     }
 
-#ifdef VIRTUAL
-    return;
-#endif
+#ifndef VIRTUAL
     // return if debugflag is not zero, debug mode
     if (debugflag || updateFlag) {
         return;
@@ -186,6 +187,7 @@ void basictests() {
         return;
     }
     LOG(logINFO, ("Compatibility - success\n"));
+#endif
 }
 
 #ifdef VIRTUAL

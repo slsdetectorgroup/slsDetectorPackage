@@ -88,11 +88,9 @@ void basictests() {
     initCheckDone = 0;
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
-    LOG(logINFOBLUE,
-        ("******** Moench Detector Virtual Server *****************\n"));
+    LOG(logINFOBLUE, ("********* Moench Detector Virtual Server *********\n"));
 #else
-    LOG(logINFOBLUE,
-        ("************ Moench Detector Server *********************\n"));
+    LOG(logINFOBLUE, ("************* Moench Detector Server *************\n"));
 
     initError = defineGPIOpins(initErrorMessage);
     if (initError == FAIL) {
@@ -134,7 +132,7 @@ void basictests() {
     if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
         sw_fw_apiversion = getFirmwareAPIVersion();
     LOG(logINFOBLUE,
-        ("************ Moench Detector Server *********************\n"
+        ("**************************************************\n"
          "Hardware Version:\t\t 0x%x\n"
          "Hardware Serial Nr:\t\t 0x%x\n"
 

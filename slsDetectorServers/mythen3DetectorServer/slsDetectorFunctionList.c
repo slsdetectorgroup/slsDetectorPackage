@@ -82,9 +82,9 @@ void basictests() {
     initCheckDone = 0;
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
-    LOG(logINFOBLUE, ("******** Mythen3 Virtual Server *****************\n"));
+    LOG(logINFOBLUE, ("************* Mythen3 Virtual Server *************\n"));
 #else
-    LOG(logINFOBLUE, ("************ Mythen3 Server *********************\n"));
+    LOG(logINFOBLUE, ("***************** Mythen3 Server *****************\n"));
 #endif
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
@@ -116,7 +116,7 @@ void basictests() {
     uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
     LOG(logINFOBLUE,
-        ("*************************************************\n"
+        ("**************************************************\n"
          "Hardware Version:\t\t 0x%x\n"
 
          "Detector IP Addr:\t\t 0x%x\n"

@@ -111,7 +111,7 @@ void basictests() {
     int64_t client_sw_apiversion = getClientServerAPIVersion();
 
     LOG(logINFOBLUE,
-        ("********************************************************\n"
+        ("**************************************************\n"
          "Board Revision         : 0x%x\n"
 
          "Detector IP Addr       : 0x%x\n"

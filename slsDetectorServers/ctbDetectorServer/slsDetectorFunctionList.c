@@ -85,11 +85,9 @@ void basictests() {
     initCheckDone = 0;
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
-    LOG(logINFOBLUE,
-        ("******** Chip Test Board Virtual Server *****************\n"));
+    LOG(logINFOBLUE, ("********* Chip Test Board Virtual Server *********\n"));
 #else
-    LOG(logINFOBLUE,
-        ("************ Chip Test Board Server *********************\n"));
+    LOG(logINFOBLUE, ("************* Chip Test Board Server *************\n"));
     initError = defineGPIOpins(initErrorMessage);
     if (initError == FAIL) {
         return;
@@ -130,7 +128,7 @@ void basictests() {
     if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
         sw_fw_apiversion = getFirmwareAPIVersion();
     LOG(logINFOBLUE,
-        ("********************************************************\n"
+        ("**************************************************\n"
          "Hardware Version:\t\t 0x%x\n"
          "Hardware Serial Nr:\t\t 0x%x\n"
 

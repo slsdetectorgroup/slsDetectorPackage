@@ -8257,7 +8257,7 @@ int set_master(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting master: %u\n", (int)arg));
 
-#if !defined(EIGERD) && !defined(GOTTHARD2)
+#if !defined(EIGERD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set

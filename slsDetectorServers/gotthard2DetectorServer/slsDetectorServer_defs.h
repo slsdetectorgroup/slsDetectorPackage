@@ -149,7 +149,7 @@ enum CLKINDEX {
 enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
 
 enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
-#define MASTER_NAMES "hardware", "master", "slave"
+#define MASTER_NAMES "hardware (master/slave)", "master", "slave"
 
 /** Chip Definitions */
 #define ASIC_ADDR_MAX_BITS       (4)

@@ -87,6 +87,8 @@ void basictests() {
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
     LOG(logINFOBLUE, ("******** Gotthard2 Virtual Server *****************\n"));
+    LOG(logINFOBLUE,
+        ("Software Version:\t\t 0x%llx\n", (long long int)getServerVersion()));
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Dangerous to continue.\n");
@@ -94,6 +96,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
+
     return;
 #else
     LOG(logINFOBLUE, ("************ Gotthard2 Server *********************\n"));
@@ -388,8 +391,8 @@ void initStopServer() {
 #ifdef VIRTUAL
         sharedMemory_setStop(0);
         setMaster(OW_MASTER);
-        // not reading config file (nothing of interest to stop server)
-        if (checkCommandLineConfiguration() == FAIL) {
+        if (readConfigFile() == FAIL ||
+            checkCommandLineConfiguration() == FAIL) {
             initCheckDone = 1;
             return;
         }
@@ -964,8 +967,8 @@ int readConfigFile() {
 
 int checkCommandLineConfiguration() {
     if (masterCommandLine != -1) {
-        LOG(logINFO, ("Setting %s from Command Line\n",
-                      (masterCommandLine == 1 ? "Master" : "Slave")));
+        LOG(logINFOBLUE, ("Setting %s from Command Line\n",
+                          (masterCommandLine == 1 ? "Master" : "Slave")));
         if (setMaster(masterCommandLine == 1 ? OW_MASTER : OW_SLAVE) == FAIL) {
             initError = FAIL;
             sprintf(initErrorMessage, "Could not set %s from command line.\n",
@@ -1506,17 +1509,12 @@ int setHighVoltage(int val) {
 
 int setMaster(enum MASTERINDEX m) {
     char *master_names[] = {MASTER_NAMES};
-    LOG(logINFOBLUE, ("Setting up Master flag as %s\n", master_names[m]));
+    LOG(logINFOBLUE, ("Setting up as %s in (%s server)\n", master_names[m],
+                      (isControlServer ? "control" : "stop")));
     int retval = -1;
     switch (m) {
     case OW_MASTER:
-        LOG(logINFORED,
-            ("slave before:0x%x\n", bus_r(CONFIG_REG) | CONFIG_SLAVE_MSK));
-        LOG(logINFORED,
-            ("to change to :0x%x\n", bus_r(CONFIG_REG) & ~CONFIG_SLAVE_MSK));
         bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_SLAVE_MSK);
-        LOG(logINFORED,
-            ("slave after:0x%x\n", bus_r(CONFIG_REG) | CONFIG_SLAVE_MSK));
         isMaster(&retval);
         if (retval != 1) {
             LOG(logERROR, ("Could not set master\n"));
@@ -1539,10 +1537,8 @@ int setMaster(enum MASTERINDEX m) {
 }
 
 int isMaster(int *retval) {
-    LOG(logINFORED, ("slave:0x%x\n", bus_r(CONFIG_REG) | CONFIG_SLAVE_MSK));
-    int slave = ((bus_r(CONFIG_REG) | CONFIG_SLAVE_MSK) >> CONFIG_SLAVE_OFST);
+    int slave = ((bus_r(CONFIG_REG) & CONFIG_SLAVE_MSK) >> CONFIG_SLAVE_OFST);
     *retval = (slave == 1 ? 0 : 1);
-    LOG(logINFORED, ("master:%d\n", *retval));
     return OK;
 }
 

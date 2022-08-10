@@ -114,7 +114,6 @@ int printSocketReadError() {
 void init_detector() {
     memset(udpDetails, 0, sizeof(udpDetails));
 #ifdef VIRTUAL
-    LOG(logINFO, ("This is a VIRTUAL detector\n"));
     udpDetails[0].srcip = LOCALHOSTIP_INT;
     udpDetails[0].srcip2 = LOCALHOSTIP_INT;
 #endif

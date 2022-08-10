@@ -3850,12 +3850,13 @@ int power_chip(int file_des) {
         // check only when powering on
         if (arg != -1 && arg != 0) {
             if (!checkModuleFlag) {
-                LOG(logINFOBLUE, ("In No-Module mode: Ignoring module type. Continuing.\n"));
+                LOG(logINFOBLUE,
+                    ("In No-Module mode: Ignoring module type. Continuing.\n"));
             } else {
                 ret = checkDetectorType(mess);
                 if (ret == FAIL) {
                     LOG(logERROR, ("Could not power on chip.\n"));
-                }               
+                }
             }
         }
 #endif

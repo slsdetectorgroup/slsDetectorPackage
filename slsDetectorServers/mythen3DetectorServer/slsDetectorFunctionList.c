@@ -89,7 +89,6 @@ void basictests() {
         LOG(logERROR, (initErrorMessage));
         initError = FAIL;
     }
-    return;
 #else
     LOG(logINFOBLUE, ("************ Mythen3 Server *********************\n"));
     if (mapCSP0() == FAIL) {
@@ -110,6 +109,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
+#endif
     uint16_t hversion = getHardwareVersionNumber();
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
@@ -138,6 +138,7 @@ void basictests() {
          (long long int)sw_fw_apiversion, requiredFirmwareVersion,
          (long long int)client_sw_apiversion));
 
+#ifndef VIRTUAL
     // return if flag is not zero, debug mode
     if (debugflag || updateFlag) {
         return;

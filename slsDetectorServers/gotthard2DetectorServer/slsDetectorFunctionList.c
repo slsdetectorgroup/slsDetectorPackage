@@ -87,8 +87,6 @@ void basictests() {
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
     LOG(logINFOBLUE, ("******** Gotthard2 Virtual Server *****************\n"));
-    LOG(logINFOBLUE,
-        ("Software Version:\t\t 0x%llx\n", (long long int)getServerVersion()));
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Dangerous to continue.\n");
@@ -96,8 +94,6 @@ void basictests() {
         initError = FAIL;
         return;
     }
-
-    return;
 #else
     LOG(logINFOBLUE, ("************ Gotthard2 Server *********************\n"));
     if (mapCSP0() == FAIL) {
@@ -120,7 +116,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-
+#endif
     uint16_t hversion = getHardwareVersionNumber();
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
@@ -148,6 +144,7 @@ void basictests() {
          (long long int)sw_fw_apiversion, requiredFirmwareVersion,
          (long long int)client_sw_apiversion));
 
+#ifndef VIRTUAL
     // return if flag is not zero, debug mode
     if (debugflag || updateFlag) {
         return;

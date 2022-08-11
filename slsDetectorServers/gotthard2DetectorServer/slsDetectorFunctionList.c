@@ -1012,8 +1012,9 @@ int setParallelMode(int mode) {
 }
 
 int getParallelMode() {
-    int nonparallel = ((bus_r(ASIC_CONFIG_REG) & ASIC_CONFIG_NON_PARALLEL_RD_MSK) >>
-            ASIC_CONFIG_NON_PARALLEL_RD_OFST);
+    int nonparallel =
+        ((bus_r(ASIC_CONFIG_REG) & ASIC_CONFIG_NON_PARALLEL_RD_MSK) >>
+         ASIC_CONFIG_NON_PARALLEL_RD_OFST);
     return (nonparallel == 0 ? 1 : 0);
 }
 

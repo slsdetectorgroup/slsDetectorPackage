@@ -2271,10 +2271,6 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     clkDivider[ind] = val;
     LOG(logINFO, ("\t%s clock (%d) divider set to %d\n", clock_names[ind], ind,
                   clkDivider[ind]));
-    // update system frequency
-    if (ind == SYSTEM_C0) {
-        setTimingSource(getTimingSource());
-    }
 
     // phase is reset by pll (when setting output frequency)
     if (ind < SYSTEM_C0) {

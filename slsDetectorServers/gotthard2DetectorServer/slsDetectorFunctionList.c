@@ -996,6 +996,27 @@ void resetPeripheral() {
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PRPHRL_RST_MSK);
 }
 
+/* set parameters -  readout */
+
+int setParallelMode(int mode) {
+    if (mode < 0)
+        return FAIL;
+    LOG(logINFO, ("Setting %s mode\n", (mode ? "Parallel" : "Non Parallel")));
+    uint32_t addr = ASIC_CONFIG_REG;
+    if (mode) {
+        bus_w(addr, bus_r(addr) & ~ASIC_CONFIG_NON_PARALLEL_RD_MSK);
+    } else {
+        bus_w(addr, bus_r(addr) | ASIC_CONFIG_NON_PARALLEL_RD_MSK);
+    }
+    return OK;
+}
+
+int getParallelMode() {
+    int nonparallel = ((bus_r(ASIC_CONFIG_REG) & ASIC_CONFIG_NON_PARALLEL_RD_MSK) >>
+            ASIC_CONFIG_NON_PARALLEL_RD_OFST);
+    return (nonparallel == 0 ? 1 : 0);
+}
+
 /* set parameters -  dr, roi */
 
 int setDynamicRange(int dr) {

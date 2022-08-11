@@ -18,13 +18,11 @@ namespace sls {
 UdpRxSocket::UdpRxSocket(int port, ssize_t packet_size, const char *hostname,
                          int kernel_buffer_size)
     : packet_size_(packet_size) {
-    struct addrinfo hints;
-    memset(&hints, 0, sizeof(hints));
+    struct addrinfo hints {};
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_protocol = 0;
     hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
-    struct addrinfo *res = nullptr;
+    struct addrinfo *res{nullptr};
 
     const std::string portname = std::to_string(port);
     if (getaddrinfo(hostname, portname.c_str(), &hints, &res)) {
@@ -36,6 +34,7 @@ UdpRxSocket::UdpRxSocket(int port, ssize_t packet_size, const char *hostname,
         throw RuntimeError("Failed to create UDP RX socket");
     }
     if (bind(sockfd_, res->ai_addr, res->ai_addrlen) == -1) {
+        close(sockfd_);
         throw RuntimeError("Failed to bind UDP RX socket");
     }
     freeaddrinfo(res);
@@ -56,29 +55,19 @@ UdpRxSocket::UdpRxSocket(int port, ssize_t packet_size, const char *hostname,
     }
 }
 
-UdpRxSocket::~UdpRxSocket() { Shutdown(); }
+UdpRxSocket::~UdpRxSocket() {
+    Shutdown();
+    close(sockfd_);
+    sockfd_ = -1;
+}
+
 ssize_t UdpRxSocket::getPacketSize() const noexcept { return packet_size_; }
 
 bool UdpRxSocket::ReceivePacket(char *dst) noexcept {
     auto bytes_received =
         recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
-    return bytes_received == packet_size_;
-}
 
-ssize_t UdpRxSocket::ReceiveDataOnly(char *dst) noexcept {
-    auto r = recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
-    constexpr ssize_t eiger_header_packet = 40; // only detector that has this
-    if (r == eiger_header_packet) {
-        LOG(logWARNING) << "Got header pkg";
-        r = recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
-    }
-    // temporary workaround for Eiger firmware (stop sends bad packets of size 8
-    // bytes)
-    if (r == 8) {
-        LOG(logWARNING) << "Ignoring bad packet of size 8 bytes";
-        r = recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
-    }
-    return r;
+    return bytes_received == packet_size_;
 }
 
 int UdpRxSocket::getBufferSize() const {
@@ -95,10 +84,7 @@ void UdpRxSocket::setBufferSize(int size) {
 }
 
 void UdpRxSocket::Shutdown() {
+    // not closing yet on purpose, but read gives -1
     shutdown(sockfd_, SHUT_RDWR);
-    if (sockfd_ >= 0) {
-        close(sockfd_);
-        sockfd_ = -1;
-    }
 }
 } // namespace sls

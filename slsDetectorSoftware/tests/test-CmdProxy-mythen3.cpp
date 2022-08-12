@@ -523,7 +523,7 @@ TEST_CASE("interpolation", "[.cmd]") {
                 REQUIRE(oss.str() == "interpolation 0\n");
                 REQUIRE(det.getCounterMask().tsquash(
                             "inconsistent counter mask") == fixedMask[i]);
-                unsigned int expectedVth3DacVal =
+                int expectedVth3DacVal =
                     (fixedMask[i] & 0x4 ? fixedVth3DacVal : disabledDacValue);
                 REQUIRE(det.getDAC(defs::VTH3, 0, {0})
                             .tsquash("inconsistent vth3 dac value") ==

@@ -1942,11 +1942,9 @@ TEST_CASE("trigger", "[.cmd]") {
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("trigger", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::EIGER && det_type != defs::MYTHEN3) {
-        REQUIRE_THROWS(proxy.Call("trigger", {}, -1, PUT));
-    } else if (det_type == defs::MYTHEN3) {
+    if (det_type == defs::MYTHEN3) {
         REQUIRE_NOTHROW(proxy.Call("trigger", {}, -1, PUT));
-    } else if (det_type == defs::EIGER) {
+    } else if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
         auto prev_timing =
             det.getTimingMode().tsquash("inconsistent timing mode in test");
         auto prev_frames =
@@ -1976,6 +1974,8 @@ TEST_CASE("trigger", "[.cmd]") {
         det.setNumberOfFrames(prev_frames);
         det.setExptime(prev_exptime);
         det.setPeriod(prev_period);
+    } else {
+        REQUIRE_THROWS(proxy.Call("trigger", {}, -1, PUT));
     }
 }
 

@@ -645,7 +645,7 @@ int startStateMachine();
 void *start_timer(void *arg);
 #endif
 int stopStateMachine();
-#ifdef MYTHEN3D
+#if defined(MYTHEN3D) || defined(JUNGFRAUD)
 int softwareTrigger();
 #endif
 #ifdef EIGERD

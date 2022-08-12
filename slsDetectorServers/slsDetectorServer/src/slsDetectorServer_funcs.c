@@ -4144,19 +4144,19 @@ int software_trigger(int file_des) {
 #if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
-    if (arg && (myDetectorType == MYTHEN3 || myDetectorType == JUNGFRAU)) {
+    if (arg && myDetectorType == MYTHEN3) {
         ret = FAIL;
-        strcpy(mess,
-               "Blocking trigger not implemented for this detector. Please use "
-               "non blocking trigger.\n");
+        strcpy(mess, "Blocking trigger not implemented for this detector. "
+                     "Please use "
+                     "non blocking trigger.\n");
         LOG(logERROR, (mess));
     }
     // only set
     else if (Server_VerifyLock() == OK) {
-#ifdef EIGERD
-        ret = softwareTrigger(arg);
-#else
+#ifdef MYTHEN3D
         ret = softwareTrigger();
+#else
+        ret = softwareTrigger(arg);
 #endif
         if (ret == FAIL) {
             strcpy(mess, "Could not send software trigger\n");

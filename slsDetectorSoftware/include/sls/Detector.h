@@ -617,7 +617,7 @@ class Detector {
     /** [Eiger][Mythen3][Jungfrau] Sends an internal software trigger to the
      * detector block true if command blocks till frames are sent out from that
      * trigger
-     * [Eiger] Block can be true
+     * [Eiger][Jungfrau] Block can be true
      */
     void sendSoftwareTrigger(const bool block = false, Positions pos = {});
 

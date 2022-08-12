@@ -1984,9 +1984,7 @@ TEST_CASE("blockingtrigger", "[.cmd]") {
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("blockingtrigger", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::EIGER) {
-        REQUIRE_THROWS(proxy.Call("blockingtrigger", {}, -1, PUT));
-    } else if (det_type == defs::EIGER) {
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
         auto prev_timing =
             det.getTimingMode().tsquash("inconsistent timing mode in test");
         auto prev_frames =
@@ -2019,6 +2017,8 @@ TEST_CASE("blockingtrigger", "[.cmd]") {
         det.setNumberOfFrames(prev_frames);
         det.setExptime(prev_exptime);
         det.setPeriod(prev_period);
+    } else {
+        REQUIRE_THROWS(proxy.Call("blockingtrigger", {}, -1, PUT));
     }
 }
 

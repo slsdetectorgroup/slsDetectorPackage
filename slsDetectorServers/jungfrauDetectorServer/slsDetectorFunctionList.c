@@ -2690,9 +2690,28 @@ int stopStateMachine() {
     return OK;
 }
 
-int softwareTrigger() {
+int softwareTrigger(int block) {
+    // ready for trigger
+    if (getRunStatus() != WAITING) {
+        LOG(logWARNING, ("Not yet ready for trigger!\n"));
+        return 0;
+    }
+
     LOG(logINFO, ("Sending Software Trigger\n"));
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_SOFTWARE_TRIGGER_MSK);
+
+#ifndef VIRTUAL
+    // block till frame is sent out
+    if (block) {
+        enum runStatus s = getRunStatus();
+        while (s == RUNNING || s == TRANSMITTING) {
+            usleep(5000);
+            s = getRunStatus();
+        }
+    }
+    LOG(logINFO, ("Ready for Next Trigger...\n"));
+#endif
+
     return OK;
 }
 

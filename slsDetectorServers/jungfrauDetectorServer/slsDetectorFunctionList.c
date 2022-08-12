@@ -2691,11 +2691,13 @@ int stopStateMachine() {
 }
 
 int softwareTrigger(int block) {
+#ifndef VIRTUAL
     // ready for trigger
     if (getRunStatus() != WAITING) {
         LOG(logWARNING, ("Not yet ready for trigger!\n"));
         return 0;
     }
+#endif
 
     LOG(logINFO, ("Sending Software Trigger\n"));
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_SOFTWARE_TRIGGER_MSK);

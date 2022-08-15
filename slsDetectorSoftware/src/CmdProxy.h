@@ -787,6 +787,7 @@ class CmdProxy {
         {"gappixels", &CmdProxy::GapPixels},
         {"fliprows", &CmdProxy::fliprows},
         {"master", &CmdProxy::master},
+        {"sync", &CmdProxy::sync},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::Acquire},
@@ -1301,6 +1302,13 @@ class CmdProxy {
         "[0, 1]\n\t[Eiger] Sets half module to master and "
         "others to slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger] "
         "Gets if the current module/ half module is master.");
+
+    INTEGER_COMMAND_VEC_ID_GET(
+        sync, getSynchronization, setSynchronization, StringTo<int>,
+        "[0, 1]\n\t[Jungfrau] Sets module to master and "
+        "others to slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger] "
+        "Gets if the current module/ half module is master.");
+
 
     /* acquisition parameters */
 

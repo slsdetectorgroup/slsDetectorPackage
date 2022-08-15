@@ -17,10 +17,10 @@
 
 namespace sls {
 
-Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth)
-    : index(ind), memory(nullptr), fifoBound(nullptr), fifoFree(nullptr),
-      fifoStream(nullptr), fifoDepth(depth), status_fifoBound(0),
-      status_fifoFree(depth) {
+Fifo::Fifo(int index, size_t fifoItemSize, uint32_t fifoDepth)
+    : index(index), memory(nullptr), fifoBound(nullptr), fifoFree(nullptr),
+      fifoStream(nullptr), fifoDepth(fifoDepth), status_fifoBound(0),
+      status_fifoFree(fifoDepth) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     CreateFifos(fifoItemSize);
 }
@@ -30,7 +30,7 @@ Fifo::~Fifo() {
     DestroyFifos();
 }
 
-void Fifo::CreateFifos(uint32_t fifoItemSize) {
+void Fifo::CreateFifos(size_t fifoItemSize) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     // destroy if not already
@@ -41,7 +41,7 @@ void Fifo::CreateFifos(uint32_t fifoItemSize) {
     fifoFree = new CircularFifo<char>(fifoDepth);
     fifoStream = new CircularFifo<char>(fifoDepth);
     // allocate memory
-    size_t mem_len = (size_t)fifoItemSize * (size_t)fifoDepth * sizeof(char);
+    size_t mem_len = fifoItemSize * (size_t)fifoDepth * sizeof(char);
     memory = (char *)malloc(mem_len);
     if (memory == nullptr) {
         throw RuntimeError("Could not allocate memory for fifos");

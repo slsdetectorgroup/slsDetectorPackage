@@ -266,13 +266,12 @@ class Implementation : private virtual slsDetectorDefs {
     /** params: total frames caught */
     void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
                                              void *arg);
-    /** params: sls_receiver_header pointer, pointer to data, image size */
-    void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
+    /** params: sls_receiver_header, pointer to data, image size */
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
                                                    char *, size_t, void *),
                                       void *arg);
-    /** params: sls_receiver_header pointer, pointer to data, reference to image
-     * size */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
+    /** params: sls_receiver_header, pointer to data, reference to image size */
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &,
                                                          char *, size_t &,
                                                          void *),
                                             void *arg);
@@ -288,6 +287,9 @@ class Implementation : private virtual slsDetectorDefs {
     void SetupWriter();
     void StartMasterWriter();
     void StartRunning();
+    void SetupListener(int i);
+    void SetupDataProcessor(int i);
+    void SetupDataStreamer(int i);
 
     /**************************************************
      *                                                *
@@ -296,13 +298,11 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
 
     // config parameters
-    detectorType detType{GENERIC};
     xy numModules{1, 1};
     xy numPorts{1, 1};
     int modulePos{0};
     std::string detHostname;
     bool silentMode{false};
-    uint32_t fifoDepth{0};
     frameDiscardPolicy frameDiscardMode{NO_DISCARD};
     bool framePadding{true};
     pid_t parentThreadId;
@@ -320,7 +320,6 @@ class Implementation : private virtual slsDetectorDefs {
     bool fileWriteEnable{false};
     bool masterFileWriteEnable{true};
     bool overwriteEnable{true};
-    uint32_t framesPerFile{0};
 
     // acquisition
     std::atomic<runStatus> status{IDLE};
@@ -328,11 +327,9 @@ class Implementation : private virtual slsDetectorDefs {
     scanParameters scanParams{};
 
     // network configuration (UDP)
-    int numUDPInterfaces{1};
     std::array<std::string, MAX_NUMBER_OF_LISTENING_THREADS> eth;
     std::array<uint32_t, MAX_NUMBER_OF_LISTENING_THREADS> udpPortNum{
         {DEFAULT_UDP_PORTNO, DEFAULT_UDP_PORTNO + 1}};
-    int udpSocketBufferSize{0};
     int actualUDPSocketBufferSize{0};
 
     // zmq parameters
@@ -364,12 +361,6 @@ class Implementation : private virtual slsDetectorDefs {
     ns gateDelay3 = std::chrono::nanoseconds(0);
     ns subExpTime = std::chrono::nanoseconds(0);
     ns subPeriod = std::chrono::nanoseconds(0);
-    uint32_t numberOfAnalogSamples{0};
-    uint32_t numberOfDigitalSamples{0};
-    uint32_t counterMask{0};
-    uint32_t dynamicRange{16};
-    ROI detectorRoi{};
-    bool tengigaEnable{false};
     bool flipRows{false};
     bool quadEnable{false};
     bool activated{true};
@@ -380,9 +371,6 @@ class Implementation : private virtual slsDetectorDefs {
     int thresholdEnergyeV{-1};
     std::array<int, 3> thresholdAllEnergyeV = {{-1, -1, -1}};
     std::vector<int64_t> rateCorrections;
-    readoutMode readoutType{ANALOG_ONLY};
-    uint32_t adcEnableMaskOneGiga{BIT32_MASK};
-    uint32_t adcEnableMaskTenGiga{BIT32_MASK};
     std::vector<int> ctbDbitList;
     int ctbDbitOffset{0};
 
@@ -392,9 +380,9 @@ class Implementation : private virtual slsDetectorDefs {
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(uint64_t, void *){nullptr};
     void *pAcquisitionFinished{nullptr};
-    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, size_t,
+    void (*rawDataReadyCallBack)(sls_receiver_header &, char *, size_t,
                                  void *){nullptr};
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *, size_t &,
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header &, char *, size_t &,
                                        void *){nullptr};
     void *pRawDataReady{nullptr};
 

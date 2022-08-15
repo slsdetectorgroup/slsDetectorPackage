@@ -185,8 +185,7 @@ void DetectorImpl::initializeMembers(bool verify) {
     // get objects from single det shared memory (open)
     for (int i = 0; i < shm()->totalNumberOfModules; i++) {
         try {
-            modules.push_back(
-                make_unique<Module>(detectorIndex, i, verify));
+            modules.push_back(make_unique<Module>(detectorIndex, i, verify));
         } catch (...) {
             modules.clear();
             throw;
@@ -307,8 +306,7 @@ void DetectorImpl::addModule(const std::string &hostname) {
     }
 
     auto pos = modules.size();
-    modules.emplace_back(
-        make_unique<Module>(type, detectorIndex, pos, false));
+    modules.emplace_back(make_unique<Module>(type, detectorIndex, pos, false));
     shm()->totalNumberOfModules = modules.size();
     modules[pos]->setControlPort(port);
     modules[pos]->setStopPort(port + 1);
@@ -459,17 +457,17 @@ int DetectorImpl::createReceivingDataSockets() {
         try {
             zmqSocket.push_back(
                 make_unique<ZmqSocket>(modules[iSocket / numUDPInterfaces]
-                                                ->getClientStreamingIP()
-                                                .str()
-                                                .c_str(),
-                                            portnum));
+                                           ->getClientStreamingIP()
+                                           .str()
+                                           .c_str(),
+                                       portnum));
             // set high water mark
             int hwm = shm()->zmqHwm;
             if (hwm >= 0) {
                 zmqSocket[iSocket]->SetReceiveHighWaterMark(hwm);
                 if (zmqSocket[iSocket]->GetReceiveHighWaterMark() != hwm) {
                     throw ZmqSocketError("Could not set zmq rcv hwm to " +
-                                              std::to_string(hwm));
+                                         std::to_string(hwm));
                 }
             }
             LOG(logINFO) << "Zmq Client[" << iSocket << "] at "
@@ -672,7 +670,6 @@ void DetectorImpl::readFrameFromReceiver() {
                       << "\n\t databytes: " << multisize
                       << "\n\t dynamicRange: " << dynamicRange;
 
- 
         // send data to callback
         if (data) {
             char *callbackImage = multiframe.get();
@@ -1063,7 +1060,7 @@ void DetectorImpl::setClientStreamingHwm(const int limit) {
                 if (it->GetReceiveHighWaterMark() != limit) {
                     shm()->zmqHwm = -1;
                     throw ZmqSocketError("Could not set zmq rcv hwm to " +
-                                              std::to_string(limit));
+                                         std::to_string(limit));
                 }
             }
             LOG(logINFO) << "Setting Client Zmq socket rcv hwm to " << limit;
@@ -1186,10 +1183,10 @@ void DetectorImpl::startAcquisition(bool blocking, std::vector<int> positions) {
             std::iota(begin(positions), end(positions), 0);
         }
         // could be all slaves in positions
-        slaves.reserve(positions.size()); 
+        slaves.reserve(positions.size());
         auto is_master = Parallel(&Module::isMaster, positions);
         for (size_t i : positions) {
-            if (is_master[i]) 
+            if (is_master[i])
                 master.push_back(i);
             else
                 slaves.push_back(i);
@@ -1418,8 +1415,8 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
 }
 
 Result<int> DetectorImpl::getDefaultDac(defs::dacIndex index,
-                                             defs::detectorSettings sett,
-                                             Positions pos) {
+                                        defs::detectorSettings sett,
+                                        Positions pos) {
     return Parallel(&Module::getDefaultDac, pos, index, sett);
 }
 
@@ -1463,7 +1460,8 @@ defs::ROI DetectorImpl::getRxROI() const {
     auto t = Parallel(&Module::getRxROI, {});
     if (t.equal() && t.front().completeRoi()) {
         LOG(logDEBUG) << "no roi";
-        return defs::ROI (0, shm()->numberOfChannels.x - 1, 0, shm()->numberOfChannels.y - 1);
+        return defs::ROI(0, shm()->numberOfChannels.x - 1, 0,
+                         shm()->numberOfChannels.y - 1);
     }
 
     defs::xy numChansPerMod = modules[0]->getNumberOfChannels();
@@ -1537,21 +1535,26 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
         throw RuntimeError("Invalid Roi of size 0.");
     }
     if (arg.completeRoi()) {
-        throw RuntimeError("Did you mean the clear roi command (API: clearRxROI, cmd: rx_clearroi)?");
+        throw RuntimeError("Did you mean the clear roi command (API: "
+                           "clearRxROI, cmd: rx_clearroi)?");
     }
     if (arg.xmin > arg.xmax || arg.ymin > arg.ymax) {
-        throw RuntimeError("Invalid Receiver Roi. xmin/ymin exceeds xmax/ymax.");
+        throw RuntimeError(
+            "Invalid Receiver Roi. xmin/ymin exceeds xmax/ymax.");
     }
 
     defs::xy numChansPerMod = modules[0]->getNumberOfChannels();
     bool is2D = (numChansPerMod.y > 1 ? true : false);
     defs::xy geometry = getPortGeometry();
 
-    if (!is2D && ((arg.ymin != -1 && arg.ymin != 0) || (arg.ymax != -1 && arg.ymax != 0))) {
-        throw RuntimeError("Invalid Receiver roi. Cannot set 2d roi for a 1d detector.");
+    if (!is2D && ((arg.ymin != -1 && arg.ymin != 0) ||
+                  (arg.ymax != -1 && arg.ymax != 0))) {
+        throw RuntimeError(
+            "Invalid Receiver roi. Cannot set 2d roi for a 1d detector.");
     }
 
-    if (arg.xmin < 0 || arg.xmax >= shm()->numberOfChannels.x || (is2D && (arg.ymin < 0 || arg.ymax >= shm()->numberOfChannels.y))) {
+    if (arg.xmin < 0 || arg.xmax >= shm()->numberOfChannels.x ||
+        (is2D && (arg.ymin < 0 || arg.ymax >= shm()->numberOfChannels.y))) {
         throw RuntimeError("Invalid Receiver Roi. Outside detector range.");
     }
 
@@ -1576,7 +1579,8 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
                         --moduleRoi.xmax;
                     }
                 } else {
-                    throw RuntimeError("Cannot have more than 2 modules for a Gotthard2 detector");
+                    throw RuntimeError("Cannot have more than 2 modules for a "
+                                       "Gotthard2 detector");
                 }
             } else {
                 // get module limits
@@ -1593,27 +1597,27 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
                 if (arg.xmin > moduleFullRoi.xmax ||
                     arg.xmax < moduleFullRoi.xmin ||
                     (is2D && (arg.ymin > moduleFullRoi.ymax ||
-                            arg.ymax < moduleFullRoi.ymin))) {
+                              arg.ymax < moduleFullRoi.ymin))) {
                     moduleRoi.setNoRoi();
                 }
                 // incomplete module roi
                 else if (arg.xmin > moduleFullRoi.xmin ||
-                        arg.xmax < moduleFullRoi.xmax ||
-                        (is2D && (arg.ymin > moduleFullRoi.ymin ||
-                                arg.ymax < moduleFullRoi.ymax))) {
+                         arg.xmax < moduleFullRoi.xmax ||
+                         (is2D && (arg.ymin > moduleFullRoi.ymin ||
+                                   arg.ymax < moduleFullRoi.ymax))) {
                     moduleRoi.xmin = (arg.xmin <= moduleFullRoi.xmin)
-                                        ? 0
-                                        : (arg.xmin % numChansPerMod.x);
+                                         ? 0
+                                         : (arg.xmin % numChansPerMod.x);
                     moduleRoi.xmax = (arg.xmax >= moduleFullRoi.xmax)
-                                        ? numChansPerMod.x - 1
-                                        : (arg.xmax % numChansPerMod.x);
+                                         ? numChansPerMod.x - 1
+                                         : (arg.xmax % numChansPerMod.x);
                     if (is2D) {
                         moduleRoi.ymin = (arg.ymin <= moduleFullRoi.ymin)
-                                            ? 0
-                                            : (arg.ymin % numChansPerMod.y);
+                                             ? 0
+                                             : (arg.ymin % numChansPerMod.y);
                         moduleRoi.ymax = (arg.ymax >= moduleFullRoi.ymax)
-                                            ? numChansPerMod.y - 1
-                                            : (arg.ymax % numChansPerMod.y);
+                                             ? numChansPerMod.y - 1
+                                             : (arg.ymax % numChansPerMod.y);
                     }
                 }
             }
@@ -1625,7 +1629,9 @@ void DetectorImpl::setRxROI(const defs::ROI arg) {
 
     // metadata
     if (arg.completeRoi()) {
-        modules[0]->setRxROIMetadata(defs::ROI (0, shm()->numberOfChannels.x - 1, 0, shm()->numberOfChannels.y - 1));
+        modules[0]->setRxROIMetadata(defs::ROI(0, shm()->numberOfChannels.x - 1,
+                                               0,
+                                               shm()->numberOfChannels.y - 1));
     } else {
         modules[0]->setRxROIMetadata(arg);
     }
@@ -1638,7 +1644,6 @@ void DetectorImpl::clearRxROI() {
     shm()->rx_roi.xmax = -1;
     shm()->rx_roi.ymax = -1;
 }
-
 
 std::vector<std::string> DetectorImpl::getCtbDacNames() const {
     return ctb_shm()->getDacNames();

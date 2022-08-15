@@ -1125,7 +1125,7 @@ int64_t getMeasuredSubPeriod() {
 
 /* parameters - channel, module, settings */
 
-void getModule(sls_detector_module* myMod) {
+void getModule(sls_detector_module *myMod) {
     // serial number
     myMod->serialnumber = detectorModules->serialnumber;
     // reg (settings)
@@ -1133,7 +1133,7 @@ void getModule(sls_detector_module* myMod) {
     // iodelay
     myMod->iodelay = setIODelay(-1);
     // tau
-    myMod->tau = (int) getCurrentTau();
+    myMod->tau = (int)getCurrentTau();
     // eV
     myMod->eV[0] = detectorModules->eV[0];
     // dacs
@@ -1150,8 +1150,10 @@ int setModule(sls_detector_module myMod, char *mess) {
 
     LOG(logINFO, ("Setting module with settings %d\n", myMod.reg));
 
-    if (((myMod.nchan) > (detectorModules->nchan)) || ((myMod.ndac) > (detectorModules->ndac))) {
-        strcpy(mess, "Could not set module as the number of channels or dacs do not match to the one in the detector server\n");
+    if (((myMod.nchan) > (detectorModules->nchan)) ||
+        ((myMod.ndac) > (detectorModules->ndac))) {
+        strcpy(mess, "Could not set module as the number of channels or dacs "
+                     "do not match to the one in the detector server\n");
         LOG(logERROR, (mess));
         return FAIL;
     }
@@ -2158,7 +2160,7 @@ void setExternalGating(int enable[]) {
     enable[1] = eiger_extgatingpolarity;
 }
 
-int setTrimbits(int* chanregs, char* mess) {
+int setTrimbits(int *chanregs, char *mess) {
     LOG(logINFO, ("Setting module with trimbits\n"));
 #ifndef VIRTUAL
     // include gap pixels
@@ -2190,7 +2192,7 @@ int setTrimbits(int* chanregs, char* mess) {
         LOG(logERROR, (mess));
         setSettings(UNDEFINED);
         LOG(logERROR, ("Settings has been changed to undefined (random "
-                        "trim file)\n"));
+                       "trim file)\n"));
 
         // if quad, reset M8 and PROGRAM manually
         if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
@@ -2218,7 +2220,6 @@ int setTrimbits(int* chanregs, char* mess) {
 #endif
     return OK;
 }
-
 
 int setAllTrimbits(int val) {
     LOG(logINFO, ("Setting all trimbits to %d\n", val));

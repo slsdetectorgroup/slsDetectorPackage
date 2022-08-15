@@ -11,11 +11,22 @@ namespace sls {
  */
 class detectorData {
   public:
-    detectorData(double progressIndex, std::string fileName, int nx, int ny, char *data, int databytes, int dynamicRange, uint64_t fileIndex, bool completeImage)
-        : progressIndex(progressIndex), fileName(fileName), fileIndex(fileIndex), nx(nx), ny(ny), data(data), databytes(databytes), dynamicRange(dynamicRange), completeImage(completeImage){};
+    detectorData(double progressIndex, std::string fileName, int nx, int ny,
+                 char *data, int databytes, int dynamicRange,
+                 uint64_t fileIndex, bool completeImage)
+        : progressIndex(progressIndex), fileName(fileName),
+          fileIndex(fileIndex), nx(nx), ny(ny), data(data),
+          databytes(databytes), dynamicRange(dynamicRange),
+          completeImage(completeImage){};
 
-    detectorData(double progressIndex, std::string fileName, int nx, int ny, char *data, int databytes, int dynamicRange, uint64_t fileIndex, bool completeImage, std::array<int, 4> rxRoi)
-        : progressIndex(progressIndex), fileName(fileName), fileIndex(fileIndex), nx(nx), ny(ny), data(data), databytes(databytes), dynamicRange(dynamicRange), completeImage(completeImage), rxRoi(rxRoi) {};
+    detectorData(double progressIndex, std::string fileName, int nx, int ny,
+                 char *data, int databytes, int dynamicRange,
+                 uint64_t fileIndex, bool completeImage,
+                 std::array<int, 4> rxRoi)
+        : progressIndex(progressIndex), fileName(fileName),
+          fileIndex(fileIndex), nx(nx), ny(ny), data(data),
+          databytes(databytes), dynamicRange(dynamicRange),
+          completeImage(completeImage), rxRoi(rxRoi){};
     /**
      * data has to be deleted by caller
      */
@@ -51,7 +62,7 @@ class detectorData {
     int databytes;
     int dynamicRange;
     bool completeImage;
-    std::array<int,4> rxRoi{{-1, -1, -1, -1}};
+    std::array<int, 4> rxRoi{{-1, -1, -1, -1}};
 };
 
 } // namespace sls

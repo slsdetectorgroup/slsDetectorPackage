@@ -310,14 +310,14 @@ int64_t getMeasurementTime();
 
 // parameters - module, settings
 #if defined(MYTHEN3D) || defined(EIGERD)
-void getModule(sls_detector_module* myMod);
+void getModule(sls_detector_module *myMod);
 #endif
 #if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(GOTTHARD2D))
 int setModule(sls_detector_module myMod, char *mess);
 #endif
 
 #ifdef EIGERD
-int setTrimbits(int* chanregs, char* mess);
+int setTrimbits(int *chanregs, char *mess);
 #endif
 #ifdef MYTHEN3D
 int setTrimbits(int *trimbits);
@@ -569,7 +569,8 @@ int getFrequency(enum CLKINDEX ind);
 int getVCOFrequency(enum CLKINDEX ind);
 int getMaxClockDivider();
 int setClockDivider(enum CLKINDEX ind, int val);
-int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val, int timeUpdate);
+int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val,
+                                        int timeUpdate);
 int getClockDivider(enum CLKINDEX ind);
 
 #elif GOTTHARD2D

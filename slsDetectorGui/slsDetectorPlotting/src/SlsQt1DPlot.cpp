@@ -444,17 +444,16 @@ void SlsQt1DPlot::SetLog(int axisId, bool yes) {
     Update();
 }
 
-
 void SlsQt1DPlot::EnableRoiBox(std::array<int, 4> roi) {
     if (roiBox == nullptr) {
         roiBox = new QwtPlotShapeItem();
         roiBox->attach(this);
         roiBox->setPen(QColor(Qt::yellow), 2.0, Qt::SolidLine);
-    } 
+    }
 
     // TopLeft - BottomRight (max points are +1 on graph)
     QRect myRect(QPoint(roi[0], roi[2]), QPoint(roi[1] - 1, roi[3] - 1));
-    roiBox->setRect( QRectF(myRect) );
+    roiBox->setRect(QRectF(myRect));
     replot();
 }
 
@@ -464,7 +463,6 @@ void SlsQt1DPlot::DisableRoiBox() {
         replot();
     }
 }
-
 
 void SlsQt1DPlot::UnZoom() {
     setAxisScale(QwtPlot::xBottom, zoomer->x(), zoomer->x() + zoomer->w());

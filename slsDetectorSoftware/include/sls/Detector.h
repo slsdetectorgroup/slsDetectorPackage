@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-
 namespace sls {
 using ns = std::chrono::nanoseconds;
 class detectorData;
@@ -144,7 +143,8 @@ class Detector {
                             defs::detectorSettings settings = defs::STANDARD,
                             bool trimbits = true, Positions pos = {});
 
-    /** [Mythen3] It loads trim files from settingspath. An energy of -1 will pick up values from detector */
+    /** [Mythen3] It loads trim files from settingspath. An energy of -1 will
+     * pick up values from detector */
     void setThresholdEnergy(std::array<int, 3> threshold_ev,
                             defs::detectorSettings settings = defs::STANDARD,
                             bool trimbits = true, Positions pos = {});
@@ -907,7 +907,7 @@ class Detector {
     Result<defs::ROI> getIndividualRxROIs(Positions pos) const;
 
     defs::ROI getRxROI() const;
-    
+
     /** only at multi module level without gap pixels */
     void setRxROI(const defs::ROI value);
 
@@ -1495,13 +1495,15 @@ class Detector {
     /** [Mythen3] */
     Result<bool> getInterpolation(Positions pos = {}) const;
 
-    /** [Mythen3] interpolation mode enables all counters and disables vth3. Disabling sets back counter mask and vth3. */
+    /** [Mythen3] interpolation mode enables all counters and disables vth3.
+     * Disabling sets back counter mask and vth3. */
     void setInterpolation(bool value, Positions pos = {});
 
     /** [Mythen3] */
     Result<bool> getPumpProbe(Positions pos = {}) const;
 
-    /** [Mythen3] pump probe mode only enables vth2. Disabling sets back to previous value */
+    /** [Mythen3] pump probe mode only enables vth2. Disabling sets back to
+     * previous value */
     void setPumpProbe(bool value, Positions pos = {});
 
     /** [Mythen3] */

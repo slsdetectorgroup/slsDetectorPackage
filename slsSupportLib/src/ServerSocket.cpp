@@ -15,7 +15,6 @@
 #include <stdexcept>
 #include <unistd.h>
 
-
 namespace sls {
 
 #define DEFAULT_PACKET_SIZE 1286

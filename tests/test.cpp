@@ -30,13 +30,14 @@ int main(int argc, char *argv[]) {
     sls::test::my_ip = "undefined";
 
     Catch::Session session;
-    auto cli =
-        session.cli() |
-        sls::Opt(sls::test::hostname, "hostname")["-hn"]["--hostname"](
-            "Detector hostname for integration tests") |
-        sls::Opt(sls::test::detector_type, "detector_type")["-dt"]["--detector_type"](
-            "Detector type for integration tests") |
-        sls::Opt(sls::test::my_ip, "my_ip")["-hip"]["--host_ip"]("Host ip address");
+    auto cli = session.cli() |
+               sls::Opt(sls::test::hostname, "hostname")["-hn"]["--hostname"](
+                   "Detector hostname for integration tests") |
+               sls::Opt(sls::test::detector_type,
+                        "detector_type")["-dt"]["--detector_type"](
+                   "Detector type for integration tests") |
+               sls::Opt(sls::test::my_ip,
+                        "my_ip")["-hip"]["--host_ip"]("Host ip address");
 
     session.cli(cli);
 
@@ -47,8 +48,8 @@ int main(int argc, char *argv[]) {
 
     sls::test::type = slsDetectorDefs::GENERIC;
     if (!sls::test::detector_type.empty()) {
-        sls::test::type =
-            sls::StringTo<slsDetectorDefs::detectorType>(sls::test::detector_type);
+        sls::test::type = sls::StringTo<slsDetectorDefs::detectorType>(
+            sls::test::detector_type);
     }
 
     return session.run();

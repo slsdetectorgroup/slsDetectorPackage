@@ -333,8 +333,7 @@ TEST_CASE("streamingInterface") {
     REQUIRE(ToString(defs::streamingInterface::ETHERNET_10GB) == "10gbe");
     REQUIRE(ToString(defs::streamingInterface::LOW_LATENCY_LINK) == "lll");
     REQUIRE(ToString(defs::streamingInterface::LOW_LATENCY_LINK |
-                     defs::streamingInterface::ETHERNET_10GB) ==
-            "lll, 10gbe");
+                     defs::streamingInterface::ETHERNET_10GB) == "lll, 10gbe");
 }
 
 // Speed level
@@ -353,10 +352,8 @@ TEST_CASE("string to speedLevel") {
             defs::speedLevel::HALF_SPEED);
     REQUIRE(StringTo<defs::speedLevel>("quarter_speed") ==
             defs::speedLevel::QUARTER_SPEED);
-    REQUIRE(StringTo<defs::speedLevel>("108") ==
-            defs::speedLevel::G2_108MHZ);
-    REQUIRE(StringTo<defs::speedLevel>("144") ==
-            defs::speedLevel::G2_144MHZ);
+    REQUIRE(StringTo<defs::speedLevel>("108") == defs::speedLevel::G2_108MHZ);
+    REQUIRE(StringTo<defs::speedLevel>("144") == defs::speedLevel::G2_144MHZ);
 }
 
 } // namespace sls

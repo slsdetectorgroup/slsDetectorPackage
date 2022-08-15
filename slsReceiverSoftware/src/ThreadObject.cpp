@@ -18,15 +18,15 @@ namespace sls {
 #define gettid() syscall(SYS_gettid)
 #endif
 
-ThreadObject::ThreadObject(int threadIndex, std::string threadType)
-    : index(threadIndex), type(threadType) {
+ThreadObject::ThreadObject(int index, std::string type)
+    : index(index), type(type) {
     LOG(logDEBUG) << type << " thread created: " << index;
     sem_init(&semaphore, 1, 0);
     try {
         threadObject = std::thread(&ThreadObject::RunningThread, this);
     } catch (...) {
-        throw RuntimeError("Could not create " + type +
-                                " thread with index " + std::to_string(index));
+        throw RuntimeError("Could not create " + type + " thread with index " +
+                           std::to_string(index));
     }
 }
 

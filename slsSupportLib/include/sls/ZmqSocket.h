@@ -9,8 +9,8 @@
  *@short functions to open/close zmq sockets
  */
 
-#include "sls/sls_detector_exceptions.h"
 #include "sls/container_utils.h"
+#include "sls/sls_detector_exceptions.h"
 
 #include <map>
 #include <memory>
@@ -22,7 +22,6 @@ namespace sls {
 #define MAX_STR_LENGTH 1000
 // #define ZMQ_DETAIL
 #define ROIVERBOSITY
-
 
 /** zmq header structure */
 struct zmqHeader {
@@ -224,8 +223,7 @@ class ZmqSocket {
     /** Socket descriptor */
     mySocketDescriptors sockfd;
 
-    std::unique_ptr<char[]> header_buffer =
-        make_unique<char[]>(MAX_STR_LENGTH);
+    std::unique_ptr<char[]> header_buffer = make_unique<char[]>(MAX_STR_LENGTH);
 };
 
 } // namespace sls

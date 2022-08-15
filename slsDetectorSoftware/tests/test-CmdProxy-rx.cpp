@@ -465,7 +465,8 @@ TEST_CASE("rx_roi", "[.cmd]") {
                 REQUIRE(oss.str() == "rx_roi [10, 15]\n");
             }
             REQUIRE_THROWS(proxy.Call("rx_roi", {"-1", "-1"}, -1, PUT));
-            REQUIRE_THROWS(proxy.Call("rx_roi", {"10", "15", "25", "30"}, -1, PUT));
+            REQUIRE_THROWS(
+                proxy.Call("rx_roi", {"10", "15", "25", "30"}, -1, PUT));
         }
         // 2d
         else {
@@ -481,10 +482,18 @@ TEST_CASE("rx_roi", "[.cmd]") {
             }
             {
                 std::ostringstream oss;
-                proxy.Call("rx_roi", {"1", std::to_string(detsize.x - 5), "1", std::to_string(detsize.y - 5)}, -1, PUT, oss);
-                REQUIRE(oss.str() == std::string("rx_roi [1, ") + std::to_string(detsize.x - 5) + std::string(", ") + std::to_string(detsize.y - 5) + std::string(", 1]\n"));
-            }            
-            REQUIRE_THROWS(proxy.Call("rx_roi", {"-1", "-1", "-1", "-1"}, -1, PUT));
+                proxy.Call("rx_roi",
+                           {"1", std::to_string(detsize.x - 5), "1",
+                            std::to_string(detsize.y - 5)},
+                           -1, PUT, oss);
+                REQUIRE(oss.str() == std::string("rx_roi [1, ") +
+                                         std::to_string(detsize.x - 5) +
+                                         std::string(", ") +
+                                         std::to_string(detsize.y - 5) +
+                                         std::string(", 1]\n"));
+            }
+            REQUIRE_THROWS(
+                proxy.Call("rx_roi", {"-1", "-1", "-1", "-1"}, -1, PUT));
         }
 
         for (int i = 0; i != det.size(); ++i) {
@@ -574,7 +583,7 @@ TEST_CASE("fname", "[.cmd]") {
     }
     REQUIRE_THROWS(proxy.Call("fname", {"fdf/dfd"}, -1, PUT));
     REQUIRE_THROWS(proxy.Call("fname", {"fdf dfd"}, -1, PUT));
-    
+
     for (int i = 0; i != det.size(); ++i) {
         det.setFileNamePrefix(prev_val[i], {i});
     }

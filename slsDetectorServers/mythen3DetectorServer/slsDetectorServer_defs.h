@@ -105,7 +105,7 @@ enum DACINDEX {
         1220, /* vIpreOut */                                                   \
         2800, /* Vth3 */                                                       \
         2800, /* Vth1 */                                                       \
-        800, /* vIcin */                                                       \
+        800,  /* vIcin */                                                      \
         1800, /* cas */                                                        \
         1100, /* Vrpreamp */                                                   \
         1100, /* Vcal_n */                                                     \

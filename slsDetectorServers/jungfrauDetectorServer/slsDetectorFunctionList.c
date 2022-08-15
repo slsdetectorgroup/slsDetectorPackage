@@ -1363,7 +1363,7 @@ int setMaster(enum MASTERINDEX m) {
         }
         break;
     case OW_SLAVE:
-        bus_w(CONTROL_REG, bus_r(CONTROL_REG) &~ CONTROL_MASTER_MSK);
+        bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_MASTER_MSK);
         isMaster(&retval);
         if (retval != 0) {
             LOG(logERROR, ("Could not set slave\n"));
@@ -1371,14 +1371,16 @@ int setMaster(enum MASTERINDEX m) {
         }
         break;
     default:
-        LOG(logERROR, ("Cannot reset to hardware settings from client. Restart detector server.\n"));
+        LOG(logERROR, ("Cannot reset to hardware settings from client. Restart "
+                       "detector server.\n"));
         return FAIL;
     }
     return OK;
 }
 
 int isMaster(int *retval) {
-    *retval = ((bus_r(CONTROL_REG) & CONTROL_MASTER_MSK) >> CONTROL_MASTER_OFST);
+    *retval =
+        ((bus_r(CONTROL_REG) & CONTROL_MASTER_MSK) >> CONTROL_MASTER_OFST);
     return OK;
 }
 

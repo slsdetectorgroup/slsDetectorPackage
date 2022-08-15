@@ -145,7 +145,7 @@ void setADIFDefaults();
 int readConfigFile();
 #endif
 #if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
-    defined(MYTHEN3D) || defined(JUNGFRAUD)
+    defined(MYTHEN3D)
 int checkCommandLineConfiguration();
 #endif
 #ifdef EIGERD

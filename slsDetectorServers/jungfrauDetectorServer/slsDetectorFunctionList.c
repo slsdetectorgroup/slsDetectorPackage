@@ -35,9 +35,6 @@ extern int isControlServer;
 extern void getMacAddressinString(char *cmac, int size, uint64_t mac);
 extern void getIpAddressinString(char *cip, uint32_t ip);
 
-// Variables that will be exported
-int masterCommandLine = -1;
-
 int initError = OK;
 int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
@@ -407,8 +404,7 @@ void initStopServer() {
             initCheckDone = 1;
             return;
         }
-        if (readConfigFile() == FAIL ||
-            checkCommandLineConfiguration() == FAIL) {
+        if (readConfigFile() == FAIL) {
             initCheckDone = 1;
             return;
         }
@@ -476,7 +472,7 @@ void setupDetector() {
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
 
     // get chip version
-    if (readConfigFile() == FAIL || checkCommandLineConfiguration() == FAIL) {
+    if (readConfigFile() == FAIL) {
         return;
     }
 
@@ -771,32 +767,6 @@ int readConfigFile() {
             setChipVersion(version);
         }
 
-        // master command
-        else if (!strncmp(line, "master", strlen("master"))) {
-            int m = -1;
-            // cannot scan values
-            if (sscanf(line, "%s %d", command, &m) != 2) {
-                sprintf(initErrorMessage,
-                        "Could not scan master commands from on-board server "
-                        "config file. Line:[%s].\n",
-                        line);
-                break;
-            }
-            if (m != 0 && m != 1) {
-                sprintf(initErrorMessage,
-                        "Invalid master argument from on-board server "
-                        "config file. Line:[%s].\n",
-                        line);
-                break;
-            }
-            if (setMaster(m == 1 ? OW_MASTER : OW_SLAVE) == FAIL) {
-                sprintf(initErrorMessage,
-                        "Could not set master from config file. Line:[%s].\n",
-                        line);
-                break;
-            }
-        }
-
         // other commands
         else {
             sprintf(initErrorMessage,
@@ -817,21 +787,6 @@ int readConfigFile() {
         LOG(logINFOBLUE, ("Successfully read config file\n"));
     }
     return initError;f
-}
-
-int checkCommandLineConfiguration() {
-    if (masterCommandLine != -1) {
-        LOG(logINFO, ("Setting %s from Command Line\n",
-                      (masterCommandLine == 1 ? "Master" : "Slave")));
-        if (setMaster(masterCommandLine == 1 ? OW_MASTER : OW_SLAVE) == FAIL) {
-            initError = FAIL;
-            sprintf(initErrorMessage, "Could not set %s from command line.\n",
-                    (masterCommandLine == 1 ? "Master" : "Slave"));
-            LOG(logERROR, (initErrorMessage));
-            return FAIL;
-        }
-    }
-    return OK;
 }
 
 /* firmware functions (resets) */
@@ -1416,8 +1371,8 @@ int setMaster(enum MASTERINDEX m) {
         }
         break;
     default:
-        // hardware settings (do nothing)
-        break;
+        LOG(logERROR, ("Cannot reset to hardware settings from client. Restart detector server.\n"));
+        return FAIL;
     }
     return OK;
 }

@@ -786,7 +786,7 @@ int readConfigFile() {
     } else {
         LOG(logINFOBLUE, ("Successfully read config file\n"));
     }
-    return initError;f
+    return initError;
 }
 
 /* firmware functions (resets) */

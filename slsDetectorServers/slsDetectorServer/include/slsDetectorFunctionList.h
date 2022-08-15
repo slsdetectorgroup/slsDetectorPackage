@@ -387,6 +387,7 @@ int setHighVoltage(int val);
 // parameters - timing, extsig
 #if defined(EIGERD) || defined(JUNGFRAUD)
 int setMaster(enum MASTERINDEX m);
+#endif
 #ifdef EIGERD
 int setTop(enum TOPINDEX t);
 int isTop(int *retval);

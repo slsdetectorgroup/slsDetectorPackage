@@ -584,9 +584,9 @@ TEST_CASE("master", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2) {
+        det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU) {
         REQUIRE_NOTHROW(proxy.Call("master", {}, -1, GET));
-        if (det_type == defs::EIGER) {
+        if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
             // get previous master
             int prevMaster = 0;
             {

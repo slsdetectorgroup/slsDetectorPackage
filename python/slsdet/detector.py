@@ -1479,8 +1479,8 @@ class Detector(CppDetectorApi):
     @element
     def master(self):
         """
-        [Eiger] Sets half module to master and others to slaves.\n
-        [Gotthard][Gotthard2][Mythen3][Eiger] Gets if the current module/ half module is master.
+        [Eiger][Jungfrau] Sets (half) module to master and other(s) to slaves.\n
+        [Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau] Gets if the current module/ half module is master.
         """
         return self.getMaster()
 

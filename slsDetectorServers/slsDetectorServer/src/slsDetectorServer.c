@@ -33,7 +33,7 @@ extern int ignoreConfigFileFlag;
 extern int phaseShift;
 #endif
 #if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
-    defined(MYTHEN3D)
+    defined(MYTHEN3D) || defined (JUNGFRAUD)
 extern int masterCommandLine;
 #endif
 #ifdef EIGERD
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     int version = 0;
     ignoreConfigFileFlag = 0;
 #if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
-    defined(MYTHEN3D)
+    defined(MYTHEN3D) || defined (JUNGFRAUD)
     masterCommandLine = -1;
 #endif
 #ifdef EIGERD
@@ -215,13 +215,12 @@ int main(int argc, char *argv[]) {
             break;
 
         case 'm':
-#if (defined(MYTHEN3D) || defined(GOTTHARDD) || defined(GOTTHARD2D)) &&        \
-    !defined(VIRTUAL)
+#if !defined(VIRTUAL) && !defined(EIGERD) && !defined(JUNGFRAUD)
             LOG(logERROR, ("Cannot set master via the detector server for this "
                            "detector\n"));
             exit(EXIT_FAILURE);
 #elif defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||          \
-    defined(MYTHEN3D)
+    defined(MYTHEN3D) || defined(JUNGFRAUD)
             if (sscanf(optarg, "%d", &masterCommandLine) != 1) {
                 LOG(logERROR, ("Cannot scan master argument\n%s", helpMessage));
                 exit(EXIT_FAILURE);

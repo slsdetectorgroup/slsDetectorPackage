@@ -35,6 +35,9 @@ extern int isControlServer;
 extern void getMacAddressinString(char *cmac, int size, uint64_t mac);
 extern void getIpAddressinString(char *cip, uint32_t ip);
 
+// Variables that will be exported
+int masterCommandLine = -1;
+
 int initError = OK;
 int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
@@ -404,7 +407,8 @@ void initStopServer() {
             initCheckDone = 1;
             return;
         }
-        if (readConfigFile() == FAIL) {
+        if (readConfigFile() == FAIL ||
+            checkCommandLineConfiguration() == FAIL) {
             initCheckDone = 1;
             return;
         }
@@ -472,7 +476,7 @@ void setupDetector() {
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
 
     // get chip version
-    if (readConfigFile() == FAIL) {
+    if (readConfigFile() == FAIL || checkCommandLineConfiguration() == FAIL) {
         return;
     }
 
@@ -767,6 +771,41 @@ int readConfigFile() {
             setChipVersion(version);
         }
 
+        // master command
+        else if (!strncmp(line, "master", strlen("master"))) {
+            int m = -1;
+            // cannot scan values
+            if (sscanf(line, "%s %d", command, &m) != 2) {
+                sprintf(initErrorMessage,
+                        "Could not scan master commands from on-board server "
+                        "config file. Line:[%s].\n",
+                        line);
+                break;
+            }
+            if (m != 0 && m != 1) {
+                sprintf(initErrorMessage,
+                        "Invalid master argument from on-board server "
+                        "config file. Line:[%s].\n",
+                        line);
+                break;
+            }
+            if (setMaster(m == 1 ? OW_MASTER : OW_SLAVE) == FAIL) {
+                sprintf(initErrorMessage,
+                        "Could not set master from config file. Line:[%s].\n",
+                        line);
+                break;
+            }
+        }
+
+        // other commands
+        else {
+            sprintf(initErrorMessage,
+                    "Could not scan command from on-board server "
+                    "config file. Line:[%s].\n",
+                    line);
+            break;
+        }
+
         memset(line, 0, LZ);
     }
     fclose(fd);
@@ -777,7 +816,22 @@ int readConfigFile() {
     } else {
         LOG(logINFOBLUE, ("Successfully read config file\n"));
     }
-    return initError;
+    return initError;f
+}
+
+int checkCommandLineConfiguration() {
+    if (masterCommandLine != -1) {
+        LOG(logINFO, ("Setting %s from Command Line\n",
+                      (masterCommandLine == 1 ? "Master" : "Slave")));
+        if (setMaster(masterCommandLine == 1 ? OW_MASTER : OW_SLAVE) == FAIL) {
+            initError = FAIL;
+            sprintf(initErrorMessage, "Could not set %s from command line.\n",
+                    (masterCommandLine == 1 ? "Master" : "Slave"));
+            LOG(logERROR, (initErrorMessage));
+            return FAIL;
+        }
+    }
+    return OK;
 }
 
 /* firmware functions (resets) */
@@ -1338,6 +1392,40 @@ int setHighVoltage(int val) {
 }
 
 /* parameters - timing, extsig */
+
+int setMaster(enum MASTERINDEX m) {
+    char *master_names[] = {MASTER_NAMES};
+    LOG(logINFOBLUE, ("Setting up as %s in (%s server)\n", master_names[m],
+                      (isControlServer ? "control" : "stop")));
+    int retval = -1;
+    switch (m) {
+    case OW_MASTER:
+        bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_MASTER_MSK);
+        isMaster(&retval);
+        if (retval != 1) {
+            LOG(logERROR, ("Could not set master\n"));
+            return FAIL;
+        }
+        break;
+    case OW_SLAVE:
+        bus_w(CONTROL_REG, bus_r(CONTROL_REG) &~ CONTROL_MASTER_MSK);
+        isMaster(&retval);
+        if (retval != 0) {
+            LOG(logERROR, ("Could not set slave\n"));
+            return FAIL;
+        }
+        break;
+    default:
+        // hardware settings (do nothing)
+        break;
+    }
+    return OK;
+}
+
+int isMaster(int *retval) {
+    *retval = ((bus_r(CONTROL_REG) & CONTROL_MASTER_MSK) >> CONTROL_MASTER_OFST);
+    return OK;
+}
 
 void setTiming(enum timingMode arg) {
     switch (arg) {

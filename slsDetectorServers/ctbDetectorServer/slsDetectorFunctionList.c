@@ -85,17 +85,9 @@ void basictests() {
     initCheckDone = 0;
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
-    LOG(logINFOBLUE,
-        ("******** Chip Test Board Virtual Server *****************\n"));
-    if (mapCSP0() == FAIL) {
-        strcpy(initErrorMessage,
-               "Could not map to memory. Dangerous to continue.\n");
-        LOG(logERROR, (initErrorMessage));
-        initError = FAIL;
-    }
-    return;
+    LOG(logINFOBLUE, ("********* Chip Test Board Virtual Server *********\n"));
 #else
-
+    LOG(logINFOBLUE, ("************* Chip Test Board Server *************\n"));
     initError = defineGPIOpins(initErrorMessage);
     if (initError == FAIL) {
         return;
@@ -104,14 +96,15 @@ void basictests() {
     if (initError == FAIL) {
         return;
     }
+#endif
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Dangerous to continue.\n");
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
+        LOG(logERROR, (initErrorMessage));
         initError = FAIL;
         return;
     }
-
+#ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
         ((checkType() == FAIL) || (testFpga() == FAIL) ||
@@ -122,7 +115,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-
+#endif
     uint16_t hversion = getHardwareVersionNumber();
     uint16_t hsnumber = getHardwareSerialNumber();
     uint32_t ipadd = getDetectorIP();
@@ -135,7 +128,7 @@ void basictests() {
     if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
         sw_fw_apiversion = getFirmwareAPIVersion();
     LOG(logINFOBLUE,
-        ("************ Chip Test Board Server *********************\n"
+        ("**************************************************\n"
          "Hardware Version:\t\t 0x%x\n"
          "Hardware Serial Nr:\t\t 0x%x\n"
 
@@ -153,6 +146,7 @@ void basictests() {
          (long long int)sw_fw_apiversion, REQRD_FRMWR_VRSN,
          (long long int)client_sw_apiversion));
 
+#ifndef VIRTUAL
     // return if flag is not zero, debug mode
     if (debugflag || updateFlag) {
         return;

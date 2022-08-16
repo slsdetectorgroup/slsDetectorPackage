@@ -1483,7 +1483,8 @@ TEST_CASE("parallel", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::EIGER || det_type == defs::MYTHEN3) {
+    if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
         auto prev_val = det.getParallelMode();
         {
             std::ostringstream oss;

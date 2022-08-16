@@ -499,12 +499,15 @@ class Detector {
     void setExternalSignalFlags(int signalIndex, defs::externalSignalFlag value,
                                 Positions pos = {});
 
-    /** [Eiger][Mythen3] */
+    /** [Eiger][Mythen3][Gotthard2] */
     Result<bool> getParallelMode(Positions pos = {}) const;
 
-    /** [Eiger][Mythen3]
+    /** [Eiger][Mythen3][Gotthard2]
      * [Mythen3] If exposure time is too short, acquisition will return with an
-     * ERROR and take fewer frames than expected */
+     * ERROR and take fewer frames than expected \n
+     * [Mythen3][Eiger] Default: Non parallel \n
+     * [Gotthard2] Default: Parallel. Non parallel mode works only in continuous
+     * mode.*/
     void setParallelMode(bool value, Positions pos = {});
 
     /** [Gotthard2][Jungfrau] */

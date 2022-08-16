@@ -88,7 +88,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - adapted for g2 hdi v2.0. able to set master from server command line, server config file, and client.
 - rx udp socket refactored (maybe resolves getting stuck?)remove check for eiger header and isntead checks for malformed packets for every detector
 -help should not create a new object
-
+- g2 parallel command
 
 2. Resolved Issues
 ==================

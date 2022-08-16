@@ -586,7 +586,7 @@ TEST_CASE("master", "[.cmd]") {
     if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
         det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2) {
         REQUIRE_NOTHROW(proxy.Call("master", {}, -1, GET));
-        if (det_type == defs::EIGER) {
+        if (det_type == defs::EIGER || det_type == defs::GOTTHARD2) {
             // get previous master
             int prevMaster = 0;
             {

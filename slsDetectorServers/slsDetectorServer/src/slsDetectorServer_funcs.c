@@ -114,7 +114,6 @@ int printSocketReadError() {
 void init_detector() {
     memset(udpDetails, 0, sizeof(udpDetails));
 #ifdef VIRTUAL
-    LOG(logINFO, ("This is a VIRTUAL detector\n"));
     udpDetails[0].srcip = LOCALHOSTIP_INT;
     udpDetails[0].srcip2 = LOCALHOSTIP_INT;
 #endif
@@ -3849,27 +3848,14 @@ int power_chip(int file_des) {
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
         // check only when powering on
         if (arg != -1 && arg != 0) {
-            if (checkModuleFlag) {
-                int type_ret = checkDetectorType();
-                if (type_ret == -1) {
-                    ret = FAIL;
-                    sprintf(mess, "Could not power on chip. Could not open "
-                                  "file to get type of module attached.\n");
-                    LOG(logERROR, (mess));
-                } else if (type_ret == -2) {
-                    ret = FAIL;
-                    sprintf(mess,
-                            "Could not power on chip. No module attached!\n");
-                    LOG(logERROR, (mess));
-                } else if (type_ret == FAIL) {
-                    ret = FAIL;
-                    sprintf(mess, "Could not power on chip. Wrong module "
-                                  "attached!\n");
-                    LOG(logERROR, (mess));
-                }
+            if (!checkModuleFlag) {
+                LOG(logINFOBLUE,
+                    ("In No-Module mode: Ignoring module type. Continuing.\n"));
             } else {
-                LOG(logINFOBLUE, ("In No-Module mode: Ignoring module "
-                                  "type. Continuing.\n"));
+                ret = checkDetectorType(mess);
+                if (ret == FAIL) {
+                    LOG(logERROR, ("Could not power on chip.\n"));
+                }
             }
         }
 #endif
@@ -8270,7 +8256,7 @@ int set_master(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting master: %u\n", (int)arg));
 
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set

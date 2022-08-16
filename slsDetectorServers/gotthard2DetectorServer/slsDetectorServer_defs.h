@@ -3,7 +3,7 @@
 #pragma once
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN (0x210527)
+#define REQRD_FRMWRE_VRSN (0x220720)
 #define KERNEL_DATE_VRSN  "Mon May 10 18:00:21 CEST 2021"
 #define ID_FILE           "detid_gotthard2.txt"
 
@@ -31,8 +31,10 @@
 #define ADU_MAX_BITS                          (12)
 #define MAX_FRAMES_IN_BURST_MODE              (2720)
 #define TYPE_GOTTHARD2_MODULE_VAL             (536)
-#define TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL (683)
-#define TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL  (704)
+#define TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL (683)
+#define TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL  (704)
+#define TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL (723)
+#define TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL  (747)
 #define TYPE_GOTTHARD2_MODULE_VAL             (536)
 #define TYPE_TOLERANCE                        (5)
 #define TYPE_NO_MODULE_STARTING_VAL           (800)
@@ -145,6 +147,9 @@ enum CLKINDEX {
         "SYSTEM_C3"
 
 enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
+
+enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
+#define MASTER_NAMES "hardware (master/slave)", "master", "slave"
 
 /** Chip Definitions */
 #define ASIC_ADDR_MAX_BITS       (4)

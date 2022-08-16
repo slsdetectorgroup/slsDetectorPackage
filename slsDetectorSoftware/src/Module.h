@@ -123,6 +123,8 @@ class Module : public virtual slsDetectorDefs {
     void setFlipRows(bool value);
     bool isMaster() const;
     void setMaster(const bool master);
+    bool getSynchronization() const;
+    void setSynchronization(const bool value);
 
     bool isVirtualDetectorServer() const;
 

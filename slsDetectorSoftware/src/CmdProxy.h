@@ -1304,12 +1304,10 @@ class CmdProxy {
         "slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau] Gets if "
         "the current (half) module is master.");
 
-    INTEGER_COMMAND_VEC_ID_GET(
-        sync, getSynchronization, setSynchronization, StringTo<int>,
-        "[0, 1]\n\t[Jungfrau] Sets module to master and "
-        "others to slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger] "
-        "Gets if the current module/ half module is master.");
-
+    INTEGER_COMMAND_SET_NOID_GET_ID(sync, getSynchronization,
+                                    setSynchronization, StringTo<int>,
+                                    "[0, 1]\n\t[Jungfrau] Enables or disables "
+                                    "synchronization between modules.");
 
     /* acquisition parameters */
 

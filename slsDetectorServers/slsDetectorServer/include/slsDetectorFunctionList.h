@@ -397,6 +397,11 @@ int isTop(int *retval);
 int isMaster(int *retval);
 #endif
 
+#ifdef JUNGFRAUD
+int getSynchronization();
+void setSynchronization(int enable);
+#endif
+
 #ifdef GOTTHARD2D
 void updatingRegisters();
 #endif

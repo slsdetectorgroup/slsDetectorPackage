@@ -1490,6 +1490,18 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def sync(self):
+        """
+        [Jungfrau] Enables or disables synchronization between modules.
+        """
+        return self.getSynchronization()
+
+    @sync.setter
+    def sync(self, value):
+        ut.set_using_dict(self.setSynchronization, value)
+
+    @property
+    @element
     def lock(self):
         """Lock detector to one client IP, 1 locks, 0 unlocks. Default is unlocked."""
         return self.getDetectorLock()

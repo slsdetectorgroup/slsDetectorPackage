@@ -271,6 +271,8 @@ enum detFuncs {
     F_GET_DIGITAL_PULSING,
     F_SET_DIGITAL_PULSING,
     F_GET_MODULE,
+    F_GET_SYNCHRONIZATION,
+    F_SET_SYNCHRONIZATION,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -648,6 +650,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_DIGITAL_PULSING:             return "F_GET_DIGITAL_PULSING";
     case F_SET_DIGITAL_PULSING:             return "F_SET_DIGITAL_PULSING";
     case F_GET_MODULE:                      return "F_GET_MODULE";
+    case F_GET_SYNCHRONIZATION:             return "F_GET_SYNCHRONIZATION";
+    case F_SET_SYNCHRONIZATION:             return "F_SET_SYNCHRONIZATION";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

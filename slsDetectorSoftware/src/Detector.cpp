@@ -325,6 +325,14 @@ void Detector::setMaster(bool master, int pos) {
     }
 }
 
+Result<bool> Detector::getSynchronization(Positions pos) const {
+    return pimpl->Parallel(&Module::getSynchronization, pos);
+}
+
+void Detector::setSynchronization(bool value) {
+    pimpl->Parallel(&Module::setSynchronization, {}, value);
+}
+
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
     return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
 }

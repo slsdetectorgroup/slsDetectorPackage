@@ -91,6 +91,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 -help should not create a new object
 - jungfrau master
 - g2 parallel command
+- jungfrau sync
 
 2. Resolved Issues
 ==================

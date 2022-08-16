@@ -207,7 +207,7 @@ int setExternalSampling(int val);
 #endif
 
 // parameters - readout
-#if defined(EIGERD) || defined(MYTHEN3D)
+#if defined(EIGERD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int setParallelMode(int mode);
 int getParallelMode();
 #endif
@@ -385,13 +385,15 @@ int getADC(enum ADCINDEX ind);
 int setHighVoltage(int val);
 
 // parameters - timing, extsig
-#ifdef EIGERD
+#if defined(EIGERD) || defined(GOTTHARD2D) || defined(JUNGFRAUD)
 int setMaster(enum MASTERINDEX m);
+#endif
+#ifdef EIGERD
 int setTop(enum TOPINDEX t);
 int isTop(int *retval);
 #endif
 #if defined(MYTHEN3D) || defined(EIGERD) || defined(GOTTHARDD) ||              \
-    defined(GOTTHARD2D)
+    defined(GOTTHARD2D) || defined(JUNGFRAUD)
 int isMaster(int *retval);
 #endif
 
@@ -558,7 +560,7 @@ int setDataStream(enum portPosition port, int enable);
 int setPhase(enum CLKINDEX ind, int val, int degrees);
 
 #elif MYTHEN3D
-int checkDetectorType();
+int checkDetectorType(char *mess);
 int powerChip(int on);
 int setPhase(enum CLKINDEX ind, int val, int degrees);
 int getPhase(enum CLKINDEX ind, int degrees);
@@ -574,7 +576,7 @@ int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val,
 int getClockDivider(enum CLKINDEX ind);
 
 #elif GOTTHARD2D
-int checkDetectorType();
+int checkDetectorType(char *mess);
 int powerChip(int on);
 void setDBITPipeline(int val);
 int getDBITPipeline();
@@ -648,7 +650,7 @@ int stopStateMachine();
 #ifdef MYTHEN3D
 int softwareTrigger();
 #endif
-#ifdef EIGERD
+#if defined(EIGERD) || defined(JUNGFRAUD)
 int softwareTrigger(int block);
 #endif
 #if defined(EIGERD) || defined(MYTHEN3D)

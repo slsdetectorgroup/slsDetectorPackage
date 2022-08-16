@@ -82,22 +82,16 @@ void basictests() {
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
     LOG(logINFOBLUE, ("******** Gotthard Virtual Server *****************\n"));
+#else
+    LOG(logINFOBLUE, ("**************** Gotthard Server *****************\n"));
+#endif
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Dangerous to continue.\n");
         LOG(logERROR, (initErrorMessage));
         initError = FAIL;
     }
-    return;
-#else
-    if (mapCSP0() == FAIL) {
-        strcpy(initErrorMessage,
-               "Could not map to memory. Dangerous to continue.\n");
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
-        initError = FAIL;
-        return;
-    }
-
+#ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
         ((checkType() == FAIL) || (testFpga() == FAIL) ||
@@ -108,7 +102,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-
+#endif
     uint32_t boardrev = getBoardRevision();
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
@@ -117,7 +111,7 @@ void basictests() {
     int64_t client_sw_apiversion = getClientServerAPIVersion();
 
     LOG(logINFOBLUE,
-        ("************ Gotthard Server *********************\n"
+        ("**************************************************\n"
          "Board Revision         : 0x%x\n"
 
          "Detector IP Addr       : 0x%x\n"
@@ -134,6 +128,7 @@ void basictests() {
          (long long int)fwversion, (long long int)swversion,
          (long long int)client_sw_apiversion));
 
+#ifndef VIRTUAL
     if (!debugflag || updateFlag) {
         LOG(logINFO, ("Basic Tests - success\n"));
     }

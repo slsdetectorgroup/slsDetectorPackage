@@ -584,9 +584,11 @@ TEST_CASE("master", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2) {
+        det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2 ||
+        det_type == defs::JUNGFRAU) {
         REQUIRE_NOTHROW(proxy.Call("master", {}, -1, GET));
-        if (det_type == defs::EIGER) {
+        if (det_type == defs::EIGER || det_type == defs::GOTTHARD2 ||
+            det_type == defs::JUNGFRAU) {
             // get previous master
             int prevMaster = 0;
             {
@@ -1483,7 +1485,8 @@ TEST_CASE("parallel", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::EIGER || det_type == defs::MYTHEN3) {
+    if (det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
         auto prev_val = det.getParallelMode();
         {
             std::ostringstream oss;
@@ -1942,11 +1945,9 @@ TEST_CASE("trigger", "[.cmd]") {
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("trigger", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::EIGER && det_type != defs::MYTHEN3) {
-        REQUIRE_THROWS(proxy.Call("trigger", {}, -1, PUT));
-    } else if (det_type == defs::MYTHEN3) {
+    if (det_type == defs::MYTHEN3) {
         REQUIRE_NOTHROW(proxy.Call("trigger", {}, -1, PUT));
-    } else if (det_type == defs::EIGER) {
+    } else if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
         auto prev_timing =
             det.getTimingMode().tsquash("inconsistent timing mode in test");
         auto prev_frames =
@@ -1976,6 +1977,8 @@ TEST_CASE("trigger", "[.cmd]") {
         det.setNumberOfFrames(prev_frames);
         det.setExptime(prev_exptime);
         det.setPeriod(prev_period);
+    } else {
+        REQUIRE_THROWS(proxy.Call("trigger", {}, -1, PUT));
     }
 }
 
@@ -1984,9 +1987,7 @@ TEST_CASE("blockingtrigger", "[.cmd]") {
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("blockingtrigger", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::EIGER) {
-        REQUIRE_THROWS(proxy.Call("blockingtrigger", {}, -1, PUT));
-    } else if (det_type == defs::EIGER) {
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
         auto prev_timing =
             det.getTimingMode().tsquash("inconsistent timing mode in test");
         auto prev_frames =
@@ -2019,6 +2020,8 @@ TEST_CASE("blockingtrigger", "[.cmd]") {
         det.setNumberOfFrames(prev_frames);
         det.setExptime(prev_exptime);
         det.setPeriod(prev_period);
+    } else {
+        REQUIRE_THROWS(proxy.Call("blockingtrigger", {}, -1, PUT));
     }
 }
 

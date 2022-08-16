@@ -1479,8 +1479,8 @@ class Detector(CppDetectorApi):
     @element
     def master(self):
         """
-        [Eiger] Sets half module to master and others to slaves.\n
-        [Gotthard][Gotthard2][Mythen3][Eiger] Gets if the current module/ half module is master.
+        [Eiger][Gotthard2][Jungfrau] Sets (half) module to master and other(s) to slaves.\n
+        [Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau] Gets if the current (half) module is master.
         """
         return self.getMaster()
 
@@ -2045,11 +2045,13 @@ class Detector(CppDetectorApi):
     @element
     def parallel(self):
         """
-        [Eiger][Mythen3] Enable or disable the parallel readout mode of detector. 
+        [Eiger][Mythen3][Gotthard2] Enable or disable the parallel readout mode of detector. 
         
         Note
         ----
         [Mythen3] If exposure time is too short, acquisition will return with an ERROR and take fewer frames than expected. 
+        [Mythen3][Eiger] Default: Non parallel
+        [Gotthard2] Default: parallel. Non parallel mode works only in continuous mode.
         """
         return self.getParallelMode()
 

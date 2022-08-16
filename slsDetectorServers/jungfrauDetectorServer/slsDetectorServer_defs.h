@@ -67,6 +67,9 @@ enum DACINDEX {
         420   /* J_VREF_COMP */                                                \
     };
 
+enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
+#define MASTER_NAMES "hardware", "master", "slave"
+
 #define NUMSETTINGS     (2)
 #define NSPECIALDACS    (3)
 #define SPECIALDACINDEX {J_VREF_PRECH, J_VREF_DS, J_VREF_COMP};

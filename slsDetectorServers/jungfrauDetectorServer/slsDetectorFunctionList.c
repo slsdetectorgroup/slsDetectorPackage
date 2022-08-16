@@ -67,14 +67,9 @@ void basictests() {
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
     LOG(logINFOBLUE, ("******** Jungfrau Virtual Server *****************\n"));
-    if (mapCSP0() == FAIL) {
-        strcpy(initErrorMessage,
-               "Could not map to memory. Dangerous to continue.\n");
-        LOG(logERROR, (initErrorMessage));
-        initError = FAIL;
-    }
-    return;
 #else
+    LOG(logINFOBLUE, ("************ Jungfrau Server *********************\n"));
+
     initError = defineGPIOpins(initErrorMessage);
     if (initError == FAIL) {
         return;
@@ -83,14 +78,14 @@ void basictests() {
     if (initError == FAIL) {
         return;
     }
+#endif
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Dangerous to continue.\n");
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
+        LOG(logERROR, (initErrorMessage));
         initError = FAIL;
-        return;
     }
-
+#ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
         ((checkType() == FAIL) || (testFpga() == FAIL) ||
@@ -101,7 +96,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-
+#endif
     uint16_t hversion = getHardwareVersionNumber();
     uint16_t hsnumber = getHardwareSerialNumber();
     uint32_t ipadd = getDetectorIP();
@@ -135,6 +130,7 @@ void basictests() {
          (long long int)sw_fw_apiversion, requiredFirmwareVersion,
          (long long int)client_sw_apiversion));
 
+#ifndef VIRTUAL
     // return if flag is not zero, debug mode
     if (debugflag || updateFlag) {
         return;
@@ -2732,6 +2728,33 @@ int stopStateMachine() {
 
     usleep(100 * 1000);
     resetCore();
+    return OK;
+}
+
+int softwareTrigger(int block) {
+#ifndef VIRTUAL
+    // ready for trigger
+    if (getRunStatus() != WAITING) {
+        LOG(logWARNING, ("Not yet ready for trigger!\n"));
+        return 0;
+    }
+#endif
+
+    LOG(logINFO, ("Sending Software Trigger\n"));
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_SOFTWARE_TRIGGER_MSK);
+
+#ifndef VIRTUAL
+    // block till frame is sent out
+    if (block) {
+        enum runStatus s = getRunStatus();
+        while (s == RUNNING || s == TRANSMITTING) {
+            usleep(5000);
+            s = getRunStatus();
+        }
+    }
+    LOG(logINFO, ("Ready for Next Trigger...\n"));
+#endif
+
     return OK;
 }
 

@@ -1298,10 +1298,10 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID_GET(
         master, getMaster, setMaster, StringTo<int>,
-        "[0, 1]\n\t[Eiger][Jungfrau] Sets (half) module to master and "
-        "other(s) to "
-        "slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau] "
-        "Gets if the current module/ half module is master.");
+        "[0, 1]\n\t[Eiger][Gotthard2][Jungfrau] Sets (half) module to master "
+        "and other(s) to "
+        "slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau] Gets if "
+        "the current (half) module is master.");
 
     /* acquisition parameters */
 
@@ -1408,10 +1408,12 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         parallel, getParallelMode, setParallelMode, StringTo<int>,
-        "[0, 1]\n\t[Eiger][Mythen3] Enable or disable parallel "
+        "[0, 1]\n\t[Eiger][Mythen3][Gotthard2] Enable or disable parallel "
         "mode.\n\t[Mythen3] If exptime is too short, the "
         "acquisition will return ERROR status and take fewer "
-        "frames than expected.");
+        "frames than expected.\n\t[Mythen3][Eiger] Default: Non "
+        "parallel.\n\t[Gotthard2] Default: Parallel. Non parallel mode works "
+        "only in continuous mode.");
 
     INTEGER_COMMAND_VEC_ID(
         filterresistor, getFilterResistor, setFilterResistor, StringTo<int>,

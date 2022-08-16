@@ -114,7 +114,6 @@ int printSocketReadError() {
 void init_detector() {
     memset(udpDetails, 0, sizeof(udpDetails));
 #ifdef VIRTUAL
-    LOG(logINFO, ("This is a VIRTUAL detector\n"));
     udpDetails[0].srcip = LOCALHOSTIP_INT;
     udpDetails[0].srcip2 = LOCALHOSTIP_INT;
 #endif
@@ -3849,27 +3848,14 @@ int power_chip(int file_des) {
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
         // check only when powering on
         if (arg != -1 && arg != 0) {
-            if (checkModuleFlag) {
-                int type_ret = checkDetectorType();
-                if (type_ret == -1) {
-                    ret = FAIL;
-                    sprintf(mess, "Could not power on chip. Could not open "
-                                  "file to get type of module attached.\n");
-                    LOG(logERROR, (mess));
-                } else if (type_ret == -2) {
-                    ret = FAIL;
-                    sprintf(mess,
-                            "Could not power on chip. No module attached!\n");
-                    LOG(logERROR, (mess));
-                } else if (type_ret == FAIL) {
-                    ret = FAIL;
-                    sprintf(mess, "Could not power on chip. Wrong module "
-                                  "attached!\n");
-                    LOG(logERROR, (mess));
-                }
+            if (!checkModuleFlag) {
+                LOG(logINFOBLUE,
+                    ("In No-Module mode: Ignoring module type. Continuing.\n"));
             } else {
-                LOG(logINFOBLUE, ("In No-Module mode: Ignoring module "
-                                  "type. Continuing.\n"));
+                ret = checkDetectorType(mess);
+                if (ret == FAIL) {
+                    LOG(logERROR, ("Could not power on chip.\n"));
+                }
             }
         }
 #endif
@@ -4143,18 +4129,19 @@ int software_trigger(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Software Trigger (block: %d\n", arg));
 
-#if !defined(EIGERD) && !defined(MYTHEN3D)
+#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     if (arg && myDetectorType == MYTHEN3) {
         ret = FAIL;
-        strcpy(mess, "Blocking trigger not implemented for Mythen3. Please use "
+        strcpy(mess, "Blocking trigger not implemented for this detector. "
+                     "Please use "
                      "non blocking trigger.\n");
         LOG(logERROR, (mess));
     }
     // only set
     else if (Server_VerifyLock() == OK) {
-#ifdef MYTHEN3
+#ifdef MYTHEN3D
         ret = softwareTrigger();
 #else
         ret = softwareTrigger(arg);
@@ -5513,7 +5500,7 @@ int set_parallel_mode(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting parallel mode: %u\n", arg));
 
-#if !defined(EIGERD) && !defined(MYTHEN3D)
+#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -5544,7 +5531,7 @@ int get_parallel_mode(int file_des) {
 
     LOG(logDEBUG1, ("Getting parallel mode\n"));
 
-#if !defined(EIGERD) && !defined(MYTHEN3D)
+#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -8270,7 +8257,7 @@ int set_master(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting master: %u\n", (int)arg));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set

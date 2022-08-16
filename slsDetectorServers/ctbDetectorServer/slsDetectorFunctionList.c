@@ -2412,7 +2412,7 @@ int calculateDataBytes() { return dataBytes; }
 
 int getTotalNumberOfChannels() {
     int nchanx = 0, nchany = 0;
-    getTotalNumberOfChannels(&nchanx, &nchany);
+    getNumberOfChannels(&nchanx, &nchany);
     return nchanx * nchany;
 }
 

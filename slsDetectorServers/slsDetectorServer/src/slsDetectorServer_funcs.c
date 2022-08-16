@@ -1880,55 +1880,57 @@ int acquire(int blocking, int file_des) {
 #ifdef EIGERD
             // check for hardware mac and hardware ip
             if (udpDetails[0].srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[MAC_ADDRESS_SIZE];
-            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-            sprintf(mess,
+                ret = FAIL;
+                uint64_t sourcemac = getDetectorMAC();
+                char src_mac[MAC_ADDRESS_SIZE];
+                getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                sprintf(
+                    mess,
                     "Invalid udp source mac address for this detector. Must be "
                     "same as hardware detector mac address %s\n",
                     src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails[0].srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(mess,
+                LOG(logERROR, (mess));
+            } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                       (udpDetails[0].srcip != getDetectorIP())) {
+                ret = FAIL;
+                uint32_t sourceip = getDetectorIP();
+                char src_ip[INET_ADDRSTRLEN];
+                getIpAddressinString(src_ip, sourceip);
+                sprintf(
+                    mess,
                     "Invalid udp source ip address for this detector. Must be "
                     "same "
                     "as hardware detector ip address %s in 1G readout mode \n",
                     src_ip);
-            LOG(logERROR, (mess));
-        } else
+                LOG(logERROR, (mess));
+            } else
 #endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else if (sharedMemory_getScanStatus() == RUNNING) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because a scan is "
-                         "already running!\n");
-            LOG(logERROR, (mess));
-        } else {
-            memset(scanErrMessage, 0, MAX_STR_LENGTH);
-            sharedMemory_setScanStop(0);
-            sharedMemory_setScanStatus(IDLE); // if it was error
-            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                               &blocking)) {
+                if (configured == FAIL) {
                 ret = FAIL;
-                strcpy(mess, "Could not start acquisition thread!\n");
+                strcpy(mess, "Could not start acquisition because ");
+                strcat(mess, configureMessage);
+                LOG(logERROR, (mess));
+            } else if (sharedMemory_getScanStatus() == RUNNING) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition because a scan is "
+                             "already running!\n");
                 LOG(logERROR, (mess));
             } else {
-                // only does not wait for non blocking and scan
-                if (blocking || !scan) {
-                    pthread_join(pthread_tid, NULL);
+                memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                sharedMemory_setScanStop(0);
+                sharedMemory_setScanStatus(IDLE); // if it was error
+                if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                   &blocking)) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start acquisition thread!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    // only does not wait for non blocking and scan
+                    if (blocking || !scan) {
+                        pthread_join(pthread_tid, NULL);
+                    }
                 }
             }
-        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -8234,7 +8236,7 @@ int get_master(int file_des) {
     LOG(logDEBUG1, ("Getting master\n"));
 
 #if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARDD) &&           \
-    !defined(GOTTHARD2D)
+    !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     ret = isMaster(&retval);
@@ -8255,7 +8257,7 @@ int set_master(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting master: %u\n", (int)arg));
 
-#if !defined(EIGERD) && !defined(GOTTHARD2D)
+#if !defined(EIGERD) && !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set

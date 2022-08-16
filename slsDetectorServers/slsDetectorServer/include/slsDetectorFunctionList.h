@@ -385,7 +385,7 @@ int getADC(enum ADCINDEX ind);
 int setHighVoltage(int val);
 
 // parameters - timing, extsig
-#if defined(EIGERD) || defined(GOTTHARD2D)
+#if defined(EIGERD) || defined(GOTTHARD2D) || defined(JUNGFRAUD)
 int setMaster(enum MASTERINDEX m);
 #endif
 #ifdef EIGERD
@@ -393,7 +393,7 @@ int setTop(enum TOPINDEX t);
 int isTop(int *retval);
 #endif
 #if defined(MYTHEN3D) || defined(EIGERD) || defined(GOTTHARDD) ||              \
-    defined(GOTTHARD2D)
+    defined(GOTTHARD2D) || defined(JUNGFRAUD)
 int isMaster(int *retval);
 #endif
 

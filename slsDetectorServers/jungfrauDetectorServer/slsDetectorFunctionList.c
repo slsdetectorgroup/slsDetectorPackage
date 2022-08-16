@@ -763,6 +763,15 @@ int readConfigFile() {
             setChipVersion(version);
         }
 
+        // other commands
+        else {
+            sprintf(initErrorMessage,
+                    "Could not scan command from on-board server "
+                    "config file. Line:[%s].\n",
+                    line);
+            break;
+        }
+
         memset(line, 0, LZ);
     }
     fclose(fd);
@@ -1334,6 +1343,42 @@ int setHighVoltage(int val) {
 }
 
 /* parameters - timing, extsig */
+
+int setMaster(enum MASTERINDEX m) {
+    char *master_names[] = {MASTER_NAMES};
+    LOG(logINFOBLUE, ("Setting up as %s in (%s server)\n", master_names[m],
+                      (isControlServer ? "control" : "stop")));
+    int retval = -1;
+    switch (m) {
+    case OW_MASTER:
+        bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_MASTER_MSK);
+        isMaster(&retval);
+        if (retval != 1) {
+            LOG(logERROR, ("Could not set master\n"));
+            return FAIL;
+        }
+        break;
+    case OW_SLAVE:
+        bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_MASTER_MSK);
+        isMaster(&retval);
+        if (retval != 0) {
+            LOG(logERROR, ("Could not set slave\n"));
+            return FAIL;
+        }
+        break;
+    default:
+        LOG(logERROR, ("Cannot reset to hardware settings from client. Restart "
+                       "detector server.\n"));
+        return FAIL;
+    }
+    return OK;
+}
+
+int isMaster(int *retval) {
+    *retval =
+        ((bus_r(CONTROL_REG) & CONTROL_MASTER_MSK) >> CONTROL_MASTER_OFST);
+    return OK;
+}
 
 void setTiming(enum timingMode arg) {
     switch (arg) {

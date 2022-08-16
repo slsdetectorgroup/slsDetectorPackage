@@ -1298,9 +1298,10 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID_GET(
         master, getMaster, setMaster, StringTo<int>,
-        "[0, 1]\n\t[Eiger][Gotthard2] Sets (half) module to master and "
-        "other(s) to slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger] "
-        "Gets if the current (half) module is master.");
+        "[0, 1]\n\t[Eiger][Gotthard2][Jungfrau] Sets (half) module to master "
+        "and other(s) to "
+        "slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau] Gets if "
+        "the current (half) module is master.");
 
     /* acquisition parameters */
 

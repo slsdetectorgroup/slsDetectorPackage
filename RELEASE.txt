@@ -89,6 +89,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - rx udp socket refactored (maybe resolves getting stuck?)remove check for eiger header and isntead checks for malformed packets for every detector
 - jungfrau sw trigger , blocking trigger
 -help should not create a new object
+- jungfrau master
 - g2 parallel command
 
 2. Resolved Issues

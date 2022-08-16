@@ -1402,12 +1402,12 @@ std::string CmdProxy::Trigger(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "trigger") {
-            os << "\n\t[Eiger][Mythen3] Sends software trigger signal to "
-                  "detector";
+            os << "\n\t[Eiger][Mythen3][Jungfrau] Sends software trigger "
+                  "signal to detector";
         } else if (cmd == "blockingtrigger") {
-            os << "\n\t[Eiger] Sends software trigger signal to detector and "
-                  "blocks till "
-                  "the frames are sent out for that trigger.";
+            os << "\n\t[Eiger][Jungfrau] Sends software trigger signal to "
+                  "detector and blocks till the frames are sent out for that "
+                  "trigger.";
         } else {
             throw RuntimeError("unknown command " + cmd);
         }

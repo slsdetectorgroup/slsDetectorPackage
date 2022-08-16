@@ -618,8 +618,10 @@ class Detector {
      * different frame numbers for different modules.*/
     void setNextFrameNumber(uint64_t value, Positions pos = {});
 
-    /** [Eiger][Mythen3] Sends an internal software trigger to the detector
-     * block true if command blocks till frames are sent out from that trigger
+    /** [Eiger][Mythen3][Jungfrau] Sends an internal software trigger to the
+     * detector block true if command blocks till frames are sent out from that
+     * trigger
+     * [Eiger][Jungfrau] Block can be true
      */
     void sendSoftwareTrigger(const bool block = false, Positions pos = {});
 

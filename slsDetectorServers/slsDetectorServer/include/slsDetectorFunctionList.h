@@ -650,7 +650,7 @@ int stopStateMachine();
 #ifdef MYTHEN3D
 int softwareTrigger();
 #endif
-#ifdef EIGERD
+#if defined(EIGERD) || defined(JUNGFRAUD)
 int softwareTrigger(int block);
 #endif
 #if defined(EIGERD) || defined(MYTHEN3D)

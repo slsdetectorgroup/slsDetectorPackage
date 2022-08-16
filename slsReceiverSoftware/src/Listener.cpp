@@ -151,14 +151,13 @@ void Listener::CreateUDPSocket(int &actualSize) {
     if (disabledPort) {
         return;
     }
-    ShutDownUDPSocket();
-
     uint32_t packetSize = generalData->packetSize;
     if (generalData->detType == GOTTHARD2 && index != 0) {
         packetSize = generalData->vetoPacketSize;
     }
 
     try {
+        udpSocket = nullptr;
         udpSocket = make_unique<UdpRxSocket>(
             udpPortNumber, packetSize,
             (eth.length() ? InterfaceNameToIp(eth).str().c_str() : nullptr),
@@ -340,18 +339,13 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
     // never entering this loop)
     while (numpackets < pperFrame) {
         // listen to new packet
-        int rc = 0;
-        if (udpSocketAlive) {
-            rc = udpSocket->ReceiveDataOnly(&listeningPacket[0]);
-        }
-        // end of acquisition
-        if (rc <= 0) {
+        if (!udpSocketAlive || !udpSocket->ReceivePacket(&listeningPacket[0])) {
+            // end of acquisition
             if (numpackets == 0)
                 return 0;
             return HandleFuturePacket(true, numpackets, fnum, isHeaderEmpty,
                                       imageSize, dstHeader);
         }
-
         numPacketsCaught++;
         numPacketsStatistic++;
         GetPacketIndices(fnum, pnum, bnum, standardHeader,

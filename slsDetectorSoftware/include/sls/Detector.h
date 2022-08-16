@@ -197,10 +197,11 @@ class Detector {
      */
     void setFlipRows(bool value, Positions pos = {});
 
-    /** [Eiger][Mythen3][Gotthard1] via stop server **/
+    /** [Eiger][Mythen3][Gotthard1][Gotthard2] via stop server **/
     Result<bool> getMaster(Positions pos = {}) const;
 
-    /** [Eiger] Set half module to master and the others to slaves */
+    /** [Eiger][Gotthard2] Set (half) module to master and the other(s) to
+     * slaves */
     void setMaster(bool value, int pos);
 
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;

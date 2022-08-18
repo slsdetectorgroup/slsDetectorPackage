@@ -23,7 +23,7 @@ void init_det(py::module &m) {
     using sls::Result;
 
     py::class_<Detector> CppDetectorApi(m, "CppDetectorApi");
-    CppDetectorApi.def(py::init<int>())
+    CppDetectorApi.def(py::init<int>());
 
         [[FUNCTIONS]]
 }

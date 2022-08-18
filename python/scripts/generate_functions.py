@@ -109,7 +109,7 @@ def get_fdec(node):
     args = f"({return_type}(Detector::*)({args}){const})"
     return args
 
-
+# blueprint for getting time
 # .def("getExptime",
 #     [](sls::Detector& self, sls::Positions p){
 #     auto r = self.getExptime(p);
@@ -120,7 +120,11 @@ def get_fdec(node):
 
 
 def time_return_lambda(node, args):
-    s = f'CppDetectorApi.def("{node.spelling}",[](sls::Detector& self, sls::Positions p){{ auto r = self.{node.spelling}(p); \n return std::vector<sls::Duration>(r.begin(), r.end()); }}{args});'
+    names = ['a', 'b', 'c', 'd']
+    fa = [a.type.spelling for a in node.get_arguments()]
+    ca = ','.join(f'{arg} {n}' for arg, n in zip(fa, names))
+    na = ','.join(names[0:len(fa)])
+    s = f'CppDetectorApi.def("{node.spelling}",[](sls::Detector& self, {ca}){{ auto r = self.{node.spelling}({na}); \n return std::vector<sls::Duration>(r.begin(), r.end()); }}{args});'
     return s
 
 
@@ -139,7 +143,7 @@ def visit(node):
 
                     if (
                         child.result_type.spelling == "Result<sls::ns>"
-                        and args == ", py::arg() = Positions{}"
+                        
                     ):
                         # pass
                         # do time magic

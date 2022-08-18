@@ -14,6 +14,7 @@
 #include "sls/sls_detector_defs.h"
 #include "sls/sls_detector_exceptions.h"
 #include "sls/string_utils.h"
+#include "sls/Duration.h"
 #include <array>
 #include <chrono>
 #include <iomanip>

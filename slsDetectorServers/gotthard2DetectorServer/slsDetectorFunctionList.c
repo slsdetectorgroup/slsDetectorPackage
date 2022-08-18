@@ -2029,23 +2029,27 @@ int checkDetectorType(char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
+    
     int type = atoi(buffer);
-    enum MASTERINDEX master = OW_MASTER;
+    int hdiValue = 0;
     if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL) <= TYPE_TOLERANCE) {
         LOG(logINFOBLUE, ("MASTER 25um Module (HDI v1.0)\n"));
+        hdiValue = CONFIG_HDI_ID_25UM_HDI_1_0_MSTR_VAL;
     } else if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL) <=
                TYPE_TOLERANCE) {
         LOG(logINFOBLUE, ("MASTER 25um Module (HDI v2.0)\n"));
+        hdiValue = CONFIG_HDI_ID_25UM_HDI_2_0_MSTR_VAL;
     } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL) <=
                TYPE_TOLERANCE) {
         LOG(logINFOBLUE, ("SLAVE 25um Module (HDI v1.0)\n"));
-        master = OW_SLAVE;
+        hdiValue = CONFIG_HDI_ID_25UM_HDI_1_0_SLV_VAL;
     } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL) <=
                TYPE_TOLERANCE) {
         LOG(logINFOBLUE, ("SLAVE 25um Module (HDI v2.0)\n"));
-        master = OW_SLAVE;
+        hdiValue = CONFIG_HDI_ID_25UM_HDI_2_0_SLV_VAL;
     } else if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) <= TYPE_TOLERANCE) {
         LOG(logINFOBLUE, ("50um Module\n"));
+        hdiValue = CONFIG_HDI_ID_50UM_VAL;
     }
     // no module or invalid module
     else if (type > TYPE_NO_MODULE_STARTING_VAL) {
@@ -2064,13 +2068,19 @@ int checkDetectorType(char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_HDI_MOD_ID_MSK);
-    bus_w(CONFIG_REG, bus_r(CONFIG_REG) | ((type << CONFIG_HDI_MOD_ID_OFST) &
-                                           CONFIG_HDI_MOD_ID_MSK));
-    if (setMaster(master) == FAIL) {
-        strcpy(mess, "Could not set to master/slave.");
-        LOG(logERROR, (mess));
-        return FAIL;
+    bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_HDI_ID_MSK);
+    bus_w(CONFIG_REG, bus_r(CONFIG_REG) | ((hdiValue << CONFIG_HDI_ID_OFST) & CONFIG_HDI_ID_MSK));
+
+    {
+        enum MASTERINDEX master = OW_MASTER;
+        if (hdiValue == CONFIG_HDI_ID_25UM_HDI_1_0_SLV_VAL || hdiValue == CONFIG_HDI_ID_25UM_HDI_2_0_SLV_VAL) {
+            master = OW_SLAVE;
+        }
+        if (setMaster(master) == FAIL) {
+            strcpy(mess, "Could not set to master/slave.");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
     }
     return OK;
 }

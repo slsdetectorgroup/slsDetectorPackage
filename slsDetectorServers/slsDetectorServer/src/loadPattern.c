@@ -30,13 +30,6 @@ extern int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
 #define MAX_LEVELS MAX_PATTERN_LEVELS
 #endif
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-#ifdef VIRTUAL
-void initializePatternWord() {
-    memset(virtual_pattern, 0, sizeof(virtual_pattern));
-}
-#endif
-
 void initializePatternAddresses() {
     LOG(logINFO, ("Setting default Loop and Wait Addresses(0x%x)\n", MAX_PATTERN_LENGTH - 1));
     for (int i = 0; i != MAX_LEVELS; ++i) {
@@ -44,6 +37,13 @@ void initializePatternAddresses() {
         setPatternWaitAddress(i, MAX_PATTERN_LENGTH - 1);
     }
 }
+
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#ifdef VIRTUAL
+void initializePatternWord() {
+    memset(virtual_pattern, 0, sizeof(virtual_pattern));
+}
+#endif
 
 uint64_t validate_readPatternIOControl() {
     return get64BitReg(PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);

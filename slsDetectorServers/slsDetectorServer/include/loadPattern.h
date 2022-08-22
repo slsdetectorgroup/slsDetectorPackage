@@ -5,11 +5,11 @@
 #include "Pattern.h"
 #include "clogger.h"
 
+void initializePatternAddresses();
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 #ifdef VIRTUAL
 void initializePatternWord();
 #endif
-void initializePatternAddresses();
 uint64_t validate_readPatternIOControl();
 int validate_writePatternIOControl(char *message, uint64_t arg);
 void writePatternIOControl(uint64_t word);

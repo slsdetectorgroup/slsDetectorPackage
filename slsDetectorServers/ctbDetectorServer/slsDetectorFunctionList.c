@@ -493,6 +493,8 @@ void setupDetector() {
     resetPeripheral();
     cleanFifos();
 
+    initializePatternAddresses();
+
     // hv
     MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK,
                        SPI_HV_SRL_DGTL_OTPT_MSK, SPI_HV_SRL_DGTL_OTPT_OFST,

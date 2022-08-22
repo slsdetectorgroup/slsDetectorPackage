@@ -474,6 +474,8 @@ void setupDetector() {
     setASICDefaults();
     setADIFDefaults();
 
+    initializePatternAddresses();
+
     // enable all counters before setting dacs (vthx)
     setCounterMask(MAX_COUNTER_MSK);
     resetToDefaultDacs(0);

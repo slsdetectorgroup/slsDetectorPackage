@@ -2339,7 +2339,7 @@ int getClockDivider(enum CLKINDEX ind) {
     return clkDivider[ind];
 }
 
-void setBadChannels(int nch, int *channels) {
+int setBadChannels(int nch, int *channels) {
     LOG(logINFO, ("Setting %d bad channels\n", nch));
 
     // resetting all mask registers first
@@ -2390,7 +2390,7 @@ int *getBadChannels(int *nch) {
     // debugging
     LOG(logDEBUG1, ("Reading Bad channel list\n"));
     for (int i = 0; i != (*nch); ++i) {
-        LOG(logINFO, ("[%d]: %d\n", i, retvals[i]));
+        LOG(logDEBUG1, ("[%d]: %d\n", i, retvals[i]));
     }
     return retvals;
 }

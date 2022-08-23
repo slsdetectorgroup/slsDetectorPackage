@@ -498,6 +498,40 @@ void Module::setSynchronization(const bool value) {
     sendToDetector(F_SET_SYNCHRONIZATION, static_cast<int>(value), nullptr);
 }
 
+std::vector<int> Module::getBadChannels() const {
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_GET_BAD_CHANNELS);
+    if (client.Receive<int>() == FAIL) {
+        throw DetectorError("Detector " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
+    // receive badchannels
+    auto nch = client.Receive<int>();
+    std::vector<int> badchannels(nch);
+    if (nch > 0) {
+        client.Receive(badchannels);
+        for (size_t i = 0; i < badchannels.size(); ++i) {
+            LOG(logDEBUG1) << i << ":" << badchannels[i];
+        }
+    }
+    return badchannels;
+}
+
+void Module::setBadChannels(std::vector<int> list) {
+    auto nch = static_cast<int>(list.size());
+    LOG(logDEBUG1) << "Sending bad channels to detector, nch:" << nch;
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(F_SET_BAD_CHANNELS);
+    client.Send(nch);
+    if (nch > 0) {
+        client.Send(list);
+    }
+    if (client.Receive<int>() == FAIL) {
+        throw DetectorError("Detector " + std::to_string(moduleIndex) +
+                            " returned error: " + client.readErrorMessage());
+    }
+}
+
 bool Module::isVirtualDetectorServer() const {
     return sendToDetector<int>(F_IS_VIRTUAL);
 }
@@ -2134,40 +2168,6 @@ void Module::setADCConfiguration(const int chipIndex, const int adcIndex,
                                  int value) {
     int args[]{chipIndex, adcIndex, value};
     sendToDetector(F_SET_ADC_CONFIGURATION, args, nullptr);
-}
-
-std::vector<int> Module::getBadChannels() const {
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_GET_BAD_CHANNELS);
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
-    // receive badchannels
-    auto nch = client.Receive<int>();
-    std::vector<int> badchannels(nch);
-    if (nch > 0) {
-        client.Receive(badchannels);
-        for (size_t i = 0; i < badchannels.size(); ++i) {
-            LOG(logDEBUG1) << i << ":" << badchannels[i];
-        }
-    }
-    return badchannels;
-}
-
-void Module::setBadChannels(std::vector<int> list) {
-    auto nch = static_cast<int>(list.size());
-    LOG(logDEBUG1) << "Sending bad channels to detector, nch:" << nch;
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(F_SET_BAD_CHANNELS);
-    client.Send(nch);
-    if (nch > 0) {
-        client.Send(list);
-    }
-    if (client.Receive<int>() == FAIL) {
-        throw DetectorError("Detector " + std::to_string(moduleIndex) +
-                            " returned error: " + client.readErrorMessage());
-    }
 }
 
 // Mythen3 Specific

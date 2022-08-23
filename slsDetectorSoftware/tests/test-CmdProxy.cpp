@@ -622,6 +622,20 @@ TEST_CASE("master", "[.cmd]") {
     }
 }
 
+TEST_CASE("badchannels", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3) {
+        REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"/tmp/bla.txt"}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"/tmp/bla.txt"}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
+    }
+}
+
 /* acquisition parameters */
 
 // acquire: not testing

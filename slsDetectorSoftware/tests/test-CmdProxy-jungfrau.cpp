@@ -561,7 +561,7 @@ TEST_CASE("sync", "[.cmd]") {
             proxy.Call("sync", {}, -1, GET, oss);
             REQUIRE(oss.str() == "sync 1\n");
         }
-        det.getSynchronization(prev_val);
+        det.setSynchronization(prev_val);
     } else {
         REQUIRE_THROWS(proxy.Call("sync", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("sync", {"0"}, -1, PUT));

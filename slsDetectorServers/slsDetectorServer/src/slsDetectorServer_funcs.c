@@ -7983,7 +7983,7 @@ int get_bad_channels(int file_des) {
 
     LOG(logDEBUG1, ("Getting bad channels\n"));
 
-#ifndef GOTTHARD2D
+#if !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
@@ -8031,9 +8031,9 @@ int set_bad_channels(int file_des) {
     if (Server_VerifyLock() == OK) {
         // validate bad channel number
         int maxChannel = NCHAN * NCHIP;
-        if (detectorType == MYTHEN3) {
-            maxChannel = NCHAN_1_COUNTER * NCHIP;
-        }
+#ifdef MYTHEN3D
+        maxChannel = NCHAN_1_COUNTER * NCHIP;
+#endif
         for (int i = 0; i < nargs; ++i) {
             LOG(logDEBUG1, ("\t[%d]:%d\n", i, args[i]));
             if (args[i] < 0 || args[i] >= maxChannel) {

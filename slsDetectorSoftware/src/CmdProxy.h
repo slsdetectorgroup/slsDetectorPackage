@@ -788,6 +788,7 @@ class CmdProxy {
         {"fliprows", &CmdProxy::fliprows},
         {"master", &CmdProxy::master},
         {"sync", &CmdProxy::sync},
+        {"badchannels", &CmdProxy::BadChannels},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::Acquire},
@@ -984,7 +985,6 @@ class CmdProxy {
         {"vetostream", &CmdProxy::VetoStreaming},
         {"vetoalg", &CmdProxy::VetoAlgorithm},
         {"confadc", &CmdProxy::ConfigureADC},
-        {"badchannels", &CmdProxy::BadChannels},
 
         /* Mythen3 Specific */
         {"counters", &CmdProxy::Counters},
@@ -1122,6 +1122,7 @@ class CmdProxy {
     std::string Trimbits(int action);
     std::string TrimEnergies(int action);
     std::string GapPixels(int action);
+    std::string BadChannels(int action);
     /* acquisition parameters */
     std::string Acquire(int action);
     std::string Exptime(int action);
@@ -1182,7 +1183,6 @@ class CmdProxy {
     std::string VetoStreaming(int action);
     std::string VetoAlgorithm(int action);
     std::string ConfigureADC(int action);
-    std::string BadChannels(int action);
     /* Mythen3 Specific */
     std::string Counters(int action);
     std::string GateDelay(int action);

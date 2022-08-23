@@ -1820,11 +1820,11 @@ void Detector::setADCConfiguration(const int chipIndex, const int adcIndex,
 }
 
 void Detector::getBadChannels(const std::string &fname, Positions pos) const {
-    pimpl->Parallel(&Module::getBadChannels, pos, fname);
+    pimpl->getBadChannels(fname, pos);
 }
 
 void Detector::setBadChannels(const std::string &fname, Positions pos) {
-    pimpl->Parallel(&Module::setBadChannels, pos, fname);
+    pimpl->setBadChannels(fname, pos);
 }
 
 // Mythen3 Specific

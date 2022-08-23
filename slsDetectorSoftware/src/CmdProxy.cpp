@@ -2324,8 +2324,9 @@ std::string CmdProxy::BadChannels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Gotthard2] Sets the bad channels (from file of bad "
-              "channel numbers) to be masked out."
+        os << "[fname]\n\t[Gotthard2][Mythen3] Sets the bad channels (from "
+              "file of bad channel numbers) to be masked out."
+              "\n\t[Mythen3] Also does trimming"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {

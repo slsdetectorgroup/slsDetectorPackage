@@ -3024,7 +3024,7 @@ void setVetoAlgorithm(enum vetoAlgorithm alg,
     bus_w(addr, value);
 }
 
-void setBadChannels(int nch, int *channels) {
+int setBadChannels(int nch, int *channels) {
     LOG(logINFO, ("Setting %d bad channels\n", nch));
 
     int numAddr = MASK_STRIP_NUM_REGS;
@@ -3047,6 +3047,7 @@ void setBadChannels(int nch, int *channels) {
              channels[i], iaddr, iBit, addr, bus_r(addr), (1 << iBit)));
         bus_w(addr, bus_r(addr) | (1 << iBit));
     }
+    return OK;
 }
 
 int *getBadChannels(int *nch) {

@@ -2136,8 +2136,7 @@ void Module::setADCConfiguration(const int chipIndex, const int adcIndex,
     sendToDetector(F_SET_ADC_CONFIGURATION, args, nullptr);
 }
 
-void Module::getBadChannels(const std::string &fname) const {
-    LOG(logDEBUG1) << "Getting bad channels to " << fname;
+std::vector<int> Module::getBadChannels() const {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_GET_BAD_CHANNELS);
     if (client.Receive<int>() == FAIL) {
@@ -2153,49 +2152,17 @@ void Module::getBadChannels(const std::string &fname) const {
             LOG(logDEBUG1) << i << ":" << badchannels[i];
         }
     }
-
-    // save to file
-    std::ofstream outfile(fname);
-    if (!outfile) {
-        throw RuntimeError("Could not create file to save bad channels");
-    }
-    for (auto ch : badchannels)
-        outfile << ch << '\n';
-    LOG(logDEBUG1) << nch << " bad channels saved to file";
+    return badchannels;
 }
 
-void Module::setBadChannels(const std::string &fname) {
-    // read bad channels file
-    std::ifstream input_file(fname);
-    if (!input_file) {
-        throw RuntimeError("Could not open bad channels file " + fname +
-                           " for reading");
-    }
-    std::vector<int> badchannels;
-    for (std::string line; std::getline(input_file, line);) {
-        line.erase(std::remove_if(begin(line), end(line), isspace),
-                   end(line)); // remove space
-        if (!line.empty()) {
-            std::istringstream iss(line);
-            int ival = 0;
-            iss >> ival;
-            if (iss.fail()) {
-                throw RuntimeError("Could not load bad channels file. Invalid "
-                                   "channel number at position " +
-                                   std::to_string(badchannels.size()));
-            }
-            badchannels.push_back(ival);
-        }
-    }
-
-    // send bad channels to module
-    auto nch = static_cast<int>(badchannels.size());
+void Module::setBadChannels(std::vector<int> list) {
+    auto nch = static_cast<int>(list.size());
     LOG(logDEBUG1) << "Sending bad channels to detector, nch:" << nch;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_BAD_CHANNELS);
     client.Send(nch);
     if (nch > 0) {
-        client.Send(badchannels);
+        client.Send(list);
     }
     if (client.Receive<int>() == FAIL) {
         throw DetectorError("Detector " + std::to_string(moduleIndex) +

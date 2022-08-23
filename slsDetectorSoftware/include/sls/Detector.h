@@ -1439,10 +1439,12 @@ class Detector {
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              const int value, Positions pos = {});
 
-    /** [Gotthard2] */
+    /** [Gotthard2][Mythen3] */
     void getBadChannels(const std::string &fname, Positions pos = {}) const;
 
-    /** [Gotthard2] */
+    /** [Gotthard2][Mythen3]
+     * [Mythen3] Also does trimming
+     */
     void setBadChannels(const std::string &fname, Positions pos = {});
     ///@}
 

@@ -52,7 +52,7 @@ enum detectorSettings thisSettings = UNINITIALIZED;
 sls_detector_module *detectorModules = NULL;
 int *detectorChans = NULL;
 int *detectorDacs = NULL;
-int *channelMask = NULL;
+int *badChannelMask = NULL;
 int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
 int defaultDacValue_standard[] = SPECIAL_DEFAULT_STANDARD_DAC_VALS;
 int defaultDacValue_fast[] = SPECIAL_DEFAULT_FAST_DAC_VALS;
@@ -392,8 +392,8 @@ void allocateDetectorStructureMemory() {
     // Allocation of memory
     detectorModules = malloc(sizeof(sls_detector_module));
     detectorChans = malloc(NCHIP * NCHAN * sizeof(int));
-    channelMask = malloc(NCHIP * NCHAN * sizeof(char));
-    memset(channelMask, 0, NCHIP * NCHAN * sizeof(char));
+    badChannelMask = malloc(NCHIP * NCHAN * sizeof(char));
+    memset(badChannelMask, 0, NCHIP * NCHAN * sizeof(char));
     detectorDacs = malloc(NDAC * sizeof(int));
 
     LOG(logDEBUG1,
@@ -1349,9 +1349,8 @@ int setTrimbits(int *trimbits) {
     int error = 0;
     char cmess[MAX_STR_LENGTH];
     for (int ichip = 0; ichip < NCHIP; ichip++) {
-        patternParameters *pat = setChannelRegisterChip(
-            ichip, channelMask,
-            trimbits); // change here!!! @who: Change what?
+        patternParameters *pat =
+            setChannelRegisterChip(ichip, badChannelMask, trimbits);
         if (pat == NULL) {
             error = 1;
         } else {
@@ -2338,6 +2337,62 @@ int getClockDivider(enum CLKINDEX ind) {
         return -1;
     }
     return clkDivider[ind];
+}
+
+void setBadChannels(int nch, int *channels) {
+    LOG(logINFO, ("Setting %d bad channels\n", nch));
+
+    // resetting all mask registers first
+    memset(badChannelMask, 0, NCHIP * NCHAN * sizeof(char));
+
+    // setting badchannels, loop through list
+    for (int i = 0; i < nch; ++i) {
+        LOG(logINFO, ("\t[%d]: %d\n", i, channels[i]));
+        // set bad channel for all counters
+        for (int ich = channels[i] * 3; ich != channels[i] * 3 + 3; ++ich) {
+            int iaddr = ich / 32;
+            int iBit = ich % 32;
+            badChannelMask[iaddr] |= (1 << iBit);
+        }
+    }
+
+    return setTrimbits(detectorChans);
+}
+
+int *getBadChannels(int *nch) {
+    int *retvals = NULL;
+    // count number of bad channels
+    *nch = 0;
+    int numAddr = NCHAN * NCHIP / 32;
+    for (int iaddr = 0; iaddr != numAddr; ++iaddr) {
+        *nch += __builtin_popcount(badChannelMask[iaddr]);
+    }
+    if (*nch > 0) {
+        *nch /= 3;
+        // get list of bad channels
+        retvals = malloc(*nch * sizeof(int));
+        if (retvals == NULL) {
+            *nch = -1;
+            return NULL;
+        }
+        // setting badchannels, loop through list
+        int ich = 0;
+        for (int i = 0; i < NCHAN * NCHIP; ++i) {
+            int iaddr = i / 32;
+            int iBit = i % 32;
+            // return is for 1 counter, but mask set for all counters
+            if ((badChannelMask[iaddr] >> iBit) & 0x1) {
+                retvals[ich++] = i / 3;
+                i += 3;
+            }
+        }
+    }
+    // debugging
+    LOG(logDEBUG1, ("Reading Bad channel list\n"));
+    for (int i = 0; i != (*nch); ++i) {
+        LOG(logINFO, ("[%d]: %d\n", i, retvals[i]));
+    }
+    return retvals;
 }
 
 int getTransmissionDelayFrame() {

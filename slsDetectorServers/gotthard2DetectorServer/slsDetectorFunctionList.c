@@ -2029,48 +2029,73 @@ int checkDetectorType(char *mess) {
         LOG(logERROR, (mess));
         return FAIL;
     }
-    int type = atoi(buffer);
-    enum MASTERINDEX master = OW_MASTER;
-    if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL) <= TYPE_TOLERANCE) {
-        LOG(logINFOBLUE, ("MASTER 25um Module (HDI v1.0)\n"));
-    } else if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL) <=
-               TYPE_TOLERANCE) {
-        LOG(logINFOBLUE, ("MASTER 25um Module (HDI v2.0)\n"));
-    } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL) <=
-               TYPE_TOLERANCE) {
-        LOG(logINFOBLUE, ("SLAVE 25um Module (HDI v1.0)\n"));
-        master = OW_SLAVE;
-    } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL) <=
-               TYPE_TOLERANCE) {
-        LOG(logINFOBLUE, ("SLAVE 25um Module (HDI v2.0)\n"));
-        master = OW_SLAVE;
-    } else if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) <= TYPE_TOLERANCE) {
-        LOG(logINFOBLUE, ("50um Module\n"));
+
+    {
+        int type = atoi(buffer);
+        int hdiSlave = 0;
+        int hdiVersion = 0x1;
+        int hdi25um = 1;
+        if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL) <=
+            TYPE_TOLERANCE) {
+            LOG(logINFOBLUE, ("MASTER 25um Module (HDI v1.0)\n"));
+        } else if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL) <=
+                   TYPE_TOLERANCE) {
+            LOG(logINFOBLUE, ("MASTER 25um Module (HDI v2.0)\n"));
+            hdiVersion = 0x2;
+        } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL) <=
+                   TYPE_TOLERANCE) {
+            LOG(logINFOBLUE, ("SLAVE 25um Module (HDI v1.0)\n"));
+            hdiSlave = 1;
+        } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL) <=
+                   TYPE_TOLERANCE) {
+            LOG(logINFOBLUE, ("SLAVE 25um Module (HDI v2.0)\n"));
+            hdiSlave = 1;
+            hdiVersion = 0x2;
+        } else if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) <= TYPE_TOLERANCE) {
+            LOG(logINFOBLUE, ("50um Module\n"));
+            hdi25um = 0;
+        }
+        // no module or invalid module
+        else if (type > TYPE_NO_MODULE_STARTING_VAL) {
+            sprintf(mess, "No Module attached! Run server with -nomodule.\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        } else {
+            sprintf(mess,
+                    "Wrong Module attached! Expected %d, %d, %d, %d or %d for "
+                    "Gotthard2, got %d\n",
+                    TYPE_GOTTHARD2_MODULE_VAL,
+                    TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL,
+                    TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL,
+                    TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL,
+                    TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL, type);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        if (hdiSlave) {
+            bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_HDI_SLAVE_MSK);
+        } else {
+            bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_HDI_SLAVE_MSK);
+        }
+        if (hdi25um) {
+            bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_HDI_25UM_MSK);
+        } else {
+            bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_HDI_25UM_MSK);
+        }
+        bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_HDI_VERSION_MSK);
+        bus_w(CONFIG_REG,
+              bus_r(CONFIG_REG) | ((hdiVersion << CONFIG_HDI_VERSION_OFST) &
+                                   CONFIG_HDI_VERSION_MSK));
     }
-    // no module or invalid module
-    else if (type > TYPE_NO_MODULE_STARTING_VAL) {
-        sprintf(mess, "No Module attached! Run server with -nomodule.\n");
-        LOG(logERROR, (mess));
-        return FAIL;
-    } else {
-        sprintf(mess,
-                "Wrong Module attached! Expected %d, %d, %d, %d or %d for "
-                "Gotthard2, got %d\n",
-                TYPE_GOTTHARD2_MODULE_VAL,
-                TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL,
-                TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL,
-                TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL,
-                TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL, type);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_HDI_MOD_ID_MSK);
-    bus_w(CONFIG_REG, bus_r(CONFIG_REG) | ((type << CONFIG_HDI_MOD_ID_OFST) &
-                                           CONFIG_HDI_MOD_ID_MSK));
-    if (setMaster(master) == FAIL) {
-        strcpy(mess, "Could not set to master/slave.");
-        LOG(logERROR, (mess));
-        return FAIL;
+
+    {
+        enum MASTERINDEX master =
+            (bus_r(CONFIG_REG) & CONFIG_HDI_SLAVE_MSK) ? OW_SLAVE : OW_MASTER;
+        if (setMaster(master) == FAIL) {
+            strcpy(mess, "Could not set to master/slave.");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
     }
     return OK;
 }

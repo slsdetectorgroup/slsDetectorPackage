@@ -30,6 +30,16 @@ extern int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
 #define MAX_LEVELS MAX_PATTERN_LEVELS
 #endif
 
+void initializePatternAddresses() {
+    LOG(logINFO, ("Setting default Loop and Wait Addresses(0x%x)\n",
+                  MAX_PATTERN_LENGTH - 1));
+    for (int i = 0; i != MAX_LEVELS; ++i) {
+        setPatternLoopAddresses(i, MAX_PATTERN_LENGTH - 1,
+                                MAX_PATTERN_LENGTH - 1);
+        setPatternWaitAddress(i, MAX_PATTERN_LENGTH - 1);
+    }
+}
+
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 #ifdef VIRTUAL
 void initializePatternWord() {
@@ -735,6 +745,8 @@ int loadPattern(char *message, enum TLogLevel printLevel,
 #ifdef MYTHEN3D
     trimmingPrint = printLevel;
 #endif
+    initializePatternAddresses();
+
     // words
     for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
         if ((i % 10 == 0) && pat->word[i] != 0) {
@@ -876,6 +888,8 @@ int loadPatternFile(char *patFname, char *errMessage) {
     char command[LZ];
     char temp[MAX_STR_LENGTH];
     memset(temp, 0, MAX_STR_LENGTH);
+
+    initializePatternAddresses();
 
     // keep reading a line
     while (fgets(line, LZ, fd)) {

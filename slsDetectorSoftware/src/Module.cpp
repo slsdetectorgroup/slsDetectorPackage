@@ -490,6 +490,14 @@ void Module::setMaster(const bool master) {
     sendToDetectorStop(F_SET_MASTER, static_cast<int>(master), nullptr);
 }
 
+bool Module::getSynchronization() const {
+    return sendToDetector<int>(F_GET_SYNCHRONIZATION);
+}
+
+void Module::setSynchronization(const bool value) {
+    sendToDetector(F_SET_SYNCHRONIZATION, static_cast<int>(value), nullptr);
+}
+
 bool Module::isVirtualDetectorServer() const {
     return sendToDetector<int>(F_IS_VIRTUAL);
 }

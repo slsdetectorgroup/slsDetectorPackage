@@ -787,6 +787,7 @@ class CmdProxy {
         {"gappixels", &CmdProxy::GapPixels},
         {"fliprows", &CmdProxy::fliprows},
         {"master", &CmdProxy::master},
+        {"sync", &CmdProxy::sync},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::Acquire},
@@ -1302,6 +1303,11 @@ class CmdProxy {
         "and other(s) to "
         "slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau] Gets if "
         "the current (half) module is master.");
+
+    INTEGER_COMMAND_SET_NOID_GET_ID(sync, getSynchronization,
+                                    setSynchronization, StringTo<int>,
+                                    "[0, 1]\n\t[Jungfrau] Enables or disables "
+                                    "synchronization between modules.");
 
     /* acquisition parameters */
 

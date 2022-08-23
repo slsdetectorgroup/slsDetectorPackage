@@ -1380,6 +1380,19 @@ int isMaster(int *retval) {
     return OK;
 }
 
+int getSynchronization() {
+    return ((bus_r(EXT_SIGNAL_REG) & EXT_SYNC_MSK) >> EXT_SYNC_OFST);
+}
+
+void setSynchronization(int enable) {
+    LOG(logINFOBLUE,
+        ("%s Synchronization\n", (enable ? "Enabling" : "Disabling")));
+    if (enable)
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SYNC_MSK);
+    else
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SYNC_MSK);
+}
+
 void setTiming(enum timingMode arg) {
     switch (arg) {
     case AUTO_TIMING:

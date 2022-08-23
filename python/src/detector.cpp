@@ -183,6 +183,13 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("setMaster", (void (Detector::*)(bool, int)) & Detector::setMaster,
              py::arg(), py::arg())
+        .def("getSynchronization",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getSynchronization,
+             py::arg() = Positions{})
+        .def("setSynchronization",
+             (void (Detector::*)(bool)) & Detector::setSynchronization,
+             py::arg())
         .def("isVirtualDetectorServer",
              (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::isVirtualDetectorServer,

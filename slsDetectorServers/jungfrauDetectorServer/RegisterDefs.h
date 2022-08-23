@@ -210,6 +210,8 @@
 
 #define EXT_SIGNAL_OFST                     (0)
 #define EXT_SIGNAL_MSK                      (0x00000001 << EXT_SIGNAL_OFST)
+#define EXT_SYNC_OFST                       (4)
+#define EXT_SYNC_MSK                        (0x00000001 << EXT_SYNC_OFST)
 
 /* Control Register */
 #define CONTROL_REG                         (0x4F << MEM_MAP_SHIFT)

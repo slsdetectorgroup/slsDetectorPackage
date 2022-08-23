@@ -304,3 +304,5 @@ int set_analog_pulsing(int);
 int get_digital_pulsing(int);
 int set_digital_pulsing(int);
 int get_module(int);
+int get_synchronization(int);
+int set_synchronization(int);

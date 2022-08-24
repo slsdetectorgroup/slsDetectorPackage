@@ -109,15 +109,6 @@ def get_fdec(node):
     args = f"({return_type}(Detector::*)({args}){const})"
     return args
 
-# blueprint for getting time
-# .def("getExptime",
-#     [](sls::Detector& self, sls::Positions p){
-#     auto r = self.getExptime(p);
-#     std::vector<sls::Duration> vec(r.begin(), r.end());
-#     return vec;
-#     },
-#     py::arg() = Positions{})
-
 
 def time_return_lambda(node, args):
     names = ['a', 'b', 'c', 'd']
@@ -137,19 +128,8 @@ def visit(node):
                     and child.access_specifier == cindex.AccessSpecifier.PUBLIC
                 ):
                     m.append(child)
-                    # args = get_arguments(child)
                     args = get_arguments_with_default(child)
                     fs = get_fdec(child)
-
-                    # if (
-                    #     child.result_type.spelling == "Result<sls::ns>"
-                        
-                    # ):
-                    #     # pass
-                    #     # do time magic
-                    #     # print(child.spelling, child.result_type.spelling, f'{args=}')
-                    #     lines.append(time_return_lambda(child, args))
-                    # else:
                     lines.append(
                         f'CppDetectorApi.def("{child.spelling}",{fs} &Detector::{child.spelling}{args});'
                     )

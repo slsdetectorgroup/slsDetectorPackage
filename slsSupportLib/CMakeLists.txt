@@ -13,7 +13,6 @@ set(SOURCES
     src/UdpRxSocket.cpp
     src/sls_detector_exceptions.cpp
     src/md5_helper.cpp
-    src/Duration.cpp
 )
 
 # Header files to install as a part of the library
@@ -26,7 +25,6 @@ set(PUBLICHEADERS
     include/sls/ToString.h
     include/sls/TypeTraits.h
     include/sls/TimeHelper.h
-    include/sls/Duration.h
 )
 
 # Additional headers to be installed if SLS_DEVEL_HEADERS

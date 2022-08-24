@@ -141,20 +141,20 @@ def visit(node):
                     args = get_arguments_with_default(child)
                     fs = get_fdec(child)
 
-                    if (
-                        child.result_type.spelling == "Result<sls::ns>"
+                    # if (
+                    #     child.result_type.spelling == "Result<sls::ns>"
                         
-                    ):
-                        # pass
-                        # do time magic
-                        # print(child.spelling, child.result_type.spelling, f'{args=}')
-                        lines.append(time_return_lambda(child, args))
-                    else:
-                        lines.append(
-                            f'CppDetectorApi.def("{child.spelling}",{fs} &Detector::{child.spelling}{args});'
-                        )
-                        if cargs.verbose:
-                            print(f"&Detector::{child.spelling}{args})")
+                    # ):
+                    #     # pass
+                    #     # do time magic
+                    #     # print(child.spelling, child.result_type.spelling, f'{args=}')
+                    #     lines.append(time_return_lambda(child, args))
+                    # else:
+                    lines.append(
+                        f'CppDetectorApi.def("{child.spelling}",{fs} &Detector::{child.spelling}{args});'
+                    )
+                    if cargs.verbose:
+                        print(f"&Detector::{child.spelling}{args})")
                     cn.append(child)
 
     for child in node.get_children():

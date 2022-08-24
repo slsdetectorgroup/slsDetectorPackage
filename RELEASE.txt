@@ -96,7 +96,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 
 2. Resolved Issues
 ==================
-
+    - Reading back sub-microsecond exposure times from the Python API. 
 
 3. Firmware Requirements
 ========================

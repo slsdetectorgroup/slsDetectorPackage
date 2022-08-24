@@ -3,7 +3,6 @@
 
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-#include <pybind11/chrono.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -230,35 +229,26 @@ void init_det(py::module &m) {
                        (void (Detector::*)(int64_t)) &
                            Detector::setNumberOfTriggers,
                        py::arg());
-    CppDetectorApi.def(
-        "getExptime",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getExptime(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getExptime",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getExptime,
+                       py::arg() = Positions{});
     CppDetectorApi.def("setExptime",
                        (void (Detector::*)(sls::ns, sls::Positions)) &
                            Detector::setExptime,
                        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getPeriod",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getPeriod(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getPeriod",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getPeriod,
+                       py::arg() = Positions{});
     CppDetectorApi.def("setPeriod",
                        (void (Detector::*)(sls::ns, sls::Positions)) &
                            Detector::setPeriod,
                        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getDelayAfterTrigger",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getDelayAfterTrigger(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getDelayAfterTrigger",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getDelayAfterTrigger,
+                       py::arg() = Positions{});
     CppDetectorApi.def("setDelayAfterTrigger",
                        (void (Detector::*)(sls::ns, sls::Positions)) &
                            Detector::setDelayAfterTrigger,
@@ -271,20 +261,14 @@ void init_det(py::module &m) {
                        (Result<int64_t>(Detector::*)(sls::Positions) const) &
                            Detector::getNumberOfTriggersLeft,
                        py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getPeriodLeft",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getPeriodLeft(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getDelayAfterTriggerLeft",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getDelayAfterTriggerLeft(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getPeriodLeft",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getPeriodLeft,
+                       py::arg() = Positions{});
+    CppDetectorApi.def("getDelayAfterTriggerLeft",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getDelayAfterTriggerLeft,
+                       py::arg() = Positions{});
     CppDetectorApi.def("getDynamicRange",
                        (Result<int>(Detector::*)(sls::Positions) const) &
                            Detector::getDynamicRange,
@@ -1030,24 +1014,18 @@ void init_det(py::module &m) {
     CppDetectorApi.def("setRxZmqHwm",
                        (void (Detector::*)(const int)) & Detector::setRxZmqHwm,
                        py::arg());
-    CppDetectorApi.def(
-        "getSubExptime",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getSubExptime(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getSubExptime",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getSubExptime,
+                       py::arg() = Positions{});
     CppDetectorApi.def("setSubExptime",
                        (void (Detector::*)(sls::ns, sls::Positions)) &
                            Detector::setSubExptime,
                        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getSubDeadTime",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getSubDeadTime(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getSubDeadTime",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getSubDeadTime,
+                       py::arg() = Positions{});
     CppDetectorApi.def("setSubDeadTime",
                        (void (Detector::*)(sls::ns, sls::Positions)) &
                            Detector::setSubDeadTime,
@@ -1060,13 +1038,10 @@ void init_det(py::module &m) {
                        (void (Detector::*)(bool, sls::Positions)) &
                            Detector::setOverFlowMode,
                        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getRateCorrection",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getRateCorrection(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getRateCorrection",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getRateCorrection,
+                       py::arg() = Positions{});
     CppDetectorApi.def("setDefaultRateCorrection",
                        (void (Detector::*)(sls::Positions)) &
                            Detector::setDefaultRateCorrection,
@@ -1083,20 +1058,14 @@ void init_det(py::module &m) {
                        (void (Detector::*)(const bool, sls::Positions)) &
                            Detector::setInterruptSubframe,
                        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getMeasuredPeriod",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getMeasuredPeriod(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getMeasuredSubFramePeriod",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getMeasuredSubFramePeriod(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getMeasuredPeriod",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getMeasuredPeriod,
+                       py::arg() = Positions{});
+    CppDetectorApi.def("getMeasuredSubFramePeriod",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getMeasuredSubFramePeriod,
+                       py::arg() = Positions{});
     CppDetectorApi.def("getActive",
                        (Result<bool>(Detector::*)(sls::Positions) const) &
                            Detector::getActive,
@@ -1185,13 +1154,10 @@ void init_det(py::module &m) {
                        (void (Detector::*)(bool, sls::Positions)) &
                            Detector::setAutoComparatorDisable,
                        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getComparatorDisableTime",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getComparatorDisableTime(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getComparatorDisableTime",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getComparatorDisableTime,
+                       py::arg() = Positions{});
     CppDetectorApi.def("setComparatorDisableTime",
                        (void (Detector::*)(sls::ns, sls::Positions)) &
                            Detector::setComparatorDisableTime,
@@ -1212,13 +1178,10 @@ void init_det(py::module &m) {
                        (void (Detector::*)(int, sls::Positions)) &
                            Detector::setStorageCellStart,
                        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getStorageCellDelay",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getStorageCellDelay(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getStorageCellDelay",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getStorageCellDelay,
+                       py::arg() = Positions{});
     CppDetectorApi.def("setStorageCellDelay",
                        (void (Detector::*)(sls::ns, sls::Positions)) &
                            Detector::setStorageCellDelay,
@@ -1254,13 +1217,10 @@ void init_det(py::module &m) {
     CppDetectorApi.def(
         "clearROI", (void (Detector::*)(sls::Positions)) & Detector::clearROI,
         py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getExptimeLeft",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getExptimeLeft(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getExptimeLeft",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getExptimeLeft,
+                       py::arg() = Positions{});
     CppDetectorApi.def("getNumberOfBursts",
                        (Result<int64_t>(Detector::*)(sls::Positions) const) &
                            Detector::getNumberOfBursts,
@@ -1268,13 +1228,10 @@ void init_det(py::module &m) {
     CppDetectorApi.def(
         "setNumberOfBursts",
         (void (Detector::*)(int64_t)) & Detector::setNumberOfBursts, py::arg());
-    CppDetectorApi.def(
-        "getBurstPeriod",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getBurstPeriod(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getBurstPeriod",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getBurstPeriod,
+                       py::arg() = Positions{});
     CppDetectorApi.def("setBurstPeriod",
                        (void (Detector::*)(sls::ns, sls::Positions)) &
                            Detector::setBurstPeriod,
@@ -1408,10 +1365,8 @@ void init_det(py::module &m) {
                        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
         "getExptime",
-        [](sls::Detector &self, int a, sls::Positions b) {
-            auto r = self.getExptime(a, b);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
+        (Result<sls::ns>(Detector::*)(int, sls::Positions) const) &
+            Detector::getExptime,
         py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("setExptime",
                        (void (Detector::*)(int, sls::ns, sls::Positions)) &
@@ -1424,10 +1379,8 @@ void init_det(py::module &m) {
         py::arg() = Positions{});
     CppDetectorApi.def(
         "getGateDelay",
-        [](sls::Detector &self, int a, sls::Positions b) {
-            auto r = self.getGateDelay(a, b);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
+        (Result<sls::ns>(Detector::*)(int, sls::Positions) const) &
+            Detector::getGateDelay,
         py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("setGateDelay",
                        (void (Detector::*)(int, sls::ns, sls::Positions)) &
@@ -1889,20 +1842,14 @@ void init_det(py::module &m) {
                        (Result<int64_t>(Detector::*)(sls::Positions) const) &
                            Detector::getNumberOfFramesFromStart,
                        py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getActualTime",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getActualTime(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getMeasurementTime",
-        [](sls::Detector &self, sls::Positions a) {
-            auto r = self.getMeasurementTime(a);
-            return std::vector<sls::Duration>(r.begin(), r.end());
-        },
-        py::arg() = Positions{});
+    CppDetectorApi.def("getActualTime",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getActualTime,
+                       py::arg() = Positions{});
+    CppDetectorApi.def("getMeasurementTime",
+                       (Result<sls::ns>(Detector::*)(sls::Positions) const) &
+                           Detector::getMeasurementTime,
+                       py::arg() = Positions{});
     CppDetectorApi.def("getUserDetails", (std::string(Detector::*)() const) &
                                              Detector::getUserDetails);
     ;

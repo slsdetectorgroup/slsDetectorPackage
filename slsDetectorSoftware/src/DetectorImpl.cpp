@@ -1712,10 +1712,13 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
         // assuming single counter
         int nchan = modules[0]->getNumberOfChannels().x / 3;
         for (auto badchannel : list) {
+            if (badchannel < 0) {
+                throw RuntimeError("Invalid bad channel list. " +
+                                   std::to_string(badchannel) +
+                                   " out of bounds.");
+            }
             int ch = badchannel % nchan;
             int imod = badchannel / nchan;
-            LOG(logINFORED) << "badchannel:" << badchannel << " ch:" << ch
-                            << " imod:" << imod << " size:" << modules.size();
             if (imod >= (int)modules.size()) {
                 throw RuntimeError("Invalid bad channel list. " +
                                    std::to_string(badchannel) +

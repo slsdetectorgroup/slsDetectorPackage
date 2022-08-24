@@ -92,6 +92,8 @@ This document describes the differences between v7.0.0 and v6.x.x
 - jungfrau master
 - g2 parallel command
 - jungfrau sync
+- m3 bad channels
+- pat loop and wait address default
 
 2. Resolved Issues
 ==================

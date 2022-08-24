@@ -1658,8 +1658,11 @@ void DetectorImpl::getBadChannels(const std::string &fname,
     // update to multi values if multi modules
     if (isAllPositions(pos)) {
         badchannels.clear();
-        // assuming single counter
         int nchan = modules[0]->getNumberOfChannels().x / 3;
+        if (shm()->detType == MYTHEN3) {
+            // assuming single counter
+            nchan /= 3;
+        }
         int imod = 0;
         for (auto vec : res) {
             for (auto badch : vec) {
@@ -1709,8 +1712,11 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
     // update to multi values if multi modules
     if (isAllPositions(pos)) {
         std::vector<std::vector<int>> badchannels;
-        // assuming single counter
-        int nchan = modules[0]->getNumberOfChannels().x / 3;
+        int nchan = modules[0]->getNumberOfChannels().x;
+        if (shm()->detType == MYTHEN3) {
+            // assuming single counter
+            nchan /= 3;
+        }
         for (auto badchannel : list) {
             if (badchannel < 0) {
                 throw RuntimeError("Invalid bad channel list. " +

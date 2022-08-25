@@ -13,6 +13,7 @@ void init_duration(py::module &m) {
         .def(py::init<double>())
         .def("total_seconds", &DurationWrapper::total_seconds)
         .def("count", &DurationWrapper::count)
+        .def("set_count", &DurationWrapper::set_count)
         .def("__repr__", [](const DurationWrapper &self) {
             std::stringstream ss;
             ss << "sls::DurationWrapper(total_seconds: " << self.total_seconds()

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
+#include "py_headers.h"
 
 #include <cassert>
 #include <cmath>
@@ -9,9 +10,6 @@
 #include <iostream>
 #include <vector>
 
-#include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
 namespace py = pybind11;
 
 template <size_t bit_index0, size_t bit_index1>

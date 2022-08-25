@@ -1,16 +1,12 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-#include <pybind11/operators.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include "py_headers.h"
 
 #include "mythenFileIO.h"
 #include "sls/Detector.h"
 #include "sls/Result.h"
 #include <chrono>
 #include <vector>
-
-#include "typecaster.h"
 
 using ds = std::chrono::duration<double>;
 

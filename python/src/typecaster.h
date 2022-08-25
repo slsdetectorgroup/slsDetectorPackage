@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
+#include <pybind11/pybind11.h>
+#include <datetime.h>
+
 #include "sls/Result.h"
 #include "DurationWrapper.h"
-#include <pybind11/pybind11.h>
 
-#include <datetime.h>
 namespace py = pybind11;
 namespace pybind11 {
 namespace detail {
@@ -15,7 +16,6 @@ struct type_caster<sls::Result<Type, Alloc>>
 
 
 // Based on the typecaster in pybind11/chrono.h
-
 template <> struct type_caster<std::chrono::nanoseconds> {
     public:
         PYBIND11_TYPE_CASTER(std::chrono::nanoseconds, const_name("DurationWrapper"));

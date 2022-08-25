@@ -92,7 +92,7 @@ uint64_t readPatternWord(int addr) {
     uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr * REG_OFFSET * 2;
     return get64BitReg(reg_lsb, reg_msb);
 #else
-    LOG(logINFORED, ("  Reading (Executing) Pattern Word (addr:0x%x)\n", addr));
+    LOG(logDEBUG1, ("  Reading (Executing) Pattern Word (addr:0x%x)\n", addr));
     uint32_t reg = PATTERN_CNTRL_REG;
 
     // overwrite with  only addr

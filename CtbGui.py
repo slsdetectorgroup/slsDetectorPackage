@@ -1,5 +1,6 @@
+from fileinput import filename
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
-import sys
+import sys, os
 import pyqtgraph as pg
 from pyqtgraph import PlotWidget
 
@@ -20,6 +21,7 @@ class MainWindow(QtWidgets.QMainWindow):
         #TODO Only add the components of action options
         #Show info
         self.actionInfo.triggered.connect(self.showInfo)
+        self.actionOpen.triggered.connect(self.openFile)
 
         #For DACs tab
         #TODO Only add the components of DACs tab
@@ -58,6 +60,16 @@ class MainWindow(QtWidgets.QMainWindow):
         #For Sense Tab
         #TODO Only add the components of Sense tab
 
+        self.pushButtonSense0.clicked.connect(self.updateSense0)
+        self.pushButtonSense1.clicked.connect(self.updateSense1)
+        self.pushButtonSense2.clicked.connect(self.updateSense2)
+        self.pushButtonSense3.clicked.connect(self.updateSense3)
+        self.pushButtonSense4.clicked.connect(self.updateSense4)
+        self.pushButtonSense5.clicked.connect(self.updateSense5)
+        self.pushButtonSense6.clicked.connect(self.updateSense6)
+        self.pushButtonSense7.clicked.connect(self.updateSense7)
+        self.pushButtonTemp.clicked.connect(self.updateTemperature)
+
         #For Signals Tab
         #TODO Only add the components of Signals tab
 
@@ -70,6 +82,25 @@ class MainWindow(QtWidgets.QMainWindow):
         #For Acquistions Tab
         #TODO Only add the components of Acquistions tab
 
+    #For Action options function 
+    #TODO Only add the components of action option+ functions    
+    #Function to show info
+    def showInfo(self):
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle("Info about CTB")
+        msg.setText("This Gui is for chip test board.\n Current Phase: Development")
+        x = msg.exec_()
+
+    #Function to open file
+    def openFile(self):
+        response = QtWidgets.QFileDialog.getOpenFileName(
+            parent=self,
+            caption='Select a file to open',
+            directory=os.getcwd(),
+            #filter='README (*.md *.ui)'
+        )
+        if (response[0]):
+            print(response[0])
     #For the DACs tab functions
     # TODO Only add DACs tab functions
         
@@ -157,7 +188,32 @@ class MainWindow(QtWidgets.QMainWindow):
     #For Sense Tab functions
     #TODO Only add the components of Sense tab functions
 
+    def updateSense0(self):
+        print('Sense 0')
+    
+    def updateSense1(self):
+        print('Sense 1')
+    
+    def updateSense2(self):
+        print('Sense 2')
+    
+    def updateSense3(self):
+        print('Sense 3')
 
+    def updateSense4(self):
+        print('Sense 4')
+    
+    def updateSense5(self):
+        print('Sense 5')
+
+    def updateSense6(self):
+        print('Sense 6')
+    
+    def updateSense7(self):
+        print('Sense 7')
+
+    def updateTemperature(self):
+        print('Temperature')
 
     #For Signals Tab functions
     #TODO Only add the components of Signals tab functions
@@ -171,14 +227,7 @@ class MainWindow(QtWidgets.QMainWindow):
     #For Acquistions Tab functions
     #TODO Only add the components of Acquistions tab functions
 
-    #For Action options function 
-    #TODO Only add the components of action option+ functions    
-    #Function top show info
-    def showInfo(self):
-        msg = QtWidgets.QMessageBox()
-        msg.setWindowTitle("Info about CTB")
-        msg.setText("This Gui is for chip test board.\n Current Phase: Development")
-        x = msg.exec_()
+
 
 
 if __name__ == '__main__':

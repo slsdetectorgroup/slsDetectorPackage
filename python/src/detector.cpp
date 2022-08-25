@@ -6,10 +6,10 @@
 #include "py_headers.h"
 
 #include "sls/Detector.h"
+#include "sls/TimeHelper.h"
 #include "sls/ToString.h"
 #include "sls/network_utils.h"
 #include "sls/sls_detector_defs.h"
-#include "sls/TimeHelper.h"
 
 #include <array>
 #include <chrono>
@@ -23,7 +23,6 @@ void init_det(py::module &m) {
 
     py::class_<Detector> CppDetectorApi(m, "CppDetectorApi");
     CppDetectorApi.def(py::init<int>());
-
 
     CppDetectorApi.def("freeSharedMemory",
                        (void (Detector::*)()) & Detector::freeSharedMemory);
@@ -196,6 +195,13 @@ void init_det(py::module &m) {
     CppDetectorApi.def("setMaster",
                        (void (Detector::*)(bool, int)) & Detector::setMaster,
                        py::arg(), py::arg());
+    CppDetectorApi.def("getSynchronization",
+                       (Result<bool>(Detector::*)(sls::Positions) const) &
+                           Detector::getSynchronization,
+                       py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setSynchronization",
+        (void (Detector::*)(bool)) & Detector::setSynchronization, py::arg());
     CppDetectorApi.def("isVirtualDetectorServer",
                        (Result<bool>(Detector::*)(sls::Positions) const) &
                            Detector::isVirtualDetectorServer,
@@ -1850,5 +1856,4 @@ void init_det(py::module &m) {
     CppDetectorApi.def("getUserDetails", (std::string(Detector::*)() const) &
                                              Detector::getUserDetails);
     ;
->>>>>>> a0b6c5763 (initital implementation)
 }

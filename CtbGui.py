@@ -1,4 +1,3 @@
-from fileinput import filename
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
@@ -237,3 +236,4 @@ if __name__ == '__main__':
 
     #Run the app
     app.exec_()
+    

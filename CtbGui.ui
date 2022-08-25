@@ -6,20 +6,1445 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1184</width>
+    <width>1387</width>
     <height>989</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>CTB Gui</string>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>731</width>
+      <height>911</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>DACs</string>
+     </attribute>
+     <widget class="QFrame" name="frame">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>701</width>
+        <height>811</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+      <widget class="QCheckBox" name="checkBoxDAC17_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>652</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC5">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>208</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 5</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC3">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>134</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC3">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>134</y>
+         <width>111</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 3</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC2_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>97</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC11">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>430</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC10">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>393</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC14">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>541</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC15">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>578</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 15</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC17">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>652</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 17</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC3_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>134</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC0_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>23</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC2">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>97</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC4">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>171</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 4</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC9">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>356</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 9</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC10">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>393</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 10</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC1_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>60</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC16_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>615</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC2">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>97</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC16">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>615</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC0">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>23</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC14">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>541</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC5_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>208</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC7">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>282</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC14">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>541</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 14</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC7_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>282</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC8">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>319</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 8</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC13">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>504</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC1">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>60</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 1</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC6_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>245</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC13">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>504</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 13</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC7">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>282</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 7</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC9">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>356</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC13">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>504</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC15">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>578</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC4">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>171</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC9_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>356</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC8">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>319</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC10">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>393</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC6">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>245</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 6</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC12_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>467</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC0">
+       <property name="geometry">
+        <rect>
+         <x>521</x>
+         <y>24</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC5">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>208</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC6">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>245</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC15">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>578</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC16">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>615</y>
+         <width>91</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 16</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC11">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>430</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 11</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC11">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>430</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC3">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>134</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC1">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>60</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC13_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>504</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC12">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>467</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC10_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>393</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC17">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>652</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC17">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>652</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC16">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>615</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC12">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>467</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC12">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>467</y>
+         <width>101</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 12</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC7">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>282</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC0">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>23</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC1">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>60</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC5">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>208</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC8_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>319</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC4_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>171</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC14_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>541</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC6">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>245</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC2">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>97</y>
+         <width>111</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>DAC 2</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC15_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>578</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC8">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>319</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelDAC4">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>171</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxDAC9">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>356</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxDAC11_2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>430</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxADC">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>690</y>
+         <width>111</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>ADC Vpp</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxADC">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>690</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxADC2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>690</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelADC">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>690</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxHighVoltage">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>730</y>
+         <width>121</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>High Voltage</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxHighVoltage">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>730</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxHighVoltage2">
+       <property name="geometry">
+        <rect>
+         <x>350</x>
+         <y>730</y>
+         <width>51</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelHighVoltage">
+       <property name="geometry">
+        <rect>
+         <x>520</x>
+         <y>730</y>
+         <width>31</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Power Supplies</string>
+     </attribute>
+     <widget class="QFrame" name="frame_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>701</width>
+        <height>351</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QCheckBox" name="checkBoxVA">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>30</y>
+         <width>94</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>VA</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxVB">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>80</y>
+         <width>94</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>VB</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxVC">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>130</y>
+         <width>94</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>VC</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxVD">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>180</y>
+         <width>94</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>VD</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxVIO">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>230</y>
+         <width>94</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>VIO</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxVCHIP">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>280</y>
+         <width>94</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>VCHIP</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxVA">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>20</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxVB">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>70</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxVC">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>120</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxVD">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>170</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxVIO">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>220</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="spinBoxVCHIP">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>270</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxVA2">
+       <property name="geometry">
+        <rect>
+         <x>340</x>
+         <y>20</y>
+         <width>94</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxVB2">
+       <property name="geometry">
+        <rect>
+         <x>340</x>
+         <y>70</y>
+         <width>94</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxVC2">
+       <property name="geometry">
+        <rect>
+         <x>340</x>
+         <y>120</y>
+         <width>94</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxVD2">
+       <property name="geometry">
+        <rect>
+         <x>340</x>
+         <y>170</y>
+         <width>94</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxVIO2">
+       <property name="geometry">
+        <rect>
+         <x>340</x>
+         <y>220</y>
+         <width>94</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxVCHIP2">
+       <property name="geometry">
+        <rect>
+         <x>340</x>
+         <y>270</y>
+         <width>94</width>
+         <height>24</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>mV</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelVA">
+       <property name="geometry">
+        <rect>
+         <x>550</x>
+         <y>20</y>
+         <width>64</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelVB">
+       <property name="geometry">
+        <rect>
+         <x>550</x>
+         <y>70</y>
+         <width>64</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelVC">
+       <property name="geometry">
+        <rect>
+         <x>550</x>
+         <y>120</y>
+         <width>64</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelVD">
+       <property name="geometry">
+        <rect>
+         <x>550</x>
+         <y>170</y>
+         <width>64</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelVIO">
+       <property name="geometry">
+        <rect>
+         <x>550</x>
+         <y>220</y>
+         <width>64</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelVCHIP">
+       <property name="geometry">
+        <rect>
+         <x>550</x>
+         <y>270</y>
+         <width>64</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_3">
+     <attribute name="title">
+      <string>Sense</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tab_4">
+     <attribute name="title">
+      <string>Signals</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tab_5">
+     <attribute name="title">
+      <string>ADCs</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tab_6">
+     <attribute name="title">
+      <string>Pattern</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tab_7">
+     <attribute name="title">
+      <string>Acquisition</string>
+     </attribute>
+    </widget>
+   </widget>
+   <widget class="PlotWidget" name="plotWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>760</x>
+      <y>50</y>
+      <width>611</width>
+      <height>881</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1184</width>
+     <width>1387</width>
      <height>27</height>
     </rect>
    </property>
@@ -62,6 +1487,31 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>pyqtgraph</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionExit</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>591</x>
+     <y>494</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

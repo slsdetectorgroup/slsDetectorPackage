@@ -79,7 +79,7 @@ def element_if_equal(mylist):
 
 def reduce_time(mylist):
     res = element_if_equal(element_if_equal(mylist))
-    if isinstance(res, dt.timedelta):
+    if isinstance(res, (dt.timedelta, _slsdet.DurationWrapper)):
         return res.total_seconds()
     elif isinstance(res[0], list):
         return [[item.total_seconds() for item in subl] for subl in res]

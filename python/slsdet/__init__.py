@@ -25,3 +25,4 @@ IpAddr = _slsdet.IpAddr
 MacAddr = _slsdet.MacAddr
 scanParameters = _slsdet.scanParameters
 currentSrcParameters = _slsdet.currentSrcParameters
+DurationWrapper = _slsdet.DurationWrapper

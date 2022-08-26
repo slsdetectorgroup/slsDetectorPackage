@@ -52,7 +52,7 @@ enum detectorSettings thisSettings = UNINITIALIZED;
 sls_detector_module *detectorModules = NULL;
 int *detectorChans = NULL;
 int *detectorDacs = NULL;
-int *badChannelMask = NULL;
+char *badChannelMask = NULL;
 int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
 int defaultDacValue_standard[] = SPECIAL_DEFAULT_STANDARD_DAC_VALS;
 int defaultDacValue_fast[] = SPECIAL_DEFAULT_FAST_DAC_VALS;
@@ -1349,8 +1349,8 @@ int setTrimbits(int *trimbits) {
     int error = 0;
     char cmess[MAX_STR_LENGTH];
     for (int ichip = 0; ichip < NCHIP; ichip++) {
-        patternParameters *pat =
-            setChannelRegisterChip(ichip, badChannelMask, trimbits);
+        patternParameters *pat = setChannelRegisterChip(
+            ichip, badChannelMask + ichip * NCHAN, trimbits);
         if (pat == NULL) {
             error = 1;
         } else {
@@ -2348,42 +2348,42 @@ int setBadChannels(int nch, int *channels) {
     // setting badchannels, loop through list
     for (int i = 0; i < nch; ++i) {
         LOG(logINFO, ("\t[%d]: %d\n", i, channels[i]));
-        // set bad channel for all counters
-        for (int ich = channels[i] * 3; ich != channels[i] * 3 + 3; ++ich) {
-            int iaddr = ich / 32;
-            int iBit = ich % 32;
-            badChannelMask[iaddr] |= (1 << iBit);
-        }
+        // for all counters
+        int ich = channels[i] * NCOUNTERS;
+        badChannelMask[ich++] = 1;
+        badChannelMask[ich++] = 1;
+        badChannelMask[ich] = 1;
     }
 
+    for (int i = 0; i != NCHAN * NCHIP; ++i) {
+        if (badChannelMask[i]) {
+            LOG(logDEBUG1, ("[%d]:0x%02x\n", i, badChannelMask[i]));
+        }
+    }
     return setTrimbits(detectorChans);
 }
 
 int *getBadChannels(int *nch) {
     int *retvals = NULL;
-    // count number of bad channels
+    // number of bad channels
     *nch = 0;
-    int numAddr = NCHAN * NCHIP / 32;
-    for (int iaddr = 0; iaddr != numAddr; ++iaddr) {
-        *nch += __builtin_popcount(badChannelMask[iaddr]);
+    for (int ich = 0; ich != NCHAN * NCHIP; ++ich) {
+        *nch += __builtin_popcount(badChannelMask[ich]);
     }
     if (*nch > 0) {
-        *nch /= 3;
-        // get list of bad channels
+        *nch /= NCOUNTERS;
         retvals = malloc(*nch * sizeof(int));
         if (retvals == NULL) {
             *nch = -1;
             return NULL;
         }
-        // setting badchannels, loop through list
+        // actual bad channels incl. counters
         int ich = 0;
         for (int i = 0; i < NCHAN * NCHIP; ++i) {
-            int iaddr = i / 32;
-            int iBit = i % 32;
             // return is for 1 counter, but mask set for all counters
-            if ((badChannelMask[iaddr] >> iBit) & 0x1) {
-                retvals[ich++] = i / 3;
-                i += 3;
+            if (badChannelMask[i]) {
+                retvals[ich++] = i / NCOUNTERS;
+                i += NCOUNTERS;
             }
         }
     }

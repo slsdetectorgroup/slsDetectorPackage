@@ -66,7 +66,7 @@ int clearBit(int ibit, int patword);
 int getChipStatusRegister();
 
 patternParameters *setChipStatusRegisterPattern(int csr);
-patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits);
+patternParameters *setChannelRegisterChip(int ichip, char *mask, int *trimbits);
 int getGainCaps();
 int M3SetGainCaps(int caps);
 int getInterpolation();

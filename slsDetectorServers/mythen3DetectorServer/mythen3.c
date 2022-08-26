@@ -209,7 +209,8 @@ int M3SetNegativePolarity(int enable) {
     return csr;
 }
 
-patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits) {
+patternParameters *setChannelRegisterChip(int ichip, char *mask,
+                                          int *trimbits) {
 
     patternParameters *pat = malloc(sizeof(patternParameters));
     memset(pat, 0, sizeof(patternParameters));
@@ -297,8 +298,8 @@ patternParameters *setChannelRegisterChip(int ichip, int *mask, int *trimbits) {
             pat->word[iaddr++] = patword;
         }
 
-        for (int i = 0; i < 3; i++) {
-            if (mask[i])
+        for (int ic = 0; ic < 3; ic++) {
+            if (mask[ichip * NCHAN + ich * 3 + ic])
                 patword = setBit(SIGNAL_serialIN, patword);
             else
                 patword = clearBit(SIGNAL_serialIN, patword);

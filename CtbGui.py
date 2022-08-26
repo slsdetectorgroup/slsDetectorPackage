@@ -1,7 +1,9 @@
+from turtle import color
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
 from pyqtgraph import PlotWidget
+
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -71,6 +73,71 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #For Signals Tab
         #TODO Only add the components of Signals tab
+        self.pushButtonBIT0.clicked.connect(self.colorBIT0)
+        self.pushButtonBIT1.clicked.connect(self.colorBIT1)
+        self.pushButtonBIT2.clicked.connect(self.colorBIT2)
+        self.pushButtonBIT3.clicked.connect(self.colorBIT3)
+        self.pushButtonBIT4.clicked.connect(self.colorBIT4)
+        self.pushButtonBIT5.clicked.connect(self.colorBIT5)
+        self.pushButtonBIT6.clicked.connect(self.colorBIT6)
+        self.pushButtonBIT7.clicked.connect(self.colorBIT7)
+        self.pushButtonBIT8.clicked.connect(self.colorBIT8)
+        self.pushButtonBIT9.clicked.connect(self.colorBIT9)
+        self.pushButtonBIT10.clicked.connect(self.colorBIT10)
+        self.pushButtonBIT11.clicked.connect(self.colorBIT11)
+        self.pushButtonBIT12.clicked.connect(self.colorBIT12)
+        self.pushButtonBIT13.clicked.connect(self.colorBIT13)
+        self.pushButtonBIT14.clicked.connect(self.colorBIT14)
+        self.pushButtonBIT15.clicked.connect(self.colorBIT15)
+        self.pushButtonBIT16.clicked.connect(self.colorBIT16)
+        self.pushButtonBIT17.clicked.connect(self.colorBIT17)
+        self.pushButtonBIT18.clicked.connect(self.colorBIT18)
+        self.pushButtonBIT19.clicked.connect(self.colorBIT19)
+        self.pushButtonBIT20.clicked.connect(self.colorBIT20)
+        self.pushButtonBIT21.clicked.connect(self.colorBIT21)
+        self.pushButtonBIT22.clicked.connect(self.colorBIT22)
+        self.pushButtonBIT23.clicked.connect(self.colorBIT23)
+        self.pushButtonBIT24.clicked.connect(self.colorBIT24)
+        self.pushButtonBIT25.clicked.connect(self.colorBIT25)
+        self.pushButtonBIT26.clicked.connect(self.colorBIT26)
+        self.pushButtonBIT27.clicked.connect(self.colorBIT27)
+        self.pushButtonBIT28.clicked.connect(self.colorBIT28)
+        self.pushButtonBIT29.clicked.connect(self.colorBIT29)
+        self.pushButtonBIT30.clicked.connect(self.colorBIT30)
+        self.pushButtonBIT31.clicked.connect(self.colorBIT31)
+        self.pushButtonBIT32.clicked.connect(self.colorBIT32)
+        self.pushButtonBIT33.clicked.connect(self.colorBIT33)
+        self.pushButtonBIT34.clicked.connect(self.colorBIT34)
+        self.pushButtonBIT35.clicked.connect(self.colorBIT35)
+        self.pushButtonBIT36.clicked.connect(self.colorBIT36)
+        self.pushButtonBIT37.clicked.connect(self.colorBIT37)
+        self.pushButtonBIT38.clicked.connect(self.colorBIT38)
+        self.pushButtonBIT39.clicked.connect(self.colorBIT39)
+        self.pushButtonBIT40.clicked.connect(self.colorBIT40)
+        self.pushButtonBIT41.clicked.connect(self.colorBIT41)
+        self.pushButtonBIT42.clicked.connect(self.colorBIT42)
+        self.pushButtonBIT43.clicked.connect(self.colorBIT43)
+        self.pushButtonBIT44.clicked.connect(self.colorBIT44)
+        self.pushButtonBIT45.clicked.connect(self.colorBIT45)
+        self.pushButtonBIT46.clicked.connect(self.colorBIT46)
+        self.pushButtonBIT47.clicked.connect(self.colorBIT47)
+        self.pushButtonBIT48.clicked.connect(self.colorBIT48)
+        self.pushButtonBIT49.clicked.connect(self.colorBIT49)
+        self.pushButtonBIT50.clicked.connect(self.colorBIT50)
+        self.pushButtonBIT51.clicked.connect(self.colorBIT51)
+        self.pushButtonBIT52.clicked.connect(self.colorBIT52)
+        self.pushButtonBIT53.clicked.connect(self.colorBIT53)
+        self.pushButtonBIT54.clicked.connect(self.colorBIT54)
+        self.pushButtonBIT55.clicked.connect(self.colorBIT55)
+        self.pushButtonBIT56.clicked.connect(self.colorBIT56)
+        self.pushButtonBIT57.clicked.connect(self.colorBIT57)
+        self.pushButtonBIT58.clicked.connect(self.colorBIT58)
+        self.pushButtonBIT59.clicked.connect(self.colorBIT59)
+        self.pushButtonBIT60.clicked.connect(self.colorBIT60)
+        self.pushButtonBIT61.clicked.connect(self.colorBIT61)
+        self.pushButtonBIT62.clicked.connect(self.colorBIT62)
+        self.pushButtonBIT63.clicked.connect(self.colorBIT63)
+
 
         #For ADCs Tab
         #TODO Only add the components of ADCs tab
@@ -188,7 +255,7 @@ class MainWindow(QtWidgets.QMainWindow):
     #TODO Only add the components of Sense tab functions
 
     def updateSense0(self):
-        print('Sense 0')
+        print("Sense 0")
     
     def updateSense1(self):
         print('Sense 1')
@@ -216,6 +283,199 @@ class MainWindow(QtWidgets.QMainWindow):
 
     #For Signals Tab functions
     #TODO Only add the components of Signals tab functions
+    def colorBIT0(self):
+        self.showPalette(self.pushButtonBIT0)
+    
+    def colorBIT1(self):
+        self.showPalette(self.pushButtonBIT1)
+    
+    def colorBIT2(self):
+        self.showPalette(self.pushButtonBIT2)
+    
+    def colorBIT3(self):
+        self.showPalette(self.pushButtonBIT3)
+    
+    def colorBIT4(self):
+        self.showPalette(self.pushButtonBIT4)
+    
+    def colorBIT5(self):
+        self.showPalette(self.pushButtonBIT5)
+    
+    def colorBIT6(self):
+        self.showPalette(self.pushButtonBIT6)
+
+    def colorBIT7(self):
+        self.showPalette(self.pushButtonBIT7)
+
+    def colorBIT8(self):
+        self.showPalette(self.pushButtonBIT8)
+    
+    def colorBIT9(self):
+        self.showPalette(self.pushButtonBIT9)
+
+    def colorBIT10(self):
+        self.showPalette(self.pushButtonBIT10)
+
+    def colorBIT11(self):
+        self.showPalette(self.pushButtonBIT11)
+
+    def colorBIT12(self):
+        self.showPalette(self.pushButtonBIT12)
+
+    def colorBIT13(self):
+        self.showPalette(self.pushButtonBIT13)
+
+    def colorBIT14(self):
+        self.showPalette(self.pushButtonBIT14)
+
+    def colorBIT15(self):
+        self.showPalette(self.pushButtonBIT15)
+
+    def colorBIT16(self):
+        self.showPalette(self.pushButtonBIT16)
+
+    def colorBIT17(self):
+        self.showPalette(self.pushButtonBIT17)
+
+    def colorBIT18(self):
+        self.showPalette(self.pushButtonBIT18)
+
+    def colorBIT19(self):
+        self.showPalette(self.pushButtonBIT19)
+    
+    def colorBIT20(self):
+        self.showPalette(self.pushButtonBIT20)
+
+    def colorBIT21(self):
+        self.showPalette(self.pushButtonBIT21)
+
+    def colorBIT22(self):
+        self.showPalette(self.pushButtonBIT22)
+
+    def colorBIT23(self):
+        self.showPalette(self.pushButtonBIT23)
+
+    def colorBIT24(self):
+        self.showPalette(self.pushButtonBIT24)
+
+    def colorBIT25(self):
+        self.showPalette(self.pushButtonBIT25)
+
+    def colorBIT26(self):
+        self.showPalette(self.pushButtonBIT26)
+
+    def colorBIT27(self):
+        self.showPalette(self.pushButtonBIT27)
+
+    def colorBIT28(self):
+        self.showPalette(self.pushButtonBIT28)
+
+    def colorBIT29(self):
+        self.showPalette(self.pushButtonBIT29)
+
+    def colorBIT30(self):
+        self.showPalette(self.pushButtonBIT30)
+
+    def colorBIT31(self):
+        self.showPalette(self.pushButtonBIT31)
+
+    def colorBIT32(self):
+        self.showPalette(self.pushButtonBIT32)
+
+    def colorBIT33(self):
+        self.showPalette(self.pushButtonBIT33)
+
+    def colorBIT34(self):
+        self.showPalette(self.pushButtonBIT34)
+
+    def colorBIT35(self):
+        self.showPalette(self.pushButtonBIT35)
+
+    def colorBIT36(self):
+        self.showPalette(self.pushButtonBIT36)
+
+    def colorBIT37(self):
+        self.showPalette(self.pushButtonBIT37)
+
+    def colorBIT38(self):
+        self.showPalette(self.pushButtonBIT38)
+
+    def colorBIT39(self):
+        self.showPalette(self.pushButtonBIT39)
+
+    def colorBIT40(self):
+        self.showPalette(self.pushButtonBIT40)
+
+    def colorBIT41(self):
+        self.showPalette(self.pushButtonBIT41)
+
+    def colorBIT42(self):
+        self.showPalette(self.pushButtonBIT42)
+
+    def colorBIT43(self):
+        self.showPalette(self.pushButtonBIT43)
+
+    def colorBIT44(self):
+        self.showPalette(self.pushButtonBIT44)
+
+    def colorBIT45(self):
+        self.showPalette(self.pushButtonBIT45)
+
+    def colorBIT46(self):
+        self.showPalette(self.pushButtonBIT46)
+
+    def colorBIT47(self):
+        self.showPalette(self.pushButtonBIT47)
+    
+    def colorBIT48(self):
+        self.showPalette(self.pushButtonBIT48)
+
+    def colorBIT49(self):
+        self.showPalette(self.pushButtonBIT49)
+
+    def colorBIT50(self):
+        self.showPalette(self.pushButtonBIT50)
+
+    def colorBIT51(self):
+        self.showPalette(self.pushButtonBIT51)
+
+    def colorBIT52(self):
+        self.showPalette(self.pushButtonBIT52)
+
+    def colorBIT53(self):
+        self.showPalette(self.pushButtonBIT53)
+
+    def colorBIT54(self):
+        self.showPalette(self.pushButtonBIT54)
+
+    def colorBIT55(self):
+        self.showPalette(self.pushButtonBIT55)
+
+    def colorBIT56(self):
+        self.showPalette(self.pushButtonBIT56)
+
+    def colorBIT57(self):
+        self.showPalette(self.pushButtonBIT57)
+
+    def colorBIT58(self):
+        self.showPalette(self.pushButtonBIT58)
+
+    def colorBIT59(self):
+        self.showPalette(self.pushButtonBIT59)
+
+    def colorBIT60(self):
+        self.showPalette(self.pushButtonBIT60)
+
+    def colorBIT61(self):
+        self.showPalette(self.pushButtonBIT61)
+
+    def colorBIT62(self):
+        self.showPalette(self.pushButtonBIT62)
+
+    def colorBIT63(self):
+        self.showPalette(self.pushButtonBIT63)
+
+    
 
     #For ADCs Tab functions
     #TODO Only add the components of ADCs tab functions
@@ -225,6 +485,13 @@ class MainWindow(QtWidgets.QMainWindow):
     
     #For Acquistions Tab functions
     #TODO Only add the components of Acquistions tab functions
+
+    #For other functios
+    #TODO Add other functions which will be reused 
+    def showPalette(self, button):
+        color = QtWidgets.QColorDialog.getColor()
+        button.setStyleSheet("background-color: %s" % color.name())
+        print(color.name())
 
 
 

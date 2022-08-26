@@ -1291,7 +1291,8 @@ int setModule(sls_detector_module myMod, char *mess) {
     detectorModules->serialnumber = myMod.serialnumber;
 
     // csr reg
-    if (setChipStatusRegister(myMod.reg)) {
+    // flip the negative polarity signals
+    if (setChipStatusRegister(myMod.reg ^ ((1 << _CSR_C10pre) | (1 << _CSR_C15pre)))) {
         sprintf(mess, "Could not CSR from module\n");
         LOG(logERROR, (mess));
         return FAIL;

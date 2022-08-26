@@ -1694,20 +1694,26 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
     }
     std::vector<int> list;
     for (std::string line; std::getline(input_file, line);) {
-        line.erase(std::remove_if(begin(line), end(line), isspace),
-                   end(line)); // remove space
+       // line.erase(std::remove_if(begin(line), end(line), isspace), end(line)); // remove space
+        std::replace_if(begin(line), end(line), [](char c) {return (c == ',');}, ' '); // replace comma with space
+        /*std::generate(std::remove_if(begin(line), end(line), [](char c) {return (c == ':');}, 
+         []() {return ();
+        );*/
         if (!line.empty()) {
             std::istringstream iss(line);
-            int ival = 0;
-            iss >> ival;
-            if (iss.fail()) {
-                throw RuntimeError("Could not load bad channels file. Invalid "
-                                   "channel number at position " +
-                                   std::to_string(list.size()));
+            while(iss.good()) {
+                int ival = 0;
+                iss >> ival;
+                if (iss.fail()) {
+                    throw RuntimeError("Could not load bad channels file. Invalid "
+                                    "channel number at position " +
+                                    std::to_string(list.size()));
+                }
+                list.push_back(ival);
             }
-            list.push_back(ival);
         }
     }
+    LOG(logINFORED) << "list:"<< ToString(list);
 
     // update to multi values if multi modules
     if (isAllPositions(pos)) {

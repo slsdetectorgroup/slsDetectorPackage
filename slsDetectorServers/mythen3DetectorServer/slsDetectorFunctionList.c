@@ -391,9 +391,9 @@ void initStopServer() {
 void allocateDetectorStructureMemory() {
     // Allocation of memory
     detectorModules = malloc(sizeof(sls_detector_module));
-    detectorChans = malloc(NCHIP * NCHAN * sizeof(int));
-    badChannelMask = malloc(NCHIP * NCHAN * sizeof(char));
-    memset(badChannelMask, 0, NCHIP * NCHAN * sizeof(char));
+    detectorChans = malloc(NCHAN_PER_MODULE * sizeof(int));
+    badChannelMask = malloc(NCHAN_PER_MODULE * sizeof(char));
+    memset(badChannelMask, 0, NCHAN_PER_MODULE * sizeof(char));
     detectorDacs = malloc(NDAC * sizeof(int));
 
     LOG(logDEBUG1,
@@ -404,7 +404,7 @@ void allocateDetectorStructureMemory() {
     (detectorModules)->chanregs = detectorChans;
     (detectorModules)->ndac = NDAC;
     (detectorModules)->nchip = NCHIP;
-    (detectorModules)->nchan = NCHIP * NCHAN;
+    (detectorModules)->nchan = NCHAN_PER_MODULE;
     (detectorModules)->reg = UNINITIALIZED;
     (detectorModules)->iodelay = 0;
     (detectorModules)->tau = 0;
@@ -1291,8 +1291,8 @@ int setModule(sls_detector_module myMod, char *mess) {
     detectorModules->serialnumber = myMod.serialnumber;
 
     // csr reg
-    // flip the negative polarity signals
-    if (setChipStatusRegister(myMod.reg ^ ((1 << _CSR_C10pre) | (1 << _CSR_C15pre)))) {
+    flipNegativePolarity(&myMod.reg);
+    if (setChipStatusRegister(myMod.reg)) {
         sprintf(mess, "Could not CSR from module\n");
         LOG(logERROR, (mess));
         return FAIL;
@@ -2342,21 +2342,18 @@ int getClockDivider(enum CLKINDEX ind) {
 
 int setBadChannels(int nch, int *channels) {
     LOG(logINFO, ("Setting %d bad channels\n", nch));
-
-    // resetting all mask registers first
-    memset(badChannelMask, 0, NCHIP * NCHAN * sizeof(char));
+    memset(badChannelMask, 0, NCHAN_PER_MODULE * sizeof(char));
 
     // setting badchannels, loop through list
     for (int i = 0; i < nch; ++i) {
         LOG(logINFO, ("\t[%d]: %d\n", i, channels[i]));
-        // for all counters
-        int ich = channels[i] * NCOUNTERS;
-        badChannelMask[ich++] = 1;
-        badChannelMask[ich++] = 1;
-        badChannelMask[ich] = 1;
+        for (int ich = channels[i] * NCOUNTERS;
+             ich != channels[i] * NCOUNTERS + 3; ++ich) {
+            badChannelMask[ich] = 1;
+        }
     }
 
-    for (int i = 0; i != NCHAN * NCHIP; ++i) {
+    for (int i = 0; i != NCHAN_PER_MODULE; ++i) {
         if (badChannelMask[i]) {
             LOG(logDEBUG1, ("[%d]:0x%02x\n", i, badChannelMask[i]));
         }
@@ -2368,7 +2365,7 @@ int *getBadChannels(int *nch) {
     int *retvals = NULL;
     // number of bad channels
     *nch = 0;
-    for (int ich = 0; ich != NCHAN * NCHIP; ++ich) {
+    for (int ich = 0; ich != NCHAN_PER_MODULE; ++ich) {
         *nch += __builtin_popcount(badChannelMask[ich]);
     }
     if (*nch > 0) {
@@ -2380,7 +2377,7 @@ int *getBadChannels(int *nch) {
         }
         // actual bad channels incl. counters
         int ich = 0;
-        for (int i = 0; i < NCHAN * NCHIP; ++i) {
+        for (int i = 0; i < NCHAN_PER_MODULE; ++i) {
             // return is for 1 counter, but mask set for all counters
             if (badChannelMask[i]) {
                 retvals[ich++] = i / NCOUNTERS;

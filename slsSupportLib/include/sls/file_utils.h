@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <vector>
 
 namespace sls {
 
@@ -48,4 +49,11 @@ int getFileSize(std::ifstream &ifs);
 ssize_t getFileSize(FILE *fd, const std::string &prependErrorString);
 
 std::string getFileNameFromFilePath(const std::string &fpath);
+
+/** File can have # for comments.
+ * Channels can be separated by spaces, commas
+ * and ranges provided using ':', eg. 23:29
+ * */
+std::vector<int> getChannelsFromFile(const std::string &fname);
+
 } // namespace sls

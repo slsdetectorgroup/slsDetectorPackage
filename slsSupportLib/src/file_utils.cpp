@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/file_utils.h"
+#include "sls/ToString.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 
@@ -160,6 +161,72 @@ ssize_t getFileSize(FILE *fd, const std::string &prependErrorString) {
     }
     rewind(fd);
     return fileSize;
+}
+
+std::vector<int> getChannelsFromFile(const std::string &fname) {
+    // read bad channels file
+    std::ifstream input_file(fname);
+    if (!input_file) {
+        throw RuntimeError("Could not open bad channels file " + fname +
+                           " for reading");
+    }
+    std::vector<int> list;
+    for (std::string line; std::getline(input_file, line);) {
+
+        // replace comma with space
+        std::replace_if(
+            begin(line), end(line), [](char c) { return (c == ','); }, ' ');
+
+        // replace x:y with a sequence of x to y
+        auto result = line.find(':');
+        while (result != std::string::npos) {
+            auto start = line.rfind(' ', result);
+            if (start == std::string::npos) {
+                start = 0;
+            } else
+                ++start;
+            int istart = StringTo<int>(line.substr(start, result - start));
+
+            auto stop = line.find(' ', result);
+            if (stop == std::string::npos) {
+                stop = line.length();
+            }
+            int istop =
+                StringTo<int>(line.substr(result + 1, stop - result - 1));
+
+            std::vector<int> v(istop - istart);
+            std::generate(v.begin(), v.end(),
+                          [n = istart]() mutable { return n++; });
+            line.replace(start, stop - start, ToString(v));
+
+            LOG(logDEBUG1) << line;
+            result = line.find(':');
+        }
+
+        // remove punctuations including [ and ]
+        line.erase(std::remove_if(begin(line), end(line), ispunct), end(line));
+
+        LOG(logDEBUG1) << line;
+
+        // push all channels from a line separated by space
+        if (!line.empty()) {
+            std::istringstream iss(line);
+            while (iss.good()) {
+                int ival = 0;
+                iss >> ival;
+                if (iss.fail()) {
+                    throw RuntimeError(
+                        "Could not load bad channels file. Invalid "
+                        "channel number at position " +
+                        std::to_string(list.size()));
+                }
+                list.push_back(ival);
+            }
+        }
+    }
+    LOG(logDEBUG1) << "list:" << ToString(list);
+
+    return list;
 }
 
 } // namespace sls

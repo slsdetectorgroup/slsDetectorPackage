@@ -97,6 +97,10 @@ patternParameters *setChipStatusRegisterPattern(int csr) {
     return pat;
 }
 
+void flipNegativePolarity(int *csr) {
+    (*csr) ^= ((1 << _CSR_C10pre) | (1 << _CSR_C15pre));
+}
+
 int getGainCaps() {
     int csr = chipStatusRegister;
     // Translates bit representation

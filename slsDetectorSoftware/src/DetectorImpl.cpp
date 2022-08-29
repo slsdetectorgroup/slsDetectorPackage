@@ -1695,10 +1695,11 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
     std::vector<int> list;
     for (std::string line; std::getline(input_file, line);) {
 
+        // replace comma with space
         std::replace_if(
-            begin(line), end(line), [](char c) { return (c == ','); },
-            ' '); // replace comma with space
+            begin(line), end(line), [](char c) { return (c == ','); }, ' ');
 
+        // replace x:y with a sequence of x to y
         auto result = line.find(':');
         while (result != std::string::npos) {
             auto start = line.rfind(' ', result);
@@ -1724,11 +1725,12 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
             result = line.find(':');
         }
 
-        line.erase(std::remove_if(begin(line), end(line), ispunct),
-                   end(line)); // remove punctuations
+        // remove punctuations including [ and ]
+        line.erase(std::remove_if(begin(line), end(line), ispunct), end(line));
 
         LOG(logDEBUG1) << line;
 
+        // push all channels from a line separated by space
         if (!line.empty()) {
             std::istringstream iss(line);
             while (iss.good()) {

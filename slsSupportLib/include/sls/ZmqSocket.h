@@ -14,7 +14,15 @@
 
 #include <map>
 #include <memory>
+
+// Selective suppression of  warning in gcc, 
+// showed up in gcc 12 and at the moment
+// no upgrade is available to rapidjson 
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <rapidjson/document.h> //json header in zmq stream
+#pragma GCC diagnostic pop
+
 #include <zmq.h>
 
 namespace sls {

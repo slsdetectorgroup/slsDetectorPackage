@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
+#include "py_headers.h"
+
 #include "sls/sls_detector_defs.h"
-#include <pybind11/chrono.h>
-#include <pybind11/numpy.h>
-#include <pybind11/operators.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
 #include <sstream>
 namespace py = pybind11;
 void init_scan(py::module &m) {

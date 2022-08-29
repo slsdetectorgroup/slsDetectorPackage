@@ -1694,26 +1694,57 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
     }
     std::vector<int> list;
     for (std::string line; std::getline(input_file, line);) {
-       // line.erase(std::remove_if(begin(line), end(line), isspace), end(line)); // remove space
-        std::replace_if(begin(line), end(line), [](char c) {return (c == ',');}, ' '); // replace comma with space
-        /*std::generate(std::remove_if(begin(line), end(line), [](char c) {return (c == ':');}, 
-         []() {return ();
-        );*/
+
+        std::replace_if(
+            begin(line), end(line), [](char c) { return (c == ','); },
+            ' '); // replace comma with space
+
+        auto result = line.find(':');
+        while (result != std::string::npos) {
+            auto start = line.rfind(' ', result);
+            if (start == std::string::npos) {
+                start = 0;
+            } else
+                ++start;
+            int istart = StringTo<int>(line.substr(start, result - start));
+
+            auto stop = line.find(' ', result);
+            if (stop == std::string::npos) {
+                stop = line.length();
+            }
+            int istop =
+                StringTo<int>(line.substr(result + 1, stop - result - 1));
+
+            std::vector<int> v(istop - istart);
+            std::generate(v.begin(), v.end(),
+                          [n = istart]() mutable { return n++; });
+            line.replace(start, stop - start, ToString(v));
+
+            LOG(logDEBUG1) << line;
+            result = line.find(':');
+        }
+
+        line.erase(std::remove_if(begin(line), end(line), ispunct),
+                   end(line)); // remove punctuations
+
+        LOG(logDEBUG1) << line;
+
         if (!line.empty()) {
             std::istringstream iss(line);
-            while(iss.good()) {
+            while (iss.good()) {
                 int ival = 0;
                 iss >> ival;
                 if (iss.fail()) {
-                    throw RuntimeError("Could not load bad channels file. Invalid "
-                                    "channel number at position " +
-                                    std::to_string(list.size()));
+                    throw RuntimeError(
+                        "Could not load bad channels file. Invalid "
+                        "channel number at position " +
+                        std::to_string(list.size()));
                 }
                 list.push_back(ival);
             }
         }
     }
-    LOG(logINFORED) << "list:"<< ToString(list);
+    LOG(logDEBUG1) << "list:" << ToString(list);
 
     // update to multi values if multi modules
     if (isAllPositions(pos)) {

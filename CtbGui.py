@@ -141,6 +141,44 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #For ADCs Tab
         #TODO Only add the components of ADCs tab
+        self.pushButtonADC0.clicked.connect(self.colorADC0)
+        self.pushButtonADC1.clicked.connect(self.colorADC1)
+        self.pushButtonADC2.clicked.connect(self.colorADC2)
+        self.pushButtonADC3.clicked.connect(self.colorADC3)
+        self.pushButtonADC4.clicked.connect(self.colorADC4)
+        self.pushButtonADC5.clicked.connect(self.colorADC5)
+        self.pushButtonADC6.clicked.connect(self.colorADC6)
+        self.pushButtonADC7.clicked.connect(self.colorADC7)
+        self.pushButtonADC8.clicked.connect(self.colorADC8)
+        self.pushButtonADC9.clicked.connect(self.colorADC9)
+        self.pushButtonADC10.clicked.connect(self.colorADC10)
+        self.pushButtonADC11.clicked.connect(self.colorADC11)
+        self.pushButtonADC12.clicked.connect(self.colorADC12)
+        self.pushButtonADC13.clicked.connect(self.colorADC13)
+        self.pushButtonADC14.clicked.connect(self.colorADC14)
+        self.pushButtonADC15.clicked.connect(self.colorADC15)
+        self.pushButtonADC16.clicked.connect(self.colorADC16)
+        self.pushButtonADC17.clicked.connect(self.colorADC17)
+        self.pushButtonADC18.clicked.connect(self.colorADC18)
+        self.pushButtonADC19.clicked.connect(self.colorADC19)
+        self.pushButtonADC20.clicked.connect(self.colorADC20)
+        self.pushButtonADC21.clicked.connect(self.colorADC21)
+        self.pushButtonADC22.clicked.connect(self.colorADC22)
+        self.pushButtonADC23.clicked.connect(self.colorADC23)
+        self.pushButtonADC24.clicked.connect(self.colorADC24)
+        self.pushButtonADC25.clicked.connect(self.colorADC25)
+        self.pushButtonADC26.clicked.connect(self.colorADC26)
+        self.pushButtonADC27.clicked.connect(self.colorADC27)
+        self.pushButtonADC28.clicked.connect(self.colorADC28)
+        self.pushButtonADC29.clicked.connect(self.colorADC29)
+        self.pushButtonADC30.clicked.connect(self.colorADC30)
+        self.pushButtonADC31.clicked.connect(self.colorADC31)
+        self.pushButtonAll15.clicked.connect(self.all15)
+        self.pushButtonNone15.clicked.connect(self.none15)
+        self.pushButtonAll16.clicked.connect(self.all16)
+        self.pushButtonNone16.clicked.connect(self.none16)
+        self.pushButtonAll.clicked.connect(self.all)
+        self.pushButtonNone.clicked.connect(self.none)
 
         #For Pattern Tab
         #TODO Only add the components of Pattern tab
@@ -479,6 +517,122 @@ class MainWindow(QtWidgets.QMainWindow):
 
     #For ADCs Tab functions
     #TODO Only add the components of ADCs tab functions
+    def colorADC0(self):
+        self.showPalette(self.pushButtonADC0)
+    
+    def colorADC1(self):
+        self.showPalette(self.pushButtonADC1)
+    
+    def colorADC2(self):
+        self.showPalette(self.pushButtonADC2)
+    
+    def colorADC3(self):
+        self.showPalette(self.pushButtonADC3)
+    
+    def colorADC4(self):
+        self.showPalette(self.pushButtonADC4)
+    
+    def colorADC5(self):
+        self.showPalette(self.pushButtonADC5)
+    
+    def colorADC6(self):
+        self.showPalette(self.pushButtonADC6)
+
+    def colorADC7(self):
+        self.showPalette(self.pushButtonADC7)
+
+    def colorADC8(self):
+        self.showPalette(self.pushButtonADC8)
+    
+    def colorADC9(self):
+        self.showPalette(self.pushButtonADC9)
+
+    def colorADC10(self):
+        self.showPalette(self.pushButtonADC10)
+
+    def colorADC11(self):
+        self.showPalette(self.pushButtonADC11)
+
+    def colorADC12(self):
+        self.showPalette(self.pushButtonADC12)
+
+    def colorADC13(self):
+        self.showPalette(self.pushButtonADC13)
+
+    def colorADC14(self):
+        self.showPalette(self.pushButtonADC14)
+
+    def colorADC15(self):
+        self.showPalette(self.pushButtonADC15)
+
+    def colorADC16(self):
+        self.showPalette(self.pushButtonADC16)
+
+    def colorADC17(self):
+        self.showPalette(self.pushButtonADC17)
+
+    def colorADC18(self):
+        self.showPalette(self.pushButtonADC18)
+
+    def colorADC19(self):
+        self.showPalette(self.pushButtonADC19)
+    
+    def colorADC20(self):
+        self.showPalette(self.pushButtonADC20)
+
+    def colorADC21(self):
+        self.showPalette(self.pushButtonADC21)
+
+    def colorADC22(self):
+        self.showPalette(self.pushButtonADC22)
+
+    def colorADC23(self):
+        self.showPalette(self.pushButtonADC23)
+
+    def colorADC24(self):
+        self.showPalette(self.pushButtonADC24)
+
+    def colorADC25(self):
+        self.showPalette(self.pushButtonADC25)
+
+    def colorADC26(self):
+        self.showPalette(self.pushButtonADC26)
+
+    def colorADC27(self):
+        self.showPalette(self.pushButtonADC27)
+
+    def colorADC28(self):
+        self.showPalette(self.pushButtonADC28)
+
+    def colorADC29(self):
+        self.showPalette(self.pushButtonADC29)
+
+    def colorADC30(self):
+        self.showPalette(self.pushButtonADC30)
+
+    def colorADC31(self):
+        self.showPalette(self.pushButtonADC31)
+
+    def all15(self):
+        print("all 0-15")
+
+    def none15(self):
+        print("none 0-15")
+
+    def all16(self):
+        print("all 16-31")
+
+    def none16(self):
+        print("None 16-13")
+
+    def all(self):
+        print("all ")
+
+    def none(self):
+        print("None")
+
+
+
 
     #For Pattern Tab functions
     #TODO Only add the components of Pattern tab functions
@@ -490,8 +644,10 @@ class MainWindow(QtWidgets.QMainWindow):
     #TODO Add other functions which will be reused 
     def showPalette(self, button):
         color = QtWidgets.QColorDialog.getColor()
-        button.setStyleSheet("background-color: %s" % color.name())
-        print(color.name())
+        if color.isValid():
+            button.setStyleSheet("background-color: %s" % color.name())
+            print(color.name())
+        
 
 
 
@@ -500,6 +656,7 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     main = MainWindow()
     main.show()
+    #main.showMaximized()
 
     #Run the app
     app.exec_()

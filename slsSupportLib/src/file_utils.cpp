@@ -227,9 +227,9 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
     LOG(logDEBUG1) << "list:" << ToString(list);
 
     // remove duplicates from list
-    auto listSize = list.size();  
-    std::sort(list.begin(), list.end()); 
-    list.erase( unique( list.begin(), list.end() ), list.end() );
+    auto listSize = list.size();
+    std::sort(list.begin(), list.end());
+    list.erase(unique(list.begin(), list.end()), list.end());
     if (list.size() != listSize) {
         LOG(logWARNING) << "Removed duplicates from channel file";
     }

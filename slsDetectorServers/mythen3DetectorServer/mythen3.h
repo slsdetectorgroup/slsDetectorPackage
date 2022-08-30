@@ -67,7 +67,7 @@ int getChipStatusRegister();
 
 patternParameters *setChipStatusRegisterPattern(int csr);
 patternParameters *setChannelRegisterChip(int ichip, char *mask, int *trimbits);
-void flipNegativePolarity(int *csr);
+void flipNegativePolarityBits(int *csr);
 int getGainCaps();
 int M3SetGainCaps(int caps);
 int getInterpolation();

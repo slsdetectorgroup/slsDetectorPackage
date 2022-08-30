@@ -1291,7 +1291,7 @@ int setModule(sls_detector_module myMod, char *mess) {
     detectorModules->serialnumber = myMod.serialnumber;
 
     // csr reg
-    flipNegativePolarity(&myMod.reg);
+    flipNegativePolarityBits(&myMod.reg);
     if (setChipStatusRegister(myMod.reg)) {
         sprintf(mess, "Could not CSR from module\n");
         LOG(logERROR, (mess));
@@ -2340,19 +2340,16 @@ int getClockDivider(enum CLKINDEX ind) {
     return clkDivider[ind];
 }
 
-int setBadChannels(int nch, int *channels) {
-    LOG(logINFO, ("Setting %d bad channels\n", nch));
+int setBadChannels(int numChannels, int *channelList) {
+    LOG(logINFO, ("Setting %d bad channels\n", numChannels));
     memset(badChannelMask, 0, NCHAN_PER_MODULE * sizeof(char));
-
-    // setting badchannels, loop through list
-    for (int i = 0; i < nch; ++i) {
-        LOG(logINFO, ("\t[%d]: %d\n", i, channels[i]));
-        for (int ich = channels[i] * NCOUNTERS;
-             ich != channels[i] * NCOUNTERS + 3; ++ich) {
+    for (int i = 0; i != numChannels; ++i) {
+        LOG(logINFO, ("\t[%d]: %d\n", i, channelList[i]));
+        for (int ich = channelList[i] * NCOUNTERS;
+             ich != channelList[i] * NCOUNTERS + NCOUNTERS; ++ich) {
             badChannelMask[ich] = 1;
         }
     }
-
     for (int i = 0; i != NCHAN_PER_MODULE; ++i) {
         if (badChannelMask[i]) {
             LOG(logDEBUG1, ("[%d]:0x%02x\n", i, badChannelMask[i]));
@@ -2361,33 +2358,32 @@ int setBadChannels(int nch, int *channels) {
     return setTrimbits(detectorChans);
 }
 
-int *getBadChannels(int *nch) {
+int *getBadChannels(int *numChannels) {
     int *retvals = NULL;
-    // number of bad channels
-    *nch = 0;
-    for (int ich = 0; ich != NCHAN_PER_MODULE; ++ich) {
-        *nch += __builtin_popcount(badChannelMask[ich]);
+    *numChannels = 0;
+    for (int i = 0; i != NCHAN_PER_MODULE; i = i + NCOUNTERS) {
+        if (badChannelMask[i]) {
+            *numChannels += 1;
+        }
     }
-    if (*nch > 0) {
-        *nch /= NCOUNTERS;
-        retvals = malloc(*nch * sizeof(int));
+    if (*numChannels > 0) {
+        retvals = malloc(*numChannels * sizeof(int));
+        memset(retvals, 0, *numChannels * sizeof(int));
         if (retvals == NULL) {
-            *nch = -1;
+            *numChannels = -1;
             return NULL;
         }
-        // actual bad channels incl. counters
+        // return only 1 channel for all counters
         int ich = 0;
-        for (int i = 0; i < NCHAN_PER_MODULE; ++i) {
-            // return is for 1 counter, but mask set for all counters
+        for (int i = 0; i != NCHAN_PER_MODULE; i = i + NCOUNTERS) {
             if (badChannelMask[i]) {
                 retvals[ich++] = i / NCOUNTERS;
-                i += NCOUNTERS;
             }
         }
     }
     // debugging
-    LOG(logDEBUG1, ("Reading Bad channel list\n"));
-    for (int i = 0; i != (*nch); ++i) {
+    LOG(logDEBUG1, ("Reading Bad channel list: %d\n", *numChannels));
+    for (int i = 0; i != (*numChannels); ++i) {
         LOG(logDEBUG1, ("[%d]: %d\n", i, retvals[i]));
     }
     return retvals;

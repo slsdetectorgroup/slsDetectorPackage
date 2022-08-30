@@ -627,8 +627,8 @@ void setVetoAlgorithm(enum vetoAlgorithm alg,
 #endif
 
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-int setBadChannels(int nch, int *channels);
-int *getBadChannels(int *nch);
+int setBadChannels(int numChannels, int *channelList);
+int *getBadChannels(int *numChannels);
 #endif
 
 #if defined(JUNGFRAUD) || defined(EIGERD)

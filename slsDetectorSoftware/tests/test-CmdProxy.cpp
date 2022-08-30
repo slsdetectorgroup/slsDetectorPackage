@@ -4,6 +4,7 @@
 #include "catch.hpp"
 #include "sls/Detector.h"
 #include "sls/sls_detector_defs.h"
+#include "sls/file_utils.h"
 
 #include <chrono>
 #include <sstream>
@@ -629,8 +630,24 @@ TEST_CASE("badchannels", "[.cmd]") {
 
     if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3) {
         REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
-        REQUIRE_NOTHROW(proxy.Call("badchannels", {"/tmp/bla.txt"}, -1, GET));
-        REQUIRE_NOTHROW(proxy.Call("badchannels", {"/tmp/bla.txt"}, -1, PUT));
+
+        std::string fname = "/tmp/sls_test_channels.txt";
+        std::ofstream outfile;
+        outfile.open(fname.c_str(), std::ios_base::out);
+        if (!outfile.is_open()) {
+            throw RuntimeError("Could not open file " + fname + "for writing to test channel4 file reading");
+        } 
+        outfile << "0" << std::endl;
+        outfile << "12, 15, 43" << std::endl;
+        outfile << "40:45" << std::endl;
+        outfile << "1279" << std::endl;
+        outfile.close();
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname}, 0, GET));
+        auto list = getChannelsFromFile(fname);
+        std::vector <int> expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
+        REQUIRE(list == expected);
+
     } else {
         REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
     }

@@ -233,7 +233,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.radioButtonWaveform.clicked.connect(self.plotOptions)
         self.radioButtonDistribution.clicked.connect(self.plotOptions)
         self.radioButtonImage.clicked.connect(self.plotOptions)
-        self.comboBoxPlot.editingFinished.connect(self.plotOptions)
+        self.comboBoxPlot.activated.connect(self.plotOptions)
         self.spinBoxSerialOffset.editingFinished.connect(self.getSerialOffset)
         self.spinBoxNCount.editingFinished.connect(self.getNCounter)
         self.spinBoxDynamicRange.editingFinished.connect(self.getDynamicRange)
@@ -241,7 +241,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxImageY.editingFinished.connect(self.getImageY)
         self.checkBoxAcquire.clicked.connect(self.getPedestal)
         self.checkBoxSubtract.clicked.connect(self.getPedestal)
-        self.checkboxCommonMode.clicked.connect(self.getPedestal)
+        self.checkBoxCommonMode.clicked.connect(self.getPedestal)
         self.pushButtonReset.clicked.connect(self.resetPedestal)
         self.checkBoxRaw.clicked.connect(self.getRawData)
         self.spinBoxRawMin.editingFinished.connect(self.getRawData)
@@ -861,65 +861,54 @@ class MainWindow(QtWidgets.QMainWindow):
     def getSerialOffset(self):
         print("SerialOffSet")
 
-    def plotOptions(self):
+    def getNCounter(self):
         print("plot options")
 
-    def plotOptions(self):
+    def getDynamicRange(self):
         print("plot options")
 
-    def plotOptions(self):
+    def getImageX(self):
         print("plot options")
 
-    def plotOptions(self):
+    def getImageY(self):
         print("plot options")
 
-    def plotOptions(self):
+    def getPedestal(self):
         print("plot options")
 
-    def plotOptions(self):
+    def resetPedestal(self):
         print("plot options")
 
-    def plotOptions(self):
+    def getRawData(self):
         print("plot options")
 
-    def plotOptions(self):
+    def getPedestalSubtract(self):
         print("plot options")
 
-    def plotOptions(self):
+    def getFitADC(self):
         print("plot options")
 
-    def plotOptions(self):
+    def getPlotBit(self):
         print("plot options")
 
-    def plotOptions(self):
+    def setFileName(self):
         print("plot options")
 
-    def plotOptions(self):
+    def setFilePath(self):
         print("plot options")
 
-    def plotOptions(self):
+    def setIndex(self):
         print("plot options")
 
-    def plotOptions(self):
+    def getMeasurements(self):
         print("plot options")
 
-    def plotOptions(self):
+    def acquire(self):
         print("plot options")
 
-    def plotOptions(self):
+    def plotReferesh(self):
         print("plot options")
 
-    def plotOptions(self):
-        print("plot options")
-
-    def plotOptions(self):
-        print("plot options")
-
-    def plotOptions(self):
-        print("plot options")
-
-    def plotOptions(self):
-        print("plot options")
 
     #For other functios
     #TODO Add other functions which will be reused 

@@ -63,7 +63,7 @@
             </rect>
            </property>
            <property name="currentIndex">
-            <number>6</number>
+            <number>3</number>
            </property>
            <widget class="QWidget" name="tab">
             <attribute name="title">
@@ -75,7 +75,7 @@
                <x>10</x>
                <y>10</y>
                <width>711</width>
-               <height>811</height>
+               <height>791</height>
               </rect>
              </property>
              <property name="frameShape">
@@ -1194,9 +1194,9 @@
              <property name="geometry">
               <rect>
                <x>10</x>
-               <y>20</y>
+               <y>10</y>
                <width>711</width>
-               <height>351</height>
+               <height>331</height>
               </rect>
              </property>
              <property name="frameShape">
@@ -1527,9 +1527,9 @@
              <property name="geometry">
               <rect>
                <x>10</x>
-               <y>20</y>
+               <y>10</y>
                <width>711</width>
-               <height>491</height>
+               <height>471</height>
               </rect>
              </property>
              <property name="frameShape">
@@ -7673,6 +7673,9 @@
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
                </property>
               </widget>
               <widget class="QDoubleSpinBox" name="doubleSpinBoxDBit">

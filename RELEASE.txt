@@ -92,7 +92,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - jungfrau master
 - g2 parallel command
 - jungfrau sync
-- m3 bad channels (badchannel file also for g2 extended to include commas and colons)
+- m3 bad channels (badchannel file also for g2 extended to include commas and colons, remove duplicates)
 - m3 fix for gain caps to invert where needed when loading from trimbit file (fix for feature might have been added only in developer branch)
 - pat loop and wait address default
 - ctb and moench Fw fixed (to work with pattern commdand) )addreess length

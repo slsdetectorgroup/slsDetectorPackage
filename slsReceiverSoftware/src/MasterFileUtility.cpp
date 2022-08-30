@@ -32,8 +32,7 @@ std::string CreateMasterBinaryFile(const std::string &filePath,
     rapidjson::StringBuffer s;
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
     attr->GetBinaryAttributes(&writer);
-    if (fwrite(s.GetString(), 1, strlen(s.GetString()), fd) !=
-        strlen(s.GetString())) {
+    if (fwrite(s.GetString(), strlen(s.GetString()), 1, fd) != 1) {
         throw RuntimeError(
             "Master binary file incorrect number of bytes written to file");
     }

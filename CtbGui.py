@@ -182,9 +182,81 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #For Pattern Tab
         #TODO Only add the components of Pattern tab
+        self.pushButtonCompiler.clicked.connect(self.getCompiler)
+        self.pushButtonPattern.clicked.connect(self.getPattern)
+        self.spinBoxFrames.editingFinished.connect(self.getFrames)
+        self.spinBoxPeriod.editingFinished.connect(self.getPeriod)
+        self.spinBoxTriggers.editingFinished.connect(self.getTriggers)
+        self.spinBoxRunF.editingFinished.connect(self.getRunFrequency)
+        self.spinBoxADCF.editingFinished.connect(self.getADCFrequency)
+        self.spinBoxADCPhase.editingFinished.connect(self.getADCPhase)
+        self.spinBoxADCPipeline.editingFinished.connect(self.getADCPipeline)
+        self.spinBoxDBITF.editingFinished.connect(self.getDBITFrequency)
+        self.spinBoxDBITPhase.editingFinished.connect(self.getDBITPhase)
+        self.spinBoxDBITPipeline.editingFinished.connect(self.getDBITPipeline)
+        self.spinBoxStartAddress.editingFinished.connect(self.getStartAddress)
+        self.spinBoxStopAddress.editingFinished.connect(self.getStopAddress)
+        self.spinBoxLoop0.editingFinished.connect(self.getLoop0)
+        self.spinBoxLoop1.editingFinished.connect(self.getLoop1)
+        self.spinBoxLoop2.editingFinished.connect(self.getLoop2)
+        self.spinBoxLoop3.editingFinished.connect(self.getLoop3)
+        self.spinBoxLoop4.editingFinished.connect(self.getLoop4)
+        self.spinBoxLoop5.editingFinished.connect(self.getLoop5)
+        self.spinBoxLoop0Start.editingFinished.connect(self.getLoop0Start)
+        self.spinBoxLoop1Start.editingFinished.connect(self.getLoop1Start)
+        self.spinBoxLoop2Start.editingFinished.connect(self.getLoop2Start)
+        self.spinBoxLoop3Start.editingFinished.connect(self.getLoop3Start)
+        self.spinBoxLoop4Start.editingFinished.connect(self.getLoop4Start)
+        self.spinBoxLoop5Start.editingFinished.connect(self.getLoop5Start)
+        self.spinBoxLoop0Stop.editingFinished.connect(self.getLoop0Stop)
+        self.spinBoxLoop1Stop.editingFinished.connect(self.getLoop1Stop)
+        self.spinBoxLoop2Stop.editingFinished.connect(self.getLoop2Stop)
+        self.spinBoxLoop3Stop.editingFinished.connect(self.getLoop3Stop)
+        self.spinBoxLoop4Stop.editingFinished.connect(self.getLoop4Stop)
+        self.spinBoxLoop5Stop.editingFinished.connect(self.getLoop5Stop)
+        self.spinBoxWait0.editingFinished.connect(self.getWait0)
+        self.spinBoxWait1.editingFinished.connect(self.getWait1)
+        self.spinBoxWait2.editingFinished.connect(self.getWait2)
+        self.spinBoxWait0Address.editingFinished.connect(self.getWait0Address)
+        self.spinBoxWait1Address.editingFinished.connect(self.getWait1Address)
+        self.spinBoxWait2Address.editingFinished.connect(self.getWait2Address)
+        self.spinBoxAnalog.editingFinished.connect(self.getAnalog)
+        self.spinBoxDigital.editingFinished.connect(self.getDigital)
+        self.checkBoxAnalog.clicked.connect(self.getReadOut)
+        self.checkBoxDigital.clicked.connect(self.getReadOut)
+        self.pushButtonLoad.clicked.connect(self.loadPattern)
+
         
         #For Acquistions Tab
         #TODO Only add the components of Acquistions tab
+        self.radioButtonNoPlot.clicked.connect(self.plotOptions)
+        self.radioButtonWaveform.clicked.connect(self.plotOptions)
+        self.radioButtonDistribution.clicked.connect(self.plotOptions)
+        self.radioButtonImage.clicked.connect(self.plotOptions)
+        self.comboBoxPlot.editingFinished.connect(self.plotOptions)
+        self.spinBoxSerialOffset.editingFinished.connect(self.getSerialOffset)
+        self.spinBoxNCount.editingFinished.connect(self.getNCounter)
+        self.spinBoxDynamicRange.editingFinished.connect(self.getDynamicRange)
+        self.spinBoxImageX.editingFinished.connect(self.getImageX)
+        self.spinBoxImageY.editingFinished.connect(self.getImageY)
+        self.checkBoxAcquire.clicked.connect(self.getPedestal)
+        self.checkBoxSubtract.clicked.connect(self.getPedestal)
+        self.checkboxCommonMode.clicked.connect(self.getPedestal)
+        self.pushButtonReset.clicked.connect(self.resetPedestal)
+        self.checkBoxRaw.clicked.connect(self.getRawData)
+        self.spinBoxRawMin.editingFinished.connect(self.getRawData)
+        self.spinBoxRawMax.editingFinished.connect(self.getRawData)
+        self.checkBoxPedestal.clicked.connect(self.getPedestalSubtract)
+        self.spinBoxPedestalMin.editingFinished.connect(self.getPedestalSubtract)
+        self.spinBoxPedestalMax.editingFinished.connect(self.getPedestalSubtract)
+        self.spinBoxFit.editingFinished.connect(self.getFitADC)
+        self.spinBoxPlot.editingFinished.connect(self.getPlotBit)
+        self.lineEditFileName.editingFinished.connect(self.setFileName)
+        self.lineEditFilePath.editingFinished.connect(self.setFilePath)
+        self.spinBoxIndex.editingFinished.connect(self.setIndex)
+        self.spinBoxMeasurements.editingFinished.connect(self.getMeasurements)
+        self.pushButtonStart.clicked.connect(self.acquire)
+        self.pushButtonReferesh.clicked.connect(self.plotReferesh)
 
     #For Action options function 
     #TODO Only add the components of action option+ functions    
@@ -633,12 +705,221 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 
-
     #For Pattern Tab functions
     #TODO Only add the components of Pattern tab functions
+    def getCompiler(self):
+        response = QtWidgets.QFileDialog.getOpenFileName(
+            parent=self,
+            caption='Select a compiler file',
+            directory=os.getcwd(),
+            #filter='README (*.md *.ui)'
+        )
+        if (response[0]):
+            self.lineEditCompiler.setText(response[0])
+
+    def getPattern(self):
+        response = QtWidgets.QFileDialog.getOpenFileName(
+            parent=self,
+            caption='Select a pattern file',
+            directory=os.getcwd(),
+            #filter='README (*.md *.ui)'
+        )
+        if (response[0]):
+            self.lineEditPattern.setText(response[0])
+
+    def getFrames(self):
+        print("frames")
+
+    def getPeriod(self):
+        period = self.spinBoxPeriod.value()
+        print(period)
+
+    def getTriggers(self):
+        print("frames")
+
+    def getRunFrequency(self):
+        print("frames")
+
+    def getADCFrequency(self):
+        print("frames")
+
+    def getADCPhase(self):
+        print("frames")
+
+    def getADCPipeline(self):
+        print("frames")
+
+    def getDBITFrequency(self):
+        print("frames")
+
+    def getDBITPhase(self):
+        print("frames")
+
+    def getDBITPipeline(self):
+        print("frames")
+
+    def getStartAddress(self):
+        print("frames")
+
+    def getStopAddress(self):
+        print("frames")
+
+    def getLoop0(self):
+        print("frames")
+
+    def getLoop1(self):
+        print("frames")
+
+    def getLoop2(self):
+        print("frames")
+
+    def getLoop3(self):
+        print("frames")
+
+    def getLoop4(self):
+        print("frames")
+
+    def getLoop5(self):
+        print("frames")
+
+    def getLoop0Start(self):
+        print("frames")
+
+    def getLoop1Start(self):
+        print("frames")
+
+    def getLoop2Start(self):
+        print("frames")
+
+    def getLoop3Start(self):
+        print("frames")
+
+    def getLoop4Start(self):
+        print("frames")
+
+    def getLoop5Start(self):
+        print("frames")
+
+    def getLoop0Stop(self):
+        print("frames")
+
+    def getLoop1Stop(self):
+        print("frames")
+
+    def getLoop2Stop(self):
+        print("frames")
+
+    def getLoop3Stop(self):
+        print("frames")
+
+    def getLoop4Stop(self):
+        print("frames")
+
+    def getLoop5Stop(self):
+        print("frames")
+
+    def getWait0(self):
+        print("frames")
+
+    def getWait1(self):
+        print("frames")
+
+    def getWait2(self):
+        print("frames")
+
+    def getWait0Address(self):
+        print("frames")
+
+    def getWait1Address(self):
+        print("frames")
+
+    def getWait2Address(self):
+        print("frames")
+
+    def getAnalog(self):
+        print("frames")
+
+    def getDigital(self):
+        print("frames")
+
+    def getReadOut(self):
+        if self.checkBoxAnalog.isChecked():
+            print("analog")
+        elif self.checkBoxDigital.isChecked():
+            print("digital")
+        else:
+            print("none")
+
+    def loadPattern(self):
+        print("loading pattern")
     
     #For Acquistions Tab functions
     #TODO Only add the components of Acquistions tab functions
+    def plotOptions(self):
+        print("plot options")
+
+    def getSerialOffset(self):
+        print("SerialOffSet")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
+
+    def plotOptions(self):
+        print("plot options")
 
     #For other functios
     #TODO Add other functions which will be reused 
@@ -648,9 +929,6 @@ class MainWindow(QtWidgets.QMainWindow):
             button.setStyleSheet("background-color: %s" % color.name())
             print(color.name())
         
-
-
-
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

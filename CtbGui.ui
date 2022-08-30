@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1497</width>
-    <height>979</height>
+    <height>967</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -63,7 +63,7 @@
             </rect>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>6</number>
            </property>
            <widget class="QWidget" name="tab">
             <attribute name="title">
@@ -74,7 +74,7 @@
               <rect>
                <x>10</x>
                <y>10</y>
-               <width>701</width>
+               <width>711</width>
                <height>811</height>
               </rect>
              </property>
@@ -171,6 +171,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="maximum">
                <number>4096</number>
               </property>
@@ -183,6 +186,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
               <property name="maximum">
                <number>4096</number>
@@ -248,6 +254,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
               <property name="maximum">
                <number>4096</number>
@@ -522,6 +531,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="maximum">
                <number>4096</number>
               </property>
@@ -548,6 +560,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="maximum">
                <number>4096</number>
               </property>
@@ -573,6 +588,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
               <property name="maximum">
                <number>4096</number>
@@ -652,6 +670,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="maximum">
                <number>4096</number>
               </property>
@@ -664,6 +685,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
               <property name="maximum">
                <number>4096</number>
@@ -704,6 +728,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="maximum">
                <number>4096</number>
               </property>
@@ -716,6 +743,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
               <property name="maximum">
                <number>4096</number>
@@ -795,6 +825,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="maximum">
                <number>4096</number>
               </property>
@@ -808,6 +841,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="maximum">
                <number>4096</number>
               </property>
@@ -820,6 +856,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
               <property name="maximum">
                <number>4096</number>
@@ -847,6 +886,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="maximum">
                <number>4096</number>
               </property>
@@ -859,6 +901,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
               <property name="maximum">
                <number>4096</number>
@@ -873,6 +918,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="maximum">
                <number>4096</number>
               </property>
@@ -885,6 +933,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
               <property name="maximum">
                <number>4096</number>
@@ -1003,6 +1054,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="maximum">
                <number>4096</number>
               </property>
@@ -1041,6 +1095,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
               <property name="maximum">
                <number>4096</number>
@@ -1094,6 +1151,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
               <property name="maximum">
                <number>4096</number>
               </property>
@@ -1135,7 +1195,7 @@
               <rect>
                <x>10</x>
                <y>20</y>
-               <width>701</width>
+               <width>711</width>
                <height>351</height>
               </rect>
              </property>
@@ -1232,6 +1292,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVB">
               <property name="geometry">
@@ -1241,6 +1304,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVC">
@@ -1252,6 +1318,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVD">
               <property name="geometry">
@@ -1261,6 +1330,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVIO">
@@ -1272,6 +1344,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVCHIP">
               <property name="geometry">
@@ -1281,6 +1356,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxVAmV">
@@ -1450,7 +1528,7 @@
               <rect>
                <x>10</x>
                <y>20</y>
-               <width>701</width>
+               <width>711</width>
                <height>491</height>
               </rect>
              </property>
@@ -7593,6 +7671,9 @@
                <property name="styleSheet">
                 <string notr="true">background-color: rgb(255, 255, 255);</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
               <widget class="QDoubleSpinBox" name="doubleSpinBoxDBit">
                <property name="geometry">
@@ -7605,6 +7686,9 @@
                </property>
                <property name="styleSheet">
                 <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </widget>
@@ -10607,6 +10691,9 @@
                <property name="styleSheet">
                 <string notr="true">background-color: rgb(255, 255, 255);</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
               <widget class="QSpinBox" name="spinBoxInversionMask">
                <property name="geometry">
@@ -10620,6 +10707,9 @@
                <property name="styleSheet">
                 <string notr="true">background-color: rgb(255, 255, 255);</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </widget>
             </widget>
@@ -10628,11 +10718,2021 @@
             <attribute name="title">
              <string>Pattern</string>
             </attribute>
+            <widget class="QFrame" name="frame_9">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>10</y>
+               <width>711</width>
+               <height>811</height>
+              </rect>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Sunken</enum>
+             </property>
+             <widget class="QLabel" name="label">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>20</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Number of frames:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxTriggers">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>50</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_36">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>20</y>
+                <width>81</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Period (s):</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxFrames">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>20</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_69">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>50</y>
+                <width>161</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Number of triggers:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxPeriod">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>20</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_70">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>90</y>
+                <width>211</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Run Clock Frequency (MHz):</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxRunF">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>90</y>
+                <width>331</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_71">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>130</y>
+                <width>191</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>ADC Clock Frequency (MHz):</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_72">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>160</y>
+                <width>171</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>ADC Clock Phase (a.u.):</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_73">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>190</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>ADC Pipeline:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_74">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>130</y>
+                <width>191</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>DBIT Clock Frequency (MHz):</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_75">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>160</y>
+                <width>161</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>DBIT Clock Phase (a.u.):</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_76">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>190</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>DBIT Pipeline:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxADCF">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>130</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxADCPhase">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>160</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxADCPipeline">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>190</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxDBITF">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>130</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxDBITPhase">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>160</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxDBITPipeline">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>190</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_77">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>230</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Address: </string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxStopAddress">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>230</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_78">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>230</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxStartAddress">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>230</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_79">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>360</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Loop 3 Repetitions:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_80">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>330</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Loop 2 Repetitions:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_81">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>300</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Loop 1 Repetitions:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop1">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>300</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_82">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>390</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Loop 4 Repetitions:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop5">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>420</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_83">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>270</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Loop 0 Repetitions:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop0">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>270</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_84">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>420</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Loop 5 Repetitions:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop2">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>330</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop3">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>360</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop4">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>390</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_91">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>460</y>
+                <width>191</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Wait Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_92">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>520</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Wait 2 (run clk):</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_93">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>490</y>
+                <width>171</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Wait 1 (run clk):</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxWait1">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>490</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_94">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>490</y>
+                <width>161</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Wait Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxWait2Address">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>520</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_95">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>460</y>
+                <width>191</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Wait 0 (run clk):</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxWait0">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>460</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_96">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>520</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Wait Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxWait2">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>520</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxWait0Address">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>460</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxWait1Address">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>490</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop0Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>270</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_85">
+              <property name="geometry">
+               <rect>
+                <x>250</x>
+                <y>270</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop0Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>270</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_87">
+              <property name="geometry">
+               <rect>
+                <x>480</x>
+                <y>270</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_86">
+              <property name="geometry">
+               <rect>
+                <x>250</x>
+                <y>300</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_88">
+              <property name="geometry">
+               <rect>
+                <x>480</x>
+                <y>300</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop1Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>300</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop1Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>300</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_89">
+              <property name="geometry">
+               <rect>
+                <x>250</x>
+                <y>330</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_90">
+              <property name="geometry">
+               <rect>
+                <x>480</x>
+                <y>330</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop2Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>330</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop2Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>330</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_97">
+              <property name="geometry">
+               <rect>
+                <x>250</x>
+                <y>360</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_98">
+              <property name="geometry">
+               <rect>
+                <x>480</x>
+                <y>360</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop3Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>360</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop3Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>360</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_99">
+              <property name="geometry">
+               <rect>
+                <x>250</x>
+                <y>390</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_100">
+              <property name="geometry">
+               <rect>
+                <x>480</x>
+                <y>390</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop4Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>390</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop4Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>390</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_101">
+              <property name="geometry">
+               <rect>
+                <x>250</x>
+                <y>420</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_102">
+              <property name="geometry">
+               <rect>
+                <x>480</x>
+                <y>420</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop5Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>420</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop5Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>420</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_103">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>558</y>
+                <width>101</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Compiler:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_104">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>600</y>
+                <width>91</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Pattern:</string>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditCompiler">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>560</y>
+                <width>231</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(200, 219, 230);</string>
+              </property>
+              <property name="placeholderText">
+               <string>Compiler</string>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditPattern">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>600</y>
+                <width>231</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(200, 219, 230);</string>
+              </property>
+              <property name="placeholderText">
+               <string>Pattern File</string>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="pushButtonCompiler">
+              <property name="geometry">
+               <rect>
+                <x>490</x>
+                <y>560</y>
+                <width>201</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
+              </property>
+              <property name="text">
+               <string>Browse</string>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="pushButtonPattern">
+              <property name="geometry">
+               <rect>
+                <x>490</x>
+                <y>600</y>
+                <width>201</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
+              </property>
+              <property name="text">
+               <string>Browse</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_105">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>650</y>
+                <width>201</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Sample per Frame -</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_106">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>680</y>
+                <width>81</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Analog:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxAnalog">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>680</y>
+                <width>131</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxDigital">
+              <property name="geometry">
+               <rect>
+                <x>550</x>
+                <y>680</y>
+                <width>131</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_107">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>680</y>
+                <width>81</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Digital:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_108">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>720</y>
+                <width>181</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Read Out Mode: </string>
+              </property>
+             </widget>
+             <widget class="QCheckBox" name="checkBoxAnalog">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>720</y>
+                <width>94</width>
+                <height>24</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Analog</string>
+              </property>
+             </widget>
+             <widget class="QCheckBox" name="checkBoxDigital">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>720</y>
+                <width>94</width>
+                <height>24</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Digital</string>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="pushButtonLoad">
+              <property name="geometry">
+               <rect>
+                <x>480</x>
+                <y>750</y>
+                <width>201</width>
+                <height>41</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
+              </property>
+              <property name="text">
+               <string>Load Pattern</string>
+              </property>
+             </widget>
+            </widget>
            </widget>
            <widget class="QWidget" name="tab_7">
             <attribute name="title">
              <string>Acquisition</string>
             </attribute>
+            <widget class="QFrame" name="frame_10">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>10</y>
+               <width>711</width>
+               <height>341</height>
+              </rect>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Sunken</enum>
+             </property>
+             <widget class="QLabel" name="label_109">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>111</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>13</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Plot Settings</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_110">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>40</y>
+                <width>51</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Plot:</string>
+              </property>
+             </widget>
+             <widget class="QRadioButton" name="radioButtonNoPlot">
+              <property name="geometry">
+               <rect>
+                <x>70</x>
+                <y>40</y>
+                <width>81</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>No Plot</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QRadioButton" name="radioButtonWaveform">
+              <property name="geometry">
+               <rect>
+                <x>170</x>
+                <y>40</y>
+                <width>111</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Waveform</string>
+              </property>
+             </widget>
+             <widget class="QRadioButton" name="radioButtonDistribution">
+              <property name="geometry">
+               <rect>
+                <x>290</x>
+                <y>40</y>
+                <width>111</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Distribution</string>
+              </property>
+             </widget>
+             <widget class="QRadioButton" name="radioButtonImage">
+              <property name="geometry">
+               <rect>
+                <x>420</x>
+                <y>40</y>
+                <width>91</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Image</string>
+              </property>
+             </widget>
+             <widget class="QComboBox" name="comboBoxPlot">
+              <property name="geometry">
+               <rect>
+                <x>520</x>
+                <y>40</y>
+                <width>171</width>
+                <height>29</height>
+               </rect>
+              </property>
+              <item>
+               <property name="text">
+                <string>Serializer</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Deserializer</string>
+               </property>
+              </item>
+             </widget>
+             <widget class="QLabel" name="label_111">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>80</y>
+                <width>91</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Serial offset:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxSerialOffset">
+              <property name="geometry">
+               <rect>
+                <x>110</x>
+                <y>80</y>
+                <width>111</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxNCount">
+              <property name="geometry">
+               <rect>
+                <x>330</x>
+                <y>80</y>
+                <width>111</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_112">
+              <property name="geometry">
+               <rect>
+                <x>240</x>
+                <y>80</y>
+                <width>81</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>N Counters:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxDynamicRange">
+              <property name="geometry">
+               <rect>
+                <x>580</x>
+                <y>80</y>
+                <width>111</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_113">
+              <property name="geometry">
+               <rect>
+                <x>460</x>
+                <y>80</y>
+                <width>111</width>
+                <height>20</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Dynamic Range:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_114">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>110</y>
+                <width>91</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Image Pixels:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_115">
+              <property name="geometry">
+               <rect>
+                <x>300</x>
+                <y>110</y>
+                <width>21</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>X:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxImageX">
+              <property name="geometry">
+               <rect>
+                <x>330</x>
+                <y>110</y>
+                <width>111</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxImageY">
+              <property name="geometry">
+               <rect>
+                <x>580</x>
+                <y>110</y>
+                <width>111</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_116">
+              <property name="geometry">
+               <rect>
+                <x>540</x>
+                <y>110</y>
+                <width>21</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Y:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_117">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>140</y>
+                <width>64</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Pedestal:</string>
+              </property>
+             </widget>
+             <widget class="QCheckBox" name="checkBoxAcquire">
+              <property name="geometry">
+               <rect>
+                <x>110</x>
+                <y>140</y>
+                <width>94</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Acquire</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QCheckBox" name="checkBoxSubtract">
+              <property name="geometry">
+               <rect>
+                <x>230</x>
+                <y>140</y>
+                <width>94</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Subtract</string>
+              </property>
+             </widget>
+             <widget class="QCheckBox" name="checkBoxCommonMode">
+              <property name="geometry">
+               <rect>
+                <x>350</x>
+                <y>140</y>
+                <width>131</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Common Mode</string>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="pushButtonReset">
+              <property name="geometry">
+               <rect>
+                <x>522</x>
+                <y>140</y>
+                <width>171</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
+              </property>
+              <property name="text">
+               <string>Reset</string>
+              </property>
+             </widget>
+             <widget class="QCheckBox" name="checkBoxRaw">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>180</y>
+                <width>94</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Raw Data</string>
+              </property>
+             </widget>
+             <widget class="QCheckBox" name="checkBoxPedestal">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>220</y>
+                <width>151</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Pedestal Subtract</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_118">
+              <property name="geometry">
+               <rect>
+                <x>283</x>
+                <y>180</y>
+                <width>31</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Min:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_119">
+              <property name="geometry">
+               <rect>
+                <x>283</x>
+                <y>220</y>
+                <width>31</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Min:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxRawMin">
+              <property name="geometry">
+               <rect>
+                <x>330</x>
+                <y>180</y>
+                <width>111</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxPedestalMin">
+              <property name="geometry">
+               <rect>
+                <x>330</x>
+                <y>220</y>
+                <width>111</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_120">
+              <property name="geometry">
+               <rect>
+                <x>533</x>
+                <y>220</y>
+                <width>31</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Max:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxPedestalMax">
+              <property name="geometry">
+               <rect>
+                <x>580</x>
+                <y>220</y>
+                <width>111</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxRawMax">
+              <property name="geometry">
+               <rect>
+                <x>580</x>
+                <y>180</y>
+                <width>111</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_121">
+              <property name="geometry">
+               <rect>
+                <x>533</x>
+                <y>180</y>
+                <width>31</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Max:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxFit">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>260</y>
+                <width>151</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxPlot">
+              <property name="geometry">
+               <rect>
+                <x>530</x>
+                <y>260</y>
+                <width>161</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_122">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>260</y>
+                <width>101</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Fit Panel ADC:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_123">
+              <property name="geometry">
+               <rect>
+                <x>390</x>
+                <y>260</y>
+                <width>101</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Plot Bit:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="labelX">
+              <property name="geometry">
+               <rect>
+                <x>60</x>
+                <y>300</y>
+                <width>51</width>
+                <height>20</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>X</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="labelY">
+              <property name="geometry">
+               <rect>
+                <x>230</x>
+                <y>300</y>
+                <width>41</width>
+                <height>20</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Y</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="labelValues">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>300</y>
+                <width>81</width>
+                <height>20</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Values</string>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="pushButtonReferesh">
+              <property name="geometry">
+               <rect>
+                <x>520</x>
+                <y>290</y>
+                <width>171</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
+              </property>
+              <property name="text">
+               <string>Referesh</string>
+              </property>
+             </widget>
+            </widget>
+            <widget class="QFrame" name="frame_11">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>360</y>
+               <width>711</width>
+               <height>221</height>
+              </rect>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Sunken</enum>
+             </property>
+             <widget class="QLabel" name="label_127">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>131</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>13</pointsize>
+               </font>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Sunken</enum>
+              </property>
+              <property name="lineWidth">
+               <number>1</number>
+              </property>
+              <property name="text">
+               <string>Output Settings</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_128">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>50</y>
+                <width>151</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Save the Output file?</string>
+              </property>
+             </widget>
+             <widget class="QRadioButton" name="radioButtonYes">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>50</y>
+                <width>111</width>
+                <height>24</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Yes</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QRadioButton" name="radioButtonNo">
+              <property name="geometry">
+               <rect>
+                <x>330</x>
+                <y>50</y>
+                <width>111</width>
+                <height>24</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>No</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+             <widget class="QFrame" name="frameOutput">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>80</y>
+                <width>701</width>
+                <height>131</height>
+               </rect>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <widget class="QLabel" name="label_129">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>10</y>
+                 <width>81</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>File Name:</string>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_130">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>48</y>
+                 <width>81</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>File Path:</string>
+               </property>
+              </widget>
+              <widget class="QLabel" name="label_131">
+               <property name="geometry">
+                <rect>
+                 <x>10</x>
+                 <y>88</y>
+                 <width>64</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="text">
+                <string>Index:</string>
+               </property>
+              </widget>
+              <widget class="QLineEdit" name="lineEditFileName">
+               <property name="geometry">
+                <rect>
+                 <x>120</x>
+                 <y>10</y>
+                 <width>251</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(200, 219, 230);</string>
+               </property>
+               <property name="placeholderText">
+                <string>File Name</string>
+               </property>
+              </widget>
+              <widget class="QLineEdit" name="lineEditFilePath">
+               <property name="geometry">
+                <rect>
+                 <x>120</x>
+                 <y>50</y>
+                 <width>251</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(200, 219, 230);</string>
+               </property>
+               <property name="placeholderText">
+                <string>File Path</string>
+               </property>
+              </widget>
+              <widget class="QSpinBox" name="spinBoxIndex">
+               <property name="geometry">
+                <rect>
+                 <x>220</x>
+                 <y>90</y>
+                 <width>151</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </widget>
+            </widget>
+            <widget class="QFrame" name="frame_13">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>650</y>
+               <width>711</width>
+               <height>51</height>
+              </rect>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <widget class="QPushButton" name="pushButtonStart">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>93</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(85, 170, 127);</string>
+              </property>
+              <property name="text">
+               <string>Start</string>
+              </property>
+             </widget>
+             <widget class="QProgressBar" name="progressBar">
+              <property name="geometry">
+               <rect>
+                <x>120</x>
+                <y>10</y>
+                <width>581</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="value">
+               <number>24</number>
+              </property>
+             </widget>
+            </widget>
+            <widget class="QFrame" name="frame_14">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>590</y>
+               <width>711</width>
+               <height>51</height>
+              </rect>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <widget class="QSpinBox" name="spinBoxMeasurements">
+              <property name="geometry">
+               <rect>
+                <x>220</x>
+                <y>10</y>
+                <width>151</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_132">
+              <property name="geometry">
+               <rect>
+                <x>20</x>
+                <y>10</y>
+                <width>191</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Number of Measurements:</string>
+              </property>
+             </widget>
+            </widget>
            </widget>
           </widget>
           <widget class="PlotWidget" name="plotWidget" native="true">
@@ -10724,6 +12824,38 @@
     <hint type="destinationlabel">
      <x>753</x>
      <y>496</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>radioButtonYes</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>frameOutput</receiver>
+   <slot>show()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>296</x>
+     <y>500</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>381</x>
+     <y>584</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>radioButtonNo</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>frameOutput</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>416</x>
+     <y>500</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>381</x>
+     <y>584</y>
     </hint>
    </hints>
   </connection>

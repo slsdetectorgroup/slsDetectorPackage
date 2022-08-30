@@ -36,7 +36,7 @@
 #define TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL (723)
 #define TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL  (747)
 #define TYPE_GOTTHARD2_MODULE_VAL             (536)
-#define TYPE_TOLERANCE                        (5)
+#define TYPE_TOLERANCE                        (10)
 #define TYPE_NO_MODULE_STARTING_VAL           (800)
 #define INITIAL_STARTUP_WAIT                  (1 * 1000 * 1000)
 

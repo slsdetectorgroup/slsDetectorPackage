@@ -1350,8 +1350,8 @@ int setTrimbits(int *trimbits) {
     int error = 0;
     char cmess[MAX_STR_LENGTH];
     for (int ichip = 0; ichip < NCHIP; ichip++) {
-        patternParameters *pat = setChannelRegisterChip(
-            ichip, badChannelMask + ichip * NCHAN, trimbits);
+        patternParameters *pat =
+            setChannelRegisterChip(ichip, badChannelMask, trimbits);
         if (pat == NULL) {
             error = 1;
         } else {

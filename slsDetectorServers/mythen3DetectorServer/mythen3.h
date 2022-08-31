@@ -61,6 +61,8 @@
     ((1 << _CSR_C10pre) | (1 << CSR_C15sh) | (1 << CSR_C30sh) |                \
      (1 << CSR_C50sh) | (1 << CSR_C225ACsh) | (1 << _CSR_C15pre))
 
+#define CHAN_REG_BAD_CHANNEL_MSK (0x38)
+
 int setBit(int ibit, int patword);
 int clearBit(int ibit, int patword);
 int getChipStatusRegister();

@@ -284,44 +284,44 @@ patternParameters *setChannelRegisterChip(int ichip, char *mask,
     // for each channel (all chips)
     for (int ich = 0; ich < NCHAN_1_COUNTER; ich++) {
         LOG(logDEBUG1, (" Chip %d, Channel %d\n", ichip, ich));
-        int val =
-            trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS + NCOUNTERS * ich] +
-            trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS + NCOUNTERS * ich +
-                     1] *
-                64 +
-            trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS + NCOUNTERS * ich +
-                     2] *
-                64 * 64;
+        int chanReg =
+            64 *
+            (trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS + NCOUNTERS * ich] +
+             trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS + NCOUNTERS * ich +
+                      1] *
+                 64 +
+             trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS + NCOUNTERS * ich +
+                      2] *
+                 64 * 64);
 
-        // push 6 0 bits
-        for (int i = 0; i < 3; i++) {
-            patword = clearBit(SIGNAL_serialIN, patword);
-            patword = clearBit(SIGNAL_clk, patword);
-            pat->word[iaddr++] = patword;
-            patword = setBit(SIGNAL_clk, patword);
-            pat->word[iaddr++] = patword;
-        }
-
-        for (int ic = 0; ic < 3; ic++) {
-            if (mask[ichip * NCHAN + ich * 3 + ic])
-                patword = setBit(SIGNAL_serialIN, patword);
-            else
-                patword = clearBit(SIGNAL_serialIN, patword);
-            patword = clearBit(SIGNAL_clk, patword);
-            pat->word[iaddr++] = patword;
-            patword = setBit(SIGNAL_clk, patword);
-            pat->word[iaddr++] = patword;
+        for (int icounter = 0; icounter != 3; ++icounter) {
+            if (mask[ichip * NCHAN + ich * NCOUNTERS + icounter]) {
+                LOG(logDEBUG1,
+                    ("badchannel [modCounter:%d, modChan:%d, ichip:%d, ich:%d, "
+                     "icounter:%d]\n",
+                     ichip * NCHAN + ich * NCOUNTERS + icounter,
+                     ichip * NCHAN_1_COUNTER + ich, ichip, ich, icounter));
+                chanReg |= (0x1 << 3 + icounter);
+            }
         }
 
         // deserialize
-        for (int i = 0; i < 18; i++) {
-            if (val & (1 << i)) {
+        if (chanReg & CHAN_REG_BAD_CHANNEL_MSK) {
+            LOG(logINFOBLUE,
+                ("badchannel [chanReg:0x%x modCounter:%d, modChan:%d, "
+                 "ichip:%d, ich:%d]\n",
+                 chanReg, ichip * NCHAN + ich * NCOUNTERS,
+                 ichip * NCHAN_1_COUNTER + ich, ichip, ich));
+        }
+        for (int i = 0; i < 24; i++) {
+            patword = clearBit(SIGNAL_clk, patword);
+            pat->word[iaddr++] = patword;
+
+            if (chanReg & (1 << (i + 1))) {
                 patword = setBit(SIGNAL_serialIN, patword);
             } else {
                 patword = clearBit(SIGNAL_serialIN, patword);
             }
-            patword = clearBit(SIGNAL_clk, patword);
-            pat->word[iaddr++] = patword;
 
             patword = setBit(SIGNAL_clk, patword);
             pat->word[iaddr++] = patword;

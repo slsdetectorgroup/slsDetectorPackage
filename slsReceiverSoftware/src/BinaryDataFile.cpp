@@ -103,13 +103,10 @@ void BinaryDataFile::WriteToFile(char *imageData, sls_receiver_header &header,
     }
 
     // if write error
-    if (ret != imageSize + sizeof(sls_receiver_header)) {
-        throw RuntimeError(
-            std::to_string(index) +
-            " : Write to file failed for image number " +
-            std::to_string(currentFrameNumber) + ". Wrote " +
-            std::to_string(ret) + " bytes instead of " +
-            std::to_string(imageSize + sizeof(sls_receiver_header)));
+    if (ret != 1) {
+        throw RuntimeError(std::to_string(index) +
+                           " : Write to file failed for image number " +
+                           std::to_string(currentFrameNumber));
     }
 }
 

@@ -905,6 +905,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def acquire(self):
         print("plot options")
+        self.spinBoxMeasurements.stepUp()
+        if self.radioButtonYes.isChecked():
+            self.spinBoxIndex.stepUp()
+            print ('random')
+            
 
     def plotReferesh(self):
         print("plot options")
@@ -923,7 +928,5 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     main = MainWindow()
     main.show()
-    #main.showMaximized()
-
     #Run the app
     app.exec_()

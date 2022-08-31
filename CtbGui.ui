@@ -1761,7 +1761,7 @@
                </font>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1784,7 +1784,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1803,7 +1803,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1822,7 +1822,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1841,7 +1841,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1860,7 +1860,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1879,7 +1879,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1898,7 +1898,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1917,7 +1917,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -12816,7 +12816,7 @@
  <connections>
   <connection>
    <sender>actionExit</sender>
-   <signal>toggled(bool)</signal>
+   <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>close()</slot>
    <hints>

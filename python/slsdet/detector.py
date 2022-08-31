@@ -1182,6 +1182,7 @@ class Detector(CppDetectorApi):
         ----
         Not mandatory to set as udp_dstip retrieves it from slsReceiver process but must be set if you use a custom receiver (not slsReceiver). \n
         To set MACs for individual modules, use setDestinationUDPMAC. 
+        Use router mac if router between detector and receiver.
         
         Example
         -------
@@ -1208,6 +1209,7 @@ class Detector(CppDetectorApi):
         To set MACs for individual modules, use setDestinationUDPMAC2. \n
         [Jungfrau] bottom half \n
         [Gotthard2] veto debugging \n
+        Use router mac if router between detector and receiver.
         
         Example
         ------

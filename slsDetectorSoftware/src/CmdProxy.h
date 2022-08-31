@@ -1631,7 +1631,8 @@ class CmdProxy {
         "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp "
         "interface. Not mandatory to set as udp_dstip retrieves it from "
         "slsReceiver process, but must be set if you use a custom receiver "
-        "(not slsReceiver).");
+        "(not slsReceiver). Use router mac if router between detector and "
+        "receiver.");
 
     INTEGER_COMMAND_VEC_ID(
         udp_dstmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
@@ -1639,8 +1640,8 @@ class CmdProxy {
         "udp interface 2. Not mandatory to set as udp_dstip2 retrieves it from "
         "slsReceiver process but must be set if you use a custom receiver (not "
         "slsReceiver). \n\t [Jungfrau] top half or inner interface \n\t "
-        "[Gotthard2] veto "
-        "debugging.");
+        "[Gotthard2] veto debugging. Use router mac if router between detector "
+        "and receiver.");
 
     INTEGER_COMMAND_VEC_ID_GET(
         udp_dstport, getDestinationUDPPort, setDestinationUDPPort,

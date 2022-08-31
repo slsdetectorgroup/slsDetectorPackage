@@ -93,6 +93,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - g2 parallel command
 - jungfrau sync
 - ctb and moench Fw fixed (to work with pattern commdand) )addreess length
+- setting rx_hostname (or udp_dstip with rx_hostname not none) will always set udp_dstmac. solves problem of chaing udp_dstip and udp_dstmac stays the same
 
 2. Resolved Issues
 ==================

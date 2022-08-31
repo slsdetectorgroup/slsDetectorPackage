@@ -631,21 +631,12 @@ TEST_CASE("badchannels", "[.cmd]") {
     if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3) {
         REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
 
-        std::string fname = "/tmp/sls_test_channels.txt";
-        std::ofstream outfile;
-        outfile.open(fname.c_str(), std::ios_base::out);
-        if (!outfile.is_open()) {
-            throw RuntimeError("Could not open file " + fname +
-                               "for writing to test channel4 file reading");
-        }
-        outfile << "0" << std::endl;
-        outfile << "12, 15, 43" << std::endl;
-        outfile << "40:45" << std::endl;
-        outfile << "1279" << std::endl;
-        outfile.close();
-        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname}, 0, PUT));
-        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname}, 0, GET));
-        auto list = getChannelsFromFile(fname);
+        std::string fname_put = "test-file_utils-channels.txt";
+        std::string fname_get = "/tmp/sls_test_channels.txt";
+        
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_put}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        auto list = getChannelsFromFile(fname_get);
         std::vector<int> expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
         REQUIRE(list == expected);
 

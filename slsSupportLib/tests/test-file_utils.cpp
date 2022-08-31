@@ -30,18 +30,7 @@ TEST_CASE("Get size of file with data") {
 }
 
 TEST_CASE("Channel file reading") {
-    std::string fname = "/tmp/sls_test_channels.txt";
-    std::ofstream outfile;
-    outfile.open(fname.c_str(), std::ios_base::out);
-    if (!outfile.is_open()) {
-        throw RuntimeError("Could not open file " + fname +
-                           "for writing to test channel4 file reading");
-    }
-    outfile << "0" << std::endl;
-    outfile << "12, 15, 43" << std::endl;
-    outfile << "40:45" << std::endl;
-    outfile << "1279" << std::endl;
-    outfile.close();
+    std::string fname = "test-file_utils-channels.txt";
     std::vector<int> list;
     REQUIRE_NOTHROW(list = getChannelsFromFile(fname));
     std::vector<int> expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};

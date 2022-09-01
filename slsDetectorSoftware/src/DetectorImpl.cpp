@@ -50,6 +50,11 @@ void DetectorImpl::setupDetector(bool verify, bool update) {
         ctb_shm.openSharedMemory(verify);
 }
 
+bool DetectorImpl::isAllPositions(const Positions pos) const {
+    return (pos.empty() || (pos.size() == 1 && pos[0] == -1) ||
+            (pos.size() == modules.size()));
+}
+
 void DetectorImpl::setAcquiringFlag(bool flag) { shm()->acquiringFlag = flag; }
 
 int DetectorImpl::getDetectorIndex() const { return detectorIndex; }
@@ -1643,6 +1648,85 @@ void DetectorImpl::clearRxROI() {
     shm()->rx_roi.ymin = -1;
     shm()->rx_roi.xmax = -1;
     shm()->rx_roi.ymax = -1;
+}
+
+void DetectorImpl::getBadChannels(const std::string &fname,
+                                  Positions pos) const {
+    auto res = Parallel(&Module::getBadChannels, pos);
+    std::vector<int> badchannels(res[0]);
+
+    // update to multi values if multi modules
+    if (isAllPositions(pos)) {
+        badchannels.clear();
+        int nchan = modules[0]->getNumberOfChannels().x;
+        if (shm()->detType == MYTHEN3) {
+            // assuming single counter
+            nchan /= MAX_NUM_COUNTERS;
+        }
+        int imod = 0;
+        for (auto vec : res) {
+            for (auto badch : vec) {
+                badchannels.push_back(imod * nchan + badch);
+            }
+            ++imod;
+        }
+    } else if (pos.size() != 1) {
+        throw RuntimeError("Can get bad channels only for 1 or all modules.\n");
+    }
+
+    // save to file
+    LOG(logDEBUG1) << "Getting bad channels to " << fname;
+    std::ofstream outfile(fname);
+    if (!outfile) {
+        throw RuntimeError("Could not create file to save bad channels");
+    }
+    for (auto ch : badchannels)
+        outfile << ch << '\n';
+    LOG(logDEBUG1) << badchannels.size() << " bad channels saved to file";
+}
+
+void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
+    std::vector<int> list = sls::getChannelsFromFile(fname);
+    if (list.empty()) {
+        throw RuntimeError("Bad channel file is empty.");
+    }
+
+    // update to multi values if multi modules
+    if (isAllPositions(pos)) {
+        std::vector<std::vector<int>> badchannels;
+        int nchan = modules[0]->getNumberOfChannels().x;
+        if (shm()->detType == MYTHEN3) {
+            // assuming single counter
+            nchan /= MAX_NUM_COUNTERS;
+        }
+        for (auto badchannel : list) {
+            if (badchannel < 0) {
+                throw RuntimeError("Invalid bad channel list. " +
+                                   std::to_string(badchannel) +
+                                   " out of bounds.");
+            }
+            int ch = badchannel % nchan;
+            int imod = badchannel / nchan;
+            if (imod >= (int)modules.size()) {
+                throw RuntimeError("Invalid bad channel list. " +
+                                   std::to_string(badchannel) +
+                                   " out of bounds.");
+            }
+
+            if ((int)badchannels.size() != imod + 1) {
+                badchannels.push_back(std::vector<int>{});
+            }
+            badchannels[imod].push_back(ch);
+        }
+        for (int imod = 0; imod != (int)modules.size(); ++imod) {
+            Parallel(&Module::setBadChannels, {imod}, badchannels[imod]);
+        }
+
+    } else if (pos.size() != 1) {
+        throw RuntimeError("Can set bad channels only for 1 or all modules.\n");
+    } else {
+        Parallel(&Module::setBadChannels, pos, list);
+    }
 }
 
 std::vector<std::string> DetectorImpl::getCtbDacNames() const {

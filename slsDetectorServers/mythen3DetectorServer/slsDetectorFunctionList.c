@@ -52,7 +52,7 @@ enum detectorSettings thisSettings = UNINITIALIZED;
 sls_detector_module *detectorModules = NULL;
 int *detectorChans = NULL;
 int *detectorDacs = NULL;
-int *channelMask = NULL;
+char *badChannelMask = NULL;
 int defaultDacValues[NDAC] = DEFAULT_DAC_VALS;
 int defaultDacValue_standard[] = SPECIAL_DEFAULT_STANDARD_DAC_VALS;
 int defaultDacValue_fast[] = SPECIAL_DEFAULT_FAST_DAC_VALS;
@@ -391,9 +391,9 @@ void initStopServer() {
 void allocateDetectorStructureMemory() {
     // Allocation of memory
     detectorModules = malloc(sizeof(sls_detector_module));
-    detectorChans = malloc(NCHIP * NCHAN * sizeof(int));
-    channelMask = malloc(NCHIP * NCHAN * sizeof(char));
-    memset(channelMask, 0, NCHIP * NCHAN * sizeof(char));
+    detectorChans = malloc(NCHAN_PER_MODULE * sizeof(int));
+    badChannelMask = malloc(NCHAN_PER_MODULE * sizeof(char));
+    memset(badChannelMask, 0, NCHAN_PER_MODULE * sizeof(char));
     detectorDacs = malloc(NDAC * sizeof(int));
 
     LOG(logDEBUG1,
@@ -404,7 +404,7 @@ void allocateDetectorStructureMemory() {
     (detectorModules)->chanregs = detectorChans;
     (detectorModules)->ndac = NDAC;
     (detectorModules)->nchip = NCHIP;
-    (detectorModules)->nchan = NCHIP * NCHAN;
+    (detectorModules)->nchan = NCHAN_PER_MODULE;
     (detectorModules)->reg = UNINITIALIZED;
     (detectorModules)->iodelay = 0;
     (detectorModules)->tau = 0;
@@ -1291,6 +1291,7 @@ int setModule(sls_detector_module myMod, char *mess) {
     detectorModules->serialnumber = myMod.serialnumber;
 
     // csr reg
+    flipNegativePolarityBits(&myMod.reg);
     if (setChipStatusRegister(myMod.reg)) {
         sprintf(mess, "Could not CSR from module\n");
         LOG(logERROR, (mess));
@@ -1349,9 +1350,8 @@ int setTrimbits(int *trimbits) {
     int error = 0;
     char cmess[MAX_STR_LENGTH];
     for (int ichip = 0; ichip < NCHIP; ichip++) {
-        patternParameters *pat = setChannelRegisterChip(
-            ichip, channelMask,
-            trimbits); // change here!!! @who: Change what?
+        patternParameters *pat =
+            setChannelRegisterChip(ichip, badChannelMask, trimbits);
         if (pat == NULL) {
             error = 1;
         } else {
@@ -2338,6 +2338,55 @@ int getClockDivider(enum CLKINDEX ind) {
         return -1;
     }
     return clkDivider[ind];
+}
+
+int setBadChannels(int numChannels, int *channelList) {
+    LOG(logINFO, ("Setting %d bad channels\n", numChannels));
+    memset(badChannelMask, 0, NCHAN_PER_MODULE * sizeof(char));
+    for (int i = 0; i != numChannels; ++i) {
+        LOG(logINFO, ("\t[%d]: %d\n", i, channelList[i]));
+        for (int ich = channelList[i] * NCOUNTERS;
+             ich != channelList[i] * NCOUNTERS + NCOUNTERS; ++ich) {
+            badChannelMask[ich] = 1;
+        }
+    }
+    for (int i = 0; i != NCHAN_PER_MODULE; ++i) {
+        if (badChannelMask[i]) {
+            LOG(logDEBUG1, ("[%d]:0x%02x\n", i, badChannelMask[i]));
+        }
+    }
+    return setTrimbits(detectorChans);
+}
+
+int *getBadChannels(int *numChannels) {
+    int *retvals = NULL;
+    *numChannels = 0;
+    for (int i = 0; i != NCHAN_PER_MODULE; i = i + NCOUNTERS) {
+        if (badChannelMask[i]) {
+            *numChannels += 1;
+        }
+    }
+    if (*numChannels > 0) {
+        retvals = malloc(*numChannels * sizeof(int));
+        memset(retvals, 0, *numChannels * sizeof(int));
+        if (retvals == NULL) {
+            *numChannels = -1;
+            return NULL;
+        }
+        // return only 1 channel for all counters
+        int ich = 0;
+        for (int i = 0; i != NCHAN_PER_MODULE; i = i + NCOUNTERS) {
+            if (badChannelMask[i]) {
+                retvals[ich++] = i / NCOUNTERS;
+            }
+        }
+    }
+    // debugging
+    LOG(logDEBUG1, ("Reading Bad channel list: %d\n", *numChannels));
+    for (int i = 0; i != (*numChannels); ++i) {
+        LOG(logDEBUG1, ("[%d]: %d\n", i, retvals[i]));
+    }
+    return retvals;
 }
 
 int getTransmissionDelayFrame() {

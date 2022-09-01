@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <vector>
 
+#include "tests/globals.h"
+
 namespace sls {
 
 TEST_CASE("Get size of empty file") {
@@ -27,6 +29,15 @@ TEST_CASE("Get size of file with data") {
     auto size = getFileSize(ifs);
     REQUIRE(size == n_bytes);
     REQUIRE(ifs.tellg() == 0); // getting size resets pos!
+}
+
+TEST_CASE("Channel file reading") {
+    std::string fname =
+        getAbsolutePathFromCurrentProcess(TEST_FILE_NAME_BAD_CHANNELS);
+    std::vector<int> list;
+    REQUIRE_NOTHROW(list = getChannelsFromFile(fname));
+    std::vector<int> expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
+    REQUIRE(list == expected);
 }
 
 } // namespace sls

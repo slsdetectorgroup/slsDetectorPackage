@@ -731,18 +731,4 @@ TEST_CASE("confadc", "[.cmd]") {
     }
 }
 
-TEST_CASE("badchannels", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::GOTTHARD2) {
-        REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
-        REQUIRE_NOTHROW(proxy.Call("badchannels", {"/tmp/bla.txt"}, -1, GET));
-        REQUIRE_NOTHROW(proxy.Call("badchannels", {"/tmp/bla.txt"}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
-    }
-}
-
 } // namespace sls

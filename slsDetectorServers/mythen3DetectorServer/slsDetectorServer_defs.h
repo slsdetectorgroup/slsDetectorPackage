@@ -17,6 +17,7 @@
 #define NCHAN_1_COUNTER             (128)
 #define NCHAN                       (128 * NCOUNTERS)
 #define NCHIP                       (10)
+#define NCHAN_PER_MODULE            (NCHAN * NCHIP)
 #define NDAC                        (16)
 #define HV_SOFT_MAX_VOLTAGE         (500)
 #define HV_HARD_MAX_VOLTAGE         (530)

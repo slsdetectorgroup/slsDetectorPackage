@@ -3,6 +3,8 @@
 #pragma once
 #include "sls/sls_detector_defs.h"
 
+#define TEST_FILE_NAME_BAD_CHANNELS ("test-file_utils-channels.txt")
+
 namespace sls {
 
 using dt = slsDetectorDefs::detectorType;

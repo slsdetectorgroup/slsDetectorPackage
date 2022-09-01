@@ -333,6 +333,14 @@ void Detector::setSynchronization(bool value) {
     pimpl->Parallel(&Module::setSynchronization, {}, value);
 }
 
+void Detector::getBadChannels(const std::string &fname, Positions pos) const {
+    pimpl->getBadChannels(fname, pos);
+}
+
+void Detector::setBadChannels(const std::string &fname, Positions pos) {
+    pimpl->setBadChannels(fname, pos);
+}
+
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
     return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
 }
@@ -1817,14 +1825,6 @@ void Detector::setADCConfiguration(const int chipIndex, const int adcIndex,
                                    const int value, Positions pos) {
     pimpl->Parallel(&Module::setADCConfiguration, pos, chipIndex, adcIndex,
                     value);
-}
-
-void Detector::getBadChannels(const std::string &fname, Positions pos) const {
-    pimpl->Parallel(&Module::getBadChannels, pos, fname);
-}
-
-void Detector::setBadChannels(const std::string &fname, Positions pos) {
-    pimpl->Parallel(&Module::setBadChannels, pos, fname);
 }
 
 // Mythen3 Specific

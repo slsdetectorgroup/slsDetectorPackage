@@ -540,6 +540,32 @@ std::string CmdProxy::GapPixels(int action) {
     return os.str();
 }
 
+std::string CmdProxy::BadChannels(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[fname]\n\t[Gotthard2][Mythen3] Sets the bad channels (from "
+              "file of bad channel numbers) to be masked out."
+              "\n\t[Mythen3] Also does trimming"
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->getBadChannels(args[0], std::vector<int>{det_id});
+        os << "successfully retrieved" << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->setBadChannels(args[0], std::vector<int>{det_id});
+        os << "successfully loaded" << '\n';
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* acquisition parameters */
 
 std::string CmdProxy::Exptime(int action) {
@@ -2314,31 +2340,6 @@ std::string CmdProxy::ConfigureADC(int action) {
                                  value, std::vector<int>{det_id});
         os << '[' << args[0] << ", " << args[1] << ", " << ToStringHex(value)
            << "]\n";
-    } else {
-        throw RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
-std::string CmdProxy::BadChannels(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Gotthard2] Sets the bad channels (from file of bad "
-              "channel numbers) to be masked out."
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
-        }
-        det->getBadChannels(args[0], std::vector<int>{det_id});
-        os << "successfully retrieved" << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
-        }
-        det->setBadChannels(args[0], std::vector<int>{det_id});
-        os << "successfully loaded" << '\n';
     } else {
         throw RuntimeError("Unknown action");
     }

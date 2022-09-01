@@ -624,8 +624,11 @@ int getVetoStream();
 enum vetoAlgorithm getVetoAlgorithm(enum streamingInterface interface);
 void setVetoAlgorithm(enum vetoAlgorithm alg,
                       enum streamingInterface interface);
-void setBadChannels(int nch, int *channels);
-int *getBadChannels(int *nch);
+#endif
+
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
+int setBadChannels(int numChannels, int *channelList);
+int *getBadChannels(int *numChannels);
 #endif
 
 #if defined(JUNGFRAUD) || defined(EIGERD)

@@ -31,8 +31,8 @@ extern int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
 #endif
 
 void initializePatternAddresses() {
-    LOG(logINFO, ("Setting default Loop and Wait Addresses(0x%x)\n",
-                  MAX_PATTERN_LENGTH - 1));
+    LOG(logDEBUG1, ("Setting default Loop and Wait Addresses(0x%x)\n",
+                    MAX_PATTERN_LENGTH - 1));
     for (int i = 0; i != MAX_LEVELS; ++i) {
         setPatternLoopAddresses(i, MAX_PATTERN_LENGTH - 1,
                                 MAX_PATTERN_LENGTH - 1);

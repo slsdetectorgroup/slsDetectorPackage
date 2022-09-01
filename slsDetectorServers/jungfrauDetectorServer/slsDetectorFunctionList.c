@@ -2738,9 +2738,6 @@ int stopStateMachine() {
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STOP_ACQ_MSK);
 
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
-
-    usleep(100 * 1000);
-    resetCore();
     return OK;
 }
 

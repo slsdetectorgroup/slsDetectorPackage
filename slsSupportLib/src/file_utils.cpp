@@ -8,10 +8,10 @@
 #include <errno.h>
 #include <ios>
 #include <iostream>
+#include <libgen.h> // dirname
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <libgen.h> // dirname
 #include <unistd.h> //readlink
 
 namespace sls {
@@ -216,12 +216,14 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
 
         // split line (delim space) and push to list
         std::vector<std::string> vec = split(line, ' ');
-        for (auto it: vec) {
+        for (auto it : vec) {
             int ival = 0;
             try {
                 ival = StringTo<int>(it);
             } catch (std::exception &e) {
-                throw RuntimeError("Could not load channels from file. Invalid channel number: " + it);
+                throw RuntimeError("Could not load channels from file. Invalid "
+                                   "channel number: " +
+                                   it);
             }
             list.push_back(ival);
         }

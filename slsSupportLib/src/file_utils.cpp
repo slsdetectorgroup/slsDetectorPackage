@@ -11,6 +11,8 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <libgen.h> // dirname
+#include <unistd.h> //readlink
 
 namespace sls {
 
@@ -234,6 +236,25 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
         LOG(logWARNING) << "Removed duplicates from channel file";
     }
     return list;
+}
+
+std::string getAbsolutePathFromCurrentProcess(const std::string &fname) {
+    if (fname[0] == '/') {
+        return fname;
+    }
+
+    // get path of current binary
+    char path[MAX_STR_LENGTH];
+    memset(path, 0, MAX_STR_LENGTH);
+    ssize_t len = readlink("/proc/self/exe", path, MAX_STR_LENGTH - 1);
+    if (len < 0) {
+        throw RuntimeError("Could not get absolute path for " + fname);
+    }
+    path[len] = '\0';
+
+    // get dir path and attach file name
+    std::string absPath = (std::string(dirname(path)) + '/' + fname);
+    return absPath;
 }
 
 } // namespace sls

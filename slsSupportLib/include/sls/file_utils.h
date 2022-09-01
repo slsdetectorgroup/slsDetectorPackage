@@ -56,4 +56,6 @@ std::string getFileNameFromFilePath(const std::string &fpath);
  * */
 std::vector<int> getChannelsFromFile(const std::string &fname);
 
+std::string getAbsolutePathFromCurrentProcess(const std::string &fname);
+
 } // namespace sls

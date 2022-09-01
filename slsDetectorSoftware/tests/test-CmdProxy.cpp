@@ -631,9 +631,10 @@ TEST_CASE("badchannels", "[.cmd]") {
     if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3) {
         REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
 
-        std::string fname_put = "test-file_utils-channels.txt";
+        std::string fname_put =
+            getAbsolutePathFromCurrentProcess(TEST_FILE_NAME_BAD_CHANNELS);
         std::string fname_get = "/tmp/sls_test_channels.txt";
-        
+
         REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_put}, 0, PUT));
         REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
         auto list = getChannelsFromFile(fname_get);

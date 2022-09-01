@@ -301,7 +301,7 @@ patternParameters *setChannelRegisterChip(int ichip, char *mask,
                      "icounter:%d]\n",
                      ichip * NCHAN + ich * NCOUNTERS + icounter,
                      ichip * NCHAN_1_COUNTER + ich, ichip, ich, icounter));
-                chanReg |= (0x1 << 3 + icounter);
+                chanReg |= (0x1 << (3 + icounter));
             }
         }
 

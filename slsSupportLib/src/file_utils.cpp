@@ -174,6 +174,10 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
     }
     std::vector<int> list;
     for (std::string line; std::getline(input_file, line);) {
+        // ignore comments
+        if (line.find('#') != std::string::npos) {
+            line.erase(line.find('#'));
+        }
 
         // replace comma with space
         std::replace_if(
@@ -208,25 +212,20 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
         // remove punctuations including [ and ]
         line.erase(std::remove_if(begin(line), end(line), ispunct), end(line));
 
-        LOG(logDEBUG1) << line;
+        LOG(logDEBUG) << "\nline: [" << line << ']';
 
-        // push all channels from a line separated by space
-        if (!line.empty()) {
-            std::istringstream iss(line);
-            while (iss.good()) {
-                int ival = 0;
-                iss >> ival;
-                if (iss.fail()) {
-                    throw RuntimeError(
-                        "Could not load channels from file. Invalid "
-                        "channel number at position " +
-                        std::to_string(list.size()));
-                }
-                list.push_back(ival);
+        // split line (delim space) and push to list
+        std::vector<std::string> vec = split(line, ' ');
+        for (auto it: vec) {
+            int ival = 0;
+            try {
+                ival = StringTo<int>(it);
+            } catch (std::exception &e) {
+                throw RuntimeError("Could not load channels from file. Invalid channel number: " + it);
             }
+            list.push_back(ival);
         }
     }
-    LOG(logDEBUG1) << "list:" << ToString(list);
 
     // remove duplicates from list
     auto listSize = list.size();
@@ -235,6 +234,8 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
     if (list.size() != listSize) {
         LOG(logWARNING) << "Removed duplicates from channel file";
     }
+
+    LOG(logDEBUG1) << "list:" << ToString(list);
     return list;
 }
 

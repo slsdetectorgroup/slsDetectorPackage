@@ -762,11 +762,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.det.frames = self.spinBoxFrames.value()
 
     def getPeriod(self):
-        period = self.spinBoxPeriod.value()
-        print(period)
-
+        self.det.period = self.spinBoxPeriod.value()
+       
     def getTriggers(self):
-        print("frames")
+        self.det.triggers = self.spinBoxTriggers.value()
 
     def getRunFrequency(self):
         print("frames")
@@ -977,12 +976,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxADC.setValue(self.det.getDAC(dacIndex.ADC_VPP)[0])
         self.spinBoxHighVoltage.setValue(self.det.getDAC(dacIndex.HIGH_VOLTAGE)[0])
 
+        #Updating values for Power Supply
         self.spinBoxVA.setValue(self.det.getDAC(dacIndex.V_POWER_A)[0])
         self.spinBoxVB.setValue(self.det.getDAC(dacIndex.V_POWER_B)[0])
         self.spinBoxVC.setValue(self.det.getDAC(dacIndex.V_POWER_C)[0])
         self.spinBoxVD.setValue(self.det.getDAC(dacIndex.V_POWER_D)[0])
         self.spinBoxVIO.setValue(self.det.getDAC(dacIndex.V_POWER_IO)[0])
         self.spinBoxVCHIP.setValue(self.det.getDAC(dacIndex.V_POWER_CHIP)[0])
+
+        #Updating values for patterns
+        self.spinBoxFrames.setValue(self.det.frames)
+        self.spinBoxPeriod.setValue(self.det.period)
+        self.spinBoxTriggers.setValue(self.det.triggers)
+
+        name = self.det.getDacNames()
+        print(name[2])
 
 
         

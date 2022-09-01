@@ -1155,7 +1155,7 @@
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
               <property name="maximum">
-               <number>4096</number>
+               <number>200</number>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxHighVoltagemV">
@@ -1295,6 +1295,9 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
+              <property name="maximum">
+               <number>2468</number>
+              </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVB">
               <property name="geometry">
@@ -1307,6 +1310,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>2468</number>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVC">
@@ -1321,6 +1327,9 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
+              <property name="maximum">
+               <number>2468</number>
+              </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVD">
               <property name="geometry">
@@ -1333,6 +1342,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>2468</number>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVIO">
@@ -1347,6 +1359,9 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
+              <property name="maximum">
+               <number>2468</number>
+              </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVCHIP">
               <property name="geometry">
@@ -1359,6 +1374,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>2468</number>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxVAmV">
@@ -1768,7 +1786,7 @@
               </property>
               <property name="icon">
                <iconset theme="update">
-                <normaloff>../</normaloff>../</iconset>
+                <normaloff>../../../.designer</normaloff>../../../.designer</iconset>
               </property>
               <property name="flat">
                <bool>false</bool>
@@ -10801,22 +10819,6 @@
                <string>Number of triggers:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxPeriod">
-              <property name="geometry">
-               <rect>
-                <x>560</x>
-                <y>20</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
              <widget class="QLabel" name="label_70">
               <property name="geometry">
                <rect>
@@ -11883,6 +11885,16 @@
               </property>
               <property name="text">
                <string>Load Pattern</string>
+              </property>
+             </widget>
+             <widget class="QDoubleSpinBox" name="spinBoxPeriod">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>20</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
               </property>
              </widget>
             </widget>

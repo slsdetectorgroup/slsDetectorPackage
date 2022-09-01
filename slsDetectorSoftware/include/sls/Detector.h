@@ -210,6 +210,14 @@ class Detector {
     /** [Jungfrau]  */
     void setSynchronization(bool value);
 
+    /** [Gotthard2][Mythen3] */
+    void getBadChannels(const std::string &fname, Positions pos = {}) const;
+
+    /** [Gotthard2][Mythen3]
+     * [Mythen3] Also does trimming
+     */
+    void setBadChannels(const std::string &fname, Positions pos = {});
+
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@}
 
@@ -1441,11 +1449,6 @@ class Detector {
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              const int value, Positions pos = {});
 
-    /** [Gotthard2] */
-    void getBadChannels(const std::string &fname, Positions pos = {}) const;
-
-    /** [Gotthard2] */
-    void setBadChannels(const std::string &fname, Positions pos = {});
     ///@}
 
     /** @name Mythen3 Specific */

@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/file_utils.h"
+#include "sls/ToString.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 
 #include <errno.h>
 #include <ios>
 #include <iostream>
+#include <libgen.h> // dirname
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h> //readlink
 
 namespace sls {
 
@@ -160,6 +163,101 @@ ssize_t getFileSize(FILE *fd, const std::string &prependErrorString) {
     }
     rewind(fd);
     return fileSize;
+}
+
+std::vector<int> getChannelsFromFile(const std::string &fname) {
+    // read bad channels file
+    std::ifstream input_file(fname);
+    if (!input_file) {
+        throw RuntimeError("Could not open bad channels file " + fname +
+                           " for reading");
+    }
+    std::vector<int> list;
+    for (std::string line; std::getline(input_file, line);) {
+        // ignore comments
+        if (line.find('#') != std::string::npos) {
+            line.erase(line.find('#'));
+        }
+
+        // replace comma with space
+        std::replace_if(
+            begin(line), end(line), [](char c) { return (c == ','); }, ' ');
+
+        // replace x:y with a sequence of x to y
+        auto result = line.find(':');
+        while (result != std::string::npos) {
+            auto start = line.rfind(' ', result);
+            if (start == std::string::npos) {
+                start = 0;
+            } else
+                ++start;
+            int istart = StringTo<int>(line.substr(start, result - start));
+
+            auto stop = line.find(' ', result);
+            if (stop == std::string::npos) {
+                stop = line.length();
+            }
+            int istop =
+                StringTo<int>(line.substr(result + 1, stop - result - 1));
+
+            std::vector<int> v(istop - istart);
+            std::generate(v.begin(), v.end(),
+                          [n = istart]() mutable { return n++; });
+            line.replace(start, stop - start, ToString(v));
+
+            LOG(logDEBUG1) << line;
+            result = line.find(':');
+        }
+
+        // remove punctuations including [ and ]
+        line.erase(std::remove_if(begin(line), end(line), ispunct), end(line));
+
+        LOG(logDEBUG) << "\nline: [" << line << ']';
+
+        // split line (delim space) and push to list
+        std::vector<std::string> vec = split(line, ' ');
+        for (auto it : vec) {
+            int ival = 0;
+            try {
+                ival = StringTo<int>(it);
+            } catch (std::exception &e) {
+                throw RuntimeError("Could not load channels from file. Invalid "
+                                   "channel number: " +
+                                   it);
+            }
+            list.push_back(ival);
+        }
+    }
+
+    // remove duplicates from list
+    auto listSize = list.size();
+    std::sort(list.begin(), list.end());
+    list.erase(unique(list.begin(), list.end()), list.end());
+    if (list.size() != listSize) {
+        LOG(logWARNING) << "Removed duplicates from channel file";
+    }
+
+    LOG(logDEBUG1) << "list:" << ToString(list);
+    return list;
+}
+
+std::string getAbsolutePathFromCurrentProcess(const std::string &fname) {
+    if (fname[0] == '/') {
+        return fname;
+    }
+
+    // get path of current binary
+    char path[MAX_STR_LENGTH];
+    memset(path, 0, MAX_STR_LENGTH);
+    ssize_t len = readlink("/proc/self/exe", path, MAX_STR_LENGTH - 1);
+    if (len < 0) {
+        throw RuntimeError("Could not get absolute path for " + fname);
+    }
+    path[len] = '\0';
+
+    // get dir path and attach file name
+    std::string absPath = (std::string(dirname(path)) + '/' + fname);
+    return absPath;
 }
 
 } // namespace sls

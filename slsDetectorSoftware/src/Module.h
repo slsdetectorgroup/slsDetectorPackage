@@ -125,6 +125,8 @@ class Module : public virtual slsDetectorDefs {
     void setMaster(const bool master);
     bool getSynchronization() const;
     void setSynchronization(const bool value);
+    std::vector<int> getBadChannels() const;
+    void setBadChannels(std::vector<int> list);
 
     bool isVirtualDetectorServer() const;
 
@@ -453,8 +455,6 @@ class Module : public virtual slsDetectorDefs {
     int getADCConfiguration(const int chipIndex, const int adcIndex) const;
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              int value);
-    void getBadChannels(const std::string &fname) const;
-    void setBadChannels(const std::string &fname);
 
     /**************************************************
      *                                                *

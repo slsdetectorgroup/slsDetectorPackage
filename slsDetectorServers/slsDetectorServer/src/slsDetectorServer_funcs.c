@@ -1897,11 +1897,11 @@ int acquire(int blocking, int file_des) {
             uint32_t sourceip = getDetectorIP();
             char src_ip[INET_ADDRSTRLEN];
             getIpAddressinString(src_ip, sourceip);
-            sprintf(mess,
-                    "Invalid udp source ip address for this detector. Must be "
-                    "same "
-                    "as hardware detector ip address %s in 1G readout mode \n",
-                    src_ip);
+            sprintf(
+                mess,
+                "Invalid udp source ip address for this detector. Must be "
+                "same as hardware detector ip address %s in 1G readout mode \n",
+                src_ip);
             LOG(logERROR, (mess));
         } else
 #endif
@@ -7981,7 +7981,7 @@ int get_bad_channels(int file_des) {
 
     LOG(logDEBUG1, ("Getting bad channels\n"));
 
-#ifndef GOTTHARD2D
+#if !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
@@ -8022,44 +8022,53 @@ int set_bad_channels(int file_des) {
 
     LOG(logDEBUG1, ("Setting %d bad channels\n", nargs));
 
-#ifndef GOTTHARD2D
+#if !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
     if (Server_VerifyLock() == OK) {
         // validate bad channel number
+        int maxChannel = NCHAN * NCHIP;
+#ifdef MYTHEN3D
+        maxChannel = NCHAN_1_COUNTER * NCHIP;
+#endif
         for (int i = 0; i < nargs; ++i) {
             LOG(logDEBUG1, ("\t[%d]:%d\n", i, args[i]));
-            if (args[i] < 0 || args[i] >= (NCHAN * NCHIP)) {
+            if (args[i] < 0 || args[i] >= maxChannel) {
                 ret = FAIL;
                 sprintf(mess,
                         "Could not set bad channels. Invalid bad channel "
                         "number %d. Options [0-%d]\n",
-                        args[i], NCHIP * NCHAN - 1);
+                        args[i], maxChannel - 1);
                 LOG(logERROR, (mess));
                 break;
             }
         }
         if (ret == OK) {
-            setBadChannels(nargs, args);
-            int nretvals = 0;
-            int *retvals = getBadChannels(&nretvals);
-            if (nretvals == -1) {
-                ret = FAIL;
-                strcpy(mess,
-                       "Could not get bad channels. Memory allcoation error\n");
+            ret = setBadChannels(nargs, args);
+            if (ret == FAIL) {
+                strcpy(mess, "Could not set bad channels.\n");
                 LOG(logERROR, (mess));
-            } else if (nretvals != nargs) {
-                ret = FAIL;
-                sprintf(
-                    mess,
-                    "Could not set bad channels. Set %d channels, but read %d "
-                    "channels\n",
-                    nargs, nretvals);
-                LOG(logERROR, (mess));
-            }
-            if (retvals != NULL) {
-                free(retvals);
+            } else {
+                int nretvals = 0;
+                int *retvals = getBadChannels(&nretvals);
+                if (nretvals == -1) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not get bad channels. Memory "
+                                 "allcoation error\n");
+                    LOG(logERROR, (mess));
+                } else if (nretvals != nargs) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set bad channels. Set %d channels, but "
+                            "read %d "
+                            "channels\n",
+                            nargs, nretvals);
+                    LOG(logERROR, (mess));
+                }
+                if (retvals != NULL) {
+                    free(retvals);
+                }
             }
         }
     }

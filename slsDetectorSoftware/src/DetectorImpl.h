@@ -190,6 +190,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
         }
     }
 
+    bool isAllPositions(const Positions pos) const;
+
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag);
 
@@ -302,6 +304,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
     defs::ROI getRxROI() const;
     void setRxROI(const defs::ROI arg);
     void clearRxROI();
+
+    void getBadChannels(const std::string &fname, Positions pos) const;
+    void setBadChannels(const std::string &fname, Positions pos);
 
     std::vector<std::string> getCtbDacNames() const;
     std::string getCtbDacName(defs::dacIndex i) const;

@@ -3,6 +3,7 @@
 #include "CmdProxy.h"
 #include "catch.hpp"
 #include "sls/Detector.h"
+#include "sls/file_utils.h"
 #include "sls/sls_detector_defs.h"
 
 #include <chrono>
@@ -619,6 +620,29 @@ TEST_CASE("master", "[.cmd]") {
         }
     } else {
         REQUIRE_THROWS(proxy.Call("master", {}, -1, GET));
+    }
+}
+
+TEST_CASE("badchannels", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3) {
+        REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
+
+        std::string fname_put =
+            getAbsolutePathFromCurrentProcess(TEST_FILE_NAME_BAD_CHANNELS);
+        std::string fname_get = "/tmp/sls_test_channels.txt";
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_put}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        auto list = getChannelsFromFile(fname_get);
+        std::vector<int> expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
+        REQUIRE(list == expected);
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
     }
 }
 

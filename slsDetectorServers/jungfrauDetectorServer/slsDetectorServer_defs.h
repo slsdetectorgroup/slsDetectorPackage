@@ -5,8 +5,8 @@
 #include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API  0x171220
-#define REQRD_FRMWRE_VRSN_BOARD2 0x210831 // 1.0 pcb (version = 010)
-#define REQRD_FRMWRE_VRSN        0x211008 // 2.0 pcb (version = 011)
+#define REQRD_FRMWRE_VRSN_BOARD2 0x220421 // 1.0 pcb (version = 010)
+#define REQRD_FRMWRE_VRSN        0x220422 // 2.0 pcb (version = 011)
 
 #define LINKED_SERVER_NAME "jungfrauDetectorServer"
 

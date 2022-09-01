@@ -4,6 +4,8 @@ import sys, os
 import pyqtgraph as pg
 from pyqtgraph import PlotWidget
 
+from slsdet import Detector, dacIndex
+
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -11,7 +13,9 @@ class MainWindow(QtWidgets.QMainWindow):
         pg.setConfigOption('foreground', 'k')
 
         super(MainWindow, self).__init__()
+        self.det = Detector()
         uic.loadUi('CtbGui.ui', self)
+        self.update_field()
 
         pen = pg.mkPen(color = (36, 119, 173), width=1) 
         #Plotting the data
@@ -281,85 +285,112 @@ class MainWindow(QtWidgets.QMainWindow):
     # TODO Only add DACs tab functions
         
     def setDAC0(self):
-        print("Dac 0")
+        dacValues = self.spinBoxDAC0.value()
+        self.det.setDAC(dacIndex.DAC_0, dacValues)
     
     def setDAC1(self):
-        print("Dac 1")
+        dacValues = self.spinBoxDAC1.value()
+        self.det.setDAC(dacIndex.DAC_1, dacValues)
     
     def setDAC2(self):
-        print("Dac 2")
+        dacValues = self.spinBoxDAC2.value()
+        self.det.setDAC(dacIndex.DAC_2, dacValues)
 
     def setDAC3(self):
-        print("Dac 3")
+        dacValues = self.spinBoxDAC3.value()
+        self.det.setDAC(dacIndex.DAC_3, dacValues)
 
     def setDAC4(self):
-        print("Dac 4")
+        dacValues = self.spinBoxDAC4.value()
+        self.det.setDAC(dacIndex.DAC_4, dacValues)
 
     def setDAC5(self):
-        print("Dac 5")
+        dacValues = self.spinBoxDAC5.value()
+        self.det.setDAC(dacIndex.DAC_5, dacValues)
 
     def setDAC6(self):
-        print("Dac 6")
+        dacValues = self.spinBoxDAC6.value()
+        self.det.setDAC(dacIndex.DAC_6, dacValues)
 
     def setDAC7(self):
-        print("Dac 7")
+        dacValues = self.spinBoxDAC7.value()
+        self.det.setDAC(dacIndex.DAC_7, dacValues)
 
     def setDAC8(self):
-        print("Dac 8")
+        dacValues = self.spinBoxDAC8.value()
+        self.det.setDAC(dacIndex.DAC_8, dacValues)
     
     def setDAC9(self):
-        print("Dac 9")
+        dacValues = self.spinBoxDAC9.value()
+        self.det.setDAC(dacIndex.DAC_9, dacValues)
     
     def setDAC10(self):
-        print("Dac 10")
+        dacValues = self.spinBoxDAC10.value()
+        self.det.setDAC(dacIndex.DAC_10, dacValues)
     
     def setDAC11(self):
-        print("Dac 11")
+        dacValues = self.spinBoxDAC11.value()
+        self.det.setDAC(dacIndex.DAC_11, dacValues)
     
     def setDAC12(self):
-        print("Dac 12")
+        dacValues = self.spinBoxDAC12.value()
+        self.det.setDAC(dacIndex.DAC_12, dacValues)
     
     def setDAC13(self):
-        print("Dac 13")
+        dacValues = self.spinBoxDAC13.value()
+        self.det.setDAC(dacIndex.DAC_13, dacValues)
 
     def setDAC14(self):
-        print("Dac 14")
+        dacValues = self.spinBoxDAC14.value()
+        self.det.setDAC(dacIndex.DAC_14, dacValues)
 
     def setDAC15(self):
-        print("Dac 15")
+        dacValues = self.spinBoxDAC15.value()
+        self.det.setDAC(dacIndex.DAC_15, dacValues)
 
     def setDAC16(self):
-        print("Dac 16")
+        dacValues = self.spinBoxDAC16.value()
+        self.det.setDAC(dacIndex.DAC_16, dacValues)
 
     def setDAC17(self):
-        print("Dac 17")
+        dacValues = self.spinBoxDAC17.value()
+        self.det.setDAC(dacIndex.DAC_17, dacValues)
     
+    #TODO yet to implement the ADC and HV
     def setADC(self):
-        print("ADC")
+        ADCValues = self.spinBoxADC.value()
+        self.det.setDAC(dacIndex.ADC_VPP, ADCValues)
 
     def setHighVoltage(self):
-        print("High Voltage")
+        HVValues = self.spinBoxHighVoltage.value()
+        self.det.setDAC(dacIndex.HIGH_VOLTAGE, HVValues)
     
     #For Power Supplies Tab functions
     #TODO Only add the components of Power Supplies tab functions
 
     def setVA(self):
-        print("VA")
+        dacValues = self.spinBoxVA.value()
+        self.det.setDAC(dacIndex.V_POWER_A, dacValues)
     
     def setVB(self):
-        print("VB")
+        dacValues = self.spinBoxVB.value()
+        self.det.setDAC(dacIndex.V_POWER_B, dacValues)
     
     def setVC(self):
-        print("VC")
+        dacValues = self.spinBoxVC.value()
+        self.det.setDAC(dacIndex.V_POWER_C, dacValues)
 
     def setVD(self):
-        print("VD")
+        dacValues = self.spinBoxVD.value()
+        self.det.setDAC(dacIndex.V_POWER_D, dacValues)
 
     def setVIO(self):
-        print("VIO")
+        dacValues = self.spinBoxVIO.value()
+        self.det.setDAC(dacIndex.V_POWER_IO, dacValues)
 
     def setVCHIP(self):
-        print("VCHIP")
+        dacValues = self.spinBoxVCHIP.value()
+        self.det.setDAC(dacIndex.V_POWER_CHIP, dacValues)
 
     #For Sense Tab functions
     #TODO Only add the components of Sense tab functions
@@ -728,7 +759,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.lineEditPattern.setText(response[0])
 
     def getFrames(self):
-        print("frames")
+        self.det.frames = self.spinBoxFrames.value()
 
     def getPeriod(self):
         period = self.spinBoxPeriod.value()
@@ -922,6 +953,38 @@ class MainWindow(QtWidgets.QMainWindow):
         if color.isValid():
             button.setStyleSheet("background-color: %s" % color.name())
             print(color.name())
+
+    #updating fields with values 
+    def update_field(self):
+        self.spinBoxDAC0.setValue(self.det.getDAC(dacIndex.DAC_0)[0])
+        self.spinBoxDAC1.setValue(self.det.getDAC(dacIndex.DAC_1)[0])
+        self.spinBoxDAC2.setValue(self.det.getDAC(dacIndex.DAC_2)[0])
+        self.spinBoxDAC3.setValue(self.det.getDAC(dacIndex.DAC_3)[0])
+        self.spinBoxDAC4.setValue(self.det.getDAC(dacIndex.DAC_4)[0])
+        self.spinBoxDAC5.setValue(self.det.getDAC(dacIndex.DAC_5)[0])
+        self.spinBoxDAC6.setValue(self.det.getDAC(dacIndex.DAC_6)[0])
+        self.spinBoxDAC7.setValue(self.det.getDAC(dacIndex.DAC_7)[0])
+        self.spinBoxDAC8.setValue(self.det.getDAC(dacIndex.DAC_8)[0])
+        self.spinBoxDAC9.setValue(self.det.getDAC(dacIndex.DAC_9)[0])
+        self.spinBoxDAC10.setValue(self.det.getDAC(dacIndex.DAC_10)[0])
+        self.spinBoxDAC11.setValue(self.det.getDAC(dacIndex.DAC_11)[0])
+        self.spinBoxDAC12.setValue(self.det.getDAC(dacIndex.DAC_12)[0])
+        self.spinBoxDAC13.setValue(self.det.getDAC(dacIndex.DAC_13)[0])
+        self.spinBoxDAC14.setValue(self.det.getDAC(dacIndex.DAC_14)[0])
+        self.spinBoxDAC15.setValue(self.det.getDAC(dacIndex.DAC_15)[0])
+        self.spinBoxDAC16.setValue(self.det.getDAC(dacIndex.DAC_16)[0])
+        self.spinBoxDAC17.setValue(self.det.getDAC(dacIndex.DAC_17)[0])
+        self.spinBoxADC.setValue(self.det.getDAC(dacIndex.ADC_VPP)[0])
+        self.spinBoxHighVoltage.setValue(self.det.getDAC(dacIndex.HIGH_VOLTAGE)[0])
+
+        self.spinBoxVA.setValue(self.det.getDAC(dacIndex.V_POWER_A)[0])
+        self.spinBoxVB.setValue(self.det.getDAC(dacIndex.V_POWER_B)[0])
+        self.spinBoxVC.setValue(self.det.getDAC(dacIndex.V_POWER_C)[0])
+        self.spinBoxVD.setValue(self.det.getDAC(dacIndex.V_POWER_D)[0])
+        self.spinBoxVIO.setValue(self.det.getDAC(dacIndex.V_POWER_IO)[0])
+        self.spinBoxVCHIP.setValue(self.det.getDAC(dacIndex.V_POWER_CHIP)[0])
+
+
         
 
 if __name__ == '__main__':

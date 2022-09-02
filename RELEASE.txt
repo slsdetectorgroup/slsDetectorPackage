@@ -97,7 +97,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - pat loop and wait address default
 - ctb and moench Fw fixed (to work with pattern commdand) )addreess length
 - jungfrau reset core and usleep removed (fix for 6.1.1 is now fixed in firmware)
-
+- m3 clock update, m3 clk 4 and 5 cannot be set
 
 2. Resolved Issues
 ==================

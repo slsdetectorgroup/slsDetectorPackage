@@ -1750,6 +1750,52 @@ void updatingRegisters() {
     LOG(logINFO, ("\tDone Updating registers\n\n"));
 }
 
+int updateClockDivs() {
+    char *clock_names[] = {CLK_NAMES};
+    switch (burstMode) {
+    case BURST_INTERNAL:
+    case BURST_EXTERNAL:
+        if (setClockDivider(SYSTEM_C0, DEFAULT_BURST_SYSTEM_C0) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_BURST_SYSTEM_C0));
+            return FAIL;
+        }
+        if (setClockDivider(SYSTEM_C1, DEFAULT_BURST_SYSTEM_C1) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_BURST_SYSTEM_C1));
+            return FAIL;
+        }
+        if (setClockDivider(SYSTEM_C2, DEFAULT_BURST_SYSTEM_C2) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_BURST_SYSTEM_C2));
+            return FAIL;
+        }
+        break;
+    case CONTINUOUS_INTERNAL:
+    case CONTINUOUS_EXTERNAL:
+        if (setClockDivider(SYSTEM_C0, DEFAULT_CNTNS_SYSTEM_C0) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_CNTNS_SYSTEM_C0));
+            return FAIL;
+        }
+        if (setClockDivider(SYSTEM_C1, DEFAULT_CNTNS_SYSTEM_C1) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_CNTNS_SYSTEM_C1));
+            return FAIL;
+        }
+        if (setClockDivider(SYSTEM_C2, DEFAULT_CNTNS_SYSTEM_C2) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_CNTNS_SYSTEM_C2));
+            return FAIL;
+        }
+        break;
+    default:
+        LOG(logERROR, ("Unknown burst mode. Cannot update clock divs.\n"));
+        return FAIL;
+    }
+    return OK;
+}
+
 void setTiming(enum timingMode arg) {
     switch (arg) {
     case AUTO_TIMING:
@@ -2780,6 +2826,9 @@ int setBurstMode(enum burstMode burst) {
     }
 
     updatingRegisters();
+
+    updateClockDivs();
+
     return configureASICGlobalSettings();
 }
 

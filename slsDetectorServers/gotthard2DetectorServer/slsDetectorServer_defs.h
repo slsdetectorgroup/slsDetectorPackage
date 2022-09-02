@@ -65,6 +65,14 @@
 #define DEFAULT_SYSTEM_C2  (5)  //(144444448) // sync_clk, 144 MHz
 #define DEFAULT_SYSTEM_C3  (5)  //(144444448) // str_clk, 144 MHz
 
+#define DEFAULT_CNTNS_SYSTEM_C0 (10) // (72222224) run_clk, 72 MHz
+#define DEFAULT_CNTNS_SYSTEM_C1 (20) // (36111112) chip_clk, 36 MHz
+#define DEFAULT_CNTNS_SYSTEM_C2 (10) // (72222224) sync_clk, 72 MHz
+
+#define DEFAULT_BURST_SYSTEM_C0 (5)  // (144444448) run_clk, 144 MHz
+#define DEFAULT_BURST_SYSTEM_C1 (10) // (72222224) chip_clk, 72 MHz
+#define DEFAULT_BURST_SYSTEM_C2 (5)  // (144444448) sync_clk, 144 MHz
+
 #define DEFAULT_READOUT_SPEED    (G2_108MHZ)
 #define SPEED_144_CLKDIV_0       (6)
 #define SPEED_144_CLKDIV_1       (6)

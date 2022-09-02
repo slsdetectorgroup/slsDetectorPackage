@@ -2190,7 +2190,8 @@ std::string CmdProxy::BurstMode(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[burst_internal or 0, burst_external or 1, cw_internal or 2, "
-              "cw_external or 3]\n\t[Gotthard2] Default is burst_internal type"
+              "cw_external or 3]\n\t[Gotthard2] Default is burst_internal "
+              "type. Also changes clkdiv 2, 3, 4"
            << '\n';
     } else {
         if (action == defs::GET_ACTION) {

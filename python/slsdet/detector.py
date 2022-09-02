@@ -2561,6 +2561,7 @@ class Detector(CppDetectorApi):
         Note
         ----
         BURST_INTERNAL (default), BURST_EXTERNAL, CONTINUOUS_INTERNAL, CONTINUOUS_EXTERNAL
+        Also changes clkdiv 2, 3, 4
         """
         return self.getBurstMode()
 

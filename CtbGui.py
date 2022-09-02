@@ -918,10 +918,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def getPeriod(self):
         match self.comboBoxTime.currentIndex():
             case 0:
-                unit = 1e-3
+                unit = 1
             case 1:
-                unit = 1e-6
+                unit = 1e-3
             case 2:
+                unit = 1e-6
+            case 3:
                 unit = 1e-9
         self.det.period = self.spinBoxPeriod.value()*unit
 
@@ -1127,6 +1129,27 @@ class MainWindow(QtWidgets.QMainWindow):
 
     #updating fields with values 
     def update_field(self):
+        #Getting dac Name
+        self.checkBoxDAC0.setText(self.det.getDacNames()[0])
+        self.checkBoxDAC1.setText(self.det.getDacNames()[1])
+        self.checkBoxDAC2.setText(self.det.getDacNames()[2])
+        self.checkBoxDAC3.setText(self.det.getDacNames()[3])
+        self.checkBoxDAC4.setText(self.det.getDacNames()[4])
+        self.checkBoxDAC5.setText(self.det.getDacNames()[5])
+        self.checkBoxDAC6.setText(self.det.getDacNames()[6])
+        self.checkBoxDAC7.setText(self.det.getDacNames()[7])
+        self.checkBoxDAC8.setText(self.det.getDacNames()[8])
+        self.checkBoxDAC9.setText(self.det.getDacNames()[9])
+        self.checkBoxDAC10.setText(self.det.getDacNames()[10])
+        self.checkBoxDAC11.setText(self.det.getDacNames()[11])
+        self.checkBoxDAC12.setText(self.det.getDacNames()[12])
+        self.checkBoxDAC13.setText(self.det.getDacNames()[13])
+        self.checkBoxDAC14.setText(self.det.getDacNames()[14])
+        self.checkBoxDAC15.setText(self.det.getDacNames()[15])
+        self.checkBoxDAC16.setText(self.det.getDacNames()[16])
+        self.checkBoxDAC17.setText(self.det.getDacNames()[17])
+
+        #Getting dac values
         self.spinBoxDAC0.setValue(self.det.getDAC(dacIndex.DAC_0)[0])
         if (self.det.getDAC(dacIndex.DAC_0)[0]) == -100:
             self.spinBoxDAC0.setDisabled(True)
@@ -1283,17 +1306,20 @@ class MainWindow(QtWidgets.QMainWindow):
         #Converting to right time unit
         tPeriod = self.det.period
         if tPeriod < 100e-9:
-            self.comboBoxTime.setCurrentIndex(2)
+            self.comboBoxTime.setCurrentIndex(3)
             periodTime = (tPeriod/1e-9)
             self.spinBoxPeriod.setValue(periodTime)
         elif tPeriod < 100e-6:
-            self.comboBoxTime.setCurrentIndex(1)
+            self.comboBoxTime.setCurrentIndex(2)
             periodTime1 = (tPeriod/1e-6)
             self.spinBoxPeriod.setValue(periodTime1)
-        else:
-            self.comboBoxTime.setCurrentIndex(0)
+        elif tPeriod < 100e-3:
+            self.comboBoxTime.setCurrentIndex(1)
             periodTime0 = (tPeriod/1e-3)
             self.spinBoxPeriod.setValue(periodTime0)
+        else:
+            self.comboBoxTime.setCurrentIndex(0)
+            self.spinBoxPeriod.setValue(tPeriod)
 
         self.spinBoxTriggers.setValue(self.det.triggers)
 

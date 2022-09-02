@@ -33,41 +33,43 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDAC0.editingFinished.connect(self.setDAC0)
         self.checkBoxDAC0.clicked.connect(self.setDAC0)
         self.spinBoxDAC1.editingFinished.connect(self.setDAC1)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC1.clicked.connect(self.setDAC1)
         self.spinBoxDAC2.editingFinished.connect(self.setDAC2)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC2.clicked.connect(self.setDAC2)
         self.spinBoxDAC3.editingFinished.connect(self.setDAC3)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC3.clicked.connect(self.setDAC3)
         self.spinBoxDAC4.editingFinished.connect(self.setDAC4)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC4.clicked.connect(self.setDAC4)
         self.spinBoxDAC5.editingFinished.connect(self.setDAC5)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC5.clicked.connect(self.setDAC5)
         self.spinBoxDAC6.editingFinished.connect(self.setDAC6)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC6.clicked.connect(self.setDAC6)
         self.spinBoxDAC7.editingFinished.connect(self.setDAC7)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC7.clicked.connect(self.setDAC7)
         self.spinBoxDAC8.editingFinished.connect(self.setDAC8)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC8.clicked.connect(self.setDAC8)
         self.spinBoxDAC9.editingFinished.connect(self.setDAC9)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC9.clicked.connect(self.setDAC9)
         self.spinBoxDAC10.editingFinished.connect(self.setDAC10)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC10.clicked.connect(self.setDAC10)
         self.spinBoxDAC11.editingFinished.connect(self.setDAC11)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC11.clicked.connect(self.setDAC11)
         self.spinBoxDAC12.editingFinished.connect(self.setDAC12)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC12.clicked.connect(self.setDAC12)
         self.spinBoxDAC13.editingFinished.connect(self.setDAC13)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC13.clicked.connect(self.setDAC13)
         self.spinBoxDAC14.editingFinished.connect(self.setDAC14)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC14.clicked.connect(self.setDAC14)
         self.spinBoxDAC15.editingFinished.connect(self.setDAC15)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC15.clicked.connect(self.setDAC15)
         self.spinBoxDAC16.editingFinished.connect(self.setDAC16)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC16.clicked.connect(self.setDAC16)
         self.spinBoxDAC17.editingFinished.connect(self.setDAC17)
-        self.checkBoxVA.clicked.connect(self.setVA)
+        self.checkBoxDAC17.clicked.connect(self.setDAC17)
         self.spinBoxADC.editingFinished.connect(self.setADC)
+        self.checkBoxADC.clicked.connect(self.setADC)
         self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
+        self.checkBoxHighVoltage.clicked.connect(self.setHighVoltage)
 
         #For Power Supplies tab
         #TODO Only add the components of Power supplies tab
@@ -470,12 +472,24 @@ class MainWindow(QtWidgets.QMainWindow):
     
     #TODO yet to implement the ADC and HV
     def setADC(self):
-        ADCValues = self.spinBoxADC.value()
-        self.det.setDAC(dacIndex.ADC_VPP, ADCValues)
+        if self.checkBoxADC.isChecked():
+            ADCValues = self.spinBoxADC.value()
+            self.det.setDAC(dacIndex.ADC_VPP, ADCValues)
+            self.spinBoxADC.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.ADC_VPP, 0)
+            self.spinBoxADC.setDisabled(True)
+
 
     def setHighVoltage(self):
-        HVValues = self.spinBoxHighVoltage.value()
-        self.det.setHighVoltage(HVValues)
+        if self.checkBoxHighVoltage.isChecked():
+            HVValues = self.spinBoxHighVoltage.value()
+            self.det.setHighVoltage(HVValues)
+            self.spinBoxHighVoltage.setDisabled(False)
+        else:
+            self.det.setHighVoltage(0)
+            self.spinBoxHighVoltage.setDisabled(True)
+        
     
     #For Power Supplies Tab functions
     #TODO Only add the components of Power Supplies tab functions

@@ -1897,11 +1897,11 @@ int acquire(int blocking, int file_des) {
             uint32_t sourceip = getDetectorIP();
             char src_ip[INET_ADDRSTRLEN];
             getIpAddressinString(src_ip, sourceip);
-            sprintf(
-                mess,
-                "Invalid udp source ip address for this detector. Must be "
-                "same as hardware detector ip address %s in 1G readout mode \n",
-                src_ip);
+            sprintf(mess,
+                    "Invalid udp source ip address for this detector. Must be "
+                    "same as hardware detector ip address %s in 1G readout "
+                    "mode \n",
+                    src_ip);
             LOG(logERROR, (mess));
         } else
 #endif
@@ -5999,7 +5999,11 @@ int set_clock_divider(int file_des) {
     // only set
     if (Server_VerifyLock() == OK) {
 
+#ifdef MYTHEN3D
+        if (args[0] >= NUM_CLOCKS_TO_SET) {
+#else
         if (args[0] >= NUM_CLOCKS) {
+#endif
             modeNotImplemented("clock index (divider set)", args[0]);
         }
 
@@ -6057,7 +6061,7 @@ int get_clock_divider(int file_des) {
 #else
     // get only
     if (arg >= NUM_CLOCKS) {
-        modeNotImplemented("clock index (divider set)", arg);
+        modeNotImplemented("clock index (divider get)", arg);
     }
     if (ret == OK) {
         enum CLKINDEX c = (enum CLKINDEX)arg;

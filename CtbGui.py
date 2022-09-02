@@ -1,3 +1,4 @@
+from fileinput import filename
 from turtle import color
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
@@ -5,7 +6,6 @@ import pyqtgraph as pg
 from pyqtgraph import PlotWidget
 
 from slsdet import Detector, dacIndex
-
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -21,7 +21,6 @@ class MainWindow(QtWidgets.QMainWindow):
         #Plotting the data
         self.curve = self.plotWidget.plot(pen=pen)
 
-
         #For the action options in app
         #TODO Only add the components of action options
         #Show info
@@ -32,23 +31,41 @@ class MainWindow(QtWidgets.QMainWindow):
         #TODO Only add the components of DACs tab
 
         self.spinBoxDAC0.editingFinished.connect(self.setDAC0)
+        self.checkBoxDAC0.clicked.connect(self.setDAC0)
         self.spinBoxDAC1.editingFinished.connect(self.setDAC1)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC2.editingFinished.connect(self.setDAC2)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC3.editingFinished.connect(self.setDAC3)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC4.editingFinished.connect(self.setDAC4)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC5.editingFinished.connect(self.setDAC5)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC6.editingFinished.connect(self.setDAC6)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC7.editingFinished.connect(self.setDAC7)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC8.editingFinished.connect(self.setDAC8)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC9.editingFinished.connect(self.setDAC9)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC10.editingFinished.connect(self.setDAC10)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC11.editingFinished.connect(self.setDAC11)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC12.editingFinished.connect(self.setDAC12)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC13.editingFinished.connect(self.setDAC13)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC14.editingFinished.connect(self.setDAC14)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC15.editingFinished.connect(self.setDAC15)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC16.editingFinished.connect(self.setDAC16)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxDAC17.editingFinished.connect(self.setDAC17)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxADC.editingFinished.connect(self.setADC)
         self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
 
@@ -56,11 +73,15 @@ class MainWindow(QtWidgets.QMainWindow):
         #TODO Only add the components of Power supplies tab
 
         self.spinBoxVA.editingFinished.connect(self.setVA)
+        self.checkBoxVA.clicked.connect(self.setVA)
         self.spinBoxVB.editingFinished.connect(self.setVB)
+        self.checkBoxVB.clicked.connect(self.setVB)
         self.spinBoxVC.editingFinished.connect(self.setVC)
+        self.checkBoxVC.clicked.connect(self.setVC)
         self.spinBoxVD.editingFinished.connect(self.setVD)
+        self.checkBoxVD.clicked.connect(self.setVD)
         self.spinBoxVIO.editingFinished.connect(self.setVIO)
-        self.spinBoxVCHIP.editingFinished.connect(self.setVCHIP)
+        self.checkBoxVIO.clicked.connect(self.setVIO)
 
         #For Sense Tab
         #TODO Only add the components of Sense tab
@@ -190,6 +211,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonPattern.clicked.connect(self.getPattern)
         self.spinBoxFrames.editingFinished.connect(self.getFrames)
         self.spinBoxPeriod.editingFinished.connect(self.getPeriod)
+        self.comboBoxTime.activated.connect(self.getPeriod)
         self.spinBoxTriggers.editingFinished.connect(self.getTriggers)
         self.spinBoxRunF.editingFinished.connect(self.getRunFrequency)
         self.spinBoxADCF.editingFinished.connect(self.getADCFrequency)
@@ -261,6 +283,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxMeasurements.editingFinished.connect(self.getMeasurements)
         self.pushButtonStart.clicked.connect(self.acquire)
         self.pushButtonReferesh.clicked.connect(self.plotReferesh)
+        self.pushButtonBrowse.clicked.connect(self.browseFile)
 
     #For Action options function 
     #TODO Only add the components of action option+ functions    
@@ -285,76 +308,165 @@ class MainWindow(QtWidgets.QMainWindow):
     # TODO Only add DACs tab functions
         
     def setDAC0(self):
-        dacValues = self.spinBoxDAC0.value()
-        self.det.setDAC(dacIndex.DAC_0, dacValues)
+        if self.checkBoxDAC0.isChecked():
+            dacValues = self.spinBoxDAC0.value()
+            self.det.setDAC(dacIndex.DAC_0, dacValues)
+            self.spinBoxDAC0.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_0, -100)
+            self.spinBoxDAC0.setDisabled(True)
     
     def setDAC1(self):
-        dacValues = self.spinBoxDAC1.value()
-        self.det.setDAC(dacIndex.DAC_1, dacValues)
+        if self.checkBoxDAC1.isChecked():
+            dacValues = self.spinBoxDAC1.value()
+            self.det.setDAC(dacIndex.DAC_1, dacValues)
+            self.spinBoxDAC1.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_1, -100)
+            self.spinBoxDAC1.setDisabled(True)
     
     def setDAC2(self):
-        dacValues = self.spinBoxDAC2.value()
-        self.det.setDAC(dacIndex.DAC_2, dacValues)
+        if self.checkBoxDAC2.isChecked():
+            dacValues = self.spinBoxDAC2.value()
+            self.det.setDAC(dacIndex.DAC_2, dacValues)
+            self.spinBoxDAC2.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_2, -100)
+            self.spinBoxDAC2.setDisabled(True)
 
     def setDAC3(self):
-        dacValues = self.spinBoxDAC3.value()
-        self.det.setDAC(dacIndex.DAC_3, dacValues)
+        if self.checkBoxDAC3.isChecked():
+            dacValues = self.spinBoxDAC3.value()
+            self.det.setDAC(dacIndex.DAC_3, dacValues)
+            self.spinBoxDAC3.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_3, -100)
+            self.spinBoxDAC3.setDisabled(True)
 
     def setDAC4(self):
-        dacValues = self.spinBoxDAC4.value()
-        self.det.setDAC(dacIndex.DAC_4, dacValues)
+        if self.checkBoxDAC4.isChecked():
+            dacValues = self.spinBoxDAC4.value()
+            self.det.setDAC(dacIndex.DAC_4, dacValues)
+            self.spinBoxDAC4.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_4, -100)
+            self.spinBoxDAC4.setDisabled(True)
 
     def setDAC5(self):
-        dacValues = self.spinBoxDAC5.value()
-        self.det.setDAC(dacIndex.DAC_5, dacValues)
+        if self.checkBoxDAC5.isChecked():
+            dacValues = self.spinBoxDAC5.value()
+            self.det.setDAC(dacIndex.DAC_5, dacValues)
+            self.spinBoxDAC5.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_5, -100)
+            self.spinBoxDAC5.setDisabled(True)
 
     def setDAC6(self):
-        dacValues = self.spinBoxDAC6.value()
-        self.det.setDAC(dacIndex.DAC_6, dacValues)
+        if self.checkBoxDAC6.isChecked():
+            dacValues = self.spinBoxDAC6.value()
+            self.det.setDAC(dacIndex.DAC_6, dacValues)
+            self.spinBoxDAC6.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_6, -100)
+            self.spinBoxDAC6.setDisabled(True)
 
     def setDAC7(self):
-        dacValues = self.spinBoxDAC7.value()
-        self.det.setDAC(dacIndex.DAC_7, dacValues)
+        if self.checkBoxDAC7.isChecked():
+            dacValues = self.spinBoxDAC7.value()
+            self.det.setDAC(dacIndex.DAC_7, dacValues)
+            self.spinBoxDAC7.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_7, -100)
+            self.spinBoxDAC7.setDisabled(True)
 
     def setDAC8(self):
-        dacValues = self.spinBoxDAC8.value()
-        self.det.setDAC(dacIndex.DAC_8, dacValues)
+        if self.checkBoxDAC0.isChecked():
+            dacValues = self.spinBoxDAC8.value()
+            self.det.setDAC(dacIndex.DAC_8, dacValues)
+            self.spinBoxDAC8.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_8, -100)
+            self.spinBoxDAC8.setDisabled(True)
     
     def setDAC9(self):
-        dacValues = self.spinBoxDAC9.value()
-        self.det.setDAC(dacIndex.DAC_9, dacValues)
+        if self.checkBoxDAC9.isChecked():
+            dacValues = self.spinBoxDAC9.value()
+            self.det.setDAC(dacIndex.DAC_9, dacValues)
+            self.spinBoxDAC9.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_9, -100)
+            self.spinBoxDAC9.setDisabled(True)
     
     def setDAC10(self):
-        dacValues = self.spinBoxDAC10.value()
-        self.det.setDAC(dacIndex.DAC_10, dacValues)
+        if self.checkBoxDAC10.isChecked():
+            dacValues = self.spinBoxDAC10.value()
+            self.det.setDAC(dacIndex.DAC_10, dacValues)
+            self.spinBoxDAC10.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_10, -100)
+            self.spinBoxDAC10.setDisabled(True)
     
     def setDAC11(self):
-        dacValues = self.spinBoxDAC11.value()
-        self.det.setDAC(dacIndex.DAC_11, dacValues)
+        if self.checkBoxDAC11.isChecked():
+            dacValues = self.spinBoxDAC11.value()
+            self.det.setDAC(dacIndex.DAC_11, dacValues)
+            self.spinBoxDAC11.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_11, -100)
+            self.spinBoxDAC11.setDisabled(True)
     
     def setDAC12(self):
-        dacValues = self.spinBoxDAC12.value()
-        self.det.setDAC(dacIndex.DAC_12, dacValues)
+        if self.checkBoxDAC12.isChecked():
+            dacValues = self.spinBoxDAC12.value()
+            self.det.setDAC(dacIndex.DAC_12, dacValues)
+            self.spinBoxDAC12.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_12, -100)
+            self.spinBoxDAC12.setDisabled(True)
     
     def setDAC13(self):
-        dacValues = self.spinBoxDAC13.value()
-        self.det.setDAC(dacIndex.DAC_13, dacValues)
+        if self.checkBoxDAC13.isChecked():
+            dacValues = self.spinBoxDAC13.value()
+            self.det.setDAC(dacIndex.DAC_13, dacValues)
+            self.spinBoxDAC13.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_13, -100)
+            self.spinBoxDAC13.setDisabled(True)
 
     def setDAC14(self):
-        dacValues = self.spinBoxDAC14.value()
-        self.det.setDAC(dacIndex.DAC_14, dacValues)
-
+        if self.checkBoxDAC14.isChecked():
+            dacValues = self.spinBoxDAC14.value()
+            self.det.setDAC(dacIndex.DAC_14, dacValues)
+            self.spinBoxDAC14.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_14, -100)
+            self.spinBoxDAC14.setDisabled(True)
     def setDAC15(self):
-        dacValues = self.spinBoxDAC15.value()
-        self.det.setDAC(dacIndex.DAC_15, dacValues)
+        if self.checkBoxDAC15.isChecked():
+            dacValues = self.spinBoxDAC15.value()
+            self.det.setDAC(dacIndex.DAC_15, dacValues)
+            self.spinBoxDAC15.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_15, -100)
+            self.spinBoxDAC15.setDisabled(True)
 
     def setDAC16(self):
-        dacValues = self.spinBoxDAC16.value()
-        self.det.setDAC(dacIndex.DAC_16, dacValues)
+        if self.checkBoxDAC16.isChecked():
+            dacValues = self.spinBoxDAC16.value()
+            self.det.setDAC(dacIndex.DAC_16, dacValues)
+            self.spinBoxDAC16.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_16, -100)
+            self.spinBoxDAC16.setDisabled(True)
 
     def setDAC17(self):
-        dacValues = self.spinBoxDAC17.value()
-        self.det.setDAC(dacIndex.DAC_17, dacValues)
+        if self.checkBoxDAC17.isChecked():
+            dacValues = self.spinBoxDAC17.value()
+            self.det.setDAC(dacIndex.DAC_17, dacValues)
+            self.spinBoxDAC17.setDisabled(False)
+        else:
+            self.det.setDAC(dacIndex.DAC_17, -100)
+            self.spinBoxDAC17.setDisabled(True)
     
     #TODO yet to implement the ADC and HV
     def setADC(self):
@@ -363,64 +475,95 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def setHighVoltage(self):
         HVValues = self.spinBoxHighVoltage.value()
-        self.det.setDAC(dacIndex.HIGH_VOLTAGE, HVValues)
+        self.det.setHighVoltage(HVValues)
     
     #For Power Supplies Tab functions
     #TODO Only add the components of Power Supplies tab functions
 
     def setVA(self):
-        dacValues = self.spinBoxVA.value()
-        self.det.setDAC(dacIndex.V_POWER_A, dacValues)
+        if self.checkBoxVA.isChecked():
+            dacValues = self.spinBoxVA.value()
+            self.det.setVoltage(dacIndex.V_POWER_A, dacValues)
+            self.spinBoxVA.setDisabled(False)
+        else:
+            self.det.setVoltage(dacIndex.V_POWER_A, 0)
+            self.spinBoxVA.setDisabled(True)
     
     def setVB(self):
-        dacValues = self.spinBoxVB.value()
-        self.det.setDAC(dacIndex.V_POWER_B, dacValues)
+        if self.checkBoxVB.isChecked():
+            dacValues = self.spinBoxVB.value()
+            self.det.setVoltage(dacIndex.V_POWER_B, dacValues)
+            self.spinBoxVB.setDisabled(False)
+        else:
+            self.det.setVoltage(dacIndex.V_POWER_B, 0)
+            self.spinBoxVB.setDisabled(True)
     
     def setVC(self):
-        dacValues = self.spinBoxVC.value()
-        self.det.setDAC(dacIndex.V_POWER_C, dacValues)
+        if self.checkBoxVC.isChecked():
+            dacValues = self.spinBoxVC.value()
+            self.det.setVoltage(dacIndex.V_POWER_C, dacValues)
+            self.spinBoxVC.setDisabled(False)
+        else:
+            self.det.setVoltage(dacIndex.V_POWER_C, 0)
+            self.spinBoxVC.setDisabled(True)
 
     def setVD(self):
-        dacValues = self.spinBoxVD.value()
-        self.det.setDAC(dacIndex.V_POWER_D, dacValues)
+        if self.checkBoxVD.isChecked():
+            dacValues = self.spinBoxVD.value()
+            self.det.setVoltage(dacIndex.V_POWER_D, dacValues)
+            self.spinBoxVD.setDisabled(False)
+        else:
+            self.det.setVoltage(dacIndex.V_POWER_D, 0)
+            self.spinBoxVD.setDisabled(True)
 
     def setVIO(self):
-        dacValues = self.spinBoxVIO.value()
-        self.det.setDAC(dacIndex.V_POWER_IO, dacValues)
+        if self.checkBoxVIO.isChecked():
+            dacValues = self.spinBoxVIO.value()
+            self.det.setVoltage(dacIndex.V_POWER_IO, dacValues)
+            self.spinBoxVIO.setDisabled(False)
+        else:
+            self.det.setVoltage(dacIndex.V_POWER_IO, 0)
+            self.spinBoxVIO.setDisabled(True)
 
-    def setVCHIP(self):
-        dacValues = self.spinBoxVCHIP.value()
-        self.det.setDAC(dacIndex.V_POWER_CHIP, dacValues)
 
     #For Sense Tab functions
     #TODO Only add the components of Sense tab functions
 
     def updateSense0(self):
-        print("Sense 0")
+        sense0 = self.det.getSlowADC(dacIndex.SLOW_ADC0)
+        self.labelSense0_2.setText(str(sense0[0]))
     
     def updateSense1(self):
-        print('Sense 1')
+        sense0 = self.det.getSlowADC(dacIndex.SLOW_ADC1)
+        self.labelSense1_2.setText(str(sense0[0]))
     
     def updateSense2(self):
-        print('Sense 2')
+        sense0 = self.det.getSlowADC(dacIndex.SLOW_ADC2)
+        self.labelSense2_2.setText(str(sense0[0]))
     
     def updateSense3(self):
-        print('Sense 3')
+        sense0 = self.det.getSlowADC(dacIndex.SLOW_ADC3)
+        self.labelSense3_2.setText(str(sense0[0]))
 
     def updateSense4(self):
-        print('Sense 4')
+        sense0 = self.det.getSlowADC(dacIndex.SLOW_ADC4)
+        self.labelSense4_2.setText(str(sense0[0]))
     
     def updateSense5(self):
-        print('Sense 5')
+        sense0 = self.det.getSlowADC(dacIndex.SLOW_ADC5)
+        self.labelSense5_2.setText(str(sense0[0]))
 
     def updateSense6(self):
-        print('Sense 6')
+        sense0 = self.det.getSlowADC(dacIndex.SLOW_ADC6)
+        self.labelSense6_2.setText(str(sense0[0]))
     
     def updateSense7(self):
-        print('Sense 7')
+        sense0 = self.det.getSlowADC(dacIndex.SLOW_ADC7)
+        self.labelSense7_2.setText(str(sense0[0]))
 
     def updateTemperature(self):
-        print('Temperature')
+        sense0 = self.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
+        self.labelTemp_2.setText(str(sense0[0]))
 
     #For Signals Tab functions
     #TODO Only add the components of Signals tab functions
@@ -616,8 +759,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def colorBIT63(self):
         self.showPalette(self.pushButtonBIT63)
 
-    
-
     #For ADCs Tab functions
     #TODO Only add the components of ADCs tab functions
     def colorADC0(self):
@@ -735,7 +876,6 @@ class MainWindow(QtWidgets.QMainWindow):
         print("None")
 
 
-
     #For Pattern Tab functions
     #TODO Only add the components of Pattern tab functions
     def getCompiler(self):
@@ -762,8 +902,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.det.frames = self.spinBoxFrames.value()
 
     def getPeriod(self):
-        self.det.period = self.spinBoxPeriod.value()
-       
+        match self.comboBoxTime.currentIndex():
+            case 0:
+                unit = 1e-3
+            case 1:
+                unit = 1e-6
+            case 2:
+                unit = 1e-9
+        self.det.period = self.spinBoxPeriod.value()*unit
+
     def getTriggers(self):
         self.det.triggers = self.spinBoxTriggers.value()
 
@@ -940,9 +1087,19 @@ class MainWindow(QtWidgets.QMainWindow):
             self.spinBoxIndex.stepUp()
             print ('random')
             
-
     def plotReferesh(self):
         print("plot options")
+
+    def browseFile(self):
+        response = QtWidgets.QFileDialog.getSaveFileName(
+            parent=self,
+            caption='Select a file to save the Output',
+            directory=os.getcwd(),
+            
+            #filter='README (*.md *.ui)'
+        )
+        if (response[0]):
+            self.lineEditFilePath.setText(response[0])
 
 
     #For other functios
@@ -951,7 +1108,8 @@ class MainWindow(QtWidgets.QMainWindow):
         color = QtWidgets.QColorDialog.getColor()
         if color.isValid():
             button.setStyleSheet("background-color: %s" % color.name())
-            print(color.name())
+            #get the RGB Values
+            print(color.getRgb())
 
     #updating fields with values 
     def update_field(self):
@@ -977,23 +1135,61 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxHighVoltage.setValue(self.det.getDAC(dacIndex.HIGH_VOLTAGE)[0])
 
         #Updating values for Power Supply
-        self.spinBoxVA.setValue(self.det.getDAC(dacIndex.V_POWER_A)[0])
-        self.spinBoxVB.setValue(self.det.getDAC(dacIndex.V_POWER_B)[0])
-        self.spinBoxVC.setValue(self.det.getDAC(dacIndex.V_POWER_C)[0])
-        self.spinBoxVD.setValue(self.det.getDAC(dacIndex.V_POWER_D)[0])
-        self.spinBoxVIO.setValue(self.det.getDAC(dacIndex.V_POWER_IO)[0])
-        self.spinBoxVCHIP.setValue(self.det.getDAC(dacIndex.V_POWER_CHIP)[0])
+        self.spinBoxVA.setValue(self.det.getVoltage(dacIndex.V_POWER_A)[0])
+        if (self.det.getVoltage(dacIndex.V_POWER_A)[0]) == 0:
+            self.spinBoxVA.setDisabled(True)
+        else:
+            self.checkBoxVA.setChecked(True)
+        
+        self.spinBoxVB.setValue(self.det.getVoltage(dacIndex.V_POWER_B)[0])
+        if (self.det.getVoltage(dacIndex.V_POWER_B)[0]) == 0:
+            self.spinBoxVB.setDisabled(True)
+        else:
+            self.checkBoxVB.setChecked(True)
+        
+
+        self.spinBoxVC.setValue(self.det.getVoltage(dacIndex.V_POWER_C)[0])
+        if (self.det.getVoltage(dacIndex.V_POWER_C)[0]) == 0:
+            self.spinBoxVC.setDisabled(True)
+        else:
+            self.checkBoxVC.setChecked(True)
+
+        self.spinBoxVD.setValue(self.det.getVoltage(dacIndex.V_POWER_D)[0])
+        if (self.det.getVoltage(dacIndex.V_POWER_D)[0]) == 0:
+            self.spinBoxVD.setDisabled(True)
+        else:
+            self.checkBoxVD.setChecked(True)
+
+        self.spinBoxVIO.setValue(self.det.getVoltage(dacIndex.V_POWER_IO)[0])
+        if (self.det.getVoltage(dacIndex.V_POWER_IO)[0]) == 0:
+            self.spinBoxIO.setDisabled(True)
+        else:
+            self.checkBoxVIO.setChecked(True)
+
+        self.spinBoxVCHIP.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 
         #Updating values for patterns
         self.spinBoxFrames.setValue(self.det.frames)
-        self.spinBoxPeriod.setValue(self.det.period)
+
+        #Converting to right time unit
+        tPeriod = self.det.period
+        if tPeriod < 100e-9:
+            self.comboBoxTime.setCurrentIndex(2)
+            periodTime = (tPeriod/1e-9)
+            self.spinBoxPeriod.setValue(periodTime)
+        elif tPeriod < 100e-6:
+            self.comboBoxTime.setCurrentIndex(1)
+            periodTime1 = (tPeriod/1e-6)
+            self.spinBoxPeriod.setValue(periodTime1)
+        else:
+            self.comboBoxTime.setCurrentIndex(0)
+            periodTime0 = (tPeriod/1e-3)
+            self.spinBoxPeriod.setValue(periodTime0)
+
         self.spinBoxTriggers.setValue(self.det.triggers)
 
         name = self.det.getDacNames()
         print(name[2])
-
-
-        
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

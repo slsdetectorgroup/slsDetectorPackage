@@ -905,6 +905,9 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
               <property name="maximum">
                <number>4096</number>
               </property>

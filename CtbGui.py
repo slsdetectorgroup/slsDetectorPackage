@@ -1128,25 +1128,120 @@ class MainWindow(QtWidgets.QMainWindow):
     #updating fields with values 
     def update_field(self):
         self.spinBoxDAC0.setValue(self.det.getDAC(dacIndex.DAC_0)[0])
+        if (self.det.getDAC(dacIndex.DAC_0)[0]) == -100:
+            self.spinBoxDAC0.setDisabled(True)
+        else:
+            self.checkBoxDAC0.setChecked(True)
+
         self.spinBoxDAC1.setValue(self.det.getDAC(dacIndex.DAC_1)[0])
+        if (self.det.getDAC(dacIndex.DAC_1)[0]) == -100:
+            self.spinBoxDAC1.setDisabled(True)
+        else:
+            self.checkBoxDAC1.setChecked(True)
+            
         self.spinBoxDAC2.setValue(self.det.getDAC(dacIndex.DAC_2)[0])
+        if (self.det.getDAC(dacIndex.DAC_2)[0]) == -100:
+            self.spinBoxDAC2.setDisabled(True)
+        else:
+            self.checkBoxDAC2.setChecked(True)
+
         self.spinBoxDAC3.setValue(self.det.getDAC(dacIndex.DAC_3)[0])
+        if (self.det.getDAC(dacIndex.DAC_3)[0]) == -100:
+            self.spinBoxDAC3.setDisabled(True)
+        else:
+            self.checkBoxDAC3.setChecked(True)
+
         self.spinBoxDAC4.setValue(self.det.getDAC(dacIndex.DAC_4)[0])
+        if (self.det.getDAC(dacIndex.DAC_4)[0]) == -100:
+            self.spinBoxDAC4.setDisabled(True)
+        else:
+            self.checkBoxDAC4.setChecked(True)
+
         self.spinBoxDAC5.setValue(self.det.getDAC(dacIndex.DAC_5)[0])
+        if (self.det.getDAC(dacIndex.DAC_5)[0]) == -100:
+            self.spinBoxDAC5.setDisabled(True)
+        else:
+            self.checkBoxDAC5.setChecked(True)
+
         self.spinBoxDAC6.setValue(self.det.getDAC(dacIndex.DAC_6)[0])
+        if (self.det.getDAC(dacIndex.DAC_6)[0]) == -100:
+            self.spinBoxDAC6.setDisabled(True)
+        else:
+            self.checkBoxDAC6.setChecked(True)
+
         self.spinBoxDAC7.setValue(self.det.getDAC(dacIndex.DAC_7)[0])
+        if (self.det.getDAC(dacIndex.DAC_7)[0]) == -100:
+            self.spinBoxDAC7.setDisabled(True)
+        else:
+            self.checkBoxDAC7.setChecked(True)
+
         self.spinBoxDAC8.setValue(self.det.getDAC(dacIndex.DAC_8)[0])
+        if (self.det.getDAC(dacIndex.DAC_8)[0]) == -100:
+            self.spinBoxDAC8.setDisabled(True)
+        else:
+            self.checkBoxDAC8.setChecked(True)
+
         self.spinBoxDAC9.setValue(self.det.getDAC(dacIndex.DAC_9)[0])
+        if (self.det.getDAC(dacIndex.DAC_9)[0]) == -100:
+            self.spinBoxDAC9.setDisabled(True)
+        else:
+            self.checkBoxDAC9.setChecked(True)
+
         self.spinBoxDAC10.setValue(self.det.getDAC(dacIndex.DAC_10)[0])
+        if (self.det.getDAC(dacIndex.DAC_10)[0]) == -100:
+            self.spinBoxDAC10.setDisabled(True)
+        else:
+            self.checkBoxDAC10.setChecked(True)
+
         self.spinBoxDAC11.setValue(self.det.getDAC(dacIndex.DAC_11)[0])
+        if (self.det.getDAC(dacIndex.DAC_11)[0]) == -100:
+            self.spinBoxDAC11.setDisabled(True)
+        else:
+            self.checkBoxDAC11.setChecked(True)
+
         self.spinBoxDAC12.setValue(self.det.getDAC(dacIndex.DAC_12)[0])
+        if (self.det.getDAC(dacIndex.DAC_12)[0]) == -100:
+            self.spinBoxDAC12.setDisabled(True)
+        else:
+            self.checkBoxDAC12.setChecked(True)
+
         self.spinBoxDAC13.setValue(self.det.getDAC(dacIndex.DAC_13)[0])
+        if (self.det.getDAC(dacIndex.DAC_13)[0]) == -100:
+            self.spinBoxDAC13.setDisabled(True)
+        else:
+            self.checkBoxDAC13.setChecked(True)
+
         self.spinBoxDAC14.setValue(self.det.getDAC(dacIndex.DAC_14)[0])
+        if (self.det.getDAC(dacIndex.DAC_14)[0]) == -100:
+            self.spinBoxDAC14.setDisabled(True)
+        else:
+            self.checkBoxDAC14.setChecked(True)
+
         self.spinBoxDAC15.setValue(self.det.getDAC(dacIndex.DAC_15)[0])
+        if (self.det.getDAC(dacIndex.DAC_15)[0]) == -100:
+            self.spinBoxDAC15.setDisabled(True)
+        else:
+            self.checkBoxDAC15.setChecked(True)
+
         self.spinBoxDAC16.setValue(self.det.getDAC(dacIndex.DAC_16)[0])
+        if (self.det.getDAC(dacIndex.DAC_16)[0]) == -100:
+            self.spinBoxDAC16.setDisabled(True)
+        else:
+            self.checkBoxDAC16.setChecked(True)
+
         self.spinBoxDAC17.setValue(self.det.getDAC(dacIndex.DAC_17)[0])
+        if (self.det.getDAC(dacIndex.DAC_17)[0]) == -100:
+            self.spinBoxDAC17.setDisabled(True)
+        else:
+            self.checkBoxDAC17.setChecked(True)
+
         self.spinBoxADC.setValue(self.det.getDAC(dacIndex.ADC_VPP)[0])
-        self.spinBoxHighVoltage.setValue(self.det.getDAC(dacIndex.HIGH_VOLTAGE)[0])
+
+        self.spinBoxHighVoltage.setValue(self.det.getHighVoltage()[0])
+        if (self.det.getHighVoltage()[0]) == 0:
+            self.spinBoxHighVoltage.setDisabled(True)
+        else:
+            self.checkBoxHighVoltage.setChecked(True)
 
         #Updating values for Power Supply
         self.spinBoxVA.setValue(self.det.getVoltage(dacIndex.V_POWER_A)[0])

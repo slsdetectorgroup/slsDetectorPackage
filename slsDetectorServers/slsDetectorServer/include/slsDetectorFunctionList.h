@@ -404,6 +404,7 @@ void setSynchronization(int enable);
 
 #ifdef GOTTHARD2D
 void updatingRegisters();
+int updateClockDivs();
 #endif
 void setTiming(enum timingMode arg);
 enum timingMode getTiming();

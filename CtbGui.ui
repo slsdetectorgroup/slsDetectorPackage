@@ -63,7 +63,7 @@
             </rect>
            </property>
            <property name="currentIndex">
-            <number>5</number>
+            <number>0</number>
            </property>
            <widget class="QWidget" name="tab">
             <attribute name="title">
@@ -7770,12 +7770,12 @@
              <property name="frameShadow">
               <enum>QFrame::Sunken</enum>
              </property>
-             <widget class="QCheckBox" name="checkBoxADC0DB">
+             <widget class="QCheckBox" name="checkBoxADC0En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>10</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -7785,7 +7785,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC0Plot">
@@ -7840,12 +7840,12 @@
                <string>ADC0</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC0Out">
+             <widget class="QCheckBox" name="checkBoxADC0Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>10</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -7855,15 +7855,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC1DB">
+             <widget class="QCheckBox" name="checkBoxADC1En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>30</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -7873,7 +7873,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC1Plot">
@@ -7928,12 +7928,12 @@
                <string>ADC1</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC1Out">
+             <widget class="QCheckBox" name="checkBoxADC1Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>30</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -7943,15 +7943,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC2DB">
+             <widget class="QCheckBox" name="checkBoxADC2En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>50</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -7961,7 +7961,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC2Plot">
@@ -8016,12 +8016,12 @@
                <string>ADC2</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC2Out">
+             <widget class="QCheckBox" name="checkBoxADC2Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>50</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8031,15 +8031,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC3DB">
+             <widget class="QCheckBox" name="checkBoxADC3En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>70</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8049,7 +8049,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC3Plot">
@@ -8104,12 +8104,12 @@
                <string>ADC3</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC3Out">
+             <widget class="QCheckBox" name="checkBoxADC3Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>70</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8119,15 +8119,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC4DB">
+             <widget class="QCheckBox" name="checkBoxADC4En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>90</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8137,7 +8137,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC4Plot">
@@ -8192,12 +8192,12 @@
                <string>ADC4</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC4Out">
+             <widget class="QCheckBox" name="checkBoxADC4Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>90</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8207,15 +8207,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC5DB">
+             <widget class="QCheckBox" name="checkBoxADC5En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>110</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8225,7 +8225,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC5Plot">
@@ -8280,12 +8280,12 @@
                <string>ADC5</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC5Out">
+             <widget class="QCheckBox" name="checkBoxADC5Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>110</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8295,15 +8295,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC6DB">
+             <widget class="QCheckBox" name="checkBoxADC6En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>130</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8313,7 +8313,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC6Plot">
@@ -8368,12 +8368,12 @@
                <string>ADC6</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC6Out">
+             <widget class="QCheckBox" name="checkBoxADC6Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>130</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8383,15 +8383,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC7DB">
+             <widget class="QCheckBox" name="checkBoxADC7En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>150</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8401,7 +8401,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC7Plot">
@@ -8456,12 +8456,12 @@
                <string>ADC7</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC7Out">
+             <widget class="QCheckBox" name="checkBoxADC7Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>150</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8471,15 +8471,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC8DB">
+             <widget class="QCheckBox" name="checkBoxADC8En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>170</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8489,7 +8489,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC8Plot">
@@ -8544,12 +8544,12 @@
                <string>ADC8</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC8Out">
+             <widget class="QCheckBox" name="checkBoxADC8Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>170</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8559,15 +8559,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC9DB">
+             <widget class="QCheckBox" name="checkBoxADC9En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>190</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8577,7 +8577,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC9Plot">
@@ -8632,12 +8632,12 @@
                <string>ADC9</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC9Out">
+             <widget class="QCheckBox" name="checkBoxADC9Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>190</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8647,15 +8647,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC10DB">
+             <widget class="QCheckBox" name="checkBoxADC10En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>210</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8665,7 +8665,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC10Plot">
@@ -8720,12 +8720,12 @@
                <string>ADC10</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC10Out">
+             <widget class="QCheckBox" name="checkBoxADC10Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>210</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8735,15 +8735,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC11DB">
+             <widget class="QCheckBox" name="checkBoxADC11En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>230</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8753,7 +8753,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC11Plot">
@@ -8808,12 +8808,12 @@
                <string>ADC11</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC11Out">
+             <widget class="QCheckBox" name="checkBoxADC11Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>230</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8823,15 +8823,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC12DB">
+             <widget class="QCheckBox" name="checkBoxADC12En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>250</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8841,7 +8841,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC12Plot">
@@ -8896,12 +8896,12 @@
                <string>ADC12</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC12Out">
+             <widget class="QCheckBox" name="checkBoxADC12Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>250</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8911,15 +8911,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC13DB">
+             <widget class="QCheckBox" name="checkBoxADC13En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>270</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8929,7 +8929,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC13Plot">
@@ -8984,12 +8984,12 @@
                <string>ADC13</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC13Out">
+             <widget class="QCheckBox" name="checkBoxADC13Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>270</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8999,15 +8999,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC14DB">
+             <widget class="QCheckBox" name="checkBoxADC14En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>290</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9017,7 +9017,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC14Plot">
@@ -9072,12 +9072,12 @@
                <string>ADC14</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC14Out">
+             <widget class="QCheckBox" name="checkBoxADC14Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>290</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9087,15 +9087,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC15DB">
+             <widget class="QCheckBox" name="checkBoxADC15En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>310</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9105,7 +9105,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC15Plot">
@@ -9160,12 +9160,12 @@
                <string>ADC15</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC15Out">
+             <widget class="QCheckBox" name="checkBoxADC15Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>310</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9175,15 +9175,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC16DB">
+             <widget class="QCheckBox" name="checkBoxADC16En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>10</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9193,7 +9193,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC16Plot">
@@ -9248,12 +9248,12 @@
                <string>ADC16</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC16Out">
+             <widget class="QCheckBox" name="checkBoxADC16Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>10</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9263,15 +9263,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC17DB">
+             <widget class="QCheckBox" name="checkBoxADC17En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>30</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9281,7 +9281,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC17Plot">
@@ -9336,12 +9336,12 @@
                <string>ADC17</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC17Out">
+             <widget class="QCheckBox" name="checkBoxADC17Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>30</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9351,15 +9351,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC18DB">
+             <widget class="QCheckBox" name="checkBoxADC18En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>50</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9369,7 +9369,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC18Plot">
@@ -9424,12 +9424,12 @@
                <string>ADC18</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC18Out">
+             <widget class="QCheckBox" name="checkBoxADC18Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>50</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9439,15 +9439,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC19DB">
+             <widget class="QCheckBox" name="checkBoxADC19En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>70</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9457,7 +9457,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC19Plot">
@@ -9512,12 +9512,12 @@
                <string>ADC19</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC19Out">
+             <widget class="QCheckBox" name="checkBoxADC19Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>70</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9527,15 +9527,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC20DB">
+             <widget class="QCheckBox" name="checkBoxADC20En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>90</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9545,7 +9545,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC20Plot">
@@ -9600,12 +9600,12 @@
                <string>ADC20</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC20Out">
+             <widget class="QCheckBox" name="checkBoxADC20Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>90</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9615,15 +9615,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC21DB">
+             <widget class="QCheckBox" name="checkBoxADC21En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>110</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9633,7 +9633,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC21Plot">
@@ -9688,12 +9688,12 @@
                <string>ADC21</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC21Out">
+             <widget class="QCheckBox" name="checkBoxADC21Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>110</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9703,15 +9703,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC22DB">
+             <widget class="QCheckBox" name="checkBoxADC22En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>130</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9721,7 +9721,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC22Plot">
@@ -9776,12 +9776,12 @@
                <string>ADC22</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC22Out">
+             <widget class="QCheckBox" name="checkBoxADC22Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>130</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9791,15 +9791,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC23DB">
+             <widget class="QCheckBox" name="checkBoxADC23En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>150</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9809,7 +9809,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC23Plot">
@@ -9864,12 +9864,12 @@
                <string>ADC23</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC23Out">
+             <widget class="QCheckBox" name="checkBoxADC23Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>150</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9879,15 +9879,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC24DB">
+             <widget class="QCheckBox" name="checkBoxADC24En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>170</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9897,7 +9897,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC24Plot">
@@ -9952,12 +9952,12 @@
                <string>ADC24</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC24Out">
+             <widget class="QCheckBox" name="checkBoxADC24Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>170</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9967,15 +9967,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC25DB">
+             <widget class="QCheckBox" name="checkBoxADC25En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>190</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9985,7 +9985,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC25Plot">
@@ -10040,12 +10040,12 @@
                <string>ADC25</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC25Out">
+             <widget class="QCheckBox" name="checkBoxADC25Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>190</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10055,15 +10055,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC26DB">
+             <widget class="QCheckBox" name="checkBoxADC26En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>210</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10073,7 +10073,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC26Plot">
@@ -10128,12 +10128,12 @@
                <string>ADC26</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC26Out">
+             <widget class="QCheckBox" name="checkBoxADC26Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>210</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10143,15 +10143,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC27DB">
+             <widget class="QCheckBox" name="checkBoxADC27En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>230</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10161,7 +10161,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC27Plot">
@@ -10216,12 +10216,12 @@
                <string>ADC27</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC27Out">
+             <widget class="QCheckBox" name="checkBoxADC27Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>230</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10231,15 +10231,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC28DB">
+             <widget class="QCheckBox" name="checkBoxADC28En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>250</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10249,7 +10249,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC28Plot">
@@ -10304,12 +10304,12 @@
                <string>ADC28</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC28Out">
+             <widget class="QCheckBox" name="checkBoxADC28Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>250</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10319,15 +10319,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC29DB">
+             <widget class="QCheckBox" name="checkBoxADC29En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>270</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10337,7 +10337,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC29Plot">
@@ -10392,12 +10392,12 @@
                <string>ADC29</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC29Out">
+             <widget class="QCheckBox" name="checkBoxADC29Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>270</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10407,15 +10407,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC30DB">
+             <widget class="QCheckBox" name="checkBoxADC30En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>290</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10425,7 +10425,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC30Plot">
@@ -10480,12 +10480,12 @@
                <string>ADC30</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC30Out">
+             <widget class="QCheckBox" name="checkBoxADC30Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>290</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10495,15 +10495,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC31DB">
+             <widget class="QCheckBox" name="checkBoxADC31En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>310</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10513,7 +10513,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC31Plot">
@@ -10568,12 +10568,12 @@
                <string>ADC31</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC31Out">
+             <widget class="QCheckBox" name="checkBoxADC31Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>310</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10583,7 +10583,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
              <widget class="QPushButton" name="pushButtonAll15">
@@ -11679,19 +11679,6 @@
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
-             <widget class="QSpinBox" name="spinBoxWait1Address">
-              <property name="geometry">
-               <rect>
-                <x>560</x>
-                <y>40</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
              <widget class="QLabel" name="label_94">
               <property name="geometry">
                <rect>
@@ -11734,19 +11721,6 @@
                <string>Wait Address:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxWait2Address">
-              <property name="geometry">
-               <rect>
-                <x>560</x>
-                <y>70</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
              <widget class="QLabel" name="label_95">
               <property name="geometry">
                <rect>
@@ -11758,19 +11732,6 @@
               </property>
               <property name="text">
                <string>Wait 0 (run clk):</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxWait0Address">
-              <property name="geometry">
-               <rect>
-                <x>560</x>
-                <y>10</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxWait0">
@@ -11836,6 +11797,54 @@
               </property>
               <property name="text">
                <string>Wait Address:</string>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditWait0Address">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>10</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditWait1Address">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>40</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditWait2Address">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>70</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
               </property>
              </widget>
             </widget>
@@ -11951,7 +11960,7 @@
                <x>10</x>
                <y>700</y>
                <width>711</width>
-               <height>101</height>
+               <height>111</height>
               </rect>
              </property>
              <property name="frameShape">
@@ -11976,27 +11985,14 @@
              <widget class="QSpinBox" name="spinBoxDigital">
               <property name="geometry">
                <rect>
-                <x>550</x>
+                <x>490</x>
                 <y>30</y>
-                <width>131</width>
+                <width>201</width>
                 <height>31</height>
                </rect>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxDigital">
-              <property name="geometry">
-               <rect>
-                <x>360</x>
-                <y>70</y>
-                <width>94</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Digital</string>
               </property>
              </widget>
              <widget class="QLabel" name="label_105">
@@ -12028,9 +12024,9 @@
              <widget class="QSpinBox" name="spinBoxAnalog">
               <property name="geometry">
                <rect>
-                <x>210</x>
+                <x>150</x>
                 <y>30</y>
-                <width>131</width>
+                <width>191</width>
                 <height>31</height>
                </rect>
               </property>
@@ -12044,32 +12040,19 @@
                 <x>10</x>
                 <y>70</y>
                 <width>181</width>
-                <height>19</height>
+                <height>31</height>
                </rect>
               </property>
               <property name="text">
                <string>Read Out Mode: </string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxAnalog">
+             <widget class="QComboBox" name="comboBoxROMode">
               <property name="geometry">
                <rect>
-                <x>210</x>
+                <x>150</x>
                 <y>70</y>
-                <width>94</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Analog</string>
-              </property>
-             </widget>
-             <widget class="QComboBox" name="comboBox">
-              <property name="geometry">
-               <rect>
-                <x>520</x>
-                <y>70</y>
-                <width>121</width>
+                <width>191</width>
                 <height>29</height>
                </rect>
               </property>
@@ -12094,7 +12077,7 @@
              <property name="geometry">
               <rect>
                <x>510</x>
-               <y>810</y>
+               <y>820</y>
                <width>191</width>
                <height>31</height>
               </rect>
@@ -13063,38 +13046,6 @@
     <hint type="destinationlabel">
      <x>753</x>
      <y>496</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>radioButtonYes</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>frameOutput</receiver>
-   <slot>show()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>296</x>
-     <y>500</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>381</x>
-     <y>584</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>radioButtonNo</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>frameOutput</receiver>
-   <slot>hide()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>416</x>
-     <y>500</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>381</x>
-     <y>584</y>
     </hint>
    </hints>
   </connection>

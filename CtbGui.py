@@ -30,6 +30,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.spinBoxDAC0.editingFinished.connect(self.setDAC0)
         self.checkBoxDAC0.clicked.connect(self.setDAC0)
+        self.checkBoxDAC0mV.clicked.connect(self.setDAC0)
         self.spinBoxDAC1.editingFinished.connect(self.setDAC1)
         self.checkBoxDAC1.clicked.connect(self.setDAC1)
         self.spinBoxDAC2.editingFinished.connect(self.setDAC2)
@@ -243,13 +244,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxWait0.editingFinished.connect(self.getWait0)
         self.spinBoxWait1.editingFinished.connect(self.getWait1)
         self.spinBoxWait2.editingFinished.connect(self.getWait2)
-        self.spinBoxWait0Address.editingFinished.connect(self.getWait0Address)
-        self.spinBoxWait1Address.editingFinished.connect(self.getWait1Address)
-        self.spinBoxWait2Address.editingFinished.connect(self.getWait2Address)
+        self.lineEditWait0Address.editingFinished.connect(self.getWait0Address)
+        self.lineEditWait1Address.editingFinished.connect(self.getWait1Address)
+        self.lineEditWait2Address.editingFinished.connect(self.getWait2Address)
         self.spinBoxAnalog.editingFinished.connect(self.getAnalog)
         self.spinBoxDigital.editingFinished.connect(self.getDigital)
-        self.checkBoxAnalog.clicked.connect(self.getReadOut)
-        self.checkBoxDigital.clicked.connect(self.getReadOut)
+        self.comboBoxROMode.activated.connect(self.getReadOut)
         self.pushButtonLoad.clicked.connect(self.loadPattern)
 
         
@@ -309,9 +309,15 @@ class MainWindow(QtWidgets.QMainWindow):
         
     def setDAC0(self):
         if self.checkBoxDAC0.isChecked():
-            dacValues = self.spinBoxDAC0.value()
-            self.det.setDAC(dacIndex.DAC_0, dacValues)
-            self.spinBoxDAC0.setDisabled(False)
+            if self.checkBoxDAC0mV.isChecked():
+                dacValues = self.spinBoxDAC0.value()
+                self.det.setDAC(dacIndex.DAC_0, dacValues, True)
+                self.labelDAC0.setText(str(self.det.getDAC(dacIndex.DAC_0, True)[0])) 
+            else:
+                dacValues = self.spinBoxDAC0.value()
+                self.det.setDAC(dacIndex.DAC_0, dacValues)
+                self.spinBoxDAC0.setDisabled(False)
+                self.labelDAC0.setText(str(self.det.getDAC(dacIndex.DAC_0)[0])) 
         else:
             self.det.setDAC(dacIndex.DAC_0, -100)
             self.spinBoxDAC0.setDisabled(True)
@@ -1034,20 +1040,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.det.dsamples = self.spinBoxDigital.value()
 
     def getReadOut(self):
-        if (self.checkBoxAnalog.isChecked()) & (self.checkBoxDigital.isChecked()):
-            self.det.romode = readoutMode.ANALOG_AND_DIGITAL
-            self.spinBoxDigital.setDisabled(False)
-            self.spinBoxAnalog.setDisabled(False)
-        elif self.checkBoxDigital.isChecked():
-            self.det.romode = readoutMode.DIGITAL_ONLY
-            self.spinBoxAnalog.setDisabled(True)
-            self.spinBoxDigital.setDisabled(False)
-        elif self.checkBoxAnalog.isChecked():
-            self.det.romode = readoutMode.ANALOG_ONLY
-            self.spinBoxDigital.setDisabled(True)
-            self.spinBoxAnalog.setDisabled(False)
-        else:
-            print("none")
+        match self.comboBoxROMode.currentIndex():
+            case 0:
+                self.det.romode = readoutMode.ANALOG_ONLY
+                self.spinBoxDigital.setDisabled(True)
+                self.spinBoxAnalog.setDisabled(False)
+            case 1:
+                self.det.romode = readoutMode.DIGITAL_ONLY
+                self.spinBoxAnalog.setDisabled(True)
+                self.spinBoxDigital.setDisabled(False)
+            case 2:
+                self.det.romode = readoutMode.ANALOG_AND_DIGITAL
+                self.spinBoxDigital.setDisabled(False)
+                self.spinBoxAnalog.setDisabled(False)
 
     def loadPattern(self):
         print("loading pattern")
@@ -1154,6 +1159,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self.checkBoxDAC15.setText(self.det.getDacNames()[15])
         self.checkBoxDAC16.setText(self.det.getDacNames()[16])
         self.checkBoxDAC17.setText(self.det.getDacNames()[17])
+
+        self.labelDAC0.setText(str(self.det.getDAC(dacIndex.DAC_0)[0]))
+        self.labelDAC1.setText(str(self.det.getDAC(dacIndex.DAC_1)[0]))
+        self.labelDAC2.setText(str(self.det.getDAC(dacIndex.DAC_2)[0]))
+        self.labelDAC3.setText(str(self.det.getDAC(dacIndex.DAC_3)[0]))
+        self.labelDAC4.setText(str(self.det.getDAC(dacIndex.DAC_4)[0]))
+        self.labelDAC5.setText(str(self.det.getDAC(dacIndex.DAC_5)[0]))
+        self.labelDAC6.setText(str(self.det.getDAC(dacIndex.DAC_6)[0]))
+        self.labelDAC7.setText(str(self.det.getDAC(dacIndex.DAC_7)[0]))
+        self.labelDAC8.setText(str(self.det.getDAC(dacIndex.DAC_8)[0]))
+        self.labelDAC9.setText(str(self.det.getDAC(dacIndex.DAC_9)[0]))
+        self.labelDAC10.setText(str(self.det.getDAC(dacIndex.DAC_10)[0]))
+        self.labelDAC11.setText(str(self.det.getDAC(dacIndex.DAC_11)[0]))
+        self.labelDAC12.setText(str(self.det.getDAC(dacIndex.DAC_12)[0]))
+        self.labelDAC13.setText(str(self.det.getDAC(dacIndex.DAC_13)[0]))
+        self.labelDAC14.setText(str(self.det.getDAC(dacIndex.DAC_14)[0]))
+        self.labelDAC15.setText(str(self.det.getDAC(dacIndex.DAC_15)[0]))
+        self.labelDAC16.setText(str(self.det.getDAC(dacIndex.DAC_16)[0]))
+        self.labelDAC17.setText(str(self.det.getDAC(dacIndex.DAC_17)[0]))
+        self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
+        self.labelHighVoltage.setText(str(self.det.getHighVoltage()[0]))
 
         #Getting dac values
         self.spinBoxDAC0.setValue(self.det.getDAC(dacIndex.DAC_0)[0])
@@ -1272,6 +1298,13 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.checkBoxHighVoltage.setChecked(True)
 
+        self.labelVA.setText(str(self.det.getVoltage(dacIndex.V_POWER_A)[0]))
+        self.labelVB.setText(str(self.det.getVoltage(dacIndex.V_POWER_B)[0]))
+        self.labelVC.setText(str(self.det.getVoltage(dacIndex.V_POWER_C)[0]))
+        self.labelVD.setText(str(self.det.getVoltage(dacIndex.V_POWER_D)[0]))
+        self.labelVIO.setText(str(self.det.getVoltage(dacIndex.V_POWER_IO)[0]))
+        self.labelVCHIP.setText(str(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0]))
+
         #Updating values for Power Supply
         self.spinBoxVA.setValue(self.det.getVoltage(dacIndex.V_POWER_A)[0])
         if (self.det.getVoltage(dacIndex.V_POWER_A)[0]) == 0:
@@ -1341,13 +1374,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDigital.setValue(self.det.dsamples)
         if (self.det.romode == (readoutMode.ANALOG_ONLY)):
             self.spinBoxDigital.setDisabled(True)
-            self.checkBoxAnalog.setChecked(True)
+            self.comboBoxROMode.setCurrentIndex(0)
         elif (self.det.romode == (readoutMode.DIGITAL_ONLY)):
             self.spinBoxAnalog.setDisabled(True)
-            self.checkBoxDigital.setChecked(True)
+            self.comboBoxROMode.setCurrentIndex(1)
         elif (self.det.romode == (readoutMode.ANALOG_AND_DIGITAL)):
-            self.checkBoxAnalog.setChecked(True)
-            self.checkBoxDigital.setChecked(True)
+            self.comboBoxROMode.setCurrentIndex(2)
+
+        self.lineEditWait0Address.setText(str(self.det.patwait0))
+        self.lineEditWait1Address.setText(str(self.det.patwait1))
+        self.lineEditWait2Address.setText(str(self.det.patwait2))
+        
+
+        self.spinBoxWait0.setValue(self.det.patwaittime0)
+        self.spinBoxWait1.setValue(self.det.patwaittime1)
+        self.spinBoxWait2.setValue(self.det.patwaittime2)
 
 
         name = self.det.getDacNames()

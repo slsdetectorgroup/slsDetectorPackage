@@ -10955,6 +10955,9 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
+              <property name="maximum">
+               <number>1000</number>
+              </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxADCPhase">
               <property name="geometry">
@@ -10968,6 +10971,9 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
+              <property name="maximum">
+               <number>159</number>
+              </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxDBITPhase">
               <property name="geometry">
@@ -10980,6 +10986,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>67</number>
               </property>
              </widget>
              <widget class="QLabel" name="label_70">
@@ -11032,6 +11041,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>1000</number>
               </property>
              </widget>
              <widget class="QLabel" name="label_75">
@@ -12051,6 +12063,31 @@
               <property name="text">
                <string>Analog</string>
               </property>
+             </widget>
+             <widget class="QComboBox" name="comboBox">
+              <property name="geometry">
+               <rect>
+                <x>520</x>
+                <y>70</y>
+                <width>121</width>
+                <height>29</height>
+               </rect>
+              </property>
+              <item>
+               <property name="text">
+                <string>ANALOG</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>DIGITAL</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ANALOG_AND_DIGITAL</string>
+               </property>
+              </item>
              </widget>
             </widget>
             <widget class="QPushButton" name="pushButtonLoad">

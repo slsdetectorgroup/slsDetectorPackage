@@ -1,11 +1,9 @@
-from fileinput import filename
-from turtle import color
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
 from pyqtgraph import PlotWidget
 
-from slsdet import Detector, dacIndex
+from slsdet import Detector, dacIndex, readoutMode
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -931,25 +929,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self.det.triggers = self.spinBoxTriggers.value()
 
     def getRunFrequency(self):
-        print("frames")
+        self.det.runclk = self.spinBoxRunF.value()
 
     def getADCFrequency(self):
-        print("frames")
+        self.det.adcclk = self.spinBoxADCF.value()
 
     def getADCPhase(self):
-        print("frames")
+        self.det.adcphase = self.spinBoxADCPhase.value()
 
     def getADCPipeline(self):
-        print("frames")
+        self.det.adcpipeline = self.spinBoxADCPipeline.value()
 
     def getDBITFrequency(self):
-        print("frames")
+        self.det.dbitclk = self.spinBoxDBITF.value()
 
     def getDBITPhase(self):
-        print("frames")
+        self.det.dbitphase = self.spinBoxDBITPhase.value()
 
     def getDBITPipeline(self):
-        print("frames")
+        self.det.dbitphase = self.spinBoxDBITPipeline.value()
 
     def getStartAddress(self):
         print("frames")
@@ -1030,16 +1028,24 @@ class MainWindow(QtWidgets.QMainWindow):
         print("frames")
 
     def getAnalog(self):
-        print("frames")
+        self.det.asamples = self.spinBoxAnalog.value()
 
     def getDigital(self):
-        print("frames")
+        self.det.dsamples = self.spinBoxDigital.value()
 
     def getReadOut(self):
-        if self.checkBoxAnalog.isChecked():
-            print("analog")
+        if (self.checkBoxAnalog.isChecked()) & (self.checkBoxDigital.isChecked()):
+            self.det.romode = readoutMode.ANALOG_AND_DIGITAL
+            self.spinBoxDigital.setDisabled(False)
+            self.spinBoxAnalog.setDisabled(False)
         elif self.checkBoxDigital.isChecked():
-            print("digital")
+            self.det.romode = readoutMode.DIGITAL_ONLY
+            self.spinBoxAnalog.setDisabled(True)
+            self.spinBoxDigital.setDisabled(False)
+        elif self.checkBoxAnalog.isChecked():
+            self.det.romode = readoutMode.ANALOG_ONLY
+            self.spinBoxDigital.setDisabled(True)
+            self.spinBoxAnalog.setDisabled(False)
         else:
             print("none")
 
@@ -1294,7 +1300,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.spinBoxVIO.setValue(self.det.getVoltage(dacIndex.V_POWER_IO)[0])
         if (self.det.getVoltage(dacIndex.V_POWER_IO)[0]) == 0:
-            self.spinBoxIO.setDisabled(True)
+            self.spinBoxVIO.setDisabled(True)
         else:
             self.checkBoxVIO.setChecked(True)
 
@@ -1303,7 +1309,7 @@ class MainWindow(QtWidgets.QMainWindow):
         #Updating values for patterns
         self.spinBoxFrames.setValue(self.det.frames)
 
-        #Converting to right time unit
+        #Converting to right time unit for period
         tPeriod = self.det.period
         if tPeriod < 100e-9:
             self.comboBoxTime.setCurrentIndex(3)
@@ -1322,6 +1328,27 @@ class MainWindow(QtWidgets.QMainWindow):
             self.spinBoxPeriod.setValue(tPeriod)
 
         self.spinBoxTriggers.setValue(self.det.triggers)
+        self.spinBoxRunF.setValue(self.det.runclk)
+        self.spinBoxADCF.setValue(self.det.adcclk)
+        self.spinBoxADCPhase.setValue(self.det.adcphase)
+        self.spinBoxADCPipeline.setValue(self.det.adcpipeline)
+        self.spinBoxDBITF.setValue(self.det.dbitclk)
+        self.spinBoxDBITPhase.setValue(self.det.dbitphase)
+        self.spinBoxDBITPipeline.setValue(self.det.dbitpipeline)
+
+        #Sample per frame
+        self.spinBoxAnalog.setValue(self.det.asamples)
+        self.spinBoxDigital.setValue(self.det.dsamples)
+        if (self.det.romode == (readoutMode.ANALOG_ONLY)):
+            self.spinBoxDigital.setDisabled(True)
+            self.checkBoxAnalog.setChecked(True)
+        elif (self.det.romode == (readoutMode.DIGITAL_ONLY)):
+            self.spinBoxAnalog.setDisabled(True)
+            self.checkBoxDigital.setChecked(True)
+        elif (self.det.romode == (readoutMode.ANALOG_AND_DIGITAL)):
+            self.checkBoxAnalog.setChecked(True)
+            self.checkBoxDigital.setChecked(True)
+
 
         name = self.det.getDacNames()
         print(name[2])

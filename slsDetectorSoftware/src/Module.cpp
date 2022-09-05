@@ -1320,16 +1320,16 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
     MacAddr retvals[2];
     sendToReceiver(F_SETUP_RECEIVER, retval, retvals);
     // update Modules with dest mac
-    if (retval.udp_dstmac == 0 && retvals[0] != 0) {
-        LOG(logINFO) << "Setting destination udp mac of "
-                        "Module "
-                     << moduleIndex << " to " << retvals[0];
+    if (retvals[0] != 0) {
+        LOG(logINFO) << "Setting destination udp mac of Module " << moduleIndex
+                     << " to " << retvals[0]
+                     << ". Use udp_dstmac for custom mac.";
         sendToDetector(F_SET_DEST_UDP_MAC, retvals[0], nullptr);
     }
-    if (retval.udp_dstmac2 == 0 && retvals[1] != 0) {
-        LOG(logINFO) << "Setting destination udp mac2 of "
-                        "Module "
-                     << moduleIndex << " to " << retvals[1];
+    if (retvals[1] != 0) {
+        LOG(logINFO) << "Setting destination udp mac2 of Module " << moduleIndex
+                     << " to " << retvals[1]
+                     << ". Use udp_dstmac2 for custom mac.";
         sendToDetector(F_SET_DEST_UDP_MAC2, retvals[1], nullptr);
     }
 

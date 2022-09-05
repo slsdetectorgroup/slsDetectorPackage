@@ -743,7 +743,8 @@ class Detector {
 
     /** Mac address of the receiver (destination) udp interface. Not mandatory
      * to set as setDestinationUDPIP (udp_dstip) retrieves it from slsReceiver
-     * process but must be set if you use a custom receiver (not slsReceiver).
+     * process but must be set if you use a custom receiver (not slsReceiver).\n
+     * Use router mac address if router in between detector and receiver.
      */
     void setDestinationUDPMAC(const MacAddr mac, Positions pos = {});
 
@@ -751,10 +752,11 @@ class Detector {
     Result<MacAddr> getDestinationUDPMAC2(Positions pos = {}) const;
 
     /* [Jungfrau][Gotthard2] Mac address of the receiver (destination) udp
-    interface 2. \n Not mandatory to set as udp_dstip2 retrieves it from
-    slsReceiver process but must be set if you use a custom receiver (not
-    slsReceiver). \n [Jungfrau] bottom half \n [Gotthard2] veto debugging \n
-    */
+     * interface 2. \n Not mandatory to set as udp_dstip2 retrieves it from
+     * slsReceiver process but must be set if you use a custom receiver (not
+     * slsReceiver). \n [Jungfrau] bottom half \n [Gotthard2] veto debugging \n
+     * Use router mac address if router in between detector and receiver.
+     */
     void setDestinationUDPMAC2(const MacAddr mac, Positions pos = {});
 
     Result<int> getDestinationUDPPort(Positions pos = {}) const;

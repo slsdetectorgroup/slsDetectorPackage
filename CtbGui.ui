@@ -63,7 +63,7 @@
             </rect>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>5</number>
            </property>
            <widget class="QWidget" name="tab">
             <attribute name="title">
@@ -171,6 +171,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -186,6 +189,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -254,6 +260,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -531,6 +540,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -560,6 +572,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -588,6 +603,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -670,6 +688,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -685,6 +706,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -728,6 +752,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -743,6 +770,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -825,6 +855,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -841,6 +874,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -856,6 +892,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -886,6 +925,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -901,6 +943,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -921,6 +966,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -936,6 +984,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1056,6 +1107,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

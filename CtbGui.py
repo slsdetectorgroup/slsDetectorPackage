@@ -1,4 +1,3 @@
-from tkinter import Spinbox
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
@@ -790,19 +789,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.det.patloop [0] = (self.spinBoxLoop0Start.value(), self.spinBoxLoop0Stop.value())
 
     def getLoop1StartStop(self):
-        self.det.patloop [1] = (self.spinBoxLoop0Start.value(), self.spinBoxLoop0Stop.value())
+        self.det.patloop [1] = (self.spinBoxLoop1Start.value(), self.spinBoxLoop1Stop.value())
 
     def getLoop2StartStop(self):
-        self.det.patloop [2] = (self.spinBoxLoop0Start.value(), self.spinBoxLoop0Stop.value())
+        self.det.patloop [2] = (self.spinBoxLoop2Start.value(), self.spinBoxLoop2Stop.value())
 
     def getLoop3StartStop(self):
-        self.det.patloop [3] = (self.spinBoxLoop0Start.value(), self.spinBoxLoop0Stop.value())
+        self.det.patloop [3] = (self.spinBoxLoop3Start.value(), self.spinBoxLoop3Stop.value())
 
     def getLoop4StartStop(self):
-        self.det.patloop [4] = (self.spinBoxLoop0Start.value(), self.spinBoxLoop0Stop.value())
+        self.det.patloop [4] = (self.spinBoxLoop4Start.value(), self.spinBoxLoop4Stop.value())
 
     def getLoop5StartStop(self):
-        self.det.patloop [5] = (self.spinBoxLoop0Start.value(), self.spinBoxLoop0Stop.value())
+        self.det.patloop [5] = (self.spinBoxLoop5Start.value(), self.spinBoxLoop5Stop.value())
 
     def getWait0(self):
         self.det.patwaittime0 = self.spinBoxWait0.value()

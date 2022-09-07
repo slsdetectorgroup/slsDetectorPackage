@@ -1,3 +1,4 @@
+from tkinter import Spinbox
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
@@ -92,16 +93,16 @@ class MainWindow(QtWidgets.QMainWindow):
         #For Power Supplies tab
         #TODO Only add the components of Power supplies tab
 
-        self.spinBoxVA.editingFinished.connect(self.setVA)
-        self.checkBoxVA.clicked.connect(self.setVA)
-        self.spinBoxVB.editingFinished.connect(self.setVB)
-        self.checkBoxVB.clicked.connect(self.setVB)
-        self.spinBoxVC.editingFinished.connect(self.setVC)
-        self.checkBoxVC.clicked.connect(self.setVC)
-        self.spinBoxVD.editingFinished.connect(self.setVD)
-        self.checkBoxVD.clicked.connect(self.setVD)
-        self.spinBoxVIO.editingFinished.connect(self.setVIO)
-        self.checkBoxVIO.clicked.connect(self.setVIO)
+        self.spinBoxVA.editingFinished.connect(partial(self.setPower, 'A'))
+        self.checkBoxVA.clicked.connect(partial(self.setPower, 'A'))
+        self.spinBoxVB.editingFinished.connect(partial(self.setPower, 'B'))
+        self.checkBoxVB.clicked.connect(partial(self.setPower, 'B'))
+        self.spinBoxVC.editingFinished.connect(partial(self.setPower, 'C'))
+        self.checkBoxVC.clicked.connect(partial(self.setPower, 'C'))
+        self.spinBoxVD.editingFinished.connect(partial(self.setPower, 'D'))
+        self.checkBoxVD.clicked.connect(partial(self.setPower, 'D'))
+        self.spinBoxVIO.editingFinished.connect(partial(self.setPower, 'IO'))
+        self.checkBoxVIO.clicked.connect(partial(self.setPower, 'IO'))
 
         #For Sense Tab
         #TODO Only add the components of Sense tab
@@ -373,6 +374,7 @@ class MainWindow(QtWidgets.QMainWindow):
         checkBox = getattr(self, f'checkBoxV{i}')
         spinBox = getattr(self, f'spinBoxV{i}')
         power = getattr(dacIndex, f'V_POWER_{i}')
+        label = getattr(self, f'labelV{i}')
 
         if checkBox.isChecked():
             self.det.setVoltage(power, spinBox.value())
@@ -380,52 +382,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.det.setVoltage(power, 0)
             spinBox.setDisabled(True)
-
-    def setVA(self):
-        if self.checkBoxVA.isChecked():
-            dacValues = self.spinBoxVA.value()
-            self.det.setVoltage(dacIndex.V_POWER_A, dacValues)
-            self.spinBoxVA.setDisabled(False)
-        else:
-            self.det.setVoltage(dacIndex.V_POWER_A, 0)
-            self.spinBoxVA.setDisabled(True)
-    
-    def setVB(self):
-        if self.checkBoxVB.isChecked():
-            dacValues = self.spinBoxVB.value()
-            self.det.setVoltage(dacIndex.V_POWER_B, dacValues)
-            self.spinBoxVB.setDisabled(False)
-        else:
-            self.det.setVoltage(dacIndex.V_POWER_B, 0)
-            self.spinBoxVB.setDisabled(True)
-    
-    def setVC(self):
-        if self.checkBoxVC.isChecked():
-            dacValues = self.spinBoxVC.value()
-            self.det.setVoltage(dacIndex.V_POWER_C, dacValues)
-            self.spinBoxVC.setDisabled(False)
-        else:
-            self.det.setVoltage(dacIndex.V_POWER_C, 0)
-            self.spinBoxVC.setDisabled(True)
-
-    def setVD(self):
-        if self.checkBoxVD.isChecked():
-            dacValues = self.spinBoxVD.value()
-            self.det.setVoltage(dacIndex.V_POWER_D, dacValues)
-            self.spinBoxVD.setDisabled(False)
-        else:
-            self.det.setVoltage(dacIndex.V_POWER_D, 0)
-            self.spinBoxVD.setDisabled(True)
-
-    def setVIO(self):
-        if self.checkBoxVIO.isChecked():
-            dacValues = self.spinBoxVIO.value()
-            self.det.setVoltage(dacIndex.V_POWER_IO, dacValues)
-            self.spinBoxVIO.setDisabled(False)
-        else:
-            self.det.setVoltage(dacIndex.V_POWER_IO, 0)
-            self.spinBoxVIO.setDisabled(True)
-
+        label.setText(str(self.det.getVoltage(power)[0]))
 
     #For Sense Tab functions
     #TODO Only add the components of Sense tab functions
@@ -1000,6 +957,17 @@ class MainWindow(QtWidgets.QMainWindow):
             spinBox.setDisabled(True)
         else:
             checkBox.setChecked(True)
+
+    def getPower(self, i):
+        spinBox = getattr(self, f'spinBoxV{i}')
+        dac  = getattr(dacIndex, f'V_POWER_{i}')
+        checkBox = getattr(self, f'checkBoxV{i}')
+
+        if (self.det.getVoltage(dac)[0]) == 0:
+            spinBox.setDisabled(True)
+        else:
+            checkBox.setChecked(True)
+
     #updating fields with values 
     def update_field(self):
         #Getting dac Name
@@ -1115,35 +1083,19 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #Updating values for Power Supply
         self.spinBoxVA.setValue(self.det.getVoltage(dacIndex.V_POWER_A)[0])
-        if (self.det.getVoltage(dacIndex.V_POWER_A)[0]) == 0:
-            self.spinBoxVA.setDisabled(True)
-        else:
-            self.checkBoxVA.setChecked(True)
+        self.getPower('A')
         
         self.spinBoxVB.setValue(self.det.getVoltage(dacIndex.V_POWER_B)[0])
-        if (self.det.getVoltage(dacIndex.V_POWER_B)[0]) == 0:
-            self.spinBoxVB.setDisabled(True)
-        else:
-            self.checkBoxVB.setChecked(True)
+        self.getPower('B')
         
-
         self.spinBoxVC.setValue(self.det.getVoltage(dacIndex.V_POWER_C)[0])
-        if (self.det.getVoltage(dacIndex.V_POWER_C)[0]) == 0:
-            self.spinBoxVC.setDisabled(True)
-        else:
-            self.checkBoxVC.setChecked(True)
+        self.getPower('C')
 
         self.spinBoxVD.setValue(self.det.getVoltage(dacIndex.V_POWER_D)[0])
-        if (self.det.getVoltage(dacIndex.V_POWER_D)[0]) == 0:
-            self.spinBoxVD.setDisabled(True)
-        else:
-            self.checkBoxVD.setChecked(True)
+        self.getPower('D')
 
         self.spinBoxVIO.setValue(self.det.getVoltage(dacIndex.V_POWER_IO)[0])
-        if (self.det.getVoltage(dacIndex.V_POWER_IO)[0]) == 0:
-            self.spinBoxVIO.setDisabled(True)
-        else:
-            self.checkBoxVIO.setChecked(True)
+        self.getPower('IO')
 
         self.spinBoxVCHIP.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 

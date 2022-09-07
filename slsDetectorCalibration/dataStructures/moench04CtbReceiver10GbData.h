@@ -153,7 +153,7 @@ class moench04CtbReceiver10GbData : public slsDetectorData<uint16_t> {
     };
 
         int getGain(char *data, int x, int y) {
-            // int aoff=aSamples*2*32;
+            int aoff=aSamples*2*32;
             int irow;
             int isc = x / sc_width;
             int icol = x % sc_width;

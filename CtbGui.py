@@ -7,7 +7,7 @@ from functools import partial
 
 from slsdet import Detector, dacIndex, readoutMode
 
-from bit_utils import set_bit
+from bit_utils import set_bit, remove_bit
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -71,20 +71,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #For Signals Tab
         #TODO Only add the components of Signals tab
-
         for i in range(64):
             getattr(self, f'checkBoxBIT{i}DB').clicked.connect(partial(self.dbit, i))
-         
-        # self.checkBoxBIT0DB.clicked.connect(partial(self.dbit, 0))
-        # self.checkBoxBIT1DB.clicked.connect(partial(self.dbit, 1))
-        # self.checkBoxBIT2DB.clicked.connect(partial(self.dbit, 2))
-        # self.checkBoxBIT3DB.clicked.connect(partial(self.dbit, 3))
-        # self.checkBoxBIT4DB.clicked.connect(partial(self.dbit, 4))
-        # self.checkBoxBIT5DB.clicked.connect(partial(self.dbit, 5))
-        # self.checkBoxBIT6DB.clicked.connect(partial(self.dbit, 6))
-        # self.checkBoxBIT7DB.clicked.connect(partial(self.dbit, 7))
-        # self.checkBoxBIT8DB.clicked.connect(partial(self.dbit, 8))
-        # self.checkBoxBIT9DB.clicked.connect(partial(self.dbit, 9))
+
+        for i in range(64):
+            getattr(self, f'checkBoxBIT{i}Out').clicked.connect(partial(self.IOout, i))
 
         self.pushButtonBIT0.clicked.connect(self.colorBIT0)
         self.pushButtonBIT1.clicked.connect(self.colorBIT1)
@@ -373,6 +364,17 @@ class MainWindow(QtWidgets.QMainWindow):
             bit.remove(i)
             self.det.rx_dbitlist = bit
             print(bit)
+
+    def IOout(self, i):
+        checkBox = getattr(self, f'checkBoxBIT{i}Out')
+        out = self.det.patioctrl
+        if checkBox.isChecked():
+            mask = set_bit(out, i)
+            self.det.patioctrl = mask
+        else:
+            mask = remove_bit(out, i)
+            self.det.patioctrl = mask
+
 
     def colorBIT0(self):
         self.showPalette(self.pushButtonBIT0)
@@ -1031,6 +1033,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getPower('IO')
 
         self.spinBoxVCHIP.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
+
+        n_bits = len(self.det.rx_dbitlist)
+        for i in range (n_bits):
+            getattr(self, f'checkBoxBIT{i}DB').setChecked(True)
 
         #Updating values for patterns
         self.spinBoxFrames.setValue(self.det.frames)

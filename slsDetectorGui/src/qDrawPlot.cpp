@@ -663,7 +663,6 @@ void qDrawPlot::DetachHists() {
 
 void qDrawPlot::StartAcquisition() {
     LOG(logDEBUG) << "Starting Acquisition in qDrawPlot";
-    std::lock_guard<std::mutex> lock(mPlots);
     progress = 0;
     currentFrame = 0;
     boxPlot->setTitle("Old Plot");

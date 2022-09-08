@@ -37,7 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
             getattr(self, f'checkBoxDAC{i}').clicked.connect(partial(self.setDAC, i))
             getattr(self, f'checkBoxDAC{i}mV').clicked.connect(partial(self.setDAC, i))
 
-        #self.spinBoxADC.editingFinished.connect(self.setADC)
+        self.comboBoxADC.activated.connect(self.setADC)
         self.checkBoxADC.clicked.connect(self.setADC)
         self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
         self.checkBoxHighVoltage.clicked.connect(self.setHighVoltage)
@@ -305,12 +305,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     #TODO yet to implement the ADC and HV
     def setADC(self):
-        if self.checkBoxADC.isChecked():
-            self.det.setDAC(dacIndex.ADC_VPP, self.spinBoxADC.value())
-            self.spinBoxADC.setDisabled(False)
-        else:
-            self.det.setDAC(dacIndex.ADC_VPP, 0)
-            self.spinBoxADC.setDisabled(True)
+         match self.comboBoxADC.currentIndex():
+            case 0:
+                self.det.setDAC(dacIndex.ADC_VPP, 0)
+            case 1:
+                self.det.setDAC(dacIndex.ADC_VPP, 1)
+            case 2:
+                self.det.setDAC(dacIndex.ADC_VPP, 2)
+            case 3:
+                self.det.setDAC(dacIndex.ADC_VPP, 3)
+            case 4:
+                self.det.setDAC(dacIndex.ADC_VPP, 4)
 
 
     def setHighVoltage(self):

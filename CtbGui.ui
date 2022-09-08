@@ -63,7 +63,7 @@
             </rect>
            </property>
            <property name="currentIndex">
-            <number>5</number>
+            <number>3</number>
            </property>
            <widget class="QWidget" name="tab">
             <attribute name="title">
@@ -6069,7 +6069,7 @@
                <string>DB List</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxBIT048DB">
+             <widget class="QCheckBox" name="checkBoxBIT48DB">
               <property name="geometry">
                <rect>
                 <x>510</x>

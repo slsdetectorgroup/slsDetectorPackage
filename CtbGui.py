@@ -7,6 +7,8 @@ from functools import partial
 
 from slsdet import Detector, dacIndex, readoutMode
 
+from bit_utils import set_bit
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         pg.setConfigOption('background', (247, 247, 247))
@@ -29,61 +31,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #For DACs tab
         #TODO Only add the components of DACs tab
+        n_dacs = len(self.det.daclist)
+        for i in range(n_dacs):
+            getattr(self, f'spinBoxDAC{i}').editingFinished.connect(partial(self.setDAC, i))
+            getattr(self, f'checkBoxDAC{i}').clicked.connect(partial(self.setDAC, i))
+            getattr(self, f'checkBoxDAC{i}mV').clicked.connect(partial(self.setDAC, i))
 
-        self.spinBoxDAC0.editingFinished.connect(partial(self.setDAC, 0))
-        self.checkBoxDAC0.clicked.connect(partial(self.setDAC, 0))
-        self.checkBoxDAC0mV.clicked.connect(partial(self.setDAC, 0))
-        self.spinBoxDAC1.editingFinished.connect(partial(self.setDAC, 1))
-        self.checkBoxDAC1.clicked.connect(partial(self.setDAC, 1))
-        self.checkBoxDAC1mV.clicked.connect(partial(self.setDAC, 1))
-        self.spinBoxDAC2.editingFinished.connect(partial(self.setDAC, 2))
-        self.checkBoxDAC2.clicked.connect(partial(self.setDAC, 2))
-        self.checkBoxDAC2mV.clicked.connect(partial(self.setDAC, 2))
-        self.spinBoxDAC3.editingFinished.connect(partial(self.setDAC, 3))
-        self.checkBoxDAC3.clicked.connect(partial(self.setDAC, 3))
-        self.checkBoxDAC3mV.clicked.connect(partial(self.setDAC, 3))
-        self.spinBoxDAC4.editingFinished.connect(partial(self.setDAC, 4))
-        self.checkBoxDAC4.clicked.connect(partial(self.setDAC, 4))
-        self.checkBoxDAC4mV.clicked.connect(partial(self.setDAC, 4))
-        self.spinBoxDAC5.editingFinished.connect(partial(self.setDAC, 5))
-        self.checkBoxDAC5.clicked.connect(partial(self.setDAC, 5))
-        self.checkBoxDAC5mV.clicked.connect(partial(self.setDAC, 5))
-        self.spinBoxDAC6.editingFinished.connect(partial(self.setDAC, 6))
-        self.checkBoxDAC6.clicked.connect(partial(self.setDAC, 6))
-        self.checkBoxDAC6mV.clicked.connect(partial(self.setDAC, 6))
-        self.spinBoxDAC7.editingFinished.connect(partial(self.setDAC, 7))
-        self.checkBoxDAC7.clicked.connect(partial(self.setDAC, 7))
-        self.checkBoxDAC7mV.clicked.connect(partial(self.setDAC, 7))
-        self.spinBoxDAC8.editingFinished.connect(partial(self.setDAC, 8))
-        self.checkBoxDAC8.clicked.connect(partial(self.setDAC, 8))
-        self.checkBoxDAC8mV.clicked.connect(partial(self.setDAC, 8))
-        self.spinBoxDAC9.editingFinished.connect(partial(self.setDAC, 9))
-        self.checkBoxDAC9.clicked.connect(partial(self.setDAC, 9))
-        self.checkBoxDAC9mV.clicked.connect(partial(self.setDAC, 9))
-        self.spinBoxDAC10.editingFinished.connect(partial(self.setDAC, 10))
-        self.checkBoxDAC10.clicked.connect(partial(self.setDAC, 10))
-        self.checkBoxDAC10mV.clicked.connect(partial(self.setDAC, 10))
-        self.spinBoxDAC11.editingFinished.connect(partial(self.setDAC, 11))
-        self.checkBoxDAC11.clicked.connect(partial(self.setDAC, 11))
-        self.checkBoxDAC11mV.clicked.connect(partial(self.setDAC, 11))
-        self.spinBoxDAC12.editingFinished.connect(partial(self.setDAC, 12))
-        self.checkBoxDAC12.clicked.connect(partial(self.setDAC, 12))
-        self.checkBoxDAC12mV.clicked.connect(partial(self.setDAC, 12))
-        self.spinBoxDAC13.editingFinished.connect(partial(self.setDAC, 13))
-        self.checkBoxDAC13.clicked.connect(partial(self.setDAC, 13))
-        self.checkBoxDAC13mV.clicked.connect(partial(self.setDAC, 13))
-        self.spinBoxDAC14.editingFinished.connect(partial(self.setDAC, 14))
-        self.checkBoxDAC14.clicked.connect(partial(self.setDAC, 14))
-        self.checkBoxDAC14mV.clicked.connect(partial(self.setDAC, 14))
-        self.spinBoxDAC15.editingFinished.connect(partial(self.setDAC, 15))
-        self.checkBoxDAC15.clicked.connect(partial(self.setDAC, 15))
-        self.checkBoxDAC15mV.clicked.connect(partial(self.setDAC, 15))
-        self.spinBoxDAC16.editingFinished.connect(partial(self.setDAC, 16))
-        self.checkBoxDAC16.clicked.connect(partial(self.setDAC, 16))
-        self.checkBoxDAC16mV.clicked.connect(partial(self.setDAC, 16))
-        self.spinBoxDAC17.editingFinished.connect(partial(self.setDAC, 17))
-        self.checkBoxDAC17.clicked.connect(partial(self.setDAC, 17))
-        self.checkBoxDAC17mV.clicked.connect(partial(self.setDAC, 17))
         #self.spinBoxADC.editingFinished.connect(self.setADC)
         self.checkBoxADC.clicked.connect(self.setADC)
         self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
@@ -118,6 +71,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #For Signals Tab
         #TODO Only add the components of Signals tab
+
+        for i in range(64):
+            getattr(self, f'checkBoxBIT{i}DB').clicked.connect(partial(self.dbit, i))
+         
+        # self.checkBoxBIT0DB.clicked.connect(partial(self.dbit, 0))
+        # self.checkBoxBIT1DB.clicked.connect(partial(self.dbit, 1))
+        # self.checkBoxBIT2DB.clicked.connect(partial(self.dbit, 2))
+        # self.checkBoxBIT3DB.clicked.connect(partial(self.dbit, 3))
+        # self.checkBoxBIT4DB.clicked.connect(partial(self.dbit, 4))
+        # self.checkBoxBIT5DB.clicked.connect(partial(self.dbit, 5))
+        # self.checkBoxBIT6DB.clicked.connect(partial(self.dbit, 6))
+        # self.checkBoxBIT7DB.clicked.connect(partial(self.dbit, 7))
+        # self.checkBoxBIT8DB.clicked.connect(partial(self.dbit, 8))
+        # self.checkBoxBIT9DB.clicked.connect(partial(self.dbit, 9))
+
         self.pushButtonBIT0.clicked.connect(self.colorBIT0)
         self.pushButtonBIT1.clicked.connect(self.colorBIT1)
         self.pushButtonBIT2.clicked.connect(self.colorBIT2)
@@ -320,6 +288,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         if (response[0]):
             print(response[0])
+            
     #For the DACs tab functions
     # TODO Only add DACs tab functions
 
@@ -346,8 +315,7 @@ class MainWindow(QtWidgets.QMainWindow):
     #TODO yet to implement the ADC and HV
     def setADC(self):
         if self.checkBoxADC.isChecked():
-            ADCValues = self.spinBoxADC.value()
-            self.det.setDAC(dacIndex.ADC_VPP, ADCValues)
+            self.det.setDAC(dacIndex.ADC_VPP, self.spinBoxADC.value())
             self.spinBoxADC.setDisabled(False)
         else:
             self.det.setDAC(dacIndex.ADC_VPP, 0)
@@ -356,8 +324,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def setHighVoltage(self):
         if self.checkBoxHighVoltage.isChecked():
-            HVValues = self.spinBoxHighVoltage.value()
-            self.det.setHighVoltage(HVValues)
+            self.det.setHighVoltage(self.spinBoxHighVoltage.value())
             self.spinBoxHighVoltage.setDisabled(False)
         else:
             self.det.setHighVoltage(0)
@@ -394,6 +361,19 @@ class MainWindow(QtWidgets.QMainWindow):
 
     #For Signals Tab functions
     #TODO Only add the components of Signals tab functions
+
+    def dbit (self, i):
+        checkBox = getattr(self, f'checkBoxBIT{i}DB')
+        bit = self.det.rx_dbitlist
+        if checkBox.isChecked():
+            bit.append(i)
+            self.det.rx_dbitlist = bit
+            print(bit)
+        else:
+            bit.remove(i)
+            self.det.rx_dbitlist = bit
+            print(bit)
+
     def colorBIT0(self):
         self.showPalette(self.pushButtonBIT0)
     
@@ -940,24 +920,8 @@ class MainWindow(QtWidgets.QMainWindow):
     #updating fields with values 
     def update_field(self):
         #Getting dac Name
-        self.checkBoxDAC0.setText(self.det.getDacNames()[0])
-        self.checkBoxDAC1.setText(self.det.getDacNames()[1])
-        self.checkBoxDAC2.setText(self.det.getDacNames()[2])
-        self.checkBoxDAC3.setText(self.det.getDacNames()[3])
-        self.checkBoxDAC4.setText(self.det.getDacNames()[4])
-        self.checkBoxDAC5.setText(self.det.getDacNames()[5])
-        self.checkBoxDAC6.setText(self.det.getDacNames()[6])
-        self.checkBoxDAC7.setText(self.det.getDacNames()[7])
-        self.checkBoxDAC8.setText(self.det.getDacNames()[8])
-        self.checkBoxDAC9.setText(self.det.getDacNames()[9])
-        self.checkBoxDAC10.setText(self.det.getDacNames()[10])
-        self.checkBoxDAC11.setText(self.det.getDacNames()[11])
-        self.checkBoxDAC12.setText(self.det.getDacNames()[12])
-        self.checkBoxDAC13.setText(self.det.getDacNames()[13])
-        self.checkBoxDAC14.setText(self.det.getDacNames()[14])
-        self.checkBoxDAC15.setText(self.det.getDacNames()[15])
-        self.checkBoxDAC16.setText(self.det.getDacNames()[16])
-        self.checkBoxDAC17.setText(self.det.getDacNames()[17])
+        for i, dac_name in enumerate(self.det.getDacNames()):
+            getattr(self, f'checkBoxDAC{i}').setText(dac_name)
 
         self.labelDAC0.setText(str(self.det.getDAC(dacIndex.DAC_0)[0]))
         self.labelDAC1.setText(str(self.det.getDAC(dacIndex.DAC_1)[0]))

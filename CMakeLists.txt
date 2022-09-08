@@ -235,7 +235,7 @@ endif (SLS_USE_INTEGRATION_TESTS)
 
 if (SLS_USE_PYTHON)
     find_package (Python 3.6 COMPONENTS Interpreter Development)
-    add_subdirectory(libs/pybind11  ${CMAKE_BINARY_DIR}/bin/)
+    add_subdirectory(libs/pybind  ${CMAKE_BINARY_DIR}/bin/)
     add_subdirectory(python)
 endif(SLS_USE_PYTHON)
 

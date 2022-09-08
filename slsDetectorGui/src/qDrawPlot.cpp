@@ -254,13 +254,17 @@ void qDrawPlot::resizeEvent(QResizeEvent *event) {
 
 bool qDrawPlot::GetIsRunning() { return isRunning; }
 
-void qDrawPlot::SetRunning(bool enable) { isRunning = enable; }
+void qDrawPlot::SetRunning(bool enable) { 
+    std::lock_guard<std::mutex> lock(mPlots);
+    isRunning = enable; 
+}
 
 double qDrawPlot::GetProgress() { return progress; }
 
 int64_t qDrawPlot::GetCurrentFrameIndex() { return currentFrame; }
 
 void qDrawPlot::Select1dPlot(bool enable) {
+    std::lock_guard<std::mutex> lock(mPlots);
     if (enable) {
         is1d = true;
         // DetachHists(); it clears the last measurement
@@ -487,6 +491,7 @@ void qDrawPlot::EnableGainPlot(bool enable) {
 }
 
 void qDrawPlot::SetSaveFileName(QString val) {
+    std::lock_guard<std::mutex> lock(mPlots);
     LOG(logDEBUG) << "Setting Clone/Save File Name to "
                   << val.toAscii().constData();
     fileSaveName = val;
@@ -592,6 +597,7 @@ void qDrawPlot::ClonePlot() {
 }
 
 void qDrawPlot::SavePlot() {
+    std::lock_guard<std::mutex> lock(mPlots);
     // render image
     QImage savedImage(size().width(), size().height(), QImage::Format_RGB32);
     QPainter painter(&savedImage);
@@ -657,6 +663,7 @@ void qDrawPlot::DetachHists() {
 
 void qDrawPlot::StartAcquisition() {
     LOG(logDEBUG) << "Starting Acquisition in qDrawPlot";
+    std::lock_guard<std::mutex> lock(mPlots);
     progress = 0;
     currentFrame = 0;
     boxPlot->setTitle("Old Plot");

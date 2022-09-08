@@ -865,6 +865,7 @@ void qTabMeasurement::SetNextFrameNumber(int val) {
 }
 
 void qTabMeasurement::ResetProgress() {
+    std::lock_guard<std::mutex> lock(mProgress);
     LOG(logDEBUG) << "Resetting progress";
     lblCurrentFrame->setText("0");
     lblCurrentMeasurement->setText("0");
@@ -873,6 +874,7 @@ void qTabMeasurement::ResetProgress() {
 
 void qTabMeasurement::UpdateProgress() {
     LOG(logDEBUG) << "Updating progress";
+    std::lock_guard<std::mutex> lock(mProgress);
     progressBar->setValue(plot->GetProgress());
     lblCurrentFrame->setText(QString::number(plot->GetCurrentFrameIndex()));
     lblCurrentMeasurement->setText(QString::number(currentMeasurement));
@@ -920,7 +922,6 @@ void qTabMeasurement::StartAcquisition() {
     currentMeasurement = 0;
     ResetProgress();
     Enable(0);
-    progressBar->setValue(0);
     progressTimer->start(100);
     emit EnableTabsSignal(false);
 }

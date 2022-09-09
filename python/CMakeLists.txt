@@ -64,7 +64,7 @@ configure_file( scripts/test_virtual.py
 )
 
 
-if(SLS_INTALL_PYTHONEXT)
+if(SLS_INSTALL_PYTHONEXT)
     install(TARGETS _slsdet
         EXPORT "${TARGETS_EXPORT_NAME}"
         LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/python

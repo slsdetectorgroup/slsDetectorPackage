@@ -1,3 +1,4 @@
+import base64
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
@@ -7,7 +8,7 @@ from functools import partial
 
 from slsdet import Detector, dacIndex, readoutMode
 
-from bit_utils import set_bit, remove_bit
+from bit_utils import set_bit, remove_bit, bit_is_set
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -305,7 +306,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     #TODO yet to implement the ADC and HV
     def setADC(self):
-         match self.comboBoxADC.currentIndex():
+        match self.comboBoxADC.currentIndex():
             case 0:
                 self.det.setDAC(dacIndex.ADC_VPP, 0)
             case 1:
@@ -316,6 +317,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.det.setDAC(dacIndex.ADC_VPP, 3)
             case 4:
                 self.det.setDAC(dacIndex.ADC_VPP, 4)
+        self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
 
 
     def setHighVoltage(self):
@@ -364,11 +366,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if checkBox.isChecked():
             bit.append(i)
             self.det.rx_dbitlist = bit
-            print(bit)
         else:
             bit.remove(i)
             self.det.rx_dbitlist = bit
-            print(bit)
 
     def IOout(self, i):
         checkBox = getattr(self, f'checkBoxBIT{i}Out')
@@ -379,7 +379,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             mask = remove_bit(out, i)
             self.det.patioctrl = mask
-
+        self.lineEditBoxIOControl.setText(hex(self.det.patioctrl))
 
     def colorBIT0(self):
         self.showPalette(self.pushButtonBIT0)
@@ -924,6 +924,13 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             checkBox.setChecked(True)
 
+    #initializing the Out status 
+    def outSet(self, i):
+        out = self.det.patioctrl
+        mask = bit_is_set(out, i)
+        if mask == 1:
+            getattr(self, f'checkBoxBIT{i}Out').setChecked(True)
+
     #updating fields with values 
     def update_field(self):
         #Getting dac Name
@@ -1006,8 +1013,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDAC17.setValue(self.det.getDAC(dacIndex.DAC_17)[0])
         self.getDac(17)
 
-        #self.spinBoxADC.setValue(self.det.getDAC(dacIndex.ADC_VPP)[0])
+        #Setting ADC VPP
+        self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
+        adcVPP = self.det.getDAC(dacIndex.ADC_VPP)
+        for i in (adcVPP):
+            if (self.det.getDAC(dacIndex.ADC_VPP)[0]) == i:
+                self.comboBoxADC.setCurrentIndex(i)
 
+        #Setting High voltage
         self.spinBoxHighVoltage.setValue(self.det.getHighVoltage()[0])
         if (self.det.getHighVoltage()[0]) == 0:
             self.spinBoxHighVoltage.setDisabled(True)
@@ -1039,10 +1052,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.spinBoxVCHIP.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 
-        n_bits = len(self.det.rx_dbitlist)
-        for i in range (n_bits):
+        #TODO yet to implement it properly
+        #For initializing the Out Status
+        for i in range(64):
+            self.outSet(i)
+
+        #For initializing DBit
+        n_bits = (self.det.rx_dbitlist)
+        for i in list (n_bits):
             getattr(self, f'checkBoxBIT{i}DB').setChecked(True)
 
+        #Initialization IO Control Register
+        self.lineEditBoxIOControl.setText(hex(self.det.patioctrl))
         #Updating values for patterns
         self.spinBoxFrames.setValue(self.det.frames)
 

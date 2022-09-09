@@ -63,7 +63,7 @@
             </rect>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>3</number>
            </property>
            <widget class="QWidget" name="tab">
             <attribute name="title">
@@ -1832,7 +1832,7 @@
               </property>
               <property name="icon">
                <iconset theme="update">
-                <normaloff>../../../.designer</normaloff>../../../.designer</iconset>
+                <normaloff>../../../../.designer</normaloff>../../../../.designer</iconset>
               </property>
               <property name="flat">
                <bool>false</bool>
@@ -7750,6 +7750,9 @@
                </property>
                <property name="styleSheet">
                 <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
                <property name="readOnly">
                 <bool>true</bool>

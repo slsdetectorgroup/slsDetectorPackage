@@ -13,6 +13,7 @@ set(SOURCES
     src/UdpRxSocket.cpp
     src/sls_detector_exceptions.cpp
     src/md5_helper.cpp
+    src/ImageFifo.cpp
 )
 
 # Header files to install as a part of the library

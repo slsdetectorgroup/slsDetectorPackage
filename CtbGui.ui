@@ -1131,32 +1131,6 @@
                <string>mV</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC">
-              <property name="geometry">
-               <rect>
-                <x>30</x>
-                <y>690</y>
-                <width>111</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>ADC Vpp</string>
-              </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxADCmV">
-              <property name="geometry">
-               <rect>
-                <x>350</x>
-                <y>690</y>
-                <width>51</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>mV</string>
-              </property>
-             </widget>
              <widget class="QLabel" name="labelADC">
               <property name="geometry">
                <rect>
@@ -1192,24 +1166,14 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only enter values between 60-200</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
               <property name="maximum">
                <number>200</number>
-              </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxHighVoltagemV">
-              <property name="geometry">
-               <rect>
-                <x>350</x>
-                <y>730</y>
-                <width>51</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>mV</string>
               </property>
              </widget>
              <widget class="QLabel" name="labelHighVoltage">
@@ -1262,6 +1226,45 @@
                 <string>2000</string>
                </property>
               </item>
+             </widget>
+             <widget class="QLabel" name="label_124">
+              <property name="geometry">
+               <rect>
+                <x>370</x>
+                <y>690</y>
+                <width>64</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_125">
+              <property name="geometry">
+               <rect>
+                <x>50</x>
+                <y>690</y>
+                <width>71</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>ADC_VPP</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_126">
+              <property name="geometry">
+               <rect>
+                <x>370</x>
+                <y>730</y>
+                <width>64</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>V</string>
+              </property>
              </widget>
             </widget>
            </widget>
@@ -7737,6 +7740,18 @@
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="decimals">
+                <number>0</number>
+               </property>
+               <property name="minimum">
+                <double>0.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>99999999.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>0.000000000000000</double>
                </property>
               </widget>
               <widget class="QLineEdit" name="lineEditBoxIOControl">

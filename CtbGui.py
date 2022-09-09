@@ -39,13 +39,11 @@ class MainWindow(QtWidgets.QMainWindow):
             getattr(self, f'checkBoxDAC{i}mV').clicked.connect(partial(self.setDAC, i))
 
         self.comboBoxADC.activated.connect(self.setADC)
-        self.checkBoxADC.clicked.connect(self.setADC)
         self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
         self.checkBoxHighVoltage.clicked.connect(self.setHighVoltage)
 
         #For Power Supplies tab
         #TODO Only add the components of Power supplies tab
-
         self.spinBoxVA.editingFinished.connect(partial(self.setPower, 'A'))
         self.checkBoxVA.clicked.connect(partial(self.setPower, 'A'))
         self.spinBoxVB.editingFinished.connect(partial(self.setPower, 'B'))
@@ -59,7 +57,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #For Sense Tab
         #TODO Only add the components of Sense tab
-
         self.pushButtonSense0.clicked.connect(partial(self.updateSense, 0))
         self.pushButtonSense1.clicked.connect(partial(self.updateSense, 1))
         self.pushButtonSense2.clicked.connect(partial(self.updateSense, 2))
@@ -142,7 +139,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonBIT61.clicked.connect(self.colorBIT61)
         self.pushButtonBIT62.clicked.connect(self.colorBIT62)
         self.pushButtonBIT63.clicked.connect(self.colorBIT63)
-
 
         #For ADCs Tab
         #TODO Only add the components of ADCs tab
@@ -227,7 +223,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDigital.editingFinished.connect(self.getDigital)
         self.comboBoxROMode.activated.connect(self.getReadOut)
         self.pushButtonLoad.clicked.connect(self.loadPattern)
-
         
         #For Acquistions Tab
         #TODO Only add the components of Acquistions tab
@@ -283,7 +278,6 @@ class MainWindow(QtWidgets.QMainWindow):
             
     #For the DACs tab functions
     # TODO Only add DACs tab functions
-
     def setDAC(self, i):
         checkBoxDac = getattr(self, f'checkBoxDAC{i}')
         checkBoxmV = getattr(self, f'checkBoxDAC{i}mV')
@@ -319,7 +313,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.det.setDAC(dacIndex.ADC_VPP, 4)
         self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
 
-
     def setHighVoltage(self):
         if self.checkBoxHighVoltage.isChecked():
             self.det.setHighVoltage(self.spinBoxHighVoltage.value())
@@ -327,7 +320,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.det.setHighVoltage(0)
             self.spinBoxHighVoltage.setDisabled(True)
-        
+        self.labelHighVoltage.setText(str(self.det.getHighVoltage()[0]))
     
     #For Power Supplies Tab functions
     #TODO Only add the components of Power Supplies tab functions
@@ -689,7 +682,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def none(self):
         print("None")
 
-
     #For Pattern Tab functions
     #TODO Only add the components of Pattern tab functions
     def getCompiler(self):
@@ -888,12 +880,10 @@ class MainWindow(QtWidgets.QMainWindow):
             parent=self,
             caption='Select a file to save the Output',
             directory=os.getcwd(),
-            
             #filter='README (*.md *.ui)'
         )
         if (response[0]):
             self.lineEditFilePath.setText(response[0])
-
 
     #For other functios
     #TODO Add other functions which will be reused 
@@ -936,82 +926,22 @@ class MainWindow(QtWidgets.QMainWindow):
         #Getting dac Name
         for i, dac_name in enumerate(self.det.getDacNames()):
             getattr(self, f'checkBoxDAC{i}').setText(dac_name)
+        
+        #Getting dac values for label
+        for i in range(18):
+            dac  = getattr(dacIndex, f'DAC_{i}')
+            getattr(self, f'labelDAC{i}').setText(str(self.det.getDAC(dac)[0]))
 
-        self.labelDAC0.setText(str(self.det.getDAC(dacIndex.DAC_0)[0]))
-        self.labelDAC1.setText(str(self.det.getDAC(dacIndex.DAC_1)[0]))
-        self.labelDAC2.setText(str(self.det.getDAC(dacIndex.DAC_2)[0]))
-        self.labelDAC3.setText(str(self.det.getDAC(dacIndex.DAC_3)[0]))
-        self.labelDAC4.setText(str(self.det.getDAC(dacIndex.DAC_4)[0]))
-        self.labelDAC5.setText(str(self.det.getDAC(dacIndex.DAC_5)[0]))
-        self.labelDAC6.setText(str(self.det.getDAC(dacIndex.DAC_6)[0]))
-        self.labelDAC7.setText(str(self.det.getDAC(dacIndex.DAC_7)[0]))
-        self.labelDAC8.setText(str(self.det.getDAC(dacIndex.DAC_8)[0]))
-        self.labelDAC9.setText(str(self.det.getDAC(dacIndex.DAC_9)[0]))
-        self.labelDAC10.setText(str(self.det.getDAC(dacIndex.DAC_10)[0]))
-        self.labelDAC11.setText(str(self.det.getDAC(dacIndex.DAC_11)[0]))
-        self.labelDAC12.setText(str(self.det.getDAC(dacIndex.DAC_12)[0]))
-        self.labelDAC13.setText(str(self.det.getDAC(dacIndex.DAC_13)[0]))
-        self.labelDAC14.setText(str(self.det.getDAC(dacIndex.DAC_14)[0]))
-        self.labelDAC15.setText(str(self.det.getDAC(dacIndex.DAC_15)[0]))
-        self.labelDAC16.setText(str(self.det.getDAC(dacIndex.DAC_16)[0]))
-        self.labelDAC17.setText(str(self.det.getDAC(dacIndex.DAC_17)[0]))
         self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
         self.labelHighVoltage.setText(str(self.det.getHighVoltage()[0]))
 
         #Getting dac values
+        for i in range(18):
+            dac  = getattr(dacIndex, f'DAC_{i}')
+            getattr(self, f'spinBoxDAC{i}').setValue(self.det.getDAC(dac)[0])
+            self.getDac(i)
         self.spinBoxDAC0.setValue(self.det.getDAC(dacIndex.DAC_0)[0])
         self.getDac(0)
-    
-        self.spinBoxDAC1.setValue(self.det.getDAC(dacIndex.DAC_1)[0])
-        self.getDac(1)
-            
-        self.spinBoxDAC2.setValue(self.det.getDAC(dacIndex.DAC_2)[0])
-        self.getDac(2)
-
-        self.spinBoxDAC3.setValue(self.det.getDAC(dacIndex.DAC_3)[0])
-        self.getDac(3)
-
-        self.spinBoxDAC4.setValue(self.det.getDAC(dacIndex.DAC_4)[0])
-        self.getDac(4)
-
-        self.spinBoxDAC5.setValue(self.det.getDAC(dacIndex.DAC_5)[0])
-        self.getDac(5)
-
-        self.spinBoxDAC6.setValue(self.det.getDAC(dacIndex.DAC_6)[0])
-        self.getDac(6)
-
-        self.spinBoxDAC7.setValue(self.det.getDAC(dacIndex.DAC_7)[0])
-        self.getDac(7)
-
-        self.spinBoxDAC8.setValue(self.det.getDAC(dacIndex.DAC_8)[0])
-        self.getDac(8)
-
-        self.spinBoxDAC9.setValue(self.det.getDAC(dacIndex.DAC_9)[0])
-        self.getDac(9)
-
-        self.spinBoxDAC10.setValue(self.det.getDAC(dacIndex.DAC_10)[0])
-        self.getDac(10)
-
-        self.spinBoxDAC11.setValue(self.det.getDAC(dacIndex.DAC_11)[0])
-        self.getDac(11)
-
-        self.spinBoxDAC12.setValue(self.det.getDAC(dacIndex.DAC_12)[0])
-        self.getDac(12)
-
-        self.spinBoxDAC13.setValue(self.det.getDAC(dacIndex.DAC_13)[0])
-        self.getDac(13)
-
-        self.spinBoxDAC14.setValue(self.det.getDAC(dacIndex.DAC_14)[0])
-        self.getDac(14)
-
-        self.spinBoxDAC15.setValue(self.det.getDAC(dacIndex.DAC_15)[0])
-        self.getDac(15)
-
-        self.spinBoxDAC16.setValue(self.det.getDAC(dacIndex.DAC_16)[0])
-        self.getDac(16)
-
-        self.spinBoxDAC17.setValue(self.det.getDAC(dacIndex.DAC_17)[0])
-        self.getDac(17)
 
         #Setting ADC VPP
         self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
@@ -1052,7 +982,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.spinBoxVCHIP.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 
-        #TODO yet to implement it properly
         #For initializing the Out Status
         for i in range(64):
             self.outSet(i)
@@ -1064,6 +993,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         #Initialization IO Control Register
         self.lineEditBoxIOControl.setText(hex(self.det.patioctrl))
+        self.doubleSpinBoxDBit.setValue(self.det.rx_dbitoffset)
         #Updating values for patterns
         self.spinBoxFrames.setValue(self.det.frames)
 
@@ -1107,8 +1037,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.comboBoxROMode.setCurrentIndex(2)
 
         #TODO yet to decide on hex or int
-        self.spinBoxStartAddress.setValue(int((self.det.patlimits)[0]))
-        self.spinBoxStopAddress.setValue(int((self.det.patlimits)[1]))
+        self.spinBoxStartAddress.setValue((self.det.patlimits)[0])
+        self.spinBoxStopAddress.setValue((self.det.patlimits)[1])
 
         self.lineEditWait0Address.setText(hex(self.det.patwait [0]))
         self.lineEditWait1Address.setText(hex(self.det.patwait [1]))
@@ -1126,18 +1056,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxLoop5.setValue(self.det.patnloop [5])
 
         #TODO yet to decide on hex or int
-        self.spinBoxLoop0Start.setValue(int((self.det.patloop [0])[0]))
-        self.spinBoxLoop0Stop.setValue(int((self.det.patloop [0])[1]))
-        self.spinBoxLoop1Start.setValue(int((self.det.patloop [1])[0]))
-        self.spinBoxLoop1Stop.setValue(int((self.det.patloop [1])[1]))
-        self.spinBoxLoop2Start.setValue(int((self.det.patloop [2])[0]))
-        self.spinBoxLoop2Stop.setValue(int((self.det.patloop [2])[1]))
-        self.spinBoxLoop3Start.setValue(int((self.det.patloop [3])[0]))
-        self.spinBoxLoop3Stop.setValue(int((self.det.patloop [3])[1]))
-        self.spinBoxLoop4Start.setValue(int((self.det.patloop [4])[0]))
-        self.spinBoxLoop4Stop.setValue(int((self.det.patloop [4])[1]))
-        self.spinBoxLoop5Start.setValue(int((self.det.patloop [5])[0]))
-        self.spinBoxLoop5Stop.setValue(int((self.det.patloop [5])[1]))
+        self.spinBoxLoop0Start.setValue((self.det.patloop [0])[0])
+        self.spinBoxLoop0Stop.setValue((self.det.patloop [0])[1])
+        self.spinBoxLoop1Start.setValue((self.det.patloop [1])[0])
+        self.spinBoxLoop1Stop.setValue((self.det.patloop [1])[1])
+        self.spinBoxLoop2Start.setValue((self.det.patloop [2])[0])
+        self.spinBoxLoop2Stop.setValue((self.det.patloop [2])[1])
+        self.spinBoxLoop3Start.setValue((self.det.patloop [3])[0])
+        self.spinBoxLoop3Stop.setValue((self.det.patloop [3])[1])
+        self.spinBoxLoop4Start.setValue((self.det.patloop [4])[0])
+        self.spinBoxLoop4Stop.setValue((self.det.patloop [4])[1])
+        self.spinBoxLoop5Start.setValue((self.det.patloop [5])[0])
+        self.spinBoxLoop5Stop.setValue((self.det.patloop [5])[1])
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

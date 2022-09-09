@@ -94,12 +94,12 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
                     uint32_t detHeaderSize, uint32_t correctedDataSize,
                     uint32_t &numpackets, bool &isHeaderEmpty,
                     bool standardHeader, sls_receiver_header &rxHeader,
-                    sls_detector_header *detHeader, uint32_t pnum,
+                    martin_detector_header *detHeader, uint32_t pnum,
                     uint64_t bnum);
 
     void GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum,
                           bool standardHeader, char *packet,
-                          sls_detector_header *&header);
+                          martin_detector_header *&header);
 
     void PrintFifoStatistics();
 

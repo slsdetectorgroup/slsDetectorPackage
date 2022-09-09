@@ -2510,7 +2510,7 @@ void *start_timer(void *arg) {
     int dr = eiger_dynamicrange;
     double bytesPerPixel = (double)dr / 8.00;
     int datasize = (tgEnable ? 4096 : 1024);
-    int packetsize = datasize + sizeof(sls_detector_header);
+    int packetsize = datasize + sizeof(martin_detector_header);
     int maxPacketsPerFrame = (tgEnable ? 4 : 16) * dr;
     int npixelsx = 256 * 2 * bytesPerPixel;
     int databytes = 256 * 256 * 2 * bytesPerPixel;
@@ -2648,34 +2648,34 @@ void *start_timer(void *arg) {
                 // set header
                 char packetData[packetsize];
                 memset(packetData, 0, packetsize);
-                sls_detector_header *header =
-                    (sls_detector_header *)(packetData);
-                header->detType = (uint16_t)myDetectorType;
-                header->version = SLS_DETECTOR_HEADER_VERSION;
-                header->frameNumber = frameNr + iframes;
-                header->packetNumber = i;
-                header->modId = eiger_virtual_module_id;
-                header->row = row;
-                header->column = colLeft;
+                martin_detector_header *header =
+                    (martin_detector_header *)(packetData);
+                header->detType = (uint8_t)myDetectorType;
+                header->version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
+                header->frameNumber = (uint16_t)(frameNr + iframes);
+                header->packetNumber = (uint16_t)i;
+                // header->modId = eiger_virtual_module_id;
+                header->row = (uint8_t)row;
+                header->column = (uint8_t)colLeft;
 
                 char packetData2[packetsize];
                 memset(packetData2, 0, packetsize);
-                header = (sls_detector_header *)(packetData2);
-                header->detType = (uint16_t)myDetectorType;
-                header->version = SLS_DETECTOR_HEADER_VERSION;
-                header->frameNumber = frameNr + iframes;
-                header->packetNumber = i;
-                header->modId = eiger_virtual_module_id;
-                header->row = row;
-                header->column = colRight;
+                header = (martin_detector_header *)(packetData2);
+                header->detType = (uint8_t)myDetectorType;
+                header->version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
+                header->frameNumber = (uint16_t)(frameNr + iframes);
+                header->packetNumber = (uint16_t)i;
+                // header->modId = eiger_virtual_module_id;
+                header->row = (uint8_t)row;
+                header->column = (uint8_t)colRight;
                 if (eiger_virtual_quad_mode) {
-                    header->row = 1;    // right is next row
-                    header->column = 0; // right same first column
+                    header->row = (uint16_t)1;    // right is next row
+                    header->column = (uint16_t)0; // right same first column
                 }
 
                 // fill data
-                int dstOffset = sizeof(sls_detector_header);
-                int dstOffset2 = sizeof(sls_detector_header);
+                int dstOffset = sizeof(martin_detector_header);
+                int dstOffset2 = sizeof(martin_detector_header);
                 if (dr == 12) {
                     // multiple of 768,1024,4096
                     int copysize = 256;

@@ -291,7 +291,7 @@ class EigerData : public GeneralData {
   public:
     EigerData() {
         detType = slsDetectorDefs::EIGER;
-        headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
+        headerSizeinPacket = sizeof(slsDetectorDefs::martin_detector_header);
         framesPerFile = EIGER_MAX_FRAMES_PER_FILE;
         numUDPInterfaces = 2;
         headerPacketSize = 40;
@@ -327,7 +327,7 @@ class JungfrauData : public GeneralData {
   public:
     JungfrauData() {
         detType = slsDetectorDefs::JUNGFRAU;
-        headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
+        headerSizeinPacket = sizeof(slsDetectorDefs::martin_detector_header);
         dataSize = 8192;
         packetSize = headerSizeinPacket + dataSize;
         framesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
@@ -361,7 +361,7 @@ class Mythen3Data : public GeneralData {
     Mythen3Data() {
         detType = slsDetectorDefs::MYTHEN3;
         nPixelsY = 1;
-        headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
+        headerSizeinPacket = sizeof(slsDetectorDefs::martin_detector_header);
         framesPerFile = MYTHEN3_MAX_FRAMES_PER_FILE;
         fifoDepth = 50000;
         standardheader = true;
@@ -430,7 +430,7 @@ class Gotthard2Data : public GeneralData {
         detType = slsDetectorDefs::GOTTHARD2;
         nPixelsX = 128 * 10;
         nPixelsY = 1;
-        headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
+        headerSizeinPacket = sizeof(slsDetectorDefs::martin_detector_header);
         dataSize = 2560; // 1280 channels * 2 bytes
         framesPerFile = GOTTHARD2_MAX_FRAMES_PER_FILE;
         fifoDepth = 50000;

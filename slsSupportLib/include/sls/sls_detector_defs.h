@@ -145,6 +145,16 @@ class slsDetectorDefs {
         uint8_t version;
     } sls_detector_header;
 
+    // new header
+    typedef struct {
+        uint16_t frameNumber;
+        uint16_t packetNumber;
+        uint8_t row;
+        uint8_t column;
+        uint8_t detType;
+        uint8_t version;
+    } martin_detector_header;
+
 #ifdef __cplusplus
     // For sending and receiving data
     static_assert(sizeof(detectorType) == sizeof(int),
@@ -156,6 +166,11 @@ class slsDetectorDefs {
         sls_detector_header detHeader; /**< is the detector header */
         sls_bitset packetsMask;        /**< is the packets caught bit mask */
     };
+    struct martin_receiver_header {
+        martin_detector_header detHeader; /**< is the detector header */
+        sls_bitset packetsMask;           /**< is the packets caught bit mask */
+    };
+
 #endif
     enum frameDiscardPolicy {
         NO_DISCARD,

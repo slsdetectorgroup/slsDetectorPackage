@@ -308,7 +308,7 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
     uint32_t pperFrame = generalData->packetsPerFrame;
     bool isHeaderEmpty = true;
     uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - imageSize);
-    sls_detector_header *srcDetHeader = nullptr;
+    martin_detector_header *srcDetHeader = nullptr;
 
     // carry over packet
     if (carryOverFlag) {
@@ -362,10 +362,10 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
         }
 
         lastCaughtFrameIndex = fnum;
-        LOG(logDEBUG1) << "Listening " << index
-                       << ": currentfindex:" << currentFrameIndex
-                       << ", fnum:" << fnum << ", pnum:" << pnum
-                       << ", numpackets:" << numpackets;
+        LOG(logINFORED) << "Listening " << index
+                        << ": currentfindex:" << currentFrameIndex
+                        << ", fnum:" << fnum << ", pnum:" << pnum
+                        << ", numpackets:" << numpackets;
         if (!startedFlag)
             RecordFirstIndex(fnum);
 
@@ -443,7 +443,7 @@ void Listener::CopyPacket(char *dst, char *src, uint32_t dataSize,
                           uint32_t detHeaderSize, uint32_t correctedDataSize,
                           uint32_t &numpackets, bool &isHeaderEmpty,
                           bool standardHeader, sls_receiver_header &dstHeader,
-                          sls_detector_header *srcDetHeader, uint32_t pnum,
+                          martin_detector_header *srcDetHeader, uint32_t pnum,
                           uint64_t bnum) {
 
     // copy packet data
@@ -478,8 +478,12 @@ void Listener::CopyPacket(char *dst, char *src, uint32_t dataSize,
     // writer header
     if (isHeaderEmpty) {
         if (standardHeader) {
-            memcpy((char *)&dstHeader, (char *)srcDetHeader,
-                   sizeof(sls_detector_header));
+            dstHeader.detHeader.frameNumber = srcDetHeader->frameNumber;
+            dstHeader.detHeader.bunchId = 0;
+            dstHeader.detHeader.row = srcDetHeader->row;
+            dstHeader.detHeader.column = srcDetHeader->column;
+            dstHeader.detHeader.detType = srcDetHeader->detType;
+            dstHeader.detHeader.version = srcDetHeader->version;
         } else {
             dstHeader.detHeader.frameNumber = currentFrameIndex;
             dstHeader.detHeader.bunchId = bnum;
@@ -496,11 +500,11 @@ void Listener::CopyPacket(char *dst, char *src, uint32_t dataSize,
 
 void Listener::GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum,
                                 bool standardHeader, char *packet,
-                                sls_detector_header *&header) {
+                                martin_detector_header *&header) {
     if (standardHeader) {
-        header = (sls_detector_header *)(&packet[0]);
-        fnum = header->frameNumber;
-        pnum = header->packetNumber;
+        header = (martin_detector_header *)(&packet[0]);
+        fnum = (uint64_t)header->frameNumber;
+        pnum = (uint64_t)header->packetNumber;
     } else {
         // set first packet to be odd or even (check required when switching
         // from roi to no roi)

@@ -362,10 +362,10 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
         }
 
         lastCaughtFrameIndex = fnum;
-        LOG(logINFORED) << "Listening " << index
-                        << ": currentfindex:" << currentFrameIndex
-                        << ", fnum:" << fnum << ", pnum:" << pnum
-                        << ", numpackets:" << numpackets;
+        LOG(logDEBUG1) << "Listening " << index
+                       << ": currentfindex:" << currentFrameIndex
+                       << ", fnum:" << fnum << ", pnum:" << pnum
+                       << ", numpackets:" << numpackets;
         if (!startedFlag)
             RecordFirstIndex(fnum);
 

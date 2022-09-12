@@ -103,6 +103,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
     void PrintFifoStatistics();
 
+#ifdef DECOMPRESS
+    void DecompressPacket(char *data, int numBytes, int datasize, int pnum);
+#endif
+
     static const std::string TypeName;
     GeneralData *generalData{nullptr};
     Fifo *fifo;

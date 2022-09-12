@@ -66,7 +66,6 @@ target_include_directories(md5sls
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-
 # Create an object library to avoid building the library twice
 add_library(slsSupportObject OBJECT
     ${SOURCES}
@@ -82,6 +81,10 @@ target_include_directories(slsSupportObject
 )
 
 message(STATUS "RAPID: ${SLS_INTERNAL_RAPIDJSON_DIR}")
+
+target_compile_definitions(slsSupportObject 
+    PUBLIC DECOMPRESS
+)
 
 target_link_libraries(slsSupportObject 
   PUBLIC
@@ -102,6 +105,7 @@ set(SUPPORT_LIBRARY_TARGETS slsSupportObject)
 # Add shared library version of the support lib
 if(SLS_BUILD_SHARED_LIBRARIES)
     add_library(slsSupportShared SHARED $<TARGET_OBJECTS:slsSupportObject>)
+    target_compile_definitions(slsSupportShared PUBLIC DECOMPRESS)
     target_link_libraries(slsSupportShared PUBLIC slsSupportObject)
 
     set_target_properties(slsSupportShared PROPERTIES
@@ -116,6 +120,7 @@ endif(SLS_BUILD_SHARED_LIBRARIES)
 
 # Add static version of the support lib
 add_library(slsSupportStatic STATIC $<TARGET_OBJECTS:slsSupportObject>)
+target_compile_definitions(slsSupportStatic PUBLIC DECOMPRESS)
 target_link_libraries(slsSupportStatic PUBLIC slsSupportObject)
 
 set_target_properties(slsSupportStatic PROPERTIES

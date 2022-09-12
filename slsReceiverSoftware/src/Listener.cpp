@@ -339,7 +339,12 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
     // never entering this loop)
     while (numpackets < pperFrame) {
         // listen to new packet
-        if (!udpSocketAlive || !udpSocket->ReceivePacket(&listeningPacket[0])) {
+        int rc = 0;
+        if (udpSocketAlive) {
+            rc = udpSocket->ReceivePacket(&listeningPacket[0]);
+            LOG(logDEBUG1) << "rc:" << rc;
+        }
+        if (rc == 0) {
             // end of acquisition
             if (numpackets == 0)
                 return 0;
@@ -376,6 +381,12 @@ uint32_t Listener::ListenToAnImage(sls_receiver_header &dstHeader,
                           << numpackets;
             return 0;
         }
+
+        // decompress before copying to carry over packet
+#ifdef DECOMPRESS
+        DecompressPacket(listeningPacket.get() + hsize, rc - hsize, dsize,
+                         pnum);
+#endif
 
         // future packet
         if (fnum != currentFrameIndex) {
@@ -537,6 +548,81 @@ void Listener::PrintFifoStatistics() {
                << "  Used_Fifo_Max_Level:" << fifo->GetMaxLevelForFifoBound()
                << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree()
                << " \tCurrent_Frame#:" << currentFrameIndex;
+}
+
+void Listener::DecompressPacket(char *data, int numBytes, int datasize,
+                                int pnum) {
+#ifdef DECOMPRESS
+
+    std::unique_ptr<char[]> temp = sls::make_unique<char[]>(datasize);
+    if (temp == nullptr) {
+        LOG(logERROR) << "Could not malloc " << datasize
+                      << "bytes. Not decompressing!";
+        return;
+    }
+    memset(temp.get(), 0, datasize);
+    uint8_t *dst = (uint8_t *)(&temp[0]);
+    uint8_t *src = (uint8_t *)data;
+
+    // debug print
+    /*
+    if (pnum == 0 && index == 0) {
+        LOG(logINFOBLUE) << "decompression mode ";
+        for (unsigned int i = 0; i < 10; ++i) {
+            printf("[%d]%d:0x%02x\n", index, i, (uint8_t)data[i]);
+        }
+    }
+    */
+
+    int ibyte = 0;
+    int dstByte = 0;
+    //  while (src != (uint8_t *)(data + numBytes)) {
+    while (ibyte != numBytes) {
+        if (dstByte >= datasize) {
+            LOG(logERROR) << index
+                          << ": Writing beyond datasize allocated. Ignoring "
+                             "Decompression for packet "
+                          << pnum;
+            break;
+        }
+        uint8_t byteRead = src[ibyte++];
+        if (byteRead != 0xFF) {
+            dst[dstByte++] = byteRead;
+        } else {
+            do {
+                byteRead = src[ibyte++];
+                for (int i = 0; i != byteRead; ++i) {
+                    if (dstByte >= datasize) {
+                        LOG(logERROR) << index
+                                      << ": Writing beyond datasize allocated. "
+                                         "Ignoring Decompression for packet "
+                                      << pnum;
+                        break;
+                    }
+                    dst[dstByte++] = (uint8_t)0x0;
+                }
+            } while (byteRead == 0xFF);
+        }
+    }
+
+    if (dstByte != datasize) {
+        LOG(logERROR) << index << ": Insufficient number of bytes "
+                      << dstByte - 1 << " for packet " << pnum << ". Expected "
+                      << datasize;
+    }
+
+    memcpy(data, temp.get(), datasize);
+
+    // debug print
+    /*
+    if (pnum == 0 && index == 0) {
+        for (unsigned int i = 0; i < 10; ++i) {
+            printf("[%d]%d:0x%02x\n", index, i, (uint8_t)data[i]);
+        }
+    }
+    */
+
+#endif
 }
 
 } // namespace sls

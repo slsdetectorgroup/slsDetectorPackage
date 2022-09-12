@@ -63,12 +63,20 @@ UdpRxSocket::~UdpRxSocket() {
 
 ssize_t UdpRxSocket::getPacketSize() const noexcept { return packet_size_; }
 
-bool UdpRxSocket::ReceivePacket(char *dst) noexcept {
+#ifdef DECOMPRESS
+int UdpRxSocket::ReceivePacket(char *dst) noexcept {
     auto bytes_received =
         recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
 
+    return (bytes_received >= 1 ? bytes_received : 0);
+}
+#else
+bool UdpRxSocket::ReceivePacket(char *dst) noexcept {
+    auto bytes_received =
+        recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
     return bytes_received == packet_size_;
 }
+#endif
 
 int UdpRxSocket::getBufferSize() const {
     int ret = 0;

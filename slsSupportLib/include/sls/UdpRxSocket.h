@@ -18,7 +18,11 @@ class UdpRxSocket {
     UdpRxSocket(int port, ssize_t packet_size, const char *hostname = nullptr,
                 int kernel_buffer_size = 0);
     ~UdpRxSocket();
+#ifdef DECOMPRESS
+    int ReceivePacket(char *dst) noexcept;
+#else
     bool ReceivePacket(char *dst) noexcept;
+#endif
     int getBufferSize() const;
     void setBufferSize(int size);
     ssize_t getPacketSize() const noexcept;

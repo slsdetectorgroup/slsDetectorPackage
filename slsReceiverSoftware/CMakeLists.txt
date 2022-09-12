@@ -43,6 +43,10 @@ target_include_directories(slsReceiverObject PUBLIC
     ${SLS_INTERNAL_RAPIDJSON_DIR}
 )
 
+target_compile_definitions(slsReceiverObject 
+    PUBLIC DECOMPRESS
+)
+
 target_link_libraries(slsReceiverObject 
   PUBLIC
     slsProjectOptions
@@ -67,6 +71,7 @@ set(RECEIVER_LIBRARY_TARGETS slsReceiverObject)
 #Shared library
 if(SLS_BUILD_SHARED_LIBRARIES)
     add_library(slsReceiverShared SHARED $<TARGET_OBJECTS:slsReceiverObject>)
+    target_compile_definitions(slsReceiverShared PUBLIC DECOMPRESS)   
     target_link_libraries(slsReceiverShared PUBLIC slsReceiverObject)
     set_target_properties(slsReceiverShared PROPERTIES
         VERSION ${PACKAGE_VERSION_MAJOR}.${PACKAGE_VERSION_MINOR}.${PACKAGE_VERSION_PATCH}
@@ -80,6 +85,7 @@ endif(SLS_BUILD_SHARED_LIBRARIES)
 
 #Static library 
 add_library(slsReceiverStatic STATIC $<TARGET_OBJECTS:slsReceiverObject>)
+target_compile_definitions(slsReceiverStatic PUBLIC DECOMPRESS)
 target_link_libraries(slsReceiverStatic PUBLIC slsReceiverObject)
 set_target_properties(slsReceiverStatic PROPERTIES
     ARCHIVE_OUTPUT_NAME SlsReceiverStatic
@@ -108,6 +114,8 @@ if (SLS_USE_RECEIVER_BINARIES)
     if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
         set_property(TARGET slsReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
+    
+    target_compile_definitions(slsReceiver PUBLIC DECOMPRESS) 
 
     target_link_libraries(slsReceiver PUBLIC
     PUBLIC
@@ -129,6 +137,7 @@ if (SLS_USE_RECEIVER_BINARIES)
         set_property(TARGET slsMultiReceiver PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     endif()
 
+    target_compile_definitions(slsMultiReceiver PUBLIC DECOMPRESS)   
     target_link_libraries(slsMultiReceiver 
     PUBLIC
         slsReceiverStatic

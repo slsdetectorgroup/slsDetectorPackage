@@ -2549,7 +2549,11 @@ void *start_timer(void *arg) {
             if (i > 0 && i % pixelsPerPacket == 0) {
                 ++pixelVal;
             }
-
+#ifdef DECOMPRESS
+            int repeat = 1;
+            if (tgEnable)
+                repeat = 4;
+#endif
             switch (dr) {
             case 4:
                 *((uint8_t *)(imageData + i)) =
@@ -2561,8 +2565,33 @@ void *start_timer(void *arg) {
                 //& 0xF));
                 break;
             case 8:
+#ifdef DECOMPRESS
+                for (int p = 0; p != packetsPerFrame; ++p) {
+                    for (int ports = 0; ports != 2; ++ports) {
+                        i = 2 * datasize * p + ports * 512; // 2 ports
+                        for (int r = 0; r != repeat; ++r) {
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0x57;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0x2;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xb4;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0x3;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0x7;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0x2;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xFF;
+                            *((uint8_t *)(imageData + (i++))) = (uint8_t)0xF9;
+                        }
+                    }
+                }
+                i = npixels;
+#else
                 *((uint8_t *)(imageData + i)) =
                     eiger_virtual_test_mode ? 0xFE : (uint8_t)pixelVal;
+#endif
                 break;
             case 12:
                 if (eiger_virtual_test_mode) {
@@ -2730,14 +2759,26 @@ void *start_timer(void *arg) {
                      (tgEnable && eiger_virtual_left_datastream)) &&
                     i >= startval && i <= endval) {
                     usleep(eiger_virtual_transmission_delay_left);
+#ifdef DECOMPRESS
+                    sendUDPPacket(iRxEntry, 0, packetData,
+                                  14 * (tgEnable ? 4 : 1) +
+                                      sizeof(martin_detector_header));
+#else
                     sendUDPPacket(iRxEntry, 0, packetData, packetsize);
+#endif
                     LOG(logDEBUG1, ("Sent left packet: %d\n", i));
                 }
                 if ((!tgEnable ||
                      (tgEnable && eiger_virtual_right_datastream)) &&
                     i >= startval && i <= endval) {
                     usleep(eiger_virtual_transmission_delay_right);
+#ifdef DECOMPRESS
+                    sendUDPPacket(iRxEntry, 1, packetData2,
+                                  14 * (tgEnable ? 4 : 1) +
+                                      sizeof(martin_detector_header));
+#else
                     sendUDPPacket(iRxEntry, 1, packetData2, packetsize);
+#endif
                     LOG(logDEBUG1, ("Sent right packet: %d\n", i));
                 }
             }

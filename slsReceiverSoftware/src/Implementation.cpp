@@ -654,6 +654,13 @@ void Implementation::startReceiver() {
     stoppedFlag = false;
     ResetParametersforNewAcquisition();
 
+#ifdef DECOMPRESS
+    if (generalData->dynamicRange != 8 || generalData->detType != EIGER) {
+        throw sls::RuntimeError(
+            "Cannot decompress for this bit mode! (Only 8 bit allowed)\n");
+    }
+#endif
+
     // listener
     CreateUDPSockets();
 

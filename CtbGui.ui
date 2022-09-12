@@ -63,7 +63,7 @@
             </rect>
            </property>
            <property name="currentIndex">
-            <number>3</number>
+            <number>4</number>
            </property>
            <widget class="QWidget" name="tab">
             <attribute name="title">
@@ -7726,34 +7726,6 @@
                 <string>DBit Offset:</string>
                </property>
               </widget>
-              <widget class="QDoubleSpinBox" name="doubleSpinBoxDBit">
-               <property name="geometry">
-                <rect>
-                 <x>190</x>
-                 <y>60</y>
-                 <width>221</width>
-                 <height>31</height>
-                </rect>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">background-color: rgb(255, 255, 255);</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-               <property name="decimals">
-                <number>0</number>
-               </property>
-               <property name="minimum">
-                <double>0.000000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>99999999.000000000000000</double>
-               </property>
-               <property name="value">
-                <double>0.000000000000000</double>
-               </property>
-              </widget>
               <widget class="QLineEdit" name="lineEditBoxIOControl">
                <property name="geometry">
                 <rect>
@@ -7771,6 +7743,22 @@
                </property>
                <property name="readOnly">
                 <bool>true</bool>
+               </property>
+              </widget>
+              <widget class="QSpinBox" name="spinBoxDBitOffset">
+               <property name="geometry">
+                <rect>
+                 <x>190</x>
+                 <y>60</y>
+                 <width>221</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </widget>
@@ -11277,6 +11265,9 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
+              <property name="maximum">
+               <number>9999</number>
+              </property>
              </widget>
              <widget class="QLabel" name="label_82">
               <property name="geometry">
@@ -11316,6 +11307,9 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
+              <property name="maximum">
+               <number>9999</number>
+              </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxLoop1Start">
               <property name="geometry">
@@ -11329,6 +11323,9 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
+              <property name="maximum">
+               <number>9999</number>
+              </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxLoop5Stop">
               <property name="geometry">
@@ -11341,6 +11338,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>9999</number>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxLoop3">
@@ -11380,6 +11380,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>9999</number>
               </property>
              </widget>
              <widget class="QLabel" name="label_83">
@@ -11432,6 +11435,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>9999</number>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxLoop4">
@@ -11511,6 +11517,9 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
+              <property name="maximum">
+               <number>9999</number>
+              </property>
              </widget>
              <widget class="QLabel" name="label_99">
               <property name="geometry">
@@ -11536,6 +11545,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>9999</number>
               </property>
              </widget>
              <widget class="QLabel" name="label_90">
@@ -11563,6 +11575,9 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
+              <property name="maximum">
+               <number>9999</number>
+              </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxLoop1Stop">
               <property name="geometry">
@@ -11575,6 +11590,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>9999</number>
               </property>
              </widget>
              <widget class="QLabel" name="label_101">
@@ -11601,6 +11619,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>9999</number>
               </property>
              </widget>
              <widget class="QLabel" name="label_100">
@@ -11692,6 +11713,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>9999</number>
               </property>
              </widget>
             </widget>

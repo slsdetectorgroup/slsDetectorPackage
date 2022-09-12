@@ -1,4 +1,5 @@
 import base64
+from cgitb import enable
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
@@ -78,6 +79,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(64):
             getattr(self, f"checkBoxBIT{i}Out").clicked.connect(partial(self.IOout, i))
 
+        self.spinBoxDBitOffset.editingFinished.connect(self.setDbitOffset)
         self.pushButtonBIT0.clicked.connect(self.colorBIT0)
         self.pushButtonBIT1.clicked.connect(self.colorBIT1)
         self.pushButtonBIT2.clicked.connect(self.colorBIT2)
@@ -145,6 +147,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # For ADCs Tab
         # TODO Only add the components of ADCs tab
+        for i in range(32):
+            getattr(self, f"checkBoxADC{i}Inv").clicked.connect(partial(self.ADCInvert))
+
+        for i in range(32):
+            getattr(self, f"checkBoxADC{i}En").clicked.connect(partial(self.ADCEnable, i))
+
         self.pushButtonADC0.clicked.connect(self.colorADC0)
         self.pushButtonADC1.clicked.connect(self.colorADC1)
         self.pushButtonADC2.clicked.connect(self.colorADC2)
@@ -366,6 +374,9 @@ class MainWindow(QtWidgets.QMainWindow):
             mask = remove_bit(out, i)
             self.det.patioctrl = mask
         self.lineEditBoxIOControl.setText(hex(self.det.patioctrl))
+
+    def setDbitOffset(self):
+        self.det.rx_dbitoffset = self.spinBoxDBitOffset.value()
 
     def colorBIT0(self):
         self.showPalette(self.pushButtonBIT0)
@@ -675,6 +686,40 @@ class MainWindow(QtWidgets.QMainWindow):
     def none(self):
         print("None")
 
+    # def IOout(self, i):
+    #     checkBox = getattr(self, f"checkBoxBIT{i}Out")
+    #     out = self.det.patioctrl
+    #     if checkBox.isChecked():
+    #         mask = set_bit(out, i)
+    #         self.det.patioctrl = mask
+    #     else:
+    #         mask = remove_bit(out, i)
+    #         self.det.patioctrl = mask
+    #     self.lineEditBoxIOControl.setText(hex(self.det.patioctrl))
+
+    def ADCEnable(self, i):
+        enableMaskCheckBox = getattr(self, f'checkBoxADC{i}En').isChecked()
+        if enableMaskCheckBox:
+            if self.det.tengiga:
+                enableMask = set_bit(self.det.adcenable10g, i)
+                self.det.adcenable10g = enableMask
+            else:
+                enableMask = set_bit(self.det.adcenable, i)
+                self.det.adcenable = enableMask
+        else:
+            if self.det.tengiga:
+                enableMask = remove_bit(self.det.adcenable10g, i)
+                self.det.adcenable10g = enableMask
+            else:
+                enableMask = remove_bit(self.det.adcenable, i)
+                self.det.adcenable = enableMask
+    
+    def ADCInvert(self):
+        if self.det.tengiga:
+            print("10g")
+        else:
+            print("1g")
+
     # For Pattern Tab functions
     # TODO Only add the components of Pattern tab functions
     def setCompiler(self):
@@ -701,11 +746,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.det.frames = self.spinBoxFrames.value()
 
     def setPeriod(self):
-        if self.comboBoxTime.currentIndex()==0:
+        if self.comboBoxTime.currentIndex() == 0:
             self.det.period = self.spinBoxPeriod.value()
-        elif self.comboBoxTime.currentIndex()==1:
+        elif self.comboBoxTime.currentIndex() == 1:
             self.det.period = self.spinBoxPeriod.value() * (1e-3)
-        elif self.comboBoxTime.currentIndex()==2:
+        elif self.comboBoxTime.currentIndex() == 2:
             self.det.period = self.spinBoxPeriod.value() * (1e-6)
         else:
             self.det.period = self.spinBoxPeriod.value() * (1e-9)
@@ -926,13 +971,23 @@ class MainWindow(QtWidgets.QMainWindow):
             checkBox.setChecked(True)
 
     # initializing the Out status
-    # TODO add loop here
-    def outSet(self, i):
+    def set_IO_Out(self, i):
         out = self.det.patioctrl
-        # mask = bit_is_set(out, i)
-        # if mask == 1:
-        if bit_is_set(out, i):
-            getattr(self, f"checkBoxBIT{i}Out").setChecked(True)
+        for i in range(64):
+            if bit_is_set(out, i):
+                getattr(self, f"checkBoxBIT{i}Out").setChecked(True)
+
+    def set_ADC_Enable(self, i):
+        if self.det.tengiga:
+            out = self.det.adcenable10g
+            for i in range(32):
+                if bit_is_set(out, i):
+                    getattr(self, f"checkBoxADC{i}En").setChecked(True)
+        else:
+            out = self.det.adcenable
+            for i in range(32):
+                if bit_is_set(out, i):
+                    getattr(self, f"checkBoxADC{i}En").setChecked(True)
 
     # updating fields with values
     def update_field(self):
@@ -996,8 +1051,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxVCHIP.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 
         # For initializing the Out Status
-        for i in range(64):
-            self.outSet(i)
+        self.set_IO_Out(i)
 
         # For initializing DBit
         n_bits = self.det.rx_dbitlist
@@ -1006,7 +1060,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Initialization IO Control Register
         self.lineEditBoxIOControl.setText(hex(self.det.patioctrl))
-        self.doubleSpinBoxDBit.setValue(self.det.rx_dbitoffset)
+        self.spinBoxDBitOffset.setValue(self.det.rx_dbitoffset)
+        
+        #Initializing the ADC Enable mask
+        self.set_ADC_Enable(i)
         # Updating values for patterns
         self.spinBoxFrames.setValue(self.det.frames)
 

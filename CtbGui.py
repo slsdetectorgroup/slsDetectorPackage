@@ -10,53 +10,56 @@ from slsdet import Detector, dacIndex, readoutMode
 
 from bit_utils import set_bit, remove_bit, bit_is_set
 
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
-        pg.setConfigOption('background', (247, 247, 247))
-        pg.setConfigOption('foreground', 'k')
+        pg.setConfigOption("background", (247, 247, 247))
+        pg.setConfigOption("foreground", "k")
 
         super(MainWindow, self).__init__()
         self.det = Detector()
-        uic.loadUi('CtbGui.ui', self)
+        uic.loadUi("CtbGui.ui", self)
         self.update_field()
 
-        pen = pg.mkPen(color = (36, 119, 173), width=1) 
-        #Plotting the data
+        pen = pg.mkPen(color=(36, 119, 173), width=1)
+        # Plotting the data
         self.curve = self.plotWidget.plot(pen=pen)
 
-        #For the action options in app
-        #TODO Only add the components of action options
-        #Show info
+        # For the action options in app
+        # TODO Only add the components of action options
+        # Show info
         self.actionInfo.triggered.connect(self.showInfo)
         self.actionOpen.triggered.connect(self.openFile)
 
-        #For DACs tab
-        #TODO Only add the components of DACs tab
+        # For DACs tab
+        # TODO Only add the components of DACs tab
         n_dacs = len(self.det.daclist)
         for i in range(n_dacs):
-            getattr(self, f'spinBoxDAC{i}').editingFinished.connect(partial(self.setDAC, i))
-            getattr(self, f'checkBoxDAC{i}').clicked.connect(partial(self.setDAC, i))
-            getattr(self, f'checkBoxDAC{i}mV').clicked.connect(partial(self.setDAC, i))
+            getattr(self, f"spinBoxDAC{i}").editingFinished.connect(
+                partial(self.setDAC, i)
+            )
+            getattr(self, f"checkBoxDAC{i}").clicked.connect(partial(self.setDAC, i))
+            getattr(self, f"checkBoxDAC{i}mV").clicked.connect(partial(self.setDAC, i))
 
         self.comboBoxADC.activated.connect(self.setADC)
         self.spinBoxHighVoltage.editingFinished.connect(self.setHighVoltage)
         self.checkBoxHighVoltage.clicked.connect(self.setHighVoltage)
 
-        #For Power Supplies tab
-        #TODO Only add the components of Power supplies tab
-        self.spinBoxVA.editingFinished.connect(partial(self.setPower, 'A'))
-        self.checkBoxVA.clicked.connect(partial(self.setPower, 'A'))
-        self.spinBoxVB.editingFinished.connect(partial(self.setPower, 'B'))
-        self.checkBoxVB.clicked.connect(partial(self.setPower, 'B'))
-        self.spinBoxVC.editingFinished.connect(partial(self.setPower, 'C'))
-        self.checkBoxVC.clicked.connect(partial(self.setPower, 'C'))
-        self.spinBoxVD.editingFinished.connect(partial(self.setPower, 'D'))
-        self.checkBoxVD.clicked.connect(partial(self.setPower, 'D'))
-        self.spinBoxVIO.editingFinished.connect(partial(self.setPower, 'IO'))
-        self.checkBoxVIO.clicked.connect(partial(self.setPower, 'IO'))
+        # For Power Supplies tab
+        # TODO Only add the components of Power supplies tab
+        self.spinBoxVA.editingFinished.connect(partial(self.setPower, "A"))
+        self.checkBoxVA.clicked.connect(partial(self.setPower, "A"))
+        self.spinBoxVB.editingFinished.connect(partial(self.setPower, "B"))
+        self.checkBoxVB.clicked.connect(partial(self.setPower, "B"))
+        self.spinBoxVC.editingFinished.connect(partial(self.setPower, "C"))
+        self.checkBoxVC.clicked.connect(partial(self.setPower, "C"))
+        self.spinBoxVD.editingFinished.connect(partial(self.setPower, "D"))
+        self.checkBoxVD.clicked.connect(partial(self.setPower, "D"))
+        self.spinBoxVIO.editingFinished.connect(partial(self.setPower, "IO"))
+        self.checkBoxVIO.clicked.connect(partial(self.setPower, "IO"))
 
-        #For Sense Tab
-        #TODO Only add the components of Sense tab
+        # For Sense Tab
+        # TODO Only add the components of Sense tab
         self.pushButtonSense0.clicked.connect(partial(self.updateSense, 0))
         self.pushButtonSense1.clicked.connect(partial(self.updateSense, 1))
         self.pushButtonSense2.clicked.connect(partial(self.updateSense, 2))
@@ -67,13 +70,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonSense7.clicked.connect(partial(self.updateSense, 7))
         self.pushButtonTemp.clicked.connect(self.updateTemperature)
 
-        #For Signals Tab
-        #TODO Only add the components of Signals tab
+        # For Signals Tab
+        # TODO Only add the components of Signals tab
         for i in range(64):
-            getattr(self, f'checkBoxBIT{i}DB').clicked.connect(partial(self.dbit, i))
+            getattr(self, f"checkBoxBIT{i}DB").clicked.connect(partial(self.dbit, i))
 
         for i in range(64):
-            getattr(self, f'checkBoxBIT{i}Out').clicked.connect(partial(self.IOout, i))
+            getattr(self, f"checkBoxBIT{i}Out").clicked.connect(partial(self.IOout, i))
 
         self.pushButtonBIT0.clicked.connect(self.colorBIT0)
         self.pushButtonBIT1.clicked.connect(self.colorBIT1)
@@ -140,8 +143,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonBIT62.clicked.connect(self.colorBIT62)
         self.pushButtonBIT63.clicked.connect(self.colorBIT63)
 
-        #For ADCs Tab
-        #TODO Only add the components of ADCs tab
+        # For ADCs Tab
+        # TODO Only add the components of ADCs tab
         self.pushButtonADC0.clicked.connect(self.colorADC0)
         self.pushButtonADC1.clicked.connect(self.colorADC1)
         self.pushButtonADC2.clicked.connect(self.colorADC2)
@@ -181,51 +184,51 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonAll.clicked.connect(self.all)
         self.pushButtonNone.clicked.connect(self.none)
 
-        #For Pattern Tab
-        #TODO Only add the components of Pattern tab
-        self.pushButtonCompiler.clicked.connect(self.getCompiler)
-        self.pushButtonPattern.clicked.connect(self.getPattern)
-        self.spinBoxFrames.editingFinished.connect(self.getFrames)
-        self.spinBoxPeriod.editingFinished.connect(self.getPeriod)
-        self.comboBoxTime.activated.connect(self.getPeriod)
-        self.spinBoxTriggers.editingFinished.connect(self.getTriggers)
-        self.spinBoxRunF.editingFinished.connect(self.getRunFrequency)
-        self.spinBoxADCF.editingFinished.connect(self.getADCFrequency)
-        self.spinBoxADCPhase.editingFinished.connect(self.getADCPhase)
-        self.spinBoxADCPipeline.editingFinished.connect(self.getADCPipeline)
-        self.spinBoxDBITF.editingFinished.connect(self.getDBITFrequency)
-        self.spinBoxDBITPhase.editingFinished.connect(self.getDBITPhase)
-        self.spinBoxDBITPipeline.editingFinished.connect(self.getDBITPipeline)
+        # For Pattern Tab
+        # TODO Only add the components of Pattern tab
+        self.pushButtonCompiler.clicked.connect(self.setCompiler)
+        self.pushButtonPattern.clicked.connect(self.setPattern)
+        self.spinBoxFrames.editingFinished.connect(self.setFrames)
+        self.spinBoxPeriod.editingFinished.connect(self.setPeriod)
+        self.comboBoxTime.activated.connect(self.setPeriod)
+        self.spinBoxTriggers.editingFinished.connect(self.setTriggers)
+        self.spinBoxRunF.editingFinished.connect(self.setRunFrequency)
+        self.spinBoxADCF.editingFinished.connect(self.setADCFrequency)
+        self.spinBoxADCPhase.editingFinished.connect(self.setADCPhase)
+        self.spinBoxADCPipeline.editingFinished.connect(self.setADCPipeline)
+        self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
+        self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
+        self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
         self.spinBoxStartAddress.editingFinished.connect(self.setPatLimits)
         self.spinBoxStopAddress.editingFinished.connect(self.setPatLimits)
-        self.spinBoxLoop0.editingFinished.connect(self.getLoop0)
-        self.spinBoxLoop1.editingFinished.connect(self.getLoop1)
-        self.spinBoxLoop2.editingFinished.connect(self.getLoop2)
-        self.spinBoxLoop3.editingFinished.connect(self.getLoop3)
-        self.spinBoxLoop4.editingFinished.connect(self.getLoop4)
-        self.spinBoxLoop5.editingFinished.connect(self.getLoop5)
-        self.spinBoxLoop0Start.editingFinished.connect(self.getLoop0StartStop)
-        self.spinBoxLoop1Start.editingFinished.connect(self.getLoop1StartStop)
-        self.spinBoxLoop2Start.editingFinished.connect(self.getLoop2StartStop)
-        self.spinBoxLoop3Start.editingFinished.connect(self.getLoop3StartStop)
-        self.spinBoxLoop4Start.editingFinished.connect(self.getLoop4StartStop)
-        self.spinBoxLoop5Start.editingFinished.connect(self.getLoop5StartStop)
-        self.spinBoxLoop0Stop.editingFinished.connect(self.getLoop0StartStop)
-        self.spinBoxLoop1Stop.editingFinished.connect(self.getLoop1StartStop)
-        self.spinBoxLoop2Stop.editingFinished.connect(self.getLoop2StartStop)
-        self.spinBoxLoop3Stop.editingFinished.connect(self.getLoop3StartStop)
-        self.spinBoxLoop4Stop.editingFinished.connect(self.getLoop4StartStop)
-        self.spinBoxLoop5Stop.editingFinished.connect(self.getLoop5StartStop)
-        self.spinBoxWait0.editingFinished.connect(self.getWait0)
-        self.spinBoxWait1.editingFinished.connect(self.getWait1)
-        self.spinBoxWait2.editingFinished.connect(self.getWait2)
-        self.spinBoxAnalog.editingFinished.connect(self.getAnalog)
-        self.spinBoxDigital.editingFinished.connect(self.getDigital)
-        self.comboBoxROMode.activated.connect(self.getReadOut)
+        self.spinBoxLoop0.editingFinished.connect(self.setLoop0)
+        self.spinBoxLoop1.editingFinished.connect(self.setLoop1)
+        self.spinBoxLoop2.editingFinished.connect(self.setLoop2)
+        self.spinBoxLoop3.editingFinished.connect(self.setLoop3)
+        self.spinBoxLoop4.editingFinished.connect(self.setLoop4)
+        self.spinBoxLoop5.editingFinished.connect(self.setLoop5)
+        self.spinBoxLoop0Start.editingFinished.connect(self.setLoop0StartStop)
+        self.spinBoxLoop1Start.editingFinished.connect(self.setLoop1StartStop)
+        self.spinBoxLoop2Start.editingFinished.connect(self.setLoop2StartStop)
+        self.spinBoxLoop3Start.editingFinished.connect(self.setLoop3StartStop)
+        self.spinBoxLoop4Start.editingFinished.connect(self.setLoop4StartStop)
+        self.spinBoxLoop5Start.editingFinished.connect(self.setLoop5StartStop)
+        self.spinBoxLoop0Stop.editingFinished.connect(self.setLoop0StartStop)
+        self.spinBoxLoop1Stop.editingFinished.connect(self.setLoop1StartStop)
+        self.spinBoxLoop2Stop.editingFinished.connect(self.setLoop2StartStop)
+        self.spinBoxLoop3Stop.editingFinished.connect(self.setLoop3StartStop)
+        self.spinBoxLoop4Stop.editingFinished.connect(self.setLoop4StartStop)
+        self.spinBoxLoop5Stop.editingFinished.connect(self.setLoop5StartStop)
+        self.spinBoxWait0.editingFinished.connect(self.setWait0)
+        self.spinBoxWait1.editingFinished.connect(self.setWait1)
+        self.spinBoxWait2.editingFinished.connect(self.setWait2)
+        self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
+        self.spinBoxDigital.editingFinished.connect(self.setDigital)
+        self.comboBoxROMode.activated.connect(self.setReadOut)
         self.pushButtonLoad.clicked.connect(self.loadPattern)
-        
-        #For Acquistions Tab
-        #TODO Only add the components of Acquistions tab
+
+        # For Acquistions Tab
+        # TODO Only add the components of Acquistions tab
         self.radioButtonNoPlot.clicked.connect(self.plotOptions)
         self.radioButtonWaveform.clicked.connect(self.plotOptions)
         self.radioButtonDistribution.clicked.connect(self.plotOptions)
@@ -256,61 +259,51 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonReferesh.clicked.connect(self.plotReferesh)
         self.pushButtonBrowse.clicked.connect(self.browseFile)
 
-    #For Action options function 
-    #TODO Only add the components of action option+ functions    
-    #Function to show info
+    # For Action options function
+    # TODO Only add the components of action option+ functions
+    # Function to show info
     def showInfo(self):
         msg = QtWidgets.QMessageBox()
         msg.setWindowTitle("Info about CTB")
         msg.setText("This Gui is for chip test board.\n Current Phase: Development")
         x = msg.exec_()
 
-    #Function to open file
+    # Function to open file
     def openFile(self):
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
-            caption='Select a file to open',
+            caption="Select a file to open",
             directory=os.getcwd(),
-            #filter='README (*.md *.ui)'
+            # filter='README (*.md *.ui)'
         )
-        if (response[0]):
+        if response[0]:
             print(response[0])
-            
-    #For the DACs tab functions
+
+    # For the DACs tab functions
     # TODO Only add DACs tab functions
     def setDAC(self, i):
-        checkBoxDac = getattr(self, f'checkBoxDAC{i}')
-        checkBoxmV = getattr(self, f'checkBoxDAC{i}mV')
-        spinBoxDac = getattr(self,f'spinBoxDAC{i}')
-        dac  = getattr(dacIndex, f'DAC_{i}')
-        dacLabel = getattr(self, f'labelDAC{i}')
+        checkBoxDac = getattr(self, f"checkBoxDAC{i}")
+        checkBoxmV = getattr(self, f"checkBoxDAC{i}mV")
+        spinBoxDac = getattr(self, f"spinBoxDAC{i}")
+        dac = getattr(dacIndex, f"DAC_{i}")
+        dacLabel = getattr(self, f"labelDAC{i}")
 
         if checkBoxDac.isChecked():
             if checkBoxmV.isChecked():
                 self.det.setDAC(dac, spinBoxDac.value(), True)
-                dacLabel.setText(str(self.det.getDAC(dac, True)[0])) 
+                dacLabel.setText(str(self.det.getDAC(dac, True)[0]))
             else:
                 self.det.setDAC(dac, spinBoxDac.value())
-                dacLabel.setText(str(self.det.getDAC(dac)[0])) 
+                dacLabel.setText(str(self.det.getDAC(dac)[0]))
             spinBoxDac.setDisabled(False)
         else:
             self.det.setDAC(dac, -100)
             spinBoxDac.setDisabled(True)
             dacLabel.setText(str(self.det.getDAC(dac)[0]))
 
-    #TODO yet to implement the ADC and HV
+    # TODO yet to implement the ADC and HV
     def setADC(self):
-        match self.comboBoxADC.currentIndex():
-            case 0:
-                self.det.setDAC(dacIndex.ADC_VPP, 0)
-            case 1:
-                self.det.setDAC(dacIndex.ADC_VPP, 1)
-            case 2:
-                self.det.setDAC(dacIndex.ADC_VPP, 2)
-            case 3:
-                self.det.setDAC(dacIndex.ADC_VPP, 3)
-            case 4:
-                self.det.setDAC(dacIndex.ADC_VPP, 4)
+        self.det.setDAC(dacIndex.ADC_VPP, self.comboBoxADC.currentIndex())
         self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
 
     def setHighVoltage(self):
@@ -321,14 +314,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.det.setHighVoltage(0)
             self.spinBoxHighVoltage.setDisabled(True)
         self.labelHighVoltage.setText(str(self.det.getHighVoltage()[0]))
-    
-    #For Power Supplies Tab functions
-    #TODO Only add the components of Power Supplies tab functions
+
+    # For Power Supplies Tab functions
+    # TODO Only add the components of Power Supplies tab functions
     def setPower(self, i):
-        checkBox = getattr(self, f'checkBoxV{i}')
-        spinBox = getattr(self, f'spinBoxV{i}')
-        power = getattr(dacIndex, f'V_POWER_{i}')
-        label = getattr(self, f'labelV{i}')
+        checkBox = getattr(self, f"checkBoxV{i}")
+        spinBox = getattr(self, f"spinBoxV{i}")
+        power = getattr(dacIndex, f"V_POWER_{i}")
+        label = getattr(self, f"labelV{i}")
 
         if checkBox.isChecked():
             self.det.setVoltage(power, spinBox.value())
@@ -338,11 +331,11 @@ class MainWindow(QtWidgets.QMainWindow):
             spinBox.setDisabled(True)
         label.setText(str(self.det.getVoltage(power)[0]))
 
-    #For Sense Tab functions
-    #TODO Only add the components of Sense tab functions
+    # For Sense Tab functions
+    # TODO Only add the components of Sense tab functions
     def updateSense(self, i):
-        slowADC = getattr(dacIndex, f'SLOW_ADC{i}')
-        label = getattr(self, f'labelSense{i}_2')
+        slowADC = getattr(dacIndex, f"SLOW_ADC{i}")
+        label = getattr(self, f"labelSense{i}_2")
         sense0 = self.det.getSlowADC(slowADC)
         label.setText(str(sense0[0]))
 
@@ -350,21 +343,21 @@ class MainWindow(QtWidgets.QMainWindow):
         sense0 = self.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
         self.labelTemp_2.setText(str(sense0[0]))
 
-    #For Signals Tab functions
-    #TODO Only add the components of Signals tab functions
+    # For Signals Tab functions
+    # TODO Only add the components of Signals tab functions
 
-    def dbit (self, i):
-        checkBox = getattr(self, f'checkBoxBIT{i}DB')
-        bit = self.det.rx_dbitlist
+    def dbit(self, i):
+        checkBox = getattr(self, f"checkBoxBIT{i}DB")
+        bitList = self.det.rx_dbitlist
         if checkBox.isChecked():
-            bit.append(i)
-            self.det.rx_dbitlist = bit
+            bitList.append(i)
+            self.det.rx_dbitlist = bitList
         else:
-            bit.remove(i)
-            self.det.rx_dbitlist = bit
+            bitList.remove(i)
+            self.det.rx_dbitlist = bitList
 
     def IOout(self, i):
-        checkBox = getattr(self, f'checkBoxBIT{i}Out')
+        checkBox = getattr(self, f"checkBoxBIT{i}Out")
         out = self.det.patioctrl
         if checkBox.isChecked():
             mask = set_bit(out, i)
@@ -376,22 +369,22 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def colorBIT0(self):
         self.showPalette(self.pushButtonBIT0)
-    
+
     def colorBIT1(self):
         self.showPalette(self.pushButtonBIT1)
-    
+
     def colorBIT2(self):
         self.showPalette(self.pushButtonBIT2)
-    
+
     def colorBIT3(self):
         self.showPalette(self.pushButtonBIT3)
-    
+
     def colorBIT4(self):
         self.showPalette(self.pushButtonBIT4)
-    
+
     def colorBIT5(self):
         self.showPalette(self.pushButtonBIT5)
-    
+
     def colorBIT6(self):
         self.showPalette(self.pushButtonBIT6)
 
@@ -400,7 +393,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def colorBIT8(self):
         self.showPalette(self.pushButtonBIT8)
-    
+
     def colorBIT9(self):
         self.showPalette(self.pushButtonBIT9)
 
@@ -433,7 +426,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def colorBIT19(self):
         self.showPalette(self.pushButtonBIT19)
-    
+
     def colorBIT20(self):
         self.showPalette(self.pushButtonBIT20)
 
@@ -517,7 +510,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def colorBIT47(self):
         self.showPalette(self.pushButtonBIT47)
-    
+
     def colorBIT48(self):
         self.showPalette(self.pushButtonBIT48)
 
@@ -566,26 +559,26 @@ class MainWindow(QtWidgets.QMainWindow):
     def colorBIT63(self):
         self.showPalette(self.pushButtonBIT63)
 
-    #For ADCs Tab functions
-    #TODO Only add the components of ADCs tab functions
+    # For ADCs Tab functions
+    # TODO Only add the components of ADCs tab functions
     def colorADC0(self):
         self.showPalette(self.pushButtonADC0)
-    
+
     def colorADC1(self):
         self.showPalette(self.pushButtonADC1)
-    
+
     def colorADC2(self):
         self.showPalette(self.pushButtonADC2)
-    
+
     def colorADC3(self):
         self.showPalette(self.pushButtonADC3)
-    
+
     def colorADC4(self):
         self.showPalette(self.pushButtonADC4)
-    
+
     def colorADC5(self):
         self.showPalette(self.pushButtonADC5)
-    
+
     def colorADC6(self):
         self.showPalette(self.pushButtonADC6)
 
@@ -594,7 +587,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def colorADC8(self):
         self.showPalette(self.pushButtonADC8)
-    
+
     def colorADC9(self):
         self.showPalette(self.pushButtonADC9)
 
@@ -627,7 +620,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def colorADC19(self):
         self.showPalette(self.pushButtonADC19)
-    
+
     def colorADC20(self):
         self.showPalette(self.pushButtonADC20)
 
@@ -682,141 +675,159 @@ class MainWindow(QtWidgets.QMainWindow):
     def none(self):
         print("None")
 
-    #For Pattern Tab functions
-    #TODO Only add the components of Pattern tab functions
-    def getCompiler(self):
+    # For Pattern Tab functions
+    # TODO Only add the components of Pattern tab functions
+    def setCompiler(self):
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
-            caption='Select a compiler file',
+            caption="Select a compiler file",
             directory=os.getcwd(),
-            #filter='README (*.md *.ui)'
+            # filter='README (*.md *.ui)'
         )
-        if (response[0]):
+        if response[0]:
             self.lineEditCompiler.setText(response[0])
 
-    def getPattern(self):
+    def setPattern(self):
         response = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
-            caption='Select a pattern file',
+            caption="Select a pattern file",
             directory=os.getcwd(),
-            #filter='README (*.md *.ui)'
+            # filter='README (*.md *.ui)'
         )
-        if (response[0]):
+        if response[0]:
             self.lineEditPattern.setText(response[0])
 
-    def getFrames(self):
+    def setFrames(self):
         self.det.frames = self.spinBoxFrames.value()
 
-    def getPeriod(self):
-        match self.comboBoxTime.currentIndex():
-            case 0:
-                unit = 1
-            case 1:
-                unit = 1e-3
-            case 2:
-                unit = 1e-6
-            case 3:
-                unit = 1e-9
-        self.det.period = self.spinBoxPeriod.value()*unit
+    def setPeriod(self):
+        if self.comboBoxTime.currentIndex()==0:
+            self.det.period = self.spinBoxPeriod.value()
+        elif self.comboBoxTime.currentIndex()==1:
+            self.det.period = self.spinBoxPeriod.value() * (1e-3)
+        elif self.comboBoxTime.currentIndex()==2:
+            self.det.period = self.spinBoxPeriod.value() * (1e-6)
+        else:
+            self.det.period = self.spinBoxPeriod.value() * (1e-9)
 
-    def getTriggers(self):
+    def setTriggers(self):
         self.det.triggers = self.spinBoxTriggers.value()
 
-    def getRunFrequency(self):
+    def setRunFrequency(self):
         self.det.runclk = self.spinBoxRunF.value()
 
-    def getADCFrequency(self):
+    def setADCFrequency(self):
         self.det.adcclk = self.spinBoxADCF.value()
 
-    def getADCPhase(self):
+    def setADCPhase(self):
         self.det.adcphase = self.spinBoxADCPhase.value()
 
-    def getADCPipeline(self):
+    def setADCPipeline(self):
         self.det.adcpipeline = self.spinBoxADCPipeline.value()
 
-    def getDBITFrequency(self):
+    def setDBITFrequency(self):
         self.det.dbitclk = self.spinBoxDBITF.value()
 
-    def getDBITPhase(self):
+    def setDBITPhase(self):
         self.det.dbitphase = self.spinBoxDBITPhase.value()
 
-    def getDBITPipeline(self):
+    def setDBITPipeline(self):
         self.det.dbitpipeline = self.spinBoxDBITPipeline.value()
 
     def setPatLimits(self):
-        self.det.patlimits = (self.spinBoxStartAddress.value(), self.spinBoxStopAddress.value())
+        self.det.patlimits = (
+            self.spinBoxStartAddress.value(),
+            self.spinBoxStopAddress.value(),
+        )
 
-    def getLoop0(self):
+    def setLoop0(self):
         self.det.patnloop[0] = self.spinBoxLoop0.value()
 
-    def getLoop1(self):
+    def setLoop1(self):
         self.det.patnloop[1] = self.spinBoxLoop1.value()
 
-    def getLoop2(self):
+    def setLoop2(self):
         self.det.patnloop[2] = self.spinBoxLoop2.value()
 
-    def getLoop3(self):
+    def setLoop3(self):
         self.det.patnloop[3] = self.spinBoxLoop3.value()
 
-    def getLoop4(self):
+    def setLoop4(self):
         self.det.patnloop[4] = self.spinBoxLoop4.value()
 
-    def getLoop5(self):
+    def setLoop5(self):
         self.det.patnloop[5] = self.spinBoxLoop5.value()
 
-    def getLoop0StartStop(self):
-        self.det.patloop [0] = (self.spinBoxLoop0Start.value(), self.spinBoxLoop0Stop.value())
+    def setLoop0StartStop(self):
+        self.det.patloop[0] = (
+            self.spinBoxLoop0Start.value(),
+            self.spinBoxLoop0Stop.value(),
+        )
 
-    def getLoop1StartStop(self):
-        self.det.patloop [1] = (self.spinBoxLoop1Start.value(), self.spinBoxLoop1Stop.value())
+    def setLoop1StartStop(self):
+        self.det.patloop[1] = (
+            self.spinBoxLoop1Start.value(),
+            self.spinBoxLoop1Stop.value(),
+        )
 
-    def getLoop2StartStop(self):
-        self.det.patloop [2] = (self.spinBoxLoop2Start.value(), self.spinBoxLoop2Stop.value())
+    def setLoop2StartStop(self):
+        self.det.patloop[2] = (
+            self.spinBoxLoop2Start.value(),
+            self.spinBoxLoop2Stop.value(),
+        )
 
-    def getLoop3StartStop(self):
-        self.det.patloop [3] = (self.spinBoxLoop3Start.value(), self.spinBoxLoop3Stop.value())
+    def setLoop3StartStop(self):
+        self.det.patloop[3] = (
+            self.spinBoxLoop3Start.value(),
+            self.spinBoxLoop3Stop.value(),
+        )
 
-    def getLoop4StartStop(self):
-        self.det.patloop [4] = (self.spinBoxLoop4Start.value(), self.spinBoxLoop4Stop.value())
+    def setLoop4StartStop(self):
+        self.det.patloop[4] = (
+            self.spinBoxLoop4Start.value(),
+            self.spinBoxLoop4Stop.value(),
+        )
 
-    def getLoop5StartStop(self):
-        self.det.patloop [5] = (self.spinBoxLoop5Start.value(), self.spinBoxLoop5Stop.value())
+    def setLoop5StartStop(self):
+        self.det.patloop[5] = (
+            self.spinBoxLoop5Start.value(),
+            self.spinBoxLoop5Stop.value(),
+        )
 
-    def getWait0(self):
+    def setWait0(self):
         self.det.patwaittime0 = self.spinBoxWait0.value()
 
-    def getWait1(self):
+    def setWait1(self):
         self.det.patwaittime1 = self.spinBoxWait1.value()
 
-    def getWait2(self):
+    def setWait2(self):
         self.det.patwaittime2 = self.spinBoxWait2.value()
 
-    def getAnalog(self):
+    def setAnalog(self):
         self.det.asamples = self.spinBoxAnalog.value()
 
-    def getDigital(self):
+    def setDigital(self):
         self.det.dsamples = self.spinBoxDigital.value()
 
-    def getReadOut(self):
-        match self.comboBoxROMode.currentIndex():
-            case 0:
-                self.det.romode = readoutMode.ANALOG_ONLY
-                self.spinBoxDigital.setDisabled(True)
-                self.spinBoxAnalog.setDisabled(False)
-            case 1:
-                self.det.romode = readoutMode.DIGITAL_ONLY
-                self.spinBoxAnalog.setDisabled(True)
-                self.spinBoxDigital.setDisabled(False)
-            case 2:
-                self.det.romode = readoutMode.ANALOG_AND_DIGITAL
-                self.spinBoxDigital.setDisabled(False)
-                self.spinBoxAnalog.setDisabled(False)
+    def setReadOut(self):
+        if self.comboBoxROMode.currentIndex() == 0:
+            self.det.romode = readoutMode.ANALOG_ONLY
+            self.spinBoxDigital.setDisabled(True)
+            self.spinBoxAnalog.setDisabled(False)
+        elif self.comboBoxROMode.currentIndex() == 1:
+            self.det.romode = readoutMode.DIGITAL_ONLY
+            self.spinBoxAnalog.setDisabled(True)
+            self.spinBoxDigital.setDisabled(False)
+        else:
+            self.det.romode = readoutMode.ANALOG_AND_DIGITAL
+            self.spinBoxDigital.setDisabled(False)
+            self.spinBoxAnalog.setDisabled(False)
 
     def loadPattern(self):
         print("loading pattern")
-    
-    #For Acquistions Tab functions
-    #TODO Only add the components of Acquistions tab functions
+
+    # For Acquistions Tab functions
+    # TODO Only add the components of Acquistions tab functions
     def plotOptions(self):
         print("plot options")
 
@@ -870,87 +881,89 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxMeasurements.stepUp()
         if self.radioButtonYes.isChecked():
             self.spinBoxIndex.stepUp()
-            print ('random')
-            
+            print("random")
+
     def plotReferesh(self):
         print("plot options")
 
     def browseFile(self):
         response = QtWidgets.QFileDialog.getSaveFileName(
             parent=self,
-            caption='Select a file to save the Output',
+            caption="Select a file to save the Output",
             directory=os.getcwd(),
-            #filter='README (*.md *.ui)'
+            # filter='README (*.md *.ui)'
         )
-        if (response[0]):
+        if response[0]:
             self.lineEditFilePath.setText(response[0])
 
-    #For other functios
-    #TODO Add other functions which will be reused 
+    # For other functios
+    # TODO Add other functions which will be reused
     def showPalette(self, button):
         color = QtWidgets.QColorDialog.getColor()
         if color.isValid():
             button.setStyleSheet("background-color: %s" % color.name())
-            #get the RGB Values
+            # get the RGB Values
             print(color.getRgb())
 
-    #Getting the checkbox status
+    # Getting the checkbox status
     def getDac(self, i):
-        checkBox = getattr(self, f'checkBoxDAC{i}')
-        spinBox = getattr(self, f'spinBoxDAC{i}')
-        dac  = getattr(dacIndex, f'DAC_{i}')
+        checkBox = getattr(self, f"checkBoxDAC{i}")
+        spinBox = getattr(self, f"spinBoxDAC{i}")
+        dac = getattr(dacIndex, f"DAC_{i}")
         if (self.det.getDAC(dac)[0]) == -100:
             spinBox.setDisabled(True)
         else:
             checkBox.setChecked(True)
 
     def getPower(self, i):
-        spinBox = getattr(self, f'spinBoxV{i}')
-        dac  = getattr(dacIndex, f'V_POWER_{i}')
-        checkBox = getattr(self, f'checkBoxV{i}')
+        spinBox = getattr(self, f"spinBoxV{i}")
+        dac = getattr(dacIndex, f"V_POWER_{i}")
+        checkBox = getattr(self, f"checkBoxV{i}")
 
         if (self.det.getVoltage(dac)[0]) == 0:
             spinBox.setDisabled(True)
         else:
             checkBox.setChecked(True)
 
-    #initializing the Out status 
+    # initializing the Out status
+    # TODO add loop here
     def outSet(self, i):
         out = self.det.patioctrl
-        mask = bit_is_set(out, i)
-        if mask == 1:
-            getattr(self, f'checkBoxBIT{i}Out').setChecked(True)
+        # mask = bit_is_set(out, i)
+        # if mask == 1:
+        if bit_is_set(out, i):
+            getattr(self, f"checkBoxBIT{i}Out").setChecked(True)
 
-    #updating fields with values 
+    # updating fields with values
     def update_field(self):
-        #Getting dac Name
+        # Getting dac Name
         for i, dac_name in enumerate(self.det.getDacNames()):
-            getattr(self, f'checkBoxDAC{i}').setText(dac_name)
-        
-        #Getting dac values for label
+            getattr(self, f"checkBoxDAC{i}").setText(dac_name)
+
+        # Getting dac values for label
         for i in range(18):
-            dac  = getattr(dacIndex, f'DAC_{i}')
-            getattr(self, f'labelDAC{i}').setText(str(self.det.getDAC(dac)[0]))
+            dac = getattr(dacIndex, f"DAC_{i}")
+            getattr(self, f"labelDAC{i}").setText(str(self.det.getDAC(dac)[0]))
 
         self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
         self.labelHighVoltage.setText(str(self.det.getHighVoltage()[0]))
 
-        #Getting dac values
+        # Getting dac values
         for i in range(18):
-            dac  = getattr(dacIndex, f'DAC_{i}')
-            getattr(self, f'spinBoxDAC{i}').setValue(self.det.getDAC(dac)[0])
+            dac = getattr(dacIndex, f"DAC_{i}")
+            getattr(self, f"spinBoxDAC{i}").setValue(self.det.getDAC(dac)[0])
             self.getDac(i)
         self.spinBoxDAC0.setValue(self.det.getDAC(dacIndex.DAC_0)[0])
         self.getDac(0)
 
-        #Setting ADC VPP
+        # Setting ADC VPP
         self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
         adcVPP = self.det.getDAC(dacIndex.ADC_VPP)
-        for i in (adcVPP):
+        for i in adcVPP:
             if (self.det.getDAC(dacIndex.ADC_VPP)[0]) == i:
                 self.comboBoxADC.setCurrentIndex(i)
 
-        #Setting High voltage
+        # Setting High voltage
         self.spinBoxHighVoltage.setValue(self.det.getHighVoltage()[0])
         if (self.det.getHighVoltage()[0]) == 0:
             self.spinBoxHighVoltage.setDisabled(True)
@@ -964,52 +977,52 @@ class MainWindow(QtWidgets.QMainWindow):
         self.labelVIO.setText(str(self.det.getVoltage(dacIndex.V_POWER_IO)[0]))
         self.labelVCHIP.setText(str(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0]))
 
-        #Updating values for Power Supply
+        # Updating values for Power Supply
         self.spinBoxVA.setValue(self.det.getVoltage(dacIndex.V_POWER_A)[0])
-        self.getPower('A')
-        
+        self.getPower("A")
+
         self.spinBoxVB.setValue(self.det.getVoltage(dacIndex.V_POWER_B)[0])
-        self.getPower('B')
-        
+        self.getPower("B")
+
         self.spinBoxVC.setValue(self.det.getVoltage(dacIndex.V_POWER_C)[0])
-        self.getPower('C')
+        self.getPower("C")
 
         self.spinBoxVD.setValue(self.det.getVoltage(dacIndex.V_POWER_D)[0])
-        self.getPower('D')
+        self.getPower("D")
 
         self.spinBoxVIO.setValue(self.det.getVoltage(dacIndex.V_POWER_IO)[0])
-        self.getPower('IO')
+        self.getPower("IO")
 
         self.spinBoxVCHIP.setValue(self.det.getVoltage(dacIndex.V_POWER_CHIP)[0])
 
-        #For initializing the Out Status
+        # For initializing the Out Status
         for i in range(64):
             self.outSet(i)
 
-        #For initializing DBit
-        n_bits = (self.det.rx_dbitlist)
-        for i in list (n_bits):
-            getattr(self, f'checkBoxBIT{i}DB').setChecked(True)
+        # For initializing DBit
+        n_bits = self.det.rx_dbitlist
+        for i in list(n_bits):
+            getattr(self, f"checkBoxBIT{i}DB").setChecked(True)
 
-        #Initialization IO Control Register
+        # Initialization IO Control Register
         self.lineEditBoxIOControl.setText(hex(self.det.patioctrl))
         self.doubleSpinBoxDBit.setValue(self.det.rx_dbitoffset)
-        #Updating values for patterns
+        # Updating values for patterns
         self.spinBoxFrames.setValue(self.det.frames)
 
-        #Converting to right time unit for period
+        # Converting to right time unit for period
         tPeriod = self.det.period
         if tPeriod < 100e-9:
             self.comboBoxTime.setCurrentIndex(3)
-            periodTime = (tPeriod/1e-9)
+            periodTime = tPeriod / 1e-9
             self.spinBoxPeriod.setValue(periodTime)
         elif tPeriod < 100e-6:
             self.comboBoxTime.setCurrentIndex(2)
-            periodTime1 = (tPeriod/1e-6)
+            periodTime1 = tPeriod / 1e-6
             self.spinBoxPeriod.setValue(periodTime1)
         elif tPeriod < 100e-3:
             self.comboBoxTime.setCurrentIndex(1)
-            periodTime0 = (tPeriod/1e-3)
+            periodTime0 = tPeriod / 1e-3
             self.spinBoxPeriod.setValue(periodTime0)
         else:
             self.comboBoxTime.setCurrentIndex(0)
@@ -1024,54 +1037,55 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDBITPhase.setValue(self.det.dbitphase)
         self.spinBoxDBITPipeline.setValue(self.det.dbitpipeline)
 
-        #Sample per frame
+        # Sample per frame
         self.spinBoxAnalog.setValue(self.det.asamples)
         self.spinBoxDigital.setValue(self.det.dsamples)
-        if (self.det.romode == (readoutMode.ANALOG_ONLY)):
+        if self.det.romode == (readoutMode.ANALOG_ONLY):
             self.spinBoxDigital.setDisabled(True)
             self.comboBoxROMode.setCurrentIndex(0)
-        elif (self.det.romode == (readoutMode.DIGITAL_ONLY)):
+        elif self.det.romode == (readoutMode.DIGITAL_ONLY):
             self.spinBoxAnalog.setDisabled(True)
             self.comboBoxROMode.setCurrentIndex(1)
-        elif (self.det.romode == (readoutMode.ANALOG_AND_DIGITAL)):
+        elif self.det.romode == (readoutMode.ANALOG_AND_DIGITAL):
             self.comboBoxROMode.setCurrentIndex(2)
 
-        #TODO yet to decide on hex or int
+        # TODO yet to decide on hex or int
         self.spinBoxStartAddress.setValue((self.det.patlimits)[0])
         self.spinBoxStopAddress.setValue((self.det.patlimits)[1])
 
-        self.lineEditWait0Address.setText(hex(self.det.patwait [0]))
-        self.lineEditWait1Address.setText(hex(self.det.patwait [1]))
-        self.lineEditWait2Address.setText(hex(self.det.patwait [2]))
+        self.lineEditWait0Address.setText(hex(self.det.patwait[0]))
+        self.lineEditWait1Address.setText(hex(self.det.patwait[1]))
+        self.lineEditWait2Address.setText(hex(self.det.patwait[2]))
 
-        self.spinBoxWait0.setValue(self.det.patwaittime [0])
-        self.spinBoxWait1.setValue(self.det.patwaittime [1])
-        self.spinBoxWait2.setValue(self.det.patwaittime [2])
+        self.spinBoxWait0.setValue(self.det.patwaittime[0])
+        self.spinBoxWait1.setValue(self.det.patwaittime[1])
+        self.spinBoxWait2.setValue(self.det.patwaittime[2])
 
-        self.spinBoxLoop0.setValue(self.det.patnloop [0])
-        self.spinBoxLoop1.setValue(self.det.patnloop [1])
-        self.spinBoxLoop2.setValue(self.det.patnloop [2])
-        self.spinBoxLoop3.setValue(self.det.patnloop [3])
-        self.spinBoxLoop4.setValue(self.det.patnloop [4])
-        self.spinBoxLoop5.setValue(self.det.patnloop [5])
+        self.spinBoxLoop0.setValue(self.det.patnloop[0])
+        self.spinBoxLoop1.setValue(self.det.patnloop[1])
+        self.spinBoxLoop2.setValue(self.det.patnloop[2])
+        self.spinBoxLoop3.setValue(self.det.patnloop[3])
+        self.spinBoxLoop4.setValue(self.det.patnloop[4])
+        self.spinBoxLoop5.setValue(self.det.patnloop[5])
 
-        #TODO yet to decide on hex or int
-        self.spinBoxLoop0Start.setValue((self.det.patloop [0])[0])
-        self.spinBoxLoop0Stop.setValue((self.det.patloop [0])[1])
-        self.spinBoxLoop1Start.setValue((self.det.patloop [1])[0])
-        self.spinBoxLoop1Stop.setValue((self.det.patloop [1])[1])
-        self.spinBoxLoop2Start.setValue((self.det.patloop [2])[0])
-        self.spinBoxLoop2Stop.setValue((self.det.patloop [2])[1])
-        self.spinBoxLoop3Start.setValue((self.det.patloop [3])[0])
-        self.spinBoxLoop3Stop.setValue((self.det.patloop [3])[1])
-        self.spinBoxLoop4Start.setValue((self.det.patloop [4])[0])
-        self.spinBoxLoop4Stop.setValue((self.det.patloop [4])[1])
-        self.spinBoxLoop5Start.setValue((self.det.patloop [5])[0])
-        self.spinBoxLoop5Stop.setValue((self.det.patloop [5])[1])
+        # TODO yet to decide on hex or int
+        self.spinBoxLoop0Start.setValue((self.det.patloop[0])[0])
+        self.spinBoxLoop0Stop.setValue((self.det.patloop[0])[1])
+        self.spinBoxLoop1Start.setValue((self.det.patloop[1])[0])
+        self.spinBoxLoop1Stop.setValue((self.det.patloop[1])[1])
+        self.spinBoxLoop2Start.setValue((self.det.patloop[2])[0])
+        self.spinBoxLoop2Stop.setValue((self.det.patloop[2])[1])
+        self.spinBoxLoop3Start.setValue((self.det.patloop[3])[0])
+        self.spinBoxLoop3Stop.setValue((self.det.patloop[3])[1])
+        self.spinBoxLoop4Start.setValue((self.det.patloop[4])[0])
+        self.spinBoxLoop4Stop.setValue((self.det.patloop[4])[1])
+        self.spinBoxLoop5Start.setValue((self.det.patloop[5])[0])
+        self.spinBoxLoop5Stop.setValue((self.det.patloop[5])[1])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     main = MainWindow()
     main.show()
-    #Run the app
+    # Run the app
     app.exec_()

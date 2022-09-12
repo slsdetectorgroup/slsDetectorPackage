@@ -115,6 +115,11 @@ class Detector(CppDetectorApi):
         fname = ut.make_string_path(fname)
         self.loadConfig(fname)
 
+        #create a new object to replace the old, allow us to
+        #do a new initialization of dacs etc.
+        new_object = self.__class__(self.getShmId())
+        self.__dict__.update(new_object.__dict__)
+
     @property
     def parameters(self):
         """Sets detector measurement parameters to those contained in fname. 

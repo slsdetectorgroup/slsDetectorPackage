@@ -18,41 +18,40 @@ target_link_libraries(_slsdet PUBLIC
 )  
 
 
-
 set_target_properties(_slsdet PROPERTIES
                         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
                     )
 
 #Copy Python code 
 set( PYTHON_FILES
-    __init__.py
-    adcs.py
-    dacs.py
-    decorators.py
-    detector_property.py
-    detector.py
-    defines.py
-    eiger.py
-    enums.py
-    errors.py
-    gotthard.py
-    pattern.py
-    gotthard2.py
-    moench.py
-    proxy.py
-    ctb.py
-    jungfrau.py
-    mythen3.py
-    registers.py
-    temperature.py
-    lookup.py
-    utils.py
+    slsdet/__init__.py
+    slsdet/adcs.py
+    slsdet/dacs.py
+    slsdet/decorators.py
+    slsdet/detector_property.py
+    slsdet/detector.py
+    slsdet/defines.py
+    slsdet/eiger.py
+    slsdet/enums.py
+    slsdet/errors.py
+    slsdet/gotthard.py
+    slsdet/pattern.py
+    slsdet/gotthard2.py
+    slsdet/moench.py
+    slsdet/proxy.py
+    slsdet/ctb.py
+    slsdet/jungfrau.py
+    slsdet/mythen3.py
+    slsdet/registers.py
+    slsdet/temperature.py
+    slsdet/lookup.py
+    slsdet/utils.py
 
 )
 
 foreach(FILE ${PYTHON_FILES})
-    configure_file( slsdet/${FILE}  
-    ${CMAKE_BINARY_DIR}/bin/slsdet/${FILE}  )
+    configure_file( ${FILE}  
+    ${CMAKE_BINARY_DIR}/bin/${FILE}  )
 
 endforeach(FILE ${PYTHON_FILES})
 
@@ -63,3 +62,13 @@ configure_file( scripts/basic.py
 configure_file( scripts/test_virtual.py  
     ${CMAKE_BINARY_DIR}/test_virtual.py 
 )
+
+
+if(SLS_INSTALL_PYTHONEXT)
+    install(TARGETS _slsdet
+        EXPORT "${TARGETS_EXPORT_NAME}"
+        LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/python
+    )
+
+    install(FILES ${PYTHON_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/python/slsdet)
+endif()

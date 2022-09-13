@@ -2893,7 +2893,7 @@ enum runStatus getRunStatus() {
 #endif
 }
 
-void readFrame(int *ret, char *mess) {
+void waitForAcquisitionEnd(int *ret, char *mess) {
 #ifdef VIRTUAL
     // wait for status to be done
     while (sharedMemory_getStatus() == RUNNING) {

@@ -666,7 +666,14 @@ int softwareTrigger(int block);
 int startReadOut();
 #endif
 enum runStatus getRunStatus();
-void readFrame(int *ret, char *mess);
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+void readFrames(int *ret, char *mess);
+#endif
+#ifdef EIGERD
+void waitForAcquisitionEnd(int *ret, char *mess);
+#else
+void waitForAcquisitionEnd();
+#endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 void readandSendUDPFrames(int *ret, char *mess);
 void unsetFifoReadStrobes();

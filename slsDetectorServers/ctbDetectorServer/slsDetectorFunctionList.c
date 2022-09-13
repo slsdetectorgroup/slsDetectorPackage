@@ -2203,40 +2203,36 @@ void readandSendUDPFrames(int *ret, char *mess) {
     closeUDPSocket(0);
 }
 
-void readFrame(int *ret, char *mess) {
+void waitForAcquisitionEnd() {
+    while (runBusy()) {
+        usleep(500); // random
+    }
+#ifdef VIRTUAL
+    LOG(logINFOGREEN, ("acquisition successfully finished\n"));
+#else
+    // frames left to give status
+    int64_t retval = getNumFramesLeft() + 2;
+    if (retval > 1) {
+        LOG(logERROR, ("No data and run stopped: %lld frames left\n",
+                (long long int)retval));
+    } else {
+        LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+    }
+#endif
+}
+
+void readFrames(int *ret, char *mess) {
 #ifdef VIRTUAL
     // wait for acquisition to be done
     while (runBusy()) {
         usleep(500); // random
     }
-    LOG(logINFOGREEN, ("acquisition successfully finished\n"));
     return;
 #endif
-    // 1G
+    // 1G force reading of frames
     if (!enableTenGigabitEthernet(-1)) {
         readandSendUDPFrames(ret, mess);
     }
-    // 10G
-    else {
-        // wait for acquisition to be done
-        while (runBusy()) {
-            usleep(500); // random
-        }
-    }
-
-    // ret could be fail in 1gudp for not creating udp sockets
-    if (*ret != FAIL) {
-        // frames left to give status
-        int64_t retval = getNumFramesLeft() + 2;
-        if (retval > 1) {
-            sprintf(mess, "No data and run stopped: %lld frames left\n",
-                    (long long int)retval);
-            LOG(logERROR, (mess));
-        } else {
-            LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
-        }
-    }
-    *ret = (int)OK;
 }
 
 void unsetFifoReadStrobes() {

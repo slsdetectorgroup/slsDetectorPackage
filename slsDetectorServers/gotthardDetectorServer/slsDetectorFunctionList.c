@@ -1854,7 +1854,7 @@ enum runStatus getRunStatus() {
     return s;
 }
 
-void readFrame(int *ret, char *mess) {
+void waitForAcquisitionEnd() {
 #ifdef VIRTUAL
     while (sharedMemory_getStatus() == RUNNING) {
         // LOG(logERROR, ("Waiting for finished flag\n");
@@ -1868,7 +1868,6 @@ void readFrame(int *ret, char *mess) {
     }
 
     // frames left to give status
-    *ret = (int)OK;
     int64_t retval = getNumFramesLeft() + 1;
     if (retval > -1) {
         LOG(logERROR, ("No data and run stopped: %lld frames left\n",

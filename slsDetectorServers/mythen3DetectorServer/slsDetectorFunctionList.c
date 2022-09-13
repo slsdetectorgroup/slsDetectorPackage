@@ -2689,7 +2689,7 @@ enum runStatus getRunStatus() {
     return s;
 }
 
-void readFrame(int *ret, char *mess) {
+void waitForAcquisitionEnd() {
     // wait for status to be done
     while (runBusy()) {
         usleep(500);
@@ -2700,7 +2700,6 @@ void readFrame(int *ret, char *mess) {
     return;
 #endif
 
-    *ret = (int)OK;
     // frames left to give status
     int64_t retval = getNumFramesLeft() + 1;
 

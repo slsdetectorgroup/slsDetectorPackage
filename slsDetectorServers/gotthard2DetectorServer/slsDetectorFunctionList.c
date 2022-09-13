@@ -3396,7 +3396,7 @@ enum runStatus getRunStatus() {
     return s;
 }
 
-void readFrame(int *ret, char *mess) {
+void waitForAcquisitionEnd() {
     // wait for status to be done
     while (runBusy()) {
         usleep(500);
@@ -3406,7 +3406,6 @@ void readFrame(int *ret, char *mess) {
     return;
 #endif
 
-    *ret = (int)OK;
     LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 }
 

@@ -63,7 +63,7 @@
             </rect>
            </property>
            <property name="currentIndex">
-            <number>4</number>
+            <number>5</number>
            </property>
            <widget class="QWidget" name="tab">
             <attribute name="title">
@@ -11172,7 +11172,7 @@
                <string>Stop Address:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxStopAddress">
+             <widget class="QLineEdit" name="lineEditStopAddress">
               <property name="geometry">
                <rect>
                 <x>560</x>
@@ -11184,8 +11184,11 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxStartAddress">
+             <widget class="QLineEdit" name="lineEditStartAddress">
               <property name="geometry">
                <rect>
                 <x>210</x>
@@ -11196,6 +11199,9 @@
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
               </property>
              </widget>
             </widget>
@@ -11253,22 +11259,6 @@
                <string>Loop 3 Repetitions:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxLoop0Stop">
-              <property name="geometry">
-               <rect>
-                <x>610</x>
-                <y>10</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
-              </property>
-             </widget>
              <widget class="QLabel" name="label_82">
               <property name="geometry">
                <rect>
@@ -11295,54 +11285,6 @@
                <string>Stop Address:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxLoop3Stop">
-              <property name="geometry">
-               <rect>
-                <x>610</x>
-                <y>100</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop1Start">
-              <property name="geometry">
-               <rect>
-                <x>380</x>
-                <y>40</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop5Stop">
-              <property name="geometry">
-               <rect>
-                <x>610</x>
-                <y>160</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
-              </property>
-             </widget>
              <widget class="QSpinBox" name="spinBoxLoop3">
               <property name="geometry">
                <rect>
@@ -11367,22 +11309,6 @@
               </property>
               <property name="text">
                <string>Loop 1 Repetitions:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop0Start">
-              <property name="geometry">
-               <rect>
-                <x>380</x>
-                <y>10</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
               </property>
              </widget>
              <widget class="QLabel" name="label_83">
@@ -11422,22 +11348,6 @@
               </property>
               <property name="text">
                <string>Stop Address:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop2Stop">
-              <property name="geometry">
-               <rect>
-                <x>610</x>
-                <y>70</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxLoop4">
@@ -11505,22 +11415,6 @@
                <string>Loop 5 Repetitions:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxLoop3Start">
-              <property name="geometry">
-               <rect>
-                <x>380</x>
-                <y>100</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
-              </property>
-             </widget>
              <widget class="QLabel" name="label_99">
               <property name="geometry">
                <rect>
@@ -11532,22 +11426,6 @@
               </property>
               <property name="text">
                <string>Start Address:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop4Stop">
-              <property name="geometry">
-               <rect>
-                <x>610</x>
-                <y>130</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
               </property>
              </widget>
              <widget class="QLabel" name="label_90">
@@ -11563,38 +11441,6 @@
                <string>Stop Address:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxLoop2Start">
-              <property name="geometry">
-               <rect>
-                <x>380</x>
-                <y>70</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop1Stop">
-              <property name="geometry">
-               <rect>
-                <x>610</x>
-                <y>40</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
-              </property>
-             </widget>
              <widget class="QLabel" name="label_101">
               <property name="geometry">
                <rect>
@@ -11606,22 +11452,6 @@
               </property>
               <property name="text">
                <string>Start Address:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop4Start">
-              <property name="geometry">
-               <rect>
-                <x>380</x>
-                <y>130</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>9999</number>
               </property>
              </widget>
              <widget class="QLabel" name="label_100">
@@ -11702,7 +11532,103 @@
                <string>Start Address:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxLoop5Start">
+             <widget class="QLineEdit" name="lineEditLoop5Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>160</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop4Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>130</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop3Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>100</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop2Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>70</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop1Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>40</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop0Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>10</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop5Start">
               <property name="geometry">
                <rect>
                 <x>380</x>
@@ -11714,8 +11640,88 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
-              <property name="maximum">
-               <number>9999</number>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop4Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>130</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop3Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>100</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop2Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>70</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop1Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>40</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop0Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>10</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
               </property>
              </widget>
             </widget>

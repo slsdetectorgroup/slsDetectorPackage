@@ -36,9 +36,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # TODO Only add the components of DACs tab
         n_dacs = len(self.det.daclist)
         for i in range(n_dacs):
-            getattr(self, f"spinBoxDAC{i}").editingFinished.connect(
-                partial(self.setDAC, i)
-            )
+            getattr(self, f"spinBoxDAC{i}").editingFinished.connect(partial(self.setDAC, i))
             getattr(self, f"checkBoxDAC{i}").clicked.connect(partial(self.setDAC, i))
             getattr(self, f"checkBoxDAC{i}mV").clicked.connect(partial(self.setDAC, i))
 
@@ -211,26 +209,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
         self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
         self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
-        self.spinBoxStartAddress.editingFinished.connect(self.setPatLimits)
-        self.spinBoxStopAddress.editingFinished.connect(self.setPatLimits)
         self.spinBoxLoop0.editingFinished.connect(self.setLoop0)
         self.spinBoxLoop1.editingFinished.connect(self.setLoop1)
         self.spinBoxLoop2.editingFinished.connect(self.setLoop2)
         self.spinBoxLoop3.editingFinished.connect(self.setLoop3)
         self.spinBoxLoop4.editingFinished.connect(self.setLoop4)
         self.spinBoxLoop5.editingFinished.connect(self.setLoop5)
-        self.spinBoxLoop0Start.editingFinished.connect(self.setLoop0StartStop)
-        self.spinBoxLoop1Start.editingFinished.connect(self.setLoop1StartStop)
-        self.spinBoxLoop2Start.editingFinished.connect(self.setLoop2StartStop)
-        self.spinBoxLoop3Start.editingFinished.connect(self.setLoop3StartStop)
-        self.spinBoxLoop4Start.editingFinished.connect(self.setLoop4StartStop)
-        self.spinBoxLoop5Start.editingFinished.connect(self.setLoop5StartStop)
-        self.spinBoxLoop0Stop.editingFinished.connect(self.setLoop0StartStop)
-        self.spinBoxLoop1Stop.editingFinished.connect(self.setLoop1StartStop)
-        self.spinBoxLoop2Stop.editingFinished.connect(self.setLoop2StartStop)
-        self.spinBoxLoop3Stop.editingFinished.connect(self.setLoop3StartStop)
-        self.spinBoxLoop4Stop.editingFinished.connect(self.setLoop4StartStop)
-        self.spinBoxLoop5Stop.editingFinished.connect(self.setLoop5StartStop)
         self.spinBoxWait0.editingFinished.connect(self.setWait0)
         self.spinBoxWait1.editingFinished.connect(self.setWait1)
         self.spinBoxWait2.editingFinished.connect(self.setWait2)
@@ -784,12 +768,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def setDBITPipeline(self):
         self.det.dbitpipeline = self.spinBoxDBITPipeline.value()
 
-    def setPatLimits(self):
-        self.det.patlimits = (
-            self.spinBoxStartAddress.value(),
-            self.spinBoxStopAddress.value(),
-        )
-
     def setLoop0(self):
         self.det.patnloop[0] = self.spinBoxLoop0.value()
 
@@ -807,42 +785,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def setLoop5(self):
         self.det.patnloop[5] = self.spinBoxLoop5.value()
-
-    def setLoop0StartStop(self):
-        self.det.patloop[0] = (
-            self.spinBoxLoop0Start.value(),
-            self.spinBoxLoop0Stop.value(),
-        )
-
-    def setLoop1StartStop(self):
-        self.det.patloop[1] = (
-            self.spinBoxLoop1Start.value(),
-            self.spinBoxLoop1Stop.value(),
-        )
-
-    def setLoop2StartStop(self):
-        self.det.patloop[2] = (
-            self.spinBoxLoop2Start.value(),
-            self.spinBoxLoop2Stop.value(),
-        )
-
-    def setLoop3StartStop(self):
-        self.det.patloop[3] = (
-            self.spinBoxLoop3Start.value(),
-            self.spinBoxLoop3Stop.value(),
-        )
-
-    def setLoop4StartStop(self):
-        self.det.patloop[4] = (
-            self.spinBoxLoop4Start.value(),
-            self.spinBoxLoop4Stop.value(),
-        )
-
-    def setLoop5StartStop(self):
-        self.det.patloop[5] = (
-            self.spinBoxLoop5Start.value(),
-            self.spinBoxLoop5Stop.value(),
-        )
 
     def setWait0(self):
         self.det.patwaittime0 = self.spinBoxWait0.value()
@@ -1010,7 +952,6 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(18):
             dac = getattr(dacIndex, f"DAC_{i}")
             getattr(self, f"labelDAC{i}").setText(str(self.det.getDAC(dac)[0]))
-
         self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
         self.labelHighVoltage.setText(str(self.det.getHighVoltage()[0]))
 
@@ -1122,8 +1063,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.comboBoxROMode.setCurrentIndex(2)
 
         # TODO yet to decide on hex or int
-        self.spinBoxStartAddress.setValue((self.det.patlimits)[0])
-        self.spinBoxStopAddress.setValue((self.det.patlimits)[1])
+        self.lineEditStartAddress.setText(hex((self.det.patlimits)[0]))
+        self.lineEditStopAddress.setText(hex((self.det.patlimits)[1]))
 
         self.lineEditWait0Address.setText(hex(self.det.patwait[0]))
         self.lineEditWait1Address.setText(hex(self.det.patwait[1]))
@@ -1141,19 +1082,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxLoop5.setValue(self.det.patnloop[5])
 
         # TODO yet to decide on hex or int
-        self.spinBoxLoop0Start.setValue((self.det.patloop[0])[0])
-        self.spinBoxLoop0Stop.setValue((self.det.patloop[0])[1])
-        self.spinBoxLoop1Start.setValue((self.det.patloop[1])[0])
-        self.spinBoxLoop1Stop.setValue((self.det.patloop[1])[1])
-        self.spinBoxLoop2Start.setValue((self.det.patloop[2])[0])
-        self.spinBoxLoop2Stop.setValue((self.det.patloop[2])[1])
-        self.spinBoxLoop3Start.setValue((self.det.patloop[3])[0])
-        self.spinBoxLoop3Stop.setValue((self.det.patloop[3])[1])
-        self.spinBoxLoop4Start.setValue((self.det.patloop[4])[0])
-        self.spinBoxLoop4Stop.setValue((self.det.patloop[4])[1])
-        self.spinBoxLoop5Start.setValue((self.det.patloop[5])[0])
-        self.spinBoxLoop5Stop.setValue((self.det.patloop[5])[1])
-
+        self.lineEditLoop0Start.setText(hex((self.det.patloop[0])[0]))
+        self.lineEditLoop0Stop.setText(hex((self.det.patloop[0])[1]))
+        self.lineEditLoop1Start.setText(hex((self.det.patloop[1])[0]))
+        self.lineEditLoop1Stop.setText(hex((self.det.patloop[1])[1]))
+        self.lineEditLoop2Start.setText(hex((self.det.patloop[2])[0]))
+        self.lineEditLoop2Stop.setText(hex((self.det.patloop[2])[1]))
+        self.lineEditLoop3Start.setText(hex((self.det.patloop[3])[0]))
+        self.lineEditLoop3Stop.setText(hex((self.det.patloop[3])[1]))
+        self.lineEditLoop4Start.setText(hex((self.det.patloop[4])[0]))
+        self.lineEditLoop4Stop.setText(hex((self.det.patloop[4])[1]))
+        self.lineEditLoop5Start.setText(hex((self.det.patloop[5])[0]))
+        self.lineEditLoop5Stop.setText(hex((self.det.patloop[5])[1]))
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

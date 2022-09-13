@@ -10749,7 +10749,26 @@
                 <string>Enable mask:</string>
                </property>
               </widget>
-              <widget class="QDoubleSpinBox" name="doubleSpinBoxEnableMask">
+              <widget class="QLineEdit" name="lineEditInversion">
+               <property name="geometry">
+                <rect>
+                 <x>230</x>
+                 <y>10</y>
+                 <width>221</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+              <widget class="QLineEdit" name="lineEditEnable">
                <property name="geometry">
                 <rect>
                  <x>230</x>
@@ -10764,27 +10783,8 @@
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
-               <property name="decimals">
-                <number>0</number>
-               </property>
-               <property name="maximum">
-                <double>1000.000000000000000</double>
-               </property>
-              </widget>
-              <widget class="QSpinBox" name="spinBoxInversionMask">
-               <property name="geometry">
-                <rect>
-                 <x>230</x>
-                 <y>10</y>
-                 <width>221</width>
-                 <height>31</height>
-                </rect>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">background-color: rgb(255, 255, 255);</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               <property name="readOnly">
+                <bool>true</bool>
                </property>
               </widget>
              </widget>

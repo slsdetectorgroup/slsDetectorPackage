@@ -148,10 +148,14 @@ class MainWindow(QtWidgets.QMainWindow):
         # For ADCs Tab
         # TODO Only add the components of ADCs tab
         for i in range(32):
-            getattr(self, f"checkBoxADC{i}Inv").clicked.connect(partial(self.ADCInvert))
+            getattr(self, f"checkBoxADC{i}Inv").clicked.connect(
+                partial(self.ADCInvert, i)
+            )
 
         for i in range(32):
-            getattr(self, f"checkBoxADC{i}En").clicked.connect(partial(self.ADCEnable, i))
+            getattr(self, f"checkBoxADC{i}En").clicked.connect(
+                partial(self.ADCEnable, i)
+            )
 
         self.pushButtonADC0.clicked.connect(self.colorADC0)
         self.pushButtonADC1.clicked.connect(self.colorADC1)
@@ -686,39 +690,40 @@ class MainWindow(QtWidgets.QMainWindow):
     def none(self):
         print("None")
 
-    # def IOout(self, i):
-    #     checkBox = getattr(self, f"checkBoxBIT{i}Out")
-    #     out = self.det.patioctrl
-    #     if checkBox.isChecked():
-    #         mask = set_bit(out, i)
-    #         self.det.patioctrl = mask
-    #     else:
-    #         mask = remove_bit(out, i)
-    #         self.det.patioctrl = mask
-    #     self.lineEditBoxIOControl.setText(hex(self.det.patioctrl))
-
     def ADCEnable(self, i):
-        enableMaskCheckBox = getattr(self, f'checkBoxADC{i}En').isChecked()
-        if enableMaskCheckBox:
+        enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
+        if enableMaskCheckBox.isChecked():
             if self.det.tengiga:
                 enableMask = set_bit(self.det.adcenable10g, i)
                 self.det.adcenable10g = enableMask
+                self.lineEditEnable.setText(hex(self.det.adcenable10g))
+                # adcenable10g = self.det.adcenable10g
+                # for i in range(32):
+                #     if bit_is_set(adcenable10g, i):
+                #         getattr(self, f"checkBoxADC{i}En").setChecked(True)
             else:
                 enableMask = set_bit(self.det.adcenable, i)
                 self.det.adcenable = enableMask
+                self.lineEditEnable.setText(hex(self.det.adcenable))
         else:
             if self.det.tengiga:
                 enableMask = remove_bit(self.det.adcenable10g, i)
                 self.det.adcenable10g = enableMask
+                self.lineEditEnable.setText(hex(self.det.adcenable10g))
             else:
                 enableMask = remove_bit(self.det.adcenable, i)
                 self.det.adcenable = enableMask
-    
-    def ADCInvert(self):
-        if self.det.tengiga:
-            print("10g")
+                self.lineEditEnable.setText(hex(self.det.adcenable))
+
+    def ADCInvert(self, i):
+        invertCheckBox = getattr(self, f"checkBoxADC{i}Inv")
+        if invertCheckBox.isChecked():
+            inversionMask = set_bit(self.det.adcinvert, i)
+            self.det.adcinvert = inversionMask
         else:
-            print("1g")
+            inversionMask = remove_bit(self.det.adcinvert, i)
+            self.det.adcinvert = inversionMask
+        self.lineEditInversion.setText(hex(self.det.adcinvert))
 
     # For Pattern Tab functions
     # TODO Only add the components of Pattern tab functions
@@ -979,15 +984,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def set_ADC_Enable(self, i):
         if self.det.tengiga:
-            out = self.det.adcenable10g
+            adcenable10g = self.det.adcenable10g
             for i in range(32):
-                if bit_is_set(out, i):
+                if bit_is_set(adcenable10g, i):
                     getattr(self, f"checkBoxADC{i}En").setChecked(True)
         else:
-            out = self.det.adcenable
+            adcenable = self.det.adcenable
             for i in range(32):
-                if bit_is_set(out, i):
+                if bit_is_set(adcenable, i):
                     getattr(self, f"checkBoxADC{i}En").setChecked(True)
+
+    def set_ADC_Inversion(self, i):
+        adcInversion = self.det.adcinvert
+        for i in range(32):
+            if bit_is_set(adcInversion, i):
+                getattr(self, f"checkBoxADC{i}Inv").setChecked(True)
 
     # updating fields with values
     def update_field(self):
@@ -1061,9 +1072,13 @@ class MainWindow(QtWidgets.QMainWindow):
         # Initialization IO Control Register
         self.lineEditBoxIOControl.setText(hex(self.det.patioctrl))
         self.spinBoxDBitOffset.setValue(self.det.rx_dbitoffset)
-        
-        #Initializing the ADC Enable mask
+
+        # Initializing the ADC Enable mask
         self.set_ADC_Enable(i)
+        self.lineEditEnable.setText(hex(self.det.adcenable))
+        # Initializing the ADC Inversion Mask
+        self.set_ADC_Inversion(i)
+        self.lineEditInversion.setText(hex(self.det.adcinvert))
         # Updating values for patterns
         self.spinBoxFrames.setValue(self.det.frames)
 

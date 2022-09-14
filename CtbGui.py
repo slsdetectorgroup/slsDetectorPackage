@@ -1,5 +1,4 @@
-import base64
-from cgitb import enable
+import time
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
@@ -8,7 +7,6 @@ from pyqtgraph import PlotWidget
 from functools import partial
 
 from slsdet import Detector, dacIndex, readoutMode
-
 from bit_utils import set_bit, remove_bit, bit_is_set
 
 
@@ -36,7 +34,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # TODO Only add the components of DACs tab
         n_dacs = len(self.det.daclist)
         for i in range(n_dacs):
-            getattr(self, f"spinBoxDAC{i}").editingFinished.connect(partial(self.setDAC, i))
+            getattr(self, f"spinBoxDAC{i}").editingFinished.connect(
+                partial(self.setDAC, i)
+            )
             getattr(self, f"checkBoxDAC{i}").clicked.connect(partial(self.setDAC, i))
             getattr(self, f"checkBoxDAC{i}mV").clicked.connect(partial(self.setDAC, i))
 
@@ -230,27 +230,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self.radioButtonDistribution.clicked.connect(self.plotOptions)
         self.radioButtonImage.clicked.connect(self.plotOptions)
         self.comboBoxPlot.activated.connect(self.plotOptions)
-        self.spinBoxSerialOffset.editingFinished.connect(self.getSerialOffset)
-        self.spinBoxNCount.editingFinished.connect(self.getNCounter)
-        self.spinBoxDynamicRange.editingFinished.connect(self.getDynamicRange)
-        self.spinBoxImageX.editingFinished.connect(self.getImageX)
-        self.spinBoxImageY.editingFinished.connect(self.getImageY)
-        self.checkBoxAcquire.clicked.connect(self.getPedestal)
-        self.checkBoxSubtract.clicked.connect(self.getPedestal)
-        self.checkBoxCommonMode.clicked.connect(self.getPedestal)
+        self.spinBoxSerialOffset.editingFinished.connect(self.setSerialOffset)
+        self.spinBoxNCount.editingFinished.connect(self.setNCounter)
+        self.spinBoxDynamicRange.editingFinished.connect(self.setDynamicRange)
+        self.spinBoxImageX.editingFinished.connect(self.setImageX)
+        self.spinBoxImageY.editingFinished.connect(self.setImageY)
+        self.checkBoxAcquire.clicked.connect(self.setPedestal)
+        self.checkBoxSubtract.clicked.connect(self.setPedestal)
+        self.checkBoxCommonMode.clicked.connect(self.setPedestal)
         self.pushButtonReset.clicked.connect(self.resetPedestal)
-        self.checkBoxRaw.clicked.connect(self.getRawData)
-        self.spinBoxRawMin.editingFinished.connect(self.getRawData)
-        self.spinBoxRawMax.editingFinished.connect(self.getRawData)
-        self.checkBoxPedestal.clicked.connect(self.getPedestalSubtract)
-        self.spinBoxPedestalMin.editingFinished.connect(self.getPedestalSubtract)
-        self.spinBoxPedestalMax.editingFinished.connect(self.getPedestalSubtract)
-        self.spinBoxFit.editingFinished.connect(self.getFitADC)
-        self.spinBoxPlot.editingFinished.connect(self.getPlotBit)
+        self.checkBoxRaw.clicked.connect(self.setRawData)
+        self.spinBoxRawMin.editingFinished.connect(self.setRawData)
+        self.spinBoxRawMax.editingFinished.connect(self.setRawData)
+        self.checkBoxPedestal.clicked.connect(self.setPedestalSubtract)
+        self.spinBoxPedestalMin.editingFinished.connect(self.setPedestalSubtract)
+        self.spinBoxPedestalMax.editingFinished.connect(self.setPedestalSubtract)
+        self.spinBoxFit.editingFinished.connect(self.setFitADC)
+        self.spinBoxPlot.editingFinished.connect(self.setPlotBit)
         self.lineEditFileName.editingFinished.connect(self.setFileName)
         self.lineEditFilePath.editingFinished.connect(self.setFilePath)
         self.spinBoxIndex.editingFinished.connect(self.setIndex)
-        self.spinBoxMeasurements.editingFinished.connect(self.getMeasurements)
+        self.spinBoxMeasurements.editingFinished.connect(self.setMeasurements)
         self.pushButtonStart.clicked.connect(self.acquire)
         self.pushButtonReferesh.clicked.connect(self.plotReferesh)
         self.pushButtonBrowse.clicked.connect(self.browseFile)
@@ -341,7 +341,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # For Signals Tab functions
     # TODO Only add the components of Signals tab functions
-
     def dbit(self, i):
         checkBox = getattr(self, f"checkBoxBIT{i}DB")
         bitList = self.det.rx_dbitlist
@@ -681,10 +680,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 enableMask = set_bit(self.det.adcenable10g, i)
                 self.det.adcenable10g = enableMask
                 self.lineEditEnable.setText(hex(self.det.adcenable10g))
-                # adcenable10g = self.det.adcenable10g
-                # for i in range(32):
-                #     if bit_is_set(adcenable10g, i):
-                #         getattr(self, f"checkBoxADC{i}En").setChecked(True)
             else:
                 enableMask = set_bit(self.det.adcenable, i)
                 self.det.adcenable = enableMask
@@ -823,37 +818,37 @@ class MainWindow(QtWidgets.QMainWindow):
     def plotOptions(self):
         print("plot options")
 
-    def getSerialOffset(self):
+    def setSerialOffset(self):
         print("SerialOffSet")
 
-    def getNCounter(self):
+    def setNCounter(self):
         print("plot options")
 
-    def getDynamicRange(self):
+    def setDynamicRange(self):
         print("plot options")
 
-    def getImageX(self):
+    def setImageX(self):
         print("plot options")
 
-    def getImageY(self):
+    def setImageY(self):
         print("plot options")
 
-    def getPedestal(self):
+    def setPedestal(self):
         print("plot options")
 
     def resetPedestal(self):
         print("plot options")
 
-    def getRawData(self):
+    def setRawData(self):
         print("plot options")
 
-    def getPedestalSubtract(self):
+    def setPedestalSubtract(self):
         print("plot options")
 
-    def getFitADC(self):
+    def setFitADC(self):
         print("plot options")
 
-    def getPlotBit(self):
+    def setPlotBit(self):
         print("plot options")
 
     def setFileName(self):
@@ -865,11 +860,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def setIndex(self):
         print("plot options")
 
-    def getMeasurements(self):
+    def setMeasurements(self):
         print("plot options")
 
     def acquire(self):
-        print("plot options")
+        # self.det.acquire()
         self.spinBoxMeasurements.stepUp()
         if self.radioButtonYes.isChecked():
             self.spinBoxIndex.stepUp()
@@ -1094,6 +1089,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEditLoop4Stop.setText(hex((self.det.patloop[4])[1]))
         self.lineEditLoop5Start.setText(hex((self.det.patloop[5])[0]))
         self.lineEditLoop5Stop.setText(hex((self.det.patloop[5])[1]))
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

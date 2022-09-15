@@ -1080,36 +1080,23 @@ class MainWindow(QtWidgets.QMainWindow):
         # TODO yet to decide on hex or int
         self.lineEditStartAddress.setText(hex((self.det.patlimits)[0]))
         self.lineEditStopAddress.setText(hex((self.det.patlimits)[1]))
+        #For Wait time and Wait address
+        for i in range(3):
+            lineEditWait = getattr(self, f"lineEditWait{i}Address")
+            spinBoxWait = getattr(self, f"spinBoxWait{i}")
+            lineEditWait.setText(hex(self.det.patwait[i]))
+            spinBoxWait.setValue(self.det.patwaittime[i])
 
-        self.lineEditWait0Address.setText(hex(self.det.patwait[0]))
-        self.lineEditWait1Address.setText(hex(self.det.patwait[1]))
-        self.lineEditWait2Address.setText(hex(self.det.patwait[2]))
-
-        self.spinBoxWait0.setValue(self.det.patwaittime[0])
-        self.spinBoxWait1.setValue(self.det.patwaittime[1])
-        self.spinBoxWait2.setValue(self.det.patwaittime[2])
-
-        self.spinBoxLoop0.setValue(self.det.patnloop[0])
-        self.spinBoxLoop1.setValue(self.det.patnloop[1])
-        self.spinBoxLoop2.setValue(self.det.patnloop[2])
-        self.spinBoxLoop3.setValue(self.det.patnloop[3])
-        self.spinBoxLoop4.setValue(self.det.patnloop[4])
-        self.spinBoxLoop5.setValue(self.det.patnloop[5])
-
-        # TODO yet to decide on hex or int
-        self.lineEditLoop0Start.setText(hex((self.det.patloop[0])[0]))
-        self.lineEditLoop0Stop.setText(hex((self.det.patloop[0])[1]))
-        self.lineEditLoop1Start.setText(hex((self.det.patloop[1])[0]))
-        self.lineEditLoop1Stop.setText(hex((self.det.patloop[1])[1]))
-        self.lineEditLoop2Start.setText(hex((self.det.patloop[2])[0]))
-        self.lineEditLoop2Stop.setText(hex((self.det.patloop[2])[1]))
-        self.lineEditLoop3Start.setText(hex((self.det.patloop[3])[0]))
-        self.lineEditLoop3Stop.setText(hex((self.det.patloop[3])[1]))
-        self.lineEditLoop4Start.setText(hex((self.det.patloop[4])[0]))
-        self.lineEditLoop4Stop.setText(hex((self.det.patloop[4])[1]))
-        self.lineEditLoop5Start.setText(hex((self.det.patloop[5])[0]))
-        self.lineEditLoop5Stop.setText(hex((self.det.patloop[5])[1]))
-
+        for i in range(6):
+            #For Loop repetitions
+            spinBoxLoop = getattr(self, f"spinBoxLoop{i}")
+            spinBoxLoop.setValue(self.det.patnloop[i])
+            #For Loop start address
+            lineEditLoopStart = getattr(self, f"lineEditLoop{i}Start")
+            lineEditLoopStart.setText(hex((self.det.patloop[i])[0]))
+            #For loop stop address
+            lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
+            lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

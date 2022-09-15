@@ -209,15 +209,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.spinBoxDBITF.editingFinished.connect(self.setDBITFrequency)
         self.spinBoxDBITPhase.editingFinished.connect(self.setDBITPhase)
         self.spinBoxDBITPipeline.editingFinished.connect(self.setDBITPipeline)
-        self.spinBoxLoop0.editingFinished.connect(self.setLoop0)
-        self.spinBoxLoop1.editingFinished.connect(self.setLoop1)
-        self.spinBoxLoop2.editingFinished.connect(self.setLoop2)
-        self.spinBoxLoop3.editingFinished.connect(self.setLoop3)
-        self.spinBoxLoop4.editingFinished.connect(self.setLoop4)
-        self.spinBoxLoop5.editingFinished.connect(self.setLoop5)
-        self.spinBoxWait0.editingFinished.connect(self.setWait0)
-        self.spinBoxWait1.editingFinished.connect(self.setWait1)
-        self.spinBoxWait2.editingFinished.connect(self.setWait2)
+        for i in range(6):
+            getattr(self, f"spinBoxLoop{i}").editingFinished.connect(
+                partial(self.setLoop, i)
+            )
+        for i in range(3):
+            getattr(self, f"spinBoxWait{i}").editingFinished.connect(
+                partial(self.setWait, i)
+            )
         self.spinBoxAnalog.editingFinished.connect(self.setAnalog)
         self.spinBoxDigital.editingFinished.connect(self.setDigital)
         self.comboBoxROMode.activated.connect(self.setReadOut)
@@ -666,7 +665,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.det.adcenable = enableMask
             self.lineEditEnable.setText(hex(self.det.adcenable))
         enableMaskCheckBox.setChecked(True)
-    
+
     def enableMask_Disable(self, i):
         enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
         if self.det.tengiga:
@@ -680,7 +679,7 @@ class MainWindow(QtWidgets.QMainWindow):
         enableMaskCheckBox.setChecked(False)
 
     def all_0_15(self):
-        for i in range(0,16):
+        for i in range(0, 16):
             enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
             if enableMaskCheckBox.isChecked():
                 pass
@@ -688,7 +687,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.enableMask_Enable(i)
 
     def none_0_15(self):
-        for i in range(1,16):
+        for i in range(1, 16):
             enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
             if enableMaskCheckBox.isChecked():
                 self.enableMask_Disable(i)
@@ -696,7 +695,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 pass
 
     def all_16_32(self):
-        for i in range(16,32):
+        for i in range(16, 32):
             enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
             if enableMaskCheckBox.isChecked():
                 pass
@@ -712,7 +711,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 pass
 
     def enable_mask_all(self):
-        for i in range(0,32):
+        for i in range(0, 32):
             enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
             if enableMaskCheckBox.isChecked():
                 pass
@@ -803,32 +802,13 @@ class MainWindow(QtWidgets.QMainWindow):
     def setDBITPipeline(self):
         self.det.dbitpipeline = self.spinBoxDBITPipeline.value()
 
-    def setLoop0(self):
-        self.det.patnloop[0] = self.spinBoxLoop0.value()
+    def setLoop(self, i):
+        loopSpinBox = getattr(self, f"spinBoxLoop{i}").value()
+        self.det.patnloop[i] = loopSpinBox
 
-    def setLoop1(self):
-        self.det.patnloop[1] = self.spinBoxLoop1.value()
-
-    def setLoop2(self):
-        self.det.patnloop[2] = self.spinBoxLoop2.value()
-
-    def setLoop3(self):
-        self.det.patnloop[3] = self.spinBoxLoop3.value()
-
-    def setLoop4(self):
-        self.det.patnloop[4] = self.spinBoxLoop4.value()
-
-    def setLoop5(self):
-        self.det.patnloop[5] = self.spinBoxLoop5.value()
-
-    def setWait0(self):
-        self.det.patwaittime0 = self.spinBoxWait0.value()
-
-    def setWait1(self):
-        self.det.patwaittime1 = self.spinBoxWait1.value()
-
-    def setWait2(self):
-        self.det.patwaittime2 = self.spinBoxWait2.value()
+    def setWait(self, i):
+        waitSpinBox = getattr(self, f"spinBoxWait{i}").value()
+        self.det.patwaittime[i] = waitSpinBox
 
     def setAnalog(self):
         self.det.asamples = self.spinBoxAnalog.value()

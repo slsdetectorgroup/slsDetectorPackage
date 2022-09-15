@@ -1882,8 +1882,8 @@ void waitForAcquisitionEnd() {
         usleep(500);
     }
 #ifndef VIRTUAL
-    int64_t retval = getNumFramesLeft() + 2;
-    if (retval > 1) {
+    int64_t retval = getNumFramesLeft() + 1;
+    if (retval > 0) {
         LOG(logINFORED, ("%lld frames left\n", (long long int)retval));
     }
 #endif

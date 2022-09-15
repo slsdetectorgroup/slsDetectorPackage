@@ -1729,7 +1729,7 @@ void *start_timer(void *arg) {
     closeUDPSocket(0);
 
     sharedMemory_setStatus(IDLE);
-    LOG(logINFOBLUE, ("Finished Acquiring\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
     return NULL;
 }
 #endif
@@ -1855,26 +1855,16 @@ enum runStatus getRunStatus() {
 }
 
 void waitForAcquisitionEnd() {
-#ifdef VIRTUAL
-    while (sharedMemory_getStatus() == RUNNING) {
-        // LOG(logERROR, ("Waiting for finished flag\n");
-        usleep(5000);
-    }
-    return;
-#endif
-    // wait for status to be done
     while (runBusy()) {
         usleep(500);
     }
-
-    // frames left to give status
+#ifndef VIRTUAL
     int64_t retval = getNumFramesLeft() + 1;
     if (retval > -1) {
-        LOG(logERROR, ("No data and run stopped: %lld frames left\n",
-                       (long long int)retval));
-    } else {
-        LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+        LOG(logINFORED, ("%lld frames left\n", (long long int)retval));
     }
+#endif
+    LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
 u_int32_t runBusy() {

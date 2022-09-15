@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>1497</width>
-    <height>967</height>
+    <height>978</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>CTB GUI</string>
+   <string>Chip Test Board</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -56,14 +56,14 @@
           <widget class="QTabWidget" name="tabWidget">
            <property name="geometry">
             <rect>
-             <x>0</x>
+             <x>10</x>
              <y>0</y>
              <width>741</width>
-             <height>881</height>
+             <height>891</height>
             </rect>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>5</number>
            </property>
            <widget class="QWidget" name="tab">
             <attribute name="title">
@@ -171,6 +171,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -186,6 +189,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -254,6 +260,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -531,6 +540,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -560,6 +572,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -588,6 +603,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -670,6 +688,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -685,6 +706,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -728,6 +752,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -743,6 +770,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -825,6 +855,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -841,6 +874,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -856,6 +892,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -886,6 +925,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -902,8 +944,14 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="minimum">
+               <number>0</number>
               </property>
               <property name="maximum">
                <number>4096</number>
@@ -917,6 +965,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -933,6 +984,9 @@
                 <width>131</width>
                 <height>31</height>
                </rect>
+              </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1054,6 +1108,9 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (0 - 4096)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
@@ -1066,48 +1123,6 @@
                <rect>
                 <x>350</x>
                 <y>430</y>
-                <width>51</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>mV</string>
-              </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxADC">
-              <property name="geometry">
-               <rect>
-                <x>30</x>
-                <y>690</y>
-                <width>111</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>ADC Vpp</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxADC">
-              <property name="geometry">
-               <rect>
-                <x>190</x>
-                <y>690</y>
-                <width>131</width>
-                <height>31</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-              <property name="maximum">
-               <number>4096</number>
-              </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxADCmV">
-              <property name="geometry">
-               <rect>
-                <x>350</x>
-                <y>690</y>
                 <width>51</width>
                 <height>24</height>
                </rect>
@@ -1151,24 +1166,14 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only enter values between 60-200</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
               <property name="maximum">
-               <number>4096</number>
-              </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxHighVoltagemV">
-              <property name="geometry">
-               <rect>
-                <x>350</x>
-                <y>730</y>
-                <width>51</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>mV</string>
+               <number>200</number>
               </property>
              </widget>
              <widget class="QLabel" name="labelHighVoltage">
@@ -1182,6 +1187,83 @@
               </property>
               <property name="text">
                <string>0</string>
+              </property>
+             </widget>
+             <widget class="QComboBox" name="comboBoxADC">
+              <property name="geometry">
+               <rect>
+                <x>190</x>
+                <y>690</y>
+                <width>131</width>
+                <height>29</height>
+               </rect>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <item>
+               <property name="text">
+                <string>1000</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1140</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1330</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1600</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2000</string>
+               </property>
+              </item>
+             </widget>
+             <widget class="QLabel" name="label_124">
+              <property name="geometry">
+               <rect>
+                <x>370</x>
+                <y>690</y>
+                <width>64</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>mV</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_125">
+              <property name="geometry">
+               <rect>
+                <x>50</x>
+                <y>690</y>
+                <width>71</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>ADC_VPP</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_126">
+              <property name="geometry">
+               <rect>
+                <x>370</x>
+                <y>730</y>
+                <width>64</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>V</string>
               </property>
              </widget>
             </widget>
@@ -1270,19 +1352,6 @@
                <string>VIO</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxVCHIP">
-              <property name="geometry">
-               <rect>
-                <x>30</x>
-                <y>280</y>
-                <width>94</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>VCHIP</string>
-              </property>
-             </widget>
              <widget class="QSpinBox" name="spinBoxVA">
               <property name="geometry">
                <rect>
@@ -1292,8 +1361,26 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (636 - 2468)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="specialValueText">
+               <string/>
+              </property>
+              <property name="suffix">
+               <string>mV</string>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>2468</number>
+              </property>
+              <property name="value">
+               <number>0</number>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVB">
@@ -1305,8 +1392,17 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (636 - 2468)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="suffix">
+               <string>mV</string>
+              </property>
+              <property name="maximum">
+               <number>2468</number>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVC">
@@ -1318,8 +1414,17 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (636 - 2468)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="suffix">
+               <string>mV</string>
+              </property>
+              <property name="maximum">
+               <number>2468</number>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVD">
@@ -1331,8 +1436,17 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (636 - 2468)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="suffix">
+               <string>mV</string>
+              </property>
+              <property name="maximum">
+               <number>2468</number>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVIO">
@@ -1344,8 +1458,17 @@
                 <height>31</height>
                </rect>
               </property>
+              <property name="toolTip">
+               <string>Only accepts value range (1200 - 2468)</string>
+              </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="suffix">
+               <string>mV</string>
+              </property>
+              <property name="maximum">
+               <number>2468</number>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxVCHIP">
@@ -1360,83 +1483,14 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxVAmV">
-              <property name="geometry">
-               <rect>
-                <x>340</x>
-                <y>20</y>
-                <width>94</width>
-                <height>24</height>
-               </rect>
+              <property name="readOnly">
+               <bool>true</bool>
               </property>
-              <property name="text">
+              <property name="suffix">
                <string>mV</string>
               </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxVBmV">
-              <property name="geometry">
-               <rect>
-                <x>340</x>
-                <y>70</y>
-                <width>94</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>mV</string>
-              </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxVCmV">
-              <property name="geometry">
-               <rect>
-                <x>340</x>
-                <y>120</y>
-                <width>94</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>mV</string>
-              </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxVDmV">
-              <property name="geometry">
-               <rect>
-                <x>340</x>
-                <y>170</y>
-                <width>94</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>mV</string>
-              </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxVIOmV">
-              <property name="geometry">
-               <rect>
-                <x>340</x>
-                <y>220</y>
-                <width>94</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>mV</string>
-              </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxVCHIPmV">
-              <property name="geometry">
-               <rect>
-                <x>340</x>
-                <y>270</y>
-                <width>94</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>mV</string>
+              <property name="maximum">
+               <number>2468</number>
               </property>
              </widget>
              <widget class="QLabel" name="labelVA">
@@ -1515,6 +1569,19 @@
               </property>
               <property name="text">
                <string>0</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_136">
+              <property name="geometry">
+               <rect>
+                <x>50</x>
+                <y>280</y>
+                <width>64</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>VCHIP</string>
               </property>
              </widget>
             </widget>
@@ -1761,14 +1828,14 @@
                </font>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
               </property>
               <property name="icon">
                <iconset theme="update">
-                <normaloff>../</normaloff>../</iconset>
+                <normaloff>../../../../.designer</normaloff>../../../../.designer</iconset>
               </property>
               <property name="flat">
                <bool>false</bool>
@@ -1784,7 +1851,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1803,7 +1870,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1822,7 +1889,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1841,7 +1908,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1860,7 +1927,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1879,7 +1946,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1898,7 +1965,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -1917,7 +1984,7 @@
                </rect>
               </property>
               <property name="styleSheet">
-               <string notr="true">background-color: rgb(203, 203, 203);</string>
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
                <string>Update</string>
@@ -6005,7 +6072,7 @@
                <string>DB List</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxBIT048DB">
+             <widget class="QCheckBox" name="checkBoxBIT48DB">
               <property name="geometry">
                <rect>
                 <x>510</x>
@@ -7659,7 +7726,7 @@
                 <string>DBit Offset:</string>
                </property>
               </widget>
-              <widget class="QDoubleSpinBox" name="doubleSpinBoxIOControl">
+              <widget class="QLineEdit" name="lineEditBoxIOControl">
                <property name="geometry">
                 <rect>
                  <x>190</x>
@@ -7678,7 +7745,7 @@
                 <bool>true</bool>
                </property>
               </widget>
-              <widget class="QDoubleSpinBox" name="doubleSpinBoxDBit">
+              <widget class="QSpinBox" name="spinBoxDBitOffset">
                <property name="geometry">
                 <rect>
                  <x>190</x>
@@ -7716,12 +7783,12 @@
              <property name="frameShadow">
               <enum>QFrame::Sunken</enum>
              </property>
-             <widget class="QCheckBox" name="checkBoxADC0DB">
+             <widget class="QCheckBox" name="checkBoxADC0En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>10</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -7731,7 +7798,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC0Plot">
@@ -7786,12 +7853,12 @@
                <string>ADC0</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC0Out">
+             <widget class="QCheckBox" name="checkBoxADC0Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>10</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -7801,15 +7868,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC1DB">
+             <widget class="QCheckBox" name="checkBoxADC1En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>30</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -7819,7 +7886,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC1Plot">
@@ -7874,12 +7941,12 @@
                <string>ADC1</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC1Out">
+             <widget class="QCheckBox" name="checkBoxADC1Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>30</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -7889,15 +7956,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC2DB">
+             <widget class="QCheckBox" name="checkBoxADC2En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>50</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -7907,7 +7974,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC2Plot">
@@ -7962,12 +8029,12 @@
                <string>ADC2</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC2Out">
+             <widget class="QCheckBox" name="checkBoxADC2Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>50</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -7977,15 +8044,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC3DB">
+             <widget class="QCheckBox" name="checkBoxADC3En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>70</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -7995,7 +8062,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC3Plot">
@@ -8050,12 +8117,12 @@
                <string>ADC3</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC3Out">
+             <widget class="QCheckBox" name="checkBoxADC3Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>70</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8065,15 +8132,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC4DB">
+             <widget class="QCheckBox" name="checkBoxADC4En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>90</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8083,7 +8150,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC4Plot">
@@ -8138,12 +8205,12 @@
                <string>ADC4</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC4Out">
+             <widget class="QCheckBox" name="checkBoxADC4Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>90</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8153,15 +8220,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC5DB">
+             <widget class="QCheckBox" name="checkBoxADC5En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>110</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8171,7 +8238,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC5Plot">
@@ -8226,12 +8293,12 @@
                <string>ADC5</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC5Out">
+             <widget class="QCheckBox" name="checkBoxADC5Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>110</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8241,15 +8308,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC6DB">
+             <widget class="QCheckBox" name="checkBoxADC6En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>130</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8259,7 +8326,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC6Plot">
@@ -8314,12 +8381,12 @@
                <string>ADC6</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC6Out">
+             <widget class="QCheckBox" name="checkBoxADC6Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>130</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8329,15 +8396,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC7DB">
+             <widget class="QCheckBox" name="checkBoxADC7En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>150</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8347,7 +8414,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC7Plot">
@@ -8402,12 +8469,12 @@
                <string>ADC7</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC7Out">
+             <widget class="QCheckBox" name="checkBoxADC7Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>150</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8417,15 +8484,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC8DB">
+             <widget class="QCheckBox" name="checkBoxADC8En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>170</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8435,7 +8502,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC8Plot">
@@ -8490,12 +8557,12 @@
                <string>ADC8</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC8Out">
+             <widget class="QCheckBox" name="checkBoxADC8Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>170</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8505,15 +8572,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC9DB">
+             <widget class="QCheckBox" name="checkBoxADC9En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>190</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8523,7 +8590,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC9Plot">
@@ -8578,12 +8645,12 @@
                <string>ADC9</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC9Out">
+             <widget class="QCheckBox" name="checkBoxADC9Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>190</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8593,15 +8660,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC10DB">
+             <widget class="QCheckBox" name="checkBoxADC10En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>210</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8611,7 +8678,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC10Plot">
@@ -8666,12 +8733,12 @@
                <string>ADC10</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC10Out">
+             <widget class="QCheckBox" name="checkBoxADC10Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>210</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8681,15 +8748,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC11DB">
+             <widget class="QCheckBox" name="checkBoxADC11En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>230</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8699,7 +8766,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC11Plot">
@@ -8754,12 +8821,12 @@
                <string>ADC11</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC11Out">
+             <widget class="QCheckBox" name="checkBoxADC11Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>230</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8769,15 +8836,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC12DB">
+             <widget class="QCheckBox" name="checkBoxADC12En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>250</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8787,7 +8854,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC12Plot">
@@ -8842,12 +8909,12 @@
                <string>ADC12</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC12Out">
+             <widget class="QCheckBox" name="checkBoxADC12Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>250</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8857,15 +8924,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC13DB">
+             <widget class="QCheckBox" name="checkBoxADC13En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>270</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8875,7 +8942,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC13Plot">
@@ -8930,12 +8997,12 @@
                <string>ADC13</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC13Out">
+             <widget class="QCheckBox" name="checkBoxADC13Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>270</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8945,15 +9012,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC14DB">
+             <widget class="QCheckBox" name="checkBoxADC14En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>290</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -8963,7 +9030,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC14Plot">
@@ -9018,12 +9085,12 @@
                <string>ADC14</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC14Out">
+             <widget class="QCheckBox" name="checkBoxADC14Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>290</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9033,15 +9100,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC15DB">
+             <widget class="QCheckBox" name="checkBoxADC15En">
               <property name="geometry">
                <rect>
                 <x>160</x>
                 <y>310</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9051,7 +9118,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC15Plot">
@@ -9106,12 +9173,12 @@
                <string>ADC15</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC15Out">
+             <widget class="QCheckBox" name="checkBoxADC15Inv">
               <property name="geometry">
                <rect>
                 <x>80</x>
                 <y>310</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9121,15 +9188,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC16DB">
+             <widget class="QCheckBox" name="checkBoxADC16En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>10</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9139,7 +9206,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC16Plot">
@@ -9194,12 +9261,12 @@
                <string>ADC16</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC16Out">
+             <widget class="QCheckBox" name="checkBoxADC16Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>10</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9209,15 +9276,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC17DB">
+             <widget class="QCheckBox" name="checkBoxADC17En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>30</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9227,7 +9294,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC17Plot">
@@ -9282,12 +9349,12 @@
                <string>ADC17</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC17Out">
+             <widget class="QCheckBox" name="checkBoxADC17Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>30</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9297,15 +9364,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC18DB">
+             <widget class="QCheckBox" name="checkBoxADC18En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>50</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9315,7 +9382,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC18Plot">
@@ -9370,12 +9437,12 @@
                <string>ADC18</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC18Out">
+             <widget class="QCheckBox" name="checkBoxADC18Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>50</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9385,15 +9452,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC19DB">
+             <widget class="QCheckBox" name="checkBoxADC19En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>70</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9403,7 +9470,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC19Plot">
@@ -9458,12 +9525,12 @@
                <string>ADC19</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC19Out">
+             <widget class="QCheckBox" name="checkBoxADC19Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>70</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9473,15 +9540,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC20DB">
+             <widget class="QCheckBox" name="checkBoxADC20En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>90</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9491,7 +9558,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC20Plot">
@@ -9546,12 +9613,12 @@
                <string>ADC20</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC20Out">
+             <widget class="QCheckBox" name="checkBoxADC20Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>90</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9561,15 +9628,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC21DB">
+             <widget class="QCheckBox" name="checkBoxADC21En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>110</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9579,7 +9646,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC21Plot">
@@ -9634,12 +9701,12 @@
                <string>ADC21</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC21Out">
+             <widget class="QCheckBox" name="checkBoxADC21Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>110</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9649,15 +9716,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC22DB">
+             <widget class="QCheckBox" name="checkBoxADC22En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>130</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9667,7 +9734,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC22Plot">
@@ -9722,12 +9789,12 @@
                <string>ADC22</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC22Out">
+             <widget class="QCheckBox" name="checkBoxADC22Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>130</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9737,15 +9804,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC23DB">
+             <widget class="QCheckBox" name="checkBoxADC23En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>150</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9755,7 +9822,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC23Plot">
@@ -9810,12 +9877,12 @@
                <string>ADC23</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC23Out">
+             <widget class="QCheckBox" name="checkBoxADC23Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>150</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9825,15 +9892,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC24DB">
+             <widget class="QCheckBox" name="checkBoxADC24En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>170</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9843,7 +9910,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC24Plot">
@@ -9898,12 +9965,12 @@
                <string>ADC24</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC24Out">
+             <widget class="QCheckBox" name="checkBoxADC24Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>170</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9913,15 +9980,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC25DB">
+             <widget class="QCheckBox" name="checkBoxADC25En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>190</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -9931,7 +9998,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC25Plot">
@@ -9986,12 +10053,12 @@
                <string>ADC25</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC25Out">
+             <widget class="QCheckBox" name="checkBoxADC25Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>190</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10001,15 +10068,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC26DB">
+             <widget class="QCheckBox" name="checkBoxADC26En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>210</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10019,7 +10086,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC26Plot">
@@ -10074,12 +10141,12 @@
                <string>ADC26</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC26Out">
+             <widget class="QCheckBox" name="checkBoxADC26Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>210</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10089,15 +10156,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC27DB">
+             <widget class="QCheckBox" name="checkBoxADC27En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>230</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10107,7 +10174,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC27Plot">
@@ -10162,12 +10229,12 @@
                <string>ADC27</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC27Out">
+             <widget class="QCheckBox" name="checkBoxADC27Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>230</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10177,15 +10244,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC28DB">
+             <widget class="QCheckBox" name="checkBoxADC28En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>250</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10195,7 +10262,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC28Plot">
@@ -10250,12 +10317,12 @@
                <string>ADC28</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC28Out">
+             <widget class="QCheckBox" name="checkBoxADC28Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>250</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10265,15 +10332,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC29DB">
+             <widget class="QCheckBox" name="checkBoxADC29En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>270</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10283,7 +10350,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC29Plot">
@@ -10338,12 +10405,12 @@
                <string>ADC29</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC29Out">
+             <widget class="QCheckBox" name="checkBoxADC29Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>270</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10353,15 +10420,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC30DB">
+             <widget class="QCheckBox" name="checkBoxADC30En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>290</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10371,7 +10438,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC30Plot">
@@ -10426,12 +10493,12 @@
                <string>ADC30</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC30Out">
+             <widget class="QCheckBox" name="checkBoxADC30Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>290</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10441,15 +10508,15 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC31DB">
+             <widget class="QCheckBox" name="checkBoxADC31En">
               <property name="geometry">
                <rect>
                 <x>520</x>
                 <y>310</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10459,7 +10526,7 @@
                </font>
               </property>
               <property name="text">
-               <string>DB List</string>
+               <string>En</string>
               </property>
              </widget>
              <widget class="QCheckBox" name="checkBoxADC31Plot">
@@ -10514,12 +10581,12 @@
                <string>ADC31</string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxADC31Out">
+             <widget class="QCheckBox" name="checkBoxADC31Inv">
               <property name="geometry">
                <rect>
                 <x>440</x>
                 <y>310</y>
-                <width>94</width>
+                <width>71</width>
                 <height>16</height>
                </rect>
               </property>
@@ -10529,7 +10596,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Out</string>
+               <string>Inv</string>
               </property>
              </widget>
              <widget class="QPushButton" name="pushButtonAll15">
@@ -10577,7 +10644,7 @@
                <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
-               <string>None 16-23</string>
+               <string>None 16-31</string>
               </property>
              </widget>
              <widget class="QPushButton" name="pushButtonAll16">
@@ -10593,7 +10660,7 @@
                <string notr="true">background-color: rgb(199, 213, 207);</string>
               </property>
               <property name="text">
-               <string>All 16-23</string>
+               <string>All 16-31</string>
               </property>
              </widget>
              <widget class="QPushButton" name="pushButtonNone">
@@ -10682,23 +10749,7 @@
                 <string>Enable mask:</string>
                </property>
               </widget>
-              <widget class="QDoubleSpinBox" name="doubleSpinBoxEnableMask">
-               <property name="geometry">
-                <rect>
-                 <x>230</x>
-                 <y>60</y>
-                 <width>221</width>
-                 <height>31</height>
-                </rect>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">background-color: rgb(255, 255, 255);</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-              <widget class="QSpinBox" name="spinBoxInversionMask">
+              <widget class="QLineEdit" name="lineEditInversion">
                <property name="geometry">
                 <rect>
                  <x>230</x>
@@ -10713,6 +10764,28 @@
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+              <widget class="QLineEdit" name="lineEditEnable">
+               <property name="geometry">
+                <rect>
+                 <x>230</x>
+                 <y>60</y>
+                 <width>221</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
               </widget>
              </widget>
             </widget>
@@ -10721,13 +10794,13 @@
             <attribute name="title">
              <string>Pattern</string>
             </attribute>
-            <widget class="QFrame" name="frame_9">
+            <widget class="QFrame" name="frame_12">
              <property name="geometry">
               <rect>
                <x>10</x>
                <y>10</y>
                <width>711</width>
-               <height>811</height>
+               <height>71</height>
               </rect>
              </property>
              <property name="frameShape">
@@ -10740,7 +10813,7 @@
               <property name="geometry">
                <rect>
                 <x>10</x>
-                <y>20</y>
+                <y>10</y>
                 <width>131</width>
                 <height>19</height>
                </rect>
@@ -10749,24 +10822,11 @@
                <string>Number of frames:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxTriggers">
-              <property name="geometry">
-               <rect>
-                <x>210</x>
-                <y>50</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
              <widget class="QLabel" name="label_36">
               <property name="geometry">
                <rect>
                 <x>360</x>
-                <y>20</y>
+                <y>10</y>
                 <width>81</width>
                 <height>19</height>
                </rect>
@@ -10779,7 +10839,7 @@
               <property name="geometry">
                <rect>
                 <x>210</x>
-                <y>20</y>
+                <y>10</y>
                 <width>131</width>
                 <height>21</height>
                </rect>
@@ -10788,11 +10848,40 @@
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
+             <widget class="QSpinBox" name="spinBoxTriggers">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>40</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QDoubleSpinBox" name="spinBoxPeriod">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>10</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="decimals">
+               <number>4</number>
+              </property>
+              <property name="maximum">
+               <double>99999.990000000005239</double>
+              </property>
+             </widget>
              <widget class="QLabel" name="label_69">
               <property name="geometry">
                <rect>
                 <x>10</x>
-                <y>50</y>
+                <y>40</y>
                 <width>161</width>
                 <height>19</height>
                </rect>
@@ -10801,118 +10890,57 @@
                <string>Number of triggers:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxPeriod">
+             <widget class="QComboBox" name="comboBoxTime">
               <property name="geometry">
                <rect>
-                <x>560</x>
-                <y>20</y>
-                <width>131</width>
+                <x>627</x>
+                <y>40</y>
+                <width>61</width>
                 <height>21</height>
                </rect>
               </property>
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
+              <item>
+               <property name="text">
+                <string>s</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ms</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>μs</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ns</string>
+               </property>
+              </item>
              </widget>
-             <widget class="QLabel" name="label_70">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>90</y>
-                <width>211</width>
-                <height>31</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Run Clock Frequency (MHz):</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxRunF">
-              <property name="geometry">
-               <rect>
-                <x>360</x>
-                <y>90</y>
-                <width>331</width>
-                <height>31</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_71">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>130</y>
-                <width>191</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>ADC Clock Frequency (MHz):</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_72">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>160</y>
-                <width>171</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>ADC Clock Phase (a.u.):</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_73">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>190</y>
-                <width>131</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>ADC Pipeline:</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_74">
-              <property name="geometry">
-               <rect>
-                <x>360</x>
-                <y>130</y>
-                <width>191</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>DBIT Clock Frequency (MHz):</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_75">
-              <property name="geometry">
-               <rect>
-                <x>360</x>
-                <y>160</y>
-                <width>161</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>DBIT Clock Phase (a.u.):</string>
-              </property>
-             </widget>
+            </widget>
+            <widget class="QFrame" name="frame_15">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>90</y>
+               <width>711</width>
+               <height>141</height>
+              </rect>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Sunken</enum>
+             </property>
              <widget class="QLabel" name="label_76">
               <property name="geometry">
                <rect>
                 <x>360</x>
-                <y>190</y>
+                <y>110</y>
                 <width>111</width>
                 <height>19</height>
                </rect>
@@ -10925,33 +10953,7 @@
               <property name="geometry">
                <rect>
                 <x>210</x>
-                <y>130</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxADCPhase">
-              <property name="geometry">
-               <rect>
-                <x>210</x>
-                <y>160</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxADCPipeline">
-              <property name="geometry">
-               <rect>
-                <x>210</x>
-                <y>190</y>
+                <y>50</y>
                 <width>131</width>
                 <height>21</height>
                </rect>
@@ -10964,33 +10966,136 @@
               <property name="geometry">
                <rect>
                 <x>560</x>
-                <y>130</y>
+                <y>50</y>
                 <width>131</width>
                 <height>21</height>
                </rect>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>1000</number>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxADCPhase">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>80</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>159</number>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxDBITPhase">
               <property name="geometry">
                <rect>
                 <x>560</x>
-                <y>160</y>
+                <y>80</y>
                 <width>131</width>
                 <height>21</height>
                </rect>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>67</number>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_70">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>211</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Run Clock Frequency (MHz):</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_71">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>50</y>
+                <width>191</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>ADC Clock Frequency (MHz):</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_72">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>80</y>
+                <width>171</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>ADC Clock Phase (a.u.):</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxRunF">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>10</y>
+                <width>331</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="maximum">
+               <number>1000</number>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_75">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>80</y>
+                <width>161</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>DBIT Clock Phase (a.u.):</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_73">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>110</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>ADC Pipeline:</string>
               </property>
              </widget>
              <widget class="QSpinBox" name="spinBoxDBITPipeline">
               <property name="geometry">
                <rect>
                 <x>560</x>
-                <y>190</y>
+                <y>110</y>
                 <width>131</width>
                 <height>21</height>
                </rect>
@@ -10999,11 +11104,53 @@
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
+             <widget class="QLabel" name="label_74">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>50</y>
+                <width>191</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>DBIT Clock Frequency (MHz):</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxADCPipeline">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>110</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </widget>
+            <widget class="QFrame" name="frame_16">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>240</y>
+               <width>711</width>
+               <height>41</height>
+              </rect>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Sunken</enum>
+             </property>
              <widget class="QLabel" name="label_77">
               <property name="geometry">
                <rect>
                 <x>10</x>
-                <y>230</y>
+                <y>10</y>
                 <width>131</width>
                 <height>19</height>
                </rect>
@@ -11012,24 +11159,11 @@
                <string>Start Address: </string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxStopAddress">
-              <property name="geometry">
-               <rect>
-                <x>560</x>
-                <y>230</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
              <widget class="QLabel" name="label_78">
               <property name="geometry">
                <rect>
                 <x>360</x>
-                <y>230</y>
+                <y>10</y>
                 <width>111</width>
                 <height>19</height>
                </rect>
@@ -11038,245 +11172,11 @@
                <string>Stop Address:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxStartAddress">
-              <property name="geometry">
-               <rect>
-                <x>210</x>
-                <y>230</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_79">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>360</y>
-                <width>131</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Loop 3 Repetitions:</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_80">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>330</y>
-                <width>131</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Loop 2 Repetitions:</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_81">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>300</y>
-                <width>131</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Loop 1 Repetitions:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop1">
-              <property name="geometry">
-               <rect>
-                <x>150</x>
-                <y>300</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_82">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>390</y>
-                <width>131</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Loop 4 Repetitions:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop5">
-              <property name="geometry">
-               <rect>
-                <x>150</x>
-                <y>420</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_83">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>270</y>
-                <width>131</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Loop 0 Repetitions:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop0">
-              <property name="geometry">
-               <rect>
-                <x>150</x>
-                <y>270</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_84">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>420</y>
-                <width>131</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Loop 5 Repetitions:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop2">
-              <property name="geometry">
-               <rect>
-                <x>150</x>
-                <y>330</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop3">
-              <property name="geometry">
-               <rect>
-                <x>150</x>
-                <y>360</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop4">
-              <property name="geometry">
-               <rect>
-                <x>150</x>
-                <y>390</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_91">
-              <property name="geometry">
-               <rect>
-                <x>360</x>
-                <y>460</y>
-                <width>191</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Wait Address:</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_92">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>520</y>
-                <width>131</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Wait 2 (run clk):</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_93">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>490</y>
-                <width>171</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Wait 1 (run clk):</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxWait1">
-              <property name="geometry">
-               <rect>
-                <x>210</x>
-                <y>490</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_94">
-              <property name="geometry">
-               <rect>
-                <x>360</x>
-                <y>490</y>
-                <width>161</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Wait Address:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxWait2Address">
+             <widget class="QLineEdit" name="lineEditStopAddress">
               <property name="geometry">
                <rect>
                 <x>560</x>
-                <y>520</y>
+                <y>10</y>
                 <width>131</width>
                 <height>21</height>
                </rect>
@@ -11284,25 +11184,15 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
-             </widget>
-             <widget class="QLabel" name="label_95">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>460</y>
-                <width>191</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Wait 0 (run clk):</string>
+              <property name="readOnly">
+               <bool>true</bool>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxWait0">
+             <widget class="QLineEdit" name="lineEditStartAddress">
               <property name="geometry">
                <rect>
                 <x>210</x>
-                <y>460</y>
+                <y>10</y>
                 <width>131</width>
                 <height>21</height>
                </rect>
@@ -11310,324 +11200,31 @@
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
-             </widget>
-             <widget class="QLabel" name="label_96">
-              <property name="geometry">
-               <rect>
-                <x>360</x>
-                <y>520</y>
-                <width>111</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Wait Address:</string>
+              <property name="readOnly">
+               <bool>true</bool>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxWait2">
-              <property name="geometry">
-               <rect>
-                <x>210</x>
-                <y>520</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxWait0Address">
-              <property name="geometry">
-               <rect>
-                <x>560</x>
-                <y>460</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxWait1Address">
-              <property name="geometry">
-               <rect>
-                <x>560</x>
-                <y>490</y>
-                <width>131</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop0Start">
-              <property name="geometry">
-               <rect>
-                <x>380</x>
-                <y>270</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_85">
-              <property name="geometry">
-               <rect>
-                <x>250</x>
-                <y>270</y>
-                <width>111</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Start Address:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop0Stop">
-              <property name="geometry">
-               <rect>
-                <x>610</x>
-                <y>270</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_87">
-              <property name="geometry">
-               <rect>
-                <x>480</x>
-                <y>270</y>
-                <width>111</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Stop Address:</string>
-              </property>
-             </widget>
+            </widget>
+            <widget class="QFrame" name="frame_17">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>290</y>
+               <width>711</width>
+               <height>191</height>
+              </rect>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Sunken</enum>
+             </property>
              <widget class="QLabel" name="label_86">
               <property name="geometry">
                <rect>
                 <x>250</x>
-                <y>300</y>
-                <width>111</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Start Address:</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_88">
-              <property name="geometry">
-               <rect>
-                <x>480</x>
-                <y>300</y>
-                <width>111</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Stop Address:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop1Start">
-              <property name="geometry">
-               <rect>
-                <x>380</x>
-                <y>300</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop1Stop">
-              <property name="geometry">
-               <rect>
-                <x>610</x>
-                <y>300</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_89">
-              <property name="geometry">
-               <rect>
-                <x>250</x>
-                <y>330</y>
-                <width>111</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Start Address:</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_90">
-              <property name="geometry">
-               <rect>
-                <x>480</x>
-                <y>330</y>
-                <width>111</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Stop Address:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop2Start">
-              <property name="geometry">
-               <rect>
-                <x>380</x>
-                <y>330</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop2Stop">
-              <property name="geometry">
-               <rect>
-                <x>610</x>
-                <y>330</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_97">
-              <property name="geometry">
-               <rect>
-                <x>250</x>
-                <y>360</y>
-                <width>111</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Start Address:</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_98">
-              <property name="geometry">
-               <rect>
-                <x>480</x>
-                <y>360</y>
-                <width>111</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Stop Address:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop3Start">
-              <property name="geometry">
-               <rect>
-                <x>380</x>
-                <y>360</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop3Stop">
-              <property name="geometry">
-               <rect>
-                <x>610</x>
-                <y>360</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_99">
-              <property name="geometry">
-               <rect>
-                <x>250</x>
-                <y>390</y>
-                <width>111</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Start Address:</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_100">
-              <property name="geometry">
-               <rect>
-                <x>480</x>
-                <y>390</y>
-                <width>111</width>
-                <height>19</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Stop Address:</string>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop4Start">
-              <property name="geometry">
-               <rect>
-                <x>380</x>
-                <y>390</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QSpinBox" name="spinBoxLoop4Stop">
-              <property name="geometry">
-               <rect>
-                <x>610</x>
-                <y>390</y>
-                <width>81</width>
-                <height>21</height>
-               </rect>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_101">
-              <property name="geometry">
-               <rect>
-                <x>250</x>
-                <y>420</y>
+                <y>40</y>
                 <width>111</width>
                 <height>19</height>
                </rect>
@@ -11640,7 +11237,7 @@
               <property name="geometry">
                <rect>
                 <x>480</x>
-                <y>420</y>
+                <y>160</y>
                 <width>111</width>
                 <height>19</height>
                </rect>
@@ -11649,11 +11246,50 @@
                <string>Stop Address:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxLoop5Start">
+             <widget class="QLabel" name="label_79">
               <property name="geometry">
                <rect>
-                <x>380</x>
-                <y>420</y>
+                <x>10</x>
+                <y>100</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Loop 3 Repetitions:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_82">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>130</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Loop 4 Repetitions:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_88">
+              <property name="geometry">
+               <rect>
+                <x>480</x>
+                <y>40</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop3">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>100</y>
                 <width>81</width>
                 <height>21</height>
                </rect>
@@ -11662,24 +11298,653 @@
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxLoop5Stop">
+             <widget class="QLabel" name="label_81">
               <property name="geometry">
                <rect>
-                <x>610</x>
-                <y>420</y>
+                <x>10</x>
+                <y>40</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Loop 1 Repetitions:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_83">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Loop 0 Repetitions:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop0">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>10</y>
                 <width>81</width>
                 <height>21</height>
                </rect>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_87">
+              <property name="geometry">
+               <rect>
+                <x>480</x>
+                <y>10</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop4">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>130</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_80">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>70</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Loop 2 Repetitions:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_97">
+              <property name="geometry">
+               <rect>
+                <x>250</x>
+                <y>100</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_85">
+              <property name="geometry">
+               <rect>
+                <x>250</x>
+                <y>10</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_84">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>160</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Loop 5 Repetitions:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_99">
+              <property name="geometry">
+               <rect>
+                <x>250</x>
+                <y>130</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_90">
+              <property name="geometry">
+               <rect>
+                <x>480</x>
+                <y>70</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_101">
+              <property name="geometry">
+               <rect>
+                <x>250</x>
+                <y>160</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_100">
+              <property name="geometry">
+               <rect>
+                <x>480</x>
+                <y>130</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop5">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>160</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop2">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>70</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_98">
+              <property name="geometry">
+               <rect>
+                <x>480</x>
+                <y>100</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Stop Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxLoop1">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>40</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_89">
+              <property name="geometry">
+               <rect>
+                <x>250</x>
+                <y>70</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Start Address:</string>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop5Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>160</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop4Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>130</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop3Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>100</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop2Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>70</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop1Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>40</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop0Stop">
+              <property name="geometry">
+               <rect>
+                <x>610</x>
+                <y>10</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop5Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>160</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop4Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>130</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop3Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>100</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop2Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>70</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop1Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>40</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditLoop0Start">
+              <property name="geometry">
+               <rect>
+                <x>380</x>
+                <y>10</y>
+                <width>81</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </widget>
+            <widget class="QFrame" name="frame_18">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>490</y>
+               <width>711</width>
+               <height>101</height>
+              </rect>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <widget class="QLabel" name="label_94">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>40</y>
+                <width>161</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Wait Address:</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxWait2">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>70</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_91">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>10</y>
+                <width>191</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Sunken</enum>
+              </property>
+              <property name="text">
+               <string>Wait Address:</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_95">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>191</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Wait 0 (run clk):</string>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxWait0">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>10</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QSpinBox" name="spinBoxWait1">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>40</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_93">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>40</y>
+                <width>171</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Wait 1 (run clk):</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_92">
+              <property name="geometry">
+               <rect>
+                <x>10</x>
+                <y>70</y>
+                <width>131</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Wait 2 (run clk):</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_96">
+              <property name="geometry">
+               <rect>
+                <x>360</x>
+                <y>70</y>
+                <width>111</width>
+                <height>19</height>
+               </rect>
+              </property>
+              <property name="text">
+               <string>Wait Address:</string>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditWait0Address">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>10</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditWait1Address">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>40</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="lineEditWait2Address">
+              <property name="geometry">
+               <rect>
+                <x>560</x>
+                <y>70</y>
+                <width>131</width>
+                <height>21</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </widget>
+            <widget class="QFrame" name="frame_19">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>600</y>
+               <width>711</width>
+               <height>91</height>
+              </rect>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Sunken</enum>
+             </property>
+             <widget class="QPushButton" name="pushButtonPattern">
+              <property name="geometry">
+               <rect>
+                <x>490</x>
+                <y>50</y>
+                <width>201</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(199, 213, 207);</string>
+              </property>
+              <property name="text">
+               <string>Browse</string>
               </property>
              </widget>
              <widget class="QLabel" name="label_103">
               <property name="geometry">
                <rect>
                 <x>10</x>
-                <y>558</y>
+                <y>8</y>
                 <width>101</width>
                 <height>31</height>
                </rect>
@@ -11688,40 +11953,11 @@
                <string>Compiler:</string>
               </property>
              </widget>
-             <widget class="QLabel" name="label_104">
-              <property name="geometry">
-               <rect>
-                <x>10</x>
-                <y>600</y>
-                <width>91</width>
-                <height>31</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Pattern:</string>
-              </property>
-             </widget>
-             <widget class="QLineEdit" name="lineEditCompiler">
-              <property name="geometry">
-               <rect>
-                <x>210</x>
-                <y>560</y>
-                <width>231</width>
-                <height>31</height>
-               </rect>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">background-color: rgb(200, 219, 230);</string>
-              </property>
-              <property name="placeholderText">
-               <string>Compiler</string>
-              </property>
-             </widget>
              <widget class="QLineEdit" name="lineEditPattern">
               <property name="geometry">
                <rect>
                 <x>210</x>
-                <y>600</y>
+                <y>50</y>
                 <width>231</width>
                 <height>31</height>
                </rect>
@@ -11737,7 +11973,7 @@
               <property name="geometry">
                <rect>
                 <x>490</x>
-                <y>560</y>
+                <y>10</y>
                 <width>201</width>
                 <height>31</height>
                </rect>
@@ -11749,40 +11985,56 @@
                <string>Browse</string>
               </property>
              </widget>
-             <widget class="QPushButton" name="pushButtonPattern">
-              <property name="geometry">
-               <rect>
-                <x>490</x>
-                <y>600</y>
-                <width>201</width>
-                <height>31</height>
-               </rect>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">background-color: rgb(199, 213, 207);</string>
-              </property>
-              <property name="text">
-               <string>Browse</string>
-              </property>
-             </widget>
-             <widget class="QLabel" name="label_105">
+             <widget class="QLabel" name="label_104">
               <property name="geometry">
                <rect>
                 <x>10</x>
-                <y>650</y>
-                <width>201</width>
-                <height>19</height>
+                <y>50</y>
+                <width>91</width>
+                <height>31</height>
                </rect>
               </property>
               <property name="text">
-               <string>Sample per Frame -</string>
+               <string>Pattern:</string>
               </property>
              </widget>
+             <widget class="QLineEdit" name="lineEditCompiler">
+              <property name="geometry">
+               <rect>
+                <x>210</x>
+                <y>10</y>
+                <width>231</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(200, 219, 230);</string>
+              </property>
+              <property name="placeholderText">
+               <string>Compiler</string>
+              </property>
+             </widget>
+            </widget>
+            <widget class="QFrame" name="frame_20">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>700</y>
+               <width>711</width>
+               <height>111</height>
+              </rect>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Sunken</enum>
+             </property>
              <widget class="QLabel" name="label_106">
               <property name="geometry">
                <rect>
                 <x>10</x>
-                <y>680</y>
+                <y>30</y>
                 <width>81</width>
                 <height>31</height>
                </rect>
@@ -11791,12 +12043,12 @@
                <string>Analog:</string>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxAnalog">
+             <widget class="QSpinBox" name="spinBoxDigital">
               <property name="geometry">
                <rect>
-                <x>210</x>
-                <y>680</y>
-                <width>131</width>
+                <x>490</x>
+                <y>30</y>
+                <width>201</width>
                 <height>31</height>
                </rect>
               </property>
@@ -11804,24 +12056,24 @@
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
-             <widget class="QSpinBox" name="spinBoxDigital">
+             <widget class="QLabel" name="label_105">
               <property name="geometry">
                <rect>
-                <x>550</x>
-                <y>680</y>
-                <width>131</width>
-                <height>31</height>
+                <x>10</x>
+                <y>10</y>
+                <width>201</width>
+                <height>19</height>
                </rect>
               </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              <property name="text">
+               <string>Sample per Frame -</string>
               </property>
              </widget>
              <widget class="QLabel" name="label_107">
               <property name="geometry">
                <rect>
                 <x>360</x>
-                <y>680</y>
+                <y>30</y>
                 <width>81</width>
                 <height>31</height>
                </rect>
@@ -11830,61 +12082,73 @@
                <string>Digital:</string>
               </property>
              </widget>
+             <widget class="QSpinBox" name="spinBoxAnalog">
+              <property name="geometry">
+               <rect>
+                <x>150</x>
+                <y>30</y>
+                <width>191</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
              <widget class="QLabel" name="label_108">
               <property name="geometry">
                <rect>
                 <x>10</x>
-                <y>720</y>
+                <y>70</y>
                 <width>181</width>
-                <height>19</height>
+                <height>31</height>
                </rect>
               </property>
               <property name="text">
                <string>Read Out Mode: </string>
               </property>
              </widget>
-             <widget class="QCheckBox" name="checkBoxAnalog">
+             <widget class="QComboBox" name="comboBoxROMode">
               <property name="geometry">
                <rect>
-                <x>210</x>
-                <y>720</y>
-                <width>94</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Analog</string>
-              </property>
-             </widget>
-             <widget class="QCheckBox" name="checkBoxDigital">
-              <property name="geometry">
-               <rect>
-                <x>360</x>
-                <y>720</y>
-                <width>94</width>
-                <height>24</height>
-               </rect>
-              </property>
-              <property name="text">
-               <string>Digital</string>
-              </property>
-             </widget>
-             <widget class="QPushButton" name="pushButtonLoad">
-              <property name="geometry">
-               <rect>
-                <x>490</x>
-                <y>750</y>
+                <x>150</x>
+                <y>70</y>
                 <width>191</width>
-                <height>41</height>
+                <height>29</height>
                </rect>
               </property>
-              <property name="styleSheet">
-               <string notr="true">background-color: rgb(199, 213, 207);</string>
-              </property>
-              <property name="text">
-               <string>Load Pattern</string>
-              </property>
+              <item>
+               <property name="text">
+                <string>ANALOG</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>DIGITAL</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>ANALOG_AND_DIGITAL</string>
+               </property>
+              </item>
              </widget>
+            </widget>
+            <widget class="QPushButton" name="pushButtonLoad">
+             <property name="geometry">
+              <rect>
+               <x>510</x>
+               <y>820</y>
+               <width>191</width>
+               <height>31</height>
+              </rect>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(199, 213, 207);</string>
+             </property>
+             <property name="text">
+              <string>Load Pattern</string>
+             </property>
             </widget>
            </widget>
            <widget class="QWidget" name="tab_7">
@@ -12607,7 +12871,7 @@
                 <rect>
                  <x>120</x>
                  <y>10</y>
-                 <width>251</width>
+                 <width>291</width>
                  <height>31</height>
                 </rect>
                </property>
@@ -12623,7 +12887,7 @@
                 <rect>
                  <x>120</x>
                  <y>50</y>
-                 <width>251</width>
+                 <width>291</width>
                  <height>31</height>
                 </rect>
                </property>
@@ -12637,14 +12901,30 @@
               <widget class="QSpinBox" name="spinBoxIndex">
                <property name="geometry">
                 <rect>
-                 <x>220</x>
+                 <x>240</x>
                  <y>90</y>
-                 <width>151</width>
+                 <width>171</width>
                  <height>31</height>
                 </rect>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+              <widget class="QPushButton" name="pushButtonBrowse">
+               <property name="geometry">
+                <rect>
+                 <x>490</x>
+                 <y>50</y>
+                 <width>201</width>
+                 <height>31</height>
+                </rect>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(199, 213, 207);</string>
+               </property>
+               <property name="text">
+                <string>Browse</string>
                </property>
               </widget>
              </widget>
@@ -12744,7 +13024,7 @@
              <x>760</x>
              <y>10</y>
              <width>681</width>
-             <height>861</height>
+             <height>881</height>
             </rect>
            </property>
           </widget>
@@ -12816,7 +13096,7 @@
  <connections>
   <connection>
    <sender>actionExit</sender>
-   <signal>toggled(bool)</signal>
+   <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>close()</slot>
    <hints>
@@ -12831,34 +13111,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>radioButtonYes</sender>
+   <sender>checkBoxHighVoltage</sender>
    <signal>clicked(bool)</signal>
-   <receiver>frameOutput</receiver>
-   <slot>show()</slot>
+   <receiver>spinBoxHighVoltage</receiver>
+   <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>296</x>
-     <y>500</y>
+     <x>121</x>
+     <y>830</y>
     </hint>
     <hint type="destinationlabel">
-     <x>381</x>
-     <y>584</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>radioButtonNo</sender>
-   <signal>clicked(bool)</signal>
-   <receiver>frameOutput</receiver>
-   <slot>hide()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>416</x>
-     <y>500</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>381</x>
-     <y>584</y>
+     <x>286</x>
+     <y>834</y>
     </hint>
    </hints>
   </connection>

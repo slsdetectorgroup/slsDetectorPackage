@@ -187,12 +187,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonADC29.clicked.connect(self.colorADC29)
         self.pushButtonADC30.clicked.connect(self.colorADC30)
         self.pushButtonADC31.clicked.connect(self.colorADC31)
-        self.pushButtonAll15.clicked.connect(self.all15)
-        self.pushButtonNone15.clicked.connect(self.none15)
-        self.pushButtonAll16.clicked.connect(self.all16)
-        self.pushButtonNone16.clicked.connect(self.none16)
-        self.pushButtonAll.clicked.connect(self.all)
-        self.pushButtonNone.clicked.connect(self.none)
+        self.pushButtonAll15.clicked.connect(self.all_0_15)
+        self.pushButtonNone15.clicked.connect(self.none_0_15)
+        self.pushButtonAll16.clicked.connect(self.all_16_32)
+        self.pushButtonNone16.clicked.connect(self.none_16_32)
+        self.pushButtonAll.clicked.connect(self.enable_mask_all)
+        self.pushButtonNone.clicked.connect(self.enable_mask_none)
 
         # For Pattern Tab
         # TODO Only add the components of Pattern tab
@@ -655,44 +655,84 @@ class MainWindow(QtWidgets.QMainWindow):
     def colorADC31(self):
         self.showPalette(self.pushButtonADC31)
 
-    def all15(self):
-        print("all 0-15")
+    def enableMask_Enable(self, i):
+        enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
+        if self.det.tengiga:
+            enableMask = set_bit(self.det.adcenable10g, i)
+            self.det.adcenable10g = enableMask
+            self.lineEditEnable.setText(hex(self.det.adcenable10g))
+        else:
+            enableMask = set_bit(self.det.adcenable, i)
+            self.det.adcenable = enableMask
+            self.lineEditEnable.setText(hex(self.det.adcenable))
+        enableMaskCheckBox.setChecked(True)
+    
+    def enableMask_Disable(self, i):
+        enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
+        if self.det.tengiga:
+            enableMask = remove_bit(self.det.adcenable10g, i)
+            self.det.adcenable10g = enableMask
+            self.lineEditEnable.setText(hex(self.det.adcenable10g))
+        else:
+            enableMask = remove_bit(self.det.adcenable, i)
+            self.det.adcenable = enableMask
+            self.lineEditEnable.setText(hex(self.det.adcenable))
+        enableMaskCheckBox.setChecked(False)
 
-    def none15(self):
-        print("none 0-15")
+    def all_0_15(self):
+        for i in range(0,16):
+            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
+            if enableMaskCheckBox.isChecked():
+                pass
+            else:
+                self.enableMask_Enable(i)
 
-    def all16(self):
-        print("all 16-31")
+    def none_0_15(self):
+        for i in range(1,16):
+            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
+            if enableMaskCheckBox.isChecked():
+                self.enableMask_Disable(i)
+            else:
+                pass
 
-    def none16(self):
-        print("None 16-13")
+    def all_16_32(self):
+        for i in range(16,32):
+            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
+            if enableMaskCheckBox.isChecked():
+                pass
+            else:
+                self.enableMask_Enable(i)
 
-    def all(self):
-        print("all ")
+    def none_16_32(self):
+        for i in range(16, 32):
+            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
+            if enableMaskCheckBox.isChecked():
+                self.enableMask_Disable(i)
+            else:
+                pass
 
-    def none(self):
-        print("None")
+    def enable_mask_all(self):
+        for i in range(0,32):
+            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
+            if enableMaskCheckBox.isChecked():
+                pass
+            else:
+                self.enableMask_Enable(i)
+
+    def enable_mask_none(self):
+        for i in range(1, 32):
+            enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
+            if enableMaskCheckBox.isChecked():
+                self.enableMask_Disable(i)
+            else:
+                pass
 
     def ADCEnable(self, i):
         enableMaskCheckBox = getattr(self, f"checkBoxADC{i}En")
         if enableMaskCheckBox.isChecked():
-            if self.det.tengiga:
-                enableMask = set_bit(self.det.adcenable10g, i)
-                self.det.adcenable10g = enableMask
-                self.lineEditEnable.setText(hex(self.det.adcenable10g))
-            else:
-                enableMask = set_bit(self.det.adcenable, i)
-                self.det.adcenable = enableMask
-                self.lineEditEnable.setText(hex(self.det.adcenable))
+            self.enableMask_Enable(i)
         else:
-            if self.det.tengiga:
-                enableMask = remove_bit(self.det.adcenable10g, i)
-                self.det.adcenable10g = enableMask
-                self.lineEditEnable.setText(hex(self.det.adcenable10g))
-            else:
-                enableMask = remove_bit(self.det.adcenable, i)
-                self.det.adcenable = enableMask
-                self.lineEditEnable.setText(hex(self.det.adcenable))
+            self.enableMask_Disable(i)
 
     def ADCInvert(self, i):
         invertCheckBox = getattr(self, f"checkBoxADC{i}Inv")

@@ -3,6 +3,7 @@
 #pragma once
 #include "SlsQt2DHist.h"
 #include "SlsQt2DZoomer.h"
+#include <array>
 #include <qlist.h>
 #include <qwt_plot.h>
 #include <qwt_plot_shapeitem.h>

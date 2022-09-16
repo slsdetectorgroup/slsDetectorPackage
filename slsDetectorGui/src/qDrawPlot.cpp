@@ -1082,6 +1082,11 @@ void qDrawPlot::Update2dPlot() {
         xyRangeChanged = false;
     }
     plot2d->DisableZoom(disableZoom);
+    /*if (gainplot2d->isVisible()) {
+        //gainplot2d->DisableZoom(disableZoom);
+        gainplot2d->SetZoom(plot2d->GetZoom());
+    }*/
+
     plot2d->SetZRange(isZRange[0], isZRange[1], zRange[0], zRange[1]);
     if (!isRxRoiDisplayed) {
         isRxRoiDisplayed = true;
@@ -1125,26 +1130,38 @@ void qDrawPlot::Update1dXYRange() {
 }
 
 void qDrawPlot::Update2dXYRange() {
+    double xmin = 0, xmax = 0, ymin = 0, ymax = 0;
     if (!isXYRange[qDefs::XMIN] && !isXYRange[qDefs::XMAX]) {
         plot2d->EnableXAutoScaling();
+        xmin = plot2d->GetXMinimum();
+        xmax = plot2d->GetXMaximum();
     } else {
-        double xmin = (isXYRange[qDefs::XMIN] ? xyRange[qDefs::XMIN]
+        xmin = (isXYRange[qDefs::XMIN] ? xyRange[qDefs::XMIN]
                                               : plot2d->GetXMinimum());
-        double xmax = (isXYRange[qDefs::XMAX] ? xyRange[qDefs::XMAX]
+        xmax = (isXYRange[qDefs::XMAX] ? xyRange[qDefs::XMAX]
                                               : plot2d->GetXMaximum());
         plot2d->SetXMinMax(xmin, xmax);
     }
 
     if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
         plot2d->EnableYAutoScaling();
+        ymin = plot2d->GetYMinimum();
+        ymax = plot2d->GetYMaximum();
     } else {
-        double ymin = (isXYRange[qDefs::YMIN] ? xyRange[qDefs::YMIN]
+        ymin = (isXYRange[qDefs::YMIN] ? xyRange[qDefs::YMIN]
                                               : plot2d->GetYMinimum());
-        double ymax = (isXYRange[qDefs::YMAX] ? xyRange[qDefs::YMAX]
+        ymax = (isXYRange[qDefs::YMAX] ? xyRange[qDefs::YMAX]
                                               : plot2d->GetYMaximum());
         plot2d->SetYMinMax(ymin, ymax);
     }
     plot2d->Update();
+    if (gainplot2d->isVisible()) {
+        gainplot2d->SetXMinMax(xmin, xmax);
+        gainplot2d->SetYMinMax(ymin, ymax);
+        gainplot2d->Update();
+        gainplot2d->SetZoom(xmin, ymin, xmax - xmin, ymax - ymin);
+        gainplot2d->replot();
+    }    
 }
 
 void qDrawPlot::toDoublePixelData(double *dest, char *source, int size,

@@ -2937,7 +2937,7 @@ void waitForAcquisitionEnd(int *ret, char *mess) {
             printf("Transmitting...\n");
         }
     }
-    LOG(logINFO, ("Transmitting done\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
 #endif
     LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }

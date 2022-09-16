@@ -52,7 +52,6 @@ int start_acquisition(int);
 int stop_acquisition(int);
 int get_run_status(int);
 int start_and_read_all(int);
-int read_all(int);
 int get_num_frames(int);
 int set_num_frames(int);
 int get_num_triggers(int);

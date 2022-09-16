@@ -2010,15 +2010,30 @@ void *start_state_machine(void *arg) {
             }
             break;
         }
+
+        
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+        readFrames(&ret, mess);
+        if (ret == FAIL && scan) {
+            sprintf(scanErrMessage, "Cannot scan at %d. ", scanSteps[i]);
+            strcat(scanErrMessage, mess);
+            sharedMemory_setScanStatus(ERROR);
+            break;
+        }        
+#endif
         // blocking or scan
         if (*blocking || times > 1) {
-            readFrame(&ret, mess);
+#ifdef EIGERD
+            waitForAcquisitionEnd(&ret, mess);
             if (ret == FAIL && scan) {
                 sprintf(scanErrMessage, "Cannot scan at %d. ", scanSteps[i]);
                 strcat(scanErrMessage, mess);
                 sharedMemory_setScanStatus(ERROR);
                 break;
             }
+#else
+            waitForAcquisitionEnd();
+#endif
         }
     }
     // end of scan
@@ -2060,18 +2075,6 @@ int get_run_status(int file_des) {
 }
 
 int start_and_read_all(int file_des) { return acquire(1, file_des); }
-
-int read_all(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-
-    LOG(logDEBUG1, ("Reading all frames\n"));
-    // only set
-    if (Server_VerifyLock() == OK) {
-        readFrame(&ret, mess);
-    }
-    return Server_SendResult(file_des, INT32, NULL, 0);
-}
 
 int get_num_frames(int file_des) {
     ret = OK;

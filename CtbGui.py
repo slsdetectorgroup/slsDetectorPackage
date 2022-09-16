@@ -884,11 +884,12 @@ class MainWindow(QtWidgets.QMainWindow):
         print("plot options")
 
     def acquire(self):
-        # self.det.acquire()
-        self.spinBoxMeasurements.stepUp()
-        if self.radioButtonYes.isChecked():
-            self.spinBoxIndex.stepUp()
-            print("random")
+        measurement_Number = self.spinBoxMeasurements.value()
+        for i in range(measurement_Number):
+            self.det.acquire()
+            if self.radioButtonYes.isChecked():
+                self.spinBoxIndex.stepUp()
+                print("random")
 
     def plotReferesh(self):
         print("plot options")

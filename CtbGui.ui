@@ -12745,6 +12745,48 @@
                  <string>Referesh</string>
                 </property>
                </widget>
+               <zorder>label_109</zorder>
+               <zorder>label_110</zorder>
+               <zorder>radioButtonNoPlot</zorder>
+               <zorder>radioButtonWaveform</zorder>
+               <zorder>radioButtonDistribution</zorder>
+               <zorder>radioButtonImage</zorder>
+               <zorder>comboBoxPlot</zorder>
+               <zorder>label_111</zorder>
+               <zorder>spinBoxSerialOffset</zorder>
+               <zorder>spinBoxNCount</zorder>
+               <zorder>label_112</zorder>
+               <zorder>spinBoxDynamicRange</zorder>
+               <zorder>label_113</zorder>
+               <zorder>label_114</zorder>
+               <zorder>label_115</zorder>
+               <zorder>spinBoxImageX</zorder>
+               <zorder>spinBoxImageY</zorder>
+               <zorder>label_116</zorder>
+               <zorder>label_117</zorder>
+               <zorder>checkBoxAcquire</zorder>
+               <zorder>checkBoxSubtract</zorder>
+               <zorder>checkBoxCommonMode</zorder>
+               <zorder>pushButtonReset</zorder>
+               <zorder>checkBoxRaw</zorder>
+               <zorder>checkBoxPedestal</zorder>
+               <zorder>label_118</zorder>
+               <zorder>label_119</zorder>
+               <zorder>spinBoxRawMin</zorder>
+               <zorder>spinBoxPedestalMin</zorder>
+               <zorder>label_120</zorder>
+               <zorder>spinBoxPedestalMax</zorder>
+               <zorder>spinBoxRawMax</zorder>
+               <zorder>label_121</zorder>
+               <zorder>spinBoxFit</zorder>
+               <zorder>spinBoxPlot</zorder>
+               <zorder>label_122</zorder>
+               <zorder>label_123</zorder>
+               <zorder>labelX</zorder>
+               <zorder>labelY</zorder>
+               <zorder>labelValues</zorder>
+               <zorder>pushButtonReferesh</zorder>
+               <zorder>plotWidget</zorder>
               </widget>
               <widget class="QFrame" name="frame_11">
                <property name="geometry">

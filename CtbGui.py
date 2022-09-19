@@ -5,7 +5,6 @@ import pyqtgraph as pg
 from pyqtgraph import PlotWidget
 
 from functools import partial
-
 from slsdet import Detector, dacIndex, readoutMode
 from bit_utils import set_bit, remove_bit, bit_is_set
 
@@ -249,7 +248,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEditFileName.editingFinished.connect(self.setFileName)
         self.lineEditFilePath.editingFinished.connect(self.setFilePath)
         self.spinBoxIndex.editingFinished.connect(self.setIndex)
-        self.spinBoxMeasurements.editingFinished.connect(self.setMeasurements)
         self.pushButtonStart.clicked.connect(self.acquire)
         self.pushButtonReferesh.clicked.connect(self.plotReferesh)
         self.pushButtonBrowse.clicked.connect(self.browseFile)
@@ -880,16 +878,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def setIndex(self):
         print("plot options")
 
-    def setMeasurements(self):
-        print("plot options")
-
     def acquire(self):
         measurement_Number = self.spinBoxMeasurements.value()
         for i in range(measurement_Number):
             self.det.acquire()
             if self.radioButtonYes.isChecked():
                 self.spinBoxIndex.stepUp()
-                print("random")
 
     def plotReferesh(self):
         print("plot options")
@@ -1081,7 +1075,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # TODO yet to decide on hex or int
         self.lineEditStartAddress.setText(hex((self.det.patlimits)[0]))
         self.lineEditStopAddress.setText(hex((self.det.patlimits)[1]))
-        #For Wait time and Wait address
+        # For Wait time and Wait address
         for i in range(3):
             lineEditWait = getattr(self, f"lineEditWait{i}Address")
             spinBoxWait = getattr(self, f"spinBoxWait{i}")
@@ -1089,15 +1083,16 @@ class MainWindow(QtWidgets.QMainWindow):
             spinBoxWait.setValue(self.det.patwaittime[i])
 
         for i in range(6):
-            #For Loop repetitions
+            # For Loop repetitions
             spinBoxLoop = getattr(self, f"spinBoxLoop{i}")
             spinBoxLoop.setValue(self.det.patnloop[i])
-            #For Loop start address
+            # For Loop start address
             lineEditLoopStart = getattr(self, f"lineEditLoop{i}Start")
             lineEditLoopStart.setText(hex((self.det.patloop[i])[0]))
-            #For loop stop address
+            # For loop stop address
             lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
             lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

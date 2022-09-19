@@ -153,10 +153,6 @@ void SlsQt2DPlot::UnZoom(bool replot) {
                                  // zoomer->zoom(0);
 }
 
-QRectF SlsQt2DPlot::GetZoom() {
-    return zoomer->zoomBase();
-}
-
 void SlsQt2DPlot::SetZoom(QRectF rect) {
     zoomer->setZoomBase(rect);
     replot();

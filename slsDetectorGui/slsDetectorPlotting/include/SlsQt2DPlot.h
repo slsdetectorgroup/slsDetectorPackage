@@ -31,8 +31,6 @@ class SlsQt2DPlot : public QwtPlot {
     void SetZFont(const QFont &f);
 
     void UnZoom(bool replot = true);
-    QRectF GetZoom();
-    void SetZoom(QRectF rect);
     void SetZoom(double xmin, double ymin, double x_width, double y_width);
     void DisableZoom(bool disable);
     void EnableXAutoScaling() { setAxisAutoScale(QwtPlot::xBottom, true); };
@@ -78,6 +76,7 @@ class SlsQt2DPlot : public QwtPlot {
 
   public slots:
     void showSpectrogram(bool on);
+    void SetZoom(QRectF rect);
 
   private:
     void SetupZoom();

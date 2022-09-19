@@ -228,6 +228,9 @@ void qDrawPlot::SetupPlots() {
     gainplot2d->setAxisScaleDiv(QwtPlot::yRight, div);
     gainplot2d->hide();
 
+    connect(plot2d, SIGNAL(zoomed(const QRectF &rect)), gainplot2d,
+            SLOT(SetZoom(rect)));
+
     // layout of plots
     int ratio = qDefs::DATA_GAIN_PLOT_RATIO - 1;
     plotLayout->addWidget(plot1d, 0, 0, ratio, ratio);
@@ -254,9 +257,9 @@ void qDrawPlot::resizeEvent(QResizeEvent *event) {
 
 bool qDrawPlot::GetIsRunning() { return isRunning; }
 
-void qDrawPlot::SetRunning(bool enable) { 
+void qDrawPlot::SetRunning(bool enable) {
     std::lock_guard<std::mutex> lock(mPlots);
-    isRunning = enable; 
+    isRunning = enable;
 }
 
 double qDrawPlot::GetProgress() { return progress; }
@@ -1072,6 +1075,7 @@ void qDrawPlot::Update2dPlot() {
                                       qDefs::DATA_GAIN_PLOT_RATIO);
             gainplot2d->setFixedHeight(plot2d->height() /
                                        qDefs::DATA_GAIN_PLOT_RATIO);
+            gainplot1d->DisableZoom(true);
             gainplot2d->show();
         }
     } else if (gainplot2d->isVisible()) {
@@ -1082,11 +1086,6 @@ void qDrawPlot::Update2dPlot() {
         xyRangeChanged = false;
     }
     plot2d->DisableZoom(disableZoom);
-    /*if (gainplot2d->isVisible()) {
-        //gainplot2d->DisableZoom(disableZoom);
-        gainplot2d->SetZoom(plot2d->GetZoom());
-    }*/
-
     plot2d->SetZRange(isZRange[0], isZRange[1], zRange[0], zRange[1]);
     if (!isRxRoiDisplayed) {
         isRxRoiDisplayed = true;
@@ -1130,38 +1129,29 @@ void qDrawPlot::Update1dXYRange() {
 }
 
 void qDrawPlot::Update2dXYRange() {
-    double xmin = 0, xmax = 0, ymin = 0, ymax = 0;
     if (!isXYRange[qDefs::XMIN] && !isXYRange[qDefs::XMAX]) {
         plot2d->EnableXAutoScaling();
-        xmin = plot2d->GetXMinimum();
-        xmax = plot2d->GetXMaximum();
     } else {
-        xmin = (isXYRange[qDefs::XMIN] ? xyRange[qDefs::XMIN]
+        double xmin = (isXYRange[qDefs::XMIN] ? xyRange[qDefs::XMIN]
                                               : plot2d->GetXMinimum());
-        xmax = (isXYRange[qDefs::XMAX] ? xyRange[qDefs::XMAX]
+        double xmax = (isXYRange[qDefs::XMAX] ? xyRange[qDefs::XMAX]
                                               : plot2d->GetXMaximum());
         plot2d->SetXMinMax(xmin, xmax);
+        gainplot2d->SetXMinMax(xmin, xmax);
     }
 
     if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
         plot2d->EnableYAutoScaling();
-        ymin = plot2d->GetYMinimum();
-        ymax = plot2d->GetYMaximum();
     } else {
-        ymin = (isXYRange[qDefs::YMIN] ? xyRange[qDefs::YMIN]
+        double ymin = (isXYRange[qDefs::YMIN] ? xyRange[qDefs::YMIN]
                                               : plot2d->GetYMinimum());
-        ymax = (isXYRange[qDefs::YMAX] ? xyRange[qDefs::YMAX]
+        double ymax = (isXYRange[qDefs::YMAX] ? xyRange[qDefs::YMAX]
                                               : plot2d->GetYMaximum());
         plot2d->SetYMinMax(ymin, ymax);
+        gainplot2d->SetYMinMax(ymin, ymax);
     }
     plot2d->Update();
-    if (gainplot2d->isVisible()) {
-        gainplot2d->SetXMinMax(xmin, xmax);
-        gainplot2d->SetYMinMax(ymin, ymax);
-        gainplot2d->Update();
-        gainplot2d->SetZoom(xmin, ymin, xmax - xmin, ymax - ymin);
-        gainplot2d->replot();
-    }    
+    gainplot2d->Update();
 }
 
 void qDrawPlot::toDoublePixelData(double *dest, char *source, int size,

@@ -228,8 +228,8 @@ void qDrawPlot::SetupPlots() {
     gainplot2d->setAxisScaleDiv(QwtPlot::yRight, div);
     gainplot2d->hide();
 
-    connect(plot2d, SIGNAL(zoomed(const QRectF &rect)), gainplot2d,
-            SLOT(SetZoom(rect)));
+    connect(plot2d, SIGNAL(PlotZoomedSignal(const QRectF &)), gainplot2d,
+            SLOT(SetZoom(const QRectF &)));
 
     // layout of plots
     int ratio = qDefs::DATA_GAIN_PLOT_RATIO - 1;
@@ -1131,6 +1131,7 @@ void qDrawPlot::Update1dXYRange() {
 void qDrawPlot::Update2dXYRange() {
     if (!isXYRange[qDefs::XMIN] && !isXYRange[qDefs::XMAX]) {
         plot2d->EnableXAutoScaling();
+        gainplot2d->EnableXAutoScaling();
     } else {
         double xmin = (isXYRange[qDefs::XMIN] ? xyRange[qDefs::XMIN]
                                               : plot2d->GetXMinimum());
@@ -1142,6 +1143,7 @@ void qDrawPlot::Update2dXYRange() {
 
     if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
         plot2d->EnableYAutoScaling();
+        gainplot2d->EnableYAutoScaling();
     } else {
         double ymin = (isXYRange[qDefs::YMIN] ? xyRange[qDefs::YMIN]
                                               : plot2d->GetYMinimum());

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "SlsQt2DPlot.h"
-// #include "sls/ansi.h"
+#include "sls/logger.h"
 
 #include <qlist.h>
 #include <qprinter.h>
@@ -141,6 +141,9 @@ void SlsQt2DPlot::SetupZoom() {
     const QColor c(Qt::darkBlue);
     zoomer->setRubberBandPen(c);
     zoomer->setTrackerPen(c);
+
+    connect(zoomer, SIGNAL(zoomed(const QRectF &)), this,
+            SIGNAL(PlotZoomedSignal(const QRectF &)));
 }
 
 void SlsQt2DPlot::UnZoom(bool replot) {
@@ -153,8 +156,11 @@ void SlsQt2DPlot::UnZoom(bool replot) {
                                  // zoomer->zoom(0);
 }
 
-void SlsQt2DPlot::SetZoom(QRectF rect) {
-    zoomer->setZoomBase(rect);
+void SlsQt2DPlot::SetZoom(const QRectF &rect) {
+    double xmin = 0, xmax = 0, ymin = 0, ymax = 0;
+    rect.getCoords(&xmin, &ymin, &xmax, &ymax);
+    SetXMinMax(xmin, xmax);
+    SetYMinMax(ymin, ymax);
     replot();
 }
 

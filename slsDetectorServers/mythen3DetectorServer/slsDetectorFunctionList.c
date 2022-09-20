@@ -1647,6 +1647,14 @@ int getDAC(enum DACINDEX ind, int mV) {
 
 int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
 
+int getADC(enum ADCINDEX ind, int *value) {
+    if (readADCFromFile(TEMPERATURE_FILE_NAME, value) == FAIL) {
+        LOG(logERROR, ("Could not get temperature\n"));
+        return FAIL;
+    }
+    return OK;
+}
+
 int setHighVoltage(int val) {
     // limit values
     if (val > HV_SOFT_MAX_VOLTAGE) {

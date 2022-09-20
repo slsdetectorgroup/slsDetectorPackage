@@ -701,3 +701,39 @@ int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
     }
     return OK;
 }
+
+int readADCFromFile(char *fname, int *value) {
+#ifdef VIRTUAL
+    // *value = 0;
+    // return OK
+#endif
+    // open file
+    FILE *fd = fopen(fname, "r");
+    if (fd == NULL) {
+        LOG(logERROR, ("Could not open file for reading [%s]\n", fname));
+        return FAIL;
+    }
+
+    // read, assigning line to null and readbytes to 0 then getline
+    // allocates initial buffer
+    size_t readbytes = 0;
+    char *line = NULL;
+    if (getline(&line, &readbytes, fd) == -1) {
+        LOG(logERROR, ("Could not read file [%s]\n", fname));
+        return FAIL;
+    }
+    // read again to read the updated value
+    rewind(fd);
+    free(line);
+    readbytes = 0;
+    readbytes = getline(&line, &readbytes, fd);
+    if (readbytes == -1) {
+        LOG(logERROR, ("could not read file [%s]\n", fname));
+        return FAIL;
+    }
+    // Remove the trailing 0
+    *value = atoi(line) / 10;
+    free(line);
+    fclose(fd);
+    return OK;
+}

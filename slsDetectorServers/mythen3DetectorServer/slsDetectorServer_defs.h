@@ -24,6 +24,7 @@
 #define HV_DRIVER_FILE_NAME         ("/etc/devlinks/hvdac")
 #define DAC_DRIVER_FILE_NAME        ("/etc/devlinks/dac")
 #define TYPE_FILE_NAME              ("/etc/devlinks/type")
+#define TEMPERATURE_FILE_NAME       ("/sys/class/hwmon/hwmon0/temp1_input")
 #define DAC_MAX_MV                  (2048)
 #define TYPE_MYTHEN3_MODULE_VAL     (93)
 #define TYPE_TOLERANCE              (5)
@@ -116,6 +117,8 @@ enum DACINDEX {
         2800, /* vTrim */                                                      \
         800   /* VdcSh */                                                      \
     };
+
+enum ADCINDEX { TEMP_FPGA };
 
 #define NUMSETTINGS     (3)
 #define NSPECIALDACS    (2)

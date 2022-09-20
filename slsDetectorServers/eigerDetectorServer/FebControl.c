@@ -395,35 +395,11 @@ int Feb_Control_ReceiveHighVoltage(unsigned int *value) {
 
     // normal
     if (Feb_Control_normal) {
-        // open file
-        FILE *fd = fopen(NORMAL_HIGHVOLTAGE_INPUTPORT, "r");
-        if (fd == NULL) {
-            LOG(logERROR,
-                ("Could not open file for writing to get high voltage\n"));
-            return 0;
-        }
 
-        // read, assigning line to null and readbytes to 0 then getline
-        // allocates initial buffer
-        size_t readbytes = 0;
-        char *line = NULL;
-        if (getline(&line, &readbytes, fd) == -1) {
-            LOG(logERROR, ("could not read file to get high voltage\n"));
+        if (readADCFromFile(NORMAL_HIGHVOLTAGE_INPUTPORT, value) == FAIL) {
+            LOG(logERROR, ("Could not get high voltage\n"));
             return 0;
         }
-        // read again to read the updated value
-        rewind(fd);
-        free(line);
-        readbytes = 0;
-        readbytes = getline(&line, &readbytes, fd);
-        if (readbytes == -1) {
-            LOG(logERROR, ("could not read file to get high voltage\n"));
-            return 0;
-        }
-        // Remove the trailing 0
-        *value = atoi(line) / 10;
-        free(line);
-        fclose(fd);
     }
 
     // 9m

@@ -24,6 +24,7 @@
 #define DAC_DRIVER_FILE_NAME                  ("/etc/devlinks/dac")
 #define ONCHIP_DAC_DRIVER_FILE_NAME           ("/etc/devlinks/chipdac")
 #define TYPE_FILE_NAME                        ("/etc/devlinks/type")
+#define TEMPERATURE_FILE_NAME                 ("/sys/class/hwmon/hwmon0/temp1_input")
 #define CONFIG_FILE                           ("config_gotthard2.txt")
 #define DAC_MAX_MV                            (2048)
 #define ONCHIP_DAC_MAX_VAL                    (0x3FF)
@@ -153,6 +154,8 @@ enum CLKINDEX {
 #define CLK_NAMES                                                              \
     "READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2",         \
         "SYSTEM_C3"
+
+enum ADCINDEX { TEMP_FPGA };
 
 enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
 

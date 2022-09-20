@@ -252,8 +252,6 @@ void qDrawPlot::Zoom1DGainPlot(const QRectF &rect) {
 
 void qDrawPlot::Zoom2DGainPlot(const QRectF &rect) {
     std::lock_guard<std::mutex> lock(mPlots);
-    double xmin = 0, xmax = 0, ymin = 0, ymax = 0;
-    rect.getCoords(&xmin, &ymin, &xmax, &ymax);
     gainplot2d->SetZoom(rect);
 }
 

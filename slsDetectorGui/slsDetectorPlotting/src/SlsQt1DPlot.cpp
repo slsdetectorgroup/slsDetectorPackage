@@ -464,6 +464,14 @@ void SlsQt1DPlot::DisableRoiBox() {
     }
 }
 
+void SlsQt1DPlot::SetZoom(const QRectF &rect) {
+    double xmin = 0, xmax = 0, ymin = 0, ymax = 0;
+    rect.getCoords(&xmin, &ymin, &xmax, &ymax);
+    SetXMinMax(xmin, xmax);
+    SetYMinMax(ymin, ymax);
+    replot();
+}
+
 void SlsQt1DPlot::UnZoom() {
     setAxisScale(QwtPlot::xBottom, zoomer->x(), zoomer->x() + zoomer->w());
     setAxisScale(QwtPlot::yLeft, zoomer->y(), zoomer->y() + zoomer->h());
@@ -540,6 +548,9 @@ void SlsQt1DPlot::SetupZoom() {
     const QColor c(Qt::darkBlue);
     zoomer->setRubberBandPen(c);
     zoomer->setTrackerPen(c);
+
+    connect(zoomer, SIGNAL(zoomed(const QRectF &)), this,
+            SIGNAL(PlotZoomedSignal(const QRectF &)));
 }
 
 //  Set a plain canvas frame and align the scales to it

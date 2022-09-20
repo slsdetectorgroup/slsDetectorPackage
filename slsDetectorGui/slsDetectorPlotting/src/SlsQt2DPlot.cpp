@@ -159,6 +159,8 @@ void SlsQt2DPlot::UnZoom(bool replot) {
 void SlsQt2DPlot::SetZoom(const QRectF &rect) {
     double xmin = 0, xmax = 0, ymin = 0, ymax = 0;
     rect.getCoords(&xmin, &ymin, &xmax, &ymax);
+    LOG(logDEBUG1) << "Plot zooming in to " << xmin << " " << xmax << " "
+                   << ymin << " " << ymax;
     SetXMinMax(xmin, xmax);
     SetYMinMax(ymin, ymax);
     replot();

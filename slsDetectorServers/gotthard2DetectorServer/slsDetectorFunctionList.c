@@ -1507,6 +1507,7 @@ int getDAC(enum DACINDEX ind, int mV) {
 int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
 
 int getADC(enum ADCINDEX ind, int *value) {
+    LOG(logDEBUG1, ("Reading FPGA temperature...\n"));
     if (readADCFromFile(TEMPERATURE_FILE_NAME, value) == FAIL) {
         LOG(logERROR, ("Could not get temperature\n"));
         return FAIL;

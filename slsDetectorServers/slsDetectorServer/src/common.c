@@ -703,10 +703,7 @@ int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
 }
 
 int readADCFromFile(char *fname, int *value) {
-#ifdef VIRTUAL
-    // *value = 0;
-    // return OK
-#endif
+    LOG(logDEBUG1, ("fname:%s\n", fname));
     // open file
     FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
@@ -714,26 +711,24 @@ int readADCFromFile(char *fname, int *value) {
         return FAIL;
     }
 
-    // read, assigning line to null and readbytes to 0 then getline
-    // allocates initial buffer
-    size_t readbytes = 0;
-    char *line = NULL;
-    if (getline(&line, &readbytes, fd) == -1) {
-        LOG(logERROR, ("Could not read file [%s]\n", fname));
+    const size_t LZ = 256;
+    char line[LZ];
+    memset(line, 0, LZ);
+
+    if (NULL == fgets(line, LZ, fd)) {
+        LOG(logERROR, ("Could not read from file %s\n", fname));
+        *value = -1;
         return FAIL;
     }
-    // read again to read the updated value
-    rewind(fd);
-    free(line);
-    readbytes = 0;
-    readbytes = getline(&line, &readbytes, fd);
-    if (readbytes == -1) {
-        LOG(logERROR, ("could not read file [%s]\n", fname));
+
+    *value = -1;
+    if (sscanf(line, "%d", value) != 1) {
+        LOG(logERROR, ("Could not scan temperature from %s\n", line));
         return FAIL;
     }
-    // Remove the trailing 0
-    *value = atoi(line) / 10;
-    free(line);
+
+    LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*value) / 1000.00));
+
     fclose(fd);
     return OK;
 }

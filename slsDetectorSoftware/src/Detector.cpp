@@ -634,6 +634,8 @@ Result<int> Detector::getTemperature(defs::dacIndex index,
     switch (getDetectorType().squash()) {
     case defs::EIGER:
     case defs::JUNGFRAU:
+    case defs::MYTHEN3:
+    case defs::GOTTHARD2:
         for (auto &it : res) {
             it /= 1000;
         }

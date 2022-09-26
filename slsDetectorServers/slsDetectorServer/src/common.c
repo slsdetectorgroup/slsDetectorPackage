@@ -727,7 +727,11 @@ int readADCFromFile(char *fname, int *value) {
         return FAIL;
     }
 
+#ifdef EIGERD
+    *value /= 10;
+#else
     LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*value) / 1000.00));
+#endif
 
     fclose(fd);
     return OK;

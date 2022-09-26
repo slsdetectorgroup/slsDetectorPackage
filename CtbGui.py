@@ -1,8 +1,8 @@
-import time
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
 from pyqtgraph import PlotWidget
+
 
 from functools import partial
 from slsdet import Detector, dacIndex, readoutMode
@@ -297,16 +297,19 @@ class MainWindow(QtWidgets.QMainWindow):
     # TODO yet to implement the ADC and HV
     def setADC(self):
         self.det.setDAC(dacIndex.ADC_VPP, self.comboBoxADC.currentIndex())
-        self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
+        self.labelADC.setText(f'Mode: {str(self.det.getDAC(dacIndex.ADC_VPP)[0])}')
 
     def setHighVoltage(self):
-        if self.checkBoxHighVoltage.isChecked():
-            self.det.setHighVoltage(self.spinBoxHighVoltage.value())
-            self.spinBoxHighVoltage.setDisabled(False)
-        else:
-            self.det.setHighVoltage(0)
-            self.spinBoxHighVoltage.setDisabled(True)
-        self.labelHighVoltage.setText(str(self.det.getHighVoltage()[0]))
+        try:
+            if self.checkBoxHighVoltage.isChecked():
+                self.det.setHighVoltage(self.spinBoxHighVoltage.value())
+                self.spinBoxHighVoltage.setDisabled(False)
+            else:
+                self.det.setHighVoltage(0)
+                self.spinBoxHighVoltage.setDisabled(True)
+            self.labelHighVoltage.setText(str(self.det.getHighVoltage()[0]))
+        except Exception as e:
+            print(e)
 
     # For Power Supplies Tab functions
     # TODO Only add the components of Power Supplies tab functions
@@ -315,14 +318,16 @@ class MainWindow(QtWidgets.QMainWindow):
         spinBox = getattr(self, f"spinBoxV{i}")
         power = getattr(dacIndex, f"V_POWER_{i}")
         label = getattr(self, f"labelV{i}")
-
-        if checkBox.isChecked():
-            self.det.setVoltage(power, spinBox.value())
-            spinBox.setDisabled(False)
-        else:
-            self.det.setVoltage(power, 0)
-            spinBox.setDisabled(True)
-        label.setText(str(self.det.getVoltage(power)[0]))
+        try:
+            if checkBox.isChecked():
+                self.det.setVoltage(power, spinBox.value())
+                spinBox.setDisabled(False)
+            else:
+                self.det.setVoltage(power, 0)
+                spinBox.setDisabled(True)
+            label.setText(str(self.det.getVoltage(power)[0]))
+        except Exception as e:
+            print(e)
 
     # For Sense Tab functions
     # TODO Only add the components of Sense tab functions
@@ -334,7 +339,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def updateTemperature(self):
         sense0 = self.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
-        self.labelTemp_2.setText(str(sense0[0]))
+        self.labelTemp_2.setText(f'{str(sense0[0])} °C')
 
     # For Signals Tab functions
     # TODO Only add the components of Signals tab functions
@@ -758,7 +763,7 @@ class MainWindow(QtWidgets.QMainWindow):
             parent=self,
             caption="Select a pattern file",
             directory=os.getcwd(),
-            # filter='README (*.md *.ui)'
+            filter='README (*.pat)'
         )
         if response[0]:
             self.lineEditPattern.setText(response[0])
@@ -829,7 +834,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.spinBoxAnalog.setDisabled(False)
 
     def loadPattern(self):
-        print("loading pattern")
+        pattern_file = self.lineEditPattern.text()
+        if pattern_file:
+            print(pattern_file)
+            #self.det.parameters = pattern_file
+        else:
+            print('No pattern file selected!!!')
 
     # For Acquistions Tab functions
     # TODO Only add the components of Acquistions tab functions
@@ -974,7 +984,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getDac(0)
 
         # Setting ADC VPP
-        self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
+        self.labelADC.setText(f'Mode: {str(self.det.getDAC(dacIndex.ADC_VPP)[0])}')
         adcVPP = self.det.getDAC(dacIndex.ADC_VPP)
         for i in adcVPP:
             if (self.det.getDAC(dacIndex.ADC_VPP)[0]) == i:

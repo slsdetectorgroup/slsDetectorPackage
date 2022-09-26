@@ -717,7 +717,7 @@ class Detector {
 
     void setDestinationUDPList(const UdpDestination, const int module_id);
 
-    /** [Jungfrau][Eiger] */
+    /** [Jungfrau][Eiger][Mythen3][Gotthard2] */
     Result<int> getNumberofUDPDestinations(Positions pos = {}) const;
 
     void clearUDPDestinations(Positions pos = {});

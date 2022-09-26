@@ -28,6 +28,7 @@ extern int debugflag;
 extern int updateFlag;
 extern int checkModuleFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
+extern int numUdpDestinations;
 extern const enum detectorType myDetectorType;
 
 // Global variable from communication_funcs.c
@@ -1897,74 +1898,85 @@ int getNumberofUDPInterfaces() { return 1; }
 
 int configureMAC() {
 
-    uint32_t srcip = udpDetails[0].srcip;
-    uint32_t dstip = udpDetails[0].dstip;
-    uint64_t srcmac = udpDetails[0].srcmac;
-    uint64_t dstmac = udpDetails[0].dstmac;
-    int srcport = udpDetails[0].srcport;
-    int dstport = udpDetails[0].dstport;
-
     LOG(logINFOBLUE, ("Configuring MAC\n"));
-    char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
-        dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
-    getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
-    getIpAddressinString(src_ip, srcip);
-    getIpAddressinString(dst_ip, dstip);
+    LOG(logINFO, ("Number of entries: %d\n\n", numUdpDestinations));
+    for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION; ++iRxEntry) {
 
-    LOG(logINFO, ("\tSource IP   : %s\n"
-                  "\tSource MAC  : %s\n"
-                  "\tSource Port : %d\n"
-                  "\tDest IP     : %s\n"
-                  "\tDest MAC    : %s\n"
-                  "\tDest Port   : %d\n",
-                  src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+        uint32_t srcip = udpDetails[iRxEntry].srcip;
+        uint32_t dstip = udpDetails[iRxEntry].dstip;
+        uint64_t srcmac = udpDetails[iRxEntry].srcmac;
+        uint64_t dstmac = udpDetails[iRxEntry].dstmac;
+        int srcport = udpDetails[iRxEntry].srcport;
+        int dstport = udpDetails[iRxEntry].dstport;
 
+        LOG(logINFOBLUE, ("Configuring MAC\n"));
+        char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
+            dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
+        getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
+        getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
+        getIpAddressinString(src_ip, srcip);
+        getIpAddressinString(dst_ip, dstip);
+        if (iRxEntry < numUdpDestinations) {
+            LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
+            LOG(logINFO, ("\tSource IP   : %s\n"
+                          "\tSource MAC  : %s\n"
+                          "\tSource Port : %d\n"
+                          "\tDest IP     : %s\n"
+                          "\tDest MAC    : %s\n"
+                          "\tDest Port   : %d\n",
+                          src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+        }
 #ifdef VIRTUAL
-    if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
-        LOG(logERROR, ("could not set udp destination IP and port\n"));
-        return FAIL;
-    }
+        if (setUDPDestinationDetails(iRxEntry, 0, dst_ip, dstport) == FAIL) {
+            LOG(logERROR, ("could not set udp destination IP and port for "
+                           "data interface [entry:%d] \n",
+                           iRxEntry));
+            return FAIL;
+        }
 #endif
 
-    // start addr
-    uint32_t addr = BASE_UDP_RAM;
-    // calculate rxr endpoint offset
-    // addr += (iRxEntry * RXR_ENDPOINT_OFST);//TODO: is there round robin
-    // already implemented?
-    // get struct memory
-    udp_header *udp =
-        (udp_header *)(Nios_getBaseAddress() + addr / (sizeof(u_int32_t)));
-    memset(udp, 0, sizeof(udp_header));
+        // start addr
+        uint32_t addr = BASE_UDP_RAM;
+        // calculate rxr endpoint offset
+        addr += (iRxEntry * RXR_ENDPOINT_OFST); // TODO: is there round robin
+        // already implemented?
+        // get struct memory
+        udp_header *udp =
+            (udp_header *)(Nios_getBaseAddress() + addr / (sizeof(u_int32_t)));
+        memset(udp, 0, sizeof(udp_header));
 
-    //  mac addresses
-    // msb (32) + lsb (16)
-    udp->udp_destmac_msb = ((dstmac >> 16) & BIT32_MASK);
-    udp->udp_destmac_lsb = ((dstmac >> 0) & BIT16_MASK);
-    // msb (16) + lsb (32)
-    udp->udp_srcmac_msb = ((srcmac >> 32) & BIT16_MASK);
-    udp->udp_srcmac_lsb = ((srcmac >> 0) & BIT32_MASK);
+        //  mac addresses
+        // msb (32) + lsb (16)
+        udp->udp_destmac_msb = ((dstmac >> 16) & BIT32_MASK);
+        udp->udp_destmac_lsb = ((dstmac >> 0) & BIT16_MASK);
+        // msb (16) + lsb (32)
+        udp->udp_srcmac_msb = ((srcmac >> 32) & BIT16_MASK);
+        udp->udp_srcmac_lsb = ((srcmac >> 0) & BIT32_MASK);
 
-    // ip addresses
-    udp->ip_srcip_msb = ((srcip >> 16) & BIT16_MASK);
-    udp->ip_srcip_lsb = ((srcip >> 0) & BIT16_MASK);
-    udp->ip_destip_msb = ((dstip >> 16) & BIT16_MASK);
-    udp->ip_destip_lsb = ((dstip >> 0) & BIT16_MASK);
+        // ip addresses
+        udp->ip_srcip_msb = ((srcip >> 16) & BIT16_MASK);
+        udp->ip_srcip_lsb = ((srcip >> 0) & BIT16_MASK);
+        udp->ip_destip_msb = ((dstip >> 16) & BIT16_MASK);
+        udp->ip_destip_lsb = ((dstip >> 0) & BIT16_MASK);
 
-    // source port
-    udp->udp_srcport = srcport;
-    udp->udp_destport = dstport;
+        // source port
+        udp->udp_srcport = srcport;
+        udp->udp_destport = dstport;
 
-    // other defines
-    udp->udp_ethertype = 0x800;
-    udp->ip_ver = 0x4;
-    udp->ip_ihl = 0x5;
-    udp->ip_flags = 0x2; // FIXME
-    udp->ip_ttl = 0x40;
-    udp->ip_protocol = 0x11;
-    // total length is redefined in firmware
+        // other defines
+        udp->udp_ethertype = 0x800;
+        udp->ip_ver = 0x4;
+        udp->ip_ihl = 0x5;
+        udp->ip_flags = 0x2; // FIXME
+        udp->ip_ttl = 0x40;
+        udp->ip_protocol = 0x11;
+        // total length is redefined in firmware
 
-    calcChecksum(udp);
+        calcChecksum(udp);
+        if (iRxEntry < numUdpDestinations) {
+            LOG(logINFO, ("\tIP checksum : 0x%lx\n\n", udp->ip_checksum));
+        }
+    }
 
     // TODO?
     cleanFifos();
@@ -2001,7 +2013,6 @@ void calcChecksum(udp_header *udp) {
         sum = (sum & 0xffff) + (sum >> 16); // Fold 32-bit sum to 16 bits
     long int checksum = sum & 0xffff;
     checksum += UDP_IP_HEADER_LENGTH_BYTES;
-    LOG(logINFO, ("\tIP checksum is 0x%lx\n", checksum));
     udp->ip_checksum = checksum;
 }
 
@@ -2511,6 +2522,7 @@ void *start_timer(void *arg) {
     }
 
     // Send data
+    int iRxEntry = 0;
     // loop over number of frames
     for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
 
@@ -2544,10 +2556,11 @@ void *start_timer(void *arg) {
             memcpy(packetData + sizeof(sls_detector_header),
                    imageData + srcOffset, dataSize);
             srcOffset += dataSize;
-            sendUDPPacket(0, 0, packetData, packetSize);
+            sendUDPPacket(iRxEntry, 0, packetData, packetSize);
         }
-        LOG(logINFO, ("Sent frame: %d [%lld]\n", frameNr,
-                      (long long unsigned int)virtual_currentFrameNumber));
+        LOG(logINFO,
+            ("Sent frame: %d [%lld] to E%d\n", frameNr,
+             (long long unsigned int)virtual_currentFrameNumber, iRxEntry));
         clock_gettime(CLOCK_REALTIME, &end);
         int64_t timeNs =
             ((end.tv_sec - begin.tv_sec) * 1E9 + (end.tv_nsec - begin.tv_nsec));
@@ -2559,6 +2572,10 @@ void *start_timer(void *arg) {
             }
         }
         ++virtual_currentFrameNumber;
+        ++iRxEntry;
+        if (iRxEntry == numUdpDestinations) {
+            iRxEntry = 0;
+        }
     }
 
     closeUDPSocket(0);

@@ -1599,7 +1599,7 @@ class CmdProxy {
 
     GET_COMMAND(
         udp_numdst, getNumberofUDPDestinations,
-        "\n\t[Jungfrau][Eiger] One can enter upto 32 "
+        "\n\t[Jungfrau][Eiger][Mythen3][Gotthard2] One can enter upto 32 "
         "destinations that the detector will stream images "
         "out in a round robin fashion. This is get only command. Default: 1");
 
@@ -1610,8 +1610,7 @@ class CmdProxy {
         udp_firstdst, getFirstUDPDestination, setFirstUDPDestination,
         StringTo<int>,
         "[0 - 31 (or number of udp destinations)]\n\t[Jungfrau] One can set "
-        "which is the first "
-        "destination that the detector will stream images "
+        "which is the first destination that the detector will stream images "
         "out from in a round robin fashion. The entry must not have been "
         "empty. Default: 0");
 

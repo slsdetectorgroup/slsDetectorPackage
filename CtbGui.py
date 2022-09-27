@@ -1,8 +1,9 @@
+
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
 from pyqtgraph import PlotWidget
-
+import multiprocessing as mp
 
 from functools import partial
 from slsdet import Detector, dacIndex, readoutMode
@@ -836,8 +837,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def loadPattern(self):
         pattern_file = self.lineEditPattern.text()
         if pattern_file:
-            print(pattern_file)
-            #self.det.parameters = pattern_file
+            self.det.parameters = pattern_file
         else:
             print('No pattern file selected!!!')
 
@@ -909,7 +909,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.lineEditFilePath.setText(response[0])
 
     # For other functios
-    # TODO Add other functions which will be reused
+    # TODO Add other functions which will be reused  
     def showPalette(self, button):
         color = QtWidgets.QColorDialog.getColor()
         if color.isValid():

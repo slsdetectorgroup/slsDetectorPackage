@@ -69,7 +69,7 @@
               </size>
              </property>
              <property name="currentIndex">
-              <number>0</number>
+              <number>6</number>
              </property>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -11315,6 +11315,9 @@
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
+                <property name="maximum">
+                 <number>9999</number>
+                </property>
                </widget>
                <widget class="QLabel" name="label_81">
                 <property name="geometry">
@@ -11354,6 +11357,9 @@
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
+                <property name="maximum">
+                 <number>9999</number>
+                </property>
                </widget>
                <widget class="QLabel" name="label_87">
                 <property name="geometry">
@@ -11379,6 +11385,9 @@
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="maximum">
+                 <number>9999</number>
                 </property>
                </widget>
                <widget class="QLabel" name="label_80">
@@ -11497,6 +11506,9 @@
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                 </property>
+                <property name="maximum">
+                 <number>9999</number>
+                </property>
                </widget>
                <widget class="QSpinBox" name="spinBoxLoop2">
                 <property name="geometry">
@@ -11509,6 +11521,9 @@
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="maximum">
+                 <number>9999</number>
                 </property>
                </widget>
                <widget class="QLabel" name="label_98">
@@ -11535,6 +11550,9 @@
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                </property>
+                <property name="maximum">
+                 <number>9999</number>
                 </property>
                </widget>
                <widget class="QLabel" name="label_89">
@@ -12297,6 +12315,16 @@
                 <item>
                  <property name="text">
                   <string>Deserializer</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Moench 04-Analog</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Moench 04-Digital</string>
                  </property>
                 </item>
                </widget>

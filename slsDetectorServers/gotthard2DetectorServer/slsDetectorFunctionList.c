@@ -1843,6 +1843,36 @@ int getNumberofUDPInterfaces() {
     return ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_10GBE_ENBL_MSK) ? 2 : 1);
 }
 
+int getNumberofDestinations(int *retval) {
+    *retval = (((bus_r(PKT_CONFIG_REG) & PKT_CONFIG_NRXR_MAX_MSK) >>
+                PKT_CONFIG_NRXR_MAX_OFST) +
+               1);
+    return OK;
+}
+
+int setNumberofDestinations(int value) {
+    LOG(logINFO, ("Setting number of entries to %d\n", value));
+    --value;
+    bus_w(PKT_CONFIG_REG, bus_r(PKT_CONFIG_REG) & ~PKT_CONFIG_NRXR_MAX_MSK);
+    bus_w(PKT_CONFIG_REG,
+          bus_r(PKT_CONFIG_REG) |
+              ((value << PKT_CONFIG_NRXR_MAX_OFST) & PKT_CONFIG_NRXR_MAX_MSK));
+    return OK;
+}
+
+int getFirstUDPDestination() {
+    return ((bus_r(PKT_CONFIG_REG) & PKT_CONFIG_RXR_START_ID_MSK) >>
+            PKT_CONFIG_RXR_START_ID_OFST);
+}
+
+void setFirstUDPDestination(int value) {
+    LOG(logINFO, ("Setting first entry to %d\n", value));
+    bus_w(PKT_CONFIG_REG, bus_r(PKT_CONFIG_REG) & ~PKT_CONFIG_RXR_START_ID_MSK);
+    bus_w(PKT_CONFIG_REG,
+          bus_r(PKT_CONFIG_REG) | ((value << PKT_CONFIG_RXR_START_ID_OFST) &
+                                   PKT_CONFIG_RXR_START_ID_MSK));
+}
+
 void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
                  uint64_t destmac, uint32_t destport, uint64_t sourcemac,
                  uint32_t sourceip, uint32_t sourceport) {
@@ -3194,6 +3224,7 @@ void *start_timer(void *arg) {
         return NULL;
     }
 
+    int firstDest = getFirstUDPDestination();
     int i10gbe = (getNumberofUDPInterfaces() == 2 ? 1 : 0);
 
     int numRepeats = getNumTriggers();
@@ -3236,7 +3267,7 @@ void *start_timer(void *arg) {
         *((uint16_t *)(vetoData + i)) = i;
     }
 
-    int iRxEntry = 0;
+    int iRxEntry = firstDest;
     // loop over number of repeats
     for (int repeatNr = 0; repeatNr != numRepeats; ++repeatNr) {
 

@@ -433,13 +433,16 @@ void setNumberofUDPInterfaces(int val);
 #endif
 int getNumberofUDPInterfaces();
 
-#if defined(JUNGFRAUD) || defined(EIGERD)
+#if defined(JUNGFRAUD) || defined(EIGERD) || defined(MYTHEN3D) ||              \
+    defined(GOTTHARD2D)
 int getNumberofDestinations(int *retval);
 int setNumberofDestinations(int value);
 #endif
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int getFirstUDPDestination();
 void setFirstUDPDestination(int value);
+#endif
+#ifdef JUNGFRAUD
 void selectPrimaryInterface(int val);
 int getPrimaryInterface();
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,

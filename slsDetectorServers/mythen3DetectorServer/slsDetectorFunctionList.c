@@ -1896,6 +1896,36 @@ int getExtSignal(int signalIndex) {
 
 int getNumberofUDPInterfaces() { return 1; }
 
+int getNumberofDestinations(int *retval) {
+    *retval = (((bus_r(PKT_CONFIG_REG) & PKT_CONFIG_NRXR_MAX_MSK) >>
+                PKT_CONFIG_NRXR_MAX_OFST) +
+               1);
+    return OK;
+}
+
+int setNumberofDestinations(int value) {
+    LOG(logINFO, ("Setting number of entries to %d\n", value));
+    --value;
+    bus_w(PKT_CONFIG_REG, bus_r(PKT_CONFIG_REG) & ~PKT_CONFIG_NRXR_MAX_MSK);
+    bus_w(PKT_CONFIG_REG,
+          bus_r(PKT_CONFIG_REG) |
+              ((value << PKT_CONFIG_NRXR_MAX_OFST) & PKT_CONFIG_NRXR_MAX_MSK));
+    return OK;
+}
+
+int getFirstUDPDestination() {
+    return ((bus_r(PKT_CONFIG_REG) & PKT_CONFIG_RXR_START_ID_MSK) >>
+            PKT_CONFIG_RXR_START_ID_OFST);
+}
+
+void setFirstUDPDestination(int value) {
+    LOG(logINFO, ("Setting first entry to %d\n", value));
+    bus_w(PKT_CONFIG_REG, bus_r(PKT_CONFIG_REG) & ~PKT_CONFIG_RXR_START_ID_MSK);
+    bus_w(PKT_CONFIG_REG,
+          bus_r(PKT_CONFIG_REG) | ((value << PKT_CONFIG_RXR_START_ID_OFST) &
+                                   PKT_CONFIG_RXR_START_ID_MSK));
+}
+
 int configureMAC() {
 
     LOG(logINFOBLUE, ("Configuring MAC\n"));
@@ -2462,6 +2492,8 @@ void *start_timer(void *arg) {
         return NULL;
     }
 
+    int firstDest = getFirstUDPDestination();
+
     const int64_t periodNs = getPeriod();
     const int numFrames = (getNumFrames() * getNumTriggers());
     const int64_t expUs = getGatePeriod() / 1000;
@@ -2522,7 +2554,7 @@ void *start_timer(void *arg) {
     }
 
     // Send data
-    int iRxEntry = 0;
+    int iRxEntry = firstDest;
     // loop over number of frames
     for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
 

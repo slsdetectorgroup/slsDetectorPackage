@@ -2031,7 +2031,6 @@ int configureMAC() {
                            iRxEntry));
             return FAIL;
         }
-        return OK;
 #endif
         // data
         setupHeader(iRxEntry, 0, dstip, dstmac, dstport, srcmac, srcip,

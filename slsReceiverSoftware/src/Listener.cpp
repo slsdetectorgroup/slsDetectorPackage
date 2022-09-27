@@ -448,9 +448,9 @@ void Listener::CopyPacket(char *dst, char *src, uint32_t dataSize,
 
     // copy packet data
     switch (generalData->detType) {
-    // for gotthard, 1st packet: 4 bytes fnum, CACA
-    // + CACA, 639*2 bytes data 				2nd packet: 4
-    // bytes fnum, previous 1*2 bytes data  + 640*2 bytes data !!
+    // for gotthard,
+    // 1st packet: 4 bytes fnum, CACA + CACA, 639*2 bytes data
+    // 2nd packet: 4 bytes fnum, previous 1*2 bytes data  + 640*2 bytes data
     case GOTTHARD:
         if (!pnum)
             memcpy(dst, &src[detHeaderSize + 4], dataSize - 2);

@@ -1969,7 +1969,6 @@ int configureMAC() {
         uint32_t addr = BASE_UDP_RAM;
         // calculate rxr endpoint offset
         addr += (iRxEntry * RXR_ENDPOINT_OFST); // TODO: is there round robin
-        // already implemented?
         // get struct memory
         udp_header *udp =
             (udp_header *)(Nios_getBaseAddress() + addr / (sizeof(u_int32_t)));

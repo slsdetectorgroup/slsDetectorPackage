@@ -1,9 +1,16 @@
-
+import time
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
 from pyqtgraph import PlotWidget
 import multiprocessing as mp
+from threading import Thread
+from PIL import Image as im
+import matplotlib.pyplot as plt
+import json
+import zmq
+import numpy as np
+
 
 from functools import partial
 from slsdet import Detector, dacIndex, readoutMode
@@ -17,13 +24,19 @@ class MainWindow(QtWidgets.QMainWindow):
 
         super(MainWindow, self).__init__()
         self.det = Detector()
+        self.zmqIp = self.det.rx_zmqip
+        self.zmqport = self.det.rx_zmqport
+        self.zmq_stream = self.det.rx_zmqstream
+
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.SUB)
+        self.socket.connect(f"tcp://{self.zmqIp}:{self.zmqport}")
+        self.socket.subscribe("")
+
         uic.loadUi("CtbGui.ui", self)
         self.update_field()
 
-        pen = pg.mkPen(color=(36, 119, 173), width=1)
         # Plotting the data
-        self.curve = self.plotWidget.plot(pen=pen)
-
         # For the action options in app
         # TODO Only add the components of action options
         # Show info
@@ -253,6 +266,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonReferesh.clicked.connect(self.plotReferesh)
         self.pushButtonBrowse.clicked.connect(self.browseFile)
 
+        self.read_timer =  QtCore.QTimer()
+        self.read_timer.timeout.connect(self.read_zmq)
     # For Action options function
     # TODO Only add the components of action option+ functions
     # Function to show info
@@ -891,12 +906,13 @@ class MainWindow(QtWidgets.QMainWindow):
     def acquire(self):
         measurement_Number = self.spinBoxMeasurements.value()
         for i in range(measurement_Number):
+            #self.read_timer.start(20)
             self.det.acquire()
             if self.radioButtonYes.isChecked():
                 self.spinBoxIndex.stepUp()
 
     def plotReferesh(self):
-        print("plot options")
+        self.read_zmq()
 
     def browseFile(self):
         response = QtWidgets.QFileDialog.getSaveFileName(
@@ -910,6 +926,53 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # For other functios
     # TODO Add other functions which will be reused  
+    #Reading data from zmq and decoding it.
+    def read_zmq(self):
+        try:
+            msg = self.socket.recv_multipart(flags=zmq.NOBLOCK)
+            if len(msg) != 2:
+                print(f'len(msg) = {len(msg)}')
+                return
+            header, data = msg
+            jsonHeader = json.loads(header)
+            print(jsonHeader)
+            print(f'Data size: {len(data)}')
+            data_array = np.array(np.frombuffer(data, dtype=np.uint16))
+
+            # return data_array
+            adc_numbers = [9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28,
+                            27, 26, 25, 24]
+
+            n_pixels_per_sc = 5000
+
+            sc_width = 25
+            analog_frame = np.zeros((400, 400))
+            order_sc = np.zeros((400, 400))
+
+            for n_pixel in range(n_pixels_per_sc):
+                for i_sc, adc_nr in enumerate(adc_numbers):
+                    # ANALOG
+                    col = ((adc_nr % 16) * sc_width) + (n_pixel % sc_width)
+                    if i_sc < 16:
+                        row = 199 - int(n_pixel / sc_width)
+                    else:
+                        row = 200 + int(n_pixel / sc_width)
+
+                    index_min = n_pixel * 32 + i_sc
+
+                    pixel_value = data_array[index_min]
+                    analog_frame[row, col] = pixel_value
+                    order_sc[row, col] = i_sc
+
+
+            fig, ax = plt.subplots()
+            im = ax.imshow(analog_frame)
+            ax.invert_yaxis()
+            fig.colorbar(im)
+            plt.show()
+        except Exception as e:
+            print(str(e))
+
     def showPalette(self, button):
         color = QtWidgets.QColorDialog.getColor()
         if color.isValid():

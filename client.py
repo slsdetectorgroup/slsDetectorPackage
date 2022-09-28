@@ -28,14 +28,9 @@ def zmq_receiver():
             print(jsonHeader)
             print(f'Data size: {len(data)}')
             data_array = np.array(np.frombuffer(data, dtype=np.uint16))
-            #image = data_array.reshape([400, 400])
             break
     return data_array
-    # print(data_array1)
-        # pg.image(image, title="test")
 
-    # if __name__ == '__main__':
-    #      pg.QtWidgets.QApplication.exec_()
 def analog(data_array):
     adc_numbers = [9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28,
                     27, 26, 25, 24]
@@ -67,5 +62,10 @@ def analog(data_array):
 fig, ax = plt.subplots()
 data = analog(data_array=zmq_receiver())
 im = ax.imshow(data)
+ax.invert_yaxis()
 fig.colorbar(im)
 plt.show()
+# pg.image(data, title="test")
+
+# if __name__ == '__main__':
+#          pg.QtWidgets.QApplication.exec_()

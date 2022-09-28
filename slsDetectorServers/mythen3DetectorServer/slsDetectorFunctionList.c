@@ -1939,7 +1939,6 @@ int configureMAC() {
         int srcport = udpDetails[iRxEntry].srcport;
         int dstport = udpDetails[iRxEntry].dstport;
 
-        LOG(logINFOBLUE, ("Configuring MAC\n"));
         char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
             dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
         getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);

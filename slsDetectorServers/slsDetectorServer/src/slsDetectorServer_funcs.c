@@ -5689,6 +5689,9 @@ int set_clock_frequency(int file_des) {
         case DBIT_CLOCK:
             c = DBIT_CLK;
             break;
+        case GATED_CLOCK:
+            c = GATED_CLK;
+            break;
 #endif
         case RUN_CLOCK:
             c = RUN_CLK;
@@ -5749,6 +5752,9 @@ int get_clock_frequency(int file_des) {
 #ifdef CHIPTESTBOARDD
     case DBIT_CLOCK:
         c = DBIT_CLK;
+        break;
+    case GATED_CLOCK:
+        c = GATED_CLK;
         break;
 #endif
     case RUN_CLOCK:

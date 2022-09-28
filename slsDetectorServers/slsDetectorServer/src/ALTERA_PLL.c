@@ -135,6 +135,8 @@ int ALTERA_PLL_Cntrl_DBIT_ClkIndex = 0;
 uint32_t ALTERA_PLL_Cntrl_PLLRstMask = 0x0;
 uint32_t ALTERA_PLL_Cntrl_AddrMask = 0x0;
 int ALTERA_PLL_Cntrl_AddrOfst = 0;
+uint32_t ALTERA_PLL_A_Cntrl_Reg = 0x0;
+uint32_t ALTERA_PLL_A_Param_Reg = 0x0;
 
 #ifdef JUNGFRAUD
 void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
@@ -153,7 +155,7 @@ void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
 #else
 void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
                            uint32_t wpmsk, uint32_t prmsk, uint32_t amsk,
-                           int aofst) {
+                           int aofst, uint32_t acreg, uint32_t apreg) {
     ALTERA_PLL_Cntrl_Reg = creg;
     ALTERA_PLL_Param_Reg = preg;
     ALTERA_PLL_Cntrl_RcnfgPrmtrRstMask = rprmsk;
@@ -161,44 +163,55 @@ void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
     ALTERA_PLL_Cntrl_PLLRstMask = prmsk;
     ALTERA_PLL_Cntrl_AddrMask = amsk;
     ALTERA_PLL_Cntrl_AddrOfst = aofst;
+    ALTERA_PLL_A_Cntrl_Reg = acreg;
+    ALTERA_PLL_A_Param_Reg = apreg;
 }
 #endif
 
-void ALTERA_PLL_ResetPLL() {
-    LOG(logINFO, ("Resetting only PLL\n"));
+void ALTERA_PLL_ResetPLL(int pllIndex) {
+    LOG(logINFO, ("Resetting only PLL %d\n", pllIndex));
+    uint32_t cntrlReg = ALTERA_PLL_Cntrl_Reg;
+    if (pllIndex == 1) {
+        cntrlReg = ALTERA_PLL_A_Cntrl_Reg;
+    }
 
     LOG(logDEBUG2, ("pllrstmsk:0x%x\n", ALTERA_PLL_Cntrl_PLLRstMask));
 
-    bus_w(ALTERA_PLL_Cntrl_Reg,
-          bus_r(ALTERA_PLL_Cntrl_Reg) | ALTERA_PLL_Cntrl_PLLRstMask);
-    LOG(logDEBUG2, ("Set PLL Reset mSk: ALTERA_PLL_Cntrl_Reg:0x%x\n",
-                    bus_r(ALTERA_PLL_Cntrl_Reg)));
+    bus_w(cntrlReg, bus_r(cntrlReg) | ALTERA_PLL_Cntrl_PLLRstMask);
+    LOG(logDEBUG2, ("Set PLL Reset mSk: cntrlReg:0x%x\n", bus_r(cntrlReg)));
 
     usleep(ALTERA_PLL_WAIT_TIME_US);
 
-    bus_w(ALTERA_PLL_Cntrl_Reg,
-          bus_r(ALTERA_PLL_Cntrl_Reg) & ~ALTERA_PLL_Cntrl_PLLRstMask);
-    LOG(logDEBUG2, ("UnSet PLL Reset mSk: ALTERA_PLL_Cntrl_Reg:0x%x\n",
-                    bus_r(ALTERA_PLL_Cntrl_Reg)));
+    bus_w(cntrlReg, bus_r(cntrlReg) & ~ALTERA_PLL_Cntrl_PLLRstMask);
+    LOG(logDEBUG2, ("UnSet PLL Reset mSk: cntrlReg:0x%x\n", bus_r(cntrlReg)));
 }
 
-void ALTERA_PLL_ResetPLLAndReconfiguration() {
-    LOG(logINFO, ("Resetting PLL and Reconfiguration\n"));
+void ALTERA_PLL_ResetPLLAndReconfiguration(int pllIndex) {
+    LOG(logINFO, ("Resetting PLL and Reconfiguration of pll %d\n", pllIndex));
+    uint32_t cntrlReg = ALTERA_PLL_Cntrl_Reg;
+    if (pllIndex == 1) {
+        cntrlReg = ALTERA_PLL_A_Cntrl_Reg;
+    }
 
-    bus_w(ALTERA_PLL_Cntrl_Reg, bus_r(ALTERA_PLL_Cntrl_Reg) |
-                                    ALTERA_PLL_Cntrl_RcnfgPrmtrRstMask |
-                                    ALTERA_PLL_Cntrl_PLLRstMask);
+    bus_w(cntrlReg, bus_r(cntrlReg) | ALTERA_PLL_Cntrl_RcnfgPrmtrRstMask |
+                        ALTERA_PLL_Cntrl_PLLRstMask);
     usleep(ALTERA_PLL_WAIT_TIME_US);
-    bus_w(ALTERA_PLL_Cntrl_Reg, bus_r(ALTERA_PLL_Cntrl_Reg) &
-                                    ~ALTERA_PLL_Cntrl_RcnfgPrmtrRstMask &
-                                    ~ALTERA_PLL_Cntrl_PLLRstMask);
+    bus_w(cntrlReg, bus_r(cntrlReg) & ~ALTERA_PLL_Cntrl_RcnfgPrmtrRstMask &
+                        ~ALTERA_PLL_Cntrl_PLLRstMask);
 }
 
-void ALTERA_PLL_SetPllReconfigReg(uint32_t reg, uint32_t val,
+void ALTERA_PLL_SetPllReconfigReg(int pllIndex, uint32_t reg, uint32_t val,
                                   int useSecondWRMask) {
-    LOG(logDEBUG1,
-        ("Setting PLL Reconfig Reg, reg:0x%x, val:0x%x, useSecondWRMask:%d)\n",
-         reg, val, useSecondWRMask));
+    LOG(logDEBUG1, ("Setting PLL %d Reconfig Reg, reg:0x%x, val:0x%x, "
+                    "useSecondWRMask:%d)\n",
+                    pllIndex, reg, val, useSecondWRMask));
+
+    uint32_t cntrlReg = ALTERA_PLL_Cntrl_Reg;
+    uint32_t paramReg = ALTERA_PLL_Param_Reg;
+    if (pllIndex == 1) {
+        cntrlReg = ALTERA_PLL_A_Cntrl_Reg;
+        paramReg = ALTERA_PLL_A_Param_Reg;
+    }
 
     uint32_t wrmask = ALTERA_PLL_Cntrl_WrPrmtrMask;
 #ifdef JUNGFRAUD
@@ -210,38 +223,34 @@ void ALTERA_PLL_SetPllReconfigReg(uint32_t reg, uint32_t val,
     LOG(logDEBUG2,
         ("pllparamreg:0x%x pllcontrolreg:0x%x addrofst:%d addrmsk:0x%x "
          "wrmask:0x%x\n",
-         ALTERA_PLL_Param_Reg, ALTERA_PLL_Cntrl_Reg, ALTERA_PLL_Cntrl_AddrOfst,
+         paramReg, cntrlReg, ALTERA_PLL_Cntrl_AddrOfst,
          ALTERA_PLL_Cntrl_AddrMask, wrmask));
 
     // set parameter
-    bus_w(ALTERA_PLL_Param_Reg, val);
-    LOG(logDEBUG2, ("Set Parameter: ALTERA_PLL_Param_Reg:0x%x\n",
-                    bus_r(ALTERA_PLL_Param_Reg)));
+    bus_w(paramReg, val);
+    LOG(logDEBUG2, ("Set Parameter: paramReg:0x%x\n", bus_r(paramReg)));
     usleep(ALTERA_PLL_WAIT_TIME_US);
 
     // set address
-    bus_w(ALTERA_PLL_Cntrl_Reg,
+    bus_w(cntrlReg,
           (reg << ALTERA_PLL_Cntrl_AddrOfst) & ALTERA_PLL_Cntrl_AddrMask);
-    LOG(logDEBUG2, ("Set Address: ALTERA_PLL_Cntrl_Reg:0x%x\n",
-                    bus_r(ALTERA_PLL_Cntrl_Reg)));
+    LOG(logDEBUG2, ("Set Address: cntrlReg:0x%x\n", bus_r(cntrlReg)));
     usleep(ALTERA_PLL_WAIT_TIME_US);
 
     // write parameter
-    bus_w(ALTERA_PLL_Cntrl_Reg, bus_r(ALTERA_PLL_Cntrl_Reg) | wrmask);
-    LOG(logDEBUG2, ("Set WR bit: ALTERA_PLL_Cntrl_Reg:0x%x\n",
-                    bus_r(ALTERA_PLL_Cntrl_Reg)));
+    bus_w(cntrlReg, bus_r(cntrlReg) | wrmask);
+    LOG(logDEBUG2, ("Set WR bit: cntrlReg:0x%x\n", bus_r(cntrlReg)));
 
     usleep(ALTERA_PLL_WAIT_TIME_US);
 
-    bus_w(ALTERA_PLL_Cntrl_Reg, bus_r(ALTERA_PLL_Cntrl_Reg) & ~wrmask);
-    LOG(logDEBUG2, ("Unset WR bit: ALTERA_PLL_Cntrl_Reg:0x%x\n",
-                    bus_r(ALTERA_PLL_Cntrl_Reg)));
+    bus_w(cntrlReg, bus_r(cntrlReg) & ~wrmask);
+    LOG(logDEBUG2, ("Unset WR bit: cntrlReg:0x%x\n", bus_r(cntrlReg)));
 
     usleep(ALTERA_PLL_WAIT_TIME_US);
 }
 
 void ALTERA_PLL_SetPhaseShift(int32_t phase, int clkIndex, int pos) {
-    LOG(logINFO, ("\tWriting PLL Phase Shift\n"));
+    LOG(logINFO, ("\tWriting PLL Phase Shift ot pll %d\n", 0));
     uint32_t value = (((phase << ALTERA_PLL_SHIFT_NUM_SHIFTS_OFST) &
                        ALTERA_PLL_SHIFT_NUM_SHIFTS_MSK) |
                       ((clkIndex << ALTERA_PLL_SHIFT_CNT_SELECT_OFST) &
@@ -259,19 +268,24 @@ void ALTERA_PLL_SetPhaseShift(int32_t phase, int clkIndex, int pos) {
 #endif
 
     // write phase shift
-    ALTERA_PLL_SetPllReconfigReg(ALTERA_PLL_PHASE_SHIFT_REG, value,
+    ALTERA_PLL_SetPllReconfigReg(0, ALTERA_PLL_PHASE_SHIFT_REG, value,
                                  useSecondWR);
 }
 
 void ALTERA_PLL_SetModePolling() {
     LOG(logINFO, ("\tSetting Polling Mode\n"));
-    ALTERA_PLL_SetPllReconfigReg(ALTERA_PLL_MODE_REG,
+    ALTERA_PLL_SetPllReconfigReg(0, ALTERA_PLL_MODE_REG,
                                  ALTERA_PLL_MODE_PLLNG_MD_VAL, 0);
 }
 
-int ALTERA_PLL_SetOuputFrequency(int clkIndex, int pllVCOFreqMhz, int value) {
-    LOG(logDEBUG1, ("C%d: Setting output frequency to %d (pllvcofreq: %dMhz)\n",
-                    clkIndex, value, pllVCOFreqMhz));
+int ALTERA_PLL_SetOuputFrequency(int pllIndex, int clkIndex, int pllVCOFreqMhz,
+                                 int value) {
+    if (pllIndex == 1) {
+        clkIndex = 0;
+    }
+    LOG(logDEBUG1,
+        ("pll%d: C%d: Setting output frequency to %d (pllvcofreq: %dMhz)\n",
+         pllIndex, clkIndex, value, pllVCOFreqMhz));
 
     // calculate output frequency
     float total_div = (float)pllVCOFreqMhz / (float)value;
@@ -301,11 +315,11 @@ int ALTERA_PLL_SetOuputFrequency(int clkIndex, int pllVCOFreqMhz, int value) {
     LOG(logDEBUG1, ("C%d word:0x%08x\n", clkIndex, val));
 
     // write frequency (post-scale output counter C)
-    ALTERA_PLL_SetPllReconfigReg(ALTERA_PLL_C_COUNTER_REG, val, 0);
+    ALTERA_PLL_SetPllReconfigReg(pllIndex, ALTERA_PLL_C_COUNTER_REG, val, 0);
 
     // reset required to keep the phase (must reconfigure adcs again after this
     // as adc clock is stopped temporarily when resetting pll)
-    ALTERA_PLL_ResetPLL();
+    ALTERA_PLL_ResetPLL(pllIndex);
 
     /*double temp = ((double)pllVCOFreqMhz / (double)(low_count + high_count));
         if ((temp - (int)temp) > 0.0001) {

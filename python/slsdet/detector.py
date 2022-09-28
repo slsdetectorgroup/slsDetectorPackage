@@ -2835,6 +2835,16 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def gatedclk(self):
+        """[Ctb][Moench] Run clock in MHz."""
+        return self.getGatedClock()
+
+    @gatedclk.setter
+    def gatedclk(self, freq):
+        ut.set_using_dict(self.setGatedClock, freq)
+
+    @property
+    @element
     def romode(self):
         """
         [CTB] Readout mode of detector. Enum: readoutMode

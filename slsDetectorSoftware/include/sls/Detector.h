@@ -1562,6 +1562,12 @@ class Detector {
     /** [CTB][Moench] */
     void setRUNClock(int value_in_MHz, Positions pos = {});
 
+    /** [CTB] */
+    Result<int> getGatedClock(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setGatedClock(int value_in_MHz, Positions pos = {});
+
     /** [CTB][Moench]  in MHZ */
     Result<int> getSYNCClock(Positions pos = {}) const;
 

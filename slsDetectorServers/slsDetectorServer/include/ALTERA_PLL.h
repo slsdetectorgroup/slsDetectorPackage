@@ -33,18 +33,18 @@ void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
  */
 void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
                            uint32_t wpmsk, uint32_t prmsk, uint32_t amsk,
-                           int aofst);
+                           int aofst, uint32_t acreg, uint32_t apreg);
 #endif
 
 /**
  * Reset only PLL
  */
-void ALTERA_PLL_ResetPLL();
+void ALTERA_PLL_ResetPLL(int pllIndex);
 
 /**
  * Reset PLL Reconfiguration and PLL
  */
-void ALTERA_PLL_ResetPLLAndReconfiguration();
+void ALTERA_PLL_ResetPLLAndReconfiguration(int pllIndex);
 
 /**
  * Set PLL Reconfig register
@@ -53,7 +53,7 @@ void ALTERA_PLL_ResetPLLAndReconfiguration();
  * @param useDefaultWRMask only jungfrau for dbit clk (clkindex1, use second WR
  * mask)
  */
-void ALTERA_PLL_SetPllReconfigReg(uint32_t reg, uint32_t val,
+void ALTERA_PLL_SetPllReconfigReg(int pllIndex, uint32_t reg, uint32_t val,
                                   int useSecondWRMask);
 
 /**
@@ -75,4 +75,5 @@ void ALTERA_PLL_SetModePolling();
  * @param value frequency to set to
  * @param frequency set
  */
-int ALTERA_PLL_SetOuputFrequency(int clkIndex, int pllVCOFreqMhz, int value);
+int ALTERA_PLL_SetOuputFrequency(int pllIndex, int clkIndex, int pllVCOFreqMhz,
+                                 int value);

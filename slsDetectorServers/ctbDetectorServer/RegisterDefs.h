@@ -380,6 +380,22 @@
 #define PLL_CNTRL_ADDR_OFST     (16)
 #define PLL_CNTRL_ADDR_MSK      (0x0000003F << PLL_CNTRL_ADDR_OFST)
 
+/* Reconfiguratble PLL Paramater RW register */
+#define PLL_A_PARAM_REG (0x93 << MEM_MAP_SHIFT)
+
+/* Reconfiguratble PLL Control RW regiser */
+#define PLL_A_CNTRL_REG (0x94 << MEM_MAP_SHIFT)
+
+#define PLL_A_CNTRL_RCNFG_PRMTR_RST_OFST (0)
+#define PLL_A_CNTRL_RCNFG_PRMTR_RST_MSK                                        \
+    (0x00000001 << PLL_A_CNTRL_RCNFG_PRMTR_RST_OFST)
+#define PLL_A_CNTRL_WR_PRMTR_OFST (2)
+#define PLL_A_CNTRL_WR_PRMTR_MSK  (0x00000001 << PLL_A_CNTRL_WR_PRMTR_OFST)
+#define PLL_A_CNTRL_PLL_RST_OFST  (3)
+#define PLL_A_CNTRL_PLL_RST_MSK   (0x00000001 << PLL_A_CNTRL_PLL_RST_OFST)
+#define PLL_A_CNTRL_ADDR_OFST     (16)
+#define PLL_A_CNTRL_ADDR_MSK      (0x0000003F << PLL_A_CNTRL_ADDR_OFST)
+
 /* Pattern Control RW register */
 #define PATTERN_CNTRL_REG (0x52 << MEM_MAP_SHIFT)
 

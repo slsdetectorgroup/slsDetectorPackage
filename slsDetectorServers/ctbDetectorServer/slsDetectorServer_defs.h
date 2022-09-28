@@ -86,8 +86,8 @@ enum DACINDEX {
     D_PWR_A,
     D_PWR_IO
 };
-enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
-#define CLK_NAMES "run", "adc", "sync", "dbit"
+enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, GATED_CLK, NUM_CLOCKS };
+#define CLK_NAMES "run", "adc", "sync", "dbit", "gated"
 
 /* Hardware Definitions */
 #define NCHAN                   (36)
@@ -124,6 +124,7 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define DEFAULT_ADC_CLK               (40)  // 20
 #define DEFAULT_SYNC_CLK              (40)  // 20
 #define DEFAULT_DBIT_CLK              (200)
+#define DEFAULT_GATED_CLK             (400)
 
 #define UDP_HEADER_MAX_FRAME_VALUE (0xFFFFFFFFFFFF)
 
@@ -160,5 +161,6 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define BIT32_MSK              (0xFFFFFFFF)
 #define BIT16_MASK             (0xFFFF)
 
-#define MAXIMUM_ADC_CLK  (65)
-#define PLL_VCO_FREQ_MHZ (800)
+#define MAXIMUM_ADC_CLK    (65)
+#define PLL_VCO_FREQ_MHZ   (800)
+#define PLL_A_VCO_FREQ_MHZ (400)

@@ -399,7 +399,13 @@ typedef struct {
 
 #define TRIMBITMASK 0x3f
 
-    enum clockIndex { ADC_CLOCK, DBIT_CLOCK, RUN_CLOCK, SYNC_CLOCK };
+    enum clockIndex {
+        ADC_CLOCK,
+        DBIT_CLOCK,
+        RUN_CLOCK,
+        SYNC_CLOCK,
+        GATED_CLOCK
+    };
 
     /**
      * read out mode (ctb, moench)

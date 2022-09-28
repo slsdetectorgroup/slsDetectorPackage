@@ -1950,6 +1950,15 @@ void Detector::setRUNClock(int value_in_MHz, Positions pos) {
                     value_in_MHz);
 }
 
+Result<int> Detector::getGatedClock(Positions pos) const {
+    return pimpl->Parallel(&Module::getClockFrequency, pos, defs::GATED_CLOCK);
+}
+
+void Detector::setGatedClock(int value_in_MHz, Positions pos) {
+    pimpl->Parallel(&Module::setClockFrequency, pos, defs::GATED_CLOCK,
+                    value_in_MHz);
+}
+
 Result<int> Detector::getSYNCClock(Positions pos) const {
     return pimpl->Parallel(&Module::getClockFrequency, pos, defs::SYNC_CLOCK);
 }

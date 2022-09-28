@@ -62,7 +62,7 @@ uint32_t adcEnableMask_1g = BIT32_MSK;
 uint8_t adcEnableMask_10g = 0xFF;
 
 int32_t clkPhase[NUM_CLOCKS] = {};
-uint32_t clkFrequency[NUM_CLOCKS] = {40, 20, 20, 200};
+uint32_t clkFrequency[NUM_CLOCKS] = {40, 20, 20, 200, 400};
 int dacValues[NDAC] = {};
 // software limit that depends on the current chip on the ctb
 int vLimit = 0;
@@ -471,6 +471,7 @@ void setupDetector() {
         clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK;
         clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK;
         clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK;
+        clkFrequency[GATED_CLK] = DEFAULT_GATED_CLK;
         for (int i = 0; i < NDAC; ++i)
             dacValues[i] = -1;
     }
@@ -488,7 +489,15 @@ void setupDetector() {
 #endif
     setupUDPCommParameters();
 
-    ALTERA_PLL_ResetPLLAndReconfiguration();
+    // altera pll
+    ALTERA_PLL_SetDefines(
+        PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK,
+        PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
+        PLL_CNTRL_ADDR_OFST, PLL_A_CNTRL_REG, PLL_A_PARAM_REG);
+    // both plls
+    ALTERA_PLL_ResetPLLAndReconfiguration(0);
+    ALTERA_PLL_ResetPLLAndReconfiguration(1);
+
     resetCore();
     resetPeripheral();
     cleanFifos();
@@ -547,12 +556,6 @@ void setupDetector() {
     INA226_CalibrateCurrentRegister(I2C_POWER_VC_DEVICE_ID);
     INA226_CalibrateCurrentRegister(I2C_POWER_VD_DEVICE_ID);
     setVchip(VCHIP_MIN_MV);
-
-    // altera pll
-    ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG,
-                          PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK,
-                          PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
-                          PLL_CNTRL_ADDR_OFST);
 
     setADCInvertRegister(0); // depends on chip
 
@@ -1784,34 +1787,45 @@ int setFrequency(enum CLKINDEX ind, int val) {
         return FAIL;
     }
 
+    int pllIndex = 0;
+    int vcofreq = PLL_VCO_FREQ_MHZ;
+    if (ind == GATED_CLK) {
+        pllIndex = 1;
+        vcofreq = PLL_A_VCO_FREQ_MHZ;
+    }
     // Remembering adcphase/ dbit phase in degrees
-    int adcPhase = getPhase(ADC_CLK, 1);
-    LOG(logDEBUG1, ("\tRemembering ADC phase: %d degrees\n", adcPhase));
-    int dbitPhase = getPhase(DBIT_CLK, 1);
-    LOG(logDEBUG1, ("\tRemembering DBIT phase: %d degrees\n", dbitPhase));
+    int adcPhase = 0, dbitPhase = 0;
+    if (pllIndex == 0) {
+        adcPhase = getPhase(ADC_CLK, 1);
+        LOG(logDEBUG1, ("\tRemembering ADC phase: %d degrees\n", adcPhase));
+        dbitPhase = getPhase(DBIT_CLK, 1);
+        LOG(logDEBUG1, ("\tRemembering DBIT phase: %d degrees\n", dbitPhase));
+    }
 
     // Calculate and set output frequency
     clkFrequency[ind] =
-        ALTERA_PLL_SetOuputFrequency(ind, PLL_VCO_FREQ_MHZ, val);
+        ALTERA_PLL_SetOuputFrequency(pllIndex, ind, vcofreq, val);
     LOG(logINFO, ("\t%s clock (%d) frequency set to %d MHz\n", clock_names[ind],
                   ind, clkFrequency[ind]));
 
     // phase reset by pll (when setting output frequency)
-    clkPhase[ADC_CLK] = 0;
-    clkPhase[DBIT_CLK] = 0;
+    if (pllIndex == 0) {
+        clkPhase[ADC_CLK] = 0;
+        clkPhase[DBIT_CLK] = 0;
 
-    // set the phase (reset by pll)
-    LOG(logINFO, ("\tCorrecting ADC phase to %d degrees\n", adcPhase));
-    setPhase(ADC_CLK, adcPhase, 1);
-    LOG(logINFO, ("\tCorrecting DBIT phase to %d degrees\n", dbitPhase));
-    setPhase(DBIT_CLK, dbitPhase, 1);
+        // set the phase (reset by pll)
+        LOG(logINFO, ("\tCorrecting ADC phase to %d degrees\n", adcPhase));
+        setPhase(ADC_CLK, adcPhase, 1);
+        LOG(logINFO, ("\tCorrecting DBIT phase to %d degrees\n", dbitPhase));
+        setPhase(DBIT_CLK, dbitPhase, 1);
 
-    // required to reconfigure as adc clock is stopped temporarily when
-    // resetting pll (in changing output frequency)
-    AD9257_Configure();
+        // required to reconfigure as adc clock is stopped temporarily when
+        // resetting pll (in changing output frequency)
+        AD9257_Configure();
 
-    if (ind != SYNC_CLK) {
-        configureSyncFrequency(ind);
+        if (ind != SYNC_CLK) {
+            configureSyncFrequency(ind);
+        }
     }
     return OK;
 }

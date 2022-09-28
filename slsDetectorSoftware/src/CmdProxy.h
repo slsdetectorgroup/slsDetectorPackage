@@ -1008,6 +1008,7 @@ class CmdProxy {
         {"asamples", &CmdProxy::asamples},
         {"adcclk", &CmdProxy::adcclk},
         {"runclk", &CmdProxy::runclk},
+        {"gatedclk", &CmdProxy::gatedclk},
         {"syncclk", &CmdProxy::syncclk},
         {"adcpipeline", &CmdProxy::adcpipeline},
         {"v_limit", &CmdProxy::v_limit},
@@ -2090,6 +2091,10 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(runclk, getRUNClock, setRUNClock, StringTo<int>,
                            "[n_clk in MHz]\n\t[Ctb][Moench] Run clock in MHz.");
+
+    INTEGER_COMMAND_VEC_ID(gatedclk, getGatedClock, setGatedClock,
+                           StringTo<int>,
+                           "[n_clk in MHz]\n\t[Ctb] Gated clock in MHz.");
 
     GET_COMMAND(syncclk, getSYNCClock,
                 "[n_clk in MHz]\n\t[Ctb][Moench] Sync clock in MHz.");

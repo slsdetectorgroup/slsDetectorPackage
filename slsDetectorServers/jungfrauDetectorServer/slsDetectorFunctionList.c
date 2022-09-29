@@ -428,7 +428,13 @@ void setupDetector() {
     setupUDPCommParameters();
 #endif
 
+    // altera pll
+    ALTERA_PLL_SetDefines(
+        PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK,
+        PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
+        PLL_CNTRL_ADDR_OFST, PLL_CNTRL_DBIT_WR_PRMTR_MSK, DBIT_CLK_INDEX);
     ALTERA_PLL_ResetPLL();
+
     resetCore();
     resetPeripheral();
     cleanFifos();
@@ -455,12 +461,6 @@ void setupDetector() {
     LTC2620_Disable();
     LTC2620_Configure();
     resetToDefaultDacs(0);
-
-    // altera pll
-    ALTERA_PLL_SetDefines(
-        PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK,
-        PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
-        PLL_CNTRL_ADDR_OFST, PLL_CNTRL_DBIT_WR_PRMTR_MSK, DBIT_CLK_INDEX);
 
     /* Only once at server startup */
     bus_w(DAQ_REG, 0x0);

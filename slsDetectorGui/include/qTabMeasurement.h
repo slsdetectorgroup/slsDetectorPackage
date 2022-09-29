@@ -4,6 +4,8 @@
 #include "sls/Detector.h"
 #include "ui_form_tab_measurement.h"
 
+#include <mutex>
+
 class QStandardItemModel;
 
 namespace sls {
@@ -100,6 +102,8 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     bool isAcquisitionStopped{false};
     int numMeasurements{1};
     int currentMeasurement{0};
+    mutable std::mutex mProgress;
+
 };
 
 } // namespace sls

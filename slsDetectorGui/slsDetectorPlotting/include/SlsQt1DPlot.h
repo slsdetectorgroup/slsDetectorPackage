@@ -5,6 +5,7 @@
 
 #include "SlsQt1DZoomer.h"
 #include "sls/ansi.h"
+#include <array>
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_marker.h>

@@ -266,6 +266,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pushButtonReferesh.clicked.connect(self.plotReferesh)
         self.pushButtonBrowse.clicked.connect(self.browseFile)
 
+        #To auto trigger the read
         self.read_timer =  QtCore.QTimer()
         self.read_timer.timeout.connect(self.read_zmq)
     # For Action options function
@@ -964,12 +965,18 @@ class MainWindow(QtWidgets.QMainWindow):
                     analog_frame[row, col] = pixel_value
                     order_sc[row, col] = i_sc
 
-
             fig, ax = plt.subplots()
             im = ax.imshow(analog_frame)
             ax.invert_yaxis()
             fig.colorbar(im)
             plt.show()
+
+            
+            plot1 = pg.ImageView(self.plotWidget, view=pg.PlotItem())
+            plot1.show()
+            plot1.setImage(analog_frame)
+            
+
         except Exception as e:
             print(str(e))
 

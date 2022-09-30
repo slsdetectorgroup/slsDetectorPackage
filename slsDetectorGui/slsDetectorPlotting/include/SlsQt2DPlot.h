@@ -78,6 +78,9 @@ class SlsQt2DPlot : public QwtPlot {
     void showSpectrogram(bool on);
     void SetZoom(const QRectF &rect);
 
+  private slots:
+    void GetPannedCoord(int, int);
+
   signals:
     void PlotZoomedSignal(const QRectF &);
 

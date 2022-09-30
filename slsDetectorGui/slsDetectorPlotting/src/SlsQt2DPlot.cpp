@@ -144,6 +144,9 @@ void SlsQt2DPlot::SetupZoom() {
 
     connect(zoomer, SIGNAL(zoomed(const QRectF &)), this,
             SIGNAL(PlotZoomedSignal(const QRectF &)));
+
+    connect(panner, SIGNAL(panned(int, int)), this,
+            SLOT(GetPannedCoord(int, int)));
 }
 
 void SlsQt2DPlot::UnZoom(bool replot) {
@@ -154,6 +157,22 @@ void SlsQt2DPlot::UnZoom(bool replot) {
     zoomer->setZoomBase(replot); // Call replot for the attached plot before
                                  // initializing the zoomer with its scales.
                                  // zoomer->zoom(0);
+}
+
+void SlsQt2DPlot::GetPannedCoord(int, int) {
+    double xmin = invTransform(QwtPlot::xBottom, 0);
+    double xmax = invTransform(QwtPlot::xBottom, canvas()->rect().width());
+    double ymax = invTransform(QwtPlot::yLeft, 0);
+    double ymin = invTransform(QwtPlot::yLeft, canvas()->rect().height());
+    LOG(logDEBUG1) << "Rect1  " << xmin << "\t" << xmax << "\t" << ymin << "\t"
+                   << ymax;
+    QPointF topLeft = QPointF(xmin, ymin);
+    QPointF bottomRight = QPointF(xmax, ymax);
+    const QRectF rectf = QRectF(topLeft, bottomRight);
+    rectf.getCoords(&xmin, &ymin, &xmax, &ymax);
+    LOG(logDEBUG1) << "RectF  " << xmin << "\t" << xmax << "\t" << ymin << "\t"
+                   << ymax;
+    emit PlotZoomedSignal(rectf);
 }
 
 void SlsQt2DPlot::SetZoom(const QRectF &rect) {

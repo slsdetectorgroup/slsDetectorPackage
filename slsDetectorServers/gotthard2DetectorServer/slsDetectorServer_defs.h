@@ -94,6 +94,9 @@
 #define DEFAULT_ASIC_DOUT_RDY_SRC (0x5)
 #define DEFAULT_ASIC_DOUT_RDY_DLY (0x3)
 
+#define GAIN_VAL_OFST (12)
+#define GAIN_VAL_MSK  (0x3 << GAIN_VAL_OFST)
+
 #define VETO_DATA_SIZE (160)
 typedef struct {
     uint64_t frameNumber;

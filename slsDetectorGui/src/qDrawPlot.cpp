@@ -13,6 +13,7 @@
 #include <QPainter>
 #include <QResizeEvent>
 #include <QtConcurrentRun>
+#include <qwt_scale_engine.h>
 
 namespace sls {
 
@@ -170,10 +171,7 @@ void qDrawPlot::SetupPlots() {
     QList<double> majorTicks({0, 1, 2, 3});
     QwtScaleDiv div(0, 3, QList<double>(), QList<double>(), majorTicks);
     gainplot1d->setAxisScaleDiv(QwtPlot::yLeft, div);
-    // gainplot1d->axisScaleDraw(QwtPlot::xBottom)->enableComponent(QwtScaleDraw::Ticks,
-    // false);
-    // gainplot1d->axisScaleDraw(QwtPlot::yLeft)->enableComponent(QwtScaleDraw::Labels,
-    // false);
+
     gainhist1d->setItemAttribute(QwtPlotItem::Legend, false);
     gainhist1d->Attach(gainplot1d);
     gainplot1d->DisableZoom(true);
@@ -247,7 +245,7 @@ void qDrawPlot::SetupPlots() {
 
 void qDrawPlot::Zoom1DGainPlot(const QRectF &rect) {
     std::lock_guard<std::mutex> lock(mPlots);
-    gainplot1d->SetZoom(rect);
+    gainplot1d->SetZoomX(rect);
 }
 
 void qDrawPlot::Zoom2DGainPlot(const QRectF &rect) {
@@ -568,7 +566,7 @@ void qDrawPlot::ClonePlot() {
             h->Attach(clonegainplot1D);
 
             connect(cloneplot1D, SIGNAL(PlotZoomedSignal(const QRectF &)),
-                    clonegainplot1D, SLOT(SetZoom(const QRectF &)));
+                    clonegainplot1D, SLOT(SetZoomX(const QRectF &)));
         }
     } else {
         LOG(logDEBUG) << "Cloning 2D Image";

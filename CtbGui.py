@@ -3,9 +3,16 @@ from PyQt5 import QtWidgets, QtCore, QtGui, uic
 import sys, os
 import pyqtgraph as pg
 from pyqtgraph import PlotWidget
+import multiprocessing as mp
+from threading import Thread
+from PIL import Image as im
+import matplotlib.pyplot as plt
+import json
+import zmq
+import numpy as np
+
 
 from functools import partial
-
 from slsdet import Detector, dacIndex, readoutMode
 from bit_utils import set_bit, remove_bit, bit_is_set
 
@@ -17,13 +24,19 @@ class MainWindow(QtWidgets.QMainWindow):
 
         super(MainWindow, self).__init__()
         self.det = Detector()
+        self.zmqIp = self.det.rx_zmqip
+        self.zmqport = self.det.rx_zmqport
+        self.zmq_stream = self.det.rx_zmqstream
+
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.SUB)
+        self.socket.connect(f"tcp://{self.zmqIp}:{self.zmqport}")
+        self.socket.subscribe("")
+
         uic.loadUi("CtbGui.ui", self)
         self.update_field()
 
-        pen = pg.mkPen(color=(36, 119, 173), width=1)
         # Plotting the data
-        self.curve = self.plotWidget.plot(pen=pen)
-
         # For the action options in app
         # TODO Only add the components of action options
         # Show info
@@ -249,11 +262,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lineEditFileName.editingFinished.connect(self.setFileName)
         self.lineEditFilePath.editingFinished.connect(self.setFilePath)
         self.spinBoxIndex.editingFinished.connect(self.setIndex)
-        self.spinBoxMeasurements.editingFinished.connect(self.setMeasurements)
         self.pushButtonStart.clicked.connect(self.acquire)
         self.pushButtonReferesh.clicked.connect(self.plotReferesh)
         self.pushButtonBrowse.clicked.connect(self.browseFile)
 
+        #To auto trigger the read
+        self.read_timer =  QtCore.QTimer()
+        self.read_timer.timeout.connect(self.read_zmq)
     # For Action options function
     # TODO Only add the components of action option+ functions
     # Function to show info
@@ -299,16 +314,19 @@ class MainWindow(QtWidgets.QMainWindow):
     # TODO yet to implement the ADC and HV
     def setADC(self):
         self.det.setDAC(dacIndex.ADC_VPP, self.comboBoxADC.currentIndex())
-        self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
+        self.labelADC.setText(f'Mode: {str(self.det.getDAC(dacIndex.ADC_VPP)[0])}')
 
     def setHighVoltage(self):
-        if self.checkBoxHighVoltage.isChecked():
-            self.det.setHighVoltage(self.spinBoxHighVoltage.value())
-            self.spinBoxHighVoltage.setDisabled(False)
-        else:
-            self.det.setHighVoltage(0)
-            self.spinBoxHighVoltage.setDisabled(True)
-        self.labelHighVoltage.setText(str(self.det.getHighVoltage()[0]))
+        try:
+            if self.checkBoxHighVoltage.isChecked():
+                self.det.setHighVoltage(self.spinBoxHighVoltage.value())
+                self.spinBoxHighVoltage.setDisabled(False)
+            else:
+                self.det.setHighVoltage(0)
+                self.spinBoxHighVoltage.setDisabled(True)
+            self.labelHighVoltage.setText(str(self.det.getHighVoltage()[0]))
+        except Exception as e:
+            print(e)
 
     # For Power Supplies Tab functions
     # TODO Only add the components of Power Supplies tab functions
@@ -317,14 +335,16 @@ class MainWindow(QtWidgets.QMainWindow):
         spinBox = getattr(self, f"spinBoxV{i}")
         power = getattr(dacIndex, f"V_POWER_{i}")
         label = getattr(self, f"labelV{i}")
-
-        if checkBox.isChecked():
-            self.det.setVoltage(power, spinBox.value())
-            spinBox.setDisabled(False)
-        else:
-            self.det.setVoltage(power, 0)
-            spinBox.setDisabled(True)
-        label.setText(str(self.det.getVoltage(power)[0]))
+        try:
+            if checkBox.isChecked():
+                self.det.setVoltage(power, spinBox.value())
+                spinBox.setDisabled(False)
+            else:
+                self.det.setVoltage(power, 0)
+                spinBox.setDisabled(True)
+            label.setText(str(self.det.getVoltage(power)[0]))
+        except Exception as e:
+            print(e)
 
     # For Sense Tab functions
     # TODO Only add the components of Sense tab functions
@@ -336,7 +356,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def updateTemperature(self):
         sense0 = self.det.getTemperature(dacIndex.SLOW_ADC_TEMP)
-        self.labelTemp_2.setText(str(sense0[0]))
+        self.labelTemp_2.setText(f'{str(sense0[0])} °C')
 
     # For Signals Tab functions
     # TODO Only add the components of Signals tab functions
@@ -760,7 +780,7 @@ class MainWindow(QtWidgets.QMainWindow):
             parent=self,
             caption="Select a pattern file",
             directory=os.getcwd(),
-            # filter='README (*.md *.ui)'
+            filter='README (*.pat)'
         )
         if response[0]:
             self.lineEditPattern.setText(response[0])
@@ -831,7 +851,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.spinBoxAnalog.setDisabled(False)
 
     def loadPattern(self):
-        print("loading pattern")
+        pattern_file = self.lineEditPattern.text()
+        if pattern_file:
+            self.det.parameters = pattern_file
+        else:
+            print('No pattern file selected!!!')
 
     # For Acquistions Tab functions
     # TODO Only add the components of Acquistions tab functions
@@ -880,18 +904,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def setIndex(self):
         print("plot options")
 
-    def setMeasurements(self):
-        print("plot options")
-
     def acquire(self):
-        # self.det.acquire()
-        self.spinBoxMeasurements.stepUp()
-        if self.radioButtonYes.isChecked():
-            self.spinBoxIndex.stepUp()
-            print("random")
+        measurement_Number = self.spinBoxMeasurements.value()
+        for i in range(measurement_Number):
+            #self.read_timer.start(20)
+            self.det.acquire()
+            if self.radioButtonYes.isChecked():
+                self.spinBoxIndex.stepUp()
 
     def plotReferesh(self):
-        print("plot options")
+        self.read_zmq()
 
     def browseFile(self):
         response = QtWidgets.QFileDialog.getSaveFileName(
@@ -904,7 +926,60 @@ class MainWindow(QtWidgets.QMainWindow):
             self.lineEditFilePath.setText(response[0])
 
     # For other functios
-    # TODO Add other functions which will be reused
+    # TODO Add other functions which will be reused  
+    #Reading data from zmq and decoding it.
+    def read_zmq(self):
+        try:
+            msg = self.socket.recv_multipart(flags=zmq.NOBLOCK)
+            if len(msg) != 2:
+                print(f'len(msg) = {len(msg)}')
+                return
+            header, data = msg
+            jsonHeader = json.loads(header)
+            print(jsonHeader)
+            print(f'Data size: {len(data)}')
+            data_array = np.array(np.frombuffer(data, dtype=np.uint16))
+
+            # return data_array
+            adc_numbers = [9, 8, 11, 10, 13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 7, 6, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28,
+                            27, 26, 25, 24]
+
+            n_pixels_per_sc = 5000
+
+            sc_width = 25
+            analog_frame = np.zeros((400, 400))
+            order_sc = np.zeros((400, 400))
+
+            for n_pixel in range(n_pixels_per_sc):
+                for i_sc, adc_nr in enumerate(adc_numbers):
+                    # ANALOG
+                    col = ((adc_nr % 16) * sc_width) + (n_pixel % sc_width)
+                    if i_sc < 16:
+                        row = 199 - int(n_pixel / sc_width)
+                    else:
+                        row = 200 + int(n_pixel / sc_width)
+
+                    index_min = n_pixel * 32 + i_sc
+
+                    pixel_value = data_array[index_min]
+                    analog_frame[row, col] = pixel_value
+                    order_sc[row, col] = i_sc
+
+            fig, ax = plt.subplots()
+            im = ax.imshow(analog_frame)
+            ax.invert_yaxis()
+            fig.colorbar(im)
+            plt.show()
+
+            
+            plot1 = pg.ImageView(self.plotWidget, view=pg.PlotItem())
+            plot1.show()
+            plot1.setImage(analog_frame)
+            
+
+        except Exception as e:
+            print(str(e))
+
     def showPalette(self, button):
         color = QtWidgets.QColorDialog.getColor()
         if color.isValid():
@@ -979,7 +1054,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.getDac(0)
 
         # Setting ADC VPP
-        self.labelADC.setText(str(self.det.getDAC(dacIndex.ADC_VPP)[0]))
+        self.labelADC.setText(f'Mode: {str(self.det.getDAC(dacIndex.ADC_VPP)[0])}')
         adcVPP = self.det.getDAC(dacIndex.ADC_VPP)
         for i in adcVPP:
             if (self.det.getDAC(dacIndex.ADC_VPP)[0]) == i:
@@ -1080,7 +1155,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # TODO yet to decide on hex or int
         self.lineEditStartAddress.setText(hex((self.det.patlimits)[0]))
         self.lineEditStopAddress.setText(hex((self.det.patlimits)[1]))
-        #For Wait time and Wait address
+        # For Wait time and Wait address
         for i in range(3):
             lineEditWait = getattr(self, f"lineEditWait{i}Address")
             spinBoxWait = getattr(self, f"spinBoxWait{i}")
@@ -1088,15 +1163,16 @@ class MainWindow(QtWidgets.QMainWindow):
             spinBoxWait.setValue(self.det.patwaittime[i])
 
         for i in range(6):
-            #For Loop repetitions
+            # For Loop repetitions
             spinBoxLoop = getattr(self, f"spinBoxLoop{i}")
             spinBoxLoop.setValue(self.det.patnloop[i])
-            #For Loop start address
+            # For Loop start address
             lineEditLoopStart = getattr(self, f"lineEditLoop{i}Start")
             lineEditLoopStart.setText(hex((self.det.patloop[i])[0]))
-            #For loop stop address
+            # For loop stop address
             lineEditLoopStop = getattr(self, f"lineEditLoop{i}Stop")
             lineEditLoopStop.setText(hex((self.det.patloop[i])[1]))
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

@@ -3195,11 +3195,11 @@ void Module::initializeModuleStructure(detectorType type) {
     shm()->detType = type;
     shm()->numberOfModule.x = 0;
     shm()->numberOfModule.y = 0;
-    shm()->controlPort = DEFAULT_PORTNO;
-    shm()->stopPort = DEFAULT_PORTNO + 1;
+    shm()->controlPort = DEFAULT_TCP_CNTRL_PORTNO;
+    shm()->stopPort = DEFAULT_TCP_STOP_PORTNO;
     strcpy_safe(shm()->settingsDir, getenv("HOME"));
     strcpy_safe(shm()->rxHostname, "none");
-    shm()->rxTCPPort = DEFAULT_PORTNO + 2;
+    shm()->rxTCPPort = DEFAULT_TCP_RX_PORTNO + moduleIndex;
     shm()->useReceiverFlag = false;
     shm()->numUDPInterfaces = 1;
     shm()->zmqport =

@@ -11,7 +11,6 @@
 #include <unistd.h>
 
 #define SEND_REC_MAX_SIZE 4096
-#define DEFAULT_PORTNO    1952
 #define DEFAULT_BACKLOG   5
 
 //  blackfin limits

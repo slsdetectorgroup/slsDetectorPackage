@@ -101,6 +101,8 @@ This document describes the differences between v7.0.0 and v6.x.x
 - g2 change clkdivs 2 3 4 to defaults for burst and cw mode.
 - ctb and moench: allowing 1g non blocking acquire to send data
 - m3 and g2 temp
+- gain plot zooming fixed (disabled, acc. to main plot)
+- ctb, moench, jungfrau (pll reset at start fixed, before no defines)
 
 2. Resolved Issues
 ==================

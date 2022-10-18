@@ -39,7 +39,7 @@ extern int masterCommandLine;
 #ifdef EIGERD
 extern int topCommandLine;
 #endif
-int portno = DEFAULT_PORTNO;
+int portno = DEFAULT_TCP_CNTRL_PORTNO;
 
 void error(char *msg) { perror(msg); }
 

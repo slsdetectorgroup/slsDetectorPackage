@@ -169,9 +169,16 @@ class SlsQt1DPlot : public QwtPlot {
 
     QwtPlotShapeItem *roiBox{nullptr};
 
+  signals:
+    void PlotZoomedSignal(const QRectF &);
+
   public slots:
+    void SetZoomX(const QRectF &rect);
     void UnZoom();
     void Update();
+
+  private slots:
+    void GetPannedCoord(int, int);
 };
 
 } // namespace sls

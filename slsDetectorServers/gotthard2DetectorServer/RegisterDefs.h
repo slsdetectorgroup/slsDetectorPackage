@@ -204,9 +204,9 @@
 #define PKT_CONFIG_REG                      (0x00 * REG_OFFSET + BASE_PKT)
 
 #define PKT_CONFIG_NRXR_MAX_OFST            (0)
-#define PKT_CONFIG_NRXR_MAX_MSK             (0x0000003F << PKT_CONFIG_NRXR_MAX_OFST)
+#define PKT_CONFIG_NRXR_MAX_MSK             (0x0000001F << PKT_CONFIG_NRXR_MAX_OFST)
 #define PKT_CONFIG_RXR_START_ID_OFST        (8)
-#define PKT_CONFIG_RXR_START_ID_MSK         (0x0000003F << PKT_CONFIG_RXR_START_ID_OFST)
+#define PKT_CONFIG_RXR_START_ID_MSK         (0x0000001F << PKT_CONFIG_RXR_START_ID_OFST)
 
 /* Module Coordinates Register */
 #define COORD_0_REG                         (0x02 * REG_OFFSET + BASE_PKT)

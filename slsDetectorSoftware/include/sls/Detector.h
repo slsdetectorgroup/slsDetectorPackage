@@ -718,15 +718,17 @@ class Detector {
 
     void setDestinationUDPList(const UdpDestination, const int module_id);
 
-    /** [Jungfrau][Eiger] */
+    /** [Jungfrau][Eiger][Mythen3][Gotthard2] */
     Result<int> getNumberofUDPDestinations(Positions pos = {}) const;
 
     void clearUDPDestinations(Positions pos = {});
 
-    /** [Jungfrau] */
+    /** [Jungfrau][Mythen3][Gotthard2] */
     Result<int> getFirstUDPDestination(Positions pos = {}) const;
 
-    /**[Jungfrau] Options 0-31 (or number of udp destinations) */
+    /**[Jungfrau][Gotthard2] Options 0-31 (or number of udp destinations)\n
+     * [Mythen3] Options 0-63 (or number of udp destinations)
+     */
     void setFirstUDPDestination(const int value, Positions pos = {});
 
     Result<IpAddr> getDestinationUDPIP(Positions pos = {}) const;

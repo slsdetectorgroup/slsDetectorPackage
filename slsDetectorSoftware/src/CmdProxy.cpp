@@ -1519,9 +1519,10 @@ std::string CmdProxy::UDPDestinationList(int action) {
               "\n\t[mac=xx:xx:xx:xx:xx:xx] "
               "[(optional)mac2=xx:xx:xx:xx:xx:xx]\n\t[port=value] "
               "[(optional)port2=value\n\tThe order of ip, mac and port does "
-              "not matter. entry_value can be >0 only for Eiger and Jungfrau "
-              "where round robin is implemented. If 'auto' used, then ip is "
-              "set to ip of rx_hostname."
+              "not matter. entry_value can be >0 only for "
+              "[Eiger][Jungfrau][Mythen3][Gotthard2] where round robin is "
+              "implemented. If 'auto' used, then ip is set to ip of "
+              "rx_hostname."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {

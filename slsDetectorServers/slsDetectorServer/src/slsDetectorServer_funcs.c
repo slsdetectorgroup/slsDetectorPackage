@@ -58,7 +58,6 @@ int ignoreConfigFileFlag = 0;
 
 udpStruct udpDetails[MAX_UDP_DESTINATION];
 int numUdpDestinations = 1;
-int firstUDPDestination = 0;
 
 int configured = FAIL;
 char configureMessage[MAX_STR_LENGTH] = "udp parameters not configured yet";
@@ -9047,7 +9046,8 @@ int get_dest_udp_list(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting udp destination list for entry %d\n", arg));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MYTHEN3D) &&           \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     if (arg >= MAX_UDP_DESTINATION) {
@@ -9114,7 +9114,8 @@ int set_dest_udp_list(int file_des) {
     getMacAddressinString(mac, MAC_ADDRESS_SIZE, args64[0]);
     getMacAddressinString(mac2, MAC_ADDRESS_SIZE, args64[1]);
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MYTHEN3D) &&           \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -9133,7 +9134,7 @@ int set_dest_udp_list(int file_des) {
                     MAX_UDP_DESTINATION - 1);
             LOG(logERROR, (mess));
         }
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
         else if (args[4] != 0 || args64[1] != 0) {
             ret = FAIL;
             strcpy(mess, "Could not set udp destination. ip2 and mac2 not "
@@ -9213,14 +9214,11 @@ int set_dest_udp_list(int file_des) {
                     numdest = 1;
                 }
                 // set number of destinations
-#if defined(JUNGFRAUD) || defined(EIGERD)
                 if (setNumberofDestinations(numdest) == FAIL) {
                     ret = FAIL;
                     strcpy(mess, "Could not set number of udp destinations.\n");
                     LOG(logERROR, (mess));
-                } else
-#endif
-                {
+                } else {
                     numUdpDestinations = numdest;
                     LOG(logINFOBLUE, ("Number of UDP Destinations: %d\n",
                                       numUdpDestinations));
@@ -9238,12 +9236,12 @@ int get_num_dest_list(int file_des) {
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(EIGERD)
+#if !defined(JUNGFRAUD) && !defined(EIGERD) && !defined(MYTHEN3D) &&           \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     retval = numUdpDestinations;
     LOG(logDEBUG1, ("numUdpDestinations retval: 0x%x\n", retval));
-
     int retval1 = 0;
     if (getNumberofDestinations(&retval1) == FAIL || retval1 != retval) {
         ret = FAIL;
@@ -9253,8 +9251,8 @@ int get_num_dest_list(int file_des) {
                 retval1, retval);
         LOG(logERROR, (mess));
     }
-#endif
 
+#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -9269,7 +9267,8 @@ int clear_all_udp_dst(int file_des) {
             // minimum 1 destination in fpga
             int numdest = 1;
             // set number of destinations
-#if defined(JUNGFRAUD) || defined(EIGERD)
+#if defined(JUNGFRAUD) || defined(EIGERD) || defined(MYTHEN3D) ||              \
+    defined(GOTTHARD2D)
             if (setNumberofDestinations(numdest) == FAIL) {
                 ret = FAIL;
                 strcpy(mess, "Could not clear udp destinations to 1 entry.\n");
@@ -9296,20 +9295,12 @@ int get_udp_first_dest(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
-    retval = firstUDPDestination;
-    if (getFirstUDPDestination() != retval) {
-        ret = FAIL;
-        sprintf(mess,
-                "Could not get first desintation. (server reads %d, fpga reads "
-                "%d).\n",
-                getFirstUDPDestination(), retval);
-        LOG(logERROR, (mess));
-    }
-#endif
+    retval = getFirstUDPDestination();
     LOG(logDEBUG1, ("first udp destination retval: 0x%x\n", retval));
+#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -9322,7 +9313,7 @@ int set_udp_first_dest(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting first udp destination to %d\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -9338,10 +9329,6 @@ int set_udp_first_dest(int file_des) {
                 int retval = getFirstUDPDestination();
                 validate(&ret, mess, arg, retval, "set udp first destination",
                          DEC);
-                if (ret == OK) {
-                    firstUDPDestination = arg;
-                    // configure_mac();
-                }
             }
         }
     }

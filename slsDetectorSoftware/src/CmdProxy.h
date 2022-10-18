@@ -1600,9 +1600,9 @@ class CmdProxy {
 
     GET_COMMAND(
         udp_numdst, getNumberofUDPDestinations,
-        "\n\t[Jungfrau][Eiger] One can enter upto 32 "
-        "destinations that the detector will stream images "
-        "out in a round robin fashion. This is get only command. Default: 1");
+        "\n\t[Jungfrau][Eiger][Mythen3][Gotthard2] One can enter upto 32 (64 "
+        "for Mythen3) destinations that the detector will stream images out in "
+        "a round robin fashion. This is get only command. Default: 1");
 
     EXECUTE_SET_COMMAND(udp_cleardst, clearUDPDestinations,
                         "\n\tClears udp destination details on the detector.");
@@ -1610,11 +1610,11 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         udp_firstdst, getFirstUDPDestination, setFirstUDPDestination,
         StringTo<int>,
-        "[0 - 31 (or number of udp destinations)]\n\t[Jungfrau] One can set "
-        "which is the first "
-        "destination that the detector will stream images "
-        "out from in a round robin fashion. The entry must not have been "
-        "empty. Default: 0");
+        "\n[0 - 31 (or number of udp "
+        "destinations)]\n\t[Jungfrau][Gotthard2]\n[0-63]\n\t[Mythen3]\n\n\t "
+        "One can set which is the first destination that the detector will "
+        "stream images out from in a round robin fashion. The entry must not "
+        "have been empty. Default: 0");
 
     INTEGER_COMMAND_VEC_ID(
         udp_srcmac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,

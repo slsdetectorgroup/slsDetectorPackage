@@ -17,6 +17,16 @@ environments.
 .. warning ::
 
     If you use conda avoid also installing packages with pip. 
+---------------------
+PYBIND11 
+---------------------
+From v7.0.0 onwards, it is packaged into the libs and is no longer a submodule of the slsDetectorPackage.
+
+If you switch to and between versions older than v7.0.0, please update the pybind submodule manually before compiling:
+
+.. code-block:: bash
+
+    git submodule update --init  #from the main slsDetectorPackage folder
 
 ---------------------
 PYTHONPATH 

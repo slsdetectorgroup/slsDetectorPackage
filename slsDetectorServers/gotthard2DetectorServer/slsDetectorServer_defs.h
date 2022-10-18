@@ -12,18 +12,23 @@
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 
 /* Hardware Definitions */
-#define NCHAN                                 (128)
-#define NCHIP                                 (10)
-#define NDAC                                  (16)
-#define NADC                                  (32)
-#define ONCHIP_NDAC                           (7)
-#define DYNAMIC_RANGE                         (16)
-#define HV_SOFT_MAX_VOLTAGE                   (500)
-#define HV_HARD_MAX_VOLTAGE                   (530)
-#define HV_DRIVER_FILE_NAME                   ("/etc/devlinks/hvdac")
-#define DAC_DRIVER_FILE_NAME                  ("/etc/devlinks/dac")
-#define ONCHIP_DAC_DRIVER_FILE_NAME           ("/etc/devlinks/chipdac")
-#define TYPE_FILE_NAME                        ("/etc/devlinks/type")
+#define NCHAN                       (128)
+#define NCHIP                       (10)
+#define NDAC                        (16)
+#define NADC                        (32)
+#define ONCHIP_NDAC                 (7)
+#define DYNAMIC_RANGE               (16)
+#define HV_SOFT_MAX_VOLTAGE         (500)
+#define HV_HARD_MAX_VOLTAGE         (530)
+#define HV_DRIVER_FILE_NAME         ("/etc/devlinks/hvdac")
+#define DAC_DRIVER_FILE_NAME        ("/etc/devlinks/dac")
+#define ONCHIP_DAC_DRIVER_FILE_NAME ("/etc/devlinks/chipdac")
+#define TYPE_FILE_NAME              ("/etc/devlinks/type")
+#ifdef VIRTUAL
+#define TEMPERATURE_FILE_NAME ("/tmp/temp.txt")
+#else
+#define TEMPERATURE_FILE_NAME ("/sys/class/hwmon/hwmon0/temp1_input")
+#endif
 #define CONFIG_FILE                           ("config_gotthard2.txt")
 #define DAC_MAX_MV                            (2048)
 #define ONCHIP_DAC_MAX_VAL                    (0x3FF)
@@ -156,6 +161,8 @@ enum CLKINDEX {
 #define CLK_NAMES                                                              \
     "READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2",         \
         "SYSTEM_C3"
+
+enum ADCINDEX { TEMP_FPGA };
 
 enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
 

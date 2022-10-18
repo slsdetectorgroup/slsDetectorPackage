@@ -12,18 +12,23 @@
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 
 /* Hardware Definitions */
-#define NCOUNTERS                   (3)
-#define MAX_COUNTER_MSK             (0x7)
-#define NCHAN_1_COUNTER             (128)
-#define NCHAN                       (128 * NCOUNTERS)
-#define NCHIP                       (10)
-#define NCHAN_PER_MODULE            (NCHAN * NCHIP)
-#define NDAC                        (16)
-#define HV_SOFT_MAX_VOLTAGE         (500)
-#define HV_HARD_MAX_VOLTAGE         (530)
-#define HV_DRIVER_FILE_NAME         ("/etc/devlinks/hvdac")
-#define DAC_DRIVER_FILE_NAME        ("/etc/devlinks/dac")
-#define TYPE_FILE_NAME              ("/etc/devlinks/type")
+#define NCOUNTERS            (3)
+#define MAX_COUNTER_MSK      (0x7)
+#define NCHAN_1_COUNTER      (128)
+#define NCHAN                (128 * NCOUNTERS)
+#define NCHIP                (10)
+#define NCHAN_PER_MODULE     (NCHAN * NCHIP)
+#define NDAC                 (16)
+#define HV_SOFT_MAX_VOLTAGE  (500)
+#define HV_HARD_MAX_VOLTAGE  (530)
+#define HV_DRIVER_FILE_NAME  ("/etc/devlinks/hvdac")
+#define DAC_DRIVER_FILE_NAME ("/etc/devlinks/dac")
+#define TYPE_FILE_NAME       ("/etc/devlinks/type")
+#ifdef VIRTUAL
+#define TEMPERATURE_FILE_NAME ("/tmp/temp.txt")
+#else
+#define TEMPERATURE_FILE_NAME ("/sys/class/hwmon/hwmon0/temp1_input")
+#endif
 #define DAC_MAX_MV                  (2048)
 #define TYPE_MYTHEN3_MODULE_VAL     (93)
 #define TYPE_TOLERANCE              (5)
@@ -116,6 +121,8 @@ enum DACINDEX {
         2800, /* vTrim */                                                      \
         800   /* VdcSh */                                                      \
     };
+
+enum ADCINDEX { TEMP_FPGA };
 
 #define NUMSETTINGS     (3)
 #define NSPECIALDACS    (2)

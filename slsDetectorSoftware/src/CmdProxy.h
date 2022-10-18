@@ -1450,9 +1450,10 @@ class CmdProxy {
     GET_IND_COMMAND(temp_adc, getTemperature, slsDetectorDefs::TEMPERATURE_ADC,
                     " °C", "[n_value]\n\t[Jungfrau][Gotthard] ADC Temperature");
 
-    GET_IND_COMMAND(
-        temp_fpga, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA, " °C",
-        "[n_value]\n\t[Eiger][Jungfrau][Gotthard] FPGA Temperature");
+    GET_IND_COMMAND(temp_fpga, getTemperature,
+                    slsDetectorDefs::TEMPERATURE_FPGA, " °C",
+                    "[n_value]\n\t[Eiger][Jungfrau][Gotthard][Mythen3]["
+                    "Gotthard2] FPGA Temperature");
 
     GET_IND_COMMAND(temp_fpgaext, getTemperature,
                     slsDetectorDefs::TEMPERATURE_FPGAEXT, " °C",

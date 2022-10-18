@@ -64,6 +64,8 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void resizeEvent(QResizeEvent *event);
 
   private slots:
+    void Zoom1DGainPlot(const QRectF &rect);
+    void Zoom2DGainPlot(const QRectF &rect);
     void SetSaveFileName(QString val);
     void UpdatePlot();
 

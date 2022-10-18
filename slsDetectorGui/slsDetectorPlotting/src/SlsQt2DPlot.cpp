@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "SlsQt2DPlot.h"
-// #include "sls/ansi.h"
+#include "sls/logger.h"
 
 #include <qlist.h>
 #include <qprinter.h>
@@ -141,6 +141,12 @@ void SlsQt2DPlot::SetupZoom() {
     const QColor c(Qt::darkBlue);
     zoomer->setRubberBandPen(c);
     zoomer->setTrackerPen(c);
+
+    connect(zoomer, SIGNAL(zoomed(const QRectF &)), this,
+            SIGNAL(PlotZoomedSignal(const QRectF &)));
+
+    connect(panner, SIGNAL(panned(int, int)), this,
+            SLOT(GetPannedCoord(int, int)));
 }
 
 void SlsQt2DPlot::UnZoom(bool replot) {
@@ -151,6 +157,32 @@ void SlsQt2DPlot::UnZoom(bool replot) {
     zoomer->setZoomBase(replot); // Call replot for the attached plot before
                                  // initializing the zoomer with its scales.
                                  // zoomer->zoom(0);
+}
+
+void SlsQt2DPlot::GetPannedCoord(int, int) {
+    double xmin = invTransform(QwtPlot::xBottom, 0);
+    double xmax = invTransform(QwtPlot::xBottom, canvas()->rect().width());
+    double ymax = invTransform(QwtPlot::yLeft, 0);
+    double ymin = invTransform(QwtPlot::yLeft, canvas()->rect().height());
+    LOG(logDEBUG1) << "Rect1  " << xmin << "\t" << xmax << "\t" << ymin << "\t"
+                   << ymax;
+    QPointF topLeft = QPointF(xmin, ymin);
+    QPointF bottomRight = QPointF(xmax, ymax);
+    const QRectF rectf = QRectF(topLeft, bottomRight);
+    rectf.getCoords(&xmin, &ymin, &xmax, &ymax);
+    LOG(logDEBUG1) << "RectF  " << xmin << "\t" << xmax << "\t" << ymin << "\t"
+                   << ymax;
+    emit PlotZoomedSignal(rectf);
+}
+
+void SlsQt2DPlot::SetZoom(const QRectF &rect) {
+    double xmin = 0, xmax = 0, ymin = 0, ymax = 0;
+    rect.getCoords(&xmin, &ymin, &xmax, &ymax);
+    LOG(logDEBUG1) << "Plot zooming in to " << xmin << " " << xmax << " "
+                   << ymin << " " << ymax;
+    SetXMinMax(xmin, xmax);
+    SetYMinMax(ymin, ymax);
+    replot();
 }
 
 void SlsQt2DPlot::SetZoom(double xmin, double ymin, double x_width,

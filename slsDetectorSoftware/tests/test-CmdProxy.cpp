@@ -1853,8 +1853,7 @@ TEST_CASE("temp_fpga", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD ||
-        det_type == defs::EIGER) {
+    if (det_type != defs::MOENCH) {
         REQUIRE_NOTHROW(proxy.Call("temp_fpga", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_fpga", {}, 0, GET, oss));

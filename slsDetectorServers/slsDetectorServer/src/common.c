@@ -701,3 +701,38 @@ int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix) {
     }
     return OK;
 }
+
+int readADCFromFile(char *fname, int *value) {
+    LOG(logDEBUG1, ("fname:%s\n", fname));
+    // open file
+    FILE *fd = fopen(fname, "r");
+    if (fd == NULL) {
+        LOG(logERROR, ("Could not open file for reading [%s]\n", fname));
+        return FAIL;
+    }
+
+    const size_t LZ = 256;
+    char line[LZ];
+    memset(line, 0, LZ);
+
+    if (NULL == fgets(line, LZ, fd)) {
+        LOG(logERROR, ("Could not read from file %s\n", fname));
+        *value = -1;
+        return FAIL;
+    }
+
+    *value = -1;
+    if (sscanf(line, "%d", value) != 1) {
+        LOG(logERROR, ("Could not scan temperature from %s\n", line));
+        return FAIL;
+    }
+
+#ifdef EIGERD
+    *value /= 10;
+#else
+    LOG(logINFO, ("Temperature: %.2f °C\n", (double)(*value) / 1000.00));
+#endif
+
+    fclose(fd);
+    return OK;
+}

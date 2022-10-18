@@ -281,7 +281,7 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
 void DetectorImpl::addModule(const std::string &hostname) {
     LOG(logINFO) << "Adding module " << hostname;
 
-    int port = DEFAULT_PORTNO;
+    int port = DEFAULT_TCP_CNTRL_PORTNO;
     std::string host = hostname;
     auto res = split(hostname, ':');
     if (res.size() > 1) {

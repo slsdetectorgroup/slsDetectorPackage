@@ -378,7 +378,9 @@ void setPower(enum DACINDEX ind, int val);
 void powerOff();
 #endif
 
-#if !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+int getADC(enum ADCINDEX ind, int *value);
+#elif !defined(MOENCHD)
 int getADC(enum ADCINDEX ind);
 #endif
 

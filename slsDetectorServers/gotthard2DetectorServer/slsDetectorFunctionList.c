@@ -1507,6 +1507,15 @@ int getDAC(enum DACINDEX ind, int mV) {
 
 int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
 
+int getADC(enum ADCINDEX ind, int *value) {
+    LOG(logDEBUG1, ("Reading FPGA temperature...\n"));
+    if (readADCFromFile(TEMPERATURE_FILE_NAME, value) == FAIL) {
+        LOG(logERROR, ("Could not get temperature\n"));
+        return FAIL;
+    }
+    return OK;
+}
+
 int setHighVoltage(int val) {
     if (val > HV_SOFT_MAX_VOLTAGE) {
         val = HV_SOFT_MAX_VOLTAGE;
@@ -3257,8 +3266,22 @@ void *start_timer(void *arg) {
     // Generate data
     char imageData[imagesize];
     memset(imageData, 0, imagesize);
-    for (int i = 0; i < imagesize; i += sizeof(uint16_t)) {
-        *((uint16_t *)(imageData + i)) = i;
+    const int nchannels = NCHIP * NCHAN;
+    int gainVal = 0;
+    int channelVal = 0;
+    for (int i = 0; i < nchannels; ++i) {
+        if ((i % nchannels) < 400) {
+            gainVal = 1;
+        } else if ((i % nchannels) < 800) {
+            gainVal = 2;
+        } else {
+            gainVal = 3;
+        }
+        channelVal = (i & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
+
+        *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+            (uint16_t)channelVal;
+        // LOG(logINFORED, ("[%d]:0x%08x\n", i, channelVal));
     }
     char vetoData[vetodatasize];
     memset(vetoData, 0, sizeof(vetodatasize));

@@ -1374,13 +1374,18 @@ int get_adc(int file_des) {
     if (receiveData(file_des, &ind, sizeof(ind), INT32) < 0)
         return printSocketReadError();
 
-#if defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(MOENCHD)
     functionNotImplemented();
 #else
     enum ADCINDEX serverAdcIndex = 0;
 
     // get
     switch (ind) {
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+    case TEMPERATURE_FPGA:
+        serverAdcIndex = TEMP_FPGA;
+        break;
+#endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD)
     case TEMPERATURE_FPGA:
         serverAdcIndex = TEMP_FPGA;
@@ -1480,8 +1485,18 @@ int get_adc(int file_des) {
     // valid index
     if (ret == OK) {
         LOG(logDEBUG1, ("Getting ADC %d\n", serverAdcIndex));
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+        ret = getADC(serverAdcIndex, &retval);
+        if (ret == FAIL) {
+            strcpy(mess, "Could not get temperature\n");
+            LOG(logERROR, (mess));
+        } else {
+            LOG(logDEBUG1, ("ADC(%d): %d\n", serverAdcIndex, retval));
+        }
+#else
         retval = getADC(serverAdcIndex);
         LOG(logDEBUG1, ("ADC(%d): %d\n", serverAdcIndex, retval));
+#endif
     }
 #endif
 

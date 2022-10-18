@@ -605,6 +605,9 @@ std::vector<defs::dacIndex> Detector::getTemperatureList() const {
             defs::TEMPERATURE_10GE,  defs::TEMPERATURE_DCDC,
             defs::TEMPERATURE_SODL,  defs::TEMPERATURE_SODR,
             defs::TEMPERATURE_FPGA2, defs::TEMPERATURE_FPGA3};
+    case defs::MYTHEN3:
+    case defs::GOTTHARD2:
+        return std::vector<defs::dacIndex>{defs::TEMPERATURE_FPGA};
     default:
         return std::vector<defs::dacIndex>{};
     }
@@ -631,6 +634,8 @@ Result<int> Detector::getTemperature(defs::dacIndex index,
     switch (getDetectorType().squash()) {
     case defs::EIGER:
     case defs::JUNGFRAU:
+    case defs::MYTHEN3:
+    case defs::GOTTHARD2:
         for (auto &it : res) {
             it /= 1000;
         }

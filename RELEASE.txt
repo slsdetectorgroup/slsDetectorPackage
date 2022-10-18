@@ -104,6 +104,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - m3 and g2 temp
 - gain plot zooming fixed (disabled, acc. to main plot)
 - ctb, moench, jungfrau (pll reset at start fixed, before no defines)
+- pybind built into package, no need to update submodule when previous release had different pybind version
 
 2. Resolved Issues
 ==================

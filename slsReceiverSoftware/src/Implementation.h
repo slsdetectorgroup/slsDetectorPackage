@@ -329,7 +329,7 @@ class Implementation : private virtual slsDetectorDefs {
     // network configuration (UDP)
     std::array<std::string, MAX_NUMBER_OF_LISTENING_THREADS> eth;
     std::array<uint32_t, MAX_NUMBER_OF_LISTENING_THREADS> udpPortNum{
-        {DEFAULT_UDP_PORTNO, DEFAULT_UDP_PORTNO + 1}};
+        {DEFAULT_UDP_DST_PORTNO, DEFAULT_UDP_DST_PORTNO + 1}};
     int actualUDPSocketBufferSize{0};
 
     // zmq parameters

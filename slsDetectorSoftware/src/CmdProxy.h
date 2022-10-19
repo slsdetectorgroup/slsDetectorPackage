@@ -666,7 +666,6 @@ class CmdProxy {
         {"vb_cs", "dac"},
         {"vb_opa_fd", "dac"},
         {"vcom_adc2", "dac"},
-        {"adcvpp", "dac"},
         {"vb_ds", "dac"},
         {"vb_comp", "dac"},
         {"vb_pixbuf", "dac"},
@@ -1018,6 +1017,7 @@ class CmdProxy {
         {"dsamples", &CmdProxy::dsamples},
         {"romode", &CmdProxy::romode},
         {"dbitclk", &CmdProxy::dbitclk},
+        {"adcvpp", &CmdProxy::AdcVpp},
         {"v_a", &CmdProxy::v_a},
         {"v_b", &CmdProxy::v_b},
         {"v_c", &CmdProxy::v_c},
@@ -1190,6 +1190,7 @@ class CmdProxy {
     /* CTB/ Moench Specific */
     std::string Samples(int action);
     /* CTB Specific */
+    std::string AdcVpp(int action);
     std::string SlowAdc(int action);
     std::string ReceiverDbitList(int action);
     std::string DigitalIODelay(int action);

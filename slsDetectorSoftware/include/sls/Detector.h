@@ -1585,6 +1585,14 @@ class Detector {
      */
     void setVoltage(defs::dacIndex index, int value, Positions pos = {});
 
+    /**
+     * [CTB][Moench] Options: [0- 4] or [1V, 1.14V, 1.33V, 1.6V, 2V]
+     */
+    Result<int> getADCVpp(bool mV = false, Positions pos = {}) const;
+
+    /** [CTB][Moench] */
+    void setADCVpp(int value, bool mV = false, Positions pos = {});
+
     /** [CTB][Moench] */
     Result<uint32_t> getADCEnableMask(Positions pos = {}) const;
 

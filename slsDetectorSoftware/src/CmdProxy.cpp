@@ -2580,7 +2580,7 @@ std::string CmdProxy::AdcVpp(int action) {
         } else if (args.size() > 1) {
             WrongNumberOfParameters(1);
         }
-        auto t = det->getDAC(defs::ADC_VPP, mV, std::vector<int>{det_id});
+        auto t = det->getADCVpp(mV, std::vector<int>{det_id});
         os << OutString(t) << (mV ? " mV\n" : "\n");
     } else if (action == defs::PUT_ACTION) {
         bool mV = false;
@@ -2593,7 +2593,7 @@ std::string CmdProxy::AdcVpp(int action) {
         } else if (args.size() > 2 || args.size() < 1) {
             WrongNumberOfParameters(1);
         }
-        det->setDAC(defs::ADC_VPP, StringTo<int>(args[1]), mV,
+        det->setADCVpp(StringTo<int>(args[1]), mV,
                     std::vector<int>{det_id});
         os << args[1] << (mV ? " mV\n" : "\n");
     } else {

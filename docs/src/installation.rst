@@ -27,13 +27,18 @@ Build from source using CMake
 ---------------------------------
 
 Note that on some systems, for example RH7,  cmake v3+ is available under the cmake3 alias.
-It is also required to clone with the option --recursive to get the git submodules used
-in the package. 
+It is also required to clone with the option --recursive to get the pybind11 submodules used
+in the package. (Only needed for older versions than v7.0.0)
 
 
 .. code-block:: bash
 
     git clone --recursive https://github.com/slsdetectorgroup/slsDetectorPackage.git
+    
+    # if older than v7.0.0 and using python, update pybind11 submodules
+    cd slsDetectorPackage
+    git submodule update --init
+
     mkdir build && cd build
     cmake ../slsDetectorPackage -DCMAKE_INSTALL_PREFIX=/your/install/path
     make -j12 #or whatever number of cores you are using to build
@@ -55,26 +60,28 @@ These are mainly aimed at those not familiar with using ccmake and cmake.
 
     The binaries are generated in slsDetectorPackage/build/bin directory.
 
-    Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [n] [-h] [z] [-d <HDF5 directory>] [-l Install directory] [-k <CMake command>] [-j <Number of threads>]
+    Usage: ./cmk.sh [-b] [-c] [-d <HDF5 directory>] [e] [g] [-h] [i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [m] [n] [-p] [-q <Zmq hint directory>] [r] [s] [t] [u] [z]  
     -[no option]: only make
-    -c: Clean
     -b: Builds/Rebuilds CMake files normal mode
-    -p: Builds/Rebuilds Python API
-    -h: Builds/Rebuilds Cmake files with HDF5 package
+    -c: Clean
     -d: HDF5 Custom Directory
+    -e: Debug mode
+    -g: Build/Rebuilds only gui
+    -h: Builds/Rebuilds Cmake files with HDF5 package
+    -i: Builds tests
+    -j: Number of threads to compile through
     -k: CMake command
     -l: Install directory
-    -t: Build/Rebuilds only text client
-    -r: Build/Rebuilds only receiver
-    -g: Build/Rebuilds only gui
-    -s: Simulator
-    -u: Chip Test Gui
-    -j: Number of threads to compile through
-    -e: Debug mode
-    -i: Builds tests
     -m: Manuals
     -n: Manuals without compiling doxygen (only rst)
+    -p: Builds/Rebuilds Python API
+    -q: Zmq hint directory
+    -r: Build/Rebuilds only receiver
+    -s: Simulator
+    -t: Build/Rebuilds only text client
+    -u: Chip Test Gui
     -z: Moench zmq processor
+
     
     # get all options
     ./cmk.sh -?

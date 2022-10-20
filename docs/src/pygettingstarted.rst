@@ -20,9 +20,14 @@ environments.
 ---------------------
 PYBIND11 
 ---------------------
-From v7.0.0 onwards, it is packaged into the libs and is no longer a submodule of the slsDetectorPackage.
+**v7.0.0 of slsDetectorPackage:**
 
-If you switch to and between versions older than v7.0.0, please update the pybind submodule manually before compiling:
+#. It is packaged into libs (pybind)
+#. No longer a submodule of the slsDetectorPackage
+
+**Older than v7.0.0:**
+#. Submodule in libs (pybind11)
+#. Switching between versions will require an update of the submodule as well using:
 
 .. code-block:: bash
 

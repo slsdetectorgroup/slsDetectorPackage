@@ -108,7 +108,7 @@ TEST_CASE("adcvpp", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
-        auto prev_val = det.getDAC(defs::ADC_VPP, false);
+        auto prev_val = det.getADCVpp(false);
         {
             std::ostringstream oss;
             proxy.Call("adcvpp", {"1"}, -1, PUT, oss);
@@ -125,7 +125,7 @@ TEST_CASE("adcvpp", "[.cmd]") {
             REQUIRE(oss.str() == "dac adcvpp 1140 mV\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setDAC(defs::ADC_VPP, prev_val[i], false, {i});
+            det.setADCVpp(prev_val[i], false, {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("dac adcvpp", {}, -1, GET));

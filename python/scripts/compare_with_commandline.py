@@ -14,7 +14,6 @@ pycmd = dir(Detector)
 # dacs are in general not included in the python commands and we expect to
 # set them from the specialized class or using an enum 
 dacs = [
-        'adcvpp',
         'iodelay',
         'list',
         'rxb_lb',

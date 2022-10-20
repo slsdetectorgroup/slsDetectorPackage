@@ -253,12 +253,6 @@ std::string GetHelpDac(std::string dac) {
             "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
             "common mode voltage of ADC DAC bank 2.");
     }
-    if (dac == "adcvpp") {
-        return std::string(
-            "[dac or mV value][(optional unit) mV] \n\t[Ctb][Moench] Vpp of "
-            "ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V. "
-            "\n\tAdvanced User function! ");
-    }
     if (dac == "vb_ds") {
         return std::string(
             "[dac or mV value][(optional unit) mV] \n\t[Jungfrau] Dac for ??");

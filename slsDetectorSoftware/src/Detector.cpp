@@ -1999,6 +1999,14 @@ void Detector::setVoltage(defs::dacIndex index, int value, Positions pos) {
     pimpl->Parallel(&Module::setDAC, pos, value, index, true);
 }
 
+Result<int> Detector::getADCVpp(bool mV, Positions pos) const {
+    return pimpl->Parallel(&Module::getDAC, pos, defs::ADC_VPP, mV);
+}
+
+void Detector::setADCVpp(int value, bool mV, Positions pos) {
+    pimpl->Parallel(&Module::setDAC, pos, value, defs::ADC_VPP, mV);
+}
+
 Result<uint32_t> Detector::getADCEnableMask(Positions pos) const {
     return pimpl->Parallel(&Module::getADCEnableMask, pos);
 }

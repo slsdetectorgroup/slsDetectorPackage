@@ -2556,6 +2556,51 @@ std::string CmdProxy::Samples(int action) {
 }
 
 /* CTB Specific */
+std::string CmdProxy::AdcVpp(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+
+    if (action == defs::HELP_ACTION) {
+        os << "[dac or mV value][(optional unit) mV] \n\t[Ctb][Moench] Vpp of "
+            "ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V. "
+            "\n\tAdvanced User function!\n"
+           << '\n';
+        return os.str();
+    }
+
+    if (action == defs::GET_ACTION) {
+        bool mV = false;
+
+        if (args.size() == 1) {
+            if ((args[0] != "mv") && (args[0] != "mV")) {
+                throw RuntimeError("Unknown argument " + args[0] +
+                                   ". Did you mean mV?");
+            }
+            mV = true;
+        } else if (args.size() > 1) {
+            WrongNumberOfParameters(1);
+        }
+        auto t = det->getADCVpp(mV, std::vector<int>{det_id});
+        os << OutString(t) << (mV ? " mV\n" : "\n");
+    } else if (action == defs::PUT_ACTION) {
+        bool mV = false;
+        if (args.size() == 2) {
+            if ((args[1] != "mv") && (args[1] != "mV")) {
+                throw RuntimeError("Unknown argument " + args[1] +
+                                   ". Did you mean mV?");
+            }
+            mV = true;
+        } else if (args.size() > 2 || args.size() < 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->setADCVpp(StringTo<int>(args[1]), mV,
+                    std::vector<int>{det_id});
+        os << args[1] << (mV ? " mV\n" : "\n");
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 std::string CmdProxy::SlowAdc(int action) {
     std::ostringstream os;

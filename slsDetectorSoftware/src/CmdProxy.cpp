@@ -2595,7 +2595,7 @@ std::string CmdProxy::AdcVpp(int action) {
         }
         det->setADCVpp(StringTo<int>(args[0]), mV,
                     std::vector<int>{det_id});
-        os << args[1] << (mV ? " mV\n" : "\n");
+        os << args[0] << (mV ? " mV\n" : "\n");
     } else {
         throw RuntimeError("Unknown action");
     }

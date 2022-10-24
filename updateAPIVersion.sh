@@ -47,10 +47,11 @@ if [ -z "$API_BRANCH" ]; then
     #prefix of 0x
     API_DATE=${API_DATE/#/0x}
     echo "date="$API_DATE
-    API_VAL+=API_DATE
+    API_VAL+=$API_DATE
 else
     #API_BRANCH is defined (3rd argument)
-    API_VAL+=API_BRANCH
+    echo "branch="$API_BRANCH
+    API_VAL+=$API_BRANCH
 fi
 
 #copy it to versionAPI.h

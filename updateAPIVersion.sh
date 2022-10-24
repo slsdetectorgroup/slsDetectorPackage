@@ -15,7 +15,7 @@ CURR_DIR=$PWD
 API_BRANCH=""
 if [ $# -eq 3 ]; then
     API_BRANCH=$3
-    echo "branch got is ="$API_BRANCH
+    echo -e "branch got is ="$API_BRANCH
 fi
 
 #go to directory

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
+branch=""
 if [ $# -eq 0 ]; then
 	declare -a det=("ctbDetectorServer" 
 		"gotthardDetectorServer" 
@@ -10,6 +11,7 @@ if [ $# -eq 0 ]; then
 		)
 else
 	declare -a det=("${1}")
+	branch = $2
 fi
 
 declare -a deterror=("OK" "OK" "OK" "OK" "OK" "OK")
@@ -21,7 +23,7 @@ do
 	echo -e "Compiling $dir [$file]"
 	cd $dir
 	make clean
-	if make version; then
+	if make version API_BRANCH=$branch; then
 		deterror[i]="OK"
 	else
 		deterror[i]="FAIL"

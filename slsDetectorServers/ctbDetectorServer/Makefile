@@ -25,7 +25,7 @@ version: clean versioning $(PROGS)
 
 boot: $(OBJS) 
 
-APIBRANCH = "default"
+APIBRANCH=""
 version_branch=APIBRANCH
 version_name=APICTB
 version_path=slsDetectorServers/ctbDetectorServer

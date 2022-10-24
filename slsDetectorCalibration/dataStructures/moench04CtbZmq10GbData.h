@@ -91,14 +91,14 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
                         } else {
                             row = 200 + i / sc_width;
                         }
-                        if (nds > 0)
+                       // if (nds > 0)
                             dataMap[row][col] =
-                                ((nadc + 4) * i + iadc) * 2 + off; //+16*(ip+1);
-                        else
-                            dataMap[row][col] =
-                                (nadc * i + iadc) * 2 + off; //+16*(ip+1);
+                                ((nadc ) * i + iadc) * 2 + off; //+16*(ip+1);
+                        //else
+                          //  dataMap[row][col] =
+                            //    (nadc * i + iadc) * 2 + off; //+16*(ip+1);
                         if (dataMap[row][col] < 0 ||
-                            dataMap[row][col] >= aSamples * 2 * 32 + off)
+                            dataMap[row][col] >= aSamples * 2 * 32 +  off)
                             cout << "Error: pointer " << dataMap[row][col]
                                  << " out of range " << endl;
                     }

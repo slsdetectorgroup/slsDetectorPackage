@@ -437,7 +437,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
                             val[(iy + ir) * nx + ix + ic] =
 			      subtractPedestal(data, ix + ic, iy + ir, cm);
 			    
-			  }
+			  
 			}
 			v = &(val[(iy + ir) * nx + ix + ic]);
 			tot += *v;

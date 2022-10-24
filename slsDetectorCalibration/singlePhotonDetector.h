@@ -433,10 +433,11 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
                             (ix + ic) >= 0 && (ix + ic) < nx) {
 
 
-                        if ((iy + ir) >= iy && (ix + ic) >= ix ) {
+			  if ((iy + ir) >= iy && (ix + ic) >= ix ) {
                             val[(iy + ir) * nx + ix + ic] =
-                                subtractPedestal(data, ix + ic, iy + ir, cm);
-
+			      subtractPedestal(data, ix + ic, iy + ir, cm);
+			    
+			  }
 			}
 			v = &(val[(iy + ir) * nx + ix + ic]);
 			tot += *v;

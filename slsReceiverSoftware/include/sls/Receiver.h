@@ -4,9 +4,9 @@
 #include "sls/sls_detector_defs.h"
 #include <memory>
 
-class ClientInterface;
-
 namespace sls {
+
+class ClientInterface;
 
 class Receiver : private virtual slsDetectorDefs {
 
@@ -39,16 +39,17 @@ class Receiver : private virtual slsDetectorDefs {
     int64_t getReceiverVersion();
 
     /**
-     * Start Acquisition Call back (slsMultiReceiver writes data if file write enabled)
-     * if registerCallBackRawDataReady or registerCallBackRawDataModifyReady registered,
-     * users get data
-     * callback arguments are:
+     * Start Acquisition Call back (slsMultiReceiver writes data if file write
+     * enabled) if registerCallBackRawDataReady or
+     * registerCallBackRawDataModifyReady registered, users get data callback
+     * arguments are:
      * - file path
      * - file name prefix
      * - file index
      * - image size in bytes
      */
-    void registerCallBackStartAcquisition(int (*func)(const std::string &, const std::string &,
+    void registerCallBackStartAcquisition(int (*func)(const std::string &,
+                                                      const std::string &,
                                                       uint64_t, size_t, void *),
                                           void *arg);
 
@@ -65,9 +66,9 @@ class Receiver : private virtual slsDetectorDefs {
      * args to raw data ready callback are:
      * - sls_receiver_header frame metadata,
      * - pointer to data
-     * - image size in bytes 
+     * - image size in bytes
      */
-    void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
                                                    char *, size_t, void *),
                                       void *arg);
 
@@ -80,7 +81,7 @@ class Receiver : private virtual slsDetectorDefs {
      * Can be modified to the new size to be written/streamed. (only smaller
      * value allowed).
      */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &,
                                                          char *, size_t &,
                                                          void *),
                                             void *arg);

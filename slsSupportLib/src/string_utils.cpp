@@ -14,7 +14,9 @@ std::vector<std::string> split(const std::string &strToSplit, char delimeter) {
     std::string item;
     std::vector<std::string> splittedStrings;
     while (std::getline(ss, item, delimeter)) {
-        splittedStrings.push_back(item);
+        if (item.length() > 0) {
+            splittedStrings.push_back(item);
+        }
     }
     return splittedStrings;
 }

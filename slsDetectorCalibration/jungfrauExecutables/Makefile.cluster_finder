@@ -22,6 +22,10 @@ jungfrauClusterFinderHighZ:  jungfrauClusterFinder.cpp  $(INCS) clean
 			 g++ -o jungfrauClusterFinderHighZ  jungfrauClusterFinder.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL  -DHIGHZ 
 
 
+jungfrauClusterFinderStrx:  jungfrauClusterFinder.cpp  $(INCS) clean
+			 g++ -o jungfrauClusterFinderStrx  jungfrauClusterFinder.cpp $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DSAVE_ALL  -DJFSTRX 
+
+
 
 
 jungfrauMakeEta:  jungfrauInterpolation.cpp  $(INCS) clean

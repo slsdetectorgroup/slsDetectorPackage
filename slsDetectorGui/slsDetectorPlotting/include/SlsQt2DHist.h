@@ -9,6 +9,8 @@
 #include <qwt_scale_draw.h>
 #include <qwt_scale_widget.h>
 
+namespace sls {
+
 class SlsQt2DHist : public QwtRasterData {
 
   private:
@@ -124,5 +126,7 @@ class SlsQt2DHist : public QwtRasterData {
                                     x);
     }
 };
+
+} // namespace sls
 
 #endif

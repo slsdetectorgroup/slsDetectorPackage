@@ -4,7 +4,7 @@
 #include "sls/CircularFifo.h"
 #include <vector>
 
-using sls::CircularFifo;
+namespace sls {
 
 TEST_CASE("Empty buffer") {
     CircularFifo<char> fifo(0);
@@ -51,3 +51,5 @@ TEST_CASE("Push pop") {
     CHECK(fifo.isEmpty() == true);
     CHECK(fifo.isFull() == false);
 }
+
+} // namespace sls

@@ -8,6 +8,8 @@
 #include <sstream>
 #include <vector>
 
+namespace sls {
+
 // Dummy classes only used here for testing
 class DummyWithStr {
   public:
@@ -19,35 +21,37 @@ class DummyNoStr {
     std::string somethingelse();
 };
 
-TEST_CASE("sls::is_container") {
+TEST_CASE("is_container") {
 
-    CHECK(sls::is_container<std::vector<int>>::value == true);
-    CHECK(sls::is_container<std::array<double, 3>>::value == true);
+    CHECK(is_container<std::vector<int>>::value == true);
+    CHECK(is_container<std::array<double, 3>>::value == true);
 }
 
 TEST_CASE("Check for str() method") {
-    REQUIRE(sls::has_str<DummyWithStr>::value == true);
-    REQUIRE(sls::has_str<DummyNoStr>::value == false);
+    REQUIRE(has_str<DummyWithStr>::value == true);
+    REQUIRE(has_str<DummyNoStr>::value == false);
 }
 
 TEST_CASE("Check for str() on ostream") {
-    REQUIRE(sls::has_str<std::ostringstream>::value == true);
+    REQUIRE(has_str<std::ostringstream>::value == true);
 }
 
-TEST_CASE("sls::is_duration") {
-    REQUIRE(sls::is_duration<std::chrono::nanoseconds>::value == true);
-    REQUIRE(sls::is_duration<std::chrono::seconds>::value == true);
-    REQUIRE(sls::is_duration<std::chrono::hours>::value == true);
+TEST_CASE("is_duration") {
+    REQUIRE(is_duration<std::chrono::nanoseconds>::value == true);
+    REQUIRE(is_duration<std::chrono::seconds>::value == true);
+    REQUIRE(is_duration<std::chrono::hours>::value == true);
 
-    REQUIRE(sls::is_duration<int>::value == false);
-    REQUIRE(sls::is_duration<std::vector<int>>::value == false);
+    REQUIRE(is_duration<int>::value == false);
+    REQUIRE(is_duration<std::vector<int>>::value == false);
 }
 
 TEST_CASE("initializer list") {
-    REQUIRE(sls::is_light_container<std::initializer_list<int>>::value == true);
+    REQUIRE(is_light_container<std::initializer_list<int>>::value == true);
 }
 
 TEST_CASE("Check for emplace back") {
     // we know vector should have this its the type trait that is tested
-    REQUIRE(sls::has_emplace_back<std::vector<int>>::value == true);
+    REQUIRE(has_emplace_back<std::vector<int>>::value == true);
 }
+
+} // namespace sls

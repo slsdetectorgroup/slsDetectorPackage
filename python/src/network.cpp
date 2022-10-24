@@ -4,11 +4,7 @@
 This file contains Python bindings for the IpAddr and MacAddr
 classes.
 */
-
-#include <pybind11/chrono.h>
-#include <pybind11/operators.h>
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include "py_headers.h"
 
 #include "sls/network_utils.h"
 namespace py = pybind11;

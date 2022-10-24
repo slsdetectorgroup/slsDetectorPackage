@@ -28,8 +28,8 @@ class TGTextButton;
 namespace sls
 {
    class Detector;
+   class detectorData;
 };
-class detectorData;
 
 template <class dataType> class slsDetectorData;
 
@@ -201,10 +201,10 @@ class ctbAcquisition : public TGGroupFrame {
    void setBitGraph (int i ,int en, Pixel_t col);
    void startAcquisition();
    static   void progressCallback(double,void*);
-   static void dataCallback(detectorData*, long unsigned int, unsigned int,  void*);
+   static void dataCallback(sls::detectorData*, long unsigned int, unsigned int,  void*);
    int StopFlag;
    
-   int plotData(detectorData*, int);
+   int plotData(sls::detectorData*, int);
 
    void setPatternFile(const char* t);
 

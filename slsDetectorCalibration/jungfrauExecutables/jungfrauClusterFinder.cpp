@@ -4,7 +4,12 @@
 #include <iostream>
 
 //#include "moench03T1ZmqData.h"
+#ifndef JFSTRX
 #include "jungfrauHighZSingleChipData.h"
+#endif
+#ifdef JFSTRX
+#include "jungfrauLGADStrixelsData.h"
+#endif
 
 #include "multiThreadedAnalogDetector.h"
 #include "singlePhotonDetector.h"
@@ -38,8 +43,13 @@ int main(int argc, char *argv[]) {
     int ndark = 100;
     int ok;
     int iprog = 0;
-
+#ifndef JFSTRX
     jungfrauHighZSingleChipData *decoder = new jungfrauHighZSingleChipData();
+#endif
+#ifdef JFSTRX
+    cout << "bbb" << endl;
+    jungfrauLGADStrixelsData *decoder = new jungfrauLGADStrixelsData();
+#endif
 
     decoder->getDetectorSize(nx, ny);
     cout << "nx " << nx << " ny " << ny << endl;
@@ -97,7 +107,7 @@ int main(int argc, char *argv[]) {
 
     for (int irun = runmin; irun < runmax; irun++) {
         sprintf(fn, fformat, irun);
-        sprintf(fname, "%s/%s.raw", indir, fn);
+        sprintf(fname, "%s/%s.dat", indir, fn);
         sprintf(outfname, "%s/%s.clust", outdir, fn);
         sprintf(imgfname, "%s/%s.tiff", outdir, fn);
         std::time(&end_time);

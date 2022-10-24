@@ -10,14 +10,15 @@
 #include <string.h>
 #include <thread>
 #include <vector>
-#include <zmq.h>
+
+namespace sls {
 
 using namespace rapidjson;
 ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
                      const uint32_t portnumber)
     : portno(portnumber), sockfd(false) {
     // Extra check that throws if conversion fails, could be removed
-    auto ipstr = sls::HostnameToIp(hostname_or_ip).str();
+    auto ipstr = HostnameToIp(hostname_or_ip).str();
     std::ostringstream oss;
     oss << "tcp://" << ipstr << ":" << portno;
     sockfd.serverAddress = oss.str();
@@ -26,20 +27,20 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
     // create context
     sockfd.contextDescriptor = zmq_ctx_new();
     if (sockfd.contextDescriptor == nullptr)
-        throw sls::ZmqSocketError("Could not create contextDescriptor");
+        throw ZmqSocketError("Could not create contextDescriptor");
 
     // create subscriber
     sockfd.socketDescriptor = zmq_socket(sockfd.contextDescriptor, ZMQ_SUB);
     if (sockfd.socketDescriptor == nullptr) {
         PrintError();
-        throw sls::ZmqSocketError("Could not create socket");
+        throw ZmqSocketError("Could not create socket");
     }
 
     // Socket Options provided above
     // an empty string implies receiving any messages
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SUBSCRIBE, "", 0)) {
         PrintError();
-        throw sls::ZmqSocketError("Could set socket opt");
+        throw ZmqSocketError("Could set socket opt");
     }
     // ZMQ_LINGER default is already -1 means no messages discarded. use this
     // options if optimizing required ZMQ_SNDHWM default is 0 means no limit.
@@ -48,7 +49,7 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_LINGER, &value,
                        sizeof(value))) {
         PrintError();
-        throw sls::ZmqSocketError("Could not set ZMQ_LINGER");
+        throw ZmqSocketError("Could not set ZMQ_LINGER");
     }
     LOG(logDEBUG) << "Default receive high water mark:"
                   << GetReceiveHighWaterMark();
@@ -59,13 +60,13 @@ ZmqSocket::ZmqSocket(const uint32_t portnumber, const char *ethip)
     // create context
     sockfd.contextDescriptor = zmq_ctx_new();
     if (sockfd.contextDescriptor == nullptr)
-        throw sls::ZmqSocketError("Could not create contextDescriptor");
+        throw ZmqSocketError("Could not create contextDescriptor");
 
     // create publisher
     sockfd.socketDescriptor = zmq_socket(sockfd.contextDescriptor, ZMQ_PUB);
     if (sockfd.socketDescriptor == nullptr) {
         PrintError();
-        throw sls::ZmqSocketError("Could not create socket");
+        throw ZmqSocketError("Could not create socket");
     }
     LOG(logDEBUG) << "Default send high water mark:" << GetSendHighWaterMark();
 
@@ -78,7 +79,7 @@ ZmqSocket::ZmqSocket(const uint32_t portnumber, const char *ethip)
     // bind address
     if (zmq_bind(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {
         PrintError();
-        throw sls::ZmqSocketError("Could not bind socket");
+        throw ZmqSocketError("Could not bind socket");
     }
     // sleep to allow a slow-joiner
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -90,7 +91,7 @@ int ZmqSocket::GetSendHighWaterMark() {
     if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_SNDHWM, &value,
                        &value_size)) {
         PrintError();
-        throw sls::ZmqSocketError("Could not get ZMQ_SNDHWM");
+        throw ZmqSocketError("Could not get ZMQ_SNDHWM");
     }
     return value;
 }
@@ -99,7 +100,7 @@ void ZmqSocket::SetSendHighWaterMark(int limit) {
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SNDHWM, &limit,
                        sizeof(limit))) {
         PrintError();
-        throw sls::ZmqSocketError("Could not set ZMQ_SNDHWM");
+        throw ZmqSocketError("Could not set ZMQ_SNDHWM");
     }
 }
 
@@ -109,7 +110,7 @@ int ZmqSocket::GetReceiveHighWaterMark() {
     if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_RCVHWM, &value,
                        &value_size)) {
         PrintError();
-        throw sls::ZmqSocketError("Could not get ZMQ_SNDHWM");
+        throw ZmqSocketError("Could not get ZMQ_SNDHWM");
     }
     return value;
 }
@@ -118,7 +119,7 @@ void ZmqSocket::SetReceiveHighWaterMark(int limit) {
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_RCVHWM, &limit,
                        sizeof(limit))) {
         PrintError();
-        throw sls::ZmqSocketError("Could not set ZMQ_SNDHWM");
+        throw ZmqSocketError("Could not set ZMQ_SNDHWM");
     }
 }
 
@@ -131,82 +132,57 @@ int ZmqSocket::Connect() {
 }
 
 int ZmqSocket::SendHeader(int index, zmqHeader header) {
+    std::ostringstream oss;
+    oss << "{\"jsonversion\":" << header.jsonversion
+        << ", \"bitmode\":" << header.dynamicRange
+        << ", \"fileIndex\":" << header.fileIndex << ", \"detshape\":["
+        << header.ndetx << ", " << header.ndety << ']' << ", \"shape\":["
+        << header.npixelsx << ", " << header.npixelsy << ']'
+        << ", \"size\":" << header.imageSize
+        << ", \"acqIndex\":" << header.acqIndex
+        << ", \"frameIndex\":" << header.frameIndex
+        << ", \"progress\":" << header.progress << ", \"fname\":\""
+        << header.fname << '\"' << ", \"data\":" << (header.data ? 1 : 0)
+        << ", \"completeImage\":" << (header.completeImage ? 1 : 0)
 
-    /** Json Header Format */
-    const char jsonHeaderFormat[] = "{"
-                                    "\"jsonversion\":%u, "
-                                    "\"bitmode\":%u, "
-                                    "\"fileIndex\":%lu, "
-                                    "\"detshape\":[%u, %u], "
-                                    "\"shape\":[%u, %u], "
-                                    "\"size\":%u, "
-                                    "\"acqIndex\":%lu, "
-                                    "\"frameIndex\":%lu, "
-                                    "\"progress\":%lf, "
-                                    "\"fname\":\"%s\", "
-                                    "\"data\": %d, "
-                                    "\"completeImage\": %d, "
+        << ", \"frameNumber\":" << header.frameNumber
+        << ", \"expLength\":" << header.expLength
+        << ", \"packetNumber\":" << header.packetNumber
+        << ", \"bunchId\":" << header.bunchId
+        << ", \"timestamp\":" << header.timestamp
+        << ", \"modId\":" << header.modId << ", \"row\":" << header.row
+        << ", \"column\":" << header.column
+        << ", \"reserved\":" << header.reserved
+        << ", \"debug\":" << header.debug
+        << ", \"roundRNumber\":" << header.roundRNumber
+        << ", \"detType\":" << static_cast<int>(header.detType)
+        << ", \"version\":"
+        << static_cast<int>(header.version)
 
-                                    "\"frameNumber\":%lu, "
-                                    "\"expLength\":%u, "
-                                    "\"packetNumber\":%u, "
-                                    "\"bunchId\":%lu, "
-                                    "\"timestamp\":%lu, "
-                                    "\"modId\":%u, "
-                                    "\"row\":%u, "
-                                    "\"column\":%u, "
-                                    "\"reserved\":%u, "
-                                    "\"debug\":%u, "
-                                    "\"roundRNumber\":%u, "
-                                    "\"detType\":%u, "
-                                    "\"version\":%u, "
-
-                                    // additional stuff
-                                    "\"flipRows\":%u, "
-                                    "\"quad\":%u"
-
-        ;                                              //"}\n";
-    memset(header_buffer.get(), '\0', MAX_STR_LENGTH); // TODO! Do we need this
-    sprintf(header_buffer.get(), jsonHeaderFormat, header.jsonversion,
-            header.dynamicRange, header.fileIndex, header.ndetx, header.ndety,
-            header.npixelsx, header.npixelsy, header.imageSize, header.acqIndex,
-            header.frameIndex, header.progress, header.fname.c_str(),
-            header.data ? 1 : 0, header.completeImage ? 1 : 0,
-
-            header.frameNumber, header.expLength, header.packetNumber,
-            header.bunchId, header.timestamp, header.modId, header.row,
-            header.column, header.reserved, header.debug, header.roundRNumber,
-            header.detType, header.version,
-
-            // additional stuff
-            header.flipRows, header.quad);
+        // additional stuff
+        << ", \"flipRows\":" << header.flipRows << ", \"quad\":" << header.quad;
 
     if (!header.addJsonHeader.empty()) {
-        strcat(header_buffer.get(), ", ");
-        strcat(header_buffer.get(), "\"addJsonHeader\": {");
+        oss << ", \"addJsonHeader\": {";
         for (auto it = header.addJsonHeader.begin();
              it != header.addJsonHeader.end(); ++it) {
             if (it != header.addJsonHeader.begin()) {
-                strcat(header_buffer.get(), ", ");
+                oss << ", ";
             }
-            strcat(header_buffer.get(), "\"");
-            strcat(header_buffer.get(), it->first.c_str());
-            strcat(header_buffer.get(), "\":\"");
-            strcat(header_buffer.get(), it->second.c_str());
-            strcat(header_buffer.get(), "\"");
+            oss << "\"" << it->first.c_str() << "\":\"" << it->second.c_str()
+                << "\"";
         }
-        strcat(header_buffer.get(), " } ");
+        oss << " } ";
     }
-
-    strcat(header_buffer.get(), "}\n");
-    int length = strlen(header_buffer.get());
-
-#ifdef VERBOSE
+    oss << "}\n";
+    std::string message = oss.str();
+    int length = message.length();
+#ifdef ZMQ_DETAIL
     // if(!index)
-    cprintf(BLUE, "%d : Streamer: buf: %s\n", index, buf);
+    LOG(logINFOBLUE) << index << " : Streamer: buf: " << message;
 #endif
 
-    if (zmq_send(sockfd.socketDescriptor, header_buffer.get(), length,
+    if (zmq_send(sockfd.socketDescriptor, message.c_str(), length,
                  header.data ? ZMQ_SNDMORE : 0) < 0) {
         PrintError();
         return 0;
@@ -232,13 +208,13 @@ int ZmqSocket::ReceiveHeader(const int index, zmqHeader &zHeader,
     if (bytes_received > 0) {
 #ifdef ZMQ_DETAIL
         cprintf(BLUE, "Header %d [%d] Length: %d Header:%s \n", index, portno,
-                bytes_received, buffer.data());
+                bytes_received, header_buffer.get());
 #endif
         if (ParseHeader(index, bytes_received, header_buffer.get(), zHeader,
                         version)) {
 #ifdef ZMQ_DETAIL
             cprintf(RED, "Parsed Header %d [%d] Length: %d Header:%s \n", index,
-                    portno, bytes_received, buffer.data());
+                    portno, bytes_received, header_buffer.get());
 #endif
             if (!zHeader.data) {
 #ifdef ZMQ_DETAIL
@@ -333,7 +309,7 @@ int ZmqSocket::ReceiveData(const int index, char *buf, const int size) {
         memset(buf + length, 0xFF, size - length);
     } else {
         LOG(logERROR) << "Received weird packet size " << length
-                      << " for socket " << index;
+                      << " (expected " << size << ") for socket " << index;
         memset(buf, 0xFF, size);
     }
 
@@ -439,3 +415,5 @@ void ZmqSocket::mySocketDescriptors::Close() {
         contextDescriptor = nullptr;
     }
 };
+
+} // namespace sls

@@ -8,9 +8,11 @@
 #include <iostream>
 #include <thread>
 
+namespace sls {
+
 std::vector<char> server() {
     std::cout << "starting server\n";
-    auto server = sls::ServerSocket(1950);
+    auto server = ServerSocket(1950);
     auto s = server.accept();
     std::vector<char> buffer(100, '\0');
     s.Receive(buffer.data(), buffer.size());
@@ -33,7 +35,7 @@ TEST_CASE("The server recive the same message as we send", "[support]") {
 
     auto s = std::async(std::launch::async, server);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    auto client = sls::DetectorSocket("localhost", 1950);
+    auto client = DetectorSocket("localhost", 1950);
     client.Send(sent_message.data(), sent_message.size());
     client.Receive(received_message.data(), received_message.size());
     client.close();
@@ -45,5 +47,7 @@ TEST_CASE("The server recive the same message as we send", "[support]") {
 }
 
 TEST_CASE("throws on no server", "[support]") {
-    CHECK_THROWS(sls::DetectorSocket("localhost", 1950));
+    CHECK_THROWS(DetectorSocket("localhost", 1950));
 }
+
+} // namespace sls

@@ -12,8 +12,8 @@
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
 
-using sls::CmdProxy;
-using sls::Detector;
+namespace sls {
+
 using test::GET;
 using test::PUT;
 
@@ -658,3 +658,5 @@ TEST_CASE("top", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("top", {"1"}, -1, PUT));
     }
 }
+
+} // namespace sls

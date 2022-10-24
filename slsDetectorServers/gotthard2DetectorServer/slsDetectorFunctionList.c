@@ -27,6 +27,7 @@ extern int debugflag;
 extern int updateFlag;
 extern int checkModuleFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
+extern int numUdpDestinations;
 extern const enum detectorType myDetectorType;
 extern int ignoreConfigFileFlag;
 
@@ -73,7 +74,6 @@ int64_t burstPeriodReg = 0;
 int filterResistor = 0;
 int cdsGain = 0;
 int detPos[2] = {};
-int master = 1;
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -87,7 +87,10 @@ void basictests() {
     initCheckDone = 0;
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
-    LOG(logINFOBLUE, ("******** Gotthard2 Virtual Server *****************\n"));
+    LOG(logINFOBLUE, ("************ Gotthard2 Virtual Server ************\n"));
+#else
+    LOG(logINFOBLUE, ("**************** Gotthard2 Server ****************\n"));
+#endif
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Dangerous to continue.\n");
@@ -95,16 +98,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-    return;
-#else
-    LOG(logINFOBLUE, ("************ Gotthard2 Server *********************\n"));
-    if (mapCSP0() == FAIL) {
-        strcpy(initErrorMessage,
-               "Could not map to memory. Dangerous to continue.\n");
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
-        initError = FAIL;
-        return;
-    }
+#ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
         ((validateKernelVersion(KERNEL_DATE_VRSN) == FAIL) ||
@@ -118,7 +112,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-
+#endif
     uint16_t hversion = getHardwareVersionNumber();
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
@@ -129,7 +123,7 @@ void basictests() {
     uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
     LOG(logINFOBLUE,
-        ("*************************************************\n"
+        ("**************************************************\n"
          "Hardware Version:\t\t 0x%x\n"
 
          "Detector IP Addr:\t\t 0x%x\n"
@@ -146,6 +140,7 @@ void basictests() {
          (long long int)sw_fw_apiversion, requiredFirmwareVersion,
          (long long int)client_sw_apiversion));
 
+#ifndef VIRTUAL
     // return if flag is not zero, debug mode
     if (debugflag || updateFlag) {
         return;
@@ -234,6 +229,7 @@ int testBus() {
 
     int ret = OK;
     u_int32_t addr = DTA_OFFSET_REG;
+    u_int32_t prevValue = bus_r(addr);
     u_int32_t times = 1000 * 1000;
 
     for (u_int32_t i = 0; i < times; ++i) {
@@ -245,7 +241,7 @@ int testBus() {
         }
     }
 
-    bus_w(addr, 0);
+    bus_w(addr, prevValue);
 
     if (ret == OK) {
         LOG(logINFO, ("Successfully tested bus %d times\n", times));
@@ -388,8 +384,9 @@ void initStopServer() {
         }
 #ifdef VIRTUAL
         sharedMemory_setStop(0);
-        // not reading config file (nothing of interest to stop server)
-        if (checkCommandLineConfiguration() == FAIL) {
+        setMaster(OW_MASTER);
+        if (readConfigFile() == FAIL ||
+            checkCommandLineConfiguration() == FAIL) {
             initCheckDone = 1;
             return;
         }
@@ -464,35 +461,15 @@ void setupDetector() {
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
     // check module type attached if not in debug mode
-    {
-        int ret = checkDetectorType();
-        if (checkModuleFlag) {
-            switch (ret) {
-            case -1:
-                sprintf(initErrorMessage,
-                        "Could not get the module type attached.\n");
-                initError = FAIL;
-                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
-                return;
-            case -2:
-                sprintf(initErrorMessage,
-                        "No Module attached! Run server with -nomodule.\n");
-                initError = FAIL;
-                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
-                return;
-            case FAIL:
-                sprintf(initErrorMessage,
-                        "Wrong Module (Not Gotthard2) attached!\n");
-                initError = FAIL;
-                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
-                return;
-            default:
-                break;
-            }
-        } else {
-            LOG(logINFOBLUE,
-                ("In No-Module mode: Ignoring module type. Continuing.\n"));
-        }
+    if (initError == FAIL)
+        return;
+    if (!checkModuleFlag) {
+        LOG(logINFOBLUE, ("In No-Module mode: Ignoring module type...\n"));
+    } else {
+        initError = checkDetectorType(initErrorMessage);
+    }
+    if (initError == FAIL) {
+        return;
     }
 
     // power on chip
@@ -710,8 +687,35 @@ int readConfigFile() {
                         strlen(line) - 1, line));
         memset(command, 0, LZ);
 
+        // master command
+        if (!strncmp(line, "master", strlen("master"))) {
+            int m = -1;
+            // cannot scan values
+            if (sscanf(line, "%s %d", command, &m) != 2) {
+                sprintf(initErrorMessage,
+                        "Could not scan master commands from on-board server "
+                        "config file. Line:[%s].\n",
+                        line);
+                break;
+            }
+            // validations
+            if (m != 0 && m != 1) {
+                sprintf(initErrorMessage,
+                        "Invalid master argument from on-board server "
+                        "config file. Line:[%s].\n",
+                        line);
+                break;
+            }
+            if (setMaster(m == 1 ? OW_MASTER : OW_SLAVE) == FAIL) {
+                sprintf(initErrorMessage,
+                        "Could not set master from config file. Line:[%s].\n",
+                        line);
+                break;
+            }
+        }
+
         // vetoref command
-        if (!strncmp(line, "vetoref", strlen("vetoref"))) {
+        else if (!strncmp(line, "vetoref", strlen("vetoref"))) {
             int igain = 0;
             int value = 0;
 
@@ -957,15 +961,15 @@ int readConfigFile() {
 
 int checkCommandLineConfiguration() {
     if (masterCommandLine != -1) {
-#ifdef VIRTUAL
-        master = masterCommandLine;
-#else
-        initError = FAIL;
-        strcpy(initErrorMessage,
-               "Cannot set Master from command line for this detector. "
-               "Should have been caught before!\n");
-        return FAIL;
-#endif
+        LOG(logINFOBLUE, ("Setting %s from Command Line\n",
+                          (masterCommandLine == 1 ? "Master" : "Slave")));
+        if (setMaster(masterCommandLine == 1 ? OW_MASTER : OW_SLAVE) == FAIL) {
+            initError = FAIL;
+            sprintf(initErrorMessage, "Could not set %s from command line.\n",
+                    (masterCommandLine == 1 ? "Master" : "Slave"));
+            LOG(logERROR, (initErrorMessage));
+            return FAIL;
+        }
     }
     return OK;
 }
@@ -994,6 +998,28 @@ void resetPeripheral() {
 #endif
     LOG(logINFO, ("Resetting Peripheral\n"));
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PRPHRL_RST_MSK);
+}
+
+/* set parameters -  readout */
+
+int setParallelMode(int mode) {
+    if (mode < 0)
+        return FAIL;
+    LOG(logINFO, ("Setting %s mode\n", (mode ? "Parallel" : "Non Parallel")));
+    uint32_t addr = ASIC_CONFIG_REG;
+    if (mode) {
+        bus_w(addr, bus_r(addr) & ~ASIC_CONFIG_NON_PARALLEL_RD_MSK);
+    } else {
+        bus_w(addr, bus_r(addr) | ASIC_CONFIG_NON_PARALLEL_RD_MSK);
+    }
+    return OK;
+}
+
+int getParallelMode() {
+    int nonparallel =
+        ((bus_r(ASIC_CONFIG_REG) & ASIC_CONFIG_NON_PARALLEL_RD_MSK) >>
+         ASIC_CONFIG_NON_PARALLEL_RD_OFST);
+    return (nonparallel == 0 ? 1 : 0);
 }
 
 /* set parameters -  dr, roi */
@@ -1481,6 +1507,15 @@ int getDAC(enum DACINDEX ind, int mV) {
 
 int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
 
+int getADC(enum ADCINDEX ind, int *value) {
+    LOG(logDEBUG1, ("Reading FPGA temperature...\n"));
+    if (readADCFromFile(TEMPERATURE_FILE_NAME, value) == FAIL) {
+        LOG(logERROR, ("Could not get temperature\n"));
+        return FAIL;
+    }
+    return OK;
+}
+
 int setHighVoltage(int val) {
     if (val > HV_SOFT_MAX_VOLTAGE) {
         val = HV_SOFT_MAX_VOLTAGE;
@@ -1497,8 +1532,38 @@ int setHighVoltage(int val) {
 
 /* parameters - timing */
 
+int setMaster(enum MASTERINDEX m) {
+    char *master_names[] = {MASTER_NAMES};
+    LOG(logINFOBLUE, ("Setting up as %s in (%s server)\n", master_names[m],
+                      (isControlServer ? "control" : "stop")));
+    int retval = -1;
+    switch (m) {
+    case OW_MASTER:
+        bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_SLAVE_MSK);
+        isMaster(&retval);
+        if (retval != 1) {
+            LOG(logERROR, ("Could not set master\n"));
+            return FAIL;
+        }
+        break;
+    case OW_SLAVE:
+        bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_SLAVE_MSK);
+        isMaster(&retval);
+        if (retval != 0) {
+            LOG(logERROR, ("Could not set slave\n"));
+            return FAIL;
+        }
+        break;
+    default:
+        // hardware settings (do nothing)
+        break;
+    }
+    return OK;
+}
+
 int isMaster(int *retval) {
-    *retval = master;
+    int slave = ((bus_r(CONFIG_REG) & CONFIG_SLAVE_MSK) >> CONFIG_SLAVE_OFST);
+    *retval = (slave == 1 ? 0 : 1);
     return OK;
 }
 
@@ -1695,6 +1760,52 @@ void updatingRegisters() {
     LOG(logINFO, ("\tDone Updating registers\n\n"));
 }
 
+int updateClockDivs() {
+    char *clock_names[] = {CLK_NAMES};
+    switch (burstMode) {
+    case BURST_INTERNAL:
+    case BURST_EXTERNAL:
+        if (setClockDivider(SYSTEM_C0, DEFAULT_BURST_SYSTEM_C0) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_BURST_SYSTEM_C0));
+            return FAIL;
+        }
+        if (setClockDivider(SYSTEM_C1, DEFAULT_BURST_SYSTEM_C1) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_BURST_SYSTEM_C1));
+            return FAIL;
+        }
+        if (setClockDivider(SYSTEM_C2, DEFAULT_BURST_SYSTEM_C2) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_BURST_SYSTEM_C2));
+            return FAIL;
+        }
+        break;
+    case CONTINUOUS_INTERNAL:
+    case CONTINUOUS_EXTERNAL:
+        if (setClockDivider(SYSTEM_C0, DEFAULT_CNTNS_SYSTEM_C0) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_CNTNS_SYSTEM_C0));
+            return FAIL;
+        }
+        if (setClockDivider(SYSTEM_C1, DEFAULT_CNTNS_SYSTEM_C1) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_CNTNS_SYSTEM_C1));
+            return FAIL;
+        }
+        if (setClockDivider(SYSTEM_C2, DEFAULT_CNTNS_SYSTEM_C2) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_CNTNS_SYSTEM_C2));
+            return FAIL;
+        }
+        break;
+    default:
+        LOG(logERROR, ("Unknown burst mode. Cannot update clock divs.\n"));
+        return FAIL;
+    }
+    return OK;
+}
+
 void setTiming(enum timingMode arg) {
     switch (arg) {
     case AUTO_TIMING:
@@ -1741,6 +1852,36 @@ int getNumberofUDPInterfaces() {
     return ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_10GBE_ENBL_MSK) ? 2 : 1);
 }
 
+int getNumberofDestinations(int *retval) {
+    *retval = (((bus_r(PKT_CONFIG_REG) & PKT_CONFIG_NRXR_MAX_MSK) >>
+                PKT_CONFIG_NRXR_MAX_OFST) +
+               1);
+    return OK;
+}
+
+int setNumberofDestinations(int value) {
+    LOG(logINFO, ("Setting number of entries to %d\n", value));
+    --value;
+    bus_w(PKT_CONFIG_REG, bus_r(PKT_CONFIG_REG) & ~PKT_CONFIG_NRXR_MAX_MSK);
+    bus_w(PKT_CONFIG_REG,
+          bus_r(PKT_CONFIG_REG) |
+              ((value << PKT_CONFIG_NRXR_MAX_OFST) & PKT_CONFIG_NRXR_MAX_MSK));
+    return OK;
+}
+
+int getFirstUDPDestination() {
+    return ((bus_r(PKT_CONFIG_REG) & PKT_CONFIG_RXR_START_ID_MSK) >>
+            PKT_CONFIG_RXR_START_ID_OFST);
+}
+
+void setFirstUDPDestination(int value) {
+    LOG(logINFO, ("Setting first entry to %d\n", value));
+    bus_w(PKT_CONFIG_REG, bus_r(PKT_CONFIG_REG) & ~PKT_CONFIG_RXR_START_ID_MSK);
+    bus_w(PKT_CONFIG_REG,
+          bus_r(PKT_CONFIG_REG) | ((value << PKT_CONFIG_RXR_START_ID_OFST) &
+                                   PKT_CONFIG_RXR_START_ID_MSK));
+}
+
 void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
                  uint64_t destmac, uint32_t destport, uint64_t sourcemac,
                  uint32_t sourceip, uint32_t sourceport) {
@@ -1785,6 +1926,9 @@ void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
     // total length is redefined in firmware
 
     calcChecksum(udp);
+    if (iRxEntry < numUdpDestinations) {
+        LOG(logINFO, ("\tIP checksum : 0x%lx\n\n", udp->ip_checksum));
+    }
 }
 
 void calcChecksum(udp_header *udp) {
@@ -1815,93 +1959,98 @@ void calcChecksum(udp_header *udp) {
         sum = (sum & 0xffff) + (sum >> 16); // Fold 32-bit sum to 16 bits
     long int checksum = sum & 0xffff;
     checksum += UDP_IP_HEADER_LENGTH_BYTES;
-    LOG(logINFO, ("\tIP checksum is 0x%lx\n", checksum));
     udp->ip_checksum = checksum;
 }
 
 int configureMAC() {
 
-    uint32_t srcip = udpDetails[0].srcip;
-    uint32_t srcip2 = udpDetails[0].srcip2;
-    uint32_t dstip = udpDetails[0].dstip;
-    uint32_t dstip2 = udpDetails[0].dstip2;
-    uint64_t srcmac = udpDetails[0].srcmac;
-    uint64_t srcmac2 = udpDetails[0].srcmac2;
-    uint64_t dstmac = udpDetails[0].dstmac;
-    uint64_t dstmac2 = udpDetails[0].dstmac2;
-    int srcport = udpDetails[0].srcport;
-    int srcport2 = udpDetails[0].srcport2;
-    int dstport = udpDetails[0].dstport;
-    int dstport2 = udpDetails[0].dstport2;
-
     LOG(logINFOBLUE, ("Configuring MAC\n"));
-    char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
-        dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
-    getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
-    getIpAddressinString(src_ip, srcip);
-    getIpAddressinString(dst_ip, dstip);
-    char src_mac2[MAC_ADDRESS_SIZE], src_ip2[INET_ADDRSTRLEN],
-        dst_mac2[MAC_ADDRESS_SIZE], dst_ip2[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac2, MAC_ADDRESS_SIZE, srcmac2);
-    getMacAddressinString(dst_mac2, MAC_ADDRESS_SIZE, dstmac2);
-    getIpAddressinString(src_ip2, srcip2);
-    getIpAddressinString(dst_ip2, dstip2);
 
-    LOG(logINFO, ("\tData Interface \n"));
-    LOG(logINFO, ("\tSource IP   : %s\n"
-                  "\tSource MAC  : %s\n"
-                  "\tSource Port : %d\n"
-                  "\tDest IP     : %s\n"
-                  "\tDest MAC    : %s\n"
-                  "\tDest Port   : %d\n\n",
-                  src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+    LOG(logINFO, ("Number of entries: %d\n\n", numUdpDestinations));
+    for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION; ++iRxEntry) {
+        uint32_t srcip = udpDetails[iRxEntry].srcip;
+        uint32_t srcip2 = udpDetails[iRxEntry].srcip2;
+        uint32_t dstip = udpDetails[iRxEntry].dstip;
+        uint32_t dstip2 = udpDetails[iRxEntry].dstip2;
+        uint64_t srcmac = udpDetails[iRxEntry].srcmac;
+        uint64_t srcmac2 = udpDetails[iRxEntry].srcmac2;
+        uint64_t dstmac = udpDetails[iRxEntry].dstmac;
+        uint64_t dstmac2 = udpDetails[iRxEntry].dstmac2;
+        int srcport = udpDetails[iRxEntry].srcport;
+        int srcport2 = udpDetails[iRxEntry].srcport2;
+        int dstport = udpDetails[iRxEntry].dstport;
+        int dstport2 = udpDetails[iRxEntry].dstport2;
 
-    int lll = getVetoStream();
-    int i10gbe = (getNumberofUDPInterfaces() == 2 ? 1 : 0);
+        char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
+            dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
+        getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
+        getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
+        getIpAddressinString(src_ip, srcip);
+        getIpAddressinString(dst_ip, dstip);
+        char src_mac2[MAC_ADDRESS_SIZE], src_ip2[INET_ADDRSTRLEN],
+            dst_mac2[MAC_ADDRESS_SIZE], dst_ip2[INET_ADDRSTRLEN];
+        getMacAddressinString(src_mac2, MAC_ADDRESS_SIZE, srcmac2);
+        getMacAddressinString(dst_mac2, MAC_ADDRESS_SIZE, dstmac2);
+        getIpAddressinString(src_ip2, srcip2);
+        getIpAddressinString(dst_ip2, dstip2);
 
-    if (lll) {
-        LOG(logINFOGREEN, ("\tVeto (lll) : enabled\n\n"));
-    } else {
-        LOG(logINFORED, ("\tVeto (lll) : disabled\n\n"));
-    }
-    if (i10gbe) {
-        LOG(logINFOGREEN, ("\tVeto (10GbE): enabled\n"));
-    } else {
-        LOG(logINFORED, ("\tVeto (10GbE): disabled\n"));
-    }
-    LOG(logINFO, ("\tSource IP2  : %s\n"
-                  "\tSource MAC2 : %s\n"
-                  "\tSource Port2: %d\n"
-                  "\tDest IP2    : %s\n"
-                  "\tDest MAC2   : %s\n"
-                  "\tDest Port2  : %d\n\n",
-                  src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
+        int i10gbe = (getNumberofUDPInterfaces() == 2 ? 1 : 0);
+        if (iRxEntry < numUdpDestinations) {
+            LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
 
+            LOG(logINFO, ("\tData Interface \n"));
+            LOG(logINFO, ("\tSource IP   : %s\n"
+                          "\tSource MAC  : %s\n"
+                          "\tSource Port : %d\n"
+                          "\tDest IP     : %s\n"
+                          "\tDest MAC    : %s\n"
+                          "\tDest Port   : %d\n\n",
+                          src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+
+            if (getVetoStream()) {
+                LOG(logINFOGREEN, ("\tVeto (lll) : enabled\n\n"));
+            } else {
+                LOG(logINFORED, ("\tVeto (lll) : disabled\n\n"));
+            }
+            if (i10gbe) {
+                LOG(logINFOGREEN, ("\tVeto (10GbE): enabled\n"));
+            } else {
+                LOG(logINFORED, ("\tVeto (10GbE): disabled\n"));
+            }
+            LOG(logINFO,
+                ("\tSource IP2  : %s\n"
+                 "\tSource MAC2 : %s\n"
+                 "\tSource Port2: %d\n"
+                 "\tDest IP2    : %s\n"
+                 "\tDest MAC2   : %s\n"
+                 "\tDest Port2  : %d\n\n",
+                 src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
+        }
 #ifdef VIRTUAL
-    if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
-        LOG(logERROR, ("could not set udp destination IP and port\n"));
-        return FAIL;
-    }
-    if (i10gbe && setUDPDestinationDetails(0, 1, dst_ip2, dstport2) == FAIL) {
-        LOG(logERROR, ("could not set udp destination IP and port for "
-                       "interface 2\n"));
-        return FAIL;
-    }
-    return OK;
+        if (setUDPDestinationDetails(iRxEntry, 0, dst_ip, dstport) == FAIL) {
+            LOG(logERROR, ("could not set udp destination IP and port for "
+                           "data interface [entry:%d] \n",
+                           iRxEntry));
+            return FAIL;
+        }
+        if (i10gbe &&
+            setUDPDestinationDetails(iRxEntry, 1, dst_ip2, dstport2) == FAIL) {
+            LOG(logERROR, ("could not set udp destination IP and port for "
+                           "veto interface [entry:%d] \n",
+                           iRxEntry));
+            return FAIL;
+        }
 #endif
-    // default one rxr entry (others not yet implemented in client yet)
-    int iRxEntry = 0;
+        // data
+        setupHeader(iRxEntry, 0, dstip, dstmac, dstport, srcmac, srcip,
+                    srcport);
 
-    // data
-    setupHeader(iRxEntry, 0, dstip, dstmac, dstport, srcmac, srcip, srcport);
-
-    // veto
-    if (i10gbe) {
-        setupHeader(iRxEntry, 1, dstip2, dstmac2, dstport2, srcmac2, srcip2,
-                    srcport2);
+        // veto
+        if (i10gbe) {
+            setupHeader(iRxEntry, 1, dstip2, dstmac2, dstport2, srcmac2, srcip2,
+                        srcport2);
+        }
     }
-
     cleanFifos();
     resetCore();
     // alignDeserializer();
@@ -1950,55 +2099,97 @@ int *getDetectorPosition() { return detPos; }
 
 // Detector Specific
 
-int checkDetectorType() {
+int checkDetectorType(char *mess) {
 #ifdef VIRTUAL
+    setMaster(OW_MASTER);
     return OK;
 #endif
-    LOG(logINFO, ("Checking type of module\n"));
+    LOG(logINFO, ("Checking module type\n"));
     FILE *fd = fopen(TYPE_FILE_NAME, "r");
     if (fd == NULL) {
-        LOG(logERROR,
-            ("Could not open file %s to get type of the module attached\n",
-             TYPE_FILE_NAME));
-        return -1;
+        sprintf(mess,
+                "Could not open file %s to get type of the module attached\n",
+                TYPE_FILE_NAME);
+        return FAIL;
     }
     char buffer[MAX_STR_LENGTH];
     memset(buffer, 0, sizeof(buffer));
     fread(buffer, MAX_STR_LENGTH, sizeof(char), fd);
     fclose(fd);
     if (strlen(buffer) == 0) {
-        LOG(logERROR,
-            ("Could not read file %s to get type of the module attached\n",
-             TYPE_FILE_NAME));
-        return -1;
-    }
-    int type = atoi(buffer);
-    if (type > TYPE_NO_MODULE_STARTING_VAL) {
-        LOG(logERROR,
-            ("No Module attached! Expected %d, %d or %d for Gotthard2, got "
-             "%d\n",
-             TYPE_GOTTHARD2_MODULE_VAL, TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL,
-             TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL, type));
-        return -2;
+        sprintf(mess,
+                "Could not read file %s to get type of the module attached\n",
+                TYPE_FILE_NAME);
+        LOG(logERROR, (mess));
+        return FAIL;
     }
 
-    if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL) <= TYPE_TOLERANCE) {
-        LOG(logINFOBLUE, ("MASTER 25um Module\n"));
-        master = 1;
-    } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL) <=
-               TYPE_TOLERANCE) {
-        master = 0;
-        LOG(logINFOBLUE, ("SLAVE 25um Module\n"));
-    } else if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) <= TYPE_TOLERANCE) {
-        master = -1;
-        LOG(logINFOBLUE, ("50um Module\n"));
-    } else {
-        LOG(logERROR,
-            ("Wrong Module attached! Expected %d, %d or %d for Gotthard2, got "
-             "%d\n",
-             TYPE_GOTTHARD2_MODULE_VAL, TYPE_GOTTHARD2_25UM_MASTER_MODULE_VAL,
-             TYPE_GOTTHARD2_25UM_SLAVE_MODULE_VAL, type));
-        return FAIL;
+    {
+        int type = atoi(buffer);
+        int hdiSlave = 0;
+        int hdiVersion = 0x1;
+        int hdi25um = 1;
+        if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL) <=
+            TYPE_TOLERANCE) {
+            LOG(logINFOBLUE, ("MASTER 25um Module (HDI v1.0)\n"));
+        } else if (abs(type - TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL) <=
+                   TYPE_TOLERANCE) {
+            LOG(logINFOBLUE, ("MASTER 25um Module (HDI v2.0)\n"));
+            hdiVersion = 0x2;
+        } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL) <=
+                   TYPE_TOLERANCE) {
+            LOG(logINFOBLUE, ("SLAVE 25um Module (HDI v1.0)\n"));
+            hdiSlave = 1;
+        } else if (abs(type - TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL) <=
+                   TYPE_TOLERANCE) {
+            LOG(logINFOBLUE, ("SLAVE 25um Module (HDI v2.0)\n"));
+            hdiSlave = 1;
+            hdiVersion = 0x2;
+        } else if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) <= TYPE_TOLERANCE) {
+            LOG(logINFOBLUE, ("50um Module\n"));
+            hdi25um = 0;
+        }
+        // no module or invalid module
+        else if (type > TYPE_NO_MODULE_STARTING_VAL) {
+            sprintf(mess, "No Module attached! Run server with -nomodule.\n");
+            LOG(logERROR, (mess));
+            return FAIL;
+        } else {
+            sprintf(mess,
+                    "Wrong Module attached! Expected %d, %d, %d, %d or %d for "
+                    "Gotthard2, got %d\n",
+                    TYPE_GOTTHARD2_MODULE_VAL,
+                    TYPE_GOTTHARD2_25UM_MASTER_HD1_V1_VAL,
+                    TYPE_GOTTHARD2_25UM_SLAVE_HDI_V1_VAL,
+                    TYPE_GOTTHARD2_25UM_MASTER_HD1_V2_VAL,
+                    TYPE_GOTTHARD2_25UM_SLAVE_HDI_V2_VAL, type);
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
+        if (hdiSlave) {
+            bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_HDI_SLAVE_MSK);
+        } else {
+            bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_HDI_SLAVE_MSK);
+        }
+        if (hdi25um) {
+            bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_HDI_25UM_MSK);
+        } else {
+            bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_HDI_25UM_MSK);
+        }
+        bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_HDI_VERSION_MSK);
+        bus_w(CONFIG_REG,
+              bus_r(CONFIG_REG) | ((hdiVersion << CONFIG_HDI_VERSION_OFST) &
+                                   CONFIG_HDI_VERSION_MSK));
+    }
+
+    {
+        enum MASTERINDEX master =
+            (bus_r(CONFIG_REG) & CONFIG_HDI_SLAVE_MSK) ? OW_SLAVE : OW_MASTER;
+        if (setMaster(master) == FAIL) {
+            strcpy(mess, "Could not set to master/slave.");
+            LOG(logERROR, (mess));
+            return FAIL;
+        }
     }
     return OK;
 }
@@ -2271,10 +2462,6 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     clkDivider[ind] = val;
     LOG(logINFO, ("\t%s clock (%d) divider set to %d\n", clock_names[ind], ind,
                   clkDivider[ind]));
-    // update system frequency
-    if (ind == SYSTEM_C0) {
-        setTimingSource(getTimingSource());
-    }
 
     // phase is reset by pll (when setting output frequency)
     if (ind < SYSTEM_C0) {
@@ -2296,6 +2483,24 @@ int setClockDivider(enum CLKINDEX ind, int val) {
                  clock_names[i], i, currPhaseDeg, oldPhases[i]));
             setPhase(i, oldPhases[i], 1);
         }
+    }
+
+    // update system frequency and time settings that depend on it
+    if (ind == SYSTEM_C0) {
+        LOG(logINFO, ("\tUpdating time settings (sys freq change)\n"));
+        int64_t exptime = getExpTime();
+        int64_t period = getPeriod();
+        int64_t delayAfterTrigger = getDelayAfterTrigger();
+        int64_t burstPeriod = getBurstPeriod();
+
+        systemFrequency = ((double)getVCOFrequency(SYSTEM_C0) /
+                           (double)clkDivider[SYSTEM_C0]);
+
+        setExpTime(exptime);
+        setPeriod(period);
+        setDelayAfterTrigger(delayAfterTrigger);
+        setBurstPeriod(burstPeriod);
+        LOG(logINFO, ("\tDone updating time settings\n"));
     }
     return OK;
 }
@@ -2669,6 +2874,9 @@ int setBurstMode(enum burstMode burst) {
     }
 
     updatingRegisters();
+
+    updateClockDivs();
+
     return configureASICGlobalSettings();
 }
 
@@ -2798,13 +3006,10 @@ void setTimingSource(enum timingSourceType value) {
     case TIMING_INTERNAL:
         LOG(logINFO, ("Setting timing source to internal\n"));
         bus_w(addr, (bus_r(addr) & ~CONTROL_TIMING_SOURCE_EXT_MSK));
-        systemFrequency = INT_SYSTEM_C0_FREQUENCY;
         break;
     case TIMING_EXTERNAL:
         LOG(logINFO, ("Setting timing source to exernal\n"));
         bus_w(addr, (bus_r(addr) | CONTROL_TIMING_SOURCE_EXT_MSK));
-        systemFrequency = ((double)getVCOFrequency(SYSTEM_C0) /
-                           (double)clkDivider[SYSTEM_C0]);
         break;
     default:
         LOG(logERROR, ("Unknown timing source %d\n", value));
@@ -2916,8 +3121,8 @@ void setVetoAlgorithm(enum vetoAlgorithm alg,
     bus_w(addr, value);
 }
 
-void setBadChannels(int nch, int *channels) {
-    LOG(logINFO, ("Setting %d bad channels\n", nch));
+int setBadChannels(int numChannels, int *channelList) {
+    LOG(logINFO, ("Setting %d bad channels\n", numChannels));
 
     int numAddr = MASK_STRIP_NUM_REGS;
     int startAddr = MASK_STRIP_START_REG;
@@ -2929,42 +3134,44 @@ void setBadChannels(int nch, int *channels) {
     }
 
     // setting badchannels, loop through list
-    for (int i = 0; i < nch; ++i) {
-        LOG(logINFO, ("\t[%d]: %d\n", i, channels[i]));
-        int iaddr = channels[i] / 32;
-        int iBit = channels[i] % 32;
+    for (int i = 0; i != numChannels; ++i) {
+        LOG(logINFO, ("\t[%d]: %d\n", i, channelList[i]));
+        int iaddr = channelList[i] / 32;
+        int iBit = channelList[i] % 32;
         uint32_t addr = startAddr + iaddr * REG_OFFSET;
         LOG(logDEBUG1,
             ("val:%d iaddr:%d iBit:%d, addr:0x%x old:0x%x val:0x%x\n",
-             channels[i], iaddr, iBit, addr, bus_r(addr), (1 << iBit)));
+             channelList[i], iaddr, iBit, addr, bus_r(addr), (1 << iBit)));
         bus_w(addr, bus_r(addr) | (1 << iBit));
     }
+    return OK;
 }
 
-int *getBadChannels(int *nch) {
+int *getBadChannels(int *numChannels) {
     int *retvals = NULL;
     // count number of bad channels
-    *nch = 0;
-    for (int i = 0; i < MASK_STRIP_NUM_REGS; ++i) {
+    *numChannels = 0;
+    for (int i = 0; i != MASK_STRIP_NUM_REGS; ++i) {
         uint32_t addr = MASK_STRIP_START_REG + i * REG_OFFSET;
-        *nch += __builtin_popcount(bus_r(addr));
+        *numChannels += __builtin_popcount(bus_r(addr));
     }
-    if (*nch > 0) {
+    if (*numChannels > 0) {
         // get list of bad channels
-        retvals = malloc(*nch * sizeof(int));
+        retvals = malloc(*numChannels * sizeof(int));
+        memset(retvals, 0, *numChannels * sizeof(int));
         if (retvals == NULL) {
-            *nch = -1;
+            *numChannels = -1;
             return NULL;
         }
         int chIndex = 0;
         int numAddr = MASK_STRIP_NUM_REGS;
         // loop through registers
-        for (int iaddr = 0; iaddr < numAddr; ++iaddr) {
+        for (int iaddr = 0; iaddr != numAddr; ++iaddr) {
             // calculate address and get value
             uint32_t addr = MASK_STRIP_START_REG + iaddr * REG_OFFSET;
             uint32_t val = bus_r(addr);
             // loop through 32 bits
-            for (int iBit = 0; iBit < 32; ++iBit) {
+            for (int iBit = 0; iBit != 32; ++iBit) {
                 // masked, add to list
                 if ((val >> iBit) & 0x1) {
                     LOG(logDEBUG1, ("iaddr:%d iBit:%d val:0x%x, ch:%d\n", iaddr,
@@ -2976,7 +3183,7 @@ int *getBadChannels(int *nch) {
     }
     // debugging
     LOG(logDEBUG1, ("Reading Bad channel list\n"));
-    for (int i = 0; i < (*nch); ++i) {
+    for (int i = 0; i != (*numChannels); ++i) {
         LOG(logDEBUG1, ("[%d]: %d\n", i, retvals[i]));
     }
     return retvals;
@@ -3025,6 +3232,7 @@ void *start_timer(void *arg) {
         return NULL;
     }
 
+    int firstDest = getFirstUDPDestination();
     int i10gbe = (getNumberofUDPInterfaces() == 2 ? 1 : 0);
 
     int numRepeats = getNumTriggers();
@@ -3058,8 +3266,22 @@ void *start_timer(void *arg) {
     // Generate data
     char imageData[imagesize];
     memset(imageData, 0, imagesize);
-    for (int i = 0; i < imagesize; i += sizeof(uint16_t)) {
-        *((uint16_t *)(imageData + i)) = i;
+    const int nchannels = NCHIP * NCHAN;
+    int gainVal = 0;
+    int channelVal = 0;
+    for (int i = 0; i < nchannels; ++i) {
+        if ((i % nchannels) < 400) {
+            gainVal = 1;
+        } else if ((i % nchannels) < 800) {
+            gainVal = 2;
+        } else {
+            gainVal = 3;
+        }
+        channelVal = (i & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
+
+        *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+            (uint16_t)channelVal;
+        // LOG(logINFORED, ("[%d]:0x%08x\n", i, channelVal));
     }
     char vetoData[vetodatasize];
     memset(vetoData, 0, sizeof(vetodatasize));
@@ -3067,6 +3289,7 @@ void *start_timer(void *arg) {
         *((uint16_t *)(vetoData + i)) = i;
     }
 
+    int iRxEntry = firstDest;
     // loop over number of repeats
     for (int repeatNr = 0; repeatNr != numRepeats; ++repeatNr) {
 
@@ -3102,7 +3325,7 @@ void *start_timer(void *arg) {
             memcpy(packetData + sizeof(sls_detector_header), imageData,
                    datasize);
             // send 1 packet = 1 frame
-            sendUDPPacket(0, 0, packetData, packetsize);
+            sendUDPPacket(iRxEntry, 0, packetData, packetsize);
 
             // second interface (veto)
             char packetData2[vetopacketsize];
@@ -3116,11 +3339,12 @@ void *start_timer(void *arg) {
                 memcpy(packetData2 + sizeof(veto_header), vetoData,
                        vetodatasize);
                 // send 1 packet = 1 frame
-                sendUDPPacket(0, 1, packetData2, vetopacketsize);
+                sendUDPPacket(iRxEntry, 1, packetData2, vetopacketsize);
             }
-            LOG(logINFO, ("Sent frame %s: %d (bursts/ triggers: %d) [%lld]\n",
-                          (i10gbe ? "(+veto)" : ""), frameNr, repeatNr,
-                          (long long unsigned int)virtual_currentFrameNumber));
+            LOG(logINFO,
+                ("Sent frame %s: %d (bursts/ triggers: %d) [%lld] to E%d\n",
+                 (i10gbe ? "(+veto)" : ""), frameNr, repeatNr,
+                 (long long unsigned int)virtual_currentFrameNumber, iRxEntry));
             clock_gettime(CLOCK_REALTIME, &end);
             int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
                               (end.tv_nsec - begin.tv_nsec));
@@ -3132,6 +3356,10 @@ void *start_timer(void *arg) {
                 }
             }
             ++virtual_currentFrameNumber;
+            ++iRxEntry;
+            if (iRxEntry == numUdpDestinations) {
+                iRxEntry = 0;
+            }
         }
         clock_gettime(CLOCK_REALTIME, &rend);
         int64_t timeNs = ((rend.tv_sec - rbegin.tv_sec) * 1E9 +
@@ -3151,7 +3379,7 @@ void *start_timer(void *arg) {
     }
 
     sharedMemory_setStatus(IDLE);
-    LOG(logINFOBLUE, ("Finished Acquiring\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
     return NULL;
 }
 #endif
@@ -3237,18 +3465,11 @@ enum runStatus getRunStatus() {
     return s;
 }
 
-void readFrame(int *ret, char *mess) {
-    // wait for status to be done
+void waitForAcquisitionEnd() {
     while (runBusy()) {
         usleep(500);
     }
-#ifdef VIRTUAL
-    LOG(logINFOGREEN, ("acquisition successfully finished\n"));
-    return;
-#endif
-
-    *ret = (int)OK;
-    LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+    LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
 u_int32_t runBusy() {

@@ -229,7 +229,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
                 double *rest = new double[ny * nx];
                 newFrame(data);
                 if (cmSub) {
-                    cout << "add to common mode?" << endl;
+		  //cout << "add to common mode?" << endl;
                     addToCommonMode(data);
                 }
                 for (iy = ymin; iy < ymax; ++iy) {
@@ -386,7 +386,7 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
         // double quadTot;
         // quadrant quad;
         double rms;
-        // if (cmSub) cm=1;
+
         if (ph == NULL)
             ph = image;
 

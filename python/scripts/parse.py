@@ -25,7 +25,25 @@ def remove_comments(text):
     )
     return re.sub(pattern, replacer, text)
 
+def remove_ifdefs(lines):
+    """Keeps C++ version of the code"""
+    out = []
+    it = iter(lines)
+    skip = False
+    for line in it:
+        
+        if "#ifdef __cplusplus" in line:
+            line = next(it)
 
+        if "#else" in line:
+            skip = True
+
+        if "#endif" in line:
+            skip = False
+
+        if not skip and "#endif" not in line:    
+            out.append(line)
+    return out
 
 
 #based on ccsyspath: https://github.com/AndrewWalker/ccsyspath

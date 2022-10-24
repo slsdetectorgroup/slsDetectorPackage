@@ -4,7 +4,6 @@ set(SOURCES
     src/Implementation.cpp
     src/ClientInterface.cpp
     src/Receiver.cpp
-    src/File.cpp
     src/BinaryDataFile.cpp
     src/ThreadObject.cpp
     src/Listener.cpp

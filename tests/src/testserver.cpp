@@ -10,6 +10,8 @@
 #include <iostream>
 #include <unordered_map>
 
+namespace sls {
+
 // For hashing of enum with C++11, not needed in 14
 struct EnumClassHash {
     template <typename T> std::size_t operator()(T t) const {
@@ -25,14 +27,14 @@ using func_ptr = void (*)(Interface &);
  ********************************************/
 
 void read_data(Interface &socket) {
-    auto data = sls::make_unique<char[]>(DATA_SIZE);
-    std::cout << "Read: " << socket.Receive(data.get(), DATA_SIZE)
+    auto data = sls::make_unique<char[]>(sls::DATA_SIZE);
+    std::cout << "Read: " << socket.Receive(data.get(), sls::DATA_SIZE)
               << " bytes into buffer\n";
 }
 
 void read_half_data(Interface &socket) {
-    auto data = sls::make_unique<char[]>(DATA_SIZE);
-    std::cout << "Read: " << socket.Receive(data.get(), DATA_SIZE / 2)
+    auto data = sls::make_unique<char[]>(sls::DATA_SIZE);
+    std::cout << "Read: " << socket.Receive(data.get(), sls::DATA_SIZE / 2)
               << " bytes into buffer\n";
 }
 
@@ -49,11 +51,13 @@ void read_combined(Interface &socket) {
 }
 
 // Map from int to function pointer, in this case probably a map would be faster
-std::unordered_map<func_id, func_ptr, EnumClassHash> fmap{
-    {func_id::read_data, &read_data},
-    {func_id::read_int, &read_int},
-    {func_id::read_half_data, &read_half_data},
-    {func_id::combined, &read_combined}};
+std::unordered_map<sls::func_id, func_ptr, EnumClassHash> fmap{
+    {sls::func_id::read_data, &read_data},
+    {sls::func_id::read_int, &read_int},
+    {sls::func_id::read_half_data, &read_half_data},
+    {sls::func_id::combined, &read_combined}};
+
+} // namespace sls
 
 int main(int argc, char **argv) {
     std::cout << "Starting test server...\n";
@@ -73,9 +77,9 @@ int main(int argc, char **argv) {
     while (true) {
         try {
             auto socket = server.accept();
-            auto fnum = socket.Receive<func_id>();
+            auto fnum = socket.Receive<sls::func_id>();
             std::cout << "Calling func: " << (int)fnum << "\n";
-            (*fmap[fnum])(socket); // call mapped function
+            (*sls::fmap[fnum])(socket); // call mapped function
 
         } catch (const sls::RuntimeError &e) {
             // Do nothing, error is printed when the exeption is created

@@ -16,41 +16,18 @@
 #include <atomic>
 #include <memory>
 
+namespace sls {
+
 class GeneralData;
 class Fifo;
 
 class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    /**
-     * Constructor
-     * Calls Base Class CreateThread(), sets ErrorMask if error and increments
-     * NumberofListerners
-     * @param ind self index
-     * @param dtype detector type
-     * @param f address of Fifo pointer
-     * @param s pointer to receiver status
-     * @param portno pointer to udp port number
-     * @param e ethernet interface
-     * @param dr pointer to dynamic range
-     * @param us pointer to udp socket buffer size
-     * @param as pointer to actual udp socket buffer size
-     * @param fpf pointer to frames per file
-     * @param fdp frame discard policy
-     * @param act pointer to activated
-     * @param detds pointer to detector data stream
-     * @param sm pointer to silent mode
-     */
-    Listener(int ind, detectorType dtype, Fifo *f, std::atomic<runStatus> *s,
-             uint32_t *portno, std::string *e, int *us, int *as, uint32_t *fpf,
-             frameDiscardPolicy *fdp, bool *act, bool *detds, bool *sm);
-
-    /**
-     * Destructor
-     * Calls Base Class DestroyThread() and decrements NumberofListerners
-     */
+    Listener(int index, std::atomic<runStatus> *status);
     ~Listener();
 
+    bool isPortDisabled() const;
     uint64_t GetPacketsCaught() const;
     uint64_t GetNumCompleteFramesCaught() const;
     uint64_t GetLastFrameIndexCaught() const;
@@ -61,23 +38,26 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     uint64_t GetListenedIndex() const;
 
     void SetFifo(Fifo *f);
-    void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *g);
-    void CreateUDPSockets();
-    void ShutDownUDPSocket();
+    void SetUdpPortNumber(const uint32_t portNumber);
+    void SetEthernetInterface(const std::string e);
+    void SetActivate(bool enable);
+    void SetDetectorDatastream(bool enable);
+    void SetNoRoi(bool enable);
+    void SetFrameDiscardPolicy(frameDiscardPolicy value);
+    void SetSilentMode(bool enable);
 
-    /**
-     * Create & closes a dummy UDP socket
-     * to set & get actual buffer size
-     * @param s UDP socket buffer size to be set
-     */
-    void CreateDummySocketForUDPSocketBufferSize(int s);
+    void ResetParametersforNewAcquisition();
+    void CreateUDPSocket(int &actualSize);
+    void ShutDownUDPSocket();
+    /** to set & get actual buffer size */
+    void CreateDummySocketForUDPSocketBufferSize(int s, int &actualSize);
 
     /**
      * Set hard coded (calculated but not from detector) row and column
      * r is in row index if detector has not send them yet in firmware,
-     * c is in col index for jungfrau and eiger (for missing packets/deactivated
-     * eiger) c when used is in 2d
+     * c is in col index for jungfrau and eiger (for missing
+     * packets/deactivated) c when used is in 2d
      */
     void SetHardCodedPosition(uint16_t r, uint16_t c);
 
@@ -95,18 +75,31 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * Pushes non empty buffers into fifo/ frees empty buffer,
      * pushes dummy buffer into fifo
      * and reset running mask by calling StopRunning()
-     * @param buf address of buffer
      */
-    void StopListening(char *buf);
+    void StopListening(char *buf, size_t &size);
 
     /**
      * Listen to the UDP Socket for an image,
      * place them in the right order
-     * @param buf address of buffer
      * @returns number of bytes of relevant data, can be image size or 0 (stop
      * acquisition) or -1 to discard image
      */
-    uint32_t ListenToAnImage(char *buf);
+    uint32_t ListenToAnImage(sls_receiver_header &dstHeader, char *dstData);
+
+    size_t HandleFuturePacket(bool EOA, uint32_t numpackets, uint64_t fnum,
+                              bool isHeaderEmpty, size_t imageSize,
+                              sls_receiver_header &rxHeader);
+
+    void CopyPacket(char *dst, char *src, uint32_t dataSize,
+                    uint32_t detHeaderSize, uint32_t correctedDataSize,
+                    uint32_t &numpackets, bool &isHeaderEmpty,
+                    bool standardHeader, sls_receiver_header &rxHeader,
+                    sls_detector_header *detHeader, uint32_t pnum,
+                    uint64_t bnum);
+
+    void GetPacketIndices(uint64_t &fnum, uint32_t &pnum, uint64_t &bnum,
+                          bool standardHeader, char *packet,
+                          sls_detector_header *&header);
 
     void PrintFifoStatistics();
 
@@ -115,19 +108,17 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     Fifo *fifo;
 
     // individual members
-    detectorType myDetectorType;
     std::atomic<runStatus> *status;
-    std::unique_ptr<sls::UdpRxSocket> udpSocket{nullptr};
-    uint32_t *udpPortNumber;
-    std::string *eth;
-    int *udpSocketBufferSize;
-    /** double due to kernel bookkeeping */
-    int *actualUDPSocketBufferSize;
-    uint32_t *framesPerFile;
-    frameDiscardPolicy *frameDiscardMode;
-    bool *activated;
-    bool *detectorDataStream;
-    bool *silentMode;
+    std::unique_ptr<UdpRxSocket> udpSocket{nullptr};
+
+    uint32_t udpPortNumber{0};
+    std::string eth;
+    frameDiscardPolicy frameDiscardMode;
+    bool activated{false};
+    bool detectorDataStream{true};
+    bool noRoi{false};
+    bool silentMode;
+    bool disabledPort{false};
 
     /** row hardcoded as 1D or 2d,
      * if detector does not send them yet or
@@ -135,7 +126,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     uint16_t row{0};
 
     /** column hardcoded as 2D,
-     * deactivated eiger/missing packets (eiger/jungfrau sends 2d pos) **/
+     * deactivated/missing packets (eiger/jungfrau sends 2d pos) **/
     uint16_t column{0};
 
     // acquisition start
@@ -172,3 +163,5 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * (pecific to gotthard, can vary between modules, hence defined here) */
     bool oddStartingPacket{true};
 };
+
+} // namespace sls

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-using namespace sls;
+namespace sls {
 
 TEST_CASE("Equality of an empty vector", "[support]") {
     std::vector<int> v;
@@ -64,36 +64,36 @@ TEST_CASE("A vector of double with different values", "[support]") {
 
 TEST_CASE("Sum of empty vector", "[support]") {
     std::vector<float> v;
-    REQUIRE(sls::sum(v) == Approx(0));
+    REQUIRE(sum(v) == Approx(0));
 }
 
 TEST_CASE("Sum of vector", "[support]") {
     std::vector<double> v{1.2, 2., 4.2, 4, 1.13};
-    REQUIRE(sls::sum(v) == Approx(12.53));
+    REQUIRE(sum(v) == Approx(12.53));
 }
 
 TEST_CASE("Minus one if different", "[support]") {
     std::vector<double> v;
     REQUIRE(v.empty());
     double d = -1;
-    REQUIRE(sls::minusOneIfDifferent(v) == d);
+    REQUIRE(minusOneIfDifferent(v) == d);
 
     SECTION("single element") {
         v.push_back(7.3);
         REQUIRE(v.size() == 1);
-        REQUIRE(sls::minusOneIfDifferent(v) == Approx(7.3));
+        REQUIRE(minusOneIfDifferent(v) == Approx(7.3));
     }
     SECTION("different elements") {
         v.push_back(7.3);
         v.push_back(1.0);
         v.push_back(62.1);
-        REQUIRE(sls::minusOneIfDifferent(v) == Approx(-1.0));
+        REQUIRE(minusOneIfDifferent(v) == Approx(-1.0));
     }
 }
 
 TEST_CASE("minus one does not have side effects", "[support]") {
     std::vector<int> v{1, 1, 1};
-    int i = sls::minusOneIfDifferent(v);
+    int i = minusOneIfDifferent(v);
     REQUIRE(i == 1);
     i = 5;
     REQUIRE(v[0] == 1);
@@ -135,3 +135,5 @@ TEST_CASE("compare a vector of arrays", "[support]") {
     std::vector<std::array<uint64_t, 3>> vec1{{5, 90, 8}, {5, 6, 8}, {5, 6, 8}};
     CHECK(minusOneIfDifferent(vec1) == arr);
 }
+
+} // namespace sls

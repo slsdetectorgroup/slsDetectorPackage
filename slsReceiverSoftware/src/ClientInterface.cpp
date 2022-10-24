@@ -22,10 +22,10 @@
 #include <unistd.h>
 #include <vector>
 
+namespace sls {
+
 using ns = std::chrono::nanoseconds;
-using sls::RuntimeError;
-using sls::SocketError;
-using Interface = sls::ServerInterface;
+using Interface = ServerInterface;
 
 // gettid added in glibc 2.30
 #if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
@@ -43,19 +43,20 @@ ClientInterface::~ClientInterface() {
 
 ClientInterface::ClientInterface(int portNumber)
     : detType(GOTTHARD),
-      portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2),
+      portNumber(portNumber > 0 ? portNumber : DEFAULT_TCP_RX_PORTNO),
       server(portNumber) {
     functionTable();
     parentThreadId = gettid();
     tcpThread =
-        sls::make_unique<std::thread>(&ClientInterface::startTCPServer, this);
+        make_unique<std::thread>(&ClientInterface::startTCPServer, this);
 }
 
 int64_t ClientInterface::getReceiverVersion() { return APIRECEIVER; }
 
 /***callback functions***/
 void ClientInterface::registerCallBackStartAcquisition(
-    int (*func)(const std::string &, const std::string &, uint64_t, size_t, void *),
+    int (*func)(const std::string &, const std::string &, uint64_t, size_t,
+                void *),
     void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
@@ -69,13 +70,13 @@ void ClientInterface::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
 }
 
 void ClientInterface::registerCallBackRawDataReady(
-    void (*func)(sls_receiver_header *, char *, size_t, void *), void *arg) {
+    void (*func)(sls_receiver_header &, char *, size_t, void *), void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
 
 void ClientInterface::registerCallBackRawDataModifyReady(
-    void (*func)(sls_receiver_header *, char *, size_t &, void *), void *arg) {
+    void (*func)(sls_receiver_header &, char *, size_t &, void *), void *arg) {
     rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
 }
@@ -97,7 +98,7 @@ void ClientInterface::startTCPServer() {
             } catch (const RuntimeError &e) {
                 // We had an error needs to be sent to client
                 char mess[MAX_STR_LENGTH]{};
-                sls::strcpy_safe(mess, e.what());
+                strcpy_safe(mess, e.what());
                 socket.Send(FAIL);
                 socket.Send(mess);
             }
@@ -122,7 +123,7 @@ int ClientInterface::functionTable(){
 	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&ClientInterface::get_last_client_ip;
 	flist[F_GET_RECEIVER_VERSION]			=	&ClientInterface::get_version;
 	flist[F_SETUP_RECEIVER]				    =	&ClientInterface::setup_receiver;
-	flist[F_RECEIVER_SET_ROI]				=	&ClientInterface::set_roi;
+	flist[F_RECEIVER_SET_DETECTOR_ROI]		=	&ClientInterface::set_detector_roi;
 	flist[F_RECEIVER_SET_NUM_FRAMES]        =   &ClientInterface::set_num_frames;  
 	flist[F_SET_RECEIVER_NUM_TRIGGERS]      =   &ClientInterface::set_num_triggers;           
 	flist[F_SET_RECEIVER_NUM_BURSTS]        =   &ClientInterface::set_num_bursts;         
@@ -217,6 +218,9 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_SET_DATASTREAM]        =   &ClientInterface::set_detector_datastream;
     flist[F_GET_RECEIVER_ARPING]            =   &ClientInterface::get_arping;
     flist[F_SET_RECEIVER_ARPING]            =   &ClientInterface::set_arping;
+    flist[F_RECEIVER_GET_RECEIVER_ROI]      =   &ClientInterface::get_receiver_roi;
+    flist[F_RECEIVER_SET_RECEIVER_ROI]      =   &ClientInterface::set_receiver_roi;
+    flist[F_RECEIVER_SET_RECEIVER_ROI_METADATA] =   &ClientInterface::set_receiver_roi_metadata;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -247,7 +251,7 @@ int ClientInterface::decodeFunction(Interface &socket) {
 void ClientInterface::functionNotImplemented() {
     std::ostringstream os;
     os << "Function: " << getFunctionNameFromEnum((enum detFuncs)fnum)
-       << ", is is not implemented for this detector";
+       << " is not implemented for this detector";
     throw RuntimeError(os.str());
 }
 
@@ -273,7 +277,7 @@ void ClientInterface::validate(T arg, T retval, const std::string &modename,
 
 void ClientInterface::verifyLock() {
     if (lockedByClient && server.getThisClient() != server.getLockedBy()) {
-        throw sls::SocketError("Receiver locked\n");
+        throw SocketError("Receiver locked\n");
     }
 }
 
@@ -283,7 +287,7 @@ void ClientInterface::verifyIdle(Interface &socket) {
         oss << "Can not execute "
             << getFunctionNameFromEnum((enum detFuncs)fnum)
             << " when receiver is not idle";
-        throw sls::SocketError(oss.str());
+        throw SocketError(oss.str());
     }
 }
 
@@ -295,7 +299,7 @@ int ClientInterface::lock_receiver(Interface &socket) {
             (server.getLockedBy() == server.getThisClient())) {
             lockedByClient = lock;
             lock ? server.setLockedBy(server.getThisClient())
-                 : server.setLockedBy(sls::IpAddr{});
+                 : server.setLockedBy(IpAddr{});
         } else {
             throw RuntimeError("Receiver locked\n");
         }
@@ -313,7 +317,7 @@ int ClientInterface::get_version(Interface &socket) {
 
 int ClientInterface::setup_receiver(Interface &socket) {
     auto arg = socket.Receive<rxParameters>();
-    LOG(logDEBUG) << sls::ToString(arg);
+    LOG(logDEBUG) << ToString(arg);
 
     // if object exists, verify unlocked and idle, else only verify lock
     // (connecting first time)
@@ -329,17 +333,17 @@ int ClientInterface::setup_receiver(Interface &socket) {
 
     // udp setup
     // update retvals only if detmac is not the same as in detector
-    sls::MacAddr retvals[2];
+    MacAddr retvals[2];
     if (arg.udp_dstip != 0) {
-        sls::MacAddr r = setUdpIp(sls::IpAddr(arg.udp_dstip));
-        sls::MacAddr detMac{arg.udp_dstmac};
+        MacAddr r = setUdpIp(IpAddr(arg.udp_dstip));
+        MacAddr detMac{arg.udp_dstmac};
         if (detMac != r) {
             retvals[0] = r;
         }
     }
     if (arg.udp_dstip2 != 0) {
-        sls::MacAddr r = setUdpIp2(sls::IpAddr(arg.udp_dstip2));
-        sls::MacAddr detMac{arg.udp_dstmac2};
+        MacAddr r = setUdpIp2(IpAddr(arg.udp_dstip2));
+        MacAddr detMac{arg.udp_dstmac2};
         if (detMac != r) {
             retvals[1] = r;
         }
@@ -455,7 +459,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
     }
     if (detType == GOTTHARD) {
         try {
-            impl()->setROI(arg.roi);
+            impl()->setDetectorROI(arg.roi);
         } catch (const RuntimeError &e) {
             throw RuntimeError("Could not set ROI");
         }
@@ -495,10 +499,13 @@ void ClientInterface::setDetectorType(detectorType arg) {
 
     try {
         detType = GENERIC;
-        receiver = sls::make_unique<Implementation>(arg);
+        receiver = make_unique<Implementation>(arg);
         detType = arg;
-    } catch (...) {
-        throw RuntimeError("Could not set detector type");
+    } catch (std::exception &e) {
+        std::ostringstream os;
+        os << "Could not set detector type in the receiver. ";
+        os << e.what();
+        throw RuntimeError(os.str());
     }
 
     // callbacks after (in setdetectortype, the object is reinitialized)
@@ -518,16 +525,16 @@ void ClientInterface::setDetectorType(detectorType arg) {
     impl()->setThreadIds(parentThreadId, tcpThreadId);
 }
 
-int ClientInterface::set_roi(Interface &socket) {
+int ClientInterface::set_detector_roi(Interface &socket) {
     auto arg = socket.Receive<ROI>();
-    LOG(logDEBUG1) << "Set ROI: [" << arg.xmin << ", " << arg.xmax << "]";
+    LOG(logDEBUG1) << "Set Detector ROI: " << ToString(arg);
 
     if (detType != GOTTHARD)
         functionNotImplemented();
 
     verifyIdle(socket);
     try {
-        impl()->setROI(arg);
+        impl()->setDetectorROI(arg);
     } catch (const RuntimeError &e) {
         throw RuntimeError("Could not set ROI");
     }
@@ -572,7 +579,7 @@ int ClientInterface::set_num_add_storage_cells(Interface &socket) {
         throw RuntimeError("Invalid number of additional storage cells " +
                            std::to_string(value));
     }
-    verifyIdle(socket);
+    // allowing this to be done even when receiver not idle
     LOG(logDEBUG1) << "Setting num additional storage cells to " << value;
     impl()->setNumberOfAdditionalStorageCells(value);
     return socket.Send(OK);
@@ -637,7 +644,7 @@ int ClientInterface::set_exptime(Interface &socket) {
     socket.Receive(args);
     int gateIndex = static_cast<int>(args[0]);
     ns value = std::chrono::nanoseconds(args[1]);
-    LOG(logDEBUG1) << "Setting exptime to " << sls::ToString(value)
+    LOG(logDEBUG1) << "Setting exptime to " << ToString(value)
                    << " (gateIndex: " << gateIndex << ")";
     switch (gateIndex) {
     case -1:
@@ -676,14 +683,14 @@ int ClientInterface::set_exptime(Interface &socket) {
 
 int ClientInterface::set_period(Interface &socket) {
     auto value = std::chrono::nanoseconds(socket.Receive<int64_t>());
-    LOG(logDEBUG1) << "Setting period to " << sls::ToString(value);
+    LOG(logDEBUG1) << "Setting period to " << ToString(value);
     impl()->setAcquisitionPeriod(value);
     return socket.Send(OK);
 }
 
 int ClientInterface::set_subexptime(Interface &socket) {
     auto value = std::chrono::nanoseconds(socket.Receive<int64_t>());
-    LOG(logDEBUG1) << "Setting period to " << sls::ToString(value);
+    LOG(logDEBUG1) << "Setting period to " << ToString(value);
     ns subdeadtime = impl()->getSubPeriod() - impl()->getSubExpTime();
     impl()->setSubExpTime(value);
     impl()->setSubPeriod(impl()->getSubExpTime() + subdeadtime);
@@ -692,10 +699,10 @@ int ClientInterface::set_subexptime(Interface &socket) {
 
 int ClientInterface::set_subdeadtime(Interface &socket) {
     auto value = std::chrono::nanoseconds(socket.Receive<int64_t>());
-    LOG(logDEBUG1) << "Setting sub deadtime to " << sls::ToString(value);
+    LOG(logDEBUG1) << "Setting sub deadtime to " << ToString(value);
     impl()->setSubPeriod(value + impl()->getSubExpTime());
     LOG(logDEBUG1) << "Setting sub period to "
-                   << sls::ToString(impl()->getSubPeriod());
+                   << ToString(impl()->getSubPeriod());
     return socket.Send(OK);
 }
 
@@ -766,7 +773,7 @@ int ClientInterface::get_streaming_frequency(Interface &socket) {
 
 int ClientInterface::get_status(Interface &socket) {
     auto retval = impl()->getStatus();
-    LOG(logDEBUG1) << "Status:" << sls::ToString(retval);
+    LOG(logDEBUG1) << "Status:" << ToString(retval);
     return socket.sendResult(retval);
 }
 
@@ -788,7 +795,7 @@ int ClientInterface::stop_receiver(Interface &socket) {
     auto s = impl()->getStatus();
     if (s != IDLE)
         throw RuntimeError("Could not stop receiver. It as it is: " +
-                           sls::ToString(s));
+                           ToString(s));
 
     return socket.Send(OK);
 }
@@ -849,7 +856,7 @@ int ClientInterface::get_file_index(Interface &socket) {
 
 int ClientInterface::get_frame_index(Interface &socket) {
     auto retval = impl()->getCurrentFrameIndex();
-    LOG(logDEBUG1) << "frames index:" << sls::ToString(retval);
+    LOG(logDEBUG1) << "frames index:" << ToString(retval);
     auto size = static_cast<int>(retval.size());
     socket.Send(OK);
     socket.Send(size);
@@ -859,7 +866,7 @@ int ClientInterface::get_frame_index(Interface &socket) {
 
 int ClientInterface::get_missing_packets(Interface &socket) {
     auto missing_packets = impl()->getNumMissingPackets();
-    LOG(logDEBUG1) << "missing packets:" << sls::ToString(missing_packets);
+    LOG(logDEBUG1) << "missing packets:" << ToString(missing_packets);
     auto size = static_cast<int>(missing_packets.size());
     socket.Send(OK);
     socket.Send(size);
@@ -869,7 +876,7 @@ int ClientInterface::get_missing_packets(Interface &socket) {
 
 int ClientInterface::get_frames_caught(Interface &socket) {
     auto retval = impl()->getFramesCaught();
-    LOG(logDEBUG1) << "frames caught:" << sls::ToString(retval);
+    LOG(logDEBUG1) << "frames caught:" << ToString(retval);
     auto size = static_cast<int>(retval.size());
     socket.Send(OK);
     socket.Send(size);
@@ -1087,7 +1094,7 @@ int ClientInterface::get_streaming_port(Interface &socket) {
 }
 
 int ClientInterface::set_streaming_source_ip(Interface &socket) {
-    auto ip = socket.Receive<sls::IpAddr>();
+    auto ip = socket.Receive<IpAddr>();
     if (ip == 0)
         throw RuntimeError("Invalid zmq ip " + ip.str());
     verifyIdle(socket);
@@ -1096,7 +1103,7 @@ int ClientInterface::set_streaming_source_ip(Interface &socket) {
 }
 
 int ClientInterface::get_streaming_source_ip(Interface &socket) {
-    sls::IpAddr retval = impl()->getStreamingSourceIP();
+    IpAddr retval = impl()->getStreamingSourceIP();
     LOG(logDEBUG1) << "streaming IP:" << retval;
     return socket.sendResult(retval);
 }
@@ -1144,14 +1151,14 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
         }
     }
     // verifyIdle(socket); allowing it to be set on the fly
-    LOG(logDEBUG1) << "Setting additional json header: " << sls::ToString(json);
+    LOG(logDEBUG1) << "Setting additional json header: " << ToString(json);
     impl()->setAdditionalJsonHeader(json);
     return socket.Send(OK);
 }
 
 int ClientInterface::get_additional_json_header(Interface &socket) {
     std::map<std::string, std::string> json = impl()->getAdditionalJsonHeader();
-    LOG(logDEBUG1) << "additional json header:" << sls::ToString(json);
+    LOG(logDEBUG1) << "additional json header:" << ToString(json);
     std::ostringstream oss;
     for (auto &it : json) {
         oss << it.first << ' ' << it.second << ' ';
@@ -1167,7 +1174,8 @@ int ClientInterface::get_additional_json_header(Interface &socket) {
 int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
     auto size = socket.Receive<int>();
     if (size == 0) {
-        throw RuntimeError("Receiver socket buffer size must be > 0.");
+        throw RuntimeError(
+            "Receiver socket buffer size must be greater than 0.");
     }
     if (size > 0) {
         verifyIdle(socket);
@@ -1316,7 +1324,7 @@ int ClientInterface::set_adc_mask(Interface &socket) {
 }
 
 int ClientInterface::set_dbit_list(Interface &socket) {
-    sls::StaticVector<int, MAX_RX_DBIT> args;
+    StaticVector<int, MAX_RX_DBIT> args;
     socket.Receive(args);
     if (detType != CHIPTESTBOARD)
         functionNotImplemented();
@@ -1333,7 +1341,7 @@ int ClientInterface::set_dbit_list(Interface &socket) {
 int ClientInterface::get_dbit_list(Interface &socket) {
     if (detType != CHIPTESTBOARD)
         functionNotImplemented();
-    sls::StaticVector<int, MAX_RX_DBIT> retval;
+    StaticVector<int, MAX_RX_DBIT> retval;
     retval = impl()->getDbitList();
     LOG(logDEBUG1) << "Dbit list size retval:" << retval.size();
     return socket.sendResult(retval);
@@ -1396,10 +1404,10 @@ int ClientInterface::set_read_n_rows(Interface &socket) {
     return socket.Send(OK);
 }
 
-sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
+MacAddr ClientInterface::setUdpIp(IpAddr arg) {
     LOG(logINFO) << "Received UDP IP: " << arg;
     // getting eth
-    std::string eth = sls::IpToInterfaceName(arg.str());
+    std::string eth = IpToInterfaceName(arg.str());
     if (eth == "none") {
         throw RuntimeError("Failed to get udp ethernet interface from IP " +
                            arg.str());
@@ -1418,7 +1426,7 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
     udpips[0] = arg.str();
 
     // get mac address
-    auto retval = sls::InterfaceNameToMac(eth);
+    auto retval = InterfaceNameToMac(eth);
     if (retval == 0 && arg.str() != LOCALHOST_IP) {
         throw RuntimeError("Failed to get udp mac adddress to listen to (eth:" +
                            eth + ", ip:" + arg.str() + ")\n");
@@ -1428,16 +1436,16 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
 }
 
 int ClientInterface::set_udp_ip(Interface &socket) {
-    auto arg = socket.Receive<sls::IpAddr>();
+    auto arg = socket.Receive<IpAddr>();
     verifyIdle(socket);
     auto retval = setUdpIp(arg);
     return socket.sendResult(retval);
 }
 
-sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
+MacAddr ClientInterface::setUdpIp2(IpAddr arg) {
     LOG(logINFO) << "Received UDP IP2: " << arg;
     // getting eth
-    std::string eth = sls::IpToInterfaceName(arg.str());
+    std::string eth = IpToInterfaceName(arg.str());
     if (eth == "none") {
         throw RuntimeError("Failed to get udp ethernet interface2 from IP " +
                            arg.str());
@@ -1453,7 +1461,7 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
     udpips[1] = arg.str();
 
     // get mac address
-    auto retval = sls::InterfaceNameToMac(eth);
+    auto retval = InterfaceNameToMac(eth);
     if (retval == 0 && arg.str() != LOCALHOST_IP) {
         throw RuntimeError(
             "Failed to get udp mac adddress2 to listen to (eth:" + eth +
@@ -1464,7 +1472,7 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
 }
 
 int ClientInterface::set_udp_ip2(Interface &socket) {
-    auto arg = socket.Receive<sls::IpAddr>();
+    auto arg = socket.Receive<IpAddr>();
     verifyIdle(socket);
     if (detType != JUNGFRAU && detType != GOTTHARD2) {
         throw RuntimeError(
@@ -1588,7 +1596,7 @@ int ClientInterface::set_gate_delay(Interface &socket) {
     socket.Receive(args);
     int gateIndex = static_cast<int>(args[0]);
     auto value = std::chrono::nanoseconds(args[1]);
-    LOG(logDEBUG1) << "Setting gate delay to " << sls::ToString(value)
+    LOG(logDEBUG1) << "Setting gate delay to " << ToString(value)
                    << " (gateIndex: " << gateIndex << ")";
     if (detType != MYTHEN3) {
         functionNotImplemented();
@@ -1617,7 +1625,7 @@ int ClientInterface::set_gate_delay(Interface &socket) {
 
 int ClientInterface::get_thread_ids(Interface &socket) {
     auto retval = impl()->getThreadIds();
-    LOG(logDEBUG1) << "thread ids retval: " << sls::ToString(retval);
+    LOG(logDEBUG1) << "thread ids retval: " << ToString(retval);
     return socket.sendResult(retval);
 }
 
@@ -1656,7 +1664,7 @@ int ClientInterface::set_rate_correct(Interface &socket) {
 
 int ClientInterface::set_scan(Interface &socket) {
     auto arg = socket.Receive<scanParameters>();
-    LOG(logDEBUG) << "Scan Mode: " << sls::ToString(arg);
+    LOG(logDEBUG) << "Scan Mode: " << ToString(arg);
     verifyIdle(socket);
     impl()->setScan(arg);
     return socket.Send(OK);
@@ -1691,7 +1699,7 @@ int ClientInterface::set_streaming_hwm(Interface &socket) {
 
 int ClientInterface::set_all_threshold(Interface &socket) {
     auto eVs = socket.Receive<std::array<int, 3>>();
-    LOG(logDEBUG) << "Threshold:" << sls::ToString(eVs);
+    LOG(logDEBUG) << "Threshold:" << ToString(eVs);
     if (detType != MYTHEN3)
         functionNotImplemented();
     verifyIdle(socket);
@@ -1711,8 +1719,8 @@ int ClientInterface::set_detector_datastream(Interface &socket) {
         throw RuntimeError("Invalid port type");
     }
     bool enable = static_cast<int>(args[1]);
-    LOG(logDEBUG1) << "Setting datastream (" << sls::ToString(port) << ") to "
-                   << sls::ToString(enable);
+    LOG(logDEBUG1) << "Setting datastream (" << ToString(port) << ") to "
+                   << ToString(enable);
     if (detType != EIGER)
         functionNotImplemented();
     verifyIdle(socket);
@@ -1736,3 +1744,39 @@ int ClientInterface::set_arping(Interface &socket) {
     impl()->setArping(value, udpips);
     return socket.Send(OK);
 }
+
+int ClientInterface::get_receiver_roi(Interface &socket) {
+    auto retval = impl()->getReceiverROI();
+    LOG(logDEBUG1) << "Receiver roi retval:" << ToString(retval);
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::set_receiver_roi(Interface &socket) {
+    auto arg = socket.Receive<ROI>();
+    if (detType == CHIPTESTBOARD || detType == MOENCH)
+        functionNotImplemented();
+    LOG(logDEBUG1) << "Set Receiver ROI: " << ToString(arg);
+    verifyIdle(socket);
+    try {
+        impl()->setReceiverROI(arg);
+    } catch (const RuntimeError &e) {
+        throw RuntimeError("Could not set ReceiverROI");
+    }
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
+    auto arg = socket.Receive<ROI>();
+    if (detType == CHIPTESTBOARD || detType == MOENCH)
+        functionNotImplemented();
+    LOG(logDEBUG1) << "Set Receiver ROI Metadata: " << ToString(arg);
+    verifyIdle(socket);
+    try {
+        impl()->setReceiverROIMetadata(arg);
+    } catch (const RuntimeError &e) {
+        throw RuntimeError("Could not set ReceiverROI metadata");
+    }
+    return socket.Send(OK);
+}
+
+} // namespace sls

@@ -10,8 +10,8 @@
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
 
-using sls::CmdProxy;
-using sls::Detector;
+namespace sls {
+
 using test::GET;
 using test::PUT;
 
@@ -538,3 +538,34 @@ TEST_CASE("filtercells", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("filtercells", {"0"}, -1, PUT));
     }
 }
+
+TEST_CASE("sync", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getSynchronization().tsquash(
+            "inconsistent synchronization to test");
+        {
+            std::ostringstream oss;
+            proxy.Call("sync", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "sync 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("sync", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "sync 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("sync", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "sync 1\n");
+        }
+        det.setSynchronization(prev_val);
+    } else {
+        REQUIRE_THROWS(proxy.Call("sync", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("sync", {"0"}, -1, PUT));
+    }
+}
+
+} // namespace sls

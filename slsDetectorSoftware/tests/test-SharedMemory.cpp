@@ -7,13 +7,13 @@
 
 #include <iostream>
 
+namespace sls {
+
 struct Data {
     int x;
     double y;
     char mess[50];
 };
-
-using namespace sls;
 
 constexpr int shm_id = 10;
 
@@ -26,7 +26,7 @@ TEST_CASE("Create SharedMemory read and write", "[detector]") {
 
     shm()->x = 3;
     shm()->y = 5.7;
-    sls::strcpy_safe(shm()->mess, "Some string");
+    strcpy_safe(shm()->mess, "Some string");
 
     CHECK(shm()->x == 3);
     CHECK(shm()->y == 5.7);
@@ -47,7 +47,7 @@ TEST_CASE("Open existing SharedMemory and read", "[detector]") {
     }
 
     SharedMemory<double> shm2(shm_id, -1);
-    shm2.openSharedMemory();
+    shm2.openSharedMemory(true);
     CHECK(*shm2() == 5.3);
 
     shm2.removeSharedMemory();
@@ -74,7 +74,7 @@ TEST_CASE("Open two shared memories to the same place", "[detector]") {
 
     // Open the second shared memory with the same name
     SharedMemory<Data> shm2(shm_id, -1);
-    shm2.openSharedMemory();
+    shm2.openSharedMemory(true);
     CHECK(shm2()->x == 5);
     CHECK(shm.getName() == shm2.getName());
 
@@ -96,7 +96,6 @@ TEST_CASE("Move SharedMemory", "[detector]") {
                                std::to_string(shm_id));
     shm.createSharedMemory();
     shm()->x = 9;
-
 
     SharedMemory<Data> shm2(shm_id + 1, -1);
     shm2 = std::move(shm); // shm is now a moved from object!
@@ -132,13 +131,12 @@ TEST_CASE("Create several shared memories", "[detector]") {
     }
 }
 
-TEST_CASE("Create create a shared memory with a tag"){
+TEST_CASE("Create create a shared memory with a tag") {
     SharedMemory<int> shm(0, -1, "ctbdacs");
     REQUIRE(shm.getName() == "/slsDetectorPackage_detector_0_ctbdacs");
-
 }
 
-TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set"){
+TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set") {
 
     // if SLSDETNAME is already set we unset it but
     // save the value
@@ -156,20 +154,17 @@ TEST_CASE("Create create a shared memory with a tag when SLSDETNAME is set"){
         unsetenv(SHM_ENV_NAME);
     else
         setenv(SHM_ENV_NAME, old_slsdetname.c_str(), 1);
-
 }
 
-TEST_CASE("map int64 to int32 throws"){
+TEST_CASE("map int64 to int32 throws") {
     SharedMemory<int32_t> shm(shm_id, -1);
     shm.createSharedMemory();
     *shm() = 7;
 
     SharedMemory<int64_t> shm2(shm_id, -1);
-    REQUIRE_THROWS(shm2.openSharedMemory());
+    REQUIRE_THROWS(shm2.openSharedMemory(true));
 
     shm.removeSharedMemory();
-    
-
-
-
 }
+
+} // namespace sls

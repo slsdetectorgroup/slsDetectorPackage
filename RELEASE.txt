@@ -59,20 +59,57 @@ This document describes the differences between v7.0.0 and v6.x.x
 - gotthard 25 um image reconstructed in gui and virtual hdf5 (firmware updated for slave to reverse channels)
 - master binary file in json format now
 - fixed bug introduced in 6.0.0: hdf5 files created 1 file per frame after the initial file which had maxframesperfile
+- rx_roi
 - m3 polarity, interpolation (enables all counters when enabled), pump probe, analog pulsing, digital pulsing
 - updatedetectorserver - removes old server current binary pointing to for blackfin
 - removing copydetectorserver using tftp 
->>>>>>> developer
 - registerCallBackRawDataReady and registerCallBackRawDataModifyReady now gives a sls_receiver_header* instead of a char*, and uint32_t to size_t
 - registerCallBackStartAcquisition gave incorrect imagesize (+120 bytes). corrected.
 - registerCallBackStartAcquisition parameter is a const string reference
 - m3 (runnig config second time with tengiga 0, dr !=32, counters !=0x7) calculated incorrect image size expected
 - fixed row column indexing (mainly for multi module Jungfrau 2 interfaces )
 - eiger gui row indices not flipped anymore (fix in config)
+- m3 (settings dac check disabled temporarily?)
+- m3 virtual server sends the right pacets now
+- gap pixels in gui enabled by default
+- rxr src files and classes (detectordata, ZmqSocket, helpDacs) added to sls namespace, and macros (namely from logger (logINFO etc)), slsDetectorGui (make_unique in implemtnation requires sls nemspace (points to std otherwise) but not deectorImpl.cpp)
+- blackfin programing made seamless (nCE fixed which helps)
+-save settings file for m3 and eiger
+- m3 threshold changes
+- g2 and m3 clkdiv 2 (system clock) change should affect time settings (g2: exptime, period, delayaftertrigger, burstperiod, m3: exptime, gatedelay, gateperiod, period, delayaftertrigger)
+- g2 system frequency is the same irrespective of timing source
+- (apparently) rxr doesnt get stuck anymore from 6.1.1
+- rxr mem size changed (fifo header size from 8 to 16) due to sls rxr header = 112.. 112+ 16=128 (reduces packet losss especially for g2)
+-udp_srcip and udp_Srcip2: can set to auto (for virtual or 1g data networks)
+- set dataset name for all hdf5 files to "data" only
+- number of storage cells is not updated in teh receiver. done. and also allowing it to be modified in running status
+- refactored memory structure in receiver and listener code (maybe resolves stuck issue, need to check)
+- callback modified to have rx header and not rx header pointer
+- adapted for g2 hdi v2.0. able to set master from server command line, server config file, and client.
+- rx udp socket refactored (maybe resolves getting stuck?)remove check for eiger header and isntead checks for malformed packets for every detector
+- jungfrau sw trigger , blocking trigger
+-help should not create a new object
+- jungfrau master
+- g2 parallel command
+- jungfrau sync
+- m3 bad channels (badchannel file also for g2 extended to include commas and colons, remove duplicates)
+- m3 fix for gain caps to invert where needed when loading from trimbit file (fix for feature might have been added only in developer branch)
+- pat loop and wait address default
+- ctb and moench Fw fixed (to work with pattern commdand) )addreess length
+- setting rx_hostname (or udp_dstip with rx_hostname not none) will always set udp_dstmac. solves problem of chaing udp_dstip and udp_dstmac stays the same
+- jungfrau reset core and usleep removed (fix for 6.1.1 is now fixed in firmware)
+- g2 change clkdivs 2 3 4 to defaults for burst and cw mode.
+- ctb and moench: allowing 1g non blocking acquire to send data
+- m3 and g2 rr
+- m3 and g2 temp
+- gain plot zooming fixed (disabled, acc. to main plot)
+- ctb, moench, jungfrau (pll reset at start fixed, before no defines)
+- pybind built into package, no need to update submodule when previous release had different pybind version
+- adcvpp moved from dac.. and api added (ctb, moench)
 
 2. Resolved Issues
 ==================
-
+    - Reading back sub-microsecond exposure times from the Python API. 
 
 3. Firmware Requirements
 ========================

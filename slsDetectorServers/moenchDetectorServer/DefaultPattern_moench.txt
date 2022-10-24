@@ -274,15 +274,28 @@ patword 0x0110 0x0008599f0008503a
 patword 0x0111 0x0008599f0008503a
 patioctrl 0x8f0effff6dbffdbf
 patlimits 0x0000 0x0110
-patloop0 0x00be 0x00ef
-patnloop0 199
-patloop1 0x0400 0x0400
-patnloop1 0
-patloop2 0x0400 0x0400
-patnloop2 0
-patwait0 0x002e
-patwaittime0 800
-patwait1 0x0400
-patwaittime1 0
-patwait2 0x0400
-patwaittime2 0
+patloop 0 0x00be 0x00ef
+patnloop 0 199
+patloop 1 0x0400 0x0400
+patnloop 1 0
+patloop 2 0x0400 0x0400
+patnloop 2 0
+patwait 0 0x002e
+patwaittime 0 800
+patwait 1 0x0400
+patwaittime 1 0
+patwait 2 0x0400
+patwaittime 2 0
+
+patloop 3 0x1fff 0x1fff
+patnloop 3 0
+patloop 4 0x1fff 0x1fff
+patnloop 4 0
+patloop 5 0x1fff 0x1fff
+patnloop 5 0
+patwait 3 0x1fff
+patwaittime 3 0
+patwait 4 0x1fff
+patwaittime 4 0
+patwait 5 0x1fff
+patwaittime 5 0

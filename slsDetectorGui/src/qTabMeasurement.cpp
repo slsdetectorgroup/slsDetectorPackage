@@ -7,7 +7,9 @@
 #include <QStandardItemModel>
 #include <QTimer>
 
-qTabMeasurement::qTabMeasurement(QWidget *parent, sls::Detector *detector,
+namespace sls {
+
+qTabMeasurement::qTabMeasurement(QWidget *parent, Detector *detector,
                                  qDrawPlot *p)
     : QWidget(parent), det(detector), plot(p), progressTimer(nullptr) {
     setupUi(this);
@@ -337,9 +339,26 @@ void qTabMeasurement::GetTimingMode() {
     disconnect(comboTimingMode, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetTimingMode(int)));
     try {
+
+        slsDetectorDefs::timingMode retval{slsDetectorDefs::AUTO_TIMING};
+        // m3: remove slave modes (always trigger) before squashing
+        if (det->getDetectorType().squash() == slsDetectorDefs::MYTHEN3) {
+            auto retvals = det->getTimingMode();
+            auto is_master = det->getMaster();
+            Result<slsDetectorDefs::timingMode> masterRetvals;
+            for (size_t i = 0; i != is_master.size(); ++i) {
+                if (is_master[i]) {
+                    masterRetvals.push_back(retvals[i]);
+                }
+            }
+            retval = masterRetvals.tsquash(
+                "Inconsistent timing mode for all detectors.");
+        } else {
+            retval = det->getTimingMode().tsquash(
+                "Inconsistent timing mode for all detectors.");
+        }
+
         auto oldMode = comboTimingMode->currentIndex();
-        auto retval = det->getTimingMode().tsquash(
-            "Inconsistent timing mode for all detectors.");
         switch (retval) {
         case slsDetectorDefs::AUTO_TIMING:
         case slsDetectorDefs::TRIGGER_EXPOSURE:
@@ -353,8 +372,8 @@ void qTabMeasurement::GetTimingMode() {
             }
             break;
         default:
-            throw sls::RuntimeError(std::string("Unknown timing mode: ") +
-                                    std::to_string(retval));
+            throw RuntimeError(std::string("Unknown timing mode: ") +
+                               std::to_string(retval));
         }
     }
     CATCH_DISPLAY("Could not get timing mode.",
@@ -390,8 +409,8 @@ void qTabMeasurement::GetBurstMode() {
             ShowTriggerDelay();
             break;
         default:
-            throw sls::RuntimeError(std::string("Unknown burst mode: ") +
-                                    std::to_string(retval));
+            throw RuntimeError(std::string("Unknown burst mode: ") +
+                               std::to_string(retval));
         }
     }
     CATCH_DISPLAY("Could not get burst mode.", "qTabMeasurement::GetBurstMode")
@@ -846,6 +865,7 @@ void qTabMeasurement::SetNextFrameNumber(int val) {
 }
 
 void qTabMeasurement::ResetProgress() {
+    std::lock_guard<std::mutex> lock(mProgress);
     LOG(logDEBUG) << "Resetting progress";
     lblCurrentFrame->setText("0");
     lblCurrentMeasurement->setText("0");
@@ -854,6 +874,7 @@ void qTabMeasurement::ResetProgress() {
 
 void qTabMeasurement::UpdateProgress() {
     LOG(logDEBUG) << "Updating progress";
+    std::lock_guard<std::mutex> lock(mProgress);
     progressBar->setValue(plot->GetProgress());
     lblCurrentFrame->setText(QString::number(plot->GetCurrentFrameIndex()));
     lblCurrentMeasurement->setText(QString::number(currentMeasurement));
@@ -901,7 +922,6 @@ void qTabMeasurement::StartAcquisition() {
     currentMeasurement = 0;
     ResetProgress();
     Enable(0);
-    progressBar->setValue(0);
     progressTimer->start(100);
     emit EnableTabsSignal(false);
 }
@@ -1000,3 +1020,5 @@ void qTabMeasurement::Refresh() {
 
     LOG(logDEBUG) << "**Updated Measurement Tab";
 }
+
+} // namespace sls

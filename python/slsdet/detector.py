@@ -17,7 +17,7 @@ from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
 from _slsdet import xy
 from . import utils as ut
-from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy
+from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -114,6 +114,11 @@ class Detector(CppDetectorApi):
     def config(self, fname):
         fname = ut.make_string_path(fname)
         self.loadConfig(fname)
+
+        #create a new object to replace the old, allow us to
+        #do a new initialization of dacs etc.
+        new_object = self.__class__(self.getShmId())
+        self.__dict__.update(new_object.__dict__)
 
     @property
     def parameters(self):
@@ -1182,6 +1187,7 @@ class Detector(CppDetectorApi):
         ----
         Not mandatory to set as udp_dstip retrieves it from slsReceiver process but must be set if you use a custom receiver (not slsReceiver). \n
         To set MACs for individual modules, use setDestinationUDPMAC. 
+        Use router mac if router between detector and receiver.
         
         Example
         -------
@@ -1208,6 +1214,7 @@ class Detector(CppDetectorApi):
         To set MACs for individual modules, use setDestinationUDPMAC2. \n
         [Jungfrau] bottom half \n
         [Gotthard2] veto debugging \n
+        Use router mac if router between detector and receiver.
         
         Example
         ------
@@ -1442,20 +1449,21 @@ class Detector(CppDetectorApi):
     @property
     def trimbits(self):
         """
-        [Eiger][Mythen3] Loads custom trimbit file to detector. 
+        [Eiger][Mythen3] Loads/Saves custom trimbit file to detector. 
         
         Note
         -----
         If no extension specified, serial number of each module is attached.
 
-        :getter: Not implemented
+        :setter: Loads the trimbit file to detector
+        :getter: Saves the trimbits from the detector to file. Not implemented with 'trimbits'. Use saveTrimbits().
 
         Example
         -------
         >>> d.trimbits = '/path_to_file/noise'
         - 14:53:27.931 INFO: Settings file loaded: /path_to_file/noise.sn000
         """
-        return NotImplementedError("trimbits are set only")
+        raise NotImplementedError('trimbits is set only. Use saveTrimbits()')
 
     @trimbits.setter
     def trimbits(self, fname):
@@ -1478,14 +1486,26 @@ class Detector(CppDetectorApi):
     @element
     def master(self):
         """
-        [Eiger] Sets half module to master and others to slaves.\n
-        [Gotthard][Gotthard2][Mythen3][Eiger] Gets if the current module/ half module is master.
+        [Eiger][Gotthard2][Jungfrau] Sets (half) module to master and other(s) to slaves.\n
+        [Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau] Gets if the current (half) module is master.
         """
         return self.getMaster()
 
     @master.setter
     def master(self, value):
         ut.set_using_dict(self.setMaster, value)
+
+    @property
+    @element
+    def sync(self):
+        """
+        [Jungfrau] Enables or disables synchronization between modules.
+        """
+        return self.getSynchronization()
+
+    @sync.setter
+    def sync(self, value):
+        ut.set_using_dict(self.setSynchronization, value)
 
     @property
     @element
@@ -1833,13 +1853,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def threshold(self):
-        """[Eiger] Threshold in eV
+        """[Eiger][Mythen3] Threshold in eV
         
         Note
         ----
         To change settings as well or set threshold without trimbits, use setThresholdEnergy.
 
-        :setter: It loads trim files from settingspath.
+        :setter: It loads trim files from settingspath.\n [Mythen3] An energy of -1 will pick up values from detector.
         """
         if self.type == detectorType.MYTHEN3:
             return self.getAllThresholdEnergy()
@@ -2044,11 +2064,13 @@ class Detector(CppDetectorApi):
     @element
     def parallel(self):
         """
-        [Eiger][Mythen3] Enable or disable the parallel readout mode of detector. 
+        [Eiger][Mythen3][Gotthard2] Enable or disable the parallel readout mode of detector. 
         
         Note
         ----
         [Mythen3] If exposure time is too short, acquisition will return with an ERROR and take fewer frames than expected. 
+        [Mythen3][Eiger] Default: Non parallel
+        [Gotthard2] Default: parallel. Non parallel mode works only in continuous mode.
         """
         return self.getParallelMode()
 
@@ -2546,6 +2568,7 @@ class Detector(CppDetectorApi):
         Note
         ----
         BURST_INTERNAL (default), BURST_EXTERNAL, CONTINUOUS_INTERNAL, CONTINUOUS_EXTERNAL
+        Also changes clkdiv 2, 3, 4
         """
         return self.getBurstMode()
 
@@ -2617,7 +2640,7 @@ class Detector(CppDetectorApi):
         -------
         >>> d.vetophoton = (2, 24, 2560, '/tmp/bla.txt')
         """
-        raise NotImplementedError('vetofile is set only')
+        raise NotImplementedError('vetophoton is set only')
 
     @vetophoton.setter
     def vetophoton(self, args):
@@ -3098,6 +3121,24 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setPatternMask, mask)
 
     @property
+    # @element
+    def patwait(self):
+        """
+        [Ctb][Moench][Mythen3] Wait address of loop level provided.
+        
+        Example
+        -------
+        >>> d.patwait[0] = 5
+        >>> d.patwait[0]
+        5
+        >>> d.patwait
+        0: 5
+        1: 20
+        2: 30
+        """
+        return PatWaitProxy(self)
+
+    @property
     @element
     def patwait0(self):
         """[Ctb][Moench][Mythen3] Wait 0 address.
@@ -3158,6 +3199,23 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setPatternWaitAddr, *addr)
 
     @property
+    def patwaittime(self):
+        """
+        [Ctb][Moench][Mythen3] Wait time in clock cycles of loop level provided.
+        
+        Example
+        -------
+        >>> d.patwaittime[0] = 5
+        >>> d.patwaittime[0]
+        5
+        >>> d.patwaittime
+        0: 5
+        1: 20
+        2: 30
+        """
+        return PatWaitTimeProxy(self)
+
+    @property
     @element
     def patwaittime0(self):
         """[Ctb][Moench][Mythen3] Wait 0 time in clock cycles."""
@@ -3190,6 +3248,23 @@ class Detector(CppDetectorApi):
         nclk = ut.merge_args(2, nclk)
         ut.set_using_dict(self.setPatternWaitTime, *nclk)
 
+
+    @property
+    def patloop(self):
+        """
+        [Ctb][Moench][Mythen3] Limits (start and stop address) of the loop provided.
+        
+        Example
+        -------
+        >>> d.patloop[0] = [5, 20]
+        >>> d.patloop[0]
+        [5, 20]
+        >>> d.patloop
+        0: [5, 20]
+        1: [20, 4]
+        2: [30, 5]
+        """
+        return PatLoopProxy(self)
 
     @property
     @element
@@ -3252,6 +3327,24 @@ class Detector(CppDetectorApi):
     def patloop2(self, addr):
         addr = ut.merge_args(2, addr)
         ut.set_using_dict(self.setPatternLoopAddresses, *addr)
+
+
+    @property
+    def patnloop(self):
+        """
+        [Ctb][Moench][Mythen3] Number of cycles of the loop provided.
+        
+        Example
+        -------
+        >>> d.patnloop[0] = 5
+        >>> d.patnloop[0]
+        5
+        >>> d.patnloop
+        0: 5
+        1: 20
+        2: 30
+        """
+        return PatNLoopProxy(self)
 
     @property
     @element
@@ -3515,7 +3608,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def interpolation(self):
-        """[Mythen3] Enable or disable interpolation.  Enabling also enables all counters """
+        """[Mythen3] Enable or disable interpolation.  interpolation mode enables all counters and disables vth3. Disabling sets back counter mask and vth3. """
         return self.getInterpolation()
 
     @interpolation.setter
@@ -3525,7 +3618,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def pumpprobe(self):
-        """[Mythen3] Enable or disable pump probe mode. """
+        """[Mythen3] Enable or disable pump probe mode. Pump probe mode only enables vth2. Disabling sets back to previous value """
         return self.getPumpProbe()
 
     @pumpprobe.setter

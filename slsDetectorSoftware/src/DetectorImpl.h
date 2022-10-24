@@ -2,33 +2,30 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 
+#include "CtbConfig.h"
 #include "SharedMemory.h"
 #include "sls/Result.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
-
-#include "CtbConfig.h"
-class ZmqSocket;
-class detectorData;
-
+#include <future>
 #include <memory>
 #include <mutex>
+#include <numeric>
 #include <semaphore.h>
 #include <string>
 #include <thread>
 #include <vector>
 
-#define DETECTOR_SHMAPIVERSION 0x190809
-#define DETECTOR_SHMVERSION    0x201007
-#define SHORT_STRING_LENGTH    50
-
-#include <future>
-#include <numeric>
-
 namespace sls {
 
+class ZmqSocket;
+class detectorData;
 class Module;
+
+#define DETECTOR_SHMAPIVERSION 0x190809
+#define DETECTOR_SHMVERSION    0x220505
+#define SHORT_STRING_LENGTH    50
 
 /**
  * @short structure allocated in shared memory to store detector settings
@@ -51,14 +48,14 @@ struct sharedDetector {
     /** last time stamp when accessing the shared memory */
     char lastDate[SHORT_STRING_LENGTH];
 
-    int numberOfModules;
+    int totalNumberOfModules;
     slsDetectorDefs::detectorType detType;
 
     /** END OF FIXED PATTERN
      * -----------------------------------------------*/
 
     /** Number of modules operated at once */
-    slsDetectorDefs::xy numberOfModule;
+    slsDetectorDefs::xy numberOfModules;
 
     /**  max number of channels for complete detector*/
     slsDetectorDefs::xy numberOfChannels;
@@ -68,6 +65,8 @@ struct sharedDetector {
     bool gapPixels;
     /** high water mark of listening tcp port (only data) */
     int zmqHwm;
+    /** in shm for gui purposes */
+    defs::ROI rx_roi{};
 };
 
 class DetectorImpl : public virtual slsDetectorDefs {
@@ -87,12 +86,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
-    sls::Result<RT> Parallel(RT (sls::Module::*somefunc)(CT...),
-                             std::vector<int> positions,
-                             typename NonDeduced<CT>::type... Args) {
+    Result<RT> Parallel(RT (Module::*somefunc)(CT...),
+                        std::vector<int> positions,
+                        typename NonDeduced<CT>::type... Args) {
 
         if (modules.empty())
-            throw sls::RuntimeError("No modules added");
+            throw RuntimeError("No modules added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(modules.size());
@@ -102,11 +101,11 @@ class DetectorImpl : public virtual slsDetectorDefs {
         futures.reserve(positions.size());
         for (size_t i : positions) {
             if (i >= modules.size())
-                throw sls::RuntimeError("Module out of range");
+                throw RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
                                          modules[i].get(), Args...));
         }
-        sls::Result<RT> result;
+        Result<RT> result;
         result.reserve(positions.size());
         for (auto &i : futures) {
             result.push_back(i.get());
@@ -115,12 +114,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename RT, typename... CT>
-    sls::Result<RT> Parallel(RT (sls::Module::*somefunc)(CT...) const,
-                             std::vector<int> positions,
-                             typename NonDeduced<CT>::type... Args) const {
+    Result<RT> Parallel(RT (Module::*somefunc)(CT...) const,
+                        std::vector<int> positions,
+                        typename NonDeduced<CT>::type... Args) const {
 
         if (modules.empty())
-            throw sls::RuntimeError("No modules added");
+            throw RuntimeError("No modules added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(modules.size());
@@ -130,11 +129,11 @@ class DetectorImpl : public virtual slsDetectorDefs {
         futures.reserve(positions.size());
         for (size_t i : positions) {
             if (i >= modules.size())
-                throw sls::RuntimeError("Module out of range");
+                throw RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
                                          modules[i].get(), Args...));
         }
-        sls::Result<RT> result;
+        Result<RT> result;
         result.reserve(positions.size());
         for (auto &i : futures) {
             result.push_back(i.get());
@@ -143,12 +142,11 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename... CT>
-    void Parallel(void (sls::Module::*somefunc)(CT...),
-                  std::vector<int> positions,
+    void Parallel(void (Module::*somefunc)(CT...), std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) {
 
         if (modules.empty())
-            throw sls::RuntimeError("No modules added");
+            throw RuntimeError("No modules added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(modules.size());
@@ -158,7 +156,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
         futures.reserve(positions.size());
         for (size_t i : positions) {
             if (i >= modules.size())
-                throw sls::RuntimeError("Module out of range");
+                throw RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
                                          modules[i].get(), Args...));
         }
@@ -168,12 +166,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename... CT>
-    void Parallel(void (sls::Module::*somefunc)(CT...) const,
+    void Parallel(void (Module::*somefunc)(CT...) const,
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) const {
 
         if (modules.empty())
-            throw sls::RuntimeError("No modules added");
+            throw RuntimeError("No modules added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(modules.size());
@@ -183,7 +181,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
         futures.reserve(positions.size());
         for (size_t i : positions) {
             if (i >= modules.size())
-                throw sls::RuntimeError("Module out of range");
+                throw RuntimeError("Module out of range");
             futures.push_back(std::async(std::launch::async, somefunc,
                                          modules[i].get(), Args...));
         }
@@ -191,6 +189,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
             i.get();
         }
     }
+
+    bool isAllPositions(const Positions pos) const;
 
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag);
@@ -278,6 +278,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int acquire();
 
+    /** also takes care of master and slave for multi module mythen */
+    void startAcquisition(bool blocking, std::vector<int> positions);
+
     /**
      * Combines data from all readouts and gives it to the gui
      * or just gives progress of acquisition by polling receivers
@@ -294,16 +297,20 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::vector<char> readProgrammingFile(const std::string &fname);
 
     void setNumberofUDPInterfaces(int n, Positions pos);
-    sls::Result<int> getDefaultDac(defs::dacIndex index,
-                                   defs::detectorSettings sett,
-                                   Positions pos = {});
+    Result<int> getDefaultDac(defs::dacIndex index, defs::detectorSettings sett,
+                              Positions pos = {});
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos);
+    defs::ROI getRxROI() const;
+    void setRxROI(const defs::ROI arg);
+    void clearRxROI();
 
+    void getBadChannels(const std::string &fname, Positions pos) const;
+    void setBadChannels(const std::string &fname, Positions pos);
 
     std::vector<std::string> getCtbDacNames() const;
     std::string getCtbDacName(defs::dacIndex i) const;
-    void setCtbDacNames(const std::vector<std::string>& names);
+    void setCtbDacNames(const std::vector<std::string> &names);
 
   private:
     /**
@@ -386,10 +393,13 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int kbhit();
 
+    defs::xy getPortGeometry() const;
+    defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
+
     const int detectorIndex{0};
-    sls::SharedMemory<sharedDetector> shm{0, -1};
-    sls::SharedMemory<CtbConfig> ctb_shm{0, -1, CtbConfig::shm_tag()};
-    std::vector<std::unique_ptr<sls::Module>> modules;
+    SharedMemory<sharedDetector> shm{0, -1};
+    SharedMemory<CtbConfig> ctb_shm{0, -1, CtbConfig::shm_tag()};
+    std::vector<std::unique_ptr<Module>> modules;
 
     /** data streaming (down stream) enabled in client (zmq sckets created) */
     bool client_downstream{false};

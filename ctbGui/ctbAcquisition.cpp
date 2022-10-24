@@ -828,14 +828,14 @@ void ctbAcquisition::setCanvas(TCanvas* c) {
   myCanvas->AddExec("dynamic",Form("((ctbAcquisition*)%p)->canvasClicked()",this));
   // myCanvas->AddExec("ex","canvasClicked()");
 }
-void ctbAcquisition::dataCallback(detectorData *data, long unsigned int index, unsigned int dum, void* pArgs) {
+void ctbAcquisition::dataCallback(sls::detectorData *data, long unsigned int index, unsigned int dum, void* pArgs) {
 
   // return 
   ((ctbAcquisition*)pArgs)->plotData(data,index);
 }
 
 
-int ctbAcquisition::plotData(detectorData *data, int index) {
+int ctbAcquisition::plotData(sls::detectorData *data, int index) {
 
   /*
 ******************************************************************
@@ -988,7 +988,7 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
 	ped=0;
 	aval=dataStructure->getValue(data->data,x,y);
 	//aval=dataStructure->getChannel(data->data,x,y);
-	cout << x << " " <<y << " "<< aval << endl;
+	// cout << x << " " <<y << " "<< aval << endl;
 	if (cbGetPedestal->IsOn()) {
 	  if (photonFinder) {
 	    photonFinder->addToPedestal(aval,x,y);

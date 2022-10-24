@@ -7,6 +7,8 @@
 #include <qwt_plot.h>
 #include <qwt_scale_div.h>
 
+namespace sls {
+
 void SlsQt1DZoomer::ResetZoomBase() {
     SetZoomBase(x0, y0, x1 - x0,
                 y1 - y0); // for going between log and nonlog plots
@@ -93,3 +95,5 @@ void SlsQt1DZoomer::ExtendZoomBase(SlsQtH1D *h) {
 
     ResetZoomBase();
 }
+
+} // namespace sls

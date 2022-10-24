@@ -88,16 +88,9 @@ void basictests() {
     initCheckDone = 0;
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
-    LOG(logINFOBLUE,
-        ("******** Moench Detector Virtual Server *****************\n"));
-    if (mapCSP0() == FAIL) {
-        strcpy(initErrorMessage,
-               "Could not map to memory. Dangerous to continue.\n");
-        LOG(logERROR, (initErrorMessage));
-        initError = FAIL;
-    }
-    return;
+    LOG(logINFOBLUE, ("********* Moench Detector Virtual Server *********\n"));
 #else
+    LOG(logINFOBLUE, ("************* Moench Detector Server *************\n"));
 
     initError = defineGPIOpins(initErrorMessage);
     if (initError == FAIL) {
@@ -107,6 +100,7 @@ void basictests() {
     if (initError == FAIL) {
         return;
     }
+#endif
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Dangerous to continue.\n");
@@ -114,7 +108,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-
+#ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
         ((checkType() == FAIL) || (testFpga() == FAIL) ||
@@ -125,7 +119,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-
+#endif
     uint16_t hversion = getHardwareVersionNumber();
     uint16_t hsnumber = getHardwareSerialNumber();
     uint32_t ipadd = getDetectorIP();
@@ -138,7 +132,7 @@ void basictests() {
     if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
         sw_fw_apiversion = getFirmwareAPIVersion();
     LOG(logINFOBLUE,
-        ("************ Moench Detector Server *********************\n"
+        ("**************************************************\n"
          "Hardware Version:\t\t 0x%x\n"
          "Hardware Serial Nr:\t\t 0x%x\n"
 
@@ -156,6 +150,7 @@ void basictests() {
          (long long int)sw_fw_apiversion, REQRD_FRMWR_VRSN,
          (long long int)client_sw_apiversion));
 
+#ifndef VIRTUAL
     // return if flag is not zero, debug mode
     if (debugflag || updateFlag) {
         return;
@@ -508,10 +503,18 @@ void setupDetector() {
 #endif
     setupUDPCommParameters();
 
+    // altera pll
+    ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG,
+                          PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK,
+                          PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
+                          PLL_CNTRL_ADDR_OFST);
     ALTERA_PLL_ResetPLLAndReconfiguration();
+
     resetCore();
     resetPeripheral();
     cleanFifos();
+
+    initializePatternAddresses();
 
     // hv
     MAX1932_SetDefines(SPI_REG, SPI_HV_SRL_CS_OTPT_MSK, SPI_HV_SRL_CLK_OTPT_MSK,
@@ -539,11 +542,6 @@ void setupDetector() {
     LTC2620_Configure();
     resetToDefaultDacs(0);
 
-    // altera pll
-    ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG,
-                          PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK,
-                          PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
-                          PLL_CNTRL_ADDR_OFST);
     // not using setADCInvertRegister command (as it xors the default)
     bus_w(ADC_PORT_INVERT_REG, ADC_PORT_INVERT_VAL);
 
@@ -1758,7 +1756,7 @@ void *start_timer(void *arg) {
     closeUDPSocket(0);
 
     sharedMemory_setStatus(IDLE);
-    LOG(logINFOBLUE, ("Finished Acquiring\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
     return NULL;
 }
 #endif
@@ -1880,40 +1878,31 @@ void readandSendUDPFrames(int *ret, char *mess) {
     closeUDPSocket(0);
 }
 
-void readFrame(int *ret, char *mess) {
-#ifdef VIRTUAL
-    // wait for acquisition to be done
+void waitForAcquisitionEnd() {
     while (runBusy()) {
-        usleep(500); // random
+        usleep(500);
     }
-    LOG(logINFOGREEN, ("acquisition successfully finished\n"));
-    return;
+#ifndef VIRTUAL
+    int64_t retval = getNumFramesLeft() + 1;
+    if (retval > 0) {
+        LOG(logINFORED, ("%lld frames left\n", (long long int)retval));
+    }
 #endif
-    // 1G
+    LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
+}
+
+void readFrames(int *ret, char *mess) {
+#ifdef VIRTUAL
+    while (runBusy()) {
+        usleep(500);
+    }
+#else
+    // 1G force reading of frames
     if (!enableTenGigabitEthernet(-1)) {
         readandSendUDPFrames(ret, mess);
+        LOG(logINFOBLUE, ("Transmitting frames done\n"));
     }
-    // 10G
-    else {
-        // wait for acquisition to be done
-        while (runBusy()) {
-            usleep(500); // random
-        }
-    }
-
-    // ret could be fail in 1gudp for not creating udp sockets
-    if (*ret != FAIL) {
-        // frames left to give status
-        int64_t retval = getNumFramesLeft() + 2;
-        if (retval > 1) {
-            sprintf(mess, "No data and run stopped: %lld frames left\n",
-                    (long long int)retval);
-            LOG(logERROR, (mess));
-        } else {
-            LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
-        }
-    }
-    *ret = (int)OK;
+#endif
 }
 
 void unsetFifoReadStrobes() {
@@ -2048,7 +2037,7 @@ int calculateDataBytes() { return dataBytes; }
 
 int getTotalNumberOfChannels() {
     int nchanx = 0, nchany = 0;
-    getTotalNumberOfChannels(&nchanx, &nchany);
+    getNumberOfChannels(&nchanx, &nchany);
     return nchanx * nchany;
 }
 

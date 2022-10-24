@@ -59,7 +59,8 @@ int main(int argc, char **argv) {
 
         case 'f':
             fname = optarg;
-            LOG(logDEBUG) << long_options[option_index].name << " " << optarg;
+            LOG(sls::logDEBUG)
+                << long_options[option_index].name << " " << optarg;
             break;
 
         case 'd':
@@ -72,8 +73,8 @@ int main(int argc, char **argv) {
 
         case 'v':
             tempval = APIGUI;
-            LOG(logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x"
-                         << std::hex << tempval << ")";
+            LOG(sls::logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x"
+                              << std::hex << tempval << ")";
             return 0;
 
         case 'h':
@@ -88,7 +89,7 @@ int main(int argc, char **argv) {
                 "i. Default: 0. Required \n" +
                 "\t                            only when more than one multi "
                 "detector object is needed.\n\n";
-            LOG(logERROR) << help_message;
+            LOG(sls::logERROR) << help_message;
             return -1;
         }
     }
@@ -96,15 +97,18 @@ int main(int argc, char **argv) {
     QApplication app(argc, argv);
     app.setStyle(new QPlastiqueStyle); // style is deleted by QApplication
     try {
-        qDetectorMain det(multiId, fname, isDeveloper);
+        sls::qDetectorMain det(multiId, fname, isDeveloper);
         det.show();
         app.exec();
     } catch (const std::exception &e) {
-        qDefs::Message(qDefs::CRITICAL,
-                       std::string(e.what()) + "\nExiting Gui :'( ", "main");
+        sls::qDefs::Message(sls::qDefs::CRITICAL,
+                            std::string(e.what()) + "\nExiting Gui :'( ",
+                            "main");
     }
     return 0;
 }
+
+namespace sls {
 
 qDetectorMain::qDetectorMain(int multiId, const std::string &fname,
                              bool isDevel)
@@ -195,6 +199,7 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->setTabEnabled(ADVANCED, false);
     tabs->setTabEnabled(DEVELOPER, isDeveloper);
     actionLoadTrimbits->setVisible(false);
+    actionSaveTrimbits->setVisible(false);
 
     dockWidgetPlot->setFloating(false);
     dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
@@ -212,7 +217,7 @@ void qDetectorMain::SetUpWidgetWindow() {
 void qDetectorMain::SetUpDetector(const std::string &config_file, int multiID) {
 
     // instantiate detector and set window title
-    det = sls::make_unique<sls::Detector>(multiID);
+    det = make_unique<Detector>(multiID);
 
     // create messages tab to capture config file loading logs
     tabMessages = new qTabMessages(this);
@@ -225,10 +230,12 @@ void qDetectorMain::SetUpDetector(const std::string &config_file, int multiID) {
     detType = det->getDetectorType().tsquash(
         "Different detector type for all modules.");
     actionLoadTrimbits->setEnabled(false);
+    actionSaveTrimbits->setEnabled(false);
     switch (detType) {
     case slsDetectorDefs::EIGER:
     case slsDetectorDefs::MYTHEN3:
         actionLoadTrimbits->setEnabled(true);
+        actionSaveTrimbits->setEnabled(true);
         break;
     case slsDetectorDefs::GOTTHARD:
     case slsDetectorDefs::JUNGFRAU:
@@ -238,16 +245,14 @@ void qDetectorMain::SetUpDetector(const std::string &config_file, int multiID) {
     default:
         std::ostringstream os;
         os << det->getHostname() << " has "
-           << sls::ToString(det->getDetectorType().squash())
-           << " detector type (" << std::to_string(detType)
-           << "). Exiting GUI.";
+           << ToString(det->getDetectorType().squash()) << " detector type ("
+           << std::to_string(detType) << "). Exiting GUI.";
         std::string errorMess = os.str();
-        throw sls::RuntimeError(errorMess.c_str());
+        throw RuntimeError(errorMess.c_str());
     }
     std::ostringstream os;
-    os << "SLS Detector GUI : "
-       << sls::ToString(det->getDetectorType().squash()) << " - "
-       << det->getHostname();
+    os << "SLS Detector GUI : " << ToString(det->getDetectorType().squash())
+       << " - " << det->getHostname();
     std::string title = os.str();
     LOG(logINFO) << title;
     setWindowTitle(QString(title.c_str()));
@@ -339,9 +344,10 @@ void qDetectorMain::EnableModes(QAction *action) {
         enable = actionExpert->isChecked();
 
         tabs->setTabEnabled(ADVANCED, enable);
-        actionLoadTrimbits->setVisible(enable &&
-                                       (detType == slsDetectorDefs::EIGER ||
-                                        detType == slsDetectorDefs::MYTHEN3));
+        bool visible = enable && (detType == slsDetectorDefs::EIGER ||
+                                  detType == slsDetectorDefs::MYTHEN3);
+        actionLoadTrimbits->setVisible(visible);
+        actionSaveTrimbits->setVisible(visible);
         tabSettings->SetExportMode(enable);
         LOG(logINFO) << "Expert Mode: " << qDefs::stringEnable(enable);
     }
@@ -417,6 +423,22 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                 LOG(logINFO) << "Trimbits loaded successfully";
             }
         }
+
+        else if (action == actionSaveTrimbits) {
+            QString fPath =
+                QString((det->getSettingsPath().squash("/tmp/")).c_str());
+            LOG(logDEBUG) << "Saving Trimbits";
+            QString fName = QFileDialog::getSaveFileName(
+                this, tr("Save Detector Trimbits"), fPath,
+                tr("Trimbit files (*.trim noise.sn*);;All Files(*)"));
+            if (!fName.isEmpty()) {
+                det->saveTrimbits(std::string(fName.toAscii().constData()));
+                qDefs::Message(qDefs::INFORMATION,
+                               "The Trimbits have been saved successfully.",
+                               "qDetectorMain::ExecuteUtilities");
+                LOG(logINFO) << "Trimbits saved successfully";
+            }
+        }
     }
     CATCH_DISPLAY("Could not execute utilities.",
                   "qDetectorMain::ExecuteUtilities")
@@ -441,10 +463,10 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
         LOG(logINFO) << "About Common GUI for Jungfrau, Eiger, Mythen3, "
                         "Gotthard, Gotthard2 and Moench detectors";
 
-        std::string guiVersion = sls::ToStringHex(APIGUI);
+        std::string guiVersion = ToStringHex(APIGUI);
         std::string clientVersion = "unknown";
         try {
-            clientVersion = sls::ToStringHex(det->getClientVersion());
+            clientVersion = ToStringHex(det->getClientVersion());
         }
         CATCH_DISPLAY("Could not get client version.",
                       "qDetectorMain::ExecuteHelp")
@@ -577,6 +599,8 @@ void qDetectorMain::EnableTabs(bool enable) {
     tabs->setTabEnabled(ADVANCED, expertTab);
     actionLoadTrimbits->setVisible(expertTab &&
                                    detType == slsDetectorDefs::EIGER);
+    actionSaveTrimbits->setVisible(expertTab &&
+                                   detType == slsDetectorDefs::EIGER);
 
     // moved to here, so that its all in order, instead of signals and different
     // threads
@@ -609,3 +633,5 @@ void qDetectorMain::SetZoomToolTip(bool disable) {
     else
         dockWidgetPlot->setToolTip(zoomToolTip);
 }
+
+} // namespace sls

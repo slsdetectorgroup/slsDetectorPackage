@@ -270,6 +270,9 @@ enum detFuncs {
     F_SET_ANALOG_PULSING,
     F_GET_DIGITAL_PULSING,
     F_SET_DIGITAL_PULSING,
+    F_GET_MODULE,
+    F_GET_SYNCHRONIZATION,
+    F_SET_SYNCHRONIZATION,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -279,7 +282,7 @@ enum detFuncs {
     F_LOCK_RECEIVER,
     F_GET_LAST_RECEIVER_CLIENT_IP,
     F_GET_RECEIVER_VERSION,
-    F_RECEIVER_SET_ROI,
+    F_RECEIVER_SET_DETECTOR_ROI,
     F_RECEIVER_SET_NUM_FRAMES,
     F_SET_RECEIVER_NUM_TRIGGERS,
     F_SET_RECEIVER_NUM_BURSTS,
@@ -375,6 +378,9 @@ enum detFuncs {
     F_RECEIVER_SET_DATASTREAM,
     F_GET_RECEIVER_ARPING,
     F_SET_RECEIVER_ARPING,
+    F_RECEIVER_GET_RECEIVER_ROI,
+    F_RECEIVER_SET_RECEIVER_ROI,
+    F_RECEIVER_SET_RECEIVER_ROI_METADATA,
 
     NUM_REC_FUNCTIONS
 };
@@ -643,6 +649,9 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_ANALOG_PULSING:              return "F_SET_ANALOG_PULSING";
     case F_GET_DIGITAL_PULSING:             return "F_GET_DIGITAL_PULSING";
     case F_SET_DIGITAL_PULSING:             return "F_SET_DIGITAL_PULSING";
+    case F_GET_MODULE:                      return "F_GET_MODULE";
+    case F_GET_SYNCHRONIZATION:             return "F_GET_SYNCHRONIZATION";
+    case F_SET_SYNCHRONIZATION:             return "F_SET_SYNCHRONIZATION";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
@@ -652,7 +661,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_LOCK_RECEIVER: 					return "F_LOCK_RECEIVER";
 	case F_GET_LAST_RECEIVER_CLIENT_IP: 	return "F_GET_LAST_RECEIVER_CLIENT_IP";
 	case F_GET_RECEIVER_VERSION: 			return "F_GET_RECEIVER_VERSION";
-	case F_RECEIVER_SET_ROI: 				return "F_RECEIVER_SET_ROI";
+	case F_RECEIVER_SET_DETECTOR_ROI: 		return "F_RECEIVER_SET_DETECTOR_ROI";
 	case F_RECEIVER_SET_NUM_FRAMES:			return "F_RECEIVER_SET_NUM_FRAMES";
 	case F_SET_RECEIVER_NUM_TRIGGERS:		return "F_SET_RECEIVER_NUM_TRIGGERS";
 	case F_SET_RECEIVER_NUM_BURSTS:			return "F_SET_RECEIVER_NUM_BURSTS";
@@ -748,6 +757,9 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_RECEIVER_SET_DATASTREAM:         return "F_RECEIVER_SET_DATASTREAM";
     case F_GET_RECEIVER_ARPING:             return "F_GET_RECEIVER_ARPING";
     case F_SET_RECEIVER_ARPING:             return "F_SET_RECEIVER_ARPING";
+    case F_RECEIVER_GET_RECEIVER_ROI:       return "F_RECEIVER_GET_RECEIVER_ROI";
+    case F_RECEIVER_SET_RECEIVER_ROI:       return "F_RECEIVER_SET_RECEIVER_ROI";
+    case F_RECEIVER_SET_RECEIVER_ROI_METADATA: return "F_RECEIVER_SET_RECEIVER_ROI_METADATA";
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

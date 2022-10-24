@@ -10,10 +10,9 @@
 #include <memory>
 #include <vector>
 
-class detectorData;
-
 namespace sls {
 using ns = std::chrono::nanoseconds;
+class detectorData;
 class DetectorImpl;
 class MacAddr;
 class IpAddr;
@@ -144,7 +143,8 @@ class Detector {
                             defs::detectorSettings settings = defs::STANDARD,
                             bool trimbits = true, Positions pos = {});
 
-    /** [Mythen3] It loads trim files from settingspath */
+    /** [Mythen3] It loads trim files from settingspath. An energy of -1 will
+     * pick up values from detector */
     void setThresholdEnergy(std::array<int, 3> threshold_ev,
                             defs::detectorSettings settings = defs::STANDARD,
                             bool trimbits = true, Positions pos = {});
@@ -158,6 +158,10 @@ class Detector {
     /** [Eiger][Mythen3] If no extension specified, serial number of each module
      * is attached. */
     void loadTrimbits(const std::string &fname, Positions pos = {});
+
+    /** [Eiger][Mythen3] If no extension specified, serial number of each module
+     * is attached. */
+    void saveTrimbits(const std::string &fname, Positions pos = {});
 
     /** [Eiger][Mythen3] -1 if they are all different */
     Result<int> getAllTrimbits(Positions pos = {}) const;
@@ -193,11 +197,26 @@ class Detector {
      */
     void setFlipRows(bool value, Positions pos = {});
 
-    /** [Eiger][Mythen3][Gotthard1] via stop server **/
+    /** [Eiger][Mythen3][Gotthard1][Gotthard2][Jungfrau] via stop server **/
     Result<bool> getMaster(Positions pos = {}) const;
 
-    /** [Eiger] Set half module to master and the others to slaves */
+    /** [Eiger][Gotthard2][Jungfrau] Set (half) module to master and the
+     * other(s) to slaves */
     void setMaster(bool value, int pos);
+
+    /** [Jungfrau] **/
+    Result<bool> getSynchronization(Positions pos = {}) const;
+
+    /** [Jungfrau]  */
+    void setSynchronization(bool value);
+
+    /** [Gotthard2][Mythen3] */
+    void getBadChannels(const std::string &fname, Positions pos = {}) const;
+
+    /** [Gotthard2][Mythen3]
+     * [Mythen3] Also does trimming
+     */
+    void setBadChannels(const std::string &fname, Positions pos = {});
 
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@}
@@ -434,6 +453,7 @@ class Detector {
 
     /**
      * (Degrees)
+     * [Mythen3][Gotthard2] Options: TEMPERATURE_FPGA
      * [Gotthard] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA \n
      * [Jungfrau] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA \n
      * [Eiger] Options: TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE,
@@ -494,12 +514,15 @@ class Detector {
     void setExternalSignalFlags(int signalIndex, defs::externalSignalFlag value,
                                 Positions pos = {});
 
-    /** [Eiger][Mythen3] */
+    /** [Eiger][Mythen3][Gotthard2] */
     Result<bool> getParallelMode(Positions pos = {}) const;
 
-    /** [Eiger][Mythen3]
+    /** [Eiger][Mythen3][Gotthard2]
      * [Mythen3] If exposure time is too short, acquisition will return with an
-     * ERROR and take fewer frames than expected */
+     * ERROR and take fewer frames than expected \n
+     * [Mythen3][Eiger] Default: Non parallel \n
+     * [Gotthard2] Default: Parallel. Non parallel mode works only in continuous
+     * mode.*/
     void setParallelMode(bool value, Positions pos = {});
 
     /** [Gotthard2][Jungfrau] */
@@ -610,8 +633,10 @@ class Detector {
      * different frame numbers for different modules.*/
     void setNextFrameNumber(uint64_t value, Positions pos = {});
 
-    /** [Eiger][Mythen3] Sends an internal software trigger to the detector
-     * block true if command blocks till frames are sent out from that trigger
+    /** [Eiger][Mythen3][Jungfrau] Sends an internal software trigger to the
+     * detector block true if command blocks till frames are sent out from that
+     * trigger
+     * [Eiger][Jungfrau] Block can be true
      */
     void sendSoftwareTrigger(const bool block = false, Positions pos = {});
 
@@ -693,15 +718,17 @@ class Detector {
 
     void setDestinationUDPList(const UdpDestination, const int module_id);
 
-    /** [Jungfrau][Eiger] */
+    /** [Jungfrau][Eiger][Mythen3][Gotthard2] */
     Result<int> getNumberofUDPDestinations(Positions pos = {}) const;
 
     void clearUDPDestinations(Positions pos = {});
 
-    /** [Jungfrau] */
+    /** [Jungfrau][Mythen3][Gotthard2] */
     Result<int> getFirstUDPDestination(Positions pos = {}) const;
 
-    /**[Jungfrau] Options 0-31 (or number of udp destinations) */
+    /**[Jungfrau][Gotthard2] Options 0-31 (or number of udp destinations)\n
+     * [Mythen3] Options 0-63 (or number of udp destinations)
+     */
     void setFirstUDPDestination(const int value, Positions pos = {});
 
     Result<IpAddr> getDestinationUDPIP(Positions pos = {}) const;
@@ -719,7 +746,8 @@ class Detector {
 
     /** Mac address of the receiver (destination) udp interface. Not mandatory
      * to set as setDestinationUDPIP (udp_dstip) retrieves it from slsReceiver
-     * process but must be set if you use a custom receiver (not slsReceiver).
+     * process but must be set if you use a custom receiver (not slsReceiver).\n
+     * Use router mac address if router in between detector and receiver.
      */
     void setDestinationUDPMAC(const MacAddr mac, Positions pos = {});
 
@@ -727,10 +755,11 @@ class Detector {
     Result<MacAddr> getDestinationUDPMAC2(Positions pos = {}) const;
 
     /* [Jungfrau][Gotthard2] Mac address of the receiver (destination) udp
-    interface 2. \n Not mandatory to set as udp_dstip2 retrieves it from
-    slsReceiver process but must be set if you use a custom receiver (not
-    slsReceiver). \n [Jungfrau] bottom half \n [Gotthard2] veto debugging \n
-    */
+     * interface 2. \n Not mandatory to set as udp_dstip2 retrieves it from
+     * slsReceiver process but must be set if you use a custom receiver (not
+     * slsReceiver). \n [Jungfrau] bottom half \n [Gotthard2] veto debugging \n
+     * Use router mac address if router in between detector and receiver.
+     */
     void setDestinationUDPMAC2(const MacAddr mac, Positions pos = {});
 
     Result<int> getDestinationUDPPort(Positions pos = {}) const;
@@ -884,7 +913,7 @@ class Detector {
     void setRxLock(bool value, Positions pos = {});
 
     /** Client IP Address that last communicated with the receiver */
-    Result<sls::IpAddr> getRxLastClientIP(Positions pos = {}) const;
+    Result<IpAddr> getRxLastClientIP(Positions pos = {}) const;
 
     /** Get thread ids from the receiver in order of [parent, tcp, listener 0,
      * processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. If
@@ -898,6 +927,16 @@ class Detector {
     /** Starts a thread in slsReceiver to arping the interface it is listening
      * every minute. Useful in 10G mode. */
     void setRxArping(bool value, Positions pos = {});
+
+    /** at module level */
+    Result<defs::ROI> getIndividualRxROIs(Positions pos) const;
+
+    defs::ROI getRxROI() const;
+
+    /** only at multi module level without gap pixels */
+    void setRxROI(const defs::ROI value);
+
+    void clearRxROI();
 
     ///@}
 
@@ -1359,7 +1398,7 @@ class Detector {
     Result<defs::burstMode> getBurstMode(Positions pos = {});
 
     /** [Gotthard2]  BURST_INTERNAL (default), BURST_EXTERNAL,
-     * CONTINUOUS_INTERNAL, CONTINUOUS_EXTERNAL */
+     * CONTINUOUS_INTERNAL, CONTINUOUS_EXTERNAL. Also changes clkdiv 2, 3, 4 */
     void setBurstMode(defs::burstMode value, Positions pos = {});
 
     /** [Gotthard2] */
@@ -1413,11 +1452,6 @@ class Detector {
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              const int value, Positions pos = {});
 
-    /** [Gotthard2] */
-    void getBadChannels(const std::string &fname, Positions pos = {}) const;
-
-    /** [Gotthard2] */
-    void setBadChannels(const std::string &fname, Positions pos = {});
     ///@}
 
     /** @name Mythen3 Specific */
@@ -1481,13 +1515,15 @@ class Detector {
     /** [Mythen3] */
     Result<bool> getInterpolation(Positions pos = {}) const;
 
-    /** [Mythen3] Also enables all counters */
+    /** [Mythen3] interpolation mode enables all counters and disables vth3.
+     * Disabling sets back counter mask and vth3. */
     void setInterpolation(bool value, Positions pos = {});
 
     /** [Mythen3] */
     Result<bool> getPumpProbe(Positions pos = {}) const;
 
-    /** [Mythen3] */
+    /** [Mythen3] pump probe mode only enables vth2. Disabling sets back to
+     * previous value */
     void setPumpProbe(bool value, Positions pos = {});
 
     /** [Mythen3] */
@@ -1548,6 +1584,14 @@ class Detector {
      * [Moench] Options: V_LIMIT
      */
     void setVoltage(defs::dacIndex index, int value, Positions pos = {});
+
+    /**
+     * [CTB][Moench] Options: [0- 4] or [1V, 1.14V, 1.33V, 1.6V, 2V]
+     */
+    Result<int> getADCVpp(bool mV = false, Positions pos = {}) const;
+
+    /** [CTB][Moench] */
+    void setADCVpp(int value, bool mV = false, Positions pos = {});
 
     /** [CTB][Moench] */
     Result<uint32_t> getADCEnableMask(Positions pos = {}) const;
@@ -1909,7 +1953,7 @@ class Detector {
     void setDetectorLock(bool lock, Positions pos = {});
 
     /** Client IP Address that last communicated with the detector */
-    Result<sls::IpAddr> getLastClientIP(Positions pos = {}) const;
+    Result<IpAddr> getLastClientIP(Positions pos = {}) const;
 
     /** Execute a command on the detector server console */
     Result<std::string> executeCommand(const std::string &value,

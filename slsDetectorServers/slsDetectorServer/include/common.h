@@ -68,3 +68,5 @@ int createEmptyFile(char *mess, char *fname, char *errorPrefix);
 int deleteFile(char *mess, char *fname, char *errorPrefix);
 
 int deleteOldServers(char *mess, char *newServerPath, char *errorPrefix);
+
+int readADCFromFile(char *fname, int *value);

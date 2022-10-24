@@ -23,10 +23,6 @@ class UdpRxSocket {
     void setBufferSize(int size);
     ssize_t getPacketSize() const noexcept;
     void Shutdown();
-
-    // Only for backwards compatibility, this drops the EIGER small pkt, may be
-    // removed
-    ssize_t ReceiveDataOnly(char *dst) noexcept;
 };
 
 } // namespace sls

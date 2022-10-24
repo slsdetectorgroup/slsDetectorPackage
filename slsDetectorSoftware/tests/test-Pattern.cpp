@@ -3,7 +3,7 @@
 #include "catch.hpp"
 #include "sls/Pattern.h"
 
-using sls::Pattern;
+namespace sls {
 
 TEST_CASE("Pattern is default constructable and has zeroed fields") {
     Pattern p;
@@ -14,9 +14,9 @@ TEST_CASE("Pattern is default constructable and has zeroed fields") {
 
 TEST_CASE("Copy construct pattern") {
     Pattern p;
-    p.data()->loop[0] = 7;
+    p.data()->startloop[0] = 7;
     Pattern p1(p);
-    REQUIRE(p1.data()->loop[0] == 7);
+    REQUIRE(p1.data()->startloop[0] == 7);
 }
 
 TEST_CASE("Compare patterns") {
@@ -27,3 +27,5 @@ TEST_CASE("Compare patterns") {
     p1.data()->word[500] = 1;
     REQUIRE_FALSE(p == p1);
 }
+
+} // namespace sls

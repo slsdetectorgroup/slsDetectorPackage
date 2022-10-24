@@ -6,6 +6,8 @@
 #include <QStackedLayout>
 #include <QStandardItemModel>
 
+namespace sls {
+
 QString qTabPlot::defaultPlotTitle("");
 QString qTabPlot::defaultHistXAxisTitle("Channel Number");
 QString qTabPlot::defaultHistYAxisTitle("Counts");
@@ -13,7 +15,7 @@ QString qTabPlot::defaultImageXAxisTitle("Pixel");
 QString qTabPlot::defaultImageYAxisTitle("Pixel");
 QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
-qTabPlot::qTabPlot(QWidget *parent, sls::Detector *detector, qDrawPlot *p)
+qTabPlot::qTabPlot(QWidget *parent, Detector *detector, qDrawPlot *p)
     : QWidget(parent), det(detector), plot(p), is1d(false) {
     setupUi(this);
     SetupWidgetWindow();
@@ -74,6 +76,10 @@ void qTabPlot::SetupWidgetWindow() {
     // set zmq high water mark to GUI_ZMQ_RCV_HWM (2)
     spinSndHwm->setValue(qDefs::GUI_ZMQ_RCV_HWM);
     spinRcvHwm->setValue(qDefs::GUI_ZMQ_RCV_HWM);
+
+    if (chkGapPixels->isEnabled()) {
+        chkGapPixels->setChecked(true);
+    }
 }
 
 void qTabPlot::Initialization() {
@@ -327,6 +333,7 @@ void qTabPlot::SetGapPixels(bool enable) {
     LOG(logINFO) << "Setting Gap Pixels Enable to " << enable;
     try {
         det->setGapPixelsinCallback(enable);
+        plot->SetGapPixels(enable);
     }
     CATCH_HANDLE("Could not set gap pixels enable.", "qTabPlot::SetGapPixels",
                  this, &qTabPlot::GetGapPixels)
@@ -792,3 +799,5 @@ void qTabPlot::Refresh() {
 
     LOG(logDEBUG) << "**Updated Plot Tab";
 }
+
+} // namespace sls

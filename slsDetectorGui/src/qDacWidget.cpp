@@ -3,7 +3,9 @@
 #include "qDacWidget.h"
 #include "qDefs.h"
 
-qDacWidget::qDacWidget(QWidget *parent, sls::Detector *detector, bool d,
+namespace sls {
+
+qDacWidget::qDacWidget(QWidget *parent, Detector *detector, bool d,
                        std::string n, slsDetectorDefs::dacIndex i)
     : QWidget(parent), det(detector), isDac(d), index(i) {
     setupUi(this);
@@ -94,3 +96,5 @@ void qDacWidget::Refresh() {
         GetAdc();
     }
 }
+
+} // namespace sls

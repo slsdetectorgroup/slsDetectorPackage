@@ -53,16 +53,17 @@ void printHelp() {
  */
 int StartAcq(const std::string &filePath, const std::string &fileName,
              uint64_t fileIndex, size_t imageSize, void *objectPointer) {
-    LOG(logINFOBLUE) << "#### StartAcq:  filePath:" << filePath
-                     << "  fileName:" << fileName << " fileIndex:" << fileIndex
-                     << "  imageSize:" << imageSize << " ####";
+    LOG(sls::logINFOBLUE) << "#### StartAcq:  filePath:" << filePath
+                          << "  fileName:" << fileName
+                          << " fileIndex:" << fileIndex
+                          << "  imageSize:" << imageSize << " ####";
     return 0;
 }
 
 /** Acquisition Finished Call back */
 void AcquisitionFinished(uint64_t framesCaught, void *objectPointer) {
-    LOG(logINFOBLUE) << "#### AcquisitionFinished: framesCaught:"
-                     << framesCaught << " ####";
+    LOG(sls::logINFOBLUE) << "#### AcquisitionFinished: framesCaught:"
+                          << framesCaught << " ####";
 }
 
 /**
@@ -70,9 +71,9 @@ void AcquisitionFinished(uint64_t framesCaught, void *objectPointer) {
  * Prints in different colors(for each receiver process) the different headers
  * for each image call back.
  */
-void GetData(slsDetectorDefs::sls_receiver_header *header, char *dataPointer,
+void GetData(slsDetectorDefs::sls_receiver_header &header, char *dataPointer,
              size_t imageSize, void *objectPointer) {
-    slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
+    slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
 
     PRINT_IN_COLOR(
         detectorHeader.modId ? detectorHeader.modId : detectorHeader.row,
@@ -101,9 +102,9 @@ void GetData(slsDetectorDefs::sls_receiver_header *header, char *dataPointer,
  * @param modifiedImageSize new data size in bytes after the callback.
  * This will be the size written/streamed. (only smaller value is allowed).
  */
-void GetData(slsDetectorDefs::sls_receiver_header *header, char *dataPointer,
+void GetData(slsDetectorDefs::sls_receiver_header &header, char *dataPointer,
              size_t &modifiedImageSize, void *objectPointer) {
-    slsDetectorDefs::sls_detector_header detectorHeader = header->detHeader;
+    slsDetectorDefs::sls_detector_header detectorHeader = header.detHeader;
 
     PRINT_IN_COLOR(
         detectorHeader.modId ? detectorHeader.modId : detectorHeader.row,
@@ -123,7 +124,7 @@ void GetData(slsDetectorDefs::sls_receiver_header *header, char *dataPointer,
         detectorHeader.debug, detectorHeader.roundRNumber,
         detectorHeader.detType, detectorHeader.version,
         // header->packetsMask.to_string().c_str(),
-        ((uint8_t)(*((uint8_t *)(dataPointer)))), modifiedImageSize);
+        *reinterpret_cast<uint8_t *>(dataPointer), modifiedImageSize);
 
     // if data is modified, eg ROI and size is reduced
     modifiedImageSize = 26000;
@@ -204,7 +205,7 @@ int main(int argc, char *argv[]) {
             try {
                 receiver = sls::make_unique<sls::Receiver>(startTCPPort + i);
             } catch (...) {
-                LOG(logINFOBLUE)
+                LOG(sls::logINFOBLUE)
                     << "Exiting Child Process [ Tid: " << gettid() << " ]";
                 throw;
             }

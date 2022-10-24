@@ -12,6 +12,8 @@ is listening to.
 #include <atomic>
 #include <thread>
 
+namespace sls {
+
 class Arping {
 
   public:
@@ -33,3 +35,5 @@ class Arping {
     std::thread t;
     std::atomic<pid_t> threadId{0};
 };
+
+} // namespace sls

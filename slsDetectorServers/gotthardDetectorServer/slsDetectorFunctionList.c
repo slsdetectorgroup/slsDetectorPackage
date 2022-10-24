@@ -82,22 +82,16 @@ void basictests() {
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
     LOG(logINFOBLUE, ("******** Gotthard Virtual Server *****************\n"));
+#else
+    LOG(logINFOBLUE, ("**************** Gotthard Server *****************\n"));
+#endif
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Dangerous to continue.\n");
         LOG(logERROR, (initErrorMessage));
         initError = FAIL;
     }
-    return;
-#else
-    if (mapCSP0() == FAIL) {
-        strcpy(initErrorMessage,
-               "Could not map to memory. Dangerous to continue.\n");
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
-        initError = FAIL;
-        return;
-    }
-
+#ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
         ((checkType() == FAIL) || (testFpga() == FAIL) ||
@@ -108,7 +102,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-
+#endif
     uint32_t boardrev = getBoardRevision();
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
@@ -117,7 +111,7 @@ void basictests() {
     int64_t client_sw_apiversion = getClientServerAPIVersion();
 
     LOG(logINFOBLUE,
-        ("************ Gotthard Server *********************\n"
+        ("**************************************************\n"
          "Board Revision         : 0x%x\n"
 
          "Detector IP Addr       : 0x%x\n"
@@ -134,6 +128,7 @@ void basictests() {
          (long long int)fwversion, (long long int)swversion,
          (long long int)client_sw_apiversion));
 
+#ifndef VIRTUAL
     if (!debugflag || updateFlag) {
         LOG(logINFO, ("Basic Tests - success\n"));
     }
@@ -432,6 +427,8 @@ void setupDetector() {
     // roi, gbit readout
     rois.xmin = -1;
     rois.xmax = -1;
+    rois.ymin = -1;
+    rois.ymax = -1;
     setROI(rois); // set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
     setGbitReadout();
 
@@ -857,8 +854,11 @@ int setROI(ROI arg) {
         LOG(logINFO, ("Clearing ROI\n"));
         rois.xmin = -1;
         rois.xmax = -1;
+        rois.ymin = -1;
+        rois.ymax = -1;
     } else {
-        LOG(logINFO, ("Setting ROI:(%d, %d)\n", arg.xmin, arg.xmax));
+        LOG(logINFO, ("Setting ROI:(%d, %d, %d, %d)\n", arg.xmin, arg.xmax,
+                      arg.ymin, arg.ymax));
         // validation
         // xmin divisible by 256 and less than 1280
         if (((arg.xmin % NCHAN_PER_ADC) != 0) ||
@@ -892,7 +892,8 @@ ROI getROI() {
     if (rois.xmin == -1) {
         LOG(logINFO, ("\tROI: None\n"));
     } else {
-        LOG(logINFO, ("ROI: (%d,%d)\n", rois.xmin, rois.xmax));
+        LOG(logINFO, ("ROI: (%d,%d,%d,%d)\n", rois.xmin, rois.xmax, rois.ymin,
+                      rois.ymax));
     }
     return rois;
 }
@@ -1675,7 +1676,9 @@ void *start_timer(void *arg) {
     char imageData[imageSize];
     memset(imageData, 0, imageSize);
     if (adcConfigured == -1) {
-        *((uint32_t *)(imageData)) = 0xCACACACA;
+        // split dereferencing for rhel7 warnings
+        uint32_t *start = (uint32_t *)imageData;
+        *start = 0xCACACACA;
     }
     for (int i = sizeof(uint32_t); i < imageSize; i += sizeof(uint16_t)) {
         *((uint16_t *)(imageData + i)) = (uint16_t)i;
@@ -1702,7 +1705,9 @@ void *start_timer(void *arg) {
             char packetData[packetSize];
             memset(packetData, 0, packetSize);
             // set header
-            *((uint16_t *)(packetData)) = virtual_currentFrameNumber;
+            // split dereferencing for rhel7 warnings
+            uint16_t *fnum = (uint16_t *)packetData;
+            *fnum = virtual_currentFrameNumber;
             ++virtual_currentFrameNumber;
 
             // fill data
@@ -1728,7 +1733,7 @@ void *start_timer(void *arg) {
     closeUDPSocket(0);
 
     sharedMemory_setStatus(IDLE);
-    LOG(logINFOBLUE, ("Finished Acquiring\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
     return NULL;
 }
 #endif
@@ -1853,28 +1858,17 @@ enum runStatus getRunStatus() {
     return s;
 }
 
-void readFrame(int *ret, char *mess) {
-#ifdef VIRTUAL
-    while (sharedMemory_getStatus() == RUNNING) {
-        // LOG(logERROR, ("Waiting for finished flag\n");
-        usleep(5000);
-    }
-    return;
-#endif
-    // wait for status to be done
+void waitForAcquisitionEnd() {
     while (runBusy()) {
         usleep(500);
     }
-
-    // frames left to give status
-    *ret = (int)OK;
+#ifndef VIRTUAL
     int64_t retval = getNumFramesLeft() + 1;
     if (retval > -1) {
-        LOG(logERROR, ("No data and run stopped: %lld frames left\n",
-                       (long long int)retval));
-    } else {
-        LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+        LOG(logINFORED, ("%lld frames left\n", (long long int)retval));
     }
+#endif
+    LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
 u_int32_t runBusy() {

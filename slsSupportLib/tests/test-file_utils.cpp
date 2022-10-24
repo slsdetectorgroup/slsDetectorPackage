@@ -7,10 +7,14 @@
 #include <unistd.h>
 #include <vector>
 
+#include "tests/globals.h"
+
+namespace sls {
+
 TEST_CASE("Get size of empty file") {
     char fname[] = "temfile_XXXXXX";
     std::ifstream ifs(fname);
-    auto size = sls::getFileSize(ifs);
+    auto size = getFileSize(ifs);
     REQUIRE(size <= 0); // -1 or zero
 }
 
@@ -22,7 +26,18 @@ TEST_CASE("Get size of file with data") {
     write(fh, data.data(), n_bytes);
 
     std::ifstream ifs(fname);
-    auto size = sls::getFileSize(ifs);
+    auto size = getFileSize(ifs);
     REQUIRE(size == n_bytes);
     REQUIRE(ifs.tellg() == 0); // getting size resets pos!
 }
+
+TEST_CASE("Channel file reading") {
+    std::string fname =
+        getAbsolutePathFromCurrentProcess(TEST_FILE_NAME_BAD_CHANNELS);
+    std::vector<int> list;
+    REQUIRE_NOTHROW(list = getChannelsFromFile(fname));
+    std::vector<int> expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
+    REQUIRE(list == expected);
+}
+
+} // namespace sls

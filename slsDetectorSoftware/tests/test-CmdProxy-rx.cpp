@@ -9,8 +9,8 @@
 #include "sls/versionAPI.h"
 #include "tests/globals.h"
 
-using sls::CmdProxy;
-using sls::Detector;
+namespace sls {
+
 using test::GET;
 using test::PUT;
 
@@ -440,6 +440,88 @@ TEST_CASE("rx_arping", "[.cmd][.rx]") {
     }
 }
 
+TEST_CASE("rx_roi", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+        REQUIRE_THROWS(proxy.Call("rx_roi", {"5", "10"}, -1, PUT));
+    } else {
+        auto prev_val = det.getRxROI();
+        defs::xy detsize = det.getDetectorSize();
+
+        // 1d
+        if (det_type == defs::GOTTHARD || det_type == defs::GOTTHARD2 ||
+            det_type == defs::MYTHEN3) {
+            {
+                std::ostringstream oss;
+                proxy.Call("rx_roi", {"5", "10"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [5, 10]\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("rx_roi", {"10", "15"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [10, 15]\n");
+            }
+            REQUIRE_THROWS(proxy.Call("rx_roi", {"-1", "-1"}, -1, PUT));
+            REQUIRE_THROWS(
+                proxy.Call("rx_roi", {"10", "15", "25", "30"}, -1, PUT));
+        }
+        // 2d
+        else {
+            {
+                std::ostringstream oss;
+                proxy.Call("rx_roi", {"10", "15", "1", "5"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [10, 15, 1, 5]\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("rx_roi", {"10", "22", "18", "19"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "rx_roi [10, 22, 18, 19]\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("rx_roi",
+                           {"1", std::to_string(detsize.x - 5), "1",
+                            std::to_string(detsize.y - 5)},
+                           -1, PUT, oss);
+                REQUIRE(oss.str() == std::string("rx_roi [1, ") +
+                                         std::to_string(detsize.x - 5) +
+                                         std::string(", ") +
+                                         std::to_string(detsize.y - 5) +
+                                         std::string(", 1]\n"));
+            }
+            REQUIRE_THROWS(
+                proxy.Call("rx_roi", {"-1", "-1", "-1", "-1"}, -1, PUT));
+        }
+
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxROI(prev_val);
+        }
+    }
+}
+
+TEST_CASE("rx_clearroi", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+        REQUIRE_THROWS(proxy.Call("rx_clearroi", {}, -1, PUT));
+    } else {
+        auto prev_val = det.getRxROI();
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_clearroi", {}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_clearroi successful\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxROI(prev_val);
+        }
+    }
+}
+
 /* File */
 
 TEST_CASE("fformat", "[.cmd]") {
@@ -499,6 +581,9 @@ TEST_CASE("fname", "[.cmd]") {
         proxy.Call("fname", {"run"}, -1, PUT, oss);
         REQUIRE(oss.str() == "fname run\n");
     }
+    REQUIRE_THROWS(proxy.Call("fname", {"fdf/dfd"}, -1, PUT));
+    REQUIRE_THROWS(proxy.Call("fname", {"fdf dfd"}, -1, PUT));
+
     for (int i = 0; i != det.size(); ++i) {
         det.setFileNamePrefix(prev_val[i], {i});
     }
@@ -915,3 +1000,5 @@ TEST_CASE("rx_jsonpara", "[.cmd][.rx]") {
 }
 
 /* Insignificant */
+
+} // namespace sls

@@ -20,6 +20,7 @@
 // C++ includes
 #include "sls/sls_detector_exceptions.h"
 #include <algorithm>
+#include <array>
 #include <bitset>
 #include <chrono>
 #include <cstdint>
@@ -34,12 +35,13 @@
 #define MAX_RX_DBIT 64
 
 /** default ports */
-#define DEFAULT_PORTNO         1952
-#define DEFAULT_UDP_PORTNO     50001
-#define DEFAULT_ZMQ_CL_PORTNO  30001
-#define DEFAULT_ZMQ_RX_PORTNO  30001
-#define DEFAULT_UDP_SRC_PORTNO 32410
-#define DEFAULT_UDP_DST_PORTNO 50001
+#define DEFAULT_TCP_CNTRL_PORTNO 1952
+#define DEFAULT_TCP_STOP_PORTNO  1953
+#define DEFAULT_TCP_RX_PORTNO    1954
+#define DEFAULT_ZMQ_CL_PORTNO    30001
+#define DEFAULT_ZMQ_RX_PORTNO    30001
+#define DEFAULT_UDP_SRC_PORTNO   32410
+#define DEFAULT_UDP_DST_PORTNO   50001
 
 #define MAX_UDP_DESTINATION 32
 
@@ -48,9 +50,6 @@
 
 // ctb/ moench 1g udp (read from fifo)
 #define UDP_PACKET_DATA_BYTES (1344)
-
-/** maximum rois */
-#define MAX_ROIS 100
 
 /** maximum trim en */
 #define MAX_TRIMEN 100
@@ -71,7 +70,11 @@
 #define MAX_STR_LENGTH   1000
 #define SHORT_STR_LENGTH 20
 
-#define MAX_PATTERN_LENGTH 0x2000
+#define MAX_PATTERN_LENGTH    0x2000
+#define MAX_PATTERN_LEVELS    6
+#define M3_MAX_PATTERN_LEVELS 3
+
+#define MAX_NUM_COUNTERS 3
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 500
 
@@ -172,13 +175,38 @@ class slsDetectorDefs {
     struct ROI {
         int xmin{-1};
         int xmax{-1};
+        int ymin{-1};
+        int ymax{-1};
         ROI() = default;
         ROI(int xmin, int xmax) : xmin(xmin), xmax(xmax){};
+        ROI(int xmin, int xmax, int ymin, int ymax)
+            : xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax){};
+        constexpr std::array<int, 4> getIntArray() const {
+            return std::array<int, 4>({xmin, xmax, ymin, ymax});
+        }
+        constexpr bool completeRoi() const {
+            return (xmin == -1 && xmax == -1 && ymin == -1 && ymax == -1);
+        }
+        constexpr bool noRoi() const {
+            return (xmin == 0 && xmax == 0 && ymin == 0 && ymax == 0);
+        }
+        void setNoRoi() {
+            xmin = 0;
+            xmax = 0;
+            ymin = 0;
+            ymax = 0;
+        }
+        constexpr bool operator==(const ROI &other) const {
+            return ((xmin == other.xmin) && (xmax == other.xmax) &&
+                    (ymin == other.ymin) && (ymax == other.ymax));
+        }
     } __attribute__((packed));
 #else
 typedef struct {
     int xmin;
     int xmax;
+    int ymin;
+    int ymax;
 } ROI;
 #endif
 

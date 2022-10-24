@@ -12,11 +12,8 @@
 #include <sstream>
 #include <vector>
 
-// using namespace sls;
-using sls::defs;
-using sls::StringTo;
-using sls::ToString;
-using sls::ToStringHex;
+namespace sls {
+
 using namespace sls::time;
 
 TEST_CASE("Integer conversions", "[support]") {
@@ -91,9 +88,9 @@ TEST_CASE("Array") {
 }
 
 TEST_CASE("Convert types with str method") {
-    sls::IpAddr addr;
+    IpAddr addr;
     REQUIRE(ToString(addr) == "0.0.0.0");
-    REQUIRE(ToString(sls::IpAddr{}) == "0.0.0.0");
+    REQUIRE(ToString(IpAddr{}) == "0.0.0.0");
 }
 
 TEST_CASE("String to string", "[support]") {
@@ -227,14 +224,19 @@ TEST_CASE("Detector type") {
 TEST_CASE("Formatting slsDetectorDefs::ROI") {
     slsDetectorDefs::ROI roi(5, 159);
     REQUIRE(ToString(roi) == "[5, 159]");
+    slsDetectorDefs::ROI roi1(5, 159, 6, 170);
+    REQUIRE(ToString(roi1) == "[5, 159, 6, 170]");
 }
 
 TEST_CASE("Streaming of slsDetectorDefs::ROI") {
     using namespace sls;
     slsDetectorDefs::ROI roi(-10, 1);
-    std::ostringstream oss;
+    std::ostringstream oss, oss1;
     oss << roi;
     REQUIRE(oss.str() == "[-10, 1]");
+    slsDetectorDefs::ROI roi1(-10, 1, 5, 11);
+    oss1 << roi1;
+    REQUIRE(oss1.str() == "[-10, 1, 5, 11]");
 }
 
 TEST_CASE("std::array") {
@@ -320,39 +322,38 @@ TEST_CASE("Printing c style arrays of double") {
 }
 
 TEST_CASE("Print a member of patternParameters") {
-    auto pat = sls::make_unique<sls::patternParameters>();
+    auto pat = make_unique<patternParameters>();
     pat->limits[0] = 4;
     pat->limits[1] = 100;
     REQUIRE(ToString(pat->limits) == "[4, 100]");
 }
 
 TEST_CASE("streamingInterface") {
-    REQUIRE(ToString(sls::defs::streamingInterface::NONE) == "none");
-    REQUIRE(ToString(sls::defs::streamingInterface::ETHERNET_10GB) == "10gbe");
-    REQUIRE(ToString(sls::defs::streamingInterface::LOW_LATENCY_LINK) == "lll");
-    REQUIRE(ToString(sls::defs::streamingInterface::LOW_LATENCY_LINK |
-                     sls::defs::streamingInterface::ETHERNET_10GB) ==
-            "lll, 10gbe");
+    REQUIRE(ToString(defs::streamingInterface::NONE) == "none");
+    REQUIRE(ToString(defs::streamingInterface::ETHERNET_10GB) == "10gbe");
+    REQUIRE(ToString(defs::streamingInterface::LOW_LATENCY_LINK) == "lll");
+    REQUIRE(ToString(defs::streamingInterface::LOW_LATENCY_LINK |
+                     defs::streamingInterface::ETHERNET_10GB) == "lll, 10gbe");
 }
 
 // Speed level
 TEST_CASE("speedLevel to string") {
-    REQUIRE(ToString(sls::defs::speedLevel::FULL_SPEED) == "full_speed");
-    REQUIRE(ToString(sls::defs::speedLevel::HALF_SPEED) == "half_speed");
-    REQUIRE(ToString(sls::defs::speedLevel::QUARTER_SPEED) == "quarter_speed");
-    REQUIRE(ToString(sls::defs::speedLevel::G2_108MHZ) == "108");
-    REQUIRE(ToString(sls::defs::speedLevel::G2_144MHZ) == "144");
+    REQUIRE(ToString(defs::speedLevel::FULL_SPEED) == "full_speed");
+    REQUIRE(ToString(defs::speedLevel::HALF_SPEED) == "half_speed");
+    REQUIRE(ToString(defs::speedLevel::QUARTER_SPEED) == "quarter_speed");
+    REQUIRE(ToString(defs::speedLevel::G2_108MHZ) == "108");
+    REQUIRE(ToString(defs::speedLevel::G2_144MHZ) == "144");
 }
 
 TEST_CASE("string to speedLevel") {
-    REQUIRE(StringTo<sls::defs::speedLevel>("full_speed") ==
-            sls::defs::speedLevel::FULL_SPEED);
-    REQUIRE(StringTo<sls::defs::speedLevel>("half_speed") ==
-            sls::defs::speedLevel::HALF_SPEED);
-    REQUIRE(StringTo<sls::defs::speedLevel>("quarter_speed") ==
-            sls::defs::speedLevel::QUARTER_SPEED);
-    REQUIRE(StringTo<sls::defs::speedLevel>("108") ==
-            sls::defs::speedLevel::G2_108MHZ);
-    REQUIRE(StringTo<sls::defs::speedLevel>("144") ==
-            sls::defs::speedLevel::G2_144MHZ);
+    REQUIRE(StringTo<defs::speedLevel>("full_speed") ==
+            defs::speedLevel::FULL_SPEED);
+    REQUIRE(StringTo<defs::speedLevel>("half_speed") ==
+            defs::speedLevel::HALF_SPEED);
+    REQUIRE(StringTo<defs::speedLevel>("quarter_speed") ==
+            defs::speedLevel::QUARTER_SPEED);
+    REQUIRE(StringTo<defs::speedLevel>("108") == defs::speedLevel::G2_108MHZ);
+    REQUIRE(StringTo<defs::speedLevel>("144") == defs::speedLevel::G2_144MHZ);
 }
+
+} // namespace sls

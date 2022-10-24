@@ -38,7 +38,7 @@ class Dac(DetectorProperty):
 
 class NamedDacs:
     """
-    New implementation of the detector dacs. Used at the momen for 
+    New implementation of the detector dacs. Used at the moment for 
     Ctb but should replace the old one for all detectors
     """
     _frozen = False
@@ -47,8 +47,13 @@ class NamedDacs:
         self._detector = detector
         self._current = 0
 
-        self._dacnames = [n.replace(" ", "") for n in detector.getDacNames()]
-        # # Populate the dacs
+        #only get the dacnames if we have modules attached
+        if detector.size() == 0:
+            self._dacnames  = [f"dac{i}" for i in range(18)]
+        else:
+            self._dacnames = [n.replace(" ", "") for n in detector.getDacNames()]
+
+        # Populate the dacs
         for i,name in enumerate(self._dacnames):
             #name, enum, low, high, default, detector
             setattr(self, name, Dac(name, dacIndex(i), 0, 4000, 1000, detector))
@@ -60,7 +65,7 @@ class NamedDacs:
 
     def __setattr__(self, name, value):
         if not self._frozen:
-            #durining init we need to be able to set up the class
+            #durning init we need to be able to set up the class
             super().__setattr__(name, value)
         else:
             #Later we restrict us to manipulate dacs and a few fields

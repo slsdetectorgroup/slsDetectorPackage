@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
 
     sem_init(&semaphore, 1, 0);
 
-    LOG(logINFOBLUE) << "Created [ Tid: " << gettid() << " ]";
+    LOG(sls::logINFOBLUE) << "Created [ Tid: " << gettid() << " ]";
 
     // Catch signal SIGINT to close files and call destructors properly
     struct sigaction sa;
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
                               // of handler
     if (sigaction(SIGINT, &sa, nullptr) == -1) {
-        LOG(logERROR) << "Could not set handler function for SIGINT";
+        LOG(sls::logERROR) << "Could not set handler function for SIGINT";
     }
 
     // if socket crash, ignores SISPIPE, prevents global signal handler
@@ -44,18 +44,18 @@ int main(int argc, char *argv[]) {
     sigemptyset(&asa.sa_mask); // dont block additional signals during
                                // invocation of handler
     if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
-        LOG(logERROR) << "Could not set handler function for SIGPIPE";
+        LOG(sls::logERROR) << "Could not set handler function for SIGPIPE";
     }
 
     try {
         sls::Receiver r(argc, argv);
-        LOG(logINFO) << "[ Press \'Ctrl+c\' to exit ]";
+        LOG(sls::logINFO) << "[ Press \'Ctrl+c\' to exit ]";
         sem_wait(&semaphore);
         sem_destroy(&semaphore);
     } catch (...) {
         // pass
     }
-    LOG(logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
-    LOG(logINFO) << "Exiting Receiver";
+    LOG(sls::logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
+    LOG(sls::logINFO) << "Exiting Receiver";
     return 0;
 }

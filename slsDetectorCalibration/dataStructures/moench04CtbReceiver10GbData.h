@@ -152,6 +152,41 @@ class moench04CtbReceiver10GbData : public slsDetectorData<uint16_t> {
         //  cout << "data struct created" << endl;
     };
 
+        int getGain(char *data, int x, int y) {
+            int aoff=aSamples*2*32;
+            int irow;
+            int isc = x / sc_width;
+            int icol = x % sc_width;
+            if (y < 200)
+                irow = sc_height - 1 - y;
+            else {
+                irow = y - sc_height;
+                isc++;
+            }
+            int ibit[32] = {-1, -1, -1, -1, -1, -1, 1,  3,  5,  7,  -1,
+                            -1, -1, -1, -1, -1, 62, 60, 58, 56, 54, 52,
+                            50, 48, 63, 61, 59, 57, 55, 53, 51, 49};
+            int isample = irow * sc_width + icol;
+
+            uint64_t sample;
+            char *ptr;
+            if (isc < 0 || isc >= 32)
+                return 0;
+            if (ibit[isc] < 0 || ibit[isc] >= 64)
+                return 0;
+            if (dSamples > isample) {
+                ptr = sizeof(sls_detector_header) + data + 32 * (isample + 1) + 8 * isample;
+                sample = *((uint64_t *)ptr);
+                // cout << isc << " " << ibit[isc] << " " << isample << hex <<
+                // sample << dec << endl;
+                if (sample & (1 << ibit[isc]))
+                    return 1;
+                else
+                    return 0;
+            } else
+                return 0;
+        }
+
     /**
 
     Returns the frame number for the given dataset. Purely virtual func.

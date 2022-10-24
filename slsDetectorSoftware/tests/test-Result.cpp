@@ -6,10 +6,10 @@
 #include "sls/TypeTraits.h"
 #include <string>
 
-using sls::Result;
+namespace sls {
 
 TEST_CASE("Result looks and behaves like a standard container") {
-    REQUIRE(sls::is_container<Result<int>>::value == true);
+    REQUIRE(is_container<Result<int>>::value == true);
 }
 
 TEST_CASE("Default construction is possible and gives an empty result") {
@@ -195,3 +195,5 @@ TEST_CASE("String conversions") {
     REQUIRE(ToString(res4) ==
             "[{one: 1}, {one: 1, three: 3, two: 2}, {one: 1}]");
 }
+
+} // namespace sls

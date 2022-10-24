@@ -14,61 +14,62 @@
 #include "ThreadObject.h"
 #include "receiver_defs.h"
 
+#include <atomic>
+#include <mutex>
+#include <vector>
+
+namespace sls {
+
 class GeneralData;
 class Fifo;
 class File;
 class DataStreamer;
 struct MasterAttributes;
 
-#include <atomic>
-#include <mutex>
-#include <vector>
-
 class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
   public:
-    DataProcessor(int index, detectorType detectorType, Fifo *fifo,
-                  bool *activated, bool *dataStreamEnable,
-                  uint32_t *streamingFrequency, uint32_t *streamingTimerInMs,
-                  uint32_t *streamingStartFnum, bool *framePadding,
-                  std::vector<int> *ctbDbitList, int *ctbDbitOffset,
-                  int *ctbAnalogDataBytes);
-
+    DataProcessor(int index);
     ~DataProcessor() override;
 
     bool GetStartedFlag() const;
 
     void SetFifo(Fifo *f);
-    void ResetParametersforNewAcquisition();
     void SetGeneralData(GeneralData *generalData);
 
+    void SetActivate(bool enable);
+    void SetReceiverROI(ROI roi);
+    void SetDataStreamEnable(bool enable);
+    void SetStreamingFrequency(uint32_t value);
+    void SetStreamingTimerInMs(uint32_t value);
+    void SetStreamingStartFnum(uint32_t value);
+    void SetFramePadding(bool enable);
+    void SetCtbDbitList(std::vector<int> value);
+    void SetCtbDbitOffset(int value);
+
+    void ResetParametersforNewAcquisition();
     void CloseFiles();
     void DeleteFiles();
     void SetupFileWriter(const bool filewriteEnable,
                          const fileFormat fileFormatType,
                          std::mutex *hdf5LibMutex);
 
-    void CreateFirstFiles(const std::string &filePath,
-                          const std::string &fileNamePrefix,
+    void CreateFirstFiles(const std::string &fileNamePrefix,
                           const uint64_t fileIndex, const bool overWriteEnable,
-                          const bool silentMode, const int modulePos,
-                          const int numUnitsPerReadout,
-                          const uint32_t udpPortNumber,
-                          const uint32_t maxFramesPerFile,
-                          const uint64_t numImages, const uint32_t dynamicRange,
+                          const bool silentMode, const uint32_t udpPortNumber,
+                          const uint64_t numImages,
                           const bool detectorDataStream);
 #ifdef HDF5C
     uint32_t GetFilesInAcquisition() const;
-    std::array<std::string, 2> CreateVirtualFile(
-        const std::string &filePath, const std::string &fileNamePrefix,
-        const uint64_t fileIndex, const bool overWriteEnable,
-        const bool silentMode, const int modulePos,
-        const int numUnitsPerReadout, const uint32_t maxFramesPerFile,
-        const uint64_t numImages, const int numModX, const int numModY,
-        const uint32_t dynamicRange, std::mutex *hdf5LibMutex);
+    std::string CreateVirtualFile(const std::string &filePath,
+                                  const std::string &fileNamePrefix,
+                                  const uint64_t fileIndex,
+                                  const bool overWriteEnable,
+                                  const bool silentMode, const int modulePos,
+                                  const uint64_t numImages, const int numModX,
+                                  const int numModY, std::mutex *hdf5LibMutex);
     void LinkFileInMaster(const std::string &masterFileName,
                           const std::string &virtualFileName,
-                          const std::string &virtualDatasetName,
                           const bool silentMode, std::mutex *hdf5LibMutex);
 #endif
 
@@ -80,13 +81,13 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
                                  MasterAttributes *attr,
                                  std::mutex *hdf5LibMutex);
 
-    /** params: sls_receiver_header pointer, pointer to data, image size */
-    void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
+    /** params: sls_receiver_header, pointer to data, image size */
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
                                                    char *, size_t, void *),
                                       void *arg);
 
-    /** params: sls_receiver_header pointer, pointer to data, reference to image size */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
+    /** params: sls_receiver_header, pointer to data, reference to image size */
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &,
                                                          char *, size_t &,
                                                          void *),
                                             void *arg);
@@ -110,9 +111,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     /**
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
-     * @returns frame number
      */
-    uint64_t ProcessAnImage(char *buf);
+    void ProcessAnImage(sls_receiver_header &header, size_t &size,
+                        size_t &firstImageIndex, char *data);
 
     /**
      * Calls CheckTimer and CheckCount for streaming frequency and timer
@@ -135,45 +136,50 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      */
     bool CheckCount();
 
-    void PadMissingPackets(char *buf);
+    void PadMissingPackets(sls_receiver_header header, char *data);
 
     /**
      * Align corresponding digital bits together (CTB only if ctbDbitlist is not
      * empty)
      */
-    void RearrangeDbitData(char *buf);
+    void RearrangeDbitData(size_t &size, char *data);
 
-    static const std::string typeName_;
+    void CropImage(size_t &size, char *data);
 
-    const GeneralData *generalData_{nullptr};
-    Fifo *fifo_;
-    detectorType detectorType_;
-    bool *dataStreamEnable_;
-    bool *activated_;
+    static const std::string typeName;
+
+    GeneralData *generalData{nullptr};
+    Fifo *fifo;
+    bool dataStreamEnable;
+    bool activated{false};
+    ROI receiverRoi{};
+    bool receiverRoiEnabled{false};
+    bool receiverNoRoi{false};
+    std::unique_ptr<char[]> completeImageToStreamBeforeCropping;
     /** if 0, sending random images with a timer */
-    uint32_t *streamingFrequency_;
-    uint32_t *streamingTimerInMs_;
-    uint32_t *streamingStartFnum_;
-    uint32_t currentFreqCount_{0};
-    struct timespec timerbegin_{};
-    bool *framePadding_;
-    std::vector<int> *ctbDbitList_;
-    int *ctbDbitOffset_;
-    int *ctbAnalogDataBytes_;
-    std::atomic<bool> startedFlag_{false};
-    std::atomic<uint64_t> firstIndex_{0};
+    uint32_t streamingFrequency;
+    uint32_t streamingTimerInMs;
+    uint32_t streamingStartFnum;
+    uint32_t currentFreqCount{0};
+    struct timespec timerbegin {};
+    bool framePadding;
+    std::vector<int> ctbDbitList;
+    int ctbDbitOffset;
+    std::atomic<bool> startedFlag{false};
+    std::atomic<uint64_t> firstIndex{0};
 
     // for statistics
-    /** Number of frames caught */
-    uint64_t numFramesCaught_{0};
+    uint64_t numFramesCaught{0};
 
     /** Frame Number of latest processed frame number */
-    std::atomic<uint64_t> currentFrameIndex_{0};
+    std::atomic<uint64_t> currentFrameIndex{0};
 
     /** first streamer frame to add frame index in fifo header */
-    bool firstStreamerFrame_{false};
+    bool firstStreamerFrame{false};
 
-    File *dataFile_{nullptr};
+    bool streamCurrentFrame{false};
+
+    File *dataFile{nullptr};
 
     // call back
     /**
@@ -183,7 +189,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * dataPointer is the pointer to the data
      * dataSize in bytes is the size of the data in bytes.
      */
-    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, size_t,
+    void (*rawDataReadyCallBack)(sls_receiver_header &, char *, size_t,
                                  void *) = nullptr;
 
     /**
@@ -194,8 +200,10 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * revDatasize is the reference of data size in bytes. Can be modified to
      * the new size to be written/streamed. (only smaller value).
      */
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *, size_t &,
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header &, char *, size_t &,
                                        void *) = nullptr;
 
     void *pRawDataReady{nullptr};
 };
+
+} // namespace sls

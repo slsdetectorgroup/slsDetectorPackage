@@ -32,17 +32,29 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="lblReadout">
+   <item row="1" column="0" colspan="3">
+    <widget class="QTabWidget" name="tabWidget">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-       <horstretch>0</horstretch>
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>5</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="text">
-      <string>Readout: </string>
+     <property name="currentIndex">
+      <number>1</number>
      </property>
+     <widget class="QWidget" name="tabDAC">
+      <attribute name="title">
+       <string>DACs</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridlayoutDac"/>
+     </widget>
+     <widget class="QWidget" name="tabADC">
+      <attribute name="title">
+       <string>ADCs</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridlayoutAdc"/>
+     </widget>
     </widget>
    </item>
    <item row="0" column="1">
@@ -77,143 +89,17 @@
      </property>
     </spacer>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="lblComboHV">
+   <item row="0" column="0">
+    <widget class="QLabel" name="lblReadout">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High Voltage&lt;/p&gt;&lt;p&gt; #highvoltage#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
      <property name="text">
-      <string>High Voltage: </string>
+      <string>Readout: </string>
      </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QComboBox" name="comboHV">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>28</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High Voltage&lt;/p&gt;&lt;p&gt; #highvoltage#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <item>
-      <property name="text">
-       <string>0</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>90</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>110</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>120</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>150</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>180</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>200</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="lblSpinHV">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High Voltage. Range: 60 - 200V. Swich off high voltage by setting to 0.&lt;/p&gt;&lt;p&gt;-1 corresponds to different values from detectors.&lt;/p&gt;&lt;p&gt;#highvoltage#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>High Voltage: </string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QSpinBox" name="spinHV">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>28</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High Voltage. Range: 60 - 200V. Swich off high voltage by setting to 0.&lt;/p&gt;&lt;p&gt;-1 corresponds to different values from detectors.&lt;/p&gt;&lt;p&gt;#highvoltage#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="keyboardTracking">
-      <bool>false</bool>
-     </property>
-     <property name="minimum">
-      <number>-1</number>
-     </property>
-     <property name="maximum">
-      <number>200</number>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="3">
-    <widget class="QTabWidget" name="tabWidget">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>5</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="currentIndex">
-      <number>1</number>
-     </property>
-     <widget class="QWidget" name="tabDAC">
-      <attribute name="title">
-       <string>DACs</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridlayoutDac"/>
-     </widget>
-     <widget class="QWidget" name="tabADC">
-      <attribute name="title">
-       <string>ADCs</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridlayoutAdc"/>
-     </widget>
     </widget>
    </item>
   </layout>

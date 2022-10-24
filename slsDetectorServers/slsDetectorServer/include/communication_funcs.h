@@ -26,6 +26,7 @@ int receiveData(int file_des, void *buf, int length, intType itype);
 int sendDataOnly(int file_des, void *buf, int length);
 int receiveDataOnly(int file_des, void *buf, int length);
 
+int sendModule(int file_des, sls_detector_module *myMod);
 int receiveModule(int file_des, sls_detector_module *myMod);
 
 /**

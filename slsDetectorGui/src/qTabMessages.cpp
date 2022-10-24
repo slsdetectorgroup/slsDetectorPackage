@@ -11,6 +11,8 @@
 #include <QTextStream>
 #include <string>
 
+namespace sls {
+
 qTabMessages::qTabMessages(QWidget *parent) : QWidget(parent) {
     setupUi(this);
     SetupWidgetWindow();
@@ -142,3 +144,5 @@ void qTabMessages::Refresh() {
     dispCommand->clear();
     dispCommand->setFocus();
 }
+
+} // namespace sls

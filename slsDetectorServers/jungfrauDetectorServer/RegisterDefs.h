@@ -210,6 +210,8 @@
 
 #define EXT_SIGNAL_OFST                     (0)
 #define EXT_SIGNAL_MSK                      (0x00000001 << EXT_SIGNAL_OFST)
+#define EXT_SYNC_OFST                       (4)
+#define EXT_SYNC_MSK                        (0x00000001 << EXT_SYNC_OFST)
 
 /* Control Register */
 #define CONTROL_REG                         (0x4F << MEM_MAP_SHIFT)
@@ -218,6 +220,8 @@
 #define CONTROL_START_ACQ_MSK               (0x00000001 << CONTROL_START_ACQ_OFST)
 #define CONTROL_STOP_ACQ_OFST               (1)
 #define CONTROL_STOP_ACQ_MSK                (0x00000001 << CONTROL_STOP_ACQ_OFST)
+#define CONTROL_SOFTWARE_TRIGGER_OFST       (2)
+#define CONTROL_SOFTWARE_TRIGGER_MSK        (0x00000001 << CONTROL_SOFTWARE_TRIGGER_OFST)
 #define CONTROL_CORE_RST_OFST               (10)
 #define CONTROL_CORE_RST_MSK                (0x00000001 << CONTROL_CORE_RST_OFST)
 #define CONTROL_PERIPHERAL_RST_OFST         (11) // DDR3 HMem Ctrlr, GBE, Temp
@@ -226,6 +230,8 @@
 #define CONTROL_DDR3_MEM_RST_MSK            (0x00000001 << CONTROL_DDR3_MEM_RST_OFST) // only PHY, not DDR3 PLL ,Not used in software
 #define CONTROL_ACQ_FIFO_CLR_OFST           (14)
 #define CONTROL_ACQ_FIFO_CLR_MSK            (0x00000001 << CONTROL_ACQ_FIFO_CLR_OFST)
+#define CONTROL_MASTER_OFST                 (15)
+#define CONTROL_MASTER_MSK                  (0x00000001 << CONTROL_MASTER_OFST)
 #define CONTROL_STORAGE_CELL_NUM_OFST       (16)
 #define CONTROL_STORAGE_CELL_NUM_MSK        (0x0000000F << CONTROL_STORAGE_CELL_NUM_OFST)
 #define CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST   (20)

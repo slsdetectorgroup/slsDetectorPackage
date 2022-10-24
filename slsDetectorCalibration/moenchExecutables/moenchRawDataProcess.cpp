@@ -2,11 +2,12 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 //#include "sls/ansi.h"
 #include <iostream>
+//#define CORR
 #undef CORR
 
-#define C_GHOST 0.0004
+#define C_GHOST 0 //0.0004
 
-#define CM_ROWS 50
+#define CM_ROWS 20
 
 #define RAWDATA
 
@@ -164,8 +165,8 @@ int main(int argc, char *argv[]) {
     cout << "Applying common mode  " << ncol_cm << endl;
     cm = new moench03CommonMode(ncol_cm);
 
-    cout << "Applying ghost corrections " << xt_ghost << endl;
-    gs = new moench03GhostSummation(decoder, xt_ghost);
+    // cout << "Applying ghost corrections " << xt_ghost << endl;
+    // gs = new moench03GhostSummation(decoder, xt_ghost);
 #endif
 
     singlePhotonDetector *filter = new singlePhotonDetector(
@@ -222,15 +223,20 @@ int main(int argc, char *argv[]) {
     //  cout << "mt " << endl;
 
     int ifr = 0;
-
+    char froot[1000];
     double *ped=new double[nx * ny];//, *ped1;
-
+    int pos,pos1;
+    
     if (pedfile) {
+      if (string(pedfile).find(".raw") != std::string::npos) {
+	pos1=string(pedfile).rfind("/");
+	strcpy(froot,pedfile+pos1);
+	pos=string(froot).find(".raw");
+	froot[pos]='\0';
+      }
 
-        cout << "PEDESTAL " << endl;
-        sprintf(imgfname, "%s/pedestals.tiff", outdir);
-
-        if (string(pedfile).find(".tif") == std::string::npos) {
+      cout << "PEDESTAL " << endl;
+      if (string(pedfile).find(".tif") == std::string::npos) {
             sprintf(fname, "%s", pedfile);
             cout << fname << endl;
             std::time(&end_time);
@@ -259,6 +265,10 @@ int main(int argc, char *argv[]) {
                     ;
                 }
 
+		sprintf(imgfname, "%s/%s_ped.tiff", outdir,froot);
+		mt->writePedestal(imgfname);
+		sprintf(imgfname, "%s/%s_var.tiff", outdir,froot);
+		mt->writePedestalRMS(imgfname);
             } else
                 cout << "Could not open pedestal file " << fname
                      << " for reading " << endl;
@@ -276,7 +286,6 @@ int main(int argc, char *argv[]) {
                      << " for reading " << endl;
             }
         }
-        mt->writePedestal(imgfname);
         std::time(&end_time);
         cout << std::ctime(&end_time) << endl;
     }

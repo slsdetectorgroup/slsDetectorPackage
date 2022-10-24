@@ -6,6 +6,8 @@
 #include <chrono>
 #include <unistd.h>
 
+namespace sls {
+
 // gettid added in glibc 2.30
 #if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
 #include <sys/syscall.h>
@@ -16,9 +18,9 @@ void Arping::SetInterfacesAndIps(const int index, const std::string &interface,
                                  const std::string &ip) {
 
     if (interface.empty() || ip.empty()) {
-        throw sls::RuntimeError("Could not arping. Interface name and ip not "
-                                "set up for interface " +
-                                std::to_string(index));
+        throw RuntimeError("Could not arping. Interface name and ip not "
+                           "set up for interface " +
+                           std::to_string(index));
     }
     // create commands to arping
     std::ostringstream os;
@@ -38,7 +40,7 @@ void Arping::StartThread() {
     try {
         t = std::thread(&Arping::ThreadExecution, this);
     } catch (...) {
-        throw sls::RuntimeError("Could not start arping thread");
+        throw RuntimeError("Could not start arping thread");
     }
     runningFlag = true;
 }
@@ -74,13 +76,13 @@ void Arping::ThreadExecution() {
 void Arping::TestCommands() {
     // atleast one interface must be set up
     if (commands[0].empty()) {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Could not arping. Interface not set up in apring thread");
     }
     // test if arping commands throw an error
     std::string error = ExecuteCommands();
     if (!error.empty()) {
-        throw sls::RuntimeError(error);
+        throw RuntimeError(error);
     }
 }
 
@@ -118,3 +120,5 @@ std::string Arping::ExecuteCommands() {
 
     return std::string();
 }
+
+} // namespace sls

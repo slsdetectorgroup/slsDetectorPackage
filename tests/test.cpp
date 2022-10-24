@@ -11,6 +11,7 @@
 #include "tests/config.h"
 #include <string>
 
+namespace sls {
 // using namespace Catch::clara;
 using Opt = Catch::clara::Opt;
 using dt = slsDetectorDefs::detectorType;
@@ -23,18 +24,20 @@ dt type;
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 } // namespace test
+} // namespace sls
 
 int main(int argc, char *argv[]) {
-    test::my_ip = "undefined";
+    sls::test::my_ip = "undefined";
 
     Catch::Session session;
-    auto cli =
-        session.cli() |
-        Opt(test::hostname, "hostname")["-hn"]["--hostname"](
-            "Detector hostname for integration tests") |
-        Opt(test::detector_type, "detector_type")["-dt"]["--detector_type"](
-            "Detector type for integration tests") |
-        Opt(test::my_ip, "my_ip")["-hip"]["--host_ip"]("Host ip address");
+    auto cli = session.cli() |
+               sls::Opt(sls::test::hostname, "hostname")["-hn"]["--hostname"](
+                   "Detector hostname for integration tests") |
+               sls::Opt(sls::test::detector_type,
+                        "detector_type")["-dt"]["--detector_type"](
+                   "Detector type for integration tests") |
+               sls::Opt(sls::test::my_ip,
+                        "my_ip")["-hip"]["--host_ip"]("Host ip address");
 
     session.cli(cli);
 
@@ -43,10 +46,10 @@ int main(int argc, char *argv[]) {
         return ret;
     }
 
-    test::type = slsDetectorDefs::GENERIC;
-    if (!test::detector_type.empty()) {
-        test::type =
-            sls::StringTo<slsDetectorDefs::detectorType>(test::detector_type);
+    sls::test::type = slsDetectorDefs::GENERIC;
+    if (!sls::test::detector_type.empty()) {
+        sls::test::type = sls::StringTo<slsDetectorDefs::detectorType>(
+            sls::test::detector_type);
     }
 
     return session.run();

@@ -6,16 +6,19 @@
 #include "sls/ServerSocket.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/sls_detector_funcs.h"
-class ServerInterface;
 
 #include <atomic>
 #include <future>
+
+namespace sls {
+
+class ServerInterface;
 
 class ClientInterface : private virtual slsDetectorDefs {
     enum numberMode { DEC, HEX };
     detectorType detType;
     int portNumber{0};
-    sls::ServerSocket server;
+    ServerSocket server;
     std::unique_ptr<Implementation> receiver;
     std::unique_ptr<std::thread> tcpThread;
     int ret{OK};
@@ -31,7 +34,8 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     //***callback functions***
     /** params: file path, file name, file index, image size */
-    void registerCallBackStartAcquisition(int (*func)(const std::string &, const std::string &,
+    void registerCallBackStartAcquisition(int (*func)(const std::string &,
+                                                      const std::string &,
                                                       uint64_t, size_t, void *),
                                           void *arg);
 
@@ -39,13 +43,13 @@ class ClientInterface : private virtual slsDetectorDefs {
     void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
                                              void *arg);
 
-    /** params: sls_receiver_header pointer, pointer to data, image size */
-    void registerCallBackRawDataReady(void (*func)(sls_receiver_header *,
+    /** params: sls_receiver_header, pointer to data, image size */
+    void registerCallBackRawDataReady(void (*func)(sls_receiver_header &,
                                                    char *, size_t, void *),
                                       void *arg);
 
-    /** params: sls_receiver_header pointer, pointer to data, reference to image size */
-    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header *,
+    /** params: sls_receiver_header, pointer to data, reference to image size */
+    void registerCallBackRawDataModifyReady(void (*func)(sls_receiver_header &,
                                                          char *, size_t &,
                                                          void *),
                                             void *arg);
@@ -53,140 +57,142 @@ class ClientInterface : private virtual slsDetectorDefs {
   private:
     void startTCPServer();
     int functionTable();
-    int decodeFunction(sls::ServerInterface &socket);
+    int decodeFunction(ServerInterface &socket);
     void functionNotImplemented();
     void modeNotImplemented(const std::string &modename, int mode);
     template <typename T>
     void validate(T arg, T retval, const std::string &modename, numberMode hex);
     void verifyLock();
-    void verifyIdle(sls::ServerInterface &socket);
+    void verifyIdle(ServerInterface &socket);
 
-    int lock_receiver(sls::ServerInterface &socket);
-    int get_last_client_ip(sls::ServerInterface &socket);
-    int get_version(sls::ServerInterface &socket);
-    int setup_receiver(sls::ServerInterface &socket);
+    int lock_receiver(ServerInterface &socket);
+    int get_last_client_ip(ServerInterface &socket);
+    int get_version(ServerInterface &socket);
+    int setup_receiver(ServerInterface &socket);
     void setDetectorType(detectorType arg);
-    int set_roi(sls::ServerInterface &socket);
-    int set_num_frames(sls::ServerInterface &socket);
-    int set_num_triggers(sls::ServerInterface &socket);
-    int set_num_bursts(sls::ServerInterface &socket);
-    int set_num_add_storage_cells(sls::ServerInterface &socket);
-    int set_timing_mode(sls::ServerInterface &socket);
-    int set_burst_mode(sls::ServerInterface &socket);
-    int set_num_analog_samples(sls::ServerInterface &socket);
-    int set_num_digital_samples(sls::ServerInterface &socket);
-    int set_exptime(sls::ServerInterface &socket);
-    int set_period(sls::ServerInterface &socket);
-    int set_subexptime(sls::ServerInterface &socket);
-    int set_subdeadtime(sls::ServerInterface &socket);
-    int set_dynamic_range(sls::ServerInterface &socket);
-    int set_streaming_frequency(sls::ServerInterface &socket);
-    int get_streaming_frequency(sls::ServerInterface &socket);
-    int get_status(sls::ServerInterface &socket);
-    int start_receiver(sls::ServerInterface &socket);
-    int stop_receiver(sls::ServerInterface &socket);
-    int set_file_dir(sls::ServerInterface &socket);
-    int get_file_dir(sls::ServerInterface &socket);
-    int set_file_name(sls::ServerInterface &socket);
-    int get_file_name(sls::ServerInterface &socket);
-    int set_file_index(sls::ServerInterface &socket);
-    int get_file_index(sls::ServerInterface &socket);
-    int get_frame_index(sls::ServerInterface &socket);
-    int get_missing_packets(sls::ServerInterface &socket);
-    int get_frames_caught(sls::ServerInterface &socket);
-    int set_file_write(sls::ServerInterface &socket);
-    int get_file_write(sls::ServerInterface &socket);
-    int set_master_file_write(sls::ServerInterface &socket);
-    int get_master_file_write(sls::ServerInterface &socket);
-    int enable_compression(sls::ServerInterface &socket);
-    int set_overwrite(sls::ServerInterface &socket);
-    int get_overwrite(sls::ServerInterface &socket);
-    int enable_tengiga(sls::ServerInterface &socket);
-    int set_fifo_depth(sls::ServerInterface &socket);
-    int set_activate(sls::ServerInterface &socket);
-    int set_streaming(sls::ServerInterface &socket);
-    int get_streaming(sls::ServerInterface &socket);
-    int set_streaming_timer(sls::ServerInterface &socket);
-    int get_flip_rows(sls::ServerInterface &socket);
-    int set_flip_rows(sls::ServerInterface &socket);
-    int set_file_format(sls::ServerInterface &socket);
-    int get_file_format(sls::ServerInterface &socket);
-    int set_streaming_port(sls::ServerInterface &socket);
-    int get_streaming_port(sls::ServerInterface &socket);
-    int set_streaming_source_ip(sls::ServerInterface &socket);
-    int get_streaming_source_ip(sls::ServerInterface &socket);
-    int set_silent_mode(sls::ServerInterface &socket);
-    int get_silent_mode(sls::ServerInterface &socket);
-    int restream_stop(sls::ServerInterface &socket);
-    int set_additional_json_header(sls::ServerInterface &socket);
-    int get_additional_json_header(sls::ServerInterface &socket);
-    int set_udp_socket_buffer_size(sls::ServerInterface &socket);
-    int get_real_udp_socket_buffer_size(sls::ServerInterface &socket);
-    int set_frames_per_file(sls::ServerInterface &socket);
-    int get_frames_per_file(sls::ServerInterface &socket);
-    int check_version_compatibility(sls::ServerInterface &socket);
-    int set_discard_policy(sls::ServerInterface &socket);
-    int get_discard_policy(sls::ServerInterface &socket);
-    int set_padding_enable(sls::ServerInterface &socket);
-    int get_padding_enable(sls::ServerInterface &socket);
-    int set_readout_mode(sls::ServerInterface &socket);
-    int set_adc_mask(sls::ServerInterface &socket);
-    int set_dbit_list(sls::ServerInterface &socket);
-    int get_dbit_list(sls::ServerInterface &socket);
-    int set_dbit_offset(sls::ServerInterface &socket);
-    int get_dbit_offset(sls::ServerInterface &socket);
-    int set_quad_type(sls::ServerInterface &socket);
-    int set_read_n_rows(sls::ServerInterface &socket);
-    sls::MacAddr setUdpIp(sls::IpAddr arg);
-    int set_udp_ip(sls::ServerInterface &socket);
-    sls::MacAddr setUdpIp2(sls::IpAddr arg);
-    int set_udp_ip2(sls::ServerInterface &socket);
-    int set_udp_port(sls::ServerInterface &socket);
-    int set_udp_port2(sls::ServerInterface &socket);
-    int set_num_interfaces(sls::ServerInterface &socket);
-    int set_adc_mask_10g(sls::ServerInterface &socket);
-    int set_counter_mask(sls::ServerInterface &socket);
-    int increment_file_index(sls::ServerInterface &socket);
-    int set_additional_json_parameter(sls::ServerInterface &socket);
-    int get_additional_json_parameter(sls::ServerInterface &socket);
-    int get_progress(sls::ServerInterface &socket);
-    int set_num_gates(sls::ServerInterface &socket);
-    int set_gate_delay(sls::ServerInterface &socket);
-    int get_thread_ids(sls::ServerInterface &socket);
-    int get_streaming_start_fnum(sls::ServerInterface &socket);
-    int set_streaming_start_fnum(sls::ServerInterface &socket);
-    int set_rate_correct(sls::ServerInterface &socket);
-    int set_scan(sls::ServerInterface &socket);
-    int set_threshold(sls::ServerInterface &socket);
-    int get_streaming_hwm(sls::ServerInterface &socket);
-    int set_streaming_hwm(sls::ServerInterface &socket);
-    int set_all_threshold(sls::ServerInterface &socket);
-    int set_detector_datastream(sls::ServerInterface &socket);
-    int get_arping(sls::ServerInterface &socket);
-    int set_arping(sls::ServerInterface &socket);
+    int set_detector_roi(ServerInterface &socket);
+    int set_num_frames(ServerInterface &socket);
+    int set_num_triggers(ServerInterface &socket);
+    int set_num_bursts(ServerInterface &socket);
+    int set_num_add_storage_cells(ServerInterface &socket);
+    int set_timing_mode(ServerInterface &socket);
+    int set_burst_mode(ServerInterface &socket);
+    int set_num_analog_samples(ServerInterface &socket);
+    int set_num_digital_samples(ServerInterface &socket);
+    int set_exptime(ServerInterface &socket);
+    int set_period(ServerInterface &socket);
+    int set_subexptime(ServerInterface &socket);
+    int set_subdeadtime(ServerInterface &socket);
+    int set_dynamic_range(ServerInterface &socket);
+    int set_streaming_frequency(ServerInterface &socket);
+    int get_streaming_frequency(ServerInterface &socket);
+    int get_status(ServerInterface &socket);
+    int start_receiver(ServerInterface &socket);
+    int stop_receiver(ServerInterface &socket);
+    int set_file_dir(ServerInterface &socket);
+    int get_file_dir(ServerInterface &socket);
+    int set_file_name(ServerInterface &socket);
+    int get_file_name(ServerInterface &socket);
+    int set_file_index(ServerInterface &socket);
+    int get_file_index(ServerInterface &socket);
+    int get_frame_index(ServerInterface &socket);
+    int get_missing_packets(ServerInterface &socket);
+    int get_frames_caught(ServerInterface &socket);
+    int set_file_write(ServerInterface &socket);
+    int get_file_write(ServerInterface &socket);
+    int set_master_file_write(ServerInterface &socket);
+    int get_master_file_write(ServerInterface &socket);
+    int enable_compression(ServerInterface &socket);
+    int set_overwrite(ServerInterface &socket);
+    int get_overwrite(ServerInterface &socket);
+    int enable_tengiga(ServerInterface &socket);
+    int set_fifo_depth(ServerInterface &socket);
+    int set_activate(ServerInterface &socket);
+    int set_streaming(ServerInterface &socket);
+    int get_streaming(ServerInterface &socket);
+    int set_streaming_timer(ServerInterface &socket);
+    int get_flip_rows(ServerInterface &socket);
+    int set_flip_rows(ServerInterface &socket);
+    int set_file_format(ServerInterface &socket);
+    int get_file_format(ServerInterface &socket);
+    int set_streaming_port(ServerInterface &socket);
+    int get_streaming_port(ServerInterface &socket);
+    int set_streaming_source_ip(ServerInterface &socket);
+    int get_streaming_source_ip(ServerInterface &socket);
+    int set_silent_mode(ServerInterface &socket);
+    int get_silent_mode(ServerInterface &socket);
+    int restream_stop(ServerInterface &socket);
+    int set_additional_json_header(ServerInterface &socket);
+    int get_additional_json_header(ServerInterface &socket);
+    int set_udp_socket_buffer_size(ServerInterface &socket);
+    int get_real_udp_socket_buffer_size(ServerInterface &socket);
+    int set_frames_per_file(ServerInterface &socket);
+    int get_frames_per_file(ServerInterface &socket);
+    int check_version_compatibility(ServerInterface &socket);
+    int set_discard_policy(ServerInterface &socket);
+    int get_discard_policy(ServerInterface &socket);
+    int set_padding_enable(ServerInterface &socket);
+    int get_padding_enable(ServerInterface &socket);
+    int set_readout_mode(ServerInterface &socket);
+    int set_adc_mask(ServerInterface &socket);
+    int set_dbit_list(ServerInterface &socket);
+    int get_dbit_list(ServerInterface &socket);
+    int set_dbit_offset(ServerInterface &socket);
+    int get_dbit_offset(ServerInterface &socket);
+    int set_quad_type(ServerInterface &socket);
+    int set_read_n_rows(ServerInterface &socket);
+    MacAddr setUdpIp(IpAddr arg);
+    int set_udp_ip(ServerInterface &socket);
+    MacAddr setUdpIp2(IpAddr arg);
+    int set_udp_ip2(ServerInterface &socket);
+    int set_udp_port(ServerInterface &socket);
+    int set_udp_port2(ServerInterface &socket);
+    int set_num_interfaces(ServerInterface &socket);
+    int set_adc_mask_10g(ServerInterface &socket);
+    int set_counter_mask(ServerInterface &socket);
+    int increment_file_index(ServerInterface &socket);
+    int set_additional_json_parameter(ServerInterface &socket);
+    int get_additional_json_parameter(ServerInterface &socket);
+    int get_progress(ServerInterface &socket);
+    int set_num_gates(ServerInterface &socket);
+    int set_gate_delay(ServerInterface &socket);
+    int get_thread_ids(ServerInterface &socket);
+    int get_streaming_start_fnum(ServerInterface &socket);
+    int set_streaming_start_fnum(ServerInterface &socket);
+    int set_rate_correct(ServerInterface &socket);
+    int set_scan(ServerInterface &socket);
+    int set_threshold(ServerInterface &socket);
+    int get_streaming_hwm(ServerInterface &socket);
+    int set_streaming_hwm(ServerInterface &socket);
+    int set_all_threshold(ServerInterface &socket);
+    int set_detector_datastream(ServerInterface &socket);
+    int get_arping(ServerInterface &socket);
+    int set_arping(ServerInterface &socket);
+    int get_receiver_roi(ServerInterface &socket);
+    int set_receiver_roi(ServerInterface &socket);
+    int set_receiver_roi_metadata(ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {
             return receiver.get();
         } else {
-            throw sls::SocketError(
+            throw SocketError(
                 "Receiver not set up. Please use rx_hostname first.\n");
         }
     }
 
-    int (ClientInterface::*flist[NUM_REC_FUNCTIONS])(
-        sls::ServerInterface &socket);
+    int (ClientInterface::*flist[NUM_REC_FUNCTIONS])(ServerInterface &socket);
 
     //***callback parameters***
 
-    int (*startAcquisitionCallBack)(const std::string &, const std::string &, uint64_t, size_t,
-                                    void *) = nullptr;
+    int (*startAcquisitionCallBack)(const std::string &, const std::string &,
+                                    uint64_t, size_t, void *) = nullptr;
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(uint64_t, void *) = nullptr;
     void *pAcquisitionFinished{nullptr};
-    void (*rawDataReadyCallBack)(sls_receiver_header *, char *, size_t,
+    void (*rawDataReadyCallBack)(sls_receiver_header &, char *, size_t,
                                  void *) = nullptr;
-    void (*rawDataModifyReadyCallBack)(sls_receiver_header *, char *, size_t &,
+    void (*rawDataModifyReadyCallBack)(sls_receiver_header &, char *, size_t &,
                                        void *) = nullptr;
     void *pRawDataReady{nullptr};
 
@@ -195,3 +201,5 @@ class ClientInterface : private virtual slsDetectorDefs {
     std::vector<std::string> udpips =
         std::vector<std::string>(MAX_NUMBER_OF_LISTENING_THREADS);
 };
+
+} // namespace sls

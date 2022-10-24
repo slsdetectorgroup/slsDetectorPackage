@@ -57,7 +57,6 @@ int normal = 0;
 int eiger_highvoltage = 0;
 int eiger_theo_highvoltage = 0;
 int eiger_iodelay = 0;
-int eiger_photonenergy = 0;
 int eiger_dynamicrange = 0;
 int eiger_parallelmode = 0;
 int eiger_overflow32 = 0;
@@ -110,7 +109,10 @@ void basictests() {
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
     LOG(logINFOBLUE,
-        ("************ EIGER Virtual Server *****************\n\n"));
+        ("************ EIGER Virtual Server ****************\n\n"));
+#else
+    LOG(logINFOBLUE,
+        ("**************** EIGER Server ********************\n\n"));
 #endif
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
@@ -120,7 +122,7 @@ void basictests() {
     int64_t client_sw_apiversion = getClientServerAPIVersion();
 
     LOG(logINFOBLUE,
-        ("**************** EIGER Server *********************\n\n"
+        ("**************************************************\n"
          "Detector IP Addr:\t\t 0x%x\n"
          "Detector MAC Addr:\t\t 0x%llx\n"
 
@@ -143,9 +145,7 @@ void basictests() {
         udpDetails[iRxEntry].srcmac = macadd;
     }
 
-#ifdef VIRTUAL
-    return;
-#endif
+#ifndef VIRTUAL
     // return if debugflag is not zero, debug mode
     if (debugflag || updateFlag) {
         return;
@@ -187,6 +187,7 @@ void basictests() {
         return;
     }
     LOG(logINFO, ("Compatibility - success\n"));
+#endif
 }
 
 #ifdef VIRTUAL
@@ -682,17 +683,17 @@ void allocateDetectorStructureMemory() {
         ("modules from 0x%x to 0x%x\n", detectorModules, detectorModules));
     LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n", detectorChans, detectorChans));
     LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n", detectorDacs, detectorDacs));
-    (detectorModules)->dacs = detectorDacs;
-    (detectorModules)->chanregs = detectorChans;
-    (detectorModules)->ndac = NDAC;
-    (detectorModules)->nchip = NCHIP;
-    (detectorModules)->nchan = NCHIP * NCHAN;
-    (detectorModules)->reg = 0;
-    (detectorModules)->iodelay = 0;
-    (detectorModules)->tau = 0;
-    (detectorModules)->eV[0] = 0;
-    (detectorModules)->eV[1] = 0;
-    (detectorModules)->eV[2] = 0;
+    detectorModules->dacs = detectorDacs;
+    detectorModules->chanregs = detectorChans;
+    detectorModules->ndac = NDAC;
+    detectorModules->nchip = NCHIP;
+    detectorModules->nchan = NCHIP * NCHAN;
+    detectorModules->reg = 0;
+    detectorModules->iodelay = 0;
+    detectorModules->tau = 0;
+    detectorModules->eV[0] = -1;
+    detectorModules->eV[1] = -1;
+    detectorModules->eV[2] = -1;
     thisSettings = UNINITIALIZED;
 
     // if trimval requested, should return -1 to acknowledge unknown
@@ -732,9 +733,8 @@ void setupDetector() {
     getSubExpTime(DEFAULT_SUBFRAME_DEADTIME);
     setPeriod(DEFAULT_PERIOD);
     setNumTriggers(DEFAULT_NUM_CYCLES);
-    eiger_dynamicrange = DEFAULT_DYNAMIC_RANGE;
     setDynamicRange(DEFAULT_DYNAMIC_RANGE);
-    eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
+    detectorModules->eV[0] = DEFAULT_PHOTON_ENERGY;
     setParallelMode(DEFAULT_PARALLEL_MODE);
     setOverFlowMode(DEFAULT_READOUT_OVERFLOW32_MODE);
     setReadoutSpeed(DEFAULT_CLK_SPEED);
@@ -1127,24 +1127,44 @@ int64_t getMeasuredSubPeriod() {
 
 /* parameters - channel, module, settings */
 
+void getModule(sls_detector_module *myMod) {
+    // serial number
+    myMod->serialnumber = detectorModules->serialnumber;
+    // reg (settings)
+    myMod->reg = detectorModules->reg;
+    // iodelay
+    myMod->iodelay = setIODelay(-1);
+    // tau
+    myMod->tau = (int)getCurrentTau();
+    // eV
+    myMod->eV[0] = detectorModules->eV[0];
+    // dacs
+    for (int idac = 0; idac < (detectorModules->ndac); idac++) {
+        *((myMod->dacs) + idac) = *((detectorModules->dacs) + idac);
+    }
+    // trimbits
+    for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
+        *((myMod->chanregs) + ichan) = *((detectorModules->chanregs) + ichan);
+    }
+}
+
 int setModule(sls_detector_module myMod, char *mess) {
 
     LOG(logINFO, ("Setting module with settings %d\n", myMod.reg));
 
+    if (((myMod.nchan) > (detectorModules->nchan)) ||
+        ((myMod.ndac) > (detectorModules->ndac))) {
+        strcpy(mess, "Could not set module as the number of channels or dacs "
+                     "do not match to the one in the detector server\n");
+        LOG(logERROR, (mess));
+        return FAIL;
+    }
+
+    // serial number (pointless)
+    detectorModules->serialnumber = myMod.serialnumber;
+
     // settings
     setSettings((enum detectorSettings)myMod.reg);
-
-    // copy module locally (module number, serial number
-    // dacs (pointless), trimbit values(if needed)
-    if (detectorModules) {
-        if (copyModule(detectorModules, &myMod) == FAIL) {
-            sprintf(mess, "Could not copy module\n");
-            LOG(logERROR, (mess));
-            setSettings(UNDEFINED);
-            LOG(logERROR, ("Settings has been changed to undefined\n"));
-            return FAIL;
-        }
-    }
 
     // iodelay
     if (setIODelay(myMod.iodelay) != myMod.iodelay) {
@@ -1178,60 +1198,15 @@ int setModule(sls_detector_module myMod, char *mess) {
         }
     }
 
-#ifndef VIRTUAL
     // trimbits
+#ifndef VIRTUAL
     if (myMod.nchan == 0) {
         LOG(logINFO, ("Setting module without trimbits\n"));
     } else {
         LOG(logINFO, ("Setting module with trimbits\n"));
-        // includ gap pixels
-        unsigned int tt[263680];
-        int ip = 0, ich = 0;
-        for (int iy = 0; iy < 256; ++iy) {
-            for (int ichip = 0; ichip < 4; ++ichip) {
-                for (int ix = 0; ix < 256; ++ix) {
-                    tt[ip++] = myMod.chanregs[ich++];
-                }
-                if (ichip < 3) {
-                    tt[ip++] = 0;
-                    tt[ip++] = 0;
-                }
-            }
-        }
-
-        // set trimbits
-        sharedMemory_lockLocalLink();
-
-        // if quad, set M8 and PROGRAM manually
-        if (!Feb_Control_SetChipSignalsToTrimQuad(1)) {
-            sharedMemory_unlockLocalLink();
+        if (setTrimbits(myMod.chanregs, mess) == FAIL) {
             return FAIL;
         }
-
-        if (!Feb_Control_SetTrimbits(tt, top)) {
-            sprintf(mess, "Could not set module. Could not set trimbits\n");
-            LOG(logERROR, (mess));
-            setSettings(UNDEFINED);
-            LOG(logERROR, ("Settings has been changed to undefined (random "
-                           "trim file)\n"));
-
-            // if quad, reset M8 and PROGRAM manually
-            if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
-                sharedMemory_unlockLocalLink();
-                return FAIL;
-            }
-
-            sharedMemory_unlockLocalLink();
-            return FAIL;
-        }
-
-        // if quad, reset M8 and PROGRAM manually
-        if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
-            sharedMemory_unlockLocalLink();
-            return FAIL;
-        }
-
-        sharedMemory_unlockLocalLink();
     }
 #endif
 
@@ -1284,6 +1259,7 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         return thisSettings;
     }
     thisSettings = sett;
+    detectorModules->reg = sett;
     LOG(logINFO, ("Settings: %d\n", thisSettings));
     return thisSettings;
 }
@@ -1294,13 +1270,14 @@ enum detectorSettings getSettings() { return thisSettings; }
 
 int getThresholdEnergy() {
     LOG(logDEBUG1, ("Getting Threshold energy\n"));
-    return eiger_photonenergy;
+    return detectorModules->eV[0];
 }
 
 int setThresholdEnergy(int ev) {
     LOG(logINFO, ("Setting threshold energy:%d\n", ev));
-    if (ev >= 0)
-        eiger_photonenergy = ev;
+    if (ev >= 0) {
+        detectorModules->eV[0] = ev;
+    }
     return getThresholdEnergy();
 }
 
@@ -1910,6 +1887,7 @@ int setIODelay(int val) {
 #else
         eiger_iodelay = val;
 #endif
+        detectorModules->iodelay = val;
     }
     return eiger_iodelay;
 }
@@ -2153,7 +2131,6 @@ void setDefaultSettingsTau_in_nsec(int t) {
 int64_t getCurrentTau() {
     if (!getRateCorrectionEnable()) {
         eiger_tau_ns = 0;
-        return 0;
     } else {
 #ifndef VIRTUAL
         sharedMemory_lockLocalLink();
@@ -2162,8 +2139,9 @@ int64_t getCurrentTau() {
 #else
         eiger_tau_ns = eiger_virtual_ratetable_tau_in_ns;
 #endif
-        return eiger_tau_ns;
     }
+    detectorModules->tau = eiger_tau_ns;
+    return eiger_tau_ns;
 }
 
 void setExternalGating(int enable[]) {
@@ -2184,6 +2162,67 @@ void setExternalGating(int enable[]) {
     enable[1] = eiger_extgatingpolarity;
 }
 
+int setTrimbits(int *chanregs, char *mess) {
+    LOG(logINFO, ("Setting module with trimbits\n"));
+#ifndef VIRTUAL
+    // include gap pixels
+    unsigned int tt[263680];
+    int ip = 0, ich = 0;
+    for (int iy = 0; iy < 256; ++iy) {
+        for (int ichip = 0; ichip < 4; ++ichip) {
+            for (int ix = 0; ix < 256; ++ix) {
+                tt[ip++] = chanregs[ich++];
+            }
+            if (ichip < 3) {
+                tt[ip++] = 0;
+                tt[ip++] = 0;
+            }
+        }
+    }
+
+    // set trimbits
+    sharedMemory_lockLocalLink();
+
+    // if quad, set M8 and PROGRAM manually
+    if (!Feb_Control_SetChipSignalsToTrimQuad(1)) {
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+
+    if (!Feb_Control_SetTrimbits(tt, top)) {
+        sprintf(mess, "Could not set module. Could not set trimbits\n");
+        LOG(logERROR, (mess));
+        setSettings(UNDEFINED);
+        LOG(logERROR, ("Settings has been changed to undefined (random "
+                       "trim file)\n"));
+
+        // if quad, reset M8 and PROGRAM manually
+        if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
+            sharedMemory_unlockLocalLink();
+            return FAIL;
+        }
+
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+
+    // if quad, reset M8 and PROGRAM manually
+    if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+
+    sharedMemory_unlockLocalLink();
+
+    // copying trimbits locally (if tirmbit value > -1)
+    for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
+        if (*(chanregs + ichan) >= 0)
+            *((detectorModules->chanregs) + ichan) = *(chanregs + ichan);
+    }
+#endif
+    return OK;
+}
+
 int setAllTrimbits(int val) {
     LOG(logINFO, ("Setting all trimbits to %d\n", val));
 #ifndef VIRTUAL
@@ -2195,6 +2234,8 @@ int setAllTrimbits(int val) {
     }
     sharedMemory_unlockLocalLink();
 #endif
+
+    // copying trimbits locally
     if (detectorModules) {
         for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
             *((detectorModules->chanregs) + ichan) = val;
@@ -2724,7 +2765,7 @@ void *start_timer(void *arg) {
     closeUDPSocket(1);
 
     sharedMemory_setStatus(IDLE);
-    LOG(logINFOBLUE, ("Finished Acquiring\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
     return NULL;
 }
 #endif
@@ -2852,16 +2893,13 @@ enum runStatus getRunStatus() {
 #endif
 }
 
-void readFrame(int *ret, char *mess) {
+void waitForAcquisitionEnd(int *ret, char *mess) {
 #ifdef VIRTUAL
     // wait for status to be done
     while (sharedMemory_getStatus() == RUNNING) {
         usleep(500);
     }
-    LOG(logINFOGREEN, ("acquisition successfully finished\n"));
-    return;
 #else
-
     sharedMemory_lockLocalLink();
     if (Feb_Control_WaitForFinishedFlag(5000, 1) == STATUS_ERROR) {
         sharedMemory_unlockLocalLink();
@@ -2870,7 +2908,7 @@ void readFrame(int *ret, char *mess) {
         return;
     }
     sharedMemory_unlockLocalLink();
-    LOG(logINFOGREEN, ("Acquisition finished\n"));
+    LOG(logINFO, ("Acquisition  done\n"));
 
     // wait for detector to send
     int isTransmitting = 1;
@@ -2899,59 +2937,12 @@ void readFrame(int *ret, char *mess) {
             printf("Transmitting...\n");
         }
     }
-    LOG(logINFO, ("Beb: Detector has sent all data (acquire)\n"));
-    LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
 #endif
+    LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
 /* common */
-
-int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
-    LOG(logDEBUG1, ("Copying module\n"));
-
-    if (srcMod->serialnumber >= 0) {
-
-        destMod->serialnumber = srcMod->serialnumber;
-    }
-    // no trimbit feature
-    if (destMod->nchan && ((srcMod->nchan) > (destMod->nchan))) {
-        LOG(logINFO, ("Number of channels of source is larger than number of "
-                      "channels of destination\n"));
-        return FAIL;
-    }
-    if ((srcMod->ndac) > (destMod->ndac)) {
-        LOG(logINFO, ("Number of dacs of source is larger than number of dacs "
-                      "of destination\n"));
-        return FAIL;
-    }
-
-    LOG(logDEBUG1, ("DACs: src %d, dest %d\n", srcMod->ndac, destMod->ndac));
-    LOG(logDEBUG1, ("Chans: src %d, dest %d\n", srcMod->nchan, destMod->nchan));
-    if (srcMod->reg >= 0)
-        destMod->reg = srcMod->reg;
-    if (srcMod->iodelay >= 0)
-        destMod->iodelay = srcMod->iodelay;
-    if (srcMod->tau >= 0)
-        destMod->tau = srcMod->tau;
-    if (srcMod->eV[0] >= 0)
-        destMod->eV[0] = srcMod->eV[0];
-    LOG(logDEBUG1, ("Copying register %x (%x)\n", destMod->reg, srcMod->reg));
-
-    if (destMod->nchan != 0 && srcMod->nchan != 0) {
-        for (int ichan = 0; ichan < (srcMod->nchan); ichan++) {
-            if (*((srcMod->chanregs) + ichan) >= 0)
-                *((destMod->chanregs) + ichan) = *((srcMod->chanregs) + ichan);
-        }
-    } else
-        LOG(logINFO, ("Not Copying trimbits\n"));
-
-    for (int idac = 0; idac < (srcMod->ndac); idac++) {
-        if (*((srcMod->dacs) + idac) >= 0) {
-            *((destMod->dacs) + idac) = *((srcMod->dacs) + idac);
-        }
-    }
-    return OK;
-}
 
 int calculateDataBytes() {
     if (send_to_ten_gig)

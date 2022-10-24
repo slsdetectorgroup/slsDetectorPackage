@@ -273,7 +273,7 @@ T StringTo(const std::string &t, const std::string &unit) {
     try {
         tval = std::stod(t);
     } catch (const std::invalid_argument &e) {
-        throw sls::RuntimeError("Could not convert string to time");
+        throw RuntimeError("Could not convert string to time");
     }
 
     using std::chrono::duration;
@@ -287,7 +287,7 @@ T StringTo(const std::string &t, const std::string &unit) {
     } else if (unit == "s" || unit.empty()) {
         return duration_cast<T>(std::chrono::duration<double>(tval));
     } else {
-        throw sls::RuntimeError(
+        throw RuntimeError(
             "Invalid unit in conversion from string to std::chrono::duration");
     }
 }

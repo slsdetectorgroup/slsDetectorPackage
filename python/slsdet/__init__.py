@@ -17,10 +17,12 @@ import _slsdet
 xy = _slsdet.xy
 defs = _slsdet.slsDetectorDefs
 
+#Make enums and #defines available at top level
 from .enums import *
-
+from .defines import *
 
 IpAddr = _slsdet.IpAddr
 MacAddr = _slsdet.MacAddr
 scanParameters = _slsdet.scanParameters
 currentSrcParameters = _slsdet.currentSrcParameters
+DurationWrapper = _slsdet.DurationWrapper

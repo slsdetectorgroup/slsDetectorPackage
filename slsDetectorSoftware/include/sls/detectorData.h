@@ -4,32 +4,30 @@
 #include <cstdint>
 #include <string>
 
+namespace sls {
+
 /**
    @short data structure to hold the detector data after postprocessing
  */
 class detectorData {
   public:
-    /**
-     * Constructor
-     * @param progress progress index
-     * @param fname file name prefix
-     * @param x number of detector channels (1D detector) or dimension in x (2D
-     * detector)
-     * @param y dimension in y (2D detector)
-     * @param d pointer to data in char* format
-     * @param dbytes number of bytes of image pointed to by cval pointer
-     * @param dr dynamic range or bits per pixel
-     * @param fIndex file index
-     * @param complete true if complete image, else missing packets
-     */
-    detectorData(double progress, std::string fname, int x, int y, char *d,
-                 int dbytes, int dr, uint64_t fIndex, bool complete)
-        : progressIndex(progress), fileName(fname), fileIndex(fIndex), nx(x),
-          ny(y), data(d), databytes(dbytes), dynamicRange(dr),
-          completeImage(complete){};
+    detectorData(double progressIndex, std::string fileName, int nx, int ny,
+                 char *data, int databytes, int dynamicRange,
+                 uint64_t fileIndex, bool completeImage)
+        : progressIndex(progressIndex), fileName(fileName),
+          fileIndex(fileIndex), nx(nx), ny(ny), data(data),
+          databytes(databytes), dynamicRange(dynamicRange),
+          completeImage(completeImage){};
 
+    detectorData(double progressIndex, std::string fileName, int nx, int ny,
+                 char *data, int databytes, int dynamicRange,
+                 uint64_t fileIndex, bool completeImage,
+                 std::array<int, 4> rxRoi)
+        : progressIndex(progressIndex), fileName(fileName),
+          fileIndex(fileIndex), nx(nx), ny(ny), data(data),
+          databytes(databytes), dynamicRange(dynamicRange),
+          completeImage(completeImage), rxRoi(rxRoi){};
     /**
-     * Destructor
      * data has to be deleted by caller
      */
     ~detectorData(){};
@@ -60,8 +58,11 @@ class detectorData {
     uint64_t fileIndex;
     int nx;
     int ny;
-    char *data;
+    char *data{nullptr};
     int databytes;
     int dynamicRange;
     bool completeImage;
+    std::array<int, 4> rxRoi{{-1, -1, -1, -1}};
 };
+
+} // namespace sls

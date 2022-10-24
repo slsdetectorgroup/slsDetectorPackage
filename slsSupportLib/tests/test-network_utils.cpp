@@ -10,7 +10,7 @@
 #include "sls/sls_detector_exceptions.h"
 #include "sls/string_utils.h"
 
-using namespace sls;
+namespace sls {
 
 TEST_CASE("Convert mac address using classes", "[support]") {
 
@@ -128,3 +128,5 @@ TEST_CASE("udp dst struct basic properties") {
 }
 
 // TODO!(Erik) Look up a real hostname and verify the IP
+
+} // namespace sls

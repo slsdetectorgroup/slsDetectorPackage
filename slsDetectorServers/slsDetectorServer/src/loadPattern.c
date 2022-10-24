@@ -24,6 +24,22 @@ extern u_int32_t bus_r(u_int32_t offset);
 extern int64_t get64BitReg(int aLSB, int aMSB);
 extern int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
 
+#ifdef MYTHEN3D
+#define MAX_LEVELS M3_MAX_PATTERN_LEVELS
+#else
+#define MAX_LEVELS MAX_PATTERN_LEVELS
+#endif
+
+void initializePatternAddresses() {
+    LOG(logDEBUG1, ("Setting default Loop and Wait Addresses(0x%x)\n",
+                    MAX_PATTERN_LENGTH - 1));
+    for (int i = 0; i != MAX_LEVELS; ++i) {
+        setPatternLoopAddresses(i, MAX_PATTERN_LENGTH - 1,
+                                MAX_PATTERN_LENGTH - 1);
+        setPatternWaitAddress(i, MAX_PATTERN_LENGTH - 1);
+    }
+}
+
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 #ifdef VIRTUAL
 void initializePatternWord() {
@@ -76,7 +92,7 @@ uint64_t readPatternWord(int addr) {
     uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr * REG_OFFSET * 2;
     return get64BitReg(reg_lsb, reg_msb);
 #else
-    LOG(logINFORED, ("  Reading (Executing) Pattern Word (addr:0x%x)\n", addr));
+    LOG(logDEBUG1, ("  Reading (Executing) Pattern Word (addr:0x%x)\n", addr));
     uint32_t reg = PATTERN_CNTRL_REG;
 
     // overwrite with  only addr
@@ -157,9 +173,11 @@ void writePatternWord(int addr, uint64_t word) {
 
 int validate_getPatternWaitAddresses(char *message, int level, int *addr) {
     // validate input
-    if (level < 0 || level > 2) {
-        sprintf(message,
-                "Cannot get patwait address. Level must be between 0 and 2.\n");
+    if (level < 0 || level >= MAX_LEVELS) {
+        sprintf(
+            message,
+            "Cannot get patwait address. Level %d must be between 0 and %d.\n",
+            level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -178,6 +196,17 @@ int getPatternWaitAddress(int level) {
     case 2:
         return ((bus_r(PATTERN_WAIT_2_ADDR_REG) & PATTERN_WAIT_2_ADDR_MSK) >>
                 PATTERN_WAIT_2_ADDR_OFST);
+#ifndef MYTHEN3D
+    case 3:
+        return ((bus_r(PATTERN_WAIT_3_ADDR_REG) & PATTERN_WAIT_3_ADDR_MSK) >>
+                PATTERN_WAIT_3_ADDR_OFST);
+    case 4:
+        return ((bus_r(PATTERN_WAIT_4_ADDR_REG) & PATTERN_WAIT_4_ADDR_MSK) >>
+                PATTERN_WAIT_4_ADDR_OFST);
+    case 5:
+        return ((bus_r(PATTERN_WAIT_5_ADDR_REG) & PATTERN_WAIT_5_ADDR_MSK) >>
+                PATTERN_WAIT_5_ADDR_OFST);
+#endif
     default:
         return -1;
     }
@@ -185,9 +214,11 @@ int getPatternWaitAddress(int level) {
 
 int validate_setPatternWaitAddresses(char *message, int level, int addr) {
     // validate input
-    if (level < 0 || level > 2) {
-        sprintf(message,
-                "Cannot set patwait address. Level must be between 0 and 2.\n");
+    if (level < 0 || level >= MAX_LEVELS) {
+        sprintf(
+            message,
+            "Cannot set patwait address. Level %d must be between 0 and %d.\n",
+            level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -234,6 +265,20 @@ void setPatternWaitAddress(int level, int addr) {
         bus_w(PATTERN_WAIT_2_ADDR_REG,
               ((addr << PATTERN_WAIT_2_ADDR_OFST) & PATTERN_WAIT_2_ADDR_MSK));
         break;
+#ifndef MYTHEN3D
+    case 3:
+        bus_w(PATTERN_WAIT_3_ADDR_REG,
+              ((addr << PATTERN_WAIT_3_ADDR_OFST) & PATTERN_WAIT_3_ADDR_MSK));
+        break;
+    case 4:
+        bus_w(PATTERN_WAIT_4_ADDR_REG,
+              ((addr << PATTERN_WAIT_4_ADDR_OFST) & PATTERN_WAIT_4_ADDR_MSK));
+        break;
+    case 5:
+        bus_w(PATTERN_WAIT_5_ADDR_REG,
+              ((addr << PATTERN_WAIT_5_ADDR_OFST) & PATTERN_WAIT_5_ADDR_MSK));
+        break;
+#endif
     default:
         return;
     }
@@ -241,9 +286,10 @@ void setPatternWaitAddress(int level, int addr) {
 
 int validate_getPatternWaitTime(char *message, int level, uint64_t *waittime) {
     // validate input
-    if (level < 0 || level > 2) {
+    if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot get patwaittime. Level must be between 0 and 2.\n");
+                "Cannot get patwaittime. Level %d must be between 0 and %d.\n",
+                level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -262,6 +308,17 @@ uint64_t getPatternWaitTime(int level) {
     case 2:
         return get64BitReg(PATTERN_WAIT_TIMER_2_LSB_REG,
                            PATTERN_WAIT_TIMER_2_MSB_REG);
+#ifndef MYTHEN3D
+    case 3:
+        return get64BitReg(PATTERN_WAIT_TIMER_3_LSB_REG,
+                           PATTERN_WAIT_TIMER_3_MSB_REG);
+    case 4:
+        return get64BitReg(PATTERN_WAIT_TIMER_4_LSB_REG,
+                           PATTERN_WAIT_TIMER_4_MSB_REG);
+    case 5:
+        return get64BitReg(PATTERN_WAIT_TIMER_5_LSB_REG,
+                           PATTERN_WAIT_TIMER_5_MSB_REG);
+#endif
     default:
         return -1;
     }
@@ -269,9 +326,10 @@ uint64_t getPatternWaitTime(int level) {
 
 int validate_setPatternWaitTime(char *message, int level, uint64_t waittime) {
     // validate input
-    if (level < 0 || level > 2) {
+    if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot set patwaittime. Level must be between 0 and 2.\n");
+                "Cannot set patwaittime. Level %d must be between 0 and %d.\n",
+                level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -311,6 +369,20 @@ void setPatternWaitTime(int level, uint64_t t) {
         set64BitReg(t, PATTERN_WAIT_TIMER_2_LSB_REG,
                     PATTERN_WAIT_TIMER_2_MSB_REG);
         break;
+#ifndef MYTHEN3D
+    case 3:
+        set64BitReg(t, PATTERN_WAIT_TIMER_3_LSB_REG,
+                    PATTERN_WAIT_TIMER_3_MSB_REG);
+        break;
+    case 4:
+        set64BitReg(t, PATTERN_WAIT_TIMER_4_LSB_REG,
+                    PATTERN_WAIT_TIMER_4_MSB_REG);
+        break;
+    case 5:
+        set64BitReg(t, PATTERN_WAIT_TIMER_5_LSB_REG,
+                    PATTERN_WAIT_TIMER_5_MSB_REG);
+        break;
+#endif
     default:
         return;
     }
@@ -318,9 +390,10 @@ void setPatternWaitTime(int level, uint64_t t) {
 
 int validate_getPatternLoopCycles(char *message, int level, int *numLoops) {
     // validate input
-    if (level < 0 || level > 2) {
+    if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot get patnloop. Level must be between 0 and 2.\n");
+                "Cannot get patnloop. Level %d must be between 0 and %d.\n",
+                level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -336,6 +409,14 @@ int getPatternLoopCycles(int level) {
         return bus_r(PATTERN_LOOP_1_ITERATION_REG);
     case 2:
         return bus_r(PATTERN_LOOP_2_ITERATION_REG);
+#ifndef MYTHEN3D
+    case 3:
+        return bus_r(PATTERN_LOOP_3_ITERATION_REG);
+    case 4:
+        return bus_r(PATTERN_LOOP_4_ITERATION_REG);
+    case 5:
+        return bus_r(PATTERN_LOOP_5_ITERATION_REG);
+#endif
     default:
         return -1;
     }
@@ -343,9 +424,10 @@ int getPatternLoopCycles(int level) {
 
 int validate_setPatternLoopCycles(char *message, int level, int numLoops) {
     // validate input
-    if (level < 0 || level > 2) {
+    if (level < 0 || level >= MAX_LEVELS) {
         sprintf(message,
-                "Cannot set patnloop. Level must be between 0 and 2.\n");
+                "Cannot set patnloop. Level %d must be between 0 and %d.\n",
+                level, MAX_LEVELS);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -385,6 +467,17 @@ void setPatternLoopCycles(int level, int nLoop) {
     case 2:
         bus_w(PATTERN_LOOP_2_ITERATION_REG, nLoop);
         break;
+#ifndef MYTHEN3D
+    case 3:
+        bus_w(PATTERN_LOOP_3_ITERATION_REG, nLoop);
+        break;
+    case 4:
+        bus_w(PATTERN_LOOP_4_ITERATION_REG, nLoop);
+        break;
+    case 5:
+        bus_w(PATTERN_LOOP_5_ITERATION_REG, nLoop);
+        break;
+#endif
     default:
         return;
     }
@@ -443,10 +536,11 @@ void setPatternLoopLimits(int startAddr, int stopAddr) {
 int validate_getPatternLoopAddresses(char *message, int level, int *startAddr,
                                      int *stopAddr) {
     // validate input
-    if (level < 0 || level > 2) {
-        sprintf(
-            message,
-            "Cannot get patloop addresses. Level must be between 0 and 2.\n");
+    if (level < 0 || level >= MAX_LEVELS) {
+        sprintf(message,
+                "Cannot get patloop addresses. Level %d must be between 0 and "
+                "%d.\n",
+                level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -481,6 +575,32 @@ void getPatternLoopAddresses(int level, int *startAddr, int *stopAddr) {
             ((bus_r(PATTERN_LOOP_2_ADDR_REG) & PATTERN_LOOP_2_ADDR_STP_MSK) >>
              PATTERN_LOOP_2_ADDR_STP_OFST);
         break;
+#ifndef MYTHEN3D
+    case 3:
+        *startAddr =
+            ((bus_r(PATTERN_LOOP_3_ADDR_REG) & PATTERN_LOOP_3_ADDR_STRT_MSK) >>
+             PATTERN_LOOP_3_ADDR_STRT_OFST);
+        *stopAddr =
+            ((bus_r(PATTERN_LOOP_3_ADDR_REG) & PATTERN_LOOP_3_ADDR_STP_MSK) >>
+             PATTERN_LOOP_3_ADDR_STP_OFST);
+        break;
+    case 4:
+        *startAddr =
+            ((bus_r(PATTERN_LOOP_4_ADDR_REG) & PATTERN_LOOP_4_ADDR_STRT_MSK) >>
+             PATTERN_LOOP_4_ADDR_STRT_OFST);
+        *stopAddr =
+            ((bus_r(PATTERN_LOOP_4_ADDR_REG) & PATTERN_LOOP_4_ADDR_STP_MSK) >>
+             PATTERN_LOOP_4_ADDR_STP_OFST);
+        break;
+    case 5:
+        *startAddr =
+            ((bus_r(PATTERN_LOOP_5_ADDR_REG) & PATTERN_LOOP_5_ADDR_STRT_MSK) >>
+             PATTERN_LOOP_5_ADDR_STRT_OFST);
+        *stopAddr =
+            ((bus_r(PATTERN_LOOP_5_ADDR_REG) & PATTERN_LOOP_5_ADDR_STP_MSK) >>
+             PATTERN_LOOP_5_ADDR_STP_OFST);
+        break;
+#endif
     default:
         return;
     }
@@ -489,10 +609,11 @@ void getPatternLoopAddresses(int level, int *startAddr, int *stopAddr) {
 int validate_setPatternLoopAddresses(char *message, int level, int startAddr,
                                      int stopAddr) {
     // validate input
-    if (level < 0 || level > 2) {
-        sprintf(
-            message,
-            "Cannot set patloop addresses. Level must be between 0 and 2.\n");
+    if (level < 0 || level >= MAX_LEVELS) {
+        sprintf(message,
+                "Cannot set patloop addresses. Level %d must be between 0 and "
+                "%d.\n",
+                level, MAX_LEVELS - 1);
         LOG(logERROR, (message));
         return FAIL;
     }
@@ -559,6 +680,29 @@ void setPatternLoopAddresses(int level, int startAddr, int stopAddr) {
                   ((stopAddr << PATTERN_LOOP_2_ADDR_STP_OFST) &
                    PATTERN_LOOP_2_ADDR_STP_MSK));
         break;
+#ifndef MYTHEN3D
+    case 3:
+        bus_w(PATTERN_LOOP_3_ADDR_REG,
+              ((startAddr << PATTERN_LOOP_3_ADDR_STRT_OFST) &
+               PATTERN_LOOP_3_ADDR_STRT_MSK) |
+                  ((stopAddr << PATTERN_LOOP_3_ADDR_STP_OFST) &
+                   PATTERN_LOOP_3_ADDR_STP_MSK));
+        break;
+    case 4:
+        bus_w(PATTERN_LOOP_4_ADDR_REG,
+              ((startAddr << PATTERN_LOOP_4_ADDR_STRT_OFST) &
+               PATTERN_LOOP_4_ADDR_STRT_MSK) |
+                  ((stopAddr << PATTERN_LOOP_4_ADDR_STP_OFST) &
+                   PATTERN_LOOP_4_ADDR_STP_MSK));
+        break;
+    case 5:
+        bus_w(PATTERN_LOOP_5_ADDR_REG,
+              ((startAddr << PATTERN_LOOP_5_ADDR_STRT_OFST) &
+               PATTERN_LOOP_5_ADDR_STRT_MSK) |
+                  ((stopAddr << PATTERN_LOOP_5_ADDR_STP_OFST) &
+                   PATTERN_LOOP_5_ADDR_STP_MSK));
+        break;
+#endif
     default:
         return;
     }
@@ -601,6 +745,8 @@ int loadPattern(char *message, enum TLogLevel printLevel,
 #ifdef MYTHEN3D
     trimmingPrint = printLevel;
 #endif
+    initializePatternAddresses();
+
     // words
     for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
         if ((i % 10 == 0) && pat->word[i] != 0) {
@@ -625,10 +771,10 @@ int loadPattern(char *message, enum TLogLevel printLevel,
     }
 
     if (ret == OK) {
-        for (int i = 0; i <= 2; ++i) {
+        for (int i = 0; i < MAX_LEVELS; ++i) {
             // loop addr
             ret = validate_setPatternLoopAddresses(
-                message, i, pat->loop[i * 2 + 0], pat->loop[i * 2 + 1]);
+                message, i, pat->startloop[i], pat->stoploop[i]);
             if (ret == FAIL) {
                 break;
             }
@@ -685,15 +831,15 @@ int getPattern(char *message, patternParameters *pat) {
         pat->limits[1] = retval2;
     }
     if (ret == OK) {
-        for (int i = 0; i <= 2; ++i) {
+        for (int i = 0; i < MAX_LEVELS; ++i) {
             // loop addr
             ret = validate_getPatternLoopAddresses(message, i, &retval1,
                                                    &retval2);
             if (ret == FAIL) {
                 break;
             }
-            pat->loop[i * 2 + 0] = retval1;
-            pat->loop[i * 2 + 1] = retval2;
+            pat->startloop[i] = retval1;
+            pat->stoploop[i] = retval2;
 
             // num loops
             ret = validate_getPatternLoopCycles(message, i, &retval1);
@@ -742,6 +888,8 @@ int loadPatternFile(char *patFname, char *errMessage) {
     char command[LZ];
     char temp[MAX_STR_LENGTH];
     memset(temp, 0, MAX_STR_LENGTH);
+
+    initializePatternAddresses();
 
     // keep reading a line
     while (fgets(line, LZ, fd)) {
@@ -846,26 +994,14 @@ int loadPatternFile(char *patFname, char *errMessage) {
         }
 
         // patloop
-        if ((!strncmp(line, "patloop0", strlen("patloop0"))) ||
-            (!strncmp(line, "patloop1", strlen("patloop1"))) ||
-            (!strncmp(line, "patloop2", strlen("patloop2")))) {
-
-            // level
+        if (!strncmp(line, "patloop", strlen("patloop"))) {
             int level = -1;
-            if (!strncmp(line, "patloop0", strlen("patloop0"))) {
-                level = 0;
-            } else if (!strncmp(line, "patloop1", strlen("patloop1"))) {
-                level = 1;
-            } else {
-                level = 2;
-            }
-
             int startAddr = 0;
             int stopAddr = 0;
             // cannot scan values
-            if (sscanf(line, "%s 0x%x 0x%x", command, &startAddr, &stopAddr) !=
-                3) {
-                sprintf(temp, "Could not scan patloop%d arguments.\n", level);
+            if (sscanf(line, "%s %d 0x%x 0x%x", command, &level, &startAddr,
+                       &stopAddr) != 4) {
+                strcpy(temp, "Could not scan patloop arguments.\n");
                 break;
             }
 
@@ -876,24 +1012,12 @@ int loadPatternFile(char *patFname, char *errMessage) {
         }
 
         // patnloop
-        if ((!strncmp(line, "patnloop0", strlen("patnloop0"))) ||
-            (!strncmp(line, "patnloop1", strlen("patnloop1"))) ||
-            (!strncmp(line, "patnloop2", strlen("patnloop2")))) {
-
-            // level
+        if (!strncmp(line, "patnloop", strlen("patnloop"))) {
             int level = -1;
-            if (!strncmp(line, "patnloop0", strlen("patnloop0"))) {
-                level = 0;
-            } else if (!strncmp(line, "patnloop1", strlen("patnloop1"))) {
-                level = 1;
-            } else {
-                level = 2;
-            }
-
             int numLoops = -1;
             // cannot scan values
-            if (sscanf(line, "%s %d", command, &numLoops) != 2) {
-                sprintf(temp, "Could not scan patnloop %d arguments.\n", level);
+            if (sscanf(line, "%s %d  %d", command, &level, &numLoops) != 3) {
+                strcpy(temp, "Could not scan patnloop arguments.\n");
                 break;
             }
 
@@ -903,24 +1027,12 @@ int loadPatternFile(char *patFname, char *errMessage) {
         }
 
         // patwait
-        if ((!strncmp(line, "patwait0", strlen("patwait0"))) ||
-            (!strncmp(line, "patwait1", strlen("patwait1"))) ||
-            (!strncmp(line, "patwait2", strlen("patwait2")))) {
-
-            // level
+        if (!strncmp(line, "patwait ", strlen("patwait "))) {
             int level = -1;
-            if (!strncmp(line, "patwait0", strlen("patwait0"))) {
-                level = 0;
-            } else if (!strncmp(line, "patwait1", strlen("patwait1"))) {
-                level = 1;
-            } else {
-                level = 2;
-            }
-
             int addr = 0;
             // cannot scan values
-            if (sscanf(line, "%s 0x%x", command, &addr) != 2) {
-                sprintf(temp, "Could not scan patwait%d arguments.\n", level);
+            if (sscanf(line, "%s %d 0x%x", command, &level, &addr) != 3) {
+                strcpy(temp, "Could not scan patwait arguments.\n");
                 break;
             }
 
@@ -930,27 +1042,15 @@ int loadPatternFile(char *patFname, char *errMessage) {
         }
 
         // patwaittime
-        if ((!strncmp(line, "patwaittime0", strlen("patwaittime0"))) ||
-            (!strncmp(line, "patwaittime1", strlen("patwaittime1"))) ||
-            (!strncmp(line, "patwaittime2", strlen("patwaittime2")))) {
-
-            // level
+        if (!strncmp(line, "patwaittime", strlen("patwaittime"))) {
             int level = -1;
-            if (!strncmp(line, "patwaittime0", strlen("patwaittime0"))) {
-                level = 0;
-            } else if (!strncmp(line, "patwaittime1", strlen("patwaittime1"))) {
-                level = 1;
-            } else {
-                level = 2;
-            }
-
             uint64_t waittime = 0;
 
             // cannot scan values
 #ifdef VIRTUAL
-            if (sscanf(line, "%s %ld", command, &waittime) != 2) {
+            if (sscanf(line, "%s %d %ld", command, &level, &waittime) != 3) {
 #else
-            if (sscanf(line, "%s %lld", command, &waittime) != 2) {
+            if (sscanf(line, "%s %d %lld", command, &level, &waittime) != 3) {
 #endif
                 sprintf(temp, "Could not scan patwaittime%d arguments.\n",
                         level);

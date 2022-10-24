@@ -12,8 +12,8 @@
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
 
-using sls::CmdProxy;
-using sls::Detector;
+namespace sls {
+
 using test::GET;
 using test::PUT;
 
@@ -99,7 +99,7 @@ TEST_CASE("patword", "[.cmd]") {
     if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
         det_type == defs::MYTHEN3) {
         int addr = 0x23;
-        std::string saddr = sls::ToStringHex(addr, 4);
+        std::string saddr = ToStringHex(addr, 4);
         auto prev_val = det.getPatternWord(addr);
         {
             std::ostringstream oss;
@@ -154,315 +154,188 @@ TEST_CASE("patlimits", "[.cmd]") {
     }
 }
 
-TEST_CASE("patloop0", "[.cmd]") {
+TEST_CASE("patloop", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
         det_type == defs::MYTHEN3) {
-        auto prev_val = det.getPatternLoopAddresses(0);
-        {
-            std::ostringstream oss;
-            proxy.Call("patloop0", {"0x20", "0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patloop0 [0x0020, 0x005c]\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patloop0", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patloop0 [0x0020, 0x005c]\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternLoopAddresses(0, prev_val[i][0], prev_val[i][1], {i});
+        for (int iLoop = 0; iLoop != MAX_PATTERN_LEVELS; ++iLoop) {
+            // m3 only has 3 levels
+            if (det_type == defs::MYTHEN3 && iLoop >= 3) {
+                continue;
+            }
+            auto prev_val = det.getPatternLoopAddresses(iLoop);
+            std::string sLoop = ToString(iLoop);
+            if (iLoop < 3) {
+                std::string deprecatedCmd = "patloop" + sLoop;
+                { // depreciated
+                    std::ostringstream oss;
+                    proxy.Call(deprecatedCmd, {"0x20", "0x5c"}, -1, PUT, oss);
+                    REQUIRE(oss.str() == deprecatedCmd + " [0x0020, 0x005c]\n");
+                }
+                { // depreciated
+                    std::ostringstream oss;
+                    proxy.Call(deprecatedCmd, {}, -1, GET, oss);
+                    REQUIRE(oss.str() == deprecatedCmd + " [0x0020, 0x005c]\n");
+                }
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("patloop", {sLoop, "0x20", "0x5c"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "patloop [0x0020, 0x005c]\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("patloop", {sLoop}, -1, GET, oss);
+                REQUIRE(oss.str() == "patloop [0x0020, 0x005c]\n");
+            }
+            for (int iDet = 0; iDet != det.size(); ++iDet) {
+                det.setPatternLoopAddresses(iLoop, prev_val[iDet][0],
+                                            prev_val[iDet][1], {iDet});
+            }
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("patloop0", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("patloop", {"0"}, -1, GET));
     }
 }
 
-TEST_CASE("patloop1", "[.cmd]") {
+TEST_CASE("patnloop", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
         det_type == defs::MYTHEN3) {
-        auto prev_val = det.getPatternLoopAddresses(1);
-        {
-            std::ostringstream oss;
-            proxy.Call("patloop1", {"0x20", "0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patloop1 [0x0020, 0x005c]\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patloop1", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patloop1 [0x0020, 0x005c]\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternLoopAddresses(1, prev_val[i][0], prev_val[i][1], {i});
+        for (int iLoop = 0; iLoop != MAX_PATTERN_LEVELS; ++iLoop) {
+            // m3 only has 3 levels
+            if (det_type == defs::MYTHEN3 && iLoop >= 3) {
+                continue;
+            }
+            auto prev_val = det.getPatternLoopCycles(iLoop);
+            std::string sLoop = ToString(iLoop);
+            if (iLoop < 3) {
+                std::string deprecatedCmd = "patnloop" + sLoop;
+                { // depreciated
+                    std::ostringstream oss;
+                    proxy.Call(deprecatedCmd, {"5"}, -1, PUT, oss);
+                    REQUIRE(oss.str() == deprecatedCmd + " 5\n");
+                }
+                { // depreciated
+                    std::ostringstream oss;
+                    proxy.Call(deprecatedCmd, {}, -1, GET, oss);
+                    REQUIRE(oss.str() == deprecatedCmd + " 5\n");
+                }
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("patnloop", {sLoop, "5"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "patnloop 5\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("patnloop", {sLoop}, -1, GET, oss);
+                REQUIRE(oss.str() == "patnloop 5\n");
+            }
+            for (int iDet = 0; iDet != det.size(); ++iDet) {
+                det.setPatternLoopCycles(iLoop, prev_val[iDet], {iDet});
+            }
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("patloop1", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("patnloop", {"0"}, -1, GET));
     }
 }
 
-TEST_CASE("patloop2", "[.cmd]") {
+TEST_CASE("patwait", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
         det_type == defs::MYTHEN3) {
-        auto prev_val = det.getPatternLoopAddresses(2);
-        {
-            std::ostringstream oss;
-            proxy.Call("patloop2", {"0x20", "0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patloop2 [0x0020, 0x005c]\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patloop2", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patloop2 [0x0020, 0x005c]\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternLoopAddresses(2, prev_val[i][0], prev_val[i][1], {i});
+        for (int iLoop = 0; iLoop != MAX_PATTERN_LEVELS; ++iLoop) {
+            // m3 only has 3 levels
+            if (det_type == defs::MYTHEN3 && iLoop >= 3) {
+                continue;
+            }
+            auto prev_val = det.getPatternWaitAddr(iLoop);
+            std::string sLoop = ToString(iLoop);
+            if (iLoop < 3) {
+                std::string deprecatedCmd = "patwait" + sLoop;
+                { // depreciated
+                    std::ostringstream oss;
+                    proxy.Call(deprecatedCmd, {"0x5c"}, -1, PUT, oss);
+                    REQUIRE(oss.str() == deprecatedCmd + " 0x005c\n");
+                }
+                { // depreciated
+                    std::ostringstream oss;
+                    proxy.Call(deprecatedCmd, {}, -1, GET, oss);
+                    REQUIRE(oss.str() == deprecatedCmd + " 0x005c\n");
+                }
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("patwait", {sLoop, "0x5c"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "patwait 0x005c\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("patwait", {sLoop}, -1, GET, oss);
+                REQUIRE(oss.str() == "patwait 0x005c\n");
+            }
+            for (int iDet = 0; iDet != det.size(); ++iDet) {
+                det.setPatternWaitAddr(iLoop, prev_val[iDet], {iDet});
+            }
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("patloop2", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("patwait", {"0"}, -1, GET));
     }
 }
 
-TEST_CASE("patnloop0", "[.cmd]") {
+TEST_CASE("patwaittime", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
         det_type == defs::MYTHEN3) {
-        auto prev_val = det.getPatternLoopCycles(0);
-        {
-            std::ostringstream oss;
-            proxy.Call("patnloop0", {"5"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patnloop0 5\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patnloop0", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patnloop0 5\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternLoopCycles(0, prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("patnloop0", {}, -1, GET));
-    }
-}
-
-TEST_CASE("patnloop1", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3) {
-        auto prev_val = det.getPatternLoopCycles(1);
-        {
-            std::ostringstream oss;
-            proxy.Call("patnloop1", {"5"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patnloop1 5\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patnloop1", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patnloop1 5\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternLoopCycles(1, prev_val[i], {i});
+        for (int iLoop = 0; iLoop != MAX_PATTERN_LEVELS; ++iLoop) {
+            // m3 only has 3 levels
+            if (det_type == defs::MYTHEN3 && iLoop >= 3) {
+                continue;
+            }
+            auto prev_val = det.getPatternWaitTime(iLoop);
+            std::string sLoop = ToString(iLoop);
+            if (iLoop < 3) {
+                std::string deprecatedCmd = "patwaittime" + sLoop;
+                { // depreciated
+                    std::ostringstream oss;
+                    proxy.Call(deprecatedCmd, {"8589936640"}, -1, PUT, oss);
+                    REQUIRE(oss.str() == deprecatedCmd + " 8589936640\n");
+                }
+                { // depreciated
+                    std::ostringstream oss;
+                    proxy.Call(deprecatedCmd, {}, -1, GET, oss);
+                    REQUIRE(oss.str() == deprecatedCmd + " 8589936640\n");
+                }
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("patwaittime", {sLoop, "8589936640"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "patwaittime 8589936640\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("patwaittime", {sLoop}, -1, GET, oss);
+                REQUIRE(oss.str() == "patwaittime 8589936640\n");
+            }
+            for (int iDet = 0; iDet != det.size(); ++iDet) {
+                det.setPatternWaitTime(iLoop, prev_val[iDet], {iDet});
+            }
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("patnloop1", {}, -1, GET));
-    }
-}
-
-TEST_CASE("patnloop2", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3) {
-        auto prev_val = det.getPatternLoopCycles(2);
-        {
-            std::ostringstream oss;
-            proxy.Call("patnloop2", {"5"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patnloop2 5\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patnloop2", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patnloop2 5\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternLoopCycles(2, prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("patnloop2", {}, -1, GET));
-    }
-}
-
-TEST_CASE("patwait0", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3) {
-        auto prev_val = det.getPatternWaitAddr(0);
-        {
-            std::ostringstream oss;
-            proxy.Call("patwait0", {"0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patwait0 0x005c\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patwait0", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patwait0 0x005c\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternWaitAddr(0, prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("patwait0", {}, -1, GET));
-    }
-}
-
-TEST_CASE("patwait1", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3) {
-        auto prev_val = det.getPatternWaitAddr(1);
-        {
-            std::ostringstream oss;
-            proxy.Call("patwait1", {"0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patwait1 0x005c\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patwait1", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patwait1 0x005c\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternWaitAddr(1, prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("patwait1", {}, -1, GET));
-    }
-}
-
-TEST_CASE("patwait2", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3) {
-        auto prev_val = det.getPatternWaitAddr(2);
-        {
-            std::ostringstream oss;
-            proxy.Call("patwait2", {"0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patwait2 0x005c\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patwait2", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patwait2 0x005c\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternWaitAddr(2, prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("patwait2", {}, -1, GET));
-    }
-}
-
-TEST_CASE("patwaittime0", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3) {
-        auto prev_val = det.getPatternWaitTime(0);
-        {
-            std::ostringstream oss;
-            proxy.Call("patwaittime0", {"8589936640"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patwaittime0 8589936640\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patwaittime0", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patwaittime0 8589936640\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternWaitTime(0, prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("patwaittime0", {}, -1, GET));
-    }
-}
-
-TEST_CASE("patwaittime1", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3) {
-        auto prev_val = det.getPatternWaitTime(1);
-        {
-            std::ostringstream oss;
-            proxy.Call("patwaittime1", {"8589936640"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patwaittime1 8589936640\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patwaittime1", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patwaittime1 8589936640\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternWaitTime(1, prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("patwaittime1", {}, -1, GET));
-    }
-}
-
-TEST_CASE("patwaittime2", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3) {
-        auto prev_val = det.getPatternWaitTime(2);
-        {
-            std::ostringstream oss;
-            proxy.Call("patwaittime2", {"8589936640"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patwaittime2 8589936640\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patwaittime2", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patwaittime2 8589936640\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternWaitTime(2, prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("patwaittime2", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("patwaittime", {"0"}, -1, GET));
     }
 }
 
@@ -529,3 +402,5 @@ TEST_CASE("patternstart", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("patternstart", {}, -1, PUT));
     }
 }
+
+} // namespace sls

@@ -6,7 +6,9 @@
 #include "sls/bit_utils.h"
 #include <QStandardItemModel>
 
-qTabSettings::qTabSettings(QWidget *parent, sls::Detector *detector)
+namespace sls {
+
+qTabSettings::qTabSettings(QWidget *parent, Detector *detector)
     : QWidget(parent), det(detector) {
     setupUi(this);
     SetupWidgetWindow();
@@ -16,6 +18,12 @@ qTabSettings::qTabSettings(QWidget *parent, sls::Detector *detector)
 qTabSettings::~qTabSettings() {}
 
 void qTabSettings::SetupWidgetWindow() {
+
+    comboHV->hide();
+    lblComboHV->hide();
+    lblSpinHV->hide();
+    spinHV->hide();
+    hvmin = HV_MIN;
 
     counters = std::vector<QCheckBox *>{chkCounter1, chkCounter2, chkCounter3};
 
@@ -35,6 +43,9 @@ void qTabSettings::SetupWidgetWindow() {
     // enabling according to det type
     slsDetectorDefs::detectorType detType = det->getDetectorType().squash();
     if (detType == slsDetectorDefs::MYTHEN3) {
+        lblSpinHV->show();
+        spinHV->show();
+        hvmin = 0;
         lblDynamicRange->setEnabled(true);
         comboDynamicRange->setEnabled(true);
 
@@ -75,13 +86,28 @@ void qTabSettings::SetupWidgetWindow() {
             }
         }
     } else if (detType == slsDetectorDefs::EIGER) {
+        lblSpinHV->show();
+        spinHV->show();
+        hvmin = 0;
         lblDynamicRange->setEnabled(true);
         comboDynamicRange->setEnabled(true);
         lblThreshold->setEnabled(true);
         spinThreshold->setEnabled(true);
     } else if (detType == slsDetectorDefs::JUNGFRAU) {
+        lblSpinHV->show();
+        spinHV->show();
         lblGainMode->setEnabled(true);
         comboGainMode->setEnabled(true);
+    } else if (detType == slsDetectorDefs::GOTTHARD) {
+        comboHV->show();
+        lblComboHV->show();
+    } else if (detType == slsDetectorDefs::MOENCH) {
+        lblSpinHV->show();
+        spinHV->show();
+    } else if (detType == slsDetectorDefs::GOTTHARD2) {
+        lblSpinHV->show();
+        spinHV->show();
+        hvmin = 0;
     }
 
     // default settings for the disabled
@@ -163,6 +189,11 @@ void qTabSettings::ShowFixG0(bool expertMode) {
 }
 
 void qTabSettings::Initialization() {
+    // High voltage
+    connect(comboHV, SIGNAL(currentIndexChanged(int)), this,
+            SLOT(SetHighVoltage()));
+    connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
+
     // Settings
     if (comboSettings->isEnabled())
         connect(comboSettings, SIGNAL(currentIndexChanged(int)), this,
@@ -199,6 +230,91 @@ void qTabSettings::Initialization() {
     }
 }
 
+void qTabSettings::GetHighVoltage() {
+    // not enabled for eiger
+    if (!comboHV->isVisible() && !spinHV->isVisible())
+        return;
+    LOG(logDEBUG) << "Getting High Voltage";
+    disconnect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
+    disconnect(comboHV, SIGNAL(currentIndexChanged(int)), this,
+               SLOT(SetHighVoltage()));
+    try {
+        Result<int> retvals = det->getHighVoltage();
+
+        int retval = 0;
+        if (det->getDetectorType().squash() != slsDetectorDefs::EIGER) {
+            retval = retvals.tsquash("Inconsistent values for high voltage.");
+        }
+        // eiger slaves return -999
+        else {
+
+            auto is_master = det->getMaster();
+            Result<int> master_retvals;
+            for (size_t i = 0; i != retvals.size(); ++i) {
+                if (is_master[i]) {
+                    master_retvals.push_back(retvals[i]);
+                }
+            }
+            retval =
+                master_retvals.tsquash("Inconsistent values for high voltage.");
+        }
+
+        // spinHV
+        if (spinHV->isVisible()) {
+            if (retval != 0 && retval < hvmin && retval > HV_MAX) {
+                throw RuntimeError(std::string("Unknown High Voltage: ") +
+                                   std::to_string(retval));
+            }
+            spinHV->setValue(retval);
+        }
+        // combo HV
+        else {
+            switch (retval) {
+            case 0:
+                comboHV->setCurrentIndex(HV_0);
+                break;
+            case 90:
+                comboHV->setCurrentIndex(HV_90);
+                break;
+            case 110:
+                comboHV->setCurrentIndex(HV_110);
+                break;
+            case 120:
+                comboHV->setCurrentIndex(HV_120);
+                break;
+            case 150:
+                comboHV->setCurrentIndex(HV_150);
+                break;
+            case 180:
+                comboHV->setCurrentIndex(HV_180);
+                break;
+            case 200:
+                comboHV->setCurrentIndex(HV_200);
+                break;
+            default:
+                throw RuntimeError(std::string("Unknown High Voltage: ") +
+                                   std::to_string(retval));
+            }
+        }
+    }
+    CATCH_DISPLAY("Could not get high voltage.", "qTabSettings::GetHighVoltage")
+    connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
+    connect(comboHV, SIGNAL(currentIndexChanged(int)), this,
+            SLOT(SetHighVoltage()));
+}
+
+void qTabSettings::SetHighVoltage() {
+    int val = (comboHV->isVisible() ? comboHV->currentText().toInt()
+                                    : spinHV->value());
+    LOG(logINFO) << "Setting high voltage:" << val;
+
+    try {
+        det->setHighVoltage(val);
+    }
+    CATCH_HANDLE("Could not set high voltage.", "qTabSettings::SetHighVoltage",
+                 this, &qTabSettings::GetHighVoltage)
+}
+
 void qTabSettings::GetSettings() {
     LOG(logDEBUG) << "Getting settings";
     disconnect(comboSettings, SIGNAL(currentIndexChanged(int)), this,
@@ -215,8 +331,8 @@ void qTabSettings::GetSettings() {
             break;
         default:
             if ((int)retval < -1 || (int)retval >= comboSettings->count()) {
-                throw sls::RuntimeError(std::string("Unknown settings: ") +
-                                        std::to_string(retval));
+                throw RuntimeError(std::string("Unknown settings: ") +
+                                   std::to_string(retval));
             }
             comboSettings->setCurrentIndex(retval);
             break;
@@ -231,7 +347,7 @@ void qTabSettings::SetSettings(int index) {
     // settings
     auto val = static_cast<slsDetectorDefs::detectorSettings>(index);
     try {
-        LOG(logINFO) << "Setting Settings to " << sls::ToString(val);
+        LOG(logINFO) << "Setting Settings to " << ToString(val);
         det->setSettings(val);
     }
     CATCH_HANDLE("Could not set settings.", "qTabSettings::SetSettings", this,
@@ -250,8 +366,8 @@ void qTabSettings::GetGainMode() {
         auto retval = det->getGainMode().tsquash(
             "Inconsistent gain mode for all detectors.");
         if ((int)retval < 0 || (int)retval >= comboGainMode->count()) {
-            throw sls::RuntimeError(std::string("Unknown gain mode: ") +
-                                    std::to_string(retval));
+            throw RuntimeError(std::string("Unknown gain mode: ") +
+                               std::to_string(retval));
         }
         // warning when using fix_g0 and not in export mode
         if ((int)retval == FIX_G0 && !isVisibleFixG0) {
@@ -321,8 +437,8 @@ void qTabSettings::GetDynamicRange() {
             comboDynamicRange->setCurrentIndex(DYNAMICRANGE_4);
             break;
         default:
-            throw sls::RuntimeError(std::string("Unknown dynamic range: ") +
-                                    std::to_string(retval));
+            throw RuntimeError(std::string("Unknown dynamic range: ") +
+                               std::to_string(retval));
         }
     }
     CATCH_DISPLAY("Could not get dynamic range.",
@@ -352,8 +468,8 @@ void qTabSettings::SetDynamicRange(int index) {
             det->setDynamicRange(4);
             break;
         default:
-            throw sls::RuntimeError(std::string("Unknown dynamic range: ") +
-                                    std::to_string(index));
+            throw RuntimeError(std::string("Unknown dynamic range: ") +
+                               std::to_string(index));
         }
     }
     CATCH_HANDLE("Could not set dynamic range.",
@@ -399,8 +515,7 @@ void qTabSettings::SetThresholdEnergies() {
     slsDetectorDefs::detectorSettings sett =
         static_cast<slsDetectorDefs::detectorSettings>(
             comboSettings->currentIndex());
-    LOG(logINFO) << "Setting Threshold Energies to " << sls::ToString(eV)
-                 << " (eV)";
+    LOG(logINFO) << "Setting Threshold Energies to " << ToString(eV) << " (eV)";
     try {
         det->setThresholdEnergy(eV, sett);
     }
@@ -430,7 +545,7 @@ void qTabSettings::GetCounterMask() {
     disconnect(chkCounter3, SIGNAL(toggled(bool)), this,
                SLOT(SetCounterMask()));
     try {
-        auto retval = sls::getSetBits(det->getCounterMask().tsquash(
+        auto retval = getSetBits(det->getCounterMask().tsquash(
             "Counter mask is inconsistent for all detectors."));
         // default to unchecked
         for (auto p : counters) {
@@ -439,9 +554,8 @@ void qTabSettings::GetCounterMask() {
         // if retval[i] = 2, chkCounter2 is checked
         for (auto i : retval) {
             if (i > 3) {
-                throw sls::RuntimeError(
-                    std::string("Unknown counter index : ") +
-                    std::to_string(static_cast<int>(i)));
+                throw RuntimeError(std::string("Unknown counter index : ") +
+                                   std::to_string(static_cast<int>(i)));
             }
             counters[i]->setChecked(true);
         }
@@ -470,6 +584,8 @@ void qTabSettings::SetCounterMask() {
 void qTabSettings::Refresh() {
     LOG(logDEBUG) << "**Updating Settings Tab";
 
+    GetHighVoltage();
+
     if (comboSettings->isEnabled()) {
         GetSettings();
     }
@@ -496,3 +612,5 @@ void qTabSettings::Refresh() {
 
     LOG(logDEBUG) << "**Updated Settings Tab";
 }
+
+} // namespace sls

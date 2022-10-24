@@ -11,8 +11,8 @@
 #define BLACKFIN_DEFINED
 
 int defineGPIOpins(char *mess);
-int FPGAdontTouchFlash(char *mess);
-int FPGATouchFlash(char *mess);
+int FPGAdontTouchFlash(char *mess, int programming);
+int FPGATouchFlash(char *mess, int programming);
 int resetFPGA(char *mess);
 
 int emptyTempFolder(char *mess);
@@ -29,9 +29,10 @@ int eraseAndWriteToFlash(char *mess, enum PROGRAM_INDEX index,
                          ssize_t fsize, int forceDeleteNormalFile);
 int getDrive(char *mess, enum PROGRAM_INDEX index);
 /** Notify fpga not to touch flash, open src and flash drive to write */
-int openFileForFlash(char *mess, enum PROGRAM_INDEX index, FILE **flashfd, FILE **srcfd,
-                     int forceDeleteNormalFile);
-int checkNormalFile(char *mess, enum PROGRAM_INDEX index, int forceDeleteNormalFile);
+int openFileForFlash(char *mess, enum PROGRAM_INDEX index, FILE **flashfd,
+                     FILE **srcfd, int forceDeleteNormalFile);
+int checkNormalFile(char *mess, enum PROGRAM_INDEX index,
+                    int forceDeleteNormalFile);
 int eraseFlash(char *mess);
 /* write from tmp file to flash */
 int writeToFlash(char *mess, ssize_t fsize, FILE *flashfd, FILE *srcfd);

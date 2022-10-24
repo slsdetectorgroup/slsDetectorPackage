@@ -3,6 +3,7 @@
 
 /* TODO! short description */
 #include "SlsQt1DPlot.h"
+#include "sls/logger.h"
 #include <iostream>
 #include <qwt_legend.h>
 #include <qwt_math.h>
@@ -14,6 +15,8 @@
 #include <qwt_scale_widget.h>
 #include <qwt_symbol.h>
 #include <stdlib.h>
+
+namespace sls {
 
 #define QwtLog10ScaleEngine QwtLogScaleEngine // hmm
 
@@ -442,6 +445,36 @@ void SlsQt1DPlot::SetLog(int axisId, bool yes) {
     Update();
 }
 
+void SlsQt1DPlot::EnableRoiBox(std::array<int, 4> roi) {
+    if (roiBox == nullptr) {
+        roiBox = new QwtPlotShapeItem();
+        roiBox->attach(this);
+        roiBox->setPen(QColor(Qt::yellow), 2.0, Qt::SolidLine);
+    }
+
+    // TopLeft - BottomRight (max points are +1 on graph)
+    QRect myRect(QPoint(roi[0], roi[2]), QPoint(roi[1] - 1, roi[3] - 1));
+    roiBox->setRect(QRectF(myRect));
+    replot();
+}
+
+void SlsQt1DPlot::DisableRoiBox() {
+    if (roiBox != nullptr) {
+        roiBox->detach();
+        replot();
+    }
+}
+
+void SlsQt1DPlot::SetZoomX(const QRectF &rect) {
+    double xmin = 0, xmax = 0, ymin = 0, ymax = 0;
+    rect.getCoords(&xmin, &ymin, &xmax, &ymax);
+    LOG(logDEBUG1) << "Zoomed in at " << xmin << "\t" << xmax << "\t" << ymin
+                   << "\t" << ymax;
+    SetXMinMax(xmin, xmax);
+    // SetYMinMax(ymin, ymax);
+    replot();
+}
+
 void SlsQt1DPlot::UnZoom() {
     setAxisScale(QwtPlot::xBottom, zoomer->x(), zoomer->x() + zoomer->w());
     setAxisScale(QwtPlot::yLeft, zoomer->y(), zoomer->y() + zoomer->h());
@@ -456,6 +489,22 @@ void SlsQt1DPlot::SetZoom(double xmin, double ymin, double x_width,
     setAxisScale(QwtPlot::xBottom, xmin, xmin + x_width);
     setAxisScale(QwtPlot::yLeft, ymin, ymin + y_width);
     Update();
+}
+
+void SlsQt1DPlot::GetPannedCoord(int, int) {
+    double xmin = invTransform(QwtPlot::xBottom, 0);
+    double xmax = invTransform(QwtPlot::xBottom, canvas()->rect().width());
+    double ymax = invTransform(QwtPlot::yLeft, 0);
+    double ymin = invTransform(QwtPlot::yLeft, canvas()->rect().height());
+    LOG(logDEBUG1) << "Rect1  " << xmin << "\t" << xmax << "\t" << ymin << "\t"
+                   << ymax;
+    QPointF topLeft = QPointF(xmin, ymin);
+    QPointF bottomRight = QPointF(xmax, ymax);
+    const QRectF rectf = QRectF(topLeft, bottomRight);
+    rectf.getCoords(&xmin, &ymin, &xmax, &ymax);
+    LOG(logDEBUG1) << "RectF  " << xmin << "\t" << xmax << "\t" << ymin << "\t"
+                   << ymax;
+    emit PlotZoomedSignal(rectf);
 }
 
 void SlsQt1DPlot::RemoveHLine() {
@@ -518,6 +567,11 @@ void SlsQt1DPlot::SetupZoom() {
     const QColor c(Qt::darkBlue);
     zoomer->setRubberBandPen(c);
     zoomer->setTrackerPen(c);
+
+    connect(zoomer, SIGNAL(zoomed(const QRectF &)), this,
+            SIGNAL(PlotZoomedSignal(const QRectF &)));
+    connect(panner, SIGNAL(panned(int, int)), this,
+            SLOT(GetPannedCoord(int, int)));
 }
 
 //  Set a plain canvas frame and align the scales to it
@@ -580,3 +634,5 @@ void SlsQt1DPlot::DisableZoom(bool disable) {
         }
     }
 }
+
+} // namespace sls

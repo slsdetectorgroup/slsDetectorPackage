@@ -12,8 +12,8 @@
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
 
-using sls::CmdProxy;
-using sls::Detector;
+namespace sls {
+
 using test::GET;
 using test::PUT;
 
@@ -108,7 +108,7 @@ TEST_CASE("adcvpp", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
-        auto prev_val = det.getDAC(defs::ADC_VPP, false);
+        auto prev_val = det.getADCVpp(false);
         {
             std::ostringstream oss;
             proxy.Call("adcvpp", {"1"}, -1, PUT, oss);
@@ -125,7 +125,7 @@ TEST_CASE("adcvpp", "[.cmd]") {
             REQUIRE(oss.str() == "dac adcvpp 1140 mV\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setDAC(defs::ADC_VPP, prev_val[i], false, {i});
+            det.setADCVpp(prev_val[i], false, {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("dac adcvpp", {}, -1, GET));
@@ -141,7 +141,7 @@ TEST_CASE("samples", "[.cmd]") {
 
     if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
         auto prev_asamples = det.getNumberOfAnalogSamples();
-        sls::Result<int> prev_dsamples = 0;
+        Result<int> prev_dsamples = 0;
         if (det_type == defs::CHIPTESTBOARD) {
             prev_dsamples = det.getNumberOfDigitalSamples();
         }
@@ -866,3 +866,5 @@ TEST_CASE("led", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("led", {}, -1, GET));
     }
 }
+
+} // namespace sls

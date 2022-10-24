@@ -192,8 +192,7 @@ bool operator!=(const std::vector<T> &lhs,
 }
 
 template <typename T, size_t Capacity>
-std::ostream &operator<<(std::ostream &os,
-                         const sls::StaticVector<T, Capacity> &c) {
+std::ostream &operator<<(std::ostream &os, const StaticVector<T, Capacity> &c) {
     return os << ToString(c);
 }
 

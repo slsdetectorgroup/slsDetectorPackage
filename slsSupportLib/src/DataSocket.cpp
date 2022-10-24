@@ -65,7 +65,7 @@ int DataSocket::Receive(void *buffer, size_t size) {
         ss << "TCP socket read " << bytes_read << " bytes instead of "
            << bytes_expected << " bytes ("
            << getFunctionNameFromEnum(static_cast<detFuncs>(fnum_)) << ')';
-        throw sls::SocketError(ss.str());
+        throw SocketError(ss.str());
     }
 }
 
@@ -91,7 +91,7 @@ int DataSocket::Send(const void *buffer, size_t size) {
         ss << "TCP socket sent " << bytes_sent << " bytes instead of "
            << data_size << " bytes ("
            << getFunctionNameFromEnum(static_cast<detFuncs>(fnum_)) << ')';
-        throw sls::SocketError(ss.str());
+        throw SocketError(ss.str());
     }
     return bytes_sent;
 }

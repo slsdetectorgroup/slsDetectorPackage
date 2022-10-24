@@ -17,12 +17,14 @@
 #include <string>
 #include <thread>
 
+namespace sls {
+
 class ThreadObject : private virtual slsDetectorDefs {
   protected:
     const int index{0};
 
   public:
-    ThreadObject(int threadIndex, std::string threadType);
+    ThreadObject(int index, std::string type);
     virtual ~ThreadObject();
     pid_t GetThreadId() const;
     bool IsRunning() const;
@@ -47,3 +49,5 @@ class ThreadObject : private virtual slsDetectorDefs {
     const std::string type;
     std::atomic<pid_t> threadId{0};
 };
+
+} // namespace sls

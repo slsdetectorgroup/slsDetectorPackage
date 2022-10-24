@@ -12,8 +12,8 @@
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
 
-using sls::CmdProxy;
-using sls::Detector;
+namespace sls {
+
 using test::GET;
 using test::PUT;
 
@@ -216,9 +216,9 @@ TEST_CASE("counters", "[.cmd]") {
         REQUIRE(oss_set2.str() == "counters [0, 2]\n");
         // put back old value
         proxy.Call("counters", list_str, -1, PUT, oss_set3);
-        REQUIRE(oss_set3.str() == "counters " + sls::ToString(list_str) + "\n");
+        REQUIRE(oss_set3.str() == "counters " + ToString(list_str) + "\n");
         proxy.Call("counters", {}, -1, GET, oss_get);
-        REQUIRE(oss_get.str() == "counters " + sls::ToString(list_str) + "\n");
+        REQUIRE(oss_get.str() == "counters " + ToString(list_str) + "\n");
     } else {
         REQUIRE_THROWS(proxy.Call("counters", {}, -1, GET));
     }
@@ -349,7 +349,7 @@ TEST_CASE("gatedelay", "[.cmd]") {
         auto prev_val = det.getExptimeForAllGates().tsquash(
             "inconsistent gatedelay to test");
         if (prev_val[0] != prev_val[1] || prev_val[1] != prev_val[2]) {
-            throw sls::RuntimeError("inconsistent gatedelay for all gates");
+            throw RuntimeError("inconsistent gatedelay for all gates");
         }
         {
             std::ostringstream oss;
@@ -496,32 +496,50 @@ TEST_CASE("interpolation", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     if (det.getDetectorType().squash() == defs::MYTHEN3) {
-        auto prev_val = det.getInterpolation();
-        auto mask = det.getCounterMask();
-        {
-            proxy.Call("counters", {"0", "1"}, -1, PUT);
-            std::ostringstream oss;
-            proxy.Call("interpolation", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "interpolation 1\n");
-            REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") ==
-                    7);
+        auto prev_interpolation = det.getInterpolation();
+        auto prev_mask = det.getCounterMask();
+        auto prev_vth3DacVal = det.getDAC(defs::VTH3, 0, {});
+
+        int disabledDacValue = 2800;
+        auto fixedVth3DacVal = 1000;
+        det.setDAC(defs::VTH3, fixedVth3DacVal, 0, {});
+        // mask with counter 3 disabled and enabled(to test vth3)
+        uint32_t fixedMask[2] = {0x2, 0x4};
+        for (int i = 0; i != 2; ++i) {
+            det.setCounterMask(fixedMask[i]);
+            {
+                std::ostringstream oss;
+                proxy.Call("interpolation", {"1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "interpolation 1\n");
+                REQUIRE(det.getCounterMask().tsquash(
+                            "inconsistent counter mask") == 7);
+                REQUIRE(det.getDAC(defs::VTH3, 0, {0})
+                            .tsquash("inconsistent vth3 dac value") ==
+                        disabledDacValue);
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("interpolation", {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "interpolation 0\n");
+                REQUIRE(det.getCounterMask().tsquash(
+                            "inconsistent counter mask") == fixedMask[i]);
+                int expectedVth3DacVal =
+                    (fixedMask[i] & 0x4 ? fixedVth3DacVal : disabledDacValue);
+                REQUIRE(det.getDAC(defs::VTH3, 0, {0})
+                            .tsquash("inconsistent vth3 dac value") ==
+                        expectedVth3DacVal);
+            }
         }
-        {
-            proxy.Call("counters", {"0", "1"}, -1, PUT);
-            std::ostringstream oss;
-            proxy.Call("interpolation", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "interpolation 0\n");
-            REQUIRE(det.getCounterMask().tsquash("inconsistent counter mask") ==
-                    3);
-        }
+
         {
             std::ostringstream oss;
             proxy.Call("interpolation", {}, -1, GET, oss);
             REQUIRE(oss.str() == "interpolation 0\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setCounterMask(mask[i], {i});
-            det.setInterpolation(prev_val[i], {i});
+            det.setCounterMask(prev_mask[i], {i});
+            det.setInterpolation(prev_interpolation[i], {i});
+            det.setDAC(defs::VTH3, prev_vth3DacVal[i], 0, {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("interpolation", {}, -1, GET));
@@ -533,15 +551,58 @@ TEST_CASE("pumpprobe", "[.cmd]") {
     CmdProxy proxy(&det);
     if (det.getDetectorType().squash() == defs::MYTHEN3) {
         auto prev_val = det.getPumpProbe();
-        {
-            std::ostringstream oss;
-            proxy.Call("pumpprobe", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "pumpprobe 1\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("pumpprobe", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "pumpprobe 0\n");
+        auto prev_interpolation = det.getInterpolation();
+        auto prev_mask = det.getCounterMask();
+        auto prev_vth1DacVal = det.getDAC(defs::VTH1, 0, {});
+        auto prev_vth2DacVal = det.getDAC(defs::VTH2, 0, {});
+        auto prev_vth3DacVal = det.getDAC(defs::VTH3, 0, {});
+
+        int disabledDacValue = 2800;
+        auto fixedVthDacVal = 1000;
+        det.setDAC(defs::VTH1, fixedVthDacVal, 0, {});
+        det.setDAC(defs::VTH2, fixedVthDacVal, 0, {});
+        det.setDAC(defs::VTH3, fixedVthDacVal, 0, {});
+        // mask with counter 2 disabled and enabled(to test vth2)
+        uint32_t fixedMask[2] = {0x4, 0x3};
+        for (int i = 0; i != 2; ++i) {
+            det.setCounterMask(fixedMask[i]);
+            {
+                // pump probe
+                std::ostringstream oss;
+                proxy.Call("pumpprobe", {"1"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "pumpprobe 1\n");
+                REQUIRE(det.getDAC(defs::VTH1, 0, {0})
+                            .tsquash("inconsistent vth2 dac value") ==
+                        disabledDacValue);
+                REQUIRE(det.getDAC(defs::VTH2, 0, {0})
+                            .tsquash("inconsistent vth2 dac value") ==
+                        fixedVthDacVal);
+                REQUIRE(det.getDAC(defs::VTH3, 0, {0})
+                            .tsquash("inconsistent vth2 dac value") ==
+                        disabledDacValue);
+            }
+            // interpolation and pump probe
+            REQUIRE_THROWS(proxy.Call("interpolation", {"1"}, -1, PUT));
+            {
+                // none
+                std::ostringstream oss;
+                proxy.Call("pumpprobe", {"0"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "pumpprobe 0\n");
+                REQUIRE(det.getCounterMask().tsquash(
+                            "inconsistent counter mask") == 7);
+                REQUIRE(
+                    det.getDAC(defs::VTH1, 0, {0})
+                        .tsquash("inconsistent vth1 dac value") ==
+                    (fixedMask[i] & 0x1 ? fixedVthDacVal : disabledDacValue));
+                REQUIRE(
+                    det.getDAC(defs::VTH2, 0, {0})
+                        .tsquash("inconsistent vth2 dac value") ==
+                    (fixedMask[i] & 0x2 ? fixedVthDacVal : disabledDacValue));
+                REQUIRE(
+                    det.getDAC(defs::VTH3, 0, {0})
+                        .tsquash("inconsistent vth3 dac value") ==
+                    (fixedMask[i] & 0x4 ? fixedVthDacVal : disabledDacValue));
+            }
         }
         {
             std::ostringstream oss;
@@ -549,7 +610,12 @@ TEST_CASE("pumpprobe", "[.cmd]") {
             REQUIRE(oss.str() == "pumpprobe 0\n");
         }
         for (int i = 0; i != det.size(); ++i) {
+            det.setCounterMask(prev_mask[i], {i});
             det.setPumpProbe(prev_val[i], {i});
+            det.setInterpolation(prev_interpolation[i], {i});
+            det.setDAC(defs::VTH1, prev_vth1DacVal[i], 0, {i});
+            det.setDAC(defs::VTH2, prev_vth2DacVal[i], 0, {i});
+            det.setDAC(defs::VTH3, prev_vth3DacVal[i], 0, {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("pumpprobe", {}, -1, GET));
@@ -611,3 +677,5 @@ TEST_CASE("dpulse", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("dpulse", {}, -1, GET));
     }
 }
+
+} // namespace sls

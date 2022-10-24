@@ -7,6 +7,8 @@
 #include <qwt_plot_panner.h>
 #include <qwt_plot_zoomer.h>
 
+namespace sls {
+
 class SlsQt2DZoomer : public QwtPlotZoomer {
   private:
     SlsQt2DHist *hist;
@@ -39,5 +41,7 @@ class SlsQt2DZoomer : public QwtPlotZoomer {
         return text;
     }
 };
+
+} // namespace sls
 
 #endif

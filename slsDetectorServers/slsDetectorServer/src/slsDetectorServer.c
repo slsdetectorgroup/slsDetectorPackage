@@ -39,7 +39,7 @@ extern int masterCommandLine;
 #ifdef EIGERD
 extern int topCommandLine;
 #endif
-int portno = DEFAULT_PORTNO;
+int portno = DEFAULT_TCP_CNTRL_PORTNO;
 
 void error(char *msg) { perror(msg); }
 
@@ -215,8 +215,7 @@ int main(int argc, char *argv[]) {
             break;
 
         case 'm':
-#if (defined(MYTHEN3D) || defined(GOTTHARDD) || defined(GOTTHARD2D)) &&        \
-    !defined(VIRTUAL)
+#if !defined(VIRTUAL) && !defined(EIGERD)
             LOG(logERROR, ("Cannot set master via the detector server for this "
                            "detector\n"));
             exit(EXIT_FAILURE);

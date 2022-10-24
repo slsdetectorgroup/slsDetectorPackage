@@ -5,7 +5,7 @@
 #include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API 0x181130
-#define REQRD_FRMWR_VRSN        0x201005
+#define REQRD_FRMWR_VRSN        0x220825
 
 #define LINKED_SERVER_NAME "ctbDetectorServer"
 

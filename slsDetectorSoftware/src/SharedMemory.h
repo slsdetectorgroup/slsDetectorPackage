@@ -13,25 +13,22 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 
-// #include "stdlib.h"
+#include <cerrno> // errno
 #include <cstdlib>
-#include <cerrno>  // errno
 #include <cstring> // strerror
 #include <fcntl.h> // O_CREAT, O_TRUNC..
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <sys/mman.h> // shared memory
 #include <sys/stat.h> // fstat
 #include <unistd.h>
 
+namespace sls {
+
 #define SHM_DETECTOR_PREFIX "/slsDetectorPackage_detector_"
 #define SHM_MODULE_PREFIX   "_module_"
 #define SHM_ENV_NAME        "SLSDETNAME"
-
-#include <iostream>
-#include <string>
-
-namespace sls {
 
 template <typename T> class SharedMemory {
     static constexpr int NAME_MAX_LENGTH = 255;
@@ -101,14 +98,15 @@ template <typename T> class SharedMemory {
         LOG(logINFO) << "Shared memory created " << name;
     }
 
-    void openSharedMemory() {
+    void openSharedMemory(bool verifySize) {
         int fd = shm_open(name.c_str(), O_RDWR, 0);
         if (fd < 0) {
             std::string msg = "Open existing shared memory " + name +
                               " failed: " + strerror(errno);
             throw SharedMemoryError(msg);
         }
-        checkSize(fd);
+        if (verifySize)
+            checkSize(fd);
         shared_struct = mapSharedMemory(fd);
     }
 

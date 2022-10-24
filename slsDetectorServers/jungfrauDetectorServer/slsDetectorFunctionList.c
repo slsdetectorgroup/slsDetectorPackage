@@ -67,14 +67,9 @@ void basictests() {
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
     LOG(logINFOBLUE, ("******** Jungfrau Virtual Server *****************\n"));
-    if (mapCSP0() == FAIL) {
-        strcpy(initErrorMessage,
-               "Could not map to memory. Dangerous to continue.\n");
-        LOG(logERROR, (initErrorMessage));
-        initError = FAIL;
-    }
-    return;
 #else
+    LOG(logINFOBLUE, ("************ Jungfrau Server *********************\n"));
+
     initError = defineGPIOpins(initErrorMessage);
     if (initError == FAIL) {
         return;
@@ -83,14 +78,14 @@ void basictests() {
     if (initError == FAIL) {
         return;
     }
+#endif
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
                "Could not map to memory. Dangerous to continue.\n");
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
+        LOG(logERROR, (initErrorMessage));
         initError = FAIL;
-        return;
     }
-
+#ifndef VIRTUAL
     // does check only if flag is 0 (by default), set by command line
     if ((!debugflag) && (!updateFlag) &&
         ((checkType() == FAIL) || (testFpga() == FAIL) ||
@@ -101,7 +96,7 @@ void basictests() {
         initError = FAIL;
         return;
     }
-
+#endif
     uint16_t hversion = getHardwareVersionNumber();
     uint16_t hsnumber = getHardwareSerialNumber();
     uint32_t ipadd = getDetectorIP();
@@ -135,6 +130,7 @@ void basictests() {
          (long long int)sw_fw_apiversion, requiredFirmwareVersion,
          (long long int)client_sw_apiversion));
 
+#ifndef VIRTUAL
     // return if flag is not zero, debug mode
     if (debugflag || updateFlag) {
         return;
@@ -432,7 +428,13 @@ void setupDetector() {
     setupUDPCommParameters();
 #endif
 
+    // altera pll
+    ALTERA_PLL_SetDefines(
+        PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK,
+        PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
+        PLL_CNTRL_ADDR_OFST, PLL_CNTRL_DBIT_WR_PRMTR_MSK, DBIT_CLK_INDEX);
     ALTERA_PLL_ResetPLL();
+
     resetCore();
     resetPeripheral();
     cleanFifos();
@@ -459,12 +461,6 @@ void setupDetector() {
     LTC2620_Disable();
     LTC2620_Configure();
     resetToDefaultDacs(0);
-
-    // altera pll
-    ALTERA_PLL_SetDefines(
-        PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK,
-        PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
-        PLL_CNTRL_ADDR_OFST, PLL_CNTRL_DBIT_WR_PRMTR_MSK, DBIT_CLK_INDEX);
 
     /* Only once at server startup */
     bus_w(DAQ_REG, 0x0);
@@ -765,6 +761,15 @@ int readConfigFile() {
             }
 
             setChipVersion(version);
+        }
+
+        // other commands
+        else {
+            sprintf(initErrorMessage,
+                    "Could not scan command from on-board server "
+                    "config file. Line:[%s].\n",
+                    line);
+            break;
         }
 
         memset(line, 0, LZ);
@@ -1338,6 +1343,55 @@ int setHighVoltage(int val) {
 }
 
 /* parameters - timing, extsig */
+
+int setMaster(enum MASTERINDEX m) {
+    char *master_names[] = {MASTER_NAMES};
+    LOG(logINFOBLUE, ("Setting up as %s in (%s server)\n", master_names[m],
+                      (isControlServer ? "control" : "stop")));
+    int retval = -1;
+    switch (m) {
+    case OW_MASTER:
+        bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_MASTER_MSK);
+        isMaster(&retval);
+        if (retval != 1) {
+            LOG(logERROR, ("Could not set master\n"));
+            return FAIL;
+        }
+        break;
+    case OW_SLAVE:
+        bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_MASTER_MSK);
+        isMaster(&retval);
+        if (retval != 0) {
+            LOG(logERROR, ("Could not set slave\n"));
+            return FAIL;
+        }
+        break;
+    default:
+        LOG(logERROR, ("Cannot reset to hardware settings from client. Restart "
+                       "detector server.\n"));
+        return FAIL;
+    }
+    return OK;
+}
+
+int isMaster(int *retval) {
+    *retval =
+        ((bus_r(CONTROL_REG) & CONTROL_MASTER_MSK) >> CONTROL_MASTER_OFST);
+    return OK;
+}
+
+int getSynchronization() {
+    return ((bus_r(EXT_SIGNAL_REG) & EXT_SYNC_MSK) >> EXT_SYNC_OFST);
+}
+
+void setSynchronization(int enable) {
+    LOG(logINFOBLUE,
+        ("%s Synchronization\n", (enable ? "Enabling" : "Disabling")));
+    if (enable)
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SYNC_MSK);
+    else
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SYNC_MSK);
+}
 
 void setTiming(enum timingMode arg) {
     switch (arg) {
@@ -2526,13 +2580,21 @@ void *start_timer(void *arg) {
     {
         const int npixels = (NCHAN * NCHIP);
         const int pixelsPerPacket = dataSize / NUM_BYTES_PER_PIXEL;
+        int dataVal = 0;
+        int gainVal = 0;
         int pixelVal = 0;
         for (int i = 0; i < npixels; ++i) {
-            // avoiding gain also being divided when gappixels enabled in call
-            // back
-            if (i > 0 && i % pixelsPerPacket == 0) {
-                ++pixelVal;
+            if (i % pixelsPerPacket == 0) {
+                ++dataVal;
             }
+            if ((i % 1024) < 300) {
+                gainVal = 1;
+            } else if ((i % 1024) < 600) {
+                gainVal = 2;
+            } else {
+                gainVal = 3;
+            }
+            pixelVal = (dataVal & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
 // to debug multi module geometry (row, column) in virtual servers (all pixels
 // in a module set to particular value)
 #ifdef TEST_MOD_GEOMETRY
@@ -2658,7 +2720,7 @@ void *start_timer(void *arg) {
     }
 
     sharedMemory_setStatus(IDLE);
-    LOG(logINFOBLUE, ("Finished Acquiring\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
     return NULL;
 }
 #endif
@@ -2684,9 +2746,33 @@ int stopStateMachine() {
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_STOP_ACQ_MSK);
 
     LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
+    return OK;
+}
 
-    usleep(100 * 1000);
-    resetCore();
+int softwareTrigger(int block) {
+#ifndef VIRTUAL
+    // ready for trigger
+    if (getRunStatus() != WAITING) {
+        LOG(logWARNING, ("Not yet ready for trigger!\n"));
+        return 0;
+    }
+#endif
+
+    LOG(logINFO, ("Sending Software Trigger\n"));
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_SOFTWARE_TRIGGER_MSK);
+
+#ifndef VIRTUAL
+    // block till frame is sent out
+    if (block) {
+        enum runStatus s = getRunStatus();
+        while (s == RUNNING || s == TRANSMITTING) {
+            usleep(5000);
+            s = getRunStatus();
+        }
+    }
+    LOG(logINFO, ("Ready for Next Trigger...\n"));
+#endif
+
     return OK;
 }
 
@@ -2746,26 +2832,17 @@ enum runStatus getRunStatus() {
     return s;
 }
 
-void readFrame(int *ret, char *mess) {
-    // wait for status to be done
+void waitForAcquisitionEnd() {
     while (runBusy()) {
         usleep(500);
     }
-#ifdef VIRTUAL
-    LOG(logINFOGREEN, ("acquisition successfully finished\n"));
-    return;
-#endif
-
-    *ret = (int)OK;
-    // frames left to give status
+#ifndef VIRTUAL
     int64_t retval = getNumFramesLeft() + 1;
-
     if (retval > 0) {
-        LOG(logERROR, ("No data and run stopped: %lld frames left\n",
-                       (long long int)retval));
-    } else {
-        LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+        LOG(logINFORED, ("%lld frames left\n", (long long int)retval));
     }
+#endif
+    LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
 u_int32_t runBusy() {

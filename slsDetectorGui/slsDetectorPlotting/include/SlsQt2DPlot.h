@@ -3,13 +3,17 @@
 #pragma once
 #include "SlsQt2DHist.h"
 #include "SlsQt2DZoomer.h"
+#include <array>
 #include <qlist.h>
 #include <qwt_plot.h>
+#include <qwt_plot_shapeitem.h>
 #include <qwt_plot_spectrogram.h>
 
 class QwtPlotPanner;
 class QwtScaleWidget;
 class QwtLinearColorMap;
+
+namespace sls {
 
 class SlsQt2DPlot : public QwtPlot {
     Q_OBJECT
@@ -67,9 +71,18 @@ class SlsQt2DPlot : public QwtPlot {
     void SetLogz(bool enable, bool isMin, bool isMax, double min, double max);
     void SetZRange(bool isMin, bool isMax, double min, double max);
     void LogZ(bool on = 1);
+    void EnableRoiBox(std::array<int, 4> roi);
+    void DisableRoiBox();
 
   public slots:
     void showSpectrogram(bool on);
+    void SetZoom(const QRectF &rect);
+
+  private slots:
+    void GetPannedCoord(int, int);
+
+  signals:
+    void PlotZoomedSignal(const QRectF &);
 
   private:
     void SetupZoom();
@@ -86,4 +99,7 @@ class SlsQt2DPlot : public QwtPlot {
     QList<double> contourLevelsLog;
     bool disableZoom{false};
     int isLog;
+    QwtPlotShapeItem *roiBox{nullptr};
 };
+
+} // namespace sls

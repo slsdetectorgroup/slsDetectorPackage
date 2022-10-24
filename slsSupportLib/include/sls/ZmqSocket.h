@@ -9,18 +9,28 @@
  *@short functions to open/close zmq sockets
  */
 
+#include "sls/container_utils.h"
 #include "sls/sls_detector_exceptions.h"
+
+#include <map>
+#include <memory>
+
+// Selective suppression of  warning in gcc,
+// showed up in gcc 12 and at the moment
+// no upgrade is available to rapidjson
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <rapidjson/document.h> //json header in zmq stream
+#pragma GCC diagnostic pop
+
+#include <zmq.h>
+
+namespace sls {
 
 #define MAX_STR_LENGTH 1000
-
 // #define ZMQ_DETAIL
 #define ROIVERBOSITY
 
-class zmq_msg_t;
-#include "sls/container_utils.h"
-#include <map>
-#include <memory>
 /** zmq header structure */
 struct zmqHeader {
     /** true if incoming data, false if end of acquisition */
@@ -221,6 +231,7 @@ class ZmqSocket {
     /** Socket descriptor */
     mySocketDescriptors sockfd;
 
-    std::unique_ptr<char[]> header_buffer =
-        sls::make_unique<char[]>(MAX_STR_LENGTH);
+    std::unique_ptr<char[]> header_buffer = make_unique<char[]>(MAX_STR_LENGTH);
 };
+
+} // namespace sls

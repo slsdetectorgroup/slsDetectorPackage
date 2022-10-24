@@ -17,12 +17,6 @@ if [ $# -eq 3 ]; then
     API_BRANCH=$3
 fi
 
-if [ -z "$API_BRANCH" ]; then
-    echo "ITs emptttttttttttttttttttttyyyyyyy"
-else
-    echo "ITs nooooooooooot empty"
-fi
-
 #go to directory
 cd $API_DIR
 
@@ -35,22 +29,32 @@ if [ "$NUM" -gt 0 ]; then
     sed -i ${NUM}d $API_FILE
 fi
 
-#find new API date
-API_DATE="find .  -printf \"%T@ %CY-%Cm-%Cd\n\"| sort -nr | cut -d' ' -f2- | egrep -v '(\.)o' | head -n 1"
 
-API_DATE=`eval $API_DATE`
+API_VAL=""
+# API_BRANCH is not defined (use date for developer)
+if [ -z "$API_BRANCH" ]; then
 
-API_DATE=$(sed "s/-//g" <<< $API_DATE | awk '{print $1;}' ) 
+    #find new API date
+    API_DATE="find .  -printf \"%T@ %CY-%Cm-%Cd\n\"| sort -nr | cut -d' ' -f2- | egrep -v '(\.)o' | head -n 1"
 
-#extracting only date
-API_DATE=${API_DATE:2:6}
+    API_DATE=`eval $API_DATE`
 
-#prefix of 0x
-API_DATE=${API_DATE/#/0x}
-echo "date="$API_DATE
+    API_DATE=$(sed "s/-//g" <<< $API_DATE | awk '{print $1;}' ) 
+
+    #extracting only date
+    API_DATE=${API_DATE:2:6}
+
+    #prefix of 0x
+    API_DATE=${API_DATE/#/0x}
+    echo "date="$API_DATE
+    API_VAL+=API_DATE
+else
+    #API_BRANCH is defined (3rd argument)
+    API_VAL+=API_BRANCH
+fi
 
 #copy it to versionAPI.h
-echo "#define "$API_NAME $API_DATE >> $API_FILE
+echo "#define "$API_NAME $API_VAL >> $API_FILE
 
 #go back to original directory
 cd $CURR_DIR

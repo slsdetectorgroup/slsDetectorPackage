@@ -25,10 +25,11 @@ version: clean versioning $(PROGS)
 
 boot: $(OBJS) 
 
+version_branch=APIBRANCH
 version_name=APICTB
 version_path=slsDetectorServers/ctbDetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; ./updateAPIVersion.sh $(version_name) $(version_path);  tput sgr0;`
+	cd ../../ && echo $(PWD) && echo `tput setaf 6; ./updateAPIVersion.sh $(version_name) $(version_path) $version_branch;  tput sgr0;`
 
 
 $(PROGS): $(OBJS)

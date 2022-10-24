@@ -12,6 +12,12 @@ API_DIR=$PACKAGE_DIR/$2
 API_FILE=$PACKAGE_DIR/slsSupportLib/include/sls/versionAPI.h
 CURR_DIR=$PWD
 
+API_BRANCH=""
+if [ $# -eq 3 ]; then
+    API_BRANCH=$3
+    echo "branch got is ="$API_BRANCH
+fi
+
 #go to directory
 cd $API_DIR
 

@@ -208,7 +208,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
  */
 
     int getFrameNumber(char *buff) {
-        return ((sls_receiver_header *)buff)->detHeader.frameNumber;
+      return ((sls::defs::sls_receiver_header *)buff)->detHeader.frameNumber;
     }
 
     /**
@@ -221,7 +221,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 
     */
     int getPacketNumber(char *buff) {
-        return ((sls_receiver_header  *)buff)->detHeader.packetNumber;
+      return ((sls::defs::sls_receiver_header  *)buff)->detHeader.packetNumber;
     }
 
     char *readNextFrame(std::ifstream &filebin) override {

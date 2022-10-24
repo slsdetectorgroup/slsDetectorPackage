@@ -34,6 +34,10 @@ add_executable(moench04RawDataProcess moenchRawDataProcess.cpp)
 target_compile_definitions(moench04RawDataProcess PRIVATE  MOENCH04)
 list(APPEND MOENCH_EXECUTABLES moench04RawDataProcess)
 
+add_executable(moench04RawDataProcessDGS moenchRawDataProcess.cpp)
+target_compile_definitions(moench04RawDataProcess PRIVATE  MOENCH04_DGS MOENCH04)
+list(APPEND MOENCH_EXECUTABLES moench04RawDataProcessDGS)
+
 #interpolation stuff
 
 add_executable(moench03MakeEta moench03Interpolation.cpp)

@@ -2,7 +2,36 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #ifndef MOENCH03T1RECDATANEW_H
 #define MOENCH03T1RECDATANEW_H
+//#define MYROOT
+
+#ifndef MYROOT
 #include "sls/sls_detector_defs.h"
+#endif
+#ifdef MYROOT
+
+    typedef struct {
+        uint64_t frameNumber;
+        uint32_t expLength;
+        uint32_t packetNumber;
+        uint64_t bunchId;
+        uint64_t timestamp;
+        uint16_t modId;
+        uint16_t row;
+        uint16_t column;
+        uint16_t reserved;
+        uint32_t debug;
+        uint16_t roundRNumber;
+        uint8_t detType;
+        uint8_t version;
+    } sls_detector_header;
+#define MAX_NUM_PACKETS 512
+// using sls_bitset = std::bitset<MAX_NUM_PACKETS>;
+//  using bitset_storage = uint8_t[MAX_NUM_PACKETS / 8];
+  struct sls_receiver_header {
+        sls_detector_header detHeader; /**< is the detector header */
+        uint8_t packetsMask[64];        /**< is the packets caught bit mask */
+    };
+#endif
 #include "slsDetectorData.h"
 
 class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
@@ -17,8 +46,12 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
     double ghost[200][25];
 
     // Single point of definition if we need to customize
+#ifndef MYROOT
     using header = sls::defs::sls_receiver_header;
-
+#endif
+#ifdef MYROOT
+    sls_receiver_header header;
+#endif
   public:
     /**
        Implements the slsReceiverData structure for the moench02 prototype read
@@ -47,7 +80,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
         int npackets = 40;
         int i;
         int adc4(0);
-
+	int off=sizeof(header);
         for (int ip = 0; ip < npackets; ip++) {
             for (int is = 0; is < 128; is++) {
 
@@ -62,13 +95,13 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
                         } else {
                             row = 200 + i / sc_width;
                         }
-                        dataMap[row][col] = sizeof(header) +
+                        dataMap[row][col] = off +
                                             (nadc * i + iadc) * 2; //+16*(ip+1);
 #ifdef HIGHZ
                         dataMask[row][col] = 0x3fff; // invert data
 #endif
                         if (dataMap[row][col] < 0 ||
-                            dataMap[row][col] >= nSamples * 2 * 32)
+                            dataMap[row][col] >= off + nSamples * 2 * 32)
                             std::cout << "Error: pointer " << dataMap[row][col]
                                       << " out of range " << std::endl;
                     }
@@ -88,7 +121,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
             xmap[ibyte] = -1;
             ymap[ibyte] = -1;
         }
-        int off = sizeof(header) / 2;
+        off = sizeof(header) / 2;
         for (ipacket = 0; ipacket < npackets; ipacket++) {
             for (ibyte = 0; ibyte < 8192 / 2; ibyte++) {
                 i = ipacket * 8208 / 2 + ibyte;
@@ -175,7 +208,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
  */
 
     int getFrameNumber(char *buff) {
-        return ((header *)buff)->detHeader.frameNumber;
+        return ((sls_receiver_header *)buff)->detHeader.frameNumber;
     }
 
     /**
@@ -188,7 +221,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 
     */
     int getPacketNumber(char *buff) {
-        return ((header *)buff)->detHeader.packetNumber;
+        return ((sls_receiver_header  *)buff)->detHeader.packetNumber;
     }
 
     char *readNextFrame(std::ifstream &filebin) override {

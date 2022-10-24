@@ -12,7 +12,6 @@ if [ $# -eq 0 ]; then
 else
 	declare -a det=("${1}")
 	branch+=$2
-	echo "braaaaaaaaaaanch:"$branch
 fi
 
 declare -a deterror=("OK" "OK" "OK" "OK" "OK" "OK")

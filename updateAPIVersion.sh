@@ -15,7 +15,12 @@ CURR_DIR=$PWD
 API_BRANCH=""
 if [ $# -eq 3 ]; then
     API_BRANCH=$3
-    echo -e "branch got is ="$API_BRANCH
+fi
+
+if [ -z "$API_BRANCH" ]; then
+    echo "ITs emptttttttttttttttttttttyyyyyyy"
+else
+    echo "ITs nooooooooooot empty"
 fi
 
 #go to directory

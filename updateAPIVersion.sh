@@ -29,29 +29,33 @@ if [ "$NUM" -gt 0 ]; then
     sed -i ${NUM}d $API_FILE
 fi
 
+#find new API date
+API_DATE="find .  -printf \"%T@ %CY-%Cm-%Cd\n\"| sort -nr | cut -d' ' -f2- | egrep -v '(\.)o' | head -n 1"
+
+API_DATE=`eval $API_DATE`
+
+API_DATE=$(sed "s/-//g" <<< $API_DATE | awk '{print $1;}' ) 
+
+#extracting only date
+API_DATE=${API_DATE:2:6}
+
+#prefix of 0x
+API_DATE=${API_DATE/#/0x}
+echo "date="$API_DATE
+
+
 
 API_VAL=""
-# API_BRANCH is not defined (use date for developer)
+
+# API_BRANCH is not defined (default is developer)
 if [ -z "$API_BRANCH" ]; then
-
-    #find new API date
-    API_DATE="find .  -printf \"%T@ %CY-%Cm-%Cd\n\"| sort -nr | cut -d' ' -f2- | egrep -v '(\.)o' | head -n 1"
-
-    API_DATE=`eval $API_DATE`
-
-    API_DATE=$(sed "s/-//g" <<< $API_DATE | awk '{print $1;}' ) 
-
-    #extracting only date
-    API_DATE=${API_DATE:2:6}
-
-    #prefix of 0x
-    API_DATE=${API_DATE/#/0x}
-    echo "date="$API_DATE
-    API_VAL+=$API_DATE
+    echo "branch=developer"
+    API_VAL+="developer $API_DATE"
 else
     #API_BRANCH is defined (3rd argument)
     echo "branch="$API_BRANCH
-    API_VAL+="\"$API_BRANCH\""
+    API_VAL+="$API_BRANCH $API_DATE"
+    #API_VAL+="\"$API_BRANCH\""
 fi
 
 #copy it to versionAPI.h

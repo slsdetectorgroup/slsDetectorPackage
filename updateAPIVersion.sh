@@ -12,11 +12,6 @@ API_DIR=$PACKAGE_DIR/$2
 API_FILE=$PACKAGE_DIR/slsSupportLib/include/sls/versionAPI.h
 CURR_DIR=$PWD
 
-API_BRANCH=""
-if [ $# -eq 3 ]; then
-    API_BRANCH=$3
-fi
-
 #go to directory
 cd $API_DIR
 
@@ -46,15 +41,15 @@ echo "date="$API_DATE
 
 # API_VAL concatenates branch and date
 API_VAL=""
-# API_BRANCH is not defined (default is developer)
-if [ -z "$API_BRANCH" ]; then
-    echo "branch=developer"
-    API_VAL+="\"developer $API_DATE\""
-else
-    #API_BRANCH is defined (3rd argument)
+# API branch is defined (3rd argument)
+if [ $# -eq 3 ]; then
+    API_BRANCH=$3
     echo "branch="$API_BRANCH
     API_VAL+="\"$API_BRANCH $API_DATE\""
-    #API_VAL+="\"$API_BRANCH\""
+else
+    # API branch not defined (default is developer)
+    echo "branch=developer"
+    API_VAL+="\"developer $API_DATE\""
 fi
 
 #copy it to versionAPI.h

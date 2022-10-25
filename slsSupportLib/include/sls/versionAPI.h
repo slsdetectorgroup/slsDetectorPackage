@@ -10,5 +10,4 @@
 #define APICTB       "developer 0x221025"
 #define APILIB       "6.2.0.5 0x221024"
 #define APIRECEIVER  "6.3.0 0x221024"
-#define APIGUI       "developer 0x221018"
 #define APIEIGER     "sdf 0x221025"

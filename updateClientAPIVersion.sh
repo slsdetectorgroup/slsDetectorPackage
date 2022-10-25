@@ -3,9 +3,8 @@
 branch=""
 client_list=("slsDetectorSoftware" 
 	"slsReceiverSoftware" 
-	"slsDetectorGui"
 	)
-usage="\nUsage: updateClientAPI.sh [all|slsDetectorSoftware|slsReceiverSoftware|slsDetectorGui] [branch]. \n\tNo arguments means all with 'developer' branch. \n\tNo 'branch' input means 'developer branch'"
+usage="\nUsage: updateClientAPI.sh [all|slsDetectorSoftware|slsReceiverSoftware] [branch]. \n\tNo arguments means all with 'developer' branch. \n\tNo 'branch' input means 'developer branch'"
 
 # arguments
 if [ $# -eq 0 ]; then
@@ -49,9 +48,6 @@ do
 		slsReceiverSoftware)
 			declare -a name=APIRECEIVER
 			;;
-		slsDetectorGui)
-			declare -a name=APIGUI
-			;;
 		*)
 			echo -n "unknown client argument"
 			return -1
@@ -60,16 +56,4 @@ do
 	echo -e "Versioning $dir [$name]"
 	./updateAPIVersion.sh $name $dir $branch
 done
-
-#declare -a arraydirs=($LIB_DIR $RXR_DIR $GUI_DIR)
-#declare -a arraynames=("APILIB" "APIRECEIVER" "APIGUI")
-
-#arraylength=3
-#for (( i=0; i<${arraylength}; ++i ));
-#do
-#	./updateAPIVersion.sh ${arraynames[$i]} ${arraydirs[$i]}
-#done
-
-
-
 

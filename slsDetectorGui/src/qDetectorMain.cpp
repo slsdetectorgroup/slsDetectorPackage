@@ -30,7 +30,6 @@ int main(int argc, char **argv) {
     // options
     std::string fname;
     bool isDeveloper = false;
-    int64_t tempval = 0;
     int multiId = 0;
 
     // parse command line for config
@@ -72,9 +71,7 @@ int main(int argc, char **argv) {
             break;
 
         case 'v':
-            tempval = APIGUI;
-            LOG(sls::logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x"
-                              << std::hex << tempval << ")";
+            LOG(sls::logINFO) << "SLS Detector GUI " << API_LIB;
             return 0;
 
         case 'h':
@@ -463,7 +460,7 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
         LOG(logINFO) << "About Common GUI for Jungfrau, Eiger, Mythen3, "
                         "Gotthard, Gotthard2 and Moench detectors";
 
-        std::string guiVersion = ToStringHex(APIGUI);
+        std::string guiVersion = APILIB;
         std::string clientVersion = "unknown";
         try {
             clientVersion = ToStringHex(det->getClientVersion());

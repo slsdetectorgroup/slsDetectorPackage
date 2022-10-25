@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-#require 2 arguments, API_NAME API_DIR (relative to package)
+usage="\nUsage: updateAPIVersion.sh [API_NAME] [API_DIR] [API_BRANCH(opt)]."
+
 if [ $# -lt 2 ]; then
-    echo "Wrong usage of updateVersion.sh. Requires atleast 2 arguments [API_NAME, API_DIR]"
+    echo -e "Requires atleast 2 arguments. $usage"
     return [-1]
 fi
 
@@ -11,6 +12,11 @@ PACKAGE_DIR=$PWD
 API_DIR=$PACKAGE_DIR/$2
 API_FILE=$PACKAGE_DIR/slsSupportLib/include/sls/versionAPI.h
 CURR_DIR=$PWD
+
+if [ ! -d "$API_DIR" ]; then
+    echo "[API_DIR] does not exist. $usage"
+    return [-1]
+fi
 
 #go to directory
 cd $API_DIR

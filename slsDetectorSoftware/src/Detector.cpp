@@ -9,6 +9,7 @@
 #include "DetectorImpl.h"
 #include "Module.h"
 #include "sls/Pattern.h"
+#include "sls/Version.h"
 #include "sls/container_utils.h"
 #include "sls/file_utils.h"
 #include "sls/logger.h"
@@ -114,7 +115,10 @@ int Detector::getShmId() const { return pimpl->getDetectorIndex(); }
 
 std::string Detector::getPackageVersion() const { return RELEASE; }
 
-std::string Detector::getClientVersion() const { return APILIB; }
+std::string Detector::getClientVersion() const {
+    Version v(APILIB);
+    return v.concise();
+}
 
 Result<int64_t> Detector::getFirmwareVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getFirmwareVersion, pos);

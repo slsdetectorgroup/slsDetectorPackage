@@ -4099,41 +4099,6 @@ int initial_checks(int file_des) {
             LOG(logERROR, (mess));
         }
     }
-
-    /*
-        if (ret == OK) {
-            LOG(logDEBUG1,
-                ("Checking versioning compatibility with value 0x%llx\n", arg));
-
-            int64_t client_requiredVersion = arg;
-            int64_t det_apiVersion = getClientServerAPIVersion();
-            int64_t det_version = getServerVersion();
-
-            // old client
-            if (det_apiVersion > client_requiredVersion) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Client's detector SW API version: (0x%llx). "
-                        "Detector's SW API Version: (0x%llx). "
-                        "Incompatible, update client!\n",
-                        (long long int)client_requiredVersion,
-                        (long long int)det_apiVersion);
-                LOG(logERROR, (mess));
-            }
-
-            // old software
-            else if (client_requiredVersion > det_version) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Detector SW Version: (0x%llx). "
-                        "Client's detector SW API Version: (0x%llx). "
-                        "Incompatible, update detector software!\n",
-                        (long long int)det_version,
-                        (long long int)client_requiredVersion);
-                LOG(logERROR, (mess));
-            }
-        }
-        */
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 

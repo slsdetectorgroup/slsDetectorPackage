@@ -44,13 +44,12 @@ API_DATE=${API_DATE/#/0x}
 echo "date="$API_DATE
 
 
-
+# API_VAL concatenates branch and date
 API_VAL=""
-
 # API_BRANCH is not defined (default is developer)
 if [ -z "$API_BRANCH" ]; then
     echo "branch=developer"
-    API_VAL+="developer $API_DATE"
+    API_VAL+="\"developer $API_DATE\""
 else
     #API_BRANCH is defined (3rd argument)
     echo "branch="$API_BRANCH

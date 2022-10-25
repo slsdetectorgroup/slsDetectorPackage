@@ -84,7 +84,7 @@ int updateModeAllowedFunction(int file_des) {
         F_EXEC_COMMAND,           F_GET_DETECTOR_TYPE,  F_GET_FIRMWARE_VERSION,
         F_GET_SERVER_VERSION,     F_GET_SERIAL_NUMBER,  F_WRITE_REGISTER,
         F_READ_REGISTER,          F_LOCK_SERVER,        F_GET_LAST_CLIENT_IP,
-        F_PROGRAM_FPGA,           F_RESET_FPGA,         F_CHECK_VERSION,
+        F_PROGRAM_FPGA,           F_RESET_FPGA,         F_INITIAL_CHECKS,
         F_REBOOT_CONTROLLER,      F_GET_KERNEL_VERSION, F_UPDATE_KERNEL,
         F_UPDATE_DETECTOR_SERVER, F_GET_UPDATE_MODE,    F_SET_UPDATE_MODE,
         F_GET_NUM_CHANNELS,       F_GET_NUM_INTERFACES, F_ACTIVATE};
@@ -303,7 +303,7 @@ void function_table() {
     flist[F_TEMP_EVENT] = &temp_event;
     flist[F_AUTO_COMP_DISABLE] = &auto_comp_disable;
     flist[F_STORAGE_CELL_START] = &storage_cell_start;
-    flist[F_CHECK_VERSION] = &check_version;
+    flist[F_INITIAL_CHECKS] = &initial_checks;
     flist[F_SOFTWARE_TRIGGER] = &software_trigger;
     flist[F_LED] = &led;
     flist[F_DIGITAL_IO_DELAY] = &digital_io_delay;
@@ -740,7 +740,7 @@ int get_server_version(int file_des) {
     char retvals[MAX_STR_LENGTH];
     memset(retvals, 0, MAX_STR_LENGTH);
     getServerVersion(retvals);
-    LOG(logINFORED, ("server version retval: %s\n", retvals));
+    LOG(logDEBUG1, ("server version retval: %s\n", retvals));
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
@@ -4071,13 +4071,9 @@ int storage_cell_start(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int check_version(int file_des) {
+int initial_checks(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int64_t arg = -1;
-
-    if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
-        return printSocketReadError();
 
     // check software- firmware compatibility and basic tests
     LOG(logDEBUG1, ("Checking software-firmware compatibility and basic "

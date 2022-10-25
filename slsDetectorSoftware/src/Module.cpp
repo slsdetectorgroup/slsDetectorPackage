@@ -4,6 +4,7 @@
 #include "SharedMemory.h"
 #include "sls/ClientSocket.h"
 #include "sls/ToString.h"
+#include "sls/Version.h"
 #include "sls/bit_utils.h"
 #include "sls/container_utils.h"
 #include "sls/file_utils.h"
@@ -72,6 +73,7 @@ void Module::setHostname(const std::string &hostname,
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.close();
     try {
+        initialDetectorServerChecks();
         checkDetectorVersionCompatibility();
         LOG(logINFO) << "Module Version Compatibility - Success";
     } catch (const DetectorError &e) {
@@ -90,16 +92,28 @@ int64_t Module::getFirmwareVersion() const {
     return sendToDetector<int64_t>(F_GET_FIRMWARE_VERSION);
 }
 
-std::string Module::getDetectorServerVersion() const {
+std::string Module::getControlServerLongVersion() const {
     char retval[MAX_STR_LENGTH]{};
     sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);
     return retval;
 }
 
+std::string Module::getStopServerLongVersion() const {
+    char retval[MAX_STR_LENGTH]{};
+    sendToDetectorStop(F_GET_SERVER_VERSION, nullptr, retval);
+    return retval;
+}
+
+std::string Module::getDetectorServerVersion() const {
+    Version v(getControlServerLongVersion());
+    return v.concise();
+}
+
 std::string Module::getKernelVersion() const {
     char retval[MAX_STR_LENGTH]{};
     sendToDetector(F_GET_KERNEL_VERSION, nullptr, retval);
-    return retval;
+    Version v(getReceiverLongVersion());
+    return v.concise();
 }
 
 int64_t Module::getSerialNumber() const {
@@ -108,11 +122,16 @@ int64_t Module::getSerialNumber() const {
 
 int Module::getModuleId() const { return sendToDetector<int>(F_GET_MODULE_ID); }
 
+std::string Module::getReceiverLongVersion() const {
+    char retval[MAX_STR_LENGTH]{};
+    sendToReceiver(F_GET_RECEIVER_VERSION, nullptr, retval);
+    return retval;
+}
+
 std::string Module::getReceiverSoftwareVersion() const {
     if (shm()->useReceiverFlag) {
-        char retval[MAX_STR_LENGTH]{};
-        sendToReceiver(F_GET_RECEIVER_VERSION, nullptr, retval);
-        return retval;
+        Version v(getReceiverLongVersion());
+        return v.concise();
     }
     return std::string();
 }
@@ -1283,7 +1302,8 @@ std::string Module::getReceiverHostname() const {
     return std::string(shm()->rxHostname);
 }
 
-void Module::setReceiverHostname(const std::string &receiverIP) {
+void Module::setReceiverHostname(const std::string &receiverIP,
+                                 const bool initialChecks) {
     LOG(logDEBUG1) << "Setting up Receiver hostname with " << receiverIP;
 
     if (getRunStatus() == RUNNING) {
@@ -1307,8 +1327,17 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
     }
     strcpy_safe(shm()->rxHostname, host.c_str());
     shm()->useReceiverFlag = true;
-    checkReceiverVersionCompatibility();
 
+    try {
+        checkReceiverVersionCompatibility();
+        LOG(logINFO) << "Receiver Version Compatibility - Success";
+    } catch (const RuntimeError &e) {
+        if (!initialChecks) {
+            LOG(logWARNING) << "Bypassing Initial Checks at your own risk!";
+        } else {
+            throw;
+        }
+    }
     // populate parameters from detector
     rxParameters retval;
     sendToDetector(F_GET_RECEIVER_PARAMETERS, nullptr, retval);
@@ -3220,43 +3249,95 @@ void Module::initializeModuleStructure(detectorType type) {
     shm()->nDacs = parameters.nDacs;
 }
 
+void Module::initialDetectorServerChecks() {
+    sendToDetector(F_INITIAL_CHECKS);
+    sendToDetectorStop(F_INITIAL_CHECKS);
+}
+
 void Module::checkDetectorVersionCompatibility() {
-    /*
-    int64_t arg = 0;
+    std::string detServers[2] = {getControlServerLongVersion(),
+                                 getStopServerLongVersion()};
+    for (int i = 0; i != 2; ++i) {
+        // det and client (sem. versioning)
+        Version det(detServers[i]);
+        Version client(APILIB);
+        if (det.hasSemanticVersioning() && client.hasSemanticVersioning()) {
+            if (!det.isBackwardCompatible(client)) {
+                std::ostringstream oss;
+                oss << "Detector (" << (i == 0 ? "Control" : "Stop")
+                    << ") version (" << det.concise()
+                    << ") is incompatible with client version ("
+                    << client.concise() << "). Please update "
+                    << (det <= client ? "detector" : "client");
+                throw sls::RuntimeError(oss.str());
+            }
+        }
+        // comparing dates(exact match to expected)
+        else {
+            Version expectedDetector(getDetectorAPI());
+            if (det != expectedDetector) {
+                std::ostringstream oss;
+                oss << "Detector (" << (i == 0 ? "Control" : "Stop")
+                    << ") version (" << det.getDate()
+                    << ") is incompatible with client-detector API version ("
+                    << expectedDetector.getDate() << "). Please update "
+                    << (det <= expectedDetector ? "detector" : "client");
+                throw sls::RuntimeError(oss.str());
+            }
+        }
+        LOG(logDEBUG) << "Detector compatible";
+    }
+}
+
+const std::string Module::getDetectorAPI() const {
     switch (shm()->detType) {
     case EIGER:
-        arg = APIEIGER;
-        break;
+        return APIEIGER;
     case JUNGFRAU:
-        arg = APIJUNGFRAU;
-        break;
+        return APIJUNGFRAU;
     case GOTTHARD:
-        arg = APIGOTTHARD;
-        break;
+        return APIGOTTHARD;
     case CHIPTESTBOARD:
-        arg = APICTB;
-        break;
+        return APICTB;
     case MOENCH:
-        arg = APIMOENCH;
-        break;
+        return APIMOENCH;
     case MYTHEN3:
-        arg = APIMYTHEN3;
-        break;
+        return APIMYTHEN3;
     case GOTTHARD2:
-        arg = APIGOTTHARD2;
-        break;
+        return APIGOTTHARD2;
     default:
         throw NotImplementedError(
-            "Check version compatibility is not implemented for this detector");
+            "Detector type not implemented to get Detector API");
     }
-    sendToDetector(F_CHECK_VERSION, arg, nullptr);
-    sendToDetectorStop(F_CHECK_VERSION, arg, nullptr);
-    */
 }
 
 void Module::checkReceiverVersionCompatibility() {
-    // TODO! Verify that this works as intended when version don't match
-    sendToReceiver(F_RECEIVER_CHECK_VERSION, int64_t(APIRECEIVER), nullptr);
+    // rxr and client (sem. versioning)
+    Version rxr(getReceiverLongVersion());
+    Version client(APILIB);
+    if (rxr.hasSemanticVersioning() && client.hasSemanticVersioning()) {
+        if (!rxr.isBackwardCompatible(client)) {
+            std::ostringstream oss;
+            oss << "Receiver version (" << rxr.concise()
+                << ") is incompatible with client version (" << client.concise()
+                << "). Please update "
+                << (rxr <= client ? "receiver" : "client");
+            throw sls::RuntimeError(oss.str());
+        }
+    }
+    // comparing dates(exact match to expected)
+    else {
+        Version expectedReceiver(APIRECEIVER);
+        if (rxr != expectedReceiver) {
+            std::ostringstream oss;
+            oss << "Receiver version (" << rxr.getDate()
+                << ") is incompatible with client-receiver API version ("
+                << expectedReceiver.getDate() << "). Please update "
+                << (rxr <= expectedReceiver ? "receiver" : "client");
+            throw sls::RuntimeError(oss.str());
+        }
+    }
+    LOG(logDEBUG) << "Receiver compatible";
 }
 
 void Module::setModule(sls_detector_module &module, bool trimbits) {

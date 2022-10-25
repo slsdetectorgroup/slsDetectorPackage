@@ -180,7 +180,6 @@ int ClientInterface::functionTable(){
     flist[F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE]=   &ClientInterface::get_real_udp_socket_buffer_size;
     flist[F_SET_RECEIVER_FRAMES_PER_FILE]	=   &ClientInterface::set_frames_per_file;
     flist[F_GET_RECEIVER_FRAMES_PER_FILE]	=   &ClientInterface::get_frames_per_file;
-    flist[F_RECEIVER_CHECK_VERSION]			=   &ClientInterface::check_version_compatibility;
     flist[F_SET_RECEIVER_DISCARD_POLICY]	=   &ClientInterface::set_discard_policy;
     flist[F_GET_RECEIVER_DISCARD_POLICY]	=   &ClientInterface::get_discard_policy;
 	flist[F_SET_RECEIVER_PADDING]		    =   &ClientInterface::set_padding_enable;
@@ -1218,35 +1217,6 @@ int ClientInterface::get_frames_per_file(Interface &socket) {
     auto retval = static_cast<int>(impl()->getFramesPerFile());
     LOG(logDEBUG1) << "frames per file:" << retval;
     return socket.sendResult(retval);
-}
-
-int ClientInterface::check_version_compatibility(Interface &socket) {
-    auto arg = socket.Receive<int64_t>();
-    LOG(logDEBUG1) << "Checking versioning compatibility with value " << arg;
-    /*
-    int64_t client_requiredVersion = arg;
-    int64_t rx_apiVersion = APIRECEIVER;
-    int64_t rx_version = getReceiverVersion();
-
-    if (rx_apiVersion > client_requiredVersion) {
-        std::ostringstream os;
-        os << "Incompatible versions.\n Client's receiver API Version: (0x"
-           << std::hex << client_requiredVersion
-           << "). Receiver API Version: (0x" << std::hex
-           << ").\n Please update the client!\n";
-        throw RuntimeError(os.str());
-    } else if (client_requiredVersion > rx_version) {
-        std::ostringstream os;
-        os << "This receiver is incompatible.\n Receiver Version: (0x"
-           << std::hex << rx_version << "). Client's receiver API Version: (0x"
-           << std::hex << client_requiredVersion
-           << ").\n Please update the receiver";
-        throw RuntimeError(os.str());
-    } else {
-        LOG(logINFO) << "Compatibility with Client: Successful";
-    }
-    */
-    return socket.Send(OK);
 }
 
 int ClientInterface::set_discard_policy(Interface &socket) {

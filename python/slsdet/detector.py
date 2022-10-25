@@ -227,7 +227,7 @@ class Detector(CppDetectorApi):
         >>> d.detectorserverversion
         '0x200910'
         """
-        return ut.lhex(self.getDetectorServerVersion())
+        return self.getDetectorServerVersion()
 
     @property
     @element
@@ -257,7 +257,7 @@ class Detector(CppDetectorApi):
     @element
     def rx_version(self):
         """Receiver version in format [0xYYMMDD]."""
-        return ut.lhex(self.getReceiverVersion())
+        return self.getReceiverVersion()
 
     @property
     @element

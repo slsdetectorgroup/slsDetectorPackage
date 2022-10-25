@@ -90,8 +90,10 @@ int64_t Module::getFirmwareVersion() const {
     return sendToDetector<int64_t>(F_GET_FIRMWARE_VERSION);
 }
 
-int64_t Module::getDetectorServerVersion() const {
-    return sendToDetector<int64_t>(F_GET_SERVER_VERSION);
+std::string Module::getDetectorServerVersion() const {
+    char retval[MAX_STR_LENGTH]{};
+    sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);
+    return retval;
 }
 
 std::string Module::getKernelVersion() const {
@@ -106,11 +108,13 @@ int64_t Module::getSerialNumber() const {
 
 int Module::getModuleId() const { return sendToDetector<int>(F_GET_MODULE_ID); }
 
-int64_t Module::getReceiverSoftwareVersion() const {
+std::string Module::getReceiverSoftwareVersion() const {
     if (shm()->useReceiverFlag) {
-        return sendToReceiver<int64_t>(F_GET_RECEIVER_VERSION);
+        char retval[MAX_STR_LENGTH]{};
+        sendToReceiver(F_GET_RECEIVER_VERSION, nullptr, retval);
+        return retval;
     }
-    return -1;
+    return std::string();
 }
 
 // static function
@@ -3217,6 +3221,7 @@ void Module::initializeModuleStructure(detectorType type) {
 }
 
 void Module::checkDetectorVersionCompatibility() {
+    /*
     int64_t arg = 0;
     switch (shm()->detType) {
     case EIGER:
@@ -3246,6 +3251,7 @@ void Module::checkDetectorVersionCompatibility() {
     }
     sendToDetector(F_CHECK_VERSION, arg, nullptr);
     sendToDetectorStop(F_CHECK_VERSION, arg, nullptr);
+    */
 }
 
 void Module::checkReceiverVersionCompatibility() {

@@ -1232,16 +1232,14 @@ class CmdProxy {
         "[fname]\n\tSets detector measurement parameters to those contained in "
         "fname. Set up per measurement.");
 
-    GET_COMMAND_HEX(
-        detectorserverversion, getDetectorServerVersion,
-        "\n\tOn-board detector server software version in format [0xYYMMDD].");
+    GET_COMMAND(detectorserverversion, getDetectorServerVersion,
+                "\n\tOn-board detector server software version");
 
     GET_COMMAND(
         kernelversion, getKernelVersion,
         "\n\tGet kernel version on the detector including time and date.");
 
-    GET_COMMAND_HEX(rx_version, getReceiverVersion,
-                    "\n\tReceiver version in format [0xYYMMDD].");
+    GET_COMMAND(rx_version, getReceiverVersion, "\n\tReceiver version");
 
     GET_COMMAND_HEX(serialnumber, getSerialNumber,
                     "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench]"

@@ -51,7 +51,7 @@ ClientInterface::ClientInterface(int portNumber)
         make_unique<std::thread>(&ClientInterface::startTCPServer, this);
 }
 
-int64_t ClientInterface::getReceiverVersion() { return APIRECEIVER; }
+std::string ClientInterface::getReceiverVersion() { return APIRECEIVER; }
 
 /***callback functions***/
 void ClientInterface::registerCallBackStartAcquisition(
@@ -312,7 +312,9 @@ int ClientInterface::get_last_client_ip(Interface &socket) {
 }
 
 int ClientInterface::get_version(Interface &socket) {
-    return socket.sendResult(getReceiverVersion());
+    auto version = getReceiverVersion();
+    version.resize(MAX_STR_LENGTH);
+    return socket.sendResult(version);
 }
 
 int ClientInterface::setup_receiver(Interface &socket) {
@@ -1221,6 +1223,7 @@ int ClientInterface::get_frames_per_file(Interface &socket) {
 int ClientInterface::check_version_compatibility(Interface &socket) {
     auto arg = socket.Receive<int64_t>();
     LOG(logDEBUG1) << "Checking versioning compatibility with value " << arg;
+    /*
     int64_t client_requiredVersion = arg;
     int64_t rx_apiVersion = APIRECEIVER;
     int64_t rx_version = getReceiverVersion();
@@ -1242,6 +1245,7 @@ int ClientInterface::check_version_compatibility(Interface &socket) {
     } else {
         LOG(logINFO) << "Compatibility with Client: Successful";
     }
+    */
     return socket.Send(OK);
 }
 

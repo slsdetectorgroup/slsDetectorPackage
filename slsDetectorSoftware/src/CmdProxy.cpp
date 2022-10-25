@@ -277,21 +277,20 @@ std::string CmdProxy::Versions(int action) {
         auto t = det->getFirmwareVersion(std::vector<int>{det_id});
         os << "\nDetector Type: " << OutString(det->getDetectorType())
            << "\nPackage Version: " << det->getPackageVersion() << std::hex
-           << "\nClient Version: 0x" << det->getClientVersion();
+           << "\nClient Version: " << det->getClientVersion();
         if (det->getDetectorType().squash() == defs::EIGER) {
             os << "\nFirmware Version: " << OutString(t);
         } else {
             os << "\nFirmware Version: " << OutStringHex(t);
         }
         os << "\nDetector Server Version: "
-           << OutStringHex(
+           << OutString(
                   det->getDetectorServerVersion(std::vector<int>{det_id}));
-        os << "\nDetector Server Version: "
+        os << "\nDetector Kernel Version: "
            << OutString(det->getKernelVersion({std::vector<int>{det_id}}));
         if (det->getUseReceiverFlag().squash(true)) {
             os << "\nReceiver Version: "
-               << OutStringHex(
-                      det->getReceiverVersion(std::vector<int>{det_id}));
+               << OutString(det->getReceiverVersion(std::vector<int>{det_id}));
         }
         os << std::dec << '\n';
     } else if (action == defs::PUT_ACTION) {
@@ -329,7 +328,7 @@ std::string CmdProxy::ClientVersion(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        os << ToStringHex(det->getClientVersion()) << '\n';
+        os << det->getClientVersion() << '\n';
     } else if (action == defs::PUT_ACTION) {
         throw RuntimeError("cannot put");
     } else {
@@ -2562,8 +2561,9 @@ std::string CmdProxy::AdcVpp(int action) {
 
     if (action == defs::HELP_ACTION) {
         os << "[dac or mV value][(optional unit) mV] \n\t[Ctb][Moench] Vpp of "
-            "ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V. "
-            "\n\tAdvanced User function!\n"
+              "ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> "
+              "2V. "
+              "\n\tAdvanced User function!\n"
            << '\n';
         return os.str();
     }
@@ -2593,8 +2593,7 @@ std::string CmdProxy::AdcVpp(int action) {
         } else if (args.size() > 2 || args.size() < 1) {
             WrongNumberOfParameters(1);
         }
-        det->setADCVpp(StringTo<int>(args[0]), mV,
-                    std::vector<int>{det_id});
+        det->setADCVpp(StringTo<int>(args[0]), mV, std::vector<int>{det_id});
         os << args[0] << (mV ? " mV\n" : "\n");
     } else {
         throw RuntimeError("Unknown action");

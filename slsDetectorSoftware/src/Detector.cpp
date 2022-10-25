@@ -112,15 +112,15 @@ void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
 
 int Detector::getShmId() const { return pimpl->getDetectorIndex(); }
 
-std::string Detector::getPackageVersion() const { return GITBRANCH; }
+std::string Detector::getPackageVersion() const { return RELEASE; }
 
-int64_t Detector::getClientVersion() const { return APILIB; }
+std::string Detector::getClientVersion() const { return APILIB; }
 
 Result<int64_t> Detector::getFirmwareVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getFirmwareVersion, pos);
 }
 
-Result<int64_t> Detector::getDetectorServerVersion(Positions pos) const {
+Result<std::string> Detector::getDetectorServerVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getDetectorServerVersion, pos);
 }
 
@@ -136,7 +136,7 @@ Result<int> Detector::getModuleId(Positions pos) const {
     return pimpl->Parallel(&Module::getModuleId, pos);
 }
 
-Result<int64_t> Detector::getReceiverVersion(Positions pos) const {
+Result<std::string> Detector::getReceiverVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverSoftwareVersion, pos);
 }
 

@@ -90,11 +90,11 @@ class Module : public virtual slsDetectorDefs {
     void setHostname(const std::string &hostname, const bool initialChecks);
 
     int64_t getFirmwareVersion() const;
-    int64_t getDetectorServerVersion() const;
+    std::string getDetectorServerVersion() const;
     std::string getKernelVersion() const;
     int64_t getSerialNumber() const;
     int getModuleId() const;
-    int64_t getReceiverSoftwareVersion() const;
+    std::string getReceiverSoftwareVersion() const;
     static detectorType
     getTypeFromDetector(const std::string &hostname,
                         int cport = DEFAULT_TCP_CNTRL_PORTNO);

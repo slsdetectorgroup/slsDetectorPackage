@@ -117,9 +117,10 @@ void basictests() {
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
     int64_t fwversion = getFirmwareVersion();
-    int64_t swversion = getServerVersion();
+    char swversion[MAX_STR_LENGTH] = {0};
+    memset(swversion, 0, MAX_STR_LENGTH);
+    getServerVersion(swversion);
     int64_t sw_fw_apiversion = getFirmwareAPIVersion();
-    int64_t client_sw_apiversion = getClientServerAPIVersion();
 
     LOG(logINFOBLUE,
         ("**************************************************\n"
@@ -127,16 +128,13 @@ void basictests() {
          "Detector MAC Addr:\t\t 0x%llx\n"
 
          "Firmware Version:\t\t %lld\n"
-         "Software Version:\t\t 0x%llx\n"
+         "Software Version:\t\t %s\n"
          "F/w-S/w API Version:\t\t %lld\n"
          "Required Firmware Version:\t %d\n"
-         "Client-Software API Version:\t 0x%llx\n"
-         "\n"
          "********************************************************\n",
          (unsigned int)ipadd, (long long unsigned int)macadd,
-         (long long int)fwversion, (long long int)swversion,
-         (long long int)sw_fw_apiversion, REQUIRED_FIRMWARE_VERSION,
-         (long long int)client_sw_apiversion));
+         (long long int)fwversion, swversion, (long long int)sw_fw_apiversion,
+         REQUIRED_FIRMWARE_VERSION));
 
     // update default udpdstip and udpdstmac (1g is hardware ip and hardware
     // mac)
@@ -208,9 +206,7 @@ int getTestImageMode() { return eiger_virtual_test_mode; }
 
 /* Ids */
 
-uint64_t getServerVersion() { return APIEIGER; }
-
-uint64_t getClientServerAPIVersion() { return APIEIGER; }
+void getServerVersion(char *version) { strcpy(version, APIEIGER); }
 
 u_int64_t getFirmwareVersion() {
 #ifdef VIRTUAL

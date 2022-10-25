@@ -30,7 +30,7 @@ class ClientInterface : private virtual slsDetectorDefs {
   public:
     virtual ~ClientInterface();
     ClientInterface(int portNumber = -1);
-    int64_t getReceiverVersion();
+    std::string getReceiverVersion();
 
     //***callback functions***
     /** params: file path, file name, file index, image size */

@@ -110,10 +110,10 @@ void basictests() {
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
     int64_t fwversion = getFirmwareVersion();
-    int64_t swversion = getServerVersion();
+    char swversion[MAX_STR_LENGTH] = {0};
+    memset(swversion, 0, MAX_STR_LENGTH);
+    getServerVersion(swversion);
     int64_t sw_fw_apiversion = getFirmwareAPIVersion();
-    ;
-    int64_t client_sw_apiversion = getClientServerAPIVersion();
     uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
     LOG(logINFOBLUE,
@@ -124,15 +124,13 @@ void basictests() {
          "Detector MAC Addr:\t\t 0x%llx\n\n"
 
          "Firmware Version:\t\t 0x%llx\n"
-         "Software Version:\t\t 0x%llx\n"
+         "Software Version:\t\t %s\n"
          "F/w-S/w API Version:\t\t 0x%llx\n"
          "Required Firmware Version:\t 0x%x\n"
-         "Client-Software API Version:\t 0x%llx\n"
          "********************************************************\n",
          hversion, ipadd, (long long unsigned int)macadd,
-         (long long int)fwversion, (long long int)swversion,
-         (long long int)sw_fw_apiversion, requiredFirmwareVersion,
-         (long long int)client_sw_apiversion));
+         (long long int)fwversion, swversion, (long long int)sw_fw_apiversion,
+         requiredFirmwareVersion));
 
 #ifndef VIRTUAL
     // return if flag is not zero, debug mode
@@ -245,9 +243,7 @@ int testBus() {
 
 /* Ids */
 
-uint64_t getServerVersion() { return APIMYTHEN3; }
-
-uint64_t getClientServerAPIVersion() { return APIMYTHEN3; }
+void getServerVersion(char *version) { strcpy(version, APIMYTHEN3); }
 
 u_int64_t getFirmwareVersion() {
 #ifdef VIRTUAL

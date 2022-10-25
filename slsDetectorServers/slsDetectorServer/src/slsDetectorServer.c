@@ -55,7 +55,8 @@ int main(int argc, char *argv[]) {
     debugflag = 0;
     updateFlag = 0;
     checkModuleFlag = 1;
-    int version = 0;
+    char version[MAX_STR_LENGTH] = {0};
+    memset(version, 0, MAX_STR_LENGTH);
     ignoreConfigFileFlag = 0;
 #if defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(EIGERD) ||            \
     defined(MYTHEN3D)
@@ -142,22 +143,21 @@ int main(int argc, char *argv[]) {
 
         case 'v':
 #ifdef GOTTHARDD
-            version = APIGOTTHARD;
+            strcpy(version, APIGOTTHARD);
 #elif EIGERD
-            version = APIEIGER;
+            strcpy(version, APIEIGER);
 #elif JUNGFRAUD
-            version = APIJUNGFRAU;
+            strcpy(version, APIJUNGFRAU);
 #elif CHIPTESTBOARDD
-            version = APICTB;
+            strcpy(version, APICTB);
 #elif MOENCHD
-            version = APIMOENCH;
+            strcpy(version, APIMOENCH);
 #elif MYTHEN3D
-            version = APIMYTHEN3;
+            strcpy(version, APIMYTHEN3);
 #elif GOTTHARD2D
-            version = APIGOTTHARD2;
+            strcpy(version, APIGOTTHARD2);
 #endif
-            LOG(logINFO, ("SLS Detector Server Version: %s (0x%x)\n", GITBRANCH,
-                          version));
+            LOG(logINFO, ("SLS Detector Server Version: %s\n", version));
             exit(EXIT_SUCCESS);
 
         case 'p':

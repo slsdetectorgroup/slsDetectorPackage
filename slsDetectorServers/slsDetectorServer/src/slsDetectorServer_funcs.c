@@ -737,10 +737,11 @@ int get_firmware_version(int file_des) {
 int get_server_version(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int64_t retval = -1;
-    retval = getServerVersion();
-    LOG(logDEBUG1, ("server version retval: 0x%llx\n", (long long int)retval));
-    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+    char retvals[MAX_STR_LENGTH];
+    memset(retvals, 0, MAX_STR_LENGTH);
+    getServerVersion(retvals);
+    LOG(logINFORED, ("server version retval: %s\n", retvals));
+    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
 int get_serial_number(int file_des) {
@@ -4103,38 +4104,40 @@ int check_version(int file_des) {
         }
     }
 
-    if (ret == OK) {
-        LOG(logDEBUG1,
-            ("Checking versioning compatibility with value 0x%llx\n", arg));
+    /*
+        if (ret == OK) {
+            LOG(logDEBUG1,
+                ("Checking versioning compatibility with value 0x%llx\n", arg));
 
-        int64_t client_requiredVersion = arg;
-        int64_t det_apiVersion = getClientServerAPIVersion();
-        int64_t det_version = getServerVersion();
+            int64_t client_requiredVersion = arg;
+            int64_t det_apiVersion = getClientServerAPIVersion();
+            int64_t det_version = getServerVersion();
 
-        // old client
-        if (det_apiVersion > client_requiredVersion) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Client's detector SW API version: (0x%llx). "
-                    "Detector's SW API Version: (0x%llx). "
-                    "Incompatible, update client!\n",
-                    (long long int)client_requiredVersion,
-                    (long long int)det_apiVersion);
-            LOG(logERROR, (mess));
+            // old client
+            if (det_apiVersion > client_requiredVersion) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Client's detector SW API version: (0x%llx). "
+                        "Detector's SW API Version: (0x%llx). "
+                        "Incompatible, update client!\n",
+                        (long long int)client_requiredVersion,
+                        (long long int)det_apiVersion);
+                LOG(logERROR, (mess));
+            }
+
+            // old software
+            else if (client_requiredVersion > det_version) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Detector SW Version: (0x%llx). "
+                        "Client's detector SW API Version: (0x%llx). "
+                        "Incompatible, update detector software!\n",
+                        (long long int)det_version,
+                        (long long int)client_requiredVersion);
+                LOG(logERROR, (mess));
+            }
         }
-
-        // old software
-        else if (client_requiredVersion > det_version) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Detector SW Version: (0x%llx). "
-                    "Client's detector SW API Version: (0x%llx). "
-                    "Incompatible, update detector software!\n",
-                    (long long int)det_version,
-                    (long long int)client_requiredVersion);
-            LOG(logERROR, (mess));
-        }
-    }
+        */
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 

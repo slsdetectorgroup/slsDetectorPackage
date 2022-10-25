@@ -54,7 +54,7 @@ if [ -z "$API_BRANCH" ]; then
 else
     #API_BRANCH is defined (3rd argument)
     echo "branch="$API_BRANCH
-    API_VAL+="$API_BRANCH $API_DATE"
+    API_VAL+="\"$API_BRANCH $API_DATE\""
     #API_VAL+="\"$API_BRANCH\""
 fi
 

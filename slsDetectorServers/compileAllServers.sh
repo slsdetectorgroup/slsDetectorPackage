@@ -15,12 +15,12 @@ usage="\nUsage: compileAllServers.sh [server|all(opt)] [branch(opt)]. \n\tNo arg
 # arguments
 if [ $# -eq 0 ]; then
 	# no argument, all servers
-	declare -a det=$det_list
+	declare -a det=${det_list[@]}
 	echo "Compiling all servers"
 elif [ $# -eq 1 ] || [ $# -eq 2 ]; then
 	# 'all' servers
 	if [[ $1 == "all" ]]; then
-		declare -a det=$det_list
+		declare -a det=${det_list[@]}
 		echo "Compiling all servers"
 	else
 		# only one server

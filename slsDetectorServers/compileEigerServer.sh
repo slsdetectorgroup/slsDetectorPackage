@@ -28,7 +28,5 @@ git add -f bin/$file
 cp bin/$file /tftpboot/
 cd ..
 echo -e "\n\n"
-
-echo -e "Result:"
 printf "Result:\t\t= %s\n"  "${deterror}"
 	

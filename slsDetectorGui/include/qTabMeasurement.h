@@ -103,7 +103,6 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     int numMeasurements{1};
     int currentMeasurement{0};
     mutable std::mutex mProgress;
-
 };
 
 } // namespace sls

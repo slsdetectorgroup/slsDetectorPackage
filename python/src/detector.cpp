@@ -55,16 +55,17 @@ void init_det(py::module &m) {
                        (int (Detector::*)() const) & Detector::getShmId);
     CppDetectorApi.def("getPackageVersion", (std::string(Detector::*)() const) &
                                                 Detector::getPackageVersion);
-    CppDetectorApi.def("getClientVersion", (int64_t(Detector::*)() const) &
+    CppDetectorApi.def("getClientVersion", (std::string(Detector::*)() const) &
                                                Detector::getClientVersion);
     CppDetectorApi.def("getFirmwareVersion",
                        (Result<int64_t>(Detector::*)(sls::Positions) const) &
                            Detector::getFirmwareVersion,
                        py::arg() = Positions{});
-    CppDetectorApi.def("getDetectorServerVersion",
-                       (Result<int64_t>(Detector::*)(sls::Positions) const) &
-                           Detector::getDetectorServerVersion,
-                       py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getDetectorServerVersion",
+        (Result<std::string>(Detector::*)(sls::Positions) const) &
+            Detector::getDetectorServerVersion,
+        py::arg() = Positions{});
     CppDetectorApi.def(
         "getKernelVersion",
         (Result<std::string>(Detector::*)(sls::Positions) const) &
@@ -78,10 +79,11 @@ void init_det(py::module &m) {
                        (Result<int>(Detector::*)(sls::Positions) const) &
                            Detector::getModuleId,
                        py::arg() = Positions{});
-    CppDetectorApi.def("getReceiverVersion",
-                       (Result<int64_t>(Detector::*)(sls::Positions) const) &
-                           Detector::getReceiverVersion,
-                       py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getReceiverVersion",
+        (Result<std::string>(Detector::*)(sls::Positions) const) &
+            Detector::getReceiverVersion,
+        py::arg() = Positions{});
     CppDetectorApi.def(
         "getDetectorType",
         (Result<defs::detectorType>(Detector::*)(sls::Positions) const) &
@@ -202,6 +204,16 @@ void init_det(py::module &m) {
     CppDetectorApi.def(
         "setSynchronization",
         (void (Detector::*)(bool)) & Detector::setSynchronization, py::arg());
+    CppDetectorApi.def(
+        "getBadChannels",
+        (void (Detector::*)(const std::string &, sls::Positions) const) &
+            Detector::getBadChannels,
+        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setBadChannels",
+        (void (Detector::*)(const std::string &, sls::Positions)) &
+            Detector::setBadChannels,
+        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("isVirtualDetectorServer",
                        (Result<bool>(Detector::*)(sls::Positions) const) &
                            Detector::isVirtualDetectorServer,
@@ -1340,16 +1352,6 @@ void init_det(py::module &m) {
         (void (Detector::*)(const int, const int, const int, sls::Positions)) &
             Detector::setADCConfiguration,
         py::arg(), py::arg(), py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "getBadChannels",
-        (void (Detector::*)(const std::string &, sls::Positions) const) &
-            Detector::getBadChannels,
-        py::arg(), py::arg() = Positions{});
-    CppDetectorApi.def(
-        "setBadChannels",
-        (void (Detector::*)(const std::string &, sls::Positions)) &
-            Detector::setBadChannels,
-        py::arg(), py::arg() = Positions{});
     CppDetectorApi.def("getCounterMask",
                        (Result<uint32_t>(Detector::*)(sls::Positions) const) &
                            Detector::getCounterMask,
@@ -1493,6 +1495,14 @@ void init_det(py::module &m) {
         (void (Detector::*)(defs::dacIndex, int, sls::Positions)) &
             Detector::setVoltage,
         py::arg(), py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("getADCVpp",
+                       (Result<int>(Detector::*)(bool, sls::Positions) const) &
+                           Detector::getADCVpp,
+                       py::arg() = false, py::arg() = Positions{});
+    CppDetectorApi.def("setADCVpp",
+                       (void (Detector::*)(int, bool, sls::Positions)) &
+                           Detector::setADCVpp,
+                       py::arg(), py::arg() = false, py::arg() = Positions{});
     CppDetectorApi.def("getADCEnableMask",
                        (Result<uint32_t>(Detector::*)(sls::Positions) const) &
                            Detector::getADCEnableMask,

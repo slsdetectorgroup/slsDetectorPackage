@@ -2,7 +2,6 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 /** API versions */
 #define RELEASE      "developer"
-#define APIEIGER     "sdf 0x221025"
 #define APILIB "developer 0x221025"
 #define APIRECEIVER "developer 0x221025"
 #define APICTB "developer 0x221026"
@@ -11,3 +10,4 @@
 #define APIJUNGFRAU "developer 0x221026"
 #define APIMYTHEN3 "developer 0x221026"
 #define APIMOENCH "developer 0x221026"
+#define APIEIGER "developer 0x221026"

@@ -225,7 +225,7 @@ class Detector(CppDetectorApi):
         Example
         -------
         >>> d.detectorserverversion
-        '0x200910'
+        '7.0.0'
         """
         return self.getDetectorServerVersion()
 
@@ -249,14 +249,14 @@ class Detector(CppDetectorApi):
         Example
         -------
         >>> d.clientversion
-        '0x200810'
+        '7.0.1'
         """
-        return hex(self.getClientVersion())
+        return self.getClientVersion()
 
     @property
     @element
     def rx_version(self):
-        """Receiver version in format [0xYYMMDD]."""
+        """Receiver version """
         return self.getReceiverVersion()
 
     @property

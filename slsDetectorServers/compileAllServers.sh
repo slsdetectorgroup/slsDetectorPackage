@@ -47,31 +47,34 @@ fi
 
 declare -a deterror=("OK" "OK" "OK" "OK" "OK" "OK")
 
+echo -e "list is ${det[@]}"
+
 # compile each server
-for ((i=0;i<${#det[@]};++i))
+idet=0
+for i in ${!det[@]}
 do
-	dir=${det[i]}
-	file="${det[i]}_developer"
+	dir=${det[$i]}
+	file="${det[$i]}_developer"
 	echo -e "Compiling $dir [$file]"
 	cd $dir
 	make clean
 	if make version API_BRANCH=$branch; then
-		deterror[i]="OK"
+		deterror[$i]="OK"
 	else
-		deterror[i]="FAIL"
+		deterror[$i]="FAIL"
 	fi
-	
 	mv bin/$dir bin/$file
 	git add -f bin/$file
 	cp bin/$file /tftpboot/
 	cd ..
 	echo -e "\n\n"
+	++idet
 done
 
 echo -e "Results:"
-for ((i=0;i<${#det[@]};++i))
+for i in ${!det[@]}
 do
-	printf "%s\t\t= %s\n" "${det[i]}" "${deterror[i]}"
+	printf "%s\t\t= %s\n" "${det[$i]}" "${deterror[$i]}"
 done
 	
 

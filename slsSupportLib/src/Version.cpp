@@ -21,7 +21,7 @@ Version::Version(const std::string &s) {
 }
 
 bool Version::hasSemanticVersioning() const {
-    return version_ != defaultBranch;
+    return version_ != defaultBranch_;
 }
 
 std::string Version::getVersion() const { return version_; }

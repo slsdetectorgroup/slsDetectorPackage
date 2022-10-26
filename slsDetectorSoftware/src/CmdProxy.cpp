@@ -2562,8 +2562,7 @@ std::string CmdProxy::AdcVpp(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[dac or mV value][(optional unit) mV] \n\t[Ctb][Moench] Vpp of "
               "ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> "
-              "2V. "
-              "\n\tAdvanced User function!\n"
+              "2V. \n\tAdvanced User function!\n"
            << '\n';
         return os.str();
     }

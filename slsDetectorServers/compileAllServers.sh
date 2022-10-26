@@ -24,6 +24,7 @@ elif [ $# -eq 1 ] || [ $# -eq 2 ]; then
 		echo "Compiling all servers"
 	else
 		# only one server
+		# arg not in list
 		if [[ $det_list != *$1* ]]; then
 			echo -e "Invalid argument 1: $1. $usage"
 			return -1
@@ -33,6 +34,7 @@ elif [ $# -eq 1 ] || [ $# -eq 2 ]; then
 	fi
 	# branch
 	if [ $# -eq 2 ]; then
+		# arg in list
 		if [[ $det_list == *$2* ]]; then
 			echo -e "Invalid argument 2: $2. $usage"
 			return -1

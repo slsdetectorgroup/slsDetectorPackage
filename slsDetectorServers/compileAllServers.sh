@@ -51,30 +51,32 @@ echo -e "list is ${det[@]}"
 
 # compile each server
 idet=0
-for i in ${!det[@]}
+for i in ${det[@]}
 do
-	dir=${det[$i]}
-	file="${det[$i]}_developer"
+	dir=$i
+	file="${i}_developer"
 	echo -e "Compiling $dir [$file]"
 	cd $dir
 	make clean
 	if make version API_BRANCH=$branch; then
-		deterror[$i]="OK"
+		deterror[$idet]="OK"
 	else
-		deterror[$i]="FAIL"
+		deterror[$idet]="FAIL"
 	fi
 	mv bin/$dir bin/$file
 	git add -f bin/$file
 	cp bin/$file /tftpboot/
 	cd ..
 	echo -e "\n\n"
-	++idet
+	((++idet))
 done
 
 echo -e "Results:"
-for i in ${!det[@]}
+idet=0
+for i in ${det[@]}
 do
-	printf "%s\t\t= %s\n" "${det[$i]}" "${deterror[$i]}"
+	printf "%s\t\t= %s\n" "$i" "${deterror[$idet]}"
+	((++idet))
 done
 	
 

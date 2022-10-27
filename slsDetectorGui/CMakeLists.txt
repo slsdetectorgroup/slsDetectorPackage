@@ -3,7 +3,7 @@
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTOUIC ON)
 #------------------- Unsure if this is needed----------------
 #cmake_policy(SET CMP0071 OLD)
 #------------------- ----------------------------------------
@@ -15,7 +15,7 @@ set(CMAKE_AUTOUIC ON)
 #find_package(Qt5OpenGL 5.9.2 REQUIRED)
 #find_package(Qt5Svg 5.9.2 REQUIRED)
 #find_package(Qt5Concurrent 5.9.2 REQUIRED)
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 5.9 COMPONENTS Widgets Core Gui REQUIRED)
 
 find_package(Qwt 6.1.3 REQUIRED)
 find_package(PNG REQUIRED)
@@ -110,8 +110,8 @@ target_link_libraries(slsDetectorGui PUBLIC
     PNG::PNG
     ZLIB::ZLIB
     Qt5::Widgets
-    #Qt5::Gui
-    #Qt5::Core
+    Qt5::Gui
+    Qt5::Core
     #Qt5::QtOpenGL
     #Qt5::QtSvg
     #Qt5::Concurrent

@@ -144,6 +144,30 @@ Receiver PC Tuning Options
         | xth1 is example interface name. 
         | These settings are lost at pc reboot.
 
+#. Disable CPU frequency scaling and set system to performance 
+    * Check current policy (default might be powersave or schedutil)
+        .. code-block:: bash
+            
+            # check current active governor and range of cpu freq policy
+            cpupower frequency-info --policy
+            # list all available governors for this kernel
+            cpupower frequency-info --governors  
+
+    * Temporarily (until shut down)
+        .. code-block:: bash
+            
+            # set to performance
+            sudo cpupower frequency-set -g performance
+
+
+    * Permanently
+        .. code-block:: bash
+            
+            # edit /etc/sysconfig/cpupower to preference
+
+            # enable or disable permanently
+            sudo systemctl enable cpupower
+
 #. Give user speicific user scheduling privileges.
     .. code-block:: bash
 

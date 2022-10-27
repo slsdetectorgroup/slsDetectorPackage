@@ -26,6 +26,7 @@ PYBIND11
 #. No longer a submodule of the slsDetectorPackage
 
 **Older than v7.0.0:**
+
 #. Submodule in libs (pybind11)
 #. Switching between versions will require an update of the submodule as well using:
 

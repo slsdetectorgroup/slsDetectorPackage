@@ -192,7 +192,7 @@ void qTabDataOutput::SetOutputDir(bool force) {
         dispOutputDir->setModified(false);
         QString path = dispOutputDir->text();
         LOG(logDEBUG) << "Setting output directory to "
-                      << path.toAscii().constData();
+                      << path.toLatin1().constData();
 
         // empty
         if (path.isEmpty()) {
@@ -208,7 +208,7 @@ void qTabDataOutput::SetOutputDir(bool force) {
                     path.chop(1);
                 }
             }
-            std::string spath = std::string(path.toAscii().constData());
+            std::string spath = std::string(path.toLatin1().constData());
             try {
                 det->setFilePath(spath, {comboDetector->currentIndex() - 1});
             }
@@ -245,7 +245,7 @@ void qTabDataOutput::GetFileFormat() {
 
 void qTabDataOutput::SetFileFormat(int format) {
     LOG(logINFO) << "Setting File Format to "
-                 << comboFileFormat->currentText().toAscii().data();
+                 << comboFileFormat->currentText().toLatin1().data();
     try {
         det->setFileFormat(static_cast<slsDetectorDefs::fileFormat>(
             comboFileFormat->currentIndex()));
@@ -388,7 +388,7 @@ void qTabDataOutput::GetSpeed() {
 
 void qTabDataOutput::SetSpeed(int speed) {
     LOG(logINFO) << "Setting Readout Speed to "
-                 << comboClkDivider->currentText().toAscii().data();
+                 << comboClkDivider->currentText().toLatin1().data();
     try {
         det->setReadoutSpeed(static_cast<slsDetectorDefs::speedLevel>(speed));
     }

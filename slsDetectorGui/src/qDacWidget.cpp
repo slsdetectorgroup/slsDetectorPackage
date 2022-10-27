@@ -61,7 +61,7 @@ void qDacWidget::GetDac() {
 
 void qDacWidget::SetDac() {
     int val = (int)spinDac->value();
-    LOG(logINFO) << "Setting dac:" << lblDac->text().toAscii().data() << " : "
+    LOG(logINFO) << "Setting dac:" << lblDac->text().toLatin1().data() << " : "
                  << val;
 
     try {

@@ -12,7 +12,7 @@
 #include <QFileDialog>
 #include <QPainter>
 #include <QResizeEvent>
-#include <QtConcurrentRun>
+#include <QtConcurrent/QtConcurrentRun>
 #include <qwt_scale_engine.h>
 
 namespace sls {
@@ -301,13 +301,13 @@ void qDrawPlot::Select1dPlot(bool enable) {
 
 void qDrawPlot::SetPlotTitlePrefix(QString title) {
     std::lock_guard<std::mutex> lock(mPlots);
-    LOG(logINFO) << "Setting Title to " << title.toAscii().constData();
+    LOG(logINFO) << "Setting Title to " << title.toLatin1().constData();
     plotTitlePrefix = title;
 }
 
 void qDrawPlot::SetXAxisTitle(QString title) {
     std::lock_guard<std::mutex> lock(mPlots);
-    LOG(logINFO) << "Setting X Axis Title to " << title.toAscii().constData();
+    LOG(logINFO) << "Setting X Axis Title to " << title.toLatin1().constData();
     if (is1d) {
         xTitle1d = title;
     } else {
@@ -317,7 +317,7 @@ void qDrawPlot::SetXAxisTitle(QString title) {
 
 void qDrawPlot::SetYAxisTitle(QString title) {
     std::lock_guard<std::mutex> lock(mPlots);
-    LOG(logINFO) << "Setting Y Axis Title to " << title.toAscii().constData();
+    LOG(logINFO) << "Setting Y Axis Title to " << title.toLatin1().constData();
     if (is1d) {
         yTitle1d = title;
     } else {
@@ -327,7 +327,7 @@ void qDrawPlot::SetYAxisTitle(QString title) {
 
 void qDrawPlot::SetZAxisTitle(QString title) {
     std::lock_guard<std::mutex> lock(mPlots);
-    LOG(logINFO) << "Setting Z Axis Title to " << title.toAscii().constData();
+    LOG(logINFO) << "Setting Z Axis Title to " << title.toLatin1().constData();
     zTitle2d = title;
 }
 
@@ -509,7 +509,7 @@ void qDrawPlot::EnableGainPlot(bool enable) {
 void qDrawPlot::SetSaveFileName(QString val) {
     std::lock_guard<std::mutex> lock(mPlots);
     LOG(logDEBUG) << "Setting Clone/Save File Name to "
-                  << val.toAscii().constData();
+                  << val.toLatin1().constData();
     fileSaveName = val;
 }
 

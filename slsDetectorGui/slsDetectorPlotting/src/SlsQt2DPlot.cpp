@@ -4,7 +4,6 @@
 #include "sls/logger.h"
 
 #include <qlist.h>
-#include <qprinter.h>
 #include <qtoolbutton.h>
 #include <qwt_color_map.h>
 #include <qwt_plot_layout.h>

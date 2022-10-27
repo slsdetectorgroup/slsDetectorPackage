@@ -16,7 +16,6 @@
 #include "sls/versionAPI.h"
 
 #include <QFileDialog>
-#include <QPlastiqueStyle>
 #include <QResizeEvent>
 #include <QScrollArea>
 #include <QSizePolicy>
@@ -95,7 +94,6 @@ int main(int argc, char **argv) {
     }
 
     QApplication app(argc, argv);
-    app.setStyle(new QPlastiqueStyle); // style is deleted by QApplication
     try {
         sls::qDetectorMain det(multiId, fname, isDeveloper);
         det.show();
@@ -378,7 +376,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
                 refreshTabs = true;
-                det->loadConfig(std::string(fName.toAscii().constData()));
+                det->loadConfig(std::string(fName.toLatin1().constData()));
                 qDefs::Message(qDefs::INFORMATION,
                                "The Configuration Parameters have been "
                                "configured successfully.",
@@ -396,7 +394,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
                 refreshTabs = true;
-                det->loadParameters(std::string(fName.toAscii().constData()));
+                det->loadParameters(std::string(fName.toLatin1().constData()));
                 qDefs::Message(qDefs::INFORMATION,
                                "The Detector Parameters have been "
                                "configured successfully.",
@@ -416,7 +414,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             fileDialog->setFileMode(QFileDialog::AnyFile);
             if (fileDialog->exec() == QDialog::Accepted) {
                 fName = fileDialog->selectedFiles()[0];
-                det->loadTrimbits(std::string(fName.toAscii().constData()));
+                det->loadTrimbits(std::string(fName.toLatin1().constData()));
                 qDefs::Message(qDefs::INFORMATION,
                                "The Trimbits have been loaded successfully.",
                                "qDetectorMain::ExecuteUtilities");
@@ -432,7 +430,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                 this, tr("Save Detector Trimbits"), fPath,
                 tr("Trimbit files (*.trim noise.sn*);;All Files(*)"));
             if (!fName.isEmpty()) {
-                det->saveTrimbits(std::string(fName.toAscii().constData()));
+                det->saveTrimbits(std::string(fName.toLatin1().constData()));
                 qDefs::Message(qDefs::INFORMATION,
                                "The Trimbits have been saved successfully.",
                                "qDetectorMain::ExecuteUtilities");

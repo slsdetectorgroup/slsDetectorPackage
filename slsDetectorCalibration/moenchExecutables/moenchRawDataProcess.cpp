@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 
 #ifdef MOENCH04
 #ifndef MOENCH04_DGS
-    moench04CtbZmq10GbData *decoder = new moench04CtbZmq10GbData();
+    moench04CtbZmq10GbData *decoder = new moench04CtbZmq10GbData(5000,0);
     cout << "MOENCH04!" << endl;
 #endif
 
@@ -349,7 +349,7 @@ int main(int argc, char *argv[]) {
                     mt->popFree(buff);
 
                     ifr++;
-                    if (ifr % 100 == 0)
+		    if (ifr % 100 == 0)
                         cout << ifr << " " << ff << endl;
                     if (nframes > 0) {
                         if (ifr % nframes == 0) {
@@ -361,8 +361,10 @@ int main(int argc, char *argv[]) {
                             ifile++;
                         }
                     }
-                } else
-                    cout << ifr << " " << ff << " " << np << endl;
+                } else {
+		  cout << "bp " << ifr << " " << ff << " " << np << endl;
+		  //break;
+		}
                 ff = -1;
             }
             cout << "--" << endl;

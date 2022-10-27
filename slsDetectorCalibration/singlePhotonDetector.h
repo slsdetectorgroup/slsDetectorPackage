@@ -429,29 +429,30 @@ class singlePhotonDetector : public analogDetector<uint16_t> {
                     for (ic = -(clusterSize / 2); ic < (clusterSize / 2) + 1;
                          ic++) {
 
-                        if ((iy + ir) >= 0 && (iy + ir) < ny &&
+                        if ( (iy + ir) >= 0 && (iy + ir) < ny &&
                             (ix + ic) >= 0 && (ix + ic) < nx) {
 
 
-			  if ((iy + ir) >= iy && (ix + ic) >= ix ) {
-                            val[(iy + ir) * nx + ix + ic] =
+			  if ((iy + ir) > iy && (ix + ic) > ix ) {
+                            
+			    val[(iy + ir) * nx + ix + ic] =
 			      subtractPedestal(data, ix + ic, iy + ir, cm);
 			    
-			  
-			}
-			v = &(val[(iy + ir) * nx + ix + ic]);
-			tot += *v;
-			if (ir <= 0 && ic <= 0)
-			  bl += *v;
-			if (ir <= 0 && ic >= 0)
-			  br += *v;
-			if (ir >= 0 && ic <= 0)
-			  tl += *v;
-			if (ir >= 0 && ic >= 0)
+			    
+			  }
+			  v = &(val[(iy + ir) * nx + ix + ic]);
+			  tot += *v;
+			  if (ir <= 0 && ic <= 0)
+			    bl += *v;
+			  if (ir <= 0 && ic >= 0)
+			    br += *v;
+			  if (ir >= 0 && ic <= 0)
+			    tl += *v;
+			  if (ir >= 0 && ic >= 0)
 			  tr += *v;
-			if (*v > max) //{
-			  max = *v;
-			//}
+			  if (*v > max) //{
+			    max = *v;
+			  //}
                         }
                     }
                 }

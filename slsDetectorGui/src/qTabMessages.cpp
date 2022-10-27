@@ -117,7 +117,7 @@ void qTabMessages::SaveLog() {
         outfile.setFileName(fName);
         if (outfile.open(QIODevice::WriteOnly | QIODevice::Text)) {
             QTextStream out(&outfile);
-            out << dispLog->toPlainText() << endl;
+            out << dispLog->toPlainText() << '\n';
             std::string mess =
                 std::string("The Log has been successfully saved to ") +
                 fName.toLatin1().constData();

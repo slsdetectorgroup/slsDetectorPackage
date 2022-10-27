@@ -5,6 +5,8 @@
 #include "sls/ToString.h"
 #include <QDesktopWidget>
 #include <QGridLayout>
+#include <QGuiApplication>
+#include <QScreen>
 #include <QTreeWidget>
 
 namespace sls {
@@ -149,11 +151,16 @@ void qTabDebugging::GetInfo() {
     int x = ((parentWidget()->width()) - (popup1->frameGeometry().width())) / 2;
     int y =
         ((parentWidget()->height()) - (popup1->frameGeometry().height())) / 2;
-    QDesktopWidget *desktop = QApplication::desktop();
-    int screen = desktop->screenNumber(this);
+
     popup1->setWindowModality(Qt::WindowModal);
-    popup1->move((desktop->screenGeometry(screen).x()) + x,
-                 (desktop->screenGeometry(screen).y()) + y);
+    /*
+        QDesktopWidget *desktop = QApplication::desktop();
+        int screen = desktop->screenNumber(this);
+        popup1->move((desktop->screenGeometry(screen).x()) + x,
+                     (desktop->screenGeometry(screen).y()) + y);
+    */
+    popup1->move((QApplication::primaryScreen()->geometry().x()) + x,
+                 (QApplication::primaryScreen()->geometry().y()) + y);
     popup1->show();
 
     // put the first parameters

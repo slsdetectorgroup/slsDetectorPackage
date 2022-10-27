@@ -543,7 +543,7 @@ void SlsQt1DPlot::InsertVLine(double x) {
 
 void SlsQt1DPlot::SetupZoom() {
     // LeftButton for the zooming
-    // MidButton for the panning
+    // MiddleButton for the panning
     // RightButton: zoom out by 1
     // Ctrl+RighButton: zoom out to full size
 
@@ -555,14 +555,14 @@ void SlsQt1DPlot::SetupZoom() {
 
     panner = new QwtPlotPanner((QwtPlotCanvas *)canvas());
     panner->setAxisEnabled(QwtPlot::yRight, false);
-    panner->setMouseButton(Qt::MidButton);
+    panner->setMouseButton(Qt::MiddleButton);
 
     // Avoid jumping when labels with more/less digits
     // appear/disappear when scrolling vertically
 
     const QFontMetrics fm(axisWidget(QwtPlot::yLeft)->font());
     QwtScaleDraw *sd = axisScaleDraw(QwtPlot::yLeft);
-    sd->setMinimumExtent(fm.width("100.00"));
+    sd->setMinimumExtent(fm.horizontalAdvance("100.00"));
 
     const QColor c(Qt::darkBlue);
     zoomer->setRubberBandPen(c);
@@ -630,7 +630,7 @@ void SlsQt1DPlot::DisableZoom(bool disable) {
                                         Qt::RightButton);
             }
             if (panner)
-                panner->setMouseButton(Qt::MidButton);
+                panner->setMouseButton(Qt::MiddleButton);
         }
     }
 }

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>775</width>
+    <width>828</width>
     <height>345</height>
    </rect>
   </property>
@@ -24,7 +24,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>775</width>
+    <width>828</width>
     <height>345</height>
    </size>
   </property>
@@ -457,7 +457,16 @@
         </property>
         <widget class="QWidget" name="pageLblTrigger">
          <layout class="QGridLayout" name="gridLblTrigger">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -480,7 +489,16 @@
         </widget>
         <widget class="QWidget" name="pageLblBurst">
          <layout class="QGridLayout" name="gridLblBurst">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -956,7 +974,16 @@ Frame period between exposures.
         </property>
         <widget class="QWidget" name="pageSpinTrigger">
          <layout class="QGridLayout" name="gridSpinTrigger">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1013,7 +1040,16 @@ Frame period between exposures.
         </widget>
         <widget class="QWidget" name="pageSpinBurst">
          <layout class="QGridLayout" name="gridSpinBurst">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1095,7 +1131,16 @@ Frame period between exposures.
         </property>
         <widget class="QWidget" name="pageLblDelay">
          <layout class="QGridLayout" name="gridLblDelay">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1118,7 +1163,16 @@ Frame period between exposures.
         </widget>
         <widget class="QWidget" name="pageLblBurstPeriod">
          <layout class="QGridLayout" name="gridLblBurstPeriod">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1166,7 +1220,16 @@ Frame period between exposures.
         </property>
         <widget class="QWidget" name="pageSpinDelay">
          <layout class="QGridLayout" name="gridSpinDelay">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1217,7 +1280,16 @@ Frame period between exposures.
         </widget>
         <widget class="QWidget" name="pageSpinBurstPeriod">
          <layout class="QGridLayout" name="gridSpinBurstPeriod">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1293,7 +1365,16 @@ Frame period between exposures.
         </property>
         <widget class="QWidget" name="pageComboDelay">
          <layout class="QGridLayout" name="gridComboDelay">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1362,7 +1443,16 @@ Frame period between exposures.
         </widget>
         <widget class="QWidget" name="pageComboBurstPeriod">
          <layout class="QGridLayout" name="gridComboBurstPeriod">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1456,7 +1546,16 @@ Frame period between exposures.
         </property>
         <widget class="QWidget" name="pageLblSamples">
          <layout class="QGridLayout" name="gridLblTrigger_2">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1479,7 +1578,16 @@ Frame period between exposures.
         </widget>
         <widget class="QWidget" name="pageLblGates">
          <layout class="QGridLayout" name="gridLblBurst_2">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1527,7 +1635,16 @@ Frame period between exposures.
         </property>
         <widget class="QWidget" name="pageSpinSamples">
          <layout class="QGridLayout" name="gridSpinTrigger_2">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">
@@ -1583,7 +1700,16 @@ Frame period between exposures.
         </widget>
         <widget class="QWidget" name="pageSpinGates">
          <layout class="QGridLayout" name="gridSpinBurst_2">
-          <property name="margin">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
            <number>0</number>
           </property>
           <property name="spacing">

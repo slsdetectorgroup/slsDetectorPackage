@@ -99,8 +99,6 @@ void qDrawPlot::Initialization() {
 }
 
 void qDrawPlot::SetupPlots() {
-    setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-
     // default image size
     slsDetectorDefs::xy res = det->getDetectorSize();
     nPixelsX = res.x;
@@ -108,7 +106,6 @@ void qDrawPlot::SetupPlots() {
     LOG(logINFO) << "nPixelsX:" << nPixelsX;
     LOG(logINFO) << "nPixelsY:" << nPixelsY;
 
-    boxPlot->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     widgetStatistics->hide();
     lblCompleteImage->hide();
     lblInCompleteImage->hide();
@@ -137,11 +134,6 @@ void qDrawPlot::SetupPlots() {
     hists1d.append(h);
     // setup 1d plot
     plot1d = new SlsQt1DPlot(boxPlot);
-    plot1d->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot1d->SetTitleFont(
-        QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot1d->SetXFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot1d->SetYFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     plot1d->SetTitle("");
     plot1d->SetXTitle(xTitle1d);
     plot1d->SetYTitle(yTitle1d);
@@ -161,10 +153,6 @@ void qDrawPlot::SetupPlots() {
     gainhist1d->setSymbolMarkers(isMarkers);
     // setup 1d gain plot
     gainplot1d = new SlsQt1DPlot(boxPlot);
-    gainplot1d->SetTitleFont(
-        QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    gainplot1d->SetYFont(
-        QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     gainplot1d->SetTitle("");
     gainplot1d->SetYTitle("Gain");
     // set ticks to just 3
@@ -205,12 +193,6 @@ void qDrawPlot::SetupPlots() {
     plot2d = new SlsQt2DPlot(boxPlot);
     plot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5,
                     nPixelsY - 0.5, data2d);
-    plot2d->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot2d->SetTitleFont(
-        QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot2d->SetXFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot2d->SetYFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot2d->SetZFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     plot2d->setTitle("");
     plot2d->SetXTitle(xTitle2d);
     plot2d->SetYTitle(yTitle2d);
@@ -219,8 +201,6 @@ void qDrawPlot::SetupPlots() {
     gainplot2d = new SlsQt2DPlot(boxPlot);
     gainplot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5,
                         nPixelsY - 0.5, gainData);
-    gainplot2d->SetTitleFont(
-        QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     gainplot2d->setTitle("Gain");
     gainplot2d->SetZTitle("");
     gainplot2d->enableAxis(QwtPlot::yLeft, false);
@@ -524,14 +504,6 @@ void qDrawPlot::ClonePlot() {
     if (is1d) {
         LOG(logDEBUG) << "Cloning 1D Image";
         cloneplot1D = new SlsQt1DPlot();
-        cloneplot1D->setFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot1D->SetTitleFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot1D->SetXFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot1D->SetYFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
         cloneplot1D->SetTitle(plot1d->title().text());
         cloneplot1D->SetXTitle(xTitle1d);
         cloneplot1D->SetYTitle(yTitle1d);
@@ -552,10 +524,6 @@ void qDrawPlot::ClonePlot() {
             h->setSymbolMarkers(isMarkers);
             h->setItemAttribute(QwtPlotItem::Legend, false);
             clonegainplot1D = new SlsQt1DPlot();
-            clonegainplot1D->SetTitleFont(
-                QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-            clonegainplot1D->SetYFont(
-                QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
             clonegainplot1D->SetTitle("");
             clonegainplot1D->SetYTitle("Gain");
             // set ticks to just 3
@@ -571,16 +539,6 @@ void qDrawPlot::ClonePlot() {
     } else {
         LOG(logDEBUG) << "Cloning 2D Image";
         cloneplot2D = new SlsQt2DPlot();
-        cloneplot2D->setFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot2D->SetTitleFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot2D->SetXFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot2D->SetYFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot2D->SetZFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
         cloneplot2D->setTitle(plot2d->title().text());
         cloneplot2D->SetXTitle(xTitle2d);
         cloneplot2D->SetYTitle(yTitle2d);
@@ -591,8 +549,6 @@ void qDrawPlot::ClonePlot() {
 
         if (isGainDataExtracted) {
             clonegainplot2D = new SlsQt2DPlot();
-            clonegainplot2D->SetTitleFont(
-                QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
             clonegainplot2D->SetTitle("Gain");
             clonegainplot2D->SetZTitle("");
             clonegainplot2D->enableAxis(QwtPlot::yLeft, false);

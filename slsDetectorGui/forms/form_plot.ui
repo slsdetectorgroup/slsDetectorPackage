@@ -77,6 +77,11 @@
        </disabled>
       </palette>
      </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>Rx Roi Enabled</string>
      </property>
@@ -95,7 +100,7 @@
      </property>
      <property name="font">
       <font>
-       <family>Sans Serif</family>
+       <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
      </property>
@@ -109,7 +114,16 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="plotLayout">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>9</number>
+      </property>
+      <property name="topMargin">
+       <number>9</number>
+      </property>
+      <property name="rightMargin">
+       <number>9</number>
+      </property>
+      <property name="bottomMargin">
        <number>9</number>
       </property>
       <property name="spacing">
@@ -138,8 +152,22 @@
        <height>16</height>
       </size>
      </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
       <property name="spacing">
@@ -367,6 +395,11 @@
        </disabled>
       </palette>
      </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>Complete Image</string>
      </property>
@@ -431,6 +464,11 @@
         </colorrole>
        </disabled>
       </palette>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="text">
       <string>Missing Packets</string>

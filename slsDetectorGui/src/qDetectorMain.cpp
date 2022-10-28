@@ -17,7 +17,6 @@
 
 #include <QFileDialog>
 #include <QResizeEvent>
-#include <QScrollArea>
 #include <QSizePolicy>
 
 #include <getopt.h>
@@ -120,65 +119,32 @@ qDetectorMain::qDetectorMain(int multiId, const std::string &fname,
 
 qDetectorMain::~qDetectorMain() {
     disconnect(tabs, SIGNAL(currentChanged(int)), this, SLOT(Refresh(int)));
-    for (int i = 0; i < NumberOfTabs; ++i) {
-        delete scroll[i];
-    }
 }
 
 void qDetectorMain::SetUpWidgetWindow() {
-    setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-
     // plot setup
     plot = new qDrawPlot(dockWidgetPlot, det.get());
     LOG(logDEBUG) << "DockPlot ready";
     dockWidgetPlot->setWidget(plot);
 
-    // tabs setup
-    tabs = new MyTabWidget(this);
-    layoutTabs->addWidget(tabs);
-
     // creating all the other tab widgets
-    tabMeasurement = new qTabMeasurement(this, det.get(), plot);
-    tabDataOutput = new qTabDataOutput(this, det.get());
-    tabPlot = new qTabPlot(this, det.get(), plot);
-    tabSettings = new qTabSettings(this, det.get());
-    tabAdvanced = new qTabAdvanced(this, det.get(), plot);
-    tabDebugging = new qTabDebugging(this, det.get());
-    tabDeveloper = new qTabDeveloper(this, det.get());
+    tabMeasurement = new qTabMeasurement(tMeasurement, det.get(), plot);
+    tabDataOutput = new qTabDataOutput(tDataOutput, det.get());
+    tabPlot = new qTabPlot(tPlot, det.get(), plot);
+    tabSettings = new qTabSettings(tSettings, det.get());
+    tabAdvanced = new qTabAdvanced(tAdvanced, det.get(), plot);
+    tabDebugging = new qTabDebugging(tDebugging, det.get());
+    tabDeveloper = new qTabDeveloper(tDeveloper, det.get());
 
-    //	creating the scroll area widgets for the tabs
-    for (int i = 0; i < NumberOfTabs; ++i) {
-        scroll[i] = new QScrollArea();
-        scroll[i]->setFrameShape(QFrame::NoFrame);
-    }
-    // setting the tab widgets to the scrollareas
-    scroll[MEASUREMENT]->setWidget(tabMeasurement);
-    scroll[DATAOUTPUT]->setWidget(tabDataOutput);
-    scroll[PLOT]->setWidget(tabPlot);
-    scroll[SETTINGS]->setWidget(tabSettings);
-    scroll[ADVANCED]->setWidget(tabAdvanced);
-    scroll[DEBUGGING]->setWidget(tabDebugging);
-    scroll[DEVELOPER]->setWidget(tabDeveloper);
-    // inserting all the tabs
-    tabs->insertTab(MEASUREMENT, scroll[MEASUREMENT], "Measurement");
-    tabs->insertTab(DATAOUTPUT, scroll[DATAOUTPUT], "Data Output");
-    tabs->insertTab(PLOT, scroll[PLOT], "Plot");
-    tabs->insertTab(SETTINGS, scroll[SETTINGS], "Settings");
-    tabs->insertTab(ADVANCED, scroll[ADVANCED], "Advanced");
-    tabs->insertTab(DEBUGGING, scroll[DEBUGGING], "Debugging");
-    tabs->insertTab(DEVELOPER, scroll[DEVELOPER], "Developer");
-    // no scroll buttons this way
-    tabs->insertTab(MESSAGES, tabMessages, "Terminal");
+    scrollMeasurement->setWidget(tabMeasurement);
+    scrollDataOutput->setWidget(tabDataOutput);
+    scrollPlot->setWidget(tabPlot);
+    scrollSettings->setWidget(tabSettings);
+    scrollAdvanced->setWidget(tabAdvanced);
+    scrollDebugging->setWidget(tabDebugging);
+    scrollDeveloper->setWidget(tabDeveloper);
+    scrollTerminal->setWidget(tabMessages);
 
-    // swap tabs so that messages is last tab
-    tabs->tabBar()->moveTab(tabs->indexOf(tabMeasurement), MEASUREMENT);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabSettings), SETTINGS);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabDataOutput), DATAOUTPUT);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabPlot), PLOT);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabAdvanced), ADVANCED);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabDebugging), DEBUGGING);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabDeveloper), DEVELOPER);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabMessages), MESSAGES);
     tabs->setCurrentIndex(MEASUREMENT);
 
     // other tab properties
@@ -186,7 +152,6 @@ void qDetectorMain::SetUpWidgetWindow() {
     defaultTabColor = tabs->tabBar()->tabTextColor(DATAOUTPUT);
     // Set the current tab(measurement) to blue as it is the current one
     tabs->tabBar()->setTabTextColor(0, QColor(0, 0, 200, 255));
-    tabs->tabBar()->setExpanding(true);
 
     // mode setup - to set up the tabs initially as disabled, not in form so
     // done here
@@ -218,7 +183,7 @@ void qDetectorMain::SetUpDetector(const std::string &config_file, int multiID) {
     det = make_unique<Detector>(multiID);
 
     // create messages tab to capture config file loading logs
-    tabMessages = new qTabMessages(this);
+    tabMessages = new qTabMessages(tTerminal);
 
     // loads the config file at startup
     if (!config_file.empty())
@@ -557,21 +522,14 @@ void qDetectorMain::ResizeMainWindow(bool b) {
 }
 
 void qDetectorMain::resizeEvent(QResizeEvent *event) {
+
     if (!dockWidgetPlot->isFloating()) {
         dockWidgetPlot->setMinimumHeight(height() - centralwidget->height() -
                                          50);
         centralwidget->setMaximumHeight(heightCentralWidget);
     }
 
-    // adjusting tab width
-    if (width() >= 800) {
-        tabs->tabBar()->setFixedWidth(width() + 61);
-    } else {
-        tabs->tabBar()->setMinimumWidth(0);
-        tabs->tabBar()->setExpanding(true);
-        tabs->tabBar()->setUsesScrollButtons(true);
-    }
-
+    tabs->tabBar()->setFixedWidth(width());
     event->accept();
 }
 

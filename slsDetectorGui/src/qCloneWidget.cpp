@@ -49,7 +49,6 @@ void qCloneWidget::SetupWidgetWindow(QString title) {
                            std::string("  -  ") + Logger::Timestamp();
     setWindowTitle(QString(winTitle.c_str()));
 
-    boxPlot->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     boxPlot->setTitle(title);
 
     // 1d

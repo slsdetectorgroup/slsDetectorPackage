@@ -58,6 +58,15 @@
        </color>
       </brush>
      </colorrole>
+     <colorrole role="PlaceholderText">
+      <brush brushstyle="NoBrush">
+       <color alpha="128">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
     </active>
     <inactive>
      <colorrole role="WindowText">
@@ -90,6 +99,15 @@
      <colorrole role="Shadow">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="PlaceholderText">
+      <brush brushstyle="NoBrush">
+       <color alpha="128">
         <red>0</red>
         <green>0</green>
         <blue>0</blue>
@@ -134,6 +152,15 @@
        </color>
       </brush>
      </colorrole>
+     <colorrole role="PlaceholderText">
+      <brush brushstyle="NoBrush">
+       <color alpha="128">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
     </disabled>
    </palette>
   </property>
@@ -148,6 +175,9 @@
   <property name="windowIcon">
    <iconset resource="../include/icons.qrc">
     <normaloff>:/icons/images/mountain.png</normaloff>:/icons/images/mountain.png</iconset>
+  </property>
+  <property name="toolTip">
+   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt; color:#00007f;&quot;&gt;Left Click :zoom in&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt; color:#00007f;&quot;&gt;Right Click : zoom out by 1&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt; color:#00007f;&quot;&gt;Middle Click : panning&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt; color:#00007f;&quot;&gt;Ctrl+Right Click : zoom out to full size&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
   </property>
   <property name="inputMethodHints">
    <set>Qt::ImhNone</set>
@@ -182,74 +212,6 @@
    </property>
    <layout class="QGridLayout" name="layoutTabs"/>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>800</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>0</width>
-     <height>25</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>16777215</width>
-     <height>25</height>
-    </size>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>9</pointsize>
-    </font>
-   </property>
-   <property name="focusPolicy">
-    <enum>Qt::StrongFocus</enum>
-   </property>
-   <property name="defaultUp">
-    <bool>false</bool>
-   </property>
-   <property name="nativeMenuBar">
-    <bool>true</bool>
-   </property>
-   <widget class="QMenu" name="menuHelp">
-    <property name="title">
-     <string>&amp;Help</string>
-    </property>
-    <addaction name="actionAbout"/>
-   </widget>
-   <widget class="QMenu" name="menuUtilities">
-    <property name="title">
-     <string>Utilities</string>
-    </property>
-    <addaction name="actionLoadConfiguration"/>
-    <addaction name="actionLoadTrimbits"/>
-    <addaction name="actionSaveTrimbits"/>
-    <addaction name="actionLoadParameters"/>
-   </widget>
-   <widget class="QMenu" name="menuModes">
-    <property name="title">
-     <string>Modes</string>
-    </property>
-    <addaction name="actionDebug"/>
-    <addaction name="actionExpert"/>
-    <addaction name="actionDockable"/>
-   </widget>
-   <addaction name="menuUtilities"/>
-   <addaction name="menuModes"/>
-   <addaction name="menuHelp"/>
-  </widget>
   <widget class="QDockWidget" name="dockWidgetPlot">
    <property name="enabled">
     <bool>true</bool>
@@ -262,7 +224,7 @@
    </property>
    <property name="minimumSize">
     <size>
-     <width>36</width>
+     <width>50</width>
      <height>425</height>
     </size>
    </property>
@@ -281,17 +243,7 @@
     </font>
    </property>
    <property name="toolTip">
-    <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;table border=&quot;0&quot; style=&quot;-qt-table-type: root; margin-top:4px; margin-bottom:4px; margin-left:4px; margin-right:4px;&quot;&gt;
-&lt;tr&gt;
-&lt;td style=&quot;border: none;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;Left Click :zoom in&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;Righ&lt;/span&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;t Click &lt;/span&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;: zoom out by 1&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;Middle Click : panning&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;Ctrl+Right Click : zoom out to full size&lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string/>
    </property>
    <property name="statusTip">
     <string/>
@@ -369,12 +321,55 @@ p, li { white-space: pre-wrap; }
     </property>
     <property name="font">
      <font>
+      <family>Sans Serif</family>
       <pointsize>9</pointsize>
       <weight>50</weight>
       <bold>false</bold>
      </font>
     </property>
    </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>50</width>
+     <height>0</height>
+    </size>
+   </property>
+   <widget class="QMenu" name="menuUtilities">
+    <property name="title">
+     <string>Utilities</string>
+    </property>
+    <addaction name="actionLoadConfiguration"/>
+    <addaction name="actionLoadTrimbits"/>
+    <addaction name="actionSaveTrimbits"/>
+    <addaction name="actionLoadParameters"/>
+   </widget>
+   <widget class="QMenu" name="menuModes">
+    <property name="title">
+     <string>Modes</string>
+    </property>
+    <addaction name="actionDebug"/>
+    <addaction name="actionExpert"/>
+    <addaction name="actionDockable"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuUtilities"/>
+   <addaction name="menuModes"/>
+   <addaction name="menuHelp"/>
   </widget>
   <action name="actionLoadConfiguration">
    <property name="text">
@@ -384,6 +379,11 @@ p, li { white-space: pre-wrap; }
   <action name="actionLoadTrimbits">
    <property name="text">
     <string>Load Trimbits</string>
+   </property>
+  </action>
+  <action name="actionSaveTrimbits">
+   <property name="text">
+    <string>Save Trimbits</string>
    </property>
   </action>
   <action name="actionLoadParameters">
@@ -412,17 +412,12 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Dockable Windows</string>
+    <string>Dockable</string>
    </property>
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>&amp;About</string>
-   </property>
-  </action>
-  <action name="actionSaveTrimbits">
-   <property name="text">
-    <string>Save Trimbits</string>
+    <string>About</string>
    </property>
   </action>
  </widget>

@@ -110,7 +110,7 @@ namespace sls {
 qDetectorMain::qDetectorMain(int multiId, const std::string &fname,
                              bool isDevel)
     : QMainWindow(nullptr), detType(slsDetectorDefs::GENERIC),
-      isDeveloper(isDevel), heightPlotWindow(0), heightCentralWidget(0) {
+      isDeveloper(isDevel) {
 
     setupUi(this);
     SetUpDetector(fname, multiId);
@@ -167,11 +167,6 @@ void qDetectorMain::SetUpWidgetWindow() {
     dockWidgetPlot->setFloating(false);
     dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
 
-    // Other setup
-    // Height of plot and central widget
-    heightPlotWindow = dockWidgetPlot->size().height();
-    heightCentralWidget = centralwidget->size().height();
-    // Default zoom Tool Tip
     zoomToolTip = dockWidgetPlot->toolTip();
 
     Initialization();
@@ -507,28 +502,16 @@ void qDetectorMain::Refresh(int index) {
 
 void qDetectorMain::ResizeMainWindow(bool b) {
     LOG(logDEBUG1) << "Resizing Main Window: height:" << height();
-
     // undocked from the main window
     if (b) {
-        // sets the main window height to a smaller maximum to get rid of space
-        setMaximumHeight(height() - heightPlotWindow - 9);
-        dockWidgetPlot->setMinimumHeight(0);
+        // setMaximumHeight(450); //set max height crashes!!
         LOG(logINFO) << "Undocking from main window";
     } else {
-        setMaximumHeight(QWIDGETSIZE_MAX);
-        // the minimum for plot will be set when the widget gets resized
-        // automatically
+        // setMaximumHeight(QWIDGETSIZE_MAX);
     }
 }
 
 void qDetectorMain::resizeEvent(QResizeEvent *event) {
-
-    if (!dockWidgetPlot->isFloating()) {
-        dockWidgetPlot->setMinimumHeight(height() - centralwidget->height() -
-                                         50);
-        centralwidget->setMaximumHeight(heightCentralWidget);
-    }
-
     tabs->tabBar()->setFixedWidth(width());
     event->accept();
 }

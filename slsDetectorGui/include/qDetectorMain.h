@@ -71,9 +71,7 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     qTabDebugging *tabDebugging;
     qTabDeveloper *tabDeveloper;
     qTabMessages *tabMessages;
-    int isDeveloper;
-    int heightPlotWindow;
-    int heightCentralWidget;
+    int isDeveloper{false};
     QString zoomToolTip;
     QColor defaultTabColor;
 };

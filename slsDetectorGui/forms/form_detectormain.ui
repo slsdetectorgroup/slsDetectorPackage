@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>903</height>
+    <height>900</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -201,13 +201,13 @@
    <property name="minimumSize">
     <size>
      <width>0</width>
-     <height>395</height>
+     <height>400</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
      <width>524287</width>
-     <height>395</height>
+     <height>400</height>
     </size>
    </property>
    <layout class="QGridLayout" name="layoutTabs">
@@ -412,6 +412,11 @@
         </disabled>
        </palette>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="focusPolicy">
        <enum>Qt::NoFocus</enum>
       </property>
@@ -422,6 +427,11 @@
        <number>0</number>
       </property>
       <widget class="QWidget" name="tMeasurement">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <attribute name="title">
         <string>Measurement</string>
        </attribute>
@@ -443,6 +453,11 @@
         </property>
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollMeasurement">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
@@ -458,8 +473,13 @@
              <x>0</x>
              <y>0</y>
              <width>780</width>
-             <height>340</height>
+             <height>345</height>
             </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
            </property>
           </widget>
          </widget>
@@ -467,12 +487,22 @@
        </layout>
       </widget>
       <widget class="QWidget" name="tSettings">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <attribute name="title">
         <string>Settings</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollSettings">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
@@ -488,8 +518,13 @@
              <x>0</x>
              <y>0</y>
              <width>768</width>
-             <height>328</height>
+             <height>333</height>
             </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
            </property>
           </widget>
          </widget>
@@ -497,12 +532,22 @@
        </layout>
       </widget>
       <widget class="QWidget" name="tDataOutput">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <attribute name="title">
         <string>Data Output</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollDataOutput">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
@@ -518,8 +563,13 @@
              <x>0</x>
              <y>0</y>
              <width>768</width>
-             <height>328</height>
+             <height>333</height>
             </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
            </property>
           </widget>
          </widget>
@@ -527,12 +577,22 @@
        </layout>
       </widget>
       <widget class="QWidget" name="tPlot">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <attribute name="title">
         <string>Plot</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_6">
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollPlot">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
@@ -548,8 +608,13 @@
              <x>0</x>
              <y>0</y>
              <width>768</width>
-             <height>328</height>
+             <height>333</height>
             </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
            </property>
           </widget>
          </widget>
@@ -560,12 +625,22 @@
        <property name="enabled">
         <bool>true</bool>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <attribute name="title">
         <string>Advanced</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_8">
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollAdvanced">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
@@ -581,8 +656,13 @@
              <x>0</x>
              <y>0</y>
              <width>768</width>
-             <height>328</height>
+             <height>333</height>
             </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
            </property>
           </widget>
          </widget>
@@ -590,12 +670,22 @@
        </layout>
       </widget>
       <widget class="QWidget" name="tDebugging">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <attribute name="title">
         <string>Debugging</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_10">
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollDebugging">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
@@ -611,8 +701,13 @@
              <x>0</x>
              <y>0</y>
              <width>768</width>
-             <height>328</height>
+             <height>333</height>
             </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
            </property>
           </widget>
          </widget>
@@ -620,12 +715,22 @@
        </layout>
       </widget>
       <widget class="QWidget" name="tDeveloper">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <attribute name="title">
         <string>Developer</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_12">
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollDeveloper">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
@@ -641,8 +746,13 @@
              <x>0</x>
              <y>0</y>
              <width>768</width>
-             <height>328</height>
+             <height>333</height>
             </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
            </property>
           </widget>
          </widget>
@@ -650,12 +760,22 @@
        </layout>
       </widget>
       <widget class="QWidget" name="tTerminal">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <attribute name="title">
         <string>Terminal</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_14">
         <item row="0" column="0">
          <widget class="QScrollArea" name="scrollTerminal">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
@@ -671,8 +791,13 @@
              <x>0</x>
              <y>0</y>
              <width>768</width>
-             <height>328</height>
+             <height>333</height>
             </rect>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
            </property>
           </widget>
          </widget>
@@ -696,7 +821,7 @@
    <property name="minimumSize">
     <size>
      <width>50</width>
-     <height>438</height>
+     <height>54</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -745,7 +870,7 @@
     <property name="minimumSize">
      <size>
       <width>0</width>
-      <height>400</height>
+      <height>0</height>
      </size>
     </property>
     <property name="maximumSize">

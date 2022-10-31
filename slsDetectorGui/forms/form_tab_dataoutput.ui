@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>775</width>
-    <height>345</height>
+    <width>770</width>
+    <height>364</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,9 +24,14 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>775</width>
-    <height>365</height>
+    <width>770</width>
+    <height>370</height>
    </size>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -53,6 +58,12 @@
          <size>
           <width>105</width>
           <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>105</width>
+          <height>32</height>
          </size>
         </property>
         <property name="toolTip">
@@ -126,6 +137,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>35</height>
+         </size>
         </property>
         <property name="toolTip">
          <string>&lt;nobr&gt;
@@ -216,6 +233,12 @@ Disabled if receiver pc is not same as client pc.
          <size>
           <width>105</width>
           <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>105</width>
+          <height>32</height>
          </size>
         </property>
         <property name="toolTip">
@@ -314,7 +337,7 @@ Directory where one saves the data.
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>16777215</height>
+          <height>32</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -395,6 +418,12 @@ Directory where one saves the data.
          <size>
           <width>0</width>
           <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>32</height>
          </size>
         </property>
         <property name="focusPolicy">
@@ -483,7 +512,7 @@ Directory where one saves the data.
           <property name="maximumSize">
            <size>
             <width>200</width>
-            <height>16777215</height>
+            <height>32</height>
            </size>
           </property>
           <item>
@@ -521,20 +550,6 @@ Directory where one saves the data.
         </item>
        </layout>
       </item>
-      <item row="1" column="0">
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QCheckBox" name="chkParallel">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Parallel Readout</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
       <item row="4" column="0">
        <widget class="QCheckBox" name="chkTenGiga">
         <property name="enabled">
@@ -551,6 +566,20 @@ Compression using Root. Available only for Gotthard in Expert Mode.
          <string>10GbE</string>
         </property>
        </widget>
+      </item>
+      <item row="1" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QCheckBox" name="chkParallel">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Parallel Readout</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item row="3" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -584,7 +613,7 @@ Compression using Root. Available only for Gotthard in Expert Mode.
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>10</width>
+            <width>20</width>
             <height>20</height>
            </size>
           </property>
@@ -615,6 +644,12 @@ Compression using Root. Available only for Gotthard in Expert Mode.
            <size>
             <width>0</width>
             <height>25</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>32</height>
            </size>
           </property>
           <property name="keyboardTracking">
@@ -651,6 +686,19 @@ Compression using Root. Available only for Gotthard in Expert Mode.
          </spacer>
         </item>
        </layout>
+      </item>
+      <item row="5" column="0">
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </widget>

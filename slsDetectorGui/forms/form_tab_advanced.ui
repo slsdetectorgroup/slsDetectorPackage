@@ -47,6 +47,11 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="toolTip">
       <string/>
      </property>
@@ -54,7 +59,7 @@
       <enum>QTabWidget::North</enum>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <property name="elideMode">
       <enum>Qt::ElideLeft</enum>
@@ -96,6 +101,12 @@
           <size>
            <width>100</width>
            <height>25</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>28</height>
           </size>
          </property>
          <property name="keyboardTracking">
@@ -179,6 +190,12 @@
            <height>0</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>28</height>
+          </size>
+         </property>
          <property name="minimum">
           <number>-1</number>
          </property>
@@ -235,6 +252,12 @@
           <size>
            <width>160</width>
            <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>28</height>
           </size>
          </property>
          <property name="minimum">
@@ -322,6 +345,12 @@
           <size>
            <width>160</width>
            <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>28</height>
           </size>
          </property>
         </widget>
@@ -1086,6 +1115,12 @@
            <height>25</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>70</width>
+           <height>28</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;nobr&gt;
 Period between sub frames. Only for Eiger in 32 bit mode.
@@ -1148,6 +1183,12 @@ Default value is 0. A value less than the required minimum is ignored.
           <size>
            <width>0</width>
            <height>25</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>70</width>
+           <height>28</height>
           </size>
          </property>
          <property name="toolTip">
@@ -1241,6 +1282,12 @@ Exposure Time of a sub frame. Only for Eiger in 32 bit mode
            <height>25</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>28</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;nobr&gt;
 Period between sub frames. Only for Eiger in 32 bit mode.
@@ -1323,6 +1370,12 @@ Default value is 0. A value less than the required minimum is ignored.
            <height>25</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>28</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -1401,6 +1454,12 @@ Default value is 0. A value less than the required minimum is ignored.
            <height>25</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>28</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt;#&lt;span style=&quot; font-family:'Droid Sans Mono,monospace,monospace,Droid Sans Fallback'; font-size:14px; color:#ce9178;&quot;&gt;extrastoragecells&lt;/span&gt;#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -1445,6 +1504,12 @@ Default value is 0. A value less than the required minimum is ignored.
           <size>
            <width>0</width>
            <height>25</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>28</height>
           </size>
          </property>
          <property name="toolTip">
@@ -1510,6 +1575,12 @@ Default value is 0. A value less than the required minimum is ignored.
            <height>25</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>70</width>
+           <height>28</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exposure Time of a corresonding gate signal index. &lt;br/&gt;#exptime1# &lt;/p&gt;&lt;p&gt;#exptime2#&lt;/p&gt;&lt;p&gt;#exptime3#  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -1568,6 +1639,12 @@ Default value is 0. A value less than the required minimum is ignored.
            <height>25</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>28</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exposure Time of a corresonding gate signal index. &lt;br/&gt;#exptime1# &lt;/p&gt;&lt;p&gt;#exptime2#&lt;/p&gt;&lt;p&gt;#exptime3#  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -1606,6 +1683,12 @@ Default value is 0. A value less than the required minimum is ignored.
           <size>
            <width>0</width>
            <height>25</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>28</height>
           </size>
          </property>
          <property name="toolTip">
@@ -1667,6 +1750,12 @@ Default value is 0. A value less than the required minimum is ignored.
            <height>25</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>28</height>
+          </size>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gate Delay of a corresonding gate signal index. &lt;br/&gt;#gatedelay1# &lt;/p&gt;&lt;p&gt;#gatedelay2#&lt;/p&gt;&lt;p&gt;#gatedelay3#  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -1705,6 +1794,12 @@ Default value is 0. A value less than the required minimum is ignored.
           <size>
            <width>0</width>
            <height>25</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>70</width>
+           <height>28</height>
           </size>
          </property>
          <property name="toolTip">
@@ -1781,7 +1876,6 @@ Default value is 0. A value less than the required minimum is ignored.
   </layout>
  </widget>
  <tabstops>
-  <tabstop>tabAdvancedSettings</tabstop>
   <tabstop>spinSetAllTrimbits</tabstop>
   <tabstop>comboReadout</tabstop>
   <tabstop>spinXmin</tabstop>

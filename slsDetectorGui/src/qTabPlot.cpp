@@ -29,6 +29,7 @@ void qTabPlot::SetupWidgetWindow() {
     stackedWidget1D->setCurrentIndex(0);
     stackedWidget2D->setCurrentIndex(0);
     // Plot Axis
+    // its not spinboxes to not take value when checkbox checked
     dispXMin->setValidator(new QDoubleValidator(dispXMin));
     dispYMin->setValidator(new QDoubleValidator(dispYMin));
     dispZMin->setValidator(new QDoubleValidator(dispZMin));

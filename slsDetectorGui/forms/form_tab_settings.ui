@@ -30,6 +30,7 @@
   </property>
   <property name="font">
    <font>
+    <family>Carlito</family>
     <pointsize>10</pointsize>
    </font>
   </property>
@@ -89,13 +90,13 @@
      <property name="minimumSize">
       <size>
        <width>140</width>
-       <height>0</height>
+       <height>25</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>140</width>
-       <height>28</height>
+       <height>25</height>
       </size>
      </property>
      <property name="toolTip">
@@ -200,13 +201,13 @@
      <property name="minimumSize">
       <size>
        <width>140</width>
-       <height>0</height>
+       <height>25</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>140</width>
-       <height>28</height>
+       <height>25</height>
       </size>
      </property>
      <property name="keyboardTracking">
@@ -243,13 +244,13 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>0</height>
+       <height>25</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>140</width>
-       <height>28</height>
+       <height>25</height>
       </size>
      </property>
      <property name="toolTip">
@@ -368,13 +369,13 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>0</height>
+       <height>25</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>140</width>
-       <height>28</height>
+       <height>25</height>
       </size>
      </property>
      <item>
@@ -428,13 +429,13 @@
      <property name="minimumSize">
       <size>
        <width>140</width>
-       <height>0</height>
+       <height>25</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>140</width>
-       <height>28</height>
+       <height>25</height>
       </size>
      </property>
      <property name="keyboardTracking">
@@ -493,13 +494,13 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>0</height>
+       <height>25</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>140</width>
-       <height>28</height>
+       <height>25</height>
       </size>
      </property>
      <property name="toolTip">
@@ -648,13 +649,13 @@
      <property name="minimumSize">
       <size>
        <width>140</width>
-       <height>0</height>
+       <height>25</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>140</width>
-       <height>28</height>
+       <height>25</height>
       </size>
      </property>
      <property name="keyboardTracking">
@@ -688,13 +689,13 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>0</height>
+       <height>25</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>140</width>
-       <height>28</height>
+       <height>25</height>
       </size>
      </property>
      <property name="toolTip">
@@ -725,7 +726,7 @@
      <property name="minimumSize">
       <size>
        <width>90</width>
-       <height>30</height>
+       <height>35</height>
       </size>
      </property>
      <property name="maximumSize">

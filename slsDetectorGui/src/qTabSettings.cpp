@@ -18,7 +18,6 @@ qTabSettings::qTabSettings(QWidget *parent, Detector *detector)
 qTabSettings::~qTabSettings() {}
 
 void qTabSettings::SetupWidgetWindow() {
-
     comboHV->hide();
     lblComboHV->hide();
     lblSpinHV->hide();

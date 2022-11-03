@@ -774,6 +774,12 @@ Frame period between exposures.
             <property name="enabled">
              <bool>false</bool>
             </property>
+            <property name="font">
+             <font>
+              <family>Carlito</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of Triggers to be expected.&lt;/p&gt;&lt;p&gt; #triggers#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>

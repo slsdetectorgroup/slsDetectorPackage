@@ -3,10 +3,6 @@
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-#set(CMAKE_AUTOUIC ON)
-#------------------- Unsure if this is needed----------------
-#cmake_policy(SET CMP0071 OLD)
-#------------------- ----------------------------------------
 
 
 find_package(Qt5 5.9 COMPONENTS Widgets Core Gui REQUIRED)
@@ -99,7 +95,7 @@ target_include_directories(slsDetectorGui PUBLIC
 target_link_libraries(slsDetectorGui PUBLIC
     slsProjectOptions 
     slsDetectorStatic
-    ${SLS_INTERNAL_QWT_DIR}/lib
+    ${SLS_INTERNAL_QWT_DIR}/lib/libqwt.so
     PNG::PNG
     ZLIB::ZLIB
     Qt5::Widgets

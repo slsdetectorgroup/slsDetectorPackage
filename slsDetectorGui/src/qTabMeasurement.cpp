@@ -20,6 +20,7 @@ qTabMeasurement::qTabMeasurement(QWidget *parent, Detector *detector,
 qTabMeasurement::~qTabMeasurement() { delete progressTimer; }
 
 void qTabMeasurement::SetupWidgetWindow() {
+    setFont(QFont("Carlito", 9, QFont::Normal));
     // palette
     red = QPalette();
     red.setColor(QPalette::Active, QPalette::WindowText, Qt::red);

@@ -16,6 +16,12 @@
     <height>425</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <family>Carlito</family>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -100,7 +106,7 @@
      </property>
      <property name="font">
       <font>
-       <family>Cantarell</family>
+       <family>Carlito</family>
        <pointsize>10</pointsize>
       </font>
      </property>

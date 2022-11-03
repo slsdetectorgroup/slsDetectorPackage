@@ -643,7 +643,7 @@ Frame period between exposures.
          </size>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="pageLblSamples">
          <layout class="QGridLayout" name="gridLblTrigger_2">
@@ -719,6 +719,11 @@ Frame period between exposures.
           <height>0</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Number of Measurements:</string>
         </property>
@@ -745,7 +750,7 @@ Frame period between exposures.
          </size>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="pageLblDelay">
          <layout class="QGridLayout" name="gridLblDelay">
@@ -890,7 +895,7 @@ Exposure Time of a frame.
          </size>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="pageSpinTrigger">
          <layout class="QGridLayout" name="gridLayout_6">
@@ -1133,6 +1138,11 @@ Frame period between exposures.
       </item>
       <item row="1" column="1">
        <widget class="QLabel" name="lblBurstMode">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Burst Mode:</string>
         </property>
@@ -1153,7 +1163,7 @@ Frame period between exposures.
          </size>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="pageSpinDelay">
          <layout class="QGridLayout" name="gridLayout_8">
@@ -1194,6 +1204,11 @@ Frame period between exposures.
               <width>16777215</width>
               <height>25</height>
              </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
             </property>
             <property name="toolTip">
              <string>The Delay between Trigger Edge and Start of Exposure ( or Readout). 
@@ -1445,7 +1460,7 @@ Frame period between exposures.
          </size>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="pageSpinSamples">
          <layout class="QGridLayout" name="gridLayout_10">
@@ -1608,6 +1623,11 @@ Frame period between exposures.
         <property name="enabled">
          <bool>true</bool>
         </property>
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="toolTip">
          <string>&lt;nobr&gt;
 Exposure Time of a frame.
@@ -1639,6 +1659,12 @@ Exposure Time of a frame.
           <width>16777215</width>
           <height>25</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Carlito</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="toolTip">
          <string>Timing Mode of the detector. 
@@ -1692,7 +1718,7 @@ Exposure Time of a frame.
          </size>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="pageComboDelay">
          <layout class="QGridLayout" name="gridComboDelay">
@@ -1895,7 +1921,7 @@ Exposure Time of a frame.
          </size>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="pageLblTrigger">
          <layout class="QGridLayout" name="gridLblTrigger">
@@ -2047,6 +2073,11 @@ Exposure Time of a frame.
           <height>25</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="toolTip">
          <string>Timing Mode of the detector. 
  #timing#</string>
@@ -2075,6 +2106,11 @@ Exposure Time of a frame.
       </item>
       <item row="0" column="1">
        <widget class="QLabel" name="lblTimingMode">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Timing Mode:</string>
         </property>

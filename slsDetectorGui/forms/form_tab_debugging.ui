@@ -30,6 +30,7 @@
   </property>
   <property name="font">
    <font>
+    <family>Carlito</family>
     <pointsize>10</pointsize>
    </font>
   </property>

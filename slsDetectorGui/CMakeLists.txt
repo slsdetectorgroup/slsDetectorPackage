@@ -9,15 +9,8 @@ set(CMAKE_AUTORCC ON)
 #------------------- ----------------------------------------
 
 
-#find_package(Qt5Widgets 5.9.2 REQUIRED)
-#find_package(Qt5Gui 5.9.2 REQUIRED)
-#find_package(Qt5Core 5.9.2 REQUIRED)
-#find_package(Qt5OpenGL 5.9.2 REQUIRED)
-#find_package(Qt5Svg 5.9.2 REQUIRED)
-#find_package(Qt5Concurrent 5.9.2 REQUIRED)
 find_package(Qt5 5.9 COMPONENTS Widgets Core Gui REQUIRED)
 
-find_package(Qwt 6.1.3 REQUIRED)
 find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 
@@ -99,22 +92,19 @@ target_include_directories(slsDetectorGui PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/slsDetectorPlotting/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     "$<BUILD_INTERFACE:${QT5Widgets_INCLUDE_DIRS}>"
-    "$<BUILD_INTERFACE:${QWT_INCLUDE_DIR}>"
+    "$<BUILD_INTERFACE:${SLS_INTERNAL_QWT_DIR}/include>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
 )
 
 target_link_libraries(slsDetectorGui PUBLIC
     slsProjectOptions 
     slsDetectorStatic
-    ${QWT_LIBRARIES}
+    ${SLS_INTERNAL_QWT_DIR}/lib
     PNG::PNG
     ZLIB::ZLIB
     Qt5::Widgets
     Qt5::Gui
     Qt5::Core
-    #Qt5::QtOpenGL
-    #Qt5::QtSvg
-    #Qt5::Concurrent
     expat
     
     PRIVATE

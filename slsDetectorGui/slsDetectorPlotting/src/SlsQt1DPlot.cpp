@@ -562,8 +562,11 @@ void SlsQt1DPlot::SetupZoom() {
 
     const QFontMetrics fm(axisWidget(QwtPlot::yLeft)->font());
     QwtScaleDraw *sd = axisScaleDraw(QwtPlot::yLeft);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
     sd->setMinimumExtent(fm.horizontalAdvance("100.00"));
-
+#else
+    sd->setMinimumExtent(fm.width("100.00"));
+#endif
     const QColor c(Qt::darkBlue);
     zoomer->setRubberBandPen(c);
     zoomer->setTrackerPen(c);

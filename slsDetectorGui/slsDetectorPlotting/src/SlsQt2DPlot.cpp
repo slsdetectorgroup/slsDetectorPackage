@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "SlsQt2DPlot.h"
 #include "sls/logger.h"
+#include "qVersionResolve.h"
 
 #include <qlist.h>
 #include <qtoolbutton.h>
@@ -135,12 +136,7 @@ void SlsQt2DPlot::SetupZoom() {
 
     const QFontMetrics fm(axisWidget(QwtPlot::yLeft)->font());
     QwtScaleDraw *sd = axisScaleDraw(QwtPlot::yLeft);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
-    sd->setMinimumExtent(fm.horizontalAdvance("100.00"));
-#else
-    sd->setMinimumExtent(fm.width("100.00"));
-#endif
-
+    sd->setMinimumExtent(qResolve_GetQFontWidth(fm, "100.00"));
     const QColor c(Qt::darkBlue);
     zoomer->setRubberBandPen(c);
     zoomer->setTrackerPen(c);

@@ -4,6 +4,9 @@
 /* TODO! short description */
 #include "SlsQt1DPlot.h"
 #include "sls/logger.h"
+#include "qVersionResolve.h"
+
+
 #include <iostream>
 #include <qwt_legend.h>
 #include <qwt_math.h>
@@ -562,11 +565,7 @@ void SlsQt1DPlot::SetupZoom() {
 
     const QFontMetrics fm(axisWidget(QwtPlot::yLeft)->font());
     QwtScaleDraw *sd = axisScaleDraw(QwtPlot::yLeft);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
-    sd->setMinimumExtent(fm.horizontalAdvance("100.00"));
-#else
-    sd->setMinimumExtent(fm.width("100.00"));
-#endif
+    sd->setMinimumExtent(qResolve_GetQFontWidth(fm, "100.00"));
     const QColor c(Qt::darkBlue);
     zoomer->setRubberBandPen(c);
     zoomer->setTrackerPen(c);

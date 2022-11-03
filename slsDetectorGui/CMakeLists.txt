@@ -27,6 +27,7 @@ set(SOURCES
     src/qTabDeveloper.cpp
     src/qTabMessages.cpp
     src/qDacWidget.cpp
+    src/qVersionResolve.cpp
 )
 
 set(FORMS
@@ -65,6 +66,7 @@ set(HEADERS
     include/qTabDeveloper.h
     include/qTabMessages.h
     include/qDacWidget.h
+    include/qVersionResolve.h
 )
 set(RESOURCES
     include/icons.qrc

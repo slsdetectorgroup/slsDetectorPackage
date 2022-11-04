@@ -21,7 +21,7 @@
 
 namespace sls {
 
-SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
+SlsQt2DPlot::SlsQt2DPlot(QWidget *parent, bool gain) : QwtPlot(parent), gainPlot(gain) {
     isLog = 0;
     axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Floating);
     axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Floating);
@@ -39,6 +39,17 @@ SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
     SetYFont(qDefs::GetDefaultFont());
     SetZFont(qDefs::GetDefaultFont());
     Update();
+
+    if (gainPlot) {
+        setTitle("Gain");
+        SetZTitle("");
+        enableAxis(QwtPlot::yLeft, false);
+        enableAxis(QwtPlot::xBottom, false);
+        DisableZoom(true);
+        // set only major ticks from 0 to 3
+        auto div = axisScaleEngine(QwtPlot::yRight)->divideScale(0, 3, 3, 0, 1);
+        setAxisScaleDiv(QwtPlot::yRight, div);
+    }
 }
 
 SlsQt2DPlot::~SlsQt2DPlot() = default;
@@ -270,10 +281,11 @@ void SlsQt2DPlot::Update() {
         hist->SetMinimumToFirstGreaterThanZero();
     const QwtInterval zInterval = d_spectrogram->data()->interval(Qt::ZAxis);
     rightAxis->setColorMap(zInterval, myColourMap(isLog));
-
     if (!zoomer->zoomRectIndex())
         UnZoom();
-    setAxisScale(QwtPlot::yRight, zInterval.minValue(), zInterval.maxValue());
+    if (!gainPlot) {
+        setAxisScale(QwtPlot::yRight, zInterval.minValue(), zInterval.maxValue());
+    }
     plotLayout()->setAlignCanvasToScales(true);
     replot();
 }

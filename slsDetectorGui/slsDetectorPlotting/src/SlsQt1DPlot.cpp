@@ -337,7 +337,7 @@ void SlsQtH1DList::Remove(SlsQtH1D *hist) {
 }
 
 // 1d plot stuff
-SlsQt1DPlot::SlsQt1DPlot(QWidget *parent) : QwtPlot(parent) {
+SlsQt1DPlot::SlsQt1DPlot(QWidget *parent, bool gain) : QwtPlot(parent), gainPlot(gain) {
     //  n_histograms_attached=0;
     hline = vline = nullptr;
     hist_list = new SlsQtH1DList();
@@ -359,6 +359,15 @@ SlsQt1DPlot::SlsQt1DPlot(QWidget *parent) : QwtPlot(parent) {
     SetTitleFont(qDefs::GetDefaultFont());
     SetXFont(qDefs::GetDefaultFont());
     SetYFont(qDefs::GetDefaultFont());
+
+    if (gainPlot) {
+        SetTitle("");
+        SetYTitle("Gain");
+        DisableZoom(true);
+        // set only major ticks from 0 to 3
+        auto div = axisScaleEngine(QwtPlot::yLeft)->divideScale(0, 3, 3, 0, 1);
+        setAxisScaleDiv(QwtPlot::yLeft, div);
+    }
 }
 
 SlsQt1DPlot::~SlsQt1DPlot() {

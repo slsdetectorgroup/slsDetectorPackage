@@ -152,20 +152,11 @@ void qDrawPlot::SetupPlots() {
     gainhist1d->SetLineColor(0);
     gainhist1d->setStyleLinesorDots(isLines);
     gainhist1d->setSymbolMarkers(isMarkers);
-    // setup 1d gain plot
-    gainplot1d = new SlsQt1DPlot(boxPlot);
-    gainplot1d->SetTitle("");
-    gainplot1d->SetYTitle("Gain");
-    // set ticks to just 3
-    QList<double> majorTicks({0, 1, 2, 3});
-    QwtScaleDiv div(0, 3, QList<double>(), QList<double>(), majorTicks);
-    gainplot1d->setAxisScaleDiv(QwtPlot::yLeft, div);
-
     gainhist1d->setItemAttribute(QwtPlotItem::Legend, false);
+    // setup 1d gain plot
+    gainplot1d = new SlsQt1DPlot( boxPlot, true);
     gainhist1d->Attach(gainplot1d);
-    gainplot1d->DisableZoom(true);
     gainplot1d->hide();
-
     connect(plot1d, SIGNAL(PlotZoomedSignal(const QRectF &)), this,
             SLOT(Zoom1DGainPlot(const QRectF &)));
 
@@ -199,19 +190,10 @@ void qDrawPlot::SetupPlots() {
     plot2d->SetYTitle(yTitle2d);
     plot2d->SetZTitle(zTitle2d);
 
-    gainplot2d = new SlsQt2DPlot(boxPlot);
+    gainplot2d = new SlsQt2DPlot(boxPlot, true);
     gainplot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5,
                         nPixelsY - 0.5, gainData);
-    gainplot2d->setTitle("Gain");
-    gainplot2d->SetZTitle("");
-    gainplot2d->enableAxis(QwtPlot::yLeft, false);
-    // gainplot2d->enableAxis(1, false);
-    gainplot2d->enableAxis(QwtPlot::xBottom, false);
-    // set ticks to just 3
-    gainplot2d->setAxisScaleDiv(QwtPlot::yRight, div);
-    gainplot2d->DisableZoom(true);
     gainplot2d->hide();
-
     connect(plot2d, SIGNAL(PlotZoomedSignal(const QRectF &)), this,
             SLOT(Zoom2DGainPlot(const QRectF &)));
 
@@ -524,16 +506,8 @@ void qDrawPlot::ClonePlot() {
             h->setStyleLinesorDots(isLines);
             h->setSymbolMarkers(isMarkers);
             h->setItemAttribute(QwtPlotItem::Legend, false);
-            clonegainplot1D = new SlsQt1DPlot();
-            clonegainplot1D->SetTitle("");
-            clonegainplot1D->SetYTitle("Gain");
-            // set ticks to just 3
-            QList<double> majorTicks({0, 1, 2, 3});
-            QwtScaleDiv div(0, 3, QList<double>(), QList<double>(), majorTicks);
-            clonegainplot1D->setAxisScaleDiv(QwtPlot::yLeft, div);
-            clonegainplot1D->DisableZoom(true);
+            clonegainplot1D = new SlsQt1DPlot(NULL, true);
             h->Attach(clonegainplot1D);
-
             connect(cloneplot1D, SIGNAL(PlotZoomedSignal(const QRectF &)),
                     clonegainplot1D, SLOT(SetZoomX(const QRectF &)));
         }
@@ -549,23 +523,9 @@ void qDrawPlot::ClonePlot() {
         cloneplot2D->SetZRange(isZRange[0], isZRange[1], zRange[0], zRange[1]);
 
         if (isGainDataExtracted) {
-            clonegainplot2D = new SlsQt2DPlot();
-            clonegainplot2D->SetTitle("Gain");
-            clonegainplot2D->SetZTitle("");
-            clonegainplot2D->enableAxis(QwtPlot::yLeft, false);
-            clonegainplot2D->enableAxis(QwtPlot::xBottom, false);
-            // set ticks to just 3
-            QList<double> majorTicks({0, 1, 2, 3});
-            QwtScaleDiv div(0, 3, QList<double>(), QList<double>(), majorTicks);
-            clonegainplot2D->setAxisScaleDiv(QwtPlot::yRight, div);
-
-            clonegainplot2D->enableAxis(0, false);
-            clonegainplot2D->enableAxis(1, false);
-            clonegainplot2D->enableAxis(2, false);
+            clonegainplot2D = new SlsQt2DPlot(NULL, true);
             clonegainplot2D->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY,
                                      -0.5, nPixelsY - 0.5, gainData);
-            clonegainplot2D->DisableZoom(true);
-
             connect(cloneplot2D, SIGNAL(PlotZoomedSignal(const QRectF &)),
                     clonegainplot2D, SLOT(SetZoom(const QRectF &)));
         }
@@ -1098,14 +1058,12 @@ void qDrawPlot::Update1dXYRange() {
 
     if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
         plot1d->EnableYAutoScaling();
-        gainplot1d->EnableYAutoScaling();
     } else {
         double ymin = (isXYRange[qDefs::YMIN] ? xyRange[qDefs::YMIN]
                                               : plot1d->GetYMinimum());
         double ymax = (isXYRange[qDefs::YMAX] ? xyRange[qDefs::YMAX]
                                               : plot1d->GetYMaximum());
         plot1d->SetYMinMax(ymin, ymax);
-        gainplot1d->SetYMinMax(ymin, ymax);
     }
     plot1d->Update();
     gainplot1d->Update();

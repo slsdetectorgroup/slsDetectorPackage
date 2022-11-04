@@ -19,7 +19,7 @@ class SlsQt2DPlot : public QwtPlot {
     Q_OBJECT
 
   public:
-    SlsQt2DPlot(QWidget * = NULL);
+    SlsQt2DPlot(QWidget * = NULL, bool gain=false);
     ~SlsQt2DPlot();
     void SetTitle(QString title);
     void SetXTitle(QString title);
@@ -87,6 +87,8 @@ class SlsQt2DPlot : public QwtPlot {
   private:
     void SetupZoom();
     void SetupColorMap();
+    bool gainPlot{false};
+
     QwtLinearColorMap *myColourMap(QVector<double> colourStops);
     QwtLinearColorMap *myColourMap(int log = 0);
 

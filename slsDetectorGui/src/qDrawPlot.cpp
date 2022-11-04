@@ -109,6 +109,7 @@ void qDrawPlot::SetupPlots() {
     widgetStatistics->hide();
     lblCompleteImage->hide();
     lblInCompleteImage->hide();
+    lblRxRoiEnabled->hide();
 
     // setup 1d data
 

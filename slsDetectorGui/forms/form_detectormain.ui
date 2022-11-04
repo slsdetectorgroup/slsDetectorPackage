@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>900</height>
+    <height>882</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -476,8 +476,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>100</width>
-             <height>30</height>
+             <width>760</width>
+             <height>333</height>
             </rect>
            </property>
            <property name="font">
@@ -524,8 +524,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>100</width>
-             <height>30</height>
+             <width>760</width>
+             <height>333</height>
             </rect>
            </property>
            <property name="font">
@@ -572,8 +572,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>100</width>
-             <height>30</height>
+             <width>760</width>
+             <height>333</height>
             </rect>
            </property>
            <property name="font">
@@ -623,8 +623,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>100</width>
-             <height>30</height>
+             <width>760</width>
+             <height>333</height>
             </rect>
            </property>
            <property name="font">
@@ -719,8 +719,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>100</width>
-             <height>30</height>
+             <width>760</width>
+             <height>333</height>
             </rect>
            </property>
            <property name="font">
@@ -827,7 +827,7 @@
     <enum>Qt::LeftToRight</enum>
    </property>
    <property name="features">
-    <set>QDockWidget::NoDockWidgetFeatures</set>
+    <set>QDockWidget::DockWidgetFloatable</set>
    </property>
    <property name="allowedAreas">
     <set>Qt::BottomDockWidgetArea</set>
@@ -904,7 +904,7 @@
     </property>
    </widget>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
+  <widget class="QMenuBar" name="menu">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -952,7 +952,6 @@
     </property>
     <addaction name="actionDebug"/>
     <addaction name="actionExpert"/>
-    <addaction name="actionDockable"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="font">
@@ -982,6 +981,9 @@
    </property>
   </action>
   <action name="actionLoadTrimbits">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Load Trimbits</string>
    </property>

@@ -3,6 +3,7 @@
 #include "SlsQt2DPlot.h"
 #include "sls/logger.h"
 #include "qVersionResolve.h"
+#include "qDefs.h"
 
 #include <qlist.h>
 #include <qtoolbutton.h>
@@ -32,6 +33,11 @@ SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
     d_spectrogram->attach(this);
     plotLayout()->setAlignCanvasToScales(true);
     FillTestPlot();
+    setFont(qDefs::GetDefaultFont());
+    SetTitleFont(qDefs::GetDefaultFont());
+    SetXFont(qDefs::GetDefaultFont());
+    SetYFont(qDefs::GetDefaultFont());
+    SetZFont(qDefs::GetDefaultFont());
     Update();
 }
 

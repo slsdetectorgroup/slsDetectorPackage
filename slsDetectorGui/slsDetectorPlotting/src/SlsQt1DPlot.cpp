@@ -5,6 +5,7 @@
 #include "SlsQt1DPlot.h"
 #include "sls/logger.h"
 #include "qVersionResolve.h"
+#include "qDefs.h"
 
 
 #include <iostream>
@@ -354,6 +355,10 @@ SlsQt1DPlot::SlsQt1DPlot(QWidget *parent) : QwtPlot(parent) {
 
     axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Floating);
     axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Floating);
+    setFont(qDefs::GetDefaultFont());
+    SetTitleFont(qDefs::GetDefaultFont());
+    SetXFont(qDefs::GetDefaultFont());
+    SetYFont(qDefs::GetDefaultFont());
 }
 
 SlsQt1DPlot::~SlsQt1DPlot() {

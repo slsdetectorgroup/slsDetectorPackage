@@ -126,6 +126,8 @@ void qDetectorMain::SetUpWidgetWindow() {
     plot = new qDrawPlot(dockWidgetPlot, det.get());
     LOG(logDEBUG) << "DockPlot ready";
     dockWidgetPlot->setWidget(plot);
+    dockWidgetPlot->setFloating(false);
+    zoomToolTip = dockWidgetPlot->toolTip();
 
     // creating all the other tab widgets
     tabMeasurement = new qTabMeasurement(tMeasurement, det.get(), plot);
@@ -146,28 +148,17 @@ void qDetectorMain::SetUpWidgetWindow() {
     scrollTerminal->setWidget(tabMessages);
 
     tabs->setCurrentIndex(MEASUREMENT);
-
-    // other tab properties
-    // Default tab color
     defaultTabColor = tabs->tabBar()->tabTextColor(DATAOUTPUT);
-    // Set the current tab(measurement) to blue as it is the current one
+    // set current tab to blue
     tabs->tabBar()->setTabTextColor(0, QColor(0, 0, 200, 255));
-
-    // mode setup - to set up the tabs initially as disabled, not in form so
-    // done here
-    LOG(logINFO)
-        << "Dockable Mode: 0, Debug Mode: 0, Expert Mode: 0, Developer Mode: "
-        << isDeveloper;
     tabs->setTabEnabled(DEBUGGING, false);
     tabs->setTabEnabled(ADVANCED, false);
     tabs->setTabEnabled(DEVELOPER, isDeveloper);
     actionLoadTrimbits->setVisible(false);
     actionSaveTrimbits->setVisible(false);
-
-    dockWidgetPlot->setFloating(false);
-    dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
-
-    zoomToolTip = dockWidgetPlot->toolTip();
+    LOG(logINFO)
+        << "Debug Mode: 0, Expert Mode: 0, Developer Mode: "
+        << isDeveloper;
 
     Initialization();
 }
@@ -309,17 +300,8 @@ void qDetectorMain::EnableModes(QAction *action) {
         tabSettings->SetExportMode(enable);
         LOG(logINFO) << "Expert Mode: " << qDefs::stringEnable(enable);
     }
-
-    // Set DockableMode
     else {
-        enable = actionDockable->isChecked();
-        if (enable) {
-            dockWidgetPlot->setFeatures(QDockWidget::DockWidgetFloatable);
-        } else {
-            dockWidgetPlot->setFloating(false);
-            dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
-        }
-        LOG(logINFO) << "Dockable Mode: " << qDefs::stringEnable(enable);
+        LOG(logERROR) << "Unknown action";
     }
 }
 
@@ -502,12 +484,12 @@ void qDetectorMain::Refresh(int index) {
 
 void qDetectorMain::ResizeMainWindow(bool b) {
     LOG(logDEBUG1) << "Resizing Main Window: height:" << height();
-    // undocked from the main window
     if (b) {
-        // setMaximumHeight(450); //set max height crashes!!
-        LOG(logINFO) << "Undocking from main window";
+        setMaximumHeight(centralwidget->height()+menu->height());
+        LOG(logINFO) << "Plot undocked from main window";
     } else {
-        // setMaximumHeight(QWIDGETSIZE_MAX);
+        setMaximumHeight(QWIDGETSIZE_MAX);
+        LOG(logINFO) << "Plot docked back to main window";
     }
 }
 

@@ -30,7 +30,7 @@
   </property>
   <property name="font">
    <font>
-    <family>Carlito</family>
+    <family>Cantarell</family>
     <pointsize>10</pointsize>
    </font>
   </property>
@@ -55,6 +55,12 @@
        <height>16777215</height>
       </size>
      </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>Threshold:</string>
      </property>
@@ -70,6 +76,12 @@
        <width>50</width>
        <height>16777215</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="text">
       <string>1</string>
@@ -98,6 +110,12 @@
        <width>140</width>
        <height>25</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High Voltage&lt;/p&gt;&lt;p&gt; #highvoltage#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -188,6 +206,12 @@
        <height>16777215</height>
       </size>
      </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>Settings:</string>
      </property>
@@ -209,6 +233,12 @@
        <width>140</width>
        <height>25</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="keyboardTracking">
       <bool>false</bool>
@@ -252,6 +282,12 @@
        <width>140</width>
        <height>25</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gain Mode of the detector&lt;/p&gt;&lt;p&gt; #gainmode#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Fix G0 is to be used with utmost caution. Can damage the detector!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -321,6 +357,12 @@
        <height>16777215</height>
       </size>
      </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>Gain Mode:</string>
      </property>
@@ -333,6 +375,12 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High Voltage&lt;/p&gt;&lt;p&gt; #highvoltage#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -352,6 +400,12 @@
        <width>50</width>
        <height>16777215</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="text">
       <string>2</string>
@@ -377,6 +431,12 @@
        <width>140</width>
        <height>25</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <item>
       <property name="text">
@@ -413,6 +473,12 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High Voltage. Range: 60 - 200V. Swich off high voltage by setting to 0.&lt;/p&gt;&lt;p&gt;-1 corresponds to different values from detectors.&lt;/p&gt;&lt;p&gt;#highvoltage#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
@@ -437,6 +503,12 @@
        <width>140</width>
        <height>25</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="keyboardTracking">
       <bool>false</bool>
@@ -475,6 +547,12 @@
        <height>16777215</height>
       </size>
      </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>Dynamic Range:</string>
      </property>
@@ -502,6 +580,12 @@
        <width>140</width>
        <height>25</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="toolTip">
       <string>Settings of the detector. 
@@ -636,6 +720,12 @@
        <height>16777215</height>
       </size>
      </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
       <string>Counters:</string>
      </property>
@@ -657,6 +747,12 @@
        <width>140</width>
        <height>25</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="keyboardTracking">
       <bool>false</bool>
@@ -697,6 +793,12 @@
        <width>140</width>
        <height>25</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High Voltage. Range: 60 - 200V. Swich off high voltage by setting to 0.&lt;/p&gt;&lt;p&gt;-1 corresponds to different values from detectors.&lt;/p&gt;&lt;p&gt;#highvoltage#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -772,6 +874,12 @@
        </disabled>
       </palette>
      </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="focusPolicy">
       <enum>Qt::TabFocus</enum>
      </property>
@@ -797,6 +905,12 @@
        <width>50</width>
        <height>16777215</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="text">
       <string>3</string>

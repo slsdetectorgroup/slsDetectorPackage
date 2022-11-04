@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>775</width>
-    <height>345</height>
+    <width>750</width>
+    <height>330</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,13 +24,13 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>775</width>
-    <height>345</height>
+    <width>760</width>
+    <height>16777215</height>
    </size>
   </property>
   <property name="font">
    <font>
-    <family>Carlito</family>
+    <family>Cantarell</family>
     <pointsize>10</pointsize>
    </font>
   </property>
@@ -53,8 +53,15 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="maximumSize">
+      <size>
+       <width>760</width>
+       <height>16777215</height>
+      </size>
+     </property>
      <property name="font">
       <font>
+       <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
      </property>
@@ -65,7 +72,7 @@
       <enum>QTabWidget::North</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>3</number>
      </property>
      <property name="elideMode">
       <enum>Qt::ElideLeft</enum>
@@ -73,6 +80,12 @@
      <widget class="QWidget" name="tab_trimming">
       <property name="enabled">
        <bool>false</bool>
+      </property>
+      <property name="font">
+       <font>
+        <family>Cantarell</family>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <attribute name="title">
        <string>Trimming</string>
@@ -96,6 +109,12 @@
        </item>
        <item row="0" column="0">
         <widget class="QLabel" name="lblSetAllTrimbits">
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Set All trimbits:</string>
          </property>
@@ -112,8 +131,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="keyboardTracking">
           <bool>false</bool>
@@ -148,6 +173,12 @@
       <property name="enabled">
        <bool>false</bool>
       </property>
+      <property name="font">
+       <font>
+        <family>Cantarell</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <attribute name="title">
        <string>Region of Interest</string>
       </attribute>
@@ -159,6 +190,12 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="text">
           <string>X Min:</string>
@@ -179,6 +216,18 @@
            <height>35</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>35</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Clear ROI </string>
          </property>
@@ -192,15 +241,21 @@
         <widget class="QSpinBox" name="spinXmin">
          <property name="minimumSize">
           <size>
-           <width>160</width>
+           <width>120</width>
            <height>0</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>16777215</width>
-           <height>28</height>
+           <width>120</width>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="minimum">
           <number>-1</number>
@@ -234,6 +289,12 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>X Max:</string>
          </property>
@@ -256,15 +317,21 @@
         <widget class="QSpinBox" name="spinXmax">
          <property name="minimumSize">
           <size>
-           <width>160</width>
+           <width>120</width>
            <height>0</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>16777215</width>
-           <height>28</height>
+           <width>120</width>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="minimum">
           <number>-1</number>
@@ -284,6 +351,12 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="text">
           <string>Readout: </string>
@@ -316,6 +389,18 @@
            <width>0</width>
            <height>35</height>
           </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>35</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="text">
           <string>Set ROI </string>
@@ -356,14 +441,26 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
         </widget>
        </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_network">
+      <property name="font">
+       <font>
+        <family>Cantarell</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <attribute name="title">
        <string>Network</string>
       </attribute>
@@ -385,8 +482,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Sets Control Port
@@ -435,8 +538,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Sets the Receiver Hostname, connects to it and gets the receiver mac address and eth. Sets some receiver parameters like file name, file dir, file index in receiver. 
@@ -455,6 +564,12 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Destination UDP IP:</string>
          </property>
@@ -467,6 +582,12 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="text">
           <string>Readout Control Port:</string>
@@ -490,8 +611,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Sets the Receiver UDP IP
@@ -519,8 +646,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Sets the Receiver UDP MAC
@@ -548,8 +681,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Sets the detector MAC to send packets to receiver
@@ -577,8 +716,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Sets Receiver UDP Port
@@ -627,8 +772,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string notr="true">Sets Receiver TCP Port
@@ -668,6 +819,12 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Client ZMQ IP:</string>
          </property>
@@ -690,8 +847,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Sets the detector IP to send packets to receiver
@@ -719,8 +882,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Sets Stop Port 
@@ -760,6 +929,12 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Receiver ZMQ IP:</string>
          </property>
@@ -772,6 +947,12 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="text">
           <string>Receiver TCP Port:</string>
@@ -795,8 +976,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Sets Stop Port 
@@ -836,6 +1023,12 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Destination UDP Port:</string>
          </property>
@@ -858,8 +1051,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Sets Receiver UDP Port
@@ -908,8 +1107,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Sets the Receiver UDP IP
@@ -927,6 +1132,12 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="text">
           <string>Client ZMQ Port: </string>
@@ -966,8 +1177,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
         </widget>
        </item>
@@ -978,6 +1195,12 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="text">
           <string>Sourceadout UDP MAC:</string>
@@ -998,6 +1221,12 @@
            <height>0</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Readout:</string>
          </property>
@@ -1010,6 +1239,12 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="text">
           <string>Receiver ZMQ Port:</string>
@@ -1024,6 +1259,12 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Destination UDP MAC:</string>
          </property>
@@ -1037,6 +1278,12 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Source UDP IP:</string>
          </property>
@@ -1049,6 +1296,12 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="text">
           <string>Readout Stop Port:</string>
@@ -1072,8 +1325,14 @@
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>Sets the detector IP to send packets to receiver
@@ -1092,6 +1351,12 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="text">
           <string>Receiver:</string>
          </property>
@@ -1100,6 +1365,12 @@
       </layout>
      </widget>
      <widget class="QWidget" name="tab_acquisition">
+      <property name="font">
+       <font>
+        <family>Cantarell</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <attribute name="title">
        <string>Acquisition</string>
       </attribute>
@@ -1124,8 +1395,14 @@
          <property name="maximumSize">
           <size>
            <width>70</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;nobr&gt;
@@ -1194,8 +1471,14 @@ Default value is 0. A value less than the required minimum is ignored.
          <property name="maximumSize">
           <size>
            <width>70</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;nobr&gt;
@@ -1247,6 +1530,12 @@ Exposure Time of a sub frame. Only for Eiger in 32 bit mode
          <property name="enabled">
           <bool>false</bool>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt;#&lt;span style=&quot; font-family:'Droid Sans Mono,monospace,monospace,Droid Sans Fallback'; font-size:14px; color:#ce9178;&quot;&gt;extrastoragecells#&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -1291,8 +1580,14 @@ Exposure Time of a sub frame. Only for Eiger in 32 bit mode
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;nobr&gt;
@@ -1328,6 +1623,12 @@ Default value is 0. A value less than the required minimum is ignored.
          <property name="enabled">
           <bool>false</bool>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="toolTip">
           <string>&lt;nobr&gt;
 Exposure Time of a sub frame. Only for Eiger in 32 bit mode
@@ -1344,6 +1645,12 @@ Exposure Time of a sub frame. Only for Eiger in 32 bit mode
         <widget class="QLabel" name="lblDiscardBits">
          <property name="enabled">
           <bool>false</bool>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;nobr&gt;
@@ -1379,8 +1686,14 @@ Default value is 0. A value less than the required minimum is ignored.
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1463,8 +1776,14 @@ Default value is 0. A value less than the required minimum is ignored.
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt;#&lt;span style=&quot; font-family:'Droid Sans Mono,monospace,monospace,Droid Sans Fallback'; font-size:14px; color:#ce9178;&quot;&gt;extrastoragecells&lt;/span&gt;#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1515,8 +1834,14 @@ Default value is 0. A value less than the required minimum is ignored.
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;nobr&gt;
@@ -1549,6 +1874,12 @@ Exposure Time of a sub frame. Only for Eiger in 32 bit mode
         <widget class="QLabel" name="lblSubDeadTime">
          <property name="enabled">
           <bool>false</bool>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;nobr&gt;
@@ -1584,8 +1915,14 @@ Default value is 0. A value less than the required minimum is ignored.
          <property name="maximumSize">
           <size>
            <width>70</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exposure Time of a corresonding gate signal index. &lt;br/&gt;#exptime1# &lt;/p&gt;&lt;p&gt;#exptime2#&lt;/p&gt;&lt;p&gt;#exptime3#  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1648,8 +1985,14 @@ Default value is 0. A value less than the required minimum is ignored.
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exposure Time of a corresonding gate signal index. &lt;br/&gt;#exptime1# &lt;/p&gt;&lt;p&gt;#exptime2#&lt;/p&gt;&lt;p&gt;#exptime3#  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1694,8 +2037,14 @@ Default value is 0. A value less than the required minimum is ignored.
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gate index. It will get exposure time and gate delay for corresponding gate signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1731,6 +2080,12 @@ Default value is 0. A value less than the required minimum is ignored.
          <property name="enabled">
           <bool>false</bool>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -1759,8 +2114,14 @@ Default value is 0. A value less than the required minimum is ignored.
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gate Delay of a corresonding gate signal index. &lt;br/&gt;#gatedelay1# &lt;/p&gt;&lt;p&gt;#gatedelay2#&lt;/p&gt;&lt;p&gt;#gatedelay3#  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1805,8 +2166,14 @@ Default value is 0. A value less than the required minimum is ignored.
          <property name="maximumSize">
           <size>
            <width>70</width>
-           <height>28</height>
+           <height>25</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gate Delay of a corresonding gate signal index. &lt;br/&gt;#gatedelay1# &lt;/p&gt;&lt;p&gt;#gatedelay2#&lt;/p&gt;&lt;p&gt;#gatedelay3#  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1854,6 +2221,12 @@ Default value is 0. A value less than the required minimum is ignored.
          <property name="enabled">
           <bool>false</bool>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -1866,6 +2239,12 @@ Default value is 0. A value less than the required minimum is ignored.
         <widget class="QLabel" name="lblGateIndex">
          <property name="enabled">
           <bool>false</bool>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

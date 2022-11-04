@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>770</width>
-    <height>324</height>
+    <height>338</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -30,7 +30,7 @@
   </property>
   <property name="font">
    <font>
-    <family>Carlito</family>
+    <family>Cantarell</family>
     <pointsize>10</pointsize>
    </font>
   </property>
@@ -42,12 +42,12 @@
     <number>4</number>
    </property>
    <property name="bottomMargin">
-    <number>4</number>
+    <number>2</number>
    </property>
    <property name="verticalSpacing">
-    <number>0</number>
+    <number>4</number>
    </property>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -59,186 +59,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item row="0" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <spacer name="horizontalSpacer_8">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnSave">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>108</width>
-         <height>35</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>35</height>
-        </size>
-       </property>
-       <property name="palette">
-        <palette>
-         <active>
-          <colorrole role="Shadow">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>20</red>
-             <green>20</green>
-             <blue>20</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </active>
-         <inactive>
-          <colorrole role="Shadow">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>20</red>
-             <green>20</green>
-             <blue>20</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </inactive>
-         <disabled>
-          <colorrole role="Shadow">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>20</red>
-             <green>20</green>
-             <blue>20</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </disabled>
-        </palette>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
-       <property name="text">
-        <string>Save</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../include/icons.qrc">
-         <normaloff>:/icons/images/save.png</normaloff>:/icons/images/save.png</iconset>
-       </property>
-       <property name="flat">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_10">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnClone">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>108</width>
-         <height>35</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>35</height>
-        </size>
-       </property>
-       <property name="palette">
-        <palette>
-         <active>
-          <colorrole role="Shadow">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>20</red>
-             <green>20</green>
-             <blue>20</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </active>
-         <inactive>
-          <colorrole role="Shadow">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>20</red>
-             <green>20</green>
-             <blue>20</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </inactive>
-         <disabled>
-          <colorrole role="Shadow">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>20</red>
-             <green>20</green>
-             <blue>20</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </disabled>
-        </palette>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
-       <property name="text">
-        <string>Clone</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../include/icons.qrc">
-         <normaloff>:/icons/images/new.png</normaloff>:/icons/images/new.png</iconset>
-       </property>
-       <property name="flat">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
    <item row="3" column="0">
     <widget class="QGroupBox" name="boxPlotAxis">
@@ -259,6 +79,12 @@
        <width>16777215</width>
        <height>16777215</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="title">
       <string>  Plot Axis</string>
@@ -308,6 +134,12 @@
           <height>25</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
        </widget>
       </item>
       <item row="2" column="4">
@@ -330,6 +162,12 @@
           <height>25</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
        </widget>
       </item>
       <item row="2" column="7">
@@ -351,6 +189,12 @@
           <width>16777215</width>
           <height>25</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
        </widget>
       </item>
@@ -377,6 +221,12 @@
           <height>25</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
        </widget>
       </item>
       <item row="0" column="1" colspan="4">
@@ -399,6 +249,12 @@
           <height>25</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="echoMode">
          <enum>QLineEdit::Normal</enum>
         </property>
@@ -414,6 +270,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>Z Min:</string>
@@ -440,6 +302,12 @@
           <height>25</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="inputMethodHints">
          <set>Qt::ImhDigitsOnly</set>
         </property>
@@ -452,6 +320,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>X Min:</string>
@@ -466,6 +340,12 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>X Axis:</string>
         </property>
@@ -478,6 +358,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>Z Axis:</string>
@@ -504,6 +390,12 @@
           <height>25</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="inputMethodHints">
          <set>Qt::ImhDigitsOnly</set>
         </property>
@@ -516,6 +408,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>Y Max:</string>
@@ -562,6 +460,12 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>X Max:</string>
         </property>
@@ -587,6 +491,12 @@
           <height>25</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="inputMethodHints">
          <set>Qt::ImhDigitsOnly</set>
         </property>
@@ -594,6 +504,12 @@
       </item>
       <item row="0" column="0">
        <widget class="QCheckBox" name="chkTitle">
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Title :</string>
         </property>
@@ -606,6 +522,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>Y Axis:</string>
@@ -620,6 +542,12 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Keep Aspect Ratio</string>
         </property>
@@ -632,6 +560,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>Z Max:</string>
@@ -658,6 +592,12 @@
           <height>25</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
        </widget>
       </item>
       <item row="2" column="3">
@@ -667,6 +607,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>Y Min:</string>
@@ -693,6 +639,12 @@
           <height>25</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="inputMethodHints">
          <set>Qt::ImhDigitsOnly</set>
         </property>
@@ -717,6 +669,7 @@
      </property>
      <property name="font">
       <font>
+       <family>Cantarell</family>
        <pointsize>10</pointsize>
        <weight>50</weight>
        <bold>false</bold>
@@ -761,6 +714,12 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked, there is no call back and no images are plotted.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
@@ -788,6 +747,12 @@
           <width>60</width>
           <height>25</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High water mark for inbound messages for gui.&lt;/p&gt;&lt;p&gt; #zmqhwm#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -829,10 +794,22 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="currentIndex">
          <number>1</number>
         </property>
         <widget class="QWidget" name="pageTimeGap">
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <layout class="QHBoxLayout" name="horizontalLayout_14">
           <property name="spacing">
            <number>2</number>
@@ -869,6 +846,12 @@
               <height>25</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
             <property name="keyboardTracking">
              <bool>false</bool>
             </property>
@@ -903,6 +886,12 @@
               <height>25</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
             <property name="currentIndex">
              <number>3</number>
             </property>
@@ -931,6 +920,12 @@
          </layout>
         </widget>
         <widget class="QWidget" name="pageFrequency">
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <layout class="QHBoxLayout" name="horizontalLayout_13">
           <property name="spacing">
            <number>0</number>
@@ -966,6 +961,12 @@
               <width>16777215</width>
               <height>25</height>
              </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
             </property>
             <property name="keyboardTracking">
              <bool>false</bool>
@@ -1066,6 +1067,12 @@
           </disabled>
          </palette>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
@@ -1165,6 +1172,12 @@
           </disabled>
          </palette>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="currentIndex">
          <number>1</number>
         </property>
@@ -1214,10 +1227,22 @@
    </item>
    <item row="2" column="0">
     <widget class="QStackedWidget" name="stackedPlotOptions">
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page1D">
+      <property name="font">
+       <font>
+        <family>Cantarell</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <property name="leftMargin">
         <number>0</number>
@@ -1253,6 +1278,12 @@
            <width>16777215</width>
            <height>16777215</height>
           </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
          </property>
          <property name="title">
           <string>1D Plot Options</string>
@@ -1296,6 +1327,12 @@
               <height>16</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
             <property name="focusPolicy">
              <enum>Qt::NoFocus</enum>
             </property>
@@ -1334,6 +1371,12 @@
               <height>16</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
             <property name="focusPolicy">
              <enum>Qt::NoFocus</enum>
             </property>
@@ -1360,10 +1403,22 @@
           </item>
           <item row="0" column="1">
            <widget class="QStackedWidget" name="stackedWidget1D">
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
             <property name="currentIndex">
-             <number>2</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="pageSuperImpose">
+             <property name="font">
+              <font>
+               <family>Cantarell</family>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <property name="topMargin">
                <number>4</number>
@@ -1381,6 +1436,12 @@
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Superimpose</string>
@@ -1414,6 +1475,12 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Persistency:</string>
                 </property>
@@ -1441,6 +1508,12 @@
                   <width>100</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -1477,6 +1550,12 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Log Scale (Y)</string>
                 </property>
@@ -1506,6 +1585,12 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Points</string>
                 </property>
@@ -1522,6 +1607,12 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Lines</string>
                 </property>
@@ -1533,6 +1624,12 @@
              </layout>
             </widget>
             <widget class="QWidget" name="pageAccumulate">
+             <property name="font">
+              <font>
+               <family>Cantarell</family>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
              <layout class="QHBoxLayout" name="horizontalLayout">
               <property name="topMargin">
                <number>4</number>
@@ -1550,6 +1647,12 @@
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Accumulate</string>
@@ -1613,6 +1716,12 @@
                   </disabled>
                  </palette>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="focusPolicy">
                  <enum>Qt::NoFocus</enum>
                 </property>
@@ -1657,6 +1766,12 @@
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Pedestal</string>
@@ -1720,6 +1835,12 @@
                   </disabled>
                  </palette>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="focusPolicy">
                  <enum>Qt::NoFocus</enum>
                 </property>
@@ -1741,6 +1862,12 @@
              </layout>
             </widget>
             <widget class="QWidget" name="pageBinary">
+             <property name="font">
+              <font>
+               <family>Cantarell</family>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <property name="topMargin">
                <number>4</number>
@@ -1755,6 +1882,12 @@
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="toolTip">
                  <string>&lt;nobr&gt;
@@ -1776,6 +1909,12 @@ All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be res
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string>from </string>
@@ -1805,6 +1944,12 @@ All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be res
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                 </property>
@@ -1829,6 +1974,12 @@ All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be res
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string> to </string>
@@ -1857,6 +2008,12 @@ All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be res
                   <width>150</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -1899,6 +2056,12 @@ All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be res
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="toolTip">
                  <string>&lt;nobr&gt;
 Displays minimum, maximum and sum of values for each plot.
@@ -1936,6 +2099,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="toolTip">
                  <string>&lt;nobr&gt;
 Displays minimum, maximum and sum of values for each plot.
@@ -1956,6 +2125,12 @@ Displays minimum, maximum and sum of values for each plot.
       </layout>
      </widget>
      <widget class="QWidget" name="page2D">
+      <property name="font">
+       <font>
+        <family>Cantarell</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <layout class="QGridLayout" name="gridLayout_5">
        <property name="leftMargin">
         <number>0</number>
@@ -1995,6 +2170,12 @@ Displays minimum, maximum and sum of values for each plot.
            <height>16777215</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Cantarell</family>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
          <property name="title">
           <string>2D Plot Options</string>
          </property>
@@ -2025,10 +2206,22 @@ Displays minimum, maximum and sum of values for each plot.
           </property>
           <item row="0" column="2">
            <widget class="QStackedWidget" name="stackedWidget2D">
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
             <property name="currentIndex">
-             <number>2</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="pageInterpolate">
+             <property name="font">
+              <font>
+               <family>Cantarell</family>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
               <property name="topMargin">
                <number>4</number>
@@ -2050,6 +2243,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <height>0</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Interpolate</string>
                 </property>
@@ -2062,6 +2261,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Contour</string>
@@ -2082,6 +2287,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <height>0</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>Log Scale (Z)</string>
                 </property>
@@ -2097,6 +2308,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="toolTip">
                  <string>&lt;nobr&gt;
@@ -2119,6 +2336,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="toolTip">
                  <string>&lt;nobr&gt;
 Displays minimum, maximum and sum of values for each plot.
@@ -2132,6 +2355,12 @@ Displays minimum, maximum and sum of values for each plot.
              </layout>
             </widget>
             <widget class="QWidget" name="pageAccumulate_2">
+             <property name="font">
+              <font>
+               <family>Cantarell</family>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
              <layout class="QHBoxLayout" name="horizontalLayout_8">
               <property name="topMargin">
                <number>4</number>
@@ -2149,6 +2378,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Accumulate</string>
@@ -2212,6 +2447,12 @@ Displays minimum, maximum and sum of values for each plot.
                   </disabled>
                  </palette>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="focusPolicy">
                  <enum>Qt::NoFocus</enum>
                 </property>
@@ -2256,6 +2497,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Pedestal</string>
@@ -2319,6 +2566,12 @@ Displays minimum, maximum and sum of values for each plot.
                   </disabled>
                  </palette>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="focusPolicy">
                  <enum>Qt::NoFocus</enum>
                 </property>
@@ -2340,6 +2593,12 @@ Displays minimum, maximum and sum of values for each plot.
              </layout>
             </widget>
             <widget class="QWidget" name="pageBinary_2">
+             <property name="font">
+              <font>
+               <family>Cantarell</family>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
              <layout class="QHBoxLayout" name="horizontalLayout_10">
               <property name="topMargin">
                <number>4</number>
@@ -2354,6 +2613,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string>Binary</string>
@@ -2387,6 +2652,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="text">
                  <string>from </string>
                 </property>
@@ -2415,6 +2686,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <height>25</height>
                  </size>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                 </property>
@@ -2439,6 +2716,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="text">
                  <string> to </string>
@@ -2467,6 +2750,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <width>16777215</width>
                   <height>25</height>
                  </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -2509,6 +2798,12 @@ Displays minimum, maximum and sum of values for each plot.
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="font">
+                 <font>
+                  <family>Cantarell</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
                 <property name="toolTip">
                  <string>&lt;nobr&gt;
 Displays statistics, ie. minimum, maximum and sum of values for each plot.
@@ -2536,6 +2831,12 @@ Displays statistics, ie. minimum, maximum and sum of values for each plot.
               <width>16</width>
               <height>16</height>
              </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
             </property>
             <property name="focusPolicy">
              <enum>Qt::NoFocus</enum>
@@ -2572,6 +2873,12 @@ Displays statistics, ie. minimum, maximum and sum of values for each plot.
               <height>16</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <family>Cantarell</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
             <property name="focusPolicy">
              <enum>Qt::NoFocus</enum>
             </property>
@@ -2599,6 +2906,198 @@ Displays statistics, ie. minimum, maximum and sum of values for each plot.
       </layout>
      </widget>
     </widget>
+   </item>
+   <item row="4" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <spacer name="horizontalSpacer_8">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnSave">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>108</width>
+         <height>35</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>35</height>
+        </size>
+       </property>
+       <property name="palette">
+        <palette>
+         <active>
+          <colorrole role="Shadow">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>20</red>
+             <green>20</green>
+             <blue>20</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </active>
+         <inactive>
+          <colorrole role="Shadow">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>20</red>
+             <green>20</green>
+             <blue>20</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </inactive>
+         <disabled>
+          <colorrole role="Shadow">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>20</red>
+             <green>20</green>
+             <blue>20</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </disabled>
+        </palette>
+       </property>
+       <property name="font">
+        <font>
+         <family>Cantarell</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>Save</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../include/icons.qrc">
+         <normaloff>:/icons/images/save.png</normaloff>:/icons/images/save.png</iconset>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_10">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnClone">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>108</width>
+         <height>35</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>35</height>
+        </size>
+       </property>
+       <property name="palette">
+        <palette>
+         <active>
+          <colorrole role="Shadow">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>20</red>
+             <green>20</green>
+             <blue>20</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </active>
+         <inactive>
+          <colorrole role="Shadow">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>20</red>
+             <green>20</green>
+             <blue>20</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </inactive>
+         <disabled>
+          <colorrole role="Shadow">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>20</red>
+             <green>20</green>
+             <blue>20</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </disabled>
+        </palette>
+       </property>
+       <property name="font">
+        <font>
+         <family>Cantarell</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>Clone</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../include/icons.qrc">
+         <normaloff>:/icons/images/new.png</normaloff>:/icons/images/new.png</iconset>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

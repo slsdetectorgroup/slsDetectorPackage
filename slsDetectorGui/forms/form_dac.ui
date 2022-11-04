@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>350</width>
+    <width>300</width>
     <height>30</height>
    </rect>
   </property>
@@ -18,19 +18,19 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>350</width>
+    <width>300</width>
     <height>30</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>350</width>
+    <width>300</width>
     <height>30</height>
    </size>
   </property>
   <property name="font">
    <font>
-    <family>Carlito</family>
+    <family>Cantarell</family>
     <pointsize>10</pointsize>
    </font>
   </property>
@@ -69,9 +69,15 @@
      </property>
      <property name="maximumSize">
       <size>
-       <width>100</width>
+       <width>90</width>
        <height>25</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="text">
       <string>vref_comp_fe:</string>
@@ -98,8 +104,14 @@
        <height>25</height>
       </size>
      </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="text">
-      <string>1400 mV</string>
+      <string>2999 mV</string>
      </property>
     </widget>
    </item>
@@ -107,15 +119,21 @@
     <widget class="QDoubleSpinBox" name="spinDac">
      <property name="minimumSize">
       <size>
-       <width>130</width>
+       <width>100</width>
        <height>28</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>130</width>
+       <width>100</width>
        <height>28</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="buttonSymbols">
       <enum>QAbstractSpinBox::PlusMinus</enum>

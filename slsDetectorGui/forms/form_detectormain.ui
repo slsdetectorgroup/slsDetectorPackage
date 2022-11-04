@@ -139,7 +139,7 @@
   </property>
   <property name="font">
    <font>
-    <family>Carlito</family>
+    <family>Cantarell</family>
     <pointsize>10</pointsize>
    </font>
   </property>
@@ -183,6 +183,12 @@
      <width>524287</width>
      <height>400</height>
     </size>
+   </property>
+   <property name="font">
+    <font>
+     <family>Cantarell</family>
+     <pointsize>10</pointsize>
+    </font>
    </property>
    <layout class="QGridLayout" name="layoutTabs">
     <item row="0" column="0">
@@ -361,7 +367,7 @@
       </property>
       <property name="font">
        <font>
-        <family>Carlito</family>
+        <family>Cantarell</family>
         <pointsize>10</pointsize>
        </font>
       </property>
@@ -377,7 +383,7 @@
       <widget class="QWidget" name="tMeasurement">
        <property name="font">
         <font>
-         <family>Carlito</family>
+         <family>Cantarell</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -404,7 +410,7 @@
          <widget class="QScrollArea" name="scrollMeasurement">
           <property name="font">
            <font>
-            <family>Carlito</family>
+            <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
           </property>
@@ -423,12 +429,12 @@
              <x>0</x>
              <y>0</y>
              <width>778</width>
-             <height>354</height>
+             <height>351</height>
             </rect>
            </property>
            <property name="font">
             <font>
-             <family>Carlito</family>
+             <family>Cantarell</family>
              <pointsize>10</pointsize>
             </font>
            </property>
@@ -440,7 +446,7 @@
       <widget class="QWidget" name="tSettings">
        <property name="font">
         <font>
-         <family>Carlito</family>
+         <family>Cantarell</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -452,7 +458,7 @@
          <widget class="QScrollArea" name="scrollSettings">
           <property name="font">
            <font>
-            <family>Carlito</family>
+            <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
           </property>
@@ -470,13 +476,13 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>760</width>
-             <height>336</height>
+             <width>100</width>
+             <height>30</height>
             </rect>
            </property>
            <property name="font">
             <font>
-             <family>Carlito</family>
+             <family>Cantarell</family>
              <pointsize>10</pointsize>
             </font>
            </property>
@@ -488,7 +494,7 @@
       <widget class="QWidget" name="tDataOutput">
        <property name="font">
         <font>
-         <family>Carlito</family>
+         <family>Cantarell</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -500,7 +506,7 @@
          <widget class="QScrollArea" name="scrollDataOutput">
           <property name="font">
            <font>
-            <family>Carlito</family>
+            <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
           </property>
@@ -518,13 +524,13 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>760</width>
-             <height>336</height>
+             <width>100</width>
+             <height>30</height>
             </rect>
            </property>
            <property name="font">
             <font>
-             <family>Carlito</family>
+             <family>Cantarell</family>
              <pointsize>10</pointsize>
             </font>
            </property>
@@ -536,7 +542,7 @@
       <widget class="QWidget" name="tPlot">
        <property name="font">
         <font>
-         <family>Carlito</family>
+         <family>Cantarell</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -548,7 +554,7 @@
          <widget class="QScrollArea" name="scrollPlot">
           <property name="font">
            <font>
-            <family>Carlito</family>
+            <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
           </property>
@@ -566,13 +572,13 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>760</width>
-             <height>336</height>
+             <width>100</width>
+             <height>30</height>
             </rect>
            </property>
            <property name="font">
             <font>
-             <family>Carlito</family>
+             <family>Cantarell</family>
              <pointsize>10</pointsize>
             </font>
            </property>
@@ -587,7 +593,7 @@
        </property>
        <property name="font">
         <font>
-         <family>Carlito</family>
+         <family>Cantarell</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -599,7 +605,7 @@
          <widget class="QScrollArea" name="scrollAdvanced">
           <property name="font">
            <font>
-            <family>Carlito</family>
+            <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
           </property>
@@ -617,13 +623,13 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>760</width>
-             <height>336</height>
+             <width>100</width>
+             <height>30</height>
             </rect>
            </property>
            <property name="font">
             <font>
-             <family>Carlito</family>
+             <family>Cantarell</family>
              <pointsize>10</pointsize>
             </font>
            </property>
@@ -635,7 +641,7 @@
       <widget class="QWidget" name="tDebugging">
        <property name="font">
         <font>
-         <family>Carlito</family>
+         <family>Cantarell</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -647,7 +653,7 @@
          <widget class="QScrollArea" name="scrollDebugging">
           <property name="font">
            <font>
-            <family>Carlito</family>
+            <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
           </property>
@@ -666,12 +672,12 @@
              <x>0</x>
              <y>0</y>
              <width>760</width>
-             <height>336</height>
+             <height>333</height>
             </rect>
            </property>
            <property name="font">
             <font>
-             <family>Carlito</family>
+             <family>Cantarell</family>
              <pointsize>10</pointsize>
             </font>
            </property>
@@ -683,7 +689,7 @@
       <widget class="QWidget" name="tDeveloper">
        <property name="font">
         <font>
-         <family>Carlito</family>
+         <family>Cantarell</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -695,7 +701,7 @@
          <widget class="QScrollArea" name="scrollDeveloper">
           <property name="font">
            <font>
-            <family>Carlito</family>
+            <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
           </property>
@@ -713,13 +719,13 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>760</width>
-             <height>336</height>
+             <width>100</width>
+             <height>30</height>
             </rect>
            </property>
            <property name="font">
             <font>
-             <family>Carlito</family>
+             <family>Cantarell</family>
              <pointsize>10</pointsize>
             </font>
            </property>
@@ -731,7 +737,7 @@
       <widget class="QWidget" name="tTerminal">
        <property name="font">
         <font>
-         <family>Carlito</family>
+         <family>Cantarell</family>
          <pointsize>10</pointsize>
         </font>
        </property>
@@ -743,7 +749,7 @@
          <widget class="QScrollArea" name="scrollTerminal">
           <property name="font">
            <font>
-            <family>Carlito</family>
+            <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
           </property>
@@ -762,12 +768,12 @@
              <x>0</x>
              <y>0</y>
              <width>760</width>
-             <height>336</height>
+             <height>333</height>
             </rect>
            </property>
            <property name="font">
             <font>
-             <family>Carlito</family>
+             <family>Cantarell</family>
              <pointsize>10</pointsize>
             </font>
            </property>
@@ -804,7 +810,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Carlito</family>
+     <family>Cantarell</family>
      <pointsize>10</pointsize>
      <weight>50</weight>
      <bold>false</bold>
@@ -890,7 +896,7 @@
     </property>
     <property name="font">
      <font>
-      <family>Carlito</family>
+      <family>Cantarell</family>
       <pointsize>10</pointsize>
       <weight>50</weight>
       <bold>false</bold>
@@ -904,7 +910,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="minimumSize">
@@ -913,9 +919,16 @@
      <height>0</height>
     </size>
    </property>
+   <property name="font">
+    <font>
+     <family>Cantarell</family>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
    <widget class="QMenu" name="menuUtilities">
     <property name="font">
      <font>
+      <family>Cantarell</family>
       <pointsize>10</pointsize>
      </font>
     </property>
@@ -930,6 +943,7 @@
    <widget class="QMenu" name="menuModes">
     <property name="font">
      <font>
+      <family>Cantarell</family>
       <pointsize>10</pointsize>
      </font>
     </property>
@@ -943,6 +957,7 @@
    <widget class="QMenu" name="menuHelp">
     <property name="font">
      <font>
+      <family>Cantarell</family>
       <pointsize>10</pointsize>
      </font>
     </property>
@@ -961,7 +976,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Carlito</family>
+     <family>Cantarell</family>
      <pointsize>10</pointsize>
     </font>
    </property>
@@ -972,7 +987,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Carlito</family>
+     <family>Cantarell</family>
      <pointsize>10</pointsize>
     </font>
    </property>
@@ -983,7 +998,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Carlito</family>
+     <family>Cantarell</family>
      <pointsize>10</pointsize>
     </font>
    </property>
@@ -994,7 +1009,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Carlito</family>
+     <family>Cantarell</family>
      <pointsize>10</pointsize>
     </font>
    </property>
@@ -1008,7 +1023,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Carlito</family>
+     <family>Cantarell</family>
      <pointsize>10</pointsize>
     </font>
    </property>
@@ -1022,7 +1037,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Carlito</family>
+     <family>Cantarell</family>
      <pointsize>10</pointsize>
     </font>
    </property>
@@ -1036,7 +1051,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Carlito</family>
+     <family>Cantarell</family>
      <pointsize>10</pointsize>
     </font>
    </property>
@@ -1047,7 +1062,7 @@
    </property>
    <property name="font">
     <font>
-     <family>Carlito</family>
+     <family>Cantarell</family>
      <pointsize>10</pointsize>
     </font>
    </property>

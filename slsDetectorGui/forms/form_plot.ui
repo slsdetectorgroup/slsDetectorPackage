@@ -18,7 +18,7 @@
   </property>
   <property name="font">
    <font>
-    <family>Carlito</family>
+    <family>Cantarell</family>
     <pointsize>10</pointsize>
    </font>
   </property>
@@ -85,6 +85,7 @@
      </property>
      <property name="font">
       <font>
+       <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
      </property>
@@ -106,7 +107,7 @@
      </property>
      <property name="font">
       <font>
-       <family>Carlito</family>
+       <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
      </property>
@@ -160,6 +161,7 @@
      </property>
      <property name="font">
       <font>
+       <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
      </property>
@@ -199,6 +201,12 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Max: </string>
         </property>
@@ -214,6 +222,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>-</string>
@@ -253,6 +267,12 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>Min: </string>
         </property>
@@ -269,6 +289,12 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="text">
          <string>-</string>
         </property>
@@ -281,6 +307,12 @@
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>-</string>
@@ -319,6 +351,12 @@
           <width>40</width>
           <height>16777215</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="text">
          <string>Sum: </string>
@@ -403,6 +441,7 @@
      </property>
      <property name="font">
       <font>
+       <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
      </property>

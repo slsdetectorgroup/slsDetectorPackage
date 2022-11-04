@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>775</width>
-    <height>345</height>
+    <width>740</width>
+    <height>330</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,13 +24,13 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>775</width>
-    <height>400</height>
+    <width>740</width>
+    <height>16777215</height>
    </size>
   </property>
   <property name="font">
    <font>
-    <family>Carlito</family>
+    <family>Cantarell</family>
     <pointsize>10</pointsize>
    </font>
   </property>
@@ -38,7 +38,19 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0" colspan="3">
+   <property name="leftMargin">
+    <number>9</number>
+   </property>
+   <property name="topMargin">
+    <number>4</number>
+   </property>
+   <property name="bottomMargin">
+    <number>4</number>
+   </property>
+   <property name="verticalSpacing">
+    <number>0</number>
+   </property>
+   <item row="1" column="0" colspan="4">
     <widget class="QTabWidget" name="tabWidget">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -46,24 +58,56 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabDAC">
+      <property name="font">
+       <font>
+        <family>Cantarell</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <attribute name="title">
        <string>DACs</string>
       </attribute>
-      <layout class="QGridLayout" name="gridlayoutDac"/>
+      <layout class="QGridLayout" name="gridlayoutDac">
+       <property name="horizontalSpacing">
+        <number>10</number>
+       </property>
+      </layout>
      </widget>
      <widget class="QWidget" name="tabADC">
+      <property name="font">
+       <font>
+        <family>Cantarell</family>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <attribute name="title">
        <string>ADCs</string>
       </attribute>
-      <layout class="QGridLayout" name="gridlayoutAdc"/>
+      <layout class="QGridLayout" name="gridlayoutAdc">
+       <property name="horizontalSpacing">
+        <number>10</number>
+       </property>
+      </layout>
      </widget>
     </widget>
    </item>
-   <item row="0" column="1">
+   <item row="0" column="3">
     <widget class="QComboBox" name="comboDetector">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -74,18 +118,43 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>28</height>
+       <height>25</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>28</height>
+       <height>25</height>
       </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
     </widget>
    </item>
    <item row="0" column="2">
+    <widget class="QLabel" name="lblReadout">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>Readout: </string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -100,19 +169,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="lblReadout">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string>Readout: </string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>

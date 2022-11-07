@@ -97,7 +97,7 @@ target_include_directories(slsDetectorGui PUBLIC
 target_link_libraries(slsDetectorGui PUBLIC
     slsProjectOptions 
     slsDetectorStatic
-    ${SLS_INTERNAL_QWT_DIR}/lib/libqwt.so
+    ${SLS_INTERNAL_QWT_DIR}/lib/libqwt.so.6.1.5
     PNG::PNG
     ZLIB::ZLIB
     Qt5::Widgets

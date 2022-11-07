@@ -2185,6 +2185,8 @@ int setTrimbits(int *chanregs, char *mess) {
 
     // if quad, set M8 and PROGRAM manually
     if (!Feb_Control_SetChipSignalsToTrimQuad(1)) {
+        sprintf(mess, "Could not set module. Could not enable chip signals to set trimbits\n");
+        LOG(logERROR, (mess)); 
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
@@ -2198,6 +2200,8 @@ int setTrimbits(int *chanregs, char *mess) {
 
         // if quad, reset M8 and PROGRAM manually
         if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
+            sprintf(mess, "Could not set module. Could not disable chip signals to set trimbits\n");
+            LOG(logERROR, (mess)); 
             sharedMemory_unlockLocalLink();
             return FAIL;
         }
@@ -2208,6 +2212,8 @@ int setTrimbits(int *chanregs, char *mess) {
 
     // if quad, reset M8 and PROGRAM manually
     if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
+        sprintf(mess, "Could not set module. Could not disable chip signals to set trimbits\n");
+        LOG(logERROR, (mess));   
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
@@ -2787,7 +2793,7 @@ int stopStateMachine() {
 #else
     sharedMemory_lockLocalLink();
     // sends last frames from fifo and wait for feb processing done
-    if ((Feb_Control_StopAcquisition() != STATUS_IDLE)) {
+    if (!Feb_Control_StopAcquisition()) {
         LOG(logERROR, ("failed to stop acquisition\n"));
         sharedMemory_unlockLocalLink();
         return FAIL;
@@ -2810,7 +2816,8 @@ int stopStateMachine() {
 
     // reset feb and beb
     sharedMemory_lockLocalLink();
-    Feb_Control_Reset();
+    // uncommenting this out as it randomly does not set the processing bit to high
+    //Feb_Control_Reset();
     sharedMemory_unlockLocalLink();
     if (!Beb_StopAcquisition()) {
         LOG(logERROR, ("failed to stop acquisition\n"));
@@ -2903,7 +2910,8 @@ void waitForAcquisitionEnd(int *ret, char *mess) {
     sharedMemory_lockLocalLink();
     if (Feb_Control_WaitForFinishedFlag(5000, 1) == STATUS_ERROR) {
         sharedMemory_unlockLocalLink();
-        LOG(logERROR, ("Waiting for finished flag\n"));
+        strcpy(mess, "Could not wait for finished flag\n");
+        LOG(logERROR, (mess));
         *ret = FAIL;
         return;
     }
@@ -2919,6 +2927,7 @@ void waitForAcquisitionEnd(int *ret, char *mess) {
         sharedMemory_unlockLocalLink();
         if (i == STATUS_ERROR) {
             strcpy(mess, "Could not read feb processing done register\n");
+            LOG(logERROR, (mess));
             *ret = (int)FAIL;
             return;
         }
@@ -2930,6 +2939,7 @@ void waitForAcquisitionEnd(int *ret, char *mess) {
         // wait for beb to send out all packets
         if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 1) == FAIL) {
             strcpy(mess, "Could not read delay counters\n");
+            LOG(logERROR, (mess));
             *ret = (int)FAIL;
             return;
         }

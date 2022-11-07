@@ -98,6 +98,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - ctb and moench Fw fixed (to work with pattern commdand) )addreess length
 - setting rx_hostname (or udp_dstip with rx_hostname not none) will always set udp_dstmac. solves problem of chaing udp_dstip and udp_dstmac stays the same
 - jungfrau reset core and usleep removed (fix for 6.1.1 is now fixed in firmware)
+- m3 clock update, m3 clk 4 and 5 cannot be set
 - g2 change clkdivs 2 3 4 to defaults for burst and cw mode.
 - ctb and moench: allowing 1g non blocking acquire to send data
 - m3 and g2 rr

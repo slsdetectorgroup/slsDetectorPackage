@@ -1,7 +1,7 @@
-SLS Detector Package Minor Release 6.1.1 released on 04.01.2022
+SLS Detector Package Patch Release 6.1.2 released on xx.xx.2022
 ===============================================================
 
-This document describes the differences between v6.1.1 and v6.1.0.   
+This document describes the differences between v6.1.2 and v6.1.1.   
 
 
 
@@ -20,18 +20,22 @@ This document describes the differences between v6.1.1 and v6.1.0.
     Detector Server
     ---------------
     
-    1.  [Jungfrau] Cannot start 
-        Under some circumstances and not always reproducible, the detector 
-        cannot start once it has stopped. Fixed by adding a delay between the 
-        stop pulse and the resetting core to give sufficient time to readout and 
-        stream out the ongoing frame.        
+    1.  [Eiger] somtimes Freeze 
+- removed feb reset in stop acquisition as it caused processing bit to randomly not go high (leads to infinite loop waiting for it to go high). This is anyway done at prepare acquisition and set trimbits.
+- left AND right registers monitored for processing bit done
+- febProcessinginprogress returns STATUS_IDLE and not IDLE
+- In feb stop acquisition, if processing bit is running forever, checks for 1 s, then if acq done bit is high, returns ok, else throws
+- feb stop acquisition returns 1 if success and fucntion in list calling it compares properly instead of STATUS_IDLE (no effect, but incorrect logic)
+- chipsignals to trimquad should only monitor right fpga (not both as it will throw)
+- fixed error messages of readregister inconsistent values
+- setmodule and read frame was returning fail without setting error messages (leading to broken tcp connection due to no error message)        
 
 
 
 2. Firmware Requirements
 ========================
         
-    Note: No change to 6.1.0.
+    Note: No change to 6.1.1.
 
 
     Eiger
@@ -87,7 +91,7 @@ This document describes the differences between v6.1.1 and v6.1.0.
 3. Kernel Requirements
 ======================
 
-    Note: No change to 6.1.0.
+    Note: No change to 6.1.1.
 
 
     Blackfin 

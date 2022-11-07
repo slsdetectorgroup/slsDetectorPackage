@@ -437,7 +437,6 @@ void setupDetector() {
     clkDivider[SYSTEM_C0] = DEFAULT_SYSTEM_C0;
     clkDivider[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
     clkDivider[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
-    clkDivider[SYSTEM_C3] = DEFAULT_SYSTEM_C3;
 
     highvoltage = 0;
     trimmingPrint = logINFO;
@@ -2293,6 +2292,12 @@ int getVCOFrequency(enum CLKINDEX ind) {
 int getMaxClockDivider() { return ALTERA_PLL_C10_GetMaxClockDivider(); }
 
 int setClockDivider(enum CLKINDEX ind, int val) {
+    char *clock_names[] = {CLK_NAMES};
+    if (ind == SYSTEM_C1 || ind == SYSTEM_C2) {
+        LOG(logERROR, ("Cannot set %s and %s for this detector\n",
+                       clock_names[SYSTEM_C1], clock_names[SYSTEM_C2]));
+        return FAIL;
+    }
     return setClockDividerWithTimeUpdateOption(ind, val, 1);
 }
 
@@ -2360,7 +2365,6 @@ int setClockDividerWithTimeUpdateOption(enum CLKINDEX ind, int val,
         clkPhase[SYSTEM_C0] = 0;
         clkPhase[SYSTEM_C1] = 0;
         clkPhase[SYSTEM_C2] = 0;
-        clkPhase[SYSTEM_C3] = 0;
     }
 
     // set the phase in degrees (reset by pll)

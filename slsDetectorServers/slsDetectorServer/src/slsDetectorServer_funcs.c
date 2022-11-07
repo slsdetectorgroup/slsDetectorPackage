@@ -5979,7 +5979,11 @@ int set_clock_divider(int file_des) {
     // only set
     if (Server_VerifyLock() == OK) {
 
+#ifdef MYTHEN3D
+        if (args[0] >= NUM_CLOCKS_TO_SET) {
+#else
         if (args[0] >= NUM_CLOCKS) {
+#endif
             modeNotImplemented("clock index (divider set)", args[0]);
         }
 
@@ -6037,7 +6041,7 @@ int get_clock_divider(int file_des) {
 #else
     // get only
     if (arg >= NUM_CLOCKS) {
-        modeNotImplemented("clock index (divider set)", arg);
+        modeNotImplemented("clock index (divider get)", arg);
     }
     if (ret == OK) {
         enum CLKINDEX c = (enum CLKINDEX)arg;

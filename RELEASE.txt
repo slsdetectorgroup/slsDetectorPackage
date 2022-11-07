@@ -107,6 +107,11 @@ This document describes the differences between v7.0.0 and v6.x.x
 - ctb, moench, jungfrau (pll reset at start fixed, before no defines)
 - pybind built into package, no need to update submodule when previous release had different pybind version
 - adcvpp moved from dac.. and api added (ctb, moench)
+- eiger server fix (eiger server: fix for fw workaround where stop acquisition processing done signal does not come up, by removing reset in stop acquisition and waiting for2 seconds for feb done processing signal to go down, if it doesnt, throw if status is not idle.
+error messages not setup for some eiger server errors
+quad fix (chip signals to trim quad, both left and right registers can be different)
+minor logical error of no consequence (stop acquisition returns a different enum than expected))
+-
 
 2. Resolved Issues
 ==================

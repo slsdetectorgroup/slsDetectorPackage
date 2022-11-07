@@ -378,7 +378,9 @@ void setPower(enum DACINDEX ind, int val);
 void powerOff();
 #endif
 
-#if !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+int getADC(enum ADCINDEX ind, int *value);
+#elif !defined(MOENCHD)
 int getADC(enum ADCINDEX ind);
 #endif
 
@@ -404,6 +406,7 @@ void setSynchronization(int enable);
 
 #ifdef GOTTHARD2D
 void updatingRegisters();
+int updateClockDivs();
 #endif
 void setTiming(enum timingMode arg);
 enum timingMode getTiming();
@@ -432,13 +435,16 @@ void setNumberofUDPInterfaces(int val);
 #endif
 int getNumberofUDPInterfaces();
 
-#if defined(JUNGFRAUD) || defined(EIGERD)
+#if defined(JUNGFRAUD) || defined(EIGERD) || defined(MYTHEN3D) ||              \
+    defined(GOTTHARD2D)
 int getNumberofDestinations(int *retval);
 int setNumberofDestinations(int value);
 #endif
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int getFirstUDPDestination();
 void setFirstUDPDestination(int value);
+#endif
+#ifdef JUNGFRAUD
 void selectPrimaryInterface(int val);
 int getPrimaryInterface();
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
@@ -665,7 +671,14 @@ int softwareTrigger(int block);
 int startReadOut();
 #endif
 enum runStatus getRunStatus();
-void readFrame(int *ret, char *mess);
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+void readFrames(int *ret, char *mess);
+#endif
+#ifdef EIGERD
+void waitForAcquisitionEnd(int *ret, char *mess);
+#else
+void waitForAcquisitionEnd();
+#endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 void readandSendUDPFrames(int *ret, char *mess);
 void unsetFifoReadStrobes();

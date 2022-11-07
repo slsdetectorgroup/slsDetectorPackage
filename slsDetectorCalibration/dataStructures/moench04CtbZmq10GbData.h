@@ -5,6 +5,8 @@
 #include "slsDetectorData.h"
 #include "sls/sls_detector_defs.h"
 
+#define CTB
+
 using namespace std;
 class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 
@@ -17,6 +19,9 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
     const int dSamples;
     int off;
 
+    // Single point of definition if we need to customize
+    using header = sls::defs::sls_receiver_header;
+
   public:
     /**
        Implements the slsReceiverData structure for the moench02 prototype read
@@ -28,7 +33,7 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
     // slsDetectorData<uint16_t>(400, 400, nas*2*32+nds*8), aSamples(nas),
     // dSamples(nds), nadc(32), sc_width(25), sc_height(200) {
  
-        moench04CtbZmq10GbData(int nas = 5000, int nds = 0)
+        moench04CtbZmq10GbData(int nas = 5000, int nds = 0, int oo = 2 * 2)
             : slsDetectorData<uint16_t>(400, 400,
 #ifdef RAWDATA
                                         sizeof(slsDetectorDefs::sls_receiver_header) +
@@ -36,7 +41,7 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
                                             ((nas > 0) && (nds > 0)
                                                  ? max(nas, nds) * (32 * 2 + 8)
                                                  : nas * 32 * 2 + nds * 8)),
-      nadc(32), sc_width(25), sc_height(200), aSamples(nas), dSamples(nds) {
+      nadc(32), sc_width(25), sc_height(200), aSamples(nas), dSamples(nds), off(oo) {
 #ifdef RAWDATA
       off=sizeof(slsDetectorDefs::sls_receiver_header);
 #endif
@@ -86,14 +91,10 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
                         } else {
                             row = 200 + i / sc_width;
                         }
-                        if (nds > 0)
-                            dataMap[row][col] =
-                                ((nadc + 4) * i + iadc) * 2 + off; //+16*(ip+1);
-                        else
-                            dataMap[row][col] =
-                                (nadc * i + iadc) * 2 + off; //+16*(ip+1);
+			dataMap[row][col] =
+			  ((nadc ) * i + iadc) * 2 + off; 
                         if (dataMap[row][col] < 0 ||
-                            dataMap[row][col] >= aSamples * 2 * 32 + off)
+                            dataMap[row][col] >= aSamples * 2 * 32 +  off)
                             cout << "Error: pointer " << dataMap[row][col]
                                  << " out of range " << endl;
                     }
@@ -108,6 +109,7 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 
         int getGain(char *data, int x, int y) {
             // int aoff=aSamples*2*32;
+            int aoff=off+aSamples*2*32;
             int irow;
             int isc = x / sc_width;
             int icol = x % sc_width;

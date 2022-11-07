@@ -13,6 +13,7 @@
 #include <QPainter>
 #include <QResizeEvent>
 #include <QtConcurrentRun>
+#include <qwt_scale_engine.h>
 
 namespace sls {
 
@@ -170,13 +171,14 @@ void qDrawPlot::SetupPlots() {
     QList<double> majorTicks({0, 1, 2, 3});
     QwtScaleDiv div(0, 3, QList<double>(), QList<double>(), majorTicks);
     gainplot1d->setAxisScaleDiv(QwtPlot::yLeft, div);
-    // gainplot1d->axisScaleDraw(QwtPlot::xBottom)->enableComponent(QwtScaleDraw::Ticks,
-    // false);
-    // gainplot1d->axisScaleDraw(QwtPlot::yLeft)->enableComponent(QwtScaleDraw::Labels,
-    // false);
+
     gainhist1d->setItemAttribute(QwtPlotItem::Legend, false);
     gainhist1d->Attach(gainplot1d);
+    gainplot1d->DisableZoom(true);
     gainplot1d->hide();
+
+    connect(plot1d, SIGNAL(PlotZoomedSignal(const QRectF &)), this,
+            SLOT(Zoom1DGainPlot(const QRectF &)));
 
     // setup 2d data
 
@@ -226,7 +228,11 @@ void qDrawPlot::SetupPlots() {
     gainplot2d->enableAxis(QwtPlot::xBottom, false);
     // set ticks to just 3
     gainplot2d->setAxisScaleDiv(QwtPlot::yRight, div);
+    gainplot2d->DisableZoom(true);
     gainplot2d->hide();
+
+    connect(plot2d, SIGNAL(PlotZoomedSignal(const QRectF &)), this,
+            SLOT(Zoom2DGainPlot(const QRectF &)));
 
     // layout of plots
     int ratio = qDefs::DATA_GAIN_PLOT_RATIO - 1;
@@ -235,6 +241,16 @@ void qDrawPlot::SetupPlots() {
     plotLayout->addWidget(gainplot1d, ratio, 0, 1, ratio, Qt::AlignTop);
     plotLayout->addWidget(gainplot2d, 0, ratio, 1, 1,
                           Qt::AlignRight | Qt::AlignTop);
+}
+
+void qDrawPlot::Zoom1DGainPlot(const QRectF &rect) {
+    std::lock_guard<std::mutex> lock(mPlots);
+    gainplot1d->SetZoomX(rect);
+}
+
+void qDrawPlot::Zoom2DGainPlot(const QRectF &rect) {
+    std::lock_guard<std::mutex> lock(mPlots);
+    gainplot2d->SetZoom(rect);
 }
 
 void qDrawPlot::resizeEvent(QResizeEvent *event) {
@@ -254,13 +270,17 @@ void qDrawPlot::resizeEvent(QResizeEvent *event) {
 
 bool qDrawPlot::GetIsRunning() { return isRunning; }
 
-void qDrawPlot::SetRunning(bool enable) { isRunning = enable; }
+void qDrawPlot::SetRunning(bool enable) {
+    std::lock_guard<std::mutex> lock(mPlots);
+    isRunning = enable;
+}
 
 double qDrawPlot::GetProgress() { return progress; }
 
 int64_t qDrawPlot::GetCurrentFrameIndex() { return currentFrame; }
 
 void qDrawPlot::Select1dPlot(bool enable) {
+    std::lock_guard<std::mutex> lock(mPlots);
     if (enable) {
         is1d = true;
         // DetachHists(); it clears the last measurement
@@ -487,6 +507,7 @@ void qDrawPlot::EnableGainPlot(bool enable) {
 }
 
 void qDrawPlot::SetSaveFileName(QString val) {
+    std::lock_guard<std::mutex> lock(mPlots);
     LOG(logDEBUG) << "Setting Clone/Save File Name to "
                   << val.toAscii().constData();
     fileSaveName = val;
@@ -520,6 +541,7 @@ void qDrawPlot::ClonePlot() {
             h->SetLineColor(iHist);
             h->setStyleLinesorDots(isLines);
             h->setSymbolMarkers(isMarkers);
+            h->setItemAttribute(QwtPlotItem::Legend, false);
             cloneplotHists1D.append(h);
             h->Attach(cloneplot1D);
         }
@@ -540,7 +562,11 @@ void qDrawPlot::ClonePlot() {
             QList<double> majorTicks({0, 1, 2, 3});
             QwtScaleDiv div(0, 3, QList<double>(), QList<double>(), majorTicks);
             clonegainplot1D->setAxisScaleDiv(QwtPlot::yLeft, div);
+            clonegainplot1D->DisableZoom(true);
             h->Attach(clonegainplot1D);
+
+            connect(cloneplot1D, SIGNAL(PlotZoomedSignal(const QRectF &)),
+                    clonegainplot1D, SLOT(SetZoomX(const QRectF &)));
         }
     } else {
         LOG(logDEBUG) << "Cloning 2D Image";
@@ -581,6 +607,10 @@ void qDrawPlot::ClonePlot() {
             clonegainplot2D->enableAxis(2, false);
             clonegainplot2D->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY,
                                      -0.5, nPixelsY - 0.5, gainData);
+            clonegainplot2D->DisableZoom(true);
+
+            connect(cloneplot2D, SIGNAL(PlotZoomedSignal(const QRectF &)),
+                    clonegainplot2D, SLOT(SetZoom(const QRectF &)));
         }
     }
 
@@ -592,6 +622,7 @@ void qDrawPlot::ClonePlot() {
 }
 
 void qDrawPlot::SavePlot() {
+    std::lock_guard<std::mutex> lock(mPlots);
     // render image
     QImage savedImage(size().width(), size().height(), QImage::Format_RGB32);
     QPainter painter(&savedImage);
@@ -1098,47 +1129,57 @@ void qDrawPlot::Update2dPlot() {
 void qDrawPlot::Update1dXYRange() {
     if (!isXYRange[qDefs::XMIN] && !isXYRange[qDefs::XMAX]) {
         plot1d->EnableXAutoScaling();
+        gainplot1d->EnableXAutoScaling();
     } else {
         double xmin = (isXYRange[qDefs::XMIN] ? xyRange[qDefs::XMIN]
                                               : plot1d->GetXMinimum());
         double xmax = (isXYRange[qDefs::XMAX] ? xyRange[qDefs::XMAX]
                                               : plot1d->GetXMaximum());
         plot1d->SetXMinMax(xmin, xmax);
+        gainplot1d->SetXMinMax(xmin, xmax);
     }
 
     if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
         plot1d->EnableYAutoScaling();
+        gainplot1d->EnableYAutoScaling();
     } else {
         double ymin = (isXYRange[qDefs::YMIN] ? xyRange[qDefs::YMIN]
                                               : plot1d->GetYMinimum());
         double ymax = (isXYRange[qDefs::YMAX] ? xyRange[qDefs::YMAX]
                                               : plot1d->GetYMaximum());
         plot1d->SetYMinMax(ymin, ymax);
+        gainplot1d->SetYMinMax(ymin, ymax);
     }
     plot1d->Update();
+    gainplot1d->Update();
 }
 
 void qDrawPlot::Update2dXYRange() {
     if (!isXYRange[qDefs::XMIN] && !isXYRange[qDefs::XMAX]) {
         plot2d->EnableXAutoScaling();
+        gainplot2d->EnableXAutoScaling();
     } else {
         double xmin = (isXYRange[qDefs::XMIN] ? xyRange[qDefs::XMIN]
                                               : plot2d->GetXMinimum());
         double xmax = (isXYRange[qDefs::XMAX] ? xyRange[qDefs::XMAX]
                                               : plot2d->GetXMaximum());
         plot2d->SetXMinMax(xmin, xmax);
+        gainplot2d->SetXMinMax(xmin, xmax);
     }
 
     if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
         plot2d->EnableYAutoScaling();
+        gainplot2d->EnableYAutoScaling();
     } else {
         double ymin = (isXYRange[qDefs::YMIN] ? xyRange[qDefs::YMIN]
                                               : plot2d->GetYMinimum());
         double ymax = (isXYRange[qDefs::YMAX] ? xyRange[qDefs::YMAX]
                                               : plot2d->GetYMaximum());
         plot2d->SetYMinMax(ymin, ymax);
+        gainplot2d->SetYMinMax(ymin, ymax);
     }
     plot2d->Update();
+    gainplot2d->Update();
 }
 
 void qDrawPlot::toDoublePixelData(double *dest, char *source, int size,

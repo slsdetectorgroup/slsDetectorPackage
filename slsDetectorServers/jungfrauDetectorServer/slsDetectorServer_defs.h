@@ -138,6 +138,9 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define MAX_PHASE_SHIFTS (240)
 #define BIT16_MASK       (0xFFFF)
 
+#define GAIN_VAL_OFST (14)
+#define GAIN_VAL_MSK  (0x3 << GAIN_VAL_OFST)
+
 // pipeline
 #define ADC_PORT_INVERT_VAL        (0x5A5A5A5A)
 #define ADC_PORT_INVERT_BOARD2_VAL (0x453b2a9c)

@@ -2765,7 +2765,7 @@ void *start_timer(void *arg) {
     closeUDPSocket(1);
 
     sharedMemory_setStatus(IDLE);
-    LOG(logINFOBLUE, ("Finished Acquiring\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
     return NULL;
 }
 #endif
@@ -2893,16 +2893,13 @@ enum runStatus getRunStatus() {
 #endif
 }
 
-void readFrame(int *ret, char *mess) {
+void waitForAcquisitionEnd(int *ret, char *mess) {
 #ifdef VIRTUAL
     // wait for status to be done
     while (sharedMemory_getStatus() == RUNNING) {
         usleep(500);
     }
-    LOG(logINFOGREEN, ("acquisition successfully finished\n"));
-    return;
 #else
-
     sharedMemory_lockLocalLink();
     if (Feb_Control_WaitForFinishedFlag(5000, 1) == STATUS_ERROR) {
         sharedMemory_unlockLocalLink();
@@ -2911,7 +2908,7 @@ void readFrame(int *ret, char *mess) {
         return;
     }
     sharedMemory_unlockLocalLink();
-    LOG(logINFOGREEN, ("Acquisition finished\n"));
+    LOG(logINFO, ("Acquisition  done\n"));
 
     // wait for detector to send
     int isTransmitting = 1;
@@ -2940,9 +2937,9 @@ void readFrame(int *ret, char *mess) {
             printf("Transmitting...\n");
         }
     }
-    LOG(logINFO, ("Beb: Detector has sent all data (acquire)\n"));
-    LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
 #endif
+    LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
 /* common */

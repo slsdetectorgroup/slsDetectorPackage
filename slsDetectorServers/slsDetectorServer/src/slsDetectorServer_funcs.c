@@ -58,7 +58,6 @@ int ignoreConfigFileFlag = 0;
 
 udpStruct udpDetails[MAX_UDP_DESTINATION];
 int numUdpDestinations = 1;
-int firstUDPDestination = 0;
 
 int configured = FAIL;
 char configureMessage[MAX_STR_LENGTH] = "udp parameters not configured yet";
@@ -1375,13 +1374,18 @@ int get_adc(int file_des) {
     if (receiveData(file_des, &ind, sizeof(ind), INT32) < 0)
         return printSocketReadError();
 
-#if defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(MOENCHD)
     functionNotImplemented();
 #else
     enum ADCINDEX serverAdcIndex = 0;
 
     // get
     switch (ind) {
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+    case TEMPERATURE_FPGA:
+        serverAdcIndex = TEMP_FPGA;
+        break;
+#endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD)
     case TEMPERATURE_FPGA:
         serverAdcIndex = TEMP_FPGA;
@@ -1481,8 +1485,18 @@ int get_adc(int file_des) {
     // valid index
     if (ret == OK) {
         LOG(logDEBUG1, ("Getting ADC %d\n", serverAdcIndex));
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+        ret = getADC(serverAdcIndex, &retval);
+        if (ret == FAIL) {
+            strcpy(mess, "Could not get temperature\n");
+            LOG(logERROR, (mess));
+        } else {
+            LOG(logDEBUG1, ("ADC(%d): %d\n", serverAdcIndex, retval));
+        }
+#else
         retval = getADC(serverAdcIndex);
         LOG(logDEBUG1, ("ADC(%d): %d\n", serverAdcIndex, retval));
+#endif
     }
 #endif
 
@@ -1882,55 +1896,57 @@ int acquire(int blocking, int file_des) {
 #ifdef EIGERD
             // check for hardware mac and hardware ip
             if (udpDetails[0].srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[MAC_ADDRESS_SIZE];
-            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-            sprintf(mess,
+                ret = FAIL;
+                uint64_t sourcemac = getDetectorMAC();
+                char src_mac[MAC_ADDRESS_SIZE];
+                getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+                sprintf(
+                    mess,
                     "Invalid udp source mac address for this detector. Must be "
                     "same as hardware detector mac address %s\n",
                     src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails[0].srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(mess,
+                LOG(logERROR, (mess));
+            } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                       (udpDetails[0].srcip != getDetectorIP())) {
+                ret = FAIL;
+                uint32_t sourceip = getDetectorIP();
+                char src_ip[INET_ADDRSTRLEN];
+                getIpAddressinString(src_ip, sourceip);
+                sprintf(
+                    mess,
                     "Invalid udp source ip address for this detector. Must be "
                     "same as hardware detector ip address %s in 1G readout "
                     "mode \n",
                     src_ip);
-            LOG(logERROR, (mess));
-        } else
+                LOG(logERROR, (mess));
+            } else
 #endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else if (sharedMemory_getScanStatus() == RUNNING) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because a scan is "
-                         "already running!\n");
-            LOG(logERROR, (mess));
-        } else {
-            memset(scanErrMessage, 0, MAX_STR_LENGTH);
-            sharedMemory_setScanStop(0);
-            sharedMemory_setScanStatus(IDLE); // if it was error
-            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                               &blocking)) {
+                if (configured == FAIL) {
                 ret = FAIL;
-                strcpy(mess, "Could not start acquisition thread!\n");
+                strcpy(mess, "Could not start acquisition because ");
+                strcat(mess, configureMessage);
+                LOG(logERROR, (mess));
+            } else if (sharedMemory_getScanStatus() == RUNNING) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition because a scan is "
+                             "already running!\n");
                 LOG(logERROR, (mess));
             } else {
-                // only does not wait for non blocking and scan
-                if (blocking || !scan) {
-                    pthread_join(pthread_tid, NULL);
+                memset(scanErrMessage, 0, MAX_STR_LENGTH);
+                sharedMemory_setScanStop(0);
+                sharedMemory_setScanStatus(IDLE); // if it was error
+                if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                                   &blocking)) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not start acquisition thread!\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    // only does not wait for non blocking and scan
+                    if (blocking || !scan) {
+                        pthread_join(pthread_tid, NULL);
+                    }
                 }
             }
-        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -2010,15 +2026,29 @@ void *start_state_machine(void *arg) {
             }
             break;
         }
+
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+        readFrames(&ret, mess);
+        if (ret == FAIL && scan) {
+            sprintf(scanErrMessage, "Cannot scan at %d. ", scanSteps[i]);
+            strcat(scanErrMessage, mess);
+            sharedMemory_setScanStatus(ERROR);
+            break;
+        }
+#endif
         // blocking or scan
         if (*blocking || times > 1) {
-            readFrame(&ret, mess);
+#ifdef EIGERD
+            waitForAcquisitionEnd(&ret, mess);
             if (ret == FAIL && scan) {
                 sprintf(scanErrMessage, "Cannot scan at %d. ", scanSteps[i]);
                 strcat(scanErrMessage, mess);
                 sharedMemory_setScanStatus(ERROR);
                 break;
             }
+#else
+            waitForAcquisitionEnd();
+#endif
         }
     }
     // end of scan
@@ -2060,18 +2090,6 @@ int get_run_status(int file_des) {
 }
 
 int start_and_read_all(int file_des) { return acquire(1, file_des); }
-
-int read_all(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-
-    LOG(logDEBUG1, ("Reading all frames\n"));
-    // only set
-    if (Server_VerifyLock() == OK) {
-        readFrame(&ret, mess);
-    }
-    return Server_SendResult(file_des, INT32, NULL, 0);
-}
 
 int get_num_frames(int file_des) {
     ret = OK;
@@ -9032,7 +9050,8 @@ int get_dest_udp_list(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting udp destination list for entry %d\n", arg));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MYTHEN3D) &&           \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     if (arg >= MAX_UDP_DESTINATION) {
@@ -9099,7 +9118,8 @@ int set_dest_udp_list(int file_des) {
     getMacAddressinString(mac, MAC_ADDRESS_SIZE, args64[0]);
     getMacAddressinString(mac2, MAC_ADDRESS_SIZE, args64[1]);
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MYTHEN3D) &&           \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -9118,7 +9138,7 @@ int set_dest_udp_list(int file_des) {
                     MAX_UDP_DESTINATION - 1);
             LOG(logERROR, (mess));
         }
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
         else if (args[4] != 0 || args64[1] != 0) {
             ret = FAIL;
             strcpy(mess, "Could not set udp destination. ip2 and mac2 not "
@@ -9198,14 +9218,11 @@ int set_dest_udp_list(int file_des) {
                     numdest = 1;
                 }
                 // set number of destinations
-#if defined(JUNGFRAUD) || defined(EIGERD)
                 if (setNumberofDestinations(numdest) == FAIL) {
                     ret = FAIL;
                     strcpy(mess, "Could not set number of udp destinations.\n");
                     LOG(logERROR, (mess));
-                } else
-#endif
-                {
+                } else {
                     numUdpDestinations = numdest;
                     LOG(logINFOBLUE, ("Number of UDP Destinations: %d\n",
                                       numUdpDestinations));
@@ -9223,12 +9240,12 @@ int get_num_dest_list(int file_des) {
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(EIGERD)
+#if !defined(JUNGFRAUD) && !defined(EIGERD) && !defined(MYTHEN3D) &&           \
+    !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     retval = numUdpDestinations;
     LOG(logDEBUG1, ("numUdpDestinations retval: 0x%x\n", retval));
-
     int retval1 = 0;
     if (getNumberofDestinations(&retval1) == FAIL || retval1 != retval) {
         ret = FAIL;
@@ -9238,8 +9255,8 @@ int get_num_dest_list(int file_des) {
                 retval1, retval);
         LOG(logERROR, (mess));
     }
-#endif
 
+#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -9254,7 +9271,8 @@ int clear_all_udp_dst(int file_des) {
             // minimum 1 destination in fpga
             int numdest = 1;
             // set number of destinations
-#if defined(JUNGFRAUD) || defined(EIGERD)
+#if defined(JUNGFRAUD) || defined(EIGERD) || defined(MYTHEN3D) ||              \
+    defined(GOTTHARD2D)
             if (setNumberofDestinations(numdest) == FAIL) {
                 ret = FAIL;
                 strcpy(mess, "Could not clear udp destinations to 1 entry.\n");
@@ -9281,20 +9299,12 @@ int get_udp_first_dest(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
-    retval = firstUDPDestination;
-    if (getFirstUDPDestination() != retval) {
-        ret = FAIL;
-        sprintf(mess,
-                "Could not get first desintation. (server reads %d, fpga reads "
-                "%d).\n",
-                getFirstUDPDestination(), retval);
-        LOG(logERROR, (mess));
-    }
-#endif
+    retval = getFirstUDPDestination();
     LOG(logDEBUG1, ("first udp destination retval: 0x%x\n", retval));
+#endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -9307,7 +9317,7 @@ int set_udp_first_dest(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting first udp destination to %d\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -9323,10 +9333,6 @@ int set_udp_first_dest(int file_des) {
                 int retval = getFirstUDPDestination();
                 validate(&ret, mess, arg, retval, "set udp first destination",
                          DEC);
-                if (ret == OK) {
-                    firstUDPDestination = arg;
-                    // configure_mac();
-                }
             }
         }
     }

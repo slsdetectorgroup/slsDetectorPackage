@@ -50,8 +50,8 @@ TEST_CASE("Set control port then create a new object with this control port",
     Is this the best way to initialize the detectors
     Using braces to make the object go out of scope
     */
-    int old_cport = DEFAULT_PORTNO;
-    int old_sport = DEFAULT_PORTNO + 1;
+    int old_cport = DEFAULT_TCP_CNTRL_PORTNO;
+    int old_sport = DEFAULT_TCP_STOP_PORTNO;
     int new_cport = 1993;
     int new_sport = 2000;
     {
@@ -79,7 +79,7 @@ TEST_CASE("Set control port then create a new object with this control port",
 
     Module d(test::type);
     d.setHostname(test::hostname);
-    CHECK(d.getStopPort() == DEFAULT_PORTNO + 1);
+    CHECK(d.getStopPort() == DEFAULT_TCP_STOP_PORTNO);
     d.freeSharedMemory();
 }
 

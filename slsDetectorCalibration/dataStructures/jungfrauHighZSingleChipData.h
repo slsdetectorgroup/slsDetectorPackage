@@ -171,17 +171,19 @@ class jungfrauHighZSingleChipData : public slsDetectorData<uint16_t> {
     /*       return NULL; */
     /*     }; */
 
-    virtual char *readNextFrame(ifstream &filebin) {
-        int ff = -1, np = -1;
-        return readNextFrame(filebin, ff, np);
-    };
+    // not present in base class
 
-    virtual char *readNextFrame(ifstream &filebin, int &ff) {
+    virtual char *readNextFrame(std::ifstream &filebin) {
+      int ff=-1;
+      return readNextFrame(filebin, ff);
+    }
+    virtual char *readNextFrame(std::ifstream &filebin, int &ff) {
         int np = -1;
         return readNextFrame(filebin, ff, np);
     };
 
-    virtual char *readNextFrame(ifstream &filebin, int &ff, int &np) {
+    // not present in base class
+    virtual char *readNextFrame(std::ifstream &filebin, int &ff, int &np) {
         char *data = new char[dataSize];
         char *d = readNextFrame(filebin, ff, np, data);
         if (d == NULL) {
@@ -191,18 +193,10 @@ class jungfrauHighZSingleChipData : public slsDetectorData<uint16_t> {
         return data;
     }
 
-    virtual char *readNextFrame(ifstream &filebin, int &ff, int &np,
+    // not present in base class
+    virtual char *readNextFrame(std::ifstream &filebin, int &ff, int &np,
                                 char *data) {
-        char *retval = 0;
-        int nd;
-        int fnum = -1;
         np = 0;
-        int pn;
-
-        //  cout << dataSize << endl;
-        if (ff >= 0)
-            fnum = ff;
-
         if (filebin.is_open()) {
             if (filebin.read(data, dataSize)) {
                 ff = getFrameNumber(data);
@@ -210,8 +204,8 @@ class jungfrauHighZSingleChipData : public slsDetectorData<uint16_t> {
                 return data;
             }
         }
-        return NULL;
-    };
+        return nullptr;
+    }
 
     /**
 
@@ -225,7 +219,7 @@ class jungfrauHighZSingleChipData : public slsDetectorData<uint16_t> {
        found
 
     */
-    virtual char *findNextFrame(char *data, int &ndata, int dsize) {
+    char *findNextFrame(char *data, int &ndata, int dsize) override {
         if (dsize < dataSize)
             ndata = dsize;
         else
@@ -233,6 +227,7 @@ class jungfrauHighZSingleChipData : public slsDetectorData<uint16_t> {
         return data;
     }
 
+ 
     // int getPacketNumber(int x, int y) {return dataMap[y][x]/packetSize;};
 };
 

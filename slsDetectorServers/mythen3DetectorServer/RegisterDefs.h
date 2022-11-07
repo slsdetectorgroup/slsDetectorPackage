@@ -523,4 +523,7 @@
 #define DEADTIME_EARLY_EXP_FIN_ERR_OFST (4)
 #define DEADTIME_EARLY_EXP_FIN_ERR_MSK  (0x00000001 << DEADTIME_EARLY_EXP_FIN_ERR_OFST)
 
+/* UDP datagram registers --------------------------------------------------*/
+#define RXR_ENDPOINT_OFST                   (16 * REG_OFFSET)
+
 // clang-format on

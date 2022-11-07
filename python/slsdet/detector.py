@@ -115,6 +115,11 @@ class Detector(CppDetectorApi):
         fname = ut.make_string_path(fname)
         self.loadConfig(fname)
 
+        #create a new object to replace the old, allow us to
+        #do a new initialization of dacs etc.
+        new_object = self.__class__(self.getShmId())
+        self.__dict__.update(new_object.__dict__)
+
     @property
     def parameters(self):
         """Sets detector measurement parameters to those contained in fname. 
@@ -1182,6 +1187,7 @@ class Detector(CppDetectorApi):
         ----
         Not mandatory to set as udp_dstip retrieves it from slsReceiver process but must be set if you use a custom receiver (not slsReceiver). \n
         To set MACs for individual modules, use setDestinationUDPMAC. 
+        Use router mac if router between detector and receiver.
         
         Example
         -------
@@ -1208,6 +1214,7 @@ class Detector(CppDetectorApi):
         To set MACs for individual modules, use setDestinationUDPMAC2. \n
         [Jungfrau] bottom half \n
         [Gotthard2] veto debugging \n
+        Use router mac if router between detector and receiver.
         
         Example
         ------
@@ -2561,6 +2568,7 @@ class Detector(CppDetectorApi):
         Note
         ----
         BURST_INTERNAL (default), BURST_EXTERNAL, CONTINUOUS_INTERNAL, CONTINUOUS_EXTERNAL
+        Also changes clkdiv 2, 3, 4
         """
         return self.getBurstMode()
 

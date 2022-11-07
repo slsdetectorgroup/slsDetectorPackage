@@ -62,18 +62,28 @@ int main(int argc, char *argv[]) {
     int nped = 10000;
 
     int cf = 0;
-
+    int numberOfPackets=40;
 #ifdef RECT
     cout << "Should be rectangular but now it will crash! No data structure defined!" << endl;
 #endif
+
 #ifndef MOENCH04
     moench03T1ReceiverDataNew *decoder = new moench03T1ReceiverDataNew();
     cout << "MOENCH03!" << endl;
 #endif
 
 #ifdef MOENCH04
-    moench04CtbZmq10GbData *decoder = new moench04CtbZmq10GbData();
+#ifndef MOENCH04_DGS
+    moench04CtbZmq10GbData *decoder = new moench04CtbZmq10GbData(5000,0);
     cout << "MOENCH04!" << endl;
+#endif
+
+#ifdef MOENCH04_DGS
+    moench04CtbZmq10GbData *decoder = new moench04CtbZmq10GbData(5000,5000);
+    cout << "MOENCH04 DGS!" << endl;
+    numberOfPackets=45;
+#endif
+    
 #endif
 
 
@@ -249,7 +259,7 @@ int main(int argc, char *argv[]) {
             if (filebin.is_open()) {
                 ff = -1;
                 while (decoder->readNextFrame(filebin, ff, np, buff)) {
-                    if (np == 40) {
+                    if (np == numberOfPackets) {
                         mt->pushData(buff);
                         mt->nextThread();
                         mt->popFree(buff);
@@ -331,7 +341,7 @@ int main(int argc, char *argv[]) {
             ff = -1;
             ifr = 0;
             while (decoder->readNextFrame(filebin, ff, np, buff)) {
-                if (np == 40) {
+                if (np == numberOfPackets) {
                     //         //push
                     mt->pushData(buff);
                     // 	//         //pop
@@ -339,7 +349,7 @@ int main(int argc, char *argv[]) {
                     mt->popFree(buff);
 
                     ifr++;
-                    if (ifr % 100 == 0)
+		    if (ifr % 100 == 0)
                         cout << ifr << " " << ff << endl;
                     if (nframes > 0) {
                         if (ifr % nframes == 0) {
@@ -351,8 +361,10 @@ int main(int argc, char *argv[]) {
                             ifile++;
                         }
                     }
-                } else
-                    cout << ifr << " " << ff << " " << np << endl;
+                } else {
+		  cout << "bp " << ifr << " " << ff << " " << np << endl;
+		  //break;
+		}
                 ff = -1;
             }
             cout << "--" << endl;

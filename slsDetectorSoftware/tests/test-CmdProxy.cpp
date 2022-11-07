@@ -1853,8 +1853,7 @@ TEST_CASE("temp_fpga", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD ||
-        det_type == defs::EIGER) {
+    if (det_type != defs::MOENCH) {
         REQUIRE_NOTHROW(proxy.Call("temp_fpga", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_fpga", {}, 0, GET, oss));
@@ -2395,7 +2394,8 @@ TEST_CASE("udp_dstlist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::EIGER) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::EIGER ||
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
         REQUIRE_NOTHROW(proxy.Call("udp_dstlist", {}, 0, GET, std::cout, 0));
         REQUIRE_THROWS(proxy.Call(
             "udp_dstlist", {"ip=0.0.0.0", "mac=00:00:00:00:00:00", "port=1233"},
@@ -2409,7 +2409,8 @@ TEST_CASE("udp_numdst", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::EIGER) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::EIGER ||
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
         REQUIRE_NOTHROW(proxy.Call("udp_numdst", {}, -1, GET));
     } else {
         REQUIRE_THROWS(proxy.Call("udp_numdst", {}, -1, GET));
@@ -2428,7 +2429,8 @@ TEST_CASE("udp_firstdst", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
         auto prev_val = det.getFirstUDPDestination();
         {
             std::ostringstream oss;

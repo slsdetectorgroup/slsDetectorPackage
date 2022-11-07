@@ -1676,7 +1676,9 @@ void *start_timer(void *arg) {
     char imageData[imageSize];
     memset(imageData, 0, imageSize);
     if (adcConfigured == -1) {
-        *((uint32_t *)(imageData)) = 0xCACACACA;
+        // split dereferencing for rhel7 warnings
+        uint32_t *start = (uint32_t *)imageData;
+        *start = 0xCACACACA;
     }
     for (int i = sizeof(uint32_t); i < imageSize; i += sizeof(uint16_t)) {
         *((uint16_t *)(imageData + i)) = (uint16_t)i;
@@ -1703,7 +1705,9 @@ void *start_timer(void *arg) {
             char packetData[packetSize];
             memset(packetData, 0, packetSize);
             // set header
-            *((uint16_t *)(packetData)) = virtual_currentFrameNumber;
+            // split dereferencing for rhel7 warnings
+            uint16_t *fnum = (uint16_t *)packetData;
+            *fnum = virtual_currentFrameNumber;
             ++virtual_currentFrameNumber;
 
             // fill data
@@ -1729,7 +1733,7 @@ void *start_timer(void *arg) {
     closeUDPSocket(0);
 
     sharedMemory_setStatus(IDLE);
-    LOG(logINFOBLUE, ("Finished Acquiring\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
     return NULL;
 }
 #endif
@@ -1854,28 +1858,17 @@ enum runStatus getRunStatus() {
     return s;
 }
 
-void readFrame(int *ret, char *mess) {
-#ifdef VIRTUAL
-    while (sharedMemory_getStatus() == RUNNING) {
-        // LOG(logERROR, ("Waiting for finished flag\n");
-        usleep(5000);
-    }
-    return;
-#endif
-    // wait for status to be done
+void waitForAcquisitionEnd() {
     while (runBusy()) {
         usleep(500);
     }
-
-    // frames left to give status
-    *ret = (int)OK;
+#ifndef VIRTUAL
     int64_t retval = getNumFramesLeft() + 1;
     if (retval > -1) {
-        LOG(logERROR, ("No data and run stopped: %lld frames left\n",
-                       (long long int)retval));
-    } else {
-        LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+        LOG(logINFORED, ("%lld frames left\n", (long long int)retval));
     }
+#endif
+    LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
 u_int32_t runBusy() {

@@ -5,6 +5,7 @@
 
 #include "SlsQt1DZoomer.h"
 #include "sls/ansi.h"
+#include <array>
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_marker.h>
@@ -168,9 +169,16 @@ class SlsQt1DPlot : public QwtPlot {
 
     QwtPlotShapeItem *roiBox{nullptr};
 
+  signals:
+    void PlotZoomedSignal(const QRectF &);
+
   public slots:
+    void SetZoomX(const QRectF &rect);
     void UnZoom();
     void Update();
+
+  private slots:
+    void GetPannedCoord(int, int);
 };
 
 } // namespace sls

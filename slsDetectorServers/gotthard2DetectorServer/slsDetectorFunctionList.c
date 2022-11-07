@@ -27,6 +27,7 @@ extern int debugflag;
 extern int updateFlag;
 extern int checkModuleFlag;
 extern udpStruct udpDetails[MAX_UDP_DESTINATION];
+extern int numUdpDestinations;
 extern const enum detectorType myDetectorType;
 extern int ignoreConfigFileFlag;
 
@@ -1506,6 +1507,15 @@ int getDAC(enum DACINDEX ind, int mV) {
 
 int getMaxDacSteps() { return LTC2620_D_GetMaxNumSteps(); }
 
+int getADC(enum ADCINDEX ind, int *value) {
+    LOG(logDEBUG1, ("Reading FPGA temperature...\n"));
+    if (readADCFromFile(TEMPERATURE_FILE_NAME, value) == FAIL) {
+        LOG(logERROR, ("Could not get temperature\n"));
+        return FAIL;
+    }
+    return OK;
+}
+
 int setHighVoltage(int val) {
     if (val > HV_SOFT_MAX_VOLTAGE) {
         val = HV_SOFT_MAX_VOLTAGE;
@@ -1750,6 +1760,52 @@ void updatingRegisters() {
     LOG(logINFO, ("\tDone Updating registers\n\n"));
 }
 
+int updateClockDivs() {
+    char *clock_names[] = {CLK_NAMES};
+    switch (burstMode) {
+    case BURST_INTERNAL:
+    case BURST_EXTERNAL:
+        if (setClockDivider(SYSTEM_C0, DEFAULT_BURST_SYSTEM_C0) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_BURST_SYSTEM_C0));
+            return FAIL;
+        }
+        if (setClockDivider(SYSTEM_C1, DEFAULT_BURST_SYSTEM_C1) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_BURST_SYSTEM_C1));
+            return FAIL;
+        }
+        if (setClockDivider(SYSTEM_C2, DEFAULT_BURST_SYSTEM_C2) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_BURST_SYSTEM_C2));
+            return FAIL;
+        }
+        break;
+    case CONTINUOUS_INTERNAL:
+    case CONTINUOUS_EXTERNAL:
+        if (setClockDivider(SYSTEM_C0, DEFAULT_CNTNS_SYSTEM_C0) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_CNTNS_SYSTEM_C0));
+            return FAIL;
+        }
+        if (setClockDivider(SYSTEM_C1, DEFAULT_CNTNS_SYSTEM_C1) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_CNTNS_SYSTEM_C1));
+            return FAIL;
+        }
+        if (setClockDivider(SYSTEM_C2, DEFAULT_CNTNS_SYSTEM_C2) == FAIL) {
+            LOG(logERROR, ("Could not set clk %s speed to %d.\n",
+                           clock_names[SYSTEM_C0], DEFAULT_CNTNS_SYSTEM_C2));
+            return FAIL;
+        }
+        break;
+    default:
+        LOG(logERROR, ("Unknown burst mode. Cannot update clock divs.\n"));
+        return FAIL;
+    }
+    return OK;
+}
+
 void setTiming(enum timingMode arg) {
     switch (arg) {
     case AUTO_TIMING:
@@ -1796,6 +1852,36 @@ int getNumberofUDPInterfaces() {
     return ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_10GBE_ENBL_MSK) ? 2 : 1);
 }
 
+int getNumberofDestinations(int *retval) {
+    *retval = (((bus_r(PKT_CONFIG_REG) & PKT_CONFIG_NRXR_MAX_MSK) >>
+                PKT_CONFIG_NRXR_MAX_OFST) +
+               1);
+    return OK;
+}
+
+int setNumberofDestinations(int value) {
+    LOG(logINFO, ("Setting number of entries to %d\n", value));
+    --value;
+    bus_w(PKT_CONFIG_REG, bus_r(PKT_CONFIG_REG) & ~PKT_CONFIG_NRXR_MAX_MSK);
+    bus_w(PKT_CONFIG_REG,
+          bus_r(PKT_CONFIG_REG) |
+              ((value << PKT_CONFIG_NRXR_MAX_OFST) & PKT_CONFIG_NRXR_MAX_MSK));
+    return OK;
+}
+
+int getFirstUDPDestination() {
+    return ((bus_r(PKT_CONFIG_REG) & PKT_CONFIG_RXR_START_ID_MSK) >>
+            PKT_CONFIG_RXR_START_ID_OFST);
+}
+
+void setFirstUDPDestination(int value) {
+    LOG(logINFO, ("Setting first entry to %d\n", value));
+    bus_w(PKT_CONFIG_REG, bus_r(PKT_CONFIG_REG) & ~PKT_CONFIG_RXR_START_ID_MSK);
+    bus_w(PKT_CONFIG_REG,
+          bus_r(PKT_CONFIG_REG) | ((value << PKT_CONFIG_RXR_START_ID_OFST) &
+                                   PKT_CONFIG_RXR_START_ID_MSK));
+}
+
 void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
                  uint64_t destmac, uint32_t destport, uint64_t sourcemac,
                  uint32_t sourceip, uint32_t sourceport) {
@@ -1840,6 +1926,9 @@ void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
     // total length is redefined in firmware
 
     calcChecksum(udp);
+    if (iRxEntry < numUdpDestinations) {
+        LOG(logINFO, ("\tIP checksum : 0x%lx\n\n", udp->ip_checksum));
+    }
 }
 
 void calcChecksum(udp_header *udp) {
@@ -1870,93 +1959,98 @@ void calcChecksum(udp_header *udp) {
         sum = (sum & 0xffff) + (sum >> 16); // Fold 32-bit sum to 16 bits
     long int checksum = sum & 0xffff;
     checksum += UDP_IP_HEADER_LENGTH_BYTES;
-    LOG(logINFO, ("\tIP checksum is 0x%lx\n", checksum));
     udp->ip_checksum = checksum;
 }
 
 int configureMAC() {
 
-    uint32_t srcip = udpDetails[0].srcip;
-    uint32_t srcip2 = udpDetails[0].srcip2;
-    uint32_t dstip = udpDetails[0].dstip;
-    uint32_t dstip2 = udpDetails[0].dstip2;
-    uint64_t srcmac = udpDetails[0].srcmac;
-    uint64_t srcmac2 = udpDetails[0].srcmac2;
-    uint64_t dstmac = udpDetails[0].dstmac;
-    uint64_t dstmac2 = udpDetails[0].dstmac2;
-    int srcport = udpDetails[0].srcport;
-    int srcport2 = udpDetails[0].srcport2;
-    int dstport = udpDetails[0].dstport;
-    int dstport2 = udpDetails[0].dstport2;
-
     LOG(logINFOBLUE, ("Configuring MAC\n"));
-    char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
-        dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
-    getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
-    getIpAddressinString(src_ip, srcip);
-    getIpAddressinString(dst_ip, dstip);
-    char src_mac2[MAC_ADDRESS_SIZE], src_ip2[INET_ADDRSTRLEN],
-        dst_mac2[MAC_ADDRESS_SIZE], dst_ip2[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac2, MAC_ADDRESS_SIZE, srcmac2);
-    getMacAddressinString(dst_mac2, MAC_ADDRESS_SIZE, dstmac2);
-    getIpAddressinString(src_ip2, srcip2);
-    getIpAddressinString(dst_ip2, dstip2);
 
-    LOG(logINFO, ("\tData Interface \n"));
-    LOG(logINFO, ("\tSource IP   : %s\n"
-                  "\tSource MAC  : %s\n"
-                  "\tSource Port : %d\n"
-                  "\tDest IP     : %s\n"
-                  "\tDest MAC    : %s\n"
-                  "\tDest Port   : %d\n\n",
-                  src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+    LOG(logINFO, ("Number of entries: %d\n\n", numUdpDestinations));
+    for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION; ++iRxEntry) {
+        uint32_t srcip = udpDetails[iRxEntry].srcip;
+        uint32_t srcip2 = udpDetails[iRxEntry].srcip2;
+        uint32_t dstip = udpDetails[iRxEntry].dstip;
+        uint32_t dstip2 = udpDetails[iRxEntry].dstip2;
+        uint64_t srcmac = udpDetails[iRxEntry].srcmac;
+        uint64_t srcmac2 = udpDetails[iRxEntry].srcmac2;
+        uint64_t dstmac = udpDetails[iRxEntry].dstmac;
+        uint64_t dstmac2 = udpDetails[iRxEntry].dstmac2;
+        int srcport = udpDetails[iRxEntry].srcport;
+        int srcport2 = udpDetails[iRxEntry].srcport2;
+        int dstport = udpDetails[iRxEntry].dstport;
+        int dstport2 = udpDetails[iRxEntry].dstport2;
 
-    int lll = getVetoStream();
-    int i10gbe = (getNumberofUDPInterfaces() == 2 ? 1 : 0);
+        char src_mac[MAC_ADDRESS_SIZE], src_ip[INET_ADDRSTRLEN],
+            dst_mac[MAC_ADDRESS_SIZE], dst_ip[INET_ADDRSTRLEN];
+        getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, srcmac);
+        getMacAddressinString(dst_mac, MAC_ADDRESS_SIZE, dstmac);
+        getIpAddressinString(src_ip, srcip);
+        getIpAddressinString(dst_ip, dstip);
+        char src_mac2[MAC_ADDRESS_SIZE], src_ip2[INET_ADDRSTRLEN],
+            dst_mac2[MAC_ADDRESS_SIZE], dst_ip2[INET_ADDRSTRLEN];
+        getMacAddressinString(src_mac2, MAC_ADDRESS_SIZE, srcmac2);
+        getMacAddressinString(dst_mac2, MAC_ADDRESS_SIZE, dstmac2);
+        getIpAddressinString(src_ip2, srcip2);
+        getIpAddressinString(dst_ip2, dstip2);
 
-    if (lll) {
-        LOG(logINFOGREEN, ("\tVeto (lll) : enabled\n\n"));
-    } else {
-        LOG(logINFORED, ("\tVeto (lll) : disabled\n\n"));
-    }
-    if (i10gbe) {
-        LOG(logINFOGREEN, ("\tVeto (10GbE): enabled\n"));
-    } else {
-        LOG(logINFORED, ("\tVeto (10GbE): disabled\n"));
-    }
-    LOG(logINFO, ("\tSource IP2  : %s\n"
-                  "\tSource MAC2 : %s\n"
-                  "\tSource Port2: %d\n"
-                  "\tDest IP2    : %s\n"
-                  "\tDest MAC2   : %s\n"
-                  "\tDest Port2  : %d\n\n",
-                  src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
+        int i10gbe = (getNumberofUDPInterfaces() == 2 ? 1 : 0);
+        if (iRxEntry < numUdpDestinations) {
+            LOG(logINFOBLUE, ("\tEntry %d\n", iRxEntry));
 
+            LOG(logINFO, ("\tData Interface \n"));
+            LOG(logINFO, ("\tSource IP   : %s\n"
+                          "\tSource MAC  : %s\n"
+                          "\tSource Port : %d\n"
+                          "\tDest IP     : %s\n"
+                          "\tDest MAC    : %s\n"
+                          "\tDest Port   : %d\n\n",
+                          src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+
+            if (getVetoStream()) {
+                LOG(logINFOGREEN, ("\tVeto (lll) : enabled\n\n"));
+            } else {
+                LOG(logINFORED, ("\tVeto (lll) : disabled\n\n"));
+            }
+            if (i10gbe) {
+                LOG(logINFOGREEN, ("\tVeto (10GbE): enabled\n"));
+            } else {
+                LOG(logINFORED, ("\tVeto (10GbE): disabled\n"));
+            }
+            LOG(logINFO,
+                ("\tSource IP2  : %s\n"
+                 "\tSource MAC2 : %s\n"
+                 "\tSource Port2: %d\n"
+                 "\tDest IP2    : %s\n"
+                 "\tDest MAC2   : %s\n"
+                 "\tDest Port2  : %d\n\n",
+                 src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
+        }
 #ifdef VIRTUAL
-    if (setUDPDestinationDetails(0, 0, dst_ip, dstport) == FAIL) {
-        LOG(logERROR, ("could not set udp destination IP and port\n"));
-        return FAIL;
-    }
-    if (i10gbe && setUDPDestinationDetails(0, 1, dst_ip2, dstport2) == FAIL) {
-        LOG(logERROR, ("could not set udp destination IP and port for "
-                       "interface 2\n"));
-        return FAIL;
-    }
-    return OK;
+        if (setUDPDestinationDetails(iRxEntry, 0, dst_ip, dstport) == FAIL) {
+            LOG(logERROR, ("could not set udp destination IP and port for "
+                           "data interface [entry:%d] \n",
+                           iRxEntry));
+            return FAIL;
+        }
+        if (i10gbe &&
+            setUDPDestinationDetails(iRxEntry, 1, dst_ip2, dstport2) == FAIL) {
+            LOG(logERROR, ("could not set udp destination IP and port for "
+                           "veto interface [entry:%d] \n",
+                           iRxEntry));
+            return FAIL;
+        }
 #endif
-    // default one rxr entry (others not yet implemented in client yet)
-    int iRxEntry = 0;
+        // data
+        setupHeader(iRxEntry, 0, dstip, dstmac, dstport, srcmac, srcip,
+                    srcport);
 
-    // data
-    setupHeader(iRxEntry, 0, dstip, dstmac, dstport, srcmac, srcip, srcport);
-
-    // veto
-    if (i10gbe) {
-        setupHeader(iRxEntry, 1, dstip2, dstmac2, dstport2, srcmac2, srcip2,
-                    srcport2);
+        // veto
+        if (i10gbe) {
+            setupHeader(iRxEntry, 1, dstip2, dstmac2, dstport2, srcmac2, srcip2,
+                        srcport2);
+        }
     }
-
     cleanFifos();
     resetCore();
     // alignDeserializer();
@@ -2780,6 +2874,9 @@ int setBurstMode(enum burstMode burst) {
     }
 
     updatingRegisters();
+
+    updateClockDivs();
+
     return configureASICGlobalSettings();
 }
 
@@ -3135,6 +3232,7 @@ void *start_timer(void *arg) {
         return NULL;
     }
 
+    int firstDest = getFirstUDPDestination();
     int i10gbe = (getNumberofUDPInterfaces() == 2 ? 1 : 0);
 
     int numRepeats = getNumTriggers();
@@ -3168,8 +3266,22 @@ void *start_timer(void *arg) {
     // Generate data
     char imageData[imagesize];
     memset(imageData, 0, imagesize);
-    for (int i = 0; i < imagesize; i += sizeof(uint16_t)) {
-        *((uint16_t *)(imageData + i)) = i;
+    const int nchannels = NCHIP * NCHAN;
+    int gainVal = 0;
+    int channelVal = 0;
+    for (int i = 0; i < nchannels; ++i) {
+        if ((i % nchannels) < 400) {
+            gainVal = 1;
+        } else if ((i % nchannels) < 800) {
+            gainVal = 2;
+        } else {
+            gainVal = 3;
+        }
+        channelVal = (i & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
+
+        *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+            (uint16_t)channelVal;
+        // LOG(logINFORED, ("[%d]:0x%08x\n", i, channelVal));
     }
     char vetoData[vetodatasize];
     memset(vetoData, 0, sizeof(vetodatasize));
@@ -3177,6 +3289,7 @@ void *start_timer(void *arg) {
         *((uint16_t *)(vetoData + i)) = i;
     }
 
+    int iRxEntry = firstDest;
     // loop over number of repeats
     for (int repeatNr = 0; repeatNr != numRepeats; ++repeatNr) {
 
@@ -3212,7 +3325,7 @@ void *start_timer(void *arg) {
             memcpy(packetData + sizeof(sls_detector_header), imageData,
                    datasize);
             // send 1 packet = 1 frame
-            sendUDPPacket(0, 0, packetData, packetsize);
+            sendUDPPacket(iRxEntry, 0, packetData, packetsize);
 
             // second interface (veto)
             char packetData2[vetopacketsize];
@@ -3226,11 +3339,12 @@ void *start_timer(void *arg) {
                 memcpy(packetData2 + sizeof(veto_header), vetoData,
                        vetodatasize);
                 // send 1 packet = 1 frame
-                sendUDPPacket(0, 1, packetData2, vetopacketsize);
+                sendUDPPacket(iRxEntry, 1, packetData2, vetopacketsize);
             }
-            LOG(logINFO, ("Sent frame %s: %d (bursts/ triggers: %d) [%lld]\n",
-                          (i10gbe ? "(+veto)" : ""), frameNr, repeatNr,
-                          (long long unsigned int)virtual_currentFrameNumber));
+            LOG(logINFO,
+                ("Sent frame %s: %d (bursts/ triggers: %d) [%lld] to E%d\n",
+                 (i10gbe ? "(+veto)" : ""), frameNr, repeatNr,
+                 (long long unsigned int)virtual_currentFrameNumber, iRxEntry));
             clock_gettime(CLOCK_REALTIME, &end);
             int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
                               (end.tv_nsec - begin.tv_nsec));
@@ -3242,6 +3356,10 @@ void *start_timer(void *arg) {
                 }
             }
             ++virtual_currentFrameNumber;
+            ++iRxEntry;
+            if (iRxEntry == numUdpDestinations) {
+                iRxEntry = 0;
+            }
         }
         clock_gettime(CLOCK_REALTIME, &rend);
         int64_t timeNs = ((rend.tv_sec - rbegin.tv_sec) * 1E9 +
@@ -3261,7 +3379,7 @@ void *start_timer(void *arg) {
     }
 
     sharedMemory_setStatus(IDLE);
-    LOG(logINFOBLUE, ("Finished Acquiring\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
     return NULL;
 }
 #endif
@@ -3347,18 +3465,11 @@ enum runStatus getRunStatus() {
     return s;
 }
 
-void readFrame(int *ret, char *mess) {
-    // wait for status to be done
+void waitForAcquisitionEnd() {
     while (runBusy()) {
         usleep(500);
     }
-#ifdef VIRTUAL
-    LOG(logINFOGREEN, ("acquisition successfully finished\n"));
-    return;
-#endif
-
-    *ret = (int)OK;
-    LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+    LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
 u_int32_t runBusy() {

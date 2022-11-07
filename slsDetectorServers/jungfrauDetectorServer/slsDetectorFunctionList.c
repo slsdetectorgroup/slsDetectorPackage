@@ -428,7 +428,13 @@ void setupDetector() {
     setupUDPCommParameters();
 #endif
 
+    // altera pll
+    ALTERA_PLL_SetDefines(
+        PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK,
+        PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
+        PLL_CNTRL_ADDR_OFST, PLL_CNTRL_DBIT_WR_PRMTR_MSK, DBIT_CLK_INDEX);
     ALTERA_PLL_ResetPLL();
+
     resetCore();
     resetPeripheral();
     cleanFifos();
@@ -455,12 +461,6 @@ void setupDetector() {
     LTC2620_Disable();
     LTC2620_Configure();
     resetToDefaultDacs(0);
-
-    // altera pll
-    ALTERA_PLL_SetDefines(
-        PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK,
-        PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK,
-        PLL_CNTRL_ADDR_OFST, PLL_CNTRL_DBIT_WR_PRMTR_MSK, DBIT_CLK_INDEX);
 
     /* Only once at server startup */
     bus_w(DAQ_REG, 0x0);
@@ -2580,13 +2580,21 @@ void *start_timer(void *arg) {
     {
         const int npixels = (NCHAN * NCHIP);
         const int pixelsPerPacket = dataSize / NUM_BYTES_PER_PIXEL;
+        int dataVal = 0;
+        int gainVal = 0;
         int pixelVal = 0;
         for (int i = 0; i < npixels; ++i) {
-            // avoiding gain also being divided when gappixels enabled in call
-            // back
-            if (i > 0 && i % pixelsPerPacket == 0) {
-                ++pixelVal;
+            if (i % pixelsPerPacket == 0) {
+                ++dataVal;
             }
+            if ((i % 1024) < 300) {
+                gainVal = 1;
+            } else if ((i % 1024) < 600) {
+                gainVal = 2;
+            } else {
+                gainVal = 3;
+            }
+            pixelVal = (dataVal & ~GAIN_VAL_MSK) | (gainVal << GAIN_VAL_OFST);
 // to debug multi module geometry (row, column) in virtual servers (all pixels
 // in a module set to particular value)
 #ifdef TEST_MOD_GEOMETRY
@@ -2712,7 +2720,7 @@ void *start_timer(void *arg) {
     }
 
     sharedMemory_setStatus(IDLE);
-    LOG(logINFOBLUE, ("Finished Acquiring\n"));
+    LOG(logINFOBLUE, ("Transmitting frames done\n"));
     return NULL;
 }
 #endif
@@ -2824,26 +2832,17 @@ enum runStatus getRunStatus() {
     return s;
 }
 
-void readFrame(int *ret, char *mess) {
-    // wait for status to be done
+void waitForAcquisitionEnd() {
     while (runBusy()) {
         usleep(500);
     }
-#ifdef VIRTUAL
-    LOG(logINFOGREEN, ("acquisition successfully finished\n"));
-    return;
-#endif
-
-    *ret = (int)OK;
-    // frames left to give status
+#ifndef VIRTUAL
     int64_t retval = getNumFramesLeft() + 1;
-
     if (retval > 0) {
-        LOG(logERROR, ("No data and run stopped: %lld frames left\n",
-                       (long long int)retval));
-    } else {
-        LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+        LOG(logINFORED, ("%lld frames left\n", (long long int)retval));
     }
+#endif
+    LOG(logINFOGREEN, ("Blocking Acquisition done\n"));
 }
 
 u_int32_t runBusy() {

@@ -666,7 +666,6 @@ class CmdProxy {
         {"vb_cs", "dac"},
         {"vb_opa_fd", "dac"},
         {"vcom_adc2", "dac"},
-        {"adcvpp", "dac"},
         {"vb_ds", "dac"},
         {"vb_comp", "dac"},
         {"vb_pixbuf", "dac"},
@@ -1018,6 +1017,7 @@ class CmdProxy {
         {"dsamples", &CmdProxy::dsamples},
         {"romode", &CmdProxy::romode},
         {"dbitclk", &CmdProxy::dbitclk},
+        {"adcvpp", &CmdProxy::AdcVpp},
         {"v_a", &CmdProxy::v_a},
         {"v_b", &CmdProxy::v_b},
         {"v_c", &CmdProxy::v_c},
@@ -1190,6 +1190,7 @@ class CmdProxy {
     /* CTB/ Moench Specific */
     std::string Samples(int action);
     /* CTB Specific */
+    std::string AdcVpp(int action);
     std::string SlowAdc(int action);
     std::string ReceiverDbitList(int action);
     std::string DigitalIODelay(int action);
@@ -1450,9 +1451,10 @@ class CmdProxy {
     GET_IND_COMMAND(temp_adc, getTemperature, slsDetectorDefs::TEMPERATURE_ADC,
                     " °C", "[n_value]\n\t[Jungfrau][Gotthard] ADC Temperature");
 
-    GET_IND_COMMAND(
-        temp_fpga, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA, " °C",
-        "[n_value]\n\t[Eiger][Jungfrau][Gotthard] FPGA Temperature");
+    GET_IND_COMMAND(temp_fpga, getTemperature,
+                    slsDetectorDefs::TEMPERATURE_FPGA, " °C",
+                    "[n_value]\n\t[Eiger][Jungfrau][Gotthard][Mythen3]["
+                    "Gotthard2] FPGA Temperature");
 
     GET_IND_COMMAND(temp_fpgaext, getTemperature,
                     slsDetectorDefs::TEMPERATURE_FPGAEXT, " °C",
@@ -1599,9 +1601,9 @@ class CmdProxy {
 
     GET_COMMAND(
         udp_numdst, getNumberofUDPDestinations,
-        "\n\t[Jungfrau][Eiger] One can enter upto 32 "
-        "destinations that the detector will stream images "
-        "out in a round robin fashion. This is get only command. Default: 1");
+        "\n\t[Jungfrau][Eiger][Mythen3][Gotthard2] One can enter upto 32 (64 "
+        "for Mythen3) destinations that the detector will stream images out in "
+        "a round robin fashion. This is get only command. Default: 1");
 
     EXECUTE_SET_COMMAND(udp_cleardst, clearUDPDestinations,
                         "\n\tClears udp destination details on the detector.");
@@ -1609,11 +1611,11 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         udp_firstdst, getFirstUDPDestination, setFirstUDPDestination,
         StringTo<int>,
-        "[0 - 31 (or number of udp destinations)]\n\t[Jungfrau] One can set "
-        "which is the first "
-        "destination that the detector will stream images "
-        "out from in a round robin fashion. The entry must not have been "
-        "empty. Default: 0");
+        "\n[0 - 31 (or number of udp "
+        "destinations)]\n\t[Jungfrau][Gotthard2]\n[0-63]\n\t[Mythen3]\n\n\t "
+        "One can set which is the first destination that the detector will "
+        "stream images out from in a round robin fashion. The entry must not "
+        "have been empty. Default: 0");
 
     INTEGER_COMMAND_VEC_ID(
         udp_srcmac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,
@@ -1631,7 +1633,8 @@ class CmdProxy {
         "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp "
         "interface. Not mandatory to set as udp_dstip retrieves it from "
         "slsReceiver process, but must be set if you use a custom receiver "
-        "(not slsReceiver).");
+        "(not slsReceiver). Use router mac if router between detector and "
+        "receiver.");
 
     INTEGER_COMMAND_VEC_ID(
         udp_dstmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
@@ -1639,8 +1642,8 @@ class CmdProxy {
         "udp interface 2. Not mandatory to set as udp_dstip2 retrieves it from "
         "slsReceiver process but must be set if you use a custom receiver (not "
         "slsReceiver). \n\t [Jungfrau] top half or inner interface \n\t "
-        "[Gotthard2] veto "
-        "debugging.");
+        "[Gotthard2] veto debugging. Use router mac if router between detector "
+        "and receiver.");
 
     INTEGER_COMMAND_VEC_ID_GET(
         udp_dstport, getDestinationUDPPort, setDestinationUDPPort,

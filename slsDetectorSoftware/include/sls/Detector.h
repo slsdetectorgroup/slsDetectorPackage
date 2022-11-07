@@ -453,6 +453,7 @@ class Detector {
 
     /**
      * (Degrees)
+     * [Mythen3][Gotthard2] Options: TEMPERATURE_FPGA
      * [Gotthard] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA \n
      * [Jungfrau] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA \n
      * [Eiger] Options: TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE,
@@ -717,15 +718,17 @@ class Detector {
 
     void setDestinationUDPList(const UdpDestination, const int module_id);
 
-    /** [Jungfrau][Eiger] */
+    /** [Jungfrau][Eiger][Mythen3][Gotthard2] */
     Result<int> getNumberofUDPDestinations(Positions pos = {}) const;
 
     void clearUDPDestinations(Positions pos = {});
 
-    /** [Jungfrau] */
+    /** [Jungfrau][Mythen3][Gotthard2] */
     Result<int> getFirstUDPDestination(Positions pos = {}) const;
 
-    /**[Jungfrau] Options 0-31 (or number of udp destinations) */
+    /**[Jungfrau][Gotthard2] Options 0-31 (or number of udp destinations)\n
+     * [Mythen3] Options 0-63 (or number of udp destinations)
+     */
     void setFirstUDPDestination(const int value, Positions pos = {});
 
     Result<IpAddr> getDestinationUDPIP(Positions pos = {}) const;
@@ -743,7 +746,8 @@ class Detector {
 
     /** Mac address of the receiver (destination) udp interface. Not mandatory
      * to set as setDestinationUDPIP (udp_dstip) retrieves it from slsReceiver
-     * process but must be set if you use a custom receiver (not slsReceiver).
+     * process but must be set if you use a custom receiver (not slsReceiver).\n
+     * Use router mac address if router in between detector and receiver.
      */
     void setDestinationUDPMAC(const MacAddr mac, Positions pos = {});
 
@@ -751,10 +755,11 @@ class Detector {
     Result<MacAddr> getDestinationUDPMAC2(Positions pos = {}) const;
 
     /* [Jungfrau][Gotthard2] Mac address of the receiver (destination) udp
-    interface 2. \n Not mandatory to set as udp_dstip2 retrieves it from
-    slsReceiver process but must be set if you use a custom receiver (not
-    slsReceiver). \n [Jungfrau] bottom half \n [Gotthard2] veto debugging \n
-    */
+     * interface 2. \n Not mandatory to set as udp_dstip2 retrieves it from
+     * slsReceiver process but must be set if you use a custom receiver (not
+     * slsReceiver). \n [Jungfrau] bottom half \n [Gotthard2] veto debugging \n
+     * Use router mac address if router in between detector and receiver.
+     */
     void setDestinationUDPMAC2(const MacAddr mac, Positions pos = {});
 
     Result<int> getDestinationUDPPort(Positions pos = {}) const;
@@ -1393,7 +1398,7 @@ class Detector {
     Result<defs::burstMode> getBurstMode(Positions pos = {});
 
     /** [Gotthard2]  BURST_INTERNAL (default), BURST_EXTERNAL,
-     * CONTINUOUS_INTERNAL, CONTINUOUS_EXTERNAL */
+     * CONTINUOUS_INTERNAL, CONTINUOUS_EXTERNAL. Also changes clkdiv 2, 3, 4 */
     void setBurstMode(defs::burstMode value, Positions pos = {});
 
     /** [Gotthard2] */
@@ -1579,6 +1584,14 @@ class Detector {
      * [Moench] Options: V_LIMIT
      */
     void setVoltage(defs::dacIndex index, int value, Positions pos = {});
+
+    /**
+     * [CTB][Moench] Options: [0- 4] or [1V, 1.14V, 1.33V, 1.6V, 2V]
+     */
+    Result<int> getADCVpp(bool mV = false, Positions pos = {}) const;
+
+    /** [CTB][Moench] */
+    void setADCVpp(int value, bool mV = false, Positions pos = {});
 
     /** [CTB][Moench] */
     Result<uint32_t> getADCEnableMask(Positions pos = {}) const;

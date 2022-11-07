@@ -988,7 +988,7 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
 	ped=0;
 	aval=dataStructure->getValue(data->data,x,y);
 	//aval=dataStructure->getChannel(data->data,x,y);
-	cout << x << " " <<y << " "<< aval << endl;
+	// cout << x << " " <<y << " "<< aval << endl;
 	if (cbGetPedestal->IsOn()) {
 	  if (photonFinder) {
 	    photonFinder->addToPedestal(aval,x,y);

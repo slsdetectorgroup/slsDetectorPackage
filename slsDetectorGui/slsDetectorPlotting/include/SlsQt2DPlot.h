@@ -3,6 +3,7 @@
 #pragma once
 #include "SlsQt2DHist.h"
 #include "SlsQt2DZoomer.h"
+#include <array>
 #include <qlist.h>
 #include <qwt_plot.h>
 #include <qwt_plot_shapeitem.h>
@@ -75,6 +76,13 @@ class SlsQt2DPlot : public QwtPlot {
 
   public slots:
     void showSpectrogram(bool on);
+    void SetZoom(const QRectF &rect);
+
+  private slots:
+    void GetPannedCoord(int, int);
+
+  signals:
+    void PlotZoomedSignal(const QRectF &);
 
   private:
     void SetupZoom();

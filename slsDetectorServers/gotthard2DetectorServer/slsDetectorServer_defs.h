@@ -3,7 +3,7 @@
 #pragma once
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN (0x220818)
+#define REQRD_FRMWRE_VRSN (0x220901)
 #define KERNEL_DATE_VRSN  "Mon May 10 18:00:21 CEST 2021"
 #define ID_FILE           "detid_gotthard2.txt"
 
@@ -12,18 +12,23 @@
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 
 /* Hardware Definitions */
-#define NCHAN                                 (128)
-#define NCHIP                                 (10)
-#define NDAC                                  (16)
-#define NADC                                  (32)
-#define ONCHIP_NDAC                           (7)
-#define DYNAMIC_RANGE                         (16)
-#define HV_SOFT_MAX_VOLTAGE                   (500)
-#define HV_HARD_MAX_VOLTAGE                   (530)
-#define HV_DRIVER_FILE_NAME                   ("/etc/devlinks/hvdac")
-#define DAC_DRIVER_FILE_NAME                  ("/etc/devlinks/dac")
-#define ONCHIP_DAC_DRIVER_FILE_NAME           ("/etc/devlinks/chipdac")
-#define TYPE_FILE_NAME                        ("/etc/devlinks/type")
+#define NCHAN                       (128)
+#define NCHIP                       (10)
+#define NDAC                        (16)
+#define NADC                        (32)
+#define ONCHIP_NDAC                 (7)
+#define DYNAMIC_RANGE               (16)
+#define HV_SOFT_MAX_VOLTAGE         (500)
+#define HV_HARD_MAX_VOLTAGE         (530)
+#define HV_DRIVER_FILE_NAME         ("/etc/devlinks/hvdac")
+#define DAC_DRIVER_FILE_NAME        ("/etc/devlinks/dac")
+#define ONCHIP_DAC_DRIVER_FILE_NAME ("/etc/devlinks/chipdac")
+#define TYPE_FILE_NAME              ("/etc/devlinks/type")
+#ifdef VIRTUAL
+#define TEMPERATURE_FILE_NAME ("/tmp/temp.txt")
+#else
+#define TEMPERATURE_FILE_NAME ("/sys/class/hwmon/hwmon0/temp1_input")
+#endif
 #define CONFIG_FILE                           ("config_gotthard2.txt")
 #define DAC_MAX_MV                            (2048)
 #define ONCHIP_DAC_MAX_VAL                    (0x3FF)
@@ -65,6 +70,14 @@
 #define DEFAULT_SYSTEM_C2  (5)  //(144444448) // sync_clk, 144 MHz
 #define DEFAULT_SYSTEM_C3  (5)  //(144444448) // str_clk, 144 MHz
 
+#define DEFAULT_CNTNS_SYSTEM_C0 (10) // (72222224) run_clk, 72 MHz
+#define DEFAULT_CNTNS_SYSTEM_C1 (20) // (36111112) chip_clk, 36 MHz
+#define DEFAULT_CNTNS_SYSTEM_C2 (10) // (72222224) sync_clk, 72 MHz
+
+#define DEFAULT_BURST_SYSTEM_C0 (5)  // (144444448) run_clk, 144 MHz
+#define DEFAULT_BURST_SYSTEM_C1 (10) // (72222224) chip_clk, 72 MHz
+#define DEFAULT_BURST_SYSTEM_C2 (5)  // (144444448) sync_clk, 144 MHz
+
 #define DEFAULT_READOUT_SPEED    (G2_108MHZ)
 #define SPEED_144_CLKDIV_0       (6)
 #define SPEED_144_CLKDIV_1       (6)
@@ -85,6 +98,9 @@
 #define DEFAULT_DBIT_PIPELINE     (1)
 #define DEFAULT_ASIC_DOUT_RDY_SRC (0x5)
 #define DEFAULT_ASIC_DOUT_RDY_DLY (0x3)
+
+#define GAIN_VAL_OFST (12)
+#define GAIN_VAL_MSK  (0x3 << GAIN_VAL_OFST)
 
 #define VETO_DATA_SIZE (160)
 typedef struct {
@@ -145,6 +161,8 @@ enum CLKINDEX {
 #define CLK_NAMES                                                              \
     "READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2",         \
         "SYSTEM_C3"
+
+enum ADCINDEX { TEMP_FPGA };
 
 enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
 

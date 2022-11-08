@@ -1,15 +1,9 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
-#ifndef JUNGFRAULGADSTRIXELDATA_H
-#define JUNGFRAULGADSTRIXELDATA_H
-#include "sls/sls_detector_defs.h"
+#ifndef JUNGFRAUMODULEDATA_H
+#define JUNGFRAUMODULEDATA_H
 #include "slsDetectorData.h"
 
-/*
-/afs/psi.ch/project/mythen/Anna/slsDetectorPackageDeveloperMpc2011/slsDetectorCalibration/jungfrauExecutables 
-make -f Makefile.rawdataprocess jungfrauRawDataProcessStrx
- ../dataStructures/jungfrauLGADStrixelsData.h
-*/
 //#define VERSION_V2
 /**
     @short  structure for a Detector Packet or Image Header
@@ -34,14 +28,12 @@ typedef struct {
 
 } jf_header;
 
-
-using namespace std;    
-class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
+using namespace std;  
+class jungfrauModuleData : public slsDetectorData<uint16_t> {
 
   private:
     int iframe;
 
-    using header = sls::defs::sls_receiver_header;
   public:
     /**
        Implements the slsReceiverData structure for the moench02 prototype read
@@ -49,107 +41,18 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
        1286 large etc.) \param c crosstalk parameter for the output buffer
 
     */
-    jungfrauLGADStrixelsData()
-        : slsDetectorData<uint16_t>(1024/5, 512*5,
-                                    512 * 1024 * 2 + sizeof(header)) {
-      cout << "aaa" << endl;
-        for (int ix = 0; ix < 1024/5; ix++) {
-            for (int iy = 0; iy < 512*5; iy++) {
-	      dataMap[iy][ix] = sizeof(header);//+ ( 1024 * 5 + 300) * 2; //somewhere on the guardring of the LGAD
+    jungfrauModuleData()
+        : slsDetectorData<uint16_t>(1024, 512,
+                                    1024* 512 * 2 + sizeof(jf_header)) {
+
+        for (int ix = 0; ix < 1024; ix++) {
+            for (int iy = 0; iy < 512; iy++) {
+                dataMap[iy][ix] = sizeof(jf_header) + (1024 * iy + ix) * 2;
 #ifdef HIGHZ
                 dataMask[iy][ix] = 0x3fff;
 #endif
             }
         }
-	int x0=256+10, x1=256+246;
-	int y0=10, y1=256-10;
-	int ix,iy;
-	int ox=0, oy=0, ooy=0;
-	ox=0;
-	cout << "G0" << endl;
-
-	//chip1
-
-	for (int ipx=x0; ipx<x1; ipx++) {
-	  for (int ipy=y0; ipy<y0+54; ipy++) {
-	    ix=(ipx-x0+ox)/3;
-	    iy=(ipx-x0+ox)%3+(ipy-y0+oy)*3+ooy;
-	    dataMap[iy][ix] = sizeof(header) + (1024 * ipy + ipx) * 2;
-	    
-	    //  cout << ipx << " " << ipy << " " << ix << " " << iy << endl;
-
-
-	  }
-	}
-	cout << "G1" << endl;
-	oy=-54;
-	ooy=54*3;
-	ox=3;
-	for (int ipx=x0; ipx<x1; ipx++) {
-	  for (int ipy=y0+54; ipy<y0+64+54; ipy++) {
-	    ix=(ipx-x0+ox)/5;
-	    iy=(ipx-x0+ox)%5+(ipy-y0+oy)*5+ooy;
-	    dataMap[iy][ix] = sizeof(header) + (1024 * ipy + ipx) * 2;
-	  }
-	}
-	
-	cout << "G2" << endl;
-	oy=-54-64;
-	ooy=54*3+64*5;	
-	ox=3;
-	for (int ipx=x0; ipx<x1; ipx++) {
-	  for (int ipy=y0+64+54; ipy<y0+64*2+54*2; ipy++) {
-	    ix=(ipx-x0+ox)/4;
-	    iy=(ipx-x0+ox)%4+(ipy-y0+oy)*4+ooy;
-	    dataMap[iy][ix] = sizeof(header) + (1024 * ipy + ipx) * 2;
-	  }
-	}
-	
-	//chip 6
-
-	x0=256*2+10;
-	y0=256+10;
-	x1=256*2+246;
-	ooy=256*5;
-	oy=0;
-	ox=1;
-	cout << "G0" << endl;
-	for (int ipx=x0; ipx<x1; ipx++) {
-	  for (int ipy=y0; ipy<y0+54+64; ipy++) {
-	    ix=(ipx-x0+ox)/4;
-	    iy=(ipx-x0+ox)%4+(ipy-y0+oy)*4+ooy;
-	    dataMap[iy][ix] = sizeof(header) + (1024 * ipy + ipx) * 2;
-	    if (ipx==x0)
-	      cout << ipx << " " << ipy << " " << ix << " " << iy << endl;
-
-
-	  }
-	}
-	cout << "G1" << endl;
-	oy=-54-64;
-	ooy+=(54+64)*4;
-	ox=1;
-	for (int ipx=x0; ipx<x1; ipx++) {
-	  for (int ipy=y0+54+64; ipy<y0+64*2+54; ipy++) {
-	    ix=(ipx-x0+ox)/5;
-	    iy=(ipx-x0+ox)%5+(ipy-y0+oy)*5+ooy;
-	    dataMap[iy][ix] = sizeof(header) + (1024 * ipy + ipx) * 2;
-	  }
-	}
-	
-	cout << "G2" << endl;
-	oy=-54-64*2;
-	ooy+=64*5;	
-	ox=1;
-	for (int ipx=x0; ipx<x1; ipx++) {
-	  for (int ipy=y0+64*2+54; ipy<y0+64*2+54*2; ipy++) {
-	    ix=(ipx-x0+ox)/3;
-	    iy=(ipx-x0+ox)%3+(ipy-y0+oy)*3+ooy;
-	    dataMap[iy][ix] = sizeof(header) + (1024 * ipy + ipx) * 2;
-	  }
-	}
-	
-
 
         iframe = 0;
         //  cout << "data struct created" << endl;
@@ -166,27 +69,12 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
     virtual double getValue(char *data, int ix, int iy = 0) {
 
         uint16_t val = getChannel(data, ix, iy) & 0x3fff;
+	/* if (ix==0 && iy==0) */
+	/*   cout << val << endl; */
         return val;
     };
 
-    /* virtual void calcGhost(char *data, int ix, int iy) { */
-    /*   double val=0; */
-    /*   ghost[iy][ix]=0; */
-
-    /* } */
-
-    /* virtual void calcGhost(char *data) { */
-    /*   for (int ix=0; ix<25; ix++){ */
-    /*     for (int iy=0; iy<200; iy++) { */
-    /* 	calcGhost(data, ix,iy); */
-    /*     }  */
-    /*   } */
-    /*   // cout << "*" << endl; */
-    /* } */
-
-    /* double getGhost(int ix, int iy) { */
-    /*   return 0; */
-    /* }; */
+   
 
     /**
 
@@ -204,11 +92,10 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
     /* 	unsigned char bunchid[8]; */
     /* }; */
 
-
     int getFrameNumber(char *buff) {
-        return ((header *)buff)->detHeader.frameNumber;
+        return ((jf_header *)buff)->bunchNumber;
     };
-
+  
     /**
 
        Returns the packet number for the given dataset. purely virtual func
@@ -219,11 +106,10 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 
     */
     int getPacketNumber(char *buff) {
-        return ((header *)buff)->detHeader.packetNumber;
+        return 0;
     };
 
    
-
     char *readNextFrame(ifstream &filebin) {
         int ff = -1, np = -1;
         return readNextFrame(filebin, ff, np);
@@ -265,18 +151,18 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
         return NULL;
     };
 
-    /*  /**
+    /**
 
-    /*    Loops over a memory slot until a complete frame is found (i.e. all */
-    /*    packets 0 to nPackets, same frame number). purely virtual func \param */
-    /*    data pointer to the memory to be analyzed \param ndata reference to the */
-    /*    amount of data found for the frame, in case the frame is incomplete at */
-    /*    the end of the memory slot \param dsize size of the memory slot to be */
-    /*    analyzed \returns pointer to the beginning of the last good frame (might */
-    /*    be incomplete if ndata smaller than dataSize), or NULL if no frame is */
-    /*    found */
+       Loops over a memory slot until a complete frame is found (i.e. all
+       packets 0 to nPackets, same frame number). purely virtual func \param
+       data pointer to the memory to be analyzed \param ndata reference to the
+       amount of data found for the frame, in case the frame is incomplete at
+       the end of the memory slot \param dsize size of the memory slot to be
+       analyzed \returns pointer to the beginning of the last good frame (might
+       be incomplete if ndata smaller than dataSize), or NULL if no frame is
+       found
 
-    /* *\/ */
+    */
     virtual char *findNextFrame(char *data, int &ndata, int dsize) {
         if (dsize < dataSize)
             ndata = dsize;

@@ -3,7 +3,7 @@
 #pragma once
 #include "sls/sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN (0x210910)
+#define REQRD_FRMWRE_VRSN (0x220824)
 #define KERNEL_DATE_VRSN  "Mon May 10 18:00:21 CEST 2021"
 #define ID_FILE           "detid_mythen3.txt"
 
@@ -52,13 +52,11 @@
 #define DEFAULT_TRIMBIT_VALUE            (0)
 #define DEFAULT_COUNTER_DISABLED_VTH_VAL (2800)
 
-#define DEFAULT_READOUT_C0 (10) //(100000000) // rdo_clk, 100 MHz
-#define DEFAULT_READOUT_C1 (10) //(100000000) // smp sample clk (x2), 100 MHz
-#define DEFAULT_SYSTEM_C0  (10) //(100000000) // run_clk, 100 MHz
-#define DEFAULT_SYSTEM_C1  (10) //(100000000) // sync_clk, 100 MHz
-#define DEFAULT_SYSTEM_C2  (10) //(100000000) // str_clk, 100 MHz
-#define DEFAULT_SYSTEM_C3  (5)  //(200000000) // smp_clk, 200 MHz
-// (DEFAULT_SYSTEM_C3 only for timing receiver) should not be changed
+#define DEFAULT_READOUT_C0          (12) //(083333333) // rdo_clk, 83.33 MHz
+#define DEFAULT_READOUT_C1          (12) //(083333333) // rdo_smp_clk, 83.33 MHz
+#define DEFAULT_SYSTEM_C0           (20) //(050000000) // run_clk, 20 MHz
+#define DEFAULT_SYSTEM_C1           (8)  //(125000000) // str_clk, 125 MHz const
+#define DEFAULT_SYSTEM_C2           (5)  //(200000000) // smp_clk, 200 MHz const
 #define DEFAULT_TRIMMING_RUN_CLKDIV (40) // (25000000) // 25 MHz
 
 #define DEFAULT_ASIC_LATCHING_NUM_PULSES (10)
@@ -140,12 +138,12 @@ enum CLKINDEX {
     SYSTEM_C0,
     SYSTEM_C1,
     SYSTEM_C2,
-    SYSTEM_C3,
     NUM_CLOCKS
 };
+#define NUM_CLOCKS_TO_SET (3)
+
 #define CLK_NAMES                                                              \
-    "READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2",         \
-        "SYSTEM_C3"
+    "READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2"
 enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
 
 /* Struct Definitions */

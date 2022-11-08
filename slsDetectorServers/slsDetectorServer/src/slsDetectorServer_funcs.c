@@ -1528,7 +1528,11 @@ int write_register(int file_des) {
         } else {
             if (readRegister(addr, &retval) == FAIL) {
                 ret = FAIL;
-                sprintf(mess, "Could not read register 0x%x.\n", addr);
+                sprintf(
+                    mess,
+                    "Could not read register 0x%x or inconsistent values. Try "
+                    "to read +0x100 for only left and +0x200 for only right.\n",
+                    addr);
                 LOG(logERROR, (mess));
             }
         }
@@ -1566,7 +1570,10 @@ int read_register(int file_des) {
 #elif EIGERD
     if (readRegister(addr, &retval) == FAIL) {
         ret = FAIL;
-        sprintf(mess, "Could not read register 0x%x.\n", addr);
+        sprintf(mess,
+                "Could not read register 0x%x or inconsistent values. Try "
+                "+0x100 for only left and +0x200 for only right..\n",
+                addr);
         LOG(logERROR, (mess));
     }
 #else

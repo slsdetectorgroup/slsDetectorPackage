@@ -690,7 +690,7 @@ int Feb_Control_ProcessingInProgress() {
     unsigned int regr = 0, regl = 0;
     // deactivated should return end of processing
     if (!Feb_Control_activated)
-        return IDLE;
+        return STATUS_IDLE;
 
     if (!Feb_Interface_ReadRegister(Feb_Control_rightAddress, FEB_REG_STATUS,
                                     &regr)) {
@@ -704,8 +704,9 @@ int Feb_Control_ProcessingInProgress() {
                        "processing status\n"));
         return STATUS_ERROR;
     }
+    LOG(logDEBUG1, ("regl:0x%x regr:0x%x\n", regl, regr));
     // processing done
-    if ((regr | regl) & FEB_REG_STATUS_ACQ_DONE_MSK) {
+    if (regr & regl & FEB_REG_STATUS_ACQ_DONE_MSK) {
         return STATUS_IDLE;
     }
     // processing running
@@ -1030,6 +1031,7 @@ int Feb_Control_StopAcquisition() {
         // wait for feb processing to be done
         int is_processing = Feb_Control_ProcessingInProgress();
         int check_error = 0;
+        int check_stuck = 0;
         while (is_processing != STATUS_IDLE) {
             usleep(500);
             is_processing = Feb_Control_ProcessingInProgress();
@@ -1041,12 +1043,29 @@ int Feb_Control_StopAcquisition() {
                     break;
                 check_error++;
             } // reset check_error for next time
-            else
+            else {
                 check_error = 0;
+            }
+
+            // check stuck only 2000 times (1s)
+            if (is_processing == STATUS_RUNNING) {
+                if (check_stuck == 2000) {
+                    LOG(logERROR,
+                        ("Unable to get feb processing done signal\n"));
+                    // at least it is idle
+                    if (Feb_Control_AcquisitionInProgress() == STATUS_IDLE) {
+                        return 1;
+                    }
+                    LOG(logERROR, ("Unable to get acquisition done signal\n"));
+                    return 0;
+                }
+                check_stuck++;
+            } // reset check_stuck for next time
+            else {
+                check_stuck = 0;
+            }
         }
         LOG(logINFO, ("Feb: Processing done (to stop acq)\n"));
-
-        return 0;
     }
     return 1;
 }
@@ -1606,7 +1625,9 @@ int Feb_Control_SetChipSignalsToTrimQuad(int enable) {
         LOG(logINFO, ("%s chip signals to trim quad\n",
                       enable ? "Enabling" : "Disabling"));
         unsigned int regval = 0;
-        if (!Feb_Control_ReadRegister(DAQ_REG_HRDWRE, &regval)) {
+        // right fpga only
+        uint32_t righOffset = DAQ_REG_HRDWRE + Feb_Control_rightAddress;
+        if (!Feb_Control_ReadRegister(righOffset, &regval)) {
             LOG(logERROR, ("Could not set chip signals to trim quad\n"));
             return 0;
         }
@@ -1616,7 +1637,7 @@ int Feb_Control_SetChipSignalsToTrimQuad(int enable) {
             regval &= ~(DAQ_REG_HRDWRE_PROGRAM_MSK | DAQ_REG_HRDWRE_M8_MSK);
         }
 
-        if (!Feb_Control_WriteRegister(DAQ_REG_HRDWRE, regval)) {
+        if (!Feb_Control_WriteRegister(righOffset, regval)) {
             LOG(logERROR, ("Could not set chip signals to trim quad\n"));
             return 0;
         }
@@ -1652,19 +1673,19 @@ int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
 
     int run[2] = {0, 0};
     // both registers
-    if (offset < 0x100) {
+    if (offset < Feb_Control_leftAddress) {
         run[0] = 1;
         run[1] = 1;
     }
     // right registers only
-    else if (offset >= 0x200) {
+    else if (offset >= Feb_Control_rightAddress) {
         run[0] = 1;
-        actualOffset = offset - 0x200;
+        actualOffset = offset - Feb_Control_rightAddress;
     }
     // left registers only
     else {
         run[1] = 1;
-        actualOffset = offset - 0x100;
+        actualOffset = offset - Feb_Control_leftAddress;
     }
 
     for (int iloop = 0; iloop < 2; ++iloop) {
@@ -1702,19 +1723,19 @@ int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
     uint32_t value[2] = {0, 0};
     int run[2] = {0, 0};
     // both registers
-    if (offset < 0x100) {
+    if (offset < Feb_Control_leftAddress) {
         run[0] = 1;
         run[1] = 1;
     }
     // right registers only
-    else if (offset >= 0x200) {
+    else if (offset >= Feb_Control_rightAddress) {
         run[0] = 1;
-        actualOffset = offset - 0x200;
+        actualOffset = offset - Feb_Control_rightAddress;
     }
     // left registers only
     else {
         run[1] = 1;
-        actualOffset = offset - 0x100;
+        actualOffset = offset - Feb_Control_leftAddress;
     }
 
     for (int iloop = 0; iloop < 2; ++iloop) {
@@ -1735,11 +1756,10 @@ int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
             }
         }
     }
-    // Inconsistent values
-    if (value[0] != value[1]) {
-        LOG(logERROR,
-            ("Inconsistent values read from left 0x%x and right 0x%x\n",
-             value[0], value[1]));
+    // Inconsistent values when reading both registers
+    if ((run[0] & run[1]) & (value[0] != value[1])) {
+        LOG(logERROR, ("Inconsistent values read from %s 0x%x and %s 0x%x\n",
+                       side[0], value[0], side[1], value[1]));
         return 0;
     }
     return 1;

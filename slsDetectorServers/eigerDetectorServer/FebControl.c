@@ -1050,10 +1050,11 @@ int Feb_Control_StopAcquisition() {
             // check stuck only 2000 times (1s)
             if (is_processing == STATUS_RUNNING) {
                 if (check_stuck == 2000) {
-                    LOG(logERROR, ("Unable to get feb processing done signal\n"));
+                    LOG(logERROR,
+                        ("Unable to get feb processing done signal\n"));
                     // at least it is idle
                     if (Feb_Control_AcquisitionInProgress() == STATUS_IDLE) {
-                       return 1;
+                        return 1;
                     }
                     LOG(logERROR, ("Unable to get acquisition done signal\n"));
                     return 0;
@@ -1757,9 +1758,8 @@ int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
     }
     // Inconsistent values when reading both registers
     if ((run[0] & run[1]) & (value[0] != value[1])) {
-        LOG(logERROR,
-            ("Inconsistent values read from %s 0x%x and %s 0x%x\n",
-             side[0], value[0], side[1], value[1]));
+        LOG(logERROR, ("Inconsistent values read from %s 0x%x and %s 0x%x\n",
+                       side[0], value[0], side[1], value[1]));
         return 0;
     }
     return 1;

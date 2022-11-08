@@ -2185,8 +2185,9 @@ int setTrimbits(int *chanregs, char *mess) {
 
     // if quad, set M8 and PROGRAM manually
     if (!Feb_Control_SetChipSignalsToTrimQuad(1)) {
-        sprintf(mess, "Could not set module. Could not enable chip signals to set trimbits\n");
-        LOG(logERROR, (mess)); 
+        sprintf(mess, "Could not set module. Could not enable chip signals to "
+                      "set trimbits\n");
+        LOG(logERROR, (mess));
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
@@ -2200,8 +2201,9 @@ int setTrimbits(int *chanregs, char *mess) {
 
         // if quad, reset M8 and PROGRAM manually
         if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
-            sprintf(mess, "Could not set module. Could not disable chip signals to set trimbits\n");
-            LOG(logERROR, (mess)); 
+            sprintf(mess, "Could not set module. Could not disable chip "
+                          "signals to set trimbits\n");
+            LOG(logERROR, (mess));
             sharedMemory_unlockLocalLink();
             return FAIL;
         }
@@ -2212,8 +2214,9 @@ int setTrimbits(int *chanregs, char *mess) {
 
     // if quad, reset M8 and PROGRAM manually
     if (!Feb_Control_SetChipSignalsToTrimQuad(0)) {
-        sprintf(mess, "Could not set module. Could not disable chip signals to set trimbits\n");
-        LOG(logERROR, (mess));   
+        sprintf(mess, "Could not set module. Could not disable chip signals to "
+                      "set trimbits\n");
+        LOG(logERROR, (mess));
         sharedMemory_unlockLocalLink();
         return FAIL;
     }
@@ -2816,8 +2819,9 @@ int stopStateMachine() {
 
     // reset feb and beb
     sharedMemory_lockLocalLink();
-    // uncommenting this out as it randomly does not set the processing bit to high
-    //Feb_Control_Reset();
+    // uncommenting this out as it randomly does not set the processing bit to
+    // high
+    // Feb_Control_Reset();
     sharedMemory_unlockLocalLink();
     if (!Beb_StopAcquisition()) {
         LOG(logERROR, ("failed to stop acquisition\n"));

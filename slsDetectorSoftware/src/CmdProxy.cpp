@@ -323,7 +323,7 @@ std::string CmdProxy::ClientVersion(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\tClient software version in format [0xYYMMDD]." << '\n';
+        os << "\n\tClient software version" << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);

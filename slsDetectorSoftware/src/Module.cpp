@@ -128,11 +128,8 @@ std::string Module::getReceiverLongVersion() const {
 }
 
 std::string Module::getReceiverSoftwareVersion() const {
-    if (shm()->useReceiverFlag) {
-        Version v(getReceiverLongVersion());
-        return v.concise();
-    }
-    return std::string();
+    Version v(getReceiverLongVersion());
+    return v.concise();
 }
 
 // static function

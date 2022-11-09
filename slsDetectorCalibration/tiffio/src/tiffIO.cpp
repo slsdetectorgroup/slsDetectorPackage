@@ -5,7 +5,7 @@
 #include <iostream>
 #include <tiffio.h>
 
-void *WriteToTiff(float *imgData, const char *imgname, int nrow, int ncol) {
+void *WriteToTiff(float *imgData, const char *imgname, int ncol, int nrow) {
     constexpr uint32_t sampleperpixel = 1;
     TIFF *tif = TIFFOpen(imgname, "w");
     if (tif) {
@@ -30,7 +30,7 @@ void *WriteToTiff(float *imgData, const char *imgname, int nrow, int ncol) {
     return nullptr;
 }
 
-float *ReadFromTiff(const char *imgname, uint32_t &nrow, uint32_t &ncol) {
+float *ReadFromTiff(const char *imgname, uint32_t &ncol, uint32_t &nrow) {
     TIFF *tif = TIFFOpen(imgname, "r");
     if (tif) {
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &ncol);

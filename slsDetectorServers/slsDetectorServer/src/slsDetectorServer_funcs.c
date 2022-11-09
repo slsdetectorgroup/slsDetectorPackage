@@ -84,7 +84,7 @@ int updateModeAllowedFunction(int file_des) {
         F_EXEC_COMMAND,           F_GET_DETECTOR_TYPE,  F_GET_FIRMWARE_VERSION,
         F_GET_SERVER_VERSION,     F_GET_SERIAL_NUMBER,  F_WRITE_REGISTER,
         F_READ_REGISTER,          F_LOCK_SERVER,        F_GET_LAST_CLIENT_IP,
-        F_PROGRAM_FPGA,           F_RESET_FPGA,         F_CHECK_VERSION,
+        F_PROGRAM_FPGA,           F_RESET_FPGA,         F_INITIAL_CHECKS,
         F_REBOOT_CONTROLLER,      F_GET_KERNEL_VERSION, F_UPDATE_KERNEL,
         F_UPDATE_DETECTOR_SERVER, F_GET_UPDATE_MODE,    F_SET_UPDATE_MODE,
         F_GET_NUM_CHANNELS,       F_GET_NUM_INTERFACES, F_ACTIVATE};
@@ -303,7 +303,7 @@ void function_table() {
     flist[F_TEMP_EVENT] = &temp_event;
     flist[F_AUTO_COMP_DISABLE] = &auto_comp_disable;
     flist[F_STORAGE_CELL_START] = &storage_cell_start;
-    flist[F_CHECK_VERSION] = &check_version;
+    flist[F_INITIAL_CHECKS] = &initial_checks;
     flist[F_SOFTWARE_TRIGGER] = &software_trigger;
     flist[F_LED] = &led;
     flist[F_DIGITAL_IO_DELAY] = &digital_io_delay;
@@ -737,10 +737,11 @@ int get_firmware_version(int file_des) {
 int get_server_version(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int64_t retval = -1;
-    retval = getServerVersion();
-    LOG(logDEBUG1, ("server version retval: 0x%llx\n", (long long int)retval));
-    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+    char retvals[MAX_STR_LENGTH];
+    memset(retvals, 0, MAX_STR_LENGTH);
+    getServerVersion(retvals);
+    LOG(logDEBUG1, ("server version retval: %s\n", retvals));
+    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
 int get_serial_number(int file_des) {
@@ -1527,7 +1528,11 @@ int write_register(int file_des) {
         } else {
             if (readRegister(addr, &retval) == FAIL) {
                 ret = FAIL;
-                sprintf(mess, "Could not read register 0x%x.\n", addr);
+                sprintf(
+                    mess,
+                    "Could not read register 0x%x or inconsistent values. Try "
+                    "to read +0x100 for only left and +0x200 for only right.\n",
+                    addr);
                 LOG(logERROR, (mess));
             }
         }
@@ -1565,7 +1570,10 @@ int read_register(int file_des) {
 #elif EIGERD
     if (readRegister(addr, &retval) == FAIL) {
         ret = FAIL;
-        sprintf(mess, "Could not read register 0x%x.\n", addr);
+        sprintf(mess,
+                "Could not read register 0x%x or inconsistent values. Try "
+                "+0x100 for only left and +0x200 for only right..\n",
+                addr);
         LOG(logERROR, (mess));
     }
 #else
@@ -1896,57 +1904,55 @@ int acquire(int blocking, int file_des) {
 #ifdef EIGERD
             // check for hardware mac and hardware ip
             if (udpDetails[0].srcmac != getDetectorMAC()) {
-                ret = FAIL;
-                uint64_t sourcemac = getDetectorMAC();
-                char src_mac[MAC_ADDRESS_SIZE];
-                getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
-                sprintf(
-                    mess,
+            ret = FAIL;
+            uint64_t sourcemac = getDetectorMAC();
+            char src_mac[MAC_ADDRESS_SIZE];
+            getMacAddressinString(src_mac, MAC_ADDRESS_SIZE, sourcemac);
+            sprintf(mess,
                     "Invalid udp source mac address for this detector. Must be "
                     "same as hardware detector mac address %s\n",
                     src_mac);
-                LOG(logERROR, (mess));
-            } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                       (udpDetails[0].srcip != getDetectorIP())) {
-                ret = FAIL;
-                uint32_t sourceip = getDetectorIP();
-                char src_ip[INET_ADDRSTRLEN];
-                getIpAddressinString(src_ip, sourceip);
-                sprintf(
-                    mess,
+            LOG(logERROR, (mess));
+        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
+                   (udpDetails[0].srcip != getDetectorIP())) {
+            ret = FAIL;
+            uint32_t sourceip = getDetectorIP();
+            char src_ip[INET_ADDRSTRLEN];
+            getIpAddressinString(src_ip, sourceip);
+            sprintf(mess,
                     "Invalid udp source ip address for this detector. Must be "
                     "same as hardware detector ip address %s in 1G readout "
                     "mode \n",
                     src_ip);
-                LOG(logERROR, (mess));
-            } else
+            LOG(logERROR, (mess));
+        } else
 #endif
-                if (configured == FAIL) {
+            if (configured == FAIL) {
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition because ");
+            strcat(mess, configureMessage);
+            LOG(logERROR, (mess));
+        } else if (sharedMemory_getScanStatus() == RUNNING) {
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition because a scan is "
+                         "already running!\n");
+            LOG(logERROR, (mess));
+        } else {
+            memset(scanErrMessage, 0, MAX_STR_LENGTH);
+            sharedMemory_setScanStop(0);
+            sharedMemory_setScanStatus(IDLE); // if it was error
+            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                               &blocking)) {
                 ret = FAIL;
-                strcpy(mess, "Could not start acquisition because ");
-                strcat(mess, configureMessage);
-                LOG(logERROR, (mess));
-            } else if (sharedMemory_getScanStatus() == RUNNING) {
-                ret = FAIL;
-                strcpy(mess, "Could not start acquisition because a scan is "
-                             "already running!\n");
+                strcpy(mess, "Could not start acquisition thread!\n");
                 LOG(logERROR, (mess));
             } else {
-                memset(scanErrMessage, 0, MAX_STR_LENGTH);
-                sharedMemory_setScanStop(0);
-                sharedMemory_setScanStatus(IDLE); // if it was error
-                if (pthread_create(&pthread_tid, NULL, &start_state_machine,
-                                   &blocking)) {
-                    ret = FAIL;
-                    strcpy(mess, "Could not start acquisition thread!\n");
-                    LOG(logERROR, (mess));
-                } else {
-                    // only does not wait for non blocking and scan
-                    if (blocking || !scan) {
-                        pthread_join(pthread_tid, NULL);
-                    }
+                // only does not wait for non blocking and scan
+                if (blocking || !scan) {
+                    pthread_join(pthread_tid, NULL);
                 }
             }
+        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -4070,13 +4076,9 @@ int storage_cell_start(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int check_version(int file_des) {
+int initial_checks(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int64_t arg = -1;
-
-    if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
-        return printSocketReadError();
 
     // check software- firmware compatibility and basic tests
     LOG(logDEBUG1, ("Checking software-firmware compatibility and basic "
@@ -4099,39 +4101,6 @@ int check_version(int file_des) {
         if (getInitResult(&firmware_message) == FAIL) {
             ret = FAIL;
             strcpy(mess, firmware_message);
-            LOG(logERROR, (mess));
-        }
-    }
-
-    if (ret == OK) {
-        LOG(logDEBUG1,
-            ("Checking versioning compatibility with value 0x%llx\n", arg));
-
-        int64_t client_requiredVersion = arg;
-        int64_t det_apiVersion = getClientServerAPIVersion();
-        int64_t det_version = getServerVersion();
-
-        // old client
-        if (det_apiVersion > client_requiredVersion) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Client's detector SW API version: (0x%llx). "
-                    "Detector's SW API Version: (0x%llx). "
-                    "Incompatible, update client!\n",
-                    (long long int)client_requiredVersion,
-                    (long long int)det_apiVersion);
-            LOG(logERROR, (mess));
-        }
-
-        // old software
-        else if (client_requiredVersion > det_version) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Detector SW Version: (0x%llx). "
-                    "Client's detector SW API Version: (0x%llx). "
-                    "Incompatible, update detector software!\n",
-                    (long long int)det_version,
-                    (long long int)client_requiredVersion);
             LOG(logERROR, (mess));
         }
     }

@@ -75,8 +75,7 @@ int getTestImageMode();
 #endif
 
 // Ids
-u_int64_t getServerVersion();
-u_int64_t getClientServerAPIVersion();
+void getServerVersion(char *version);
 u_int64_t getFirmwareVersion();
 u_int64_t getFirmwareAPIVersion();
 #if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \

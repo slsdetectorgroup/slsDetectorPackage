@@ -74,11 +74,11 @@ class Detector {
     /** package git branch */
     std::string getPackageVersion() const;
 
-    int64_t getClientVersion() const;
+    std::string getClientVersion() const;
 
     Result<int64_t> getFirmwareVersion(Positions pos = {}) const;
 
-    Result<int64_t> getDetectorServerVersion(Positions pos = {}) const;
+    Result<std::string> getDetectorServerVersion(Positions pos = {}) const;
 
     Result<std::string> getKernelVersion(Positions pos = {}) const;
 
@@ -89,7 +89,7 @@ class Detector {
      * streamed out in the UDP header of the detector.*/
     Result<int> getModuleId(Positions pos = {}) const;
 
-    Result<int64_t> getReceiverVersion(Positions pos = {}) const;
+    Result<std::string> getReceiverVersion(Positions pos = {}) const;
 
     /** Options: EIGER, JUNGFRAU, GOTTHARD, MOENCH, MYTHEN3, GOTTHARD2,
      * CHIPTESTBOARD */

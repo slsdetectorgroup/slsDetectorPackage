@@ -1,32 +1,32 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-declare -a det=("eigerDetectorServer")
+deterror="OK"
+dir="eigerDetectorServer"
+file="${dir}_developer"
+branch=""
 
-declare -a deterror=("OK" "OK" "OK" "OK")
+# arguments
+if [ $# -eq 1 ]; then
+	branch+=$1
+	#echo "with branch $branch"
+elif [ ! $# -eq 0 ]; then
+	echo -e "Only one optional argument allowed for branch."
+	return -1
+fi
 
-for ((i=0;i<${#det[@]};++i))
-do
-	dir=${det[i]}
-	file="${det[i]}_developer"
-	echo -e "Compiling $dir [$file]"
-	cd $dir
-	make clean
-	if make version; then
-		deterror[i]="OK"
-	else
-		deterror[i]="FAIL"
-	fi
-	
-	mv bin/$dir bin/$file
-	git add -f bin/$file
-	cp bin/$file /tftpboot/
-	cd ..
-	echo -e "\n\n"
-done
+echo -e "Compiling $dir [$file]"
+cd $dir
+make clean
+if make version API_BRANCH=$branch; then
+	deterror="OK"
+else
+	deterror="FAIL"
+fi
 
-echo -e "Results:"
-for ((i=0;i<${#det[@]};++i))
-do
-	printf "%s\t\t= %s\n" "${det[i]}" "${deterror[i]}"
-done
+mv bin/$dir bin/$file
+git add -f bin/$file
+cp bin/$file /tftpboot/
+cd ..
+echo -e "\n\n"
+printf "Result:\t\t= %s\n"  "${deterror}"
 	

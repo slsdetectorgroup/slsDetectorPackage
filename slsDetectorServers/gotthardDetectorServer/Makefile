@@ -23,10 +23,11 @@ version: clean versioning $(PROGS)
 
 boot: $(OBJS)
 
+version_branch=$(API_BRANCH)
 version_name=APIGOTTHARD
 version_path=slsDetectorServers/gotthardDetectorServer
 versioning: 
-	cd ../../ && echo $(PWD) && echo `tput setaf 6; ./updateAPIVersion.sh $(version_name) $(version_path);  tput sgr0;`
+	cd ../../ && echo $(PWD) && echo `tput setaf 6; ./updateAPIVersion.sh $(version_name) $(version_path) $(version_branch);  tput sgr0;`
 
 	
 $(PROGS): $(OBJS) 

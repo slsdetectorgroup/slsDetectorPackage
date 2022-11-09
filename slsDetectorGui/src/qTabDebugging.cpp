@@ -191,10 +191,8 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item) {
                           std::to_string((unsigned long)det->getFirmwareVersion(
                               {comboDetector->currentIndex()})[0]);
             lblDetectorFirmware->setText(QString(retval.c_str()));
-            retval =
-                std::string("0x") +
-                std::to_string((unsigned long)det->getDetectorServerVersion(
-                    {comboDetector->currentIndex()})[0]);
+            retval = det->getDetectorServerVersion(
+                {comboDetector->currentIndex()})[0];
             lblDetectorSoftware->setText(QString(retval.c_str()));
         }
         CATCH_DISPLAY("Could not get versions.", "qTabDebugging::SetParameters")

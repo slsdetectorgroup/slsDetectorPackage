@@ -71,8 +71,7 @@ Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
             break;
 
         case 'v':
-            std::cout << "SLS Receiver Version: " << GITBRANCH << " (0x"
-                      << std::hex << APIRECEIVER << ")" << std::endl;
+            std::cout << "SLS Receiver Version: " << APIRECEIVER << std::endl;
             LOG(logINFOBLUE) << "Exiting [ Tid: " << gettid() << " ]";
             exit(EXIT_SUCCESS);
 
@@ -124,7 +123,7 @@ Receiver::Receiver(int tcpip_port_no) {
     tcpipInterface = make_unique<ClientInterface>(tcpip_port_no);
 }
 
-int64_t Receiver::getReceiverVersion() {
+std::string Receiver::getReceiverVersion() {
     return tcpipInterface->getReceiverVersion();
 }
 

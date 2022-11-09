@@ -102,9 +102,10 @@ void basictests() {
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
     int64_t fwversion = getFirmwareVersion();
-    int64_t swversion = getServerVersion();
+    char swversion[MAX_STR_LENGTH] = {0};
+    memset(swversion, 0, MAX_STR_LENGTH);
+    getServerVersion(swversion);
     int64_t sw_fw_apiversion = 0;
-    int64_t client_sw_apiversion = getClientServerAPIVersion();
     uint32_t requiredFirmwareVersion =
         (isHardwareVersion2() ? REQRD_FRMWRE_VRSN_BOARD2 : REQRD_FRMWRE_VRSN);
 
@@ -120,15 +121,13 @@ void basictests() {
          "Detector MAC Addr:\t\t 0x%llx\n\n"
 
          "Firmware Version:\t\t 0x%llx\n"
-         "Software Version:\t\t 0x%llx\n"
+         "Software Version:\t\t %s\n"
          "F/w-S/w API Version:\t\t 0x%llx\n"
          "Required Firmware Version:\t 0x%x\n"
-         "Client-Software API Version:\t 0x%llx\n"
          "********************************************************\n",
          hversion, hsnumber, ipadd, (long long unsigned int)macadd,
-         (long long int)fwversion, (long long int)swversion,
-         (long long int)sw_fw_apiversion, requiredFirmwareVersion,
-         (long long int)client_sw_apiversion));
+         (long long int)fwversion, swversion, (long long int)sw_fw_apiversion,
+         requiredFirmwareVersion));
 
 #ifndef VIRTUAL
     // return if flag is not zero, debug mode
@@ -257,9 +256,7 @@ int getTestImageMode() { return virtual_image_test_mode; }
 
 /* Ids */
 
-uint64_t getServerVersion() { return APIJUNGFRAU; }
-
-uint64_t getClientServerAPIVersion() { return APIJUNGFRAU; }
+void getServerVersion(char *version) { strcpy(version, APIJUNGFRAU); }
 
 u_int64_t getFirmwareVersion() {
 #ifdef VIRTUAL

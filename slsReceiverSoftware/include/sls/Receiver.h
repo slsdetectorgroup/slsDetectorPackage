@@ -36,7 +36,7 @@ class Receiver : private virtual slsDetectorDefs {
      * get get Receiver Version
      \returns id
      */
-    int64_t getReceiverVersion();
+    std::string getReceiverVersion();
 
     /**
      * Start Acquisition Call back (slsMultiReceiver writes data if file write

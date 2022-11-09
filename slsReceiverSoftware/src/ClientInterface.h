@@ -30,7 +30,7 @@ class ClientInterface : private virtual slsDetectorDefs {
   public:
     virtual ~ClientInterface();
     ClientInterface(int portNumber = -1);
-    int64_t getReceiverVersion();
+    std::string getReceiverVersion();
 
     //***callback functions***
     /** params: file path, file name, file index, image size */
@@ -128,7 +128,6 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_real_udp_socket_buffer_size(ServerInterface &socket);
     int set_frames_per_file(ServerInterface &socket);
     int get_frames_per_file(ServerInterface &socket);
-    int check_version_compatibility(ServerInterface &socket);
     int set_discard_policy(ServerInterface &socket);
     int get_discard_policy(ServerInterface &socket);
     int set_padding_enable(ServerInterface &socket);

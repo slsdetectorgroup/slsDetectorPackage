@@ -107,7 +107,7 @@ enum detFuncs {
     F_TEMP_EVENT,
     F_AUTO_COMP_DISABLE,
     F_STORAGE_CELL_START,
-    F_CHECK_VERSION,
+    F_INITIAL_CHECKS,
     F_SOFTWARE_TRIGGER,
     F_LED,
     F_DIGITAL_IO_DELAY,
@@ -339,7 +339,6 @@ enum detFuncs {
     F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE,
     F_SET_RECEIVER_FRAMES_PER_FILE,
     F_GET_RECEIVER_FRAMES_PER_FILE,
-    F_RECEIVER_CHECK_VERSION,
     F_SET_RECEIVER_DISCARD_POLICY,
     F_GET_RECEIVER_DISCARD_POLICY,
     F_SET_RECEIVER_PADDING,
@@ -488,7 +487,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_TEMP_EVENT:                      return "F_TEMP_EVENT";
     case F_AUTO_COMP_DISABLE:               return "F_AUTO_COMP_DISABLE";
     case F_STORAGE_CELL_START:              return "F_STORAGE_CELL_START";
-    case F_CHECK_VERSION:              		return "F_CHECK_VERSION";
+    case F_INITIAL_CHECKS:              	return "F_INITIAL_CHECKS";
     case F_SOFTWARE_TRIGGER:              	return "F_SOFTWARE_TRIGGER";
     case F_LED:              				return "F_LED";
 	case F_DIGITAL_IO_DELAY:              	return "F_DIGITAL_IO_DELAY";
@@ -718,7 +717,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE: return "F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE";
     case F_SET_RECEIVER_FRAMES_PER_FILE:	return "F_SET_RECEIVER_FRAMES_PER_FILE";
     case F_GET_RECEIVER_FRAMES_PER_FILE:	return "F_GET_RECEIVER_FRAMES_PER_FILE";
-    case F_RECEIVER_CHECK_VERSION:			return "F_RECEIVER_CHECK_VERSION";
     case F_SET_RECEIVER_DISCARD_POLICY:		return "F_SET_RECEIVER_DISCARD_POLICY";
     case F_GET_RECEIVER_DISCARD_POLICY:		return "F_GET_RECEIVER_DISCARD_POLICY";
     case F_SET_RECEIVER_PADDING:			return "F_SET_RECEIVER_PADDING";

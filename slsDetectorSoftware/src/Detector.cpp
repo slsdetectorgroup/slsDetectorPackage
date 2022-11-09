@@ -9,6 +9,7 @@
 #include "DetectorImpl.h"
 #include "Module.h"
 #include "sls/Pattern.h"
+#include "sls/Version.h"
 #include "sls/container_utils.h"
 #include "sls/file_utils.h"
 #include "sls/logger.h"
@@ -112,15 +113,18 @@ void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
 
 int Detector::getShmId() const { return pimpl->getDetectorIndex(); }
 
-std::string Detector::getPackageVersion() const { return GITBRANCH; }
+std::string Detector::getPackageVersion() const { return RELEASE; }
 
-int64_t Detector::getClientVersion() const { return APILIB; }
+std::string Detector::getClientVersion() const {
+    Version v(APILIB);
+    return v.concise();
+}
 
 Result<int64_t> Detector::getFirmwareVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getFirmwareVersion, pos);
 }
 
-Result<int64_t> Detector::getDetectorServerVersion(Positions pos) const {
+Result<std::string> Detector::getDetectorServerVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getDetectorServerVersion, pos);
 }
 
@@ -136,7 +140,7 @@ Result<int> Detector::getModuleId(Positions pos) const {
     return pimpl->Parallel(&Module::getModuleId, pos);
 }
 
-Result<int64_t> Detector::getReceiverVersion(Positions pos) const {
+Result<std::string> Detector::getReceiverVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverSoftwareVersion, pos);
 }
 
@@ -1123,14 +1127,16 @@ Result<std::string> Detector::getRxHostname(Positions pos) const {
 }
 
 void Detector::setRxHostname(const std::string &receiver, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverHostname, pos, receiver);
+    pimpl->Parallel(&Module::setReceiverHostname, pos, receiver,
+                    pimpl->getInitialChecks());
     updateRxRateCorrections();
 }
 
 void Detector::setRxHostname(const std::vector<std::string> &name) {
     // set all to same rx_hostname
     if (name.size() == 1) {
-        pimpl->Parallel(&Module::setReceiverHostname, {}, name[0]);
+        pimpl->Parallel(&Module::setReceiverHostname, {}, name[0],
+                        pimpl->getInitialChecks());
     } else {
         if ((int)name.size() != size()) {
             throw RuntimeError(
@@ -1139,7 +1145,8 @@ void Detector::setRxHostname(const std::vector<std::string> &name) {
         }
         // set each rx_hostname
         for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet]);
+            pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet],
+                            pimpl->getInitialChecks());
         }
     }
     updateRxRateCorrections();

@@ -107,8 +107,9 @@ void basictests() {
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
     int64_t fwversion = getFirmwareVersion();
-    int64_t swversion = getServerVersion();
-    int64_t client_sw_apiversion = getClientServerAPIVersion();
+    char swversion[MAX_STR_LENGTH] = {0};
+    memset(swversion, 0, MAX_STR_LENGTH);
+    getServerVersion(swversion);
 
     LOG(logINFOBLUE,
         ("**************************************************\n"
@@ -118,15 +119,13 @@ void basictests() {
          "Detector MAC Addr      : 0x%llx\n\n"
 
          "Firmware Version       : 0x%llx\n"
-         "Software Version       : 0x%llx\n"
-         "Client-S/w API Version : 0x%llx\n"
+         "Software Version       : %s\n"
          "********************************************************\n",
          boardrev,
 
          ipadd, (long long unsigned int)macadd,
 
-         (long long int)fwversion, (long long int)swversion,
-         (long long int)client_sw_apiversion));
+         (long long int)fwversion, swversion));
 
 #ifndef VIRTUAL
     if (!debugflag || updateFlag) {
@@ -270,9 +269,7 @@ int getTestImageMode() {
 
 /* Ids */
 
-uint64_t getServerVersion() { return APIGOTTHARD; }
-
-uint64_t getClientServerAPIVersion() { return APIGOTTHARD; }
+void getServerVersion(char *version) { strcpy(version, APIGOTTHARD); }
 
 u_int64_t getFirmwareVersion() {
 #ifdef VIRTUAL

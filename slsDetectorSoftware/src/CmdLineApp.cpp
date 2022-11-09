@@ -37,9 +37,7 @@ int main(int argc, char *argv[]) {
     // Check for --version in the arguments
     for (int i = 1; i < argc; ++i) {
         if (!(strcmp(argv[i], "--version")) || !(strcmp(argv[i], "-v"))) {
-            int64_t tempval = APILIB;
-            std::cout << argv[0] << " " << GITBRANCH << " (0x" << std::hex
-                      << tempval << ")" << std::endl;
+            std::cout << argv[0] << " " << APILIB << std::endl;
             return 0;
         }
     }

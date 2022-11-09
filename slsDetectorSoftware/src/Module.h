@@ -90,11 +90,13 @@ class Module : public virtual slsDetectorDefs {
     void setHostname(const std::string &hostname, const bool initialChecks);
 
     int64_t getFirmwareVersion() const;
-    int64_t getDetectorServerVersion() const;
+    std::string getControlServerLongVersion() const;
+    std::string getStopServerLongVersion() const;
+    std::string getDetectorServerVersion() const;
     std::string getKernelVersion() const;
     int64_t getSerialNumber() const;
     int getModuleId() const;
-    int64_t getReceiverSoftwareVersion() const;
+    std::string getReceiverSoftwareVersion() const;
     static detectorType
     getTypeFromDetector(const std::string &hostname,
                         int cport = DEFAULT_TCP_CNTRL_PORTNO);
@@ -276,7 +278,8 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
     bool getUseReceiverFlag() const;
     std::string getReceiverHostname() const;
-    void setReceiverHostname(const std::string &receiver);
+    void setReceiverHostname(const std::string &receiver,
+                             const bool initialChecks);
     int getReceiverPort() const;
     int setReceiverPort(int port_number);
     int getReceiverFifoDepth() const;
@@ -600,6 +603,8 @@ class Module : public virtual slsDetectorDefs {
     int64_t getMeasurementTime() const;
 
   private:
+    std::string getReceiverLongVersion() const;
+
     void checkArgs(const void *args, size_t args_size, void *retval,
                    size_t retval_size) const;
 
@@ -737,6 +742,8 @@ class Module : public virtual slsDetectorDefs {
     Called when new shared memory is created */
     void initializeModuleStructure(detectorType type);
 
+    void initialDetectorServerChecks();
+    const std::string getDetectorAPI() const;
     void checkDetectorVersionCompatibility();
     void checkReceiverVersionCompatibility();
     void setModule(sls_detector_module &module, bool trimbits = true);

@@ -21,16 +21,25 @@
 #include <QScrollArea>
 #include <QSizePolicy>
 
+#include "sls/Version.h"
 #include <getopt.h>
 #include <string>
 #include <sys/stat.h>
+
+std::string getClientVersion() {
+    try {
+        sls::Version v(APILIB);
+        return v.concise();
+    } catch (...) {
+        return std::string("unknown");
+    }
+}
 
 int main(int argc, char **argv) {
 
     // options
     std::string fname;
     bool isDeveloper = false;
-    int64_t tempval = 0;
     int multiId = 0;
 
     // parse command line for config
@@ -72,9 +81,7 @@ int main(int argc, char **argv) {
             break;
 
         case 'v':
-            tempval = APIGUI;
-            LOG(sls::logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x"
-                              << std::hex << tempval << ")";
+            LOG(sls::logINFO) << "SLS Detector GUI " << getClientVersion();
             return 0;
 
         case 'h':
@@ -463,10 +470,9 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
         LOG(logINFO) << "About Common GUI for Jungfrau, Eiger, Mythen3, "
                         "Gotthard, Gotthard2 and Moench detectors";
 
-        std::string guiVersion = ToStringHex(APIGUI);
         std::string clientVersion = "unknown";
         try {
-            clientVersion = ToStringHex(det->getClientVersion());
+            clientVersion = det->getClientVersion();
         }
         CATCH_DISPLAY("Could not get client version.",
                       "qDetectorMain::ExecuteHelp")
@@ -475,9 +481,8 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
             qDefs::INFORMATION,
             "<p style=\"font-family:verdana;\">"
 
-            "<b>SLS Detector GUI version:&nbsp;&nbsp;&nbsp;" +
-                guiVersion +
-                "<br>SLS Detector Client version:  " + clientVersion +
+            "<b>SLS Detector Client version:  " +
+                clientVersion +
                 "</b><br><br>"
 
                 "Common GUI to control the SLS Detectors: "

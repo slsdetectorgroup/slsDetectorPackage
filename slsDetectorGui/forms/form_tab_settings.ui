@@ -127,6 +127,9 @@
        <pointsize>10</pointsize>
       </font>
      </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Settings of the detector. &lt;/p&gt;&lt;p&gt; #settings#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>Settings:</string>
      </property>
@@ -186,6 +189,9 @@
        <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable 3rd counter&lt;/p&gt;&lt;p&gt;#counters#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>3</string>
@@ -250,6 +256,9 @@
        <pointsize>10</pointsize>
       </font>
      </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable 1st counter&lt;/p&gt;&lt;p&gt;#counters#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>1</string>
      </property>
@@ -281,6 +290,9 @@
        <pointsize>10</pointsize>
       </font>
      </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Threshold energy. The trim energy values need to be loaded first using &amp;quot;trimen&amp;quot;&lt;/p&gt;&lt;p&gt;#threshold#&lt;/p&gt;&lt;p&gt;#trimen#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>Threshold:</string>
      </property>
@@ -308,6 +320,9 @@
        <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dynamic Range of pixel/channel of detector&lt;/p&gt;&lt;p&gt;#dr#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>Dynamic Range:</string>
@@ -370,6 +385,9 @@
        <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable 2nd counter&lt;/p&gt;&lt;p&gt;#counters#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="text">
       <string>2</string>
@@ -593,6 +611,9 @@
      <property name="focusPolicy">
       <enum>Qt::TabFocus</enum>
      </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Threshold energy. The trim energy values need to be loaded first using &amp;quot;trimen&amp;quot;&lt;/p&gt;&lt;p&gt;#threshold#&lt;/p&gt;&lt;p&gt;#trimen#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>Set</string>
      </property>
@@ -628,6 +649,9 @@
        <pointsize>10</pointsize>
       </font>
      </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gain Mode of the detector&lt;/p&gt;&lt;p&gt;#gainmode#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Fix G0 is to be used with utmost caution. Can damage the detector!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>Gain Mode:</string>
      </property>
@@ -655,6 +679,9 @@
        <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Threshold energy. The trim energy values need to be loaded first using &amp;quot;trimen&amp;quot;&lt;/p&gt;&lt;p&gt;#threshold#&lt;/p&gt;&lt;p&gt;#trimen#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="keyboardTracking">
       <bool>false</bool>
@@ -698,6 +725,9 @@
        <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Threshold energy of 2nd counter&lt;/p&gt;&lt;p&gt;#threshold#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="keyboardTracking">
       <bool>false</bool>
@@ -806,6 +836,9 @@
        <pointsize>10</pointsize>
       </font>
      </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Threshold energy of 3rd counter&lt;/p&gt;&lt;p&gt;#threshold#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="keyboardTracking">
       <bool>false</bool>
      </property>
@@ -848,6 +881,9 @@
        <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dynamic Range of pixel/channel of detector&lt;/p&gt;&lt;p&gt;#dr#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <item>
       <property name="text">
@@ -928,6 +964,9 @@
        <pointsize>10</pointsize>
       </font>
      </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable counters&lt;/p&gt;&lt;p&gt;#counters#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="text">
       <string>Counters:</string>
      </property>
@@ -949,10 +988,18 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>comboHV</tabstop>
+  <tabstop>spinHV</tabstop>
   <tabstop>comboSettings</tabstop>
+  <tabstop>comboGainMode</tabstop>
   <tabstop>spinThreshold</tabstop>
+  <tabstop>spinThreshold2</tabstop>
   <tabstop>spinThreshold3</tabstop>
   <tabstop>btnSetThreshold</tabstop>
+  <tabstop>comboDynamicRange</tabstop>
+  <tabstop>chkCounter1</tabstop>
+  <tabstop>chkCounter2</tabstop>
+  <tabstop>chkCounter3</tabstop>
  </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>

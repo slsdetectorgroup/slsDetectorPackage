@@ -142,7 +142,7 @@
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Name of file. Can be modified in Measurement tab.&lt;br/&gt;#fname# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Name of data file in receiver. Can be modified in Measurement tab.&lt;br/&gt;#fname# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Name Prefix: </string>
@@ -170,13 +170,7 @@
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;nobr&gt;
-Directory where one saves the data.
-&lt;/nobr&gt;&lt;br&gt;
- #outdir#
-&lt;br&gt;
-Disabled if receiver pc is not same as client pc.
-</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Directory where one saves the data in receiver. &lt;br/&gt;#fpath# &lt;br/&gt;&lt;br/&gt;Disabled if receiver pc is not same as client pc. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Browse</string>
@@ -245,7 +239,7 @@ Disabled if receiver pc is not same as client pc.
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File Format&lt;br/&gt;#fileformat# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File Format of data file in receiver&lt;br/&gt;#fformat# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Format:</string>
@@ -279,7 +273,7 @@ Disabled if receiver pc is not same as client pc.
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File Format&lt;br/&gt;#fileformat# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File Format of data file in receiver&lt;br/&gt;#fformat# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <item>
          <property name="text">
@@ -351,12 +345,7 @@ Disabled if receiver pc is not same as client pc.
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;nobr&gt;
-Directory where one saves the data.
-&lt;/nobr&gt;&lt;br&gt;
- #outdir#
-&lt;br&gt;
-</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Directory where one saves the data in receiver. &lt;br/&gt;#fpath# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Path:</string>
@@ -427,8 +416,7 @@ Directory where one saves the data.
          </font>
         </property>
         <property name="toolTip">
-         <string>Overwrite Enable
- #overwrite#</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Overwrite enable of data file in receiver&lt;/p&gt;&lt;p&gt; #foverwrite#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Overwrite</string>
@@ -491,12 +479,7 @@ Directory where one saves the data.
          <enum>Qt::StrongFocus</enum>
         </property>
         <property name="toolTip">
-         <string>&lt;nobr&gt;
-Directory where one saves the data.
-&lt;/nobr&gt;&lt;br&gt;
- #outdir#
-&lt;br&gt;
-</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Directory where one saves the data in receiver. &lt;br/&gt;#fpath# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
@@ -550,6 +533,9 @@ Directory where one saves the data.
             <pointsize>10</pointsize>
            </font>
           </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Speed of Detector readout&lt;/p&gt;&lt;p&gt;#speed#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Clock Divider:</string>
           </property>
@@ -593,6 +579,9 @@ Directory where one saves the data.
             <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Speed of Detector readout&lt;/p&gt;&lt;p&gt;#speed#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <item>
            <property name="text">
@@ -641,11 +630,7 @@ Directory where one saves the data.
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;nobr&gt;
-Compression using Root. Available only for Gotthard in Expert Mode.
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #r_compression#
-&lt;/nobr&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable 10GbE&lt;/p&gt;&lt;p&gt;#tengiga#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>10GbE</string>
@@ -664,6 +649,9 @@ Compression using Root. Available only for Gotthard in Expert Mode.
             <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable Parallel readout&lt;/p&gt;&lt;p&gt;#parallel#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Parallel Readout</string>
@@ -685,6 +673,9 @@ Compression using Root. Available only for Gotthard in Expert Mode.
             <pointsize>10</pointsize>
            </font>
           </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable Rate Correction&lt;/p&gt;&lt;p&gt;#ratecorr#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>Rate:</string>
           </property>
@@ -700,6 +691,9 @@ Compression using Root. Available only for Gotthard in Expert Mode.
             <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Default Dead Time for Rate Correction&lt;/p&gt;&lt;p&gt;#ratecorr#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Default Dead Time</string>
@@ -732,6 +726,9 @@ Compression using Root. Available only for Gotthard in Expert Mode.
             <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Custom Dead Time for Rate Correction&lt;/p&gt;&lt;p&gt;#ratecorr#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Custom Dead Time:</string>
@@ -766,6 +763,9 @@ Compression using Root. Available only for Gotthard in Expert Mode.
             <family>Cantarell</family>
             <pointsize>10</pointsize>
            </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Custom Dead Time for Rate Correction&lt;/p&gt;&lt;p&gt;#ratecorr#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="keyboardTracking">
            <bool>false</bool>
@@ -826,6 +826,13 @@ Compression using Root. Available only for Gotthard in Expert Mode.
   <tabstop>btnOutputBrowse</tabstop>
   <tabstop>comboFileFormat</tabstop>
   <tabstop>chkOverwriteEnable</tabstop>
+  <tabstop>chkParallel</tabstop>
+  <tabstop>comboClkDivider</tabstop>
+  <tabstop>chkRate</tabstop>
+  <tabstop>radioDefaultDeadtime</tabstop>
+  <tabstop>radioCustomDeadtime</tabstop>
+  <tabstop>spinCustomDeadTime</tabstop>
+  <tabstop>chkTenGiga</tabstop>
  </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>

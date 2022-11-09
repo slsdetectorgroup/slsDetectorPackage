@@ -75,7 +75,7 @@
       </font>
      </property>
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Up arrow key picks up the previous command.&lt;/p&gt;&lt;p&gt;Down arrow key clears the current command.&lt;/p&gt;&lt;p&gt;Return or Enter key executes the current command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/icons/images/upload.png&quot;/&gt; = previous command&lt;/p&gt;&lt;p&gt;&lt;img src=&quot;:/icons/images/download.png&quot;/&gt; = clears current command&lt;/p&gt;&lt;p&gt;[Return or Enter key] = executes current command&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>
@@ -104,6 +104,9 @@
        <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
+     </property>
+     <property name="toolTip">
+      <string>Clear log</string>
      </property>
      <property name="text">
       <string>Clear</string>
@@ -139,6 +142,9 @@
        <family>Cantarell</family>
        <pointsize>10</pointsize>
       </font>
+     </property>
+     <property name="toolTip">
+      <string>Save log</string>
      </property>
      <property name="text">
       <string>Save</string>
@@ -184,9 +190,9 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>dispCommand</tabstop>
-  <tabstop>btnClear</tabstop>
   <tabstop>btnSave</tabstop>
+  <tabstop>btnClear</tabstop>
+  <tabstop>dispCommand</tabstop>
  </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>

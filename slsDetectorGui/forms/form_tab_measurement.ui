@@ -104,7 +104,7 @@
          <enum>Qt::NoFocus</enum>
         </property>
         <property name="toolTip">
-         <string>Starts Acquisition</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Starts Acquisition&lt;/p&gt;&lt;p&gt;[Shortcut: Shift + Start]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Start</string>
@@ -251,8 +251,7 @@
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;nobr&gt;Sets output file name prefix&lt;/nobr&gt;&lt;br&gt;
-&lt;nobr&gt;Check the box to enable write to file. &lt;/nobr&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enables data file writing in receiver.&lt;/p&gt;&lt;p&gt;#fwrite#&lt;/p&gt;&lt;p&gt;Sets output file name prefix&lt;/p&gt;&lt;p&gt;#fname#&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>File Name:</string>
@@ -289,8 +288,7 @@
          </font>
         </property>
         <property name="toolTip">
-         <string>Root of the file name  - please check that the output directory is correctly set and select the file name format. 
- #fname#</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets output file name prefix&lt;/p&gt;&lt;p&gt;#fname#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string/>
@@ -401,6 +399,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the acquisition index (automatically incremented when file write enabled)&lt;/p&gt;&lt;p&gt;#findex#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>Run Index:</string>
         </property>
@@ -433,8 +434,7 @@
          </font>
         </property>
         <property name="toolTip">
-         <string>Run index (automatically incremented) 
- #index#</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the acquisition index (automatically incremented when file write enabled)&lt;/p&gt;&lt;p&gt;#findex#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="statusTip">
          <string/>
@@ -712,6 +712,9 @@ Frame period between exposures.
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of measurements (not in real time) that will be acquired. &lt;/p&gt;&lt;p&gt; #only in gui#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>Number of Measurements:</string>
         </property>
@@ -781,7 +784,7 @@ Frame period between exposures.
              </font>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of Triggers to be expected.&lt;/p&gt;&lt;p&gt; #triggers#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The Delay between Trigger Edge and Start of Exposure ( or Readout). &lt;/p&gt;&lt;p&gt;#delay#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Delay After Trigger:</string>
@@ -825,7 +828,7 @@ Frame period between exposures.
              </font>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of Triggers to be expected.&lt;/p&gt;&lt;p&gt; #triggers#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Burst period between bursts&lt;/p&gt;&lt;p&gt;#burstperiod#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Burst Period:</string>
@@ -980,8 +983,7 @@ Exposure Time of a frame.
              </font>
             </property>
             <property name="toolTip">
-             <string>Number of Triggers to be expected.
- #triggers#</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of triggers to be expected.&lt;/p&gt;&lt;p&gt;#triggers#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="statusTip">
              <string/>
@@ -1070,8 +1072,7 @@ Exposure Time of a frame.
              </font>
             </property>
             <property name="toolTip">
-             <string>Number of Triggers to be expected.
- #triggers#</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of bursts to be expected.&lt;/p&gt;&lt;p&gt;#bursts#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="statusTip">
              <string/>
@@ -1162,8 +1163,7 @@ Frame period between exposures.
          </font>
         </property>
         <property name="toolTip">
-         <string>Number of measurements (not in real time) that will be acquired. 
- #frames#</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames per hardware/software trigger that will be acquired &lt;/p&gt;&lt;p&gt; #frames#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="statusTip">
          <string/>
@@ -1204,6 +1204,9 @@ Frame period between exposures.
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Burst modes&lt;/p&gt;&lt;p&gt;#burstmode#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Burst Mode:</string>
@@ -1370,8 +1373,7 @@ Frame period between exposures.
              </font>
             </property>
             <property name="toolTip">
-             <string>The Delay between Trigger Edge and Start of Exposure ( or Readout). 
-#delay#</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Burst period between bursts&lt;/p&gt;&lt;p&gt;#burstperiod#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="styleSheet">
              <string notr="true"/>
@@ -2000,8 +2002,7 @@ Exposure Time of a frame.
              </font>
             </property>
             <property name="toolTip">
-             <string>The Delay between Trigger Edge and Start of Exposure ( or Readout). 
-#delay#</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Burst period between bursts&lt;/p&gt;&lt;p&gt;#burstperiod#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="layoutDirection">
              <enum>Qt::LeftToRight</enum>
@@ -2055,6 +2056,9 @@ Exposure Time of a frame.
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of frames per hardware/software trigger that will be acquired &lt;/p&gt;&lt;p&gt; #frames#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Number of  Frames:</string>
@@ -2169,7 +2173,7 @@ Exposure Time of a frame.
              </font>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of Triggers to be expected.&lt;/p&gt;&lt;p&gt; #triggers#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of bursts to be expected.&lt;/p&gt;&lt;p&gt;#bursts#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Number of Bursts:</string>
@@ -2207,8 +2211,7 @@ Exposure Time of a frame.
          </font>
         </property>
         <property name="toolTip">
-         <string>Number of measurements (not in real time) that will be acquired. 
- #frames#</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of measurements (not in real time) that will be acquired. &lt;/p&gt;&lt;p&gt; #only in gui#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="statusTip">
          <string/>
@@ -2272,8 +2275,7 @@ Exposure Time of a frame.
          </font>
         </property>
         <property name="toolTip">
-         <string>Timing Mode of the detector. 
- #timing#</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Burst modes&lt;/p&gt;&lt;p&gt; #burstmode#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <item>
          <property name="text">
@@ -2304,6 +2306,9 @@ Exposure Time of a frame.
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Timing Mode of the detector. &lt;/p&gt;&lt;p&gt; #timing#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Timing Mode:</string>
@@ -2384,6 +2389,9 @@ Exposure Time of a frame.
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Progress of entire acquisition&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="value">
          <number>24</number>
@@ -2466,11 +2474,23 @@ Exposure Time of a frame.
   <tabstop>chkFile</tabstop>
   <tabstop>dispFileName</tabstop>
   <tabstop>spinIndex</tabstop>
+  <tabstop>spinNextFrameNumber</tabstop>
   <tabstop>comboTimingMode</tabstop>
+  <tabstop>comboBurstMode</tabstop>
   <tabstop>spinNumMeasurements</tabstop>
   <tabstop>spinNumFrames</tabstop>
+  <tabstop>spinExpTime</tabstop>
+  <tabstop>comboExpUnit</tabstop>
   <tabstop>spinPeriod</tabstop>
   <tabstop>comboPeriodUnit</tabstop>
+  <tabstop>spinNumTriggers</tabstop>
+  <tabstop>spinNumBursts</tabstop>
+  <tabstop>spinDelay</tabstop>
+  <tabstop>comboDelayUnit</tabstop>
+  <tabstop>spinBurstPeriod</tabstop>
+  <tabstop>comboBurstPeriodUnit</tabstop>
+  <tabstop>spinNumSamples</tabstop>
+  <tabstop>spinNumGates</tabstop>
  </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>

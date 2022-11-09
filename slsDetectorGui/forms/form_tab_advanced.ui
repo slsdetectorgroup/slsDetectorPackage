@@ -115,6 +115,9 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set all trimbits to this value&lt;/p&gt;&lt;p&gt;#trimval#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Set All trimbits:</string>
          </property>
@@ -139,6 +142,12 @@
            <family>Cantarell</family>
            <pointsize>10</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set all trimbits to this value&lt;/p&gt;&lt;p&gt;#trimval#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="toolTipDuration">
+          <number>-1</number>
          </property>
          <property name="keyboardTracking">
           <bool>false</bool>
@@ -228,6 +237,9 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear ROI at detector level&lt;/p&gt;&lt;p&gt;#clearroi#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Clear ROI </string>
          </property>
@@ -256,6 +268,9 @@
            <family>Cantarell</family>
            <pointsize>10</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set ROI at detector level&lt;/p&gt;&lt;p&gt;#roi#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="minimum">
           <number>-1</number>
@@ -295,6 +310,9 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set ROI at detector level&lt;/p&gt;&lt;p&gt;#roi#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>X Max:</string>
          </property>
@@ -332,6 +350,9 @@
            <family>Cantarell</family>
            <pointsize>10</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set ROI at detector level&lt;/p&gt;&lt;p&gt;#roi#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="minimum">
           <number>-1</number>
@@ -402,6 +423,9 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set ROI at detector level&lt;/p&gt;&lt;p&gt;#roi#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Set ROI </string>
          </property>
@@ -450,6 +474,9 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select readout to set ROI at detector level&lt;/p&gt;&lt;p&gt;#roi#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
         </widget>
        </item>
       </layout>
@@ -492,8 +519,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Sets Control Port
-#port#</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Control Port&lt;/p&gt;&lt;p&gt;#port#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="statusTip">
           <string/>
@@ -548,8 +574,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Sets the Receiver Hostname, connects to it and gets the receiver mac address and eth. Sets some receiver parameters like file name, file dir, file index in receiver. 
-#rx_hostname#</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the Receiver Hostname, connects to it and gets the receiver mac address and IP to configure in detector. Sets some receiver parameters like file name, file dir, file index in receiver. &lt;/p&gt;&lt;p&gt;#rx_hostname#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>none</string>
@@ -570,6 +595,9 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the destination IP of UDP packets sent out from module&lt;/p&gt;&lt;p&gt;#udp_dstip#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Destination UDP IP:</string>
          </property>
@@ -588,6 +616,9 @@
            <family>Cantarell</family>
            <pointsize>10</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Control Port&lt;/p&gt;&lt;p&gt;#port#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Readout Control Port:</string>
@@ -621,8 +652,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Sets the Receiver UDP IP
-#rx_udpip#</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the destination IP of UDP packets sent out from module&lt;/p&gt;&lt;p&gt;#udp_dstip#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>0</string>
@@ -656,8 +686,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Sets the Receiver UDP MAC
-#rx_udpmac#</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the destination MAC of UDP packets sent out from module&lt;/p&gt;&lt;p&gt;#udp_dstmac#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>0</string>
@@ -691,8 +720,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Sets the detector MAC to send packets to receiver
-#detectormac#</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the source MAC of UDP packets sent out from module&lt;/p&gt;&lt;p&gt;#udp_srcmac#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>0</string>
@@ -726,8 +754,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Sets Receiver UDP Port
-#rx_udpport#</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the destination port of UDP packets sent out from module&lt;/p&gt;&lt;p&gt;#udp_dstport#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="statusTip">
           <string/>
@@ -782,8 +809,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string notr="true">Sets Receiver TCP Port
-#rx_tcpport#</string>
+          <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Receiver TCP Port used to communicate between client and receiver.&lt;/p&gt;&lt;p&gt;#rx_tcpport#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="statusTip">
           <string/>
@@ -825,6 +851,9 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Listening ZMQ IP of client interface (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#zmqip#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Has to be same as rx_zmqip for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Client ZMQ IP:</string>
          </property>
@@ -857,8 +886,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Sets the detector IP to send packets to receiver
-#detectorip#</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Listening ZMQ IP of client interface (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#zmqip#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Has to be same as rx_zmqip for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>0</string>
@@ -892,8 +920,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Sets Stop Port 
-#stopport#</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Listening ZMQ port of client (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#zmqport#&lt;/p&gt;&lt;p&gt;Has to be same as rx_zmqport for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="statusTip">
           <string/>
@@ -934,6 +961,9 @@
            <family>Cantarell</family>
            <pointsize>10</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Publishing ZMQ IP of reciever (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#rx_zmqip#&lt;/p&gt;&lt;p&gt;Has to be same as zmqip for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Receiver ZMQ IP:</string>
@@ -986,8 +1016,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Sets Stop Port 
-#stopport#</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Stop Port&lt;/p&gt;&lt;p&gt;#stopport#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="statusTip">
           <string/>
@@ -1029,6 +1058,9 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the destination port of UDP packets sent out from module&lt;/p&gt;&lt;p&gt;#udp_dstport#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Destination UDP Port:</string>
          </property>
@@ -1061,8 +1093,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Sets Receiver UDP Port
-#rx_udpport#</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Publishing ZMQ port of reciever (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#rx_zmqport#&lt;/p&gt;&lt;p&gt;Has to be same as zmqport for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="statusTip">
           <string/>
@@ -1117,8 +1148,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Sets the Receiver UDP IP
-#rx_udpip#</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Publishing ZMQ IP of reciever (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#rx_zmqip#&lt;/p&gt;&lt;p&gt;Has to be same as zmqip for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>0</string>
@@ -1138,6 +1168,9 @@
            <family>Cantarell</family>
            <pointsize>10</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Listening ZMQ port of client (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#zmqport#&lt;/p&gt;&lt;p&gt;Has to be same as rx_zmqport for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Client ZMQ Port: </string>
@@ -1186,6 +1219,9 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select readout to set advanced network settings&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
         </widget>
        </item>
        <item row="4" column="0">
@@ -1202,8 +1238,11 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the source MAC of UDP packets sent out from module&lt;/p&gt;&lt;p&gt;#udp_srcmac#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
-          <string>Sourceadout UDP MAC:</string>
+          <string>Source UDP MAC:</string>
          </property>
         </widget>
        </item>
@@ -1227,6 +1266,9 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select readout to set advanced network settings&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Readout:</string>
          </property>
@@ -1245,6 +1287,9 @@
            <family>Cantarell</family>
            <pointsize>10</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Publishing ZMQ port of reciever (packets streamed from receiver for gui)&lt;/p&gt;&lt;p&gt;#rx_zmqport#&lt;/p&gt;&lt;p&gt;Has to be same as zmqport for gui&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Receiver ZMQ Port:</string>
@@ -1265,6 +1310,9 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the destination MAC of UDP packets sent out from module&lt;/p&gt;&lt;p&gt;#udp_dstmac#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Destination UDP MAC:</string>
          </property>
@@ -1284,6 +1332,9 @@
            <pointsize>10</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the source IP of UDP packets sent out from module&lt;/p&gt;&lt;p&gt;#udp_srcip#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Source UDP IP:</string>
          </property>
@@ -1302,6 +1353,9 @@
            <family>Cantarell</family>
            <pointsize>10</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets Stop Port&lt;/p&gt;&lt;p&gt;#stopport#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Readout Stop Port:</string>
@@ -1335,8 +1389,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>Sets the detector IP to send packets to receiver
-#detectorip#</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the source IP of UDP packets sent out from module&lt;/p&gt;&lt;p&gt;#udp_srcip#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>0</string>
@@ -1356,6 +1409,9 @@
            <family>Cantarell</family>
            <pointsize>10</pointsize>
           </font>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sets the Receiver Hostname, connects to it and gets the receiver mac address and IP to configure in detector. Sets some receiver parameters like file name, file dir, file index in receiver. &lt;/p&gt;&lt;p&gt;#rx_hostname#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Receiver:</string>
@@ -1405,13 +1461,7 @@
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;nobr&gt;
-Period between sub frames. Only for Eiger in 32 bit mode.
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
-Default value is 0. A value less than the required minimum is ignored.
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #subperiod#
-&lt;/nobr&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dead time of subframes. Only for Eiger in 32 bit mode. &lt;br/&gt;Subperiod = subexptime + subdeadtime&lt;br/&gt;#subdeadtime# &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="layoutDirection">
           <enum>Qt::LeftToRight</enum>
@@ -1590,13 +1640,7 @@ Exposure Time of a sub frame. Only for Eiger in 32 bit mode
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;nobr&gt;
-Period between sub frames. Only for Eiger in 32 bit mode.
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
-Default value is 0. A value less than the required minimum is ignored.
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #subperiod#
-&lt;/nobr&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dead time of subframes. Only for Eiger in 32 bit mode. &lt;br/&gt;Subperiod = subexptime + subdeadtime&lt;br/&gt;#subdeadtime# &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -1653,13 +1697,7 @@ Exposure Time of a sub frame. Only for Eiger in 32 bit mode
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;nobr&gt;
-Dead time between sub frames. Only for Eiger in 32 bit mode.
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
-Default value is 0. A value less than the required minimum is ignored.
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #subdeadtime#
-&lt;/nobr&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of bits to discard in gui plot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Number of bits to discard:</string>
@@ -1696,7 +1734,7 @@ Default value is 0. A value less than the required minimum is ignored.
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of bits to discard in gui plot&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="statusTip">
           <string/>
@@ -1786,7 +1824,7 @@ Default value is 0. A value less than the required minimum is ignored.
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt;#&lt;span style=&quot; font-family:'Droid Sans Mono,monospace,monospace,Droid Sans Fallback'; font-size:14px; color:#ce9178;&quot;&gt;extrastoragecells&lt;/span&gt;#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells&lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt;#&lt;span style=&quot; font-family:'Droid Sans Mono,monospace,monospace,Droid Sans Fallback'; font-size:14px; color:#ce9178;&quot;&gt;extrastoragecells&lt;/span&gt;#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="statusTip">
           <string/>
@@ -1882,13 +1920,7 @@ Exposure Time of a sub frame. Only for Eiger in 32 bit mode
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;nobr&gt;
-Dead time between sub frames. Only for Eiger in 32 bit mode.
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
-Default value is 0. A value less than the required minimum is ignored.
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #subdeadtime#
-&lt;/nobr&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dead time of subframes. Only for Eiger in 32 bit mode. &lt;br/&gt;Subperiod = subexptime + subdeadtime&lt;br/&gt;#subdeadtime# &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Sub Frame Dead Time:</string>
@@ -2047,7 +2079,7 @@ Default value is 0. A value less than the required minimum is ignored.
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gate index. It will get exposure time and gate delay for corresponding gate signal.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select gate index for the exposure time and gate delay fields below.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="statusTip">
           <string/>
@@ -2087,10 +2119,10 @@ Default value is 0. A value less than the required minimum is ignored.
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Gate Delay of a corresonding gate signal index. &lt;br/&gt;#gatedelay1# &lt;/p&gt;&lt;p&gt;#gatedelay2#&lt;/p&gt;&lt;p&gt;#gatedelay3#  &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>Gate Delay:</string>
+          <string>     Gate Delay:</string>
          </property>
         </widget>
        </item>
@@ -2228,10 +2260,10 @@ Default value is 0. A value less than the required minimum is ignored.
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exposure Time of a corresonding gate signal index. &lt;br/&gt;#exptime1# &lt;/p&gt;&lt;p&gt;#exptime2#&lt;/p&gt;&lt;p&gt;#exptime3# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>Expososure Time:</string>
+          <string>     Expososure Time:</string>
          </property>
         </widget>
        </item>
@@ -2247,7 +2279,7 @@ Default value is 0. A value less than the required minimum is ignored.
           </font>
          </property>
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of additional storage cells. For Jungfrau only. &lt;/p&gt;&lt;p&gt;Default: 0. &lt;/p&gt;&lt;p&gt;Number of Images received: #frames * #triggers * (#storagecells+1) &lt;/p&gt;&lt;p&gt; #storagecells#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select gate index for the exposure time and gate delay fields below.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Gate Index:</string>
@@ -2286,6 +2318,13 @@ Default value is 0. A value less than the required minimum is ignored.
   <tabstop>comboSubExpTimeUnit</tabstop>
   <tabstop>spinSubDeadTime</tabstop>
   <tabstop>comboSubDeadTimeUnit</tabstop>
+  <tabstop>spinDiscardBits</tabstop>
+  <tabstop>spinGateIndex</tabstop>
+  <tabstop>spinExpTime</tabstop>
+  <tabstop>comboExpTimeUnit</tabstop>
+  <tabstop>spinGateDelay</tabstop>
+  <tabstop>comboGateDelayUnit</tabstop>
+  <tabstop>tabAdvancedSettings</tabstop>
  </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>

@@ -140,6 +140,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Set xmax</string>
+        </property>
        </widget>
       </item>
       <item row="2" column="4">
@@ -168,6 +171,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Set ymin</string>
+        </property>
        </widget>
       </item>
       <item row="2" column="7">
@@ -195,6 +201,9 @@
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>Set ymax</string>
         </property>
        </widget>
       </item>
@@ -227,6 +236,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Set zmax</string>
+        </property>
        </widget>
       </item>
       <item row="0" column="1" colspan="4">
@@ -255,6 +267,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Overwrite plot title</string>
+        </property>
         <property name="echoMode">
          <enum>QLineEdit::Normal</enum>
         </property>
@@ -276,6 +291,9 @@
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>Set zmin</string>
         </property>
         <property name="text">
          <string>Z Min:</string>
@@ -308,6 +326,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Overwrite z axis title</string>
+        </property>
         <property name="inputMethodHints">
          <set>Qt::ImhDigitsOnly</set>
         </property>
@@ -326,6 +347,9 @@
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>Set xmin</string>
         </property>
         <property name="text">
          <string>X Min:</string>
@@ -346,6 +370,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Overwrite x axis title</string>
+        </property>
         <property name="text">
          <string>X Axis:</string>
         </property>
@@ -364,6 +391,9 @@
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>Overwrite z axis title</string>
         </property>
         <property name="text">
          <string>Z Axis:</string>
@@ -396,6 +426,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Overwrite x axis title</string>
+        </property>
         <property name="inputMethodHints">
          <set>Qt::ImhDigitsOnly</set>
         </property>
@@ -414,6 +447,9 @@
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>Set ymax</string>
         </property>
         <property name="text">
          <string>Y Max:</string>
@@ -466,6 +502,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Set xmax</string>
+        </property>
         <property name="text">
          <string>X Max:</string>
         </property>
@@ -497,6 +536,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Overwrite y axis title</string>
+        </property>
         <property name="inputMethodHints">
          <set>Qt::ImhDigitsOnly</set>
         </property>
@@ -509,6 +551,9 @@
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>Overwrite Plot Title</string>
         </property>
         <property name="text">
          <string>Title :</string>
@@ -529,6 +574,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Overwrite y axis title</string>
+        </property>
         <property name="text">
          <string>Y Axis:</string>
         </property>
@@ -548,6 +596,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Keep aspect ratio when changing xmin/max and ymin/max&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>Keep Aspect Ratio</string>
         </property>
@@ -566,6 +617,9 @@
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>Set zmax</string>
         </property>
         <property name="text">
          <string>Z Max:</string>
@@ -598,6 +652,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Set zmin</string>
+        </property>
        </widget>
       </item>
       <item row="2" column="3">
@@ -613,6 +670,9 @@
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>Set ymin</string>
         </property>
         <property name="text">
          <string>Y Min:</string>
@@ -644,6 +704,9 @@
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>Set xmin</string>
         </property>
         <property name="inputMethodHints">
          <set>Qt::ImhDigitsOnly</set>
@@ -755,7 +818,7 @@
          </font>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High water mark for inbound messages for gui.&lt;/p&gt;&lt;p&gt; #zmqhwm#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High water mark for inbound messages for gui.&lt;/p&gt;&lt;p&gt;#zmqhwm#&lt;/p&gt;&lt;p&gt;High water mark for outbound messages from receiver.&lt;/p&gt;&lt;p&gt;#rx_zmqhwm#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="statusTip">
          <string/>
@@ -852,6 +915,9 @@
               <pointsize>10</pointsize>
              </font>
             </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frequency of frames streamed out from receiver via zmq&lt;/p&gt;&lt;p&gt;Options:&lt;/p&gt;&lt;p&gt;- Stream out every nth frame (rx_zmqfreq = n)&lt;/p&gt;&lt;p&gt;- Stream out current frame every nth ms (rx_zmqfreq = 0)&lt;/p&gt;&lt;p&gt;#rx_zmqfreq#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="keyboardTracking">
              <bool>false</bool>
             </property>
@@ -891,6 +957,9 @@
               <family>Cantarell</family>
               <pointsize>10</pointsize>
              </font>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frequency of frames streamed out from receiver via zmq&lt;/p&gt;&lt;p&gt;Options:&lt;/p&gt;&lt;p&gt;- Stream out every nth frame (rx_zmqfreq = n)&lt;/p&gt;&lt;p&gt;- Stream out current frame every nth ms (rx_zmqfreq = 0)&lt;/p&gt;&lt;p&gt;#rx_zmqfreq#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="currentIndex">
              <number>3</number>
@@ -967,6 +1036,9 @@
               <family>Cantarell</family>
               <pointsize>10</pointsize>
              </font>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frequency of frames streamed out from receiver via zmq&lt;/p&gt;&lt;p&gt;Options:&lt;/p&gt;&lt;p&gt;- Stream out every nth frame (rx_zmqfreq = n)&lt;/p&gt;&lt;p&gt;- Stream out current frame every nth ms (rx_zmqfreq = 0)&lt;/p&gt;&lt;p&gt;#rx_zmqfreq#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="keyboardTracking">
              <bool>false</bool>
@@ -1073,6 +1145,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High water mark for inbound messages for gui.&lt;/p&gt;&lt;p&gt;#zmqhwm#&lt;/p&gt;&lt;p&gt;High water mark for outbound messages from receiver.&lt;/p&gt;&lt;p&gt;#rx_zmqhwm#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
@@ -1177,6 +1252,9 @@
           <family>Cantarell</family>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Frequency of frames streamed out from receiver via zmq&lt;/p&gt;&lt;p&gt;Options:&lt;/p&gt;&lt;p&gt;- Stream out every nth frame (rx_zmqfreq = n)&lt;/p&gt;&lt;p&gt;- Stream out current frame every nth ms (rx_zmqfreq = 0)&lt;/p&gt;&lt;p&gt;#rx_zmqfreq#&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="currentIndex">
          <number>1</number>
@@ -1773,6 +1851,9 @@
                   <pointsize>10</pointsize>
                  </font>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pedestal of 20 images&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Pedestal</string>
                 </property>
@@ -1843,6 +1924,9 @@
                 </property>
                 <property name="focusPolicy">
                  <enum>Qt::NoFocus</enum>
+                </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pedestal of 20 images&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
                  <string>Recalculate Pedestal  </string>
@@ -1916,6 +2000,9 @@ All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be res
                   <pointsize>10</pointsize>
                  </font>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;All values between &lt;span style=&quot; font-weight:600;&quot;&gt;from&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;to&lt;/span&gt; will be reset to 1, others to 0. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>from </string>
                 </property>
@@ -1950,6 +2037,9 @@ All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be res
                   <pointsize>10</pointsize>
                  </font>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;All values between &lt;span style=&quot; font-weight:600;&quot;&gt;from&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;to&lt;/span&gt; will be reset to 1, others to 0. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                 </property>
@@ -1980,6 +2070,9 @@ All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be res
                   <family>Cantarell</family>
                   <pointsize>10</pointsize>
                  </font>
+                </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;All values between &lt;span style=&quot; font-weight:600;&quot;&gt;from&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;to&lt;/span&gt; will be reset to 1, others to 0. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
                  <string> to </string>
@@ -2014,6 +2107,9 @@ All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be res
                   <family>Cantarell</family>
                   <pointsize>10</pointsize>
                  </font>
+                </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;All values between &lt;span style=&quot; font-weight:600;&quot;&gt;from&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;to&lt;/span&gt; will be reset to 1, others to 0. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -2106,9 +2202,7 @@ Displays minimum, maximum and sum of values for each plot.
                  </font>
                 </property>
                 <property name="toolTip">
-                 <string>&lt;nobr&gt;
-Displays minimum, maximum and sum of values for each plot.
-&lt;nobr&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable Gain Plot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
                  <string>Gain Plot</string>
@@ -2213,7 +2307,7 @@ Displays minimum, maximum and sum of values for each plot.
              </font>
             </property>
             <property name="currentIndex">
-             <number>0</number>
+             <number>2</number>
             </property>
             <widget class="QWidget" name="pageInterpolate">
              <property name="font">
@@ -2316,9 +2410,7 @@ Displays minimum, maximum and sum of values for each plot.
                  </font>
                 </property>
                 <property name="toolTip">
-                 <string>&lt;nobr&gt;
-Displays minimum, maximum and sum of values for each plot.
-&lt;nobr&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable Gain Plot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
                  <string>Gain Plot</string>
@@ -2343,9 +2435,7 @@ Displays minimum, maximum and sum of values for each plot.
                  </font>
                 </property>
                 <property name="toolTip">
-                 <string>&lt;nobr&gt;
-Displays minimum, maximum and sum of values for each plot.
-&lt;nobr&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Display Gap pixels&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
                  <string>Gap Pixels</string>
@@ -2504,6 +2594,9 @@ Displays minimum, maximum and sum of values for each plot.
                   <pointsize>10</pointsize>
                  </font>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pedestal of 20 Images&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Pedestal</string>
                 </property>
@@ -2575,6 +2668,9 @@ Displays minimum, maximum and sum of values for each plot.
                 <property name="focusPolicy">
                  <enum>Qt::NoFocus</enum>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pedestal of 20 Images&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Recalculate Pedestal  </string>
                 </property>
@@ -2620,6 +2716,9 @@ Displays minimum, maximum and sum of values for each plot.
                   <pointsize>10</pointsize>
                  </font>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;All values between &lt;span style=&quot; font-weight:600;&quot;&gt;from&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;to&lt;/span&gt; will be reset to 1, others to 0. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Binary</string>
                 </property>
@@ -2658,6 +2757,9 @@ Displays minimum, maximum and sum of values for each plot.
                   <pointsize>10</pointsize>
                  </font>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;All values between &lt;span style=&quot; font-weight:600;&quot;&gt;from&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;to&lt;/span&gt; will be reset to 1, others to 0. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>from </string>
                 </property>
@@ -2692,6 +2794,9 @@ Displays minimum, maximum and sum of values for each plot.
                   <pointsize>10</pointsize>
                  </font>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;All values between &lt;span style=&quot; font-weight:600;&quot;&gt;from&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;to&lt;/span&gt; will be reset to 1, others to 0. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
                 </property>
@@ -2722,6 +2827,9 @@ Displays minimum, maximum and sum of values for each plot.
                   <family>Cantarell</family>
                   <pointsize>10</pointsize>
                  </font>
+                </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;All values between &lt;span style=&quot; font-weight:600;&quot;&gt;from&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;to&lt;/span&gt; will be reset to 1, others to 0. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
                  <string> to </string>
@@ -2756,6 +2864,9 @@ Displays minimum, maximum and sum of values for each plot.
                   <family>Cantarell</family>
                   <pointsize>10</pointsize>
                  </font>
+                </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;All values between &lt;span style=&quot; font-weight:600;&quot;&gt;from&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;to&lt;/span&gt; will be reset to 1, others to 0. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -2991,6 +3102,9 @@ Displays statistics, ie. minimum, maximum and sum of values for each plot.
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
+       <property name="toolTip">
+        <string>Save Plot</string>
+       </property>
        <property name="text">
         <string>Save</string>
        </property>
@@ -3085,6 +3199,9 @@ Displays statistics, ie. minimum, maximum and sum of values for each plot.
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
+       <property name="toolTip">
+        <string>Clone Plot, which can also be saved later</string>
+       </property>
        <property name="text">
         <string>Clone</string>
        </property>
@@ -3102,39 +3219,57 @@ Displays statistics, ie. minimum, maximum and sum of values for each plot.
   </layout>
  </widget>
  <tabstops>
+  <tabstop>chkNoPlot</tabstop>
+  <tabstop>comboHwm</tabstop>
+  <tabstop>spinHwm</tabstop>
+  <tabstop>comboFrequency</tabstop>
+  <tabstop>spinNthFrame</tabstop>
   <tabstop>spinTimeGap</tabstop>
   <tabstop>comboTimeGapUnit</tabstop>
+  <tabstop>chkSuperimpose</tabstop>
+  <tabstop>spinPersistency</tabstop>
+  <tabstop>chk1DLog</tabstop>
+  <tabstop>chkPoints</tabstop>
+  <tabstop>chkLines</tabstop>
+  <tabstop>chkAccumulate</tabstop>
+  <tabstop>chkPedestal</tabstop>
+  <tabstop>chkBinary</tabstop>
+  <tabstop>spinFrom</tabstop>
+  <tabstop>spinTo</tabstop>
+  <tabstop>chkStatistics</tabstop>
+  <tabstop>chkGainPlot1D</tabstop>
   <tabstop>chkInterpolate</tabstop>
   <tabstop>chkContour</tabstop>
   <tabstop>chkLogz</tabstop>
+  <tabstop>chkGainPlot</tabstop>
+  <tabstop>chkGapPixels</tabstop>
+  <tabstop>chkAccumulate_2</tabstop>
+  <tabstop>chkPedestal_2</tabstop>
+  <tabstop>chkBinary_2</tabstop>
+  <tabstop>spinFrom_2</tabstop>
+  <tabstop>spinTo_2</tabstop>
+  <tabstop>chkStatistics_2</tabstop>
   <tabstop>chkTitle</tabstop>
   <tabstop>dispTitle</tabstop>
-  <tabstop>chkAspectRatio</tabstop>
   <tabstop>chkXAxis</tabstop>
   <tabstop>dispXAxis</tabstop>
+  <tabstop>chkZAxis</tabstop>
+  <tabstop>dispYAxis</tabstop>
+  <tabstop>chkYAxis</tabstop>
+  <tabstop>dispZAxis</tabstop>
   <tabstop>chkXMin</tabstop>
   <tabstop>dispXMin</tabstop>
-  <tabstop>chkXMax</tabstop>
-  <tabstop>dispXMax</tabstop>
-  <tabstop>chkYAxis</tabstop>
-  <tabstop>dispYAxis</tabstop>
   <tabstop>chkYMin</tabstop>
   <tabstop>dispYMin</tabstop>
-  <tabstop>chkYMax</tabstop>
-  <tabstop>dispYMax</tabstop>
-  <tabstop>chkZAxis</tabstop>
-  <tabstop>dispZAxis</tabstop>
   <tabstop>chkZMin</tabstop>
   <tabstop>dispZMin</tabstop>
+  <tabstop>chkAspectRatio</tabstop>
+  <tabstop>chkXMax</tabstop>
+  <tabstop>dispXMax</tabstop>
+  <tabstop>chkYMax</tabstop>
+  <tabstop>dispYMax</tabstop>
   <tabstop>chkZMax</tabstop>
   <tabstop>dispZMax</tabstop>
-  <tabstop>spinTo_2</tabstop>
-  <tabstop>chkSuperimpose</tabstop>
-  <tabstop>spinPersistency</tabstop>
-  <tabstop>spinFrom_2</tabstop>
-  <tabstop>chkAccumulate_2</tabstop>
-  <tabstop>spinNthFrame</tabstop>
-  <tabstop>chkBinary_2</tabstop>
  </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>

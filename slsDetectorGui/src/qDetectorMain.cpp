@@ -26,7 +26,7 @@
 #include <string>
 #include <sys/stat.h>
 
-std::string getAPIVersion() {
+std::string getClientVersion() {
     try {
         sls::Version v(APILIB);
         return v.concise();
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
             break;
 
         case 'v':
-            LOG(sls::logINFO) << "SLS Detector GUI " << getAPIVersion();
+            LOG(sls::logINFO) << "SLS Detector GUI " << getClientVersion();
             return 0;
 
         case 'h':

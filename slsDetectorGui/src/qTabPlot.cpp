@@ -199,8 +199,6 @@ void qTabPlot::Select1DPlot(bool enable) {
     LOG(logDEBUG) << "Selecting " << (enable ? "1" : "2") << "D Plot";
     is1d = enable;
     stackedPlotOptions->setCurrentIndex(is1d ? 0 : 1);
-    box1D->setEnabled(is1d);
-    box2D->setEnabled(!is1d);
     chkZAxis->setEnabled(!is1d);
     dispZAxis->setEnabled(!is1d);
     chkZMin->setEnabled(!is1d);
@@ -227,8 +225,7 @@ void qTabPlot::SetPlot() {
     comboHwm->setEnabled(plotEnable);
     spinHwm->setEnabled(plotEnable);
     stackedTimeInterval->setEnabled(plotEnable);
-    box1D->setEnabled(plotEnable);
-    box2D->setEnabled(plotEnable);
+    stackedPlotOptions->setEnabled(plotEnable);
     btnSave->setEnabled(plotEnable);
     btnClone->setEnabled(plotEnable);
     boxPlotAxis->setEnabled(plotEnable);
@@ -771,14 +768,6 @@ void qTabPlot::Refresh() {
 
     if (!plot->GetIsRunning()) {
         boxFrequency->setEnabled(true);
-
-        // streaming frequency
-        if (!chkNoPlot->isChecked()) {
-            comboFrequency->setEnabled(true);
-            stackedTimeInterval->setEnabled(true);
-            comboHwm->setEnabled(true);
-            spinHwm->setEnabled(true);
-        }
         GetStreamingFrequency();
         GetHwm();
         // gain plot, gap pixels enable

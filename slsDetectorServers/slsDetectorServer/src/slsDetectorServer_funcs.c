@@ -2984,6 +2984,10 @@ int validateAndSetAllTrimbits(int arg) {
             LOG(logERROR, (mess));
         } else {
             ret = setAllTrimbits(arg);
+            if (ret == FAIL) {
+                strcpy(mess, "Could not set all trimbits\n");
+                LOG(logERROR, (mess));
+            }
 #ifdef EIGERD
             // changes settings to undefined
             if (getSettings() != UNDEFINED) {

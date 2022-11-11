@@ -41,7 +41,10 @@ class qDefs : public QWidget {
      */
     qDefs(){};
 
-    static const int Q_FONT_SIZE = 9;
+    static QFont GetDefaultFont() {
+        return QFont("Cantarell", 10, QFont::Normal);
+    }
+
     static const int DATA_GAIN_PLOT_RATIO = 5;
     static const int MIN_HEIGHT_GAIN_PLOT_1D = 75;
     static const int GUI_ZMQ_RCV_HWM = 2;

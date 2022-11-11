@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>775</width>
-    <height>345</height>
+    <width>770</width>
+    <height>364</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,9 +24,15 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>775</width>
-    <height>365</height>
+    <width>770</width>
+    <height>370</height>
    </size>
+  </property>
+  <property name="font">
+   <font>
+    <family>Cantarell</family>
+    <pointsize>10</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -36,6 +42,12 @@
     <widget class="QGroupBox" name="boxFileWriteEnabled">
      <property name="enabled">
       <bool>false</bool>
+     </property>
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
      </property>
      <property name="title">
       <string>File</string>
@@ -54,6 +66,18 @@
           <width>105</width>
           <height>25</height>
          </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>105</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The file path can be different depending on the Module chosen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -111,8 +135,14 @@
           </disabled>
          </palette>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Name of file. Can be modified in Measurement tab.&lt;br/&gt;#fname# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Name of data file in receiver. Can be modified in Measurement tab.&lt;br/&gt;#fname# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Name Prefix: </string>
@@ -127,14 +157,20 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>35</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="toolTip">
-         <string>&lt;nobr&gt;
-Directory where one saves the data.
-&lt;/nobr&gt;&lt;br&gt;
- #outdir#
-&lt;br&gt;
-Disabled if receiver pc is not same as client pc.
-</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Directory where one saves the data in receiver. &lt;br/&gt;#fpath# &lt;br/&gt;&lt;br/&gt;Disabled if receiver pc is not same as client pc. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Browse</string>
@@ -196,8 +232,14 @@ Disabled if receiver pc is not same as client pc.
           </disabled>
          </palette>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File Format&lt;br/&gt;#fileformat# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File Format of data file in receiver&lt;br/&gt;#fformat# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Format:</string>
@@ -218,8 +260,20 @@ Disabled if receiver pc is not same as client pc.
           <height>25</height>
          </size>
         </property>
+        <property name="maximumSize">
+         <size>
+          <width>105</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File Format&lt;br/&gt;#fileformat# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File Format of data file in receiver&lt;br/&gt;#fformat# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <item>
          <property name="text">
@@ -284,13 +338,14 @@ Disabled if receiver pc is not same as client pc.
           </disabled>
          </palette>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="toolTip">
-         <string>&lt;nobr&gt;
-Directory where one saves the data.
-&lt;/nobr&gt;&lt;br&gt;
- #outdir#
-&lt;br&gt;
-</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Directory where one saves the data in receiver. &lt;br/&gt;#fpath# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Path:</string>
@@ -314,8 +369,14 @@ Directory where one saves the data.
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>16777215</height>
+          <height>28</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
         </property>
         <property name="focusPolicy">
          <enum>Qt::NoFocus</enum>
@@ -348,9 +409,14 @@ Directory where one saves the data.
           <height>16777215</height>
          </size>
         </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="toolTip">
-         <string>Overwrite Enable
- #overwrite#</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Overwrite enable of data file in receiver&lt;/p&gt;&lt;p&gt; #foverwrite#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Overwrite</string>
@@ -397,16 +463,23 @@ Directory where one saves the data.
           <height>25</height>
          </size>
         </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
         <property name="focusPolicy">
          <enum>Qt::StrongFocus</enum>
         </property>
         <property name="toolTip">
-         <string>&lt;nobr&gt;
-Directory where one saves the data.
-&lt;/nobr&gt;&lt;br&gt;
- #outdir#
-&lt;br&gt;
-</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Directory where one saves the data in receiver. &lt;br/&gt;#fpath# &lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
@@ -431,6 +504,12 @@ Directory where one saves the data.
    </item>
    <item row="2" column="0">
     <widget class="QGroupBox" name="boxCorrection_2">
+     <property name="font">
+      <font>
+       <family>Cantarell</family>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="title">
       <string>Options</string>
      </property>
@@ -447,6 +526,15 @@ Directory where one saves the data.
             <width>105</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Cantarell</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Speed of Detector readout&lt;/p&gt;&lt;p&gt;#speed#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Clock Divider:</string>
@@ -483,8 +571,17 @@ Directory where one saves the data.
           <property name="maximumSize">
            <size>
             <width>200</width>
-            <height>16777215</height>
+            <height>25</height>
            </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Cantarell</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Speed of Detector readout&lt;/p&gt;&lt;p&gt;#speed#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <item>
            <property name="text">
@@ -521,12 +618,40 @@ Directory where one saves the data.
         </item>
        </layout>
       </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="chkTenGiga">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="font">
+         <font>
+          <family>Cantarell</family>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable 10GbE&lt;/p&gt;&lt;p&gt;#tengiga#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>10GbE</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QCheckBox" name="chkParallel">
           <property name="enabled">
            <bool>false</bool>
+          </property>
+          <property name="font">
+           <font>
+            <family>Cantarell</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable Parallel readout&lt;/p&gt;&lt;p&gt;#parallel#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Parallel Readout</string>
@@ -535,29 +660,21 @@ Directory where one saves the data.
         </item>
        </layout>
       </item>
-      <item row="4" column="0">
-       <widget class="QCheckBox" name="chkTenGiga">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="toolTip">
-         <string>&lt;nobr&gt;
-Compression using Root. Available only for Gotthard in Expert Mode.
-&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
- #r_compression#
-&lt;/nobr&gt;</string>
-        </property>
-        <property name="text">
-         <string>10GbE</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QCheckBox" name="chkRate">
           <property name="enabled">
            <bool>false</bool>
+          </property>
+          <property name="font">
+           <font>
+            <family>Cantarell</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable Rate Correction&lt;/p&gt;&lt;p&gt;#ratecorr#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Rate:</string>
@@ -568,6 +685,15 @@ Compression using Root. Available only for Gotthard in Expert Mode.
          <widget class="QRadioButton" name="radioDefaultDeadtime">
           <property name="enabled">
            <bool>false</bool>
+          </property>
+          <property name="font">
+           <font>
+            <family>Cantarell</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Default Dead Time for Rate Correction&lt;/p&gt;&lt;p&gt;#ratecorr#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Default Dead Time</string>
@@ -584,7 +710,7 @@ Compression using Root. Available only for Gotthard in Expert Mode.
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>10</width>
+            <width>20</width>
             <height>20</height>
            </size>
           </property>
@@ -594,6 +720,15 @@ Compression using Root. Available only for Gotthard in Expert Mode.
          <widget class="QRadioButton" name="radioCustomDeadtime">
           <property name="enabled">
            <bool>false</bool>
+          </property>
+          <property name="font">
+           <font>
+            <family>Cantarell</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Custom Dead Time for Rate Correction&lt;/p&gt;&lt;p&gt;#ratecorr#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Custom Dead Time:</string>
@@ -616,6 +751,21 @@ Compression using Root. Available only for Gotthard in Expert Mode.
             <width>0</width>
             <height>25</height>
            </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>25</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Cantarell</family>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Custom Dead Time for Rate Correction&lt;/p&gt;&lt;p&gt;#ratecorr#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="keyboardTracking">
            <bool>false</bool>
@@ -652,6 +802,19 @@ Compression using Root. Available only for Gotthard in Expert Mode.
         </item>
        </layout>
       </item>
+      <item row="5" column="0">
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
      </layout>
     </widget>
    </item>
@@ -663,6 +826,13 @@ Compression using Root. Available only for Gotthard in Expert Mode.
   <tabstop>btnOutputBrowse</tabstop>
   <tabstop>comboFileFormat</tabstop>
   <tabstop>chkOverwriteEnable</tabstop>
+  <tabstop>chkParallel</tabstop>
+  <tabstop>comboClkDivider</tabstop>
+  <tabstop>chkRate</tabstop>
+  <tabstop>radioDefaultDeadtime</tabstop>
+  <tabstop>radioCustomDeadtime</tabstop>
+  <tabstop>spinCustomDeadTime</tabstop>
+  <tabstop>chkTenGiga</tabstop>
  </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>

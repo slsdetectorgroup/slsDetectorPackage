@@ -49,7 +49,6 @@ void qCloneWidget::SetupWidgetWindow(QString title) {
                            std::string("  -  ") + Logger::Timestamp();
     setWindowTitle(QString(winTitle.c_str()));
 
-    boxPlot->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     boxPlot->setTitle(title);
 
     // 1d
@@ -108,7 +107,7 @@ void qCloneWidget::SavePlot() {
     QString fName = filePath + QString('/') + fileName + QString("_clone") +
                     QString("%1").arg(id) + QString("_acq") +
                     QString("%1").arg(acqIndex) + QString(".png");
-    LOG(logINFO) << "Saving Clone:" << fName.toAscii().constData();
+    LOG(logINFO) << "Saving Clone:" << fName.toLatin1().constData();
     // save
     QImage img(centralwidget->size().width(), centralwidget->size().height(),
                QImage::Format_RGB32);

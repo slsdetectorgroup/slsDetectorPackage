@@ -92,7 +92,7 @@ class SlsQt1DPlot : public QwtPlot {
     Q_OBJECT
 
   public:
-    SlsQt1DPlot(QWidget * = NULL);
+    SlsQt1DPlot(QWidget * = NULL, bool gain = false);
     ~SlsQt1DPlot();
 
     void SetTitle(QString title);
@@ -145,6 +145,8 @@ class SlsQt1DPlot : public QwtPlot {
     void DisableRoiBox();
 
   private:
+    bool gainPlot{false};
+
     SlsQtH1DList *hist_list{nullptr};
     SlsQt1DZoomer *zoomer{nullptr};
     QwtPlotPanner *panner{nullptr};

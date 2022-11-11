@@ -16,9 +16,7 @@
 #include "sls/versionAPI.h"
 
 #include <QFileDialog>
-#include <QPlastiqueStyle>
 #include <QResizeEvent>
-#include <QScrollArea>
 #include <QSizePolicy>
 
 #include "sls/Version.h"
@@ -102,7 +100,6 @@ int main(int argc, char **argv) {
     }
 
     QApplication app(argc, argv);
-    app.setStyle(new QPlastiqueStyle); // style is deleted by QApplication
     try {
         sls::qDetectorMain det(multiId, fname, isDeveloper);
         det.show();
@@ -120,7 +117,7 @@ namespace sls {
 qDetectorMain::qDetectorMain(int multiId, const std::string &fname,
                              bool isDevel)
     : QMainWindow(nullptr), detType(slsDetectorDefs::GENERIC),
-      isDeveloper(isDevel), heightPlotWindow(0), heightCentralWidget(0) {
+      isDeveloper(isDevel) {
 
     setupUi(this);
     SetUpDetector(fname, multiId);
@@ -129,94 +126,45 @@ qDetectorMain::qDetectorMain(int multiId, const std::string &fname,
 
 qDetectorMain::~qDetectorMain() {
     disconnect(tabs, SIGNAL(currentChanged(int)), this, SLOT(Refresh(int)));
-    for (int i = 0; i < NumberOfTabs; ++i) {
-        delete scroll[i];
-    }
 }
 
 void qDetectorMain::SetUpWidgetWindow() {
-    setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-
     // plot setup
     plot = new qDrawPlot(dockWidgetPlot, det.get());
     LOG(logDEBUG) << "DockPlot ready";
     dockWidgetPlot->setWidget(plot);
-
-    // tabs setup
-    tabs = new MyTabWidget(this);
-    layoutTabs->addWidget(tabs);
+    dockWidgetPlot->setFloating(false);
+    zoomToolTip = dockWidgetPlot->toolTip();
 
     // creating all the other tab widgets
-    tabMeasurement = new qTabMeasurement(this, det.get(), plot);
-    tabDataOutput = new qTabDataOutput(this, det.get());
-    tabPlot = new qTabPlot(this, det.get(), plot);
-    tabSettings = new qTabSettings(this, det.get());
-    tabAdvanced = new qTabAdvanced(this, det.get(), plot);
-    tabDebugging = new qTabDebugging(this, det.get());
-    tabDeveloper = new qTabDeveloper(this, det.get());
+    tabMeasurement = new qTabMeasurement(tMeasurement, det.get(), plot);
+    tabDataOutput = new qTabDataOutput(tDataOutput, det.get());
+    tabPlot = new qTabPlot(tPlot, det.get(), plot);
+    tabSettings = new qTabSettings(tSettings, det.get());
+    tabAdvanced = new qTabAdvanced(tAdvanced, det.get(), plot);
+    tabDebugging = new qTabDebugging(tDebugging, det.get());
+    tabDeveloper = new qTabDeveloper(tDeveloper, det.get());
 
-    //	creating the scroll area widgets for the tabs
-    for (int i = 0; i < NumberOfTabs; ++i) {
-        scroll[i] = new QScrollArea();
-        scroll[i]->setFrameShape(QFrame::NoFrame);
-    }
-    // setting the tab widgets to the scrollareas
-    scroll[MEASUREMENT]->setWidget(tabMeasurement);
-    scroll[DATAOUTPUT]->setWidget(tabDataOutput);
-    scroll[PLOT]->setWidget(tabPlot);
-    scroll[SETTINGS]->setWidget(tabSettings);
-    scroll[ADVANCED]->setWidget(tabAdvanced);
-    scroll[DEBUGGING]->setWidget(tabDebugging);
-    scroll[DEVELOPER]->setWidget(tabDeveloper);
-    // inserting all the tabs
-    tabs->insertTab(MEASUREMENT, scroll[MEASUREMENT], "Measurement");
-    tabs->insertTab(DATAOUTPUT, scroll[DATAOUTPUT], "Data Output");
-    tabs->insertTab(PLOT, scroll[PLOT], "Plot");
-    tabs->insertTab(SETTINGS, scroll[SETTINGS], "Settings");
-    tabs->insertTab(ADVANCED, scroll[ADVANCED], "Advanced");
-    tabs->insertTab(DEBUGGING, scroll[DEBUGGING], "Debugging");
-    tabs->insertTab(DEVELOPER, scroll[DEVELOPER], "Developer");
-    // no scroll buttons this way
-    tabs->insertTab(MESSAGES, tabMessages, "Terminal");
+    scrollMeasurement->setWidget(tabMeasurement);
+    scrollDataOutput->setWidget(tabDataOutput);
+    scrollPlot->setWidget(tabPlot);
+    scrollSettings->setWidget(tabSettings);
+    scrollAdvanced->setWidget(tabAdvanced);
+    scrollDebugging->setWidget(tabDebugging);
+    scrollDeveloper->setWidget(tabDeveloper);
+    scrollTerminal->setWidget(tabMessages);
 
-    // swap tabs so that messages is last tab
-    tabs->tabBar()->moveTab(tabs->indexOf(tabMeasurement), MEASUREMENT);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabSettings), SETTINGS);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabDataOutput), DATAOUTPUT);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabPlot), PLOT);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabAdvanced), ADVANCED);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabDebugging), DEBUGGING);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabDeveloper), DEVELOPER);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabMessages), MESSAGES);
     tabs->setCurrentIndex(MEASUREMENT);
-
-    // other tab properties
-    // Default tab color
     defaultTabColor = tabs->tabBar()->tabTextColor(DATAOUTPUT);
-    // Set the current tab(measurement) to blue as it is the current one
+    // set current tab to blue
     tabs->tabBar()->setTabTextColor(0, QColor(0, 0, 200, 255));
-    tabs->tabBar()->setExpanding(true);
-
-    // mode setup - to set up the tabs initially as disabled, not in form so
-    // done here
-    LOG(logINFO)
-        << "Dockable Mode: 0, Debug Mode: 0, Expert Mode: 0, Developer Mode: "
-        << isDeveloper;
     tabs->setTabEnabled(DEBUGGING, false);
     tabs->setTabEnabled(ADVANCED, false);
     tabs->setTabEnabled(DEVELOPER, isDeveloper);
     actionLoadTrimbits->setVisible(false);
     actionSaveTrimbits->setVisible(false);
-
-    dockWidgetPlot->setFloating(false);
-    dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
-
-    // Other setup
-    // Height of plot and central widget
-    heightPlotWindow = dockWidgetPlot->size().height();
-    heightCentralWidget = centralwidget->size().height();
-    // Default zoom Tool Tip
-    zoomToolTip = dockWidgetPlot->toolTip();
+    LOG(logINFO) << "Debug Mode: 0, Expert Mode: 0, Developer Mode: "
+                 << isDeveloper;
 
     Initialization();
 }
@@ -227,7 +175,7 @@ void qDetectorMain::SetUpDetector(const std::string &config_file, int multiID) {
     det = make_unique<Detector>(multiID);
 
     // create messages tab to capture config file loading logs
-    tabMessages = new qTabMessages(this);
+    tabMessages = new qTabMessages(tTerminal);
 
     // loads the config file at startup
     if (!config_file.empty())
@@ -357,18 +305,8 @@ void qDetectorMain::EnableModes(QAction *action) {
         actionSaveTrimbits->setVisible(visible);
         tabSettings->SetExportMode(enable);
         LOG(logINFO) << "Expert Mode: " << qDefs::stringEnable(enable);
-    }
-
-    // Set DockableMode
-    else {
-        enable = actionDockable->isChecked();
-        if (enable) {
-            dockWidgetPlot->setFeatures(QDockWidget::DockWidgetFloatable);
-        } else {
-            dockWidgetPlot->setFloating(false);
-            dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
-        }
-        LOG(logINFO) << "Dockable Mode: " << qDefs::stringEnable(enable);
+    } else {
+        LOG(logERROR) << "Unknown action";
     }
 }
 
@@ -385,7 +323,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
                 refreshTabs = true;
-                det->loadConfig(std::string(fName.toAscii().constData()));
+                det->loadConfig(std::string(fName.toLatin1().constData()));
                 qDefs::Message(qDefs::INFORMATION,
                                "The Configuration Parameters have been "
                                "configured successfully.",
@@ -403,7 +341,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
                 refreshTabs = true;
-                det->loadParameters(std::string(fName.toAscii().constData()));
+                det->loadParameters(std::string(fName.toLatin1().constData()));
                 qDefs::Message(qDefs::INFORMATION,
                                "The Detector Parameters have been "
                                "configured successfully.",
@@ -423,7 +361,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             fileDialog->setFileMode(QFileDialog::AnyFile);
             if (fileDialog->exec() == QDialog::Accepted) {
                 fName = fileDialog->selectedFiles()[0];
-                det->loadTrimbits(std::string(fName.toAscii().constData()));
+                det->loadTrimbits(std::string(fName.toLatin1().constData()));
                 qDefs::Message(qDefs::INFORMATION,
                                "The Trimbits have been loaded successfully.",
                                "qDetectorMain::ExecuteUtilities");
@@ -439,7 +377,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                 this, tr("Save Detector Trimbits"), fPath,
                 tr("Trimbit files (*.trim noise.sn*);;All Files(*)"));
             if (!fName.isEmpty()) {
-                det->saveTrimbits(std::string(fName.toAscii().constData()));
+                det->saveTrimbits(std::string(fName.toLatin1().constData()));
                 qDefs::Message(qDefs::INFORMATION,
                                "The Trimbits have been saved successfully.",
                                "qDetectorMain::ExecuteUtilities");
@@ -549,36 +487,17 @@ void qDetectorMain::Refresh(int index) {
 
 void qDetectorMain::ResizeMainWindow(bool b) {
     LOG(logDEBUG1) << "Resizing Main Window: height:" << height();
-
-    // undocked from the main window
     if (b) {
-        // sets the main window height to a smaller maximum to get rid of space
-        setMaximumHeight(height() - heightPlotWindow - 9);
-        dockWidgetPlot->setMinimumHeight(0);
-        LOG(logINFO) << "Undocking from main window";
+        setMaximumHeight(centralwidget->height() + menu->height());
+        LOG(logINFO) << "Plot undocked from main window";
     } else {
         setMaximumHeight(QWIDGETSIZE_MAX);
-        // the minimum for plot will be set when the widget gets resized
-        // automatically
+        LOG(logINFO) << "Plot docked back to main window";
     }
 }
 
 void qDetectorMain::resizeEvent(QResizeEvent *event) {
-    if (!dockWidgetPlot->isFloating()) {
-        dockWidgetPlot->setMinimumHeight(height() - centralwidget->height() -
-                                         50);
-        centralwidget->setMaximumHeight(heightCentralWidget);
-    }
-
-    // adjusting tab width
-    if (width() >= 800) {
-        tabs->tabBar()->setFixedWidth(width() + 61);
-    } else {
-        tabs->tabBar()->setMinimumWidth(0);
-        tabs->tabBar()->setExpanding(true);
-        tabs->tabBar()->setUsesScrollButtons(true);
-    }
-
+    tabs->tabBar()->setFixedWidth(width());
     event->accept();
 }
 

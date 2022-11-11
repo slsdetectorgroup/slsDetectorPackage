@@ -29,6 +29,7 @@ void qTabPlot::SetupWidgetWindow() {
     stackedWidget1D->setCurrentIndex(0);
     stackedWidget2D->setCurrentIndex(0);
     // Plot Axis
+    // its not spinboxes to not take value when checkbox checked
     dispXMin->setValidator(new QDoubleValidator(dispXMin));
     dispYMin->setValidator(new QDoubleValidator(dispYMin));
     dispZMin->setValidator(new QDoubleValidator(dispZMin));
@@ -73,9 +74,11 @@ void qTabPlot::SetupWidgetWindow() {
     Initialization();
     Refresh();
 
-    // set zmq high water mark to GUI_ZMQ_RCV_HWM (2)
-    spinSndHwm->setValue(qDefs::GUI_ZMQ_RCV_HWM);
-    spinRcvHwm->setValue(qDefs::GUI_ZMQ_RCV_HWM);
+    // update both zmq high water mark to GUI_ZMQ_RCV_HWM (2)
+    comboHwm->setCurrentIndex(SND_HWM);
+    spinHwm->setValue(qDefs::GUI_ZMQ_RCV_HWM);
+    comboHwm->setCurrentIndex(RX_HWM);
+    spinHwm->setValue(qDefs::GUI_ZMQ_RCV_HWM);
 
     if (chkGapPixels->isEnabled()) {
         chkGapPixels->setChecked(true);
@@ -85,10 +88,9 @@ void qTabPlot::SetupWidgetWindow() {
 void qTabPlot::Initialization() {
     // Plotting frequency box
     connect(chkNoPlot, SIGNAL(toggled(bool)), this, SLOT(SetPlot()));
-    connect(spinSndHwm, SIGNAL(valueChanged(int)), this,
-            SLOT(SetStreamingHwm(int)));
-    connect(spinRcvHwm, SIGNAL(valueChanged(int)), this,
-            SLOT(SetReceivingHwm(int)));
+    connect(comboHwm, SIGNAL(currentIndexChanged(int)), this,
+            SLOT(SelectHwm(int)));
+    connect(spinHwm, SIGNAL(valueChanged(int)), this, SLOT(SetHwm(int)));
     connect(comboFrequency, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetStreamingFrequency()));
     connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this,
@@ -196,15 +198,14 @@ void qTabPlot::Initialization() {
 void qTabPlot::Select1DPlot(bool enable) {
     LOG(logDEBUG) << "Selecting " << (enable ? "1" : "2") << "D Plot";
     is1d = enable;
-    box1D->setEnabled(enable);
-    box2D->setEnabled(!enable);
-    chkZAxis->setEnabled(!enable);
-    dispZAxis->setEnabled(!enable);
-    chkZMin->setEnabled(!enable);
-    chkZMax->setEnabled(!enable);
-    dispZMin->setEnabled(!enable);
-    dispZMax->setEnabled(!enable);
-    plot->Select1dPlot(enable);
+    stackedPlotOptions->setCurrentIndex(is1d ? 0 : 1);
+    chkZAxis->setEnabled(!is1d);
+    dispZAxis->setEnabled(!is1d);
+    chkZMin->setEnabled(!is1d);
+    chkZMax->setEnabled(!is1d);
+    dispZMin->setEnabled(!is1d);
+    dispZMax->setEnabled(!is1d);
+    plot->Select1dPlot(is1d);
     SetTitles();
     SetXYRange();
     if (!is1d) {
@@ -221,14 +222,12 @@ void qTabPlot::SetPlot() {
         plotEnable = true;
     }
     comboFrequency->setEnabled(plotEnable);
-    lblSndHwm->setEnabled(plotEnable);
-    spinSndHwm->setEnabled(plotEnable);
-    lblRcvHwm->setEnabled(plotEnable);
-    spinRcvHwm->setEnabled(plotEnable);
+    comboHwm->setEnabled(plotEnable);
+    spinHwm->setEnabled(plotEnable);
     stackedTimeInterval->setEnabled(plotEnable);
-    box1D->setEnabled(plotEnable);
-    box2D->setEnabled(plotEnable);
-    boxSave->setEnabled(plotEnable);
+    stackedPlotOptions->setEnabled(plotEnable);
+    btnSave->setEnabled(plotEnable);
+    btnClone->setEnabled(plotEnable);
     boxPlotAxis->setEnabled(plotEnable);
 
     if (plotEnable) {
@@ -249,8 +248,6 @@ void qTabPlot::Set1DPlotOptionsRight() {
         stackedWidget1D->setCurrentIndex(0);
     else
         stackedWidget1D->setCurrentIndex(i + 1);
-    box1D->setTitle(
-        QString("1D Plot Options %1").arg(stackedWidget1D->currentIndex() + 1));
 }
 
 void qTabPlot::Set1DPlotOptionsLeft() {
@@ -260,8 +257,6 @@ void qTabPlot::Set1DPlotOptionsLeft() {
         stackedWidget1D->setCurrentIndex(stackedWidget1D->count() - 1);
     else
         stackedWidget1D->setCurrentIndex(i - 1);
-    box1D->setTitle(
-        QString("1D Plot Options %1").arg(stackedWidget1D->currentIndex() + 1));
 }
 
 void qTabPlot::Set2DPlotOptionsRight() {
@@ -271,8 +266,6 @@ void qTabPlot::Set2DPlotOptionsRight() {
         stackedWidget2D->setCurrentIndex(0);
     else
         stackedWidget2D->setCurrentIndex(i + 1);
-    box2D->setTitle(
-        QString("2D Plot Options %1").arg(stackedWidget2D->currentIndex() + 1));
 }
 
 void qTabPlot::Set2DPlotOptionsLeft() {
@@ -282,8 +275,6 @@ void qTabPlot::Set2DPlotOptionsLeft() {
         stackedWidget2D->setCurrentIndex(stackedWidget2D->count() - 1);
     else
         stackedWidget2D->setCurrentIndex(i - 1);
-    box2D->setTitle(
-        QString("2D Plot Options %1").arg(stackedWidget2D->currentIndex() + 1));
 }
 
 void qTabPlot::EnablePersistency(bool enable) {
@@ -711,20 +702,34 @@ void qTabPlot::SetStreamingFrequency() {
                  &qTabPlot::GetStreamingFrequency)
 }
 
+void qTabPlot::SelectHwm(int value) { GetHwm(); }
+
+void qTabPlot::GetHwm() {
+    if (comboHwm->currentIndex() == SND_HWM)
+        GetStreamingHwm();
+    else
+        GetReceivingHwm();
+}
+
+void qTabPlot::SetHwm(int value) {
+    if (comboHwm->currentIndex() == SND_HWM)
+        SetStreamingHwm(value);
+    else
+        SetReceivingHwm(value);
+}
+
 void qTabPlot::GetStreamingHwm() {
     LOG(logDEBUG) << "Getting Streaming Hwm for receiver";
-    disconnect(spinSndHwm, SIGNAL(valueChanged(int)), this,
-               SLOT(SetStreamingHwm(int)));
+    disconnect(spinHwm, SIGNAL(valueChanged(int)), this, SLOT(SetHwm(int)));
     try {
         int value = det->getRxZmqHwm().tsquash(
             "Inconsistent streaming hwm for all receivers.");
         LOG(logDEBUG) << "Got streaming hwm for receiver " << value;
-        spinSndHwm->setValue(value);
+        spinHwm->setValue(value);
     }
     CATCH_DISPLAY("Could not get streaming hwm for receiver.",
                   "qTabPlot::GetStreamingHwm")
-    connect(spinSndHwm, SIGNAL(valueChanged(int)), this,
-            SLOT(SetStreamingHwm(int)));
+    connect(spinHwm, SIGNAL(valueChanged(int)), this, SLOT(SetHwm(int)));
 }
 
 void qTabPlot::SetStreamingHwm(int value) {
@@ -733,17 +738,20 @@ void qTabPlot::SetStreamingHwm(int value) {
         det->setRxZmqHwm(value);
     }
     CATCH_HANDLE("Could not set streaming hwm for receiver.",
-                 "qTabPlot::SetStreamingHwm", this, &qTabPlot::GetStreamingHwm)
+                 "qTabPlot::SetStreamingHwm", this, &qTabPlot::GetHwm)
 }
 
 void qTabPlot::GetReceivingHwm() {
     LOG(logDEBUG) << "Getting Receiving Hwm for client";
+    disconnect(spinHwm, SIGNAL(valueChanged(int)), this, SLOT(SetHwm(int)));
     try {
         int value = det->getClientZmqHwm();
         LOG(logDEBUG) << "Got receiving hwm for client " << value;
+        spinHwm->setValue(value);
     }
     CATCH_DISPLAY("Could not get receiving hwm for client.",
                   "qTabPlot::GetReceivingHwm")
+    connect(spinHwm, SIGNAL(valueChanged(int)), this, SLOT(SetHwm(int)));
 }
 
 void qTabPlot::SetReceivingHwm(int value) {
@@ -752,7 +760,7 @@ void qTabPlot::SetReceivingHwm(int value) {
         det->setClientZmqHwm(value);
     }
     CATCH_HANDLE("Could not set receiving hwm from client.",
-                 "qTabPlot::SetReceivingHwm", this, &qTabPlot::GetReceivingHwm)
+                 "qTabPlot::SetReceivingHwm", this, &qTabPlot::GetHwm)
 }
 
 void qTabPlot::Refresh() {
@@ -760,19 +768,8 @@ void qTabPlot::Refresh() {
 
     if (!plot->GetIsRunning()) {
         boxFrequency->setEnabled(true);
-
-        // streaming frequency
-        if (!chkNoPlot->isChecked()) {
-            comboFrequency->setEnabled(true);
-            stackedTimeInterval->setEnabled(true);
-            lblSndHwm->setEnabled(true);
-            spinSndHwm->setEnabled(true);
-            lblRcvHwm->setEnabled(true);
-            spinRcvHwm->setEnabled(true);
-        }
         GetStreamingFrequency();
-        GetStreamingHwm();
-        GetReceivingHwm();
+        GetHwm();
         // gain plot, gap pixels enable
         switch (det->getDetectorType().squash()) {
         case slsDetectorDefs::EIGER:

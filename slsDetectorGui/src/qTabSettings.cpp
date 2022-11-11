@@ -18,7 +18,6 @@ qTabSettings::qTabSettings(QWidget *parent, Detector *detector)
 qTabSettings::~qTabSettings() {}
 
 void qTabSettings::SetupWidgetWindow() {
-
     comboHV->hide();
     lblComboHV->hide();
     lblSpinHV->hide();
@@ -402,7 +401,7 @@ void qTabSettings::SetGainMode(int index) {
     }
 
     LOG(logINFO) << "Setting Gain Mode to "
-                 << comboGainMode->currentText().toAscii().data();
+                 << comboGainMode->currentText().toLatin1().data();
     auto val = static_cast<slsDetectorDefs::gainMode>(index);
     try {
 
@@ -449,7 +448,7 @@ void qTabSettings::GetDynamicRange() {
 
 void qTabSettings::SetDynamicRange(int index) {
     LOG(logINFO) << "Setting dynamic range to "
-                 << comboDynamicRange->currentText().toAscii().data();
+                 << comboDynamicRange->currentText().toLatin1().data();
     try {
         switch (index) {
         case DYNAMICRANGE_32:

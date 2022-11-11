@@ -195,11 +195,10 @@ int checkType() {
 }
 
 int testFpga() {
+    LOG(logINFO, ("Testing FPGA:\n"));
 #ifdef VIRTUAL
     return OK;
 #endif
-    LOG(logINFO, ("Testing FPGA:\n"));
-
     // fixed pattern
     int ret = OK;
     volatile u_int32_t val = bus_r(FIX_PATT_REG);
@@ -215,10 +214,10 @@ int testFpga() {
 }
 
 int testBus() {
+    LOG(logINFO, ("Testing Bus:\n"));
 #ifdef VIRTUAL
     return OK;
 #endif
-    LOG(logINFO, ("Testing Bus:\n"));
 
     int ret = OK;
     u_int32_t addr = DTA_OFFSET_REG;

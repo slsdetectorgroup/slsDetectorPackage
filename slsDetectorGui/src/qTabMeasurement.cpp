@@ -20,6 +20,7 @@ qTabMeasurement::qTabMeasurement(QWidget *parent, Detector *detector,
 qTabMeasurement::~qTabMeasurement() { delete progressTimer; }
 
 void qTabMeasurement::SetupWidgetWindow() {
+    setFont(QFont("Carlito", 9, QFont::Normal));
     // palette
     red = QPalette();
     red.setColor(QPalette::Active, QPalette::WindowText, Qt::red);
@@ -384,7 +385,7 @@ void qTabMeasurement::GetTimingMode() {
 
 void qTabMeasurement::SetTimingMode(int val) {
     LOG(logINFO) << "Setting timing mode:"
-                 << comboTimingMode->currentText().toAscii().data();
+                 << comboTimingMode->currentText().toLatin1().data();
     try {
         det->setTimingMode(static_cast<slsDetectorDefs::timingMode>(val));
         EnableWidgetsforTimingMode();
@@ -420,7 +421,7 @@ void qTabMeasurement::GetBurstMode() {
 
 void qTabMeasurement::SetBurstMode(int val) {
     LOG(logINFO) << "Setting burst mode:"
-                 << comboBurstMode->currentText().toAscii().data();
+                 << comboBurstMode->currentText().toLatin1().data();
     try {
         det->setBurstMode(static_cast<slsDetectorDefs::burstMode>(val));
         ShowTriggerDelay();
@@ -800,7 +801,7 @@ void qTabMeasurement::SetFileName(bool force) {
     if (dispFileName->isModified() || force) {
         dispFileName->setModified(false);
         std::string val =
-            std::string(dispFileName->text().toAscii().constData());
+            std::string(dispFileName->text().toLatin1().constData());
         LOG(logINFO) << "Setting File Name Prefix:" << val;
         try {
             det->setFileNamePrefix(val);
@@ -966,7 +967,7 @@ void qTabMeasurement::AcquireFinished() {
 void qTabMeasurement::AbortAcquire(QString exmsg) {
     LOG(logINFORED) << "Abort Acquire";
     qDefs::ExceptionMessage("Acquire unsuccessful.",
-                            exmsg.toAscii().constData(),
+                            exmsg.toLatin1().constData(),
                             "qDrawPlot::AcquireFinished");
     isAcquisitionStopped = true;
     AcquireFinished();
@@ -978,8 +979,7 @@ void qTabMeasurement::Enable(bool enable) {
 
     // shortcut each time, else it doesnt work a second time
     btnStart->setShortcut(QApplication::translate("TabMeasurementObject",
-                                                  "Shift+Space", nullptr,
-                                                  QApplication::UnicodeUTF8));
+                                                  "Shift+Space", nullptr));
 }
 
 void qTabMeasurement::Refresh() {

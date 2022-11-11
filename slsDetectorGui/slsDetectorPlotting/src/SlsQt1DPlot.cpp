@@ -3,7 +3,10 @@
 
 /* TODO! short description */
 #include "SlsQt1DPlot.h"
+#include "qDefs.h"
+#include "qVersionResolve.h"
 #include "sls/logger.h"
+
 #include <iostream>
 #include <qwt_legend.h>
 #include <qwt_math.h>
@@ -333,7 +336,8 @@ void SlsQtH1DList::Remove(SlsQtH1D *hist) {
 }
 
 // 1d plot stuff
-SlsQt1DPlot::SlsQt1DPlot(QWidget *parent) : QwtPlot(parent) {
+SlsQt1DPlot::SlsQt1DPlot(QWidget *parent, bool gain)
+    : QwtPlot(parent), gainPlot(gain) {
     //  n_histograms_attached=0;
     hline = vline = nullptr;
     hist_list = new SlsQtH1DList();
@@ -351,6 +355,19 @@ SlsQt1DPlot::SlsQt1DPlot(QWidget *parent) : QwtPlot(parent) {
 
     axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Floating);
     axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Floating);
+    setFont(qDefs::GetDefaultFont());
+    SetTitleFont(qDefs::GetDefaultFont());
+    SetXFont(qDefs::GetDefaultFont());
+    SetYFont(qDefs::GetDefaultFont());
+
+    if (gainPlot) {
+        SetTitle("");
+        SetYTitle("Gain");
+        DisableZoom(true);
+        // set only major ticks from 0 to 3
+        auto div = axisScaleEngine(QwtPlot::yLeft)->divideScale(0, 3, 3, 0, 1);
+        setAxisScaleDiv(QwtPlot::yLeft, div);
+    }
 }
 
 SlsQt1DPlot::~SlsQt1DPlot() {
@@ -543,7 +560,7 @@ void SlsQt1DPlot::InsertVLine(double x) {
 
 void SlsQt1DPlot::SetupZoom() {
     // LeftButton for the zooming
-    // MidButton for the panning
+    // MiddleButton for the panning
     // RightButton: zoom out by 1
     // Ctrl+RighButton: zoom out to full size
 
@@ -555,15 +572,14 @@ void SlsQt1DPlot::SetupZoom() {
 
     panner = new QwtPlotPanner((QwtPlotCanvas *)canvas());
     panner->setAxisEnabled(QwtPlot::yRight, false);
-    panner->setMouseButton(Qt::MidButton);
+    panner->setMouseButton(Qt::MiddleButton);
 
     // Avoid jumping when labels with more/less digits
     // appear/disappear when scrolling vertically
 
     const QFontMetrics fm(axisWidget(QwtPlot::yLeft)->font());
     QwtScaleDraw *sd = axisScaleDraw(QwtPlot::yLeft);
-    sd->setMinimumExtent(fm.width("100.00"));
-
+    sd->setMinimumExtent(qResolve_GetQFontWidth(fm, "100.00"));
     const QColor c(Qt::darkBlue);
     zoomer->setRubberBandPen(c);
     zoomer->setTrackerPen(c);
@@ -630,7 +646,7 @@ void SlsQt1DPlot::DisableZoom(bool disable) {
                                         Qt::RightButton);
             }
             if (panner)
-                panner->setMouseButton(Qt::MidButton);
+                panner->setMouseButton(Qt::MiddleButton);
         }
     }
 }

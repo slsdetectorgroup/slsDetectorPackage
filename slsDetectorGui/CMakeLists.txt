@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
-set(CMAKE_AUTOMOC ON)
 
-find_package(Qt4 REQUIRED)
-find_package(Qwt 6.1 REQUIRED)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+
+find_package(Qt5 5.9 COMPONENTS Widgets Core Gui REQUIRED)
+
 find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 
@@ -24,6 +27,7 @@ set(SOURCES
     src/qTabDeveloper.cpp
     src/qTabMessages.cpp
     src/qDacWidget.cpp
+    src/qVersionResolve.cpp
 )
 
 set(FORMS
@@ -41,7 +45,7 @@ set(FORMS
     forms/form_cloneplot.ui
 )
 
-qt4_wrap_ui(FORMS_H ${FORMS})
+qt5_wrap_ui(FORMS_H ${FORMS})
 
 set(HEADERS
     slsDetectorPlotting/include/SlsQt1DPlot.h
@@ -62,15 +66,16 @@ set(HEADERS
     include/qTabDeveloper.h
     include/qTabMessages.h
     include/qDacWidget.h
+    include/qVersionResolve.h
 )
 set(RESOURCES
     include/icons.qrc
 )
-qt4_add_resources(RESOURCES_SRCS ${RESOURCES})
+qt5_add_resources(RESOURCES_SRCS ${RESOURCES})
 
 
 add_definitions(
-    -DPRINT_LOG #-DVERBOSE 
+   ${Qt5Widgets_DEFINITIONS} -DPRINT_LOG #-DVERBOSE 
 )
 
 add_executable(slsDetectorGui
@@ -84,23 +89,20 @@ target_include_directories(slsDetectorGui PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/slsDetectorPlotting/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-    "$<BUILD_INTERFACE:${QT_INCLUDE_DIR}>"
-    "$<BUILD_INTERFACE:${QT_QTCORE_INCLUDE_DIR}>"
-    "$<BUILD_INTERFACE:${QT_QTGUI_INCLUDE_DIR}>"
-    "$<BUILD_INTERFACE:${QWT_INCLUDE_DIR}>"
+    "$<BUILD_INTERFACE:${QT5Widgets_INCLUDE_DIRS}>"
+    "$<BUILD_INTERFACE:${SLS_INTERNAL_QWT_DIR}/include>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
 )
 
 target_link_libraries(slsDetectorGui PUBLIC
     slsProjectOptions 
     slsDetectorStatic
-    ${QT_QTCORE_LIBRARIES}
-    ${QT_QTGUI_LIBRARIES}
-    ${QWT_LIBRARIES}
+    ${SLS_INTERNAL_QWT_DIR}/lib/libqwt.so.6.1.5
     PNG::PNG
     ZLIB::ZLIB
-    Qt4::QtOpenGL
-    Qt4::QtSvg
+    Qt5::Widgets
+    Qt5::Gui
+    Qt5::Core
     expat
     
     PRIVATE
@@ -109,6 +111,8 @@ target_link_libraries(slsDetectorGui PUBLIC
 
 set_target_properties(slsDetectorGui PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    #Instruct CMake to run moc automatically when needed
+    AUTOMOC ON
 )
 if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsDetectorGui PROPERTY INTERPROCEDURAL_OPTIMIZATION True)

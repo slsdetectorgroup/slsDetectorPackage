@@ -38,8 +38,8 @@ class qTabPlot : public QWidget, private Ui::TabPlotObject {
     void CheckAspectRatio();
     void SetZRange();
     void SetStreamingFrequency();
-    void SetStreamingHwm(int value);
-    void SetReceivingHwm(int value);
+    void SelectHwm(int value);
+    void SetHwm(int value);
 
   signals:
     void DisableZoomSignal(bool);
@@ -50,8 +50,11 @@ class qTabPlot : public QWidget, private Ui::TabPlotObject {
     void Select1DPlot(bool enable);
     void GetGapPixels();
     void GetStreamingFrequency();
+    void GetHwm();
     void GetStreamingHwm();
+    void SetStreamingHwm(int value);
     void GetReceivingHwm();
+    void SetReceivingHwm(int value);
     void SetXYRange();
     void MaintainAspectRatio(int dimension);
 
@@ -66,6 +69,8 @@ class qTabPlot : public QWidget, private Ui::TabPlotObject {
     static QString defaultImageXAxisTitle;
     static QString defaultImageYAxisTitle;
     static QString defaultImageZAxisTitle;
+
+    enum { SND_HWM, RX_HWM };
 };
 
 } // namespace sls

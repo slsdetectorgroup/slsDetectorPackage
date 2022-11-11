@@ -400,7 +400,7 @@ void qTabAdvanced::GetRxrZMQIP() {
 
 void qTabAdvanced::SetDetector() {
     LOG(logDEBUG) << "Set Detector: "
-                  << comboDetector->currentText().toAscii().data();
+                  << comboDetector->currentText().toLatin1().data();
 
     GetControlPort();
     GetStopPort();
@@ -441,7 +441,7 @@ void qTabAdvanced::SetDetectorUDPIP(bool force) {
     // return forces modification (inconsistency from command line)
     if (dispDetectorUDPIP->isModified() || force) {
         dispDetectorUDPIP->setModified(false);
-        std::string s = dispDetectorUDPIP->text().toAscii().constData();
+        std::string s = dispDetectorUDPIP->text().toLatin1().constData();
         LOG(logINFO) << "Setting Detector UDP IP:" << s;
         try {
             det->setSourceUDPIP(IpAddr{s}, {comboDetector->currentIndex()});
@@ -458,7 +458,7 @@ void qTabAdvanced::SetDetectorUDPMAC(bool force) {
     // return forces modification (inconsistency from command line)
     if (dispDetectorUDPMAC->isModified() || force) {
         dispDetectorUDPMAC->setModified(false);
-        std::string s = dispDetectorUDPMAC->text().toAscii().constData();
+        std::string s = dispDetectorUDPMAC->text().toLatin1().constData();
         LOG(logINFO) << "Setting Detector UDP MAC:" << s;
         try {
             det->setSourceUDPMAC(MacAddr{s}, {comboDetector->currentIndex()});
@@ -485,7 +485,7 @@ void qTabAdvanced::SetCltZMQIP(bool force) {
     // return forces modification (inconsistency from command line)
     if (dispZMQIP->isModified() || force) {
         dispZMQIP->setModified(false);
-        std::string s = dispZMQIP->text().toAscii().constData();
+        std::string s = dispZMQIP->text().toLatin1().constData();
         LOG(logINFO) << "Setting Client ZMQ IP:" << s;
         try {
             det->setClientZmqIp(IpAddr{s}, {comboDetector->currentIndex()});
@@ -502,7 +502,7 @@ void qTabAdvanced::SetRxrHostname(bool force) {
     // return forces modification (inconsistency from command line)
     if (dispRxrHostname->isModified() || force) {
         dispRxrHostname->setModified(false);
-        std::string s = dispRxrHostname->text().toAscii().constData();
+        std::string s = dispRxrHostname->text().toLatin1().constData();
         LOG(logINFO) << "Setting Receiver Hostname:" << s;
         try {
             det->setRxHostname(s, {comboDetector->currentIndex()});
@@ -542,7 +542,7 @@ void qTabAdvanced::SetRxrUDPIP(bool force) {
     // return forces modification (inconsistency from command line)
     if (dispRxrUDPIP->isModified() || force) {
         dispRxrUDPIP->setModified(false);
-        std::string s = dispRxrUDPIP->text().toAscii().constData();
+        std::string s = dispRxrUDPIP->text().toLatin1().constData();
         LOG(logINFO) << "Setting Receiver UDP IP:" << s;
         try {
             det->setDestinationUDPIP(IpAddr{s},
@@ -560,7 +560,7 @@ void qTabAdvanced::SetRxrUDPMAC(bool force) {
     // return forces modification (inconsistency from command line)
     if (dispRxrUDPMAC->isModified() || force) {
         dispRxrUDPMAC->setModified(false);
-        std::string s = dispRxrUDPMAC->text().toAscii().constData();
+        std::string s = dispRxrUDPMAC->text().toLatin1().constData();
         LOG(logINFO) << "Setting Receiver UDP MAC:" << s;
         try {
             det->setDestinationUDPMAC(MacAddr{s},
@@ -588,7 +588,7 @@ void qTabAdvanced::SetRxrZMQIP(bool force) {
     // return forces modification (inconsistency from command line)
     if (dispRxrZMQIP->isModified() || force) {
         dispRxrZMQIP->setModified(false);
-        std::string s = dispRxrZMQIP->text().toAscii().constData();
+        std::string s = dispRxrZMQIP->text().toLatin1().constData();
         LOG(logINFO) << "Setting Receiver ZMQ IP:" << s;
         try {
             det->setRxZmqIP(IpAddr{s}, {comboDetector->currentIndex()});

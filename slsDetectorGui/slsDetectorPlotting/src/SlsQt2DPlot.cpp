@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "SlsQt2DPlot.h"
+#include "qDefs.h"
+#include "qVersionResolve.h"
 #include "sls/logger.h"
 
 #include <qlist.h>
-#include <qprinter.h>
 #include <qtoolbutton.h>
 #include <qwt_color_map.h>
 #include <qwt_plot_layout.h>
@@ -20,7 +21,8 @@
 
 namespace sls {
 
-SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
+SlsQt2DPlot::SlsQt2DPlot(QWidget *parent, bool gain)
+    : QwtPlot(parent), gainPlot(gain) {
     isLog = 0;
     axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Floating);
     axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Floating);
@@ -32,7 +34,23 @@ SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
     d_spectrogram->attach(this);
     plotLayout()->setAlignCanvasToScales(true);
     FillTestPlot();
+    setFont(qDefs::GetDefaultFont());
+    SetTitleFont(qDefs::GetDefaultFont());
+    SetXFont(qDefs::GetDefaultFont());
+    SetYFont(qDefs::GetDefaultFont());
+    SetZFont(qDefs::GetDefaultFont());
     Update();
+
+    if (gainPlot) {
+        setTitle("Gain");
+        SetZTitle("");
+        enableAxis(QwtPlot::yLeft, false);
+        enableAxis(QwtPlot::xBottom, false);
+        DisableZoom(true);
+        // set only major ticks from 0 to 3
+        auto div = axisScaleEngine(QwtPlot::yRight)->divideScale(0, 3, 3, 0, 1);
+        setAxisScaleDiv(QwtPlot::yRight, div);
+    }
 }
 
 SlsQt2DPlot::~SlsQt2DPlot() = default;
@@ -118,7 +136,7 @@ void SlsQt2DPlot::FillTestPlot(int mode) {
 
 void SlsQt2DPlot::SetupZoom() {
     // LeftButton for the zooming
-    // MidButton for the panning
+    // MiddleButton for the panning
     // RightButton: zoom out by 1
     // Ctrl+RighButton: zoom out to full size
 
@@ -129,15 +147,14 @@ void SlsQt2DPlot::SetupZoom() {
     zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
     panner = new QwtPlotPanner(canvas());
     panner->setAxisEnabled(QwtPlot::yRight, false);
-    panner->setMouseButton(Qt::MidButton);
+    panner->setMouseButton(Qt::MiddleButton);
 
     // Avoid jumping when labels with more/less digits
     // appear/disappear when scrolling vertically
 
     const QFontMetrics fm(axisWidget(QwtPlot::yLeft)->font());
     QwtScaleDraw *sd = axisScaleDraw(QwtPlot::yLeft);
-    sd->setMinimumExtent(fm.width("100.00"));
-
+    sd->setMinimumExtent(qResolve_GetQFontWidth(fm, "100.00"));
     const QColor c(Qt::darkBlue);
     zoomer->setRubberBandPen(c);
     zoomer->setTrackerPen(c);
@@ -221,7 +238,7 @@ void SlsQt2DPlot::DisableZoom(bool disable) {
                                         Qt::RightButton);
             }
             if (panner)
-                panner->setMouseButton(Qt::MidButton);
+                panner->setMouseButton(Qt::MiddleButton);
         }
     }
 }
@@ -265,10 +282,12 @@ void SlsQt2DPlot::Update() {
         hist->SetMinimumToFirstGreaterThanZero();
     const QwtInterval zInterval = d_spectrogram->data()->interval(Qt::ZAxis);
     rightAxis->setColorMap(zInterval, myColourMap(isLog));
-
     if (!zoomer->zoomRectIndex())
         UnZoom();
-    setAxisScale(QwtPlot::yRight, zInterval.minValue(), zInterval.maxValue());
+    if (!gainPlot) {
+        setAxisScale(QwtPlot::yRight, zInterval.minValue(),
+                     zInterval.maxValue());
+    }
     plotLayout()->setAlignCanvasToScales(true);
     replot();
 }

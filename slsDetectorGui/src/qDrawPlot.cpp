@@ -12,7 +12,7 @@
 #include <QFileDialog>
 #include <QPainter>
 #include <QResizeEvent>
-#include <QtConcurrentRun>
+#include <QtConcurrent/QtConcurrentRun>
 #include <qwt_scale_engine.h>
 
 namespace sls {
@@ -99,8 +99,6 @@ void qDrawPlot::Initialization() {
 }
 
 void qDrawPlot::SetupPlots() {
-    setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-
     // default image size
     slsDetectorDefs::xy res = det->getDetectorSize();
     nPixelsX = res.x;
@@ -108,10 +106,10 @@ void qDrawPlot::SetupPlots() {
     LOG(logINFO) << "nPixelsX:" << nPixelsX;
     LOG(logINFO) << "nPixelsY:" << nPixelsY;
 
-    boxPlot->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     widgetStatistics->hide();
     lblCompleteImage->hide();
     lblInCompleteImage->hide();
+    lblRxRoiEnabled->hide();
 
     // setup 1d data
 
@@ -137,11 +135,6 @@ void qDrawPlot::SetupPlots() {
     hists1d.append(h);
     // setup 1d plot
     plot1d = new SlsQt1DPlot(boxPlot);
-    plot1d->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot1d->SetTitleFont(
-        QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot1d->SetXFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot1d->SetYFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     plot1d->SetTitle("");
     plot1d->SetXTitle(xTitle1d);
     plot1d->SetYTitle(yTitle1d);
@@ -159,24 +152,11 @@ void qDrawPlot::SetupPlots() {
     gainhist1d->SetLineColor(0);
     gainhist1d->setStyleLinesorDots(isLines);
     gainhist1d->setSymbolMarkers(isMarkers);
-    // setup 1d gain plot
-    gainplot1d = new SlsQt1DPlot(boxPlot);
-    gainplot1d->SetTitleFont(
-        QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    gainplot1d->SetYFont(
-        QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    gainplot1d->SetTitle("");
-    gainplot1d->SetYTitle("Gain");
-    // set ticks to just 3
-    QList<double> majorTicks({0, 1, 2, 3});
-    QwtScaleDiv div(0, 3, QList<double>(), QList<double>(), majorTicks);
-    gainplot1d->setAxisScaleDiv(QwtPlot::yLeft, div);
-
     gainhist1d->setItemAttribute(QwtPlotItem::Legend, false);
+    // setup 1d gain plot
+    gainplot1d = new SlsQt1DPlot(boxPlot, true);
     gainhist1d->Attach(gainplot1d);
-    gainplot1d->DisableZoom(true);
     gainplot1d->hide();
-
     connect(plot1d, SIGNAL(PlotZoomedSignal(const QRectF &)), this,
             SLOT(Zoom1DGainPlot(const QRectF &)));
 
@@ -205,32 +185,15 @@ void qDrawPlot::SetupPlots() {
     plot2d = new SlsQt2DPlot(boxPlot);
     plot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5,
                     nPixelsY - 0.5, data2d);
-    plot2d->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot2d->SetTitleFont(
-        QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot2d->SetXFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot2d->SetYFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot2d->SetZFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     plot2d->setTitle("");
     plot2d->SetXTitle(xTitle2d);
     plot2d->SetYTitle(yTitle2d);
     plot2d->SetZTitle(zTitle2d);
 
-    gainplot2d = new SlsQt2DPlot(boxPlot);
+    gainplot2d = new SlsQt2DPlot(boxPlot, true);
     gainplot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5,
                         nPixelsY - 0.5, gainData);
-    gainplot2d->SetTitleFont(
-        QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    gainplot2d->setTitle("Gain");
-    gainplot2d->SetZTitle("");
-    gainplot2d->enableAxis(QwtPlot::yLeft, false);
-    // gainplot2d->enableAxis(1, false);
-    gainplot2d->enableAxis(QwtPlot::xBottom, false);
-    // set ticks to just 3
-    gainplot2d->setAxisScaleDiv(QwtPlot::yRight, div);
-    gainplot2d->DisableZoom(true);
     gainplot2d->hide();
-
     connect(plot2d, SIGNAL(PlotZoomedSignal(const QRectF &)), this,
             SLOT(Zoom2DGainPlot(const QRectF &)));
 
@@ -301,13 +264,13 @@ void qDrawPlot::Select1dPlot(bool enable) {
 
 void qDrawPlot::SetPlotTitlePrefix(QString title) {
     std::lock_guard<std::mutex> lock(mPlots);
-    LOG(logINFO) << "Setting Title to " << title.toAscii().constData();
+    LOG(logINFO) << "Setting Title to " << title.toLatin1().constData();
     plotTitlePrefix = title;
 }
 
 void qDrawPlot::SetXAxisTitle(QString title) {
     std::lock_guard<std::mutex> lock(mPlots);
-    LOG(logINFO) << "Setting X Axis Title to " << title.toAscii().constData();
+    LOG(logINFO) << "Setting X Axis Title to " << title.toLatin1().constData();
     if (is1d) {
         xTitle1d = title;
     } else {
@@ -317,7 +280,7 @@ void qDrawPlot::SetXAxisTitle(QString title) {
 
 void qDrawPlot::SetYAxisTitle(QString title) {
     std::lock_guard<std::mutex> lock(mPlots);
-    LOG(logINFO) << "Setting Y Axis Title to " << title.toAscii().constData();
+    LOG(logINFO) << "Setting Y Axis Title to " << title.toLatin1().constData();
     if (is1d) {
         yTitle1d = title;
     } else {
@@ -327,7 +290,7 @@ void qDrawPlot::SetYAxisTitle(QString title) {
 
 void qDrawPlot::SetZAxisTitle(QString title) {
     std::lock_guard<std::mutex> lock(mPlots);
-    LOG(logINFO) << "Setting Z Axis Title to " << title.toAscii().constData();
+    LOG(logINFO) << "Setting Z Axis Title to " << title.toLatin1().constData();
     zTitle2d = title;
 }
 
@@ -509,7 +472,7 @@ void qDrawPlot::EnableGainPlot(bool enable) {
 void qDrawPlot::SetSaveFileName(QString val) {
     std::lock_guard<std::mutex> lock(mPlots);
     LOG(logDEBUG) << "Setting Clone/Save File Name to "
-                  << val.toAscii().constData();
+                  << val.toLatin1().constData();
     fileSaveName = val;
 }
 
@@ -524,14 +487,6 @@ void qDrawPlot::ClonePlot() {
     if (is1d) {
         LOG(logDEBUG) << "Cloning 1D Image";
         cloneplot1D = new SlsQt1DPlot();
-        cloneplot1D->setFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot1D->SetTitleFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot1D->SetXFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot1D->SetYFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
         cloneplot1D->SetTitle(plot1d->title().text());
         cloneplot1D->SetXTitle(xTitle1d);
         cloneplot1D->SetYTitle(yTitle1d);
@@ -551,36 +506,14 @@ void qDrawPlot::ClonePlot() {
             h->setStyleLinesorDots(isLines);
             h->setSymbolMarkers(isMarkers);
             h->setItemAttribute(QwtPlotItem::Legend, false);
-            clonegainplot1D = new SlsQt1DPlot();
-            clonegainplot1D->SetTitleFont(
-                QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-            clonegainplot1D->SetYFont(
-                QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-            clonegainplot1D->SetTitle("");
-            clonegainplot1D->SetYTitle("Gain");
-            // set ticks to just 3
-            QList<double> majorTicks({0, 1, 2, 3});
-            QwtScaleDiv div(0, 3, QList<double>(), QList<double>(), majorTicks);
-            clonegainplot1D->setAxisScaleDiv(QwtPlot::yLeft, div);
-            clonegainplot1D->DisableZoom(true);
+            clonegainplot1D = new SlsQt1DPlot(NULL, true);
             h->Attach(clonegainplot1D);
-
             connect(cloneplot1D, SIGNAL(PlotZoomedSignal(const QRectF &)),
                     clonegainplot1D, SLOT(SetZoomX(const QRectF &)));
         }
     } else {
         LOG(logDEBUG) << "Cloning 2D Image";
         cloneplot2D = new SlsQt2DPlot();
-        cloneplot2D->setFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot2D->SetTitleFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot2D->SetXFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot2D->SetYFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-        cloneplot2D->SetZFont(
-            QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
         cloneplot2D->setTitle(plot2d->title().text());
         cloneplot2D->SetXTitle(xTitle2d);
         cloneplot2D->SetYTitle(yTitle2d);
@@ -590,25 +523,9 @@ void qDrawPlot::ClonePlot() {
         cloneplot2D->SetZRange(isZRange[0], isZRange[1], zRange[0], zRange[1]);
 
         if (isGainDataExtracted) {
-            clonegainplot2D = new SlsQt2DPlot();
-            clonegainplot2D->SetTitleFont(
-                QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-            clonegainplot2D->SetTitle("Gain");
-            clonegainplot2D->SetZTitle("");
-            clonegainplot2D->enableAxis(QwtPlot::yLeft, false);
-            clonegainplot2D->enableAxis(QwtPlot::xBottom, false);
-            // set ticks to just 3
-            QList<double> majorTicks({0, 1, 2, 3});
-            QwtScaleDiv div(0, 3, QList<double>(), QList<double>(), majorTicks);
-            clonegainplot2D->setAxisScaleDiv(QwtPlot::yRight, div);
-
-            clonegainplot2D->enableAxis(0, false);
-            clonegainplot2D->enableAxis(1, false);
-            clonegainplot2D->enableAxis(2, false);
+            clonegainplot2D = new SlsQt2DPlot(NULL, true);
             clonegainplot2D->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY,
                                      -0.5, nPixelsY - 0.5, gainData);
-            clonegainplot2D->DisableZoom(true);
-
             connect(cloneplot2D, SIGNAL(PlotZoomedSignal(const QRectF &)),
                     clonegainplot2D, SLOT(SetZoom(const QRectF &)));
         }
@@ -1141,14 +1058,12 @@ void qDrawPlot::Update1dXYRange() {
 
     if (!isXYRange[qDefs::YMIN] && !isXYRange[qDefs::YMAX]) {
         plot1d->EnableYAutoScaling();
-        gainplot1d->EnableYAutoScaling();
     } else {
         double ymin = (isXYRange[qDefs::YMIN] ? xyRange[qDefs::YMIN]
                                               : plot1d->GetYMinimum());
         double ymax = (isXYRange[qDefs::YMAX] ? xyRange[qDefs::YMAX]
                                               : plot1d->GetYMaximum());
         plot1d->SetYMinMax(ymin, ymax);
-        gainplot1d->SetYMinMax(ymin, ymax);
     }
     plot1d->Update();
     gainplot1d->Update();

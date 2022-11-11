@@ -124,7 +124,7 @@ This document describes the differences between v7.0.0 and v6.x.x
     - chipsignals to trimquad should only monitor right fpga (not both as it will throw)
     - fixed error messages of readregister inconsistent values
     - setmodule and read frame was returning fail without setting error messages (leading to broken tcp connection due to no error message)  ) 
--
+- gui nios temperature added
 
 2. Resolved Issues
 ==================

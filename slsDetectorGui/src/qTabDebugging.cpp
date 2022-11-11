@@ -39,25 +39,32 @@ void qTabDebugging::Initialization() {
 void qTabDebugging::PopulateDetectors() {
     LOG(logDEBUG) << "Populating detectors";
 
-    comboDetector->clear();
-    auto res = det->getHostname();
-    for (auto &it : res) {
-        comboDetector->addItem(QString(it.c_str()));
+    try{
+        comboDetector->clear();
+        comboDetector->addItem("All");
+        auto res = det->getHostname();
+        if (det->size() > 1) {
+            for (auto &it : res) {
+                comboDetector->addItem(QString(it.c_str()));
+            }
+        }
+        comboDetector->setCurrentIndex(0);
     }
+    CATCH_DISPLAY("Could not populate readouts for debugging",
+                  "qTabDebugging::PopulateDetectors")
 }
 
 void qTabDebugging::GetFirmwareVersion() {
     LOG(logDEBUG) << "Firmware Version";
-/*std::string("0x") +
-                          std::to_string((unsigned long)det->getFirmwareVersion(
-                              {comboDetector->currentIndex()})[0]);*/
     try {
-        auto retval = det->getFirmwareVersion({comboDetector->currentIndex()})[0];
-        std::string s;
-        if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
-            s = ToString(retval);
-        } else {
-            s = ToStringHex(retval);
+        auto retval = det->getFirmwareVersion({comboDetector->currentIndex() - 1}).squash(-1);
+        std::string s = "inconsistent";
+        if (retval != -1) {
+            if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
+                s = ToString(retval);
+            } else {
+                s = ToStringHex(retval);
+            }
         }
         dispFirmwareVersion->setText(s.c_str());
     }
@@ -68,7 +75,7 @@ void qTabDebugging::GetFirmwareVersion() {
 void qTabDebugging::GetServerSoftwareVersion() {
     LOG(logDEBUG) << "Server Software Version";
     try {
-        std::string s =  det->getDetectorServerVersion({comboDetector->currentIndex()})[0];
+        std::string s =  det->getDetectorServerVersion({comboDetector->currentIndex() - 1}).squash("inconsistent");
         dispSoftwareVersion->setText(s.c_str());
     }
     CATCH_DISPLAY("Could not get on-board software version.",
@@ -78,7 +85,7 @@ void qTabDebugging::GetServerSoftwareVersion() {
 void qTabDebugging::GetReceiverVersion() {
     LOG(logDEBUG) << "Server Receiver Version";
     try {
-        std::string s =  det->getReceiverVersion({comboDetector->currentIndex()})[0];
+        std::string s =  det->getReceiverVersion({comboDetector->currentIndex() - 1}).squash("inconsistent");
         dispReceiverVersion->setText(s.c_str());
     }
     CATCH_DISPLAY("Could not receiver version.",
@@ -90,7 +97,7 @@ void qTabDebugging::GetDetectorStatus() {
 
     try {
         std::string s = ToString(
-            det->getDetectorStatus({comboDetector->currentIndex()})[0]);
+            det->getDetectorStatus({comboDetector->currentIndex() - 1}).squash(defs::runStatus::ERROR));
         lblStatus->setText(QString(s.c_str()).toUpper());
     }
     CATCH_DISPLAY("Could not get detector status.",
@@ -123,7 +130,7 @@ void qTabDebugging::TestDetector() {
     // detector firmware
     if (chkDetectorFirmware->isChecked()) {
         try {
-            det->executeFirmwareTest({comboDetector->currentIndex()});
+            det->executeFirmwareTest({comboDetector->currentIndex() - 1});
             LOG(logINFO) << "Detector Firmware Test: Pass";
             lblFwTestOk->show();
         } catch (std::exception& e) {
@@ -135,7 +142,7 @@ void qTabDebugging::TestDetector() {
     // detector CPU-FPGA bus
     if (chkDetectorBus->isChecked()) {
         try {
-            det->executeBusTest({comboDetector->currentIndex()});
+            det->executeBusTest({comboDetector->currentIndex() - 1});
             LOG(logINFO) << "Detector Bus Test: Pass";
             lblBusTestOk->show();
         } catch (std::exception& e) {

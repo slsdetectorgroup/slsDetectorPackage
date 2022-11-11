@@ -707,6 +707,10 @@ int readADCFromFile(char *fname, int *value) {
     // open file
     FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
+#ifdef VIRTUAL
+        LOG(logWARNING, ("Could not open file for reading [%s]\n", fname));
+        return OK;
+#endif
         LOG(logERROR, ("Could not open file for reading [%s]\n", fname));
         return FAIL;
     }

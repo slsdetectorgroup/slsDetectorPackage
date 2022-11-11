@@ -29,7 +29,8 @@ void qTabDebugging::SetupWidgetWindow() {
 void qTabDebugging::Initialization() {
     connect(comboDetector, SIGNAL(currentIndexChanged(int)), this,
             SLOT(GetInfo()));
-    connect(chkDetectorFirmware, SIGNAL(toggled(bool)), this, SLOT(EnableTest()));
+    connect(chkDetectorFirmware, SIGNAL(toggled(bool)), this,
+            SLOT(EnableTest()));
     connect(chkDetectorBus, SIGNAL(toggled(bool)), this, SLOT(EnableTest()));
     if (groupTest->isEnabled()) {
         connect(btnTest, SIGNAL(clicked()), this, SLOT(TestDetector()));
@@ -39,7 +40,7 @@ void qTabDebugging::Initialization() {
 void qTabDebugging::PopulateDetectors() {
     LOG(logDEBUG) << "Populating detectors";
 
-    try{
+    try {
         comboDetector->clear();
         comboDetector->addItem("All");
         auto res = det->getHostname();
@@ -57,7 +58,9 @@ void qTabDebugging::PopulateDetectors() {
 void qTabDebugging::GetFirmwareVersion() {
     LOG(logDEBUG) << "Firmware Version";
     try {
-        auto retval = det->getFirmwareVersion({comboDetector->currentIndex() - 1}).squash(-1);
+        auto retval =
+            det->getFirmwareVersion({comboDetector->currentIndex() - 1})
+                .squash(-1);
         std::string s = "inconsistent";
         if (retval != -1) {
             if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
@@ -75,7 +78,9 @@ void qTabDebugging::GetFirmwareVersion() {
 void qTabDebugging::GetServerSoftwareVersion() {
     LOG(logDEBUG) << "Server Software Version";
     try {
-        std::string s =  det->getDetectorServerVersion({comboDetector->currentIndex() - 1}).squash("inconsistent");
+        std::string s =
+            det->getDetectorServerVersion({comboDetector->currentIndex() - 1})
+                .squash("inconsistent");
         dispSoftwareVersion->setText(s.c_str());
     }
     CATCH_DISPLAY("Could not get on-board software version.",
@@ -85,7 +90,9 @@ void qTabDebugging::GetServerSoftwareVersion() {
 void qTabDebugging::GetReceiverVersion() {
     LOG(logDEBUG) << "Server Receiver Version";
     try {
-        std::string s =  det->getReceiverVersion({comboDetector->currentIndex() - 1}).squash("inconsistent");
+        std::string s =
+            det->getReceiverVersion({comboDetector->currentIndex() - 1})
+                .squash("inconsistent");
         dispReceiverVersion->setText(s.c_str());
     }
     CATCH_DISPLAY("Could not receiver version.",
@@ -96,8 +103,9 @@ void qTabDebugging::GetDetectorStatus() {
     LOG(logDEBUG) << "Getting Status";
 
     try {
-        std::string s = ToString(
-            det->getDetectorStatus({comboDetector->currentIndex() - 1}).squash(defs::runStatus::ERROR));
+        std::string s =
+            ToString(det->getDetectorStatus({comboDetector->currentIndex() - 1})
+                         .squash(defs::runStatus::ERROR));
         lblStatus->setText(QString(s.c_str()).toUpper());
     }
     CATCH_DISPLAY("Could not get detector status.",
@@ -113,13 +121,13 @@ void qTabDebugging::GetInfo() {
 }
 
 void qTabDebugging::EnableTest() {
-    btnTest->setEnabled(chkDetectorFirmware->isChecked() || chkDetectorBus->isChecked());
+    btnTest->setEnabled(chkDetectorFirmware->isChecked() ||
+                        chkDetectorBus->isChecked());
     lblBusTestOk->hide();
     lblBusTestFail->hide();
     lblFwTestOk->hide();
     lblFwTestFail->hide();
 }
-
 
 void qTabDebugging::TestDetector() {
     LOG(logINFO) << "Testing Readout";
@@ -133,8 +141,9 @@ void qTabDebugging::TestDetector() {
             det->executeFirmwareTest({comboDetector->currentIndex() - 1});
             LOG(logINFO) << "Detector Firmware Test: Pass";
             lblFwTestOk->show();
-        } catch (std::exception& e) {
-            LOG(logWARNING) << "Detector Firmware Test: Fail (" << e.what() << ")";
+        } catch (std::exception &e) {
+            LOG(logWARNING)
+                << "Detector Firmware Test: Fail (" << e.what() << ")";
             lblFwTestFail->show();
         }
     }
@@ -145,15 +154,13 @@ void qTabDebugging::TestDetector() {
             det->executeBusTest({comboDetector->currentIndex() - 1});
             LOG(logINFO) << "Detector Bus Test: Pass";
             lblBusTestOk->show();
-        } catch (std::exception& e) {
+        } catch (std::exception &e) {
             LOG(logWARNING) << "Detector Bus Test: Fail (" << e.what() << ")";
             lblBusTestFail->show();
         }
     }
 }
 
-void qTabDebugging::Refresh() {
-    GetInfo();
-}
+void qTabDebugging::Refresh() { GetInfo(); }
 
 } // namespace sls

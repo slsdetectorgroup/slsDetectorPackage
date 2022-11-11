@@ -171,7 +171,6 @@ class SlsQt1DPlot : public QwtPlot {
 
     QwtPlotShapeItem *roiBox{nullptr};
 
-
   signals:
     void PlotZoomedSignal(const QRectF &);
 

@@ -3,10 +3,9 @@
 
 /* TODO! short description */
 #include "SlsQt1DPlot.h"
-#include "sls/logger.h"
-#include "qVersionResolve.h"
 #include "qDefs.h"
-
+#include "qVersionResolve.h"
+#include "sls/logger.h"
 
 #include <iostream>
 #include <qwt_legend.h>
@@ -337,7 +336,8 @@ void SlsQtH1DList::Remove(SlsQtH1D *hist) {
 }
 
 // 1d plot stuff
-SlsQt1DPlot::SlsQt1DPlot(QWidget *parent, bool gain) : QwtPlot(parent), gainPlot(gain) {
+SlsQt1DPlot::SlsQt1DPlot(QWidget *parent, bool gain)
+    : QwtPlot(parent), gainPlot(gain) {
     //  n_histograms_attached=0;
     hline = vline = nullptr;
     hist_list = new SlsQtH1DList();

@@ -44,7 +44,7 @@ class qDefs : public QWidget {
     static QFont GetDefaultFont() {
         return QFont("Cantarell", 10, QFont::Normal);
     }
-    
+
     static const int DATA_GAIN_PLOT_RATIO = 5;
     static const int MIN_HEIGHT_GAIN_PLOT_1D = 75;
     static const int GUI_ZMQ_RCV_HWM = 2;
@@ -334,6 +334,5 @@ class qDefs : public QWidget {
                        source);
     }
 };
-
 
 } // namespace sls

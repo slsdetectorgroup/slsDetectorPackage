@@ -29,6 +29,6 @@ class qTabDebugging : public QWidget, private Ui::TabDebuggingObject {
     void GetDetectorStatus();
 
     Detector *det;
-  };
+};
 
 } // namespace sls

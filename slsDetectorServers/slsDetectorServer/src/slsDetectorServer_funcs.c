@@ -1713,7 +1713,7 @@ int set_module(int file_des) {
         if (ts <= (int)sizeof(sls_detector_module)) {
             ret = FAIL;
             strcpy(mess, "Cannot set module. Received incorrect number of "
-                          "dacs or channels\n");
+                         "dacs or channels\n");
             LOG(logERROR, (mess));
         }
     }
@@ -1804,7 +1804,7 @@ int set_settings(int file_des) {
 #ifdef EIGERD
             ret = FAIL;
             strcpy(mess, "Cannot set settings via SET_SETTINGS, use "
-                          "SET_MODULE\n");
+                         "SET_MODULE\n");
             LOG(logERROR, (mess));
 #else
             validate_settings(isett);

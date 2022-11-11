@@ -279,7 +279,7 @@ void qTabDeveloper::Initialization() {
 void qTabDeveloper::PopulateDetectors() {
     LOG(logDEBUG) << "Populating detectors";
 
-    try{
+    try {
         comboDetector->clear();
         comboDetector->addItem("All");
         auto res = det->getHostname();
@@ -289,7 +289,8 @@ void qTabDeveloper::PopulateDetectors() {
             }
         }
         comboDetector->setCurrentIndex(0);
-    } CATCH_DISPLAY("Could not populate readouts for dacs/adcs",
+    }
+    CATCH_DISPLAY("Could not populate readouts for dacs/adcs",
                   "qTabDeveloper::PopulateDetectors")
 }
 

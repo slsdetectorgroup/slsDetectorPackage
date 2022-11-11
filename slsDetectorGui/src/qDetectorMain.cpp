@@ -163,9 +163,8 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->setTabEnabled(DEVELOPER, isDeveloper);
     actionLoadTrimbits->setVisible(false);
     actionSaveTrimbits->setVisible(false);
-    LOG(logINFO)
-        << "Debug Mode: 0, Expert Mode: 0, Developer Mode: "
-        << isDeveloper;
+    LOG(logINFO) << "Debug Mode: 0, Expert Mode: 0, Developer Mode: "
+                 << isDeveloper;
 
     Initialization();
 }
@@ -306,8 +305,7 @@ void qDetectorMain::EnableModes(QAction *action) {
         actionSaveTrimbits->setVisible(visible);
         tabSettings->SetExportMode(enable);
         LOG(logINFO) << "Expert Mode: " << qDefs::stringEnable(enable);
-    }
-    else {
+    } else {
         LOG(logERROR) << "Unknown action";
     }
 }
@@ -490,7 +488,7 @@ void qDetectorMain::Refresh(int index) {
 void qDetectorMain::ResizeMainWindow(bool b) {
     LOG(logDEBUG1) << "Resizing Main Window: height:" << height();
     if (b) {
-        setMaximumHeight(centralwidget->height()+menu->height());
+        setMaximumHeight(centralwidget->height() + menu->height());
         LOG(logINFO) << "Plot undocked from main window";
     } else {
         setMaximumHeight(QWIDGETSIZE_MAX);

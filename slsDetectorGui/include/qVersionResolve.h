@@ -7,6 +7,7 @@
 
 namespace sls {
 
-int qResolve_GetQFontWidth(const QFontMetrics fm, const QString& text, int len = -1);
+int qResolve_GetQFontWidth(const QFontMetrics fm, const QString &text,
+                           int len = -1);
 
 } // namespace sls

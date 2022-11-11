@@ -19,7 +19,7 @@ class SlsQt2DPlot : public QwtPlot {
     Q_OBJECT
 
   public:
-    SlsQt2DPlot(QWidget * = NULL, bool gain=false);
+    SlsQt2DPlot(QWidget * = NULL, bool gain = false);
     ~SlsQt2DPlot();
     void SetTitle(QString title);
     void SetXTitle(QString title);

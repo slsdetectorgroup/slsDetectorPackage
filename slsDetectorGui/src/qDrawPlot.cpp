@@ -154,7 +154,7 @@ void qDrawPlot::SetupPlots() {
     gainhist1d->setSymbolMarkers(isMarkers);
     gainhist1d->setItemAttribute(QwtPlotItem::Legend, false);
     // setup 1d gain plot
-    gainplot1d = new SlsQt1DPlot( boxPlot, true);
+    gainplot1d = new SlsQt1DPlot(boxPlot, true);
     gainhist1d->Attach(gainplot1d);
     gainplot1d->hide();
     connect(plot1d, SIGNAL(PlotZoomedSignal(const QRectF &)), this,

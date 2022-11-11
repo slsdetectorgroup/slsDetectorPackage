@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: LGPL-3.0-or-other
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "SlsQt2DPlot.h"
-#include "sls/logger.h"
-#include "qVersionResolve.h"
 #include "qDefs.h"
+#include "qVersionResolve.h"
+#include "sls/logger.h"
 
 #include <qlist.h>
 #include <qtoolbutton.h>
@@ -21,7 +21,8 @@
 
 namespace sls {
 
-SlsQt2DPlot::SlsQt2DPlot(QWidget *parent, bool gain) : QwtPlot(parent), gainPlot(gain) {
+SlsQt2DPlot::SlsQt2DPlot(QWidget *parent, bool gain)
+    : QwtPlot(parent), gainPlot(gain) {
     isLog = 0;
     axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Floating);
     axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Floating);
@@ -284,7 +285,8 @@ void SlsQt2DPlot::Update() {
     if (!zoomer->zoomRectIndex())
         UnZoom();
     if (!gainPlot) {
-        setAxisScale(QwtPlot::yRight, zInterval.minValue(), zInterval.maxValue());
+        setAxisScale(QwtPlot::yRight, zInterval.minValue(),
+                     zInterval.maxValue());
     }
     plotLayout()->setAlignCanvasToScales(true);
     replot();

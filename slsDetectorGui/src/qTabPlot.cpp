@@ -198,15 +198,16 @@ void qTabPlot::Initialization() {
 void qTabPlot::Select1DPlot(bool enable) {
     LOG(logDEBUG) << "Selecting " << (enable ? "1" : "2") << "D Plot";
     is1d = enable;
-    box1D->setEnabled(enable);
-    box2D->setEnabled(!enable);
-    chkZAxis->setEnabled(!enable);
-    dispZAxis->setEnabled(!enable);
-    chkZMin->setEnabled(!enable);
-    chkZMax->setEnabled(!enable);
-    dispZMin->setEnabled(!enable);
-    dispZMax->setEnabled(!enable);
-    plot->Select1dPlot(enable);
+    stackedPlotOptions->setCurrentIndex(is1d ? 0 : 1);
+    box1D->setEnabled(is1d);
+    box2D->setEnabled(!is1d);
+    chkZAxis->setEnabled(!is1d);
+    dispZAxis->setEnabled(!is1d);
+    chkZMin->setEnabled(!is1d);
+    chkZMax->setEnabled(!is1d);
+    dispZMin->setEnabled(!is1d);
+    dispZMax->setEnabled(!is1d);
+    plot->Select1dPlot(is1d);
     SetTitles();
     SetXYRange();
     if (!is1d) {

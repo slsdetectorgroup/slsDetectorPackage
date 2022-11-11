@@ -254,41 +254,6 @@ int emptyTempFolder(char *mess) {
 #endif
 }
 
-int allowUpdate(char *mess, char *functionType) {
-    LOG(logINFO, ("\tVerifying %s allowed...\n", functionType));
-
-#ifdef VIRTUAL
-    return OK;
-#endif
-    char retvals[MAX_STR_LENGTH] = {0};
-    if (executeCommand(CMD_GET_AMD_FLASH, retvals, logDEBUG1) == FAIL) {
-        // no amd found
-        if (strstr(retvals, "No result") != NULL) {
-            LOG(logINFO, ("\tNot Amd Flash\n"));
-            return OK;
-        }
-        // could not figure out if amd
-        snprintf(
-            mess, MAX_STR_LENGTH,
-            "Could not update %s. (Could not figure out if Amd flash: %s)\n",
-            functionType, retvals);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    // amd, only current kernel works with amd flash
-    if (validateKernelVersion(KERNEL_DATE_VRSN_3GPIO) == FAIL) {
-        getKernelVersion(retvals);
-        snprintf(mess, MAX_STR_LENGTH,
-                 "Could not update %s. Kernel version %s is too old to "
-                 "update the Amd flash/ root directory. Most likely, blackfin needs rescue or replacement. Please contact us.\n",
-                 functionType, retvals);
-        LOG(logERROR, (mess));
-        return FAIL;
-    }
-    LOG(logINFO, ("\tAmd flash with compatible kernel version\n"));
-    return OK;
-}
-
 int preparetoCopyProgram(char *mess, char *functionType, FILE **fd,
                          uint64_t fsize) {
 

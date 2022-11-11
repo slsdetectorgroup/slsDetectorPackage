@@ -16,7 +16,6 @@ int FPGATouchFlash(char *mess, int programming);
 int resetFPGA(char *mess);
 
 int emptyTempFolder(char *mess);
-int allowUpdate(char *mess, char *functionType);
 /**
  * deletes old file
  * verify memory available to copy

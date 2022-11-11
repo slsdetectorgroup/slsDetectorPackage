@@ -767,6 +767,10 @@ int set_firmware_test(int file_des) {
     functionNotImplemented();
 #else
     ret = testFpga();
+    if (ret == FAIL) {
+        strcpy(mess, "FPGA test failed\n");
+        LOG(logERROR, (mess));
+    }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -781,6 +785,10 @@ int set_bus_test(int file_des) {
     functionNotImplemented();
 #else
     ret = testBus();
+    if (ret == FAIL) {
+        strcpy(mess, "Bus test failed\n");
+        LOG(logERROR, (mess));
+    }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
@@ -1614,7 +1622,7 @@ int get_module(int file_des) {
         myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
         if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
             ret = FAIL;
-            sprintf(mess, "Could not allocate chans\n");
+            strcpy(mess, "Could not allocate chans\n");
             LOG(logERROR, (mess));
         } else
             module.chanregs = myChan;
@@ -1640,6 +1648,8 @@ int get_module(int file_des) {
     if (ret != FAIL) {
         if (sendModule(file_des, &module) < 0) {
             ret = FAIL;
+            strcpy(mess, "Could not send module data\n");
+            LOG(logERROR, (mess));
         }
     }
     if (myChan != NULL)
@@ -1669,7 +1679,7 @@ int set_module(int file_des) {
     // error
     if (getNumberOfDACs() > 0 && myDac == NULL) {
         ret = FAIL;
-        sprintf(mess, "Could not allocate dacs\n");
+        strcpy(mess, "Could not allocate dacs\n");
         LOG(logERROR, (mess));
     } else
         module.dacs = myDac;
@@ -1679,7 +1689,7 @@ int set_module(int file_des) {
         myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
         if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
             ret = FAIL;
-            sprintf(mess, "Could not allocate chans\n");
+            strcpy(mess, "Could not allocate chans\n");
             LOG(logERROR, (mess));
         } else
             module.chanregs = myChan;
@@ -1702,7 +1712,7 @@ int set_module(int file_des) {
         // should at least have a dac
         if (ts <= (int)sizeof(sls_detector_module)) {
             ret = FAIL;
-            sprintf(mess, "Cannot set module. Received incorrect number of "
+            strcpy(mess, "Cannot set module. Received incorrect number of "
                           "dacs or channels\n");
             LOG(logERROR, (mess));
         }
@@ -1793,7 +1803,7 @@ int set_settings(int file_des) {
         if ((int)isett != GET_FLAG) {
 #ifdef EIGERD
             ret = FAIL;
-            sprintf(mess, "Cannot set settings via SET_SETTINGS, use "
+            strcpy(mess, "Cannot set settings via SET_SETTINGS, use "
                           "SET_MODULE\n");
             LOG(logERROR, (mess));
 #else
@@ -3112,6 +3122,10 @@ int validateAndSetAllTrimbits(int arg) {
             LOG(logERROR, (mess));
         } else {
             ret = setAllTrimbits(arg);
+            if (ret == FAIL) {
+                strcpy(mess, "Could not set all trimbits\n");
+                LOG(logERROR, (mess));
+            }
 #ifdef EIGERD
             // changes settings to undefined
             if (getSettings() != UNDEFINED) {
@@ -7844,7 +7858,6 @@ int set_filter_resistor(int file_des) {
         else {
             ret = setFilterResistor(arg);
             if (ret == FAIL) {
-                ret = FAIL;
                 strcpy(mess, "Could not set filter resistor.\n");
                 LOG(logERROR, (mess));
             }
@@ -9402,7 +9415,6 @@ int get_kernel_version(int file_des) {
     if (ret == FAIL) {
         if (snprintf(mess, MAX_STR_LENGTH, "Could not get kernel version. %s\n",
                      retvals) >= MAX_STR_LENGTH) {
-            ret = FAIL;
             strcpy(mess,
                    "Could not get kernel version. Reason too long to copy\n");
         }

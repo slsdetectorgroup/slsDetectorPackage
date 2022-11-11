@@ -16,6 +16,7 @@ class qTabDebugging : public QWidget, private Ui::TabDebuggingObject {
 
   private slots:
     void GetInfo();
+    void EnableTest();
     void TestDetector();
 
   private:

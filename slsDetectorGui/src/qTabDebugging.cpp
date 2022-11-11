@@ -17,9 +17,9 @@ qTabDebugging::~qTabDebugging() {}
 
 void qTabDebugging::SetupWidgetWindow() {
     if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
-        chkDetectorFirmware->setEnabled(false);
-        chkDetectorBus->setEnabled(false);
-        btnTest->setEnabled(false);
+        groupTest->setEnabled(false);
+    } else {
+        EnableTest();
     }
     PopulateDetectors();
     Initialization();
@@ -29,7 +29,9 @@ void qTabDebugging::SetupWidgetWindow() {
 void qTabDebugging::Initialization() {
     connect(comboDetector, SIGNAL(currentIndexChanged(int)), this,
             SLOT(GetInfo()));
-    if (btnTest->isEnabled()) {
+    connect(chkDetectorFirmware, SIGNAL(toggled(bool)), this, SLOT(EnableTest()));
+    connect(chkDetectorBus, SIGNAL(toggled(bool)), this, SLOT(EnableTest()));
+    if (groupTest->isEnabled()) {
         connect(btnTest, SIGNAL(clicked()), this, SLOT(TestDetector()));
     }
 }
@@ -77,7 +79,7 @@ void qTabDebugging::GetReceiverVersion() {
     LOG(logDEBUG) << "Server Receiver Version";
     try {
         std::string s =  det->getReceiverVersion({comboDetector->currentIndex()})[0];
-        dispSoftwareVersion->setText(s.c_str());
+        dispReceiverVersion->setText(s.c_str());
     }
     CATCH_DISPLAY("Could not receiver version.",
                   "qTabDebugging::GetReceiverVersion")
@@ -103,49 +105,44 @@ void qTabDebugging::GetInfo() {
     GetDetectorStatus();
 }
 
+void qTabDebugging::EnableTest() {
+    btnTest->setEnabled(chkDetectorFirmware->isChecked() || chkDetectorBus->isChecked());
+    lblBusTestOk->hide();
+    lblBusTestFail->hide();
+    lblFwTestOk->hide();
+    lblFwTestFail->hide();
+}
+
 
 void qTabDebugging::TestDetector() {
     LOG(logINFO) << "Testing Readout";
 
-    try {
-        QString moduleName = "Module";
-        if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
-            moduleName = "Half Module";
+    // hide results if clicking button again
+    EnableTest();
+
+    // detector firmware
+    if (chkDetectorFirmware->isChecked()) {
+        try {
+            det->executeFirmwareTest({comboDetector->currentIndex()});
+            LOG(logINFO) << "Detector Firmware Test: Pass";
+            lblFwTestOk->show();
+        } catch (std::exception& e) {
+            LOG(logWARNING) << "Detector Firmware Test: Fail (" << e.what() << ")";
+            lblFwTestFail->show();
         }
-
-        // construct message
-        QString message = QString("<nobr>Test Results for %1:</nobr><br><br>")
-                              .arg(comboDetector->currentText());
-
-        // detector firmware
-        if (chkDetectorFirmware->isChecked()) {
-            try {
-                det->executeFirmwareTest({comboDetector->currentIndex()});
-                message.append(QString("<nobr>%1 Firmware: PASS</nobr><br>")
-                                   .arg(moduleName));
-                LOG(logINFO) << "Detector Firmware Test: Pass";
-            }
-            CATCH_DISPLAY("Firmware test failed.",
-                          "qTabDebugging::TestDetector")
-        }
-
-        // detector CPU-FPGA bus
-        if (chkDetectorBus->isChecked()) {
-            try {
-                det->executeBusTest({comboDetector->currentIndex()});
-                message.append(
-                    QString("<nobr>%1 Bus: PASS</nobr><br>").arg(moduleName));
-                LOG(logINFO) << "Detector Bus Test: Pass";
-            }
-            CATCH_DISPLAY("Bus test failed.", "qTabDebugging::TestDetector")
-        }
-
-        // display message
-        qDefs::Message(qDefs::INFORMATION, message.toLatin1().constData(),
-                       "qTabDebugging::TestDetector");
     }
-    CATCH_DISPLAY("Could not execute digital test.",
-                  "qTabDebugging::TestDetector")
+
+    // detector CPU-FPGA bus
+    if (chkDetectorBus->isChecked()) {
+        try {
+            det->executeBusTest({comboDetector->currentIndex()});
+            LOG(logINFO) << "Detector Bus Test: Pass";
+            lblBusTestOk->show();
+        } catch (std::exception& e) {
+            LOG(logWARNING) << "Detector Bus Test: Fail (" << e.what() << ")";
+            lblBusTestFail->show();
+        }
+    }
 }
 
 void qTabDebugging::Refresh() {

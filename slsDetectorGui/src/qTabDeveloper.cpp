@@ -200,6 +200,9 @@ void qTabDeveloper::SetupWidgetWindow() {
             dacWidgets.push_back(
                 new qDacWidget(this, det, true,
                                "vthreshold: ", getSLSIndex(detType, tempid++)));
+            adcWidgets.push_back(new qDacWidget(
+                this, det, false,
+                "Temperature FPGA: ", getSLSIndex(detType, tempid++)));
             break;
 
         case slsDetectorDefs::GOTTHARD2:
@@ -242,6 +245,9 @@ void qTabDeveloper::SetupWidgetWindow() {
             dacWidgets.push_back(
                 new qDacWidget(this, det, true,
                                "vcom_adc2: ", getSLSIndex(detType, tempid++)));
+            adcWidgets.push_back(new qDacWidget(
+                this, det, false,
+                "Temperature FPGA: ", getSLSIndex(detType, tempid++)));
             break;
         default:
             break;
@@ -465,6 +471,8 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
             return slsDetectorDefs::VDCSH;
         case 16:
             return slsDetectorDefs::VTHRESHOLD;
+        case 17:
+            return slsDetectorDefs::TEMPERATURE_FPGA;
         default:
             throw RuntimeError(std::string("Unknown dac/adc index") +
                                std::to_string(index));
@@ -501,6 +509,8 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
             return slsDetectorDefs::VB_OPA_FD;
         case 13:
             return slsDetectorDefs::VCOM_ADC2;
+        case 14:
+            return slsDetectorDefs::TEMPERATURE_FPGA;
         default:
             throw RuntimeError(std::string("Unknown dac/adc index") +
                                std::to_string(index));

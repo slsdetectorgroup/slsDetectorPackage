@@ -1,6 +1,6 @@
 .. _Detector Server Upgrade:
-Detector Server Upgrade
-=======================
+Upgrade
+========
 
 
 **Location:** slsDetectorPackage/serverBin/ folder for every release.
@@ -14,7 +14,7 @@ Detector Server Upgrade
     Eiger requires a manual reboot. Or killall the servers and restart the new linked one. If you are in the process of updating firmware, then don't reboot yet.
 
 
-From 6.1.1 and above (no tftp required)
+6.1.1+ (no tftp required)
 ---------------------------------------
 
 #. Program from console
@@ -60,7 +60,7 @@ Troubleshooting with tftp
 #. text file busy: You are trying to copy the same server.
 
 
-Older than 5.0.0
------------------
+< 5.0.0
+--------
 
 Please contact us.

@@ -55,6 +55,9 @@ set(SPHINX_SOURCE_FILES
   src/troubleshooting.rst
   src/receivers.rst
   src/slsreceiver.rst
+  src/udpheader.rst
+  src/udpconfig.rst
+  src/udpdetspec.rst
 )
 
 foreach(filename ${SPHINX_SOURCE_FILES})

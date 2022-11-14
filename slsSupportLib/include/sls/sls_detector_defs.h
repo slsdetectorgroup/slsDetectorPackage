@@ -45,8 +45,8 @@
 
 #define MAX_UDP_DESTINATION 32
 
-#define SLS_DETECTOR_HEADER_VERSION      0x2
-#define SLS_DETECTOR_JSON_HEADER_VERSION 0x4
+#define SLS_DETECTOR_HEADER_VERSION      0x3
+#define SLS_DETECTOR_JSON_HEADER_VERSION 0x5
 
 // ctb/ moench 1g udp (read from fifo)
 #define UDP_PACKET_DATA_BYTES (1344)
@@ -113,19 +113,20 @@ class slsDetectorDefs {
 
     /**
         @short  structure for a Detector Packet or Image Header
+        Details at https://slsdetectorgroup.github.io/devdoc/udpheader.html
         @li frameNumber is the frame number
         @li expLength is the subframe number (32 bit eiger) or real time
        exposure time in 100ns (others)
         @li packetNumber is the packet number
-        @li bunchId is the bunch id from beamline
+        @li detSpec1 is detector specific field 1
         @li timestamp is the time stamp with 10 MHz clock
         @li modId is the unique module id (unique even for left, right, top,
        bottom)
         @li row is the row index in the complete detector system
         @li column is the column index in the complete detector system
-        @li reserved is reserved
-        @li debug is for debugging purposes
-        @li roundRNumber is the round robin set number
+        @li detSpec2 is detector specific field 2
+        @li detSpec3 is detector specific field 3
+        @li detSpec4 is detector specific field 4
         @li detType is the detector type see :: detectorType
         @li version is the version number of this structure format
     */
@@ -134,14 +135,14 @@ class slsDetectorDefs {
         uint64_t frameNumber;
         uint32_t expLength;
         uint32_t packetNumber;
-        uint64_t bunchId;
+        uint64_t detSpec1;
         uint64_t timestamp;
         uint16_t modId;
         uint16_t row;
         uint16_t column;
-        uint16_t reserved;
-        uint32_t debug;
-        uint16_t roundRNumber;
+        uint16_t detSpec2;
+        uint32_t detSpec3;
+        uint16_t detSpec4;
         uint8_t detType;
         uint8_t version;
     } sls_detector_header;

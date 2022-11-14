@@ -60,14 +60,14 @@ struct zmqHeader {
     uint64_t frameNumber{0};
     uint32_t expLength{0};
     uint32_t packetNumber{0};
-    uint64_t bunchId{0};
+    uint64_t detSpec1{0};
     uint64_t timestamp{0};
     uint16_t modId{0};
     uint16_t row{0};
     uint16_t column{0};
-    uint16_t reserved{0};
-    uint32_t debug{0};
-    uint16_t roundRNumber{0};
+    uint16_t detSpec2{0};
+    uint32_t detSpec3{0};
+    uint16_t detSpec4{0};
     uint8_t detType{0};
     uint8_t version{0};
     /** if rows of image should be flipped */

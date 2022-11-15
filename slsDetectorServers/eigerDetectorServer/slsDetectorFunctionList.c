@@ -2275,6 +2275,7 @@ int startStateMachine() {
             sharedMemory_unlockAcqFlag();
             return FAIL;
         }
+	usleep(5 * 1000);
         LOG(logINFOGREEN, ("Acquisition started\n"));
     }
     sharedMemory_unlockLocalLink();

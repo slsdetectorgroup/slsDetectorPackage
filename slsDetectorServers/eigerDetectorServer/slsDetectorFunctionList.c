@@ -2255,7 +2255,6 @@ int startStateMachine() {
     Feb_Control_PrepareForAcquisition();
 
 
-    LOG(logINFO, ("Acquisition started bit toggled\n"));
     int ret = OK, prev_flag;
     // get the DAQ toggle bit
     prev_flag = Feb_Control_AcquisitionStartedBit();
@@ -2275,7 +2274,7 @@ int startStateMachine() {
             sharedMemory_unlockAcqFlag();
             return FAIL;
         }
-	usleep(5 * 1000);
+	usleep(100 * 1000);
         LOG(logINFOGREEN, ("Acquisition started\n"));
     }
     sharedMemory_unlockLocalLink();

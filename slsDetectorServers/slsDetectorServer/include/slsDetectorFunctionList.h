@@ -600,9 +600,6 @@ int setTransmissionDelayRight(int value);
 #endif
 
 // aquisition
-#ifdef EIGERD
-int prepareAcquisition();
-#endif
 int startStateMachine();
 #ifdef VIRTUAL
 void *start_timer(void *arg);

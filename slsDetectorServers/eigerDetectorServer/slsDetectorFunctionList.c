@@ -2217,42 +2217,44 @@ int setTransmissionDelayRight(int value) {
 
 /* aquisition */
 
-int prepareAcquisition() {
-#ifndef VIRTUAL
-    sharedMemory_lockLocalLink();
-    LOG(logINFO, ("Going to prepare for acquisition with counter_bit:%d\n",
-                  Feb_Control_Get_Counter_Bit()));
-    Feb_Control_PrepareForAcquisition();
-    sharedMemory_unlockLocalLink();
-#endif
-    return OK;
-}
-
 int startStateMachine() {
+    sharedMemory_lockAcqFlag();
+
 #ifdef VIRTUAL
     // create udp socket
     if (createUDPSocket(0) != OK) {
+        sharedMemory_unlockAcqFlag();
         return FAIL;
     }
     if (createUDPSocket(1) != OK) {
+        sharedMemory_unlockAcqFlag();
         return FAIL;
     }
     LOG(logINFOBLUE, ("Starting State Machine\n"));
     if (sharedMemory_getStop() != 0) {
         LOG(logERROR, ("Cant start acquisition. "
                        "Stop server has not updated stop status to 0\n"));
+        sharedMemory_unlockAcqFlag();
         return FAIL;
     }
     sharedMemory_setStatus(RUNNING);
     if (pthread_create(&virtual_tid, NULL, &start_timer, NULL)) {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         sharedMemory_setStatus(IDLE);
+        sharedMemory_unlockAcqFlag();
         return FAIL;
     }
     LOG(logINFO, ("Virtual Acquisition started\n"));
+    sharedMemory_unlockAcqFlag();
     return OK;
 #else
     sharedMemory_lockLocalLink();
+
+    LOG(logINFO, ("Going to prepare for acquisition with counter_bit:%d\n",
+                  Feb_Control_Get_Counter_Bit()));
+    Feb_Control_PrepareForAcquisition();
+
+
     LOG(logINFO, ("Acquisition started bit toggled\n"));
     int ret = OK, prev_flag;
     // get the DAQ toggle bit
@@ -2270,12 +2272,13 @@ int startStateMachine() {
             LOG(logERROR,
                 ("Acquisition did not LOG(logERROR ouble reading register\n"));
             sharedMemory_unlockLocalLink();
+            sharedMemory_unlockAcqFlag();
             return FAIL;
         }
         LOG(logINFOGREEN, ("Acquisition started\n"));
     }
     sharedMemory_unlockLocalLink();
-
+    sharedMemory_unlockAcqFlag();
     return ret;
 #endif
 }
@@ -2508,6 +2511,10 @@ void *start_timer(void *arg) {
 #endif
 
 int stopStateMachine() {
+    
+    // acq lock for seamless stop
+    sharedMemory_lockAcqFlag();
+
     LOG(logINFORED, ("Stopping state machine\n"));
     // if scan active, stop scan
     if (sharedMemory_getScanStatus() == RUNNING) {
@@ -2520,6 +2527,7 @@ int stopStateMachine() {
         usleep(500);
     sharedMemory_setStop(0);
     LOG(logINFO, ("Stopped State Machine\n"));
+    sharedMemory_unlockAcqFlag();
     return OK;
 #else
     sharedMemory_lockLocalLink();
@@ -2527,6 +2535,7 @@ int stopStateMachine() {
     if (!Feb_Control_StopAcquisition()) {
         LOG(logERROR, ("failed to stop acquisition\n"));
         sharedMemory_unlockLocalLink();
+        sharedMemory_unlockAcqFlag();
         return FAIL;
     }
     sharedMemory_unlockLocalLink();
@@ -2537,6 +2546,7 @@ int stopStateMachine() {
         // wait for beb to send out all packets
         if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 1) == FAIL) {
             LOG(logERROR, ("failed to stop beb acquisition\n"));
+            sharedMemory_unlockAcqFlag();
             return FAIL;
         }
         if (isTransmitting) {
@@ -2547,11 +2557,11 @@ int stopStateMachine() {
 
     // reset feb and beb
     sharedMemory_lockLocalLink();
-    // uncommenting this out as it randomly does not set the processing bit to high
-    //Feb_Control_Reset();
+    Feb_Control_Reset();
     sharedMemory_unlockLocalLink();
     if (!Beb_StopAcquisition()) {
         LOG(logERROR, ("failed to stop acquisition\n"));
+        sharedMemory_unlockAcqFlag();
         return FAIL;
     }
 
@@ -2561,6 +2571,7 @@ int stopStateMachine() {
         Beb_SetNextFrameNumber(retval + 1);
     }
     LOG(logINFOBLUE, ("Stopping state machine complete\n\n"));
+    sharedMemory_unlockAcqFlag();
     return OK;
 #endif
 }

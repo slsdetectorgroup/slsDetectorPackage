@@ -24,9 +24,9 @@ gcc -DINFILE="\"test.p\"" -DOUTFILE="\"test.pat\"" -o test.exe generator.c ; ./t
 #include <string.h>
 #include <unistd.h>
 
-#define MAXLOOPS 3
-#define MAXTIMERS 3
-#define MAXWORDS 1024
+#define MAXLOOPS 6
+#define MAXTIMERS 6
+#define MAXWORDS 8191
 
 
 
@@ -35,12 +35,12 @@ uint64_t iopat=0;
 uint64_t clkpat=0;
 
 int iaddr=0;
-int waitaddr[3]={MAXWORDS,MAXWORDS,MAXWORDS};
-int startloopaddr[3]={MAXWORDS,MAXWORDS,MAXWORDS}; 
-int stoploopaddr[3]={MAXWORDS,MAXWORDS,MAXWORDS}; 
+int waitaddr[MAXTIMERS]={MAXWORDS,MAXWORDS,MAXWORDS, MAXWORDS, MAXWORDS, MAXWORDS};
+int startloopaddr[MAXLOOPS]={MAXWORDS,MAXWORDS,MAXWORDS, MAXWORDS, MAXWORDS, MAXWORDS}; 
+int stoploopaddr[MAXLOOPS]={MAXWORDS,MAXWORDS,MAXWORDS, MAXWORDS, MAXWORDS, MAXWORDS}; 
 int start=0, stop=0;
-uint64_t waittime[3]={0,0,0};
-int nloop[3]={0,0,0};
+uint64_t waittime[MAXTIMERS]={0,0,0};
+int nloop[MAXLOOPS]={0,0,0};
 
 char infile[10000], outfile[10000];
 
@@ -69,14 +69,7 @@ void setoutput(int bit) {
   mask=mask<<bit;
   iopat |= mask;
 }
-/*
-void setclk(int bit) {
-  uint64_t mask=1;
-  mask=mask<<bit;
-  iopat |= mask;
-  clkpat |= mask;
-}
-*/
+
 void clearbit(int bit){
   uint64_t mask=1;
   mask=mask<<bit;
@@ -151,29 +144,30 @@ int parseCommand(int clk, int cmdbit, int cmd, int length) {
 
 
 
-main(void) {
+int main() {
   int iloop=0;
   fd=fopen(OUTFILE,"w");
 #include INFILE
 
   fprintf(fd,"patioctrl 0x%016llx\n",iopat);
-  //fprintf(fd,"patclkctrl 0x%016llx\n",clkpat);
   fprintf(fd,"patlimits 0x%04x 0x%04x\n",start, stop);
 
   for (iloop=0; iloop<MAXLOOPS; iloop++) {
-    fprintf(fd,"patloop%d 0x%04x 0x%04x\n",iloop, startloopaddr[iloop], stoploopaddr[iloop]);
+    fprintf(fd,"patloop %d 0x%04x 0x%04x\n",iloop, startloopaddr[iloop], stoploopaddr[iloop]);
     if ( startloopaddr[iloop]<0 || stoploopaddr[iloop]<= startloopaddr[iloop]) nloop[iloop]=0;
-    fprintf(fd,"patnloop%d %d\n",iloop, nloop[iloop]);
+    fprintf(fd,"patnloop %d %d\n",iloop, nloop[iloop]);
   }
 
   for (iloop=0; iloop<MAXTIMERS; iloop++) {
-    fprintf(fd,"patwait%d 0x%04x\n",iloop, waitaddr[iloop]);
+    fprintf(fd,"patwait %d 0x%04x\n",iloop, waitaddr[iloop]);
     if (waitaddr[iloop]<0) waittime[iloop]=0;
-    fprintf(fd,"patwaittime%d %lld\n",iloop, waittime[iloop]);
+    fprintf(fd,"patwaittime %d %lld\n",iloop, waittime[iloop]);
   }
   
-  close((int)fd);
+  fclose(fd);
   fd1=fopen(OUTFILEBIN,"w");
   fwrite(PAT,sizeof(uint64_t),iaddr, fd1);
-  close((int)fd1);
+  fclose(fd1);
+
+  return 0;
 }

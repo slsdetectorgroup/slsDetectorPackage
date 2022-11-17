@@ -14,6 +14,15 @@ namespace sls {
 #define gettid() syscall(SYS_gettid)
 #endif
 
+
+Arping::Arping(){}
+
+Arping::~Arping() {
+    if (IsRunning()) {
+        StopThread();
+    }
+}
+
 void Arping::SetInterfacesAndIps(const int index, const std::string &interface,
                                  const std::string &ip) {
 

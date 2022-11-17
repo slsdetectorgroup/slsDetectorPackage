@@ -17,6 +17,9 @@ namespace sls {
 class Arping {
 
   public:
+    Arping();
+    ~Arping();
+
     void SetInterfacesAndIps(const int index, const std::string &interface,
                              const std::string &ip);
     pid_t GetThreadId() const;

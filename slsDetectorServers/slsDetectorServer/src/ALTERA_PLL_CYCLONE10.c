@@ -172,7 +172,7 @@ void ALTERA_PLL_C10_SetOuputClockDivider(int pllIndex, int clkIndex,
     uint32_t odd_division = 0;
 
     // odd division
-    if (value > (int)(2 * low_count)) {
+    if (value > (2 * low_count)) {
         ++high_count;
         odd_division = 1;
     }

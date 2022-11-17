@@ -482,7 +482,7 @@ void Listener::CopyPacket(char *dst, char *src, uint32_t dataSize,
                    sizeof(sls_detector_header));
         } else {
             dstHeader.detHeader.frameNumber = currentFrameIndex;
-            dstHeader.detHeader.bunchId = bnum;
+            dstHeader.detHeader.detSpec1 = bnum;
             dstHeader.detHeader.row = row;
             dstHeader.detHeader.column = column;
             dstHeader.detHeader.detType =

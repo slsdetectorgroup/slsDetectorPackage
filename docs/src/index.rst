@@ -66,6 +66,15 @@ Welcome to slsDetectorPackage's documentation!
     virtualserver
     serverdefaults
 
+
+.. toctree::
+    :caption: Detector UDP Header
+    :maxdepth: 2
+
+    udpheader
+    udpconfig
+    udpdetspec
+
 .. toctree::
     :caption: Receiver
     :maxdepth: 2

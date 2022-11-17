@@ -148,13 +148,13 @@ int ZmqSocket::SendHeader(int index, zmqHeader header) {
         << ", \"frameNumber\":" << header.frameNumber
         << ", \"expLength\":" << header.expLength
         << ", \"packetNumber\":" << header.packetNumber
-        << ", \"bunchId\":" << header.bunchId
+        << ", \"detSpec1\":" << header.detSpec1
         << ", \"timestamp\":" << header.timestamp
         << ", \"modId\":" << header.modId << ", \"row\":" << header.row
         << ", \"column\":" << header.column
-        << ", \"reserved\":" << header.reserved
-        << ", \"debug\":" << header.debug
-        << ", \"roundRNumber\":" << header.roundRNumber
+        << ", \"detSpec2\":" << header.detSpec2
+        << ", \"detSpec3\":" << header.detSpec3
+        << ", \"detSpec4\":" << header.detSpec4
         << ", \"detType\":" << static_cast<int>(header.detType)
         << ", \"version\":"
         << static_cast<int>(header.version)
@@ -270,14 +270,14 @@ int ZmqSocket::ParseHeader(const int index, int length, char *buff,
     zHeader.frameNumber = document["frameNumber"].GetUint64();
     zHeader.expLength = document["expLength"].GetUint();
     zHeader.packetNumber = document["packetNumber"].GetUint();
-    zHeader.bunchId = document["bunchId"].GetUint64();
+    zHeader.detSpec1 = document["detSpec1"].GetUint64();
     zHeader.timestamp = document["timestamp"].GetUint64();
     zHeader.modId = document["modId"].GetUint();
     zHeader.row = document["row"].GetUint();
     zHeader.column = document["column"].GetUint();
-    zHeader.reserved = document["reserved"].GetUint();
-    zHeader.debug = document["debug"].GetUint();
-    zHeader.roundRNumber = document["roundRNumber"].GetUint();
+    zHeader.detSpec2 = document["detSpec2"].GetUint();
+    zHeader.detSpec3 = document["detSpec3"].GetUint();
+    zHeader.detSpec4 = document["detSpec4"].GetUint();
     zHeader.detType = document["detType"].GetUint();
     zHeader.version = document["version"].GetUint();
 

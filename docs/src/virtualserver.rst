@@ -1,6 +1,6 @@
 .. _Virtual Detector Servers:
-Detector Simulators
-===================
+Simulators
+===========
 
 Compilation
 -----------

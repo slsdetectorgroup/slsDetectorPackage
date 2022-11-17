@@ -1,5 +1,14 @@
-Detector Servers
-=================
+Getting Started
+===============
+
+Detector Servers include:
+   * Control server [default port: 1952]
+      * Almost all client communication.
+   * Stop server [default port: 1953]
+      *  Client requests for detector status, stop acquisition, temperature, advanced read/write registers.
+
+When using a blocking acquire command (sls_detector_acquire or Detector::acquire), the control server is blocked until end of acquisition. However, stop server commands could be used in parallel.
+
 
 Location
 ---------
@@ -23,17 +32,6 @@ Arguments
       -u, --update             : Update mode. Skips firmware checks and initial detector setup. 
       -s, --stopserver         : Stop server. Do not use as it is created by control server 
 
-
-Basics
-------------
-
-Detector Servers include:
-   * Control server [default port: 1952]
-      * Almost all client communication.
-   * Stop server [default port: 1953]
-      *  Client requests for detector status, stop acquisition, temperature, advanced read/write registers.
-
-When using a blocking acquire command (sls_detector_acquire or Detector::acquire), the control server is blocked until end of acquisition. However, stop server commands could be used in parallel.
 
 
 .. _Automatic start servers:

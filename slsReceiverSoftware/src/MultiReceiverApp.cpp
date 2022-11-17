@@ -78,18 +78,18 @@ void GetData(slsDetectorDefs::sls_receiver_header &header, char *dataPointer,
     PRINT_IN_COLOR(
         detectorHeader.modId ? detectorHeader.modId : detectorHeader.row,
         "#### %d %d GetData: ####\n"
-        "frameNumber: %lu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: %lu"
+        "frameNumber: %lu\t\texpLength: %u\t\tpacketNumber: %u\t\tdetSpec1: %lu"
         "\t\ttimestamp: %lu\t\tmodId: %u\t\t"
-        "row: %u\t\tcolumn: %u\t\treserved: %u\t\tdebug: %u"
-        "\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
+        "row: %u\t\tcolumn: %u\t\tdetSpec2: %u\t\tdetSpec3: %u"
+        "\t\tdetSpec4: %u\t\tdetType: %u\t\tversion: %u"
         //"\t\tpacketsMask:%s"
         "\t\tfirstbytedata: 0x%x\t\tdatsize: %zu\n\n",
         detectorHeader.column, detectorHeader.row,
         (long unsigned int)detectorHeader.frameNumber, detectorHeader.expLength,
-        detectorHeader.packetNumber, (long unsigned int)detectorHeader.bunchId,
+        detectorHeader.packetNumber, (long unsigned int)detectorHeader.detSpec1,
         (long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
-        detectorHeader.row, detectorHeader.column, detectorHeader.reserved,
-        detectorHeader.debug, detectorHeader.roundRNumber,
+        detectorHeader.row, detectorHeader.column, detectorHeader.detSpec2,
+        detectorHeader.detSpec3, detectorHeader.detSpec4,
         detectorHeader.detType, detectorHeader.version,
         // header->packetsMask.to_string().c_str(),
         ((uint8_t)(*((uint8_t *)(dataPointer)))), imageSize);
@@ -108,20 +108,19 @@ void GetData(slsDetectorDefs::sls_receiver_header &header, char *dataPointer,
 
     PRINT_IN_COLOR(
         detectorHeader.modId ? detectorHeader.modId : detectorHeader.row,
-        "#### %d GetData: ####\n"
-        "frameNumber: %llu\t\texpLength: %u\t\tpacketNumber: %u\t\tbunchId: "
-        "%llu"
-        "\t\ttimestamp: %llu\t\tmodId: %u\t\t"
-        "row: %u\t\tcolumn: %u\t\treserved: %u\t\tdebug: %u"
-        "\t\troundRNumber: %u\t\tdetType: %u\t\tversion: %u"
+        "#### %d %d GetData: ####\n"
+        "frameNumber: %lu\t\texpLength: %u\t\tpacketNumber: %u\t\tdetSpec1: %lu"
+        "\t\ttimestamp: %lu\t\tmodId: %u\t\t"
+        "row: %u\t\tcolumn: %u\t\tdetSpec2: %u\t\tdetSpec3: %u"
+        "\t\tdetSpec4: %u\t\tdetType: %u\t\tversion: %u"
         //"\t\tpacketsMask:%s"
         "\t\tfirstbytedata: 0x%x\t\tdatsize: %zu\n\n",
-        detectorHeader.row, (long long unsigned int)detectorHeader.frameNumber,
-        detectorHeader.expLength, detectorHeader.packetNumber,
-        (long long unsigned int)detectorHeader.bunchId,
-        (long long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
-        detectorHeader.row, detectorHeader.column, detectorHeader.reserved,
-        detectorHeader.debug, detectorHeader.roundRNumber,
+        detectorHeader.column, detectorHeader.row,
+        (long unsigned int)detectorHeader.frameNumber, detectorHeader.expLength,
+        detectorHeader.packetNumber, (long unsigned int)detectorHeader.detSpec1,
+        (long unsigned int)detectorHeader.timestamp, detectorHeader.modId,
+        detectorHeader.row, detectorHeader.column, detectorHeader.detSpec2,
+        detectorHeader.detSpec3, detectorHeader.detSpec4,
         detectorHeader.detType, detectorHeader.version,
         // header->packetsMask.to_string().c_str(),
         *reinterpret_cast<uint8_t *>(dataPointer), modifiedImageSize);

@@ -34,112 +34,147 @@ uint64_t pat=0;
 uint64_t iopat=0;
 uint64_t clkpat=0;
 
-int iaddr=0;
-int waitaddr[MAXTIMERS]={MAXWORDS,MAXWORDS,MAXWORDS, MAXWORDS, MAXWORDS, MAXWORDS};
-int startloopaddr[MAXLOOPS]={MAXWORDS,MAXWORDS,MAXWORDS, MAXWORDS, MAXWORDS, MAXWORDS}; 
-int stoploopaddr[MAXLOOPS]={MAXWORDS,MAXWORDS,MAXWORDS, MAXWORDS, MAXWORDS, MAXWORDS}; 
-int start=0, stop=0;
-uint64_t waittime[MAXTIMERS]={0,0,0};
-int nloop[MAXLOOPS]={0,0,0};
+unsigned iaddr=0;
+unsigned waitaddr[MAXTIMERS]={MAXWORDS,MAXWORDS,MAXWORDS, MAXWORDS, MAXWORDS, MAXWORDS};
+unsigned startloopaddr[MAXLOOPS]={MAXWORDS,MAXWORDS,MAXWORDS, MAXWORDS, MAXWORDS, MAXWORDS}; 
+unsigned stoploopaddr[MAXLOOPS]={MAXWORDS,MAXWORDS,MAXWORDS, MAXWORDS, MAXWORDS, MAXWORDS}; 
+unsigned start=0, stop=0;
+uint64_t waittime[MAXTIMERS]={0,0,0,0,0,0};
+unsigned nloop[MAXLOOPS]={0,0,0,0,0,0};
 
 char infile[10000], outfile[10000];
 
 FILE *fd, *fd1;
 uint64_t PAT[MAXWORDS];
+int iopat_enable = 0;
 
 
 int i,ii,iii,j,jj,jjj,pixx,pixy,memx,memy,muxout,memclk,colclk,rowclk,muxclk,memcol,memrow,loopcounter;
 
-void setstart() {
+void setstart() 
+{
   start=iaddr;
 }
 
-void setstop() {
+void setstop() 
+{
   stop=iaddr;
 }
 
-void setinput(int bit) {
+void setinput(int bit) 
+{
   uint64_t mask=1;
   mask=mask<<bit;
   iopat &= ~mask;
+  iopat_enable = 1;
 }
 
-void setoutput(int bit) {
+void setoutput(int bit) 
+{
   uint64_t mask=1;
   mask=mask<<bit;
   iopat |= mask;
+  iopat_enable = 1;
 }
 
-void clearbit(int bit){
+void clearbit(int bit)
+{
   uint64_t mask=1;
   mask=mask<<bit;
   pat &= ~mask;
 }
-void setbit(int bit){
+void setbit(int bit)
+{
   uint64_t mask=1;
   mask=mask<<bit;
   pat |= mask;
 }
 
-int checkbit(int bit) {
+int checkbit(int bit)
+{
   uint64_t mask=1;
   mask=mask<<bit;
   return (pat & mask ) >>bit;
 }
 
-void setstartloop(int iloop) {
+void setstartloop(int iloop)
+{
   if (iloop>=0 && iloop<MAXLOOPS)
-    startloopaddr[iloop]=iaddr;
+    {
+      startloopaddr[iloop]=iaddr;
+    }
 }
 
 
-void setstoploop(int iloop) {
+void setstoploop(int iloop)
+{
   if (iloop>=0 && iloop<MAXLOOPS)
-    stoploopaddr[iloop]=iaddr;
+    {
+      stoploopaddr[iloop]=iaddr;
+    }
 }
 
 
-void setnloop(int iloop, int n) {
+void setnloop(int iloop, int n)
+{
   if (iloop>=0 && iloop<MAXLOOPS)
-    nloop[iloop]=n;
+    {
+      nloop[iloop]=n;
+    }
 }
 
-void setwaitpoint(int iloop) {
+void setwaitpoint(int iloop)
+{
   if (iloop>=0 && iloop<MAXTIMERS)
-    waitaddr[iloop]=iaddr;
+    {
+      waitaddr[iloop]=iaddr;
+    }
 }
 
 
-void setwaittime(int iloop, uint64_t t) {
+void setwaittime(int iloop, uint64_t t)
+{
   if (iloop>=0 && iloop<MAXTIMERS)
-    waittime[iloop]=t;
+    {
+      waittime[iloop]=t;
+    }
 }
 
 
-
-
-void pw(){
+void pw()
+{
   if (iaddr<MAXWORDS)
-    PAT[iaddr]= pat;
+    {
+      PAT[iaddr]= pat;
+    }
   fprintf(fd,"patword 0x%04x 0x%016llx\n",iaddr, pat);
   iaddr++;
-  if (iaddr>=MAXWORDS) printf("ERROR: too many word in the pattern (%d instead of %d)!",iaddr, MAXWORDS);
+  if (iaddr>=MAXWORDS)
+    {
+      printf("ERROR: too many word in the pattern (%d instead of %d)!",iaddr, MAXWORDS);
+    }
 }
 
-int parseCommand(int clk, int cmdbit, int cmd, int length) {
+int parseCommand(int clk, int cmdbit, int cmd, int length)
+{
   int ibit;
   clearbit(clk);
-  for (ibit=0; ibit<length; ibit++) {
-    if (cmd&(1>>ibit))
-      setbit(cmdbit);
-    else
-      clearbit(cmdbit);
-    pw();
-    /******/
-    setbit(clk);
-    pw();
-    /******/
-  }
+  for (ibit=0; ibit<length; ibit++)
+    {
+      if (cmd&(1>>ibit))
+	{
+	  setbit(cmdbit);
+	}
+      else
+	{ 
+	  clearbit(cmdbit);
+	}
+      pw();
+      /******/
+      setbit(clk);
+      pw();
+      /******/
+    }
 };
 
 
@@ -149,19 +184,33 @@ int main() {
   fd=fopen(OUTFILE,"w");
 #include INFILE
 
-  fprintf(fd,"patioctrl 0x%016llx\n",iopat);
   fprintf(fd,"patlimits 0x%04x 0x%04x\n",start, stop);
 
-  for (iloop=0; iloop<MAXLOOPS; iloop++) {
-    fprintf(fd,"patloop %d 0x%04x 0x%04x\n",iloop, startloopaddr[iloop], stoploopaddr[iloop]);
-    if ( startloopaddr[iloop]<0 || stoploopaddr[iloop]<= startloopaddr[iloop]) nloop[iloop]=0;
-    fprintf(fd,"patnloop %d %d\n",iloop, nloop[iloop]);
+  if (iopat_enable == 1)
+  {
+    fprintf(fd,"patioctrl 0x%016llx\n",iopat);
   }
 
-  for (iloop=0; iloop<MAXTIMERS; iloop++) {
-    fprintf(fd,"patwait %d 0x%04x\n",iloop, waitaddr[iloop]);
-    if (waitaddr[iloop]<0) waittime[iloop]=0;
-    fprintf(fd,"patwaittime %d %lld\n",iloop, waittime[iloop]);
+  for (iloop=0; iloop<MAXLOOPS; iloop++) 
+  {
+    if ( (startloopaddr[iloop] != MAXWORDS) && (stoploopaddr[iloop] != MAXWORDS) )
+    {
+      fprintf(fd,"patloop %d 0x%04x 0x%04x\n",iloop, startloopaddr[iloop], stoploopaddr[iloop]);
+      if (stoploopaddr[iloop]<= startloopaddr[iloop]) 
+        {
+          nloop[iloop]=0;
+        }
+      fprintf(fd,"patnloop %d %u\n",iloop, nloop[iloop]);
+    }    
+  }
+
+  for (iloop=0; iloop<MAXTIMERS; iloop++) 
+  {
+    if (waitaddr[iloop] != MAXWORDS)
+    {
+      fprintf(fd,"patwait %d 0x%04x\n",iloop, waitaddr[iloop]);
+      fprintf(fd,"patwaittime %d %llu\n",iloop, waittime[iloop]);
+    }
   }
   
   fclose(fd);

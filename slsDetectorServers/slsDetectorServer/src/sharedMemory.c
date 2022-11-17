@@ -20,6 +20,7 @@ typedef struct Memory {
     pthread_mutex_t lockStatus;
 #ifdef EIGERD
     pthread_mutex_t lockLocalLink;
+    pthread_mutex_t lockAcqFlag;
 #endif
     enum runStatus scanStatus; // idle, running or error
     int scanStop;
@@ -120,6 +121,7 @@ int sharedMemory_initialize() {
 #endif
 
 #ifdef EIGERD
+    // local link mutex
     pthread_mutexattr_t lockLocalLinkAttribute;
     if (pthread_mutexattr_init(&lockLocalLinkAttribute) != 0) {
         LOG(logERROR,
@@ -138,6 +140,28 @@ int sharedMemory_initialize() {
     if (pthread_mutex_init(&(shm->lockLocalLink), &lockLocalLinkAttribute) !=
         0) {
         LOG(logERROR, ("Failed to initialize pthread_mutex_t lockLocalLink for "
+                       "shared memory\n"));
+        return FAIL;
+    }
+    // acq flag mutex
+    pthread_mutexattr_t lockAcqFlagAttribute;
+    if (pthread_mutexattr_init(&lockAcqFlagAttribute) != 0) {
+        LOG(logERROR,
+            ("Failed to initialize mutex attribute for lockAcqFlag for "
+             "shared memory\n"));
+        return FAIL;
+    }
+
+    if (pthread_mutexattr_setpshared(&lockAcqFlagAttribute,
+                                     PTHREAD_PROCESS_SHARED) != 0) {
+        LOG(logERROR, ("Failed to set attribute property to process shared for "
+                       "lockAcqFlag for shared memory\n"));
+        return FAIL;
+    }
+
+    if (pthread_mutex_init(&(shm->lockAcqFlag), &lockAcqFlagAttribute) !=
+        0) {
+        LOG(logERROR, ("Failed to initialize pthread_mutex_t lockAcqFlag for "
                        "shared memory\n"));
         return FAIL;
     }
@@ -265,5 +289,11 @@ void sharedMemory_lockLocalLink() { pthread_mutex_lock(&(shm->lockLocalLink)); }
 
 void sharedMemory_unlockLocalLink() {
     pthread_mutex_unlock(&(shm->lockLocalLink));
+}
+
+void sharedMemory_lockAcqFlag() { pthread_mutex_lock(&(shm->lockAcqFlag)); }
+
+void sharedMemory_unlockAcqFlag() {
+    pthread_mutex_unlock(&(shm->lockAcqFlag));
 }
 #endif

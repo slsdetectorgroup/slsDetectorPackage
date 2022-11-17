@@ -25,4 +25,6 @@ int sharedMemory_getScanStop();
 #ifdef EIGERD
 void sharedMemory_lockLocalLink();
 void sharedMemory_unlockLocalLink();
+void sharedMemory_lockAcqFlag();
+void sharedMemory_unlockAcqFlag();
 #endif

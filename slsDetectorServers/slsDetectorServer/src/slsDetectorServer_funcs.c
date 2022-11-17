@@ -2022,9 +2022,6 @@ void *start_state_machine(void *arg) {
             }
             usleep(scanSettleTime_ns / 1000);
         }
-#ifdef EIGERD
-        prepareAcquisition();
-#endif
         ret = startStateMachine();
         LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
         if (ret == FAIL) {

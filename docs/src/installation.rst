@@ -21,74 +21,6 @@
 Installation
 ==============================================
 
-.. _build from source using cmake:
-
-Build from source using CMake
----------------------------------
-
-Note that on some systems, for example RH7,  cmake v3+ is available under the cmake3 alias.
-It is also required to clone with the option --recursive to get the pybind11 submodules used
-in the package. (Only needed for older versions than v7.0.0)
-
-
-.. code-block:: bash
-
-    git clone --recursive https://github.com/slsdetectorgroup/slsDetectorPackage.git
-    
-    # if older than v7.0.0 and using python, update pybind11 submodules
-    cd slsDetectorPackage
-    git submodule update --init
-
-    mkdir build && cd build
-    cmake ../slsDetectorPackage -DCMAKE_INSTALL_PREFIX=/your/install/path
-    make -j12 #or whatever number of cores you are using to build
-    make install
-
-The easiest way to configure options is to use the ccmake utility. 
-
-.. code-block:: bash
-
-    #from the build directory
-    ccmake .
-
-
-Build using cmk.sh script
--------------------------
-These are mainly aimed at those not familiar with using ccmake and cmake.
-
-.. code-block:: bash
-
-    The binaries are generated in slsDetectorPackage/build/bin directory.
-
-    Usage: ./cmk.sh [-b] [-c] [-d <HDF5 directory>] [e] [g] [-h] [i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [m] [n] [-p] [-q <Zmq hint directory>] [r] [s] [t] [u] [z]  
-    -[no option]: only make
-    -b: Builds/Rebuilds CMake files normal mode
-    -c: Clean
-    -d: HDF5 Custom Directory
-    -e: Debug mode
-    -g: Build/Rebuilds only gui
-    -h: Builds/Rebuilds Cmake files with HDF5 package
-    -i: Builds tests
-    -j: Number of threads to compile through
-    -k: CMake command
-    -l: Install directory
-    -m: Manuals
-    -n: Manuals without compiling doxygen (only rst)
-    -p: Builds/Rebuilds Python API
-    -q: Zmq hint directory
-    -r: Build/Rebuilds only receiver
-    -s: Simulator
-    -t: Build/Rebuilds only text client
-    -u: Chip Test Gui
-    -z: Moench zmq processor
-
-    
-    # get all options
-    ./cmk.sh -?
-
-    # new build  and compile in parallel:
-    ./cmk.sh -bj5
-
 
 Install binaries using conda
 --------------------------------
@@ -126,8 +58,119 @@ We have three different packages available:
     conda search slsdet
 
 
-Build from source on old distributions
------------------------------------------
+Build from source
+-----------------
+
+Download Source Code from github
+
+.. code-block:: bash
+
+    # if < v7.0.0 & using python, use 'recursive' to get pybind11 submodule
+    git clone --recursive https://github.com/slsdetectorgroup/slsDetectorPackage.git
+    
+    cd slsDetectorPackage
+    git checkout 6.1.1
+
+    # if < v7.0.0 & using python, update pybind11 submodules when switching branches
+    git submodule update --init
+
+One can build the source code using cmake or cmk.sh script.
+
+.. note :: 
+
+    On some systems, for example RH7,  cmake v3+ is available under the cmake3 
+    alias.
+    
+    Pybind11 is packaged into v7.0.0+ into 'libs/pbind' and is no longer a 
+    submodule. Older versions of the package (< v7.0.0), pybind11 is 
+    a submdule and needs to be updated when switcing  between versions. 
+
+
+
+.. _build from source using cmake:
+
+Using CMake
+^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+    # outside slsDetecorPackage folder
+    mkdir build && cd build
+
+    # configure & generate Makefiles using ccmake 
+    # configure options at ease such as python, gui etc.
+    # [c] - configure and then [g] - generate
+    # ccmake3 for some systems
+    # ccmake .. 
+
+    # configure & generate Makefiles using cmake
+    # configure by listing all your options
+    # eg. cmake ../slsDetectorPackage -DSLS_USE_PYTHON=ON
+    # cmake3 for some systems
+    cmake ../slsDetectorPackage -DCMAKE_INSTALL_PREFIX=/your/install/path
+
+    # compiled to the build/bin directory
+    make -j12 #or whatever number of cores you are using to build
+
+    # install headers and libs in /your/install/path directory
+    make install
+
+.. warning ::
+
+    If you use conda avoid also installing packages with pip. 
+
+.. note :: 
+
+    To use only the conda environments for python, use 
+    -DPython_FIND_VIRTUALENV=ONLY
+
+    To use the system zmq instead of conda, use -DZeroMQ_HINT=/usr/lib64
+
+Using cmk.sh script
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+    The binaries are generated in slsDetectorPackage/build/bin directory.
+
+    Usage: ./cmk.sh [-b] [-c] [-d <HDF5 directory>] [e] [g] [-h] [i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [m] [n] [-p] [-q <Zmq hint directory>] [r] [s] [t] [u] [z]  
+    -[no option]: only make
+    -b: Builds/Rebuilds CMake files normal mode
+    -c: Clean
+    -d: HDF5 Custom Directory
+    -e: Debug mode
+    -g: Build/Rebuilds only gui
+    -h: Builds/Rebuilds Cmake files with HDF5 package
+    -i: Builds tests
+    -j: Number of threads to compile through
+    -k: CMake command
+    -l: Install directory
+    -m: Manuals
+    -n: Manuals without compiling doxygen (only rst)
+    -p: Builds/Rebuilds Python API
+    -q: Zmq hint directory
+    -r: Build/Rebuilds only receiver
+    -s: Simulator
+    -t: Build/Rebuilds only text client
+    -u: Chip Test Gui
+    -z: Moench zmq processor
+
+    
+    # get all options
+    ./cmk.sh -?
+
+    # new build and compile in parallel:
+    ./cmk.sh -bj5
+
+    # new build, python and compile in parallel:
+    ./cmk.sh -bpj5
+
+    # To use the sytem zmq instead of from conda env
+    ./cmk.sh -bj5 -q /usr/lib64
+
+
+On old distributions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If your linux distribution doesn't come with a C++11 compiler (gcc>4.8) then 
 it's possible to install a newer gcc using conda and build the slsDetectorPackage
@@ -138,6 +181,9 @@ using this compiler
     #Create an environment with the dependencies
     conda create -n myenv gxx_linux-64 cmake zmq
     conda activate myenv
+
+    # outside slsDetecorPackage folder
+    mkdir build && cd build
     cmake ../slsDetectorPackage -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
     make -j12
 

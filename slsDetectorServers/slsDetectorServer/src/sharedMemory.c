@@ -159,8 +159,7 @@ int sharedMemory_initialize() {
         return FAIL;
     }
 
-    if (pthread_mutex_init(&(shm->lockAcqFlag), &lockAcqFlagAttribute) !=
-        0) {
+    if (pthread_mutex_init(&(shm->lockAcqFlag), &lockAcqFlagAttribute) != 0) {
         LOG(logERROR, ("Failed to initialize pthread_mutex_t lockAcqFlag for "
                        "shared memory\n"));
         return FAIL;
@@ -293,7 +292,5 @@ void sharedMemory_unlockLocalLink() {
 
 void sharedMemory_lockAcqFlag() { pthread_mutex_lock(&(shm->lockAcqFlag)); }
 
-void sharedMemory_unlockAcqFlag() {
-    pthread_mutex_unlock(&(shm->lockAcqFlag));
-}
+void sharedMemory_unlockAcqFlag() { pthread_mutex_unlock(&(shm->lockAcqFlag)); }
 #endif

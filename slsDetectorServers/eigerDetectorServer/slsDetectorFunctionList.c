@@ -2461,7 +2461,6 @@ int startStateMachine() {
                   Feb_Control_Get_Counter_Bit()));
     Feb_Control_PrepareForAcquisition();
 
-
     LOG(logINFO, ("Acquisition started bit toggled\n"));
     int ret = OK, prev_flag;
     // get the DAQ toggle bit
@@ -2779,7 +2778,7 @@ void *start_timer(void *arg) {
 #endif
 
 int stopStateMachine() {
-    
+
     // acq lock for seamless stop
     sharedMemory_lockAcqFlag();
 

@@ -97,7 +97,9 @@ void basictests() {
         return;
     }
 #endif
-    uint16_t hversion = getHardwareVersionNumber();
+    char hversion[MAX_STR_LENGTH] = {0};
+    memset(hversion, 0, MAX_STR_LENGTH);
+    getHardwareVersion(hversion);
     uint16_t hsnumber = getHardwareSerialNumber();
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
@@ -107,14 +109,14 @@ void basictests() {
     getServerVersion(swversion);
     int64_t sw_fw_apiversion = 0;
     uint32_t requiredFirmwareVersion =
-        (isHardwareVersion2() ? REQRD_FRMWRE_VRSN_BOARD2 : REQRD_FRMWRE_VRSN);
+        (isHardwareVersion_1_0() ? REQRD_FRMWRE_VRSN_BOARD2 : REQRD_FRMWRE_VRSN);
 
     if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
         sw_fw_apiversion = getFirmwareAPIVersion();
 
     LOG(logINFOBLUE,
         ("************ Jungfrau Server *********************\n"
-         "Hardware Version:\t\t 0x%x\n"
+         "Hardware Version:\t\t %s\n"
          "Hardware Serial Nr:\t\t 0x%x\n"
 
          "Detector IP Addr:\t\t 0x%x\n"
@@ -273,9 +275,23 @@ u_int64_t getFirmwareAPIVersion() {
     return ((bus_r(API_VERSION_REG) & API_VERSION_MSK) >> API_VERSION_OFST);
 }
 
+void getHardwareVersion(char *version) { 
+    strcpy(version, "unknown");
+    int hwversion = getHardwareVersionNumber();
+    const int hwNumberList[] = HARDWARE_VERSION_NUMBERS;
+    const char* hwNamesList[] = HARDWARE_VERSION_NAMES;
+    for (int i = 0; i != NUM_HARDWARE_VERSIONS; ++i) {
+        LOG(logDEBUG, ("0x%x %d 0x%x %s\n", hwversion, i, hwNumberList[i], hwNamesList[i]));
+        if (hwNumberList[i] == hwversion) {
+            strcpy(version, hwNamesList[i]);
+            return;
+        }
+    }
+}
+
 u_int16_t getHardwareVersionNumber() {
 #ifdef VIRTUAL
-    return 0;
+    return 0x3;
 #endif
     return ((bus_r(MOD_SERIAL_NUM_REG) & HARDWARE_VERSION_NUM_MSK) >>
             HARDWARE_VERSION_NUM_OFST);
@@ -289,15 +305,9 @@ u_int16_t getHardwareSerialNumber() {
             HARDWARE_SERIAL_NUM_OFST);
 }
 
-// is board 1.0?, with value 2 (resistor network)
-int isHardwareVersion2() {
-#ifdef VIRTUAL
-    return 0;
-#endif
-    return (((bus_r(MOD_SERIAL_NUM_REG) & HARDWARE_VERSION_NUM_MSK) ==
-             HARDWARE_VERSION_2_VAL)
-                ? 1
-                : 0);
+int isHardwareVersion_1_0() {
+    const int hwNumberList[] = HARDWARE_VERSION_NUMBERS;
+    return ((getHardwareVersionNumber() == hwNumberList[0]) ? 1 : 0);
 }
 
 int getChipVersion() {
@@ -476,7 +486,7 @@ void setupDetector() {
     alignDeserializer();
     configureASICTimer();
     bus_w(ADC_PORT_INVERT_REG,
-          (isHardwareVersion2() ? ADC_PORT_INVERT_BOARD2_VAL
+          (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
                                 : ADC_PORT_INVERT_VAL));
 
     initReadoutConfiguration();
@@ -509,7 +519,7 @@ void setupDetector() {
         setFilterResistor(DEFAULT_FILTER_RESISTOR);
         setNumberOfFilterCells(DEFAULT_FILTER_CELL);
     }
-    if (!isHardwareVersion2()) {
+    if (!isHardwareVersion_1_0()) {
         setFlipRows(DEFAULT_FLIP_ROWS);
         setReadNRows(MAX_ROWS_PER_READOUT);
     }
@@ -748,12 +758,11 @@ int readConfigFile() {
                         version, line);
                 break;
             }
-            // version 1.1 and HW 1.0 (version reg value = 2) is incompatible
-            if (version == 11 && isHardwareVersion2()) {
+            // chipversion 1.1 and HW 1.0 is incompatible
+            if (version == 11 && isHardwareVersion_1_0()) {
                 strcpy(initErrorMessage,
                        "Chip version 1.1 (from on-board config file) is "
-                       "incompatible with old board (v1.0). Please update "
-                       "board or correct on-board config file.\n");
+                       "incompatible with hardware version v1.0. Please update board or correct on-board config file.\n");
                 break;
             }
 
@@ -827,7 +836,7 @@ int getDynamicRange(int *retval) {
 
 void setADCInvertRegister(uint32_t val) {
     LOG(logINFO, ("Setting ADC Port Invert Reg to 0x%x\n", val));
-    uint32_t defaultValue = (isHardwareVersion2() ? ADC_PORT_INVERT_BOARD2_VAL
+    uint32_t defaultValue = (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
                                                   : ADC_PORT_INVERT_VAL);
     uint32_t changeValue = defaultValue ^ val;
     LOG(logINFO, ("\t default: 0x%x, final:0x%x\n", defaultValue, changeValue));
@@ -836,7 +845,7 @@ void setADCInvertRegister(uint32_t val) {
 
 uint32_t getADCInvertRegister() {
     uint32_t readValue = bus_r(ADC_PORT_INVERT_REG);
-    int32_t defaultValue = (isHardwareVersion2() ? ADC_PORT_INVERT_BOARD2_VAL
+    int32_t defaultValue = (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
                                                  : ADC_PORT_INVERT_VAL);
     uint32_t val = defaultValue ^ readValue;
     LOG(logDEBUG1, ("\tread:0x%x, default:0x%x returned:0x%x\n", readValue,
@@ -1751,9 +1760,9 @@ int setReadNRows(int value) {
         LOG(logERROR, ("Invalid number of rows %d\n", value));
         return FAIL;
     }
-    if (isHardwareVersion2()) {
+    if (isHardwareVersion_1_0()) {
         LOG(logERROR, ("Could not set number of rows. Only available for "
-                       "Hardware Board version 2.0.\n"));
+                       "Hardware Board version v2.0.\n"));
         return FAIL;
     }
 
@@ -1776,7 +1785,7 @@ int setReadNRows(int value) {
 
 int getReadNRows() {
     // cannot set it in old board
-    if (isHardwareVersion2()) {
+    if (isHardwareVersion_1_0()) {
         return MAX_ROWS_PER_READOUT;
     }
     int enable = (bus_r(READ_N_ROWS_REG) & READ_N_ROWS_ENBL_MSK);
@@ -1949,7 +1958,7 @@ int setReadoutSpeed(int val) {
     switch (val) {
 
     case FULL_SPEED:
-        if (isHardwareVersion2()) {
+        if (isHardwareVersion_1_0()) {
             LOG(logERROR, ("Cannot set full speed. Should not be here\n"));
             return FAIL;
         }
@@ -1970,7 +1979,7 @@ int setReadoutSpeed(int val) {
 
     case HALF_SPEED:
         LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
-        if (isHardwareVersion2()) {
+        if (isHardwareVersion_1_0()) {
             adcOfst = ADC_OFST_HALF_SPEED_BOARD2_VAL;
             sampleAdcSpeed = SAMPLE_ADC_HALF_SPEED_BOARD2;
             adcPhase = ADC_PHASE_HALF_SPEED_BOARD2;
@@ -1991,7 +2000,7 @@ int setReadoutSpeed(int val) {
 
     case QUARTER_SPEED:
         LOG(logINFO, ("Setting Half Speed (10 MHz):\n"));
-        if (isHardwareVersion2()) {
+        if (isHardwareVersion_1_0()) {
             adcOfst = ADC_OFST_QUARTER_SPEED_BOARD2_VAL;
             sampleAdcSpeed = SAMPLE_ADC_QUARTER_SPEED_BOARD2;
             adcPhase = ADC_PHASE_QUARTER_SPEED_BOARD2;
@@ -2251,7 +2260,7 @@ int getFlipRows() {
 }
 
 void setFlipRows(int arg) {
-    if (isHardwareVersion2()) {
+    if (isHardwareVersion_1_0()) {
         LOG(logERROR, ("Could not set flip rows. Only available for "
                        "Hardware Board version 2.0.\n"));
         return;

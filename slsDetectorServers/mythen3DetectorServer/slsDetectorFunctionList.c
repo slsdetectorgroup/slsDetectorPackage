@@ -106,7 +106,9 @@ void basictests() {
         return;
     }
 #endif
-    uint16_t hversion = getHardwareVersionNumber();
+    char hversion[MAX_STR_LENGTH] = {0};
+    memset(hversion, 0, MAX_STR_LENGTH);
+    getHardwareVersion(hversion);
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
     int64_t fwversion = getFirmwareVersion();
@@ -118,7 +120,7 @@ void basictests() {
 
     LOG(logINFOBLUE,
         ("**************************************************\n"
-         "Hardware Version:\t\t 0x%x\n"
+         "Hardware Version:\t\t %s\n"
 
          "Detector IP Addr:\t\t 0x%x\n"
          "Detector MAC Addr:\t\t 0x%llx\n\n"
@@ -259,12 +261,31 @@ u_int64_t getFirmwareAPIVersion() {
     return ((bus_r(API_VERSION_REG) & API_VERSION_MSK) >> API_VERSION_OFST);
 }
 
+void getHardwareVersion(char *version) { 
+    strcpy(version, "unknown");
+    int hwversion = getHardwareVersionNumber();
+    const int hwNumberList[] = HARDWARE_VERSION_NUMBERS;
+    const char* hwNamesList[] = HARDWARE_VERSION_NAMES;
+    for (int i = 0; i != NUM_HARDWARE_VERSIONS; ++i) {
+        LOG(logDEBUG, ("0x%x %d 0x%x %s\n", hwversion, i, hwNumberList[i], hwNamesList[i]));
+        if (hwNumberList[i] == hwversion) {
+            strcpy(version, hwNamesList[i]);
+            return;
+        }
+    }
+}
+
 u_int16_t getHardwareVersionNumber() {
 #ifdef VIRTUAL
-    return 0;
+    return 0x2;
 #endif
     return ((bus_r(MCB_SERIAL_NO_REG) & MCB_SERIAL_NO_VRSN_MSK) >>
             MCB_SERIAL_NO_VRSN_OFST);
+}
+
+int isHardwareVersion_1_0() {
+    const int hwNumberList[] = HARDWARE_VERSION_NUMBERS;
+    return ((getHardwareVersionNumber() == hwNumberList[0]) ? 1 : 0);
 }
 
 u_int32_t getDetectorNumber() {

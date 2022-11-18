@@ -78,15 +78,17 @@ int getTestImageMode();
 void getServerVersion(char *version);
 u_int64_t getFirmwareVersion();
 u_int64_t getFirmwareAPIVersion();
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
-    defined(MYTHEN3D) || defined(GOTTHARD2D)
+#ifndef EIGERD
+void getHardwareVersion(char* version);
 u_int16_t getHardwareVersionNumber();
 #endif
 #if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 u_int16_t getHardwareSerialNumber();
 #endif
+#if defined(JUNGFRAUD) || defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(GOTTHARDD)
+int isHardwareVersion_1_0();
+#endif
 #ifdef JUNGFRAUD
-int isHardwareVersion2();
 int getChipVersion();
 void setChipVersion(int version);
 #endif
@@ -104,9 +106,6 @@ void setModuleId(int modid);
 #endif
 u_int64_t getDetectorMAC();
 u_int32_t getDetectorIP();
-#ifdef GOTTHARDD
-u_int32_t getBoardRevision();
-#endif
 
 // initialization
 void initControlServer();

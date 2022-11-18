@@ -231,6 +231,14 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def hardwareversion(self):
+        """
+        [Jungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] Hardware version of detector.
+        """
+        return ut.lhex(self.getHardwareVersion())
+
+    @property
+    @element
     def kernelversion(self):
         """
         Kernel version on the detector including time and date
@@ -1721,6 +1729,7 @@ class Detector(CppDetectorApi):
                 'client': self.clientversion,
                 'firmware': self.firmwareversion,
                 'detectorserver': self.detectorserverversion,
+                'hardware':self.hardwareversion,
                 'kernel': self.kernelversion,
                 'receiver': self.rx_version}
 

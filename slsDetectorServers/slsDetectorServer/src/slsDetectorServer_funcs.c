@@ -469,6 +469,7 @@ void function_table() {
     flist[F_GET_MODULE] = &get_module;
     flist[F_GET_SYNCHRONIZATION] = &get_synchronization;
     flist[F_SET_SYNCHRONIZATION] = &set_synchronization;
+    flist[F_GET_HARDWARE_VERSION] = &get_hardware_version;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -3449,7 +3450,7 @@ int write_adc_register(int file_des) {
 #if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
         AD9257_Set(addr, val);
 #elif GOTTHARDD
-        if (getBoardRevision() == 1) {
+        if (isHardwareVersion_1_0()) {
             AD9252_Set(addr, val);
         } else {
             AD9257_Set(addr, val);
@@ -4217,7 +4218,7 @@ int reboot_controller(int file_des) {
 #elif VIRTUAL
     ret = GOODBYE;
 #elif defined(MYTHEN3D) || defined(GOTTHARD2D)
-    if (getHardwareVersionNumber() == 0) {
+    if (isHardwareVersion_1_0()) {
         ret = FAIL;
         strcpy(mess, "Old board version, reboot by yourself please!\n");
         LOG(logINFORED, (mess));
@@ -4703,8 +4704,7 @@ int set_read_n_rows(int file_des) {
                         arg, READ_N_ROWS_MULTIPLE);
                 LOG(logERROR, (mess));
             }
-            // only for HW 2.0 (version = 3)
-            else if (isHardwareVersion2()) {
+            else if (isHardwareVersion_1_0()) {
                 ret = FAIL;
                 strcpy(mess, "Could not set number of rows. Only available for "
                              "Hardware Board version 2.0.\n");
@@ -8801,8 +8801,7 @@ int get_flip_rows(int file_des) {
     functionNotImplemented();
 #else
     // get only
-    // only for HW 2.0 (version = 3)
-    if (isHardwareVersion2()) {
+    if (isHardwareVersion_1_0()) {
         ret = FAIL;
         strcpy(mess, "Could not get flip rows. Only available for "
                      "Hardware Board version 2.0.\n");
@@ -8836,8 +8835,7 @@ int set_flip_rows(int file_des) {
                     arg);
             LOG(logERROR, (mess));
         }
-        // only for HW 2.0 (version = 3)
-        else if (isHardwareVersion2()) {
+        else if (isHardwareVersion_1_0()) {
             ret = FAIL;
             strcpy(mess, "Could not set flip rows. Only available for "
                          "Hardware Board version 2.0.\n");
@@ -9354,7 +9352,7 @@ int set_readout_speed(int file_des) {
     // only set
     if (Server_VerifyLock() == OK) {
 #ifdef JUNGFRAUD
-        if (arg == (int)FULL_SPEED && isHardwareVersion2()) {
+        if (arg == (int)FULL_SPEED && isHardwareVersion_1_0()) {
             ret = FAIL;
             strcpy(
                 mess,
@@ -10170,4 +10168,18 @@ int set_synchronization(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_hardware_version(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    char retvals[MAX_STR_LENGTH];
+    memset(retvals, 0, MAX_STR_LENGTH);
+#ifdef EIGERD
+    functionNotImplemented();
+#else    
+    getHardwareVersion(retvals);
+    LOG(logDEBUG1, ("hardware version retval: %s\n", retvals));
+#endif
+    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }

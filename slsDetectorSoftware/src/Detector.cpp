@@ -128,6 +128,10 @@ Result<std::string> Detector::getDetectorServerVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getDetectorServerVersion, pos);
 }
 
+Result<std::string> Detector::getHardwareVersion(Positions pos) const {
+    return pimpl->Parallel(&Module::getHardwareVersion, pos);
+}
+
 Result<std::string> Detector::getKernelVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getKernelVersion, pos);
 }
@@ -2300,6 +2304,7 @@ void Detector::setAdditionalJsonParameter(const std::string &key,
 void Detector::programFPGA(const std::string &fname,
                            const bool forceDeleteNormalFile, Positions pos) {
     LOG(logINFO) << "Updating Firmware...";
+    LOG(logINFO) << "Hardware Version: " << getHardwareVersion();
     std::vector<char> buffer = pimpl->readProgrammingFile(fname);
     pimpl->Parallel(&Module::programFPGA, pos, buffer, forceDeleteNormalFile);
     rebootController(pos);

@@ -103,7 +103,9 @@ void basictests() {
         return;
     }
 #endif
-    uint32_t boardrev = getBoardRevision();
+    char hversion[MAX_STR_LENGTH] = {0};
+    memset(hversion, 0, MAX_STR_LENGTH);
+    getHardwareVersion(hversion);
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
     int64_t fwversion = getFirmwareVersion();
@@ -113,7 +115,7 @@ void basictests() {
 
     LOG(logINFOBLUE,
         ("**************************************************\n"
-         "Board Revision         : 0x%x\n"
+         "Hardware Revision      : %s\n"
 
          "Detector IP Addr       : 0x%x\n"
          "Detector MAC Addr      : 0x%llx\n\n"
@@ -121,7 +123,7 @@ void basictests() {
          "Firmware Version       : 0x%llx\n"
          "Software Version       : %s\n"
          "********************************************************\n",
-         boardrev,
+         hversion,
 
          ipadd, (long long unsigned int)macadd,
 
@@ -335,12 +337,31 @@ u_int32_t getDetectorIP() {
     return res;
 }
 
-u_int32_t getBoardRevision() {
+void getHardwareVersion(char *version) { 
+    strcpy(version, "unknown");
+    int hwversion = getHardwareVersionNumber();
+    const int hwNumberList[] = HARDWARE_VERSION_NUMBERS;
+    const char* hwNamesList[] = HARDWARE_VERSION_NAMES;
+    for (int i = 0; i != NUM_HARDWARE_VERSIONS; ++i) {
+        LOG(logDEBUG, ("0x%x %d 0x%x %s\n", hwversion, i, hwNumberList[i], hwNamesList[i]));
+        if (hwNumberList[i] == hwversion) {
+            strcpy(version, hwNamesList[i]);
+            return;
+        }
+    }
+}
+
+u_int16_t getHardwareVersionNumber() {
 #ifdef VIRTUAL
-    return 0;
+    return 0x2;
 #endif
     return ((bus_r(BOARD_REVISION_REG) & BOARD_REVISION_MSK) >>
             BOARD_REVISION_OFST);
+}
+
+int isHardwareVersion_1_0() {
+    const int hwNumberList[] = HARDWARE_VERSION_NUMBERS;
+    return ((getHardwareVersionNumber() == hwNumberList[0]) ? 1 : 0);
 }
 
 /* initialization */
@@ -394,7 +415,7 @@ void setupDetector() {
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 
     // adc
-    if (getBoardRevision() == 1) {
+    if (isHardwareVersion_1_0()) {
         AD9252_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK,
                           ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK,
                           ADC_SPI_SRL_DT_OTPT_OFST);
@@ -579,7 +600,7 @@ void setDAQRegister() {
 
     // 0x1f16(board rev 1) 0x1f0f(board rev 2)
     u_int32_t tokenTiming =
-        ((getBoardRevision() == 1) ? DAQ_TKN_TMNG_BRD_RVSN_1_VAL
+        ((isHardwareVersion_1_0()) ? DAQ_TKN_TMNG_BRD_RVSN_1_VAL
                                    : DAQ_TKN_TMNG_BRD_RVSN_2_VAL);
 
     // 0x13f(no roi), 0x7f(roi)

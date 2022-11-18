@@ -9009,7 +9009,8 @@ int get_module_id(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
-#if !(defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D))
+#if !(defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D) ||           \
+      defined(JUNGFRAUD))
     functionNotImplemented();
 #else
     retval = getModuleId(&ret, mess);

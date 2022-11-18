@@ -440,13 +440,13 @@ Time before end of exposure when comparator is disabled */
 #define COORD_COL_INNER_OFST                (16)
 #define COORD_COL_INNER_MSK                 (0x0000FFFF << COORD_COL_INNER_OFST)
 
-/** Module column coordinates */
-#define COORD_RESERVED_REG                  (0x7E << MEM_MAP_SHIFT)
+/** Module ID coordinates */
+#define MOD_ID_REG                          (0x7E << MEM_MAP_SHIFT)
 
-#define COORD_RESERVED_OUTER_OFST           (0)
-#define COORD_RESERVED_OUTER_MSK            (0x0000FFFF << COORD_RESERVED_OUTER_OFST)
-#define COORD_RESERVED_INNER_OFST           (16)
-#define COORD_RESERVED_INNER_MSK            (0x0000FFFF << COORD_RESERVED_INNER_OFST)
+#define MOD_ID_OUTER_OFST                   (0)
+#define MOD_ID_OUTER_MSK                    (0x0000FFFF << MOD_ID_OUTER_OFST)
+#define MOD_ID_INNER_OFST                   (16)
+#define MOD_ID_INNER_MSK                    (0x0000FFFF << MOD_ID_INNER_OFST)
 
 /* ASIC Control Register */
 #define ASIC_CTRL_REG                       (0x7F << MEM_MAP_SHIFT)

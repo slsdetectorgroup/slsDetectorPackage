@@ -274,7 +274,7 @@ int ALTERA_PLL_SetOuputFrequency(int clkIndex, int pllVCOFreqMhz, int value) {
                     clkIndex, value, pllVCOFreqMhz));
 
     // calculate output frequency
-    int total_div = (float)pllVCOFreqMhz / (float)value;
+    uint32_t total_div = (float)pllVCOFreqMhz / (float)value;
 
     // assume 50% duty cycle
     uint32_t low_count = total_div / 2;

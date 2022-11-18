@@ -79,13 +79,14 @@ void getServerVersion(char *version);
 u_int64_t getFirmwareVersion();
 u_int64_t getFirmwareAPIVersion();
 #ifndef EIGERD
-void getHardwareVersion(char* version);
+void getHardwareVersion(char *version);
 u_int16_t getHardwareVersionNumber();
 #endif
 #if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 u_int16_t getHardwareSerialNumber();
 #endif
-#if defined(JUNGFRAUD) || defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(GOTTHARDD)
+#if defined(JUNGFRAUD) || defined(GOTTHARD2D) || defined(MYTHEN3D) ||          \
+    defined(GOTTHARDD)
 int isHardwareVersion_1_0();
 #endif
 #ifdef JUNGFRAUD

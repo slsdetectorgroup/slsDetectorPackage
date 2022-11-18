@@ -109,7 +109,8 @@ void basictests() {
     getServerVersion(swversion);
     int64_t sw_fw_apiversion = 0;
     uint32_t requiredFirmwareVersion =
-        (isHardwareVersion_1_0() ? REQRD_FRMWRE_VRSN_BOARD2 : REQRD_FRMWRE_VRSN);
+        (isHardwareVersion_1_0() ? REQRD_FRMWRE_VRSN_BOARD2
+                                 : REQRD_FRMWRE_VRSN);
 
     if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
         sw_fw_apiversion = getFirmwareAPIVersion();
@@ -275,13 +276,14 @@ u_int64_t getFirmwareAPIVersion() {
     return ((bus_r(API_VERSION_REG) & API_VERSION_MSK) >> API_VERSION_OFST);
 }
 
-void getHardwareVersion(char *version) { 
+void getHardwareVersion(char *version) {
     strcpy(version, "unknown");
     int hwversion = getHardwareVersionNumber();
     const int hwNumberList[] = HARDWARE_VERSION_NUMBERS;
-    const char* hwNamesList[] = HARDWARE_VERSION_NAMES;
+    const char *hwNamesList[] = HARDWARE_VERSION_NAMES;
     for (int i = 0; i != NUM_HARDWARE_VERSIONS; ++i) {
-        LOG(logDEBUG, ("0x%x %d 0x%x %s\n", hwversion, i, hwNumberList[i], hwNamesList[i]));
+        LOG(logDEBUG, ("0x%x %d 0x%x %s\n", hwversion, i, hwNumberList[i],
+                       hwNamesList[i]));
         if (hwNumberList[i] == hwversion) {
             strcpy(version, hwNamesList[i]);
             return;
@@ -487,7 +489,7 @@ void setupDetector() {
     configureASICTimer();
     bus_w(ADC_PORT_INVERT_REG,
           (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
-                                : ADC_PORT_INVERT_VAL));
+                                   : ADC_PORT_INVERT_VAL));
 
     initReadoutConfiguration();
 
@@ -762,7 +764,8 @@ int readConfigFile() {
             if (version == 11 && isHardwareVersion_1_0()) {
                 strcpy(initErrorMessage,
                        "Chip version 1.1 (from on-board config file) is "
-                       "incompatible with hardware version v1.0. Please update board or correct on-board config file.\n");
+                       "incompatible with hardware version v1.0. Please update "
+                       "board or correct on-board config file.\n");
                 break;
             }
 
@@ -836,8 +839,9 @@ int getDynamicRange(int *retval) {
 
 void setADCInvertRegister(uint32_t val) {
     LOG(logINFO, ("Setting ADC Port Invert Reg to 0x%x\n", val));
-    uint32_t defaultValue = (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
-                                                  : ADC_PORT_INVERT_VAL);
+    uint32_t defaultValue =
+        (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
+                                 : ADC_PORT_INVERT_VAL);
     uint32_t changeValue = defaultValue ^ val;
     LOG(logINFO, ("\t default: 0x%x, final:0x%x\n", defaultValue, changeValue));
     bus_w(ADC_PORT_INVERT_REG, changeValue);
@@ -846,7 +850,7 @@ void setADCInvertRegister(uint32_t val) {
 uint32_t getADCInvertRegister() {
     uint32_t readValue = bus_r(ADC_PORT_INVERT_REG);
     int32_t defaultValue = (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
-                                                 : ADC_PORT_INVERT_VAL);
+                                                    : ADC_PORT_INVERT_VAL);
     uint32_t val = defaultValue ^ readValue;
     LOG(logDEBUG1, ("\tread:0x%x, default:0x%x returned:0x%x\n", readValue,
                     defaultValue, val));

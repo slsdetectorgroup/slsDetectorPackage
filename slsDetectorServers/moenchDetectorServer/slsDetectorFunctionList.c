@@ -347,13 +347,14 @@ uint64_t getFirmwareAPIVersion() {
     return ((bus_r(API_VERSION_REG) & API_VERSION_MSK) >> API_VERSION_OFST);
 }
 
-void getHardwareVersion(char *version) { 
+void getHardwareVersion(char *version) {
     strcpy(version, "unknown");
     int hwversion = getHardwareVersionNumber();
     const int hwNumberList[] = HARDWARE_VERSION_NUMBERS;
-    const char* hwNamesList[] = HARDWARE_VERSION_NAMES;
+    const char *hwNamesList[] = HARDWARE_VERSION_NAMES;
     for (int i = 0; i != NUM_HARDWARE_VERSIONS; ++i) {
-        LOG(logDEBUG, ("0x%x %d 0x%x %s\n", hwversion, i, hwNumberList[i], hwNamesList[i]));
+        LOG(logDEBUG, ("0x%x %d 0x%x %s\n", hwversion, i, hwNumberList[i],
+                       hwNamesList[i]));
         if (hwNumberList[i] == hwversion) {
             strcpy(version, hwNamesList[i]);
             return;

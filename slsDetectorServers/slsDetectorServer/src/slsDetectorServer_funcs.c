@@ -4703,8 +4703,7 @@ int set_read_n_rows(int file_des) {
                         "of %d\n",
                         arg, READ_N_ROWS_MULTIPLE);
                 LOG(logERROR, (mess));
-            }
-            else if (isHardwareVersion_1_0()) {
+            } else if (isHardwareVersion_1_0()) {
                 ret = FAIL;
                 strcpy(mess, "Could not set number of rows. Only available for "
                              "Hardware Board version 2.0.\n");
@@ -8834,8 +8833,7 @@ int set_flip_rows(int file_des) {
             sprintf(mess, "Could not set flip rows. Invalid argument %d.\n",
                     arg);
             LOG(logERROR, (mess));
-        }
-        else if (isHardwareVersion_1_0()) {
+        } else if (isHardwareVersion_1_0()) {
             ret = FAIL;
             strcpy(mess, "Could not set flip rows. Only available for "
                          "Hardware Board version 2.0.\n");
@@ -10177,7 +10175,7 @@ int get_hardware_version(int file_des) {
     memset(retvals, 0, MAX_STR_LENGTH);
 #ifdef EIGERD
     functionNotImplemented();
-#else    
+#else
     getHardwareVersion(retvals);
     LOG(logDEBUG1, ("hardware version retval: %s\n", retvals));
 #endif

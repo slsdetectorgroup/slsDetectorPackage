@@ -8,8 +8,10 @@
 #define REQRD_FRMWR_VRSN        0x220825
 
 #define NUM_HARDWARE_VERSIONS (1)
-#define HARDWARE_VERSION_NUMBERS {0x3f}
-#define HARDWARE_VERSION_NAMES {"5.1"}
+#define HARDWARE_VERSION_NUMBERS                                               \
+    { 0x3f }
+#define HARDWARE_VERSION_NAMES                                                 \
+    { "5.1" }
 
 #define LINKED_SERVER_NAME "ctbDetectorServer"
 
@@ -88,7 +90,6 @@
 
 #define MAXIMUM_ADC_CLK  (65)
 #define PLL_VCO_FREQ_MHZ (800)
-
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

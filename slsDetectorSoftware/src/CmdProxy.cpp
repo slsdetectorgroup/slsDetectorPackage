@@ -278,7 +278,7 @@ std::string CmdProxy::Versions(int action) {
         os << "\nType     : " << OutString(det->getDetectorType())
            << "\nRelease  : " << det->getPackageVersion() << std::hex
            << "\nClient   : " << det->getClientVersion();
-        os << "\nFirmware : ";    
+        os << "\nFirmware : ";
         if (det->getDetectorType().squash() == defs::EIGER) {
             os << OutString(t);
         } else {
@@ -288,8 +288,7 @@ std::string CmdProxy::Versions(int action) {
            << OutString(
                   det->getDetectorServerVersion(std::vector<int>{det_id}));
         os << "\nHardware : "
-           << OutString(
-                  det->getHardwareVersion(std::vector<int>{det_id}));          
+           << OutString(det->getHardwareVersion(std::vector<int>{det_id}));
         os << "\nKernel   : "
            << OutString(det->getKernelVersion({std::vector<int>{det_id}}));
         if (det->getUseReceiverFlag().squash(true)) {

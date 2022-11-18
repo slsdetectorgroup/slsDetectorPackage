@@ -14,8 +14,7 @@ namespace sls {
 #define gettid() syscall(SYS_gettid)
 #endif
 
-
-Arping::Arping(){}
+Arping::Arping() {}
 
 Arping::~Arping() {
     if (IsRunning()) {

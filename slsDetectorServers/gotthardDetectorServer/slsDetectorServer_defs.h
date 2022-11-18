@@ -5,8 +5,10 @@
 #include <stdlib.h>
 
 #define NUM_HARDWARE_VERSIONS (2)
-#define HARDWARE_VERSION_NUMBERS {0x1, 0x2}
-#define HARDWARE_VERSION_NAMES {"1.0", "2.0"}
+#define HARDWARE_VERSION_NUMBERS                                               \
+    { 0x1, 0x2 }
+#define HARDWARE_VERSION_NAMES                                                 \
+    { "1.0", "2.0" }
 
 #define LINKED_SERVER_NAME "gotthardDetectorServer"
 

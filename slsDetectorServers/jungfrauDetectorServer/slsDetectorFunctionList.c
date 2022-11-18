@@ -328,23 +328,14 @@ u_int32_t getDetectorNumber() {
 }
 
 int getModuleId(int *ret, char *mess) {
-    int outer = ((bus_r(MOD_ID_REG) & MOD_ID_OUTER_MSK) >> MOD_ID_OUTER_OFST);
-    int inner = ((bus_r(MOD_ID_REG) & MOD_ID_INNER_MSK) >> MOD_ID_INNER_OFST);
-    if (outer != inner) {
-        *ret = FAIL;
-        sprintf(mess, "Inconsistent Module Id. Inner: %d, Outer: %d\n", inner,
-                outer);
-        LOG(logERROR, (mess));
-    }
-    return outer;
+    return ((bus_r(MOD_ID_REG) & MOD_ID_MSK) >> MOD_ID_OFST);
 }
 
 void setModuleId(int modid) {
     LOG(logINFOBLUE, ("Setting module id in fpga: %d\n", modid));
-    int outerModId = ((modid << MOD_ID_OUTER_OFST) & MOD_ID_OUTER_MSK);
-    int innerModId = ((modid << MOD_ID_INNER_OFST) & MOD_ID_INNER_MSK);
-    uint32_t value = outerModId | innerModId;
-    bus_w(MOD_ID_REG, value);
+    bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) & ~MOD_ID_MSK);
+    bus_w(MOD_ID_REG,
+          bus_r(MOD_ID_REG) | ((modid << MOD_ID_OFST) & MOD_ID_MSK));
 }
 
 int updateModuleId() {

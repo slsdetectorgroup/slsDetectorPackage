@@ -10,9 +10,6 @@ find_package(Qt5 5.9 COMPONENTS Widgets Core Gui REQUIRED)
 find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 
-# find_package(Qwt 6.1 REQUIRED)
-
-# add_subdirectory(${PROJECT_SOURCE_DIR}/libs/qwt)  
 
 set(SOURCES
     slsDetectorPlotting/src/SlsQt1DPlot.cpp
@@ -91,7 +88,6 @@ add_executable(slsDetectorGui
 
 target_include_directories(slsDetectorGui PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    # "$<BUILD_INTERFACE:${QWT_INCLUDE_DIR}>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/slsDetectorPlotting/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     "$<BUILD_INTERFACE:${QT5Widgets_INCLUDE_DIRS}>"
@@ -102,7 +98,6 @@ target_include_directories(slsDetectorGui PUBLIC
 target_link_libraries(slsDetectorGui PUBLIC
     slsProjectOptions 
     slsDetectorStatic
-    # ${QWT_LIBRARIES}
     PNG::PNG
     ZLIB::ZLIB
     Qt5::Widgets

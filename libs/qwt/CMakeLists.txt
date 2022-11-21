@@ -11,9 +11,11 @@ set(QWTBASE ${CMAKE_CURRENT_BINARY_DIR}/${INTERNALQWTDIR})
 file(MAKE_DIRECTORY ${QWTBASE})
 execute_process(
 	COMMAND tar -xf ${CMAKE_CURRENT_SOURCE_DIR}/qwt-6.1.5.tar.bz2 -C ${QWTBASE} --strip-components=1
-	COMMAND_ERROR_IS_FATAL ANY
+	RESULT_VARIABLE ret
 )
-
+if(ret AND NOT ret EQUAL 0)
+    message( FATAL_ERROR "Could not unpack qwt")
+endif()
 
 # # Without this define moc files are not included and linking of examples fails.
 add_definitions(-DQWT_MOC_INCLUDE)

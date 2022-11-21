@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
+
 """
 Created on Wed May 24 09:44:53 2017
 
@@ -16,13 +17,9 @@ from numpy import *
 from matplotlib.pyplot import *
 from matplotlib.patches import Rectangle
 import os
+import argparse
 
 ###############################################################################
-# Input the folder of the pattern file
-Folder = "./patterns/"
-# Prefix name of the .pat and .alias file
-File_pat = "test_v2"
-
 # COLORS AND LINE STYLES
 # alternating colors of the plots (2 needed)
 colors_plot = ['tab:blue', 'tab:orange']
@@ -43,8 +40,6 @@ alpha_loop_rect = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
 clock_vertical_lines_spacing = 1
 show_clocks_number = True
 
-# Verbosity
-verbose = False
 ###############################################################################
 
 
@@ -87,6 +82,20 @@ def hex2binary(string_num, width=None):
     return dec2binary(hex2dec(string_num.upper()), width=width)
 
 
+parser = argparse.ArgumentParser()
+
+parser.add_argument('-d', '--directory', required = True, help = "Working directory where the pattern is located")
+parser.add_argument('-p', '--pattern', required = True, help = "Pattern name")
+parser.add_argument('-a', '--alias', help = "Alias name")
+parser.add_argument('-v', '--verbose', action='store_true')
+
+args = parser.parse_args()
+
+Folder = args.directory
+File_pat = args.pattern
+File_alias = args.alias
+verbose = args.verbose
+
 # Look at the alias file and generate the lookup table for pin names
 # Create a 64 bit look up table
 table = []
@@ -102,26 +111,34 @@ for i in range(64):
         table.append([str(i+1), ""])
 
 # Loop all lines
-with open(Folder+"/" + File_pat + ".alias") as f:
-    lines = f.readlines()
-f.close()
+try:
+    with open(Folder + "/" + File_alias + ".alias") as f:
+        lines = f.readlines()
+        f.close()
+        nlines = len(lines)
+except:
+    nlines = 0
 
-nlines = len(lines)
-for i in range(nlines):
-    # whether the line is bit definition
-    if lines[i][0:3] == "BIT":
-        # split words
-        words = lines[i].split()
-        bit_num = int(words[0][3:])
-        table[bit_num][0] = words[0][3:]
-        table[bit_num][1] = words[1]
+if nlines > 0:
+    for i in range(nlines):
+        # whether the line is bit definition
+        if lines[i][0:3] == "BIT":
+            # split words
+            words = lines[i].split()
+            bit_num = int(words[0][3:])
+            table[bit_num][0] = words[0][3:]
+            table[bit_num][1] = words[1]
+else:
+    for i in range(64):
+        table[i][0] = i
+        table[i][1] = f'BIT#{i}'
+
 if verbose:
     print(table)
 
-
 # Load the pattern and get all lines
 # Loop all lines
-with open(Folder+"/"+File_pat+".pat") as f_pat:
+with open(Folder + "/" + File_pat + ".pat") as f_pat:
     lines_pat = f_pat.readlines()
 f_pat.close()
 
@@ -131,6 +148,7 @@ nlines_pat = len(lines_pat)
 cnt = 0
 if verbose:
     print("The total number of lines of pattern:", nlines_pat)
+
 # Loop all lines of pattern
 waittime0 = None
 waittime1 = None

@@ -697,6 +697,9 @@ class CmdProxy {
         {"rx_udpport", "udp_dstport"},
         {"rx_udpport2", "udp_dstport2"},
         {"flowcontrol_10g", "flowcontrol10g"},
+        {"txndelay_frame", "txdelay_frame"},
+        {"txndelay_left", "txdelay_left"},
+        {"txndelay_right", "txdelay_right"},
 
         /* Receiver Config */
         {"r_silent", "rx_silent"},
@@ -892,9 +895,10 @@ class CmdProxy {
         {"rx_printconfig", &CmdProxy::rx_printconfig},
         {"tengiga", &CmdProxy::tengiga},
         {"flowcontrol10g", &CmdProxy::flowcontrol10g},
-        {"txndelay_frame", &CmdProxy::txndelay_frame},
-        {"txndelay_left", &CmdProxy::txndelay_left},
-        {"txndelay_right", &CmdProxy::txndelay_right},
+        {"txdelay_frame", &CmdProxy::txdelay_frame},
+        {"txdelay_left", &CmdProxy::txdelay_left},
+        {"txdelay_right", &CmdProxy::txdelay_right},
+        {"txdelay", &CmdProxy::TransmissionDelay},
 
         /* Receiver Config */
         {"rx_hostname", &CmdProxy::ReceiverHostname},
@@ -1157,6 +1161,7 @@ class CmdProxy {
     std::string UDPSourceIP2(int action);
     std::string UDPDestinationIP(int action);
     std::string UDPDestinationIP2(int action);
+    std::string TransmissionDelay(int action);
     /* Receiver Config */
     std::string ReceiverHostname(int action);
     std::string Rx_ROI(int action);
@@ -1684,24 +1689,24 @@ class CmdProxy {
                            "[0, 1]\n\t[Eiger][Jungfrau] 10GbE Flow Control.");
 
     INTEGER_COMMAND_VEC_ID(
-        txndelay_frame, getTransmissionDelayFrame, setTransmissionDelayFrame,
+        txdelay_frame, getTransmissionDelayFrame, setTransmissionDelayFrame,
         StringTo<int>,
         "[n_delay]\n\t[Eiger][Jungfrau][Mythen3] Transmission delay of first "
         "udp packet being streamed out of the module.\n\t[Jungfrau] [0-31] "
         "Each value represents 1 ms\n\t[Eiger] Additional delay to "
-        "txndelay_left and txndelay_right. Each value represents 10ns. Typical "
+        "txdelay_left and txdelay_right. Each value represents 10ns. Typical "
         "value is 50000.\n\t[Mythen3] [0-16777215] Each value represents 8 ns "
         "(125 MHz clock), max is 134 ms.");
 
     INTEGER_COMMAND_VEC_ID(
-        txndelay_left, getTransmissionDelayLeft, setTransmissionDelayLeft,
+        txdelay_left, getTransmissionDelayLeft, setTransmissionDelayLeft,
         StringTo<int>,
         "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image "
         "being streamed out of the module's left UDP port. Each value "
         "represents 10ns. Typical value is 50000.");
 
     INTEGER_COMMAND_VEC_ID(
-        txndelay_right, getTransmissionDelayRight, setTransmissionDelayRight,
+        txdelay_right, getTransmissionDelayRight, setTransmissionDelayRight,
         StringTo<int>,
         "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image "
         "being streamed out of the module's right UDP port. Each value "

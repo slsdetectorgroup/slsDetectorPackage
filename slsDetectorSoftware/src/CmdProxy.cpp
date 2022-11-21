@@ -1702,6 +1702,42 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
     return os.str();
 }
 
+std::string CmdProxy::TransmissionDelay(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_delay]\n\t[Eiger][Jungfrau][Mythen3] Set transmission delay "
+              "for all modules in the detector using the step size "
+              "provided.Sets up \n\t\t[Eiger] txdelay_left to (2 * mod_index * "
+              "n_delay), \n\t\t[Eiger] txdelay_right to ((2 * mod_index + 1) * "
+              "n_delay) and \n\t\t[Eiger] txdelay_frame to (2 *num_modules * "
+              "n_delay)  \n\t\t[Jungfrau][Mythen3] txdelay_frame to "
+              "(num_modules * n_delay)  \nfor every module."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (det_id != -1) {
+            throw RuntimeError("Cannot execute this at module level");
+        }
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getTransmissionDelay();
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (det_id != -1) {
+            throw RuntimeError("Cannot execute this at module level");
+        }
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->setTransmissionDelay(StringTo<int>(args[0]));
+        os << args.front() << '\n';
+    } else {
+        throw RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Receiver Config */
 std::string CmdProxy::ReceiverHostname(int action) {
     std::ostringstream os;

@@ -431,6 +431,75 @@ void DetectorImpl::setGapPixelsinCallback(const bool enable) {
     shm()->gapPixels = enable;
 }
 
+int DetectorImpl::getTransmissionDelay() const {
+    bool eiger = false;
+    switch (shm()->detType) {
+    case JUNGFRAU:
+    case MYTHEN3:
+        break;
+    case EIGER:
+        eiger = true;
+        break;
+    default:
+        throw RuntimeError(
+            "Transmission delay is not implemented for the this detector.");
+    }
+    if (!eiger && size() <= 1) {
+        throw RuntimeError(
+            "Cannot get intermodule transmission delays with just one module");
+    }
+    int step = 0;
+    if (eiger) {
+        // between left and right
+        step = modules[0]->getTransmissionDelayRight();
+    } else {
+        // between first and second
+        step = modules[1]->getTransmissionDelayFrame();
+    }
+    for (int i = 0; i != size(); ++i) {
+        if (eiger) {
+            if ((modules[i]->getTransmissionDelayLeft() != (3 * i * step)) ||
+                (modules[i]->getTransmissionDelayRight() !=
+                 ((3 * i + 1) * step)) ||
+                (modules[i]->getTransmissionDelayFrame() !=
+                 ((3 * i + 2) * step))) {
+                throw RuntimeError("Could not get the transmission delay. "
+                                   "Unequal delays between modules.");
+            }
+        } else {
+            if (modules[i]->getTransmissionDelayFrame() != (i * step)) {
+                throw RuntimeError("Could not get the transmission delay. "
+                                   "Unequal delays between modules.");
+            }
+        }
+    }
+    return step;
+}
+
+void DetectorImpl::setTransmissionDelay(int step) {
+    bool eiger = false;
+    switch (shm()->detType) {
+    case JUNGFRAU:
+    case MYTHEN3:
+        break;
+    case EIGER:
+        eiger = true;
+        break;
+    default:
+        throw RuntimeError(
+            "Transmission delay is not implemented for the this detector.");
+    }
+    for (int i = 0; i != size(); ++i) {
+        if (eiger) {
+            modules[i]->setTransmissionDelayLeft(3 * i * step);
+            modules[i]->setTransmissionDelayRight((3 * i + 1) * step);
+            modules[i]->setTransmissionDelayFrame((3 * i + 2) * step);
+        } else {
+            modules[i]->setTransmissionDelayFrame(i * step);
+        }
+    }
+}
+
 int DetectorImpl::destroyReceivingDataSockets() {
     LOG(logINFO) << "Going to destroy data sockets";
     // close socket

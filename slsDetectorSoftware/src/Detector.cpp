@@ -1116,6 +1116,14 @@ void Detector::setTransmissionDelayRight(int value, Positions pos) {
     pimpl->Parallel(&Module::setTransmissionDelayRight, pos, value);
 }
 
+int Detector::getTransmissionDelay() const {
+    return pimpl->getTransmissionDelay();
+}
+
+void Detector::setTransmissionDelay(int step) {
+    pimpl->setTransmissionDelay(step);
+}
+
 // Receiver
 
 Result<bool> Detector::getUseReceiverFlag(Positions pos) const {

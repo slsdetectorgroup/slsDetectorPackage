@@ -2665,7 +2665,7 @@ TEST_CASE("txndelay_frame", "[.cmd]") {
         det_type == defs::MYTHEN3) {
         auto prev_val = det.getTransmissionDelayFrame();
         auto val = 5000;
-        if (det_type == defs::JUNGFRAU) {
+        if (det_type == defs::JUNGFRAU || det_type == defs::MYTHEN3) {
             val = 5;
         }
         std::string sval = std::to_string(val);
@@ -2681,6 +2681,62 @@ TEST_CASE("txndelay_frame", "[.cmd]") {
         }
     } else {
         REQUIRE_THROWS(proxy.Call("txndelay_frame", {}, -1, GET));
+    }
+}
+
+TEST_CASE("txdelay", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+        det_type == defs::MYTHEN3) {
+        Result<int> prev_left, prev_right;
+        bool eiger = false;
+        if (det_type == defs::EIGER) {
+            eiger = true;
+            prev_left = det.getTransmissionDelayLeft();
+            prev_right = det.getTransmissionDelayRight();
+        }
+        auto prev_frame = det.getTransmissionDelayFrame();
+        auto val = 5000;
+        if (det_type == defs::JUNGFRAU || det_type == defs::MYTHEN3) {
+            val = 5;
+        }
+        std::string sval = std::to_string(val);
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("txdelay", {sval}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txdelay " + sval + "\n");
+            proxy.Call("txdelay", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txdelay " + sval + "\n");
+        }
+        // test other mods
+        for (int i = 0; i != det.size(); ++i) {
+            if (eiger) {
+                REQUIRE(det.getTransmissionDelayLeft({i}).squash(-1) ==
+                        (3 * i * val));
+                REQUIRE(det.getTransmissionDelayRight({i}).squash(-1) ==
+                        ((3 * i + 1) * val));
+                REQUIRE(det.getTransmissionDelayFrame({i}).squash(-1) ==
+                        ((3 * i + 2) * val));
+            } else {
+                REQUIRE(det.getTransmissionDelayFrame({i}).squash(-1) ==
+                        (i * val));
+            }
+        }
+        // not a module level command
+        REQUIRE_THROWS(proxy.Call("txdelay", {"5"}, 0, PUT));
+        REQUIRE_THROWS(proxy.Call("txdelay", {}, 0, GET));
+
+        for (int i = 0; i != det.size(); ++i) {
+            if (eiger) {
+                det.setTransmissionDelayLeft(prev_left[i]);
+                det.setTransmissionDelayRight(prev_right[i]);
+            }
+            det.setTransmissionDelayFrame(prev_frame[i]);
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("txdelay", {}, -1, GET));
     }
 }
 

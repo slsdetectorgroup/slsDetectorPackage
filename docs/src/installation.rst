@@ -71,7 +71,7 @@ Step 1. Download Source Code from github
 
 | **Pybind**
 | v7.0.0+:
-|   pybind11 packaged into 'libs/pybind'. No longer a submodule. 
+|   pybind11 packaged into 'libs/pybind'. No longer a submodule. No need for "recursive" or "submodule update".
 | 
 | Older versions:
 |   pybind11 is a submodule> Must be cloned using "recursive" and updated when switching between versions using the following commands.

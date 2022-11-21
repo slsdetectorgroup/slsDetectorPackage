@@ -104,7 +104,7 @@ Build using CMake
     mkdir build && cd build
 
     # configure & generate Makefiles using cmake
-    # configure by listing all your options
+    # by listing all your options (alternately use ccmake described below)
     # cmake3 for some systems
     cmake ../slsDetectorPackage -DCMAKE_INSTALL_PREFIX=/your/install/path
 
@@ -114,24 +114,28 @@ Build using CMake
     # install headers and libs in /your/install/path directory
     make install
 
-===============================     ===========================================
-Example cmake options               Comment
-===============================     ===========================================
--DSLS_USE_PYTHON=ON                 Python
--DPython_FIND_VIRTUALENV=ONLY       Only the conda environments for python
--DZeroMQ_HINT=/usr/lib64            System zmq instead of conda
--DSLS_USE_GUI=ON                    GUI
-===============================     ===========================================
 
-Instead of the cmake command, one can use ccmake to open a GUI with a list of options to configure and generate Makefiles at ease.
+Instead of the cmake command, one can use ccmake to get a list of options to configure and generate Makefiles at ease.
 
 .. code-block:: bash
 
     # ccmake3 for some systems
     ccmake ..
+ 
+    # choose the options
+    # first press [c] - configure
+    # then press [g] - generate
 
-    # press [c] - configure
-    # press [g] - generate
+
+
+===============================     ===========================================
+Example cmake options               Comment
+===============================     ===========================================
+-DSLS_USE_PYTHON=ON                 Python
+-DPython_FIND_VIRTUALENV=ONLY       Python from only the conda environment 
+-DZeroMQ_HINT=/usr/lib64            System zmq instead of conda
+-DSLS_USE_GUI=ON                    GUI
+===============================     ===========================================
 
 
 

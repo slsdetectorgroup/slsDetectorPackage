@@ -58,10 +58,12 @@ We have three different packages available:
     conda search slsdet
 
 
+
 Build from source
 -------------------
 
-Step 1. Download Source Code from github
+
+1. Download Source Code from github
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
@@ -88,11 +90,12 @@ Step 1. Download Source Code from github
 
 .. _build from source using cmake:
 
-Step 2. Build from Source
+
+
+2. Build from Source
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-
-Option A: Using CMake
+Build using CMake
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
@@ -132,7 +135,7 @@ Instead of the cmake command, one can use ccmake to open a GUI with a list of op
 
 
 
-Step 2. Option B: Using in-build cmk.sh script
+Build using in-build cmk.sh script
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
@@ -178,7 +181,7 @@ Step 2. Option B: Using in-build cmk.sh script
     ./cmk.sh -bj5 -q /usr/lib64
 
 
-On old distributions
+Build on old distributions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If your linux distribution doesn't come with a C++11 compiler (gcc>4.8) then 

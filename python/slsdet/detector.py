@@ -619,25 +619,46 @@ class Detector(CppDetectorApi):
 
     @property
     @element
-    def txndelay_frame(self):
+    def txdelay(self):
+        """
+        [Eiger][Jungfrau][Mythen3] Set transmission delay for all modules in the detector using the step size provided.
+        
+        Note
+        ----
+        Sets up the following for every module:\n
+        \t\t[Eiger] txdelay_left to (2 * mod_index * n_delay), \n
+        \t\t[Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay) and \n
+        \t\t[Eiger] txdelay_frame to (2 *num_modules * n_delay)  \n
+        \t\t[Jungfrau][Mythen3] txdelay_frame to (num_modules * n_delay)\n\n
+        Please refer txdelay_left, txdelay_right and txdelay_frame for details.
+        """
+        return self.getTransmissionDelay()
+
+    @txdelay.setter
+    def txdelay(self, args):
+        ut.set_using_dict(self.setTransmissionDelay, args)
+
+    @property
+    @element
+    def txdelay_frame(self):
         """
         [Eiger][Jungfrau][Mythen3] Transmission delay of first udp packet being streamed out of the module.\n
 
         Note
         ----
         [Jungfrau] [0-31] Each value represents 1 ms. \n 
-        [Eiger] Additional delay to txndelay_left and txndelay_right. Each value represents 10ns. Typical value is 50000. \n
+        [Eiger] Additional delay to txdelay_left and txdelay_right. Each value represents 10ns. Typical value is 50000. \n
         [Mythen3] [0-16777215] Each value represents 8 ns (125 MHz clock), max is 134 ms.
         """
         return self.getTransmissionDelayFrame()
 
-    @txndelay_frame.setter
-    def txndelay_frame(self, args):
+    @txdelay_frame.setter
+    def txdelay_frame(self, args):
         ut.set_using_dict(self.setTransmissionDelayFrame, args)
 
     @property
     @element
-    def txndelay_left(self):
+    def txdelay_left(self):
         """[Eiger] Transmission delay of first packet in an image being streamed out of the module's left UDP port. 
 
         Note
@@ -646,13 +667,13 @@ class Detector(CppDetectorApi):
         """
         return self.getTransmissionDelayLeft()
 
-    @txndelay_left.setter
-    def txndelay_left(self, args):
+    @txdelay_left.setter
+    def txdelay_left(self, args):
         ut.set_using_dict(self.setTransmissionDelayLeft, args)
 
     @property
     @element
-    def txndelay_right(self):
+    def txdelay_right(self):
         """
         [Eiger] Transmission delay of first packet in an image being streamed out of the module's right UDP port. 
 
@@ -662,8 +683,8 @@ class Detector(CppDetectorApi):
         """
         return self.getTransmissionDelayRight()
 
-    @txndelay_right.setter
-    def txndelay_right(self, args):
+    @txdelay_right.setter
+    def txdelay_right(self, args):
         ut.set_using_dict(self.setTransmissionDelayRight, args)
 
     @property

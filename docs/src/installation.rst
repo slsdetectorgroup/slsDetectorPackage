@@ -13,54 +13,143 @@
     
     Before building from source make sure that you have the 
     :doc:`dependencies <../dependencies>` installed. If installing using conda, conda will 
-    manage the dependencies.
-    
+    manage the dependencies. Avoid also installing packages with pip. 
+   
 
 .. _Installation:
 
+
 Installation
-==============================================
+===============
+
+Install binaries using conda
+-------------------------------
+
+Conda is not only useful to manage python environments but can also
+be used as a user space package manager. Dates in the tag (for eg. 2020.07.23.dev0) 
+are from the developer branch. Please use released tags for stability.
+
+We have three different packages available:
+
+    * **slsdetlib** shared libraries and command line utilities 
+    * **slsdetgui** GUI
+    * **slsdet** Python bindings
+
+.. code-block:: bash
+
+    #Add channels for dependencies and our library
+    conda config --add channels conda-forge
+    conda config --add channels slsdetectorgroup
+    conda config --set channel_priority strict
+
+    #create and activate an environment with our library
+    #replace 6.1.1 with the required tag
+    conda create -n myenv slsdetlib=6.1.1
+    conda activate myenv
+
+    #ready to use
+    sls_detector_get exptime
+    etc ...
+
+
+.. code-block:: bash
+
+    #List available versions
+    conda search slsdet
+
+
+
+Build from source
+-------------------
+
+
+1. Download Source Code from github
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+
+    git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 6.1.1
+
+
+| **Pybind**
+| v7.0.0+:
+|   pybind11 packaged into 'libs/pybind'. No longer a submodule. No need for "recursive" or "submodule update".
+| 
+| Older versions:
+|   pybind11 is a submodule> Must be cloned using "recursive" and updated when switching between versions using the following commands.
+
+.. code-block:: bash
+    
+    # clone using recursive to get pybind11 submodule
+    git clone --recursive https://github.com/slsdetectorgroup/slsDetectorPackage.git
+
+    # update submodule when switching between releases
+    cd slsDetectorPackage
+    git submodule update --init
+   
 
 .. _build from source using cmake:
 
-Build from source using CMake
----------------------------------
 
-Note that on some systems, for example RH7,  cmake v3+ is available under the cmake3 alias.
-It is also required to clone with the option --recursive to get the pybind11 submodules used
-in the package. (Only needed for older versions than v7.0.0)
 
+2. Build from Source
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Build using CMake
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
 
-    git clone --recursive https://github.com/slsdetectorgroup/slsDetectorPackage.git
-    
-    # if older than v7.0.0 and using python, update pybind11 submodules
-    cd slsDetectorPackage
-    git submodule update --init
-
+    # outside slsDetecorPackage folder
     mkdir build && cd build
+
+    # configure & generate Makefiles using cmake
+    # by listing all your options (alternately use ccmake described below)
+    # cmake3 for some systems
     cmake ../slsDetectorPackage -DCMAKE_INSTALL_PREFIX=/your/install/path
+
+    # compiled to the build/bin directory
     make -j12 #or whatever number of cores you are using to build
+
+    # install headers and libs in /your/install/path directory
     make install
 
-The easiest way to configure options is to use the ccmake utility. 
+
+Instead of the cmake command, one can use ccmake to get a list of options to configure and generate Makefiles at ease.
 
 .. code-block:: bash
 
-    #from the build directory
-    ccmake .
+    # ccmake3 for some systems
+    ccmake ..
+ 
+    # choose the options
+    # first press [c] - configure
+    # then press [g] - generate
 
 
-Build using cmk.sh script
--------------------------
-These are mainly aimed at those not familiar with using ccmake and cmake.
+
+===============================     ===========================================
+Example cmake options               Comment
+===============================     ===========================================
+-DSLS_USE_PYTHON=ON                 Python
+-DPython_FIND_VIRTUALENV=ONLY       Python from only the conda environment 
+-DZeroMQ_HINT=/usr/lib64            System zmq instead of conda
+-DSLS_USE_GUI=ON                    GUI
+===============================     ===========================================
+
+
+
+Build using in-build cmk.sh script
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 
 .. code-block:: bash
 
     The binaries are generated in slsDetectorPackage/build/bin directory.
 
-    Usage: ./cmk.sh [-b] [-c] [-d <HDF5 directory>] [e] [g] [-h] [i] [-j <Number of threads>] [-k <CMake command>] [-l <Install directory>] [m] [n] [-p] [-q <Zmq hint directory>] [r] [s] [t] [u] [z]  
+    Usage: ./cmk.sh [-b] [-c] [-d <HDF5 directory>] [e] [g] [-h] [i] [-j <Number of threads>] 
+    [-k <CMake command>] [-l <Install directory>] [m] [n] [-p] [-q <Zmq hint directory>] 
+    [r] [s] [t] [u] [z]  
     -[no option]: only make
     -b: Builds/Rebuilds CMake files normal mode
     -c: Clean
@@ -86,48 +175,18 @@ These are mainly aimed at those not familiar with using ccmake and cmake.
     # get all options
     ./cmk.sh -?
 
-    # new build  and compile in parallel:
+    # new build and compile in parallel:
     ./cmk.sh -bj5
 
+    # new build, python and compile in parallel:
+    ./cmk.sh -bpj5
 
-Install binaries using conda
---------------------------------
-
-Conda is not only useful to manage python environments but can also
-be used as a user space package manager. 
-
-We have three different packages available:
-
- * **slsdetlib**, shared libraries and command line utilities 
- * **slsdetgui**, GUI
- * **slsdet**, Python bindings
+    #To use the system zmq (/usr/lib64) instead of conda
+    ./cmk.sh -bj5 -q /usr/lib64
 
 
-.. code-block:: bash
-
-    #Add channels for dependencies and our library
-    conda config --add channels conda-forge
-    conda config --add channels slsdetectorgroup
-    conda config --set channel_priority strict
-
-    #cerate an environment with our library, then activate
-    #replace 2020.07.20.dev0 with the required tag
-    conda create -n myenv slsdetlib=2020.07.23.dev0
-    conda activate myenv
-
-    #ready to use
-    sls_detector_get exptime
-    etc ...
-
-
-.. code-block:: bash
-
-    #List available versions
-    conda search slsdet
-
-
-Build from source on old distributions
------------------------------------------
+Build on old distributions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If your linux distribution doesn't come with a C++11 compiler (gcc>4.8) then 
 it's possible to install a newer gcc using conda and build the slsDetectorPackage
@@ -138,6 +197,9 @@ using this compiler
     #Create an environment with the dependencies
     conda create -n myenv gxx_linux-64 cmake zmq
     conda activate myenv
+
+    # outside slsDetecorPackage folder
+    mkdir build && cd build
     cmake ../slsDetectorPackage -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
     make -j12
 

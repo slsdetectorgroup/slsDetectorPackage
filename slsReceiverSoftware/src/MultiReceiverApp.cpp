@@ -22,10 +22,10 @@
 
 sem_t semaphore;
 
-constexpr int XMIN = 256;
-constexpr int YMIN = 128;
-constexpr int WIDTH = 100;
-constexpr int HEIGHT = 200;
+constexpr int XMIN = 512;
+constexpr int YMIN = 256;
+constexpr int WIDTH = 256;
+constexpr int HEIGHT = 256;
 constexpr int BYTES_PER_PIXEL = 2;
 constexpr int WIDTH_BYTES = WIDTH * BYTES_PER_PIXEL;
 constexpr int ONE_ROW_DATA_BYTES = 1024 * BYTES_PER_PIXEL;
@@ -151,16 +151,18 @@ void GetData(char *metadata, char *datapointer, uint32_t &revDatasize,
         *reinterpret_cast<uint8_t *>(dataPointer), revDatasize);
 */
 
-    char* dst = new char[DATA_BYTES];
+    char* revImage = new char[DATA_BYTES];
     char* src = datapointer + ONE_ROW_DATA_BYTES * YMIN + BYTES_PER_PIXEL * XMIN;
+    char* dst = revImage;
     for (int y = 0; y != HEIGHT; ++y) {
         memcpy(dst, src, WIDTH_BYTES);
         dst += WIDTH_BYTES;
         src += ONE_ROW_DATA_BYTES;
     }
-
-    memcpy(datapointer, dst, DATA_BYTES);
+    memcpy(datapointer, revImage, DATA_BYTES);
     revDatasize = DATA_BYTES;
+    delete [] revImage;
+
 }
 
 /**

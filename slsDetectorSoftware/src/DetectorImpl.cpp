@@ -458,18 +458,16 @@ int DetectorImpl::getTransmissionDelay() const {
     }
     for (int i = 0; i != size(); ++i) {
         if (eiger) {
-            if ((modules[i]->getTransmissionDelayLeft() != (3 * i * step)) ||
+            if ((modules[i]->getTransmissionDelayLeft() != (2 * i * step)) ||
                 (modules[i]->getTransmissionDelayRight() !=
-                 ((3 * i + 1) * step)) ||
+                 ((2 * i + 1) * step)) ||
                 (modules[i]->getTransmissionDelayFrame() !=
-                 ((3 * i + 2) * step))) {
-                throw RuntimeError("Could not get the transmission delay. "
-                                   "Unequal delays between modules.");
+                 (2 * size() * step))) {
+                return -1;
             }
         } else {
             if (modules[i]->getTransmissionDelayFrame() != (i * step)) {
-                throw RuntimeError("Could not get the transmission delay. "
-                                   "Unequal delays between modules.");
+                return -1;
             }
         }
     }
@@ -491,9 +489,9 @@ void DetectorImpl::setTransmissionDelay(int step) {
     }
     for (int i = 0; i != size(); ++i) {
         if (eiger) {
-            modules[i]->setTransmissionDelayLeft(3 * i * step);
-            modules[i]->setTransmissionDelayRight((3 * i + 1) * step);
-            modules[i]->setTransmissionDelayFrame((3 * i + 2) * step);
+            modules[i]->setTransmissionDelayLeft(2 * i * step);
+            modules[i]->setTransmissionDelayRight((2 * i + 1) * step);
+            modules[i]->setTransmissionDelayFrame(2 * size() * step);
         } else {
             modules[i]->setTransmissionDelayFrame(i * step);
         }

@@ -5,6 +5,11 @@
 #include "qVersionResolve.h"
 #include "sls/logger.h"
 
+//Suppressing warning until qwt has a fix, avoid
+//patching and should be backwards compatible
+//https://doc.qt.io/qt-5/qflags-obsolete.html
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <qlist.h>
 #include <qtoolbutton.h>
 #include <qwt_color_map.h>
@@ -15,6 +20,7 @@
 #include <qwt_scale_draw.h>
 #include <qwt_scale_engine.h>
 #include <qwt_scale_widget.h>
+#pragma GCC diagnostic pop
 
 #include <cmath>
 #include <iostream>

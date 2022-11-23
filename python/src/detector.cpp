@@ -778,6 +778,12 @@ void init_det(py::module &m) {
                        (void (Detector::*)(int, sls::Positions)) &
                            Detector::setTransmissionDelayRight,
                        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def("getTransmissionDelay",
+                       (int (Detector::*)() const) &
+                           Detector::getTransmissionDelay);
+    CppDetectorApi.def(
+        "setTransmissionDelay",
+        (void (Detector::*)(int)) & Detector::setTransmissionDelay, py::arg());
     CppDetectorApi.def("getUseReceiverFlag",
                        (Result<bool>(Detector::*)(sls::Positions) const) &
                            Detector::getUseReceiverFlag,

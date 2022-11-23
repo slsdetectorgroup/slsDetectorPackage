@@ -10,6 +10,7 @@ find_package(Qt5 5.9 COMPONENTS Widgets Core Gui REQUIRED)
 find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 
+
 set(SOURCES
     slsDetectorPlotting/src/SlsQt1DPlot.cpp
     slsDetectorPlotting/src/SlsQt1DZoomer.cpp
@@ -97,7 +98,6 @@ target_include_directories(slsDetectorGui PUBLIC
 target_link_libraries(slsDetectorGui PUBLIC
     slsProjectOptions 
     slsDetectorStatic
-    ${SLS_INTERNAL_QWT_DIR}/lib/libqwt.so.6.1.5
     PNG::PNG
     ZLIB::ZLIB
     Qt5::Widgets
@@ -107,6 +107,7 @@ target_link_libraries(slsDetectorGui PUBLIC
     
     PRIVATE
     slsProjectWarnings
+    qwt
 )
 
 set_target_properties(slsDetectorGui PROPERTIES

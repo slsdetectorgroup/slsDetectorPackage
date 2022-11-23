@@ -225,6 +225,7 @@ if (SLS_USE_RECEIVER)
 endif (SLS_USE_RECEIVER)
 
 if (SLS_USE_GUI)   
+    add_subdirectory(libs/qwt)  
     add_subdirectory(slsDetectorGui)
 endif (SLS_USE_GUI)
 

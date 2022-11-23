@@ -487,15 +487,31 @@ void DetectorImpl::setTransmissionDelay(int step) {
         throw RuntimeError(
             "Transmission delay is not implemented for the this detector.");
     }
+
+    //using a asyc+future directly (instead of Parallel) to pass different values
+    std::vector<std::future<void>> futures;
     for (int i = 0; i != size(); ++i) {
         if (eiger) {
-            modules[i]->setTransmissionDelayLeft(2 * i * step);
-            modules[i]->setTransmissionDelayRight((2 * i + 1) * step);
-            modules[i]->setTransmissionDelayFrame(2 * size() * step);
+            futures.push_back(std::async(std::launch::async,
+                                         &Module::setTransmissionDelayLeft,
+                                         modules[i].get(), 2 * i * step));
+            futures.push_back(std::async(std::launch::async,
+                                         &Module::setTransmissionDelayRight,
+                                         modules[i].get(), (2 * i + 1) * step));
+            futures.push_back(std::async(std::launch::async,
+                                         &Module::setTransmissionDelayFrame,
+                                         modules[i].get(), 2 * size() * step));
+
         } else {
-            modules[i]->setTransmissionDelayFrame(i * step);
+            futures.push_back(std::async(std::launch::async,
+                                         &Module::setTransmissionDelayFrame,
+                                         modules[i].get(), i * step));
         }
     }
+
+    //wait for calls to complete
+    for (auto &f : futures)
+        f.get();
 }
 
 int DetectorImpl::destroyReceivingDataSockets() {

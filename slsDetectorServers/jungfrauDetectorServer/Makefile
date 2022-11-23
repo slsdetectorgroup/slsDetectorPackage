@@ -37,6 +37,7 @@ $(PROGS): $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)  $(LDLIBS)  
 	mv $(PROGS) $(DESTDIR)
 	cp config_jungfrau.txt $(DESTDIR)
+	cp detid_jungfrau.txt $(DESTDIR)
 	rm *.gdb
 	rm $(main_src)*.o $(md5_dir)*.o
 

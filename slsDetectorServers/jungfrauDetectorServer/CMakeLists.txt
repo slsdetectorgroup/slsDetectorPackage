@@ -42,3 +42,4 @@ install(TARGETS jungfrauDetectorServer_virtual
 )
 
 configure_file(config_jungfrau.txt ${CMAKE_BINARY_DIR}/bin/config_jungfrau.txt COPYONLY)
+configure_file(detid_jungfrau.txt ${CMAKE_BINARY_DIR}/bin/detid_jungfrau.txt COPYONLY)

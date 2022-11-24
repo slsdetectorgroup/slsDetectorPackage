@@ -305,3 +305,4 @@ int set_digital_pulsing(int);
 int get_module(int);
 int get_synchronization(int);
 int set_synchronization(int);
+int get_hardware_version(int);

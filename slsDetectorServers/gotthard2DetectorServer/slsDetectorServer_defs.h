@@ -7,6 +7,11 @@
 #define KERNEL_DATE_VRSN  "Mon May 10 18:00:21 CEST 2021"
 #define ID_FILE           "detid_gotthard2.txt"
 
+#define NUM_HARDWARE_VERSIONS    (2)
+#define HARDWARE_VERSION_NUMBERS {0x0, 0x2};
+#define HARDWARE_VERSION_NAMES                                                 \
+    { "1.0", "1.2" }
+
 #define LINKED_SERVER_NAME "gotthard2DetectorServer"
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)

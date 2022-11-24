@@ -7,6 +7,12 @@
 #define MIN_REQRD_VRSN_T_RD_API 0x180314
 #define REQRD_FRMWR_VRSN        0x220825
 
+#define NUM_HARDWARE_VERSIONS (1)
+#define HARDWARE_VERSION_NUMBERS                                               \
+    { 0x1 }
+#define HARDWARE_VERSION_NAMES                                                 \
+    { "1.0" }
+
 #define LINKED_SERVER_NAME "moenchDetectorServer"
 
 #define CTRL_SRVR_INIT_TIME_US (2 * 1000 * 1000)

@@ -275,21 +275,24 @@ std::string CmdProxy::Versions(int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getFirmwareVersion(std::vector<int>{det_id});
-        os << "\nDetector Type: " << OutString(det->getDetectorType())
-           << "\nPackage Version: " << det->getPackageVersion() << std::hex
-           << "\nClient Version: " << det->getClientVersion();
+        os << "\nType     : " << OutString(det->getDetectorType())
+           << "\nRelease  : " << det->getPackageVersion() << std::hex
+           << "\nClient   : " << det->getClientVersion();
+        os << "\nFirmware : ";
         if (det->getDetectorType().squash() == defs::EIGER) {
-            os << "\nFirmware Version: " << OutString(t);
+            os << OutString(t);
         } else {
-            os << "\nFirmware Version: " << OutStringHex(t);
+            os << OutStringHex(t);
         }
-        os << "\nDetector Server Version: "
+        os << "\nServer   : "
            << OutString(
                   det->getDetectorServerVersion(std::vector<int>{det_id}));
-        os << "\nDetector Kernel Version: "
+        os << "\nHardware : "
+           << OutString(det->getHardwareVersion(std::vector<int>{det_id}));
+        os << "\nKernel   : "
            << OutString(det->getKernelVersion({std::vector<int>{det_id}}));
         if (det->getUseReceiverFlag().squash(true)) {
-            os << "\nReceiver Version: "
+            os << "\nReceiver : "
                << OutString(det->getReceiverVersion(std::vector<int>{det_id}));
         }
         os << std::dec << '\n';

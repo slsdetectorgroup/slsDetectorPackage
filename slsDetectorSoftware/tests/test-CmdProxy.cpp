@@ -114,6 +114,13 @@ TEST_CASE("detectorserverversion", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("detectorserverversion", {"0"}, -1, PUT));
 }
 
+TEST_CASE("hardwareversion", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("hardwareversion", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("hardwareversion", {"0"}, -1, PUT));
+}
+
 TEST_CASE("kernelversion", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

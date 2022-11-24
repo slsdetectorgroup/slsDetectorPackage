@@ -109,6 +109,12 @@ std::string Module::getDetectorServerVersion() const {
     return v.concise();
 }
 
+std::string Module::getHardwareVersion() const {
+    char retval[MAX_STR_LENGTH]{};
+    sendToDetector(F_GET_HARDWARE_VERSION, nullptr, retval);
+    return retval;
+}
+
 std::string Module::getKernelVersion() const {
     char retval[MAX_STR_LENGTH]{};
     sendToDetector(F_GET_KERNEL_VERSION, nullptr, retval);

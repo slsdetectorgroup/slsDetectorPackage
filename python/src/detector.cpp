@@ -67,6 +67,11 @@ void init_det(py::module &m) {
             Detector::getDetectorServerVersion,
         py::arg() = Positions{});
     CppDetectorApi.def(
+        "getHardwareVersion",
+        (Result<std::string>(Detector::*)(sls::Positions) const) &
+            Detector::getHardwareVersion,
+        py::arg() = Positions{});
+    CppDetectorApi.def(
         "getKernelVersion",
         (Result<std::string>(Detector::*)(sls::Positions) const) &
             Detector::getKernelVersion,

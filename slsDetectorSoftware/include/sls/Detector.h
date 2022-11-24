@@ -80,6 +80,9 @@ class Detector {
 
     Result<std::string> getDetectorServerVersion(Positions pos = {}) const;
 
+    /** [Jungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] */
+    Result<std::string> getHardwareVersion(Positions pos = {}) const;
+
     Result<std::string> getKernelVersion(Positions pos = {}) const;
 
     /* [Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench] */

@@ -333,20 +333,20 @@ int main(int argc, char *argv[]) {
     // uint32_t  dynamicRange = 0;
     //  infinite loop
     uint32_t packetNumber = 0;
-    uint64_t bunchId = 0;
+    uint64_t detSpec1 = 0;
     uint64_t timestamp = 0;
     int16_t modId = 0;
     uint32_t expLength = 0;
     uint16_t xCoord = 0;
     uint16_t yCoord = 0;
     // uint16_t zCoord = 0;
-    uint32_t debug = 0;
+    uint32_t detSpec3 = 0;
     // uint32_t dr = 16;
     // int16_t *dout;//=new int16_t [nnx*nny];
     uint32_t dr = 32;
     int32_t *dout = NULL; //=new int32_t [nnx*nny];
     float *doutf = NULL;  //=new int32_t [nnx*nny];
-    uint16_t roundRNumber = 0;
+    uint16_t detSpec4 = 0;
     uint8_t detType = 0;
     uint8_t version = 0;
     string additionalJsonHeader = "";
@@ -555,9 +555,9 @@ int main(int argc, char *argv[]) {
                         //  zmqsocket2->SendHeaderData (0,
                         //  false,SLS_DETECTOR_JSON_HEADER_VERSION , dr,
                         //  fileindex, 1,1,nnx,nny,nnx*nny*dr/8,acqIndex,
-                        //  frameIndex, fname,acqIndex,0 , packetNumber,bunchId,
-                        //  timestamp, modId,xCoord, yCoord, zCoord,debug,
-                        //  roundRNumber, detType, version, 0,0,
+                        //  frameIndex, fname,acqIndex,0 , packetNumber,detSpec1,
+                        //  timestamp, modId,xCoord, yCoord, zCoord,detSpec3,
+                        //  detSpec4, detType, version, 0,0,
                         //  0,&additionalJsonHeader);
 
                         outHeader.data = true;
@@ -574,13 +574,13 @@ int main(int argc, char *argv[]) {
                         outHeader.frameNumber = acqIndex;
                         outHeader.expLength = expLength;
                         outHeader.packetNumber = packetNumber;
-                        outHeader.bunchId = bunchId;
+                        outHeader.detSpec1 = detSpec1;
                         outHeader.timestamp = timestamp;
                         outHeader.modId = modId;
                         outHeader.row = xCoord;
                         outHeader.column = yCoord;
-                        outHeader.debug = debug;
-                        outHeader.roundRNumber = roundRNumber;
+                        outHeader.detSpec3 = detSpec3;
+                        outHeader.detSpec4 = detSpec4;
                         outHeader.detType = detType;
                         outHeader.version = version;
 
@@ -634,11 +634,11 @@ int main(int argc, char *argv[]) {
             expLength = zHeader.expLength; // doc["expLength"].GetUint();
             packetNumber =
                 zHeader.packetNumber;      // doc["packetNumber"].GetUint();
-            bunchId = zHeader.bunchId;     // doc["bunchId"].GetUint();
+            detSpec1 = zHeader.detSpec1;     // doc["detSpec1"].GetUint();
             timestamp = zHeader.timestamp; // doc["timestamp"].GetUint();
             modId = zHeader.modId;         // doc["modId"].GetUint();
-            debug = zHeader.debug;         // doc["debug"].GetUint();
-            //  roundRNumber=r.roundRNumber;//doc["roundRNumber"].GetUint();
+            detSpec3 = zHeader.detSpec3;         // doc["detSpec3"].GetUint();
+            //  detSpec4=r.detSpec4;//doc["detSpec4"].GetUint();
             detType = zHeader.detType; // doc["detType"].GetUint();
             version = zHeader.version; // doc["version"].GetUint();
             /*document["bitmode"].GetUint(); zHeader.dynamicRange
@@ -815,11 +815,11 @@ int main(int argc, char *argv[]) {
 
         // subFrameIndex    = doc["expLength"].GetUint();
 
-        //  bunchId=doc["bunchId"].GetUint();
+        //  detSpec1=doc["detSpec1"].GetUint();
         //  timestamp=doc["timestamp"].GetUint();
         packetNumber = zHeader.packetNumber; // doc["packetNumber"].GetUint();
         // cout << acqIndex << " " << frameIndex << " " << subFrameIndex << "
-        // "<< bunchId << " " << timestamp << " " << packetNumber << endl;
+        // "<< detSpec1 << " " << timestamp << " " << packetNumber << endl;
         // cprintf(GREEN, "frame\n");
         if (packetNumber >= 40) {
             //*((int*)buff)=frameIndex;
@@ -902,15 +902,15 @@ int main(int argc, char *argv[]) {
             //   zmqsocket2->SendHeaderData (0,
             //   false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex,
             //   1,1,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0
-            //   , packetNumber,bunchId, timestamp, modId,xCoord, yCoord,
-            //   zCoord,debug, roundRNumber, detType, version, 0,0,
+            //   , packetNumber,detSpec1, timestamp, modId,xCoord, yCoord,
+            //   zCoord,detSpec3, detSpec4, detType, version, 0,0,
             //   0,&additionalJsonHeader);
 
             //  zmqsocket2->SendHeaderData (0,
             //  false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex,
             //  1,1,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0
-            //  , packetNumber,bunchId, timestamp, modId,xCoord, yCoord,
-            //  zCoord,debug, roundRNumber, detType, version, 0,0,
+            //  , packetNumber,detSpec1, timestamp, modId,xCoord, yCoord,
+            //  zCoord,detSpec3, detSpec4, detType, version, 0,0,
             //  0,&additionalJsonHeader);
 
             outHeader.data = true;
@@ -927,13 +927,13 @@ int main(int argc, char *argv[]) {
             outHeader.frameNumber = acqIndex;
             outHeader.expLength = expLength;
             outHeader.packetNumber = packetNumber;
-            outHeader.bunchId = bunchId;
+            outHeader.detSpec1 = detSpec1;
             outHeader.timestamp = timestamp;
             outHeader.modId = modId;
             outHeader.row = xCoord;
             outHeader.column = yCoord;
-            outHeader.debug = debug;
-            outHeader.roundRNumber = roundRNumber;
+            outHeader.detSpec3 = detSpec3;
+            outHeader.detSpec4 = detSpec4;
             outHeader.detType = detType;
             outHeader.version = version;
 

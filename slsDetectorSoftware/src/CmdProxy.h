@@ -1251,9 +1251,9 @@ class CmdProxy {
                     "Serial number of detector.");
 
     GET_COMMAND(moduleid, getModuleId,
-                "\n\t[Gotthard2][Eiger][Mythen3] 16 bit value (ideally unique) "
-                "that is streamed out in the UDP header of the detector. "
-                "Picked up from a file on the module.");
+                "\n\t[Gotthard2][Eiger][Mythen3][Jungfrau] 16 bit value "
+                "(ideally unique) that is streamed out in the UDP header of "
+                "the detector. Picked up from a file on the module.");
 
     GET_COMMAND(type, getDetectorType,
                 "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, "

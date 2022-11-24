@@ -160,7 +160,7 @@ When handling callbacks, the control should be returned as soon as possible, to 
 **Example**
     * `main cpp file <https://github.com/slsdetectorgroup/api-examples/blob/master/e4-receiver_callbacks.cpp>`_ 
     * `cmake file <https://github.com/slsdetectorgroup/api-examples/blob/master/CMakeLists.txt>`_. 
-    * how to install the slsDetectorPackage is provided :ref:`here <build from source using cmake>`.
+    * how to install the slsDetectorPackage with cmake is provided :ref:`here <build from source using cmake>`.
     * compile the example **e4-rxr** by:
 
         .. code-block:: bash

@@ -42,6 +42,7 @@ char initErrorMessage[MAX_STR_LENGTH];
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
 int virtual_image_test_mode = 0;
+int virtual_moduleid = 0;
 #endif
 
 enum detectorSettings thisSettings = UNINITIALIZED;
@@ -338,6 +339,29 @@ u_int32_t getDetectorNumber() {
     return bus_r(MOD_SERIAL_NUM_REG);
 }
 
+int getModuleId(int *ret, char *mess) {
+    return ((bus_r(MOD_ID_REG) & MOD_ID_MSK) >> MOD_ID_OFST);
+}
+
+void setModuleId(int modid) {
+    LOG(logINFOBLUE, ("Setting module id in fpga: %d\n", modid));
+    bus_w(MOD_ID_REG, bus_r(MOD_ID_REG) & ~MOD_ID_MSK);
+    bus_w(MOD_ID_REG,
+          bus_r(MOD_ID_REG) | ((modid << MOD_ID_OFST) & MOD_ID_MSK));
+}
+
+int updateModuleId() {
+    int modid = getModuleIdInFile(&initError, initErrorMessage, ID_FILE);
+    if (initError == FAIL) {
+        return FAIL;
+    }
+#ifdef VIRTUAL
+    virtual_moduleid = modid;
+#endif
+    setModuleId(modid);
+    return OK;
+}
+
 u_int64_t getDetectorMAC() {
 #ifdef VIRTUAL
     return 0;
@@ -478,6 +502,10 @@ void setupDetector() {
 
     // get chip version
     if (readConfigFile() == FAIL) {
+        return;
+    }
+
+    if (updateModuleId() == FAIL) {
         return;
     }
 
@@ -2661,7 +2689,7 @@ void *start_timer(void *arg) {
                     header->version = SLS_DETECTOR_HEADER_VERSION - 1;
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = pnum;
-                    header->modId = 0;
+                    header->modId = virtual_moduleid;
                     header->row = row0;
                     header->column = col0;
 
@@ -2688,7 +2716,7 @@ void *start_timer(void *arg) {
                     header->version = SLS_DETECTOR_HEADER_VERSION - 1;
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = pnum;
-                    header->modId = 0;
+                    header->modId = virtual_moduleid;
                     header->row = row1;
                     header->column = col1;
 

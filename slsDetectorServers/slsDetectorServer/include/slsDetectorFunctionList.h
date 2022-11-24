@@ -96,15 +96,16 @@ void setChipVersion(int version);
 #ifndef EIGERD
 u_int32_t getDetectorNumber();
 #endif
-#if defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D)
+
+#if defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D) ||             \
+    defined(JUNGFRAUD)
 int getModuleId(int *ret, char *mess);
-#endif
-#if defined(EIGERD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int updateModuleId();
-#endif
-#if defined(GOTTHARD2D) || defined(MYTHEN3D)
+#ifndef EIGERD
 void setModuleId(int modid);
 #endif
+#endif
+
 u_int64_t getDetectorMAC();
 u_int32_t getDetectorIP();
 

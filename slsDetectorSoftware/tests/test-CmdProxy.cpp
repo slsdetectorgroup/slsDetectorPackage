@@ -144,7 +144,7 @@ TEST_CASE("moduleid", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3 ||
-        det_type == defs::EIGER) {
+        det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
         REQUIRE_NOTHROW(proxy.Call("moduleid", {}, -1, GET));
     } else {
         REQUIRE_THROWS(proxy.Call("moduleid", {}, -1, GET));

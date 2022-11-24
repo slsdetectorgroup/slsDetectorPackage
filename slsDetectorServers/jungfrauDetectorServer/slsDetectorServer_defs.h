@@ -14,7 +14,7 @@
 #define HARDWARE_VERSION_NAMES                                                 \
     { "1.0", "2.0" }
 
-#define ID_FILE "detid_jungfrau.txt"
+#define ID_FILE            "detid_jungfrau.txt"
 #define LINKED_SERVER_NAME "jungfrauDetectorServer"
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)

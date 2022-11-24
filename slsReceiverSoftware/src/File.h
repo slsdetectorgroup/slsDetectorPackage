@@ -13,8 +13,6 @@
 
 namespace sls {
 
-struct MasterAttributes;
-
 class File : private virtual slsDetectorDefs {
 
   public:

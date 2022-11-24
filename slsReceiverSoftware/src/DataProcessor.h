@@ -24,7 +24,7 @@ class GeneralData;
 class Fifo;
 class File;
 class DataStreamer;
-struct MasterAttributes;
+class MasterAttributes;
 
 class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 

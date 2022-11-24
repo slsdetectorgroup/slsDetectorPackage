@@ -237,11 +237,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * Sets maximum number of channels of all sls modules */
     void setNumberOfChannels(const slsDetectorDefs::xy c);
 
-    /** [Eiger][Jungfrau] */
     bool getGapPixelsinCallback() const;
-    /** [Eiger][Jungfrau] */
     void setGapPixelsinCallback(const bool enable);
-
+    int getTransmissionDelay() const;
+    void setTransmissionDelay(int step);
     bool getDataStreamingToClient();
     void setDataStreamingToClient(bool enable);
     int getClientStreamingHwm() const;

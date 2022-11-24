@@ -127,6 +127,7 @@ This document describes the differences between v7.0.0 and v6.x.x
 - gui nios temperature added
 - detector header change (bunchid, reserved, debug, roundRnumber) ->detSpec1 - 4
  -ctb and moench (allowing all clkdivs (totaldiv was a float instead of int))
+ - txndelay_ ->txdelay_ (also for python), txdelay = delay for all with step
  - hardwareversion 
 - jungfrau connected moduleid to detid_jungfrau.txt on board
 

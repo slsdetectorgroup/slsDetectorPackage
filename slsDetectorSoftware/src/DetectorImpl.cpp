@@ -431,6 +431,89 @@ void DetectorImpl::setGapPixelsinCallback(const bool enable) {
     shm()->gapPixels = enable;
 }
 
+int DetectorImpl::getTransmissionDelay() const {
+    bool eiger = false;
+    switch (shm()->detType) {
+    case JUNGFRAU:
+    case MYTHEN3:
+        break;
+    case EIGER:
+        eiger = true;
+        break;
+    default:
+        throw RuntimeError(
+            "Transmission delay is not implemented for the this detector.");
+    }
+    if (!eiger && size() <= 1) {
+        throw RuntimeError(
+            "Cannot get intermodule transmission delays with just one module");
+    }
+    int step = 0;
+    if (eiger) {
+        // between left and right
+        step = modules[0]->getTransmissionDelayRight();
+    } else {
+        // between first and second
+        step = modules[1]->getTransmissionDelayFrame();
+    }
+    for (int i = 0; i != size(); ++i) {
+        if (eiger) {
+            if ((modules[i]->getTransmissionDelayLeft() != (2 * i * step)) ||
+                (modules[i]->getTransmissionDelayRight() !=
+                 ((2 * i + 1) * step)) ||
+                (modules[i]->getTransmissionDelayFrame() !=
+                 (2 * size() * step))) {
+                return -1;
+            }
+        } else {
+            if (modules[i]->getTransmissionDelayFrame() != (i * step)) {
+                return -1;
+            }
+        }
+    }
+    return step;
+}
+
+void DetectorImpl::setTransmissionDelay(int step) {
+    bool eiger = false;
+    switch (shm()->detType) {
+    case JUNGFRAU:
+    case MYTHEN3:
+        break;
+    case EIGER:
+        eiger = true;
+        break;
+    default:
+        throw RuntimeError(
+            "Transmission delay is not implemented for the this detector.");
+    }
+
+    //using a asyc+future directly (instead of Parallel) to pass different values
+    std::vector<std::future<void>> futures;
+    for (int i = 0; i != size(); ++i) {
+        if (eiger) {
+            futures.push_back(std::async(std::launch::async,
+                                         &Module::setTransmissionDelayLeft,
+                                         modules[i].get(), 2 * i * step));
+            futures.push_back(std::async(std::launch::async,
+                                         &Module::setTransmissionDelayRight,
+                                         modules[i].get(), (2 * i + 1) * step));
+            futures.push_back(std::async(std::launch::async,
+                                         &Module::setTransmissionDelayFrame,
+                                         modules[i].get(), 2 * size() * step));
+
+        } else {
+            futures.push_back(std::async(std::launch::async,
+                                         &Module::setTransmissionDelayFrame,
+                                         modules[i].get(), i * step));
+        }
+    }
+
+    //wait for calls to complete
+    for (auto &f : futures)
+        f.get();
+}
+
 int DetectorImpl::destroyReceivingDataSockets() {
     LOG(logINFO) << "Going to destroy data sockets";
     // close socket

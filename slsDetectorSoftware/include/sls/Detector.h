@@ -835,6 +835,20 @@ class Detector {
      * port
      */
     void setTransmissionDelayRight(int value, Positions pos = {});
+
+    /** [Eiger][Jungfrau] */
+    int getTransmissionDelay() const;
+
+    /**
+     * [Eiger][Jungfrau][Mythen3] Set transmission delay for all modules in the
+     * detector using the step size provided.Sets up \n\t\t[Eiger] txdelay_left
+     * to (2 * mod_index * n_delay), \n\t\t[Eiger] txdelay_right to ((2 *
+     * mod_index + 1) * n_delay) and \n\t\t[Eiger] txdelay_frame to (2
+     * *num_modules * n_delay) \n\t\t[Jungfrau][Mythen3] txdelay_frame to
+     * (num_modules * n_delay) \nfor every module.
+     */
+    void setTransmissionDelay(int step);
+
     ///@}
 
     /** @name Receiver Configuration */

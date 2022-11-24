@@ -5,9 +5,9 @@
 #include "qVersionResolve.h"
 #include "sls/logger.h"
 
-//Suppressing warning until qwt has a fix, avoid
-//patching and should be backwards compatible
-//https://doc.qt.io/qt-5/qflags-obsolete.html
+// Suppressing warning until qwt has a fix, avoid
+// patching and should be backwards compatible
+// https://doc.qt.io/qt-5/qflags-obsolete.html
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <qlist.h>

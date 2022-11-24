@@ -770,6 +770,7 @@ class CmdProxy {
         {"packageversion", &CmdProxy::PackageVersion},
         {"clientversion", &CmdProxy::ClientVersion},
         {"firmwareversion", &CmdProxy::FirmwareVersion},
+        {"hardwareversion", &CmdProxy::hardwareversion},
         {"detectorserverversion", &CmdProxy::detectorserverversion},
         {"kernelversion", &CmdProxy::kernelversion},
         {"rx_version", &CmdProxy::rx_version},
@@ -1239,6 +1240,10 @@ class CmdProxy {
 
     GET_COMMAND(detectorserverversion, getDetectorServerVersion,
                 "\n\tOn-board detector server software version");
+
+    GET_COMMAND(hardwareversion, getHardwareVersion,
+                "\n\tJungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] "
+                "Hardware version of detector.");
 
     GET_COMMAND(
         kernelversion, getKernelVersion,

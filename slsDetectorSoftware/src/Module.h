@@ -93,6 +93,7 @@ class Module : public virtual slsDetectorDefs {
     std::string getControlServerLongVersion() const;
     std::string getStopServerLongVersion() const;
     std::string getDetectorServerVersion() const;
+    std::string getHardwareVersion() const;
     std::string getKernelVersion() const;
     int64_t getSerialNumber() const;
     int getModuleId() const;

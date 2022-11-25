@@ -32,11 +32,10 @@ This document describes the differences between v6.1.2 and v6.1.1.
         kernel or on-board detector server, depending on the current kernel 
         version.
 
-    2.  [Eiger] Stop command freezes server (apparent in large detectors) 
-        Stop command sometimes did not receive processing done signal from 
-        firmware. A workaround is implemented in software until fixed in 
-        firmware. After 1 s, it will check status and throw if it is still
-        running.
+    2.  [Eiger] locking for start and stop
+        Since the start and stop has a few commands within the server itself,
+        they are locked to ensure they dont disturb the other to have undefined
+        behavior.
 
     3.  [Eiger] Quad Trimbits or threshold
         Loading trimbits or setting threshold will throw an incorrect exception
@@ -49,6 +48,23 @@ This document describes the differences between v6.1.2 and v6.1.1.
 
         Fixed some minor functions returned empty error messages when failing.
 
+    Client
+    ------
+
+    1.  [Eiger] Stop command freezes server (apparent in large detectors) 
+        For example, if module A got a "stop" during an acquisition, 
+        it stops to an 'Idle' state. If module B gets a "stop" before an 
+        acquisition, it will return it is in 'Idle' state and continue 
+        to start the next acquisition, but module B then waits for "ready
+        for trigger" synchronization from module A, which it will never get.
+        Since module B missed the asynchronous stop command, the workaround
+        in the client is to send another "stop" command (upto 10 retries) 
+        till it returns Idle.
+
+    2.  [Eiger][Jungfrau][Moench][Ctb]
+        A "stop" command will also check for inconsistent 'nextframenumber' 
+        between the modules and set it to the max + 1 to ensure that they 
+        all start with the same frame number for the next acquisition.
 
 
 2.  On-board Detector Server Compatibility

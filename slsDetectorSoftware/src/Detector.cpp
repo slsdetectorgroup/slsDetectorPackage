@@ -780,7 +780,39 @@ void Detector::startDetectorReadout() {
 }
 
 void Detector::stopDetector(Positions pos) {
-    pimpl->Parallel(&Module::stopAcquisition, pos);
+
+    // stop and check status X times
+    int retries{0};
+    //avoid default construction of runStatus::IDLE on squash
+    auto status = getDetectorStatus().squash(defs::runStatus::RUNNING); 
+    while(status != defs::runStatus::IDLE){
+        pimpl->Parallel(&Module::stopAcquisition, pos);
+        status = getDetectorStatus().squash(defs::runStatus::RUNNING);
+        ++retries;
+
+        if(retries == 10)
+            throw RuntimeError("Could not stop detector");
+    }
+        
+
+    // validate consistent frame numbers
+    switch (getDetectorType().squash()) {
+    case defs::EIGER:
+    case defs::JUNGFRAU:
+    case defs::MOENCH:
+    case defs::CHIPTESTBOARD: {
+        auto res = getNextFrameNumber(pos);
+        if (!res.equal()) {
+            uint64_t maxVal = 0;
+            for (auto it : res) {
+                maxVal = std::max(maxVal, it);
+            }
+            setNextFrameNumber(maxVal + 1);
+        }
+    } break;
+    default:
+        break;
+    }
 }
 
 Result<defs::runStatus> Detector::getDetectorStatus(Positions pos) const {

@@ -101,35 +101,15 @@ This document describes the differences between v6.1.2 and v6.1.1.
         
     Note: No change to 6.1.1.
 
-    Eiger
-    =====  
-    Compatible version : 08.10.2021 (v29)
-    
-    Jungfrau
-    ========       
-    Compatible version : 31.08.2021 (v1.2, PCB v1.0) 
-                       : 08.10.2021 (v2.2, PCB v2.0)
-
-    Gotthard
-    ========   
-    Compatible version : 08.02.2018 (50um and 25um Master)
-                       : 09.02.2018 (25 um Slave) 
-
-    Mythen3
-    =======
-    Compatible version : 10.09.2021 (v1.1)
-
-    Gotthard2
-    =========
-    Compatible version : 27.05.2021 (v0.1)
-
-    Moench
-    ======
-    Compatible version : 05.10.2020 (v1.0)
-
-    Ctb
-    ===
-    Compatible version : 05.10.2020 (v1.0)
+    Eiger       08.10.2021 (v29)
+    Jungfrau    31.08.2021 (v1.2, PCB v1.0) 
+                08.10.2021 (v2.2, PCB v2.0)
+    Gotthard    08.02.2018 (50um and 25um Master)
+                09.02.2018 (25 um Slave) 
+    Mythen3     10.09.2021 (v1.1)
+    Gotthard2   27.05.2021 (v0.1)
+    Moench      05.10.2020 (v1.0)
+    Ctb         05.10.2020 (v1.0)
 
     Detector Firmware Upgrade
     =========================

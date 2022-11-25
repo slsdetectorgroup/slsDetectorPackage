@@ -821,7 +821,19 @@ void Detector::startDetectorReadout() {
 }
 
 void Detector::stopDetector(Positions pos) {
-    pimpl->Parallel(&Module::stopAcquisition, pos);
+
+    // stop and check status X times
+    int retries{0};
+    // avoid default construction of runStatus::IDLE on squash
+    auto status = getDetectorStatus().squash(defs::runStatus::RUNNING);
+    while (status != defs::runStatus::IDLE) {
+        pimpl->Parallel(&Module::stopAcquisition, pos);
+        status = getDetectorStatus().squash(defs::runStatus::RUNNING);
+        ++retries;
+
+        if (retries == 10)
+            throw RuntimeError("Could not stop detector");
+    }
 
     // validate consistent frame numbers
     switch (getDetectorType().squash()) {

@@ -50,7 +50,7 @@ void DetectorImpl::setupDetector(bool verify, bool update) {
         ctb_shm.openSharedMemory(verify);
 }
 
-bool DetectorImpl::isAllPositions(const Positions pos) const {
+bool DetectorImpl::isAllPositions(Positions pos) const {
     return (pos.empty() || (pos.size() == 1 && pos[0] == -1) ||
             (pos.size() == modules.size()));
 }

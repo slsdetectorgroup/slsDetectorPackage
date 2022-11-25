@@ -190,7 +190,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
         }
     }
 
-    bool isAllPositions(const Positions pos) const;
+    bool isAllPositions(Positions pos) const;
 
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag);

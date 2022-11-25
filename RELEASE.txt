@@ -1,8 +1,7 @@
-SLS Detector Package Patch Release 6.1.2 released on 14.11.2022
+SLS Detector Package Patch Release 6.1.2 released on 25.11.2022
 ===============================================================
 
 This document describes the differences between v6.1.2 and v6.1.1.   
-
 
 
     CONTENTS
@@ -21,7 +20,8 @@ This document describes the differences between v6.1.2 and v6.1.1.
     Detector Server
     ---------------
     
-    1.  [Jungfrau, Moench, Ctb]
+    1.  [Jungfrau, Moench, Ctb] 
+        Programming Firmware
         Updating kernel was not enough to ensure seamless programming of FPGA.
         nCe signal now made high before programming blackfin.
 
@@ -66,6 +66,29 @@ This document describes the differences between v6.1.2 and v6.1.1.
         between the modules and set it to the max + 1 to ensure that they 
         all start with the same frame number for the next acquisition.
 
+    Client
+    ------
+
+    1.  [Eiger] Stop command freezes server 
+        It is apparent in large detectors.
+
+        For example, if module A got a "stop" during an acquisition, 
+        it stops to an 'Idle' state. If module B gets a "stop" before an 
+        acquisition, it will return it is in 'Idle' state and continue 
+        to start the next acquisition, but module B then waits for "ready
+        for trigger" synchronization from module A, which it will never get.
+        
+        Since module B missed the asynchronous stop command, the workaround
+        in the client is to send another "stop" command (upto 10 retries) 
+        till it returns Idle.
+
+    2.  [Eiger][Jungfrau][Moench][Ctb]
+        Stop results in different frame numbers
+        A "stop" command will also now check for inconsistent 'nextframenumber' 
+        between the modules and set it to the max + 1 to ensure that they 
+        all start with the same frame number for the next acquisition.
+
+
 
 2.  On-board Detector Server Compatibility
 ==========================================
@@ -89,11 +112,11 @@ This document describes the differences between v6.1.2 and v6.1.1.
         https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
 
 
+
 3. Firmware Requirements
 ========================
         
     Note: No change to 6.1.1.
-
 
     Eiger
     =====  

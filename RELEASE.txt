@@ -73,6 +73,24 @@ This document describes the differences between v6.1.2 and v6.1.1.
 
 
 
+    Python
+    ------
+
+    1.  Conda package
+        Removed conda pkgs for python 3.6 and 3.7
+        Added conda pkgs for python 3.11
+
+    2.  Pybind11
+        Updated pybind11 from 2.6.2 to 2.10.11
+
+
+    Test
+    ----
+
+    1.  Updated catch to latest 2.x version due do build failure on fedora
+
+
+
 2.  On-board Detector Server Compatibility
 ==========================================
 

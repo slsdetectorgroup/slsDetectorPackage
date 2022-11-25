@@ -79,6 +79,8 @@ Breaking API Resolved Issues
     .   [Eiger] Vtr
         Allow Vtrim to be interpolated for settings.
 
+
+
     Detector Server
     ---------------
 
@@ -94,12 +96,16 @@ Breaking API Resolved Issues
     .   [Eiger][Junfrau][Gotthard2][Mythen3] Module Id
         Added into udp header
 
+    .   Minimum Configuration
+        One can setup with just:
+            hostname localhost
+            rx_hostname localhost
+            udp_dstip auto
+
     
 
 
 
-- m3 setThresholdEnergy and setAllThresholdEnergy was overwriting gaincaps with settings enum
-- can set localhost with virtual server with minimum configuration: (hostname localhost, rx_hostname localhost, udp_dstip auto)
 - increases the progress according to listened index. (not processed index)
 - current frame index points to listened frame index (not processed index)
 - when in discard partial frames or empty mode, the frame number doesnt increase by 1, it increases to that number (so its faster)
@@ -221,6 +227,9 @@ Breaking API Resolved Issues
 
     .   [Mythen3] Server crash for setting vthrehsold
         Fixed.
+
+    .   [Mythen3] Incorrect gaincaps
+        Setting threshold energy was overwriting gaincaps with settings enum. Fixed.
 
 
     Receiver

@@ -1,7 +1,7 @@
-SLS Detector Package Minor Release 7.0.0 released on 25.11.2021
-===============================================================
+SLS Detector Package Minor Release 7.0.0.rc1 released on xx.11.2021
+===================================================================
 
-This document describes the differences between v7.0.0 and v6.x.x   
+This document describes the differences between v7.0.0.rc1 and v6.1.2   
 
 
 
@@ -14,25 +14,90 @@ This document describes the differences between v7.0.0 and v6.x.x
     5.  Download, Documentation & Support
 
 
+Breaking API Resolved Issues
+============================
+
+    Client
+    ------
+
+    .   [Eiger] Number of UDP interfaces
+        Command line: numinterfaces, API: getNumberofUDPInterfaces
+        This command now reflects the actual number of udp interfaces for Eiger,
+        which is 2.
+
+    .   [Moench] Patsetbit and patsetmask
+        Command line: patsetbit API: getPatternBitMask/ setPatternBitMask
+        Command line: patmask API: getPatternMask/ setPatternMask
+        
+        Exchanging the help and masks for patsetbit and patsetmask in the detector
+        server, especially in loading settings.
 
 
-1. New or Changed Features
+    .   [Eiger] Datastream only for 10GbE
+        Command line: datastream, API: getDataStream/ setDataStream
+
+        This command to enable/ disable data stream from left or right port
+        is now allowed only for 10GbE.
+
+
+    Python
+    -------
+
+    .   Python sub-microsecond resolution
+        Reading back sub-microsecond exposure times from the Python API fixed by 
+        addig Python datetime supports only micro seconds as lowest unit. 
+        
+        This is fixed by introducing a new C++ type (DurationWrapper), which 
+        holds number of nanoseconds as a uint64_t (only in python bindings) and 
+        custom typecaster to convert to and from std::chrono::nanoseconds.
+
+        A get using API now returns in DurationWrapper, instead of datetime.
+        Refer exptime help for examples.
+
+
+    Receiver
+    --------
+
+    .   Arping for 10GbE
+        Command line: rx_arping API: getRxArping/ setRxArping
+        Starts a thread in the receiver to arping the interface it is listening
+        to in 10GbE mode every 60 s. 
+        
+        Changes NUM_RX_THREAD_IDS (sls_detector_defs.h) from 8 to 9.
+
+
+1. Other New or Changed Features
 ==========================
 
-- Fixed minor warnings (will fix commandline print of excess packets for missing packets)
-- ctb slow adcs and any other adcs (other than temp) goes to the control Server
-- number of udp interfaces is 2 for Eiger (CHANGE IN API??)
-- added module id for virtual servers into the udp header
-- refactoring (rxr)
-- fixed patsetbit and patsetmask for moench
-- changed default vref of adc9257 to 2V for moench (from 1.33V)
-- moench and ctb - can set the starting frame number of next acquisition
-- mythen server kernel check incompatible (cet timezone)
-- rx_arping
-- rx_threadsids max is now 9 (breaking api)
-- fixed datastream disabling for eiger. Its only available in 10g mode.
-- m3 server crash (vthrehsold dac names were not provided)
-- allow vtrim to be interpolated for Eiger settings
+    Client
+    ------
+
+    .   [Moench][Ctb] Starting frame number
+        Command line: nextframenumber, API: getNextFrameNumber/ setNextFrameNumber
+        Added and default set up on detector server start up.
+
+    .   [Eiger] Vtr
+        Allow Vtrim to be interpolated for settings.
+
+    Detector Server
+    ---------------
+
+    .   [Moench] ADC9257 Vref
+        ADC Vref voltage modified from 1.33V to 2V
+
+
+
+
+    Simulator
+    ---------
+
+    .   [Eiger][Junfrau][Gotthard2][Mythen3] Module Id
+        Added into udp header
+
+    
+
+
+
 - m3 setThresholdEnergy and setAllThresholdEnergy was overwriting gaincaps with settings enum
 - can set localhost with virtual server with minimum configuration: (hostname localhost, rx_hostname localhost, udp_dstip auto)
 - increases the progress according to listened index. (not processed index)
@@ -131,10 +196,43 @@ This document describes the differences between v7.0.0 and v6.x.x
  - hardwareversion 
 - jungfrau connected moduleid to detid_jungfrau.txt on board
 
+- dac names for ctb?
 
-2. Resolved Issues
+
+2. Other Resolved Issues
 ==================
-    - Reading back sub-microsecond exposure times from the Python API. 
+
+
+    Client
+    ------
+    
+    .   [Ctb] ADC command goes back to control server
+        Slow ADCs, slow ADC temperature, get measured current and voltage values
+        are requested via the control server again insetad of the stop server
+        due to configuration and definitions in the control server.
+
+
+    Detecor Server
+    --------------
+
+    .   [Mythne3] Kernel version compatibility test
+        Fix added to parse properly the kernel version with CET for corrected
+        version compatibility test.
+
+    .   [Mythen3] Server crash for setting vthrehsold
+        Fixed.
+
+
+    Receiver
+    --------
+
+    .   refactored and fixed minor issues
+        - 200%in acquire
+    
+    .   
+
+
+
 
 3. Firmware Requirements
 ========================

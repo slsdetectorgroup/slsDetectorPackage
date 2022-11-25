@@ -58,8 +58,8 @@ This document describes the differences between v6.1.2 and v6.1.1.
         to start the next acquisition, but module B then waits for "ready
         for trigger" synchronization from module A, which it will never get.
         Since module B missed the asynchronous stop command, the workaround
-        in the client is to send another "stop" command till it returns
-        Idle.
+        in the client is to send another "stop" command (upto 10 retries) 
+        till it returns Idle.
 
     2.  [Eiger][Jungfrau][Moench][Ctb]
         A "stop" command will also check for inconsistent 'nextframenumber' 

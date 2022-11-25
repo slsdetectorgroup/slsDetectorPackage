@@ -1,0 +1,247 @@
+SLS Detector Package Patch Release 6.1.2 released on 25.11.2022
+===============================================================
+
+This document describes the differences between v6.1.2 and v6.1.1.   
+
+
+    CONTENTS
+    --------
+    1.  Resolved Issues
+    2.  On-board Detector Server Compatibility
+    2.  Firmware Requirements
+    3.  Kernel Requirements
+    4.  Download, Documentation & Support
+
+
+
+1. Resolved Issues
+==================
+
+    Detector Server
+    ---------------
+    
+    1.  [Jungfrau, Moench, Ctb] 
+        Programming Firmware
+        Updating kernel was not enough to ensure seamless programming of FPGA.
+        nCe signal now made high before programming blackfin.
+
+        Updating the on-board detector server to this version is recommended 
+        before updating firmware for future releases.
+
+        Also removed the unnecessary test to check if it is allowed to update 
+        kernel or on-board detector server, depending on the current kernel 
+        version.
+
+    2.  [Eiger] locking for start and stop
+        Since the start and stop has a few commands within the server itself,
+        they are locked to ensure they dont disturb the other to have undefined
+        behavior.
+
+    3.  [Eiger] Quad Trimbits or threshold
+        Loading trimbits or setting threshold will throw an incorrect exception
+        for a quad as the left and right register values will not match. The fix 
+        only sets and monitors right fpga for chip trim signals in quad.
+
+    4.  [Eiger] Minor refactoring
+        Inconsistent reads between left and right register for read/write 
+        register commands now give clear error messages.
+
+        Fixed some minor functions returned empty error messages when failing.
+
+
+    Client
+    ------
+
+    1.  [Eiger] Stop command freezes server 
+        It is apparent in large detectors.
+
+        For example, if module A got a "stop" during an acquisition, 
+        it stops to an 'Idle' state. If module B gets a "stop" before an 
+        acquisition, it will return it is in 'Idle' state and continue 
+        to start the next acquisition, but module B then waits for "ready
+        for trigger" synchronization from module A, which it will never get.
+        
+        Since module B missed the asynchronous stop command, the workaround
+        in the client is to send another "stop" command (upto 10 retries) 
+        till it returns Idle.
+
+    2.  [Eiger][Jungfrau][Moench][Ctb]
+        Stop results in different frame numbers
+        A "stop" command will also now check for inconsistent 'nextframenumber' 
+        between the modules and set it to the max + 1 to ensure that they 
+        all start with the same frame number for the next acquisition.
+
+
+
+    Python
+    ------
+
+    1.  Conda package
+        Removed conda pkgs for python 3.6 and 3.7
+        Added conda pkgs for python 3.11
+
+    2.  Pybind11
+        Updated pybind11 from 2.6.2 to 2.10.11
+
+
+    Test
+    ----
+
+    1.  Updated catch to latest 2.x version due do build failure on fedora
+
+
+
+2.  On-board Detector Server Compatibility
+==========================================
+
+    Eiger       6.1.2
+    Jungfrau    6.1.2
+    Gotthard    6.1.0
+    Mythen3     6.1.0
+    Gotthard2   6.1.0
+    Moench      6.1.2
+    Ctb         6.1.2
+    
+    On-board Detector Server Upgrade
+    ================================
+    From v6.1.0 (without tftp):
+        Using command 'updatedetectorserver'
+    From 5.0.0 (with tftp):
+        Using command 'copydetectorserver'
+
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+
+
+3. Firmware Requirements
+========================
+        
+    Note: No change to 6.1.1.
+
+    Eiger       08.10.2021 (v29)
+    Jungfrau    31.08.2021 (v1.2, PCB v1.0) 
+                08.10.2021 (v2.2, PCB v2.0)
+    Gotthard    08.02.2018 (50um and 25um Master)
+                09.02.2018 (25 um Slave) 
+    Mythen3     10.09.2021 (v1.1)
+    Gotthard2   27.05.2021 (v0.1)
+    Moench      05.10.2020 (v1.0)
+    Ctb         05.10.2020 (v1.0)
+
+    Detector Firmware Upgrade
+    =========================
+    The following can be upgraded remotely:
+    Eiger      via bit files
+    Jungfrau   via 'programfpga' command <.pof>
+    Mythen3    via 'programfpga' command <.rbf>
+    Gotthard2  via 'programfpga' command <.rbf> 
+    Moench     via 'programfpga' command <.pof>
+    Ctb        via 'programfpga' command <.pof>
+
+    The following cannot be upgraded remotely:
+    Gotthard   
+
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+
+
+4. Kernel Requirements
+======================
+
+    Note: No change to 6.1.1.
+
+
+    Blackfin 
+    ========
+    Latest version: Fri Oct 29 00:00:00 2021
+    
+    Older ones will work, but might have issues with programming firmware via
+    the package.
+
+    Nios
+    ====
+    Compatible version: Mon May 10 18:00:21 CEST 2021
+
+    Kernel Upgrade
+    ==============
+    Eiger   via bit files
+    Others  via command
+
+    Commands: udpatekernel, kernelversion
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+        https://slsdetectorgroup.github.io/devdoc/pydetector.html
+
+
+
+5. Download, Documentation & Support
+====================================
+
+    Download
+    --------
+    
+    The Source Code:
+         https://github.com/slsdetectorgroup/slsDetectorPackage
+            
+    Documentation
+    -------------
+    
+    Installation:
+        https://slsdetectorgroup.github.io/devdoc/installation.html#
+        
+    Firmware Upgrade:
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+    Detector Server upgrade:
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+    Detector Simulators:
+        https://slsdetectorgroup.github.io/devdoc/virtualserver.html
+
+    Consuming slsDetectorPackage:
+        https://slsdetectorgroup.github.io/devdoc/consuming.html
+        
+    API Examples:
+        https://github.com/slsdetectorgroup/api-examples
+
+    Command Line Documentation:
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+
+    Quick Start Guide:
+        https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
+        
+    C++ API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+       
+    C++ API Example:
+        https://slsdetectorgroup.github.io/devdoc/examples.html#
+        
+    Python API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/pygettingstarted.html
+
+    Python API Example:
+        https://slsdetectorgroup.github.io/devdoc/pyexamples.html
+
+    Receivers (including custom receiver):
+        https://slsdetectorgroup.github.io/devdoc/receivers.html
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html
+
+    TroubleShooting:
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html
+        
+    Further Documentation:
+        https://www.psi.ch/en/detectors/documentation
+        
+    Info on Releases:
+        https://www.psi.ch/en/detectors/software
+
+
+    Support
+    -------
+
+        dhanya.thattil@psi.ch
+        erik.frojdh@psi.ch
+

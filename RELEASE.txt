@@ -270,6 +270,77 @@ Breaking API Resolved Issues
 
 
 
+2. Other Resolved Issues
+==================
+
+
+    Client
+    ------
+    
+    .   [Ctb] ADC command goes back to control server
+        Slow ADCs, slow ADC temperature, get measured current and voltage values
+        are requested via the control server again insetad of the stop server
+        due to configuration and definitions in the control server.
+
+    .   [Eiger] Incorrect next frame number
+        Command line: nextframenumber, API: getNextFrameNumber/ setNextFrameNumber
+        Get next frame number for 10g was connected to 1g registers and gave 
+        incorrect values. Fixed.
+
+    .   [Eiger][Jungfrau][Moench][Ctb] Stop affecting next frame number
+        Stopping acquisition sometimes results in different next frame numbers
+        for different moduels. Hence, after a stop, if the next frame numbers are
+        different, they are all set to their maximum value + 1.
+
+    .   [Mythen3] Incorrect gain caps when setting threshold energy
+        Gain caps overwritten with settings enum. Fixed.
+
+    Detecor Server
+    --------------
+
+    .   [Mythne3] Kernel version compatibility test
+        Fix added to parse properly the kernel version with CET for corrected
+        version compatibility test.
+
+    .   [Mythen3] Server crash for setting vthrehsold
+        Fixed.
+
+    .   [Mythen3] Incorrect gaincaps
+        Setting threshold energy was overwriting gaincaps with settings enum. Fixed.
+
+    .   [Ctb][Moench] Hostname fail in update mode. 
+        Fixed
+
+    .   Stop server startup errors
+        Stop servers now also check for errors at startup (including version
+        compatibility) and like the control server, it will translate to the 
+        client when connecting to the first time (hostname command).
+
+
+    Receiver
+    --------
+
+    .   refactored and fixed minor issues
+        Fixed progress also in discard partial packaets mode and deactivated ports. 
+        Fixed 200% progress.
+
+
+    
+    .   [Eiger] Datastream command order
+        The order of commands to set datastream from client mattered previously.
+        Datastream had to be set before 10GbE enable. Order does not matter anymore.
+
+    .   Multiple files
+        This bug was introduced in v6.0.0, where 1 file was created per frame 
+        after the first file. Fixed by resetting the number of frames in 
+        current file when creating a new one.
+
+    .   [Mythen3] Incorrect number of packets calculated or tengiga not set up
+        Runnig config second time (with tengiga=0, dr !=32, counters !=0x7) 
+        calculated incorrect image size expected due to inconsistent copy of
+        detector parameters. Fixed
+
+
 - adding LTO to test and disable them for Debug builds?
 - support external build of python lib
 
@@ -341,76 +412,6 @@ Breaking API Resolved Issues
 
 - dac names for ctb?
 
-
-2. Other Resolved Issues
-==================
-
-
-    Client
-    ------
-    
-    .   [Ctb] ADC command goes back to control server
-        Slow ADCs, slow ADC temperature, get measured current and voltage values
-        are requested via the control server again insetad of the stop server
-        due to configuration and definitions in the control server.
-
-    .   [Eiger] Incorrect next frame number
-        Command line: nextframenumber, API: getNextFrameNumber/ setNextFrameNumber
-        Get next frame number for 10g was connected to 1g registers and gave 
-        incorrect values. Fixed.
-
-    .   [Eiger][Jungfrau][Moench][Ctb] Stop affecting next frame number
-        Stopping acquisition sometimes results in different next frame numbers
-        for different moduels. Hence, after a stop, if the next frame numbers are
-        different, they are all set to their maximum value + 1.
-
-    .   [Mythen3] Incorrect gain caps when setting threshold energy
-        Gain caps overwritten with settings enum. Fixed.
-
-    Detecor Server
-    --------------
-
-    .   [Mythne3] Kernel version compatibility test
-        Fix added to parse properly the kernel version with CET for corrected
-        version compatibility test.
-
-    .   [Mythen3] Server crash for setting vthrehsold
-        Fixed.
-
-    .   [Mythen3] Incorrect gaincaps
-        Setting threshold energy was overwriting gaincaps with settings enum. Fixed.
-
-    .   [Ctb][Moench] Hostname fail in update mode. 
-        Fixed
-
-    .   Stop server startup errors
-        Stop servers now also check for errors at startup (including version
-        compatibility) and like the control server, it will translate to the 
-        client when connecting to the first time (hostname command).
-
-
-    Receiver
-    --------
-
-    .   refactored and fixed minor issues
-        Fixed progress also in discard partial packaets mode and deactivated ports. 
-        Fixed 200% progress.
-
-
-    
-    .   [Eiger] Datastream command order
-        The order of commands to set datastream from client mattered previously.
-        Datastream had to be set before 10GbE enable. Order does not matter anymore.
-
-    .   Multiple files
-        This bug was introduced in v6.0.0, where 1 file was created per frame 
-        after the first file. Fixed by resetting the number of frames in 
-        current file when creating a new one.
-
-    .   [Mythen3] Incorrect number of packets calculated or tengiga not set up
-        Runnig config second time (with tengiga=0, dr !=32, counters !=0x7) 
-        calculated incorrect image size expected due to inconsistent copy of
-        detector parameters. Fixed
 
 
 

@@ -37,8 +37,15 @@ Breaking API Resolved Issues
         Command line: datastream, API: getDataStream/ setDataStream
 
         This command to enable/ disable data stream from left or right port
-        is now allowed only for 10GbE.
+        is now allowed only for 10GbE. Previously, it incorrectly allowed to do so.
 
+
+    .   Non-blocking start
+        Allow non-blocking start at modular level again.
+
+
+    .   [Gotthard][Gotthard2] Num modules
+        Only 2 modules allowed maximum in a detector shared memory.
 
     Python
     -------
@@ -55,6 +62,20 @@ Breaking API Resolved Issues
         Refer exptime help for examples.
 
 
+
+    Simulator
+    ---------
+
+    .   [Eiger] Only one executable
+        Only one executable for an Eiger virtual server. Master and top mode
+        can be provided via command line or config file to the detector server,
+        as well as via the client. See in Other New Features for more details.
+
+        One can start a module using:
+            eigerDetectorServer_virtual # reads default config file (top master)
+            eigerDetectorServer_virtual -i #ignores the config file (bottom slave)
+
+
     Receiver
     --------
 
@@ -62,8 +83,27 @@ Breaking API Resolved Issues
         Command line: rx_arping API: getRxArping/ setRxArping
         Starts a thread in the receiver to arping the interface it is listening
         to in 10GbE mode every 60 s. 
-        
         Changes NUM_RX_THREAD_IDS (sls_detector_defs.h) from 8 to 9.
+
+    .   File write
+        File write is disabled by default.
+
+    .   Missing packets
+        Command line: rx_missingpackets, API: getNumMissingPackets
+        This now returns a signed 64 bit instead of unsigned. The negative polarity
+        depicts extra packets instead of missing packets and also takes care of
+        disabled ports.
+
+    .   Frames caught and frame index
+        Command line rx_framescaught, rx_frameindex, API: getFramesCaught/ getRxCurrentFrameIndex
+        They now return a vector for each port when there are 2 udp interfaces
+        in the receiver.
+
+    .   Geometry metadata
+        Added geometry (number of modules in each direction) to metadata in file.
+
+    .   HDF5 and Binary writer version 
+        Changed from 6.3 to 6.4
 
 
 1. Other New or Changed Features
@@ -80,6 +120,29 @@ Breaking API Resolved Issues
         Allow Vtrim to be interpolated for settings.
 
 
+    .   [Eiger][Gotthard][Gotthard2][Mythen3] Master
+        Command line: master, API: getMaster/ setMaster
+        All of them can get master mode from the client.
+        
+        Only Eiger can set a half module to master or slave from the client.
+        The others can set this only in a virtual server.
+        
+        Setting up on the detector or virtual server:-
+        [Eiger][Gotthard2][Mythen3][Gotthard] 
+            Using command line 'master' or 'm' with argument (slave=0, master=1)
+        [Eiger][Gotthard] 
+            Using config file with 'master' with argument (slave=0, master=1)
+
+    .   [Eiger] Top
+        Command line: top, API: getTop/ setTop
+        Sets the half module to top or bottom from the client.
+
+        This can also be set up on the detector server:
+        Using command line 'top' or 't' with argument (top=0, bottom=1)
+        Using config file with 'top' with argument (top=0, bottom=1)
+
+
+
 
     Detector Server
     ---------------
@@ -88,7 +151,10 @@ Breaking API Resolved Issues
         ADC Vref voltage modified from 1.33V to 2V
 
 
-
+    .   Command line arguments 
+        They have precedence over config files. The config files can also be 
+        ignored by an argument from the command line, '--ignore-config' or '-i'.
+            
 
     Simulator
     ---------
@@ -102,32 +168,37 @@ Breaking API Resolved Issues
             rx_hostname localhost
             udp_dstip auto
 
+    .   [Eiger]
+
+
+
+    Callback
+    --------
+
+    .   [Gotthard2] 25um Image reconstruction for 2 modules
+        First module (master) interleaves with second modules(slave). First channel
+        of master is first channel of detector. 
+
+        Requires firmware update to reverse channels of slaves.
+
     
+    Receiver
+    --------
+
+    .   [Gotthard2] 25um image reconstruction in virtual HDF5
+        Virtual HDF5 reconstructs complete image by interleaving first module 
+        (master) with second module (slave). First channel of master is first
+        channel of detector.
+
+        Requires firmware update to reverse channels of slaves.
 
 
 
-- increases the progress according to listened index. (not processed index)
-- current frame index points to listened frame index (not processed index)
-- when in discard partial frames or empty mode, the frame number doesnt increase by 1, it increases to that number (so its faster)
-- file write disabled by default
-- eiger 12 bit mode
-- start non blocking acquisition at modular level
-- connect master commands to api (allow set master for eiger)
---ignore-config command line
-- command line argument 'master' mainly for virtual servers (also master/top for real eiger), only one virtual server for eiger, use command lines for master/top
-- stop servers also check for errors at startup( in case it was running with an older version)
-- hostname cmd failed when connecting to servers in update mode (ctb, moench, jungfrau, eiger)
-- missingpackets signed (negative => extra packets)
-- framescaught and frameindex now returns a vector for each port
-- progress looks at activated or enabled ports, so progress does not stagnate
-- (eiger) disable datastreaming also for virtual servers only for 10g
-- missing packets also takes care of disabled ports
-- added geometry to metadata
-- 10g eiger nextframenumber get fixed.
-- stop, able to set nextframenumber to a consistent (max + 1) for all modules if different (eiger/ctb/jungfrau/moench)
+
 - ctb: can set names for all the dacs
 - fpga/kernel programming, checks if drive is a special file and not a normal file
-- gotthard 25 um image reconstructed in gui and virtual hdf5 (firmware updated for slave to reverse channels)
+
+
 - master binary file in json format now
 - fixed bug introduced in 6.0.0: hdf5 files created 1 file per frame after the initial file which had maxframesperfile
 - rx_roi
@@ -217,6 +288,16 @@ Breaking API Resolved Issues
         are requested via the control server again insetad of the stop server
         due to configuration and definitions in the control server.
 
+    .   [Eiger] Incorrect next frame number
+        Command line: nextframenumber, API: getNextFrameNumber/ setNextFrameNumber
+        Get next frame number for 10g was connected to 1g registers and gave 
+        incorrect values. Fixed.
+
+    .   [Eiger][Jungfrau][Moench][Ctb] Stop affecting next frame number
+        Stopping acquisition sometimes results in different next frame numbers
+        for different moduels. Hence, after a stop, if the next frame numbers are
+        different, they are all set to their maximum value + 1.
+
 
     Detecor Server
     --------------
@@ -231,21 +312,37 @@ Breaking API Resolved Issues
     .   [Mythen3] Incorrect gaincaps
         Setting threshold energy was overwriting gaincaps with settings enum. Fixed.
 
+    .   [Ctb][Moench] Hostname fail in update mode. 
+        Fixed
+
+    .   Stop server startup errors
+        Stop servers now also check for errors at startup (including version
+        compatibility) and like the control server, it will translate to the 
+        client when connecting to the first time (hostname command).
+
 
     Receiver
     --------
 
     .   refactored and fixed minor issues
-        - 200%in acquire
-    
-    .   
+        Fixed progress also in discard partial packaets mode and deactivated ports. 
+        Fixed 200% progress.
 
+
+    
+    .   [Eiger] Datastream command order
+        The order of commands to set datastream from client mattered previously.
+        Datastream had to be set before 10GbE enable. Order does not matter anymore.
 
 
 
 3. Firmware Requirements
 ========================
-        
+
+
+    G2 Firmware update to reverse channels of slaves.
+
+
     Eiger
     =====  
     Compatible version : 08.10.2021 (v29)

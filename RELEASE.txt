@@ -47,6 +47,8 @@ Breaking API Resolved Issues
     .   [Gotthard][Gotthard2] Num modules
         Only 2 modules allowed maximum in a detector shared memory.
 
+    .   CopyDetectorServer
+
     Python
     -------
 
@@ -62,6 +64,12 @@ Breaking API Resolved Issues
         Refer exptime help for examples.
 
 
+    Detector Server
+    ---------------
+
+    .   Deprecated CopyDetectorServer 
+        Command line: copydetectorserver, API: copydetectorserver
+        Removed. Use updatedetectorserver
 
     Simulator
     ---------
@@ -106,6 +114,33 @@ Breaking API Resolved Issues
         Changed from 6.3 to 6.4
 
 
+    .   Master file format to json
+        The format has been changed from ASCII to json.
+
+    .   Master file created at end of acquisition
+        The file is now written at the end of acquisition. So if any metadata
+        is changed during an acquisition, it will reflect the last value.
+
+
+    Callback
+    --------
+
+    .   Datatype of Metadata [registerCallBackRawDataReady, registerCallBackRawDataModifyReady]
+        Datatype changed from char* to sls_receiver_header*.
+
+    
+    .   Datatype of Size [registerCallBackRawDataReady, registerCallBackRawDataModifyReady]
+        Datatype changed from uint32_t to size_t
+
+    .   Datatype of file name and file path [registerCallBackStartAcquisition]
+        Datatype changed from string to const string reference.
+  
+    .   Incorrect image size [registerCallBackStartAcquisition]
+        Fixed. It used to give +120 bytes.
+
+
+
+
 1. Other New or Changed Features
 ==========================
 
@@ -142,6 +177,27 @@ Breaking API Resolved Issues
         Using config file with 'top' with argument (top=0, bottom=1)
 
 
+    .   [Ctb] DAC names
+        Command line: daclist, API: getDacNames/ setDacNames
+        Can set and get dac names in the dac list now.
+    
+
+    .   [Mythen3] Polarity, interpolation, pump probe, analog pulsing, digital pulsing
+        Command line: polarity, interpolation, pumpprobe, apulse, dpulse
+        API: getPolarity/ setPolarity, getInterpolation/ setInterpolation,
+        getPumpProbe/ setPumpProbe, getAnalogPulsing/ setAnalogPulsing,
+        getDigitalPulsing/ setDigitalPulsing
+        
+        Added these commands. Enabling interpolation will also enable all counters.
+
+    
+    Compilation
+    -----------
+
+    .   Option to provide a custom location to look for ZeroMQ, if not found 
+        using FindZeroMQ.cmake
+        -DZeroMQ_HINT=/usr/lib64 to use the system installed zmq
+
 
 
     Detector Server
@@ -155,6 +211,26 @@ Breaking API Resolved Issues
         They have precedence over config files. The config files can also be 
         ignored by an argument from the command line, '--ignore-config' or '-i'.
             
+    .   [Jungfrau][Moench][Ctb] Additional programming checks
+        Also checks if the drive to write to is a special file or a normal
+        file. If its a normal file, it throws asking to redo the command with a 
+        '--please-delete' argument to delete the normal file and create the device
+        drive and restart FPGA programming.
+
+        More readable error message insetad of "programfpga not implemented for
+        this detector'. This happens when 'hostname' command fails due to 
+        server-firmware/client compatibility and the detector type becomes
+        'GENERIC'. Fixed to suggest if 'hostname' executed properly. 
+
+    .   [Jungfrau][Moench][Ctb] Additional server update process
+        Removes old server binary or target of linked file when updating
+        detector server for blackfin detectors as there is less space on blackfin.
+
+        Clearing up absolute and respawn path (removing double '/')
+
+        Raise error if server name to be copied is the same as final soft link name.
+
+
 
     Simulator
     ---------
@@ -194,21 +270,11 @@ Breaking API Resolved Issues
 
 
 
+- adding LTO to test and disable them for Debug builds?
+- support external build of python lib
 
-- ctb: can set names for all the dacs
-- fpga/kernel programming, checks if drive is a special file and not a normal file
 
-
-- master binary file in json format now
-- fixed bug introduced in 6.0.0: hdf5 files created 1 file per frame after the initial file which had maxframesperfile
 - rx_roi
-- m3 polarity, interpolation (enables all counters when enabled), pump probe, analog pulsing, digital pulsing
-- updatedetectorserver - removes old server current binary pointing to for blackfin
-- removing copydetectorserver using tftp 
-- registerCallBackRawDataReady and registerCallBackRawDataModifyReady now gives a sls_receiver_header* instead of a char*, and uint32_t to size_t
-- registerCallBackStartAcquisition gave incorrect imagesize (+120 bytes). corrected.
-- registerCallBackStartAcquisition parameter is a const string reference
-- m3 (runnig config second time with tengiga 0, dr !=32, counters !=0x7) calculated incorrect image size expected
 - fixed row column indexing (mainly for multi module Jungfrau 2 interfaces )
 - eiger gui row indices not flipped anymore (fix in config)
 - m3 (settings dac check disabled temporarily?)
@@ -298,6 +364,8 @@ Breaking API Resolved Issues
         for different moduels. Hence, after a stop, if the next frame numbers are
         different, they are all set to their maximum value + 1.
 
+    .   [Mythen3] Incorrect gain caps when setting threshold energy
+        Gain caps overwritten with settings enum. Fixed.
 
     Detecor Server
     --------------
@@ -333,6 +401,16 @@ Breaking API Resolved Issues
     .   [Eiger] Datastream command order
         The order of commands to set datastream from client mattered previously.
         Datastream had to be set before 10GbE enable. Order does not matter anymore.
+
+    .   Multiple files
+        This bug was introduced in v6.0.0, where 1 file was created per frame 
+        after the first file. Fixed by resetting the number of frames in 
+        current file when creating a new one.
+
+    .   [Mythen3] Incorrect number of packets calculated or tengiga not set up
+        Runnig config second time (with tengiga=0, dr !=32, counters !=0x7) 
+        calculated incorrect image size expected due to inconsistent copy of
+        detector parameters. Fixed
 
 
 

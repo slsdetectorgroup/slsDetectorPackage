@@ -224,10 +224,16 @@ int getModuleIdInFile(int *ret, char *mess, char *fileName) {
     // open id file
     FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
+#ifdef JUNGFRAUD
+        *ret = OK;
+        LOG(logWARNING, ("Could not find detid_jungfrau.txt to set module id\n"));
+        return 0;
+#else
         *ret = FAIL;
         strcpy(mess, "Could not find detid file\n");
         LOG(logERROR, ("%s\n\n", mess));
         return -1;
+#endif
     }
     LOG(logINFOBLUE, ("Reading det id file %s\n", fileName));
 

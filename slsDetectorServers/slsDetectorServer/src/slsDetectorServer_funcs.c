@@ -763,7 +763,7 @@ int set_firmware_test(int file_des) {
     memset(mess, 0, sizeof(mess));
     LOG(logDEBUG1, ("Executing firmware test\n"));
 
-#if !defined(GOTTHARDD) && !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) &&  \
+#if !defined(GOTTHARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&  \
     !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
@@ -781,7 +781,7 @@ int set_bus_test(int file_des) {
     memset(mess, 0, sizeof(mess));
     LOG(logDEBUG1, ("Executing bus test\n"));
 
-#if !defined(GOTTHARDD) && !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) &&  \
+#if !defined(GOTTHARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&  \
     !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
@@ -804,7 +804,7 @@ int set_image_test_mode(int file_des) {
     LOG(logDEBUG1, ("Setting image test mode to \n", arg));
 
 #if defined(GOTTHARDD) ||                                                      \
-    ((defined(EIGERD) || defined(JUNGFRAUD)) && defined(VIRTUAL))
+    ((defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)) && defined(VIRTUAL))
     setTestImageMode(arg);
 #else
     functionNotImplemented();
@@ -819,7 +819,7 @@ int get_image_test_mode(int file_des) {
     LOG(logDEBUG1, ("Getting image test mode\n"));
 
 #if defined(GOTTHARDD) ||                                                      \
-    ((defined(EIGERD) || defined(JUNGFRAUD)) && defined(VIRTUAL))
+    ((defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)) && defined(VIRTUAL))
     retval = getTestImageMode();
     LOG(logDEBUG1, ("image test mode retval: %d\n", retval));
 #else
@@ -1025,7 +1025,7 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     case VCOM_ADC2:
         serverDacIndex = G2_VCOM_ADC2;
         break;
-#elif JUNGFRAUD
+#elif defined(JUNGFRAUD) || defined(MOENCHD)
     case HIGH_VOLTAGE:
         break;
     case VB_COMP:
@@ -1123,7 +1123,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
     case HIGH_VOLTAGE:
         retval = setHighVoltage(val);
         LOG(logDEBUG1, ("High Voltage: %d\n", retval));
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(GOTTHARD2D) || defined(MYTHEN3D)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) || defined(GOTTHARD2D) || defined(MYTHEN3D)
         validate(&ret, mess, val, retval, "set high voltage", DEC);
 #endif
 #ifdef GOTTHARDD
@@ -1364,7 +1364,7 @@ int get_adc(int file_des) {
         serverAdcIndex = TEMP_FPGA;
         break;
 #endif
-#if defined(GOTTHARDD) || defined(JUNGFRAUD)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
     case TEMPERATURE_FPGA:
         serverAdcIndex = TEMP_FPGA;
         break;
@@ -1717,7 +1717,7 @@ void validate_settings(enum detectorSettings sett) {
     switch (sett) {
 #ifdef EIGERD
     case STANDARD:
-#elif JUNGFRAUD
+#elif defined(JUNGFRAUD) || defined(MOENCHD)
     case GAIN0:
     case HIGHGAIN0:
 #elif GOTTHARDD
@@ -1830,7 +1830,7 @@ int acquire(int blocking, int file_des) {
     }
     // only set
     if (Server_VerifyLock() == OK) {
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(MOENCHD)
         // chipv1.1 has to be configured before acquisition
         if (getChipVersion() == 11 && !isChipConfigured()) {
             ret = FAIL;
@@ -2154,7 +2154,7 @@ int get_num_additional_storage_cells(int file_des) {
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
@@ -2173,7 +2173,7 @@ int set_num_additional_storage_cells(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of addl. storage cells %d\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -2450,7 +2450,7 @@ int get_delay_after_trigger(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
     !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
@@ -2472,7 +2472,7 @@ int set_delay_after_trigger(int file_des) {
     LOG(logDEBUG1,
         ("Setting delay after trigger %lld ns\n", (long long int)arg));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
     !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
@@ -2616,7 +2616,7 @@ int get_storage_cell_delay(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
@@ -2643,7 +2643,7 @@ int set_storage_cell_delay(int file_des) {
     LOG(logDEBUG1,
         ("Setting storage cell delay %lld ns\n", (long long int)arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -2682,7 +2682,7 @@ int get_frames_left(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
     !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
@@ -2698,7 +2698,7 @@ int get_triggers_left(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
     !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
@@ -2729,7 +2729,7 @@ int get_period_left(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) /* && !defined(CHIPTESTBOARDD)  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) /* && !defined(CHIPTESTBOARDD)  \
    && !defined(MYTHEN3D) && !defined(GOTTHARD2D)*/
     functionNotImplemented();
 #else
@@ -2745,7 +2745,7 @@ int get_delay_after_trigger_left(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) /* && !defined(CHIPTESTBOARDD)  \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARDD) /* && !defined(CHIPTESTBOARDD)  \
     && !defined(MYTHEN3D) && !defined(GOTTHARD2D)*/
     functionNotImplemented();
 #else
@@ -2793,7 +2793,7 @@ int get_frames_from_start(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -2808,7 +2808,7 @@ int get_actual_time(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -2823,7 +2823,7 @@ int get_measurement_time(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -2863,7 +2863,7 @@ int set_dynamic_range(int file_des) {
         case 16:
         case 32:
 #endif
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) ||     \
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||     \
     defined(GOTTHARD2D)
         case 16:
 #endif
@@ -3005,7 +3005,7 @@ int enable_ten_giga(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG, ("Setting 10GbE: %d\n", arg));
 
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(GOTTHARD2D)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARDD) || defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // set & get
@@ -3382,7 +3382,7 @@ int write_adc_register(int file_des) {
 #ifndef VIRTUAL
     // only set
     if (Server_VerifyLock() == OK) {
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD)
         AD9257_Set(addr, val);
 #elif GOTTHARDD
         if (isHardwareVersion_1_0()) {
@@ -3549,7 +3549,7 @@ int set_ten_giga_flow_control(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting ten giga flow control: %d\n", arg));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -3575,7 +3575,7 @@ int get_ten_giga_flow_control(int file_des) {
 
     LOG(logDEBUG1, ("Getting ten giga flow control\n"));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
@@ -3598,7 +3598,7 @@ int set_transmission_delay_frame(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting transmission delay frame: %d\n", arg));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MYTHEN3D)
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -3636,7 +3636,7 @@ int get_transmission_delay_frame(int file_des) {
 
     LOG(logDEBUG1, ("Getting transmission delay frame\n"));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MYTHEN3D)
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
@@ -3810,7 +3810,7 @@ int power_chip(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Powering chip to %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MYTHEN3D) &&          \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) &&          \
     !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
@@ -3835,7 +3835,7 @@ int power_chip(int file_des) {
             LOG(logDEBUG1, ("Power chip: %d\n", retval));
         }
         validate(&ret, mess, arg, retval, "power on/off chip", DEC);
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(MOENCHD)
         // narrow down error when powering on
         if (ret == FAIL && arg > 0) {
             if (setTemperatureEvent(GET_FLAG) == 1)
@@ -3900,7 +3900,7 @@ int threshold_temp(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting threshold temperature to %d\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // set & get
@@ -3933,7 +3933,7 @@ int temp_control(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting temperature control to %d\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // set & get
@@ -3957,7 +3957,7 @@ int temp_event(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting temperature event to %d\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // set & get
@@ -3980,7 +3980,7 @@ int auto_comp_disable(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting  Auto comp disable to %d\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // set & get
@@ -4003,7 +4003,7 @@ int storage_cell_start(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting Storage cell start to %d\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // set & get
@@ -4063,7 +4063,7 @@ int software_trigger(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Software Trigger (block: %d\n", arg));
 
-#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     if (arg && myDetectorType == MYTHEN3) {
@@ -4275,7 +4275,7 @@ int set_adc_invert(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Seting ADC Invert to %u\n", arg));
 
-#if (!defined(CHIPTESTBOARDD)) && (!defined(JUNGFRAUD))
+#if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -4302,7 +4302,7 @@ int get_adc_invert(int file_des) {
 
     LOG(logDEBUG1, ("Getting ADC Invert register \n"));
 
-#if (!defined(CHIPTESTBOARDD)) && (!defined(JUNGFRAUD))
+#if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get
@@ -4378,8 +4378,8 @@ int set_next_frame_number(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting next frame number to %llu\n", arg));
 
-#if (!defined(EIGERD)) && (!defined(JUNGFRAUD)) &&      \
-    (!defined(CHIPTESTBOARDD))
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&      \
+    !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
@@ -4457,8 +4457,8 @@ int get_next_frame_number(int file_des) {
 
     LOG(logDEBUG1, ("Getting next frame number \n"));
 
-#if (!defined(EIGERD)) && (!defined(JUNGFRAUD)) &&      \
-    (!defined(CHIPTESTBOARDD))
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&      \
+    !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get
@@ -4594,7 +4594,7 @@ int set_read_n_rows(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of rows: %u\n", arg));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -4629,7 +4629,7 @@ int set_read_n_rows(int file_des) {
                         maxnl);
                 LOG(logERROR, (mess));
             } else
-#elif JUNGFRAUD
+#elif defined(JUNGFRAUD) || defined(MOENCHD)
             if ((check_detector_idle("set number of rows") == OK) &&
                 (arg % READ_N_ROWS_MULTIPLE != 0)) {
                 ret = FAIL;
@@ -4675,7 +4675,7 @@ int get_read_n_rows(int file_des) {
 
     LOG(logDEBUG1, ("Getting number of rows\n"));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     retval = getReadNRows();
@@ -4703,10 +4703,10 @@ void calculate_and_set_position() {
     int pos[2] = {0, 0};
 
     int portGeometry[2] = {1, 1};
-    // position does change for eiger and jungfrau (2 interfaces)
+    // position does change for eiger and jungfrau/moench (2 interfaces)
 #if defined(EIGERD)
     portGeometry[X] = getNumberofUDPInterfaces(); // horz
-#elif defined(JUNGFRAUD)
+#elif defined(JUNGFRAUD) || defined(MOENCHD)
     portGeometry[Y] = getNumberofUDPInterfaces(); // vert
 #endif
     LOG(logDEBUG1, ("moduleIndex:%d maxymods:%d portGeo.x:%d portgeo.y:%d\n",
@@ -4740,7 +4740,7 @@ void calculate_and_set_position() {
                 udpDetails[iRxEntry].srcmac = udpDetails[0].srcmac;
             }
         }
-#if defined(JUNGFRAUD) || defined(GOTTHARD2D)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D)
         if (getNumberofUDPInterfaces() > 1) {
             if (udpDetails[0].srcmac2 == 0) {
                 char dmac2[MAC_ADDRESS_SIZE];
@@ -4764,7 +4764,7 @@ void calculate_and_set_position() {
 #endif
         configure_mac();
     }
-    // no need to do a get (also jungfrau gives bigger set for second)
+    // no need to do a get (also jungfrau/moench gives bigger set for second)
 }
 
 int set_detector_position(int file_des) {
@@ -4833,7 +4833,7 @@ int is_udp_configured() {
             return FAIL;
         }
 #endif
-#if defined(JUNGFRAUD) || defined(GOTTHARD2D)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D)
         if (getNumberofUDPInterfaces() == 2) {
             if (udpDetails[i].srcip2 == 0) {
                 sprintf(configureMessage,
@@ -4945,7 +4945,7 @@ int set_source_udp_ip2(int file_des) {
     arg = __builtin_bswap32(arg);
     LOG(logINFO, ("Setting udp source ip2: 0x%x\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -4970,7 +4970,7 @@ int get_source_udp_ip2(int file_des) {
     uint32_t retval = -1;
     LOG(logDEBUG1, ("Getting udp source ip2\n"));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -5027,7 +5027,7 @@ int set_dest_udp_ip2(int file_des) {
     arg = __builtin_bswap32(arg);
     LOG(logINFO, ("Setting udp destination ip2: 0x%x\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -5049,7 +5049,7 @@ int get_dest_udp_ip2(int file_des) {
     uint32_t retval = -1;
     LOG(logDEBUG1, ("Getting udp destination ip2\n"));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -5106,7 +5106,7 @@ int set_source_udp_mac2(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting udp source mac2: 0x%lx\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -5131,7 +5131,7 @@ int get_source_udp_mac2(int file_des) {
     uint64_t retval = -1;
     LOG(logDEBUG1, ("Getting udp source mac2\n"));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -5184,7 +5184,7 @@ int set_dest_udp_mac2(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting udp destination mac2: 0x%lx\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -5206,7 +5206,7 @@ int get_dest_udp_mac2(int file_des) {
     uint64_t retval = -1;
     LOG(logDEBUG1, ("Getting udp destination mac2\n"));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -5259,7 +5259,7 @@ int set_dest_udp_port2(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting udp destination port2: %u\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(EIGERD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -5281,7 +5281,7 @@ int get_dest_udp_port2(int file_des) {
     int retval = -1;
     LOG(logDEBUG1, ("Getting destination port2\n"));
 
-#if !defined(JUNGFRAUD) && !defined(EIGERD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -5300,7 +5300,7 @@ int set_num_interfaces(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting number of interfaces: %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
     // fixed number of udp interfaces
     int num_interfaces = getNumberofUDPInterfaces();
     if (arg != num_interfaces) {
@@ -5386,7 +5386,7 @@ int set_interface_sel(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting selected interface: %d\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -5413,7 +5413,7 @@ int get_interface_sel(int file_des) {
     int retval = -1;
     LOG(logDEBUG1, ("Getting selected interface\n"));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
@@ -5720,7 +5720,7 @@ int set_clock_phase(int file_des) {
     LOG(logDEBUG1, ("Setting clock (%d) phase: %u %s\n", args[0], args[1],
                     (args[2] == 0 ? "" : "degrees")));
 
-#if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) &&    \
+#if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
@@ -5731,13 +5731,13 @@ int set_clock_phase(int file_des) {
         int inDegrees = args[2] == 0 ? 0 : 1;
         enum CLKINDEX c = 0;
         switch (ind) {
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) ||       \
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||       \
     defined(GOTTHARDD)
         case ADC_CLOCK:
             c = ADC_CLK;
             break;
 #endif
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
         case DBIT_CLOCK:
             c = DBIT_CLK;
             break;
@@ -5829,7 +5829,7 @@ int get_clock_phase(int file_des) {
     LOG(logINFOBLUE, ("Getting clock (%d) phase %s \n", args[0],
                       (args[1] == 0 ? "" : "in degrees")));
 
-#if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) &&    \
+#if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
@@ -5838,12 +5838,12 @@ int get_clock_phase(int file_des) {
     int inDegrees = args[1] == 0 ? 0 : 1;
     enum CLKINDEX c = 0;
     switch (ind) {
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
     case ADC_CLOCK:
         c = ADC_CLK;
         break;
 #endif
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
     case DBIT_CLOCK:
         c = DBIT_CLK;
         break;
@@ -5879,19 +5879,19 @@ int get_max_clock_phase_shift(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting clock (%d) max phase shift\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) &&    \
+#if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) && !defined(MOENCHD) &&    \
     !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
     enum CLKINDEX c = 0;
     switch (arg) {
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
     case ADC_CLOCK:
         c = ADC_CLK;
         break;
 #endif
-#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
     case DBIT_CLOCK:
         c = DBIT_CLK;
         break;
@@ -6613,7 +6613,7 @@ int set_current_source(int file_des) {
                     "normal:%d]\n",
                     enable, fix, (long long int)select, normal));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -6686,7 +6686,7 @@ int set_current_source(int file_des) {
         }
 
         if (ret == OK) {
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(MOENCHD)
             if (enable == 0) {
                 disableCurrentSource();
             } else {
@@ -6713,13 +6713,13 @@ int get_current_source(int file_des) {
 
     LOG(logDEBUG1, ("Getting current source\n"));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
     retvals[0] = getCurrentSource();
     LOG(logDEBUG1, ("current source enable retval: %u\n", retvals[0]));
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(MOENCHD)
     if (retvals[0]) {
         retvals[1] = getFixCurrentSource();
         retvals[2] = getNormalCurrentSource();
@@ -6944,7 +6944,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // additional storage cells
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(MOENCHD)
     i32 = getNumAdditionalStorageCells();
 #else
     i32 = 0;
@@ -7053,7 +7053,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // ReadNRows
-#if defined(EIGERD) || defined(JUNGFRAUD)
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
     i32 = getReadNRows();
 #else
     i32 = 0;
@@ -7735,11 +7735,11 @@ int get_filter_resistor(int file_des) {
 
     LOG(logDEBUG1, ("Getting filter resistor\n"));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(MOENCHD)
     if (getChipVersion() == 10) {
         ret = FAIL;
         strcpy(mess, "Could not get filter cell. Not available for this chip "
@@ -7764,7 +7764,7 @@ int set_filter_resistor(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting filter resistor: %u\n", arg));
 
-#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
+#if !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -7778,7 +7778,7 @@ int set_filter_resistor(int file_des) {
                 arg, ASIC_FILTER_MAX_RES_VALUE);
             LOG(logERROR, (mess));
         }
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(MOENCHD)
         else if (getChipVersion() == 10) {
             ret = FAIL;
             strcpy(mess, "Could not set filter cell. Not available for this "
@@ -7792,8 +7792,8 @@ int set_filter_resistor(int file_des) {
                 strcpy(mess, "Could not set filter resistor.\n");
                 LOG(logERROR, (mess));
             }
-#ifndef JUNGFRAUD
-            // jungfrau might take time to update status register if acquiring
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+            // jungfrau/moench might take time to update status register if acquiring
             int retval = getFilterResistor();
             LOG(logDEBUG1, ("filter resistor retval: %u\n", retval));
             validate(&ret, mess, arg, retval, "set filter resistor", DEC);
@@ -8180,7 +8180,7 @@ int get_master(int file_des) {
     LOG(logDEBUG1, ("Getting master\n"));
 
 #if !defined(MYTHEN3D) && !defined(EIGERD) && !defined(GOTTHARDD) &&           \
-    !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
+    !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     ret = isMaster(&retval);
@@ -8201,7 +8201,7 @@ int set_master(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting master: %u\n", (int)arg));
 
-#if !defined(EIGERD) && !defined(GOTTHARD2D) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(GOTTHARD2D) && !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -8503,7 +8503,7 @@ int get_chip_version(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     retval = getChipVersion();
@@ -8610,7 +8610,7 @@ int get_gain_mode(int file_des) {
     enum gainMode retval = DYNAMIC;
     LOG(logDEBUG1, ("Getting gain mode\n"));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
@@ -8634,7 +8634,7 @@ int set_gain_mode(int file_des) {
     enum gainMode gainmode = arg;
     LOG(logDEBUG1, ("Setting gain mode %d\n", (int)gainmode));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -8670,7 +8670,7 @@ int get_comp_disable_time(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
@@ -8696,7 +8696,7 @@ int set_comp_disable_time(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting comp disable time %lld ns\n", (long long int)arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -8731,7 +8731,7 @@ int get_flip_rows(int file_des) {
 
     LOG(logDEBUG1, ("Getting flip rows\n"));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
@@ -8757,7 +8757,7 @@ int set_flip_rows(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting flip rows: %u\n", (int)arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -8796,7 +8796,7 @@ int get_num_filter_cells(int file_des) {
 
     LOG(logDEBUG1, ("Getting number of filter cellsn"));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // get only
@@ -8823,7 +8823,7 @@ int set_num_filter_cells(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of filter cells: %u\n", (int)arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set
@@ -8941,7 +8941,7 @@ int get_module_id(int file_des) {
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 #if !(defined(GOTTHARD2D) || defined(EIGERD) || defined(MYTHEN3D) ||           \
-      defined(JUNGFRAUD))
+      defined(JUNGFRAUD) || defined(MOENCHD))
     functionNotImplemented();
 #else
     retval = getModuleId(&ret, mess);
@@ -8961,7 +8961,7 @@ int get_dest_udp_list(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting udp destination list for entry %d\n", arg));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MYTHEN3D) &&           \
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) &&           \
     !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
@@ -9029,7 +9029,7 @@ int set_dest_udp_list(int file_des) {
     getMacAddressinString(mac, MAC_ADDRESS_SIZE, args64[0]);
     getMacAddressinString(mac2, MAC_ADDRESS_SIZE, args64[1]);
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MYTHEN3D) &&           \
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) &&           \
     !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
@@ -9080,7 +9080,7 @@ int set_dest_udp_list(int file_des) {
 
                 // if still 0, set defaults
                 int twoInterfaces = 0;
-#if defined(JUNGFRAUD) || defined(GOTTHARD2D)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(GOTTHARD2D)
                 twoInterfaces = getNumberofUDPInterfaces() == 2 ? 1 : 0;
 #endif
                 udpDetails[entry].srcport = DEFAULT_UDP_SRC_PORTNO;
@@ -9151,7 +9151,7 @@ int get_num_dest_list(int file_des) {
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(EIGERD) && !defined(MYTHEN3D) &&           \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) && !defined(MYTHEN3D) &&           \
     !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
@@ -9182,7 +9182,7 @@ int clear_all_udp_dst(int file_des) {
             // minimum 1 destination in fpga
             int numdest = 1;
             // set number of destinations
-#if defined(JUNGFRAUD) || defined(EIGERD) || defined(MYTHEN3D) ||              \
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(EIGERD) || defined(MYTHEN3D) ||              \
     defined(GOTTHARD2D)
             if (setNumberofDestinations(numdest) == FAIL) {
                 ret = FAIL;
@@ -9210,7 +9210,7 @@ int get_udp_first_dest(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
-#if !defined(JUNGFRAUD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     retval = getFirstUDPDestination();
@@ -9228,7 +9228,7 @@ int set_udp_first_dest(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting first udp destination to %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -9257,7 +9257,7 @@ int get_readout_speed(int file_des) {
     int retval = -1;
     LOG(logDEBUG1, ("Getting readout speed\n"));
 
-#if !defined(JUNGFRAUD) && !defined(EIGERD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -9280,12 +9280,12 @@ int set_readout_speed(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting readout speed : %u\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(EIGERD) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(EIGERD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(MOENCHD)
         if (arg == (int)FULL_SPEED && isHardwareVersion_1_0()) {
             ret = FAIL;
             strcpy(
@@ -9296,7 +9296,7 @@ int set_readout_speed(int file_des) {
 #endif
         if (ret == OK) {
             switch (arg) {
-#if defined(EIGERD) || defined(JUNGFRAUD)
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(MOENCHD)
             case FULL_SPEED:
             case HALF_SPEED:
             case QUARTER_SPEED:
@@ -9470,7 +9470,7 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                   char *checksum, char *serverName,
                                   int forceDeleteNormalFile) {
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) &&    \
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(CHIPTESTBOARDD) &&    \
     !defined(GOTTHARDD)
     ret = FAIL;
     sprintf(mess,
@@ -10064,7 +10064,7 @@ int get_synchronization(int file_des) {
 
     LOG(logDEBUG1, ("Getting synchronization\n"));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     retval = getSynchronization();
@@ -10081,7 +10081,7 @@ int set_synchronization(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting synchronization: %u\n", (int)arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(MOENCHD)
     functionNotImplemented();
 #else
     // only set

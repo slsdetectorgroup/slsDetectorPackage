@@ -13,7 +13,7 @@
 extern enum TLogLevel trimmingPrint;
 #endif
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#ifdef CHIPTESTBOARDD
 #ifdef VIRTUAL
 uint64_t virtual_pattern[MAX_PATTERN_LENGTH];
 #endif
@@ -40,7 +40,7 @@ void initializePatternAddresses() {
     }
 }
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#ifdef CHIPTESTBOARDD
 #ifdef VIRTUAL
 void initializePatternWord() {
     memset(virtual_pattern, 0, sizeof(virtual_pattern));
@@ -128,7 +128,7 @@ int validate_writePatternWord(char *message, int addr, uint64_t word) {
 
     // validate result
     int ret = OK;
-    // cannot validate for moench, ctb ( same as executing pattern word)
+    // cannot validate for ctb ( same as executing pattern word)
 #ifdef MYTHEN3D
     uint64_t retval = readPatternWord(addr);
     LOG(logDEBUG1, ("Pattern word (addr:0x%x) retval: 0x%llx\n", addr,

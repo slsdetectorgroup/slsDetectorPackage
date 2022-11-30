@@ -6,22 +6,19 @@
 #include "AD9252.h"  // old board compatibility
 #include "clogger.h" // runState(enum TLogLevel)
 #endif
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) ||     \
-    defined(MOENCHD)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
 #include "AD9257.h" // commonServerFunctions.h, blackfin.h, ansi.h
 #endif
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 #include "programViaNios.h"
-#elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD) ||     \
-    defined(GOTTHARDD)
+#elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(GOTTHARDD)
 #include "programViaBlackfin.h"
 #endif
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 #include "nios.h"
-#elif defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) ||   \
-    defined(MOENCHD)
+#elif defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
 #include "blackfin.h"
 #endif
 
@@ -62,7 +59,7 @@ int isInitCheckDone();
 int getInitResult(char **mess);
 void basictests();
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) ||     \
-    defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+    defined(MYTHEN3D) || defined(GOTTHARD2D)
 int checkType();
 int testFpga();
 int testBus();
@@ -82,7 +79,7 @@ u_int64_t getFirmwareAPIVersion();
 void getHardwareVersion(char *version);
 u_int16_t getHardwareVersionNumber();
 #endif
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
 u_int16_t getHardwareSerialNumber();
 #endif
 #if defined(JUNGFRAUD) || defined(GOTTHARD2D) || defined(MYTHEN3D) ||          \
@@ -125,7 +122,7 @@ void checkVirtual9MFlag();
 void allocateDetectorStructureMemory();
 #endif
 void setupDetector();
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
 int updateDatabytesandAllocateRAM();
 void updateDataBytes();
 #endif
@@ -159,13 +156,13 @@ int readRegister(uint32_t offset, uint32_t *retval);
 #elif GOTTHARDD
 uint32_t
 writeRegister16And32(uint32_t offset,
-                     uint32_t data); // FIXME its not there in ctb or moench?
+                     uint32_t data); // FIXME its not there in ctb 
 uint32_t readRegister16And32(uint32_t offset);
 #endif
 
 // firmware functions (resets)
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
-    defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MYTHEN3D) ||       \
+    defined(GOTTHARD2D)
 void cleanFifos();
 void resetCore();
 void resetPeripheral();
@@ -193,7 +190,7 @@ ROI getROI();
 void setADCInvertRegister(uint32_t val);
 uint32_t getADCInvertRegister();
 #endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
 int setADCEnableMask(uint32_t mask);
 uint32_t getADCEnableMask();
 void setADCEnableMask_10G(uint32_t mask);
@@ -225,8 +222,7 @@ int getReadoutMode();
 int selectStoragecellStart(int pos);
 int getMaxStoragecellStart();
 #endif
-#if defined(JUNGFRAUD) || defined(EIGERD) || defined(MOENCHD) ||               \
-    defined(CHIPTESTBOARDD)
+#if defined(JUNGFRAUD) || defined(EIGERD) || defined(CHIPTESTBOARDD)
 int setNextFrameNumber(uint64_t value);
 int getNextFrameNumber(uint64_t *value);
 #endif
@@ -271,7 +267,7 @@ int getNumAdditionalStorageCells();
 int setStorageCellDelay(int64_t val);
 int64_t getStorageCellDelay();
 #endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
 int setNumAnalogSamples(int val);
 int getNumAnalogSamples();
 #endif
@@ -287,7 +283,7 @@ void updatePacketizing();
 #endif
 
 #if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) ||     \
-    defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+    defined(MYTHEN3D) || defined(GOTTHARD2D)
 int setDelayAfterTrigger(int64_t val);
 int64_t getDelayAfterTrigger();
 int64_t getNumFramesLeft();
@@ -301,8 +297,8 @@ int64_t getNumBurstsLeft();
 #ifdef GOTTHARDD
 int64_t getExpTimeLeft();
 #endif
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
-    defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MYTHEN3D) ||       \
+    defined(GOTTHARD2D)
 int64_t getFramesFromStart();
 int64_t getActualTime();
 int64_t getMeasurementTime();
@@ -312,7 +308,7 @@ int64_t getMeasurementTime();
 #if defined(MYTHEN3D) || defined(EIGERD)
 void getModule(sls_detector_module *myMod);
 #endif
-#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(GOTTHARD2D))
+#if (!defined(CHIPTESTBOARDD)) && (!defined(GOTTHARD2D))
 int setModule(sls_detector_module myMod, char *mess);
 #endif
 
@@ -357,7 +353,7 @@ void setDAC(enum DACINDEX ind, int val, int mV);
 #endif
 int getDAC(enum DACINDEX ind, int mV);
 int getMaxDacSteps();
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
 int dacToVoltage(int dac);
 int checkVLimitCompliant(int mV);
 int checkVLimitDacCompliant(int dac);
@@ -380,7 +376,7 @@ void powerOff();
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 int getADC(enum ADCINDEX ind, int *value);
-#elif !defined(MOENCHD)
+#else
 int getADC(enum ADCINDEX ind);
 #endif
 
@@ -452,7 +448,7 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,
                  uint32_t sourceip, uint32_t sourceport);
 #endif
 #if defined(JUNGFRAUD) || defined(GOTTHARD2D) || defined(MYTHEN3D) ||          \
-    defined(CHIPTESTBOARDD) || defined(MOENCHD)
+    defined(CHIPTESTBOARDD)
 void calcChecksum(udp_header *udp);
 #endif
 #ifdef GOTTHARDD
@@ -471,22 +467,15 @@ int getInterruptSubframe();
 int setReadNRows(int value);
 int getReadNRows();
 #endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(EIGERD) ||          \
-    defined(MYTHEN3D)
+#if defined(CHIPTESTBOARDD) ||  defined(EIGERD) || defined(MYTHEN3D)
 int enableTenGigabitEthernet(int val);
 #endif
 
 // very detector specific
 
-// moench specific - powerchip
-#ifdef MOENCHD
-int powerChip(int on);
-int setAnalogOnlyReadout();
-#endif
-
-// chip test board or moench specific - configure frequency, phase, pll,
+// chip test board specific - configure frequency, phase, pll,
 // flashing firmware
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
 int setPhase(enum CLKINDEX ind, int val, int degrees);
 int getPhase(enum CLKINDEX ind, int degrees);
 int getMaxPhase(enum CLKINDEX ind);
@@ -668,7 +657,7 @@ int softwareTrigger(int block);
 int startReadOut();
 #endif
 enum runStatus getRunStatus();
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
 void readFrames(int *ret, char *mess);
 #endif
 #ifdef EIGERD
@@ -676,7 +665,7 @@ void waitForAcquisitionEnd(int *ret, char *mess);
 #else
 void waitForAcquisitionEnd();
 #endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) 
 void readandSendUDPFrames(int *ret, char *mess);
 void unsetFifoReadStrobes();
 void readSample(int ns);
@@ -686,7 +675,7 @@ int readFrameFromFifo();
 #endif
 
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) ||     \
-    defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+    defined(MYTHEN3D) || defined(GOTTHARD2D)
 u_int32_t runBusy();
 #endif
 
@@ -697,7 +686,7 @@ u_int32_t runState(enum TLogLevel lev);
 // common
 int calculateDataBytes();
 int getTotalNumberOfChannels();
-#if defined(MOENCHD) || defined(CHIPTESTBOARDD)
+#if defined(CHIPTESTBOARDD)
 void getNumberOfChannels(int *nchanx, int *nchany);
 #endif
 int getNumberOfChips();

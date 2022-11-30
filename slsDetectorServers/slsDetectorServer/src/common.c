@@ -484,8 +484,7 @@ int setupDetectorServer(char *mess, char *sname) {
 
     // blackfin boards (respawn) (only kept for backwards compatibility)
 #ifndef VIRTUAL
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
-    defined(GOTTHARDD)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(GOTTHARDD)
     // delete every line with DetectorServer in /etc/inittab
     strcpy(cmd, "sed -i '/DetectorServer/d' /etc/inittab");
     if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {

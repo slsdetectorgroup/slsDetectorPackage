@@ -7,7 +7,7 @@
 #include "sls/sls_detector_funcs.h"
 #include "slsDetectorFunctionList.h"
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
+#if defined(CHIPTESTBOARDD) || defined(MYTHEN3D)
 #include "Pattern.h"
 #include "loadPattern.h"
 #endif
@@ -764,7 +764,7 @@ int set_firmware_test(int file_des) {
     LOG(logDEBUG1, ("Executing firmware test\n"));
 
 #if !defined(GOTTHARDD) && !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) &&  \
-    !defined(MOENCHD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     ret = testFpga();
@@ -782,7 +782,7 @@ int set_bus_test(int file_des) {
     LOG(logDEBUG1, ("Executing bus test\n"));
 
 #if !defined(GOTTHARDD) && !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) &&  \
-    !defined(MOENCHD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
+    !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     ret = testBus();
@@ -927,31 +927,6 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
         break;
     case V_POWER_CHIP:
         serverDacIndex = D_PWR_CHIP;
-        break;
-#elif MOENCHD
-    case VBP_COLBUF:
-        serverDacIndex = MO_VBP_COLBUF;
-        break;
-    case VIPRE:
-        serverDacIndex = MO_VIPRE;
-        break;
-    case VIN_CM:
-        serverDacIndex = MO_VIN_CM;
-        break;
-    case VB_SDA:
-        serverDacIndex = MO_VB_SDA;
-        break;
-    case VCASC_SFP:
-        serverDacIndex = MO_VCASC_SFP;
-        break;
-    case VOUT_CM:
-        serverDacIndex = MO_VOUT_CM;
-        break;
-    case VIPRE_CDS:
-        serverDacIndex = MO_VIPRE_CDS;
-        break;
-    case IBIAS_SFP:
-        serverDacIndex = MO_IBIAS_SFP;
         break;
 #elif MYTHEN3D
     case VCASSH:
@@ -1105,9 +1080,6 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
 #elif CHIPTESTBOARDD
     case ADC_VPP:
     case V_LIMIT:
-#elif MOENCHD
-    case ADC_VPP:
-    case V_LIMIT:
 #endif
         break;
     default:
@@ -1119,7 +1091,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
     }
     switch (ind) {
         // adc vpp
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
     case ADC_VPP:
         // set
         if (val >= 0) {
@@ -1151,8 +1123,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
     case HIGH_VOLTAGE:
         retval = setHighVoltage(val);
         LOG(logDEBUG1, ("High Voltage: %d\n", retval));
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
-    defined(GOTTHARD2D) || defined(MYTHEN3D)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(GOTTHARD2D) || defined(MYTHEN3D)
         validate(&ret, mess, val, retval, "set high voltage", DEC);
 #endif
 #ifdef GOTTHARDD
@@ -1252,7 +1223,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
         break;
 #endif
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
     case V_LIMIT:
         if (val >= 0) {
             if (!mV) {
@@ -1286,7 +1257,7 @@ int validateAndSetDac(enum dacIndex ind, int val, int mV) {
                     ind, val, getMaxDacSteps());
             LOG(logERROR, (mess));
         } else {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
             if ((val != GET_FLAG && mV && checkVLimitCompliant(val) == FAIL) ||
                 (val != GET_FLAG && !mV &&
                  checkVLimitDacCompliant(val) == FAIL)) {
@@ -1384,9 +1355,6 @@ int get_adc(int file_des) {
     if (receiveData(file_des, &ind, sizeof(ind), INT32) < 0)
         return printSocketReadError();
 
-#if defined(MOENCHD)
-    functionNotImplemented();
-#else
     enum ADCINDEX serverAdcIndex = 0;
 
     // get
@@ -1508,7 +1476,6 @@ int get_adc(int file_des) {
         LOG(logDEBUG1, ("ADC(%d): %d\n", serverAdcIndex, retval));
 #endif
     }
-#endif
 
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -1763,15 +1730,6 @@ void validate_settings(enum detectorSettings sett) {
     case DYNAMICGAIN:
     case FIXGAIN1:
     case FIXGAIN2:
-#elif MOENCHD
-    case G1_HIGHGAIN:
-    case G1_LOWGAIN:
-    case G2_HIGHCAP_HIGHGAIN:
-    case G2_HIGHCAP_LOWGAIN:
-    case G2_LOWCAP_HIGHGAIN:
-    case G2_LOWCAP_LOWGAIN:
-    case G4_HIGHGAIN:
-    case G4_LOWGAIN:
 #elif MYTHEN3D
     case STANDARD:
     case FAST:
@@ -1878,16 +1836,6 @@ int acquire(int blocking, int file_des) {
             ret = FAIL;
             strcpy(mess, "Could not start acquisition. Chip is not configured. "
                          "Power it on to configure it.\n");
-            LOG(logERROR, (mess));
-        } else
-#endif
-#ifdef MOENCHD
-            if (getNumAnalogSamples() <= 0) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of analog "
-                    "samples: %d.\n",
-                    getNumAnalogSamples());
             LOG(logERROR, (mess));
         } else
 #endif
@@ -2026,7 +1974,7 @@ void *start_state_machine(void *arg) {
         ret = startStateMachine();
         LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
         if (ret == FAIL) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(VIRTUAL)
+#if defined(CHIPTESTBOARDD) || defined(VIRTUAL)
             sprintf(mess, "Could not start acquisition. Could not create udp "
                           "socket in server. Check udp_dstip & udp_dstport.\n");
 #else
@@ -2041,7 +1989,7 @@ void *start_state_machine(void *arg) {
             break;
         }
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
         readFrames(&ret, mess);
         if (ret == FAIL && scan) {
             sprintf(scanErrMessage, "Cannot scan at %d. ", scanSteps[i]);
@@ -2257,7 +2205,7 @@ int get_num_analog_samples(int file_des) {
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -2276,21 +2224,11 @@ int set_num_analog_samples(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of analog samples %d\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-#ifdef MOENCHD
-        if (arg % NSAMPLES_PER_ROW != 0) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not set number of analog samples to %d. Must be "
-                    "divisible by %d\n",
-                    arg, NSAMPLES_PER_ROW);
-            LOG(logERROR, (mess));
-        }
-#endif
         if (ret == OK) {
             ret = setNumAnalogSamples(arg);
             if (ret == FAIL) {
@@ -2513,7 +2451,7 @@ int get_delay_after_trigger(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
-    !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -2535,7 +2473,7 @@ int set_delay_after_trigger(int file_des) {
         ("Setting delay after trigger %lld ns\n", (long long int)arg));
 
 #if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
-    !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -2745,7 +2683,7 @@ int get_frames_left(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
-    !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -2761,7 +2699,7 @@ int get_triggers_left(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
-    !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+    !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -2792,7 +2730,7 @@ int get_period_left(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(GOTTHARDD) /* && !defined(CHIPTESTBOARDD)  \
-   && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)*/
+   && !defined(MYTHEN3D) && !defined(GOTTHARD2D)*/
     functionNotImplemented();
 #else
     // get only
@@ -2808,7 +2746,7 @@ int get_delay_after_trigger_left(int file_des) {
     int64_t retval = -1;
 
 #if !defined(JUNGFRAUD) && !defined(GOTTHARDD) /* && !defined(CHIPTESTBOARDD)  \
-    && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)*/
+    && !defined(MYTHEN3D) && !defined(GOTTHARD2D)*/
     functionNotImplemented();
 #else
     // get only
@@ -2855,8 +2793,7 @@ int get_frames_from_start(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
-    !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -2871,8 +2808,7 @@ int get_actual_time(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
-    !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -2887,8 +2823,7 @@ int get_measurement_time(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
-    !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -2929,7 +2864,7 @@ int set_dynamic_range(int file_des) {
         case 32:
 #endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) ||     \
-    defined(MOENCHD) || defined(GOTTHARD2D)
+    defined(GOTTHARD2D)
         case 16:
 #endif
             if (dr >= 0) {
@@ -3168,7 +3103,7 @@ int set_pattern_io_control(int file_des) {
 
     if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     LOG(logDEBUG1,
@@ -3191,7 +3126,7 @@ int set_pattern_word(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT64) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int addr = (int)args[0];
@@ -3219,7 +3154,7 @@ int set_pattern_loop_addresses(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = args[0];
@@ -3265,7 +3200,7 @@ int set_pattern_loop_cycles(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = args[0];
@@ -3294,7 +3229,7 @@ int set_pattern_wait_addr(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = args[0];
@@ -3323,7 +3258,7 @@ int set_pattern_wait_time(int file_des) {
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     int loopLevel = (int)args[0];
@@ -3353,7 +3288,7 @@ int set_pattern_mask(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Set Pattern Mask to %d\n", arg));
 
-#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -3375,7 +3310,7 @@ int get_pattern_mask(int file_des) {
 
     LOG(logDEBUG1, ("Get Pattern Mask\n"));
 
-#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only get
@@ -3396,7 +3331,7 @@ int set_pattern_bit_mask(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Set Pattern Bit Mask to %d\n", arg));
 
-#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -3418,7 +3353,7 @@ int get_pattern_bit_mask(int file_des) {
 
     LOG(logDEBUG1, ("Get Pattern Bit Mask\n"));
 
-#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only get
@@ -3447,7 +3382,7 @@ int write_adc_register(int file_des) {
 #ifndef VIRTUAL
     // only set
     if (Server_VerifyLock() == OK) {
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD)
         AD9257_Set(addr, val);
 #elif GOTTHARDD
         if (isHardwareVersion_1_0()) {
@@ -3875,7 +3810,7 @@ int power_chip(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Powering chip to %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) &&          \
+#if !defined(JUNGFRAUD) && !defined(MYTHEN3D) &&          \
     !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
@@ -4243,7 +4178,7 @@ int set_adc_enable_mask(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Seting 1Gb ADC Enable Mask to %u\n", arg));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if (!defined(CHIPTESTBOARDD))
     functionNotImplemented();
 #else
     // only set
@@ -4275,7 +4210,7 @@ int get_adc_enable_mask(int file_des) {
 
     LOG(logDEBUG1, ("Getting 1Gb ADC Enable Mask \n"));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if (!defined(CHIPTESTBOARDD))
     functionNotImplemented();
 #else
     // get
@@ -4294,7 +4229,7 @@ int set_adc_enable_mask_10g(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Seting 10Gb ADC Enable Mask to %u\n", arg));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if (!defined(CHIPTESTBOARDD))
     functionNotImplemented();
 #else
     // only set
@@ -4321,7 +4256,7 @@ int get_adc_enable_mask_10g(int file_des) {
 
     LOG(logDEBUG1, ("Getting 10Gb ADC Enable Mask\n"));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if (!defined(CHIPTESTBOARDD))
     functionNotImplemented();
 #else
     // get
@@ -4340,7 +4275,7 @@ int set_adc_invert(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Seting ADC Invert to %u\n", arg));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD)) && (!defined(JUNGFRAUD))
+#if (!defined(CHIPTESTBOARDD)) && (!defined(JUNGFRAUD))
     functionNotImplemented();
 #else
     // only set
@@ -4367,7 +4302,7 @@ int get_adc_invert(int file_des) {
 
     LOG(logDEBUG1, ("Getting ADC Invert register \n"));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD)) && (!defined(JUNGFRAUD))
+#if (!defined(CHIPTESTBOARDD)) && (!defined(JUNGFRAUD))
     functionNotImplemented();
 #else
     // get
@@ -4443,7 +4378,7 @@ int set_next_frame_number(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting next frame number to %llu\n", arg));
 
-#if (!defined(EIGERD)) && (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) &&      \
+#if (!defined(EIGERD)) && (!defined(JUNGFRAUD)) &&      \
     (!defined(CHIPTESTBOARDD))
     functionNotImplemented();
 #else
@@ -4454,7 +4389,7 @@ int set_next_frame_number(int file_des) {
             sprintf(mess, "Could not set next frame number. Cannot be 0.\n");
             LOG(logERROR, (mess));
         }
-#if (defined(EIGERD)) || (defined(MOENCHD)) || (defined(CHIPTESTBOARDD))
+#if (defined(EIGERD)) || (defined(CHIPTESTBOARDD))
         else if (arg > UDP_HEADER_MAX_FRAME_VALUE) {
             ret = FAIL;
 #ifdef VIRTUAL
@@ -4522,7 +4457,7 @@ int get_next_frame_number(int file_des) {
 
     LOG(logDEBUG1, ("Getting next frame number \n"));
 
-#if (!defined(EIGERD)) && (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) &&      \
+#if (!defined(EIGERD)) && (!defined(JUNGFRAUD)) &&      \
     (!defined(CHIPTESTBOARDD))
     functionNotImplemented();
 #else
@@ -4937,7 +4872,7 @@ void configure_mac() {
         if (is_udp_configured() == OK) {
             ret = configureMAC();
             if (ret != OK) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
                 if (ret == -1) {
                     sprintf(mess, "Could not allocate RAM\n");
                 } else {
@@ -5666,7 +5601,7 @@ int set_clock_frequency(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting clock (%d) frequency : %u\n", args[0], args[1]));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
 
@@ -5729,14 +5664,14 @@ int get_clock_frequency(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting clock (%d) frequency\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(GOTTHARD2D) &&   \
+#if !defined(CHIPTESTBOARDD) && !defined(GOTTHARD2D) &&   \
     !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
     enum CLKINDEX c = 0;
     switch (arg) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
     case ADC_CLOCK:
         c = ADC_CLK;
         break;
@@ -5785,7 +5720,7 @@ int set_clock_phase(int file_des) {
     LOG(logDEBUG1, ("Setting clock (%d) phase: %u %s\n", args[0], args[1],
                     (args[2] == 0 ? "" : "degrees")));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(JUNGFRAUD) &&    \
+#if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) &&    \
     !defined(GOTTHARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
@@ -5796,7 +5731,7 @@ int set_clock_phase(int file_des) {
         int inDegrees = args[2] == 0 ? 0 : 1;
         enum CLKINDEX c = 0;
         switch (ind) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD) ||       \
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) ||       \
     defined(GOTTHARDD)
         case ADC_CLOCK:
             c = ADC_CLK;
@@ -5894,7 +5829,7 @@ int get_clock_phase(int file_des) {
     LOG(logINFOBLUE, ("Getting clock (%d) phase %s \n", args[0],
                       (args[1] == 0 ? "" : "in degrees")));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(JUNGFRAUD) &&    \
+#if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) &&    \
     !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
@@ -5903,7 +5838,7 @@ int get_clock_phase(int file_des) {
     int inDegrees = args[1] == 0 ? 0 : 1;
     enum CLKINDEX c = 0;
     switch (ind) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
     case ADC_CLOCK:
         c = ADC_CLK;
         break;
@@ -5944,14 +5879,14 @@ int get_max_clock_phase_shift(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Getting clock (%d) max phase shift\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(JUNGFRAUD) &&    \
+#if !defined(CHIPTESTBOARDD) && !defined(JUNGFRAUD) &&    \
     !defined(GOTTHARD2D) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only
     enum CLKINDEX c = 0;
     switch (arg) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
     case ADC_CLOCK:
         c = ADC_CLK;
         break;
@@ -6865,7 +6800,7 @@ int get_num_channels(int file_des) {
 
     LOG(logDEBUG1, ("Getting number of channels\n"));
 
-#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD)
+#if !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -7019,7 +6954,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // analog samples
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
     i32 = getNumAnalogSamples();
 #else
     i32 = 0;
@@ -7158,7 +7093,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // 10 gbe
-#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||          \
+#if defined(EIGERD) || defined(CHIPTESTBOARDD) ||          \
     defined(MYTHEN3D)
     i32 = enableTenGigabitEthernet(GET_FLAG);
 #else
@@ -7179,7 +7114,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // adc mask
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
     u32 = getADCEnableMask();
 #else
     u32 = 0;
@@ -7189,7 +7124,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // 10g adc mask
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD)
     u32 = getADCEnableMask_10G();
 #else
     u32 = 0;
@@ -7561,7 +7496,7 @@ int set_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
 
@@ -7589,7 +7524,7 @@ int get_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
     return Server_SendResult(file_des, INT32, NULL, 0);
 #else
@@ -8206,7 +8141,7 @@ int load_default_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
 
-#if !defined(MYTHEN3D) && !defined(MOENCHD)
+#if !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
@@ -8929,7 +8864,7 @@ int set_adc_pipeline(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting adc pipeline : %u\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
 
@@ -8951,7 +8886,7 @@ int get_adc_pipeline(int file_des) {
 
     LOG(logDEBUG1, ("Getting adc pipeline\n"));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD)
     functionNotImplemented();
 #else
     // get only
@@ -9535,7 +9470,7 @@ void receive_program_via_blackfin(int file_des, enum PROGRAM_INDEX index,
                                   char *checksum, char *serverName,
                                   int forceDeleteNormalFile) {
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) &&    \
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) &&    \
     !defined(GOTTHARDD)
     ret = FAIL;
     sprintf(mess,

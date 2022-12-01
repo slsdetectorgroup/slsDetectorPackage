@@ -388,7 +388,7 @@ class Module : public virtual slsDetectorDefs {
 
     /**************************************************
      *                                                *
-     *    Jungfrau Specific                           *
+     *    Jungfrau/Moench Specific                    *
      *                                                *
      * ************************************************/
     double getChipVersion() const;
@@ -490,7 +490,7 @@ class Module : public virtual slsDetectorDefs {
 
     /**************************************************
      *                                                *
-     *    CTB / Moench Specific                       *
+     *    CTB  Specific                               *
      *                                                *
      * ************************************************/
     int getNumberOfAnalogSamples() const;
@@ -501,12 +501,6 @@ class Module : public virtual slsDetectorDefs {
     void setADCEnableMask(uint32_t mask);
     uint32_t getTenGigaADCEnableMask() const;
     void setTenGigaADCEnableMask(uint32_t mask);
-
-    /**************************************************
-     *                                                *
-     *    CTB Specific                                *
-     *                                                *
-     * ************************************************/
     int getNumberOfDigitalSamples() const;
     void setNumberOfDigitalSamples(int value);
     readoutMode getReadoutMode() const;

@@ -357,7 +357,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     void readFrameFromReceiver();
 
-    /** [Eiger][Jungfrau]
+    /** [Eiger][Jungfrau][Moench]
      * add gap pixels to the imag
      * @param image pointer to image without gap pixels
      * @param gpImage poiner to image with gap pixels, if NULL, allocated

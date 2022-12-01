@@ -113,8 +113,8 @@ void Implementation::setDetectorType(const detectorType d) {
     case GOTTHARD:
     case EIGER:
     case JUNGFRAU:
-    case CHIPTESTBOARD:
     case MOENCH:
+    case CHIPTESTBOARD:
     case MYTHEN3:
     case GOTTHARD2:
         LOG(logINFO) << " ***** " << ToString(d) << " Receiver *****";
@@ -138,11 +138,11 @@ void Implementation::setDetectorType(const detectorType d) {
     case JUNGFRAU:
         generalData = new JungfrauData();
         break;
-    case CHIPTESTBOARD:
-        generalData = new ChipTestBoardData();
-        break;
     case MOENCH:
         generalData = new MoenchData();
+        break;
+    case CHIPTESTBOARD:
+        generalData = new ChipTestBoardData();
         break;
     case MYTHEN3:
         generalData = new Mythen3Data();

@@ -445,7 +445,7 @@ TEST_CASE("rx_roi", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         REQUIRE_THROWS(proxy.Call("rx_roi", {"5", "10"}, -1, PUT));
     } else {
         auto prev_val = det.getRxROI();
@@ -507,7 +507,7 @@ TEST_CASE("rx_clearroi", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         REQUIRE_THROWS(proxy.Call("rx_clearroi", {}, -1, PUT));
     } else {
         auto prev_val = det.getRxROI();
@@ -798,7 +798,7 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER) {
         socketsperdetector *= 2;
-    } else if (det_type == defs::JUNGFRAU) {
+    } else if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         proxy.Call("numinterfaces", {"2"}, -1, PUT);
         socketsperdetector *= 2;
     }
@@ -822,7 +822,7 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
     }
     for (int i = 0; i != det.size(); ++i) {
         det.setRxZmqPort(prev_val_zmqport[i], i);
-        if (det_type == defs::JUNGFRAU) {
+        if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
             det.setNumberofUDPInterfaces(prev_val_numinterfaces[i], {i});
         }
     }
@@ -941,7 +941,6 @@ TEST_CASE("rx_dbitoffset", "[.cmd][.rx]") {
     }
 }
 
-/* Moench */
 
 TEST_CASE("rx_jsonaddheader", "[.cmd][.rx]") {
     Detector det;

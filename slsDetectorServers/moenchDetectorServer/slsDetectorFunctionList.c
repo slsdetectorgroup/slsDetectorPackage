@@ -518,7 +518,7 @@ void setupDetector() {
     resetCore();
 
     alignDeserializer();
-    configureASICTimer();
+    //configureASICTimer(); ASIC_CTRL_REG to be removed along with storage cell delay
     bus_w(ADC_PORT_INVERT_REG,
           (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
                                    : ADC_PORT_INVERT_VAL));

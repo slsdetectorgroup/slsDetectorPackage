@@ -32,7 +32,7 @@
 #define DBIT_CLK_INDEX      (0)
 
 /** Default Parameters */
-#define DEFAULT_NUM_FRAMES            (100 * 1000 * 1000)
+#define DEFAULT_NUM_FRAMES            (1)
 #define DEFAULT_STARTING_FRAME_NUMBER (1)
 #define DEFAULT_NUM_CYCLES            (1)
 #define DEFAULT_EXPTIME               (10 * 1000)       // ns

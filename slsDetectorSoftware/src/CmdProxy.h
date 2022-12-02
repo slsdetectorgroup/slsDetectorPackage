@@ -1445,9 +1445,11 @@ class CmdProxy {
         "\n\t[1-256]\n\t\t[Eiger] Number of rows to readout per half module "
         "starting from the centre. Options: 0 - 256. 256 is default. The "
         "permissible values depend on dynamic range and 10Gbe "
-        "enabled.\n\t[8-512 (multiple of 8)]\n\t\t[Jungfrau][Moench] Number of rows "
+        "enabled.\n\t[8-512 (multiple of 8)]\n\t\t[Jungfrau] Number of rows "
         "per module starting from the centre. Options: 8 - 512, must be "
-        "multiples of 8. Default is 512.");
+        "multiples of 8. Default is 512.\n\t\t[Moench] Number of rows "
+        "per module starting from the centre. Options:16 - 400, must be "
+        "multiples of 16. Default is 400.");
 
     /** temperature */
     GET_COMMAND_NOID(

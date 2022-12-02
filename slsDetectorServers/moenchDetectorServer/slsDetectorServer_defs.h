@@ -20,8 +20,8 @@
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 
 /* Hardware Definitions */
-#define NCHAN               (256 * 256)
-#define NCHIP               (8)
+#define NCHAN               (400 * 400)
+#define NCHIP               (1)
 #define NDAC                (8)
 #define DYNAMIC_RANGE       (16)
 #define NUM_BYTES_PER_PIXEL (DYNAMIC_RANGE / 8)
@@ -57,9 +57,13 @@
 #define DAC_MIN_MV           (0)
 #define DAC_MAX_MV           (2500)
 #define MAX_FILTER_CELL_VAL  (12)
-#define MIN_ROWS_PER_READOUT (8)
-#define MAX_ROWS_PER_READOUT (512)
-#define READ_N_ROWS_MULTIPLE (8) // 512 rows/128packets * 2 interfaces
+
+#define READ_N_ROWS_MULTIPLE (16) // 400 rows/50packets * 2 interfaces
+#define MIN_ROWS_PER_READOUT (16)
+#define MAX_ROWS_PER_READOUT (400)
+#define ROWS_PER_PACKET      (8)
+#define MAX_NUM_PACKETS      (MAX_ROWS_PER_READOUT/ROWS_PER_PACKET)
+#define DATA_SIZE_PER_PACKET (DATA_BYTES/MAX_NUM_PACKETS)
 
 /* Defines in the Firmware */
 #define MAX_TIMESLOT_VAL            (0x1F)

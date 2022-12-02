@@ -2603,9 +2603,9 @@ void *start_timer(void *arg) {
     int numFrames = (getNumFrames() * getNumTriggers() *
                      (getNumAdditionalStorageCells() + 1));
     int64_t expUs = getExpTime() / 1000;
-    const int dataSize = 8192;
+    const int maxPacketsPerFrame = (MAX_ROWS_PER_READOUT/ROWS_PER_PACKET);
+    const int dataSize = (DATA_BYTES/maxPacketsPerFrame);
     const int packetsize = dataSize + sizeof(sls_detector_header);
-    const int maxPacketsPerFrame = 128;
     const int maxRows = MAX_ROWS_PER_READOUT;
     int readNRows = getReadNRows();
     if (readNRows == -1) {
@@ -2629,9 +2629,9 @@ void *start_timer(void *arg) {
             if (i % pixelsPerPacket == 0) {
                 ++dataVal;
             }
-            if ((i % 1024) < 300) {
+            if ((i % 400) < 100) {
                 gainVal = 1;
-            } else if ((i % 1024) < 600) {
+            } else if ((i % 400) < 300) {
                 gainVal = 2;
             } else {
                 gainVal = 3;
@@ -2675,7 +2675,7 @@ void *start_timer(void *arg) {
             int col0 = (numInterfaces == 1 ? detPos[0] : detPos[2]);
             int row1 = detPos[1];
             int col1 = detPos[0];
-            // loop packet (128 packets)
+            // loop packet (50 packets)
             for (int i = 0; i != maxPacketsPerFrame; ++i) {
 
                 const int startval =
@@ -2690,7 +2690,7 @@ void *start_timer(void *arg) {
                     sls_detector_header *header =
                         (sls_detector_header *)(packetData);
                     header->detType = (uint16_t)myDetectorType;
-                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+                    header->version = SLS_DETECTOR_HEADER_VERSION;
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = pnum;
                     header->modId = virtual_moduleid;
@@ -2717,7 +2717,7 @@ void *start_timer(void *arg) {
                     sls_detector_header *header =
                         (sls_detector_header *)(packetData2);
                     header->detType = (uint16_t)myDetectorType;
-                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+                    header->version = SLS_DETECTOR_HEADER_VERSION;
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = pnum;
                     header->modId = virtual_moduleid;

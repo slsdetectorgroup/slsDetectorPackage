@@ -4599,7 +4599,7 @@ int set_read_n_rows(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        if (arg <= 0 || arg > MAX_ROWS_PER_READOUT) {
+        if (arg <= MIN_ROWS_PER_READOUT || arg > MAX_ROWS_PER_READOUT) {
             ret = FAIL;
             sprintf(mess,
                     "Could not set read n rows. Must be between %d "

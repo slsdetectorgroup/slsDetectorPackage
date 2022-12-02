@@ -633,6 +633,12 @@ struct detParameters {
             nDacs = 8;
             break;
         case slsDetectorDefs::detectorType::MOENCH:
+            nChanX = 400;
+            nChanY = 400;
+            nChipX = 1;
+            nChipY = 1;
+            nDacs = 8;
+            break;
         case slsDetectorDefs::detectorType::JUNGFRAU:
             nChanX = 256;
             nChanY = 256;

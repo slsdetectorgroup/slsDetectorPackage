@@ -330,7 +330,7 @@ class JungfrauData : public GeneralData {
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
         dataSize = 8192;
         packetSize = headerSizeinPacket + dataSize;
-        framesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
+        framesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
         fifoDepth = 2500;
         standardheader = true;
         maxRowsPerReadout = 512;
@@ -358,12 +358,12 @@ class MoenchData : public GeneralData {
     MoenchData() {
         detType = slsDetectorDefs::MOENCH;
         headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
-        dataSize = 8192;
+        dataSize = 6400;
         packetSize = headerSizeinPacket + dataSize;
-        framesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
-        fifoDepth = 2500;
+        framesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
+        fifoDepth = 1000;
         standardheader = true;
-        maxRowsPerReadout = 512;
+        maxRowsPerReadout = 400;
         UpdateImageSize();
     };
 
@@ -374,8 +374,8 @@ class MoenchData : public GeneralData {
 
   private:
     void UpdateImageSize() {
-        nPixelsX = (256 * 4);
-        nPixelsY = (256 * 2) / numUDPInterfaces;
+        nPixelsX = (400);
+        nPixelsY = (400) / numUDPInterfaces;
         imageSize = int(nPixelsX * nPixelsY * GetPixelDepth());
         packetsPerFrame = imageSize / dataSize;
         udpSocketBufferSize = (1000 * 1024 * 1024) / numUDPInterfaces;

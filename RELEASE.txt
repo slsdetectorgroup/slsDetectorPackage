@@ -22,6 +22,9 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     Client
     ------
 
+
+    Breaking API:
+
     .   Versioning
         The client, receiver and detector servers now have semantic Versioning
         along with the date and are managed with the Version class.
@@ -29,7 +32,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         --version argument to the executable gives the complete versioning with date.
 
         Using the client to get versions gives only the semantic version. An older
-        server will still give date. Hence, the return type is a string.
+        server will still give date. Hence, the return type is a string, breaking API.
 
         Compatibility checks at hostname or rx_hostname command will only be for
         backwards compatibility (ie. it only checks for the major version number).
@@ -49,22 +52,59 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         https://slsdetectorgroup.github.io/devdoc/udpdetspec.html
 
 
+    .   Namespace sls
+        All files in slsSupportLib and tests have now been moved to sls namespace 
+        including macros. Using the LOG, for example, will require the sls qualifier.
+
+
     .   [Eiger] Number of UDP interfaces
         Command line: numinterfaces, API: getNumberofUDPInterfaces
         This command now reflects the actual number of udp interfaces for Eiger,
         which is 2.
 
-    .   [Moench][Ctb] Starting frame number
-        Command line: nextframenumber, API: getNextFrameNumber/ setNextFrameNumber
-        Added and default set up on detector server start up.
 
-    .   [Eiger] Vtr
-        Allow Vtrim to be interpolated for settings.
+    .   Deprecated CopyDetectorServer 
+        Command line: copydetectorserver, API: copydetectorserver
+        Removed. Use updatedetectorserver
 
-    .   Namespace sls
-        All files in slsSupportLib and tests have now been moved to sls namespace 
-        including macros. Using the LOG, for example, will require the sls qualifier.
 
+    .   [Eiger][Jugfrau][Mythen3] Deprecated specific transmission delay commands
+        txndelay_frame -> txdelay_frame
+        txndelay_left -> txdelay_left
+        txndelay_right -> txdelay_right
+
+
+    .   Missing packets
+        Command line: rx_missingpackets, API: getNumMissingPackets
+        This now returns a signed 64 bit instead of unsigned. The negative polarity
+        depicts extra packets instead of missing packets and also takes care of
+        disabled ports.
+
+
+    .   Frames caught and frame index
+        Command line rx_framescaught, rx_frameindex, API: getFramesCaught/ getRxCurrentFrameIndex
+        They now return a vector for each port when there are 2 udp interfaces
+        in the receiver.
+
+
+    .   [Moench][Ctb][Mythen3] Deprecated commands
+        Patloopx, patnloopx, patwaitx, patwaittimex
+        Please use instead patloop, patnloop, patwait and patwaittime commands
+        with the level as an argument. 
+
+        Old commands work with warning, but the server expects the new ones
+        such as a default pattern file to be loaded at startup for Moench.
+
+        Renamed patternParameters struct member from 'loop' to 'startloop' and 
+        'stoploop'.
+
+
+    .   [Mythen3] Clock Divider 4 and 5
+        Cannot be set anymore. Only read back.
+
+
+
+    New commands:
 
     .   [Eiger][Gotthard][Gotthard2][Mythen3][Jungfrau] Master
         
@@ -79,6 +119,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         [Eiger][Gotthard2][Gotthard]
             Using config file with 'master' with argument (slave=0, master=1)
 
+
     .   [Eiger] Top
         Command line: top, API: getTop/ setTop
         Sets the half module to top or bottom from the client.
@@ -86,13 +127,89 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         This can also be set up on the detector server:
         Using command line 'top' or 't' with argument (top=0, bottom=1)
         Using config file with 'top' with argument (top=0, bottom=1)
+   
+
+    .   [Mythen3][Eiger] Save settings file
+        Command line: trimbits (sls_detector_get), API: saveTrimbits
+        Added
+
+
+    .   [Gotthard2] Parallel readout added
+        Command line: parallel, API: getParallelMode/ setParallelMode
+        Default for Gotthard2 is parallel. Non parallel mode only works in 
+        continuous mode.
+
+
+    .   [Jungfrau] Software trigger added
+        Command line: trigger, API: sendSoftwareTrigger
+        Send software trigger instead of harware trigger.
+
+
+    .   [Eiger][Jungfrau] Blocking trigger
+        Commandline: blockingtrigger, API: sendSoftwareTrigger with argument true
+        Sends software trigger signal to detector and blocks until the frames
+        are sent out for that trigger.
+
+
+    .   [Jungfrau] Sync
+        Command line: sync, API: getSynchronization/ setSynchronization
+        Enables or disables synchronization between modules
+
+
+    .   [Gotthard2][Mythen3] Temperature readout
+        Command line: temp_fpga, API: getTemperature with TEMPERATURE_FPGA enum
+        Added
+
+
+    .   [Gotthard2][Mythen3] Round robin added
+        Command line: udp_dstlist, API: getDestinationUDPList/ setDestinationUDPList
+        Command line: udp_numdst, API: getNumberofUDPDestinations
+        One can set up to 32 (64 for Mythen3) entries in the destination list.
+
+
+    .   [Jungfrau] Module Id
+        Command line: moduleid, API: getModuleId
+        16 bit value (ideally unique) that is streamed out in the udp header of 
+        the detector. The on-board detector server picks it up from a file 
+        (if it exists) called detid_jungfrau.txt.
+    
+
+    .   [Jungfrau][[Gotthard2][Myhten3][Gotthard][Ctb][Moench] Hardware version
+        Command line: hardwareversion, API: getHardwareVersion
+        Gets the board or hardware version. 
+        For example, Jungfrau returns 1.0 or 2.0.
+        It is also printed at on-board detector server start up.
+        Also printed before starting FPGA programming.
+
+
+    .   [Eiger][Jugfrau][Mythen3] Transmission Delay   
+        Command line: tx_delay, API: getTransmissionDelay/ setTransmissionDelay
+        Sets transmission delay for all modules in the detector using the step
+        size provided. Sets up for every module:
+            [Eiger] txdelay_left to (2 * mod_index * n_delay)
+            [Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay)
+            [Eiger] txdelay_frame to (2 *num_modules * n_delay)
+            [Jungfrau][Mythen3] txdelay_frame to (num_modules * n_delay)
+
+
+    .   [Mythen3] Bad channels
+        Command line: badchannels, API: getBadChannels/ setBadChannels
+        Set bad channels from file with a list of channels, which will be masked
+        out. Also does trimming. A detector level command will require the channel
+        numbers accordingly. The file also extended to include commas, colons range)
+        and removes duplicates. 
+
+
+    .   [Moench][Ctb] Starting frame number
+        Command line: nextframenumber, API: getNextFrameNumber/ setNextFrameNumber
+        Added and default set up on detector server start up.
 
 
     .   [Ctb] DAC names
         Command line: daclist, API: getDacNames/ setDacNames
         Can set and get dac names in the dac list now.
     
-
+    
     .   [Mythen3] Polarity, interpolation, pump probe, analog pulsing, digital pulsing
         Command line: polarity, interpolation, pumpprobe, apulse, dpulse
         API: getPolarity/ setPolarity, getInterpolation/ setInterpolation,
@@ -113,144 +230,9 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         Direct overwrite of any dac (including vthx) allowed using dac command
         (as before).
 
-    
-    .   [Mythen3][Eiger] Save settings file
-        Command line: trimbits (sls_detector_get), API: saveTrimbits
-        Added
-
-    .   [Mythen3] Threshold
-        When settings trimbits or threshold, counter mask is set and hence,
-        vthx dacs are set accordingly.
-
-        setAllThresholdEnergy takes 3 values for each counter and if one of them
-        is -1, the trimbits and setings for that counter is picked up from the 
-        detector.
-
-    .   Udp Source IP
-        Command line: udp_srcip(2), API: getSourceUDPIP(2)/ setSourceUDPIP(2)
-        One can also set this to 'auto' for 1 GbE data. It will set to IP of
-        rx_hostname (as in udp_dstip)
 
 
-    .   Storage cells in running receiver
-        Allowing the possibility to set this when receiver in running state.
-
-    .   [Gotthard2] Adapt to new HDI version
-        HDI module ID written to FPGA register
-
-    .   [Gotthard2] Parallel readout added
-        Command line: parallel, API: getParallelMode/ setParallelMode
-        Default for Gotthard2 is parallel. Non parallel mode only works in 
-        continuous mode.
-
-    .   [Jungfrau] Software trigger added
-        Command line: trigger, API: sendSoftwareTrigger
-        Send software trigger instead of harware trigger.
-
-    .   [Eiger][Jungfrau] Blocking trigger
-        Commandline: blockingtrigger, API: sendSoftwareTrigger with argument true
-        Sends software trigger signal to detector and blocks until the frames
-        are sent out for that trigger.
-
-    .   [Jungfrau] Sync
-        Command line: sync, API: getSynchronization/ setSynchronization
-        Enables or disables synchronization between modules
-
-    .   [Moench][Ctb][Mythen3] Deprecated commands
-        Patloopx, patnloopx, patwaitx, patwaittimex
-        Please use instead patloop, patnloop, patwait and patwaittime commands
-        with the level as an argument. 
-
-        Old commands work with warning, but the server expects the new ones
-        such as a default pattern file to be loaded at startup for Moench.
-
-        Renamed patternParameters struct member from 'loop' to 'startloop' and 
-        'stoploop'.
-
-
-    .   [Moench][Ctb] Pattern levels
-        Changed from 3 to 6.
-
-    .   [Mythen3][Moench][Ctb] Default patwait and patloop addresses
-        Set default wait and loop addresses to 0x1fff (max value) for all levels
-        before loading pattern. Please use the pattern command instead of parameters.
-        This ensures defaults are set up and is faster.
-
-    .   [Mythen3] Bad channels
-        Command line: badchannels, API: getBadChannels/ setBadChannels
-        Set bad channels from file with a list of channels, which will be masked
-        out. Also does trimming. A detector level command will require the channel
-        numbers accordingly. The file also extended to include commas, colons range)
-        and removes duplicates. 
-    
-    .   Incrementing default receiver tcp port
-        Automatically incrementing the default receiver tcp port for every module
-        when creating shared memory.
-
-    .   [Gotthard2][Mythen3] Temperature readout
-        Command line: temp_fpga, API: getTemperature with TEMPERATURE_FPGA enum
-        Added
-
-    .   [Gotthard2][Mythen3] Round robin added
-        Command line: udp_dstlist, API: getDestinationUDPList/ setDestinationUDPList
-        Command line: udp_numdst, API: getNumberofUDPDestinations
-        One can set up to 32 (64 for Mythen3) entries in the destination list.
-
-    .   [Jungfrau] Module Id
-        Command line: moduleid, API: getModuleId
-        16 bit value (ideally unique) that is streamed out in the udp header of 
-        the detector. The on-board detector server picks it up from a file 
-        (if it exists) called detid_jungfrau.txt.
-    
-    .   [Jungfrau][[Gotthard2][Myhten3][Gotthard][Ctb][Moench] Hardware version
-        Command line: hardwareversion, API: getHardwareVersion
-        Gets the board or hardware version. 
-        For example, Jungfrau returns 1.0 or 2.0.
-        It is also printed at on-board detector server start up.
-        Also printed before starting FPGA programming.
-
-
-    .   [Eiger][Jugfrau][Mythen3] Transmission Delay   
-        Command line: tx_delay, API: getTransmissionDelay/ setTransmissionDelay
-        Sets transmission delay for all modules in the detector using the step
-        size provided. Sets up for every module:
-            [Eiger] txdelay_left to (2 * mod_index * n_delay)
-            [Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay)
-            [Eiger] txdelay_frame to (2 *num_modules * n_delay)
-            [Jungfrau][Mythen3] txdelay_frame to (num_modules * n_delay)
-
-    .   [Eiger][Jugfrau][Mythen3] Deprecated specific transmission delay commands
-        txndelay_frame -> txdelay_frame
-        txndelay_left -> txdelay_left
-        txndelay_right -> txdelay_right
-
-    .   Catch updated to latest 2.x version due to build failure in fedora
-
-    .   [Moench][Ctb] ADC Vpp
-        Command line: adcvpp, API: getADCVpp/ setADCVpp
-        Moved from SetDAC function into into its own. One can use mV values or
-        option numbers as before.
-
-    .   [Mythen3] Clock Divider 4 and 5
-        Cannot be set anymore. Only read back.
-
-
-    .   Deprecated CopyDetectorServer 
-        Command line: copydetectorserver, API: copydetectorserver
-        Removed. Use updatedetectorserver
-
-    .   [Jungfrau][Moench][Ctb] Additional programming checks
-        Also checks if the drive to write to is a special file or a normal
-        file. If its a normal file, it throws asking to redo the command with a 
-        '--please-delete' argument to delete the normal file and create the device
-        drive and restart FPGA programming.
-
-        More readable error message insetad of "programfpga not implemented for
-        this detector'. This happens when 'hostname' command fails due to 
-        server-firmware/client compatibility and the detector type becomes
-        'GENERIC'. Fixed to suggest if 'hostname' executed properly. 
-
-
+    New commands for Receiver only:
 
     .   Arping for 10GbE
         Command line: rx_arping API: getRxArping/ setRxArping
@@ -277,16 +259,69 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         ROI. Status bar displays a message when Rx ROI enabled.
 
 
-    .   Missing packets
-        Command line: rx_missingpackets, API: getNumMissingPackets
-        This now returns a signed 64 bit instead of unsigned. The negative polarity
-        depicts extra packets instead of missing packets and also takes care of
-        disabled ports.
 
-    .   Frames caught and frame index
-        Command line rx_framescaught, rx_frameindex, API: getFramesCaught/ getRxCurrentFrameIndex
-        They now return a vector for each port when there are 2 udp interfaces
-        in the receiver.
+    Additonal options:
+
+    .   [Jungfrau][Moench][Ctb] Additional programming checks
+        Also checks if the drive to write to is a special file or a normal
+        file. If its a normal file, it throws asking to redo the command with a 
+        '--please-delete' argument to delete the normal file and create the device
+        drive and restart FPGA programming.
+
+        More readable error message insetad of "programfpga not implemented for
+        this detector'. This happens when 'hostname' command fails due to 
+        server-firmware/client compatibility and the detector type becomes
+        'GENERIC'. Fixed to suggest if 'hostname' executed properly. 
+
+
+    .   Udp Source IP
+        Command line: udp_srcip(2), API: getSourceUDPIP(2)/ setSourceUDPIP(2)
+        One can also set this to 'auto' for 1 GbE data. It will set to IP of
+        rx_hostname (as in udp_dstip)
+
+    .   Incrementing default receiver tcp port
+        Automatically incrementing the default receiver tcp port for every module
+        when creating shared memory.
+
+
+    
+    Changes:
+
+    .   [Jungfrau] Storage cells in running receiver
+        Allowing the possibility to set this when receiver in running state.
+
+
+    .   [Eiger] Vtr
+        Allow Vtrim to be interpolated for settings.
+
+
+    .   [Mythen3] Threshold
+        When settings trimbits or threshold, counter mask is set and hence,
+        vthx dacs are set accordingly.
+
+        setAllThresholdEnergy takes 3 values for each counter and if one of them
+        is -1, the trimbits and setings for that counter is picked up from the 
+        detector.
+
+
+    .   [Moench][Ctb] Pattern levels
+        Changed from 3 to 6.
+
+
+    .   [Mythen3][Moench][Ctb] Default patwait and patloop addresses
+        Set default wait and loop addresses to 0x1fff (max value) for all levels
+        before loading pattern. Please use the pattern command instead of parameters.
+        This ensures defaults are set up and is faster.
+
+
+    .   [Moench][Ctb] ADC Vpp
+        Command line: adcvpp, API: getADCVpp/ setADCVpp
+        Moved from SetDAC function into into its own. One can use mV values or
+        option numbers as before.
+
+
+
+
 
 
     Python
@@ -329,9 +364,14 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         to CMAKE_INSTALL_PREFIX/python using
         -DSLS_INSTALL_PYTHONEXT
 
+    .   Catch updated to latest 2.x version due to build failure in fedora
 
     Detector Server
     ---------------
+
+    .   [Gotthard2] Adapt to new HDI version
+        HDI module ID written to FPGA register
+
 
     .   [Moench] ADC9257 Vref
         ADC Vref voltage modified from 1.33V to 2V

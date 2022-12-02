@@ -1739,7 +1739,7 @@ void *start_timer(void *arg) {
             memset(packetData, 0, packetSize);
             sls_detector_header *header = (sls_detector_header *)(packetData);
             header->detType = (uint16_t)myDetectorType;
-            header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+            header->version = SLS_DETECTOR_HEADER_VERSION;
             header->frameNumber = frameNr + iframes;
             header->packetNumber = i;
             header->modId = 0;

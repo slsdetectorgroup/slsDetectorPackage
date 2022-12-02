@@ -3334,7 +3334,7 @@ void *start_timer(void *arg) {
             // set header
             sls_detector_header *header = (sls_detector_header *)(packetData);
             header->detType = (uint16_t)myDetectorType;
-            header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+            header->version = SLS_DETECTOR_HEADER_VERSION;
             header->frameNumber = virtual_currentFrameNumber;
             header->packetNumber = 0;
             header->modId = virtual_moduleid;

@@ -62,8 +62,6 @@
 #define MIN_ROWS_PER_READOUT (16)
 #define MAX_ROWS_PER_READOUT (400)
 #define ROWS_PER_PACKET      (8)
-#define MAX_NUM_PACKETS      (MAX_ROWS_PER_READOUT/ROWS_PER_PACKET)
-#define DATA_SIZE_PER_PACKET (DATA_BYTES/MAX_NUM_PACKETS)
 
 /* Defines in the Firmware */
 #define MAX_TIMESLOT_VAL            (0x1F)

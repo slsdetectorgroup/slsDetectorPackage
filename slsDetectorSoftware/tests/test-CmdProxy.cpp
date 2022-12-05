@@ -2745,50 +2745,65 @@ TEST_CASE("txdelay", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
         det_type == defs::MYTHEN3) {
-        Result<int> prev_left, prev_right;
-        bool eiger = false;
-        if (det_type == defs::EIGER) {
-            eiger = true;
-            prev_left = det.getTransmissionDelayLeft();
-            prev_right = det.getTransmissionDelayRight();
-        }
-        auto prev_frame = det.getTransmissionDelayFrame();
-        auto val = 5000;
-        if (det_type == defs::JUNGFRAU || det_type == defs::MYTHEN3) {
-            val = 5;
-        }
-        std::string sval = std::to_string(val);
-        {
-            std::ostringstream oss1, oss2;
-            proxy.Call("txdelay", {sval}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "txdelay " + sval + "\n");
-            proxy.Call("txdelay", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "txdelay " + sval + "\n");
-        }
-        // test other mods
-        for (int i = 0; i != det.size(); ++i) {
-            if (eiger) {
-                REQUIRE(det.getTransmissionDelayLeft({i}).squash(-1) ==
-                        (2 * i * val));
-                REQUIRE(det.getTransmissionDelayRight({i}).squash(-1) ==
-                        ((2 * i + 1) * val));
-                REQUIRE(det.getTransmissionDelayFrame({i}).squash(-1) ==
-                        (2 * det.size() * val));
-            } else {
-                REQUIRE(det.getTransmissionDelayFrame({i}).squash(-1) ==
-                        (i * val));
-            }
-        }
-        // not a module level command
-        REQUIRE_THROWS(proxy.Call("txdelay", {"5"}, 0, PUT));
-        REQUIRE_THROWS(proxy.Call("txdelay", {}, 0, GET));
 
-        for (int i = 0; i != det.size(); ++i) {
-            if (eiger) {
-                det.setTransmissionDelayLeft(prev_left[i]);
-                det.setTransmissionDelayRight(prev_right[i]);
+        // cannot get transmission delay with just one module
+        if ((det_type == defs::JUNGFRAU || det_type == defs::MYTHEN3) && (det.size() < 2)) {
+            REQUIRE_THROWS(proxy.Call("txdelay", {}, -1, GET));
+            int val = 5;
+            std::string sval = std::to_string(val);
+            {
+                std::ostringstream oss1;
+                proxy.Call("txdelay", {sval}, -1, PUT, oss1);
+                REQUIRE(oss1.str() == "txdelay " + sval + "\n");
             }
-            det.setTransmissionDelayFrame(prev_frame[i]);
+    }
+
+        else {
+            Result<int> prev_left, prev_right;
+            bool eiger = false;
+            if (det_type == defs::EIGER) {
+                eiger = true;
+                prev_left = det.getTransmissionDelayLeft();
+                prev_right = det.getTransmissionDelayRight();
+            }
+            auto prev_frame = det.getTransmissionDelayFrame();
+            auto val = 5000;
+            if (det_type == defs::JUNGFRAU || det_type == defs::MYTHEN3) {
+                val = 5;
+            }
+            std::string sval = std::to_string(val);
+            {
+                std::ostringstream oss1, oss2;
+                proxy.Call("txdelay", {sval}, -1, PUT, oss1);
+                REQUIRE(oss1.str() == "txdelay " + sval + "\n");
+                proxy.Call("txdelay", {}, -1, GET, oss2);
+                REQUIRE(oss2.str() == "txdelay " + sval + "\n");
+            }
+            // test other mods
+            for (int i = 0; i != det.size(); ++i) {
+                if (eiger) {
+                    REQUIRE(det.getTransmissionDelayLeft({i}).squash(-1) ==
+                            (2 * i * val));
+                    REQUIRE(det.getTransmissionDelayRight({i}).squash(-1) ==
+                            ((2 * i + 1) * val));
+                    REQUIRE(det.getTransmissionDelayFrame({i}).squash(-1) ==
+                            (2 * det.size() * val));
+                } else {
+                    REQUIRE(det.getTransmissionDelayFrame({i}).squash(-1) ==
+                            (i * val));
+                }
+            }
+            // not a module level command
+            REQUIRE_THROWS(proxy.Call("txdelay", {"5"}, 0, PUT));
+            REQUIRE_THROWS(proxy.Call("txdelay", {}, 0, GET));
+
+            for (int i = 0; i != det.size(); ++i) {
+                if (eiger) {
+                    det.setTransmissionDelayLeft(prev_left[i]);
+                    det.setTransmissionDelayRight(prev_right[i]);
+                }
+                det.setTransmissionDelayFrame(prev_frame[i]);
+            }
         }
     } else {
         REQUIRE_THROWS(proxy.Call("txdelay", {}, -1, GET));
@@ -2912,9 +2927,10 @@ TEST_CASE("resetfpga", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
         det_type == defs::MOENCH) {
-        std::ostringstream oss;
-        proxy.Call("resetfpga", {}, -1, PUT, oss);
-        REQUIRE(oss.str() == "resetfpga successful\n");
+        // reset will also reset udp info from config file (comment out for invdividual tests)
+        // std::ostringstream oss;
+        // proxy.Call("resetfpga", {}, -1, PUT, oss);
+        // REQUIRE(oss.str() == "resetfpga successful\n");
         REQUIRE_THROWS(proxy.Call("resetfpga", {}, -1, GET));
     } else {
         REQUIRE_THROWS(proxy.Call("resetfpga", {}, -1, GET));

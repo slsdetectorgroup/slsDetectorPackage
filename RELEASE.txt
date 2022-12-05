@@ -19,6 +19,55 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 1. New or Changed Features
 ==========================
 
+
+
+    Compilation
+    -----------
+
+    .   Custom location to find ZeroMQ
+        Option to provide a custom location to look for ZeroMQ, if not found 
+        using FindZeroMQ.cmake
+        
+        For example, to use the system installed zmq:
+        Using cmake: -DZeroMQ_HINT=/usr/lib64 
+        Using cmk.sh script: -q /usr/lib64
+
+
+    .   Support external build 
+        Assuming already installed version of the slsDetectorPacakge exists, 
+        external build of python bindings, gui, ctbgui and moench has been added.
+
+
+    .   Catch updated to latest 2.x version due to build failure in fedora
+    
+
+
+    Python
+    ------
+
+    .   Install python extension
+        Option to copy the python extension (slsdet folder and _slsdet-..so)
+        to CMAKE_INSTALL_PREFIX/python using
+        -DSLS_INSTALL_PYTHONEXT
+
+
+    .   Pybind11 (v2.10.0)
+        Pybind11 is removed as a submodule and instead built into package to
+        simplify for users. Now, there is no more need to clone with the '--recursive'
+        argument or to update submodule when switching to this package version 
+        and above.
+
+
+    .   Conda packages
+        Removed conda packages for python 3.6 and 3.7. Added for python 3.11.
+
+
+    .   Defines in sls_detector_defs
+        sls_detetor_defs parsed and #defines extracted into defines.py
+        For exmaple, one can use slsdet.LOCALHOST_IP
+
+
+
     Client
     ------
 
@@ -324,47 +373,6 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-    Python
-    ------
-
-    .   Defines in sls_detector_defs
-        sls_detetor_defs parsed and #defines extracted into defines.py
-        For exmaple, one can use slsdet.LOCALHOST_IP
-
-
-    .   Pybind11 (v2.10.0)
-        Pybind11 is removed as a submodule and instead built into package to
-        simplify for users. Now, there is no more need to clone with the '--recursive'
-        argument or to update submodule when switching to this package version 
-        and above.
-
-    .   Conda packages
-        Removed conda packages for python 3.6 and 3.7. Added for python 3.11.
-
-
-
-    Compilation
-    -----------
-
-    .   Custom location to find ZeroMQ
-        Option to provide a custom location to look for ZeroMQ, if not found 
-        using FindZeroMQ.cmake
-        
-        For example, to use the system installed zmq:
-        Using cmake: -DZeroMQ_HINT=/usr/lib64 
-        Using cmk.sh script: -q /usr/lib64
-
-
-    .   Support external build 
-        Assuming already installed version of the slsDetectorPacakge exists, 
-        external build of python bindings, gui, ctbgui and moench has been added.
-
-    .   Install python extension
-        Option to copy the python extension (slsdet folder and _slsdet-..so)
-        to CMAKE_INSTALL_PREFIX/python using
-        -DSLS_INSTALL_PYTHONEXT
-
-    .   Catch updated to latest 2.x version due to build failure in fedora
 
     Detector Server
     ---------------

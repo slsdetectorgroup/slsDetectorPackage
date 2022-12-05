@@ -342,7 +342,6 @@ TEST_CASE("rx_padding", "[.cmd][.rx]") {
 }
 
 TEST_CASE("rx_udpsocksize", "[.cmd][.rx]") {
-    //exit(-1);
     Detector det;
     CmdProxy proxy(&det);
     int64_t prev_val = det.getRxUDPSocketBufferSize().tsquash(

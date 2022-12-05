@@ -205,6 +205,8 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int &actualSize) {
 
     // create dummy socket
     try {
+        // to allowe ports to be bound from udpsocket
+        udpSocket.reset();
         UdpRxSocket g(
             udpPortNumber, packetSize,
             (eth.length() ? InterfaceNameToIp(eth).str().c_str() : nullptr),
@@ -218,7 +220,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int &actualSize) {
         } else {
             generalData->udpSocketBufferSize = actualSize / 2;
         }
-
+        // to allow udp sockets to be able to bind in the future
     } catch (...) {
         throw RuntimeError("Could not create a test UDP socket on port " +
                            std::to_string(udpPortNumber));

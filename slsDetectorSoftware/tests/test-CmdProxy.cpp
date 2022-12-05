@@ -117,8 +117,15 @@ TEST_CASE("detectorserverversion", "[.cmd]") {
 TEST_CASE("hardwareversion", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_NOTHROW(proxy.Call("hardwareversion", {}, -1, GET));
-    REQUIRE_THROWS(proxy.Call("hardwareversion", {"0"}, -1, PUT));
+    auto det_type = det.getDetectorType().squash();
+    if (det_type != defs::EIGER) {
+        REQUIRE_NOTHROW(proxy.Call("hardwareversion", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("hardwareversion", {"0"}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("hardwareversion", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("hardwareversion", {}, -1, GET));
+
+    }
 }
 
 TEST_CASE("kernelversion", "[.cmd]") {
@@ -2382,6 +2389,46 @@ TEST_CASE("scanerrmsg", "[.cmd]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
+TEST_CASE("numinterfaces", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getNumberofUDPInterfaces().tsquash(
+            "inconsistent numinterfaces to test");
+        {
+            std::ostringstream oss;
+            proxy.Call("numinterfaces", {"2"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "numinterfaces 2\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("numinterfaces", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "numinterfaces 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("numinterfaces", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "numinterfaces 1\n");
+        }
+        det.setNumberofUDPInterfaces(prev_val);
+    } else  if (det_type == defs::EIGER) {
+        REQUIRE_THROWS(proxy.Call("numinterfaces", {"1"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            proxy.Call("numinterfaces", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "numinterfaces 2\n");
+        }
+    } else {
+        std::ostringstream oss;
+        proxy.Call("numinterfaces", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "numinterfaces 1\n");
+        REQUIRE_THROWS(proxy.Call("numinterfaces", {"1"}, -1, PUT));
+    }
+    REQUIRE_THROWS(proxy.Call("numinterfaces", {"3"}, -1, PUT));
+    REQUIRE_THROWS(proxy.Call("numinterfaces", {"0"}, -1, PUT));
+}
+
 TEST_CASE("udp_srcip", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -2664,7 +2711,7 @@ TEST_CASE("flowcontrol10g", "[.cmd]") {
     }
 }
 
-TEST_CASE("txndelay_frame", "[.cmd]") {
+TEST_CASE("txdelay_frame", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -2678,16 +2725,16 @@ TEST_CASE("txndelay_frame", "[.cmd]") {
         std::string sval = std::to_string(val);
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("txndelay_frame", {sval}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "txndelay_frame " + sval + "\n");
-            proxy.Call("txndelay_frame", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "txndelay_frame " + sval + "\n");
+            proxy.Call("txdelay_frame", {sval}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txdelay_frame " + sval + "\n");
+            proxy.Call("txdelay_frame", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txdelay_frame " + sval + "\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setTransmissionDelayFrame(prev_val[i]);
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("txndelay_frame", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("txdelay_frame", {}, -1, GET));
     }
 }
 
@@ -2721,11 +2768,11 @@ TEST_CASE("txdelay", "[.cmd]") {
         for (int i = 0; i != det.size(); ++i) {
             if (eiger) {
                 REQUIRE(det.getTransmissionDelayLeft({i}).squash(-1) ==
-                        (3 * i * val));
+                        (2 * i * val));
                 REQUIRE(det.getTransmissionDelayRight({i}).squash(-1) ==
-                        ((3 * i + 1) * val));
+                        ((2 * i + 1) * val));
                 REQUIRE(det.getTransmissionDelayFrame({i}).squash(-1) ==
-                        ((3 * i + 2) * val));
+                        (2 * det.size() * val));
             } else {
                 REQUIRE(det.getTransmissionDelayFrame({i}).squash(-1) ==
                         (i * val));

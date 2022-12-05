@@ -274,12 +274,13 @@ std::string CmdProxy::Versions(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
+        bool eiger = (det->getDetectorType().squash() == defs::EIGER);
         auto t = det->getFirmwareVersion(std::vector<int>{det_id});
         os << "\nType     : " << OutString(det->getDetectorType())
            << "\nRelease  : " << det->getPackageVersion() << std::hex
            << "\nClient   : " << det->getClientVersion();
         os << "\nFirmware : ";
-        if (det->getDetectorType().squash() == defs::EIGER) {
+        if (eiger) {
             os << OutString(t);
         } else {
             os << OutStringHex(t);
@@ -287,6 +288,7 @@ std::string CmdProxy::Versions(int action) {
         os << "\nServer   : "
            << OutString(
                   det->getDetectorServerVersion(std::vector<int>{det_id}));
+        if (!eiger)
         os << "\nHardware : "
            << OutString(det->getHardwareVersion(std::vector<int>{det_id}));
         os << "\nKernel   : "

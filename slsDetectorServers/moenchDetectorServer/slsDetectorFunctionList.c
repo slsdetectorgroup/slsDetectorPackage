@@ -1802,8 +1802,8 @@ int setReadNRows(int value) {
         return FAIL;
     }
 
-    // regval is numpackets - 1
-    int regval = (value / READ_N_ROWS_MULTIPLE) - 1;
+    // regval is numpackets
+    int regval = (value / READ_N_ROWS_MULTIPLE);
     uint32_t addr = READ_N_ROWS_REG;
     LOG(logINFO, ("Setting number of rows: %d (regval:%d)\n", value, regval));
     bus_w(addr, bus_r(addr) & ~READ_N_ROWS_NUM_ROWS_MSK);
@@ -1828,12 +1828,12 @@ int getReadNRows() {
     int regval = ((bus_r(READ_N_ROWS_REG) & READ_N_ROWS_NUM_ROWS_MSK) >>
                   READ_N_ROWS_NUM_ROWS_OFST);
 
-    int maxRegval = (MAX_ROWS_PER_READOUT / READ_N_ROWS_MULTIPLE) - 1;
+    int maxRegval = (MAX_ROWS_PER_READOUT / READ_N_ROWS_MULTIPLE);
     if ((regval == maxRegval && enable) || (regval != maxRegval && !enable)) {
         return -1;
     }
 
-    return (regval + 1) * READ_N_ROWS_MULTIPLE;
+    return (regval * READ_N_ROWS_MULTIPLE);
 }
 
 void initReadoutConfiguration() {

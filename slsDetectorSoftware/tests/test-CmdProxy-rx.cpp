@@ -493,9 +493,9 @@ TEST_CASE("rx_roi", "[.cmd]") {
                            -1, PUT, oss);
                 REQUIRE(oss.str() == std::string("rx_roi [1, ") +
                                          std::to_string(detsize.x - 5) +
-                                         std::string(", ") +
+                                         std::string(", 1, ") +
                                          std::to_string(detsize.y - 5) +
-                                         std::string(", 1]\n"));
+                                         std::string("]\n"));
             }
             REQUIRE_THROWS(
                 proxy.Call("rx_roi", {"-1", "-1", "-1", "-1"}, -1, PUT));

@@ -98,38 +98,6 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("numinterfaces", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getNumberofUDPInterfaces().tsquash(
-            "inconsistent numinterfaces to test");
-        {
-            std::ostringstream oss;
-            proxy.Call("numinterfaces", {"2"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "numinterfaces 2\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("numinterfaces", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "numinterfaces 1\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("numinterfaces", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "numinterfaces 1\n");
-        }
-        det.setNumberofUDPInterfaces(prev_val);
-    } else {
-        std::ostringstream oss;
-        proxy.Call("numinterfaces", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "numinterfaces 1\n");
-        REQUIRE_THROWS(proxy.Call("numinterfaces", {"1"}, -1, PUT));
-    }
-    REQUIRE_THROWS(proxy.Call("numinterfaces", {"3"}, -1, PUT));
-    REQUIRE_THROWS(proxy.Call("numinterfaces", {"0"}, -1, PUT));
-}
 
 TEST_CASE("selinterface", "[.cmd]") {
     Detector det;

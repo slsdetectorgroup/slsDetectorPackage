@@ -4,6 +4,7 @@
 #include "catch.hpp"
 #include "sls/Detector.h"
 #include "sls/sls_detector_defs.h"
+#include "sls/Version.h"
 #include <sstream>
 
 #include "sls/versionAPI.h"
@@ -26,15 +27,15 @@ TEST_CASE("rx_version", "[.cmd][.rx]") {
     CmdProxy proxy(&det);
     std::ostringstream oss;
     proxy.Call("rx_version", {}, -1, GET, oss);
+    sls::Version v(APIRECEIVER);
     std::ostringstream vs;
-    vs << "rx_version 0x" << std::hex << APIRECEIVER << '\n';
+    vs << "rx_version " << v.concise() << '\n';
     REQUIRE(oss.str() == vs.str());
 
     REQUIRE_THROWS(proxy.Call("rx_version", {"0"}, -1, PUT));
 }
 
 /* acquisition */
-
 TEST_CASE("rx_start", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -128,6 +129,9 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
     auto prev_val = det.getFileWrite();
     det.setFileWrite(false); // avoid writing or error on file creation
     CmdProxy proxy(&det);
+    auto prev_frames =
+            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    det.setNumberOfFrames(100);
     {
         // some missing packets
         det.startReceiver();
@@ -144,6 +148,7 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
     {
         // 0 missing packets (takes into account that acquisition is stopped)
         det.startReceiver();
+        det.startDetector();
         det.stopDetector();
         det.stopReceiver();
         std::ostringstream oss;
@@ -337,6 +342,7 @@ TEST_CASE("rx_padding", "[.cmd][.rx]") {
 }
 
 TEST_CASE("rx_udpsocksize", "[.cmd][.rx]") {
+    //exit(-1);
     Detector det;
     CmdProxy proxy(&det);
     int64_t prev_val = det.getRxUDPSocketBufferSize().tsquash(

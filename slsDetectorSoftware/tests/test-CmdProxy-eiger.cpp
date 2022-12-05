@@ -235,7 +235,7 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("txndelay_left", "[.cmd]") {
+TEST_CASE("txdelay_left", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -243,20 +243,20 @@ TEST_CASE("txndelay_left", "[.cmd]") {
         auto prev_val = det.getTransmissionDelayLeft();
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("txndelay_left", {"5000"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "txndelay_left 5000\n");
-            proxy.Call("txndelay_left", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "txndelay_left 5000\n");
+            proxy.Call("txdelay_left", {"5000"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txdelay_left 5000\n");
+            proxy.Call("txdelay_left", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txdelay_left 5000\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setTransmissionDelayLeft(prev_val[i]);
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("txndelay_left", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("txdelay_left", {}, -1, GET));
     }
 }
 
-TEST_CASE("txndelay_right", "[.cmd]") {
+TEST_CASE("txdelay_right", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -264,16 +264,16 @@ TEST_CASE("txndelay_right", "[.cmd]") {
         auto prev_val = det.getTransmissionDelayRight();
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("txndelay_right", {"5000"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "txndelay_right 5000\n");
-            proxy.Call("txndelay_right", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "txndelay_right 5000\n");
+            proxy.Call("txdelay_right", {"5000"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txdelay_right 5000\n");
+            proxy.Call("txdelay_right", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txdelay_right 5000\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setTransmissionDelayRight(prev_val[i]);
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("txndelay_right", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("txdelay_right", {}, -1, GET));
     }
 }
 

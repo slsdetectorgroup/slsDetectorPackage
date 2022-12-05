@@ -566,8 +566,8 @@ TEST_CASE("fliprows", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     bool jungfrauhw2 = false;
     if (det_type == defs::JUNGFRAU &&
-        ((det.getSerialNumber().tsquash("inconsistent serial number to test") &
-          0x30000) == 0x30000)) {
+        ((det.getHardwareVersion().tsquash("inconsistent serial number to test")
+          == "2.0"))) {
         jungfrauhw2 = true;
     }
     if (det_type == defs::EIGER || jungfrauhw2) {
@@ -625,7 +625,9 @@ TEST_CASE("master", "[.cmd]") {
                 proxy.Call("master", {"1"}, 0, PUT, oss1);
                 REQUIRE(oss1.str() == "master 1\n");
             }
-            REQUIRE_THROWS(proxy.Call("master", {"1"}, -1, PUT));
+            if (det.size() > 1) {
+                REQUIRE_THROWS(proxy.Call("master", {"1"}, -1, PUT));
+            }
             // set all to slaves, and then master
             for (int i = 0; i != det.size(); ++i) {
                 det.setMaster(0, {i});
@@ -1650,9 +1652,8 @@ TEST_CASE("readnrows", "[.cmd]") {
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
         bool jungfrauhw2 = false;
         if (det_type == defs::JUNGFRAU &&
-            ((det.getSerialNumber().tsquash(
-                  "inconsistent serial number to test") &
-              0x30000) == 0x30000)) {
+            ((det.getHardwareVersion().tsquash("inconsistent hardware version number to test") 
+             == "2.0"))) {
             jungfrauhw2 = true;
         }
         if (det_type == defs::JUNGFRAU && !jungfrauhw2) {

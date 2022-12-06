@@ -33,7 +33,7 @@ TEST_CASE("timegotthard2", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("exptime", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "exptime 222ns\n");
+            REQUIRE(oss.str() == "exptime 221ns\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setExptime(prev_val[i], {i});
@@ -48,7 +48,7 @@ TEST_CASE("timegotthard2", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("burstperiod", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "burstperiod 222ns\n");
+            REQUIRE(oss.str() == "burstperiod 221ns\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setBurstPeriod(prev_val[i], {i});
@@ -63,7 +63,7 @@ TEST_CASE("timegotthard2", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("delay", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "delay 222ns\n");
+            REQUIRE(oss.str() == "delay 221ns\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setDelayAfterTrigger(prev_val[i], {i});
@@ -80,7 +80,7 @@ TEST_CASE("timegotthard2", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("period", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "period 222ns\n");
+            REQUIRE(oss.str() == "period 221ns\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPeriod(prev_val[i], {i});
@@ -96,7 +96,7 @@ TEST_CASE("timegotthard2", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("period", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "period 222ns\n");
+            REQUIRE(oss.str() == "period 221ns\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPeriod(prev_val[i], {i});
@@ -586,7 +586,7 @@ TEST_CASE("vetostream", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
-        auto prev_val = det.getVetoStream();
+        auto prev_val = det.getVetoStream().tsquash("inconsistent veto stream to test");
         {
             std::ostringstream oss;
             proxy.Call("vetostream", {"none"}, -1, PUT, oss);
@@ -618,9 +618,7 @@ TEST_CASE("vetostream", "[.cmd]") {
             REQUIRE(oss.str() == "vetostream lll, 10gbe\n");
         }
         REQUIRE_THROWS(proxy.Call("vetostream", {"lll", "none"}, -1, PUT));
-        for (int i = 0; i != det.size(); ++i) {
-            det.setVetoStream(prev_val[i], {i});
-        }
+        det.setVetoStream(prev_val);
     } else {
         REQUIRE_THROWS(proxy.Call("vetostream", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vetostream", {"none"}, -1, PUT));

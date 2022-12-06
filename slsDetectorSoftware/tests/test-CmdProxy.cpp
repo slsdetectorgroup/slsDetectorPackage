@@ -2302,82 +2302,86 @@ TEST_CASE("scan", "[.cmd]") {
     // auto previous = det.getDAC(ind, false);
     // auto notImplementedPrevious = det.getDAC(notImplementedInd, false);
 
-    {
-        std::ostringstream oss;
-        proxy.Call("scan", {ToString(ind), "500", "1500", "500"}, -1, PUT, oss);
-        CHECK(oss.str() == "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("scan", {}, -1, GET, oss);
-        CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
-                               "\nstart 500\nstop 1500\nstep "
-                               "500\nsettleTime 1ms\n]\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("scan", {ToString(ind), "500", "1500", "500", "2s"}, -1, PUT,
-                   oss);
-        CHECK(oss.str() ==
-              "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("scan", {}, -1, GET, oss);
-        CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
-                               "\nstart 500\nstop 1500\nstep "
-                               "500\nsettleTime 2s\n]\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("scan", {"0"}, -1, PUT, oss);
-        CHECK(oss.str() == "scan [0]\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("scan", {}, -1, GET, oss);
-        CHECK(oss.str() == "scan [disabled]\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("scan", {ToString(ind), "1500", "500", "-500"}, -1, PUT,
-                   oss);
-        CHECK(oss.str() == "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
-    }
-    CHECK_THROWS(proxy.Call(
-        "scan", {ToString(notImplementedInd), "500", "1500", "500"}, -1, PUT));
-    CHECK_THROWS(
-        proxy.Call("scan", {ToString(ind), "500", "1500", "-500"}, -1, PUT));
-    CHECK_THROWS(
-        proxy.Call("scan", {ToString(ind), "1500", "500", "500"}, -1, PUT));
-
-    if (det_type == defs::MYTHEN3 || defs::EIGER) {
+    if (det_type == defs::MYTHEN3 && det.size() > 1) {
+        ;// scan only allowed for single module due to sync
+    } else {
         {
             std::ostringstream oss;
-            proxy.Call("scan", {"trimbits", "0", "63", "16", "2s"}, -1, PUT,
-                       oss);
-            CHECK(oss.str() == "scan [trimbits, 0, 63, 16, 2s]\n");
+            proxy.Call("scan", {ToString(ind), "500", "1500", "500"}, -1, PUT, oss);
+            CHECK(oss.str() == "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("scan", {}, -1, GET, oss);
-            CHECK(oss.str() ==
-                  "scan [enabled\ndac trimbits\nstart 0\nstop 48\nstep "
-                  "16\nsettleTime 2s\n]\n");
+            CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
+                                "\nstart 500\nstop 1500\nstep "
+                                "500\nsettleTime 1ms\n]\n");
         }
+        {
+            std::ostringstream oss;
+            proxy.Call("scan", {ToString(ind), "500", "1500", "500", "2s"}, -1, PUT,
+                    oss);
+            CHECK(oss.str() ==
+                "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("scan", {}, -1, GET, oss);
+            CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
+                                "\nstart 500\nstop 1500\nstep "
+                                "500\nsettleTime 2s\n]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("scan", {"0"}, -1, PUT, oss);
+            CHECK(oss.str() == "scan [0]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("scan", {}, -1, GET, oss);
+            CHECK(oss.str() == "scan [disabled]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("scan", {ToString(ind), "1500", "500", "-500"}, -1, PUT,
+                    oss);
+            CHECK(oss.str() == "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
+        }
+        CHECK_THROWS(proxy.Call(
+            "scan", {ToString(notImplementedInd), "500", "1500", "500"}, -1, PUT));
+        CHECK_THROWS(
+            proxy.Call("scan", {ToString(ind), "500", "1500", "-500"}, -1, PUT));
+        CHECK_THROWS(
+            proxy.Call("scan", {ToString(ind), "1500", "500", "500"}, -1, PUT));
+
+        if (det_type == defs::MYTHEN3 || defs::EIGER) {
+            {
+                std::ostringstream oss;
+                proxy.Call("scan", {"trimbits", "0", "63", "16", "2s"}, -1, PUT,
+                        oss);
+                CHECK(oss.str() == "scan [trimbits, 0, 63, 16, 2s]\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("scan", {}, -1, GET, oss);
+                CHECK(oss.str() ==
+                    "scan [enabled\ndac trimbits\nstart 0\nstop 48\nstep "
+                    "16\nsettleTime 2s\n]\n");
+            }
+        }
+
+        // Switch off scan for future tests
+        det.setScan(defs::scanParameters());
+        // acquire for each?
+
+        // when taking acquisition
+        // Reset all dacs to previous value
+        // for (int i = 0; i != det.size(); ++i) {
+        //     det.setDAC(ind, previous[i], false, {i});
+        //     det.setDAC(notImplementedInd, notImplementedPrevious[i], false,
+        //     {i});
+        // }
     }
-
-    // Switch off scan for future tests
-    det.setScan(defs::scanParameters());
-    // acquire for each?
-
-    // when taking acquisition
-    // Reset all dacs to previous value
-    // for (int i = 0; i != det.size(); ++i) {
-    //     det.setDAC(ind, previous[i], false, {i});
-    //     det.setDAC(notImplementedInd, notImplementedPrevious[i], false,
-    //     {i});
-    // }
 }
 
 TEST_CASE("scanerrmsg", "[.cmd]") {

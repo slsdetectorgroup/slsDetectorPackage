@@ -40,8 +40,10 @@ TEST_CASE("savepattern", "[.cmd]") {
         det_type == defs::MYTHEN3) {
         REQUIRE_THROWS(
             proxy.Call("savepattern", {"/tmp/pattern.txt"}, -1, GET));
-        REQUIRE_NOTHROW(
-            proxy.Call("savepattern", {"/tmp/pattern.txt"}, -1, PUT));
+        if (det.size() == 1) {
+            REQUIRE_NOTHROW(
+                proxy.Call("savepattern", {"/tmp/pattern.txt"}, -1, PUT));
+        }
     } else {
         REQUIRE_THROWS(
             proxy.Call("savepattern", {"/tmp/pattern.txt"}, -1, PUT));

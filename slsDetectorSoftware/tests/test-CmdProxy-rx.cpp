@@ -163,6 +163,7 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
     for (int i = 0; i != det.size(); ++i) {
         det.setFileWrite(prev_val[i], {i});
     }
+    det.setNumberOfFrames(prev_frames);
 }
 
 TEST_CASE("rx_frameindex", "[.cmd][.rx]") {
@@ -797,7 +798,7 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val_zmqport = det.getRxZmqPort();
-    auto prev_val_numinterfaces = det.getNumberofUDPInterfaces();
+    auto prev_val_numinterfaces = det.getNumberofUDPInterfaces().tsquash("inconsistent number of udp interfaces to test");
 
     int socketsperdetector = 1;
     auto det_type = det.getDetectorType().squash();
@@ -827,9 +828,9 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
     }
     for (int i = 0; i != det.size(); ++i) {
         det.setRxZmqPort(prev_val_zmqport[i], i);
-        if (det_type == defs::JUNGFRAU) {
-            det.setNumberofUDPInterfaces(prev_val_numinterfaces[i], {i});
-        }
+    }
+    if (det_type == defs::JUNGFRAU) {
+        det.setNumberofUDPInterfaces(prev_val_numinterfaces);
     }
 }
 

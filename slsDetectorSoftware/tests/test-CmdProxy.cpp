@@ -28,7 +28,6 @@ TEST_CASE("Calling help doesn't throw or cause segfault") {
 }
 
 TEST_CASE("Unknown command", "[.cmd]") {
-
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("vsaevrreavv", {}, -1, PUT));
@@ -572,7 +571,7 @@ TEST_CASE("fliprows", "[.cmd]") {
     }
     if (det_type == defs::EIGER || jungfrauhw2) {
         auto previous = det.getFlipRows();
-        auto previous_numudp = det.getNumberofUDPInterfaces();
+        auto previous_numudp = det.getNumberofUDPInterfaces().tsquash("inconsistent number of udp interfaces to test");
         if (det_type == defs::JUNGFRAU) {
             det.setNumberofUDPInterfaces(2);
         }
@@ -585,9 +584,9 @@ TEST_CASE("fliprows", "[.cmd]") {
         REQUIRE(oss3.str() == "fliprows 0\n");
         for (int i = 0; i != det.size(); ++i) {
             det.setFlipRows(previous[i], {i});
-            if (det_type == defs::JUNGFRAU) {
-                det.setNumberofUDPInterfaces(previous_numudp[i], {i});
-            }
+        }
+        if (det_type == defs::JUNGFRAU) {
+            det.setNumberofUDPInterfaces(previous_numudp);
         }
     } else {
         REQUIRE_THROWS(proxy.Call("fliprows", {}, -1, GET));

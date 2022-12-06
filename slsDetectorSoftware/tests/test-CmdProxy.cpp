@@ -1867,7 +1867,7 @@ TEST_CASE("temp_fpga", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::MOENCH) {
+    if (det_type != defs::MOENCH && det_type != defs::CHIPTESTBOARD) {
         REQUIRE_NOTHROW(proxy.Call("temp_fpga", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_fpga", {}, 0, GET, oss));
@@ -2098,7 +2098,7 @@ TEST_CASE("start", "[.cmd]") {
         proxy.Call("start", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "start successful\n");
     }
-    {
+    if (det_type != defs::CHIPTESTBOARD) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
@@ -2133,7 +2133,7 @@ TEST_CASE("stop", "[.cmd]") {
     det.setPeriod(std::chrono::milliseconds(1));
     det.setNumberOfFrames(2000);
     det.startDetector();
-    {
+    if (det_type != defs::CHIPTESTBOARD) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
@@ -2176,7 +2176,7 @@ TEST_CASE("status", "[.cmd]") {
     det.setPeriod(std::chrono::milliseconds(1));
     det.setNumberOfFrames(2000);
     det.startDetector();
-    {
+    if (det_type != defs::CHIPTESTBOARD) {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");

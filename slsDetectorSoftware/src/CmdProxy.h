@@ -1242,7 +1242,7 @@ class CmdProxy {
                 "\n\tOn-board detector server software version");
 
     GET_COMMAND(hardwareversion, getHardwareVersion,
-                "\n\tJungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] "
+                "\n\t[Jungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] "
                 "Hardware version of detector.");
 
     GET_COMMAND(

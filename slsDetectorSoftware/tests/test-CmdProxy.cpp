@@ -1222,7 +1222,7 @@ TEST_CASE("clkphase", "[.cmd]") {
         }
         std::string s_deg_val = "15";
         if (det_type == defs::MYTHEN3) {
-            s_deg_val = "14";
+            s_deg_val = "15";
         } else if (det_type == defs::GOTTHARD2) {
             s_deg_val = "23";
         }

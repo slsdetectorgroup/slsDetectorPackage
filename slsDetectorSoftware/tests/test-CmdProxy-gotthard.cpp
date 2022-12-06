@@ -105,20 +105,25 @@ TEST_CASE("roi", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::GOTTHARD) {
-        auto prev_val = det.getROI();
-        {
-            std::ostringstream oss;
-            proxy.Call("roi", {"0", "255"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "roi [0, 255]\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("roi", {"256", "511"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "roi [256, 511]\n");
-        }
-        REQUIRE_THROWS(proxy.Call("roi", {"0", "256"}, -1, PUT));
-        for (int i = 0; i != det.size(); ++i) {
-            det.setROI(prev_val[i], i);
+        if (det.size() > 1) {
+            REQUIRE_THROWS(proxy.Call("roi", {"0", "255"}, -1, PUT));
+            REQUIRE_NOTHROW(proxy.Call("roi", {}, -1, GET));
+        } else {
+            auto prev_val = det.getROI();
+            {
+                std::ostringstream oss;
+                proxy.Call("roi", {"0", "255"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "roi [0, 255]\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("roi", {"256", "511"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "roi [256, 511]\n");
+            }
+            REQUIRE_THROWS(proxy.Call("roi", {"0", "256"}, -1, PUT));
+            for (int i = 0; i != det.size(); ++i) {
+                det.setROI(prev_val[i], i);
+            }
         }
     } else {
         REQUIRE_THROWS(proxy.Call("roi", {}, -1, GET));
@@ -135,7 +140,7 @@ TEST_CASE("clearroi", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("clearroi", {}, -1, PUT, oss);
-            REQUIRE(oss.str() == "clearroi [-1, -1]\n");
+            REQUIRE(oss.str() == "clearroi successful\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setROI(prev_val[i], i);

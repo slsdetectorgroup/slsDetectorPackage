@@ -112,23 +112,23 @@ TEST_CASE("adcvpp", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("adcvpp", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "dac adcvpp 1\n");
+            REQUIRE(oss.str() == "adcvpp 1\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("adcvpp", {"1140", "mv"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "dac adcvpp 1140 mV\n");
+            REQUIRE(oss.str() == "adcvpp 1140 mV\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("adcvpp", {"mv"}, -1, GET, oss);
-            REQUIRE(oss.str() == "dac adcvpp 1140 mV\n");
+            REQUIRE(oss.str() == "adcvpp 1140 mV\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setADCVpp(prev_val[i], false, {i});
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("dac adcvpp", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("adcvpp", {}, -1, GET));
     }
 }
 

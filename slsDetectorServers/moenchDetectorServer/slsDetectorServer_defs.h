@@ -5,7 +5,7 @@
 #include "sls/sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API 0x180314
-#define REQRD_FRMWR_VRSN        0x220825
+#define REQRD_FRMWR_VRSN        0x221205
 
 #define NUM_HARDWARE_VERSIONS (1)
 #define HARDWARE_VERSION_NUMBERS                                               \

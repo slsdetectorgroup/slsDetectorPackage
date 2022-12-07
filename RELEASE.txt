@@ -855,12 +855,12 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
     Eiger       17.02.2022 (v30)
     
-    Jungfrau    21.04.2022?? (v1.4, HW v1.0) 
-                22.04.2022?? (v2.4, HW v2.0)
+    Jungfrau    04.11.2022 (v1.4, HW v1.0) 
+                03.11.2022 (v2.4, HW v2.0)
 
     Mythen3     05.12.2022 (v1.4)
 
-    Gotthard2   01.09.2022 (v0.1+??)
+    Gotthard2   23.11.2022 (v0.3)
 
     Gotthard    08.02.2018 (50um and 25um Master)
                 09.02.2018 (25 um Slave) 

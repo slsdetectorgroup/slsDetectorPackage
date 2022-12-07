@@ -92,18 +92,29 @@ Download
 Upgrade
 ^^^^^^^^
 
-.. note :: 
+.. warning ::
 
-    These instructions are for upgrades from v5.0.0. For earlier versions, contact us.
+    In case you have had issues in the past with programming via software:
+
+    * 6.1.2 server has a fix for seamless fpga programming
+
+    * We recommend first updating the on-board detector server to 6.1.2 (with client 6.1.x) using command 'updatedetectorserver' or 'copydetectorserver'.
+
+    * Then use command 'programfpga' to only update firmware or use command 'update' to update firmware and server to the latest release.
+
 
 
 Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
 
-Always ensure that the client and server software are of the same release.
+
 
 
 Program from console
     .. code-block:: bash
+
+        # These instructions are for upgrades from v5.0.0. For earlier versions, please contact us.
+
+        # Always ensure that the client and server software are of the same release.
 
         # copies server from tftp folder of pc, links new server to jungfrauDetectorServer, 
         # removes old server from respawn, sets up new lnked server to respawn
@@ -155,10 +166,6 @@ Upgrade
 Mythen III
 -----------
 
-.. note :: 
-
-  As it is still in development, the rbf files must be picked up from us.
-
 Download 
 ^^^^^^^^^^^^^
 
@@ -170,10 +177,10 @@ Download
 Upgrade
 ^^^^^^^^
 
-Always ensure that the client and server software are of the same release.
-
 Program from console
     .. code-block:: bash
+
+        # Always ensure that the client and server software are of the same release.
 
         # copies server from tftp folder of pc, links new server to mythen3DetectorServer, 
         # programs fpga,
@@ -199,11 +206,11 @@ Download
 Upgrade
 ^^^^^^^^
 
-Always ensure that the client and server software are of the same release.
-
 Program from console
     .. code-block:: bash
 
+        # Always ensure that the client and server software are of the same release.
+        
         # copies server from tftp folder of pc, links new server to gotthard2DetectorServer, 
         # programs fpga,
         # reboots
@@ -230,12 +237,25 @@ Download
 Upgrade
 ^^^^^^^^
 
+.. warning ::
+
+    In case you have had issues in the past with programming via software:
+
+    * 6.1.2 server has a fix for seamless fpga programming
+
+    * We recommend first updating the on-board detector server to 6.1.2 (with client 6.1.x) using command 'updatedetectorserver' or 'copydetectorserver'.
+
+    * Then use command 'programfpga' to only update firmware or use command 'update' to update firmware and server to the latest release.
+
+
+
 Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
 
-Always ensure that the client and server software are of the same release.
 
 Program from console
     .. code-block:: bash
+
+        # Always ensure that the client and server software are of the same release.
 
         # copies server from tftp folder of pc, links new server to moenchDetectorServer, 
         # removes old server from respawn, sets up new lnked server to respawn
@@ -262,11 +282,12 @@ Upgrade
 
 Check :ref:`firmware troubleshooting <blackfin firmware troubleshooting>` if you run into issues while programming firmware.
 
-Always ensure that the client and server software are of the same release.
 
 Program from console
     .. code-block:: bash
 
+        # Always ensure that the client and server software are of the same release.
+        
         # copies server from tftp folder of pc, links new server to ctbDetectorServer, 
         # removes old server from respawn, sets up new lnked server to respawn
         # programs fpga,

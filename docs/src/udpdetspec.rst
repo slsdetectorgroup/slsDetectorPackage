@@ -110,7 +110,7 @@ Jungfrau
    |          |                    |     | last exposure.                         |
    |          |                    +-----+----------------------------------------+
    |          |                    |  0  | External input flag not detected in the|
-   |          |                    |     |  last exposure.                        |
+   |          |                    |     | last exposure.                         |
    +----------+--------------------+-----+----------------------------------------+
 
 

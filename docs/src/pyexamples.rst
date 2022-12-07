@@ -10,26 +10,45 @@ open an issue in our our  `github repo
 Setting exposure time 
 ------------------------------------
 
-Setting and reading back exposure time can be done either using a Python datetime.timedelta
-or by setting the time in seconds. 
+Setting and reading back exposure time can be done either using a Python 
+datetime.timedelta, DurationWrapper or by setting the time in seconds. 
 
 ::
 
     # Set exposure time to 1.2 seconds
     >>> d.exptime = 1.2
+    >>> d.exptime = 5e-07
 
-    # Setting exposure time using timedelta
+    # Setting exposure time using timedelta (upto microseconds precision)
     import datetime as dt
     >>> d.exptime = dt.timedelta(seconds = 1.2)
+    >>> d.exptime = dt.timedelta(seconds = 1, microseconds = 3)
 
     # With timedelta any arbitrary combination of units can be used
     >>> t = dt.timedelta(microseconds = 100, seconds = 5.3, minutes = .3)
+
+    # using DurationWrapper to set in seconds
+    >>> from slsdet import DurationWrapper
+    >>> d.exptime = DurationWrapper(1.2)
+    
+    # using DurationWrapper to set in ns
+    >>> t = DurationWrapper()
+    >>> t.set_count(500)
+    >>> d.exptime = t
 
     # To set exposure time for individual detector one have to resort
     # to the C++ style API.
     # Sets exposure time to 1.2 seconds for module 0, 6 and 12
     >>> d.setExptime(1.2, [0, 6, 12]) 
     >>> d.setExptime(dt.timedelta(seconds = 1.2), [0, 6, 12]) 
+
+    # to get in seconds
+    >>> d.period
+    181.23
+
+    # to get in DurationWrapper
+    >>> d.getExptime()
+    [sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)]
 
 
 
@@ -220,8 +239,7 @@ Setting and getting times
     # This sets the exposure time for all modules
     d.exptime = 0.5
 
-    # exptime also accepts a python datetime.timedelta
-    # which can be used to set the time in almost any unit
+    # exptime also accepts a python datetime.timedelta (upto microseconds resolution)
     t = dt.timedelta(milliseconds = 2.3)
     d.exptime = t
 
@@ -229,16 +247,25 @@ Setting and getting times
     t = dt.timedelta(minutes = 3, seconds = 1.23)
     d.exptime = t
 
+    # using DurationWrapper to set in seconds
+    >>> from slsdet import DurationWrapper
+    >>> d.exptime = DurationWrapper(1.2)
+    
+    # using DurationWrapper to set in ns
+    >>> t = DurationWrapper()
+    >>> t.set_count(500)
+    >>> d.exptime = t
+
     # exptime however always returns the time in seconds
     >>> d.exptime
     181.23 
 
     # To get back the exposure time for each module 
     # it's possible to use getExptime, this also returns
-    # the values as datetime.timedelta
+    # the values as  DurationWrapper
 
     >>> d.getExptime()
-    [datetime.timedelta(seconds=181, microseconds=230000), datetime.timedelta(seconds=181, microseconds=230000)]
+    [sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)]
 
     # In case the values are the same it's possible to use the
     # element_if_equal function to reduce the values to a single 
@@ -246,7 +273,8 @@ Setting and getting times
 
     >>> t = d.getExptime()
     >>> element_if_equal(t)
-    datetime.timedelta(seconds=1)
+    sls::DurationWrapper(total_seconds: 1.2 count: 1200000000)
+
 
 --------------
 Reading dacs

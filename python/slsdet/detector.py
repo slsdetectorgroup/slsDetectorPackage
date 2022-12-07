@@ -472,6 +472,9 @@ class Detector(CppDetectorApi):
         -----------
         >>> # setting directly in seconds
         >>> d.exptime = 1.05
+        >>>
+        >>> # setting directly in seconds
+        >>> d.exptime = 5e-07
         >>> 
         >>> # using timedelta (up to microseconds precision)
         >>> from datatime import timedelta
@@ -519,16 +522,35 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        :getter: always returns in seconds. To get in datetime.delta, use getPeriod
+        :getter: always returns in seconds. To get in DurationWrapper, use getPeriod
 
         Example
         -----------
+        >>> # setting directly in seconds
         >>> d.period = 1.05
-        >>> d.period = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>>
+        >>> # setting directly in seconds
+        >>> d.period = 5e-07
+        >>> 
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datatime import timedelta
+        >>> d.period = timedelta(seconds = 1, microseconds = 3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.period = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.period = t
+        >>>
+        >>> # to get in seconds
         >>> d.period
         181.23
-        >>> d.getPeriod()
-        [datetime.timedelta(seconds=181, microseconds=230000)]
+        >>> 
+        >>> d.getExptime()
+        sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)
         """
         res = self.getPeriod()
         return reduce_time(res)
@@ -548,7 +570,7 @@ class Detector(CppDetectorApi):
         -----
         [Gotthard2] only in continuous mode.
 
-        :getter: always returns in seconds. To get in datetime.delta, use getPeriodLeft
+        :getter: always returns in seconds. To get in DurationWrapper, use getPeriodLeft
         :setter: Not Implemented
 
         Example
@@ -556,7 +578,7 @@ class Detector(CppDetectorApi):
         >>> d.periodl
         181.23
         >>> d.getPeriodLeft()
-        [datetime.timedelta(seconds=181, microseconds=230000)]
+        [sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)]
         """
         return self.getPeriodLeft()
 
@@ -564,21 +586,40 @@ class Detector(CppDetectorApi):
     @element
     def delay(self):
         """
-        [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] Delay after trigger, accepts either a value in seconds or datetime.timedelta
+        [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] Delay after trigger, accepts either a value in seconds, DurationWrapper or datetime.timedelta
 
         Note
         -----
 
-        :getter: always returns in seconds. To get in datetime.delta, use getDelayAfterTrigger
+        :getter: always returns in seconds. To get in DurationWrapper, use getDelayAfterTrigger
 
         Example
         -----------
+        >>> # setting directly in seconds
         >>> d.delay = 1.05
-        >>> d.delay = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>>
+        >>> # setting directly in seconds
+        >>> d.delay = 5e-07
+        >>> 
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datatime import timedelta
+        >>> d.delay = timedelta(seconds = 1, microseconds = 3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.delay = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.delay = t
+        >>>
+        >>> # to get in seconds
         >>> d.delay
         181.23
+        >>> 
         >>> d.getDelayAfterTrigger()
-        [datetime.timedelta(seconds=181, microseconds=230000)]
+        sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)
         """
         return ut.reduce_time(self.getDelayAfterTrigger())
 
@@ -590,13 +631,13 @@ class Detector(CppDetectorApi):
     @element
     def delayl(self):
         """
-        [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] Delay left after trigger during acquisition, accepts either a value in seconds or datetime.timedelta
+        [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] Delay left after trigger during acquisition, accepts either a value in seconds, datetime.timedelta or DurationWrapper
 
         Note
         -----
         [Gotthard2] only in continuous mdoe.
 
-        :getter: always returns in seconds. To get in datetime.delta, use getDelayAfterTriggerLeft
+        :getter: always returns in seconds. To get in DurationWrapper, use getDelayAfterTriggerLeft
         :setter: Not Implemented
 
         Example
@@ -604,7 +645,7 @@ class Detector(CppDetectorApi):
         >>> d.delayl
         181.23
         >>> d.getDelayAfterTriggerLeft()
-        [datetime.timedelta(seconds=181, microseconds=230000)]
+        [sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)]
         """
         return ut.reduce_time(self.getDelayAfterTriggerLeft())
 
@@ -2041,16 +2082,35 @@ class Detector(CppDetectorApi):
         ----
         Subperiod = subexptime + subdeadtime.
 
-        :getter: always returns in seconds. To get in datetime.delta, use getSubExptime
+        :getter: always returns in seconds. To get in DurationWrapper, use getSubExptime
 
         Example
         -----------
+        >>> # setting directly in seconds
         >>> d.subexptime = 1.230203
-        >>> d.subexptime = datetime.timedelta(seconds = 1.23, microseconds = 203)
+        >>>
+        >>> # setting directly in seconds
+        >>> d.subexptime = 5e-07
+        >>> 
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datatime import timedelta
+        >>> d.subexptime = timedelta(seconds = 1.23, microseconds = 203)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.subexptime = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.subexptime = t
+        >>>
+        >>> # to get in seconds
         >>> d.subexptime
-        1.230203
+        181.23
+        >>> 
         >>> d.getSubExptime()
-        [datetime.timedelta(seconds = 1, microseconds = 203)]
+        sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)
         """
         res = self.getSubExptime()
         return reduce_time(res)
@@ -2082,22 +2142,41 @@ class Detector(CppDetectorApi):
     @property
     def subdeadtime(self):
         """
-        [Eiger] Dead time of EIGER subframes in 32 bit mode, accepts either a value in seconds or datetime.timedelta
+        [Eiger] Dead time of EIGER subframes in 32 bit mode, accepts either a value in seconds, datetime.timedelta or DurationWrapper
         
         Note
         ----
         Subperiod = subexptime + subdeadtime.
 
-        :getter: always returns in seconds. To get in datetime.delta, use getSubDeadTime
+        :getter: always returns in seconds. To get in DurationWrapper, use getSubDeadTime
 
         Example
         -----------
+        >>> # setting directly in seconds
         >>> d.subdeadtime = 1.230203
-        >>> d.subdeadtime = datetime.timedelta(seconds = 1.23, microseconds = 203)
+        >>>
+        >>> # setting directly in seconds
+        >>> d.subdeadtime = 5e-07
+        >>> 
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datatime import timedelta
+        >>> d.subdeadtime = timedelta(seconds = 1.23, microseconds = 203)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.subdeadtime = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.subdeadtime = t
+        >>>
+        >>> # to get in seconds
         >>> d.subdeadtime
-        1.230203
+        181.23
+        >>> 
         >>> d.getSubDeadTime()
-        [datetime.timedelta(seconds = 1, microseconds = 203)]
+        sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)
         """
         res = self.getSubDeadTime()
         return reduce_time(res)
@@ -2273,16 +2352,35 @@ class Detector(CppDetectorApi):
         -----
         It is only possible for chipv1.1.
 
-        :getter: always returns in seconds. To get in datetime.delta, use getComparatorDisableTime
+        :getter: always returns in seconds. To get in DurationWrapper, use getComparatorDisableTime
 
         Example
         -----------
+        >>> # setting directly in seconds
         >>> d.compdisabletime = 1.05
-        >>> d.compdisabletime = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>>
+        >>> # setting directly in seconds
+        >>> d.compdisabletime = 5e-07
+        >>> 
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datatime import timedelta
+        >>> d.compdisabletime = timedelta(seconds = 1, microseconds = 3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.compdisabletime = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.compdisabletime = t
+        >>>
+        >>> # to get in seconds
         >>> d.compdisabletime
         181.23
+        >>> 
         >>> d.getComparatorDisableTime()
-        [datetime.timedelta(seconds=181, microseconds=230000)]
+        sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)
         """
         return ut.reduce_time(self.getComparatorDisableTime())
 
@@ -2340,23 +2438,42 @@ class Detector(CppDetectorApi):
     @property
     def storagecell_delay(self):
         """
-        [Jungfrau] Additional time delay between 2 consecutive exposures in burst mode, accepts either a value in seconds or datetime.timedelta
+        [Jungfrau] Additional time delay between 2 consecutive exposures in burst mode, accepts either a value in seconds, datetime.timedelta or DurationWrapper
         
         Note
         -----
         Only applicable for chipv1.0. For advanced users only \n
         Value: 0-1638375 ns (resolution of 25ns)
 
-        :getter: always returns in seconds. To get in datetime.delta, use getStorageCellDelay
+        :getter: always returns in seconds. To get in DurationWrapper, use getStorageCellDelay
 
         Example
         -----------
-        >>> d.storagecell_delay = 0.00056
-        >>> d.storagecell_delay = datetime.timedelta(microseconds = 45)
+        >>> # setting directly in seconds
+        >>> d.storagecell_delay = 1.05
+        >>>
+        >>> # setting directly in seconds
+        >>> d.storagecell_delay = 5e-07
+        >>> 
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datatime import timedelta
+        >>> d.storagecell_delay = timedelta(seconds = 1, microseconds = 3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.storagecell_delay = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.storagecell_delay = t
+        >>>
+        >>> # to get in seconds
         >>> d.storagecell_delay
-        4.5e-05
+        181.23
+        >>> 
         >>> d.getStorageCellDelay()
-        [datetime.timedelta(microseconds=45)]
+        sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)
         """
         return ut.reduce_time(self.getStorageCellDelay())
 
@@ -2630,18 +2747,36 @@ class Detector(CppDetectorApi):
         Note
         -----
         
-        :getter: always returns in seconds. To get in datetime.delta, use getBurstPeriod
+        :getter: always returns in seconds. To get in DurationWrapper, use getBurstPeriod
         :setter: Not Implemented
 
         Example
         -----------
+        >>> # setting directly in seconds
         >>> d.burstperiod = 1.05
-        >>> d.burstperiod = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>>
+        >>> # setting directly in seconds
+        >>> d.burstperiod = 5e-07
+        >>> 
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datatime import timedelta
+        >>> d.burstperiod = timedelta(seconds = 1, microseconds = 3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.burstperiod = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.burstperiod = t
+        >>>
+        >>> # to get in seconds
         >>> d.burstperiod
         181.23
+        >>> 
         >>> d.getBurstPeriod()
-        [datetime.timedelta(seconds=181, microseconds=230000)]
-
+        sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)
         """
         return ut.reduce_time(self.getBurstPeriod())
 
@@ -2766,25 +2901,41 @@ class Detector(CppDetectorApi):
     @property
     def gatedelay(self):
         """
-        [Mythen3] Gate Delay of all gate signals in auto and trigger mode (internal gating), accepts either a value in seconds or datetime.timedelta
+        [Mythen3] Gate Delay of all gate signals in auto and trigger mode (internal gating), accepts either a value in seconds, datetime.timedelta or DurationWrapper
 
         Note
         -----
         To specify gateIndex, use getGateDelay or setGateDelay.
         
-        :getter: always returns in seconds. To get in datetime.delta, use getGateDelayForAllGates or getGateDelay(gateIndex)
+        :getter: always returns in seconds. To get in DurationWrapper, use getGateDelayForAllGates or getGateDelay(gateIndex)
 
         Example
         -----------
+        >>> # setting directly in seconds
         >>> d.gatedelay = 1.05
-        >>> d.gatedelay = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>>
+        >>> # setting directly in seconds
+        >>> d.gatedelay = 5e-07
+        >>> 
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datatime import timedelta
+        >>> d.gatedelay = timedelta(seconds = 1, microseconds = 3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.gatedelay = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.gatedelay = t
+        >>>
+        >>> # to get in seconds
         >>> d.gatedelay
         181.23
-        >>> d.setGateDelay(1, datetime.timedelta(seconds = 2))
-        >>> d.gatedelay
-        >>> [1.0, 2.0, 1.0]
+        >>> 
         >>> d.getExptimeForAllGates()
-        >>> [[datetime.timedelta(seconds=181, microseconds=230000), datetime.timedelta(seconds=181, microseconds=230000), datetime.timedelta(seconds=181, microseconds=230000)]]
+        sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)
         """
         return reduce_time(self.getGateDelayForAllGates())
 
@@ -3588,7 +3739,7 @@ class Detector(CppDetectorApi):
         Note
         -----
         
-        :getter: always returns in seconds. To get in datetime.delta, use getExptimeLeft
+        :getter: always returns in seconds. To get in DurationWrapper, use getExptimeLeft
         :setter: Not Implemented
         
         Example
@@ -3596,7 +3747,7 @@ class Detector(CppDetectorApi):
         >>> d.exptimel
         181.23
         >>> d.getExptimeLeft()
-        [datetime.timedelta(seconds=181, microseconds=230000)]
+        [sls::DurationWrapper(total_seconds: 181.23 count: 181230000000)]
         """
         t = self.getExptimeLeft()
         return reduce_time(t)

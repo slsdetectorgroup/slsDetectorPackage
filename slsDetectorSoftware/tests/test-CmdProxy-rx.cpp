@@ -828,15 +828,9 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
     }
     for (int i = 0; i != det.size(); ++i) {
         det.setRxZmqPort(prev_val_zmqport[i], i);
-<<<<<<< HEAD
-        if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
-            det.setNumberofUDPInterfaces(prev_val_numinterfaces[i], {i});
-        }
-=======
     }
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         det.setNumberofUDPInterfaces(prev_val_numinterfaces);
->>>>>>> developer
     }
 }
 

@@ -980,6 +980,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
     TroubleShooting:
         https://slsdetectorgroup.github.io/devdoc/troubleshooting.html
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html#receiver-pc-tuning-options
         
     Further Documentation:
         https://www.psi.ch/en/detectors/documentation

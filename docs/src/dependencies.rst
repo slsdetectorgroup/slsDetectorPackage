@@ -21,10 +21,8 @@ the shared libraries these are needed:
 GUI
 -----------------------
 
-The GUI is currently using Qt4 but watch out for an upgrade to 5. 
-
- * Qt 4.8
- * Qwt 6.1
+ * Qt 5.9
+ * Qwt 6.1.5 (packaged in libs/)
 
 -----------------------
 Python bindings

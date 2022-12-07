@@ -23,15 +23,19 @@ Arguments
    .. code-block:: bash  
 
       Possible arguments are:
-      -v, --version            : Software version
-      -p, --port <port>        : TCP communication port with client. 
-      -g, --nomodule           : [Mythen3][Gotthard2] Generic or No Module mode. 
-                                 Skips detector type checks.
-      -f, --phaseshift <value> : [Gotthard] only. Sets phase shift. 
-      -d, --devel              : Developer mode. Skips firmware checks. 
-      -u, --update             : Update mode. Skips firmware checks and initial detector setup. 
-      -s, --stopserver         : Stop server. Do not use as it is created by control server 
-
+         -v, --version            : Software version
+         -p, --port <port>        : TCP communication port with client. 
+         -g, --nomodule           : [Mythen3][Gotthard2] 
+                                    Generic or No Module mode. Skips detector type checks. 
+         -f, --phaseshift <value> : [Gotthard] only. Sets phase shift. 
+         -d, --devel              : Developer mode. Skips firmware checks. 
+         -u, --update             : Update mode. Skips firmware checks and initial detector setup. 
+         -i, --ignore-config      : [Eiger][Jungfrau][Gotthard][Gotthard2][Moench] 
+                                    Ignore config file. 
+         -m, --master <master>    : [Eiger][Mythen3][Gotthard][Gotthard2] 
+                                    Set Master to 0 or 1. Precedence over config file. Only for virtual servers except Eiger. 
+         -t, --top <top>          : [Eiger] Set Top to 0 or 1. Precedence over config file. 
+         -s, --stopserver         : Stop server. Do not use as it is created by control server 
 
 
 .. _Automatic start servers:
@@ -88,6 +92,8 @@ One can start the on-board detector server automatically upon powering on the bo
       .. code-block:: bash
       
          sync
+
+         # physically reboot for Gotthard II or Mythen III
          reboot
 
          # verify

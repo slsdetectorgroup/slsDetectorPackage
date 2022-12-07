@@ -13,16 +13,14 @@ Compilation
 * Using cmk.sh script,
      .. code-block:: bash  
         
-        ./cmk.sh -bsj9 #option s is for simulator
+        ./cmk.sh -bsj9 # option -s is for simulator
 
 
 Binaries
 ^^^^^^^^
     .. code-block:: bash  
 
-        eigerDetectorServerMaster_virtual
-        eigerDetectorServerSlaveTop_virtual
-        eigerDetectorServerSlaveBottom_virtual
+        eigerDetectorServer_virtual
         jungfrauDetectorServer_virtual
         gotthardDetectorServer_virtual
         gotthard2DetectorServer_virtual
@@ -67,7 +65,15 @@ Sample Config file
 ^^^^^^^^^^^^^^^^^^
 There are sample config files for each detector in slsDetectorPackage/examples folder.
 
-For a Single Module
+For a Single Module (Basic)
+    .. code-block:: bash  
+
+        hostname localhost
+        rx_hostname localhost
+        udp_dstip auto
+
+
+For a Single Module (With Options)
     .. code-block:: bash  
 
         # connects to control port 1912
@@ -140,7 +146,7 @@ Gui
 Limitations
 -----------
 
-#. Data coming out of virtual server is fake. Value at each pixel/ channel is incremented by 1.
+#. Data coming out of virtual server is fake. 
 
 #. A stop will stop the virtual acquisition only at the start of every new frame.
 

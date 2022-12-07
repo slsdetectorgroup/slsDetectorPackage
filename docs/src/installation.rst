@@ -71,12 +71,12 @@ Build from source
     git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 6.1.1
 
 
-| **Pybind**
+| **Pybind for Python**
 | v7.0.0+:
 |   pybind11 packaged into 'libs/pybind'. No longer a submodule. No need for "recursive" or "submodule update".
 | 
 | Older versions:
-|   pybind11 is a submodule> Must be cloned using "recursive" and updated when switching between versions using the following commands.
+|   pybind11 is a submodule. Must be cloned using "recursive" and updated when switching between versions using the following commands.
 
 .. code-block:: bash
     
@@ -139,8 +139,8 @@ Example cmake options               Comment
 
 
 
-Build using in-build cmk.sh script
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Build using in-built cmk.sh script
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 .. code-block:: bash
@@ -185,6 +185,7 @@ Build using in-build cmk.sh script
     ./cmk.sh -bj5 -q /usr/lib64
 
 
+
 Build on old distributions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -204,8 +205,9 @@ using this compiler
     make -j12
 
 
+
 Build this documentation
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 The documentation for the slsDetectorPackage is build using a combination 
 of Doxygen, Sphinx and Breathe. The easiest way to install the dependencies
@@ -213,11 +215,15 @@ is to use conda
 
 .. code-block:: bash
 
-    conda create -n myenv python sphinx sphinx_rtd_theme
+    conda create -n myenv python sphinx_rtd_theme breathe
 
-Then enable the option SLS_BUILD_DOCS to create the targets
 
 .. code-block:: bash
+
+    # using cmake or ccmake to enable DSLS_BUILD_DOCS
+    # outside slsDetecorPackage folder
+    mkdir build && cd build
+    cmake ../slsDetectorPackage -DSLS_BUILD_DOCS=ON
 
     make docs # generate API docs and build Sphinx RST
     make rst # rst only, saves time in case the API did not change

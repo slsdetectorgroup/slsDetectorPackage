@@ -15,9 +15,10 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         1.5.    Detector Server
         1.6.    Simulator
         1.7.    Receiver
-    2.          Firmware Requirements
-    3.          Kernel Requirements
-    4.          Download, Documentation & Support
+    2.          On-board Detector Server Compatibility
+    3.          Firmware Requirements
+    4.          Kernel Requirements
+    5.          Download, Documentation & Support
 
 
 
@@ -816,60 +817,80 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
+
+2.  On-board Detector Server Compatibility
+==========================================
+
+
+    Eiger       7.0.0
+    Jungfrau    7.0.0
+    Mythen3     7.0.0
+    Gotthard2   7.0.0
+    Gotthard    7.0.0
+    Moench      7.0.0
+    Ctb         7.0.0
+    
+
+    On-board Detector Server Upgrade
+    --------------------------------
+
+    From v6.1.0 (without tftp):
+        Using command 'updatedetectorserver'
+    From 5.0.0 (with tftp):
+        Using command 'copydetectorserver'
+
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+
+
+
 3. Firmware Requirements
 ========================
 
 
-    G2 Firmware update to reverse channels of slaves.
-
-
-    Eiger
-    =====  
-    Compatible version : 08.10.2021 (v29)
+    Eiger       17.02.2022 (v30)
     
-    Jungfrau
-    ========       
-    Compatible version : 31.08.2021 (v1.2, PCB v1.0) 
-                       : 08.10.2021 (v2.2, PCB v2.0)
+    Jungfrau    21.04.2022?? (v1.4, HW v1.0) 
+                22.04.2022?? (v2.4, HW v2.0)
 
-    Gotthard
-    ========   
-    Compatible version : 08.02.2018 (50um and 25um Master)
-                       : 09.02.2018 (25 um Slave) 
+    Mythen3     24.08.2022 (v1.1+??)
 
-    Mythen3
-    =======
-    Compatible version : 10.09.2021 (v1.1)
+    Gotthard2   01.09.2022 (v0.1+??)
 
-    Gotthard2
-    =========
-    Compatible version : 27.05.2021 (v0.1)
+    Gotthard    08.02.2018 (50um and 25um Master)
+                09.02.2018 (25 um Slave) 
 
-    Moench
-    ======
-    Compatible version : 05.10.2020 (v1.0)
+    Moench      05.12.2022 (v0.3)
 
-    Ctb
-    ===
-    Compatible version : 05.10.2020 (v1.0)
+    Ctb         05.12.2022 (v1.0)
+
 
     Detector Upgrade
-    ================
+    ----------------
+
     The following can be upgraded remotely:
+
     Eiger      via bit files
     Jungfrau   via command <.pof>
     Mythen3    via command <.rbf>
-    Gotthard2  via command <.rbf> 
+    Gotthard2  via command <.rbf>
     Moench     via command <.pof>
     Ctb        via command <.pof>
 
-    The following cannot be upgraded remotely:
-    Gotthard   
+    Gotthard cannot be upgraded remotely  
+
+    Except Eiger, 
+        upgrade 
+            Using command 'programfpga' or
+
+        udpate both server and firmware simultaneously
+            Using command 'update'
+
 
     Instructions available at
         https://slsdetectorgroup.github.io/devdoc/firmware.html
-    and
-        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
 
 
 
@@ -900,6 +921,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
+
 5. Download, Documentation & Support
 ====================================
 
@@ -913,7 +935,10 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     -------------
     
     Installation:
-        https://slsdetectorgroup.github.io/devdoc/installation.html#
+        https://slsdetectorgroup.github.io/devdoc/installation.html
+
+    Quick Start Guide:
+        https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
         
     Firmware Upgrade:
         https://slsdetectorgroup.github.io/devdoc/firmware.html
@@ -933,9 +958,6 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     Command Line Documentation:
         https://slsdetectorgroup.github.io/devdoc/commandline.html
 
-    Quick Start Guide:
-        https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
-        
     C++ API Documentation:
         https://slsdetectorgroup.github.io/devdoc/detector.html
        
@@ -951,6 +973,10 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     Receivers (including custom receiver):
         https://slsdetectorgroup.github.io/devdoc/receivers.html
         https://slsdetectorgroup.github.io/devdoc/slsreceiver.html
+
+    Detector UDP Header:
+        https://slsdetectorgroup.github.io/devdoc/udpheader.html
+        https://slsdetectorgroup.github.io/devdoc/udpdetspec.html
 
     TroubleShooting:
         https://slsdetectorgroup.github.io/devdoc/troubleshooting.html

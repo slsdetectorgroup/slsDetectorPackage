@@ -61,7 +61,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     *   Qt5 and in-built compressed Qwt 6.1.5
-        Ported from Qt4 to Qt5. 
+        Ported from Qt4 to Qt5. Minimum requirement: Qt 5.9
         Compressed Qwt 6.1.5 added into the package in libs. It is unpacked and built
         as a static library.This allows us to remove qwt as an external dependency
         and reduces the risk of picking up the wrong version.
@@ -166,6 +166,10 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         reserved->detSpec2
         debug->detSpec3
         roundRnumber->detSpec4
+
+        Header version number stays the same in the UDP header as there is no
+        difference in the format from the detector. Only the structure memeber names
+        have changed in sls_detector_defs.h
 
         Further details about each detector specific field can be found at:
         https://slsdetectorgroup.github.io/devdoc/udpdetspec.html
@@ -851,19 +855,19 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
     Eiger       17.02.2022 (v30)
     
-    Jungfrau    21.04.2022?? (v1.4, HW v1.0) 
-                22.04.2022?? (v2.4, HW v2.0)
+    Jungfrau    04.11.2022 (v1.4, HW v1.0) 
+                03.11.2022 (v2.4, HW v2.0)
 
-    Mythen3     24.08.2022 (v1.1+??)
+    Mythen3     05.12.2022 (v1.4)
 
-    Gotthard2   01.09.2022 (v0.1+??)
+    Gotthard2   23.11.2022 (v0.3)
 
     Gotthard    08.02.2018 (50um and 25um Master)
                 09.02.2018 (25 um Slave) 
 
     Moench      05.12.2022 (v0.3)
 
-    Ctb         05.12.2022 (v1.0)
+    Ctb         05.12.2022 (v1.1)
 
 
     Detector Upgrade
@@ -980,6 +984,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
     TroubleShooting:
         https://slsdetectorgroup.github.io/devdoc/troubleshooting.html
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html#receiver-pc-tuning-options
         
     Further Documentation:
         https://www.psi.ch/en/detectors/documentation

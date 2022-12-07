@@ -854,7 +854,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     Jungfrau    21.04.2022?? (v1.4, HW v1.0) 
                 22.04.2022?? (v2.4, HW v2.0)
 
-    Mythen3     24.08.2022 (v1.1+??)
+    Mythen3     05.12.2022 (v1.4)
 
     Gotthard2   01.09.2022 (v0.1+??)
 
@@ -863,7 +863,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
     Moench      05.12.2022 (v0.3)
 
-    Ctb         05.12.2022 (v1.0)
+    Ctb         05.12.2022 (v1.1)
 
 
     Detector Upgrade

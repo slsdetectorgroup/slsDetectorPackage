@@ -89,13 +89,18 @@ Client Commands
 File format
 --------------
 
-* The file name format is [fpath]/[fname]_dx_fy_[findex].raw, where x is module index and y is file index. **fname** is file name prefix and by default "run". **fpath** is '/' by default.
+Master file is in json format.
 
-* Each acquisition will have an increasing acquisition index or findex (if file write enabled). This can be retrieved by using **findex** command. 
+The file name format is [fpath]/[fname]_dx_fy_[findex].raw, where x is module index and y is file index. **fname** is file name prefix and by default "run". **fpath** is '/' by default.
 
-* Each acquisition can have multiple files (the file index number **y**), with **rx_framesperfile** being the maximum number of frames per file. The default varies for each detector type.
 
-* Some file name examples:
+Each acquisition will have an increasing acquisition index or findex (if file write enabled). This can be retrieved by using **findex** command. 
+
+
+Each acquisition can have multiple files (the file index number **y**), with **rx_framesperfile** being the maximum number of frames per file. The default varies for each detector type.
+
+
+Some file name examples:
 
     .. code-block:: bash
 
@@ -108,17 +113,21 @@ File format
         # second acquisition, first file
         path-to-file/run_d0_f0_1.raw
 
-* Each acquisition will create a master file that can be enabled/disabled using **fmaster**. This should have parameters relevant to the acquisition.
 
-* SLS Receiver Header consist of SLS Detector Header + 64 bytes of bitmask, altogether 112 bytes. The packetNumber in the sls detector header part, will be updated to number of packets caught by receiver for that frame. Furthermore, the bit mask will specify which packets have been received.
+Each acquisition will create a master file that can be enabled/disabled using **fmaster**. This should have parameters relevant to the acquisition.
+
+
+SLS Receiver Header consist of SLS Detector Header + 64 bytes of bitmask, altogether 112 bytes. The packetNumber in the sls detector header part, will be updated to number of packets caught by receiver for that frame. Furthermore, the bit mask will specify which packets have been received.
 
 **Binary file format**
 
-* This is the default file format. 
+This is the default file format. 
 
-* Each data file will consist of frames, each consisting of slsReceiver Header followed by data for 1 frame.
 
-* Master file is of ASCII format and will also include the format of the slsReceiver Header.
+Each data file will consist of frames, each consisting of slsReceiver Header followed by data for 1 frame.
+
+
+Master file is of ASCII format and will also include the format of the slsReceiver Header.
 
 
 **HDF5 file formats**

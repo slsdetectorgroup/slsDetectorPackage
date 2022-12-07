@@ -1242,7 +1242,7 @@ class CmdProxy {
                 "\n\tOn-board detector server software version");
 
     GET_COMMAND(hardwareversion, getHardwareVersion,
-                "\n\tJungfrau][Gotthard2][Myhten3][Gotthard][Ctb] "
+                "\n\t[Jungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] "
                 "Hardware version of detector.");
 
     GET_COMMAND(
@@ -1599,7 +1599,7 @@ class CmdProxy {
         "data from detector. Default: 1.\n\tAlso enables second interface in "
         "receiver for listening (Writes a file per interface if writing "
         "enabled).\n\tAlso restarts client and receiver zmq sockets if zmq "
-        "streaming enabled.");
+        "streaming enabled.\n\t[Eiger] Only gets with result 2.");
 
     INTEGER_COMMAND_VEC_ID(
         selinterface, getSelectedUDPInterface, selectUDPInterface,

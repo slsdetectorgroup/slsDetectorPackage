@@ -466,16 +466,32 @@ class Detector(CppDetectorApi):
         -----
         [Mythen3] sets exposure time to all gate signals in auto and trigger mode (internal gating). To specify gateIndex, use getExptime or setExptime.
         
-        :getter: always returns in seconds. To get in datetime.delta, use getExptime
+        :getter: always returns in seconds. To get in DurationWrapper, use getExptime
 
         Example
         -----------
+        >>> # setting directly in seconds
         >>> d.exptime = 1.05
-        >>> d.exptime = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>> 
+        >>> # using timedelta (up to microseconds precision)
+        >>> from datatime import timedelta
+        >>> d.exptime = timedelta(seconds = 1, microseconds = 3)
+        >>> 
+        >>> # using DurationWrapper to set in seconds
+        >>> from slsdet import DurationWrapper
+        >>> d.exptime = DurationWrapper(1.2)
+        >>> 
+        >>> # using DurationWrapper to set in ns
+        >>> t = DurationWrapper()
+        >>> t.set_count(500)
+        >>> d.exptime = t
+        >>>
+        >>> # to get in seconds
         >>> d.exptime
         181.23
+        >>> 
         >>> d.getExptime()
-        [datetime.timedelta(seconds=181, microseconds=230000)]
+        [sls::DurationWrapper(total_seconds: 1e-08 count: 10)]
         """
         if self.type == detectorType.MYTHEN3:
             res = self.getExptimeForAllGates()

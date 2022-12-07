@@ -663,7 +663,7 @@ class Detector {
      *                                                 *
      * ************************************************/
 
-    /** [Jungfrau][Moench][Gotthard2] */
+    /** [Jungfrau][Moench][Gotthard2][Eiger] */
     Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
 
     /** [Jungfrau][Moench][Gotthard2]  Number of udp interfaces to stream data from

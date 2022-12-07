@@ -527,7 +527,7 @@ for idx, i in enumerate(range(nbiteff)):
                            linestyle=linestyles_loop[2], color=colors_loop[2], alpha=alpha_loop[2],
                            label="loop 2: " + str(nloop2) + " times" if idx == 0 else "", linewidth=2.0)
             axs2[idx].plot([loop2_end, loop2_end], [-10, 10],
-                           linestyle=linestyles_loop[0], color=colors_loop[0], alpha=alpha_loop[2], linewidth=2.0)
+                           linestyle=linestyles_loop[2], color=colors_loop[2], alpha=alpha_loop[2], linewidth=2.0)
 
     # Loop 3
     if nloop3 is not None:

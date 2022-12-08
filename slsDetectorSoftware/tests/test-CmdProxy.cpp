@@ -123,7 +123,6 @@ TEST_CASE("hardwareversion", "[.cmd]") {
     } else {
         REQUIRE_THROWS(proxy.Call("hardwareversion", {"0"}, -1, PUT));
         REQUIRE_THROWS(proxy.Call("hardwareversion", {}, -1, GET));
-
     }
 }
 
@@ -565,13 +564,14 @@ TEST_CASE("fliprows", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     bool jungfrauhw2 = false;
     if (det_type == defs::JUNGFRAU &&
-        ((det.getHardwareVersion().tsquash("inconsistent serial number to test")
-          == "2.0"))) {
+        ((det.getHardwareVersion().tsquash(
+              "inconsistent serial number to test") == "2.0"))) {
         jungfrauhw2 = true;
     }
     if (det_type == defs::EIGER || jungfrauhw2) {
         auto previous = det.getFlipRows();
-        auto previous_numudp = det.getNumberofUDPInterfaces().tsquash("inconsistent number of udp interfaces to test");
+        auto previous_numudp = det.getNumberofUDPInterfaces().tsquash(
+            "inconsistent number of udp interfaces to test");
         if (det_type == defs::JUNGFRAU) {
             det.setNumberofUDPInterfaces(2);
         }
@@ -1651,8 +1651,8 @@ TEST_CASE("readnrows", "[.cmd]") {
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
         bool jungfrauhw2 = false;
         if (det_type == defs::JUNGFRAU &&
-            ((det.getHardwareVersion().tsquash("inconsistent hardware version number to test") 
-             == "2.0"))) {
+            ((det.getHardwareVersion().tsquash(
+                  "inconsistent hardware version number to test") == "2.0"))) {
             jungfrauhw2 = true;
         }
         if (det_type == defs::JUNGFRAU && !jungfrauhw2) {
@@ -2303,33 +2303,35 @@ TEST_CASE("scan", "[.cmd]") {
     // auto notImplementedPrevious = det.getDAC(notImplementedInd, false);
 
     if (det_type == defs::MYTHEN3 && det.size() > 1) {
-        ;// scan only allowed for single module due to sync
+        ; // scan only allowed for single module due to sync
     } else {
         {
             std::ostringstream oss;
-            proxy.Call("scan", {ToString(ind), "500", "1500", "500"}, -1, PUT, oss);
-            CHECK(oss.str() == "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("scan", {}, -1, GET, oss);
-            CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
-                                "\nstart 500\nstop 1500\nstep "
-                                "500\nsettleTime 1ms\n]\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("scan", {ToString(ind), "500", "1500", "500", "2s"}, -1, PUT,
-                    oss);
+            proxy.Call("scan", {ToString(ind), "500", "1500", "500"}, -1, PUT,
+                       oss);
             CHECK(oss.str() ==
-                "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
+                  "scan [" + ToString(ind) + ", 500, 1500, 500]\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("scan", {}, -1, GET, oss);
             CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
-                                "\nstart 500\nstop 1500\nstep "
-                                "500\nsettleTime 2s\n]\n");
+                                   "\nstart 500\nstop 1500\nstep "
+                                   "500\nsettleTime 1ms\n]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("scan", {ToString(ind), "500", "1500", "500", "2s"}, -1,
+                       PUT, oss);
+            CHECK(oss.str() ==
+                  "scan [" + ToString(ind) + ", 500, 1500, 500, 2s]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("scan", {}, -1, GET, oss);
+            CHECK(oss.str() == "scan [enabled\ndac " + ToString(ind) +
+                                   "\nstart 500\nstop 1500\nstep "
+                                   "500\nsettleTime 2s\n]\n");
         }
         {
             std::ostringstream oss;
@@ -2344,13 +2346,15 @@ TEST_CASE("scan", "[.cmd]") {
         {
             std::ostringstream oss;
             proxy.Call("scan", {ToString(ind), "1500", "500", "-500"}, -1, PUT,
-                    oss);
-            CHECK(oss.str() == "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
+                       oss);
+            CHECK(oss.str() ==
+                  "scan [" + ToString(ind) + ", 1500, 500, -500]\n");
         }
         CHECK_THROWS(proxy.Call(
-            "scan", {ToString(notImplementedInd), "500", "1500", "500"}, -1, PUT));
-        CHECK_THROWS(
-            proxy.Call("scan", {ToString(ind), "500", "1500", "-500"}, -1, PUT));
+            "scan", {ToString(notImplementedInd), "500", "1500", "500"}, -1,
+            PUT));
+        CHECK_THROWS(proxy.Call("scan", {ToString(ind), "500", "1500", "-500"},
+                                -1, PUT));
         CHECK_THROWS(
             proxy.Call("scan", {ToString(ind), "1500", "500", "500"}, -1, PUT));
 
@@ -2358,15 +2362,15 @@ TEST_CASE("scan", "[.cmd]") {
             {
                 std::ostringstream oss;
                 proxy.Call("scan", {"trimbits", "0", "63", "16", "2s"}, -1, PUT,
-                        oss);
+                           oss);
                 CHECK(oss.str() == "scan [trimbits, 0, 63, 16, 2s]\n");
             }
             {
                 std::ostringstream oss;
                 proxy.Call("scan", {}, -1, GET, oss);
                 CHECK(oss.str() ==
-                    "scan [enabled\ndac trimbits\nstart 0\nstop 48\nstep "
-                    "16\nsettleTime 2s\n]\n");
+                      "scan [enabled\ndac trimbits\nstart 0\nstop 48\nstep "
+                      "16\nsettleTime 2s\n]\n");
             }
         }
 
@@ -2416,7 +2420,7 @@ TEST_CASE("numinterfaces", "[.cmd]") {
             REQUIRE(oss.str() == "numinterfaces 1\n");
         }
         det.setNumberofUDPInterfaces(prev_val);
-    } else  if (det_type == defs::EIGER) {
+    } else if (det_type == defs::EIGER) {
         REQUIRE_THROWS(proxy.Call("numinterfaces", {"1"}, -1, PUT));
         {
             std::ostringstream oss;
@@ -2750,7 +2754,8 @@ TEST_CASE("txdelay", "[.cmd]") {
         det_type == defs::MYTHEN3) {
 
         // cannot get transmission delay with just one module
-        if ((det_type == defs::JUNGFRAU || det_type == defs::MYTHEN3) && (det.size() < 2)) {
+        if ((det_type == defs::JUNGFRAU || det_type == defs::MYTHEN3) &&
+            (det.size() < 2)) {
             REQUIRE_THROWS(proxy.Call("txdelay", {}, -1, GET));
             int val = 5;
             std::string sval = std::to_string(val);
@@ -2759,7 +2764,7 @@ TEST_CASE("txdelay", "[.cmd]") {
                 proxy.Call("txdelay", {sval}, -1, PUT, oss1);
                 REQUIRE(oss1.str() == "txdelay " + sval + "\n");
             }
-    }
+        }
 
         else {
             Result<int> prev_left, prev_right;
@@ -2930,10 +2935,9 @@ TEST_CASE("resetfpga", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
         det_type == defs::MOENCH) {
-        // reset will also reset udp info from config file (comment out for invdividual tests)
-        // std::ostringstream oss;
-        // proxy.Call("resetfpga", {}, -1, PUT, oss);
-        // REQUIRE(oss.str() == "resetfpga successful\n");
+        // reset will also reset udp info from config file (comment out for
+        // invdividual tests) std::ostringstream oss; proxy.Call("resetfpga",
+        // {}, -1, PUT, oss); REQUIRE(oss.str() == "resetfpga successful\n");
         REQUIRE_THROWS(proxy.Call("resetfpga", {}, -1, GET));
     } else {
         REQUIRE_THROWS(proxy.Call("resetfpga", {}, -1, GET));

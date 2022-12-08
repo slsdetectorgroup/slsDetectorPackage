@@ -3,8 +3,8 @@
 #include "CmdProxy.h"
 #include "catch.hpp"
 #include "sls/Detector.h"
-#include "sls/sls_detector_defs.h"
 #include "sls/Version.h"
+#include "sls/sls_detector_defs.h"
 #include <sstream>
 
 #include "sls/versionAPI.h"
@@ -130,7 +130,7 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
     det.setFileWrite(false); // avoid writing or error on file creation
     CmdProxy proxy(&det);
     auto prev_frames =
-            det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
     det.setNumberOfFrames(100);
     {
         // some missing packets
@@ -798,7 +798,8 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val_zmqport = det.getRxZmqPort();
-    auto prev_val_numinterfaces = det.getNumberofUDPInterfaces().tsquash("inconsistent number of udp interfaces to test");
+    auto prev_val_numinterfaces = det.getNumberofUDPInterfaces().tsquash(
+        "inconsistent number of udp interfaces to test");
 
     int socketsperdetector = 1;
     auto det_type = det.getDetectorType().squash();

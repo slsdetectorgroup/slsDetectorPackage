@@ -428,8 +428,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
         }
     }
     impl()->setTimingMode(arg.timMode);
-    if (detType == EIGER || detType == CHIPTESTBOARD ||
-        detType == MYTHEN3) {
+    if (detType == EIGER || detType == CHIPTESTBOARD || detType == MYTHEN3) {
         try {
             impl()->setTenGigaEnable(arg.tenGiga);
         } catch (const RuntimeError &e) {
@@ -939,8 +938,7 @@ int ClientInterface::get_overwrite(Interface &socket) {
 
 int ClientInterface::enable_tengiga(Interface &socket) {
     auto val = socket.Receive<int>();
-    if (detType != EIGER && detType != CHIPTESTBOARD &&
-        detType != MYTHEN3)
+    if (detType != EIGER && detType != CHIPTESTBOARD && detType != MYTHEN3)
         functionNotImplemented();
 
     if (val >= 0) {
@@ -1467,7 +1465,8 @@ int ClientInterface::set_udp_port(Interface &socket) {
 int ClientInterface::set_udp_port2(Interface &socket) {
     auto arg = socket.Receive<int>();
     verifyIdle(socket);
-    if (detType != JUNGFRAU && detType != MOENCH && detType != EIGER && detType != GOTTHARD2) {
+    if (detType != JUNGFRAU && detType != MOENCH && detType != EIGER &&
+        detType != GOTTHARD2) {
         throw RuntimeError(
             "UDP Destination Port2 not implemented for this detector");
     }

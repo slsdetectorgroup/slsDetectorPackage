@@ -99,10 +99,11 @@ void basictests() {
     }
     // works currenly only for hw2.0
     if (isHardwareVersion_1_0()) {
-        strcpy(initErrorMessage, "HW v1.0 not supported yet. Please use HW v2.0\n");
+        strcpy(initErrorMessage,
+               "HW v1.0 not supported yet. Please use HW v2.0\n");
         LOG(logERROR, ("%s\n\n", initErrorMessage));
         initError = FAIL;
-        return;        
+        return;
     }
 #endif
     char hversion[MAX_STR_LENGTH] = {0};
@@ -190,9 +191,8 @@ int checkType() {
     u_int32_t type =
         ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
     if (type != MOENCH) {
-        LOG(logERROR,
-            ("This is not a Moench firmware (read %d, expected %d)\n", type,
-             MOENCH));
+        LOG(logERROR, ("This is not a Moench firmware (read %d, expected %d)\n",
+                       type, MOENCH));
         return FAIL;
     }
 
@@ -518,7 +518,8 @@ void setupDetector() {
     resetCore();
 
     alignDeserializer();
-    //configureASICTimer(); ASIC_CTRL_REG to be removed along with storage cell delay
+    // configureASICTimer(); ASIC_CTRL_REG to be removed along with storage cell
+    // delay
     bus_w(ADC_PORT_INVERT_REG,
           (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
                                    : ADC_PORT_INVERT_VAL));
@@ -2603,8 +2604,8 @@ void *start_timer(void *arg) {
     int numFrames = (getNumFrames() * getNumTriggers() *
                      (getNumAdditionalStorageCells() + 1));
     int64_t expUs = getExpTime() / 1000;
-    const int maxPacketsPerFrame = (MAX_ROWS_PER_READOUT/ROWS_PER_PACKET);
-    const int dataSize = (DATA_BYTES/maxPacketsPerFrame);
+    const int maxPacketsPerFrame = (MAX_ROWS_PER_READOUT / ROWS_PER_PACKET);
+    const int dataSize = (DATA_BYTES / maxPacketsPerFrame);
     const int packetsize = dataSize + sizeof(sls_detector_header);
     const int maxRows = MAX_ROWS_PER_READOUT;
     int readNRows = getReadNRows();

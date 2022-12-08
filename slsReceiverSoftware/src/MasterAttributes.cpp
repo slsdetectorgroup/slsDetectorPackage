@@ -636,7 +636,7 @@ void MasterAttributes::GetMoenchBinaryAttributes(
 
 #ifdef HDF5C
 void MasterAttributes::WriteMoenchuHDF5Attributes(H5::H5File *fd,
-                                                   H5::Group *group) {
+                                                  H5::Group *group) {
     MasterAttributes::WriteHDF5Exptime(fd, group);
     MasterAttributes::WriteHDF5Period(fd, group);
     MasterAttributes::WriteHDF5NumUDPInterfaces(fd, group);

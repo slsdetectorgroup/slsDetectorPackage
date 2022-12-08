@@ -13,8 +13,8 @@
 #define HARDWARE_VERSION_NAMES                                                 \
     { "1.0", "2.0" }
 
-#define ID_FILE             ("detid_moench.txt")
-#define CONFIG_FILE         ("config_moench.txt")
+#define ID_FILE            ("detid_moench.txt")
+#define CONFIG_FILE        ("config_moench.txt")
 #define LINKED_SERVER_NAME "moenchDetectorServer"
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
@@ -52,11 +52,11 @@
 #define DEFAULT_FILTER_RESISTOR       (1) // higher resistor
 #define DEFAULT_FILTER_CELL           (0)
 
-#define HIGHVOLTAGE_MIN      (60)
-#define HIGHVOLTAGE_MAX      (200)
-#define DAC_MIN_MV           (0)
-#define DAC_MAX_MV           (2500)
-#define MAX_FILTER_CELL_VAL  (12)
+#define HIGHVOLTAGE_MIN     (60)
+#define HIGHVOLTAGE_MAX     (200)
+#define DAC_MIN_MV          (0)
+#define DAC_MAX_MV          (2500)
+#define MAX_FILTER_CELL_VAL (12)
 
 #define READ_N_ROWS_MULTIPLE (16) // 400 rows/50packets * 2 interfaces
 #define MIN_ROWS_PER_READOUT (16)

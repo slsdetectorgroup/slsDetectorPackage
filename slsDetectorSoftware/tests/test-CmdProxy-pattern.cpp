@@ -23,8 +23,7 @@ TEST_CASE("pattern", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         // no proper test for put
         REQUIRE_THROWS(proxy.Call("pattern", {}, -1, GET));
     } else {
@@ -36,8 +35,7 @@ TEST_CASE("savepattern", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         REQUIRE_THROWS(
             proxy.Call("savepattern", {"/tmp/pattern.txt"}, -1, GET));
         if (det.size() == 1) {
@@ -98,8 +96,7 @@ TEST_CASE("patword", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         int addr = 0x23;
         std::string saddr = ToStringHex(addr, 4);
         auto prev_val = det.getPatternWord(addr);
@@ -134,8 +131,7 @@ TEST_CASE("patlimits", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         auto prev_val = det.getPatternLoopAddresses(-1);
         {
             std::ostringstream oss;
@@ -161,8 +157,7 @@ TEST_CASE("patloop", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         for (int iLoop = 0; iLoop != MAX_PATTERN_LEVELS; ++iLoop) {
             // m3 only has 3 levels
             if (det_type == defs::MYTHEN3 && iLoop >= 3) {
@@ -208,8 +203,7 @@ TEST_CASE("patnloop", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         for (int iLoop = 0; iLoop != MAX_PATTERN_LEVELS; ++iLoop) {
             // m3 only has 3 levels
             if (det_type == defs::MYTHEN3 && iLoop >= 3) {
@@ -254,8 +248,7 @@ TEST_CASE("patwait", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         for (int iLoop = 0; iLoop != MAX_PATTERN_LEVELS; ++iLoop) {
             // m3 only has 3 levels
             if (det_type == defs::MYTHEN3 && iLoop >= 3) {
@@ -300,8 +293,7 @@ TEST_CASE("patwaittime", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         for (int iLoop = 0; iLoop != MAX_PATTERN_LEVELS; ++iLoop) {
             // m3 only has 3 levels
             if (det_type == defs::MYTHEN3 && iLoop >= 3) {
@@ -346,8 +338,7 @@ TEST_CASE("patmask", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         auto prev_val = det.getPatternMask();
         {
             std::ostringstream oss;
@@ -372,8 +363,7 @@ TEST_CASE("patsetbit", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
         auto prev_val = det.getPatternBitMask();
         {
             std::ostringstream oss;

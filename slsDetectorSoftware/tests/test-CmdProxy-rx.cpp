@@ -948,7 +948,6 @@ TEST_CASE("rx_dbitoffset", "[.cmd][.rx]") {
     }
 }
 
-
 TEST_CASE("rx_jsonaddheader", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);

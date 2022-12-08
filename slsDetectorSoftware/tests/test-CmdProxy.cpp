@@ -149,7 +149,8 @@ TEST_CASE("moduleid", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3 ||
-        det_type == defs::EIGER || det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+        det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH) {
         REQUIRE_NOTHROW(proxy.Call("moduleid", {}, -1, GET));
     } else {
         REQUIRE_THROWS(proxy.Call("moduleid", {}, -1, GET));
@@ -516,7 +517,8 @@ TEST_CASE("gappixels", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::EIGER) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::EIGER) {
         auto prev_val = det.getGapPixelsinCallback();
         {
             std::ostringstream oss;
@@ -989,12 +991,12 @@ TEST_CASE("readoutspeed", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::GOTTHARD2) {
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH || det_type == defs::GOTTHARD2) {
         auto prev_val = det.getReadoutSpeed();
 
-        // full speed for jungfrau/moench only works for new boards (chipv1.1 is with
-        // new board [hw1.0 and chipv1.0 not tested here])
+        // full speed for jungfrau/moench only works for new boards (chipv1.1 is
+        // with new board [hw1.0 and chipv1.0 not tested here])
         if (((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
              det.getChipVersion().squash() * 10 == 11) ||
             (det_type == defs::EIGER)) {
@@ -1009,7 +1011,8 @@ TEST_CASE("readoutspeed", "[.cmd]") {
             REQUIRE(oss4.str() == "readoutspeed full_speed\n");
         }
 
-        if (det_type == defs::EIGER || det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+        if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+            det_type == defs::MOENCH) {
             {
                 std::ostringstream oss1, oss2, oss3, oss4;
                 proxy.Call("readoutspeed", {"1"}, -1, PUT, oss1);
@@ -1074,8 +1077,8 @@ TEST_CASE("readoutspeedlist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::EIGER) {
+    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH || det_type == defs::EIGER) {
         REQUIRE_NOTHROW(proxy.Call("readoutspeedlist", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("readoutspeedlist", {}, -1, PUT));
     } else {
@@ -1087,8 +1090,8 @@ TEST_CASE("adcphase", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::GOTTHARD || det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::GOTTHARD || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD) {
         if (det_type == defs::GOTTHARD) {
             std::ostringstream oss1;
             proxy.Call("adcphase", {"20"}, -1, PUT, oss1);
@@ -1126,7 +1129,8 @@ TEST_CASE("maxadcphaseshift", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::CHIPTESTBOARD ||
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD ||
         det_type == defs::MYTHEN3 ||   // only because clk index of 0 exists
         det_type == defs::GOTTHARD2) { // only because clk index of 0 exists
         REQUIRE_NOTHROW(proxy.Call("maxadcphaseshift", {}, -1, GET));
@@ -1139,7 +1143,8 @@ TEST_CASE("dbitphase", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD) {
         auto prev_val = det.getDBITPhase();
         {
             std::ostringstream oss1, oss2;
@@ -1168,7 +1173,8 @@ TEST_CASE("maxdbitphaseshift", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::CHIPTESTBOARD ||
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD ||
         det_type == defs::MYTHEN3 ||   // only because clk index of 0 exists
         det_type == defs::GOTTHARD2) { // only because clk index of 0 exists
         REQUIRE_NOTHROW(proxy.Call("maxdbitphaseshift", {}, -1, GET));
@@ -1293,7 +1299,8 @@ TEST_CASE("highvoltage", "[.cmd]") {
         }
     }
     // range 0, 60 - 200
-    else if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::CHIPTESTBOARD) {
+    else if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+             det_type == defs::CHIPTESTBOARD) {
         REQUIRE_THROWS(proxy.Call("highvoltage", {"50"}, -1, PUT));
         {
             std::ostringstream oss1, oss2;
@@ -1371,8 +1378,8 @@ TEST_CASE("powerchip", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
         auto prev_val = det.getPowerChip();
         {
             std::ostringstream oss;
@@ -1421,7 +1428,8 @@ TEST_CASE("imagetest", "[.cmd]") {
         for (int i = 0; i != det.size(); ++i) {
             det.setImageTestMode(prev_val[i], {i});
         }
-    } else if (det_type != defs::JUNGFRAU && det_type != defs::MOENCH && det_type != defs::EIGER) {
+    } else if (det_type != defs::JUNGFRAU && det_type != defs::MOENCH &&
+               det_type != defs::EIGER) {
         // wont fail for eiger and jungfrau/moench virtual servers
         REQUIRE_THROWS(proxy.Call("imagetest", {}, -1, GET));
     }
@@ -1635,7 +1643,8 @@ TEST_CASE("readnrows", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH) {
         bool hw2 = false;
         if ((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
             ((det.getHardwareVersion().tsquash(
@@ -1687,7 +1696,8 @@ TEST_CASE("currentsource", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::GOTTHARD2 || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH) {
         auto prev_val = det.getCurrentSource();
 
         if (det_type == defs::GOTTHARD2) {
@@ -1839,7 +1849,8 @@ TEST_CASE("temp_adc", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::GOTTHARD) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::GOTTHARD) {
         REQUIRE_NOTHROW(proxy.Call("temp_adc", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_adc", {}, 0, GET, oss));
@@ -1971,7 +1982,8 @@ TEST_CASE("trigger", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::MYTHEN3) {
         REQUIRE_NOTHROW(proxy.Call("trigger", {}, -1, PUT));
-    } else if (det_type == defs::EIGER || det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    } else if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+               det_type == defs::MOENCH) {
         auto prev_timing =
             det.getTimingMode().tsquash("inconsistent timing mode in test");
         auto prev_frames =
@@ -2011,7 +2023,8 @@ TEST_CASE("blockingtrigger", "[.cmd]") {
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("blockingtrigger", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH) {
         auto prev_timing =
             det.getTimingMode().tsquash("inconsistent timing mode in test");
         auto prev_frames =
@@ -2184,8 +2197,8 @@ TEST_CASE("nextframenumber", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD) {
         auto prev_sfnum = det.getNextFrameNumber();
         REQUIRE_THROWS(proxy.Call("nextframenumber", {"0"}, -1, PUT));
         {
@@ -2421,7 +2434,6 @@ TEST_CASE("numinterfaces", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("numinterfaces", {"0"}, -1, PUT));
 }
 
-
 TEST_CASE("udp_srcip", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -2441,8 +2453,9 @@ TEST_CASE("udp_dstlist", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::EIGER ||
-        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
         REQUIRE_NOTHROW(proxy.Call("udp_dstlist", {}, 0, GET, std::cout, 0));
         REQUIRE_THROWS(proxy.Call(
             "udp_dstlist", {"ip=0.0.0.0", "mac=00:00:00:00:00:00", "port=1233"},
@@ -2456,8 +2469,9 @@ TEST_CASE("udp_numdst", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::EIGER ||
-        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::EIGER || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
         REQUIRE_NOTHROW(proxy.Call("udp_numdst", {}, -1, GET));
     } else {
         REQUIRE_THROWS(proxy.Call("udp_numdst", {}, -1, GET));
@@ -2476,8 +2490,8 @@ TEST_CASE("udp_firstdst", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
         auto prev_val = det.getFirstUDPDestination();
         {
             std::ostringstream oss;
@@ -2553,7 +2567,8 @@ TEST_CASE("udp_srcip2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::GOTTHARD2) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::GOTTHARD2) {
         auto prev_val = det.getSourceUDPIP2();
         REQUIRE_THROWS(proxy.Call("udp_srcip2", {"0.0.0.0"}, -1, PUT));
         {
@@ -2574,7 +2589,8 @@ TEST_CASE("udp_dstip2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::GOTTHARD2) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::GOTTHARD2) {
         REQUIRE_THROWS(proxy.Call("udp_dstip2", {"0.0.0.0"}, -1, PUT));
     } else {
         REQUIRE_THROWS(proxy.Call("udp_dstip2", {}, -1, GET));
@@ -2585,7 +2601,8 @@ TEST_CASE("udp_srcmac2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::GOTTHARD2) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::GOTTHARD2) {
         auto prev_val = det.getSourceUDPMAC2();
         REQUIRE_THROWS(
             proxy.Call("udp_srcmac2", {"00:00:00:00:00:00"}, -1, PUT));
@@ -2608,7 +2625,8 @@ TEST_CASE("udp_dstmac2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::GOTTHARD2) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::GOTTHARD2) {
         REQUIRE_THROWS(
             proxy.Call("udp_dstmac2", {"00:00:00:00:00:00"}, -1, PUT));
     } else {
@@ -2620,8 +2638,8 @@ TEST_CASE("udp_dstport2", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::GOTTHARD2 ||
-        det_type == defs::EIGER) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::GOTTHARD2 || det_type == defs::EIGER) {
         auto prev_val = det.getDestinationUDPPort2();
         {
             std::ostringstream oss;
@@ -2679,7 +2697,8 @@ TEST_CASE("flowcontrol10g", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH) {
         auto prev_val = det.getTenGigaFlowControl();
         {
             std::ostringstream oss;
@@ -2708,11 +2727,12 @@ TEST_CASE("txdelay_frame", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3) {
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH || det_type == defs::MYTHEN3) {
         auto prev_val = det.getTransmissionDelayFrame();
         auto val = 5000;
-        if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::MYTHEN3) {
+        if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+            det_type == defs::MYTHEN3) {
             val = 5;
         }
         std::string sval = std::to_string(val);
@@ -2735,11 +2755,12 @@ TEST_CASE("txdelay", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::MYTHEN3) {
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH || det_type == defs::MYTHEN3) {
 
         // cannot get transmission delay with just one module
-        if ((det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::MYTHEN3) &&
+        if ((det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+             det_type == defs::MYTHEN3) &&
             (det.size() < 2)) {
             REQUIRE_THROWS(proxy.Call("txdelay", {}, -1, GET));
             int val = 5;
@@ -2761,7 +2782,8 @@ TEST_CASE("txdelay", "[.cmd]") {
             }
             auto prev_frame = det.getTransmissionDelayFrame();
             auto val = 5000;
-            if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH || det_type == defs::MYTHEN3) {
+            if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+                det_type == defs::MYTHEN3) {
                 val = 5;
             }
             std::string sval = std::to_string(val);
@@ -2902,8 +2924,8 @@ TEST_CASE("programfpga", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::JUNGFRAU || det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
         det_type == defs::GOTTHARD2) {
         // TODO program a real board?
         /// afs/psi.ch/project/sls_det_firmware/jungfrau_firmware/cyclone_V/v0_8/Jungfrau_MCB.pof
@@ -2934,8 +2956,8 @@ TEST_CASE("updatekernel", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3 ||
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
         det_type == defs::GOTTHARD2) {
         // TODO: send real server?
         // std::ostringstream oss;
@@ -2953,8 +2975,8 @@ TEST_CASE("rebootcontroller", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3 ||
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
         det_type == defs::GOTTHARD2 || det_type == defs::GOTTHARD) {
         // TODO: reboot real server?
         // REQUIRE_NOTHROW(proxy.Call("rebootcontroller", {}, -1, PUT));
@@ -2969,7 +2991,8 @@ TEST_CASE("update", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD) {
         // TODO: update real server and firmware?
         // REQUIRE_NOTHROW(proxy.Call("update",
         // {"jungfrauDetectorServerv4.0.1.0", "pc13784",
@@ -3012,8 +3035,8 @@ TEST_CASE("adcreg", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::GOTTHARD) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD || det_type == defs::GOTTHARD) {
         std::ostringstream oss;
         proxy.Call("adcreg", {"0x8", "0x3"}, -1, PUT, oss);
         REQUIRE(oss.str() == "adcreg [0x8, 0x3]\n");
@@ -3097,8 +3120,8 @@ TEST_CASE("firmwaretest", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH ||  det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::GOTTHARD ||
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD || det_type == defs::GOTTHARD ||
         det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
         std::ostringstream oss;
         proxy.Call("firmwaretest", {}, -1, PUT, oss);
@@ -3114,8 +3137,8 @@ TEST_CASE("bustest", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::GOTTHARD ||
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD || det_type == defs::GOTTHARD ||
         det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
         std::ostringstream oss;
         proxy.Call("bustest", {}, -1, PUT, oss);
@@ -3154,8 +3177,8 @@ TEST_CASE("adcinvert", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::JUNGFRAU ||
+        det_type == defs::MOENCH) {
         auto prev_val = det.getADCInvert();
         {
             std::ostringstream oss;
@@ -3245,8 +3268,8 @@ TEST_CASE("framecounter", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3 ||
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
         det_type == defs::GOTTHARD2) {
         auto framecounter = det.getNumberOfFramesFromStart().squash();
         std::ostringstream oss;
@@ -3264,8 +3287,8 @@ TEST_CASE("runtime", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3 ||
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
         det_type == defs::GOTTHARD2) {
         std::ostringstream oss;
         proxy.Call("runtime", {}, -1, GET, oss);
@@ -3282,8 +3305,8 @@ TEST_CASE("frametime", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU ||  det_type == defs::MOENCH || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MYTHEN3 ||
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
+        det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3 ||
         det_type == defs::GOTTHARD2) {
         std::ostringstream oss;
         proxy.Call("frametime", {}, -1, GET, oss);

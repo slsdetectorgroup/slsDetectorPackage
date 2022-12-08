@@ -14,7 +14,8 @@
  * @param prmsk pll reset mask
  * @param amsk address mask
  * @param aofst address offset
- * @param wd2msk write parameter mask for pll for dbit clock (Jungfrau/moench only)
+ * @param wd2msk write parameter mask for pll for dbit clock (Jungfrau/moench
+ * only)
  * @param clk2Index clkIndex of second pll (Jungfrau/moench only)
  */
 void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
@@ -50,8 +51,8 @@ void ALTERA_PLL_ResetPLLAndReconfiguration();
  * Set PLL Reconfig register
  * @param reg register
  * @param val value
- * @param useDefaultWRMask only jungfrau/moench for dbit clk (clkindex1, use second WR
- * mask)
+ * @param useDefaultWRMask only jungfrau/moench for dbit clk (clkindex1, use
+ * second WR mask)
  */
 void ALTERA_PLL_SetPllReconfigReg(uint32_t reg, uint32_t val,
                                   int useSecondWRMask);

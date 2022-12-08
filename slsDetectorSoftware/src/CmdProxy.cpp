@@ -516,7 +516,8 @@ std::string CmdProxy::GapPixels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[0, 1]\n\t[Eiger][Jungfrau][Moench] Include Gap pixels in client data "
+        os << "[0, 1]\n\t[Eiger][Jungfrau][Moench] Include Gap pixels in "
+              "client data "
               "call back in Detecor api. Will not be in detector streaming, "
               "receiver file or streaming. Default is 0. "
            << '\n';
@@ -591,7 +592,8 @@ std::string CmdProxy::Exptime(int action) {
     if (action == defs::HELP_ACTION) {
         if (cmd == "exptime") {
             os << "[duration] [(optional unit) "
-                  "ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2][Ctb] Exposure time"
+                  "ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard]["
+                  "Gotthard2][Ctb] Exposure time"
                   "\n\t[Mythen3] Exposure time of all gate signals in auto and "
                   "trigger mode (internal gating). To specify gate index, use "
                   "exptime1, exptime2, exptime3."
@@ -677,7 +679,8 @@ std::string CmdProxy::ReadoutSpeed(int action) {
         os << "\n\t[0 or full_speed|1 or half_speed|2 or "
               "quarter_speed]\n\t\t[Eiger][Jungfrau][Moench] Readout "
               "speed of chip.\n\t\t[Eiger] Default speed is full_speed."
-              "\n\t\t[Jungfrau][Moench] Default speed is half_speed. full_speed "
+              "\n\t\t[Jungfrau][Moench] Default speed is half_speed. "
+              "full_speed "
               "option only available from v2.0 boards and is recommended to "
               "set "
               "number of interfaces to 2. Also overwrites "
@@ -716,7 +719,8 @@ std::string CmdProxy::Adcphase(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[n_value] "
               "[(optional)deg]\n\t[Jungfrau][Moench][Ctb][Gotthard] "
-              "Phase shift of ADC clock. \n\t[Jungfrau][Moench] Absolute phase shift. "
+              "Phase shift of ADC clock. \n\t[Jungfrau][Moench] Absolute phase "
+              "shift. "
               "If deg used, then shift in degrees. Changing Speed also resets "
               "adcphase to recommended defaults.\n\t[Ctb] Absolute "
               "phase shift. If deg used, then shift in degrees. Changing "
@@ -771,7 +775,8 @@ std::string CmdProxy::Dbitphase(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_value] [(optional)deg]\n\t[Ctb][Jungfrau][Moench] Phase shift of "
+        os << "[n_value] [(optional)deg]\n\t[Ctb][Jungfrau][Moench] Phase "
+              "shift of "
               "clock to latch digital bits. Absolute phase shift. If deg used, "
               "then shift in degrees. \n\t[Ctb]Changing dbitclk also resets "
               "dbitphase and sets to previous values."
@@ -1008,7 +1013,8 @@ std::string CmdProxy::CurrentSource(int action) {
         os << "\n\t[0|1]\n\t\t[Gotthard2] Enable or disable current source. "
               "Default "
               "is disabled.\n\t[0|1] [fix|nofix] [select source] [(only for "
-              "chipv1.1)normal|low]\n\t\t[Jungfrau][Moench] Disable or enable current "
+              "chipv1.1)normal|low]\n\t\t[Jungfrau][Moench] Disable or enable "
+              "current "
               "source with some parameters. The select source is 0-63 for "
               "chipv1.0 and a 64 bit mask for chipv1.1. To disable, one needs "
               "only one argument '0'."
@@ -1288,7 +1294,8 @@ std::string CmdProxy::DefaultDac(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[dac name][value][(optional)setting]\n\tSets the default for "
-              "that dac to this value.\n\t[Jungfrau][Moench][Mythen3] When settings is "
+              "that dac to this value.\n\t[Jungfrau][Moench][Mythen3] When "
+              "settings is "
               "provided, it sets the default value only for that setting"
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -1431,10 +1438,12 @@ std::string CmdProxy::Trigger(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "trigger") {
-            os << "\n\t[Eiger][Mythen3][Jungfrau][Moench] Sends software trigger "
+            os << "\n\t[Eiger][Mythen3][Jungfrau][Moench] Sends software "
+                  "trigger "
                   "signal to detector";
         } else if (cmd == "blockingtrigger") {
-            os << "\n\t[Eiger][Jungfrau][Moench] Sends software trigger signal to "
+            os << "\n\t[Eiger][Jungfrau][Moench] Sends software trigger signal "
+                  "to "
                   "detector and blocks till the frames are sent out for that "
                   "trigger.";
         } else {
@@ -1523,7 +1532,8 @@ std::string CmdProxy::UDPDestinationList(int action) {
               "[(optional)mac2=xx:xx:xx:xx:xx:xx]\n\t[port=value] "
               "[(optional)port2=value\n\tThe order of ip, mac and port does "
               "not matter. entry_value can be >0 only for "
-              "[Eiger][Jungfrau][Moench][Mythen3][Gotthard2] where round robin is "
+              "[Eiger][Jungfrau][Moench][Mythen3][Gotthard2] where round robin "
+              "is "
               "implemented. If 'auto' used, then ip is set to ip of "
               "rx_hostname."
            << '\n';
@@ -1602,7 +1612,8 @@ std::string CmdProxy::UDPSourceIP2(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[x.x.x.x] or auto\n\t[Jungfrau][Moench][Gotthard2] Ip address of the "
+        os << "[x.x.x.x] or auto\n\t[Jungfrau][Moench][Gotthard2] Ip address "
+              "of the "
               "detector (source) udp interface 2. Must be same subnet as "
               "destination udp ip2.\n\t [Jungfrau][Moench] top half or inner "
               "interface\n\t [Gotthard2] veto debugging. If 'auto' used, then "
@@ -1674,7 +1685,8 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[x.x.x.x] or auto\n\t[Jungfrau][Moench][Gotthard2] Ip address of the "
+        os << "[x.x.x.x] or auto\n\t[Jungfrau][Moench][Gotthard2] Ip address "
+              "of the "
               "receiver (destination) udp interface 2. If 'auto' used, then ip "
               "is set to ip of rx_hostname.\n\t[Jungfrau][Moench] bottom half "
               "\n\t[Gotthard2] veto debugging. "
@@ -1710,7 +1722,8 @@ std::string CmdProxy::TransmissionDelay(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Set transmission delay "
+        os << "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Set "
+              "transmission delay "
               "for all modules in the detector using the step size "
               "provided.Sets up \n\t\t[Eiger] txdelay_left to (2 * mod_index * "
               "n_delay), \n\t\t[Eiger] txdelay_right to ((2 * mod_index + 1) * "
@@ -2057,7 +2070,8 @@ std::string CmdProxy::TemperatureEvent(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[0]\n\t[Jungfrau][Moench] 1, if a temperature event occured. To clear "
+        os << "[0]\n\t[Jungfrau][Moench] 1, if a temperature event occured. To "
+              "clear "
               "this event, set it to 0.\n\tIf temperature crosses threshold "
               "temperature and temperature control is enabled, power to chip "
               "will be switched off and temperature event occurs. To power on "
@@ -2958,7 +2972,6 @@ std::string CmdProxy::PatternWaitTime(int action) {
     return os.str();
 }
 
-
 std::string CmdProxy::AdditionalJsonHeader(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -3041,7 +3054,8 @@ std::string CmdProxy::ProgramFpga(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[fname.pof | fname.rbf (full "
-              "path)][(opitonal)--force-delete-normal-file]\n\t[Jungfrau][Moench][Ctb] "
+              "path)][(opitonal)--force-delete-normal-file]\n\t[Jungfrau]["
+              "Moench][Ctb] "
               "Programs FPGA from pof file (full path). Then, detector "
               "controller is rebooted. \n\t\tUse --force-delete-normal-file "
               "argument, if normal file found in device tree, it must be "

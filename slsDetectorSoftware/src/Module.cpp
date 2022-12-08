@@ -1242,7 +1242,8 @@ std::string Module::printReceiverConfiguration() {
            << "\nDestination UDP MAC2:\t" << getDestinationUDPMAC2();
     }
     os << "\nDestination UDP Port:\t" << getDestinationUDPPort();
-    if (shm()->detType == JUNGFRAU || shm()->detType == MOENCH || shm()->detType == EIGER) {
+    if (shm()->detType == JUNGFRAU || shm()->detType == MOENCH ||
+        shm()->detType == EIGER) {
         os << "\nDestination UDP Port2:\t" << getDestinationUDPPort2();
     }
     os << "\n";

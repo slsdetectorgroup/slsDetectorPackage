@@ -226,7 +226,8 @@ int getModuleIdInFile(int *ret, char *mess, char *fileName) {
     if (fd == NULL) {
 #if defined(JUNGFRAUD) || defined(MOENCHD)
         *ret = OK;
-        LOG(logWARNING, ("Could not find detid file to set module id. Continuing without.\n"));
+        LOG(logWARNING, ("Could not find detid file to set module id. "
+                         "Continuing without.\n"));
         return 0;
 #else
         *ret = FAIL;
@@ -484,7 +485,8 @@ int setupDetectorServer(char *mess, char *sname) {
 
     // blackfin boards (respawn) (only kept for backwards compatibility)
 #ifndef VIRTUAL
-#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) || defined(GOTTHARDD)
+#if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD) ||       \
+    defined(GOTTHARDD)
     // delete every line with DetectorServer in /etc/inittab
     strcpy(cmd, "sed -i '/DetectorServer/d' /etc/inittab");
     if (executeCommand(cmd, retvals, logDEBUG1) == FAIL) {

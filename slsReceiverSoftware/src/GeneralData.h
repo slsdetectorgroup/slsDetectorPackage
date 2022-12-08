@@ -595,5 +595,4 @@ class ChipTestBoardData : public GeneralData {
     };
 };
 
-
 } // namespace sls

@@ -88,8 +88,8 @@ class Detector {
     /* [Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][CTB] */
     Result<int64_t> getSerialNumber(Positions pos = {}) const;
 
-    /** [Eiger][Gotthard2][Mythen3][Jungfrau][Moench] 6 bit value (ideally unique) that
-     * is streamed out in the UDP header of the detector.*/
+    /** [Eiger][Gotthard2][Mythen3][Jungfrau][Moench] 6 bit value (ideally
+     * unique) that is streamed out in the UDP header of the detector.*/
     Result<int> getModuleId(Positions pos = {}) const;
 
     Result<std::string> getReceiverVersion(Positions pos = {}) const;
@@ -191,14 +191,15 @@ class Detector {
     Result<bool> getFlipRows(Positions pos = {}) const;
 
     /** [Eiger] flips rows paramater sent to slsreceiver to stream as json
-     * parameter to flip rows in gui \n[Jungfrau][Moench] flips rows in the detector
-     * itself.  For bottom module and number of interfaces must be set to 2.
-     * slsReceiver and slsDetectorGui does not handle.slsReceiver and
+     * parameter to flip rows in gui \n[Jungfrau][Moench] flips rows in the
+     * detector itself.  For bottom module and number of interfaces must be set
+     * to 2. slsReceiver and slsDetectorGui does not handle.slsReceiver and
      * slsDetectorGui does not handle
      */
     void setFlipRows(bool value, Positions pos = {});
 
-    /** [Eiger][Mythen3][Gotthard1][Gotthard2][Jungfrau][Moench] via stop server **/
+    /** [Eiger][Mythen3][Gotthard1][Gotthard2][Jungfrau][Moench] via stop server
+     * **/
     Result<bool> getMaster(Positions pos = {}) const;
 
     /** [Eiger][Gotthard2][Jungfrau][Moench] Set (half) module to master and the
@@ -336,12 +337,12 @@ class Detector {
     Result<defs::speedLevel> getReadoutSpeed(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau][Moench][Gotthard2]
-     * [Jungfrau][Moench] Options: FULL_SPEED, HALF_SPEED (Default), QUARTER_SPEED \n
-     * [Eiger] Options: FULL_SPEED (Default), HALF_SPEED, QUARTER_SPEED \n
-     * [Gotthard2] Options: G2_108MHZ (Default), G2_144MHZ \n
-     * [Jungfrau][Moench] FULL_SPEED option only available from v2.0 boards and is
-     * recommended to set number of interfaces to 2. \n Also overwrites adcphase
-     * to recommended default.
+     * [Jungfrau][Moench] Options: FULL_SPEED, HALF_SPEED (Default),
+     * QUARTER_SPEED \n [Eiger] Options: FULL_SPEED (Default), HALF_SPEED,
+     * QUARTER_SPEED \n [Gotthard2] Options: G2_108MHZ (Default), G2_144MHZ \n
+     * [Jungfrau][Moench] FULL_SPEED option only available from v2.0 boards and
+     * is recommended to set number of interfaces to 2. \n Also overwrites
+     * adcphase to recommended default.
      */
     void setReadoutSpeed(defs::speedLevel value, Positions pos = {});
 
@@ -352,11 +353,10 @@ class Detector {
     Result<int> getADCPhase(Positions pos = {}) const;
 
     /** [Gotthard][Jungfrau][Moench][CTB]
-     * [Jungfrau][Moench] Absolute phase shift. Changing Speed also resets adcphase to
-     * recommended defaults. \n
-     * [Ctb] Absolute phase shift. Changing adcclk also resets adcphase
-     * and sets it to previous values. \n
-     * [Gotthard] Relative phase shift
+     * [Jungfrau][Moench] Absolute phase shift. Changing Speed also resets
+     * adcphase to recommended defaults. \n [Ctb] Absolute phase shift. Changing
+     * adcclk also resets adcphase and sets it to previous values. \n [Gotthard]
+     * Relative phase shift
      */
     void setADCPhase(int value, Positions pos = {});
 
@@ -367,11 +367,10 @@ class Detector {
     Result<int> getADCPhaseInDegrees(Positions pos = {}) const;
 
     /** [Gotthard][Jungfrau][Moench][CTB]
-     * [Jungfrau][Moench] Absolute phase shift. Changing Speed also resets adcphase to
-     * recommended defaults. \n
-     * [Ctb] Absolute phase shift. Changing adcclk also resets adcphase
-     * and sets it to previous values. \n
-     * [Gotthard] Relative phase shift
+     * [Jungfrau][Moench] Absolute phase shift. Changing Speed also resets
+     * adcphase to recommended defaults. \n [Ctb] Absolute phase shift. Changing
+     * adcclk also resets adcphase and sets it to previous values. \n [Gotthard]
+     * Relative phase shift
      */
     void setADCPhaseInDegrees(int value, Positions pos = {});
 
@@ -432,8 +431,8 @@ class Detector {
 
     /** [Jungfrau][Moench][Mythen3][Gotthard2] Power the chip. \n
      *  Default is disabled. \n
-     * [Jungfrau][Moench] Default is disabled. Get will return power status. Can be off
-     * if temperature event occured (temperature over temp_threshold with
+     * [Jungfrau][Moench] Default is disabled. Get will return power status. Can
+     * be off if temperature event occured (temperature over temp_threshold with
      * temp_control enabled. Will configure chip (only chip v1.1)\n
      * [Mythen3][Gotthard2] Default is 1. If module not connected or wrong
      * module, powerchip will fail.
@@ -445,8 +444,8 @@ class Detector {
 
     /** [Gotthard] If 1, adds channel intensity with precalculated values.
      * Default is 0 \n
-     * [Eiger][Jungfrau][Moench] Only for virtual servers, if 1, pixels are saturated.
-     * If 0, increasing intensity */
+     * [Eiger][Jungfrau][Moench] Only for virtual servers, if 1, pixels are
+     * saturated. If 0, increasing intensity */
     void setImageTestMode(const int value, Positions pos = {});
 
     /** gets list of temperature indices for this detector */
@@ -538,8 +537,9 @@ class Detector {
     Result<defs::currentSrcParameters>
     getCurrentSource(Positions pos = {}) const;
 
-    /** [Gotthard2][Jungfrau][Moench] Please refer documentation on currentSrcParameters
-     * (sls_detector_defs.h) on the structure and its members */
+    /** [Gotthard2][Jungfrau][Moench] Please refer documentation on
+     * currentSrcParameters (sls_detector_defs.h) on the structure and its
+     * members */
     void setCurrentSource(defs::currentSrcParameters par, Positions pos = {});
 
     /** [CTB][Gotthard2] */
@@ -553,9 +553,9 @@ class Detector {
 
     /** [Eiger] Number of rows to read out per half module
      * Options: 0 - 256. 256 is default. The permissible values depend on
-     * dynamic range and 10Gbe enabled. \n[Jungfrau][Moench] Number of rows per module
-     * starting from the centre. Options: 8 - 512, must be multiples of 8.
-     * Default is 512.
+     * dynamic range and 10Gbe enabled. \n[Jungfrau][Moench] Number of rows per
+     * module starting from the centre. Options: 8 - 512, must be multiples
+     * of 8. Default is 512.
      */
     void setReadNRows(const int lines, Positions pos = {});
 
@@ -634,10 +634,9 @@ class Detector {
      * different frame numbers for different modules.*/
     void setNextFrameNumber(uint64_t value, Positions pos = {});
 
-    /** [Eiger][Mythen3][Jungfrau][Moench] Sends an internal software trigger to the
-     * detector block true if command blocks till frames are sent out from that
-     * trigger
-     * [Eiger][Jungfrau][Moench] Block can be true
+    /** [Eiger][Mythen3][Jungfrau][Moench] Sends an internal software trigger to
+     * the detector block true if command blocks till frames are sent out from
+     * that trigger [Eiger][Jungfrau][Moench] Block can be true
      */
     void sendSoftwareTrigger(const bool block = false, Positions pos = {});
 
@@ -666,9 +665,9 @@ class Detector {
     /** [Jungfrau][Moench][Gotthard2][Eiger] */
     Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Gotthard2]  Number of udp interfaces to stream data from
-     * detector. Default is 1. \n Also enables second interface in receiver for
-     * listening (Writes a file per interface if writing enabled). \n Also
+    /** [Jungfrau][Moench][Gotthard2]  Number of udp interfaces to stream data
+     * from detector. Default is 1. \n Also enables second interface in receiver
+     * for listening (Writes a file per interface if writing enabled). \n Also
      * restarts client and receiver zmq sockets if zmq streaming enabled. \n
      * [Gotthard2] second interface enabled to send veto information via 10Gbps
      * for debugging. By default, if veto enabled, it is sent via 2.5 gbps
@@ -696,8 +695,8 @@ class Detector {
     /** [Jungfrau][Moench] bottom half [Gotthard2] veto debugging */
     Result<IpAddr> getSourceUDPIP2(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] bottom half [Gotthard2] veto debugging. \n The source UDP IP
-     * must be in the same subnet of the destination UDP IP2 */
+    /** [Jungfrau][Moench] bottom half [Gotthard2] veto debugging. \n The source
+     * UDP IP must be in the same subnet of the destination UDP IP2 */
     void setSourceUDPIP2(const IpAddr ip, Positions pos = {});
 
     Result<MacAddr> getSourceUDPMAC(Positions pos = {}) const;
@@ -727,8 +726,8 @@ class Detector {
     /** [Jungfrau][Moench][Mythen3][Gotthard2] */
     Result<int> getFirstUDPDestination(Positions pos = {}) const;
 
-    /**[Jungfrau][Moench][Gotthard2] Options 0-31 (or number of udp destinations)\n
-     * [Mythen3] Options 0-63 (or number of udp destinations)
+    /**[Jungfrau][Moench][Gotthard2] Options 0-31 (or number of udp
+     * destinations)\n [Mythen3] Options 0-63 (or number of udp destinations)
      */
     void setFirstUDPDestination(const int value, Positions pos = {});
 
@@ -755,11 +754,12 @@ class Detector {
     /** [Jungfrau][Moench] bottom half \n [Gotthard2] veto debugging */
     Result<MacAddr> getDestinationUDPMAC2(Positions pos = {}) const;
 
-    /* [Jungfrau][Moench][Gotthard2] Mac address of the receiver (destination) udp
-     * interface 2. \n Not mandatory to set as udp_dstip2 retrieves it from
+    /* [Jungfrau][Moench][Gotthard2] Mac address of the receiver (destination)
+     * udp interface 2. \n Not mandatory to set as udp_dstip2 retrieves it from
      * slsReceiver process but must be set if you use a custom receiver (not
-     * slsReceiver). \n [Jungfrau][Moench] bottom half \n [Gotthard2] veto debugging \n
-     * Use router mac address if router in between detector and receiver.
+     * slsReceiver). \n [Jungfrau][Moench] bottom half \n [Gotthard2] veto
+     * debugging \n Use router mac address if router in between detector and
+     * receiver.
      */
     void setDestinationUDPMAC2(const MacAddr mac, Positions pos = {});
 
@@ -769,12 +769,13 @@ class Detector {
      * calculated (incremented by 1 if no 2nd interface) */
     void setDestinationUDPPort(int port, int module_id = -1);
 
-    /** [Eiger] right port[Jungfrau][Moench] bottom half [Gotthard2] veto debugging */
+    /** [Eiger] right port[Jungfrau][Moench] bottom half [Gotthard2] veto
+     * debugging */
     Result<int> getDestinationUDPPort2(Positions pos = {}) const;
 
-    /** [Eiger] right port[Jungfrau][Moench] bottom half [Gotthard2] veto debugging \n
-     * Default is 50002. \n If module_id is -1, ports for each module is
-     * calculated (incremented by 1 if no 2nd interface)*/
+    /** [Eiger] right port[Jungfrau][Moench] bottom half [Gotthard2] veto
+     * debugging \n Default is 50002. \n If module_id is -1, ports for each
+     * module is calculated (incremented by 1 if no 2nd interface)*/
     void setDestinationUDPPort2(int port, int module_id = -1);
 
     /** Reconfigures Detector with UDP destination. More for debugging as the
@@ -805,11 +806,12 @@ class Detector {
     Result<int> getTransmissionDelayFrame(Positions pos = {}) const;
 
     /**
-     * Eiger][Jungfrau][Moench][Mythen3] Transmission delay of first udp packet being
-     * streamed out of the module.\n[Jungfrau][Moench] [0-31] Each value represents 1
-     * ms\n[Eiger] Additional delay to txndelay_left and txndelay_right. Each
-     * value represents 10ns. Typical value is 50000.\n[Mythen3] [0-16777215]
-     * Each value represents 8 ns (125 MHz clock), max is 134 ms.
+     * Eiger][Jungfrau][Moench][Mythen3] Transmission delay of first udp packet
+     * being streamed out of the module.\n[Jungfrau][Moench] [0-31] Each value
+     * represents 1 ms\n[Eiger] Additional delay to txndelay_left and
+     * txndelay_right. Each value represents 10ns. Typical value is
+     * 50000.\n[Mythen3] [0-16777215] Each value represents 8 ns (125 MHz
+     * clock), max is 134 ms.
      */
     void setTransmissionDelayFrame(int value, Positions pos = {});
 
@@ -838,12 +840,12 @@ class Detector {
     int getTransmissionDelay() const;
 
     /**
-     * [Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules in the
-     * detector using the step size provided.Sets up \n\t\t[Eiger] txdelay_left
-     * to (2 * mod_index * n_delay), \n\t\t[Eiger] txdelay_right to ((2 *
-     * mod_index + 1) * n_delay) and \n\t\t[Eiger] txdelay_frame to (2
-     * *num_modules * n_delay) \n\t\t[Jungfrau][Moench][Mythen3] txdelay_frame to
-     * (num_modules * n_delay) \nfor every module.
+     * [Eiger][Jungfrau][Moench][Mythen3] Set transmission delay for all modules
+     * in the detector using the step size provided.Sets up \n\t\t[Eiger]
+     * txdelay_left to (2 * mod_index * n_delay), \n\t\t[Eiger] txdelay_right to
+     * ((2 * mod_index + 1) * n_delay) and \n\t\t[Eiger] txdelay_frame to (2
+     * *num_modules * n_delay) \n\t\t[Jungfrau][Moench][Mythen3] txdelay_frame
+     * to (num_modules * n_delay) \nfor every module.
      */
     void setTransmissionDelay(int step);
 
@@ -1279,8 +1281,8 @@ class Detector {
     /** [Jungfrau][Moench] */
     Result<ns> getComparatorDisableTime(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Time before end of exposure when comparator is disabled. It
-     * is only possible for chipv1.1.*/
+    /** [Jungfrau][Moench] Time before end of exposure when comparator is
+     * disabled. It is only possible for chipv1.1.*/
     void setComparatorDisableTime(ns t, Positions pos = {});
 
     /** [Jungfrau][Moench] Advanced TODO naming */
@@ -1294,18 +1296,18 @@ class Detector {
     /** [Jungfrau][Moench] Advanced */
     Result<int> getStorageCellStart(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Advanced. Sets the storage cell storing the first acquisition
-     * of the series. Options: 0-max. max is 15 (default) for chipv1.0 and 3
-     * (default) for chipv1.1.
+    /** [Jungfrau][Moench] Advanced. Sets the storage cell storing the first
+     * acquisition of the series. Options: 0-max. max is 15 (default) for
+     * chipv1.0 and 3 (default) for chipv1.1.
      */
     void setStorageCellStart(int cell, Positions pos = {});
 
     /** [Jungfrau][Moench] Advanced*/
     Result<ns> getStorageCellDelay(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Advanced \n Additional time delay between 2 consecutive
-     * exposures in burst mode. \n Options: (0-1638375 ns (resolution of 25ns)\n
-     * Only applicable for chipv1.0.
+    /** [Jungfrau][Moench] Advanced \n Additional time delay between 2
+     * consecutive exposures in burst mode. \n Options: (0-1638375 ns
+     * (resolution of 25ns)\n Only applicable for chipv1.0.
      */
     void setStorageCellDelay(ns value, Positions pos = {});
 

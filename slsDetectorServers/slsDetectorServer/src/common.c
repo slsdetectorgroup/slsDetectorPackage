@@ -226,7 +226,8 @@ int getModuleIdInFile(int *ret, char *mess, char *fileName) {
     if (fd == NULL) {
 #ifdef JUNGFRAUD
         *ret = OK;
-        LOG(logWARNING, ("Could not find detid_jungfrau.txt to set module id\n"));
+        LOG(logWARNING,
+            ("Could not find detid_jungfrau.txt to set module id\n"));
         return 0;
 #else
         *ret = FAIL;

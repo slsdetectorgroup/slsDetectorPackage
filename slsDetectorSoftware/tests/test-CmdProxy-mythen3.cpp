@@ -565,7 +565,7 @@ TEST_CASE("pumpprobe", "[.cmd]") {
         // mask with counter 2 disabled and enabled(to test vth2)
         uint32_t fixedMask[2] = {0x4, 0x3};
         for (int i = 0; i != 2; ++i) {
-            std::cout << "i:"<< i <<std::endl;
+            std::cout << "i:" << i << std::endl;
             det.setCounterMask(fixedMask[i]);
             {
                 // pump probe

@@ -98,7 +98,6 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-
 TEST_CASE("selinterface", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

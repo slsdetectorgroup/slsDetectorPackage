@@ -586,7 +586,8 @@ TEST_CASE("vetostream", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
-        auto prev_val = det.getVetoStream().tsquash("inconsistent veto stream to test");
+        auto prev_val =
+            det.getVetoStream().tsquash("inconsistent veto stream to test");
         {
             std::ostringstream oss;
             proxy.Call("vetostream", {"none"}, -1, PUT, oss);

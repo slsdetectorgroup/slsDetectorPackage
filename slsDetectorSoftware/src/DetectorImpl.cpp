@@ -491,7 +491,8 @@ void DetectorImpl::setTransmissionDelay(int step) {
             "Transmission delay is not implemented for the this detector.");
     }
 
-    //using a asyc+future directly (instead of Parallel) to pass different values
+    // using a asyc+future directly (instead of Parallel) to pass different
+    // values
     std::vector<std::future<void>> futures;
     for (int i = 0; i != size(); ++i) {
         if (eiger) {
@@ -512,7 +513,7 @@ void DetectorImpl::setTransmissionDelay(int step) {
         }
     }
 
-    //wait for calls to complete
+    // wait for calls to complete
     for (auto &f : futures)
         f.get();
 }

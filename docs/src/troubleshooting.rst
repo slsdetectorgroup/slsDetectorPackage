@@ -8,8 +8,54 @@ open an issue at our  `github repo issues
 Common
 ------
 
-Missing Packets
-^^^^^^^^^^^^^^^
+
+1. Total Failure of Packet Delivery
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. Link up and speed
+    * Check ethtool and find if Link Deteced:Yes and Speed is acceptable (>10k).
+    * Check to see if the 10G link is up (blue or red LED on board, close to SFP+). If not:
+
+       * Check transeiver and fibers are compatible (all MMF 850nm or all SMF 1030nm)
+       * Check fiber
+       * Check fiber polarity (if short range, unplug the link anywhere, and look at the light/dark pattern: dark has to mate with light)
+
+
+#. Detector is not sending data (Except Eiger)
+    * Check the board to see if the green LED close to SFP is blinking (detector is sending data). If not, detector is not operated properly (period too short/long, no trigger in trigger mode) or misconfigured and needs reboot.
+
+#. Power supply
+    * Check if power supply has enough current. 
+    * For Jungfrau, refer to :ref:`Jungfrau Power Supply Troubleshooting<Jungfrau Troubleshooting Power Supply>`.
+
+#. Ethernet interface not configured for Jumbo frames (10Gb)
+    * Ensure that the interfaces (on NIC and the switch) used in receiver pc have MTU 9000 (jumbo frames) enabled.
+
+
+#. Check if 'rx_frames' counter in 'ifconfig' do not increment for interface.
+    * If no, check switch configuration if present. Port counters of switch can also help to identify problem.
+    * If yes, but receiver software does not see it:
+
+        * Check no firewall (eg. firewalld) is present or add rules
+        * Check that selinux is disabled ( or add rules)
+        
+#. Detector IP (Not Eiger)
+    * Ensure it is valid and does not end if 0 or 255. Also ensure that the source ip 'udp_srcip' is in the same subnet as destination ip 'udp_dstip' and the masking in the interface configuration ensures this rule.
+    * Eg. If interface IP is 102.10.10.110 and mask is 255.255.255.0, udp_srcip has to be 102.10.10.xxx (same subnet)
+
+
+#. Netstat and netcat
+    * Try with netstat to see if its really listening to the right interface. Or netcat to see if you get packets.
+
+#. Wireshark
+    * Inspect packets using wireshark.
+
+
+
+2. Partial or Random Packet Loss (Performance)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
 Possible causes could be the following:
 
 #. Receiver PC is not tuned for socket buffer size and input packet queue.
@@ -18,8 +64,6 @@ Possible causes could be the following:
 #. Wiring
     * Faulty wiring or connecting cable to incorrect interface.
 
-#. Link up and speed
-    * Check to see if there is a blue LED on board to signal that the link is up. Check ethtool and find if Link Deteced:Yes and Speed is acceptable (>10k).
 
 #. Detector is not acquiring (Not Eiger)
     * Take an acquisition with many images and using the following steps instead of acquire:
@@ -37,8 +81,6 @@ Possible causes could be the following:
 #. Data cable plugged into the wrong interface on board (Jungfrau)
     * Please ensure that the data cable is plugged into the rightmost interface. The middle one is disabled for PCB v1.0 and must be selected via command for PCB v2.0.
 
-#. Detector is not sending data
-    * Check the board to see if the green LED is blinking next to the data cable, which means that the detector is sending data.
 
 #. Firewall or security feature
     * A firewall or some security feature could be blocking the reception of data.
@@ -46,11 +88,7 @@ Possible causes could be the following:
 #. Ethernet interface not configured properly
     * Ensure that the interfaces used are configured properly with the right mask and ip. Eg. use ifconfig and route commands to verify.
 
-#. Ethernet interface not configured for Jumbo frames (10Gb)
-    * Ensure that the interfaces used in receiver pc have MTU 9000 (jumbo frames) enabled.
 
-#. Detector IP (Not Eiger)
-    * Ensure it is valid and does not end if 0 or 255. Also ensure that the detector ip is in the same subnet as rx_udpip and the masking in the interface configuration ensures this rule.
 
 #. Tcpdump or wireshark
     * Use one of these to confirm that you receive packets (with the right filtering ie. source and destination ports, ip).
@@ -331,6 +369,7 @@ Cannot get multi module data
 
 #. Check :ref:`Common Multi Module Troubleshooting<common troubleshooting multi module data>`
 #. Power Supply
+    * Jungfrau needs a ~4A per module for a short time at startup. If not, it reboots misconfigured.
     * Comment out this line in the config file: powerchip 1
     * Powering on the chip increases the power consumption by a considerable amount. If commenting out this line aids in getting data (strange data due to powered off chip), then it could be the power supply current limit. Fix it (possibly to 8A current limit) and uncomment the powerchip line back in config file.
 

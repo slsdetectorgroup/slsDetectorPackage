@@ -1,4 +1,4 @@
-SLS Detector Package Minor Release 7.0.0.rc1 released on xx.11.2021
+SLS Detector Package Minor Release 7.0.0.rc1 released on 12.12.2021
 ===================================================================
 
 This document describes the differences between v7.0.0.rc1 and v6.1.2   

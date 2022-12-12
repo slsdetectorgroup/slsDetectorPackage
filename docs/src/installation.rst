@@ -55,7 +55,13 @@ We have three different packages available:
 .. code-block:: bash
 
     #List available versions
+    # lib and binaries
+    conda search slsdetlib
+    # python
     conda search slsdet
+    # gui
+    conda search slsdetgui
+
 
 
 
@@ -133,7 +139,7 @@ Example cmake options               Comment
 ===============================     ===========================================
 -DSLS_USE_PYTHON=ON                 Python
 -DPython_FIND_VIRTUALENV=ONLY       Python from only the conda environment 
--DZeroMQ_HINT=/usr/lib64            System zmq instead of conda
+-DZeroMQ_HINT=/usr/lib64            Use system zmq instead
 -DSLS_USE_GUI=ON                    GUI
 ===============================     ===========================================
 
@@ -181,7 +187,7 @@ Build using in-built cmk.sh script
     # new build, python and compile in parallel:
     ./cmk.sh -bpj5
 
-    #To use the system zmq (/usr/lib64) instead of conda
+    #To use the system zmq (/usr/lib64) instead
     ./cmk.sh -bj5 -q /usr/lib64
 
 
@@ -203,6 +209,54 @@ using this compiler
     mkdir build && cd build
     cmake ../slsDetectorPackage -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
     make -j12
+
+
+
+Build slsDetectorGui (Qt5)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. Using pre-built binary on conda
+    .. code-block:: bash
+
+        conda create -n myenv slsdetgui=7.0.0
+        conda activate myenv
+
+
+2. Using system installation on RHEL7
+    .. code-block:: bash
+
+        yum install qt5-qtbase-devel.x86_64
+        yum install qt5-qtsvg-devel.x86_64 
+
+
+3. Using conda
+    .. code-block:: bash
+
+        #Add channels for dependencies and our library
+        conda config --add channels conda-forge
+        conda config --add channels slsdetectorgroup
+        conda config --set channel_priority strict
+
+        # create environment to compile
+        # on rhel7
+        conda create -n slsgui zeromq gxx_linux-64 gxx_linux-64 mesa-libgl-devel-cos6-x86_64 qt
+        # on fedora or newer systems
+        conda create -n slsgui zeromq qt
+
+        # when using conda compilers, would also need libgl, but no need for it on fedora unless maybe using it with ROOT
+
+        # activate environment
+        conda activate slsgui
+
+        # compile with cmake outside slsDetecorPackage folder
+        mkdir build && cd build
+        cmake ../slsDetectorPackage -DSLS_USE_GUI=ON
+        make -j12
+
+        # or compile with cmk.sh
+        cd slsDetectorPackage
+        ./cmk.sh -cbgj9
+
 
 
 

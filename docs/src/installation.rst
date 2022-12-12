@@ -243,6 +243,8 @@ Build slsDetectorGui (Qt5)
         # on fedora or newer systems
         conda create -n slsgui zeromq qt
 
+        # when using conda compilers, would also need libgl, but no need for it on fedora unless maybe using it with ROOT
+
         # activate environment
         conda activate slsgui
 

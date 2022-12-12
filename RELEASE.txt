@@ -42,7 +42,6 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         Option to provide a custom location to look for ZeroMQ, if not found 
         using FindZeroMQ.cmake
         
-
         For example, to use the system installed zmq:
         Using cmake: -DZeroMQ_HINT=/usr/lib64 
         Using cmk.sh script: -q /usr/lib64

@@ -1,4 +1,4 @@
-SLS Detector Package Minor Release 7.0.0.rc1 released on xx.11.2021
+SLS Detector Package Minor Release 7.0.0.rc1 released on 12.12.2021
 ===================================================================
 
 This document describes the differences between v7.0.0.rc1 and v6.1.2   
@@ -42,7 +42,6 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         Option to provide a custom location to look for ZeroMQ, if not found 
         using FindZeroMQ.cmake
         
-
         For example, to use the system installed zmq:
         Using cmake: -DZeroMQ_HINT=/usr/lib64 
         Using cmk.sh script: -q /usr/lib64
@@ -439,6 +438,11 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
     
     Changes or Fixes:
+
+
+    *   [Jungfrau][Gotthard2][Mythen3][Gotthard][Moench][Ctb] Can't stop
+        This bug was introduced in 6.1.1, when stopping an acquisition saying it 
+        cannot stop, even though it was successful. It is fixed now.
 
 
     *   Free and config command fail

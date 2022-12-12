@@ -22,10 +22,6 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-@Erik:- adding LTO to test and disable them for Debug builds?
-@Erik:- support external build of python lib, 
-
-
 
 1. New or Changed Features
 ==========================

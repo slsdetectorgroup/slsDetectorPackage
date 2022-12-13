@@ -87,7 +87,8 @@ int updateModeAllowedFunction(int file_des) {
         F_PROGRAM_FPGA,           F_RESET_FPGA,         F_INITIAL_CHECKS,
         F_REBOOT_CONTROLLER,      F_GET_KERNEL_VERSION, F_UPDATE_KERNEL,
         F_UPDATE_DETECTOR_SERVER, F_GET_UPDATE_MODE,    F_SET_UPDATE_MODE,
-        F_GET_NUM_CHANNELS,       F_GET_NUM_INTERFACES, F_ACTIVATE};
+        F_GET_NUM_CHANNELS,       F_GET_NUM_INTERFACES, F_ACTIVATE,
+        F_GET_HARDWARE_VERSION};
     size_t allowedFuncsSize = sizeof(allowedFuncs) / sizeof(enum detFuncs);
 
     for (unsigned int i = 0; i < allowedFuncsSize; ++i) {

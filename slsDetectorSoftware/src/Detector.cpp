@@ -821,7 +821,12 @@ void Detector::stopDetector(Positions pos) {
     int retries{0};
     // avoid default construction of runStatus::IDLE on squash
     auto status = getDetectorStatus().squash(defs::runStatus::RUNNING);
-    while (status != defs::runStatus::IDLE) {
+    while (status != defs::runStatus::IDLE &&
+           status != defs::runStatus::STOPPED) {
+        if (status == defs::runStatus::ERROR) {
+            throw RuntimeError(
+                "Could not stop detector. Returned error status.");
+        }
         pimpl->Parallel(&Module::stopAcquisition, pos);
         status = getDetectorStatus().squash(defs::runStatus::RUNNING);
         ++retries;

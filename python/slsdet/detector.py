@@ -1802,6 +1802,15 @@ class Detector(CppDetectorApi):
 
     @property
     def versions(self):
+        if self.type == detectorType.EIGER:
+            return {'type': self.type,
+                'package': self.packageversion, 
+                'client': self.clientversion,
+                'firmware': self.firmwareversion,
+                'detectorserver': self.detectorserverversion,
+                'kernel': self.kernelversion,
+                'receiver': self.rx_version}
+
         return {'type': self.type,
                 'package': self.packageversion, 
                 'client': self.clientversion,

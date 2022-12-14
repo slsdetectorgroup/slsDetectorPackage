@@ -124,6 +124,13 @@ Result<int64_t> Detector::getFirmwareVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getFirmwareVersion, pos);
 }
 
+Result<int64_t>
+Detector::getFrontEndFirmwareVersion(const defs::fpgaPosition fpgaPosition,
+                                     Positions pos) const {
+    return pimpl->Parallel(&Module::getFrontEndFirmwareVersion, pos,
+                           fpgaPosition);
+}
+
 Result<std::string> Detector::getDetectorServerVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getDetectorServerVersion, pos);
 }

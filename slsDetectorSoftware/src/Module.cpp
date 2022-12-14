@@ -92,6 +92,12 @@ int64_t Module::getFirmwareVersion() const {
     return sendToDetector<int64_t>(F_GET_FIRMWARE_VERSION);
 }
 
+int64_t
+Module::getFrontEndFirmwareVersion(const fpgaPosition fpgaPosition) const {
+    return sendToDetector<int64_t>(F_GET_FRONTEND_FIRMWARE_VERSION,
+                                   fpgaPosition);
+}
+
 std::string Module::getControlServerLongVersion() const {
     char retval[MAX_STR_LENGTH]{};
     sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);

@@ -216,6 +216,27 @@ u_int64_t getFirmwareVersion() {
 #endif
 }
 
+uint64_t getFrontEndFirmwareVersion(enum fpgaPosition fpgaPosition) {
+    uint64_t retval = 0;
+#ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
+    switch (fpgaPosition) {
+    case FRONT_LEFT:
+        retval = Feb_Control_GetFrontLeftFirmwareVersion(fpgaPosition);
+        break;
+    case FRONT_RIGHT:
+        retval = Feb_Control_GetFrontRightFirmwareVersion(fpgaPosition);
+        break;
+    default:
+        LOG(logERROR,
+            ("unknown index for fpga position to read firmware version\n"));
+        retval = -1;
+    }
+    sharedMemory_unlockLocalLink();
+#endif
+    return retval;
+}
+
 u_int64_t getFirmwareAPIVersion() {
 #ifdef VIRTUAL
     return 0;

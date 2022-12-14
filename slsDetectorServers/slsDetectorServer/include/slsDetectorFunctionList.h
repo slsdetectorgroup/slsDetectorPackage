@@ -78,6 +78,9 @@ int getTestImageMode();
 // Ids
 void getServerVersion(char *version);
 u_int64_t getFirmwareVersion();
+#ifdef EIGERD
+uint64_t getFrontEndFirmwareVersion(enum fpgaPosition fpgaPosition);
+#endif
 u_int64_t getFirmwareAPIVersion();
 #ifndef EIGERD
 void getHardwareVersion(char *version);

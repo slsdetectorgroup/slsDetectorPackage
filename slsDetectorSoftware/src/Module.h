@@ -90,6 +90,7 @@ class Module : public virtual slsDetectorDefs {
     void setHostname(const std::string &hostname, const bool initialChecks);
 
     int64_t getFirmwareVersion() const;
+    int64_t getFrontEndFirmwareVersion(const fpgaPosition fpgaPosition) const;
     std::string getControlServerLongVersion() const;
     std::string getStopServerLongVersion() const;
     std::string getDetectorServerVersion() const;

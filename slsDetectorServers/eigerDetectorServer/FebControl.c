@@ -2180,6 +2180,36 @@ int Feb_Control_GetRightFPGATemp() {
     return (int)temperature;
 }
 
+int64_t Feb_Control_GetFrontLeftFirmwareVersion() {
+    if (!Feb_Control_activated) {
+        return 0;
+    }
+    unsigned int value = 0;
+    if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress, FEB_REG_STATUS,
+                                    &value)) {
+        LOG(logERROR, ("Trouble reading FEB_REG_STATUS reg to get left feb "
+                       "fw version\n"));
+        return 0;
+    }
+    return ((value & FEB_REG_STATUS_FW_VERSION_MSK) >>
+            FEB_REG_STATUS_FW_VERSION_OFST);
+}
+
+int64_t Feb_Control_GetFrontRightLeftFirmwareVersion() {
+    if (!Feb_Control_activated) {
+        return 0;
+    }
+    unsigned int value = 0;
+    if (!Feb_Interface_ReadRegister(Feb_Control_rightAddress, FEB_REG_STATUS,
+                                    &value)) {
+        LOG(logERROR, ("Trouble reading FEB_REG_STATUS reg to get right feb "
+                       "fw version\n"));
+        return 0;
+    }
+    return ((value & FEB_REG_STATUS_FW_VERSION_MSK) >>
+            FEB_REG_STATUS_FW_VERSION_OFST);
+}
+
 int64_t Feb_Control_GetMeasuredPeriod() {
     if (!Feb_Control_activated) {
         return 0;

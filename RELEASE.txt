@@ -27,7 +27,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 ==========================
 
 - moench being made compatible with jungfrau 2.0 boards (jungfrau structure, away from ctb)
-
+- eiger febl and feb in versions
 
 2.  On-board Detector Server Compatibility
 ==========================================

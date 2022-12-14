@@ -2195,7 +2195,7 @@ int64_t Feb_Control_GetFrontLeftFirmwareVersion() {
             FEB_REG_STATUS_FW_VERSION_OFST);
 }
 
-int64_t Feb_Control_GetFrontRightLeftFirmwareVersion() {
+int64_t Feb_Control_GetFrontRightFirmwareVersion() {
     if (!Feb_Control_activated) {
         return 0;
     }

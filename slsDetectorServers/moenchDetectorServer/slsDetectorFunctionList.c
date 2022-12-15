@@ -884,7 +884,6 @@ uint32_t getADCInvertRegister() {
 
 /* parameters - timer */
 
-
 int setNextFrameNumber(uint64_t value) {
     LOG(logINFO,
         ("Setting next frame number: %llu\n", (long long unsigned int)value));
@@ -1858,7 +1857,6 @@ int setComparatorDisableTime(int64_t val) {
 int64_t getComparatorDisableTime() {
     return bus_r(COMP_DSBLE_TIME_REG) / (1E-3 * CLK_RUN);
 }
-
 
 int setReadoutSpeed(int val) {
     // stop state machine if running

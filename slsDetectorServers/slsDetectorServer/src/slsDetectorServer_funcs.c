@@ -2158,7 +2158,7 @@ int get_num_additional_storage_cells(int file_des) {
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
@@ -2177,7 +2177,7 @@ int set_num_additional_storage_cells(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of addl. storage cells %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -2620,7 +2620,7 @@ int get_storage_cell_delay(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
@@ -2647,7 +2647,7 @@ int set_storage_cell_delay(int file_des) {
     LOG(logDEBUG1,
         ("Setting storage cell delay %lld ns\n", (long long int)arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -4015,7 +4015,7 @@ int storage_cell_start(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting Storage cell start to %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // set & get
@@ -6958,7 +6958,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // additional storage cells
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
     i32 = getNumAdditionalStorageCells();
 #else
     i32 = 0;

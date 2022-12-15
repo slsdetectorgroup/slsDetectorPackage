@@ -2000,27 +2000,22 @@ class CmdProxy {
     INTEGER_COMMAND_SET_NOID_GET_ID(
         extrastoragecells, getNumberOfAdditionalStorageCells,
         setNumberOfAdditionalStorageCells, StringTo<int>,
-        "[0-15]\n\t[Jungfrau][Moench] Only for chipv1.0. Number of additional "
-        "storage "
-        "cells. Default is "
-        "0. For advanced users only. \n\tThe #images = #frames x #triggers x "
-        "(#extrastoragecells + 1).");
+        "[0-15]\n\t[Jungfrau] Only for chipv1.0. Number of additional storage "
+        "cells. Default is 0. For advanced users only. \n\tThe #images = "
+        "#frames x #triggers x (#extrastoragecells + 1).");
 
     INTEGER_COMMAND_VEC_ID(
         storagecell_start, getStorageCellStart, setStorageCellStart,
         StringTo<int>,
-        "[0-max]\n\t[Jungfrau][Moench] Storage cell that stores the first "
-        "acquisition "
+        "[0-max]\n\t[Jungfrau] Storage cell that stores the first acquisition "
         "of the series. max is 15 (default) for chipv1.0 and 3 (default) for "
         "chipv1.1. For advanced users only.");
 
-    TIME_COMMAND(
-        storagecell_delay, getStorageCellDelay, setStorageCellDelay,
-        "[duration (0-1638375 ns)] [(optional unit) "
-        "ns|us|ms|s]\n\t[Jungfrau][Moench] "
-        "Additional time delay between 2 consecutive exposures in burst mode "
-        "(resolution of 25ns). Only applicable for chipv1.0. For advanced "
-        "users only.");
+    TIME_COMMAND(storagecell_delay, getStorageCellDelay, setStorageCellDelay,
+                 "[duration (0-1638375 ns)] [(optional unit) "
+                 "ns|us|ms|s]\n\t[Jungfrau] Additional time delay between 2 "
+                 "consecutive exposures in burst mode (resolution of 25ns). "
+                 "Only applicable for chipv1.0. For advanced users only.");
 
     INTEGER_COMMAND_VEC_ID(
         gainmode, getGainMode, setGainMode, StringTo<slsDetectorDefs::gainMode>,

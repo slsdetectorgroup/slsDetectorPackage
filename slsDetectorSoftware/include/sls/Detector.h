@@ -1285,27 +1285,27 @@ class Detector {
      * disabled. It is only possible for chipv1.1.*/
     void setComparatorDisableTime(ns t, Positions pos = {});
 
-    /** [Jungfrau][Moench] Advanced TODO naming */
+    /** [Jungfrau] Advanced TODO naming */
     Result<int> getNumberOfAdditionalStorageCells(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Advanced \n
+    /** [Jungfrau] Advanced \n
      * Only for chipv1.0. Options: 0 - 15. Default: 0. \n
      * The #images = #frames x #triggers x (#storagecells + 1) */
     void setNumberOfAdditionalStorageCells(int value);
 
-    /** [Jungfrau][Moench] Advanced */
+    /** [Jungfrau] Advanced */
     Result<int> getStorageCellStart(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Advanced. Sets the storage cell storing the first
+    /** [Jungfrau] Advanced. Sets the storage cell storing the first
      * acquisition of the series. Options: 0-max. max is 15 (default) for
      * chipv1.0 and 3 (default) for chipv1.1.
      */
     void setStorageCellStart(int cell, Positions pos = {});
 
-    /** [Jungfrau][Moench] Advanced*/
+    /** [Jungfrau] Advanced*/
     Result<ns> getStorageCellDelay(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Advanced \n Additional time delay between 2
+    /** [Jungfrau] Advanced \n Additional time delay between 2
      * consecutive exposures in burst mode. \n Options: (0-1638375 ns
      * (resolution of 25ns)\n Only applicable for chipv1.0.
      */

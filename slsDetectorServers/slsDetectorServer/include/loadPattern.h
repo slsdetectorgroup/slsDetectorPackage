@@ -6,7 +6,7 @@
 #include "clogger.h"
 
 void initializePatternAddresses();
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#ifdef CHIPTESTBOARDD
 #ifdef VIRTUAL
 void initializePatternWord();
 #endif

@@ -32,7 +32,6 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     void SetNumFrames(int val);
     void SetNumTriggers(int val);
     void SetNumBursts(int val);
-    void SetNumSamples(int val);
     void SetNumGates(int val);
     void SetExposureTime();
     void SetAcquisitionPeriod();
@@ -64,7 +63,6 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     void GetNumFrames();
     void GetNumTriggers();
     void GetNumBursts();
-    void GetNumSamples();
     void GetNumGates();
     void GetExposureTime();
     void GetAcquisitionPeriod();
@@ -96,7 +94,6 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     QString errPeriodTip;
     QPalette red;
     bool delayImplemented;
-    bool sampleImplemented;
     bool gateImplemented;
     bool startingFnumImplemented;
     bool isAcquisitionStopped{false};

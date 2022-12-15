@@ -8,35 +8,28 @@ add_executable(moenchDetectorServer_virtual
     ../slsDetectorServer/src/blackfin.c
     ../slsDetectorServer/src/common.c
     ../slsDetectorServer/src/commonServerFunctions.c
-    ../slsDetectorServer/src/communication_funcs_UDP.c
-    ../slsDetectorServer/src/UDPPacketHeaderGenerator.c
     ../slsDetectorServer/src/AD9257.c
     ../slsDetectorServer/src/ALTERA_PLL.c
     ../slsDetectorServer/src/LTC2620.c
     ../slsDetectorServer/src/MAX1932.c
-    ../slsDetectorServer/src/programViaBlackfin.c   
-    ../slsDetectorServer/src/loadPattern.c         
+    ../slsDetectorServer/src/programViaBlackfin.c
+    ../slsDetectorServer/src/communication_funcs_UDP.c    
     ../slsDetectorServer/src/sharedMemory.c
     ../../slsSupportLib/src/md5.c
 )
 
-include_directories(
+target_include_directories(moenchDetectorServer_virtual
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     ../slsDetectorServer/include
     ../../slsSupportLib/include
-    ../../slsDetectorSoftware/include/sls/
-)
-
-target_include_directories(moenchDetectorServer_virtual
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_compile_definitions(moenchDetectorServer_virtual
-    PUBLIC MOENCHD VIRTUAL STOP_SERVER
+    PUBLIC MOENCHD VIRTUAL STOP_SERVER #TEST_MOD_GEOMETRY
 )
 
 target_link_libraries(moenchDetectorServer_virtual
     PUBLIC pthread rt slsProjectCSettings
-    m
 )
 
 set_target_properties(moenchDetectorServer_virtual PROPERTIES
@@ -44,7 +37,9 @@ set_target_properties(moenchDetectorServer_virtual PROPERTIES
 )
 
 install(TARGETS moenchDetectorServer_virtual
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
+    EXPORT "${TARGETS_EXPORT_NAME}"
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-configure_file(DefaultPattern_moench.txt ${CMAKE_BINARY_DIR}/bin/DefaultPattern_moench.txt COPYONLY)
+configure_file(config_moench.txt ${CMAKE_BINARY_DIR}/bin/config_moench.txt COPYONLY)
+configure_file(detid_moench.txt ${CMAKE_BINARY_DIR}/bin/detid_moench.txt COPYONLY)

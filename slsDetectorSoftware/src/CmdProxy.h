@@ -1252,13 +1252,14 @@ class CmdProxy {
     GET_COMMAND(rx_version, getReceiverVersion, "\n\tReceiver version");
 
     GET_COMMAND_HEX(serialnumber, getSerialNumber,
-                    "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench]"
+                    "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][CTB]"
                     "Serial number of detector.");
 
-    GET_COMMAND(moduleid, getModuleId,
-                "\n\t[Gotthard2][Eiger][Mythen3][Jungfrau] 16 bit value "
-                "(ideally unique) that is streamed out in the UDP header of "
-                "the detector. Picked up from a file on the module.");
+    GET_COMMAND(
+        moduleid, getModuleId,
+        "\n\t[Gotthard2][Eiger][Mythen3][Jungfrau][Moench] 16 bit value "
+        "(ideally unique) that is streamed out in the UDP header of "
+        "the detector. Picked up from a file on the module.");
 
     GET_COMMAND(type, getDetectorType,
                 "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, "
@@ -1278,12 +1279,10 @@ class CmdProxy {
         "verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, "
         "g2_lc_hg, g2_lc_lg, g4_hg, g4_lg, gain0]"
         "\n\t Detector Settings"
-        "\n\t[Jungfrau] - [ gain0 | highgain0]"
+        "\n\t[Jungfrau][Moench] - [ gain0 | highgain0]"
         "\n\t[Gotthard] - [dynamicgain | highgain | lowgain | "
         "mediumgain | veryhighgain]"
         "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
-        "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
-        "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
         "\n\t[Mythen3] - [standard | fast | highgain] Also changes vrshaper "
         "and vrpreamp. \n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] "
         "threshold and settings loaded from file found in settingspath. "
@@ -1301,22 +1300,24 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         fliprows, getFlipRows, setFlipRows, StringTo<int>,
         "[0, 1]\n\t[Eiger] flips rows paramater sent to slsreceiver "
-        "to stream as json parameter to flip rows in gui \n\t[Jungfrau] flips "
+        "to stream as json parameter to flip rows in gui "
+        "\n\t[Jungfrau][Moench] flips "
         "rows in the detector itself. For bottom module and number of "
         "interfaces must be set to 2. slsReceiver and slsDetectorGui "
         "does not handle.");
 
-    INTEGER_COMMAND_VEC_ID_GET(
-        master, getMaster, setMaster, StringTo<int>,
-        "[0, 1]\n\t[Eiger][Gotthard2][Jungfrau] Sets (half) module to master "
-        "and other(s) to "
-        "slaves.\n\t[Gotthard][Gotthard2][Mythen3][Eiger][Jungfrau] Gets if "
-        "the current (half) module is master.");
+    INTEGER_COMMAND_VEC_ID_GET(master, getMaster, setMaster, StringTo<int>,
+                               "[0, 1]\n\t[Eiger][Gotthard2][Jungfrau][Moench] "
+                               "Sets (half) module to master "
+                               "and other(s) to "
+                               "slaves.\n\t[Gotthard][Gotthard2][Mythen3]["
+                               "Eiger][Jungfrau][Moench] Gets if "
+                               "the current (half) module is master.");
 
-    INTEGER_COMMAND_SET_NOID_GET_ID(sync, getSynchronization,
-                                    setSynchronization, StringTo<int>,
-                                    "[0, 1]\n\t[Jungfrau] Enables or disables "
-                                    "synchronization between modules.");
+    INTEGER_COMMAND_SET_NOID_GET_ID(
+        sync, getSynchronization, setSynchronization, StringTo<int>,
+        "[0, 1]\n\t[Jungfrau][Moench] Enables or disables "
+        "synchronization between modules.");
 
     /* acquisition parameters */
 
@@ -1336,28 +1337,29 @@ class CmdProxy {
         period, getPeriod, setPeriod,
         "[duration] [(optional unit) ns|us|ms|s]\n\tPeriod between frames");
 
-    TIME_COMMAND(delay, getDelayAfterTrigger, setDelayAfterTrigger,
-                 "[duration] [(optional unit) "
-                 "ns|us|ms|s]\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb]["
-                 "Moench] Delay after trigger");
+    TIME_COMMAND(
+        delay, getDelayAfterTrigger, setDelayAfterTrigger,
+        "[duration] [(optional unit) "
+        "ns|us|ms|s]\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb]["
+        "Moench] Delay after trigger");
 
     GET_COMMAND(framesl, getNumberOfFramesLeft,
-                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] "
+                "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] "
                 "Number of frames left in acquisition."
                 "\n\t[Gotthard2] only in continuous auto mode.");
 
     GET_COMMAND(triggersl, getNumberOfTriggersLeft,
-                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] "
+                "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB] "
                 "Number of triggers left in acquisition. Only when external "
                 "trigger used.");
 
     TIME_GET_COMMAND(delayl, getDelayAfterTriggerLeft,
-                     "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench]"
+                     "\n\t[Gotthard][Jungfrau][Moench][Mythen3][Gotthard2][CTB]"
                      " DelayLeft Delay Left in Acquisition."
                      "\n\t[Gotthard2] only in continuous mode.");
 
     TIME_GET_COMMAND(periodl, getPeriodLeft,
-                     "\n\t[Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2]"
+                     "\n\t[Gotthard][Jungfrau][Moench][CTB][Mythen3][Gotthard2]"
                      " Period left for current frame."
                      "\n\t[Gotthard2] only in continuous mode.");
 
@@ -1368,7 +1370,7 @@ class CmdProxy {
         "[Eiger] Options: 4, 8, 12, 16, 32. If set to 32, also sets "
         "clkdivider to 2, else to 0.\n\t"
         "[Mythen3] Options: 8, 16, 32\n\t"
-        "[Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16");
+        "[Jungfrau][Moench][Gotthard][Ctb][Mythen3][Gotthard2] 16");
 
     GET_COMMAND_NOID(drlist, getDynamicRangeList,
                      "\n\tGets the list of dynamic ranges for this detector.");
@@ -1377,7 +1379,7 @@ class CmdProxy {
         timing, getTimingMode, setTimingMode,
         StringTo<slsDetectorDefs::timingMode>,
         "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of "
-        "detector.\n\t[Jungfrau][Gotthard][Ctb][Moench][Gotthard2] "
+        "detector.\n\t[Jungfrau][Moench][Gotthard][Ctb][Gotthard2] "
         "[auto|trigger]\n\t[Mythen3] "
         "[auto|trigger|gating|trigger_gating]\n\t[Eiger] "
         "[auto|trigger|gating|burst_trigger]");
@@ -1390,24 +1392,25 @@ class CmdProxy {
         "\n\tList of readout speed levels implemented for this detector.");
 
     GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift,
-                "\n\t[Jungfrau][CTB][Moench] Absolute maximum Phase shift of "
+                "\n\t[Jungfrau][Moench][CTB] Absolute maximum Phase shift of "
                 "ADC clock.");
 
-    GET_COMMAND(maxdbitphaseshift, getMaxDBITPhaseShift,
-                "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the "
-                "clock to latch digital bits.");
+    GET_COMMAND(
+        maxdbitphaseshift, getMaxDBITPhaseShift,
+        "\n\t[CTB][Jungfrau][Moench] Absolute maximum Phase shift of of the "
+        "clock to latch digital bits.");
 
     INTEGER_COMMAND_VEC_ID(highvoltage, getHighVoltage, setHighVoltage,
                            StringTo<int>,
                            "[n_value]\n\tHigh voltage to the sensor in Voltage."
                            "\n\t[Gotthard] [0|90|110|120|150|180|200]"
                            "\n\t[Eiger][Mythen3][Gotthard2] 0-200"
-                           "\n\t[Jungfrau][Ctb][Moench] [0|60-200]");
+                           "\n\t[Jungfrau][Moench][Ctb] [0|60-200]");
 
     INTEGER_COMMAND_VEC_ID(
         powerchip, getPowerChip, setPowerChip, StringTo<int>,
-        "[0, 1]\n\t[Jungfrau][Mythen3][Gotthard2][Moench] Power "
-        "the chip. \n\t[Moench] Default is 0. \n\t[Jungfrau] Default is 0. Get "
+        "[0, 1]\n\t[Jungfrau][Moench][Mythen3][Gotthard2] Power "
+        "the chip. \n\t[Jungfrau][Moench] Default is 0. Get "
         "will return power status. Can be off if temperature event occured "
         "(temperature over temp_threshold with temp_control "
         "enabled. Will configure chip (only chip v1.1)\n\t[Mythen3][Gotthard2] "
@@ -1418,7 +1421,8 @@ class CmdProxy {
         imagetest, getImageTestMode, setImageTestMode, StringTo<int>,
         "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated "
         "values when taking an acquisition. Default is 0."
-        "\n\t[Eiger][Jungfrau] Only for Virtual servers. If 0, each pixel "
+        "\n\t[Eiger][Jungfrau][Moench] Only for Virtual servers. If 0, each "
+        "pixel "
         "intensity incremented by 1. If 1, all pixels almost saturated.");
 
     INTEGER_COMMAND_VEC_ID(
@@ -1432,9 +1436,10 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         filterresistor, getFilterResistor, setFilterResistor, StringTo<int>,
-        "[value] [Gotthard2][Jungfrau] Set filter resistor. Increasing values "
+        "[value] [Gotthard2][Jungfrau][Moench] Set filter resistor. Increasing "
+        "values "
         "for increasing resistance.\n\t[Gotthard2] Options: [0|1|2|3]. Default "
-        "is 0.\n\t[Jungfrau] Options: [0|1]. Default is 1.");
+        "is 0.\n\t[Jungfrau][Moench] Options: [0|1]. Default is 1.");
 
     INTEGER_COMMAND_VEC_ID(dbitpipeline, getDBITPipeline, setDBITPipeline,
                            StringTo<int>,
@@ -1449,19 +1454,22 @@ class CmdProxy {
         "permissible values depend on dynamic range and 10Gbe "
         "enabled.\n\t[8-512 (multiple of 8)]\n\t\t[Jungfrau] Number of rows "
         "per module starting from the centre. Options: 8 - 512, must be "
-        "multiples of 8. Default is 512.");
+        "multiples of 8. Default is 512.\n\t\t[Moench] Number of rows "
+        "per module starting from the centre. Options:16 - 400, must be "
+        "multiples of 16. Default is 400.");
 
     /** temperature */
     GET_COMMAND_NOID(
         templist, getTemperatureList,
         "\n\tList of temperature commands implemented for this detector.");
 
-    GET_IND_COMMAND(temp_adc, getTemperature, slsDetectorDefs::TEMPERATURE_ADC,
-                    " °C", "[n_value]\n\t[Jungfrau][Gotthard] ADC Temperature");
+    GET_IND_COMMAND(
+        temp_adc, getTemperature, slsDetectorDefs::TEMPERATURE_ADC, " °C",
+        "[n_value]\n\t[Jungfrau][Moench][Gotthard] ADC Temperature");
 
     GET_IND_COMMAND(temp_fpga, getTemperature,
                     slsDetectorDefs::TEMPERATURE_FPGA, " °C",
-                    "[n_value]\n\t[Eiger][Jungfrau][Gotthard][Mythen3]["
+                    "[n_value]\n\t[Eiger][Jungfrau][Moench][Gotthard][Mythen3]["
                     "Gotthard2] FPGA Temperature");
 
     GET_IND_COMMAND(temp_fpgaext, getTemperature,
@@ -1595,7 +1603,7 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         numinterfaces, getNumberofUDPInterfaces, setNumberofUDPInterfaces,
         StringTo<int>,
-        "[1, 2]\n\t[Jungfrau] Number of udp interfaces to stream "
+        "[1, 2]\n\t[Jungfrau][Moench] Number of udp interfaces to stream "
         "data from detector. Default: 1.\n\tAlso enables second interface in "
         "receiver for listening (Writes a file per interface if writing "
         "enabled).\n\tAlso restarts client and receiver zmq sockets if zmq "
@@ -1604,12 +1612,14 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         selinterface, getSelectedUDPInterface, selectUDPInterface,
         StringTo<int>,
-        "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. "
+        "[0, 1]\n\t[Jungfrau][Moench] The udp interface to stream data from "
+        "detector. "
         "Effective only when number of interfaces is 1. Default: 0 (outer)");
 
     GET_COMMAND(
         udp_numdst, getNumberofUDPDestinations,
-        "\n\t[Jungfrau][Eiger][Mythen3][Gotthard2] One can enter upto 32 (64 "
+        "\n\t[Jungfrau][Moench][Eiger][Mythen3][Gotthard2] One can enter upto "
+        "32 (64 "
         "for Mythen3) destinations that the detector will stream images out in "
         "a round robin fashion. This is get only command. Default: 1");
 
@@ -1620,7 +1630,8 @@ class CmdProxy {
         udp_firstdst, getFirstUDPDestination, setFirstUDPDestination,
         StringTo<int>,
         "\n[0 - 31 (or number of udp "
-        "destinations)]\n\t[Jungfrau][Gotthard2]\n[0-63]\n\t[Mythen3]\n\n\t "
+        "destinations)]\n\t[Jungfrau][Moench][Gotthard2]\n[0-63]\n\t[Mythen3]"
+        "\n\n\t "
         "One can set which is the first destination that the detector will "
         "stream images out from in a round robin fashion. The entry must not "
         "have been empty. Default: 0");
@@ -1631,10 +1642,10 @@ class CmdProxy {
         "interface. \n\t[Eiger] Do not set as detector will replace with its "
         "own DHCP Mac (1G) or DHCP Mac + 1 (10G).");
 
-    INTEGER_COMMAND_VEC_ID(udp_srcmac2, getSourceUDPMAC2, setSourceUDPMAC2,
-                           MacAddr,
-                           "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the top "
-                           "half or inner (source) udp interface. ");
+    INTEGER_COMMAND_VEC_ID(
+        udp_srcmac2, getSourceUDPMAC2, setSourceUDPMAC2, MacAddr,
+        "[x:x:x:x:x:x]\n\t[Jungfrau][Moench] Mac address of the top "
+        "half or inner (source) udp interface. ");
 
     INTEGER_COMMAND_VEC_ID(
         udp_dstmac, getDestinationUDPMAC, setDestinationUDPMAC, MacAddr,
@@ -1646,10 +1657,12 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         udp_dstmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
-        "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) "
+        "[x:x:x:x:x:x]\n\t[Jungfrau][Moench] Mac address of the receiver "
+        "(destination) "
         "udp interface 2. Not mandatory to set as udp_dstip2 retrieves it from "
         "slsReceiver process but must be set if you use a custom receiver (not "
-        "slsReceiver). \n\t [Jungfrau] top half or inner interface \n\t "
+        "slsReceiver). \n\t [Jungfrau][Moench] top half or inner interface "
+        "\n\t "
         "[Gotthard2] veto debugging. Use router mac if router between detector "
         "and receiver.");
 
@@ -1663,10 +1676,10 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID_GET(
         udp_dstport2, getDestinationUDPPort2, setDestinationUDPPort2,
         StringTo<int>,
-        "[n]\n\t[Jungfrau][Eiger][Gotthard2] Port number of the "
+        "[n]\n\t[Jungfrau][Moench][Eiger][Gotthard2] Port number of the "
         "receiver (destination) udp interface 2. Default is 50002. "
         "\n\tIf multi command, ports for each module is calculated "
-        "(incremented by 2) \n\t[Jungfrau] top half or inner interface "
+        "(incremented by 2) \n\t[Jungfrau][Moench] top half or inner interface "
         "\n\t[Eiger] "
         "right half \n\t[Gotthard2] veto debugging");
 
@@ -1685,19 +1698,21 @@ class CmdProxy {
     GET_COMMAND(rx_printconfig, printRxConfiguration,
                 "\n\tPrints the receiver configuration.");
 
-    INTEGER_COMMAND_VEC_ID(
-        tengiga, getTenGiga, setTenGiga, StringTo<int>,
-        "[0, 1]\n\t[Eiger][Ctb][Moench][Mythen3] 10GbE Enable.");
+    INTEGER_COMMAND_VEC_ID(tengiga, getTenGiga, setTenGiga, StringTo<int>,
+                           "[0, 1]\n\t[Eiger][Ctb][Mythen3] 10GbE Enable.");
 
-    INTEGER_COMMAND_VEC_ID(flowcontrol10g, getTenGigaFlowControl,
-                           setTenGigaFlowControl, StringTo<int>,
-                           "[0, 1]\n\t[Eiger][Jungfrau] 10GbE Flow Control.");
+    INTEGER_COMMAND_VEC_ID(
+        flowcontrol10g, getTenGigaFlowControl, setTenGigaFlowControl,
+        StringTo<int>,
+        "[0, 1]\n\t[Eiger][Jungfrau][Moench] 10GbE Flow Control.");
 
     INTEGER_COMMAND_VEC_ID(
         txdelay_frame, getTransmissionDelayFrame, setTransmissionDelayFrame,
         StringTo<int>,
-        "[n_delay]\n\t[Eiger][Jungfrau][Mythen3] Transmission delay of first "
-        "udp packet being streamed out of the module.\n\t[Jungfrau] [0-31] "
+        "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Transmission delay of "
+        "first "
+        "udp packet being streamed out of the module.\n\t[Jungfrau][Moench] "
+        "[0-31] "
         "Each value represents 1 ms\n\t[Eiger] Additional delay to "
         "txdelay_left and txdelay_right. Each value represents 10ns. Typical "
         "value is 50000.\n\t[Mythen3] [0-16777215] Each value represents 8 ns "
@@ -1939,13 +1954,15 @@ class CmdProxy {
 
     /* Jungfrau Specific */
 
-    GET_COMMAND(chipversion, getChipVersion,
-                "\n\t[Jungfrau] Returns chip version. Can be 1.0 or 1.1");
+    GET_COMMAND(
+        chipversion, getChipVersion,
+        "\n\t[Jungfrau][Moench] Returns chip version. Can be 1.0 or 1.1");
 
     INTEGER_COMMAND_VEC_ID(
         temp_threshold, getThresholdTemperature, setThresholdTemperature,
         StringTo<int>,
-        "[n_temp (in degrees)]\n\t[Jungfrau] Threshold temperature in degrees. "
+        "[n_temp (in degrees)]\n\t[Jungfrau][Moench] Threshold temperature in "
+        "degrees. "
         "If temperature crosses threshold temperature and temperature control "
         "is enabled, power to chip will be switched off and temperature event "
         "occurs. To power on chip again, temperature has to be less than "
@@ -1954,7 +1971,7 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         temp_control, getTemperatureControl, setTemperatureControl,
         StringTo<int>,
-        "[0, 1]\n\t[Jungfrau] Temperature control enable. Default is 0 "
+        "[0, 1]\n\t[Jungfrau][Moench] Temperature control enable. Default is 0 "
         "(disabled). If temperature crosses threshold temperature and "
         "temperature control is enabled, power to chip will be switched off "
         "and temperature event occurs. To power on chip again, temperature has "
@@ -1964,7 +1981,8 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         autocompdisable, getAutoComparatorDisable, setAutoComparatorDisable,
         StringTo<int>,
-        "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the "
+        "[0, 1]\n\t[Jungfrau][Moench] Auto comparator disable mode. By "
+        "default, the "
         "on-chip gain switching is active during the entire exposure.This mode "
         "disables the on - chip gain switching comparator automatically after "
         "93.75% (only for chipv1.0) of exposure time (only for longer than "
@@ -1973,16 +1991,17 @@ class CmdProxy {
         "disabled(comparator enabled throughout). 1 enables mode. 0 disables "
         "mode. ");
 
-    TIME_COMMAND(compdisabletime, getComparatorDisableTime,
-                 setComparatorDisableTime,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Time "
-                 "before end of exposure when comparator is disabled. It is "
-                 "only possible for chipv1.1.");
+    TIME_COMMAND(
+        compdisabletime, getComparatorDisableTime, setComparatorDisableTime,
+        "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Moench] Time "
+        "before end of exposure when comparator is disabled. It is "
+        "only possible for chipv1.1.");
 
     INTEGER_COMMAND_SET_NOID_GET_ID(
         extrastoragecells, getNumberOfAdditionalStorageCells,
         setNumberOfAdditionalStorageCells, StringTo<int>,
-        "[0-15]\n\t[Jungfrau] Only for chipv1.0. Number of additional storage "
+        "[0-15]\n\t[Jungfrau][Moench] Only for chipv1.0. Number of additional "
+        "storage "
         "cells. Default is "
         "0. For advanced users only. \n\tThe #images = #frames x #triggers x "
         "(#extrastoragecells + 1).");
@@ -1990,13 +2009,15 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         storagecell_start, getStorageCellStart, setStorageCellStart,
         StringTo<int>,
-        "[0-max]\n\t[Jungfrau] Storage cell that stores the first acquisition "
+        "[0-max]\n\t[Jungfrau][Moench] Storage cell that stores the first "
+        "acquisition "
         "of the series. max is 15 (default) for chipv1.0 and 3 (default) for "
         "chipv1.1. For advanced users only.");
 
     TIME_COMMAND(
         storagecell_delay, getStorageCellDelay, setStorageCellDelay,
-        "[duration (0-1638375 ns)] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] "
+        "[duration (0-1638375 ns)] [(optional unit) "
+        "ns|us|ms|s]\n\t[Jungfrau][Moench] "
         "Additional time delay between 2 consecutive exposures in burst mode "
         "(resolution of 25ns). Only applicable for chipv1.0. For advanced "
         "users only.");
@@ -2007,10 +2028,11 @@ class CmdProxy {
         "Jungfrau] Gain mode.\n\tCAUTION: Do not use fixg0 without caution, "
         "you can damage the detector!!!");
 
-    INTEGER_COMMAND_VEC_ID(filtercells, getNumberOfFilterCells,
-                           setNumberOfFilterCells, StringTo<int>,
-                           "[0-12]\n\t[Jungfrau] Set Filter Cell. Only for "
-                           "chipv1.1. Advanced user Command");
+    INTEGER_COMMAND_VEC_ID(
+        filtercells, getNumberOfFilterCells, setNumberOfFilterCells,
+        StringTo<int>,
+        "[0-12]\n\t[Jungfrau][Moench] Set Filter Cell. Only for "
+        "chipv1.1. Advanced user Command");
 
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft,
@@ -2092,36 +2114,36 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         asamples, getNumberOfAnalogSamples, setNumberOfAnalogSamples,
         StringTo<int>,
-        "[n_samples]\n\t[CTB][Moench] Number of analog samples expected.");
+        "[n_samples]\n\t[CTB] Number of analog samples expected.");
 
     INTEGER_COMMAND_VEC_ID(
         adcclk, getADCClock, setADCClock, StringTo<int>,
-        "[n_clk in MHz]\n\t[Ctb][Moench] ADC clock frequency in MHz.");
+        "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz.");
 
     INTEGER_COMMAND_VEC_ID(runclk, getRUNClock, setRUNClock, StringTo<int>,
-                           "[n_clk in MHz]\n\t[Ctb][Moench] Run clock in MHz.");
+                           "[n_clk in MHz]\n\t[Ctb] Run clock in MHz.");
 
     GET_COMMAND(syncclk, getSYNCClock,
-                "[n_clk in MHz]\n\t[Ctb][Moench] Sync clock in MHz.");
+                "[n_clk in MHz]\n\t[Ctb] Sync clock in MHz.");
 
-    INTEGER_COMMAND_VEC_ID(
-        adcpipeline, getADCPipeline, setADCPipeline, StringTo<int>,
-        "[n_value]\n\t[Ctb][Moench] Pipeline for ADC clock.");
+    INTEGER_COMMAND_VEC_ID(adcpipeline, getADCPipeline, setADCPipeline,
+                           StringTo<int>,
+                           "[n_value]\n\t[Ctb] Pipeline for ADC clock.");
 
     INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, StringTo<int>,
                         defs::V_LIMIT,
-                        "[n_value]\n\t[Ctb][Moench] Soft limit for power "
+                        "[n_value]\n\t[Ctb] Soft limit for power "
                         "supplies (ctb only) and DACS in mV.");
 
     INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask,
                         StringTo<uint32_t>,
-                        "[bitmask]\n\t[Ctb][Moench] ADC Enable Mask for 1Gb "
+                        "[bitmask]\n\t[Ctb] ADC Enable Mask for 1Gb "
                         "Enable for each 32 ADC channel.");
 
     INTEGER_COMMAND_HEX(
         adcenable10g, getTenGigaADCEnableMask, setTenGigaADCEnableMask,
         StringTo<uint32_t>,
-        "[bitmask]\n\t[Ctb][Moench] ADC Enable Mask for 10Gb mode for each 32 "
+        "[bitmask]\n\t[Ctb] ADC Enable Mask for 10Gb mode for each 32 "
         "ADC channel. However, if any of a consecutive 4 bits are enabled, the "
         "complete 4 bits are enabled.");
 
@@ -2222,28 +2244,28 @@ class CmdProxy {
 
     EXECUTE_SET_COMMAND_NOID_1ARG(
         savepattern, savePattern,
-        "[fname]\n\t[Ctb][Moench][Mythen3] Saves pattern to file (ascii). "
-        "\n\t[Ctb][Moench] Also executes pattern.");
+        "[fname]\n\t[Ctb][Mythen3] Saves pattern to file (ascii). "
+        "\n\t[Ctb] Also executes pattern.");
 
     EXECUTE_SET_COMMAND(
         defaultpattern, loadDefaultPattern,
-        "\n\t[Mythen3][Moench] Loads and runs default pattern in pattern "
+        "\n\t[Mythen3] Loads and runs default pattern in pattern "
         "generator. It is to go back to initial settings.");
 
     INTEGER_COMMAND_HEX_WIDTH16(patioctrl, getPatternIOControl,
                                 setPatternIOControl, StringTo<uint64_t>,
-                                "[64 bit mask]\n\t[Ctb][Moench] 64 bit mask "
+                                "[64 bit mask]\n\t[Ctb] 64 bit mask "
                                 "defining input (0) and output (1) signals.");
 
     INTEGER_COMMAND_HEX_WIDTH16(
         patmask, getPatternMask, setPatternMask, StringTo<uint64_t>,
-        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] Selects the bits that will "
+        "[64 bit mask]\n\t[Ctb][Mythen3] Selects the bits that will "
         "have a pattern mask applied to the selected patmask for every "
         "pattern.");
 
     INTEGER_COMMAND_HEX_WIDTH16(
         patsetbit, getPatternBitMask, setPatternBitMask, StringTo<uint64_t>,
-        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] Sets the mask applied to "
+        "[64 bit mask]\n\t[Ctb][Mythen3] Sets the mask applied to "
         "every pattern to the selected bits.");
 
     EXECUTE_SET_COMMAND(patternstart, startPattern,
@@ -2253,10 +2275,10 @@ class CmdProxy {
     /* Advanced */
 
     EXECUTE_SET_COMMAND(resetfpga, resetFPGA,
-                        "\n\t[Jungfrau][Ctb][Moench] Reset FPGA.");
+                        "\n\t[Jungfrau][Moench][Ctb] Reset FPGA.");
 
     EXECUTE_SET_COMMAND(rebootcontroller, rebootController,
-                        "\n\t[Jungfrau][Ctb][Moench][Gotthard][Mythen3]["
+                        "\n\t[Jungfrau][Moench][Ctb][Gotthard][Mythen3]["
                         "Gotthard2] Reboot controller of detector.");
 
     INTEGER_COMMAND_VEC_ID(
@@ -2267,18 +2289,18 @@ class CmdProxy {
 
     EXECUTE_SET_COMMAND(
         firmwaretest, executeFirmwareTest,
-        "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb][Moench] Firmware "
+        "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Firmware "
         "test, ie. reads a read fixed pattern from a register.");
 
     EXECUTE_SET_COMMAND(
         bustest, executeBusTest,
-        "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb][Moench] Bus test, "
+        "\n\t[Jungfrau][Moench][Gotthard][Mythen3][Gotthard2][Ctb] Bus test, "
         "ie. Writes different values in a R/W register and confirms the "
         "writes to check bus.\n\tAdvanced User function!");
 
     INTEGER_COMMAND_HEX(
         adcinvert, getADCInvert, setADCInvert, StringTo<uint32_t>,
-        "[bitmask]\n\t[Ctb][Moench][Jungfrau] ADC Inversion "
+        "[bitmask]\n\t[Ctb][Jungfrau][Moench] ADC Inversion "
         "Mask.\n\t[Jungfrau][Moench] Inversions on top of the default mask.");
 
     /* Insignificant */
@@ -2303,19 +2325,19 @@ class CmdProxy {
         "\n\tClient IP Address that last communicated with the detector.");
 
     GET_COMMAND(framecounter, getNumberOfFramesFromStart,
-                "\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] "
+                "\n\t[Jungfrau][Moench][Mythen3][Gotthard2][CTB] "
                 "Number of frames from start run control."
                 "\n\t[Gotthard2] only in continuous mode.");
 
     TIME_GET_COMMAND(runtime, getActualTime,
                      "[(optional unit) "
-                     "ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench]["
+                     "ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2]["
                      "CTB] Time from detector start up."
                      "\n\t[Gotthard2] not in burst and auto mode.");
 
     TIME_GET_COMMAND(frametime, getMeasurementTime,
                      "[(optional unit) "
-                     "ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench]["
+                     "ns|us|ms|s]\n\t[Jungfrau][Moench][Mythen3][Gotthard2]["
                      "CTB] Timestamp at a frame start."
                      "\n\t[Gotthard2] not in burst and auto mode.");
 };

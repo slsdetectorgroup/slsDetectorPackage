@@ -320,10 +320,10 @@ void DetectorImpl::addModule(const std::string &hostname) {
     // module type updated by now
     shm()->detType = Parallel(&Module::getDetectorType, {})
                          .tsquash("Inconsistent detector types.");
-    // for moench and ctb
+    // for ctb
     modules[pos]->updateNumberOfChannels();
 
-    // for eiger, jungfrau, gotthard2
+    // for eiger, jungfrau, moench, gotthard2
     modules[pos]->updateNumberofUDPInterfaces();
 
     // update zmq port in case numudpinterfaces changed
@@ -413,6 +413,7 @@ void DetectorImpl::setGapPixelsinCallback(const bool enable) {
     if (enable) {
         switch (shm()->detType) {
         case JUNGFRAU:
+        case MOENCH:
             break;
         case EIGER:
             if (size() && modules[0]->getQuad()) {
@@ -435,6 +436,7 @@ int DetectorImpl::getTransmissionDelay() const {
     bool eiger = false;
     switch (shm()->detType) {
     case JUNGFRAU:
+    case MOENCH:
     case MYTHEN3:
         break;
     case EIGER:
@@ -478,6 +480,7 @@ void DetectorImpl::setTransmissionDelay(int step) {
     bool eiger = false;
     switch (shm()->detType) {
     case JUNGFRAU:
+    case MOENCH:
     case MYTHEN3:
         break;
     case EIGER:
@@ -882,10 +885,10 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage, bool quadEnable,
         nMod1TotPixelsx /= 2;
     }
     // eiger requires inter chip gap pixels are halved
-    // jungfrau prefers same inter chip gap pixels as the boundary pixels
+    // jungfrau/moench prefers same inter chip gap pixels as the boundary pixels
     int divisionValue = 2;
     slsDetectorDefs::detectorType detType = shm()->detType;
-    if (detType == JUNGFRAU) {
+    if (detType == JUNGFRAU || detType == MOENCH) {
         divisionValue = 1;
     }
     LOG(logDEBUG) << "Insert Gap pixels Calculations:\n\t"
@@ -1382,8 +1385,8 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     bool isPof = false;
     switch (shm()->detType) {
     case JUNGFRAU:
-    case CHIPTESTBOARD:
     case MOENCH:
+    case CHIPTESTBOARD:
         if (fname.find(".pof") == std::string::npos) {
             throw RuntimeError("Programming file must be a pof file.");
         }
@@ -1521,6 +1524,7 @@ defs::xy DetectorImpl::getPortGeometry() const {
         portGeometry.x = modules[0]->getNumberofUDPInterfacesFromShm();
         break;
     case JUNGFRAU:
+    case MOENCH:
         portGeometry.y = modules[0]->getNumberofUDPInterfacesFromShm();
         break;
     default:
@@ -1539,7 +1543,7 @@ defs::xy DetectorImpl::calculatePosition(int moduleIndex,
 }
 
 defs::ROI DetectorImpl::getRxROI() const {
-    if (shm()->detType == CHIPTESTBOARD || shm()->detType == MOENCH) {
+    if (shm()->detType == CHIPTESTBOARD) {
         throw RuntimeError("RxRoi not implemented for this Detector");
     }
     if (modules.size() == 0) {
@@ -1614,7 +1618,7 @@ defs::ROI DetectorImpl::getRxROI() const {
 }
 
 void DetectorImpl::setRxROI(const defs::ROI arg) {
-    if (shm()->detType == CHIPTESTBOARD || shm()->detType == MOENCH) {
+    if (shm()->detType == CHIPTESTBOARD) {
         throw RuntimeError("RxRoi not implemented for this Detector");
     }
     if (modules.size() == 0) {

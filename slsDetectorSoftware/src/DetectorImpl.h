@@ -300,6 +300,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
                               Positions pos = {});
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos);
+
+    std::pair<std::string, int> verifyRxPort(const std::string &receiver, std::vector<int> positions) const;
+    std::vector<std::pair<std::string, int>> verifyRxPort(const std::vector<std::string> &names) const;
+
     defs::ROI getRxROI() const;
     void setRxROI(const defs::ROI arg);
     void clearRxROI();

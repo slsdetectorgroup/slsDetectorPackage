@@ -1305,30 +1305,33 @@ std::string Module::getReceiverHostname() const {
     return std::string(shm()->rxHostname);
 }
 
-void Module::setReceiverHostname(const std::string &receiverIP,
+void Module::setReceiverHostname(const std::string &hostname, const int port,
                                  const bool initialChecks) {
-    LOG(logDEBUG1) << "Setting up Receiver hostname with " << receiverIP;
+    {
+        std::ostringstream oss;
+        oss << "Setting up Receiver hostname with " << hostname;
+        if (port != 0) {
+            oss << " at port " << port;
+        }
+        LOG(logDEBUG1) << oss.str();
+    }
 
     if (getRunStatus() == RUNNING) {
         throw RuntimeError("Cannot set receiver hostname. Acquisition already "
                            "running. Stop it first.");
     }
 
-    if (receiverIP == "none") {
+    if (hostname == "none") {
         memset(shm()->rxHostname, 0, MAX_STR_LENGTH);
         strcpy_safe(shm()->rxHostname, "none");
         shm()->useReceiverFlag = false;
         return;
     }
 
-    // start updating
-    std::string host = receiverIP;
-    auto res = split(host, ':');
-    if (res.size() > 1) {
-        host = res[0];
-        shm()->rxTCPPort = std::stoi(res[1]);
+    strcpy_safe(shm()->rxHostname, hostname.c_str());
+    if (port != 0) {
+        shm()->rxTCPPort = port;
     }
-    strcpy_safe(shm()->rxHostname, host.c_str());
     shm()->useReceiverFlag = true;
 
     try {

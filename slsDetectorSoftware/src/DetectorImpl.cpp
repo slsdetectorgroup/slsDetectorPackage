@@ -1542,7 +1542,9 @@ defs::xy DetectorImpl::calculatePosition(int moduleIndex,
     return pos;
 }
 
-std::pair<std::string, int> DetectorImpl::verifyRxPort(const std::string &receiver, std::vector<int> positions) const {
+std::pair<std::string, int>
+DetectorImpl::verifyRxPort(const std::string &receiver,
+                           std::vector<int> positions) const {
     // no checks if setting to none
     if (receiver == "none" || receiver.empty()) {
         return make_pair(receiver, 0);
@@ -1557,8 +1559,7 @@ std::pair<std::string, int> DetectorImpl::verifyRxPort(const std::string &receiv
     }
 
     // rx hostname and port for given positions
-    if (positions.empty() ||
-        (positions.size() == 1 && positions[0] == -1)) {
+    if (positions.empty() || (positions.size() == 1 && positions[0] == -1)) {
         positions.resize(modules.size());
         std::iota(begin(positions), end(positions), 0);
     }
@@ -1579,26 +1580,33 @@ std::pair<std::string, int> DetectorImpl::verifyRxPort(const std::string &receiv
 
     // remove the ones without a hostname
     rxHostnames.erase(std::remove_if(rxHostnames.begin(), rxHostnames.end(),
-                              [](const std::pair<std::string, int> x)
-                              { return (x.first == "none" || x.first.empty()); }), rxHostnames.end());
+                                     [](const std::pair<std::string, int> x) {
+                                         return (x.first == "none" ||
+                                                 x.first.empty());
+                                     }),
+                      rxHostnames.end());
 
     // verify no duplicates
     std::sort(std::begin(rxHostnames), std::end(rxHostnames));
-    bool hasDuplicates = std::unique(std::begin(rxHostnames), std::end(rxHostnames)) != std::end(rxHostnames);
-     if (hasDuplicates) {
-        throw RuntimeError("Cannot set rx_hostname due to duplicate hostname-port number pairs.");
+    bool hasDuplicates =
+        std::unique(std::begin(rxHostnames), std::end(rxHostnames)) !=
+        std::end(rxHostnames);
+    if (hasDuplicates) {
+        throw RuntimeError("Cannot set rx_hostname due to duplicate "
+                           "hostname-port number pairs.");
     }
 
     return std::make_pair(host, port);
 }
 
-std::vector<std::pair<std::string, int>> DetectorImpl::verifyRxPort(const std::vector<std::string> &names) const {
+std::vector<std::pair<std::string, int>>
+DetectorImpl::verifyRxPort(const std::vector<std::string> &names) const {
     if ((int)names.size() != size()) {
         throw RuntimeError(
             "Receiver hostnames size " + std::to_string(names.size()) +
             " does not match detector size " + std::to_string(size()));
     }
-    
+
     // extract ports
     std::vector<std::pair<std::string, int>> rxHostnames(size());
     for (int i = 0; i != size(); ++i) {
@@ -1615,23 +1623,27 @@ std::vector<std::pair<std::string, int>> DetectorImpl::verifyRxPort(const std::v
 
     // remove the ones without a hostname
     rxHostnames.erase(std::remove_if(rxHostnames.begin(), rxHostnames.end(),
-                              [](const std::pair<std::string, int> x)
-                              { return (x.first == "none" || x.first.empty()); }), rxHostnames.end());
+                                     [](const std::pair<std::string, int> x) {
+                                         return (x.first == "none" ||
+                                                 x.first.empty());
+                                     }),
+                      rxHostnames.end());
 
     // verify no duplicates
     std::vector<std::pair<std::string, int>> hostCopy(rxHostnames);
     std::sort(std::begin(hostCopy), std::end(hostCopy));
-    bool hasDuplicates = std::unique(std::begin(hostCopy), std::end(hostCopy)) != std::end(hostCopy);
-     if (hasDuplicates) {
-        throw RuntimeError("Cannot set rx_hostname due to duplicate hostname-port number pairs.");
+    bool hasDuplicates = std::unique(std::begin(hostCopy),
+                                     std::end(hostCopy)) != std::end(hostCopy);
+    if (hasDuplicates) {
+        throw RuntimeError("Cannot set rx_hostname due to duplicate "
+                           "hostname-port number pairs.");
     }
 
-    for (auto it: rxHostnames) {
+    for (auto it : rxHostnames) {
         std::cout << it.first << " " << it.second << std::endl;
     }
     return rxHostnames;
 }
-
 
 defs::ROI DetectorImpl::getRxROI() const {
     if (shm()->detType == CHIPTESTBOARD) {

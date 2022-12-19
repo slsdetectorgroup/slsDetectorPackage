@@ -1152,7 +1152,7 @@ Result<std::string> Detector::getRxHostname(Positions pos) const {
 }
 
 void Detector::setRxHostname(const std::string &receiver, Positions pos) {
-    auto host = pimpl->verifyRxPort(receiver, pos);   
+    auto host = pimpl->verifyRxPort(receiver, pos);
     pimpl->Parallel(&Module::setReceiverHostname, pos, host.first, host.second,
                     pimpl->getInitialChecks());
     updateRxRateCorrections();
@@ -1161,14 +1161,15 @@ void Detector::setRxHostname(const std::string &receiver, Positions pos) {
 void Detector::setRxHostname(const std::vector<std::string> &name) {
     // set all to same rx_hostname
     if (name.size() == 1) {
-        auto host = pimpl->verifyRxPort(name[0], {});   
-        pimpl->Parallel(&Module::setReceiverHostname, {}, host.first, host.second,
-                        pimpl->getInitialChecks());
+        auto host = pimpl->verifyRxPort(name[0], {});
+        pimpl->Parallel(&Module::setReceiverHostname, {}, host.first,
+                        host.second, pimpl->getInitialChecks());
     } else {
-        auto hosts = pimpl->verifyRxPort(name);   
+        auto hosts = pimpl->verifyRxPort(name);
         // set each rx_hostname
         for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setReceiverHostname, {idet}, hosts[idet].first, hosts[idet].second,
+            pimpl->Parallel(&Module::setReceiverHostname, {idet},
+                            hosts[idet].first, hosts[idet].second,
                             pimpl->getInitialChecks());
         }
     }

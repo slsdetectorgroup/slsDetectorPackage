@@ -14,7 +14,7 @@ streamingInterface = slsDetectorDefs.streamingInterface
 defs = slsDetectorDefs
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
-from .utils import Geometry, to_geo, element, reduce_time, is_iterable
+from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname_list
 from _slsdet import xy
 from . import utils as ut
 from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
@@ -162,12 +162,8 @@ class Detector(CppDetectorApi):
 
     @hostname.setter
     def hostname(self, hostnames):
-        if isinstance(hostnames, str):
-            hostnames = [hostnames]
-        if isinstance(hostnames, list):
-            self.setHostname(hostnames)
-        else:
-            raise ValueError("hostname needs to be string or list of strings")
+        args = hostname_list(hostnames)
+        self.setHostname(args)
 
 
     @property

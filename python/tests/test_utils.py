@@ -342,3 +342,32 @@ def test_merge_args_tuple():
 
 def test_merge_args_dict_with_tuple():
     assert merge_args({0: (1,2)}, 3) == ({0: (1,2,3)},)
+
+
+def test_hostname_to_list():
+    s = "localhost"
+    r = hostname_list(s)
+    assert r == [s]
+
+def test_hostname_to_list_passthrough():
+    args = ["localhost"]
+    ret = hostname_list(args)
+    assert ret == args
+
+    args = ("localhost",)
+    ret = hostname_list(args)
+    assert ret == args
+
+def test_splitting_hostname():
+    args = 'apple+banana+pear+'
+    ret = hostname_list(args)
+    assert ret == ['apple', 'banana', 'pear']
+
+    #not sensitive to trailing +
+    args = 'apple+banana+pear'
+    ret = hostname_list(args)
+    assert ret == ['apple', 'banana', 'pear']
+
+def test_hostame_throws_on_wrong_args():
+    with pytest.raises(Exception) as e:
+        hostname_list(5)

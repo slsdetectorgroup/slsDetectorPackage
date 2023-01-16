@@ -780,7 +780,8 @@ class Detector(CppDetectorApi):
 
     @rx_hostname.setter
     def rx_hostname(self, hostname):
-        self.setRxHostname(hostname)
+        args = hostname_list(hostname)
+        self.setRxHostname(args)
 
     @property
     @element

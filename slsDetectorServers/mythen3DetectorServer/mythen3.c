@@ -313,7 +313,7 @@ patternParameters *setChannelRegisterChip(int ichip, char *mask,
                  chanReg, ichip * NCHAN + ich * NCOUNTERS,
                  ichip * NCHAN_1_COUNTER + ich, ichip, ich));
         }
-        for (int i = 1; i < 24; i++) {
+        for (int i = 0; i < 23; i++) {
             patword = clearBit(SIGNAL_clk, patword);
             pat->word[iaddr++] = patword;
 

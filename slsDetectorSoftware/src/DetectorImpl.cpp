@@ -1796,13 +1796,16 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
                                    std::to_string(badchannel) +
                                    " out of bounds.");
             }
-
             if ((int)badchannels.size() != imod + 1) {
                 badchannels.push_back(std::vector<int>{});
             }
             badchannels[imod].push_back(ch);
         }
         for (int imod = 0; imod != (int)modules.size(); ++imod) {
+            // add empty vector if no bad channels in this module
+            if ((int)badchannels.size() != imod + 1) {
+                badchannels.push_back(std::vector<int>{});
+            }
             Parallel(&Module::setBadChannels, {imod}, badchannels[imod]);
         }
 

@@ -1007,7 +1007,9 @@ int setDelayAfterTrigger(int64_t val) {
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
     val /= (1E-9 * CLK_FREQ);
-    val -= masterdefaultdelay;
+    if (master) {
+        val -= masterdefaultdelay;
+    }
     if (val != retval) {
         return FAIL;
     }

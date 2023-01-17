@@ -8,7 +8,7 @@ Testing functions from utils.py
 
 import pytest
 from slsdet.utils import *
-from slsdet import IpAddr, MacAddr
+from slsdet import IpAddr, MacAddr, DurationWrapper
 import datetime as dt
 import pathlib
 from pathlib import Path
@@ -22,7 +22,11 @@ def test_iterable():
 
 
 def test_reduce_time_to_single_value_from_list():
-    t = 3 * [dt.timedelta(seconds=1)]
+    t = [dt.timedelta(seconds=1) for i in range(3)]
+    assert reduce_time(t) == 1
+
+def test_reduce_time_to_single_value_from_list_DurationWrapper():
+    t = [DurationWrapper(1) for i in range(3)]
     assert reduce_time(t) == 1
 
 
@@ -82,6 +86,12 @@ def test_all_equal_str():
 def test_all_equal_str_fails():
     assert all_equal('aaab') == False
 
+
+def test_all_equal_DurationWrapper():
+    assert all_equal([DurationWrapper(1), DurationWrapper(1)])
+
+def test_all_equal_DurationWrapper_fail():
+    assert not all_equal([DurationWrapper(1), DurationWrapper(2)])
 
 def test_element_if_equal_int():
     assert element_if_equal([5, 5]) == 5

@@ -1,0 +1,6 @@
+0
+10, 30
+40:45 50:52
+1279
+# all bad channels are applied for all counters in deector
+

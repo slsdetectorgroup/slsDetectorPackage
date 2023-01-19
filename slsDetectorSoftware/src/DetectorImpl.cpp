@@ -342,28 +342,32 @@ void DetectorImpl::updateDetectorSize() {
             "updating detector size. ");
     }
 
-    int maxx = shm()->numberOfChannels.x;
-    int maxy = shm()->numberOfChannels.y;
     int nModx = 0, nMody = 0;
     // 1d, add modules along x axis
     if (modSize.y == 1) {
-        if (maxx == 0) {
-            maxx = modSize.x * size();
+        int detSizeX = shm()->numberOfChannels.x;
+        int maxChanX = modSize.x * size();
+        // user given detsizex used only within max value
+        if (detSizeX > 1 && detSizeX <= maxChanX) {
+            maxChanX = detSizeX;
         }
-        nModx = maxx / modSize.x;
+        nModx = maxChanX / modSize.x;
         nMody = size() / nModx;
-        if ((maxx % modSize.x) > 0) {
+        if ((maxChanX % modSize.x) > 0) {
             ++nMody;
         }
     }
     // 2d, add modules along y axis (due to eiger top/bottom)
     else {
-        if (maxy == 0) {
-            maxy = modSize.y * size();
+        int detSizeY = shm()->numberOfChannels.y;
+        int maxChanY = modSize.y * size();
+        // user given detsizey used only within max value
+        if (detSizeY > 1 && detSizeY <= maxChanY) {
+            maxChanY = detSizeY;
         }
-        nMody = maxy / modSize.y;
+        nMody = maxChanY / modSize.y;
         nModx = size() / nMody;
-        if ((maxy % modSize.y) > 0) {
+        if ((maxChanY % modSize.y) > 0) {
             ++nModx;
         }
     }

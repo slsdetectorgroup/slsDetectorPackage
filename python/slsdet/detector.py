@@ -1567,6 +1567,20 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def fliprows(self):
+        """
+        [Eiger] flips rows paramater sent to slsreceiver to stream as json parameter to flip rows in gui. \n
+        [Jungfrau] flips rows in the detector itself. For bottom module and number of interfaces must be set to 2. slsReceiver and slsDetectorGui does not handle.
+        """
+        return self.getFlipRows()
+
+    @fliprows.setter
+    def fliprows(self, value):
+        ut.set_using_dict(self.setFlipRows, value)
+
+
+    @property
+    @element
     def master(self):
         """
         [Eiger][Gotthard2][Jungfrau] Sets (half) module to master and other(s) to slaves.\n

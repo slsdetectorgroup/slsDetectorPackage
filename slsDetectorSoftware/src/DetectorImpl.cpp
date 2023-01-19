@@ -1790,23 +1790,23 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
                                    " out of bounds.");
             }
             int ch = badchannel % nchan;
-            int imod = badchannel / nchan;
-            if (imod >= (int)modules.size()) {
+            size_t imod = badchannel / nchan;
+            if (imod >= modules.size()) {
                 throw RuntimeError("Invalid bad channel list. " +
                                    std::to_string(badchannel) +
                                    " out of bounds.");
             }
-            if ((int)badchannels.size() != imod + 1) {
+            if (badchannels.size() != imod + 1) {
                 badchannels.push_back(std::vector<int>{});
             }
             badchannels[imod].push_back(ch);
         }
-        for (int imod = 0; imod != (int)modules.size(); ++imod) {
+        for (size_t imod = 0; imod != modules.size(); ++imod) {
             // add empty vector if no bad channels in this module
-            if ((int)badchannels.size() != imod + 1) {
+            if (badchannels.size() != imod + 1) {
                 badchannels.push_back(std::vector<int>{});
             }
-            Parallel(&Module::setBadChannels, {imod}, badchannels[imod]);
+            Parallel(&Module::setBadChannels, {static_cast<int>(imod)}, badchannels[imod]);
         }
 
     } else if (pos.size() != 1) {

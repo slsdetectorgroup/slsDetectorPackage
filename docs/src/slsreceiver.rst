@@ -93,9 +93,9 @@ ZMQ: Json Header Format
 **Change in field names from slsDetectorPackage v6.x.x to v7.0.0**
 
 * detSpec1 <- bunchId
-* detSpec1 <- reserved
-* detSpec1 <- debug
-* detSpec1 <- roundRNumber
+* detSpec2 <- reserved
+* detSpec3 <- debug
+* detSpec4 <- roundRNumber
 
 
 **Format**
@@ -125,14 +125,14 @@ ZMQ: Json Header Format
             "frameNumber": unsigned long long int,
             "expLength": unsigned int,
             "packetNumber": unsigned int,
-            "bunchId": unsigned long int,
+            "detSpec1": unsigned long int,
             "timestamp": unsigned long int,
             "modId": unsigned int,
             "row": unsigned int,
             "column": unsigned int,
-            "reserved": unsigned int,
-            "debug": unsigned int,
-            "roundRNumber": unsigned int,
+            "detSpec2": unsigned int,
+            "detSpec3": unsigned int,
+            "detSpec4": unsigned int,
             "detType": unsigned int,
             "version": unsigned int,
             

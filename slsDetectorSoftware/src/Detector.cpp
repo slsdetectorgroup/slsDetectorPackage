@@ -349,6 +349,21 @@ void Detector::setBadChannels(const std::string &fname, Positions pos) {
     pimpl->setBadChannels(fname, pos);
 }
 
+Result<std::vector<int>> Detector::getBadChannels(Positions pos) const {
+    return pimpl->Parallel(&Module::getBadChannels, pos);
+}
+
+void Detector::setBadChannels(const std::vector<std::vector<int>> list) {
+    // not ideal since trimming might be slow?
+    for (int idet = 0; idet < size(); ++idet) {
+        pimpl->Parallel(&Module::setBadChannels, {idet}, list[idet]);
+    }
+}
+
+void Detector::setBadChannels(const std::vector<int> list, Positions pos) {
+    pimpl->setBadChannels(list, pos);
+}
+
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
     return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
 }

@@ -644,6 +644,8 @@ TEST_CASE("badchannels", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3) {
+        auto prev = det.getBadChannels();
+
         REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
 
         std::string fname_put =
@@ -655,6 +657,20 @@ TEST_CASE("badchannels", "[.cmd]") {
         auto list = getChannelsFromFile(fname_get);
         std::vector<int> expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
         REQUIRE(list == expected);
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"none"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        REQUIRE(list.empty());
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_put}, 0, PUT));
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"0"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        REQUIRE(list.empty());
+
+        det.setBadChannels(prev);
 
     } else {
         REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));

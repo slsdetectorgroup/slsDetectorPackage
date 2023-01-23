@@ -1778,6 +1778,10 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
     if (list.empty()) {
         throw RuntimeError("Bad channel file is empty.");
     }
+    setBadChannels(list, pos);
+}
+
+void DetectorImpl::setBadChannels(const std::vector<int> list, Positions pos) {
 
     // update to multi values if multi modules
     if (isAllPositions(pos)) {
@@ -1810,7 +1814,8 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
             if (badchannels.size() != imod + 1) {
                 badchannels.push_back(std::vector<int>{});
             }
-            Parallel(&Module::setBadChannels, {static_cast<int>(imod)}, badchannels[imod]);
+            Parallel(&Module::setBadChannels, {static_cast<int>(imod)},
+                     badchannels[imod]);
         }
 
     } else if (pos.size() != 1) {

@@ -221,6 +221,16 @@ class Detector {
      */
     void setBadChannels(const std::string &fname, Positions pos = {});
 
+    /** [Gotthard2][Mythen3] */
+    Result<std::vector<int>> getBadChannels(Positions pos = {}) const;
+
+    /** [Gotthard2][Mythen3] Empty list resets bad channel list, multi module
+     * channel list */
+    void setBadChannels(const std::vector<int> list, Positions pos = {});
+
+    /** [Gotthard2][Mythen3] Empty list resets bad channel list */
+    void setBadChannels(const std::vector<std::vector<int>> list);
+
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@}
 

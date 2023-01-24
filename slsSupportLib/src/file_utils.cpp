@@ -166,7 +166,7 @@ ssize_t getFileSize(FILE *fd, const std::string &prependErrorString) {
     return fileSize;
 }
 
-std::vector<int> getChannelsFromStringArray(const std::vector<std::string> list) {
+std::vector<int> getChannelsFromStringList(const std::vector<std::string> list) {
     std::vector<int> channels;
     for (auto it : list) {
 
@@ -176,7 +176,7 @@ std::vector<int> getChannelsFromStringArray(const std::vector<std::string> list)
             try {
                 int istart = StringTo<int>(it.substr(0, result));
                 int istop =  StringTo<int>(it.substr(result + 1, it.length() - result - 1));
-                LOG(logINFORED) << "istart:" << istart  << " istop:" << istop;
+                LOG(logDEBUG1) << "istart:" << istart  << " istop:" << istop;
                 std::vector<int> range(istop - istart);
                 std::generate(range.begin(), range.end(), [n = istart]() mutable { return n++; });
                 for (auto range_it : range) {
@@ -228,58 +228,10 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
         std::vector<std::string> vec = split(line, ' ');
 
         // get channels from that line and push it to list
-        auto line_vec = getChannelsFromStringArray(vec);
+        auto line_vec = getChannelsFromStringList(vec);
         for (auto it : line_vec) {
             list.push_back(it);
         }
-/*
-        // replace x:y with a sequence of x to y
-        auto result = line.find(':');
-        while (result != std::string::npos) {
-            // find space before first number
-            auto start = line.rfind(' ', result);
-            if (start == std::string::npos) {
-                start = 0;
-            } else
-                ++start;
-            int istart = StringTo<int>(line.substr(start, result - start));
-
-
-            auto stop = line.find(' ', result);
-            if (stop == std::string::npos) {
-                stop = line.length();
-            }
-            int istop =
-                StringTo<int>(line.substr(result + 1, stop - result - 1));
-
-            std::vector<int> v(istop - istart);
-            std::generate(v.begin(), v.end(),
-                          [n = istart]() mutable { return n++; });
-            line.replace(start, stop - start, ToString(v));
-
-            LOG(logDEBUG1) << line;
-            result = line.find(':');
-        }
-        LOG(logINFORED) << "\nline: [" << line << ']';
-
-        // remove punctuations including [ and ]
-        line.erase(std::remove_if(begin(line), end(line), ispunct), end(line));
-
-        LOG(logINFORED) << "\nline: [" << line << ']';
-
-        //push to list
-        for (auto it : vec) {
-            int ival = 0;
-            try {
-                ival = StringTo<int>(it);
-            } catch (std::exception &e) {
-                throw RuntimeError("Could not load channels from file. Invalid "
-                                   "channel number: " +
-                                   it);
-            }
-            list.push_back(ival);
-        }
-        */
     }
 
     if (removeDuplicates<int>(list)) {

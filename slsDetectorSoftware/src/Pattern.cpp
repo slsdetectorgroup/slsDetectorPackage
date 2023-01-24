@@ -11,11 +11,11 @@ namespace sls {
 
 Pattern::Pattern() {
     // initialize pattern addresses
-     for (int i = 0; i != MAX_PATTERN_LEVELS; ++i) {
+    for (int i = 0; i != MAX_PATTERN_LEVELS; ++i) {
         pat->startloop[i] = MAX_PATTERN_LENGTH - 1;
         pat->stoploop[i] = MAX_PATTERN_LENGTH - 1;
         pat->wait[i] = MAX_PATTERN_LENGTH - 1;
-    }   
+    }
 }
 
 Pattern::~Pattern() { delete pat; }

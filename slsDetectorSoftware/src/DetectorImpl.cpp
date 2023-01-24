@@ -1810,7 +1810,8 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
             if (badchannels.size() != imod + 1) {
                 badchannels.push_back(std::vector<int>{});
             }
-            Parallel(&Module::setBadChannels, {static_cast<int>(imod)}, badchannels[imod]);
+            Parallel(&Module::setBadChannels, {static_cast<int>(imod)},
+                     badchannels[imod]);
         }
 
     } else if (pos.size() != 1) {

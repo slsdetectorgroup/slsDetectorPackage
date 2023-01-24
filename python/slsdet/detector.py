@@ -14,7 +14,7 @@ streamingInterface = slsDetectorDefs.streamingInterface
 defs = slsDetectorDefs
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
-from .utils import Geometry, to_geo, element, reduce_time, is_iterable
+from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname_list
 from _slsdet import xy
 from . import utils as ut
 from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
@@ -162,12 +162,8 @@ class Detector(CppDetectorApi):
 
     @hostname.setter
     def hostname(self, hostnames):
-        if isinstance(hostnames, str):
-            hostnames = [hostnames]
-        if isinstance(hostnames, list):
-            self.setHostname(hostnames)
-        else:
-            raise ValueError("hostname needs to be string or list of strings")
+        args = hostname_list(hostnames)
+        self.setHostname(args)
 
 
     @property
@@ -784,7 +780,8 @@ class Detector(CppDetectorApi):
 
     @rx_hostname.setter
     def rx_hostname(self, hostname):
-        self.setRxHostname(hostname)
+        args = hostname_list(hostname)
+        self.setRxHostname(args)
 
     @property
     @element
@@ -1567,6 +1564,20 @@ class Detector(CppDetectorApi):
     @trimval.setter
     def trimval(self, value):
         ut.set_using_dict(self.setAllTrimbits, value)
+
+    @property
+    @element
+    def fliprows(self):
+        """
+        [Eiger] flips rows paramater sent to slsreceiver to stream as json parameter to flip rows in gui. \n
+        [Jungfrau] flips rows in the detector itself. For bottom module and number of interfaces must be set to 2. slsReceiver and slsDetectorGui does not handle.
+        """
+        return self.getFlipRows()
+
+    @fliprows.setter
+    def fliprows(self, value):
+        ut.set_using_dict(self.setFlipRows, value)
+
 
     @property
     @element

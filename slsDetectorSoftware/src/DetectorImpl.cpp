@@ -342,28 +342,32 @@ void DetectorImpl::updateDetectorSize() {
             "updating detector size. ");
     }
 
-    int maxx = shm()->numberOfChannels.x;
-    int maxy = shm()->numberOfChannels.y;
     int nModx = 0, nMody = 0;
     // 1d, add modules along x axis
     if (modSize.y == 1) {
-        if (maxx == 0) {
-            maxx = modSize.x * size();
+        int detSizeX = shm()->numberOfChannels.x;
+        int maxChanX = modSize.x * size();
+        // user given detsizex used only within max value
+        if (detSizeX > 1 && detSizeX <= maxChanX) {
+            maxChanX = detSizeX;
         }
-        nModx = maxx / modSize.x;
+        nModx = maxChanX / modSize.x;
         nMody = size() / nModx;
-        if ((maxx % modSize.x) > 0) {
+        if ((maxChanX % modSize.x) > 0) {
             ++nMody;
         }
     }
     // 2d, add modules along y axis (due to eiger top/bottom)
     else {
-        if (maxy == 0) {
-            maxy = modSize.y * size();
+        int detSizeY = shm()->numberOfChannels.y;
+        int maxChanY = modSize.y * size();
+        // user given detsizey used only within max value
+        if (detSizeY > 1 && detSizeY <= maxChanY) {
+            maxChanY = detSizeY;
         }
-        nMody = maxy / modSize.y;
+        nMody = maxChanY / modSize.y;
         nModx = size() / nMody;
-        if ((maxy % modSize.y) > 0) {
+        if ((maxChanY % modSize.y) > 0) {
             ++nModx;
         }
     }
@@ -1790,20 +1794,24 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
                                    " out of bounds.");
             }
             int ch = badchannel % nchan;
-            int imod = badchannel / nchan;
-            if (imod >= (int)modules.size()) {
+            size_t imod = badchannel / nchan;
+            if (imod >= modules.size()) {
                 throw RuntimeError("Invalid bad channel list. " +
                                    std::to_string(badchannel) +
                                    " out of bounds.");
             }
-
-            if ((int)badchannels.size() != imod + 1) {
+            if (badchannels.size() != imod + 1) {
                 badchannels.push_back(std::vector<int>{});
             }
             badchannels[imod].push_back(ch);
         }
-        for (int imod = 0; imod != (int)modules.size(); ++imod) {
-            Parallel(&Module::setBadChannels, {imod}, badchannels[imod]);
+        for (size_t imod = 0; imod != modules.size(); ++imod) {
+            // add empty vector if no bad channels in this module
+            if (badchannels.size() != imod + 1) {
+                badchannels.push_back(std::vector<int>{});
+            }
+            Parallel(&Module::setBadChannels, {static_cast<int>(imod)},
+                     badchannels[imod]);
         }
 
     } else if (pos.size() != 1) {

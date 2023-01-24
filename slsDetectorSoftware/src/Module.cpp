@@ -76,7 +76,7 @@ void Module::setHostname(const std::string &hostname,
         initialDetectorServerChecks();
         checkDetectorVersionCompatibility();
         LOG(logINFO) << "Module Version Compatibility - Success";
-    } catch (const DetectorError &e) {
+    } catch (const RuntimeError &e) {
         if (!initialChecks) {
             LOG(logWARNING) << "Bypassing Initial Checks at your own risk!";
         } else {

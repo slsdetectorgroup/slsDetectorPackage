@@ -31,7 +31,7 @@ alpha_wait = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 alpha_wait_rect = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
 
 # Loop colors and line styles (6 needed from 0 to 5)
-colors_loop = ['tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:ping', 'tab:grey']
+colors_loop = ['tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:grey']
 linestyles_loop = ['-.', '-.', '-.', '-.', '-.', '-.']
 alpha_loop = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 alpha_loop_rect = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
@@ -527,7 +527,7 @@ for idx, i in enumerate(range(nbiteff)):
                            linestyle=linestyles_loop[2], color=colors_loop[2], alpha=alpha_loop[2],
                            label="loop 2: " + str(nloop2) + " times" if idx == 0 else "", linewidth=2.0)
             axs2[idx].plot([loop2_end, loop2_end], [-10, 10],
-                           linestyle=linestyles_loop[0], color=colors_loop[0], alpha=alpha_loop[2], linewidth=2.0)
+                           linestyle=linestyles_loop[2], color=colors_loop[2], alpha=alpha_loop[2], linewidth=2.0)
 
     # Loop 3
     if nloop3 is not None:

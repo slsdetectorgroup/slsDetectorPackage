@@ -559,6 +559,9 @@ std::string CmdProxy::BadChannels(int action) {
         det->getBadChannels(args[0], std::vector<int>{det_id});
         os << "successfully retrieved" << '\n';
     } else if (action == defs::PUT_ACTION) {
+        for (int i = 0; i != args.size(); ++i) {
+            LOG(logINFORED) << i << ":[" << args[i] <<']';
+        }
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }

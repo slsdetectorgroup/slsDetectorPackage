@@ -4,6 +4,7 @@
 #include "sls/ToString.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
+#include "sls/container_utils.h"
 
 #include <errno.h>
 #include <ios>
@@ -165,6 +166,45 @@ ssize_t getFileSize(FILE *fd, const std::string &prependErrorString) {
     return fileSize;
 }
 
+std::vector<int> getChannelsFromStringArray(const std::vector<std::string> list) {
+    std::vector<int> channels;
+    for (auto it : list) {
+
+        // find range and replace with sequence of x to y
+        auto result = it.find(':');
+        if (result != std::string::npos) {
+            try {
+                int istart = StringTo<int>(it.substr(0, result));
+                int istop =  StringTo<int>(it.substr(result + 1, it.length() - result - 1));
+                LOG(logINFORED) << "istart:" << istart  << " istop:" << istop;
+                std::vector<int> range(istop - istart);
+                std::generate(range.begin(), range.end(), [n = istart]() mutable { return n++; });
+                for (auto range_it : range) {
+                    channels.push_back(range_it);
+                }
+            } catch (std::exception &e) {
+                throw RuntimeError("Could not load channels. Invalid channel range: " + it);
+            }
+        }
+
+        // else convert to int
+        else {
+            int ival = 0;
+            try {
+                ival = StringTo<int>(it);
+            } catch (std::exception &e) {
+                throw RuntimeError("Could not load channels. Invalid channel number: " + it);
+            }
+            channels.push_back(ival);
+        }
+    }
+    LOG(logDEBUG1) << "Channels:";
+    for (auto it : channels) {
+        LOG(logDEBUG1) << it;
+    }
+    return channels;
+}
+
 std::vector<int> getChannelsFromFile(const std::string &fname) {
     // read bad channels file
     std::ifstream input_file(fname);
@@ -183,15 +223,27 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
         std::replace_if(
             begin(line), end(line), [](char c) { return (c == ','); }, ' ');
 
+
+        // split line (delim space)
+        std::vector<std::string> vec = split(line, ' ');
+
+        // get channels from that line and push it to list
+        auto line_vec = getChannelsFromStringArray(vec);
+        for (auto it : line_vec) {
+            list.push_back(it);
+        }
+/*
         // replace x:y with a sequence of x to y
         auto result = line.find(':');
         while (result != std::string::npos) {
+            // find space before first number
             auto start = line.rfind(' ', result);
             if (start == std::string::npos) {
                 start = 0;
             } else
                 ++start;
             int istart = StringTo<int>(line.substr(start, result - start));
+
 
             auto stop = line.find(' ', result);
             if (stop == std::string::npos) {
@@ -208,14 +260,14 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
             LOG(logDEBUG1) << line;
             result = line.find(':');
         }
+        LOG(logINFORED) << "\nline: [" << line << ']';
 
         // remove punctuations including [ and ]
         line.erase(std::remove_if(begin(line), end(line), ispunct), end(line));
 
-        LOG(logDEBUG) << "\nline: [" << line << ']';
+        LOG(logINFORED) << "\nline: [" << line << ']';
 
-        // split line (delim space) and push to list
-        std::vector<std::string> vec = split(line, ' ');
+        //push to list
         for (auto it : vec) {
             int ival = 0;
             try {
@@ -227,17 +279,14 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
             }
             list.push_back(ival);
         }
+        */
     }
 
-    // remove duplicates from list
-    auto listSize = list.size();
-    std::sort(list.begin(), list.end());
-    list.erase(unique(list.begin(), list.end()), list.end());
-    if (list.size() != listSize) {
+    if (removeDuplicates<int>(list)) {
         LOG(logWARNING) << "Removed duplicates from channel file";
     }
 
-    LOG(logDEBUG1) << "list:" << ToString(list);
+    LOG(logINFORED) << "list:" << ToString(list);
     return list;
 }
 

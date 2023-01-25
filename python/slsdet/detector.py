@@ -1606,6 +1606,19 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def badchannels(self):
+        """
+        [fname|none|0]\n\t[Gotthard2][Mythen3] Sets the bad channels (from file of bad channel numbers) to be masked out. None or 0 unsets all the badchannels.\n
+        [Mythen3] Also does trimming
+        """
+        return self.getBadChannels()
+
+    @badchannels.setter
+    def badchannels(self, value):
+        ut.set_using_dict(self.setBadChannels, value)
+
+    @property
+    @element
     def lock(self):
         """Lock detector to one client IP, 1 locks, 0 unlocks. Default is unlocked."""
         return self.getDetectorLock()

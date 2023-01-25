@@ -7,6 +7,7 @@
 #include "sls/ToString.h"
 #include "sls/bit_utils.h"
 #include "sls/container_utils.h"
+#include "sls/file_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
@@ -559,16 +560,41 @@ std::string CmdProxy::BadChannels(int action) {
         det->getBadChannels(args[0], std::vector<int>{det_id});
         os << "successfully retrieved" << '\n';
     } else if (action == defs::PUT_ACTION) {
-        for (int i = 0; i != args.size(); ++i) {
-            LOG(logINFORED) << i << ":[" << args[i] <<']';
-        }
-        if (args.size() != 1) {
+        if (args.size() == 0) {
             WrongNumberOfParameters(1);
         }
-        if (args[0] == "none" || args[0] == "0") {
-            det->setBadChannels(std::vector<int>{}, std::vector<int>{det_id});
-        } else {
-            det->setBadChannels(args[0], std::vector<int>{det_id});
+        if (args.size() == 1) {
+            if (args[0] == "none" || args[0] == "0") {
+                det->setBadChannels(std::vector<int>{},
+                                    std::vector<int>{det_id});
+            } else {
+                // a single channel value
+                try {
+                    int ival = StringTo<int>(args[0]);
+                    det->setBadChannels(std::vector<int>{ival},
+                                        std::vector<int>{det_id});
+                }
+                // file path
+                catch (std::exception &e) {
+                    det->setBadChannels(args[0], std::vector<int>{det_id});
+                }
+            }
+        }
+        // parse multi args
+        else {
+            // get channels from that line and push it to list
+            std::vector<int> list;
+            auto line_vec = getChannelsFromStringList(args);
+            for (auto it : line_vec) {
+                list.push_back(it);
+            }
+
+            if (removeDuplicates<int>(list)) {
+                LOG(logWARNING) << "Removed duplicates from channel file";
+            }
+
+            LOG(logDEBUG1) << "list:" << ToString(list);
+            det->setBadChannels(list, std::vector<int>{det_id});
         }
         os << "successfully loaded" << '\n';
     } else {

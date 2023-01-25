@@ -2,9 +2,9 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/file_utils.h"
 #include "sls/ToString.h"
+#include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
-#include "sls/container_utils.h"
 
 #include <errno.h>
 #include <ios>
@@ -166,7 +166,8 @@ ssize_t getFileSize(FILE *fd, const std::string &prependErrorString) {
     return fileSize;
 }
 
-std::vector<int> getChannelsFromStringList(const std::vector<std::string> list) {
+std::vector<int>
+getChannelsFromStringList(const std::vector<std::string> list) {
     std::vector<int> channels;
     for (auto it : list) {
 
@@ -175,15 +176,18 @@ std::vector<int> getChannelsFromStringList(const std::vector<std::string> list) 
         if (result != std::string::npos) {
             try {
                 int istart = StringTo<int>(it.substr(0, result));
-                int istop =  StringTo<int>(it.substr(result + 1, it.length() - result - 1));
-                LOG(logDEBUG1) << "istart:" << istart  << " istop:" << istop;
+                int istop = StringTo<int>(
+                    it.substr(result + 1, it.length() - result - 1));
+                LOG(logDEBUG1) << "istart:" << istart << " istop:" << istop;
                 std::vector<int> range(istop - istart);
-                std::generate(range.begin(), range.end(), [n = istart]() mutable { return n++; });
+                std::generate(range.begin(), range.end(),
+                              [n = istart]() mutable { return n++; });
                 for (auto range_it : range) {
                     channels.push_back(range_it);
                 }
             } catch (std::exception &e) {
-                throw RuntimeError("Could not load channels. Invalid channel range: " + it);
+                throw RuntimeError(
+                    "Could not load channels. Invalid channel range: " + it);
             }
         }
 
@@ -193,7 +197,8 @@ std::vector<int> getChannelsFromStringList(const std::vector<std::string> list) 
             try {
                 ival = StringTo<int>(it);
             } catch (std::exception &e) {
-                throw RuntimeError("Could not load channels. Invalid channel number: " + it);
+                throw RuntimeError(
+                    "Could not load channels. Invalid channel number: " + it);
             }
             channels.push_back(ival);
         }
@@ -223,7 +228,6 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
         std::replace_if(
             begin(line), end(line), [](char c) { return (c == ','); }, ' ');
 
-
         // split line (delim space)
         std::vector<std::string> vec = split(line, ' ');
 
@@ -238,7 +242,7 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
         LOG(logWARNING) << "Removed duplicates from channel file";
     }
 
-    LOG(logINFORED) << "list:" << ToString(list);
+    LOG(logDEBUG1) << "list:" << ToString(list);
     return list;
 }
 

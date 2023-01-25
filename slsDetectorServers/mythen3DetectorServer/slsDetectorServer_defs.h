@@ -59,7 +59,7 @@
 
 #define DEFAULT_READOUT_C0          (10) //(100000000) // rdo_clk, 100 MHz
 #define DEFAULT_READOUT_C1          (10) //(100000000) // rdo_smp_clk, 100 MHz
-#define DEFAULT_SYSTEM_C0           (00) //(100000000) // run_clk, 100 MHz
+#define DEFAULT_SYSTEM_C0           (10) //(100000000) // run_clk, 100 MHz
 #define DEFAULT_SYSTEM_C1           (8)  //(125000000) // str_clk, 125 MHz const
 #define DEFAULT_SYSTEM_C2           (5)  //(200000000) // smp_clk, 200 MHz const
 #define DEFAULT_TRIMMING_RUN_CLKDIV (40) // (25000000) // 25 MHz

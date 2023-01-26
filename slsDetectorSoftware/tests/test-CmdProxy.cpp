@@ -670,6 +670,19 @@ TEST_CASE("badchannels", "[.cmd]") {
         list = getChannelsFromFile(fname_get);
         REQUIRE(list.empty());
 
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"12"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        expected = {12};
+        REQUIRE(list == expected);
+
+        REQUIRE_NOTHROW(proxy.Call(
+            "badchannels", {"0", "12,", "15", "43", "40:45", "1279"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
+        REQUIRE(list == expected);
+
         det.setBadChannels(prev);
 
     } else {

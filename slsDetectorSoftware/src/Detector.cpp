@@ -354,8 +354,16 @@ Result<std::vector<int>> Detector::getBadChannels(Positions pos) const {
 }
 
 void Detector::setBadChannels(const std::vector<std::vector<int>> list) {
-    // not ideal since trimming might be slow?
+
+    if (list.size() != static_cast<size_t>(size())) {
+        std::stringstream ss;
+        ss << "Number of bad channel sets (" << list.size()
+           << ") needs to match the number of modules (" << size() << ")";
+        throw RuntimeError(ss.str());
+    }
+
     for (int idet = 0; idet < size(); ++idet) {
+        // TODO! Call in parallel since loading trimbits is slow?
         pimpl->Parallel(&Module::setBadChannels, {idet}, list[idet]);
     }
 }

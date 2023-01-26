@@ -224,11 +224,12 @@ class Detector {
     /** [Gotthard2][Mythen3] */
     Result<std::vector<int>> getBadChannels(Positions pos = {}) const;
 
-    /** [Gotthard2][Mythen3] Empty list resets bad channel list, multi module
-     * channel list */
+    /** [Gotthard2][Mythen3] Empty list resets bad channel list */
     void setBadChannels(const std::vector<int> list, Positions pos = {});
 
-    /** [Gotthard2][Mythen3] Empty list resets bad channel list */
+    /** [Gotthard2][Mythen3] Size of list should match number of modules. Each
+     * value is at module level and can start at 0. Empty vector resets bad
+     * channel list. */
     void setBadChannels(const std::vector<std::vector<int>> list);
 
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;

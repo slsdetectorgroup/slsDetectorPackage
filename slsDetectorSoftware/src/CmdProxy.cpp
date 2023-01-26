@@ -589,7 +589,7 @@ std::string CmdProxy::BadChannels(int action) {
                 list.push_back(it);
             }
 
-            if (removeDuplicates<int>(list)) {
+            if (removeDuplicates(list)) {
                 LOG(logWARNING) << "Removed duplicates from channel file";
             }
 

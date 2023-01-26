@@ -238,7 +238,7 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
         }
     }
 
-    if (removeDuplicates<int>(list)) {
+    if (removeDuplicates(list)) {
         LOG(logWARNING) << "Removed duplicates from channel file";
     }
 

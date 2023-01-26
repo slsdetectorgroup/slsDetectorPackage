@@ -560,40 +560,23 @@ std::string CmdProxy::BadChannels(int action) {
         det->getBadChannels(args[0], std::vector<int>{det_id});
         os << "successfully retrieved" << '\n';
     } else if (action == defs::PUT_ACTION) {
+        bool parse = false;
         if (args.size() == 0) {
             WrongNumberOfParameters(1);
-        }
-        if (args.size() == 1) {
+        } else if (args.size() == 1) {
             if (args[0] == "none" || args[0] == "0") {
                 det->setBadChannels(std::vector<int>{},
                                     std::vector<int>{det_id});
+            } else if (args[0].find(".") != std::string::npos) {
+                det->setBadChannels(args[0], std::vector<int>{det_id});
             } else {
-                // a single channel value
-                try {
-                    int ival = StringTo<int>(args[0]);
-                    det->setBadChannels(std::vector<int>{ival},
-                                        std::vector<int>{det_id});
-                }
-                // file path
-                catch (std::exception &e) {
-                    det->setBadChannels(args[0], std::vector<int>{det_id});
-                }
+                parse = true;
             }
         }
-        // parse multi args
-        else {
-            // get channels from that line and push it to list
-            std::vector<int> list;
-            auto line_vec = getChannelsFromStringList(args);
-            for (auto it : line_vec) {
-                list.push_back(it);
-            }
-
-            if (removeDuplicates(list)) {
-                LOG(logWARNING) << "Removed duplicates from channel file";
-            }
-
-            LOG(logDEBUG1) << "list:" << ToString(list);
+        // parse multi args or single one with range or single value
+        if (parse || args.size() > 1) {
+            // get channels
+            auto list = getChannelsFromStringList(args);
             det->setBadChannels(list, std::vector<int>{det_id});
         }
         os << "successfully loaded" << '\n';

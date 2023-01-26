@@ -169,44 +169,57 @@ ssize_t getFileSize(FILE *fd, const std::string &prependErrorString) {
 std::vector<int>
 getChannelsFromStringList(const std::vector<std::string> list) {
     std::vector<int> channels;
-    for (auto it : list) {
+    for (auto line : list) {
 
-        // find range and replace with sequence of x to y
-        auto result = it.find(':');
-        if (result != std::string::npos) {
-            try {
-                int istart = StringTo<int>(it.substr(0, result));
-                int istop = StringTo<int>(
-                    it.substr(result + 1, it.length() - result - 1));
-                LOG(logDEBUG1) << "istart:" << istart << " istop:" << istop;
-                std::vector<int> range(istop - istart);
-                std::generate(range.begin(), range.end(),
-                              [n = istart]() mutable { return n++; });
-                for (auto range_it : range) {
-                    channels.push_back(range_it);
+        // replace comma with space
+        std::replace_if(
+            begin(line), end(line), [](char c) { return (c == ','); }, ' ');
+
+        // split line (delim space)
+        std::vector<std::string> vec = split(line, ' ');
+
+        // for every channel separated by space
+        for (auto it : vec) {
+            // find range and replace with sequence of x to y
+            auto result = it.find(':');
+            if (result != std::string::npos) {
+                try {
+                    int istart = StringTo<int>(it.substr(0, result));
+                    int istop = StringTo<int>(
+                        it.substr(result + 1, it.length() - result - 1));
+                    LOG(logDEBUG1) << "istart:" << istart << " istop:" << istop;
+                    std::vector<int> range(istop - istart);
+                    std::generate(range.begin(), range.end(),
+                                  [n = istart]() mutable { return n++; });
+                    for (auto range_it : range) {
+                        channels.push_back(range_it);
+                    }
+                } catch (std::exception &e) {
+                    throw RuntimeError(
+                        "Could not load channels. Invalid channel range: " +
+                        it);
                 }
-            } catch (std::exception &e) {
-                throw RuntimeError(
-                    "Could not load channels. Invalid channel range: " + it);
             }
-        }
 
-        // else convert to int
-        else {
-            int ival = 0;
-            try {
-                ival = StringTo<int>(it);
-            } catch (std::exception &e) {
-                throw RuntimeError(
-                    "Could not load channels. Invalid channel number: " + it);
+            // else convert to int
+            else {
+                int ival = 0;
+                try {
+                    ival = StringTo<int>(it);
+                } catch (std::exception &e) {
+                    throw RuntimeError(
+                        "Could not load channels. Invalid channel number: " +
+                        it);
+                }
+                channels.push_back(ival);
             }
-            channels.push_back(ival);
         }
     }
-    LOG(logDEBUG1) << "Channels:";
-    for (auto it : channels) {
-        LOG(logDEBUG1) << it;
+
+    if (removeDuplicates(channels)) {
+        LOG(logWARNING) << "Removed duplicates from channel file";
     }
+    LOG(logDEBUG1) << "list:" << ToString(channels);
     return channels;
 }
 
@@ -217,33 +230,19 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
         throw RuntimeError("Could not open bad channels file " + fname +
                            " for reading");
     }
-    std::vector<int> list;
+    std::vector<std::string> lines;
     for (std::string line; std::getline(input_file, line);) {
         // ignore comments
         if (line.find('#') != std::string::npos) {
             line.erase(line.find('#'));
         }
-
-        // replace comma with space
-        std::replace_if(
-            begin(line), end(line), [](char c) { return (c == ','); }, ' ');
-
-        // split line (delim space)
-        std::vector<std::string> vec = split(line, ' ');
-
-        // get channels from that line and push it to list
-        auto line_vec = getChannelsFromStringList(vec);
-        for (auto it : line_vec) {
-            list.push_back(it);
+        // ignore empty lines
+        if (line.empty()) {
+            continue;
         }
+        lines.push_back(line);
     }
-
-    if (removeDuplicates(list)) {
-        LOG(logWARNING) << "Removed duplicates from channel file";
-    }
-
-    LOG(logDEBUG1) << "list:" << ToString(list);
-    return list;
+    return getChannelsFromStringList(lines);
 }
 
 std::string getAbsolutePathFromCurrentProcess(const std::string &fname) {

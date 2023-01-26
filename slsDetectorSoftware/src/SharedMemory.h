@@ -33,7 +33,7 @@ namespace sls {
 template <typename T> class SharedMemory {
     static constexpr int NAME_MAX_LENGTH = 255;
     std::string name;
-    T *shared_struct{};
+    T *shared_struct{nullptr};
 
   public:
     // moduleid of -1 creates a detector only shared memory
@@ -64,8 +64,18 @@ template <typename T> class SharedMemory {
             unmapSharedMemory();
     }
 
-    T *operator()() { return shared_struct; }
-    const T *operator()() const { return shared_struct; }
+    T *operator()() {
+        if (shared_struct)
+            return shared_struct;
+        throw SharedMemoryError("No shared memory to access. Create it first.");
+    }
+
+    const T *operator()() const {
+        if (shared_struct)
+            return shared_struct;
+        throw SharedMemoryError("No shared memory to access. Create it first.");
+    }
+
     std::string getName() const { return name; }
 
     bool exists() {

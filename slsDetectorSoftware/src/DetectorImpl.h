@@ -84,7 +84,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     virtual ~DetectorImpl();
 
-    template <class CT> struct NonDeduced { using type = CT; };
+    template <class CT> struct NonDeduced {
+        using type = CT;
+    };
     template <typename RT, typename... CT>
     Result<RT> Parallel(RT (Module::*somefunc)(CT...),
                         std::vector<int> positions,
@@ -306,6 +308,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     void getBadChannels(const std::string &fname, Positions pos) const;
     void setBadChannels(const std::string &fname, Positions pos);
+    void setBadChannels(const std::vector<int> list, Positions pos);
 
     std::vector<std::string> getCtbDacNames() const;
     std::string getCtbDacName(defs::dacIndex i) const;

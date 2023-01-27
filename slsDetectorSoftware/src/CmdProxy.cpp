@@ -7,6 +7,7 @@
 #include "sls/ToString.h"
 #include "sls/bit_utils.h"
 #include "sls/container_utils.h"
+#include "sls/file_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
@@ -548,9 +549,9 @@ std::string CmdProxy::BadChannels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Gotthard2][Mythen3] Sets the bad channels (from "
-              "file of bad channel numbers) to be masked out."
-              "\n\t[Mythen3] Also does trimming"
+        os << "[fname|none|0]\n\t[Gotthard2][Mythen3] Sets the bad channels "
+              "(from file of bad channel numbers) to be masked out. None or 0 "
+              "unsets all the badchannels.\n\t[Mythen3] Also does trimming"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
@@ -559,10 +560,25 @@ std::string CmdProxy::BadChannels(int action) {
         det->getBadChannels(args[0], std::vector<int>{det_id});
         os << "successfully retrieved" << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 1) {
+        bool parse = false;
+        if (args.size() == 0) {
             WrongNumberOfParameters(1);
+        } else if (args.size() == 1) {
+            if (args[0] == "none" || args[0] == "0") {
+                det->setBadChannels(std::vector<int>{},
+                                    std::vector<int>{det_id});
+            } else if (args[0].find(".") != std::string::npos) {
+                det->setBadChannels(args[0], std::vector<int>{det_id});
+            } else {
+                parse = true;
+            }
         }
-        det->setBadChannels(args[0], std::vector<int>{det_id});
+        // parse multi args or single one with range or single value
+        if (parse || args.size() > 1) {
+            // get channels
+            auto list = getChannelsFromStringList(args);
+            det->setBadChannels(list, std::vector<int>{det_id});
+        }
         os << "successfully loaded" << '\n';
     } else {
         throw RuntimeError("Unknown action");

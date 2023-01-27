@@ -1778,6 +1778,10 @@ void DetectorImpl::setBadChannels(const std::string &fname, Positions pos) {
     if (list.empty()) {
         throw RuntimeError("Bad channel file is empty.");
     }
+    setBadChannels(list, pos);
+}
+
+void DetectorImpl::setBadChannels(const std::vector<int> list, Positions pos) {
 
     // update to multi values if multi modules
     if (isAllPositions(pos)) {

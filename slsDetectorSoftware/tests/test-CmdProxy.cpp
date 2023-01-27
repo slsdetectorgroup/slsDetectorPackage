@@ -644,6 +644,8 @@ TEST_CASE("badchannels", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3) {
+        auto prev = det.getBadChannels();
+
         REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
 
         std::string fname_put =
@@ -655,6 +657,51 @@ TEST_CASE("badchannels", "[.cmd]") {
         auto list = getChannelsFromFile(fname_get);
         std::vector<int> expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
         REQUIRE(list == expected);
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"none"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        REQUIRE(list.empty());
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_put}, 0, PUT));
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"0"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        REQUIRE(list.empty());
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"12"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        expected = {12};
+        REQUIRE(list == expected);
+
+        REQUIRE_NOTHROW(proxy.Call(
+            "badchannels", {"0", "12,", "15", "43", "40:45", "1279"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
+        REQUIRE(list == expected);
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"40:45"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        expected = {40, 41, 42, 43, 44};
+        REQUIRE(list == expected);
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"5,6,7"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        expected = {5, 6, 7};
+        REQUIRE(list == expected);
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"1:5,6,7"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        expected = {1, 2, 3, 4, 6, 7};
+        REQUIRE(list == expected);
+
+        det.setBadChannels(prev);
 
     } else {
         REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));

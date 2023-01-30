@@ -11,4 +11,4 @@
 #define APIEIGER     "7.0.0.rc1 0x221212"
 #define APIGOTTHARD  "7.0.0.rc2 0x221220"
 
-#define APIMYTHEN3 "7.0.0.rc3 0x230127"
+#define APIMYTHEN3 "7.0.0.rc3 0x230130"

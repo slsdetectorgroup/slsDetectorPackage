@@ -64,16 +64,21 @@ template <typename T> class SharedMemory {
             unmapSharedMemory();
     }
 
+    inline std::string getNoShmAccessMessage() const {
+        return std::string("No shared memory to access. Create it first with "
+                           "hostname or config command.");
+    };
+
     T *operator()() {
         if (shared_struct)
             return shared_struct;
-        throw SharedMemoryError("No shared memory to access. Create it first.");
+        throw SharedMemoryError(getNoShmAccessMessage());
     }
 
     const T *operator()() const {
         if (shared_struct)
             return shared_struct;
-        throw SharedMemoryError("No shared memory to access. Create it first.");
+        throw SharedMemoryError(getNoShmAccessMessage());
     }
 
     std::string getName() const { return name; }

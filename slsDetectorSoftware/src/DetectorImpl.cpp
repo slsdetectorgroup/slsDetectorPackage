@@ -253,14 +253,15 @@ void DetectorImpl::setVirtualDetectorServers(const int numdet, const int port) {
 }
 
 void DetectorImpl::setHostname(const std::vector<std::string> &name) {
-    // this check is there only to allow the previous detsizechan command
-    if (shm()->totalNumberOfModules != 0) {
+    // do not free always to allow the previous detsize/ initialchecks command
+    if (shm.exists() && shm()->totalNumberOfModules != 0) {
         LOG(logWARNING) << "There are already module(s) in shared memory."
                            "Freeing Shared memory now.";
-        bool initialChecks = shm()->initialChecks;
         freeSharedMemory();
+    }
+    // could be called after freeing shm from API
+    if (!shm.exists()) {
         setupDetector();
-        shm()->initialChecks = initialChecks;
     }
     for (const auto &hostname : name) {
         addModule(hostname);

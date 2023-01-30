@@ -554,6 +554,9 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         are requested via the control server again insetad of the stop server
         due to configuration and definitions in the control server.
 
+    
+    *   UDP Source Mac addresses
+        Only allowing unicast addresses (LSB of first octet must be 0).
 
 
 1.5. Detector Server

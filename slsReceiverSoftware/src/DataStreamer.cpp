@@ -95,6 +95,10 @@ void DataStreamer::CreateZmqSockets(uint32_t port, const IpAddr ip, int hwm) {
                     "Could not set zmq send high water mark to " +
                     std::to_string(hwm));
             }
+	    if (hwm <25) {
+	      zmqSocket->SetSendBuffer(1024*1024); //1MB (or the OS buffering deafeat the HWL purpose
+	    }
+	    zmqSocket->Rebind(); //needed, or HWL is not taken  
         }
     } catch (...) {
         LOG(logERROR) << "Could not create Zmq socket on port " << portnum

@@ -117,6 +117,15 @@ class ZmqSocket {
     /** Sets high water mark for inbound messages. Default 1000 (zmqlib) */
     void SetReceiveHighWaterMark(int limit);
 
+ /** Sets kernel buffer for  outbound messages. Default Unknown */
+    void SetSendBuffer(int limit);
+
+/** Sets kernel buffer for  inbound messages. Default Unknown */
+    void SetReceiveBuffer(int limit);
+
+    /** unbinds and rebind, to apply changes of HWM  */
+    void Rebind();
+
     /**
      * Returns Port Number
      * @returns Port Number

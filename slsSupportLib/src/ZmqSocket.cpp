@@ -104,6 +104,23 @@ void ZmqSocket::SetSendHighWaterMark(int limit) {
     }
 }
 
+void ZmqSocket::SetSendBuffer(int limit) {
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SNDBUF, &limit,
+                       sizeof(limit))) {
+        PrintError();
+        throw ZmqSocketError("Could not set ZMQ_SNDBUF");
+    }
+}
+
+void ZmqSocket::SetReceiveBuffer(int limit) {
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_RCVBUF, &limit,
+                       sizeof(limit))) {
+        PrintError();
+        throw ZmqSocketError("Could not set ZMQ_RCVBUF");
+    }
+}
+
+
 int ZmqSocket::GetReceiveHighWaterMark() {
     int value = 0;
     size_t value_size = sizeof(value);
@@ -122,6 +139,22 @@ void ZmqSocket::SetReceiveHighWaterMark(int limit) {
         throw ZmqSocketError("Could not set ZMQ_SNDHWM");
     }
 }
+
+void ZmqSocket::Rebind() { // the purpose is to apply HWL changes, which are frozen at bind, which is in the constructor.
+
+    //    unbbind
+    if (zmq_unbind(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {
+        PrintError();
+        throw ZmqSocketError("Could not unbind socket");
+    }
+// bind address
+    if (zmq_bind(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {
+        PrintError();
+        throw ZmqSocketError("Could not bind socket");
+    }
+
+}
+
 
 int ZmqSocket::Connect() {
     if (zmq_connect(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {

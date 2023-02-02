@@ -351,8 +351,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     void updateDetectorSize();
 
-    int destroyReceivingDataSockets();
-    int createReceivingDataSockets();
+    void destroyReceivingDataSockets();
+    void createReceivingDataSockets();
 
     /**
      * Reads frames from receiver through a constant socket

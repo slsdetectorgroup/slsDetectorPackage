@@ -31,6 +31,10 @@ namespace sls {
 // #define ZMQ_DETAIL
 #define ROIVERBOSITY
 
+// high water mark for gui
+#define DEFFAULT_LOW_HWM (25)
+#define DEFAULT_LOW_HWM_BUFFERSIZE (1024 * 1024)
+
 /** zmq header structure */
 struct zmqHeader {
     /** true if incoming data, false if end of acquisition */

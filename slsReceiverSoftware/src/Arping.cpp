@@ -64,9 +64,8 @@ void Arping::StartProcess() {
 }
 
 void Arping::StopProcess() {
-    if (childPid == 0) {
-        LOG(logINFORED) << "Should not be here. Child PRocess! trying ot stop Process!";
-    }
+    LOG(logINFOBLUE) << "Exiting [ Arping Process ]";
+
     if (kill(childPid, SIGTERM)) {
         throw RuntimeError("Could not kill the arping Process");
     }

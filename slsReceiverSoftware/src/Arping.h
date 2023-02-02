@@ -37,6 +37,7 @@ class Arping {
     std::atomic<bool> runningFlag{false};
     pid_t childPid;
     std::atomic<pid_t> procssId{0};
+    static const int timeIntervalSeconds = 60;
 };
 
 } // namespace sls

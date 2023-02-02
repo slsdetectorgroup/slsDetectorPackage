@@ -34,10 +34,7 @@ void Arping::SetInterfacesAndIps(const int index, const std::string &interface,
     }
     // create commands to arping
     std::ostringstream os;
-    os << "pwd";
-    //os << "arping -c 1 -U -I " << interface << " " << ip;
-    // to read error messages
-    //os << " 2>&1";
+    os << "arping -c 1 -U -I " << interface << " " << ip;
     std::string cmd = os.str();
     commands[index] = cmd;
 }
@@ -86,7 +83,7 @@ void Arping::ProcessExecution() {
 
         // wait for 60s as long as Process not killed
         int nsecs = 0;
-        while (nsecs != 5) {
+        while (nsecs != timeIntervalSeconds) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             ++nsecs;
         }
@@ -113,7 +110,7 @@ std::string Arping::ExecuteCommands() {
         if (cmd.empty())
             continue;
 
-        LOG(logINFORED) << "Executing Arping Command: " << cmd;
+        LOG(logDEBUG1) << "Executing Arping Command: " << cmd;
 
         // execute command
         FILE *sysFile = popen(cmd.c_str(), "r");

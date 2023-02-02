@@ -713,6 +713,10 @@ void Implementation::stopReceiver() {
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 
+    // delete the udp sockets
+    for (const auto &it : listener)
+        it->DeleteUDPSocket();
+
     if (fileWriteEnable && modulePos == 0) {
         // master and virtual file (hdf5)
         StartMasterWriter();

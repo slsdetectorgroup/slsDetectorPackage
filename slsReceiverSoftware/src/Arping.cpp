@@ -46,6 +46,9 @@ bool Arping::IsRunning() const { return runningFlag; }
 void Arping::StartProcess() {
     TestCommands();
 
+    // Needs to be a fork and udp socket deleted after Listening threads
+    // done running to prevent udp socket cannot bind because of popen
+    // that forks
     childPid = fork();
     // child process
     if (childPid == 0) {

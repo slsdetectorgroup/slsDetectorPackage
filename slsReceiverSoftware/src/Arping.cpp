@@ -4,9 +4,9 @@
 #include "Arping.h"
 
 #include <chrono>
-#include <unistd.h>
 #include <signal.h>
 #include <thread>
+#include <unistd.h>
 
 namespace sls {
 
@@ -52,9 +52,11 @@ void Arping::StartProcess() {
     childPid = fork();
     // child process
     if (childPid == 0) {
-        LOG(logINFOBLUE) << "Created [ Arping Process, Tid: " << gettid() << " ]";
+        LOG(logINFOBLUE) << "Created [ Arping Process, Tid: " << gettid()
+                         << " ]";
         ProcessExecution();
-        LOG(logINFOBLUE) << "Exiting [ Arping Process, Tid: " << gettid() << " ]";
+        LOG(logINFOBLUE) << "Exiting [ Arping Process, Tid: " << gettid()
+                         << " ]";
     }
     // parent process
     else if (childPid > 0) {
@@ -83,12 +85,7 @@ void Arping::ProcessExecution() {
             LOG(logERROR) << error;
         }
 
-        // wait for 60s as long as Process not killed
-        int nsecs = 0;
-        while (nsecs != timeIntervalSeconds) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            ++nsecs;
-        }
+        std::this_thread::sleep_for(std::chrono::seconds(timeIntervalSeconds));
     }
 }
 

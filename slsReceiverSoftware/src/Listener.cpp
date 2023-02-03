@@ -186,9 +186,8 @@ void Listener::ShutDownUDPSocket() {
 
 void Listener::DeleteUDPSocket() {
     if (udpSocket) {
-        udpSocket = nullptr;
+        udpSocket.reset();
         LOG(logINFO) << "Closed UDP port " << udpPortNumber;
-
     }
 }
 

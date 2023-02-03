@@ -351,19 +351,19 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
             retval[id++] = 0;
         }
     }
-    retval[NUM_RX_THREAD_IDS - 1] = arping.GetThreadId();
+    retval[NUM_RX_THREAD_IDS - 1] = arping.GetProcessId();
     return retval;
 }
 
 bool Implementation::getArping() const { return arping.IsRunning(); }
 
-pid_t Implementation::getArpingThreadId() const { return arping.GetThreadId(); }
+pid_t Implementation::getArpingProcessId() const { return arping.GetProcessId(); }
 
 void Implementation::setArping(const bool i,
                                const std::vector<std::string> ips) {
     if (i != arping.IsRunning()) {
         if (!i) {
-            arping.StopThread();
+            arping.StopProcess();
         } else {
             // setup interface
             for (int i = 0; i != generalData->numUDPInterfaces; ++i) {
@@ -374,7 +374,7 @@ void Implementation::setArping(const bool i,
                 }
                 arping.SetInterfacesAndIps(i, eth[i], ips[i]);
             }
-            arping.StartThread();
+            arping.StartProcess();
         }
     }
 }
@@ -712,6 +712,10 @@ void Implementation::stopReceiver() {
                 running = true;
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
+
+    // delete the udp sockets
+    for (const auto &it : listener)
+        it->DeleteUDPSocket();
 
     if (fileWriteEnable && modulePos == 0) {
         // master and virtual file (hdf5)

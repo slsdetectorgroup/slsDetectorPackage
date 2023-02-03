@@ -50,6 +50,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     void ResetParametersforNewAcquisition();
     void CreateUDPSocket(int &actualSize);
     void ShutDownUDPSocket();
+    void DeleteUDPSocket();
     /** to set & get actual buffer size */
     void CreateDummySocketForUDPSocketBufferSize(int s, int &actualSize);
 

@@ -1767,11 +1767,12 @@ class CmdProxy {
         rx_lastclient, getRxLastClientIP,
         "\n\tClient IP Address that last communicated with the receiver.");
 
-    GET_COMMAND(rx_threads, getRxThreadIds,
-                "\n\tGet thread ids from the receiver in order of [parent, "
-                "tcp, listener 0, processor 0, streamer 0, listener 1, "
-                "processor 1, streamer 1, arping]. If no streamer yet or there "
-                "is no second interface, it gives 0 in its place.");
+    GET_COMMAND(
+        rx_threads, getRxThreadIds,
+        "\n\tGet kernel thread ids from the receiver in order of [parent, "
+        "tcp, listener 0, processor 0, streamer 0, listener 1, "
+        "processor 1, streamer 1, arping]. If no streamer yet or there "
+        "is no second interface, it gives 0 in its place.");
 
     INTEGER_COMMAND_VEC_ID(rx_arping, getRxArping, setRxArping, StringTo<int>,
                            "[0, 1]\n\tStarts a thread in slsReceiver to arping "

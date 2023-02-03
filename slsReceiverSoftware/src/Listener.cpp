@@ -184,6 +184,13 @@ void Listener::ShutDownUDPSocket() {
     }
 }
 
+void Listener::DeleteUDPSocket() {
+    if (udpSocket) {
+        udpSocket.reset();
+        LOG(logINFO) << "Closed UDP port " << udpPortNumber;
+    }
+}
+
 void Listener::CreateDummySocketForUDPSocketBufferSize(int s, int &actualSize) {
     // custom setup (s != 0)
     // default setup at startup (s = 0)

@@ -46,6 +46,9 @@ bool Arping::IsRunning() const { return runningFlag; }
 void Arping::StartProcess() {
     TestCommands();
 
+    // to prevent zombies from child processes being killed
+    signal(SIGCHLD, SIG_IGN);
+
     // Needs to be a fork and udp socket deleted after Listening threads
     // done running to prevent udp socket cannot bind because of popen
     // that forks

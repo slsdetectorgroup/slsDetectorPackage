@@ -55,8 +55,6 @@ void Arping::StartProcess() {
         LOG(logINFOBLUE) << "Created [ Arping Process, Tid: " << gettid()
                          << " ]";
         ProcessExecution();
-        LOG(logINFOBLUE) << "Exiting [ Arping Process, Tid: " << gettid()
-                         << " ]";
     }
     // parent process
     else if (childPid > 0) {

@@ -5139,11 +5139,20 @@ int set_source_udp_mac(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
             if (udpDetails[0].srcmac != arg) {
-                for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION;
-                     ++iRxEntry) {
-                    udpDetails[iRxEntry].srcmac = arg;
+                // multicast (LSB of first octet = 1)
+                if ((arg >> 40) & 0x1) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Cannot set source mac address. Must be a unicast "
+                            "address (LSB of first octet should be 0).");
+                    LOG(logERROR, (mess));
+                } else {
+                    for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION;
+                         ++iRxEntry) {
+                        udpDetails[iRxEntry].srcmac = arg;
+                    }
+                    configure_mac();
                 }
-                configure_mac();
             }
         }
     }

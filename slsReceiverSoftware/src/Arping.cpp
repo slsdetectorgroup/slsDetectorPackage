@@ -91,7 +91,7 @@ void Arping::TestCommands() {
     // atleast one interface must be set up
     if (commands[0].empty()) {
         throw RuntimeError(
-            "Could not arping. Interface not set up in apring Process");
+            "Could not arping. Interface not set up in arping Process");
     }
     // test if arping commands throw an error
     std::string error = ExecuteCommands();

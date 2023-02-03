@@ -2,8 +2,8 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #pragma once
 /**
- *@short creates/destroys an ARPing child process to arping the interfaces slsReceiver
-is listening to.
+ *@short creates/destroys an ARPing child process to arping the interfaces
+slsReceiver is listening to.
  */
 
 #include "receiver_defs.h"
@@ -35,8 +35,7 @@ class Arping {
     std::vector<std::string> commands =
         std::vector<std::string>(MAX_NUMBER_OF_LISTENING_THREADS);
     std::atomic<bool> runningFlag{false};
-    pid_t childPid;
-    std::atomic<pid_t> procssId{0};
+    std::atomic<pid_t> childPid{0};
     static const int timeIntervalSeconds = 60;
 };
 

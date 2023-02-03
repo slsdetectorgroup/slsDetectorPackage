@@ -943,9 +943,10 @@ class Detector {
     /** Client IP Address that last communicated with the receiver */
     Result<IpAddr> getRxLastClientIP(Positions pos = {}) const;
 
-    /** Get thread ids from the receiver in order of [parent, tcp, listener 0,
-     * processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. If
-     * no streamer yet or there is no second interface, it gives 0 in its place.
+    /** Get kernel thread ids from the receiver in order of [parent, tcp,
+     * listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1,
+     * arping]. If no streamer yet or there is no second interface, it gives 0
+     * in its place.
      */
     Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
     getRxThreadIds(Positions pos = {}) const;

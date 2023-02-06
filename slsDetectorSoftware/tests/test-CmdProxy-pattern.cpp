@@ -186,12 +186,12 @@ TEST_CASE("patloop", "[.cmd]") {
             {
                 std::ostringstream oss;
                 proxy.Call("patloop", {sLoop, "0x20", "0x5c"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "patloop [0x0020, 0x005c]\n");
+                REQUIRE(oss.str() == "patloop " + sLoop + " [0x0020, 0x005c]\n");
             }
             {
                 std::ostringstream oss;
                 proxy.Call("patloop", {sLoop}, -1, GET, oss);
-                REQUIRE(oss.str() == "patloop [0x0020, 0x005c]\n");
+                REQUIRE(oss.str() == "patloop " + sLoop + " [0x0020, 0x005c]\n");
             }
             for (int iDet = 0; iDet != det.size(); ++iDet) {
                 det.setPatternLoopAddresses(iLoop, prev_val[iDet][0],
@@ -233,12 +233,12 @@ TEST_CASE("patnloop", "[.cmd]") {
             {
                 std::ostringstream oss;
                 proxy.Call("patnloop", {sLoop, "5"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "patnloop 5\n");
+                REQUIRE(oss.str() == "patnloop " + sLoop + " 5\n");
             }
             {
                 std::ostringstream oss;
                 proxy.Call("patnloop", {sLoop}, -1, GET, oss);
-                REQUIRE(oss.str() == "patnloop 5\n");
+                REQUIRE(oss.str() == "patnloop " + sLoop + " 5\n");
             }
             for (int iDet = 0; iDet != det.size(); ++iDet) {
                 det.setPatternLoopCycles(iLoop, prev_val[iDet], {iDet});
@@ -279,12 +279,12 @@ TEST_CASE("patwait", "[.cmd]") {
             {
                 std::ostringstream oss;
                 proxy.Call("patwait", {sLoop, "0x5c"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "patwait 0x005c\n");
+                REQUIRE(oss.str() == "patwait " + sLoop + " 0x005c\n");
             }
             {
                 std::ostringstream oss;
                 proxy.Call("patwait", {sLoop}, -1, GET, oss);
-                REQUIRE(oss.str() == "patwait 0x005c\n");
+                REQUIRE(oss.str() == "patwait " + sLoop + " 0x005c\n");
             }
             for (int iDet = 0; iDet != det.size(); ++iDet) {
                 det.setPatternWaitAddr(iLoop, prev_val[iDet], {iDet});
@@ -325,12 +325,12 @@ TEST_CASE("patwaittime", "[.cmd]") {
             {
                 std::ostringstream oss;
                 proxy.Call("patwaittime", {sLoop, "8589936640"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "patwaittime 8589936640\n");
+                REQUIRE(oss.str() == "patwaittime " + sLoop + " 8589936640\n");
             }
             {
                 std::ostringstream oss;
                 proxy.Call("patwaittime", {sLoop}, -1, GET, oss);
-                REQUIRE(oss.str() == "patwaittime 8589936640\n");
+                REQUIRE(oss.str() == "patwaittime " + sLoop + " 8589936640\n");
             }
             for (int iDet = 0; iDet != det.size(); ++iDet) {
                 det.setPatternWaitTime(iLoop, prev_val[iDet], {iDet});

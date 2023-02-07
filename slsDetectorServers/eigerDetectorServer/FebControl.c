@@ -1240,19 +1240,16 @@ int Feb_Control_GetDynamicRange(int *retval) {
 
 int Feb_Control_Disable16bitConversion(int disable) {
     LOG(logINFO, ("%s 16 bit expansion\n", disable ? "Disabling" : "Enabling"));
+    
+    uint32_t bitmask = DAQ_REG_HRDWRE_DSBL_16BIT_MSK;
     unsigned int regval = 0;
-    if (!Feb_Control_ReadRegister(DAQ_REG_HRDWRE, &regval)) {
-        LOG(logERROR, ("Could not %s 16 bit expansion (bit mode)\n",
-                       (disable ? "disable" : "enable")));
-        return 0;
-    }
     if (disable) {
-        regval |= DAQ_REG_HRDWRE_DSBL_16BIT_MSK;
+        regval |= bitmask;
     } else {
-        regval &= ~DAQ_REG_HRDWRE_DSBL_16BIT_MSK;
+        regval &= ~bitmask;
     }
 
-    if (!Feb_Control_WriteRegister(DAQ_REG_HRDWRE, regval)) {
+    if (!Feb_Control_WriteRegister(DAQ_REG_HRDWRE, regval, bitmask)) {
         LOG(logERROR, ("Could not %s 16 bit expansion (bit mode)\n",
                        (disable ? "disable" : "enable")));
         return 0;

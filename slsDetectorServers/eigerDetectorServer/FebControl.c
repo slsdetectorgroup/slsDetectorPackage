@@ -1667,6 +1667,14 @@ int Feb_Control_GetReadNRows() {
 }
 
 int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
+    return Feb_Control_WriteRegister_BitMask(offset, data, BIT32_MSK);
+}
+
+int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
+    return Feb_Control_ReadRegister_BitMask(offset, retval, BIT32_MASK);
+}
+
+int Feb_Control_WriteRegister_BitMask(uint32_t offset, uint32_t data, uint32_t bitmask) {
     uint32_t actualOffset = offset;
     char side[2][10] = {"right", "left"};
     unsigned int addr[2] = {Feb_Control_rightAddress, Feb_Control_leftAddress};
@@ -1691,23 +1699,31 @@ int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
     for (int iloop = 0; iloop < 2; ++iloop) {
         if (run[iloop]) {
             LOG(logDEBUG1,
-                ("Writing 0x%x to %s 0x%x\n", data, side[iloop], actualOffset));
-            if (!Feb_Interface_WriteRegister(addr[iloop], actualOffset, data, 0,
-                                             0)) {
-                LOG(logERROR, ("Could not write 0x%x to %s addr 0x%x\n", data,
-                               side[iloop], actualOffset));
-                return 0;
-            }
-            uint32_t regVal = 0;
-            if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset,
-                                            &regVal)) {
+                ("Writing 0x%x to %s 0x%x (mask:0x%x)\n", data, side[iloop], actualOffset, bitmask));
+            
+            uint32_t writeVal = 0;
+            if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset, &writeVal)) {
                 LOG(logERROR, ("Could not read %s register\n", addr[iloop]));
                 return 0;
             }
-            if (regVal != data) {
+            // set only the bits in the mask
+            writeVal &= ~(bitmask);
+            writeVal |= (data & bitmask);
+            LOG(logINFORED, ("writing 0x%x to 0x%x\n", writeVal, actualOffset));
+            if (!Feb_Interface_WriteRegister(addr[iloop], actualOffset, writeVal, 0, 0)) {
+                LOG(logERROR, ("Could not write 0x%x to %s addr 0x%x\n", (writeVal, side[iloop], actualOffset)));
+                return 0;
+            }
+
+            uint32_t readVal = 0;
+            if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset, &readVal, bitmask)) {
+                return 0;
+            }
+
+            if (writeVal != readVal) {
                 LOG(logERROR,
-                    ("Could not write %s register. Write 0x%x, read 0x%x\n",
-                     addr[iloop], data, regVal));
+                    ("Could not write %s register. Wrote 0x%x, read 0x%x\n",
+                     addr[iloop], writeVal, readVal));
                 return 0;
             }
         }
@@ -1716,7 +1732,7 @@ int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
     return 1;
 }
 
-int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
+int Feb_Control_ReadRegister_BitMask(uint32_t offset, uint32_t *retval, uint32_t bitmask) {
     uint32_t actualOffset = offset;
     char side[2][10] = {"right", "left"};
     unsigned int addr[2] = {Feb_Control_rightAddress, Feb_Control_leftAddress};
@@ -1746,8 +1762,9 @@ int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
                                side[iloop], actualOffset));
                 return 0;
             }
-            LOG(logDEBUG1, ("Read 0x%x from %s 0x%x\n", value[iloop],
-                            side[iloop], actualOffset));
+            value[iloop] &= bitmask;
+            LOG(logDEBUG1, ("Read 0x%x from %s 0x%x (mask:0x%x)\n", value[iloop],
+                            side[iloop], actualOffset, bitmask));
             *retval = value[iloop];
             // if not the other (left, not right OR right, not left), return the
             // value

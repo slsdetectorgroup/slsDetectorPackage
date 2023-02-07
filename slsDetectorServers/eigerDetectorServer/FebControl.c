@@ -1708,12 +1708,12 @@ int Feb_Control_WriteRegister_BitMask(uint32_t offset, uint32_t data, uint32_t b
             writeVal |= (data & bitmask);
             LOG(logINFORED, ("writing 0x%x to 0x%x\n", writeVal, actualOffset));
             if (!Feb_Interface_WriteRegister(addr[iloop], actualOffset, writeVal, 0, 0)) {
-                LOG(logERROR, ("Could not write 0x%x to %s addr 0x%x\n", (writeVal, side[iloop], actualOffset)));
+                LOG(logERROR, ("Could not write 0x%x to %s addr 0x%x\n", writeVal, side[iloop], actualOffset));
                 return 0;
             }
 
             uint32_t readVal = 0;
-            if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset, &readVal, bitmask)) {
+            if (!Feb_Interface_ReadRegister_BitMask(addr[iloop], actualOffset, &readVal, bitmask)) {
                 return 0;
             }
 

@@ -1259,11 +1259,11 @@ int Feb_Control_Disable16bitConversion(int disable) {
 
 int Feb_Control_Get16bitConversionDisabled(int *ret) {
     unsigned int regval = 0;
-    if (!Feb_Control_ReadRegister(DAQ_REG_HRDWRE, &regval)) {
+    if (!Feb_Control_ReadRegister_BitMask(DAQ_REG_HRDWRE, &regval, DAQ_REG_HRDWRE_DSBL_16BIT_MSK)) {
         LOG(logERROR, ("Could not get 16 bit expansion (bit mode)\n"));
         return 0;
     }
-    if (regval & DAQ_REG_HRDWRE_DSBL_16BIT_MSK) {
+    if (regval) {
         *ret = 1;
     } else {
         *ret = 0;

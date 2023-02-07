@@ -186,12 +186,14 @@ TEST_CASE("patloop", "[.cmd]") {
             {
                 std::ostringstream oss;
                 proxy.Call("patloop", {sLoop, "0x20", "0x5c"}, -1, PUT, oss);
-                REQUIRE(oss.str() == "patloop " + sLoop + " [0x0020, 0x005c]\n");
+                REQUIRE(oss.str() ==
+                        "patloop " + sLoop + " [0x0020, 0x005c]\n");
             }
             {
                 std::ostringstream oss;
                 proxy.Call("patloop", {sLoop}, -1, GET, oss);
-                REQUIRE(oss.str() == "patloop " + sLoop + " [0x0020, 0x005c]\n");
+                REQUIRE(oss.str() ==
+                        "patloop " + sLoop + " [0x0020, 0x005c]\n");
             }
             for (int iDet = 0; iDet != det.size(); ++iDet) {
                 det.setPatternLoopAddresses(iLoop, prev_val[iDet][0],

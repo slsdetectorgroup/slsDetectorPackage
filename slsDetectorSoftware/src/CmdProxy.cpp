@@ -2855,7 +2855,7 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
         if (cmd != "patlimits") {
             GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
                                       nPutArgs);
-            if (cmd != "patloop0" && cmd != "patloop1" &&cmd != "patloop2")
+            if (cmd != "patloop0" && cmd != "patloop1" && cmd != "patloop2")
                 os << level << ' ';
         }
         if (action == defs::GET_ACTION) {
@@ -2896,7 +2896,7 @@ std::string CmdProxy::PatternLoopCycles(int action) {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
         GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
                                   nPutArgs);
-        if (cmd != "patnloop0" && cmd != "patnloop1" &&cmd != "patnloop2")
+        if (cmd != "patnloop0" && cmd != "patnloop1" && cmd != "patnloop2")
             os << level << ' ';
         if (action == defs::GET_ACTION) {
             auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
@@ -2932,7 +2932,7 @@ std::string CmdProxy::PatternWaitAddress(int action) {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
         GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
                                   nPutArgs);
-        if (cmd != "patwait0" && cmd != "patwait1" &&cmd != "patwait2")
+        if (cmd != "patwait0" && cmd != "patwait1" && cmd != "patwait2")
             os << level << ' ';
         if (action == defs::GET_ACTION) {
             auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
@@ -2967,7 +2967,8 @@ std::string CmdProxy::PatternWaitTime(int action) {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
         GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                                   nPutArgs);
-        if (cmd != "patwaittime0" && cmd != "patwaittime1" &&cmd != "patwaittime2")
+        if (cmd != "patwaittime0" && cmd != "patwaittime1" &&
+            cmd != "patwaittime2")
             os << level << ' ';
         if (action == defs::GET_ACTION) {
             auto t = det->getPatternWaitTime(level, std::vector<int>{det_id});

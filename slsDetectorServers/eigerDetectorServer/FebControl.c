@@ -1249,7 +1249,7 @@ int Feb_Control_Disable16bitConversion(int disable) {
         regval &= ~bitmask;
     }
 
-    if (!Feb_Control_WriteRegister(DAQ_REG_HRDWRE, regval, bitmask)) {
+    if (!Feb_Control_WriteRegister_BitMask(DAQ_REG_HRDWRE, regval, bitmask)) {
         LOG(logERROR, ("Could not %s 16 bit expansion (bit mode)\n",
                        (disable ? "disable" : "enable")));
         return 0;

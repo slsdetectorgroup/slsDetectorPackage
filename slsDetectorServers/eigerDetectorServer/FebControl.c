@@ -1713,9 +1713,10 @@ int Feb_Control_WriteRegister_BitMask(uint32_t offset, uint32_t data, uint32_t b
             }
 
             uint32_t readVal = 0;
-            if (!Feb_Interface_ReadRegister_BitMask(addr[iloop], actualOffset, &readVal, bitmask)) {
+            if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset, &readVal)) {
                 return 0;
             }
+            readVal &= bitmask;
 
             if (writeVal != readVal) {
                 LOG(logERROR,

@@ -15,6 +15,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         1.5.    Detector Server
         1.6.    Simulator
         1.7.    Receiver
+        1.8.    Gui
     2.          On-board Detector Server Compatibility
     3.          Firmware Requirements
     4.          Kernel Requirements
@@ -449,6 +450,13 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     *   Command line pattern commands also prints level index at output now.
 
 
+    *   Zmq High water mark (hwm) and buffer size
+        When switching to the gui, hwm for the gui and the reciver was set to 2.
+        Now, if hwm is less than 25, the zmq receive buffer size is set to 1Mb 
+        in the gui. Similarly, zmq send buffer size is also set for the receiver.
+        These functions and option to rebind the zmq publisher socket is also
+        available now.
+
     
     Changes or Fixes:
 
@@ -516,13 +524,6 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         setAllThresholdEnergy takes 3 values for each counter and if one of them
         is -1, the trimbits and setings for that counter is picked up from the 
         detector.
-
-    
-    *   [Mythen3] Change in default clock dividers.
-
-
-    *   [Mythen3] trimming
-        Fixed deserializing in trimming.
 
 
     *   [Moench][Ctb] Pattern levels
@@ -608,6 +609,10 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         incorrect values. Fixed.
 
 
+    *   [Eiger] Quad Dynamic range
+        Could not set dyanamic range in an Eiger Quad. Fixed.
+
+
     *   [Mythen3][Gotthard2] System clock change effects 
         When changing the system clock (clkdiv 2), time settings should also be 
         affected (exptime, period etc.). Fixed.
@@ -624,7 +629,11 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     *   [Mythen3] Server crash for setting vthrehsold
         Fixed.
 
-    
+
+    *   [Mythen3] trimming
+        Fixed deserializing in trimming.
+
+
     *   [Mythen3] Incorrect gaincaps
         Setting threshold energy was overwriting gaincaps with settings enum. Fixed.
 
@@ -646,6 +655,9 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     *   [Gotthard2] Clock Divider defaults
         When chancing burst mode, clock dividers (2, 3 and 4) set to their 
         defaults according to burst mode.
+
+
+    *   [Mythen3] Change in default clock dividers.
 
 
     *   [Mythen3] DAC check for settings
@@ -853,11 +865,16 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 1.8. Gui
 --------
     
+
+    *   Refer Compilation topic for changes.
+
+
     *   [Jungfrau][Eiger] Gap pixels
         Enabled by default in the gui.
 
 
-    *   High voltage moved from Developer tab to Settings tab.
+    *   High voltage 
+        Moved from Developer tab to Settings tab.
 
 
     *   Gain plot zooming
@@ -871,6 +888,14 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
   
     *   [Mythen3][Gotthard2] Crashes
         Additional locking Added
+
+
+    *   X, Y, Z axis limits
+        Did not reflect on the current plot. Fixed.
+
+
+    *   Refer 'Client' notes on Zmq High water mark and Zmq buffer size for 
+        fast detectors.
 
 
 

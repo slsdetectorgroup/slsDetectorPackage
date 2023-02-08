@@ -1703,7 +1703,8 @@ int Feb_Control_WriteRegister_BitMask(uint32_t offset, uint32_t data,
             uint32_t writeVal = 0;
             if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset,
                                             &writeVal)) {
-                LOG(logERROR, ("Could not read %s register\n", addr[iloop]));
+                LOG(logERROR, ("Could not read %s addr 0x%x register\n",
+                               side[iloop], actualOffset));
                 return 0;
             }
             // set only the bits in the mask
@@ -1728,8 +1729,9 @@ int Feb_Control_WriteRegister_BitMask(uint32_t offset, uint32_t data,
 
             if (writeVal != readVal) {
                 LOG(logERROR,
-                    ("Could not write %s register. Wrote 0x%x, read 0x%x\n",
-                     side[iloop], writeVal, readVal));
+                    ("Could not write %s addr 0x%x register. Wrote "
+                     "0x%x, read 0x%x (mask:0x%x)\n",
+                     side[iloop], actualOffset, writeVal, readVal, bitmask));
                 return 0;
             }
         }
@@ -1782,7 +1784,7 @@ int Feb_Control_ReadRegister_BitMask(uint32_t offset, uint32_t *retval,
     }
     // Inconsistent values when reading both registers
     if ((run[0] & run[1]) & (value[0] != value[1])) {
-        LOG(logERROR, ("Inconsistent values read from %s 0x%x and %s 0x%x\n",
+        LOG(logERROR, ("Inconsistent values read from %s: 0x%x and %s: 0x%x\n",
                        side[0], value[0], side[1], value[1]));
         return 0;
     }

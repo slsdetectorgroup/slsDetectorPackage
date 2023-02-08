@@ -357,7 +357,9 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
 
 bool Implementation::getArping() const { return arping.IsRunning(); }
 
-pid_t Implementation::getArpingProcessId() const { return arping.GetProcessId(); }
+pid_t Implementation::getArpingProcessId() const {
+    return arping.GetProcessId();
+}
 
 void Implementation::setArping(const bool i,
                                const std::vector<std::string> ips) {

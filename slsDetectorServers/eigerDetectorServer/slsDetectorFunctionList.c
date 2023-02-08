@@ -861,12 +861,15 @@ int setDynamicRange(int dr) {
     LOG(logINFO, ("Setting dynamic range: %d\n", dr));
 #else
     sharedMemory_lockLocalLink();
-    if (Feb_Control_SetDynamicRange(dr)) {
-        if (!Beb_SetUpTransferParameters(dr)) {
-            LOG(logERROR, ("Could not set bit mode in the back end\n"));
-            sharedMemory_unlockLocalLink();
-            return eiger_dynamicrange;
-        }
+    if (!Feb_Control_SetDynamicRange(dr)) {
+        LOG(logERROR, ("Could not set dynamic range in feb\n"));
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+    if (!Beb_SetUpTransferParameters(dr)) {
+        LOG(logERROR, ("Could not set bit mode in the back end\n"));
+        sharedMemory_unlockLocalLink();
+        return eiger_dynamicrange;
     }
     sharedMemory_unlockLocalLink();
 #endif

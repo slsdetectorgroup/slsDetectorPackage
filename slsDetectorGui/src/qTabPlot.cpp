@@ -487,6 +487,7 @@ void qTabPlot::SetXYRange() {
     }
 
     plot->SetXYRangeChanged(disablezoom, xyRange, isRange);
+    plot->UpdatePlot();
     emit DisableZoomSignal(disablezoom);
 }
 
@@ -624,6 +625,7 @@ void qTabPlot::SetZRange() {
         zRange[1] = val;
     }
     plot->SetZRange(zRange, isZRange);
+    plot->UpdatePlot();
 }
 
 void qTabPlot::GetStreamingFrequency() {

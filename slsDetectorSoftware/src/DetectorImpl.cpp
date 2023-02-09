@@ -519,19 +519,18 @@ void DetectorImpl::setTransmissionDelay(int step) {
         f.get();
 }
 
-int DetectorImpl::destroyReceivingDataSockets() {
+void DetectorImpl::destroyReceivingDataSockets() {
     LOG(logINFO) << "Going to destroy data sockets";
     // close socket
     zmqSocket.clear();
 
     client_downstream = false;
     LOG(logINFO) << "Destroyed Receiving Data Socket(s)";
-    return OK;
 }
 
-int DetectorImpl::createReceivingDataSockets() {
+void DetectorImpl::createReceivingDataSockets() {
     if (client_downstream) {
-        return OK;
+        return;
     }
     LOG(logINFO) << "Going to create data sockets";
 
@@ -558,24 +557,22 @@ int DetectorImpl::createReceivingDataSockets() {
             int hwm = shm()->zmqHwm;
             if (hwm >= 0) {
                 zmqSocket[iSocket]->SetReceiveHighWaterMark(hwm);
-                if (zmqSocket[iSocket]->GetReceiveHighWaterMark() != hwm) {
-                    throw ZmqSocketError("Could not set zmq rcv hwm to " +
-                                         std::to_string(hwm));
-                }
+                // need not reconnect. cannot be connected (detector idle)
             }
             LOG(logINFO) << "Zmq Client[" << iSocket << "] at "
                          << zmqSocket.back()->GetZmqServerAddress() << "[hwm: "
                          << zmqSocket.back()->GetReceiveHighWaterMark() << "]";
-        } catch (...) {
-            LOG(logERROR) << "Could not create Zmq socket on port " << portnum;
+        } catch (std::exception &e) {
             destroyReceivingDataSockets();
-            return FAIL;
+            std::ostringstream oss;
+            oss << "Could not create zmq sub socket on port " << portnum;
+            oss << " [" << e.what() << ']';
+            throw RuntimeError(oss.str());
         }
     }
 
     client_downstream = true;
     LOG(logINFO) << "Receiving Data Socket(s) created";
-    return OK;
 }
 
 void DetectorImpl::readFrameFromReceiver() {
@@ -1115,9 +1112,7 @@ void DetectorImpl::setDataStreamingToClient(bool enable) {
         destroyReceivingDataSockets();
         // create data threads
     } else {
-        if (createReceivingDataSockets() == FAIL) {
-            throw RuntimeError("Could not create data threads in client.");
-        }
+        createReceivingDataSockets();
     }
 }
 
@@ -1150,11 +1145,7 @@ void DetectorImpl::setClientStreamingHwm(const int limit) {
         if (limit >= 0) {
             for (auto &it : zmqSocket) {
                 it->SetReceiveHighWaterMark(limit);
-                if (it->GetReceiveHighWaterMark() != limit) {
-                    shm()->zmqHwm = -1;
-                    throw ZmqSocketError("Could not set zmq rcv hwm to " +
-                                         std::to_string(limit));
-                }
+                // need not reconnect. cannot be connected (detector idle)
             }
             LOG(logINFO) << "Setting Client Zmq socket rcv hwm to " << limit;
         }

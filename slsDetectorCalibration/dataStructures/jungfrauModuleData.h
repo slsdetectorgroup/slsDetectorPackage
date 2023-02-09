@@ -40,19 +40,30 @@ class jungfrauModuleData : public slsDetectorData<uint16_t> {
        out by a module i.e. using the slsReceiver (160x160 pixels, 40 packets
        1286 large etc.) \param c crosstalk parameter for the output buffer
 
-    */
+   */
+#ifndef ZMQ
+#define off sizeof(jf_header)
+#endif
+#ifdef ZMQ
+#define off 0
+#endif
+
+
     jungfrauModuleData()
         : slsDetectorData<uint16_t>(1024, 512,
-                                    1024* 512 * 2 + sizeof(jf_header)) {
-
+                                    1024* 512 * 2 + off) {
+  
         for (int ix = 0; ix < 1024; ix++) {
             for (int iy = 0; iy < 512; iy++) {
-                dataMap[iy][ix] = sizeof(jf_header) + (1024 * iy + ix) * 2;
+                dataMap[iy][ix] = off + (1024 * iy + ix) * 2;
 #ifdef HIGHZ
                 dataMask[iy][ix] = 0x3fff;
 #endif
             }
         }
+
+
+
 
         iframe = 0;
         //  cout << "data struct created" << endl;

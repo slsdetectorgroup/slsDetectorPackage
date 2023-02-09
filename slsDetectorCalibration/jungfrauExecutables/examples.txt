@@ -1,0 +1,10 @@
+
+
+ sls_detector_put rx_jsonpara detectorMode counting 
+ sls_detector_put rx_jsonpara frameMode newPedestal 
+ sls_detector_put rx_jsonpara frameMode frame 
+ sls_detector_put rx_jsonpara detectorMode analog 
+ sls_detector_put rx_jsonpara threshold 150
+ sls_detector_put rx_jsonpara threshold 0
+ sls_detector_put rx_jsonpara threshold 300
+ sls_detector_put rx_zmqhwm 50

@@ -441,7 +441,6 @@ void qTabPlot::SetXRange() {
         MaintainAspectRatio(static_cast<int>(slsDetectorDefs::Y));
     } else {
         SetXYRange();
-	
     }
 }
 
@@ -627,7 +626,6 @@ void qTabPlot::SetZRange() {
     }
     plot->SetZRange(zRange, isZRange);
     plot->UpdatePlot();
-
 }
 
 void qTabPlot::GetStreamingFrequency() {

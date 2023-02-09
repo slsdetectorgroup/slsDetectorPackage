@@ -102,24 +102,14 @@ void ZmqSocket::SetSendHighWaterMark(int limit) {
         PrintError();
         throw ZmqSocketError("Could not set ZMQ_SNDHWM");
     }
-}
-
-void ZmqSocket::SetSendBuffer(int limit) {
-    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SNDBUF, &limit,
-                       sizeof(limit))) {
-        PrintError();
-        throw ZmqSocketError("Could not set ZMQ_SNDBUF");
+    if (GetSendHighWaterMark() != limit) {
+        throw ZmqSocketError("Could not set ZMQ_SNDHWM to " +
+                             std::to_string(limit));
+    }
+    if (limit < DEFFAULT_LOW_HWM) {
+        SetSendBuffer(DEFAULT_LOW_HWM_BUFFERSIZE);
     }
 }
-
-void ZmqSocket::SetReceiveBuffer(int limit) {
-    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_RCVBUF, &limit,
-                       sizeof(limit))) {
-        PrintError();
-        throw ZmqSocketError("Could not set ZMQ_RCVBUF");
-    }
-}
-
 
 int ZmqSocket::GetReceiveHighWaterMark() {
     int value = 0;
@@ -127,7 +117,7 @@ int ZmqSocket::GetReceiveHighWaterMark() {
     if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_RCVHWM, &value,
                        &value_size)) {
         PrintError();
-        throw ZmqSocketError("Could not get ZMQ_SNDHWM");
+        throw ZmqSocketError("Could not get ZMQ_RCVHWM");
     }
     return value;
 }
@@ -136,25 +126,77 @@ void ZmqSocket::SetReceiveHighWaterMark(int limit) {
     if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_RCVHWM, &limit,
                        sizeof(limit))) {
         PrintError();
-        throw ZmqSocketError("Could not set ZMQ_SNDHWM");
+        throw ZmqSocketError("Could not set ZMQ_RCVHWM");
+    }
+    if (GetReceiveHighWaterMark() != limit) {
+        throw ZmqSocketError("Could not set ZMQ_RCVHWM to " +
+                             std::to_string(limit));
+    }
+    if (limit < DEFFAULT_LOW_HWM) {
+        SetReceiveBuffer(DEFAULT_LOW_HWM_BUFFERSIZE);
     }
 }
 
-void ZmqSocket::Rebind() { // the purpose is to apply HWL changes, which are frozen at bind, which is in the constructor.
+int ZmqSocket::GetSendBuffer() {
+    int value = 0;
+    size_t value_size = sizeof(value);
+    if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_SNDBUF, &value,
+                       &value_size)) {
+        PrintError();
+        throw ZmqSocketError("Could not get ZMQ_SNDBUF");
+    }
+    return value;
+}
+
+void ZmqSocket::SetSendBuffer(int limit) {
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_SNDBUF, &limit,
+                       sizeof(limit))) {
+        PrintError();
+        throw ZmqSocketError("Could not set ZMQ_SNDBUF");
+    }
+    if (GetSendBuffer() != limit) {
+        throw ZmqSocketError("Could not set ZMQ_SNDBUF to " +
+                             std::to_string(limit));
+    }
+}
+
+int ZmqSocket::GetReceiveBuffer() {
+    int value = 0;
+    size_t value_size = sizeof(value);
+    if (zmq_getsockopt(sockfd.socketDescriptor, ZMQ_RCVBUF, &value,
+                       &value_size)) {
+        PrintError();
+        throw ZmqSocketError("Could not get ZMQ_RCVBUF");
+    }
+    return value;
+}
+
+void ZmqSocket::SetReceiveBuffer(int limit) {
+    if (zmq_setsockopt(sockfd.socketDescriptor, ZMQ_RCVBUF, &limit,
+                       sizeof(limit))) {
+        PrintError();
+        throw ZmqSocketError("Could not set ZMQ_RCVBUF");
+    }
+    if (GetReceiveBuffer() != limit) {
+        throw ZmqSocketError("Could not set ZMQ_RCVBUF to " +
+                             std::to_string(limit));
+    }
+}
+
+void ZmqSocket::Rebind() { // the purpose is to apply HWL changes, which are
+                           // frozen at bind, which is in the constructor.
 
     //    unbbind
     if (zmq_unbind(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {
         PrintError();
         throw ZmqSocketError("Could not unbind socket");
     }
-// bind address
+    // bind address
     if (zmq_bind(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {
         PrintError();
         throw ZmqSocketError("Could not bind socket");
     }
-
 }
-
 
 int ZmqSocket::Connect() {
     if (zmq_connect(sockfd.socketDescriptor, sockfd.serverAddress.c_str())) {

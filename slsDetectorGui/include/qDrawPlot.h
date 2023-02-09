@@ -60,6 +60,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void SavePlot();
     void SetGapPixels(bool enable);
     void UpdatePlot();
+
   protected:
     void resizeEvent(QResizeEvent *event);
 

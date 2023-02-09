@@ -557,14 +557,7 @@ void DetectorImpl::createReceivingDataSockets() {
             int hwm = shm()->zmqHwm;
             if (hwm >= 0) {
                 zmqSocket[iSocket]->SetReceiveHighWaterMark(hwm);
-                if (zmqSocket[iSocket]->GetReceiveHighWaterMark() != hwm) {
-                    throw ZmqSocketError("Could not set zmq rcv hwm to " +
-                                         std::to_string(hwm));
-                }
-                if (hwm < DEFFAULT_LOW_HWM) {
-                    //1MB (or the OS buffering deafeat the HWL purpose
-                    zmqSocket[iSocket]->SetReceiveBuffer(DEFAULT_LOW_HWM_BUFFERSIZE); 
-                }
+                // need not reconnect. cannot be connected (detector idle)
             }
             LOG(logINFO) << "Zmq Client[" << iSocket << "] at "
                          << zmqSocket.back()->GetZmqServerAddress() << "[hwm: "
@@ -1152,11 +1145,7 @@ void DetectorImpl::setClientStreamingHwm(const int limit) {
         if (limit >= 0) {
             for (auto &it : zmqSocket) {
                 it->SetReceiveHighWaterMark(limit);
-                if (it->GetReceiveHighWaterMark() != limit) {
-                    shm()->zmqHwm = -1;
-                    throw ZmqSocketError("Could not set zmq rcv hwm to " +
-                                         std::to_string(limit));
-                }
+                // need not reconnect. cannot be connected (detector idle)
             }
             LOG(logINFO) << "Setting Client Zmq socket rcv hwm to " << limit;
         }

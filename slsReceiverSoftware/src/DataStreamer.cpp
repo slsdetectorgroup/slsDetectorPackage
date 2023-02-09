@@ -91,17 +91,8 @@ void DataStreamer::CreateZmqSockets(uint32_t port, const IpAddr ip, int hwm) {
         // set if custom
         if (hwm >= 0) {
             zmqSocket->SetSendHighWaterMark(hwm);
-            if (zmqSocket->GetSendHighWaterMark() != hwm) {
-                throw RuntimeError(
-                    "Could not set zmq send high water mark to " +
-                    std::to_string(hwm));
-            }
-            if (hwm < DEFFAULT_LOW_HWM) {
-                //1MB (or the OS buffering deafeat the HWL purpose
-                zmqSocket->SetSendBuffer(DEFAULT_LOW_HWM_BUFFERSIZE); 
-            }
-            //needed, or HWL is not taken  
-            zmqSocket->Rebind(); 
+            // needed, or HWL is not taken
+            zmqSocket->Rebind();
         }
     } catch (std::exception &e) {
         std::ostringstream oss;

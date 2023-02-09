@@ -1106,8 +1106,8 @@ int Beb_SetDetectorPosition(int pos[]) {
     int posRight[2] = {Beb_top ? pos[X] + 1 : pos[X], pos[Y]};
 
     if (Beb_quadEnable) {
-        posLeft[Y] = 1; // left is next row
-        posLeft[X] = 0; // left same first row
+        posLeft[Y] = 1;  // left is next row
+        posLeft[X] = 0;  // left same first row
         posRight[Y] = 0; // right same first row
         posRight[X] = 0; // right same first column
     }

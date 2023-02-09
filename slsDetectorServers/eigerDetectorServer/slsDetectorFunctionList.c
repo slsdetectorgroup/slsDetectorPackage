@@ -2667,6 +2667,10 @@ void *start_timer(void *arg) {
                 header->modId = eiger_virtual_module_id;
                 header->row = row;
                 header->column = colLeft;
+                if (eiger_virtual_quad_mode) {
+                    header->row = 1;    // left is next row
+                    header->column = 0; // left same first column
+                }
 
                 char packetData2[packetsize];
                 memset(packetData2, 0, packetsize);
@@ -2675,11 +2679,11 @@ void *start_timer(void *arg) {
                 header->version = SLS_DETECTOR_HEADER_VERSION;
                 header->frameNumber = frameNr + iframes;
                 header->packetNumber = i;
-                header->modId = eiger_virtual_module_id;
+                header->modId = eiger_virtual_module_id + 1;
                 header->row = row;
                 header->column = colRight;
                 if (eiger_virtual_quad_mode) {
-                    header->row = 1;    // right is next row
+                    header->row = 0;    // right is next row
                     header->column = 0; // right same first column
                 }
 

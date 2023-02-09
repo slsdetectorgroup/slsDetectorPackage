@@ -212,6 +212,7 @@ void Implementation::SetupDataStreamer(int i) {
                                       streamingHwm);
     dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
     dataStreamer[i]->SetFileIndex(fileIndex);
+    dataStreamer[i]->SetQuadEnable(quadEnable);
     dataStreamer[i]->SetFlipRows(flipRows);
     dataStreamer[i]->SetNumberofPorts(numPorts);
     dataStreamer[i]->SetQuadEnable(quadEnable);

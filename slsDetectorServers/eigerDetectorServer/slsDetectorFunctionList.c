@@ -861,12 +861,15 @@ int setDynamicRange(int dr) {
     LOG(logINFO, ("Setting dynamic range: %d\n", dr));
 #else
     sharedMemory_lockLocalLink();
-    if (Feb_Control_SetDynamicRange(dr)) {
-        if (!Beb_SetUpTransferParameters(dr)) {
-            LOG(logERROR, ("Could not set bit mode in the back end\n"));
-            sharedMemory_unlockLocalLink();
-            return eiger_dynamicrange;
-        }
+    if (!Feb_Control_SetDynamicRange(dr)) {
+        LOG(logERROR, ("Could not set dynamic range in feb\n"));
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+    if (!Beb_SetUpTransferParameters(dr)) {
+        LOG(logERROR, ("Could not set bit mode in the back end\n"));
+        sharedMemory_unlockLocalLink();
+        return eiger_dynamicrange;
     }
     sharedMemory_unlockLocalLink();
 #endif
@@ -2664,6 +2667,10 @@ void *start_timer(void *arg) {
                 header->modId = eiger_virtual_module_id;
                 header->row = row;
                 header->column = colLeft;
+                if (eiger_virtual_quad_mode) {
+                    header->row = 1;    // left is next row
+                    header->column = 0; // left same first column
+                }
 
                 char packetData2[packetsize];
                 memset(packetData2, 0, packetsize);
@@ -2672,11 +2679,11 @@ void *start_timer(void *arg) {
                 header->version = SLS_DETECTOR_HEADER_VERSION;
                 header->frameNumber = frameNr + iframes;
                 header->packetNumber = i;
-                header->modId = eiger_virtual_module_id;
+                header->modId = eiger_virtual_module_id + 1;
                 header->row = row;
                 header->column = colRight;
                 if (eiger_virtual_quad_mode) {
-                    header->row = 1;    // right is next row
+                    header->row = 0;    // right is next row
                     header->column = 0; // right same first column
                 }
 

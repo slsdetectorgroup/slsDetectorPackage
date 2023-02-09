@@ -25,7 +25,7 @@ target_include_directories(eigerDetectorServer_virtual
 )
 
 target_compile_definitions(eigerDetectorServer_virtual
-    PUBLIC EIGERD PCCOMPILE STOP_SERVER
+    PUBLIC EIGERD PCCOMPILE STOP_SERVER #TEST_MOD_GEOMETRY
     PUBLIC VIRTUAL #VIRTUAL_9M
 )
 

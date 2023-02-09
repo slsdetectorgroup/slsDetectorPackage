@@ -212,6 +212,7 @@ void Implementation::SetupDataStreamer(int i) {
                                       streamingHwm);
     dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
     dataStreamer[i]->SetFileIndex(fileIndex);
+    dataStreamer[i]->SetQuadEnable(quadEnable);
     dataStreamer[i]->SetFlipRows(flipRows);
     dataStreamer[i]->SetNumberofPorts(numPorts);
     dataStreamer[i]->SetQuadEnable(quadEnable);
@@ -357,7 +358,9 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
 
 bool Implementation::getArping() const { return arping.IsRunning(); }
 
-pid_t Implementation::getArpingProcessId() const { return arping.GetProcessId(); }
+pid_t Implementation::getArpingProcessId() const {
+    return arping.GetProcessId();
+}
 
 void Implementation::setArping(const bool i,
                                const std::vector<std::string> ips) {

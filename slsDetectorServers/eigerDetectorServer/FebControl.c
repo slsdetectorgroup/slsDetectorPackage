@@ -1240,19 +1240,16 @@ int Feb_Control_GetDynamicRange(int *retval) {
 
 int Feb_Control_Disable16bitConversion(int disable) {
     LOG(logINFO, ("%s 16 bit expansion\n", disable ? "Disabling" : "Enabling"));
+
+    uint32_t bitmask = DAQ_REG_HRDWRE_DSBL_16BIT_MSK;
     unsigned int regval = 0;
-    if (!Feb_Control_ReadRegister(DAQ_REG_HRDWRE, &regval)) {
-        LOG(logERROR, ("Could not %s 16 bit expansion (bit mode)\n",
-                       (disable ? "disable" : "enable")));
-        return 0;
-    }
     if (disable) {
-        regval |= DAQ_REG_HRDWRE_DSBL_16BIT_MSK;
+        regval |= bitmask;
     } else {
-        regval &= ~DAQ_REG_HRDWRE_DSBL_16BIT_MSK;
+        regval &= ~bitmask;
     }
 
-    if (!Feb_Control_WriteRegister(DAQ_REG_HRDWRE, regval)) {
+    if (!Feb_Control_WriteRegister_BitMask(DAQ_REG_HRDWRE, regval, bitmask)) {
         LOG(logERROR, ("Could not %s 16 bit expansion (bit mode)\n",
                        (disable ? "disable" : "enable")));
         return 0;
@@ -1262,11 +1259,12 @@ int Feb_Control_Disable16bitConversion(int disable) {
 
 int Feb_Control_Get16bitConversionDisabled(int *ret) {
     unsigned int regval = 0;
-    if (!Feb_Control_ReadRegister(DAQ_REG_HRDWRE, &regval)) {
+    if (!Feb_Control_ReadRegister_BitMask(DAQ_REG_HRDWRE, &regval,
+                                          DAQ_REG_HRDWRE_DSBL_16BIT_MSK)) {
         LOG(logERROR, ("Could not get 16 bit expansion (bit mode)\n"));
         return 0;
     }
-    if (regval & DAQ_REG_HRDWRE_DSBL_16BIT_MSK) {
+    if (regval) {
         *ret = 1;
     } else {
         *ret = 0;
@@ -1667,6 +1665,15 @@ int Feb_Control_GetReadNRows() {
 }
 
 int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
+    return Feb_Control_WriteRegister_BitMask(offset, data, BIT32_MSK);
+}
+
+int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
+    return Feb_Control_ReadRegister_BitMask(offset, retval, BIT32_MASK);
+}
+
+int Feb_Control_WriteRegister_BitMask(uint32_t offset, uint32_t data,
+                                      uint32_t bitmask) {
     uint32_t actualOffset = offset;
     char side[2][10] = {"right", "left"};
     unsigned int addr[2] = {Feb_Control_rightAddress, Feb_Control_leftAddress};
@@ -1690,24 +1697,41 @@ int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
 
     for (int iloop = 0; iloop < 2; ++iloop) {
         if (run[iloop]) {
-            LOG(logDEBUG1,
-                ("Writing 0x%x to %s 0x%x\n", data, side[iloop], actualOffset));
-            if (!Feb_Interface_WriteRegister(addr[iloop], actualOffset, data, 0,
-                                             0)) {
-                LOG(logERROR, ("Could not write 0x%x to %s addr 0x%x\n", data,
+            LOG(logDEBUG1, ("Writing 0x%x to %s 0x%x (mask:0x%x)\n", data,
+                            side[iloop], actualOffset, bitmask));
+
+            uint32_t writeVal = 0;
+            if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset,
+                                            &writeVal)) {
+                LOG(logERROR, ("Could not read %s addr 0x%x register\n",
                                side[iloop], actualOffset));
                 return 0;
             }
-            uint32_t regVal = 0;
-            if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset,
-                                            &regVal)) {
-                LOG(logERROR, ("Could not read %s register\n", addr[iloop]));
+            // set only the bits in the mask
+            writeVal &= ~(bitmask);
+            writeVal |= (data & bitmask);
+
+            LOG(logDEBUG1, ("writing 0x%x to 0x%x\n", writeVal, actualOffset));
+            if (!Feb_Interface_WriteRegister(addr[iloop], actualOffset,
+                                             writeVal, 0, 0)) {
+                LOG(logERROR, ("Could not write 0x%x to %s addr 0x%x\n",
+                               writeVal, side[iloop], actualOffset));
                 return 0;
             }
-            if (regVal != data) {
+            writeVal &= bitmask;
+
+            uint32_t readVal = 0;
+            if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset,
+                                            &readVal)) {
+                return 0;
+            }
+            readVal &= bitmask;
+
+            if (writeVal != readVal) {
                 LOG(logERROR,
-                    ("Could not write %s register. Write 0x%x, read 0x%x\n",
-                     addr[iloop], data, regVal));
+                    ("Could not write %s addr 0x%x register. Wrote "
+                     "0x%x, read 0x%x (mask:0x%x)\n",
+                     side[iloop], actualOffset, writeVal, readVal, bitmask));
                 return 0;
             }
         }
@@ -1716,7 +1740,8 @@ int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
     return 1;
 }
 
-int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
+int Feb_Control_ReadRegister_BitMask(uint32_t offset, uint32_t *retval,
+                                     uint32_t bitmask) {
     uint32_t actualOffset = offset;
     char side[2][10] = {"right", "left"};
     unsigned int addr[2] = {Feb_Control_rightAddress, Feb_Control_leftAddress};
@@ -1746,8 +1771,9 @@ int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
                                side[iloop], actualOffset));
                 return 0;
             }
-            LOG(logDEBUG1, ("Read 0x%x from %s 0x%x\n", value[iloop],
-                            side[iloop], actualOffset));
+            value[iloop] &= bitmask;
+            LOG(logDEBUG1, ("Read 0x%x from %s 0x%x (mask:0x%x)\n",
+                            value[iloop], side[iloop], actualOffset, bitmask));
             *retval = value[iloop];
             // if not the other (left, not right OR right, not left), return the
             // value
@@ -1758,7 +1784,7 @@ int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
     }
     // Inconsistent values when reading both registers
     if ((run[0] & run[1]) & (value[0] != value[1])) {
-        LOG(logERROR, ("Inconsistent values read from %s 0x%x and %s 0x%x\n",
+        LOG(logERROR, ("Inconsistent values read from %s: 0x%x and %s: 0x%x\n",
                        side[0], value[0], side[1], value[1]));
         return 0;
     }

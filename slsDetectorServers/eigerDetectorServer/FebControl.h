@@ -95,7 +95,10 @@ int Feb_Control_SetReadNRows(int value);
 int Feb_Control_GetReadNRows();
 int Feb_Control_WriteRegister(uint32_t offset, uint32_t data);
 int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval);
-
+int Feb_Control_WriteRegister_BitMask(uint32_t offset, uint32_t data,
+                                      uint32_t bitmask);
+int Feb_Control_ReadRegister_BitMask(uint32_t offset, uint32_t *retval,
+                                     uint32_t bitmask);
 // pulsing
 int Feb_Control_Pulse_Pixel(int npulses, int x, int y);
 int Feb_Control_PulsePixelNMove(int npulses, int inc_x_pos, int inc_y_pos);

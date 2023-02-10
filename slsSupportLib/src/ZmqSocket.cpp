@@ -106,9 +106,12 @@ void ZmqSocket::SetSendHighWaterMark(int limit) {
         throw ZmqSocketError("Could not set ZMQ_SNDHWM to " +
                              std::to_string(limit));
     }
-    if (limit < DEFFAULT_LOW_HWM) {
-        SetSendBuffer(DEFAULT_LOW_HWM_BUFFERSIZE);
+
+    int bufsize = DEFAULT_ZMQ_BUFFERSIZE;
+    if (limit < DEFFAULT_LOW_ZMQ_HWM) {
+        bufsize = DEFAULT_LOW_ZMQ_HWM_BUFFERSIZE;
     }
+    SetSendBuffer(bufsize);
 }
 
 int ZmqSocket::GetReceiveHighWaterMark() {
@@ -132,9 +135,11 @@ void ZmqSocket::SetReceiveHighWaterMark(int limit) {
         throw ZmqSocketError("Could not set ZMQ_RCVHWM to " +
                              std::to_string(limit));
     }
-    if (limit < DEFFAULT_LOW_HWM) {
-        SetReceiveBuffer(DEFAULT_LOW_HWM_BUFFERSIZE);
+    int bufsize = DEFAULT_ZMQ_BUFFERSIZE;
+    if (limit < DEFFAULT_LOW_ZMQ_HWM) {
+        bufsize = DEFAULT_LOW_ZMQ_HWM_BUFFERSIZE;
     }
+    SetReceiveBuffer(bufsize);
 }
 
 int ZmqSocket::GetSendBuffer() {

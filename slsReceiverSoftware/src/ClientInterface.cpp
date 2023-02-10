@@ -433,7 +433,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
         }
         impl()->setScan(arg.scanParams);
     } catch (std::exception &e) {
-        throw RuntimeError("Could not get setup receiver [" +
+        throw RuntimeError("Could not setup receiver [" +
                            std::string(e.what()) + ']');
     }
 
@@ -571,7 +571,7 @@ int ClientInterface::set_num_analog_samples(Interface &socket) {
     try {
         impl()->setNumberofAnalogSamples(value);
     } catch (const std::exception &e) {
-        throw RuntimeError("Could not set num analog samples to " +
+        throw RuntimeError("Could not set number of analog samples to " +
                            std::to_string(value) + " [" +
                            std::string(e.what()) + ']');
     }
@@ -587,7 +587,7 @@ int ClientInterface::set_num_digital_samples(Interface &socket) {
     try {
         impl()->setNumberofDigitalSamples(value);
     } catch (const std::exception &e) {
-        throw RuntimeError("Could not set num digital samples to " +
+        throw RuntimeError("Could not set number of digital samples to " +
                            std::to_string(value) + " [" +
                            std::string(e.what()) + ']');
     }

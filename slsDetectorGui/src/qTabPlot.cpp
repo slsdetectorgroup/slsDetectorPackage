@@ -16,7 +16,7 @@ QString qTabPlot::defaultImageYAxisTitle("Pixel");
 QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
 qTabPlot::qTabPlot(QWidget *parent, Detector *detector, qDrawPlot *p)
-    : QWidget(parent), det(detector), plot(p), is1d(false) {
+    : QWidget(parent), det(detector), plot(p) {
     setupUi(this);
     SetupWidgetWindow();
     LOG(logDEBUG) << "Plot ready";
@@ -57,11 +57,7 @@ void qTabPlot::SetupWidgetWindow() {
         chkGainPlot1D->setChecked(true);
         plot->EnableGainPlot(true);
         break;
-    case slsDetectorDefs::EIGER:
-        chkGapPixels->setEnabled(true);
-        break;
     case slsDetectorDefs::JUNGFRAU:
-        chkGapPixels->setEnabled(true);
         chkGainPlot->setEnabled(true);
         chkGainPlot->setChecked(true);
         plot->EnableGainPlot(true);
@@ -69,6 +65,8 @@ void qTabPlot::SetupWidgetWindow() {
     default:
         break;
     }
+    isGapPixelsAllowed = VerifyGapPixelsAllowed();
+    chkGapPixels->setEnabled(isGapPixelsAllowed);
 
     Select1DPlot(is1d);
     Initialization();
@@ -193,6 +191,29 @@ void qTabPlot::Initialization() {
     connect(chkZMax, SIGNAL(toggled(bool)), this, SLOT(SetZRange()));
     connect(dispZMin, SIGNAL(editingFinished()), this, SLOT(isZMinModified()));
     connect(dispZMax, SIGNAL(editingFinished()), this, SLOT(isZMaxModified()));
+}
+
+bool qTabPlot::VerifyGapPixelsAllowed() {
+    try {
+        switch (det->getDetectorType().squash()) {
+        case slsDetectorDefs::JUNGFRAU:
+            return true;
+        case slsDetectorDefs::EIGER:
+            if (det->getQuad().squash(false)) {
+                return true;
+            }
+            // full modules
+            if (det->getModuleGeometry().y % 2 == 0) {
+                return true;
+            }
+            return false;
+        default:
+            return false;
+        }
+    }
+    CATCH_DISPLAY("Could not verify if gap pixels allowed.",
+                  "qTabPlot::VerifyGapPixelsAllowed")
+    return false;
 }
 
 void qTabPlot::Select1DPlot(bool enable) {
@@ -772,15 +793,10 @@ void qTabPlot::Refresh() {
         boxFrequency->setEnabled(true);
         GetStreamingFrequency();
         GetHwm();
-        // gain plot, gap pixels enable
+        // gain plot
         switch (det->getDetectorType().squash()) {
-        case slsDetectorDefs::EIGER:
-            chkGapPixels->setEnabled(true);
-            GetGapPixels();
-            break;
         case slsDetectorDefs::JUNGFRAU:
             chkGainPlot->setEnabled(true);
-            chkGapPixels->setEnabled(true);
             GetGapPixels();
             break;
         case slsDetectorDefs::GOTTHARD2:
@@ -788,6 +804,11 @@ void qTabPlot::Refresh() {
             break;
         default:
             break;
+        }
+        // gap pixels
+        if (isGapPixelsAllowed) {
+            chkGapPixels->setEnabled(true);
+            GetGapPixels();
         }
     } else {
         boxFrequency->setEnabled(false);

@@ -32,8 +32,9 @@ namespace sls {
 #define ROIVERBOSITY
 
 // high water mark for gui
-#define DEFFAULT_LOW_HWM           (25)
-#define DEFAULT_LOW_HWM_BUFFERSIZE (1024 * 1024) // 1MB
+#define DEFFAULT_LOW_ZMQ_HWM           (25)
+#define DEFAULT_LOW_ZMQ_HWM_BUFFERSIZE (1024 * 1024) // 1MB
+#define DEFAULT_ZMQ_BUFFERSIZE         (0)           // os default
 
 /** zmq header structure */
 struct zmqHeader {
@@ -113,14 +114,14 @@ class ZmqSocket {
     int GetSendHighWaterMark();
 
     /** Sets high water mark for outbound messages. Default 1000 (zmqlib). Also
-     * changes send buffer size depending on low hwm. Must rebind.  */
+     * changes send buffer size depending on hwm. Must rebind.  */
     void SetSendHighWaterMark(int limit);
 
     /** Returns high water mark for inbound messages */
     int GetReceiveHighWaterMark();
 
     /** Sets high water mark for inbound messages. Default 1000 (zmqlib). Also
-     * changes receiver buffer size depending on low hwm. Must reconnect */
+     * changes receiver buffer size depending on hwm. Must reconnect */
     void SetReceiveHighWaterMark(int limit);
 
     /** Gets kernel buffer for  outbound messages. Default 0 (os) */

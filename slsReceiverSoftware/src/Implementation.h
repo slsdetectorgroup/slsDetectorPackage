@@ -323,7 +323,7 @@ class Implementation : private virtual slsDetectorDefs {
 
     // acquisition
     std::atomic<runStatus> status{IDLE};
-    bool stoppedFlag{false};
+    std::atomic<bool> stoppedFlag{false};
     scanParameters scanParams{};
 
     // network configuration (UDP)

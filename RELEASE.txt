@@ -453,9 +453,9 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     *   Zmq High water mark (hwm) and buffer size
         When switching to the gui, hwm for the gui and the reciver was set to 2.
         Now, if hwm is less than 25, the zmq receive buffer size is set to 1Mb 
-        in the gui. Similarly, zmq send buffer size is also set for the receiver.
-        These functions and option to rebind the zmq publisher socket is also
-        available now.
+        in the gui, else to 0 (os default). Similarly, zmq send buffer size is 
+        also set for the receiver. These functions and option to rebind the zmq 
+        publisher socket is also available now.
 
     
     Changes or Fixes:

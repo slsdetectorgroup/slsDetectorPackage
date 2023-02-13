@@ -64,11 +64,6 @@ template <typename T> class SharedMemory {
             unmapSharedMemory();
     }
 
-    inline std::string getNoShmAccessMessage() const {
-        return std::string("No shared memory to access. Create it first with "
-                           "hostname or config command.");
-    };
-
     T *operator()() {
         if (shared_struct)
             return shared_struct;
@@ -219,6 +214,11 @@ template <typename T> class SharedMemory {
             throw SharedMemoryError(msg);
         }
     }
+
+    std::string getNoShmAccessMessage() const {
+        return std::string("No shared memory to access. Create it first with "
+                           "hostname or config command.");
+    };
 };
 
 } // namespace sls

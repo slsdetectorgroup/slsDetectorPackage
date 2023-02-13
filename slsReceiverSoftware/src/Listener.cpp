@@ -148,30 +148,34 @@ void Listener::RecordFirstIndex(uint64_t fnum) {
 }
 
 void Listener::CreateUDPSocket(int &actualSize) {
-    if (disabledPort) {
-        return;
-    }
-    uint32_t packetSize = generalData->packetSize;
-    if (generalData->detType == GOTTHARD2 && index != 0) {
-        packetSize = generalData->vetoPacketSize;
-    }
-
     try {
+        if (disabledPort) {
+            return;
+        }
+        uint32_t packetSize = generalData->packetSize;
+        if (generalData->detType == GOTTHARD2 && index != 0) {
+            packetSize = generalData->vetoPacketSize;
+        }
+
         udpSocket = nullptr;
         udpSocket = make_unique<UdpRxSocket>(
             udpPortNumber, packetSize,
             (eth.length() ? InterfaceNameToIp(eth).str().c_str() : nullptr),
             generalData->udpSocketBufferSize);
         LOG(logINFO) << index << ": UDP port opened at port " << udpPortNumber;
-    } catch (...) {
-        throw RuntimeError("Could not create UDP socket on port " +
-                           std::to_string(udpPortNumber));
+
+        udpSocketAlive = true;
+
+        // doubled due to kernel bookkeeping (could also be less due to
+        // permissions)
+        actualSize = udpSocket->getBufferSize();
+
+    } catch (std::exception &e) {
+        std::ostringstream oss;
+        oss << "Could not create UDP socket on port " << udpPortNumber << " ["
+            << e.what() << ']';
+        throw RuntimeError(oss.str());
     }
-
-    udpSocketAlive = true;
-
-    // doubled due to kernel bookkeeping (could also be less due to permissions)
-    actualSize = udpSocket->getBufferSize();
 }
 
 void Listener::ShutDownUDPSocket() {

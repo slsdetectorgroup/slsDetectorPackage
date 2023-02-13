@@ -215,9 +215,9 @@ template <typename T> class SharedMemory {
         }
     }
 
-    const char* getNoShmAccessMessage() const {
+    const char *getNoShmAccessMessage() const {
         return ("No shared memory to access. Create it first with "
-                           "hostname or config command.");
+                "hostname or config command.");
     };
 };
 

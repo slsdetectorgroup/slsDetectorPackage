@@ -524,10 +524,20 @@ TEST_CASE("gappixels", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    bool quad = det.getQuad().squash(false);
-    bool fullModule = (det.getModuleGeometry().y % 2 == 0);
 
-    if (det_type == defs::JUNGFRAU || (det_type == defs::EIGER && (quad || fullModule))) {
+    // test only for jungfrau and eiger(quad or full module only)
+    bool gapPixelTest = false;
+    if (det_type == defs::JUNGFRAU)
+        gapPixelTest = true;
+    else if (det_type == defs::EIGER) {
+        bool quad = det.getQuad().squash(false);
+        bool fullModule = (det.getModuleGeometry().y % 2 == 0);
+        if (quad || fullModule) {
+            gapPixelTest = true;
+        }
+    }
+
+    if (gapPixelTest) {
         auto prev_val = det.getGapPixelsinCallback();
         {
             std::ostringstream oss;

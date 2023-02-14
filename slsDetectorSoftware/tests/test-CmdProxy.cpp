@@ -527,7 +527,8 @@ TEST_CASE("gappixels", "[.cmd]") {
     bool quad = det.getQuad().squash(false);
     bool fullModule = (det.getModuleGeometry().y % 2 == 0);
 
-    if (det_type == defs::JUNGFRAU || (det_type == defs::EIGER && (quad || fullModule))) {
+    if (det_type == defs::JUNGFRAU ||
+        (det_type == defs::EIGER && (quad || fullModule))) {
         auto prev_val = det.getGapPixelsinCallback();
         {
             std::ostringstream oss;

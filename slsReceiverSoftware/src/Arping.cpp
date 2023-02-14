@@ -85,8 +85,8 @@ void Arping::ProcessExecution() {
         if (!error.empty()) {
             LOG(logERROR) << error;
         }
-
-        std::this_thread::sleep_for(std::chrono::seconds(timeIntervalSeconds));
+        const auto interval = std::chrono::seconds(60);
+        std::this_thread::sleep_for(interval);
     }
 }
 

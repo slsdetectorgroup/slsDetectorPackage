@@ -36,7 +36,6 @@ class Arping {
         std::vector<std::string>(MAX_NUMBER_OF_LISTENING_THREADS);
     std::atomic<bool> runningFlag{false};
     std::atomic<pid_t> childPid{0};
-    static const int timeIntervalSeconds = 60;
 };
 
 } // namespace sls

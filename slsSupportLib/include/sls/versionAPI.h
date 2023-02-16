@@ -9,5 +9,5 @@
 #define APIMYTHEN3   "7.0.0.rc3 0x230130"
 #define APIMOENCH    "7.0.0.rc3 0x230130"
 #define APIEIGER     "7.0.0.rc3 0x230130"
-#define APILIB "7.0.0.rc4 0x230214"
-#define APIRECEIVER "7.0.0.rc4 0x230214"
+#define APILIB       "7.0.0.rc4 0x230214"
+#define APIRECEIVER  "7.0.0.rc4 0x230214"

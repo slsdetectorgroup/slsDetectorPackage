@@ -178,17 +178,17 @@ Build using in-built cmk.sh script
     -z: Moench zmq processor
 
     
-    # get all options
+    # display all options
     ./cmk.sh -?
 
-    # new build and compile in parallel:
-    ./cmk.sh -bj5
+    # new build and compile in parallel (recommended basic option):
+    ./cmk.sh -cbj5
 
     # new build, python and compile in parallel:
-    ./cmk.sh -bpj5
+    ./cmk.sh -cbpj5
 
     #To use the system zmq (/usr/lib64) instead
-    ./cmk.sh -bj5 -q /usr/lib64
+    ./cmk.sh -cbj5 -q /usr/lib64
 
 
 

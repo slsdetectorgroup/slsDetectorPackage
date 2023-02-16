@@ -3,12 +3,12 @@
 
 # empty branch = developer branch in updateAPIVersion.sh
 branch=""
-det_list=("ctbDetectorServer" 
-	"gotthardDetectorServer" 
-	"gotthard2DetectorServer"
-	"jungfrauDetectorServer"
-	"mythen3DetectorServer"
-	"moenchDetectorServer"
+det_list=("ctbDetectorServer  
+	gotthardDetectorServer  
+	gotthard2DetectorServer 
+	jungfrauDetectorServer 
+	mythen3DetectorServer 
+	moenchDetectorServer" 
 	)
 usage="\nUsage: compileAllServers.sh [server|all(opt)] [branch(opt)]. \n\tNo arguments mean all servers with 'developer' branch. \n\tNo 'branch' input means 'developer branch'"
 
@@ -25,9 +25,11 @@ elif [ $# -eq 1 ] || [ $# -eq 2 ]; then
 	else
 		# only one server
 		# arg not in list
-		if [[ $det_list != *$1* ]]; then
+		echo $det_list | grep -w -q $1
+		#if [[ $det_list != *$1* ]]; then
+		if ! [[ $? ]] ; then
 			echo -e "Invalid argument 1: $1. $usage"
-			return -1
+			return 1
 		fi
 		declare -a det=("${1}")
 		#echo "Compiling only $1"
@@ -37,14 +39,14 @@ elif [ $# -eq 1 ] || [ $# -eq 2 ]; then
 		# arg in list
 		if [[ $det_list == *$2* ]]; then
 			echo -e "Invalid argument 2: $2. $usage"
-			return -1
+			return 1
 		fi
 		branch+=$2
 		#echo "with branch $branch"
 	fi
 else
 	echo -e "Too many arguments.$usage"
-	return -1
+	return 1
 fi
 
 declare -a deterror=("OK" "OK" "OK" "OK" "OK" "OK")

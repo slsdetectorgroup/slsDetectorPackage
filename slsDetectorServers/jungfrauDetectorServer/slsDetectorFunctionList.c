@@ -2798,6 +2798,8 @@ int softwareTrigger(int block) {
 
     LOG(logINFO, ("Sending Software Trigger\n"));
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_SOFTWARE_TRIGGER_MSK);
+    usleep (1000);
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_SOFTWARE_TRIGGER_MSK);
 
 #ifndef VIRTUAL
     // block till frame is sent out

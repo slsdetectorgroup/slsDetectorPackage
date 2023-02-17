@@ -15,6 +15,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         1.5.    Detector Server
         1.6.    Simulator
         1.7.    Receiver
+        1.8.    Gui
     2.          On-board Detector Server Compatibility
     3.          Firmware Requirements
     4.          Kernel Requirements
@@ -23,8 +24,8 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-1. New or Changed Features
-==========================
+1. New, Changed or Resolved Features
+=====================================
 
 
 1.1. Compilation
@@ -115,11 +116,6 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 -----------
 
 
-    *   Defines in sls_detector_defs
-        sls_detetor_defs parsed and #defines extracted into defines.py
-        For exmaple, one can use slsdet.LOCALHOST_IP
-
-
     *   Python sub-microsecond resolution
         Reading back sub-microsecond exposure times from the Python API fixed by 
         addig Python datetime supports only micro seconds as lowest unit. 
@@ -130,6 +126,20 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
         A get using API now returns in DurationWrapper, instead of datetime.
         Refer exptime help for examples.
+
+
+    *   Defines in sls_detector_defs
+        sls_detetor_defs parsed and #defines extracted into defines.py
+        For exmaple, one can use slsdet.LOCALHOST_IP
+
+
+    *   Concatenated hostnames
+        Hostnames concatenated using '+' was not split up in Python API. Fixed.
+
+
+    *   Fliprows
+        Added fliprows to python API
+
 
 
 1.4. Client
@@ -189,7 +199,6 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         The row indices would be in the order of the half modules in the hostname 
         command. Therefore, to keep the image from callback, invert the hostname
         order in the config file.
-
 
     *   Deprecated CopyDetectorServer 
         Command line: copydetectorserver, API: copydetectorserver
@@ -338,8 +347,14 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         Command line: badchannels, API: getBadChannels/ setBadChannels
         Set bad channels from file with a list of channels, which will be masked
         out. Also does trimming. A detector level command will require the channel
-        numbers accordingly. The file also extended to include commas, colons range)
-        and removes duplicates. 
+        numbers accordingly. The file and the command line is also extended to 
+        include commas, colons range and removes duplicates. 
+
+        API allows badchannels as a 2D vector (for every module) or 
+        a 1D vector with positions.
+
+        Command line: Setting it to "none" or "0" will reset all the bad channels.
+        API: Empty vector will reset all the bad channels.
 
 
     *   [Moench][Ctb] Starting frame number
@@ -432,6 +447,16 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         when creating shared memory.
 
 
+    *   Command line pattern commands also prints level index at output now.
+
+
+    *   Zmq High water mark (hwm) and buffer size
+        When switching to the gui, hwm for the gui and the reciver was set to 2.
+        Now, if hwm is less than 25, the zmq receive buffer size is set to 1Mb 
+        in the gui, else to 0 (os default). Similarly, zmq send buffer size is 
+        also set for the receiver. These functions and option to rebind the zmq 
+        publisher socket is also available now.
+
     
     Changes or Fixes:
 
@@ -440,10 +465,36 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         This bug was introduced in 6.1.1, when stopping an acquisition saying it 
         cannot stop, even though it was successful. It is fixed now.
 
+        Note: Only if the detector is not in idle or stopped status, will the 
+        command to stop acquisition go to the detector. This was introduced in 6.1.2
+        to handle multiple modules getting asynchronous start and stops from 
+        different processes.   
+
+
+    *   [Gotthard] Set delay exception
+        Set delay threw an exception as it adds master delay in verification
+        even if it was not a master. Fixed.
+
+
+    *   Shared memory access failure
+        After a free, one could get seg fault if one called a function accessing
+        the shared memory structure without first loading the config file that 
+        creates the shared memory. Fixed, a proper exception thrown if one tries
+        to access shared memory without creating it first.
+        
 
     *   Free and config command fail
         Free and config command checked mismatch of size of shared memory before 
         freeing or loading new config. Fixed.
+
+
+    *   Incorrect user provided detector size
+        Command line: detsize, API: getDetectorSize/ setDetectorSize
+        If a user sets an incorrect detector size that is greater than the actual
+        detector size, then it would have set an incorrect number of modules, 
+        affecting number of ports in the receiver. This has been fixed and now
+        the user can only set less than or equal to the maximum dimension
+        it could have.
 
 
     *   sls_detector_help or sls_detector_get -h
@@ -504,6 +555,9 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         are requested via the control server again insetad of the stop server
         due to configuration and definitions in the control server.
 
+    
+    *   UDP Source Mac addresses
+        Only allowing unicast addresses (LSB of first octet must be 0).
 
 
 1.5. Detector Server
@@ -555,6 +609,10 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         incorrect values. Fixed.
 
 
+    *   [Eiger] Quad Dynamic range
+        Could not set dyanamic range in an Eiger Quad. Fixed.
+
+
     *   [Mythen3][Gotthard2] System clock change effects 
         When changing the system clock (clkdiv 2), time settings should also be 
         affected (exptime, period etc.). Fixed.
@@ -571,7 +629,11 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     *   [Mythen3] Server crash for setting vthrehsold
         Fixed.
 
-    
+
+    *   [Mythen3] trimming
+        Fixed deserializing in trimming.
+
+
     *   [Mythen3] Incorrect gaincaps
         Setting threshold energy was overwriting gaincaps with settings enum. Fixed.
 
@@ -593,6 +655,9 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     *   [Gotthard2] Clock Divider defaults
         When chancing burst mode, clock dividers (2, 3 and 4) set to their 
         defaults according to burst mode.
+
+
+    *   [Mythen3] Change in default clock dividers.
 
 
     *   [Mythen3] DAC check for settings
@@ -800,11 +865,16 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 1.8. Gui
 --------
     
+
+    *   Refer Compilation topic for changes.
+
+
     *   [Jungfrau][Eiger] Gap pixels
         Enabled by default in the gui.
 
 
-    *   High voltage moved from Developer tab to Settings tab.
+    *   High voltage 
+        Moved from Developer tab to Settings tab.
 
 
     *   Gain plot zooming
@@ -818,6 +888,14 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
   
     *   [Mythen3][Gotthard2] Crashes
         Additional locking Added
+
+
+    *   X, Y, Z axis limits
+        Did not reflect on the current plot. Fixed.
+
+
+    *   Refer 'Client' notes on Zmq High water mark and Zmq buffer size for 
+        fast detectors.
 
 
 
@@ -858,7 +936,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     Jungfrau    04.11.2022 (v1.4, HW v1.0) 
                 03.11.2022 (v2.4, HW v2.0)
 
-    Mythen3     05.12.2022 (v1.4)
+    Mythen3     24.01.2023 (v1.4)?
 
     Gotthard2   23.11.2022 (v0.3)
 
@@ -981,6 +1059,9 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     Detector UDP Header:
         https://slsdetectorgroup.github.io/devdoc/udpheader.html
         https://slsdetectorgroup.github.io/devdoc/udpdetspec.html
+
+    slsReceiver Zmq Format:
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html#zmq-json-header-format
 
     TroubleShooting:
         https://slsdetectorgroup.github.io/devdoc/troubleshooting.html

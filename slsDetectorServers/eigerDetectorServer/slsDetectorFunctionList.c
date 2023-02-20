@@ -1457,6 +1457,12 @@ int setHighVoltage(int val) {
             sharedMemory_unlockLocalLink();
             return -3;
         }
+        // need to read the file twice to get the proper value
+        if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
+            LOG(logERROR, ("Could not read high voltage\n"));
+            sharedMemory_unlockLocalLink();
+            return -3;
+        }
         sharedMemory_unlockLocalLink();
 
         // tolerance of 5

@@ -889,6 +889,11 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     *   [Mythen3][Gotthard2] Crashes
         Additional locking Added
 
+    
+    *   File path set in detector after choosing a directory in dialog (without
+        pressing enter). Before, it was only set in the display box, but lost
+        when switching tabs.
+
 
     *   X, Y, Z axis limits
         Did not reflect on the current plot. Fixed.

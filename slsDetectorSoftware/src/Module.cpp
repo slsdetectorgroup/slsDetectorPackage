@@ -870,26 +870,25 @@ void Module::startReadout() {
 }
 
 void Module::stopAcquisition() {
-    // get status before stopping acquisition
-    runStatus s = ERROR, r = ERROR;
-    bool zmqstreaming = false;
+
+    // get det status before stopping acq
+    runStatus detStatus = ERROR;
     try {
-        if (shm()->useReceiverFlag && getReceiverStreaming()) {
-            zmqstreaming = true;
-            s = getRunStatus();
-            r = getReceiverStatus();
-        }
+        detStatus = getRunStatus();
     } catch (...) {
-        // if receiver crashed, stop detector in any case
-        zmqstreaming = false;
     }
 
     sendToDetectorStop(F_STOP_ACQUISITION);
     shm()->stoppedFlag = true;
 
-    // if rxr streaming and acquisition finished, restream dummy stop packet
-    if (zmqstreaming && (s == IDLE) && (r == IDLE)) {
-        restreamStopFromReceiver();
+    // restream dummy header, if rxr streaming and det idle before stop
+    try {
+        if (shm()->useReceiverFlag && getReceiverStreaming()) {
+            if (detStatus == IDLE && getReceiverStatus() == IDLE) {
+                restreamStopFromReceiver();
+            }
+        }
+    } catch (...) {
     }
 }
 

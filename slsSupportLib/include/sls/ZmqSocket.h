@@ -34,7 +34,7 @@ namespace sls {
 // high water mark for gui
 #define DEFFAULT_LOW_ZMQ_HWM           (25)
 #define DEFAULT_LOW_ZMQ_HWM_BUFFERSIZE (1024 * 1024) // 1MB
-#define DEFAULT_ZMQ_BUFFERSIZE         (0)           // os default
+#define DEFAULT_ZMQ_BUFFERSIZE         (-1)          // os default
 
 /** zmq header structure */
 struct zmqHeader {

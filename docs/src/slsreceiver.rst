@@ -224,6 +224,45 @@ ZMQ: Json Header Format
    +--------------+----------------------------------------------+
 
 
+SLS Receiver Header Format
+--------------------------
+
+It is 112 bytes and consists of:
+    * 48 bytes of the SLS Detector Header (described in :ref:`the current detector header <detector udp header>`)
+    * 64 bytes of packet mask
+
+.. code-block:: cpp 
+    
+    typedef struct {
+        uint64_t frameNumber;
+        uint32_t expLength;
+        uint32_t packetNumber;
+        uint64_t detSpec1;
+        uint64_t timestamp;
+        uint16_t modId;
+        uint16_t row;
+        uint16_t column;
+        uint16_t detSpec2;
+        uint32_t detSpec3;
+        uint16_t detSpec4;
+        uint8_t detType;
+        uint8_t version;
+    } sls_detector_header;
+
+    struct sls_receiver_header {
+        sls_detector_header detHeader; /**< is the detector header */
+        sls_bitset packetsMask;        /**< is the packets caught bit mask */
+    };
+
+
+.. note :: 
+
+    | The packetNumber in the SLS Receiver Header will be modified to number of packets caught by receiver for that frame. For eg. Jungfrau will have 128 packets per frame. If it is less, then this is a partial frame due to missing packets.
+    
+    | Furthermore, the bit mask will specify which packets have been received.
+
+
+
 
 File format
 --------------
@@ -255,8 +294,6 @@ Some file name examples:
 
 Each acquisition will create a master file that can be enabled/disabled using **fmaster**. This should have parameters relevant to the acquisition.
 
-
-SLS Receiver Header consist of SLS Detector Header + 64 bytes of bitmask, altogether 112 bytes. The packetNumber in the sls detector header part, will be updated to number of packets caught by receiver for that frame. Furthermore, the bit mask will specify which packets have been received.
 
 **Binary file format**
 

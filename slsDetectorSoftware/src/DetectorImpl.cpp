@@ -1224,8 +1224,7 @@ int DetectorImpl::acquire() {
         // let the progress thread (no callback) know acquisition is done
         if (dataReady == nullptr) {
             setJoinThreadFlag(true);
-        }
-        if (receiver) {
+        } else if (receiver) {
             while (numZmqRunning != 0) {
                 Parallel(&Module::restreamStopFromReceiver, {});
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -1315,6 +1314,7 @@ void DetectorImpl::processData(bool receiver) {
         }
         // only update progress
         else {
+            LOG(logINFO) << "Type 'q' and hit enter to stop";
             double progress = 0;
             printProgress(progress);
 

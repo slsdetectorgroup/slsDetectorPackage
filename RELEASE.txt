@@ -483,6 +483,12 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         to access shared memory without creating it first.
         
 
+    *   Stop detector when receiver is stuck
+        If receiver was stuck or crashed, stop acquisition command should
+        stop detector first before checking receiver status to restream 
+        dummy header. Fixed. 
+
+
     *   Free and config command fail
         Free and config command checked mismatch of size of shared memory before 
         freeing or loading new config. Fixed.

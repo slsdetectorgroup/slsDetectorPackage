@@ -116,11 +116,15 @@ Program from console
 
         # Always ensure that the client and server software are of the same release.
 
-        # copies server from tftp folder of pc, links new server to jungfrauDetectorServer, 
+        # copies server, links new server to jungfrauDetectorServer, 
         # removes old server from respawn, sets up new lnked server to respawn
-        # programs fpga,
-        # reboots
+        # programs fpga, reboots
+
+        # v5.0.0 - 6.0.0 (copies server from tftp folder of the pc)
         sls_detector_put update jungfrauDetectorServervxxx pcxxx xx.pof
+
+        # v6.1.1 - present (copies server from the full path provided)
+        sls_detector_put update jungfrauDetectorServervxxx xx.pof
 
         # Or only program firmware
         sls_detector_put programfpga xxx.pof
@@ -182,10 +186,15 @@ Program from console
 
         # Always ensure that the client and server software are of the same release.
 
-        # copies server from tftp folder of pc, links new server to mythen3DetectorServer, 
-        # programs fpga,
-        # reboots
+        # copies server, links new server to mythen3DetectorServer, 
+        # removes old server from respawn, sets up new lnked server to respawn
+        # programs fpga, reboots
+
+        # v5.0.0 - 6.0.0 (copies server from tftp folder of the pc)
         sls_detector_put update mythen3DetectorServervxxx pcxxx xxx.rbf
+
+        # v6.1.1 - present (copies server from the full path provided)
+        sls_detector_put update mythen3DetectorServervxxx xxx.rbf
 
         # Or only program firmware
         sls_detector_put programfpga xxx.rbf
@@ -211,10 +220,15 @@ Program from console
 
         # Always ensure that the client and server software are of the same release.
         
-        # copies server from tftp folder of pc, links new server to gotthard2DetectorServer, 
-        # programs fpga,
-        # reboots
+        # copies server, links new server to gotthard2DetectorServer, 
+        # removes old server from respawn, sets up new lnked server to respawn
+        # programs fpga, reboots
+
+        # v5.0.0 - 6.0.0 (copies server from tftp folder of the pc)
         sls_detector_put update gotthard2DetectorServervxxx pcxxx xxx.rbf
+
+        # v6.1.1 - present (copies server from the full path provided)
+        sls_detector_put update gotthard2DetectorServervxxx xxx.rbf
 
         # Or only program firmware
         sls_detector_put programfpga xxx.rbf
@@ -257,11 +271,15 @@ Program from console
 
         # Always ensure that the client and server software are of the same release.
 
-        # copies server from tftp folder of pc, links new server to moenchDetectorServer, 
+        # copies server, links new server to moenchDetectorServer, 
         # removes old server from respawn, sets up new lnked server to respawn
-        # programs fpga,
-        # reboots
+        # programs fpga, reboots
+
+        # v5.0.0 - 6.0.0 (copies server from tftp folder of the pc)
         sls_detector_put update moenchDetectorServervxxx pcxxx xx.pof
+
+        # v6.1.1 - present (copies server from the full path provided)
+        sls_detector_put update moenchDetectorServervxxx xx.pof
 
         # Or only program firmware
         sls_detector_put programfpga xxx.pof
@@ -288,11 +306,15 @@ Program from console
 
         # Always ensure that the client and server software are of the same release.
         
-        # copies server from tftp folder of pc, links new server to ctbDetectorServer, 
+        # copies server, links new server to ctbDetectorServer, 
         # removes old server from respawn, sets up new lnked server to respawn
-        # programs fpga,
-        # reboots
+        # programs fpga, reboots
+
+        # v5.0.0 - 6.0.0 (copies server from tftp folder of the pc)
         sls_detector_put update ctbDetectorServervxxx pcxxx xx.pof
+
+        # v6.1.1 - present (copies server from the full path provided)
+        sls_detector_put update ctbDetectorServervxxx xx.pof
 
         # Or only program firmware
         sls_detector_put programfpga xxx.pof

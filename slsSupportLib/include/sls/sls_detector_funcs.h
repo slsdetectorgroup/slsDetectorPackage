@@ -10,6 +10,8 @@
  *@short functions indices to call on server (detector/receiver)
  */
 
+#define UNRECOGNIZED_FNUM_ENUM "Unrecognized Function enum"
+
 enum detFuncs {
     F_EXEC_COMMAND = 0,
     F_GET_DETECTOR_TYPE,

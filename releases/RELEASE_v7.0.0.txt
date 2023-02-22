@@ -1,0 +1,1098 @@
+SLS Detector Package Minor Release 7.0.0.rc1 released on 12.12.2021
+===================================================================
+
+This document describes the differences between v7.0.0.rc1 and v6.1.2   
+
+
+
+    CONTENTS
+    --------
+    1.          New, Changed or Resolved Features
+        1.1.    Compilation
+        1.2.    Callback
+        1.3.    Python
+        1.4.    Client
+        1.5.    Detector Server
+        1.6.    Simulator
+        1.7.    Receiver
+        1.8.    Gui
+    2.          On-board Detector Server Compatibility
+    3.          Firmware Requirements
+    4.          Kernel Requirements
+    5.          Download, Documentation & Support
+
+
+
+
+1. New, Changed or Resolved Features
+=====================================
+
+
+1.1. Compilation
+----------------
+
+
+    General:
+
+
+    *   Custom location to find ZeroMQ
+        Option to provide a custom location to look for ZeroMQ, if not found 
+        using FindZeroMQ.cmake
+        
+        For example, to use the system installed zmq:
+        Using cmake: -DZeroMQ_HINT=/usr/lib64 
+        Using cmk.sh script: -q /usr/lib64
+
+
+    *   Support external build 
+        Assuming already installed version of the slsDetectorPacakge exists, 
+        external build of python bindings, gui, ctbgui and moench has been added.
+
+
+    *   Catch updated to latest 2.x version due to build failure in fedora
+    
+
+
+    Gui:
+
+
+    *   Qt5 and in-built compressed Qwt 6.1.5
+        Ported from Qt4 to Qt5. Minimum requirement: Qt 5.9
+        Compressed Qwt 6.1.5 added into the package in libs. It is unpacked and built
+        as a static library.This allows us to remove qwt as an external dependency
+        and reduces the risk of picking up the wrong version.
+
+
+    Python:
+
+
+    *   Install python extension
+        Option to copy the python extension (slsdet folder and _slsdet-..so)
+        to CMAKE_INSTALL_PREFIX/python using
+        -DSLS_INSTALL_PYTHONEXT
+
+
+    *   Pybind11 (v2.10.0)
+        Pybind11 is removed as a submodule and instead built into package to
+        simplify for users. Now, there is no more need to clone with the '--recursive'
+        argument or to update submodule when switching to this package version 
+        and above.
+
+
+    *   Conda packages
+        Removed conda packages for python 3.6 and 3.7. Added for python 3.11.
+
+
+
+1.2. Callback
+-------------
+
+
+    *   Datatype of Metadata [registerCallBackRawDataReady, registerCallBackRawDataModifyReady]
+        Datatype changed from char* to sls_receiver_header.
+
+
+    *   Datatype of Size [registerCallBackRawDataReady, registerCallBackRawDataModifyReady]
+        Datatype changed from uint32_t to size_t
+
+
+    *   Datatype of file name and file path [registerCallBackStartAcquisition]
+        Datatype changed from string to const string reference.
+
+
+    *   Incorrect image size [registerCallBackStartAcquisition]
+        Fixed. It used to give +120 bytes.
+
+
+    *   [Gotthard2] 25um Image reconstruction for 2 modules
+        First module (master) interleaves with second modules(slave). First channel
+        of master is first channel of detector. 
+
+        Requires firmware update to reverse channels of slaves.
+
+
+
+1.3. Python
+-----------
+
+
+    *   Python sub-microsecond resolution
+        Reading back sub-microsecond exposure times from the Python API fixed by 
+        addig Python datetime supports only micro seconds as lowest unit. 
+        
+        This is fixed by introducing a new C++ type (DurationWrapper), which 
+        holds number of nanoseconds as a uint64_t (only in python bindings) and 
+        custom typecaster to convert to and from std::chrono::nanoseconds.
+
+        A get using API now returns in DurationWrapper, instead of datetime.
+        Refer exptime help for examples.
+
+
+    *   Defines in sls_detector_defs
+        sls_detetor_defs parsed and #defines extracted into defines.py
+        For exmaple, one can use slsdet.LOCALHOST_IP
+
+
+    *   Concatenated hostnames
+        Hostnames concatenated using '+' was not split up in Python API. Fixed.
+
+
+    *   Fliprows
+        Added fliprows to python API
+
+
+
+1.4. Client
+-----------
+
+
+    Breaking API:
+
+
+    *   Versioning
+        The client, receiver and detector servers now have semantic Versioning
+        along with the date and are managed with the Version class.
+
+        --version argument to the executable gives the complete versioning with date.
+
+        Using the client to get versions gives only the semantic version. An older
+        server will still give date. Hence, the return type is a string, breaking API.
+
+        Compatibility checks at hostname or rx_hostname command will only be for
+        backwards compatibility (ie. it only checks for the major version number).
+        If its an old server, then its expected to have the exact same date (as
+        before)
+
+        Setting intitialchecks to 0 also bypasses the receiver compatibility check.
+
+
+    *   Detector Specific fields
+        bunchid ->detSpec1
+        reserved->detSpec2
+        debug->detSpec3
+        roundRnumber->detSpec4
+
+        Header version number stays the same in the UDP header as there is no
+        difference in the format from the detector. Only the structure memeber names
+        have changed in sls_detector_defs.h
+
+        Further details about each detector specific field can be found at:
+        https://slsdetectorgroup.github.io/devdoc/udpdetspec.html
+
+
+    *   Namespace sls
+        All files in slsSupportLib and tests have now been moved to sls namespace 
+        including macros. Using the LOG, for example, will require the sls qualifier.
+
+
+    *   [Eiger] Number of UDP interfaces
+        Command line: numinterfaces, API: getNumberofUDPInterfaces
+        This command now reflects the actual number of udp interfaces for Eiger,
+        which is 2.
+
+
+    *   [Eiger][Jungfrau] Row column
+        [Jungfrau] Fixed row column indexing for multi module 2 interfaces
+
+        [Eiger] The row indicies were switched across the Y axis for the callback
+        only for Eiger. This is now changed and kept similar to the other detectors.
+        The row indices would be in the order of the half modules in the hostname 
+        command. Therefore, to keep the image from callback, invert the hostname
+        order in the config file.
+
+    *   Deprecated CopyDetectorServer 
+        Command line: copydetectorserver, API: copydetectorserver
+        Removed. Use updatedetectorserver
+
+
+    *   [Eiger][Jugfrau][Mythen3] Deprecated specific transmission delay commands
+        txndelay_frame -> txdelay_frame
+        txndelay_left -> txdelay_left
+        txndelay_right -> txdelay_right
+
+
+    *   [Eiger] Datastream only for 10GbE
+        Command line: datastream, API: getDataStream/ setDataStream
+
+        This command to enable/ disable data stream from left or right port
+        is now allowed only for 10GbE. Previously, it incorrectly allowed to do so.
+
+
+    *   [Eiger][Jungfrau][Moench][Ctb] Stop command effect on next frame number
+        Stopping acquisition sometimes results in different next frame numbers
+        for different moduels. Hence, after a stop, if the next frame numbers are
+        different, they are all set to their maximum value + 1.
+
+
+    *   Missing packets
+        Command line: rx_missingpackets, API: getNumMissingPackets
+        This now returns a signed 64 bit instead of unsigned. The negative polarity
+        depicts extra packets instead of missing packets and also takes care of
+        disabled ports.
+
+
+    *   Frames caught and frame index
+        Command line rx_framescaught, rx_frameindex, API: getFramesCaught/ getRxCurrentFrameIndex
+        They now return a vector for each port when there are 2 udp interfaces
+        in the receiver.
+
+
+    *   [Gotthard][Gotthard2] Num modules
+        Only 2 modules allowed maximum in a detector shared memory.
+
+
+    *   [Moench][Ctb][Mythen3] Deprecated commands
+        Patloopx, patnloopx, patwaitx, patwaittimex
+        Please use instead patloop, patnloop, patwait and patwaittime commands
+        with the level as an argument. 
+
+        Old commands work with warning, but the server expects the new ones
+        such as a default pattern file to be loaded at startup for Moench.
+
+        Renamed patternParameters struct member from 'loop' to 'startloop' and 
+        'stoploop'.
+
+
+    *   [Mythen3] Clock Divider 4 and 5
+        Cannot be set anymore. Only read back.
+
+
+
+    New commands:
+
+
+    *   [Eiger][Gotthard][Gotthard2][Mythen3][Jungfrau] Master
+        
+        Setting up from client:
+        [Eiger][Gotthard2][Jungfrau] 
+        Command line: master, API: getMaster/ setMaster
+        All of them can get master mode from the client.
+        
+        This can also be set up on the detector server. Please refer to notes
+        on that section.
+
+
+    *   [Eiger] Top
+        Command line: top, API: getTop/ setTop
+        Sets the half module to top or bottom from the client.
+
+        This can also be set up on the detector server. Please refer to notes
+        on that section.
+
+
+    *   [Mythen3][Eiger] Save settings file
+        Command line: trimbits (sls_detector_get), API: saveTrimbits
+        Added
+
+
+    *   [Gotthard2] Parallel readout added
+        Command line: parallel, API: getParallelMode/ setParallelMode
+        Default for Gotthard2 is parallel. Non parallel mode only works in 
+        continuous mode.
+
+
+    *   [Jungfrau] Software trigger added
+        Command line: trigger, API: sendSoftwareTrigger
+        Send software trigger instead of harware trigger.
+
+
+    *   [Eiger][Jungfrau] Blocking trigger
+        Commandline: blockingtrigger, API: sendSoftwareTrigger with argument true
+        Sends software trigger signal to detector and blocks until the frames
+        are sent out for that trigger.
+
+
+    *   [Jungfrau] Sync
+        Command line: sync, API: getSynchronization/ setSynchronization
+        Enables or disables synchronization between modules
+
+
+    *   [Gotthard2][Mythen3] Temperature readout
+        Command line: temp_fpga, API: getTemperature with TEMPERATURE_FPGA enum
+        Added
+
+
+    *   [Gotthard2][Mythen3] Round robin added
+        Command line: udp_dstlist, API: getDestinationUDPList/ setDestinationUDPList
+        Command line: udp_numdst, API: getNumberofUDPDestinations
+        One can set up to 32 (64 for Mythen3) entries in the destination list.
+
+
+    *   [Jungfrau] Module Id
+        Command line: moduleid, API: getModuleId
+        16 bit value (ideally unique) that is streamed out in the udp header of 
+        the detector. The on-board detector server picks it up from a file 
+        (if it exists) called detid_jungfrau.txt.
+    
+
+    *   [Jungfrau][[Gotthard2][Myhten3][Gotthard][Ctb][Moench] Hardware version
+        Command line: hardwareversion, API: getHardwareVersion
+        Gets the board or hardware version. 
+        For example, Jungfrau returns 1.0 or 2.0.
+        It is also printed at on-board detector server start up.
+        Also printed before starting FPGA programming.
+
+
+    *   [Eiger][Jugfrau][Mythen3] Transmission Delay   
+        Command line: tx_delay, API: getTransmissionDelay/ setTransmissionDelay
+        Sets transmission delay for all modules in the detector using the step
+        size provided. Sets up for every module:
+            [Eiger] txdelay_left to (2 * mod_index * n_delay)
+            [Eiger] txdelay_right to ((2 * mod_index + 1) * n_delay)
+            [Eiger] txdelay_frame to (2 *num_modules * n_delay)
+            [Jungfrau][Mythen3] txdelay_frame to (num_modules * n_delay)
+
+
+    *   [Mythen3] Bad channels
+        Command line: badchannels, API: getBadChannels/ setBadChannels
+        Set bad channels from file with a list of channels, which will be masked
+        out. Also does trimming. A detector level command will require the channel
+        numbers accordingly. The file and the command line is also extended to 
+        include commas, colons range and removes duplicates. 
+
+        API allows badchannels as a 2D vector (for every module) or 
+        a 1D vector with positions.
+
+        Command line: Setting it to "none" or "0" will reset all the bad channels.
+        API: Empty vector will reset all the bad channels.
+
+
+    *   [Moench][Ctb] Starting frame number
+        Command line: nextframenumber, API: getNextFrameNumber/ setNextFrameNumber
+        Added and default set up on detector server start up.
+
+
+    *   [Ctb] DAC names
+        Command line: daclist, API: getDacNames/ setDacNames
+        Can set and get dac names in the dac list now.
+    
+    
+    *   [Mythen3] Polarity, interpolation, pump probe, analog pulsing, digital pulsing
+        Command line: polarity, interpolation, pumpprobe, apulse, dpulse
+        API: getPolarity/ setPolarity, getInterpolation/ setInterpolation,
+        getPumpProbe/ setPumpProbe, getAnalogPulsing/ setAnalogPulsing,
+        getDigitalPulsing/ setDigitalPulsing
+        
+        Added these commands. 
+       
+        Enabling interpolation will also enable all counters and disable vth3.
+        Disabling sets to previous counter mask and previous vth values.
+
+        In pump probe mode, only vth2 enabled. Disabling sets vth2 to prevevious 
+        value.
+
+        Setting counter mask will check interpolation and pump probe mode
+        requirements, else sets vthx dacs according to counter mask.
+
+        Direct overwrite of any dac (including vthx) allowed using dac command
+        (as before).
+
+
+
+    New commands for Receiver only:
+
+
+    *   Arping for 10GbE
+        Command line: rx_arping API: getRxArping/ setRxArping
+        Starts a thread in the receiver to arping the interface it is listening
+        to in 10GbE mode every 60 s. 
+        Changes NUM_RX_THREAD_IDS (sls_detector_defs.h) from 8 to 9.
+
+
+    *   Receiver Region of Interest
+        Command line: rx_roi, API: getRxROI/ setRxROI
+        Command line: rx_clearroi, API: clearRxROI
+        One can set an ROI in the receiver to write to file. 1D detectors can set
+        xmin and xmax, whereas the 2D can also set ymin and ymax. -1 values signify
+        no ROI. 
+        
+        This is not at network level and can only be used to reduce size of file.
+        Virtual HDF5 files not created when this is enabled and also no link in
+        master file. No file created if module not in ROI.
+
+        There can only be one ROI per detector. Therefore, can be set only at 
+        detector level, but can be retrieved at module level as well.
+
+        The GUI still shows the entire image, but has a yellow border around the 
+        ROI. Status bar displays a message when Rx ROI enabled.
+
+
+
+    Additonal Features:
+
+
+    *   Non-blocking start
+        Allowing non-blocking start at modular level again.
+
+
+    *   [Jungfrau][Moench][Ctb] Additional programming checks
+        Also checks if the drive to write to is a special file or a normal
+        file. If its a normal file, it throws asking to redo the command with a 
+        '--please-delete' argument to delete the normal file and create the device
+        drive and restart FPGA programming.
+
+        More readable error message insetad of "programfpga not implemented for
+        this detector'. This happens when 'hostname' command fails due to 
+        server-firmware/client compatibility and the detector type becomes
+        'GENERIC'. Fixed to suggest if 'hostname' executed properly. 
+
+
+    *   Udp Source IP
+        Command line: udp_srcip(2), API: getSourceUDPIP(2)/ setSourceUDPIP(2)
+        One can also set this to 'auto' for 1 GbE data and virtual detectors. 
+	It will set to IP of detector. Not available for GotthardI.
+
+    *   Incrementing default receiver tcp port
+        Automatically incrementing the default receiver tcp port for every module
+        when creating shared memory.
+
+
+    *   Command line pattern commands also prints level index at output now.
+
+
+    *   Zmq High water mark (hwm) and buffer size
+        When switching to the gui, hwm for the gui and the reciver was set to 2.
+        Now, if hwm is less than 25, the zmq receive buffer size is set to 1Mb 
+        in the gui, else to 0 (os default). Similarly, zmq send buffer size is 
+        also set for the receiver. These functions and option to rebind the zmq 
+        publisher socket is also available now.
+
+    
+    Changes or Fixes:
+
+
+    *   [Jungfrau][Gotthard2][Mythen3][Gotthard][Moench][Ctb] Can't stop
+        This bug was introduced in 6.1.1, when stopping an acquisition saying it 
+        cannot stop, even though it was successful. It is fixed now.
+
+        Note: Only if the detector is not in idle or stopped status, will the 
+        command to stop acquisition go to the detector. This was introduced in 6.1.2
+        to handle multiple modules getting asynchronous start and stops from 
+        different processes.   
+
+
+    *   [Gotthard] Set delay exception
+        Set delay threw an exception as it adds master delay in verification
+        even if it was not a master. Fixed.
+
+
+    *   Shared memory access failure
+        After a free, one could get seg fault if one called a function accessing
+        the shared memory structure without first loading the config file that 
+        creates the shared memory. Fixed, a proper exception thrown if one tries
+        to access shared memory without creating it first.
+        
+
+    *   Stop detector when receiver is stuck
+        If receiver was stuck or crashed, stop acquisition command should
+        stop detector first before checking receiver status to restream 
+        dummy header. Fixed. 
+
+
+    *   Free and config command fail
+        Free and config command checked mismatch of size of shared memory before 
+        freeing or loading new config. Fixed.
+
+
+    *   Incorrect user provided detector size
+        Command line: detsize, API: getDetectorSize/ setDetectorSize
+        If a user sets an incorrect detector size that is greater than the actual
+        detector size, then it would have set an incorrect number of modules, 
+        affecting number of ports in the receiver. This has been fixed and now
+        the user can only set less than or equal to the maximum dimension
+        it could have.
+
+
+    *   sls_detector_help or sls_detector_get -h
+        Should not create Detector object. Fixed.
+
+
+    *   [Jungfrau] Storage cells in running receiver
+        Allowing the possibility to set this when receiver in running state.
+
+
+    *   [Eiger] Vtr
+        Allow Vtrim to be interpolated for settings.
+
+
+    *   [Mythen3] Incorrect gain caps when setting threshold energy
+        Gain caps overwritten with settings enum. Fixed.
+
+
+    *   [Mythen3] Non blocking start acquisition 
+        Non-blocking start acquisition was sent out twice to the master. Fixed.
+
+
+    *   [Mythen3] Threshold
+        When settings trimbits or threshold, counter mask is set and hence,
+        vthx dacs are set accordingly.
+
+        setAllThresholdEnergy takes 3 values for each counter and if one of them
+        is -1, the trimbits and setings for that counter is picked up from the 
+        detector.
+
+
+    *   [Moench][Ctb] Pattern levels
+        Changed from 3 to 6.
+
+
+    *   [Mythen3][Moench][Ctb] Default patwait and patloop addresses
+        Set default wait and loop addresses to 0x1fff (max value) for all levels
+        before loading pattern. Please use the pattern command instead of parameters.
+        This ensures defaults are set up and is faster.
+
+
+    *   [Moench] Patsetbit and patsetmask
+        Command line: patsetbit API: getPatternBitMask/ setPatternBitMask
+        Command line: patmask API: getPatternMask/ setPatternMask
+        
+        Exchanging the help and masks for patsetbit and patsetmask in the detector
+        server, especially in loading settings.
+
+
+    *   [Moench][Ctb] ADC Vpp
+        Command line: adcvpp, API: getADCVpp/ setADCVpp
+        Moved from SetDAC function into into its own. One can use mV values or
+        option numbers as before.
+
+
+    *   [Ctb] ADC command goes back to control server
+        Slow ADCs, slow ADC temperature, get measured current and voltage values
+        are requested via the control server again insetad of the stop server
+        due to configuration and definitions in the control server.
+
+    
+    *   UDP Source Mac addresses
+        Only allowing unicast addresses (LSB of first octet must be 0).
+
+
+1.5. Detector Server
+--------------------
+
+
+    Config file:
+
+    *   [Eiger][Gotthard2][Gotthard] Master
+        Using config file with 'master' with argument (master=1, slave=0)
+
+
+    *   [Eiger] Top          
+        Using config file with 'top' with argument (top=1, bottom=0)
+    
+
+
+    Command line arguments:
+
+    *   They have precedence over config files. 
+
+
+    *   [Eiger][Gotthard2 Virtual][Mythen3 Virtual][Gotthard Virtual] Master
+        Using command line '--master = 1' or '-m = 1' with argument 
+        (master = 1, slave = 0)
+
+
+    *   [Eiger] Top
+        Using command line '--top = 1' or '-t = 1' with argument (top=1, bottom=0)
+
+
+    *   Ignore config file
+        The config files can also be ignored by an argument from the command line, 
+        '--ignore-config' or '-i'.
+                      
+
+
+    Fixes:
+
+
+    *   [Jungfrau][Eiger] Clear UDP destination
+        Command line: udp_cleardst, API: clearUDPDestinations
+        Clearing udp destination also clears it in the FPGA now. 
+
+
+    *   [Eiger] Incorrect next frame number
+        Command line: nextframenumber, API: getNextFrameNumber/ setNextFrameNumber
+        Get next frame number for 10g was connected to 1g registers and gave 
+        incorrect values. Fixed.
+
+
+    *   [Eiger] Quad Dynamic range
+        Could not set dyanamic range in an Eiger Quad. Fixed.
+
+
+    *   [Eiger] Stop before first acquisition after power on
+        Firmware fixed to handle a stop command before first acquisition after
+        the module is powered on.
+        
+
+    *   [Mythen3][Gotthard2] System clock change effects 
+        When changing the system clock (clkdiv 2), time settings should also be 
+        affected (exptime, period etc.). Fixed.
+
+        [Gotthard2] System frequency should be same irrespective of timing source.
+        Fixed.
+
+
+    *   [Mythen3] Kernel version compatibility test
+        Fix added to parse properly the kernel version with CET for corrected
+        version compatibility test.
+
+
+    *   [Mythen3] Server crash for setting vthrehsold
+        Fixed.
+
+
+    *   [Mythen3] trimming
+        Fixed deserializing in trimming.
+
+
+    *   [Mythen3] Incorrect gaincaps
+        Setting threshold energy was overwriting gaincaps with settings enum. Fixed.
+
+
+    *   [Ctb][Moench] Hostname fail in update mode. 
+        Fixed
+
+
+
+    Changes:
+
+    
+    *   [Jungfrau] Temporary fix for stop in 6.1.1
+        Temporary fix introduced in 6.1.1 for not being able to start after a
+        stop command has been issued is removed. Reset core right after also has
+        been removed. It has been fixed in firmware instead.
+
+
+    *   [Gotthard2] Clock Divider defaults
+        When chancing burst mode, clock dividers (2, 3 and 4) set to their 
+        defaults according to burst mode.
+
+
+    *   [Mythen3] Change in default clock dividers.
+
+
+    *   [Mythen3] DAC check for settings
+        Verify DAC values for each setting has been temporarily switched off
+
+
+    *   [Mythen3] DAC min and max values
+        Vtrim minimum of 600 has been removed.
+        The threshold dacs minimum is 200 and maximum is 2400.
+        The other DACs minimum is 0 and maximum is 2800.
+        When out of range, will not throw, just a warning.
+
+
+    *   [Mythen3] Vicin Dac changed to 800      
+
+
+    *   [Jungfrau][Moench][Ctb] PLL reset at server start up
+        PLL reset now at server start up.
+
+
+    *   [Moench] ADC9257 Vref
+        ADC Vref voltage modified from 1.33V to 2V
+
+
+
+    *   [Ctb] Allow all clock dividers for PLL
+        Fixed. For example, 133 MHz would not really be set previously. Fixed by
+        changing totaldiv from float to an integer.
+
+
+
+    Additional Features:
+
+    
+    *   Stop server startup errors
+        Stop servers now also check for errors at startup (including version
+        compatibility) and like the control server, it will translate to the 
+        client when connecting for the first time (hostname command).
+
+
+    *   [Jungfrau][Moench][Ctb] Additional server update process
+        Removes old server binary or target of linked file when updating
+        detector server for blackfin detectors as there is less space on blackfin.
+
+        Clearing up absolute and respawn path (removing double '/')
+
+        Raise error if server name to be copied is the same as final soft link name.
+
+
+    *   [Moench][Ctb] 1 GbE Non blocking acquisition
+        Previously non blocking acquisition in 1 GbE would not send data.
+        This feature added now.
+
+
+    *   [Gotthard2] Adapted to new HDI version
+        HDI module ID written to FPGA register
+
+
+
+1.6. Simulator
+--------------
+
+
+    *   Command line arguments. Please refer to previous section on Detector Server.
+
+
+    *   [Eiger] Only one executable
+        Only one executable for an Eiger virtual server. Master and top mode
+        can be provided via command line or config file to the detector server,
+        as well as via the client. See in Other New Features for more details.
+
+        One can start a module using:
+            eigerDetectorServer_virtual # reads default config file (top master)
+            eigerDetectorServer_virtual -i #ignores the config file (bottom slave)
+
+
+    *   [Eiger][Junfrau][Gotthard2][Mythen3] Module Id
+        Added into udp header
+
+
+    *   Minimum Configuration
+        One can setup with just:
+            hostname localhost
+            rx_hostname localhost
+            udp_dstip auto
+
+
+    *   [Mythen3] Packet size
+        Fixed packet size calculation. Previously, sending only header with no data.
+
+
+
+1.7. Receiver
+-------------
+
+
+    Breaking API:
+
+
+    *   Namespace sls
+        All the receiver source files have also been added to namespace sls.
+
+
+    *   HDF5 and Binary writer version 
+        Changed from 6.3 to 6.4
+
+
+    *   Master file format to json
+        The format has been changed from ASCII to json.
+
+
+    *   Geometry metadata
+        Added geometry (number of modules in each direction) to metadata in file.
+
+
+    *   HDF5 Dataset name
+        Changed to just "data" to simplify for user
+
+
+    *   File write
+        File write is disabled by default.
+
+
+
+    Fixes:
+
+    
+    *   Refactored and fixed minor issues
+        Including memory structure and udp sockets.
+        Fixed progress also in discard partial packaets mode and deactivated ports. 
+        Fixed 200% progress.
+        Completely padded images now have detector type or version in metadata.
+        Fixed getting stuck at stop receiver when using zmq
+        Fixed clang compiler warnings
+
+
+    *   Multiple files
+        This bug was introduced in v6.0.0, where 1 file was created per frame 
+        after the first file. Fixed by resetting the number of frames in 
+        current file when creating a new one.
+
+
+    *   [Eiger] Datastream command order
+        The order of commands to set datastream from client mattered previously.
+        Datastream had to be set before 10GbE enable. Order does not matter anymore.
+
+
+    *   Udp destination MAC
+        If it has been set before, changing udp_dstip will not update udp_dstmac.
+        Fixed to always set it in detector even if it had a value before. 
+        Udp_dstmac can still be used to overwrite again. This is useful when
+        using a router for example.
+
+
+    *   Stuck when using zmq
+        More often in 6.1.1, gets stuck at stop receiver.
+
+
+    *   [Mythen3] Incorrect number of packets calculated or tengiga not set up
+        Runnig config second time (with tengiga=0, dr !=32, counters !=0x7) 
+        calculated incorrect image size expected due to inconsistent copy of
+        detector parameters. Fixed
+
+
+    *   Storage cells in receiver
+        Previously not updated in receiver. Fixed.
+
+
+    *   Virtual HDF5 Parameter datasets
+        Corner case bug when frames caught is not a multiple of frames per file.
+        Not found in virtual image datasets. Fixed.
+
+
+
+    Changes:
+
+
+    *   Master file created at end of acquisition
+        The file is now written at the end of acquisition. So if any metadata
+        is changed during an acquisition, it will reflect the last value.
+
+
+    *   File name prefix
+        Slash '/' not allowed.
+
+
+
+    Additional Features:
+
+
+    *   [Gotthard2] 25um image reconstruction in virtual HDF5
+        Virtual HDF5 reconstructs complete image by interleaving first module 
+        (master) with second module (slave). First channel of master is first
+        channel of detector.
+
+        Requires firmware update to reverse channels of slaves.
+
+
+    *   Memory size
+        Increased an internal fifo header by 8 bytes to align memory allocated for 
+        to receive images for efficiency.
+
+
+
+1.8. Gui
+--------
+    
+
+    *   Refer Compilation topic for changes.
+
+
+    *   [Jungfrau][Eiger] Gap pixels
+        Enabled by default in the gui.
+
+
+    *   High voltage 
+        Moved from Developer tab to Settings tab.
+
+
+    *   Gain plot zooming
+        Zooming disabled. Instead, it automatically zooms in when you zoom in
+        the main plot or if min and max of x and y axis set up in plot tab.
+
+
+    *   [Mythen3] Inconsistent timing mode
+        Timing mode of the slaves should be discarded before squashing. Fixed.
+
+  
+    *   [Mythen3][Gotthard2] Crashes
+        Additional locking Added
+
+    
+    *   File path set in detector after choosing a directory in dialog (without
+        pressing enter). Before, it was only set in the display box, but lost
+        when switching tabs.
+
+
+    *   X, Y, Z axis limits
+        Did not reflect on the current plot. Fixed.
+
+
+    *   Refer 'Client' notes on Zmq High water mark and Zmq buffer size for 
+        fast detectors.
+
+
+
+
+2.  On-board Detector Server Compatibility
+==========================================
+
+
+    Eiger       7.0.0
+    Jungfrau    7.0.0
+    Mythen3     7.0.0
+    Gotthard2   7.0.0
+    Gotthard    7.0.0
+    Moench      7.0.0
+    Ctb         7.0.0
+    
+
+    On-board Detector Server Upgrade
+    --------------------------------
+
+    From v6.1.0 (without tftp):
+        Using command 'updatedetectorserver'
+    From 5.0.0 (with tftp):
+        Using command 'copydetectorserver'
+
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+
+
+
+3. Firmware Requirements
+========================
+
+
+    Eiger       20.02.2023 (v31)
+    
+    Jungfrau    04.11.2022 (v1.4, HW v1.0) 
+                03.11.2022 (v2.4, HW v2.0)
+
+    Mythen3     24.01.2023 (v1.4)
+
+    Gotthard2   23.11.2022 (v0.3)
+
+    Gotthard    08.02.2018 (50um and 25um Master)
+                09.02.2018 (25 um Slave) 
+
+    Moench      05.12.2022 (v0.3)
+
+    Ctb         05.12.2022 (v1.1)
+
+
+    Detector Upgrade
+    ----------------
+
+    The following can be upgraded remotely:
+
+    Eiger      via bit files
+    Jungfrau   via command <.pof>
+    Mythen3    via command <.rbf>
+    Gotthard2  via command <.rbf>
+    Moench     via command <.pof>
+    Ctb        via command <.pof>
+
+    Gotthard cannot be upgraded remotely  
+
+    Except Eiger, 
+        upgrade 
+            Using command 'programfpga' or
+
+        udpate both server and firmware simultaneously
+            Using command 'update'
+
+
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+
+
+
+4. Kernel Requirements
+======================
+
+    Blackfin 
+    ========
+    Latest version: Fri Oct 29 00:00:00 2021
+    
+    Older ones will work, but might have issues with programming firmware via
+    the package.
+
+    Nios
+    ====
+    Compatible version: Mon May 10 18:00:21 CEST 2021
+
+    Kernel Upgrade
+    ==============
+    Eiger   via bit files
+    Others  via command
+
+    Commands: udpatekernel, kernelversion
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+        https://slsdetectorgroup.github.io/devdoc/pydetector.html
+
+
+
+
+5. Download, Documentation & Support
+====================================
+
+    Download
+    --------
+    
+    The Source Code:
+         https://github.com/slsdetectorgroup/slsDetectorPackage
+            
+    Documentation
+    -------------
+    
+    Installation:
+        https://slsdetectorgroup.github.io/devdoc/installation.html
+
+    Quick Start Guide:
+        https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
+        
+    Firmware Upgrade:
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+    Detector Server upgrade:
+        https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
+
+    Detector Simulators:
+        https://slsdetectorgroup.github.io/devdoc/virtualserver.html
+
+    Consuming slsDetectorPackage:
+        https://slsdetectorgroup.github.io/devdoc/consuming.html
+        
+    API Examples:
+        https://github.com/slsdetectorgroup/api-examples
+
+    Command Line Documentation:
+        https://slsdetectorgroup.github.io/devdoc/commandline.html
+
+    C++ API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/detector.html
+       
+    C++ API Example:
+        https://slsdetectorgroup.github.io/devdoc/examples.html#
+        
+    Python API Documentation:
+        https://slsdetectorgroup.github.io/devdoc/pygettingstarted.html
+
+    Python API Example:
+        https://slsdetectorgroup.github.io/devdoc/pyexamples.html
+
+    Receivers (including custom receiver):
+        https://slsdetectorgroup.github.io/devdoc/receivers.html
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html
+
+    Detector UDP Header:
+        https://slsdetectorgroup.github.io/devdoc/udpheader.html
+        https://slsdetectorgroup.github.io/devdoc/udpdetspec.html
+
+    slsReceiver Zmq Format:
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html#zmq-json-header-format
+
+    TroubleShooting:
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html#receiver-pc-tuning-options
+        
+    Further Documentation:
+        https://www.psi.ch/en/detectors/documentation
+        
+    Info on Releases:
+        https://www.psi.ch/en/detectors/software
+
+
+    Support
+    -------
+
+        dhanya.thattil@psi.ch
+        erik.frojdh@psi.ch
+

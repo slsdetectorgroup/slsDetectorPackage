@@ -1314,7 +1314,7 @@ void DetectorImpl::processData(bool receiver) {
         }
         // only update progress
         else {
-            LOG(logINFO) << "Type 'q' and hit enter to stop";
+            LOG(logINFO) << "Type 'q' and hit enter to stop acquisition";
             double progress = 0;
             printProgress(progress);
 

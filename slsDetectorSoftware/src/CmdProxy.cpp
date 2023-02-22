@@ -1481,13 +1481,28 @@ std::string CmdProxy::Trigger(int action) {
 
 /* Network Configuration (Detector<->Receiver) */
 
-IpAddr CmdProxy::getIpFromAuto() {
+IpAddr CmdProxy::getDstIpFromAuto() {
     std::string rxHostname =
         det->getRxHostname(std::vector<int>{det_id}).squash("none");
     // Hostname could be ip try to decode otherwise look up the hostname
     auto val = IpAddr{rxHostname};
     if (val == 0) {
         val = HostnameToIp(rxHostname.c_str());
+    }
+    return val;
+}
+
+IpAddr CmdProxy::getSrcIpFromAuto() {
+    if (det->getDetectorType().squash() == defs::GOTTHARD) {
+        throw RuntimeError(
+            "Cannot use 'auto' for udp_srcip for GotthardI Detector.");
+    }
+    std::string hostname =
+        det->getHostname(std::vector<int>{det_id}).squash("none");
+    // Hostname could be ip try to decode otherwise look up the hostname
+    auto val = IpAddr{hostname};
+    if (val == 0) {
+        val = HostnameToIp(hostname.c_str());
     }
     return val;
 }
@@ -1502,7 +1517,7 @@ UdpDestination CmdProxy::getUdpEntry() {
         std::string value = it.substr(pos + 1);
         if (key == "ip") {
             if (value == "auto") {
-                auto val = getIpFromAuto();
+                auto val = getDstIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip of detector " << det_id
                              << " to " << val;
                 udpDestination.ip = val;
@@ -1511,7 +1526,7 @@ UdpDestination CmdProxy::getUdpEntry() {
             }
         } else if (key == "ip2") {
             if (value == "auto") {
-                auto val = getIpFromAuto();
+                auto val = getDstIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id
                              << " to " << val;
                 udpDestination.ip2 = val;
@@ -1585,8 +1600,9 @@ std::string CmdProxy::UDPSourceIP(int action) {
         os << "[x.x.x.x] or auto\n\tIp address of the detector (source) udp "
               "interface. Must be same subnet as destination udp "
               "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will replace "
-              "with its own DHCP IP address. If 'auto' used, then ip is set to "
-              "ip of rx_hostname."
+              "with its own DHCP IP address. \n\tOne can also set this to "
+              "'auto' for 1 GbE data and virtual detectors. It will set to IP "
+              "of detector. Not available for GotthardI"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getSourceUDPIP(std::vector<int>{det_id});
@@ -1600,7 +1616,7 @@ std::string CmdProxy::UDPSourceIP(int action) {
         }
         IpAddr val;
         if (args[0] == "auto") {
-            val = getIpFromAuto();
+            val = getSrcIpFromAuto();
             LOG(logINFO) << "Setting udp_srcip of detector " << det_id << " to "
                          << val;
         } else {
@@ -1622,8 +1638,9 @@ std::string CmdProxy::UDPSourceIP2(int action) {
         os << "[x.x.x.x] or auto\n\t[Jungfrau][Gotthard2] Ip address of the "
               "detector (source) udp interface 2. Must be same subnet as "
               "destination udp ip2.\n\t [Jungfrau] top half or inner "
-              "interface\n\t [Gotthard2] veto debugging. If 'auto' used, then "
-              "ip is set to ip of rx_hostname."
+              "interface\n\t [Gotthard2] veto debugging. \n\tOne can also set "
+              "this to 'auto' for 1 GbE data and virtual detectors. It will "
+              "set to IP of detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getSourceUDPIP2(std::vector<int>{det_id});
@@ -1637,7 +1654,7 @@ std::string CmdProxy::UDPSourceIP2(int action) {
         }
         IpAddr val;
         if (args[0] == "auto") {
-            val = getIpFromAuto();
+            val = getSrcIpFromAuto();
             LOG(logINFO) << "Setting udp_srcip2 of detector " << det_id
                          << " to " << val;
         } else {
@@ -1671,7 +1688,7 @@ std::string CmdProxy::UDPDestinationIP(int action) {
             WrongNumberOfParameters(1);
         }
         if (args[0] == "auto") {
-            auto val = getIpFromAuto();
+            auto val = getDstIpFromAuto();
             LOG(logINFO) << "Setting udp_dstip of detector " << det_id << " to "
                          << val;
             det->setDestinationUDPIP(val, std::vector<int>{det_id});
@@ -1707,7 +1724,7 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
             WrongNumberOfParameters(1);
         }
         if (args[0] == "auto") {
-            auto val = getIpFromAuto();
+            auto val = getDstIpFromAuto();
             LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id
                          << " to " << val;
             det->setDestinationUDPIP2(val, std::vector<int>{det_id});

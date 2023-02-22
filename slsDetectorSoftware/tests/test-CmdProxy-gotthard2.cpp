@@ -702,11 +702,11 @@ TEST_CASE("confadc", "[.cmd]") {
             }
         }
 
-        REQUIRE_THROWS(proxy.Call("confadc", {"11", "2", "0x3ff"}, -1,
+        REQUIRE_THROWS(proxy.Call("confadc", {"11", "2", "0x7f"}, -1,
                                   PUT)); // invalid chip index
-        REQUIRE_THROWS(proxy.Call("confadc", {"-1", "10", "0x3ff"}, -1,
+        REQUIRE_THROWS(proxy.Call("confadc", {"-1", "32", "0x7f"}, -1,
                                   PUT)); // invalid adc index
-        REQUIRE_THROWS(proxy.Call("confadc", {"-1", "10", "0x1fff"}, -1,
+        REQUIRE_THROWS(proxy.Call("confadc", {"-1", "10", "0x80"}, -1,
                                   PUT)); // invalid value
         {
             std::ostringstream oss;
@@ -718,12 +718,14 @@ TEST_CASE("confadc", "[.cmd]") {
             proxy.Call("confadc", {"2", "3"}, -1, GET, oss);
             REQUIRE(oss.str() == "confadc 0x11\n");
         }
+
+        // doesnt exist in hw yet to set individual chips (no file)
         for (int i = 0; i != ndet; ++i) {
-            for (int j = 0; j != nchip; ++j) {
-                for (int k = 0; k != nadc; ++k) {
-                    det.setADCConfiguration(j, k, prev_val[i][j][k], {i});
-                }
+            // for (int j = 0; j != nchip; ++j) {
+            for (int k = 0; k != nadc; ++k) {
+                det.setADCConfiguration(-1, k, prev_val[i][0][k], {i});
             }
+            //}
         }
     } else {
         REQUIRE_THROWS(proxy.Call("confadc", {}, -1, GET));

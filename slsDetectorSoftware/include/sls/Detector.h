@@ -1476,8 +1476,9 @@ class Detector {
     Result<int> getADCConfiguration(const int chipIndex, const int adcIndex,
                                     Positions pos = {}) const;
 
-    /** [Gotthard2] configures one chip at a time for specific adc, chipIndex
-     * and adcIndex is -1 for all */
+    /** [Gotthard2] configures one chip at a time for specific adc, chipIndex.
+     * -1 for all. Setting specific chip index not implemented in hardware yet
+     */
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              const int value, Positions pos = {});
 

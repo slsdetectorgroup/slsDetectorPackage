@@ -2393,7 +2393,8 @@ std::string CmdProxy::ConfigureADC(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[chip index 0-10, -1 for all] [adc index 0-31, -1 for all] [12 "
+        os << "[chip index 0-9 [setting individual chips not yet implemented], "
+              "-1 for all] [adc index 0-31, -1 for all] [7 "
               "bit configuration value in hex]\n\t[Gotthard2] Sets "
               "configuration for specific chip and adc, but configures 1 chip "
               "(all adcs for that chip) at a time."

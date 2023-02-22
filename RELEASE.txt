@@ -952,7 +952,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     Jungfrau    04.11.2022 (v1.4, HW v1.0) 
                 03.11.2022 (v2.4, HW v2.0)
 
-    Mythen3     24.01.2023 (v1.4)?
+    Mythen3     24.01.2023 (v1.4)
 
     Gotthard2   23.11.2022 (v0.3)
 

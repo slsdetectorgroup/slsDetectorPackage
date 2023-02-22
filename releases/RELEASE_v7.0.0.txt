@@ -1,38 +1,39 @@
-SLS Detector Package Minor Release 7.0.0.rc1 released on 12.12.2021
-===================================================================
+SLS Detector Package Major Release 7.0.0 released on 22.02.2023
+===============================================================
 
-This document describes the differences between v7.0.0.rc1 and v6.1.2   
+This document describes the differences between v7.0.0 and v6.1.2   
 
 
 
     CONTENTS
     --------
-    1.          New, Changed or Resolved Features
-        1.1.    Compilation
-        1.2.    Callback
-        1.3.    Python
-        1.4.    Client
-        1.5.    Detector Server
-        1.6.    Simulator
-        1.7.    Receiver
-        1.8.    Gui
-    2.          On-board Detector Server Compatibility
-    3.          Firmware Requirements
-    4.          Kernel Requirements
-    5.          Download, Documentation & Support
+    1           New, Changed or Resolved Features
+        1.1     Compilation
+        1.2     Callback
+        1.3     Python
+        1.4     Client
+        1.5     Detector Server
+        1.6     Simulator
+        1.7     Receiver
+        1.8     Gui
+    2           On-board Detector Server Compatibility
+    3           Firmware Requirements
+    4           Kernel Requirements
+    5           Download, Documentation & Support
 
 
 
 
-1. New, Changed or Resolved Features
+1 New, Changed or Resolved Features
 =====================================
 
 
-1.1. Compilation
-----------------
+1.1 Compilation
+==================
 
 
     General:
+    --------
 
 
     *   Custom location to find ZeroMQ
@@ -54,6 +55,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     Gui:
+    ----
 
 
     *   Qt5 and in-built compressed Qwt 6.1.5
@@ -64,6 +66,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     Python:
+    -------
 
 
     *   Install python extension
@@ -84,15 +87,17 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-1.2. Callback
--------------
+1.2 Callback
+=============
 
 
-    *   Datatype of Metadata [registerCallBackRawDataReady, registerCallBackRawDataModifyReady]
+    *   Datatype of Metadata [registerCallBackRawDataReady, 
+        registerCallBackRawDataModifyReady]
         Datatype changed from char* to sls_receiver_header.
 
 
-    *   Datatype of Size [registerCallBackRawDataReady, registerCallBackRawDataModifyReady]
+    *   Datatype of Size [registerCallBackRawDataReady,         
+        registerCallBackRawDataModifyReady]
         Datatype changed from uint32_t to size_t
 
 
@@ -112,8 +117,8 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-1.3. Python
------------
+1.3 Python
+===========
 
 
     *   Python sub-microsecond resolution
@@ -142,11 +147,12 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-1.4. Client
------------
+1.4 Client
+===========
 
 
     Breaking API:
+    -------------
 
 
     *   Versioning
@@ -259,6 +265,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     New commands:
+    -------------
 
 
     *   [Eiger][Gotthard][Gotthard2][Mythen3][Jungfrau] Master
@@ -390,6 +397,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     New commands for Receiver only:
+    -------------------------------
 
 
     *   Arping for 10GbE
@@ -419,6 +427,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     Additonal Features:
+    -------------------
 
 
     *   Non-blocking start
@@ -440,7 +449,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
     *   Udp Source IP
         Command line: udp_srcip(2), API: getSourceUDPIP(2)/ setSourceUDPIP(2)
         One can also set this to 'auto' for 1 GbE data and virtual detectors. 
-	It will set to IP of detector. Not available for GotthardI.
+	    It will set to IP of detector. Not available for GotthardI.
 
     *   Incrementing default receiver tcp port
         Automatically incrementing the default receiver tcp port for every module
@@ -459,6 +468,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
     
     Changes or Fixes:
+    -----------------
 
 
     *   [Jungfrau][Gotthard2][Mythen3][Gotthard][Moench][Ctb] Can't stop
@@ -566,11 +576,12 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         Only allowing unicast addresses (LSB of first octet must be 0).
 
 
-1.5. Detector Server
---------------------
+1.5 Detector Server
+====================
 
 
     Config file:
+    ------------
 
     *   [Eiger][Gotthard2][Gotthard] Master
         Using config file with 'master' with argument (master=1, slave=0)
@@ -582,6 +593,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     Command line arguments:
+    -----------------------
 
     *   They have precedence over config files. 
 
@@ -602,6 +614,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     Fixes:
+    ------
 
 
     *   [Jungfrau][Eiger] Clear UDP destination
@@ -655,6 +668,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     Changes:
+    --------
 
     
     *   [Jungfrau] Temporary fix for stop in 6.1.1
@@ -701,6 +715,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     Additional Features:
+    --------------------
 
     
     *   Stop server startup errors
@@ -728,8 +743,8 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-1.6. Simulator
---------------
+1.6 Simulator
+==============
 
 
     *   Command line arguments. Please refer to previous section on Detector Server.
@@ -761,11 +776,12 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-1.7. Receiver
--------------
+1.7 Receiver
+=============
 
 
     Breaking API:
+    -------------
 
 
     *   Namespace sls
@@ -794,6 +810,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     Fixes:
+    ------
 
     
     *   Refactored and fixed minor issues
@@ -844,6 +861,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     Changes:
+    --------
 
 
     *   Master file created at end of acquisition
@@ -857,6 +875,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
     Additional Features:
+    --------------------
 
 
     *   [Gotthard2] 25um image reconstruction in virtual HDF5
@@ -873,8 +892,8 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-1.8. Gui
---------
+1.8 Gui
+========
     
 
     *   Refer Compilation topic for changes.
@@ -916,7 +935,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-2.  On-board Detector Server Compatibility
+2  On-board Detector Server Compatibility
 ==========================================
 
 
@@ -943,7 +962,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-3. Firmware Requirements
+3 Firmware Requirements
 ========================
 
 
@@ -992,22 +1011,22 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-4. Kernel Requirements
+4 Kernel Requirements
 ======================
 
     Blackfin 
-    ========
+    --------
     Latest version: Fri Oct 29 00:00:00 2021
     
     Older ones will work, but might have issues with programming firmware via
     the package.
 
     Nios
-    ====
+    -----
     Compatible version: Mon May 10 18:00:21 CEST 2021
 
     Kernel Upgrade
-    ==============
+    ---------------
     Eiger   via bit files
     Others  via command
 
@@ -1020,7 +1039,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-5. Download, Documentation & Support
+5 Download, Documentation & Support
 ====================================
 
     Download

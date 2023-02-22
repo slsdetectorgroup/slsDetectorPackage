@@ -439,8 +439,8 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
     *   Udp Source IP
         Command line: udp_srcip(2), API: getSourceUDPIP(2)/ setSourceUDPIP(2)
-        One can also set this to 'auto' for 1 GbE data. It will set to IP of
-        rx_hostname (as in udp_dstip)
+        One can also set this to 'auto' for 1 GbE data and virtual detectors. 
+	It will set to IP of detector. Not available for GotthardI.
 
     *   Incrementing default receiver tcp port
         Automatically incrementing the default receiver tcp port for every module

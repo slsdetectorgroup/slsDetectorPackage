@@ -1600,9 +1600,9 @@ std::string CmdProxy::UDPSourceIP(int action) {
         os << "[x.x.x.x] or auto\n\tIp address of the detector (source) udp "
               "interface. Must be same subnet as destination udp "
               "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will replace "
-              "with its own DHCP IP address. \n\tIf 'auto' used, then ip is "
-              "set to "
-              "ip of detector ip.[Not for GotthardI)"
+              "with its own DHCP IP address. \n\tOne can also set this to "
+              "'auto' for 1 GbE data and virtual detectors. It will set to IP "
+              "of detector. Not available for GotthardI"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getSourceUDPIP(std::vector<int>{det_id});
@@ -1638,8 +1638,9 @@ std::string CmdProxy::UDPSourceIP2(int action) {
         os << "[x.x.x.x] or auto\n\t[Jungfrau][Gotthard2] Ip address of the "
               "detector (source) udp interface 2. Must be same subnet as "
               "destination udp ip2.\n\t [Jungfrau] top half or inner "
-              "interface\n\t [Gotthard2] veto debugging. \n\tIf 'auto' used, "
-              "then ip is set to ip of detector ip.[Not for GotthardI)"
+              "interface\n\t [Gotthard2] veto debugging. \n\tOne can also set "
+              "this to 'auto' for 1 GbE data and virtual detectors. It will "
+              "set to IP of detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getSourceUDPIP2(std::vector<int>{det_id});

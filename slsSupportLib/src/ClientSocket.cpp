@@ -4,6 +4,7 @@
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 #include "sls/sls_detector_exceptions.h"
+#include "sls/sls_detector_funcs.h"
 #include <arpa/inet.h>
 #include <cassert>
 #include <cstring>
@@ -76,9 +77,7 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
     try {
         Receive(&ret, sizeof(ret));
         if (ret == slsDetectorDefs::FAIL) {
-            char mess[MAX_STR_LENGTH]{};
-            // get error message
-            Receive(mess, sizeof(mess));
+            std::string mess = readErrorMessage();
             // Do we need to know hostname here?
             // In that case save it???
             if (socketType == "Receiver") {
@@ -107,6 +106,9 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
 std::string ClientSocket::readErrorMessage() {
     std::string error_msg(MAX_STR_LENGTH, '\0');
     Receive(&error_msg[0], error_msg.size());
+    if (error_msg.find(UNRECOGNIZED_FNUM_ENUM) != std::string::npos) {
+        error_msg.insert(0, "Software version mismatch. ");
+    }
     return error_msg;
 }
 

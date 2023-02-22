@@ -234,8 +234,7 @@ int ClientInterface::decodeFunction(Interface &socket) {
     socket.Receive(fnum);
     socket.setFnum(fnum);
     if (fnum <= NUM_DET_FUNCTIONS || fnum >= NUM_REC_FUNCTIONS) {
-        throw RuntimeError("Unrecognized Function enum " +
-                           std::to_string(fnum) + "\n");
+        throw RuntimeError(UNRECOGNIZED_FNUM_ENUM + std::to_string(fnum));
     } else {
         LOG(logDEBUG1) << "calling function fnum: " << fnum << " ("
                        << getFunctionNameFromEnum((enum detFuncs)fnum) << ")";

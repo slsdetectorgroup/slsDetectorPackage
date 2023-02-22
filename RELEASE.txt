@@ -1,4 +1,4 @@
-SLS Detector Package Major Release 7.0.0 released on 22.02.2023
+SLS Detector Package Major Release 7.0.0 released on 23.02.2023
 ===============================================================
 
 This document describes the differences between v7.0.0 and v6.1.2   

@@ -99,7 +99,6 @@ intentionally_missing  = [
                         'temp_slowadc',
                         'temp_sodl',
                         'temp_sodr',
-                        'trigger', #use sendSoftwareTrigger
                         'update', #use updateServerAndFirmare
                         'udp_validate', #use validateUdpConfiguration
                         'udp_reconfigure', #use reconfigureUdpDestination

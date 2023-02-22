@@ -453,6 +453,15 @@ class Detector(CppDetectorApi):
     def triggers(self, n_triggers):
         self.setNumberOfTriggers(n_triggers)
 
+    def resetdacs(self, use_hardware_values):
+        self.resetToDefaultDacs(use_hardware_values)
+
+    def trigger(self):
+        self.sendSoftwareTrigger()
+
+    def blockingtrigger(self):
+        self.sendSoftwareTrigger(True)
+
     @property
     def exptime(self):
         """
@@ -500,15 +509,13 @@ class Detector(CppDetectorApi):
 
     @exptime.setter
     def exptime(self, t):
-        if self.type == detectorType.MYTHEN3 and is_iterable(t):
+        if self.type == detectorType.MYTHEN3 and is_iterable(t) and not isinstance(t,dict):
             for i, v in enumerate(t):
                 if isinstance(v, int):
                     v = float(v)
                 self.setExptime(i, v)
         else:
             ut.set_time_using_dict(self.setExptime, t)
-
-
 
 
     @property

@@ -2,7 +2,7 @@
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 import subprocess
 import locale
-out = subprocess.run(['g', 'list'], stdout = subprocess.PIPE, encoding=locale.getpreferredencoding())
+out = subprocess.run(['sls_detector_get', 'list'], stdout = subprocess.PIPE, encoding=locale.getpreferredencoding())
 cmd = out.stdout.splitlines()
 cmd.pop(0)
 

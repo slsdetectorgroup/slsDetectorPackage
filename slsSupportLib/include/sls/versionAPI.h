@@ -10,4 +10,4 @@
 #define APIJUNGFRAU "7.0.0.rc5 0x230220"
 #define APIMYTHEN3 "7.0.0.rc5 0x230220"
 #define APIMOENCH "7.0.0.rc5 0x230220"
-#define APIEIGER "7.0.0.rc5 0x230220"
+#define APIEIGER "7.0.0.rc5 0x230221"

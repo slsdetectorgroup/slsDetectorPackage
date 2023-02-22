@@ -619,6 +619,11 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         Could not set dyanamic range in an Eiger Quad. Fixed.
 
 
+    *   [Eiger] Stop before first acquisition after power on
+        Firmware fixed to handle a stop command before first acquisition after
+        the module is powered on.
+        
+
     *   [Mythen3][Gotthard2] System clock change effects 
         When changing the system clock (clkdiv 2), time settings should also be 
         affected (exptime, period etc.). Fixed.
@@ -942,7 +947,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 ========================
 
 
-    Eiger       17.02.2022 (v30)
+    Eiger       20.02.2023 (v31)
     
     Jungfrau    04.11.2022 (v1.4, HW v1.0) 
                 03.11.2022 (v2.4, HW v2.0)

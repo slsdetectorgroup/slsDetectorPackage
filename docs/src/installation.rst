@@ -1,14 +1,3 @@
-
-
-
-.. note :: 
-
-    The default branch of our git repository is developer. It contains the 
-    latest development version. It is expected to compile and work but 
-    features might be added or tweaked. In some cases the API might also change
-    without being communicated. If absolute stability of the API is needed please
-    use one of the release versions. 
-
 .. warning ::
     
     Before building from source make sure that you have the 

@@ -7,7 +7,7 @@ gc = _slsdet.slsDetectorDefs.M3_GainCaps
 class Mythen3GainCapsWrapper:
     """Holds M3_GainCaps enums and facilitates printing"""
     # 'M3_C10pre', 'M3_C15pre', 'M3_C15sh', 'M3_C225ACsh', 'M3_C30sh', 'M3_C50sh'
-    all_bits = gc.M3_C10pre | gc.M3_C15pre | gc.M3_C15sh | gc.M3_C225ACsh | gc.M3_C30sh | gc.M3_C30sh
+    all_bits = gc.M3_C10pre | gc.M3_C15pre | gc.M3_C15sh | gc.M3_C225ACsh | gc.M3_C30sh | gc.M3_C50sh
     all_caps = (gc.M3_C10pre, gc.M3_C15pre, gc.M3_C15sh, gc.M3_C225ACsh, gc.M3_C30sh, gc.M3_C30sh)
     def __init__(self, value = 0):
         self._validate(value)

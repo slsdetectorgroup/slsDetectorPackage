@@ -719,13 +719,12 @@ TEST_CASE("confadc", "[.cmd]") {
             REQUIRE(oss.str() == "confadc 0x11\n");
         }
 
-        // doesnt exist in hw yet to set individual chips (no file)
         for (int i = 0; i != ndet; ++i) {
-            // for (int j = 0; j != nchip; ++j) {
-            for (int k = 0; k != nadc; ++k) {
-                det.setADCConfiguration(-1, k, prev_val[i][0][k], {i});
+            for (int j = 0; j != nchip; ++j) {
+                for (int k = 0; k != nadc; ++k) {
+                    det.setADCConfiguration(-1, k, prev_val[i][j][k], {i});
+                }
             }
-            //}
         }
     } else {
         REQUIRE_THROWS(proxy.Call("confadc", {}, -1, GET));

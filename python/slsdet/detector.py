@@ -472,6 +472,24 @@ class Detector(CppDetectorApi):
     @property
     @element
     def gaincaps(self):
+        """
+        [Mythen3] Gain caps. Enum: M3_GainCaps \n
+        
+        Note
+        ----
+        Options: M3_GainCaps, M3_C15sh, M3_C30sh, M3_C50sh, M3_C225ACsh, M3_C15pre
+
+        Example
+        -------
+        >>> d.gaincaps
+        C15pre, C30sh
+        >>> d.gaincaps = M3_GainCaps.M3_C30sh
+        >>> d.gaincaps
+        C30sh
+        >>> d.gaincaps = M3_GainCaps.M3_C30sh | M3_GainCaps.M3_C15sh
+        >>> d.gaincaps
+        C15sh, C30sh
+        """
         res = [Mythen3GainCapsWrapper(it) for it in self.getGainCaps()]
         return res
 

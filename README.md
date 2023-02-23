@@ -1,14 +1,8 @@
 ## Dependencies
-
-    Before building from source make sure that you have the 
-    [software wiki](https://slsdetectorgroup.github.io/devdoc/dependencies.html) 
-    installed. If installing using conda, conda will manage the dependencies. 
-    Avoid also installing packages with pip. 
+Before building from source make sure that you have the [software wiki](https://slsdetectorgroup.github.io/devdoc/dependencies.html) installed. If installing using conda, conda will manage the dependencies. Avoid also installing packages with pip. 
 
 ## Documentaion
-    Detailed documentation can be found in the 
-    [software wiki](https://slsdetectorgroup.github.io/devdoc/index.html) and on 
-    the [official site](https://www.psi.ch/en/detectors/software).
+Detailed documentation can be found in the [software wiki](https://slsdetectorgroup.github.io/devdoc/index.html) and on the [official site](https://www.psi.ch/en/detectors/software).
 
 ## Installation
 

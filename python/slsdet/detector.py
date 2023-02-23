@@ -3757,6 +3757,23 @@ class Detector(CppDetectorApi):
         """
         return self.getMeasuredCurrent(dacIndex.I_POWER_IO)
 
+    @property
+    def clkphase(self):
+        """
+        [Gotthard2][Mythen3] Phase shift of all clocks.
+        
+        Example
+        -------
+        >>> d.clkphase[0] = 20
+        >>> d.clkphase
+        0: 20
+        1: 10
+        2: 20
+        3: 10
+        4: 10
+        5: 5
+        """
+        return ClkPhaseProxy(self)
 
     @property
     def clkdiv(self):

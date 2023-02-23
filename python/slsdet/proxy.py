@@ -4,6 +4,7 @@ from .utils import element_if_equal
 from .enums import dacIndex
 from .defines import M3_MAX_PATTERN_LEVELS, MAX_PATTERN_LEVELS
 from _slsdet import slsDetectorDefs
+detectorType = slsDetectorDefs.detectorType
 
 
 def set_proxy_using_dict(func, key, value, unpack = False):
@@ -87,7 +88,10 @@ class ClkDivProxy:
 
     def __repr__(self):
         rstr = ''
-        for i in range(6):
+        num_clocks = 6
+        if self.det.type == detectorType.MYTHEN3:
+            num_clocks = 5
+        for i in range(num_clocks):
             r = element_if_equal(self.__getitem__(i))
             if isinstance(r, list):
                 rstr += ' '.join(f'{item}' for item in r)
@@ -96,10 +100,35 @@ class ClkDivProxy:
         
         return rstr.strip('\n')
 
+class ClkPhaseProxy:
+    """
+    Proxy class to allow for more intuitive reading clock phase
+    """
+    def __init__(self, det):
+        self.det = det
+
+    def __getitem__(self, key):
+        return element_if_equal(self.det.getClockPhase(key))
+
+    def __setitem__(self, key, value):
+        set_proxy_using_dict(self.det.setClockPhase, key, value)
+
+    def __repr__(self):
+        rstr = ''
+        if self.det.type == detectorType.MYTHEN3:
+            num_clocks = 5
+        for i in range(num_clocks):
+            r = element_if_equal(self.__getitem__(i))
+            if isinstance(r, list):
+                rstr += ' '.join(f'{item}' for item in r)
+            else:
+                rstr += f'{i}: {r}\n'
+        
+        return rstr.strip('\n')
 
 class MaxPhaseProxy:
     """
-    Proxy class to allow for more intuitive reading clockdivider
+    Proxy class to allow for more intuitive reading max clock phase shift
     """
     def __init__(self, det):
         self.det = det
@@ -109,7 +138,9 @@ class MaxPhaseProxy:
 
     def __repr__(self):
         rstr = ''
-        for i in range(5):
+        if self.det.type == detectorType.MYTHEN3:
+            num_clocks = 5
+        for i in range(num_clocks):
             r = element_if_equal(self.__getitem__(i))
             if isinstance(r, list):
                 rstr += ' '.join(f'{item}' for item in r)
@@ -120,7 +151,7 @@ class MaxPhaseProxy:
 
 class ClkFreqProxy:
     """
-    Proxy class to allow for more intuitive reading clockdivider
+    Proxy class to allow for more intuitive reading clock frequency
     """
     def __init__(self, det):
         self.det = det
@@ -130,7 +161,9 @@ class ClkFreqProxy:
 
     def __repr__(self):
         rstr = ''
-        for i in range(5):
+        if self.det.type == detectorType.MYTHEN3:
+            num_clocks = 5
+        for i in range(num_clocks):
             r = element_if_equal(self.__getitem__(i))
             if isinstance(r, list):
                 rstr += ' '.join(f'{item}' for item in r)

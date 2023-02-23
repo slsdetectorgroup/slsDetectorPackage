@@ -16,6 +16,7 @@ defs = slsDetectorDefs
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname_list
 from _slsdet import xy
+from .gaincaps import Mythen3GainCapsWrapper
 from . import utils as ut
 from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
 from .registers import Register, Adc_register
@@ -467,6 +468,29 @@ class Detector(CppDetectorApi):
 
     def blockingtrigger(self):
         self.sendSoftwareTrigger(True)
+
+    @property
+    @element
+    def gaincaps(self):
+        res = [Mythen3GainCapsWrapper(it) for it in self.getGainCaps()]
+        return res
+
+    @gaincaps.setter
+    def gaincaps(self, caps):
+        #convert to int if called with Wrapper
+        if isinstance(caps, Mythen3GainCapsWrapper):
+            self.setGainCaps(caps.value)
+        elif isinstance(caps, dict):
+            corr = {}
+            for key, value in caps.items():
+                if isinstance(value, Mythen3GainCapsWrapper):
+                    corr[key] = value.value
+                else:
+                    corr[key] = value
+            ut.set_using_dict(self.setGainCaps, corr)
+        else:
+            self.setGainCaps(caps)
+
 
     @property
     def exptime(self):

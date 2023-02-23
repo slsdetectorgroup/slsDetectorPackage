@@ -231,7 +231,7 @@ class Detector(CppDetectorApi):
         """
         [Jungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] Hardware version of detector.
         """
-        return ut.lhex(self.getHardwareVersion())
+        return self.getHardwareVersion()
 
     @property
     @element
@@ -262,6 +262,12 @@ class Detector(CppDetectorApi):
     def rx_version(self):
         """Receiver version """
         return self.getReceiverVersion()
+
+    @property
+    @element
+    def serialnumber(self):
+        """Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench] Serial number of detector """
+        return ut.lhex(self.getSerialNumber())
 
     @property
     @element
@@ -655,6 +661,10 @@ class Detector(CppDetectorApi):
     def start(self):
         """Start detector acquisition. Status changes to RUNNING or WAITING and automatically returns to idle at the end of acquisition."""
         self.startDetector()
+
+    def clearbusy(self):
+        """If acquisition aborted during acquire command, use this to clear acquiring flag in shared memory before starting next acquisition"""
+        self.clearAcquiringFlag()
 
     def rx_start(self):
         """Starts receiver listener for detector data packets and create a data file (if file write enabled)."""
@@ -1733,6 +1743,11 @@ class Detector(CppDetectorApi):
         return self.getTimingModeList()
 
     @property
+    def readoutspeedlist(self):
+        """List of readout speed levels implemented for this detector."""
+        return self.getReadoutSpeedList()
+
+    @property
     def templist(self):
         """List of temperature enums (dacIndex) implemented for this detector."""
         return self.getTemperatureList()
@@ -1833,23 +1848,17 @@ class Detector(CppDetectorApi):
 
     @property
     def versions(self):
-        if self.type == detectorType.EIGER:
-            return {'type': self.type,
+        version_list = {'type': self.type,
                 'package': self.packageversion, 
                 'client': self.clientversion,
                 'firmware': self.firmwareversion,
                 'detectorserver': self.detectorserverversion,
-                'kernel': self.kernelversion,
-                'receiver': self.rx_version}
-
-        return {'type': self.type,
-                'package': self.packageversion, 
-                'client': self.clientversion,
-                'firmware': self.firmwareversion,
-                'detectorserver': self.detectorserverversion,
-                'hardware':self.hardwareversion,
-                'kernel': self.kernelversion,
-                'receiver': self.rx_version}
+                'kernel': self.kernelversion}
+        if self.type != detectorType.EIGER:
+            version_list ['hardware'] = self.hardwareversion
+        if self.use_receiver:
+            version_list ['receiver'] = self.rx_version
+        return version_list
 
     @property
     def virtual(self):

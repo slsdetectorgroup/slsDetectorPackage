@@ -3149,6 +3149,17 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def adcvpp(self):
+        """[Ctb][Moench] Vpp of ADC. [0 -> 1V | 1 -> 1.14V | 2 -> 1.33V | 3 -> 1.6V | 4 -> 2V] \n
+            Advanced User function!"""
+        return self.getADCVpp(False)
+
+    @adcvpp.setter
+    def adcvpp(self, value):
+        ut.set_using_dict(self.setADCVpp, value, False)
+
+    @property
+    @element
     def dbitpipeline(self):
         """[Ctb][Gotthard2] Pipeline of the clock for latching digital bits. 
         

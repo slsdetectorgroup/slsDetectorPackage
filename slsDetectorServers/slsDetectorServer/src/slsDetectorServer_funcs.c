@@ -6013,7 +6013,7 @@ int set_clock_divider(int file_des) {
 #endif
             modeNotImplemented("clock index (divider set)", args[0]);
         }
-
+        // TODO: if value between to set and num clocks, msg = "cannot set"
         enum CLKINDEX c = 0;
         int val = args[1];
         if (ret == OK) {

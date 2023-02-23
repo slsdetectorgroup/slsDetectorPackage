@@ -13,6 +13,7 @@ from .detector import Detector, freeze
 from .dacs import DetectorDacs
 import _slsdet
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
+gc_enums = _slsdet.slsDetectorDefs.M3_GainCaps
 from .detector_property import DetectorProperty
 
 
@@ -63,3 +64,5 @@ class Mythen3(Detector):
     @property
     def dacs(self):
         return self._dacs
+    
+

@@ -287,13 +287,12 @@ std::string CmdProxy::Versions(int action) {
             os << OutStringHex(t);
         }
         os << "\nServer   : "
-           << OutString(
-                  det->getDetectorServerVersion(std::vector<int>{det_id}));
+           << OutString(det->getDetectorServerVersion(std::vector<int>{det_id}))
+           << "\nKernel   : "
+           << OutString(det->getKernelVersion({std::vector<int>{det_id}}));
         if (!eiger)
             os << "\nHardware : "
                << OutString(det->getHardwareVersion(std::vector<int>{det_id}));
-        os << "\nKernel   : "
-           << OutString(det->getKernelVersion({std::vector<int>{det_id}}));
         if (det->getUseReceiverFlag().squash(true)) {
             os << "\nReceiver : "
                << OutString(det->getReceiverVersion(std::vector<int>{det_id}));

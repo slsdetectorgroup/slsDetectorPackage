@@ -287,7 +287,7 @@ TEST_CASE("extrastoragecells", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::JUNGFRAU) {
         // chip version 1.0
         if (det.getChipVersion().squash() * 10 == 10) {
             auto prev_val = det.getNumberOfAdditionalStorageCells().tsquash(
@@ -330,7 +330,7 @@ TEST_CASE("storagecell_start", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::JUNGFRAU) {
         auto prev_val = det.getStorageCellStart();
         {
             std::ostringstream oss;
@@ -375,7 +375,7 @@ TEST_CASE("storagecell_delay", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+    if (det_type == defs::JUNGFRAU) {
         // chip version 1.0
         if (det.getChipVersion().squash() * 10 == 10) {
             auto prev_val = det.getStorageCellDelay();

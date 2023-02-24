@@ -225,7 +225,7 @@ int getReadoutMode();
 #endif
 
 // parameters - timer
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
 int selectStoragecellStart(int pos);
 int getMaxStoragecellStart();
 #endif
@@ -269,7 +269,7 @@ int64_t getSubDeadTime();
 int64_t getMeasuredPeriod();
 int64_t getMeasuredSubPeriod();
 #endif
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
 void setNumAdditionalStorageCells(int val);
 int getNumAdditionalStorageCells();
 int setStorageCellDelay(int64_t val);
@@ -516,7 +516,9 @@ void configureChip();
 int autoCompDisable(int on);
 int setComparatorDisableTime(int64_t val);
 int64_t getComparatorDisableTime();
+#ifndef MOENCHD
 void configureASICTimer();
+#endif
 int setReadoutSpeed(int val);
 int getReadoutSpeed(int *retval);
 int setPhase(enum CLKINDEX ind, int val, int degrees);

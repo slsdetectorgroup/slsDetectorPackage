@@ -416,6 +416,12 @@ void initControlServer() {
         Beb_Beb();
         LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
 
+
+    char hversion[MAX_STR_LENGTH] = {0};
+    memset(hversion, 0, MAX_STR_LENGTH);
+    getHardwareVersion(hversion);
+    int64_t feblfwversion = getFrontEndFirmwareVersion(FRONT_LEFT);
+    int64_t febrfwversion = getFrontEndFirmwareVersion(FRONT_RIGHT);
     LOG(logINFOBLUE,
         ("**************************************************\n"
          "Feb Versions"

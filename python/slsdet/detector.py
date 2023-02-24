@@ -1797,6 +1797,17 @@ class Detector(CppDetectorApi):
 
     @property
     def versions(self):
+        if self.type == detectorType.EIGER:
+            return {'type': self.type,
+                'package': self.packageversion, 
+                'client': self.clientversion,
+                'firmware (Beb)': self.firmwareversion,
+                'firmware(Febl)': self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_LEFT),
+                'firmware (Febr)': self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_RIGHT),
+                'detectorserver': self.detectorserverversion,
+                'kernel': self.kernelversion,
+                'receiver': self.rx_version}
+
         return {'type': self.type,
                 'package': self.packageversion, 
                 'client': self.clientversion,

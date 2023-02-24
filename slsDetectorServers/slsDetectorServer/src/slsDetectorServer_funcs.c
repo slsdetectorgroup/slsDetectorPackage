@@ -471,6 +471,7 @@ void function_table() {
     flist[F_GET_SYNCHRONIZATION] = &get_synchronization;
     flist[F_SET_SYNCHRONIZATION] = &set_synchronization;
     flist[F_GET_HARDWARE_VERSION] = &get_hardware_version;
+    flist[F_GET_FRONTEND_FIRMWARE_VERSION] = &get_frontend_firmware_version;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -10135,4 +10136,36 @@ int get_hardware_version(int file_des) {
     LOG(logDEBUG1, ("hardware version retval: %s\n", retvals));
 #endif
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
+}
+
+int get_frontend_firmware_version(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum fpgaPosition arg = FRONT_LEFT;
+    int64_t retval = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Getting front end firmware version: %s\n",
+                    (arg == FRONT_LEFT ? "left" : "right")));
+
+#if !defined(EIGERD)
+    functionNotImplemented();
+#else
+    switch (arg) {
+    case FRONT_LEFT:
+    case FRONT_RIGHT:
+        break;
+    default:
+        modeNotImplemented("Fpga position Index", (int)arg);
+        break;
+    }
+    if (ret == OK) {
+        retval = getFrontEndFirmwareVersion(arg);
+        LOG(logDEBUG1,
+            ("Front %s version retval: 0x%llx\n",
+             (arg == FRONT_LEFT ? "left" : "right"), (long long int)retval));
+    }
+#endif
+    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }

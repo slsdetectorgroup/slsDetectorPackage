@@ -276,25 +276,33 @@ std::string CmdProxy::Versions(int action) {
         }
         bool eiger = (det->getDetectorType().squash() == defs::EIGER);
         auto t = det->getFirmwareVersion(std::vector<int>{det_id});
-        os << "\nType     : " << OutString(det->getDetectorType())
-           << "\nRelease  : " << det->getPackageVersion() << std::hex
-           << "\nClient   : " << det->getClientVersion();
-        os << "\nFirmware : ";
+        os << "\nType            : " << OutString(det->getDetectorType())
+           << "\nRelease         : " << det->getPackageVersion() << std::hex
+           << "\nClient          : " << det->getClientVersion();
         if (eiger) {
-            os << OutString(t);
+            os << "\nFirmware (Beb)  : "
+               << OutString(det->getFirmwareVersion(std::vector<int>{det_id}));
+            os << "\nFirmware (Febl) : "
+               << OutString(det->getFrontEndFirmwareVersion(
+                      defs::FRONT_LEFT, std::vector<int>{det_id}));
+            os << "\nFirmware (Febr) : "
+               << OutString(det->getFrontEndFirmwareVersion(
+                      defs::FRONT_RIGHT, std::vector<int>{det_id}));
         } else {
-            os << OutStringHex(t);
+            os << "\nFirmware        : "
+               << OutStringHex(
+                      det->getFirmwareVersion(std::vector<int>{det_id}));
         }
-        os << "\nServer   : "
+        os << "\nServer          : "
            << OutString(
                   det->getDetectorServerVersion(std::vector<int>{det_id}));
         if (!eiger)
-            os << "\nHardware : "
+            os << "\nHardware        : "
                << OutString(det->getHardwareVersion(std::vector<int>{det_id}));
-        os << "\nKernel   : "
+        os << "\nKernel          : "
            << OutString(det->getKernelVersion({std::vector<int>{det_id}}));
         if (det->getUseReceiverFlag().squash(true)) {
-            os << "\nReceiver : "
+            os << "\nReceiver        : "
                << OutString(det->getReceiverVersion(std::vector<int>{det_id}));
         }
         os << std::dec << '\n';

@@ -78,6 +78,11 @@ class Detector {
 
     Result<int64_t> getFirmwareVersion(Positions pos = {}) const;
 
+    /** [Eiger] Options:  FRONT_LEFT, FRONT_RIGHT */
+    Result<int64_t>
+    getFrontEndFirmwareVersion(const defs::fpgaPosition fpgaPosition,
+                               Positions pos = {}) const;
+
     Result<std::string> getDetectorServerVersion(Positions pos = {}) const;
 
     /** [Jungfrau][Moench][Gotthard2][Myhten3][Gotthard][Ctb] */

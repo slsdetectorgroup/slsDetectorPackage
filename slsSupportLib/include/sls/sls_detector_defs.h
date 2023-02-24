@@ -445,6 +445,11 @@ typedef struct {
 
     enum portPosition { LEFT, RIGHT, TOP, BOTTOM };
 
+    /**
+     * eiger fpga position
+     */
+    enum fpgaPosition { FRONT_LEFT, FRONT_RIGHT };
+
 #ifdef __cplusplus
     enum class streamingInterface {
 #else

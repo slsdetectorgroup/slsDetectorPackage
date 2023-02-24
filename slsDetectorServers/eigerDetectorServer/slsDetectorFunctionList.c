@@ -420,6 +420,7 @@ void initControlServer() {
     char hversion[MAX_STR_LENGTH] = {0};
     memset(hversion, 0, MAX_STR_LENGTH);
     getHardwareVersion(hversion);
+    int64_t fwversion = getFirmwareVersion();
     int64_t feblfwversion = getFrontEndFirmwareVersion(FRONT_LEFT);
     int64_t febrfwversion = getFrontEndFirmwareVersion(FRONT_RIGHT);
     LOG(logINFOBLUE,

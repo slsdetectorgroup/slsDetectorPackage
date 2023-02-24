@@ -271,7 +271,7 @@ u_int64_t getFirmwareAPIVersion() {
 
 void getHardwareVersion(char *version) {
     strcpy(version, "unknown");
-    int hwversion = getHardwareVersionNumber();
+    int hwversion = 0;//getHardwareVersionNumber();
     const int hwNumberList[] = HARDWARE_VERSION_NUMBERS;
     const char *hwNamesList[] = HARDWARE_VERSION_NAMES;
     for (int i = 0; i != NUM_HARDWARE_VERSIONS; ++i) {

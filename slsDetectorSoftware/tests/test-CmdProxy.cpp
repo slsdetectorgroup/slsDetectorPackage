@@ -116,14 +116,8 @@ TEST_CASE("detectorserverversion", "[.cmd]") {
 TEST_CASE("hardwareversion", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type != defs::EIGER) {
-        REQUIRE_NOTHROW(proxy.Call("hardwareversion", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("hardwareversion", {"0"}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(proxy.Call("hardwareversion", {"0"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("hardwareversion", {}, -1, GET));
-    }
+    REQUIRE_NOTHROW(proxy.Call("hardwareversion", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("hardwareversion", {"0"}, -1, PUT));
 }
 
 TEST_CASE("kernelversion", "[.cmd]") {

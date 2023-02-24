@@ -5,6 +5,11 @@
 
 #define LINKED_SERVER_NAME "eigerDetectorServer"
 
+#define NUM_HARDWARE_VERSIONS    (2)
+#define HARDWARE_VERSION_NUMBERS {0x0, 0x1};
+#define HARDWARE_VERSION_NAMES                                                 \
+    { "FX70T", "FX30T" }
+
 #define REQUIRED_FIRMWARE_VERSION (31)
 // virtual ones renamed for consistency
 // real ones keep previous name for compatibility (already in production)

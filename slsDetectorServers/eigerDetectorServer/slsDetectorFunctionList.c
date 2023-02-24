@@ -123,7 +123,7 @@ void basictests() {
     int64_t sw_fw_apiversion = getFirmwareAPIVersion();
 
     LOG(logINFOBLUE,
-        ("**************************************************\n"
+        ("\n********************************************************\n"
          "Detector IP Addr         : 0x%x\n"
          "Detector MAC Addr        : 0x%llx\n"
 
@@ -414,7 +414,7 @@ void initControlServer() {
     int64_t feblfwversion = getFrontEndFirmwareVersion(FRONT_LEFT);
     int64_t febrfwversion = getFrontEndFirmwareVersion(FRONT_RIGHT);
     LOG(logINFOBLUE,
-        ("**************************************************\n"
+        ("\n********************************************************\n"
          "Feb Versions\n"
          "Hardware Version         : %s\n"
          "Firmware (Febl) Version  : %lld\n"

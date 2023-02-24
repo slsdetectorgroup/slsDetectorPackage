@@ -261,3 +261,20 @@ def merge_args(*args):
 
     else:
         raise ValueError("Multiple dictionaries passes cannot merge args")
+
+
+def hostname_list(args):
+    """
+    Generates a list from a hostname string
+    * Lists are passed through
+    * as are tuples (conversion in pybind11 to vector)
+    * if + is found it splits the string
+    """
+    if isinstance(args, (list, tuple)):
+        return args
+    elif(isinstance(args, str)):
+        hosts = args.split('+')
+        hosts = [it for it in hosts if len(it)]
+        return hosts
+    else:
+        raise ValueError("hostname needs to be string or list of strings")

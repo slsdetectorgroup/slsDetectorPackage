@@ -2212,18 +2212,13 @@ int Feb_Control_GetFPGAHardwareVersion(int *retval) {
         return 0;
     }
     unsigned int value = 0;
-    LOG(logINFORED, ("Going to read\n"));
-    if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress, FEB_REG_STATUS,
-                                    &value)) {
-   // if (!Feb_Control_ReadRegister_BitMask(FEB_REG_STATUS, &value,
-   //                                        FEB_REG_STATUS_FX30_MSK)) {
+    if (!Feb_Control_ReadRegister_BitMask(FEB_REG_STATUS, &value,
+                                           FEB_REG_STATUS_FX30_MSK)) {
         LOG(logERROR,
             ("Trouble reading FEB_REG_STATUS reg to feb hardware version\n"));
         return 0;
     }
-    LOG(logINFORED, ("Read hw\n"));
-    *retval = value;
-   // *retval = (value >> FEB_REG_STATUS_FX30_OFST);
+    *retval = (value >> FEB_REG_STATUS_FX30_OFST);
     return 1;
 }
 

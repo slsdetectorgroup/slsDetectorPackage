@@ -416,7 +416,7 @@ void initControlServer() {
         Beb_Beb();
         LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
 
-
+/*
     char hversion[MAX_STR_LENGTH] = {0};
     memset(hversion, 0, MAX_STR_LENGTH);
     getHardwareVersion(hversion);
@@ -444,6 +444,7 @@ void initControlServer() {
         initError = FAIL;
         return;
     }
+    */
 #endif
         // also reads config file and deactivates
         setupDetector();

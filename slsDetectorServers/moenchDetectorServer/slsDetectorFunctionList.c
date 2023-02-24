@@ -518,7 +518,7 @@ void setupDetector() {
     resetCore();
 
     alignDeserializer();
-    // configureASICTimer(); ASIC_CTRL_REG to be removed along with storage cell
+
     // delay
     bus_w(ADC_PORT_INVERT_REG,
           (isHardwareVersion_1_0() ? ADC_PORT_INVERT_BOARD2_VAL
@@ -536,14 +536,6 @@ void setupDetector() {
     setExpTime(DEFAULT_EXPTIME);
     setPeriod(DEFAULT_PERIOD);
     setDelayAfterTrigger(DEFAULT_DELAY);
-    if (getChipVersion() == 11) {
-        selectStoragecellStart(DEFAULT_STRG_CLL_STRT_CHIP11);
-    } else {
-        setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
-        selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
-        // not applicable for chipv1.1
-        setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
-    }
     setTiming(DEFAULT_TIMING_MODE);
     setNextFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 
@@ -891,66 +883,6 @@ uint32_t getADCInvertRegister() {
 }
 
 /* parameters - timer */
-int selectStoragecellStart(int pos) {
-    int value = pos;
-    uint32_t addr = DAQ_REG;
-    uint32_t mask = DAQ_STRG_CELL_SLCT_MSK;
-    int offset = DAQ_STRG_CELL_SLCT_OFST;
-    if (getChipVersion() == 11) {
-        // set the bit
-        value = 1 << pos;
-        addr = CONFIG_V11_REG;
-        mask = CONFIG_V11_STRG_CLL_MSK;
-        offset = CONFIG_V11_STRG_CLL_OFST;
-    }
-    if (pos >= 0) {
-        LOG(logINFO, ("Setting storage cell start: %d\n", pos));
-        bus_w(addr, bus_r(addr) & ~mask);
-        bus_w(addr, bus_r(addr) | ((value << offset) & mask));
-        // should not do a get to verify (status register does not update
-        // immediately during acquisition)
-        if (getChipVersion() == 11) {
-            return pos;
-        }
-    }
-
-    // read value back
-    // chipv1.1, writing and reading registers are different
-#ifndef VIRTUAL
-    if (getChipVersion() == 11) {
-        addr = CONFIG_V11_STATUS_REG;
-        mask = CONFIG_V11_STATUS_STRG_CLL_MSK;
-        offset = CONFIG_V11_STATUS_STRG_CLL_OFST;
-    }
-#endif
-    uint32_t regval = bus_r(addr);
-#ifndef VIRTUAL
-    // flip all contents of register //TODO FIRMWARE FIX
-    if (getChipVersion() == 11) {
-        regval ^= BIT32_MASK;
-    }
-#endif
-    uint32_t retval = ((regval & mask) >> offset);
-    if (getChipVersion() == 11) {
-        // get which bit
-        int max = getMaxStoragecellStart();
-        for (int i = 0; i != max + 1; ++i) {
-            if (retval & (1 << i)) {
-                return i;
-            }
-        }
-    }
-    // chip v1.0
-    return retval;
-}
-
-int getMaxStoragecellStart() {
-    if (getChipVersion() == 11) {
-        return MAX_STORAGE_CELL_CHIP11_VAL;
-    } else {
-        return MAX_STORAGE_CELL_VAL;
-    }
-}
 
 int setNextFrameNumber(uint64_t value) {
     LOG(logINFO,
@@ -1073,48 +1005,6 @@ int setDelayAfterTrigger(int64_t val) {
 int64_t getDelayAfterTrigger() {
     return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) /
            (1E-3 * CLK_SYNC);
-}
-
-void setNumAdditionalStorageCells(int val) {
-    if (val >= 0) {
-        LOG(logINFO, ("Setting number of addl. storage cells %d\n", val));
-        bus_w(CONTROL_REG,
-              (bus_r(CONTROL_REG) & ~CONTROL_STORAGE_CELL_NUM_MSK) |
-                  ((val << CONTROL_STORAGE_CELL_NUM_OFST) &
-                   CONTROL_STORAGE_CELL_NUM_MSK));
-    }
-}
-
-int getNumAdditionalStorageCells() {
-    return ((bus_r(CONTROL_REG) & CONTROL_STORAGE_CELL_NUM_MSK) >>
-            CONTROL_STORAGE_CELL_NUM_OFST);
-}
-
-int setStorageCellDelay(int64_t val) {
-    if (val < 0) {
-        LOG(logERROR,
-            ("Invalid delay after trigger: %lld ns\n", (long long int)val));
-        return FAIL;
-    }
-    LOG(logINFO, ("Setting storage cell delay %lld ns\n", (long long int)val));
-    val *= (1E-3 * CLK_RUN);
-    bus_w(ASIC_CTRL_REG,
-          (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_EXPSRE_TMR_MSK) |
-              ((val << ASIC_CTRL_EXPSRE_TMR_OFST) & ASIC_CTRL_EXPSRE_TMR_MSK));
-
-    // validate for tolerance
-    int64_t retval = getStorageCellDelay();
-    val /= (1E-3 * CLK_RUN);
-    if (val != retval) {
-        return FAIL;
-    }
-    return OK;
-}
-
-int64_t getStorageCellDelay() {
-    return (((int64_t)((bus_r(ASIC_CTRL_REG) & ASIC_CTRL_EXPSRE_TMR_MSK) >>
-                       ASIC_CTRL_EXPSRE_TMR_OFST)) /
-            (1E-3 * CLK_RUN));
 }
 
 int64_t getNumFramesLeft() {
@@ -1968,18 +1858,6 @@ int64_t getComparatorDisableTime() {
     return bus_r(COMP_DSBLE_TIME_REG) / (1E-3 * CLK_RUN);
 }
 
-void configureASICTimer() {
-    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_PRCHRG_TMR_MSK) |
-                             ASIC_CTRL_PRCHRG_TMR_VAL);
-
-    uint32_t val = ASIC_CTRL_DS_TMR_VAL;
-    if (getChipVersion() == 11) {
-        val = ASIC_CTRL_DS_TMR_CHIP1_1_VAL;
-    }
-    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | val);
-    LOG(logINFO, ("Configured ASIC Timer [0x%x]\n", bus_r(ASIC_CTRL_REG)));
-}
-
 int setReadoutSpeed(int val) {
     // stop state machine if running
     if (runBusy()) {
@@ -2601,8 +2479,7 @@ void *start_timer(void *arg) {
     int transmissionDelayUs = getTransmissionDelayFrame() * 1000;
     int numInterfaces = getNumberofUDPInterfaces();
     int64_t periodNs = getPeriod();
-    int numFrames = (getNumFrames() * getNumTriggers() *
-                     (getNumAdditionalStorageCells() + 1));
+    int numFrames = getNumFrames() * getNumTriggers();
     int64_t expUs = getExpTime() / 1000;
     const int maxPacketsPerFrame = (MAX_ROWS_PER_READOUT / ROWS_PER_PACKET);
     const int dataSize = (DATA_BYTES / maxPacketsPerFrame);

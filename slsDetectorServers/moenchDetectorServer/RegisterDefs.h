@@ -104,8 +104,6 @@
 
 #define CONFIG_V11_STATUS_FLTR_CLL_OFST         (0) 
 #define CONFIG_V11_STATUS_FLTR_CLL_MSK          (0x00000FFF << CONFIG_V11_STATUS_FLTR_CLL_OFST)
-#define CONFIG_V11_STATUS_STRG_CLL_OFST         (12) 
-#define CONFIG_V11_STATUS_STRG_CLL_MSK          (0x0000000F << CONFIG_V11_STATUS_STRG_CLL_OFST)
 // CSM mode = high current (100%), low current (16%)
 #define CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST    (19) 
 #define CONFIG_V11_STATUS_CRRNT_SRC_LOW_MSK     (0x00000001 << CONFIG_V11_STATUS_CRRNT_SRC_LOW_OFST)
@@ -231,8 +229,6 @@
 #define CONTROL_ACQ_FIFO_CLR_MSK            (0x00000001 << CONTROL_ACQ_FIFO_CLR_OFST)
 #define CONTROL_MASTER_OFST                 (15)
 #define CONTROL_MASTER_MSK                  (0x00000001 << CONTROL_MASTER_OFST)
-#define CONTROL_STORAGE_CELL_NUM_OFST       (16)
-#define CONTROL_STORAGE_CELL_NUM_MSK        (0x0000000F << CONTROL_STORAGE_CELL_NUM_OFST)
 #define CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST   (20)
 #define CONTROL_RX_ADDTNL_ENDPTS_NUM_MSK    (0x0000003F << CONTROL_RX_ADDTNL_ENDPTS_NUM_OFST)
 #define CONTROL_RX_ENDPTS_START_OFST        (26)
@@ -260,8 +256,6 @@
 
 #define CONFIG_V11_FLTR_CLL_OFST            (0) 
 #define CONFIG_V11_FLTR_CLL_MSK             (0x00000FFF << CONFIG_V11_FLTR_CLL_OFST)
-#define CONFIG_V11_STRG_CLL_OFST            (12) 
-#define CONFIG_V11_STRG_CLL_MSK             (0x0000000F << CONFIG_V11_STRG_CLL_OFST)
 // CSM mode = high current (100%), low current (16%)
 #define CONFIG_V11_CRRNT_SRC_LOW_OFST       (19) 
 #define CONFIG_V11_CRRNT_SRC_LOW_MSK        (0x00000001 << CONFIG_V11_CRRNT_SRC_LOW_OFST)
@@ -352,8 +346,6 @@
 #define DAQ_CMP_RST_MSK                     (0x00000001 << DAQ_CMP_RST_OFST)
 #define DAQ_CHIP11_VRSN_OFST                (7)
 #define DAQ_CHIP11_VRSN_MSK                 (0x00000001 << DAQ_CHIP11_VRSN_OFST)
-#define DAQ_STRG_CELL_SLCT_OFST             (8)
-#define DAQ_STRG_CELL_SLCT_MSK              (0x0000000F << DAQ_STRG_CELL_SLCT_OFST)
 #define DAQ_FRCE_SWTCH_GAIN_OFST            (12)
 #define DAQ_FRCE_SWTCH_GAIN_MSK             (0x00000003 << DAQ_FRCE_SWTCH_GAIN_OFST)
 #define DAQ_FRCE_GAIN_STG_0_VAL             ((0x0 << DAQ_FRCE_SWTCH_GAIN_OFST) & DAQ_FRCE_SWTCH_GAIN_MSK)
@@ -444,23 +436,6 @@ Time before end of exposure when comparator is disabled */
 
 #define MOD_ID_OFST                         (0)
 #define MOD_ID_MSK                          (0x0000FFFF << MOD_ID_OFST)
-
-/* ASIC Control Register */
-#define ASIC_CTRL_REG                       (0x7F << MEM_MAP_SHIFT)
-// tPC = (PCT + 1) * 25ns
-#define ASIC_CTRL_PRCHRG_TMR_OFST           (0)
-#define ASIC_CTRL_PRCHRG_TMR_MSK            (0x000000FF << ASIC_CTRL_PRCHRG_TMR_OFST)
-#define ASIC_CTRL_PRCHRG_TMR_VAL            ((0x1F << ASIC_CTRL_PRCHRG_TMR_OFST) & ASIC_CTRL_PRCHRG_TMR_MSK)
-// tDS = (DST + 1) * 25ns
-#define ASIC_CTRL_DS_TMR_OFST               (8)
-#define ASIC_CTRL_DS_TMR_MSK                (0x000000FF << ASIC_CTRL_DS_TMR_OFST)
-#define ASIC_CTRL_DS_TMR_VAL                ((0x1F << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
-#define ASIC_CTRL_DS_TMR_CHIP1_1_VAL        ((0xFF << ASIC_CTRL_DS_TMR_OFST) & ASIC_CTRL_DS_TMR_MSK)
-// tET = (ET + 1) * 25ns (increase timeout range between 2 consecutive storage
-// cells)
-#define ASIC_CTRL_EXPSRE_TMR_OFST           (16)
-#define ASIC_CTRL_EXPSRE_TMR_MSK            (0x0000FFFF << ASIC_CTRL_EXPSRE_TMR_OFST)
-#define ASIC_CTRL_EXPSRE_TMR_MAX_VAL        (0x0000FFFF / (CLK_RUN * 1E-3))
 
 /* ADC 0 Deserializer Control */
 #define ADC_DSRLZR_0_REG                    (0xF0 << MEM_MAP_SHIFT)

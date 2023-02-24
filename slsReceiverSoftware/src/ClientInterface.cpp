@@ -367,7 +367,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
     if (detType == GOTTHARD2) {
         impl()->setNumberOfBursts(arg.bursts);
     }
-    if (detType == JUNGFRAU || detType == MOENCH) {
+    if (detType == JUNGFRAU) {
         impl()->setNumberOfAdditionalStorageCells(arg.additionalStorageCells);
     }
     if (detType == CHIPTESTBOARD) {

@@ -168,18 +168,6 @@ void basictests() {
         return;
     }
 
-    // ensure febl, febr and beb fw versions are the same
-    if (fwversion != feblfwversion || fwversion != febrfwversion) {
-        sprintf(initErrorMessage,
-                "Inconsistent firmware versions in feb and beb. [Beb: %lld, "
-                "Febl: %lld Febr: %lld]\n",
-                (long long int)fwversion, (long long int)feblfwversion,
-                (long long int)febrfwversion);
-        LOG(logERROR, (initErrorMessage));
-        initError = FAIL;
-        return;
-    }
-
     // check for API compatibility - old server
     if (sw_fw_apiversion > REQUIRED_FIRMWARE_VERSION) {
         sprintf(initErrorMessage,
@@ -437,6 +425,18 @@ void initControlServer() {
          "********************************************************\n",
         hversion,  (long long int)feblfwversion,
          (long long int)febrfwversion));
+
+    // ensure febl, febr and beb fw versions are the same
+    if (fwversion != feblfwversion || fwversion != febrfwversion) {
+        sprintf(initErrorMessage,
+                "Inconsistent firmware versions in feb and beb. [Beb: %lld, "
+                "Febl: %lld Febr: %lld]\n",
+                (long long int)fwversion, (long long int)feblfwversion,
+                (long long int)febrfwversion);
+        LOG(logERROR, (initErrorMessage));
+        initError = FAIL;
+        return;
+    }
 #endif
         // also reads config file and deactivates
         setupDetector();

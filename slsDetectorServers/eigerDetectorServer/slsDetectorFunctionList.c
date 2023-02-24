@@ -143,8 +143,8 @@ void basictests() {
          "********************************************************\n",
          (unsigned int)ipadd, (long long unsigned int)macadd, /*hversion,*/
          (long long int)fwversion,/* (long long int)feblfwversion,
-         (long long int)febrfwversion,*/ swversion,
-         (long long int)sw_fw_apiversion, REQUIRED_FIRMWARE_VERSION));
+         (long long int)febrfwversion,*/ 
+         (long long int)sw_fw_apiversion, REQUIRED_FIRMWARE_VERSION, swversion));
 
     // update default udpdstip and udpdstmac (1g is hardware ip and hardware
     // mac)

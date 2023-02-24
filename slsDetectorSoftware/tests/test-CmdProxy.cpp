@@ -513,7 +513,7 @@ TEST_CASE("gappixels", "[.cmd]") {
 
     // test eiger(quad or full module only)
     bool gapPixelTest = false;
-    if (det_type == defs:: || det_type == defs::MOENCH)
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH)
         gapPixelTest = true;
     else if (det_type == defs::EIGER) {
         bool quad = det.getQuad().squash(false);

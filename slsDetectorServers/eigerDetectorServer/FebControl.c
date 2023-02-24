@@ -1742,6 +1742,7 @@ int Feb_Control_WriteRegister_BitMask(uint32_t offset, uint32_t data,
 
 int Feb_Control_ReadRegister_BitMask(uint32_t offset, uint32_t *retval,
                                      uint32_t bitmask) {
+        
     uint32_t actualOffset = offset;
     char side[2][10] = {"right", "left"};
     unsigned int addr[2] = {Feb_Control_rightAddress, Feb_Control_leftAddress};
@@ -2211,13 +2212,18 @@ int Feb_Control_GetFPGAHardwareVersion(int *retval) {
         return 0;
     }
     unsigned int value = 0;
-    if (!Feb_Control_ReadRegister_BitMask(FEB_REG_STATUS, &value,
-                                           FEB_REG_STATUS_FX30_MSK)) {
+    LOG(logINFORED, ("Going to read\n"));
+    if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress, FEB_REG_STATUS,
+                                    &value)) {
+   // if (!Feb_Control_ReadRegister_BitMask(FEB_REG_STATUS, &value,
+   //                                        FEB_REG_STATUS_FX30_MSK)) {
         LOG(logERROR,
             ("Trouble reading FEB_REG_STATUS reg to feb hardware version\n"));
         return 0;
     }
-    *retval = (value >> FEB_REG_STATUS_FX30_OFST);
+    LOG(logINFORED, ("Read hw\n"));
+    *retval = value;
+   // *retval = (value >> FEB_REG_STATUS_FX30_OFST);
     return 1;
 }
 

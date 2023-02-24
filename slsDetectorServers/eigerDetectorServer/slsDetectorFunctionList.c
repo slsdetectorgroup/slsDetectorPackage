@@ -114,15 +114,9 @@ void basictests() {
     LOG(logINFOBLUE,
         ("**************** EIGER Server ********************\n\n"));
 #endif
-   /* char hversion[MAX_STR_LENGTH] = {0};
-    memset(hversion, 0, MAX_STR_LENGTH);
-    getHardwareVersion(hversion);*/
     uint32_t ipadd = getDetectorIP();
     uint64_t macadd = getDetectorMAC();
     int64_t fwversion = getFirmwareVersion();
-   // int64_t feblfwversion = getFrontEndFirmwareVersion(FRONT_LEFT);
-    //int64_t febrfwversion = getFrontEndFirmwareVersion(FRONT_RIGHT);
-
     char swversion[MAX_STR_LENGTH] = {0};
     memset(swversion, 0, MAX_STR_LENGTH);
     getServerVersion(swversion);
@@ -133,17 +127,13 @@ void basictests() {
          "Detector IP Addr         : 0x%x\n"
          "Detector MAC Addr        : 0x%llx\n"
 
-         //"Hardware Version         : %s\n"
          "Firmware (Beb) Version   : %lld\n"
-         //"Firmware (Febl) Version  : %lld\n"
-         //"Firmware (Febr) Version  : %lld\n"
          "F/w-S/w API Version      : %lld\n"
          "Required Firmware Version: %d\n"
          "Software Version         : %s\n"
          "********************************************************\n",
-         (unsigned int)ipadd, (long long unsigned int)macadd, /*hversion,*/
-         (long long int)fwversion,/* (long long int)feblfwversion,
-         (long long int)febrfwversion,*/ 
+         (unsigned int)ipadd, (long long unsigned int)macadd,
+         (long long int)fwversion,
          (long long int)sw_fw_apiversion, REQUIRED_FIRMWARE_VERSION, swversion));
 
     // update default udpdstip and udpdstmac (1g is hardware ip and hardware
@@ -416,7 +406,7 @@ void initControlServer() {
         Beb_Beb();
         LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
 
-
+    // Getting the feb versions after initialization
     char hversion[MAX_STR_LENGTH] = {0};
     memset(hversion, 0, MAX_STR_LENGTH);
     getHardwareVersion(hversion);
@@ -425,7 +415,7 @@ void initControlServer() {
     int64_t febrfwversion = getFrontEndFirmwareVersion(FRONT_RIGHT);
     LOG(logINFOBLUE,
         ("**************************************************\n"
-         "Feb Versions"
+         "Feb Versions\n"
          "Hardware Version         : %s\n"
          "Firmware (Febl) Version  : %lld\n"
          "Firmware (Febr) Version  : %lld\n"

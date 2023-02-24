@@ -351,6 +351,29 @@ void Detector::setBadChannels(const std::string &fname, Positions pos) {
     pimpl->setBadChannels(fname, pos);
 }
 
+Result<std::vector<int>> Detector::getBadChannels(Positions pos) const {
+    return pimpl->Parallel(&Module::getBadChannels, pos);
+}
+
+void Detector::setBadChannels(const std::vector<std::vector<int>> list) {
+
+    if (list.size() != static_cast<size_t>(size())) {
+        std::stringstream ss;
+        ss << "Number of bad channel sets (" << list.size()
+           << ") needs to match the number of modules (" << size() << ")";
+        throw RuntimeError(ss.str());
+    }
+
+    for (int idet = 0; idet < size(); ++idet) {
+        // TODO! Call in parallel since loading trimbits is slow?
+        pimpl->Parallel(&Module::setBadChannels, {idet}, list[idet]);
+    }
+}
+
+void Detector::setBadChannels(const std::vector<int> list, Positions pos) {
+    pimpl->setBadChannels(list, pos);
+}
+
 Result<bool> Detector::isVirtualDetectorServer(Positions pos) const {
     return pimpl->Parallel(&Module::isVirtualDetectorServer, pos);
 }

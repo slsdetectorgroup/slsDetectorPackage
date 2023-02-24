@@ -234,8 +234,7 @@ int ClientInterface::decodeFunction(Interface &socket) {
     socket.Receive(fnum);
     socket.setFnum(fnum);
     if (fnum <= NUM_DET_FUNCTIONS || fnum >= NUM_REC_FUNCTIONS) {
-        throw RuntimeError("Unrecognized Function enum " +
-                           std::to_string(fnum) + "\n");
+        throw RuntimeError(UNRECOGNIZED_FNUM_ENUM + std::to_string(fnum));
     } else {
         LOG(logDEBUG1) << "calling function fnum: " << fnum << " ("
                        << getFunctionNameFromEnum((enum detFuncs)fnum) << ")";
@@ -320,164 +319,121 @@ int ClientInterface::setup_receiver(Interface &socket) {
     auto arg = socket.Receive<rxParameters>();
     LOG(logDEBUG) << ToString(arg);
 
-    // if object exists, verify unlocked and idle, else only verify lock
-    // (connecting first time)
-    if (receiver != nullptr) {
-        verifyIdle(socket);
-    }
-
-    // basic setup
-    setDetectorType(arg.detType);
-    impl()->setDetectorSize(arg.numberOfModule);
-    impl()->setModulePositionId(arg.moduleIndex);
-    impl()->setDetectorHostname(arg.hostname);
-
-    // udp setup
-    // update retvals only if detmac is not the same as in detector
     MacAddr retvals[2];
-    if (arg.udp_dstip != 0) {
-        MacAddr r = setUdpIp(IpAddr(arg.udp_dstip));
-        MacAddr detMac{arg.udp_dstmac};
-        if (detMac != r) {
-            retvals[0] = r;
+    try {
+        // if object exists, verify unlocked and idle, else only verify lock
+        // (connecting first time)
+        if (receiver != nullptr) {
+            verifyIdle(socket);
         }
-    }
-    if (arg.udp_dstip2 != 0) {
-        MacAddr r = setUdpIp2(IpAddr(arg.udp_dstip2));
-        MacAddr detMac{arg.udp_dstmac2};
-        if (detMac != r) {
-            retvals[1] = r;
-        }
-    }
-    impl()->setUDPPortNumber(arg.udp_dstport);
-    impl()->setUDPPortNumber2(arg.udp_dstport2);
-    if (detType == JUNGFRAU || detType == MOENCH || detType == GOTTHARD2) {
-        try {
-            impl()->setNumberofUDPInterfaces(arg.udpInterfaces);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError("Failed to set number of interfaces to " +
-                               std::to_string(arg.udpInterfaces));
-        }
-    }
-    impl()->setUDPSocketBufferSize(0);
 
-    // acquisition parameters
-    impl()->setNumberOfFrames(arg.frames);
-    impl()->setNumberOfTriggers(arg.triggers);
-    if (detType == GOTTHARD2) {
-        impl()->setNumberOfBursts(arg.bursts);
-    }
-    if (detType == JUNGFRAU) {
-        impl()->setNumberOfAdditionalStorageCells(arg.additionalStorageCells);
-    }
-    if (detType == CHIPTESTBOARD) {
-        try {
+        // basic setup
+        setDetectorType(arg.detType);
+        impl()->setDetectorSize(arg.numberOfModule);
+        impl()->setModulePositionId(arg.moduleIndex);
+        impl()->setDetectorHostname(arg.hostname);
+
+        // udp setup
+        // update retvals only if detmac is not the same as in detector
+        if (arg.udp_dstip != 0) {
+            MacAddr r = setUdpIp(IpAddr(arg.udp_dstip));
+            MacAddr detMac{arg.udp_dstmac};
+            if (detMac != r) {
+                retvals[0] = r;
+            }
+        }
+        if (arg.udp_dstip2 != 0) {
+            MacAddr r = setUdpIp2(IpAddr(arg.udp_dstip2));
+            MacAddr detMac{arg.udp_dstmac2};
+            if (detMac != r) {
+                retvals[1] = r;
+            }
+        }
+
+        impl()->setUDPPortNumber(arg.udp_dstport);
+        impl()->setUDPPortNumber2(arg.udp_dstport2);
+        if (detType == JUNGFRAU || detType == MOENCH || detType == GOTTHARD2) {
+            impl()->setNumberofUDPInterfaces(arg.udpInterfaces);
+        }
+        impl()->setUDPSocketBufferSize(0);
+
+        // acquisition parameters
+        impl()->setNumberOfFrames(arg.frames);
+        impl()->setNumberOfTriggers(arg.triggers);
+        if (detType == GOTTHARD2) {
+            impl()->setNumberOfBursts(arg.bursts);
+        }
+        if (detType == JUNGFRAU) {
+            impl()->setNumberOfAdditionalStorageCells(
+                arg.additionalStorageCells);
+        }
+
+        if (detType == CHIPTESTBOARD) {
             impl()->setNumberofAnalogSamples(arg.analogSamples);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError("Could not set num analog samples to " +
-                               std::to_string(arg.analogSamples) +
-                               " due to fifo structure memory allocation.");
         }
-    }
-    if (detType == CHIPTESTBOARD) {
-        try {
+        if (detType == CHIPTESTBOARD) {
             impl()->setNumberofDigitalSamples(arg.digitalSamples);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError("Could not set num digital samples to " +
-                               std::to_string(arg.analogSamples) +
-                               " due to fifo structure memory allocation.");
         }
-    }
-    if (detType != MYTHEN3) {
-        impl()->setAcquisitionTime(std::chrono::nanoseconds(arg.expTimeNs));
-    }
-    impl()->setAcquisitionPeriod(std::chrono::nanoseconds(arg.periodNs));
-    if (detType == EIGER) {
-        impl()->setSubExpTime(std::chrono::nanoseconds(arg.subExpTimeNs));
-        impl()->setSubPeriod(std::chrono::nanoseconds(arg.subExpTimeNs) +
-                             std::chrono::nanoseconds(arg.subDeadTimeNs));
-        impl()->setActivate(static_cast<bool>(arg.activate));
-        impl()->setDetectorDataStream(LEFT, arg.dataStreamLeft);
-        impl()->setDetectorDataStream(RIGHT, arg.dataStreamRight);
-        try {
+        if (detType != MYTHEN3) {
+            impl()->setAcquisitionTime(std::chrono::nanoseconds(arg.expTimeNs));
+        }
+        impl()->setAcquisitionPeriod(std::chrono::nanoseconds(arg.periodNs));
+        if (detType == EIGER) {
+            impl()->setSubExpTime(std::chrono::nanoseconds(arg.subExpTimeNs));
+            impl()->setSubPeriod(std::chrono::nanoseconds(arg.subExpTimeNs) +
+                                 std::chrono::nanoseconds(arg.subDeadTimeNs));
+            impl()->setActivate(static_cast<bool>(arg.activate));
+            impl()->setDetectorDataStream(LEFT, arg.dataStreamLeft);
+            impl()->setDetectorDataStream(RIGHT, arg.dataStreamRight);
             impl()->setQuad(arg.quad == 0 ? false : true);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError("Could not set quad to " +
-                               std::to_string(arg.quad) +
-                               " due to fifo strucutre memory allocation");
+            impl()->setThresholdEnergy(arg.thresholdEnergyeV[0]);
         }
-        impl()->setThresholdEnergy(arg.thresholdEnergyeV[0]);
-    }
-    if (detType == EIGER || detType == JUNGFRAU || detType == MOENCH) {
-        impl()->setReadNRows(arg.readNRows);
-    }
-    if (detType == MYTHEN3) {
-        std::array<int, 3> val;
-        for (int i = 0; i < 3; ++i) {
-            val[i] = arg.thresholdEnergyeV[i];
+        if (detType == EIGER || detType == JUNGFRAU || detType == MOENCH) {
+            impl()->setReadNRows(arg.readNRows);
         }
-        impl()->setThresholdEnergy(val);
-    }
-    if (detType == EIGER || detType == MYTHEN3) {
-        try {
+        if (detType == MYTHEN3) {
+            std::array<int, 3> val;
+            for (int i = 0; i < 3; ++i) {
+                val[i] = arg.thresholdEnergyeV[i];
+            }
+            impl()->setThresholdEnergy(val);
+        }
+        if (detType == EIGER || detType == MYTHEN3) {
             impl()->setDynamicRange(arg.dynamicRange);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError(
-                "Could not set dynamic range. Could not allocate "
-                "memory for fifo or could not start listening/writing threads");
         }
-    }
-    impl()->setTimingMode(arg.timMode);
-    if (detType == EIGER || detType == CHIPTESTBOARD || detType == MYTHEN3) {
-        try {
+        impl()->setTimingMode(arg.timMode);
+        if (detType == EIGER || detType == CHIPTESTBOARD || detType == MYTHEN3) {
             impl()->setTenGigaEnable(arg.tenGiga);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError("Could not set 10GbE.");
         }
-    }
-    if (detType == CHIPTESTBOARD) {
-        try {
+        if (detType == CHIPTESTBOARD) {
             impl()->setReadoutMode(arg.roMode);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError("Could not set read out mode "
-                               "due to fifo memory allocation.");
-        }
-    }
-    if (detType == CHIPTESTBOARD) {
-        try {
             impl()->setADCEnableMask(arg.adcMask);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError("Could not set adc enable mask "
-                               "due to fifo memory allcoation");
-        }
-        try {
             impl()->setTenGigaADCEnableMask(arg.adc10gMask);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError("Could not set 10Gb adc enable mask "
-                               "due to fifo memory allcoation");
         }
-    }
-    if (detType == GOTTHARD) {
-        try {
+        if (detType == GOTTHARD) {
             impl()->setDetectorROI(arg.roi);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError("Could not set ROI");
         }
+        if (detType == MYTHEN3) {
+            impl()->setCounterMask(arg.countermask);
+            impl()->setAcquisitionTime1(
+                std::chrono::nanoseconds(arg.expTime1Ns));
+            impl()->setAcquisitionTime2(
+                std::chrono::nanoseconds(arg.expTime2Ns));
+            impl()->setAcquisitionTime3(
+                std::chrono::nanoseconds(arg.expTime3Ns));
+            impl()->setGateDelay1(std::chrono::nanoseconds(arg.gateDelay1Ns));
+            impl()->setGateDelay2(std::chrono::nanoseconds(arg.gateDelay2Ns));
+            impl()->setGateDelay3(std::chrono::nanoseconds(arg.gateDelay3Ns));
+            impl()->setNumberOfGates(arg.gates);
+        }
+        if (detType == GOTTHARD2) {
+            impl()->setBurstMode(arg.burstType);
+        }
+        impl()->setScan(arg.scanParams);
+    } catch (std::exception &e) {
+        throw RuntimeError("Could not setup receiver [" +
+                           std::string(e.what()) + ']');
     }
-    if (detType == MYTHEN3) {
-        impl()->setCounterMask(arg.countermask);
-        impl()->setAcquisitionTime1(std::chrono::nanoseconds(arg.expTime1Ns));
-        impl()->setAcquisitionTime2(std::chrono::nanoseconds(arg.expTime2Ns));
-        impl()->setAcquisitionTime3(std::chrono::nanoseconds(arg.expTime3Ns));
-        impl()->setGateDelay1(std::chrono::nanoseconds(arg.gateDelay1Ns));
-        impl()->setGateDelay2(std::chrono::nanoseconds(arg.gateDelay2Ns));
-        impl()->setGateDelay3(std::chrono::nanoseconds(arg.gateDelay3Ns));
-        impl()->setNumberOfGates(arg.gates);
-    }
-    if (detType == GOTTHARD2) {
-        impl()->setBurstMode(arg.burstType);
-    }
-    impl()->setScan(arg.scanParams);
 
     return socket.sendResult(retvals);
 }
@@ -501,13 +457,10 @@ void ClientInterface::setDetectorType(detectorType arg) {
         detType = GENERIC;
         receiver = make_unique<Implementation>(arg);
         detType = arg;
-    } catch (std::exception &e) {
-        std::ostringstream os;
-        os << "Could not set detector type in the receiver. ";
-        os << e.what();
-        throw RuntimeError(os.str());
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set detector type in the receiver. [" +
+                           std::string(e.what()) + ']');
     }
-
     // callbacks after (in setdetectortype, the object is reinitialized)
     if (startAcquisitionCallBack != nullptr)
         impl()->registerCallBackStartAcquisition(startAcquisitionCallBack,
@@ -535,8 +488,8 @@ int ClientInterface::set_detector_roi(Interface &socket) {
     verifyIdle(socket);
     try {
         impl()->setDetectorROI(arg);
-    } catch (const RuntimeError &e) {
-        throw RuntimeError("Could not set ROI");
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set ROI [" + std::string(e.what()) + ']');
     }
     return socket.Send(OK);
 }
@@ -615,10 +568,10 @@ int ClientInterface::set_num_analog_samples(Interface &socket) {
     }
     try {
         impl()->setNumberofAnalogSamples(value);
-    } catch (const RuntimeError &e) {
-        throw RuntimeError("Could not set num analog samples to " +
-                           std::to_string(value) +
-                           " due to fifo structure memory allocation.");
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set number of analog samples to " +
+                           std::to_string(value) + " [" +
+                           std::string(e.what()) + ']');
     }
     return socket.Send(OK);
 }
@@ -631,11 +584,12 @@ int ClientInterface::set_num_digital_samples(Interface &socket) {
     }
     try {
         impl()->setNumberofDigitalSamples(value);
-    } catch (const RuntimeError &e) {
-        throw RuntimeError("Could not set num digital samples to " +
-                           std::to_string(value) +
-                           " due to fifo structure memory allocation.");
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set number of digital samples to " +
+                           std::to_string(value) + " [" +
+                           std::string(e.what()) + ']');
     }
+
     return socket.Send(OK);
 }
 
@@ -742,9 +696,9 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
         } else {
             try {
                 impl()->setDynamicRange(dr);
-            } catch (const RuntimeError &e) {
-                throw RuntimeError("Could not allocate memory for fifo or "
-                                   "could not start listening/writing threads");
+            } catch (const std::exception &e) {
+                throw RuntimeError("Could not set dynamic range [" +
+                                   std::string(e.what()) + ']');
             }
         }
     }
@@ -780,7 +734,12 @@ int ClientInterface::get_status(Interface &socket) {
 int ClientInterface::start_receiver(Interface &socket) {
     if (impl()->getStatus() == IDLE) {
         LOG(logDEBUG1) << "Starting Receiver";
-        impl()->startReceiver();
+        try {
+            impl()->startReceiver();
+        } catch (const std::exception &e) {
+            throw RuntimeError("Could not start reciever [" +
+                               std::string(e.what()) + ']');
+        }
     }
     return socket.Send(OK);
 }
@@ -790,12 +749,16 @@ int ClientInterface::stop_receiver(Interface &socket) {
     if (impl()->getStatus() == RUNNING) {
         LOG(logDEBUG1) << "Stopping Receiver";
         impl()->setStoppedFlag(static_cast<bool>(arg));
-        impl()->stopReceiver();
+        try {
+            impl()->stopReceiver();
+        } catch (const std::exception &e) {
+            throw RuntimeError("Could not stop receiver [" +
+                               std::string(e.what()) + ']');
+        }
     }
     auto s = impl()->getStatus();
     if (s != IDLE)
-        throw RuntimeError("Could not stop receiver. It as it is: " +
-                           ToString(s));
+        throw RuntimeError("Could not stop receiver. Status: " + ToString(s));
 
     return socket.Send(OK);
 }
@@ -810,7 +773,12 @@ int ClientInterface::set_file_dir(Interface &socket) {
         throw RuntimeError("Receiver path needs to be absolute path");
 
     LOG(logDEBUG1) << "Setting file path: " << fpath;
-    impl()->setFilePath(fpath);
+    try {
+        impl()->setFilePath(fpath);
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set file path [" + std::string(e.what()) +
+                           ']');
+    }
     return socket.Send(OK);
 }
 
@@ -892,7 +860,12 @@ int ClientInterface::set_file_write(Interface &socket) {
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting File write enable:" << enable;
-    impl()->setFileWriteEnable(enable);
+    try {
+        impl()->setFileWriteEnable(enable);
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not enable/disable file write [" +
+                           std::string(e.what()) + ']');
+    }
     return socket.Send(OK);
 }
 
@@ -946,8 +919,9 @@ int ClientInterface::enable_tengiga(Interface &socket) {
         LOG(logDEBUG1) << "Setting 10GbE:" << val;
         try {
             impl()->setTenGigaEnable(val);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError("Could not set 10GbE.");
+        } catch (const std::exception &e) {
+            throw RuntimeError("Could not set 10GbE. [" +
+                               std::string(e.what()) + ']');
         }
     }
     int retval = impl()->getTenGigaEnable();
@@ -963,9 +937,9 @@ int ClientInterface::set_fifo_depth(Interface &socket) {
         LOG(logDEBUG1) << "Setting fifo depth:" << value;
         try {
             impl()->setFifoDepth(value);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError("Could not set fifo depth due to fifo structure "
-                               "memory allocation.");
+        } catch (const std::exception &e) {
+            throw RuntimeError("Could not set fifo depth [" +
+                               std::string(e.what()) + ']');
         }
     }
     int retval = impl()->getFifoDepth();
@@ -1000,10 +974,12 @@ int ClientInterface::set_streaming(Interface &socket) {
     LOG(logDEBUG1) << "Setting data stream enable:" << index;
     try {
         impl()->setDataStreamEnable(index);
-    } catch (const RuntimeError &e) {
+    } catch (const std::exception &e) {
         throw RuntimeError("Could not set data stream enable to " +
-                           std::to_string(index));
+                           std::to_string(index) + " [" +
+                           std::string(e.what()) + ']');
     }
+
     return socket.Send(OK);
 }
 
@@ -1062,7 +1038,12 @@ int ClientInterface::set_file_format(Interface &socket) {
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting file format:" << f;
-    impl()->setFileFormat(f);
+    try {
+        impl()->setFileFormat(f);
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set file format to " + ToString(f) +
+                           " [" + std::string(e.what()) + ']');
+    }
 
     auto retval = impl()->getFileFormat();
     validate(f, retval, "set file format", DEC);
@@ -1183,7 +1164,13 @@ int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
                 "Receiver socket buffer size exceeded max (INT_MAX/2)");
         }
         LOG(logDEBUG1) << "Setting UDP Socket Buffer size: " << size;
-        impl()->setUDPSocketBufferSize(size);
+        try {
+            impl()->setUDPSocketBufferSize(size);
+        } catch (const std::exception &e) {
+            throw RuntimeError("Could not set udp socket buffer size to " +
+                               std::to_string(size) + " [" +
+                               std::string(e.what()) + ']');
+        }
     }
     int retval = impl()->getUDPSocketBufferSize();
     if (size != 0)
@@ -1262,9 +1249,9 @@ int ClientInterface::set_readout_mode(Interface &socket) {
         LOG(logDEBUG1) << "Setting readout mode: " << arg;
         try {
             impl()->setReadoutMode(arg);
-        } catch (const RuntimeError &e) {
-            throw RuntimeError(
-                "Could not set read out mode due to fifo memory allocation.");
+        } catch (const std::exception &e) {
+            throw RuntimeError("Could not set read out mode [" +
+                               std::string(e.what()) + ']');
         }
     }
     auto retval = impl()->getReadoutMode();
@@ -1280,10 +1267,11 @@ int ClientInterface::set_adc_mask(Interface &socket) {
     LOG(logDEBUG1) << "Setting 1Gb ADC enable mask: " << arg;
     try {
         impl()->setADCEnableMask(arg);
-    } catch (const RuntimeError &e) {
-        throw RuntimeError(
-            "Could not set adc enable mask due to fifo memory allcoation");
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set adc enable mask [" +
+                           std::string(e.what()) + ']');
     }
+
     auto retval = impl()->getADCEnableMask();
     if (retval != arg) {
         std::ostringstream os;
@@ -1347,10 +1335,10 @@ int ClientInterface::set_quad_type(Interface &socket) {
         LOG(logDEBUG1) << "Setting quad:" << quadEnable;
         try {
             impl()->setQuad(quadEnable == 0 ? false : true);
-        } catch (const RuntimeError &e) {
+        } catch (const std::exception &e) {
             throw RuntimeError("Could not set quad to " +
-                               std::to_string(quadEnable) +
-                               " due to fifo strucutre memory allocation");
+                               std::to_string(quadEnable) + " [" +
+                               std::string(e.what()) + ']');
         }
     }
     int retval = impl()->getQuad() ? 1 : 0;
@@ -1486,10 +1474,12 @@ int ClientInterface::set_num_interfaces(Interface &socket) {
     LOG(logDEBUG1) << "Setting Number of UDP Interfaces:" << arg;
     try {
         impl()->setNumberofUDPInterfaces(arg);
-    } catch (const RuntimeError &e) {
-        throw RuntimeError("Failed to set number of interfaces to " +
-                           std::to_string(arg));
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set number of interfaces to " +
+                           std::to_string(arg) + " [" + std::string(e.what()) +
+                           ']');
     }
+
     return socket.Send(OK);
 }
 
@@ -1499,10 +1489,11 @@ int ClientInterface::set_adc_mask_10g(Interface &socket) {
     LOG(logDEBUG1) << "Setting 10Gb ADC enable mask: " << arg;
     try {
         impl()->setTenGigaADCEnableMask(arg);
-    } catch (const RuntimeError &e) {
-        throw RuntimeError(
-            "Could not set 10Gb adc enable mask due to fifo memory allcoation");
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set 10Gb adc enable mask [" +
+                           std::string(e.what()) + ']');
     }
+
     auto retval = impl()->getTenGigaADCEnableMask();
     if (retval != arg) {
         std::ostringstream os;
@@ -1518,7 +1509,12 @@ int ClientInterface::set_counter_mask(Interface &socket) {
     auto arg = socket.Receive<uint32_t>();
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting counters: " << arg;
-    impl()->setCounterMask(arg);
+    try {
+        impl()->setCounterMask(arg);
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set counter mask [" +
+                           std::string(e.what()) + ']');
+    }
     return socket.Send(OK);
 }
 
@@ -1714,7 +1710,12 @@ int ClientInterface::set_arping(Interface &socket) {
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Starting/ Killing arping thread:" << value;
-    impl()->setArping(value, udpips);
+    try {
+        impl()->setArping(value, udpips);
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not start/kill arping thread [" +
+                           std::string(e.what()) + ']');
+    }
     return socket.Send(OK);
 }
 
@@ -1732,9 +1733,11 @@ int ClientInterface::set_receiver_roi(Interface &socket) {
     verifyIdle(socket);
     try {
         impl()->setReceiverROI(arg);
-    } catch (const RuntimeError &e) {
-        throw RuntimeError("Could not set ReceiverROI");
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set Receiver ROI [" +
+                           std::string(e.what()) + ']');
     }
+
     return socket.Send(OK);
 }
 
@@ -1746,9 +1749,11 @@ int ClientInterface::set_receiver_roi_metadata(Interface &socket) {
     verifyIdle(socket);
     try {
         impl()->setReceiverROIMetadata(arg);
-    } catch (const RuntimeError &e) {
-        throw RuntimeError("Could not set ReceiverROI metadata");
+    } catch (const std::exception &e) {
+        throw RuntimeError("Could not set ReceiverROI metadata [" +
+                           std::string(e.what()) + ']');
     }
+
     return socket.Send(OK);
 }
 

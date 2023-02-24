@@ -548,8 +548,8 @@ int M_nofunc(int file_des) {
     ret = FAIL;
     memset(mess, 0, sizeof(mess));
 
-    sprintf(mess, "Unrecognized Function enum %d. Please do not proceed.\n",
-            fnum);
+    sprintf(mess, "%s Function enum %d. Please do not proceed.\n",
+            UNRECOGNIZED_FNUM_ENUM, fnum);
     LOG(logERROR, (mess));
     return Server_SendResult(file_des, OTHER, NULL, 0);
 }
@@ -5087,11 +5087,20 @@ int set_source_udp_mac(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
             if (udpDetails[0].srcmac != arg) {
-                for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION;
-                     ++iRxEntry) {
-                    udpDetails[iRxEntry].srcmac = arg;
+                // multicast (LSB of first octet = 1)
+                if ((arg >> 40) & 0x1) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Cannot set source mac address. Must be a unicast "
+                            "address (LSB of first octet should be 0).");
+                    LOG(logERROR, (mess));
+                } else {
+                    for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION;
+                         ++iRxEntry) {
+                        udpDetails[iRxEntry].srcmac = arg;
+                    }
+                    configure_mac();
                 }
-                configure_mac();
             }
         }
     }
@@ -5953,7 +5962,7 @@ int set_clock_divider(int file_des) {
 #endif
             modeNotImplemented("clock index (divider set)", args[0]);
         }
-
+        // TODO: if value between to set and num clocks, msg = "cannot set"
         enum CLKINDEX c = 0;
         int val = args[1];
         if (ret == OK) {

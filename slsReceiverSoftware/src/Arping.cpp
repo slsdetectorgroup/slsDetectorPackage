@@ -4,6 +4,8 @@
 #include "Arping.h"
 
 #include <chrono>
+#include <signal.h>
+#include <thread>
 #include <unistd.h>
 
 namespace sls {
@@ -18,7 +20,7 @@ Arping::Arping() {}
 
 Arping::~Arping() {
     if (IsRunning()) {
-        StopThread();
+        StopProcess();
     }
 }
 
@@ -33,59 +35,66 @@ void Arping::SetInterfacesAndIps(const int index, const std::string &interface,
     // create commands to arping
     std::ostringstream os;
     os << "arping -c 1 -U -I " << interface << " " << ip;
-    // to read error messages
-    os << " 2>&1";
     std::string cmd = os.str();
     commands[index] = cmd;
 }
 
-pid_t Arping::GetThreadId() const { return threadId; }
+pid_t Arping::GetProcessId() const { return childPid; }
 
 bool Arping::IsRunning() const { return runningFlag; }
 
-void Arping::StartThread() {
+void Arping::StartProcess() {
     TestCommands();
-    try {
-        t = std::thread(&Arping::ThreadExecution, this);
-    } catch (...) {
-        throw RuntimeError("Could not start arping thread");
+
+    // to prevent zombies from child processes being killed
+    signal(SIGCHLD, SIG_IGN);
+
+    // Needs to be a fork and udp socket deleted after Listening threads
+    // done running to prevent udp socket cannot bind because of popen
+    // that forks
+    childPid = fork();
+    // child process
+    if (childPid == 0) {
+        LOG(logINFOBLUE) << "Created [ Arping Process, Tid: " << gettid()
+                         << " ]";
+        ProcessExecution();
     }
-    runningFlag = true;
+    // parent process
+    else if (childPid > 0) {
+        runningFlag = true;
+    }
+    // error
+    else {
+        throw RuntimeError("Could not start arping Process");
+    }
 }
 
-void Arping::StopThread() {
+void Arping::StopProcess() {
+    LOG(logINFOBLUE) << "Exiting [ Arping Process ]";
+
+    if (kill(childPid, SIGTERM)) {
+        throw RuntimeError("Could not kill the arping Process");
+    }
     runningFlag = false;
-    t.join();
 }
 
-void Arping::ThreadExecution() {
-    threadId = gettid();
-    LOG(logINFOBLUE) << "Created [ Arping Thread, Tid: " << threadId << " ]";
-
-    while (runningFlag) {
+void Arping::ProcessExecution() {
+    while (true) {
         std::string error = ExecuteCommands();
-        // just print (was already tested at thread start)
+        // just print (was already tested at Process start)
         if (!error.empty()) {
             LOG(logERROR) << error;
         }
-
-        // wait for 60s as long as thread not killed
-        int nsecs = 0;
-        while (runningFlag && nsecs != 60) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-            ++nsecs;
-        }
+        const auto interval = std::chrono::seconds(60);
+        std::this_thread::sleep_for(interval);
     }
-
-    LOG(logINFOBLUE) << "Exiting [ Arping Thread, Tid: " << threadId << " ]";
-    threadId = 0;
 }
 
 void Arping::TestCommands() {
     // atleast one interface must be set up
     if (commands[0].empty()) {
         throw RuntimeError(
-            "Could not arping. Interface not set up in apring thread");
+            "Could not arping. Interface not set up in arping Process");
     }
     // test if arping commands throw an error
     std::string error = ExecuteCommands();
@@ -101,7 +110,7 @@ std::string Arping::ExecuteCommands() {
         if (cmd.empty())
             continue;
 
-        LOG(logDEBUG) << "Executing Arping Command: " << cmd;
+        LOG(logDEBUG1) << "Executing Arping Command: " << cmd;
 
         // execute command
         FILE *sysFile = popen(cmd.c_str(), "r");

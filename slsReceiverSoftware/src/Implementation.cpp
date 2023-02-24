@@ -78,11 +78,12 @@ void Implementation::SetupFifoStructure() {
         try {
             fifo.push_back(
                 sls::make_unique<Fifo>(i, datasize, generalData->fifoDepth));
-        } catch (...) {
+        } catch (const std::exception &e) {
             fifo.clear();
             generalData->fifoDepth = 0;
-            throw RuntimeError("Could not allocate memory for fifo structure " +
-                               std::to_string(i) + ". FifoDepth is now 0.");
+            std::ostringstream oss;
+            oss << e.what() << ". Fifo depth is now 0";
+            throw RuntimeError(oss.str());
         }
         // set the listener & dataprocessor threads to point to the right fifo
         if (listener.size())
@@ -165,12 +166,10 @@ void Implementation::setDetectorType(const detectorType d) {
             SetupListener(i);
             dataProcessor.push_back(sls::make_unique<DataProcessor>(i));
             SetupDataProcessor(i);
-        } catch (...) {
+        } catch (const std::exception &e) {
             listener.clear();
             dataProcessor.clear();
-            throw RuntimeError(
-                "Could not create listener/dataprocessor threads (index:" +
-                std::to_string(i) + ")");
+            throw;
         }
     }
 
@@ -212,6 +211,7 @@ void Implementation::SetupDataStreamer(int i) {
                                       streamingHwm);
     dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
     dataStreamer[i]->SetFileIndex(fileIndex);
+    dataStreamer[i]->SetQuadEnable(quadEnable);
     dataStreamer[i]->SetFlipRows(flipRows);
     dataStreamer[i]->SetNumberofPorts(numPorts);
     dataStreamer[i]->SetQuadEnable(quadEnable);
@@ -351,19 +351,21 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
             retval[id++] = 0;
         }
     }
-    retval[NUM_RX_THREAD_IDS - 1] = arping.GetThreadId();
+    retval[NUM_RX_THREAD_IDS - 1] = arping.GetProcessId();
     return retval;
 }
 
 bool Implementation::getArping() const { return arping.IsRunning(); }
 
-pid_t Implementation::getArpingThreadId() const { return arping.GetThreadId(); }
+pid_t Implementation::getArpingProcessId() const {
+    return arping.GetProcessId();
+}
 
 void Implementation::setArping(const bool i,
                                const std::vector<std::string> ips) {
     if (i != arping.IsRunning()) {
         if (!i) {
-            arping.StopThread();
+            arping.StopProcess();
         } else {
             // setup interface
             for (int i = 0; i != generalData->numUDPInterfaces; ++i) {
@@ -374,7 +376,7 @@ void Implementation::setArping(const bool i,
                 }
                 arping.SetInterfacesAndIps(i, eth[i], ips[i]);
             }
-            arping.StartThread();
+            arping.StartProcess();
         }
     }
 }
@@ -665,8 +667,9 @@ void Implementation::startReceiver() {
             startAcquisitionCallBack(filePath, fileName, fileIndex, imageSize,
                                      pStartAcquisition);
         } catch (const std::exception &e) {
-            throw RuntimeError("Start Acquisition Callback Error: " +
-                               std::string(e.what()));
+            std::ostringstream oss;
+            oss << "Start Acquisition Callback Error: " << e.what();
+            throw RuntimeError(oss.str());
         }
         if (rawDataReadyCallBack != nullptr) {
             LOG(logINFO) << "Data Write has been defined externally";
@@ -712,6 +715,10 @@ void Implementation::stopReceiver() {
                 running = true;
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
+
+    // delete the udp sockets
+    for (const auto &it : listener)
+        it->DeleteUDPSocket();
 
     if (fileWriteEnable && modulePos == 0) {
         // master and virtual file (hdf5)
@@ -777,8 +784,9 @@ void Implementation::stopReceiver() {
                 status = IDLE;
                 LOG(logINFO) << "Receiver Stopped";
                 LOG(logINFO) << "Status: " << ToString(status);
-                throw RuntimeError("Acquisition Finished Callback Error: " +
-                                   std::string(e.what()));
+                std::ostringstream oss;
+                oss << "Acquisition Finished Callback Error: " << e.what();
+                throw RuntimeError(oss.str());
             }
         }
     }
@@ -859,7 +867,7 @@ void Implementation::CreateUDPSockets() {
         }
     } catch (const RuntimeError &e) {
         shutDownUDPSockets();
-        throw RuntimeError("Could not create UDP Socket(s).");
+        throw;
     }
     LOG(logDEBUG) << "UDP socket(s) created successfully.";
 }
@@ -879,7 +887,9 @@ void Implementation::SetupWriter() {
         shutDownUDPSockets();
         for (const auto &it : dataProcessor)
             it->CloseFiles();
-        throw RuntimeError("Could not create first data file.");
+        std::ostringstream oss;
+        oss << "Could not set up writer: " << e.what();
+        throw RuntimeError(oss.str());
     }
 }
 
@@ -968,10 +978,9 @@ void Implementation::StartMasterWriter() {
             }
         }
 #endif
-    } catch (std::exception &e) {
+    } catch (const std::exception &e) {
         // ignore it and just print it
-        LOG(logWARNING) << "Caught exception when handling virtual hdf5 file ["
-                        << e.what() << "]";
+        LOG(logWARNING) << "Error creating master/virtualfiles: " << e.what();
     }
 }
 
@@ -1032,12 +1041,10 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 SetupListener(i);
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(i));
                 SetupDataProcessor(i);
-            } catch (...) {
+            } catch (const std::exception &e) {
                 listener.clear();
                 dataProcessor.clear();
-                throw RuntimeError(
-                    "Could not create listener/dataprocessor threads (index:" +
-                    std::to_string(i) + ")");
+                throw;
             }
 
             // streamer threads
@@ -1045,16 +1052,14 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 try {
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(i));
                     SetupDataStreamer(i);
-                } catch (...) {
+                } catch (const std::exception &e) {
                     if (dataStreamEnable) {
                         dataStreamer.clear();
                         dataStreamEnable = false;
                         for (const auto &it : dataProcessor)
                             it->SetDataStreamEnable(dataStreamEnable);
                     }
-                    throw RuntimeError(
-                        "Could not create datastreamer threads (index:" +
-                        std::to_string(i) + ")");
+                    throw;
                 }
             }
         }
@@ -1165,12 +1170,12 @@ void Implementation::setDataStreamEnable(const bool enable) {
                 try {
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(i));
                     SetupDataStreamer(i);
-                } catch (...) {
+                } catch (const std::exception &e) {
                     dataStreamer.clear();
                     dataStreamEnable = false;
                     for (const auto &it : dataProcessor)
                         it->SetDataStreamEnable(dataStreamEnable);
-                    throw RuntimeError("Could not set data stream enable.");
+                    throw;
                 }
             }
             SetThreadPriorities();

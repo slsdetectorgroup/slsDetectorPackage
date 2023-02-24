@@ -225,6 +225,17 @@ class Detector {
      */
     void setBadChannels(const std::string &fname, Positions pos = {});
 
+    /** [Gotthard2][Mythen3] */
+    Result<std::vector<int>> getBadChannels(Positions pos = {}) const;
+
+    /** [Gotthard2][Mythen3] Empty list resets bad channel list */
+    void setBadChannels(const std::vector<int> list, Positions pos = {});
+
+    /** [Gotthard2][Mythen3] Size of list should match number of modules. Each
+     * value is at module level and can start at 0. Empty vector resets bad
+     * channel list. */
+    void setBadChannels(const std::vector<std::vector<int>> list);
+
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@}
 
@@ -937,9 +948,10 @@ class Detector {
     /** Client IP Address that last communicated with the receiver */
     Result<IpAddr> getRxLastClientIP(Positions pos = {}) const;
 
-    /** Get thread ids from the receiver in order of [parent, tcp, listener 0,
-     * processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. If
-     * no streamer yet or there is no second interface, it gives 0 in its place.
+    /** Get kernel thread ids from the receiver in order of [parent, tcp,
+     * listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1,
+     * arping]. If no streamer yet or there is no second interface, it gives 0
+     * in its place.
      */
     Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
     getRxThreadIds(Positions pos = {}) const;
@@ -1469,8 +1481,9 @@ class Detector {
     Result<int> getADCConfiguration(const int chipIndex, const int adcIndex,
                                     Positions pos = {}) const;
 
-    /** [Gotthard2] configures one chip at a time for specific adc, chipIndex
-     * and adcIndex is -1 for all */
+    /** [Gotthard2] configures one chip at a time for specific adc, chipIndex.
+     * -1 for all. Setting specific chip index not implemented in hardware yet
+     */
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              const int value, Positions pos = {});
 

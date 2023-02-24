@@ -1,14 +1,3 @@
-
-
-
-.. note :: 
-
-    The default branch of our git repository is developer. It contains the 
-    latest development version. It is expected to compile and work but 
-    features might be added or tweaked. In some cases the API might also change
-    without being communicated. If absolute stability of the API is needed please
-    use one of the release versions. 
-
 .. warning ::
     
     Before building from source make sure that you have the 
@@ -161,7 +150,7 @@ Build using in-built cmk.sh script
     -c: Clean
     -d: HDF5 Custom Directory
     -e: Debug mode
-    -g: Build/Rebuilds only gui
+    -g: Build/Rebuilds gui
     -h: Builds/Rebuilds Cmake files with HDF5 package
     -i: Builds tests
     -j: Number of threads to compile through
@@ -178,17 +167,17 @@ Build using in-built cmk.sh script
     -z: Moench zmq processor
 
     
-    # get all options
+    # display all options
     ./cmk.sh -?
 
-    # new build and compile in parallel:
-    ./cmk.sh -bj5
+    # new build and compile in parallel (recommended basic option):
+    ./cmk.sh -cbj5
 
     # new build, python and compile in parallel:
-    ./cmk.sh -bpj5
+    ./cmk.sh -cbpj5
 
     #To use the system zmq (/usr/lib64) instead
-    ./cmk.sh -bj5 -q /usr/lib64
+    ./cmk.sh -cbj5 -q /usr/lib64
 
 
 

@@ -517,8 +517,19 @@ TEST_CASE("gappixels", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH ||
-        det_type == defs::EIGER) {
+    // test eiger(quad or full module only)
+    bool gapPixelTest = false;
+    if (det_type == defs:: || det_type == defs::MOENCH)
+        gapPixelTest = true;
+    else if (det_type == defs::EIGER) {
+        bool quad = det.getQuad().squash(false);
+        bool fullModule = (det.getModuleGeometry().y % 2 == 0);
+        if (quad || fullModule) {
+            gapPixelTest = true;
+        }
+    }
+
+    if (gapPixelTest) {
         auto prev_val = det.getGapPixelsinCallback();
         {
             std::ostringstream oss;
@@ -637,6 +648,8 @@ TEST_CASE("badchannels", "[.cmd]") {
     auto det_type = det.getDetectorType().squash();
 
     if (det_type == defs::GOTTHARD2 || det_type == defs::MYTHEN3) {
+        auto prev = det.getBadChannels();
+
         REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
 
         std::string fname_put =
@@ -648,6 +661,51 @@ TEST_CASE("badchannels", "[.cmd]") {
         auto list = getChannelsFromFile(fname_get);
         std::vector<int> expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
         REQUIRE(list == expected);
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"none"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        REQUIRE(list.empty());
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_put}, 0, PUT));
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"0"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        REQUIRE(list.empty());
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"12"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        expected = {12};
+        REQUIRE(list == expected);
+
+        REQUIRE_NOTHROW(proxy.Call(
+            "badchannels", {"0", "12,", "15", "43", "40:45", "1279"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        expected = {0, 12, 15, 40, 41, 42, 43, 44, 1279};
+        REQUIRE(list == expected);
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"40:45"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        expected = {40, 41, 42, 43, 44};
+        REQUIRE(list == expected);
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"5,6,7"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        expected = {5, 6, 7};
+        REQUIRE(list == expected);
+
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {"1:5,6,7"}, 0, PUT));
+        REQUIRE_NOTHROW(proxy.Call("badchannels", {fname_get}, 0, GET));
+        list = getChannelsFromFile(fname_get);
+        expected = {1, 2, 3, 4, 6, 7};
+        REQUIRE(list == expected);
+
+        det.setBadChannels(prev);
 
     } else {
         REQUIRE_THROWS(proxy.Call("badchannels", {}, -1, GET));
@@ -1216,7 +1274,7 @@ TEST_CASE("clkphase", "[.cmd]") {
         }
         std::string s_deg_val = "15";
         if (det_type == defs::MYTHEN3) {
-            s_deg_val = "15";
+            s_deg_val = "14";
         } else if (det_type == defs::GOTTHARD2) {
             s_deg_val = "23";
         }

@@ -1,25 +1,19 @@
 # SPDX-License-Identifier: LGPL-3.0-or-other
 # Copyright (C) 2021 Contributors to the SLS Detector Package
 
-INCDIR=   -I. -I../dataStructures ../tiffIO.cpp -I../ -I../interpolations/ -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ -I../../libs/rapidjson/
+INCDIR=   -I. -I../dataStructures ../tiffio/src/tiffIO.cpp -I../ -I../interpolations/ -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ -I../../libs/rapidjson/ -I../tiffio/include
 LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff   -O3  -std=c++11 -Wall -L../../build/bin/ -lSlsSupport
 #-L../../bin -lhdf5  -L.
 
 #DESTDIR?=../bin
 
-all:  moenchZmqProcess moenchZmq04Process
- #moenchZmqProcessCtbGui
+all:  jungfrauZmqProcess 
+ #jungfrauZmqProcessCtbGui
 
-moenchZmqProcess:  moenchZmqProcess.cpp   clean
-		      g++ -o moenchZmqProcess  moenchZmqProcess.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWZMQ -DINTERP 
-
-moenchZmq04Process:  moenchZmqProcess.cpp   clean
-		      g++ -o moench04ZmqProcess  moenchZmqProcess.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWZMQ -DINTERP -DMOENCH04 
-
-#moenchZmqProcessCtbGui:  moenchZmqProcess.cpp   clean
-#		      g++ -o moenchZmqProcessCtbGui  moenchZmqProcess.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWZMQ -DINTERP -DCTBGUI
+jungfrauZmqProcess:  jungfrauZmqProcess.cpp   clean
+		      g++ -o jungfrauZmqProcess  jungfrauZmqProcess.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWZMQ -DINTERP
 
 clean: 	
-	rm -f  moenchZmqProcess  
+	rm -f   jungfrauZmqProcess  
 
 

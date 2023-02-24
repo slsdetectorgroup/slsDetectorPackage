@@ -86,6 +86,184 @@ Client Commands
         sls_detector_get -h rx_framescaught
 
 
+ZMQ: Json Header Format
+------------------------
+
+
+**Change in field names from slsDetectorPackage v6.x.x to v7.0.0**
+
+* detSpec1 <- bunchId
+* detSpec2 <- reserved
+* detSpec3 <- debug
+* detSpec4 <- roundRNumber
+
+
+**Format**
+
+    .. code-block:: bash 
+
+        {
+            "jsonversion": unsigned int,
+            "bitmode": unsigned int,
+            "fileIndex": unsigned long int,
+            "detshape": [
+                unsigned int,
+                unsigned int
+            ],
+            "shape": [
+                unsigned int,
+                unsigned int
+            ],
+            "size": unsigned int,
+            "acqIndex": unsigned long int,
+            "frameIndex": unsigned long int,
+            "progress": double,
+            "fname": string,
+            "data": unsigned int,
+            "completeImage": unsigned int,
+
+            "frameNumber": unsigned long long int,
+            "expLength": unsigned int,
+            "packetNumber": unsigned int,
+            "detSpec1": unsigned long int,
+            "timestamp": unsigned long int,
+            "modId": unsigned int,
+            "row": unsigned int,
+            "column": unsigned int,
+            "detSpec2": unsigned int,
+            "detSpec3": unsigned int,
+            "detSpec4": unsigned int,
+            "detType": unsigned int,
+            "version": unsigned int,
+            
+            "flipRows": unsigned int,
+            "quad": unsigned int,
+            "addJsonHeader": {
+                string : string
+            }
+        }
+
+   +--------------+----------------------------------------------+
+   |   Field      |       Description                            |
+   +--------------+----------------------------------------------+
+   | jsonversion  | Version of the json header.                  |
+   |              | Value at 4 for v6.x.x and v7.x.x             |
+   +--------------+----------------------------------------------+
+   | bitmode      | Bits per pixel [4|8|16|32]                   |
+   +--------------+----------------------------------------------+
+   | fileIndex    | Current file acquisition index               |
+   +--------------+----------------------------------------------+
+   | detshape     | Geometry of the entire detector              |
+   +--------------+----------------------------------------------+
+   | shape        | Geometry of the current port streamed out    |
+   +--------------+----------------------------------------------+
+   | size         | Size of image of current port in bytesout    |
+   +--------------+----------------------------------------------+
+   | acqIndex     | Frame number from the detector (redundant)   |
+   +--------------+----------------------------------------------+
+   | frameIndex   | Frame number of current acquisition          |
+   |              | (Starting at 0)                              |
+   +--------------+----------------------------------------------+
+   | progress     | Progress of current acquisition in %         |
+   +--------------+----------------------------------------------+
+   | fname        | Current file name                            |
+   +--------------+----------------------------------------------+
+   | data         | 1 if there is data following                 |
+   |              | 0 if dummy header                            |
+   +--------------+----------------------------------------------+
+   | completeImage| 1 if no missing packets for this frame       |
+   |              | in this port, else 0                         |
+   +--------------+----------------------------------------------+
+   | frameNumber  | Frame number                                 |
+   |              | [From detector udp header]                   |
+   +--------------+----------------------------------------------+
+   | expLength    | subframe number (32 bit eiger)               |
+   |              | or real time exposure time in 100ns (others) |
+   |              | [From detector udp header]                   |
+   +--------------+----------------------------------------------+
+   | packetNumber | Number of packets caught for that frame      |
+   +--------------+----------------------------------------------+
+   | detSpec1     | See :ref:`here<Detector Specific Fields>`    |
+   |              | [From detector udp header]                   |
+   +--------------+----------------------------------------------+
+   | timestamp    | Timestamp with 10 MHz clock                  |
+   |              | [From detector udp header]                   |
+   +--------------+----------------------------------------------+
+   | modId        | Module Id                                    |
+   |              | [From detector udp header]                   |
+   +--------------+----------------------------------------------+
+   | row          | Row number in detector                       |
+   |              | [From detector udp header]                   |
+   +--------------+----------------------------------------------+
+   | column       | Column number in detector                    |
+   |              | [From detector udp header]                   |
+   +--------------+----------------------------------------------+
+   | detSpec2     | See :ref:`here<Detector Specific Fields>`    |
+   |              | [From detector udp header]                   |
+   +--------------+----------------------------------------------+
+   | detSpec3     | See :ref:`here<Detector Specific Fields>`    |
+   |              | [From detector udp header]                   |
+   +--------------+----------------------------------------------+
+   | detSpec4     | See :ref:`here<Detector Specific Fields>`    |
+   |              | [From detector udp header]                   |
+   +--------------+----------------------------------------------+
+   | detType      | Detector type enum                           |
+   | detSpec3     | See :ref:`Detector enum<Detector Enum>`      |
+   |              | [From detector udp header]                   |
+   +--------------+----------------------------------------------+
+   | version      | Detector header version. At 2                |
+   |              | [From detector udp header]                   |
+   +--------------+----------------------------------------------+
+   | flipRows     | 1 if rows should be flipped.                 |
+   |              | Usually for Eiger bottom.                    |
+   +--------------+----------------------------------------------+
+   | quad         | 1 if its an Eiger quad.                      |
+   +--------------+----------------------------------------------+
+   | addJsonHeader| Optional custom parameters that is required  |
+   |              | for processing code.                         |
+   +--------------+----------------------------------------------+
+
+
+SLS Receiver Header Format
+--------------------------
+
+It is 112 bytes and consists of:
+    * 48 bytes of the SLS Detector Header (described in :ref:`the current detector header <detector udp header>`)
+    * 64 bytes of packet mask
+
+.. code-block:: cpp 
+    
+    typedef struct {
+        uint64_t frameNumber;
+        uint32_t expLength;
+        uint32_t packetNumber;
+        uint64_t detSpec1;
+        uint64_t timestamp;
+        uint16_t modId;
+        uint16_t row;
+        uint16_t column;
+        uint16_t detSpec2;
+        uint32_t detSpec3;
+        uint16_t detSpec4;
+        uint8_t detType;
+        uint8_t version;
+    } sls_detector_header;
+
+    struct sls_receiver_header {
+        sls_detector_header detHeader; /**< is the detector header */
+        sls_bitset packetsMask;        /**< is the packets caught bit mask */
+    };
+
+
+.. note :: 
+
+    | The packetNumber in the SLS Receiver Header will be modified to number of packets caught by receiver for that frame. For eg. Jungfrau will have 128 packets per frame. If it is less, then this is a partial frame due to missing packets.
+    
+    | Furthermore, the bit mask will specify which packets have been received.
+
+
+
+
 File format
 --------------
 
@@ -116,8 +294,6 @@ Some file name examples:
 
 Each acquisition will create a master file that can be enabled/disabled using **fmaster**. This should have parameters relevant to the acquisition.
 
-
-SLS Receiver Header consist of SLS Detector Header + 64 bytes of bitmask, altogether 112 bytes. The packetNumber in the sls detector header part, will be updated to number of packets caught by receiver for that frame. Furthermore, the bit mask will specify which packets have been received.
 
 **Binary file format**
 

@@ -47,6 +47,7 @@ class qTabPlot : public QWidget, private Ui::TabPlotObject {
   private:
     void SetupWidgetWindow();
     void Initialization();
+    bool VerifyGapPixelsAllowed();
     void Select1DPlot(bool enable);
     void GetGapPixels();
     void GetStreamingFrequency();
@@ -60,7 +61,8 @@ class qTabPlot : public QWidget, private Ui::TabPlotObject {
 
     Detector *det;
     qDrawPlot *plot;
-    bool is1d;
+    bool is1d{false};
+    bool isGapPixelsAllowed{false};
 
     /** default plot and axis titles */
     static QString defaultPlotTitle;

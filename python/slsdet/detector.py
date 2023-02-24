@@ -16,6 +16,7 @@ defs = slsDetectorDefs
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable, hostname_list
 from _slsdet import xy
+from .gaincaps import Mythen3GainCapsWrapper
 from . import utils as ut
 from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy, PatLoopProxy, PatNLoopProxy, PatWaitProxy, PatWaitTimeProxy 
 from .registers import Register, Adc_register
@@ -231,7 +232,7 @@ class Detector(CppDetectorApi):
         """
         [Jungfrau][Moench][Gotthard2][Myhten3][Gotthard][Ctb] Hardware version of detector.
         """
-        return ut.lhex(self.getHardwareVersion())
+        return self.getHardwareVersion()
 
     @property
     @element
@@ -265,9 +266,15 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def serialnumber(self):
+        """Jungfrau][Gotthard][Mythen3][Gotthard2][CTB][Moench] Serial number of detector """
+        return ut.lhex(self.getSerialNumber())
+
+    @property
+    @element
     def rx_threads(self):
         """
-        Get thread ids from the receiver in order of [parent, tcp, listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. 
+        Get kernel thread ids from the receiver in order of [parent, tcp, listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. 
         
         Note
         -----
@@ -451,6 +458,56 @@ class Detector(CppDetectorApi):
     def triggers(self, n_triggers):
         self.setNumberOfTriggers(n_triggers)
 
+    def resetdacs(self, use_hardware_values):
+        self.resetToDefaultDacs(use_hardware_values)
+
+    def trigger(self):
+        self.sendSoftwareTrigger()
+
+    def blockingtrigger(self):
+        self.sendSoftwareTrigger(True)
+
+    @property
+    @element
+    def gaincaps(self):
+        """
+        [Mythen3] Gain caps. Enum: M3_GainCaps \n
+        
+        Note
+        ----
+        Options: M3_GainCaps, M3_C15sh, M3_C30sh, M3_C50sh, M3_C225ACsh, M3_C15pre
+
+        Example
+        -------
+        >>> d.gaincaps
+        C15pre, C30sh
+        >>> d.gaincaps = M3_GainCaps.M3_C30sh
+        >>> d.gaincaps
+        C30sh
+        >>> d.gaincaps = M3_GainCaps.M3_C30sh | M3_GainCaps.M3_C15sh
+        >>> d.gaincaps
+        C15sh, C30sh
+        """
+        res = [Mythen3GainCapsWrapper(it) for it in self.getGainCaps()]
+        return res
+
+    @gaincaps.setter
+    def gaincaps(self, caps):
+        #convert to int if called with Wrapper
+        if isinstance(caps, Mythen3GainCapsWrapper):
+            self.setGainCaps(caps.value)
+        elif isinstance(caps, dict):
+            corr = {}
+            for key, value in caps.items():
+                if isinstance(value, Mythen3GainCapsWrapper):
+                    corr[key] = value.value
+                else:
+                    corr[key] = value
+            ut.set_using_dict(self.setGainCaps, corr)
+        else:
+            self.setGainCaps(caps)
+
+
     @property
     def exptime(self):
         """
@@ -498,15 +555,13 @@ class Detector(CppDetectorApi):
 
     @exptime.setter
     def exptime(self, t):
-        if self.type == detectorType.MYTHEN3 and is_iterable(t):
+        if self.type == detectorType.MYTHEN3 and is_iterable(t) and not isinstance(t,dict):
             for i, v in enumerate(t):
                 if isinstance(v, int):
                     v = float(v)
                 self.setExptime(i, v)
         else:
             ut.set_time_using_dict(self.setExptime, t)
-
-
 
 
     @property
@@ -646,6 +701,10 @@ class Detector(CppDetectorApi):
     def start(self):
         """Start detector acquisition. Status changes to RUNNING or WAITING and automatically returns to idle at the end of acquisition."""
         self.startDetector()
+
+    def clearbusy(self):
+        """If acquisition aborted during acquire command, use this to clear acquiring flag in shared memory before starting next acquisition"""
+        self.clearAcquiringFlag()
 
     def rx_start(self):
         """Starts receiver listener for detector data packets and create a data file (if file write enabled)."""
@@ -1565,6 +1624,20 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def fliprows(self):
+        """
+        [Eiger] flips rows paramater sent to slsreceiver to stream as json parameter to flip rows in gui. \n
+        [Jungfrau] flips rows in the detector itself. For bottom module and number of interfaces must be set to 2. slsReceiver and slsDetectorGui does not handle.
+        """
+        return self.getFlipRows()
+
+    @fliprows.setter
+    def fliprows(self, value):
+        ut.set_using_dict(self.setFlipRows, value)
+
+
+    @property
+    @element
     def master(self):
         """
         [Eiger][Gotthard2][Jungfrau][Moench] Sets (half) module to master and other(s) to slaves.\n
@@ -1587,6 +1660,19 @@ class Detector(CppDetectorApi):
     @sync.setter
     def sync(self, value):
         ut.set_using_dict(self.setSynchronization, value)
+
+    @property
+    @element
+    def badchannels(self):
+        """
+        [fname|none|0]\n\t[Gotthard2][Mythen3] Sets the bad channels (from file of bad channel numbers) to be masked out. None or 0 unsets all the badchannels.\n
+        [Mythen3] Also does trimming
+        """
+        return self.getBadChannels()
+
+    @badchannels.setter
+    def badchannels(self, value):
+        ut.set_using_dict(self.setBadChannels, value)
 
     @property
     @element
@@ -1697,6 +1783,11 @@ class Detector(CppDetectorApi):
         return self.getTimingModeList()
 
     @property
+    def readoutspeedlist(self):
+        """List of readout speed levels implemented for this detector."""
+        return self.getReadoutSpeedList()
+
+    @property
     def templist(self):
         """List of temperature enums (dacIndex) implemented for this detector."""
         return self.getTemperatureList()
@@ -1797,25 +1888,24 @@ class Detector(CppDetectorApi):
 
     @property
     def versions(self):
-        if self.type == detectorType.EIGER:
-            return {'type': self.type,
+        version_list = {'type': self.type,
                 'package': self.packageversion, 
                 'client': self.clientversion,
-                'firmware (Beb)': self.firmwareversion,
-                'firmware(Febl)': self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_LEFT),
-                'firmware (Febr)': self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_RIGHT),
                 'detectorserver': self.detectorserverversion,
-                'kernel': self.kernelversion,
-                'receiver': self.rx_version}
+                'kernel': self.kernelversion}
 
-        return {'type': self.type,
-                'package': self.packageversion, 
-                'client': self.clientversion,
-                'firmware': self.firmwareversion,
-                'detectorserver': self.detectorserverversion,
-                'hardware':self.hardwareversion,
-                'kernel': self.kernelversion,
-                'receiver': self.rx_version}
+        if self.type == detectorType.EIGER:
+            version_list ['firmware (Beb)'] = self.firmwareversion
+            version_list ['firmware(Febl)'] = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_LEFT)
+            version_list ['firmware (Febr)'] = self.getFrontEndFirmwareVersion(slsDetectorDefs.fpgaPosition.FRONT_RIGHT)
+        else:
+            version_list ['firmware'] = self.firmwareversion
+            version_list ['hardware'] = self.hardwareversion
+
+        if self.use_receiver:
+            version_list ['receiver'] = self.rx_version
+
+        return version_list
 
     @property
     def virtual(self):
@@ -3105,6 +3195,17 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def adcvpp(self):
+        """[Ctb][Moench] Vpp of ADC. [0 -> 1V | 1 -> 1.14V | 2 -> 1.33V | 3 -> 1.6V | 4 -> 2V] \n
+            Advanced User function!"""
+        return self.getADCVpp(False)
+
+    @adcvpp.setter
+    def adcvpp(self, value):
+        ut.set_using_dict(self.setADCVpp, value, False)
+
+    @property
+    @element
     def dbitpipeline(self):
         """[Ctb][Gotthard2] Pipeline of the clock for latching digital bits. 
         
@@ -3713,6 +3814,23 @@ class Detector(CppDetectorApi):
         """
         return self.getMeasuredCurrent(dacIndex.I_POWER_IO)
 
+    @property
+    def clkphase(self):
+        """
+        [Gotthard2][Mythen3] Phase shift of all clocks.
+        
+        Example
+        -------
+        >>> d.clkphase[0] = 20
+        >>> d.clkphase
+        0: 20
+        1: 10
+        2: 20
+        3: 10
+        4: 10
+        5: 5
+        """
+        return ClkPhaseProxy(self)
 
     @property
     def clkdiv(self):

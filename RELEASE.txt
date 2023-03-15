@@ -30,6 +30,7 @@ This document describes the differences between v7.x.x and v7.0.0
 
 - moench being made compatible with jungfrau 2.0 boards (jungfrau structure, away from ctb)
 - eiger febl and feb in versions
+- fixed rx_arping error
 
 
 

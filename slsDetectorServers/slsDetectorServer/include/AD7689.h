@@ -49,4 +49,4 @@ void AD7689_Set(uint32_t codata);
  * Get SPI reg value
  * @returns SPI reg value
  */
-uint16_t AD7689_Get();
+uint32_t AD7689_Get();

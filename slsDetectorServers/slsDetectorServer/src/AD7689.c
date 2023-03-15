@@ -97,12 +97,6 @@
 #define AD7689_INT_MAX_STEPS  (0xFFFF + 1)
 #define AD7689_TMP_C_FOR_1_MV (25.00 / 283.00)
 
-
-// for less than ms preceision (usleep has min ms precision)
-#define SLEEP_COUNT (200)
-#define SLEEP() for (int i = 0; i!= SLEEP_COUNT; ++i) ;
-
-
 // Definitions from the fpga
 uint32_t AD7689_Reg = 0x0;
 uint32_t AD7689_ROReg = 0x0;
@@ -235,15 +229,17 @@ void AD7689_Disable() {
 
 void AD7689_SPIConvPulse() {
 
+    const int sleep_count = 200;
+
     // conv bit high
-    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) | AD7689_CnvMask &~AD7689_ClkMask &~AD7689_DigMask));
+    bus_w(AD7689_Reg, (((bus_r(AD7689_Reg) | AD7689_CnvMask) &~AD7689_ClkMask) &~AD7689_DigMask));
     //apprx 20ns required before rising edge of conv bit
-    SLEEP();
+    for (int i = 0; i!= sleep_count; ++i) ;
 
     // conv bit low
     bus_w(AD7689_Reg, (bus_r(AD7689_Reg) &~AD7689_CnvMask));
     //apprx 10ns required before rising edge of conv bit
-    SLEEP();    
+    for (int i = 0; i!= sleep_count; ++i) ;   
 }
 
 void AD7689_Set(uint32_t codata) {

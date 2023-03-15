@@ -27,6 +27,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 ==========================
 
 - moench being made compatible with jungfrau 2.0 boards (jungfrau structure, away from ctb)
+- rx_hostname and port can be combo to one or to all, or vector or hostnames and ports. ignoring none or empty, then verifying no duplicates for the host port combo including from shared memory
 
 
 2.  On-board Detector Server Compatibility

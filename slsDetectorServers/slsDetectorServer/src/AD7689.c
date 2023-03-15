@@ -97,6 +97,12 @@
 #define AD7689_INT_MAX_STEPS  (0xFFFF + 1)
 #define AD7689_TMP_C_FOR_1_MV (25.00 / 283.00)
 
+
+// for less than ms preceision (usleep has min ms precision)
+#define SLEEP_COUNT (200)
+#define SLEEP() for (int i = 0; i!= SLEEP_COUNT; ++i) ;
+
+
 // Definitions from the fpga
 uint32_t AD7689_Reg = 0x0;
 uint32_t AD7689_ROReg = 0x0;
@@ -116,25 +122,6 @@ void AD7689_SetDefines(uint32_t reg, uint32_t roreg, uint32_t cmsk,
     AD7689_ClkMask = clkmsk;
     AD7689_DigMask = dmsk;
     AD7689_DigOffset = dofst;
-}
-
-void AD7689_Disable() {
-    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) & ~(AD7689_CnvMask) & ~AD7689_ClkMask &
-                       ~(AD7689_DigMask)));
-}
-
-void AD7689_Set(uint32_t codata) {
-    LOG(logINFO,
-        ("\tSetting ADC SPI Register. Writing 0x%08x to Config Reg\n", codata));
-    serializeToSPI(AD7689_Reg, codata, AD7689_CnvMask, AD7689_ADC_CFG_NUMBITS,
-                   AD7689_ClkMask, AD7689_DigMask, AD7689_DigOffset, 1);
-}
-
-uint16_t AD7689_Get() {
-    LOG(logINFO, ("\tGetting ADC SPI Register.\n"));
-    return (uint16_t)serializeFromSPI(AD7689_Reg, AD7689_CnvMask,
-                                      AD7689_ADC_DATA_NUMBITS, AD7689_ClkMask,
-                                      AD7689_DigMask, AD7689_ROReg, 1);
 }
 
 int AD7689_GetTemperature() {
@@ -166,7 +153,7 @@ int AD7689_GetTemperature() {
 
     // value in °C
     double tempValue = AD7689_TMP_C_FOR_1_MV * (double)retval;
-    LOG(logINFO, ("\ttemp read : %f °C (%d unit)\n", tempValue, regval));
+    LOG(logINFO, ("\tTemp slow adc : %f °C (reg: %d)\n", tempValue, regval));
 
     return tempValue;
 }
@@ -209,7 +196,7 @@ int AD7689_GetChannel(int ichan) {
            AD7689_INT_REF_MIN_MV, AD7689_INT_REF_MAX_MV,
            regval, &retval);*/
 
-    LOG(logINFO, ("\tvoltage read for chan %d: %d uV (regVal: %d)\n", ichan,
+    LOG(logINFO, ("\tRead slow adc [%d]: %d uV (reg: %d)\n", ichan,
                   retval, regval));
     return retval;
 }
@@ -239,4 +226,93 @@ void AD7689_Configure() {
             // overwrite configuration
             AD7689_CFG_CFG_OVRWRTE_VAL);
     }
+}
+
+void AD7689_Disable() {
+    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) & ~(AD7689_CnvMask) & ~AD7689_ClkMask &
+                       ~(AD7689_DigMask)));
+}
+
+void AD7689_SPIConvPulse() {
+
+    // conv bit high
+    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) | AD7689_CnvMask &~AD7689_ClkMask &~AD7689_DigMask));
+    //apprx 20ns required before rising edge of conv bit
+    SLEEP();
+
+    // conv bit low
+    bus_w(AD7689_Reg, (bus_r(AD7689_Reg) &~AD7689_CnvMask));
+    //apprx 10ns required before rising edge of conv bit
+    SLEEP();    
+}
+
+void AD7689_Set(uint32_t codata) {
+    
+    LOG(logDEBUG2,
+        ("\tSetting Slow ADC SPI Register. Writing 0x%04x to Config Reg\n", codata));
+    
+    // crucial to reset when nBits(14) < nData(16)
+    AD7689_SPIConvPulse();
+
+    uint32_t addr = AD7689_Reg;
+    // reading after conv pulse
+    uint32_t value = bus_r(addr);
+    int nBits = AD7689_ADC_CFG_NUMBITS;
+
+    for (int i = 0; i != nBits; ++i) {
+
+        // clk down
+        value &= ~AD7689_ClkMask;
+        bus_w(addr, value);
+
+        // write data (push out each bit from msb)
+        value = ((value & ~AD7689_DigMask) + // unset bit
+                   (((codata >> (nBits - 1 - i)) & 0x1) // set bit if needed
+                    << AD7689_DigOffset)); 
+        bus_w(addr, value);
+
+        // clk up
+        value |= AD7689_ClkMask;
+        bus_w(addr, value);
+    }
+
+    // clk down
+    value &= ~AD7689_ClkMask;
+    bus_w(addr, value);
+
+    // crucial to reset when nBits(14) < nData(16)
+    AD7689_SPIConvPulse();
+}
+
+uint32_t AD7689_Get() {
+    LOG(logDEBUG2, ("\tGetting Slow ADC SPI Register.\n"));
+                                
+    AD7689_SPIConvPulse();
+
+    uint32_t addr = AD7689_Reg;
+    // reading after conv pulse
+    uint32_t value = bus_r(addr);
+    int nBits = AD7689_ADC_DATA_NUMBITS;
+
+    // clk down
+    value &= ~AD7689_ClkMask;
+    bus_w(addr, value);
+
+    uint32_t retval = 0;
+    for (int i = 0; i != nBits; ++i) {
+
+        // clk up
+        value |= AD7689_ClkMask;
+        bus_w(addr, value);
+
+        // read data (i)
+        retval |= ((bus_r(AD7689_ROReg) & 0x1) << (nBits - 1 - i));
+
+        // clk down
+        value &= ~AD7689_ClkMask;
+        bus_w(addr, value);
+    }
+
+    LOG(logDEBUG2, ("Read From SPI Register: 0x%08x\n", retval));
+    return retval;
 }

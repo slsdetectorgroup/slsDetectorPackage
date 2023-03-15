@@ -17,23 +17,6 @@ void AD7689_SetDefines(uint32_t reg, uint32_t roreg, uint32_t cmsk,
                        uint32_t clkmsk, uint32_t dmsk, int dofst);
 
 /**
- * Disable SPI
- */
-void AD7689_Disable();
-
-/**
- * Set SPI reg value
- * @param codata value to be set
- */
-void AD7689_Set(uint32_t codata);
-
-/**
- * Get SPI reg value
- * @returns SPI reg value
- */
-uint16_t AD7689_Get();
-
-/**
  * Get temperature
  * @returns temperature in °C
  */
@@ -50,3 +33,20 @@ int AD7689_GetChannel(int ichan);
  * Configure
  */
 void AD7689_Configure();
+
+/**
+ * Disable SPI
+ */
+void AD7689_Disable();
+
+/**
+ * Set SPI reg value
+ * @param codata value to be set
+ */
+void AD7689_Set(uint32_t codata);
+
+/**
+ * Get SPI reg value
+ * @returns SPI reg value
+ */
+uint16_t AD7689_Get();

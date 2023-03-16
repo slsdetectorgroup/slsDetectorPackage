@@ -1577,7 +1577,7 @@ DetectorImpl::verifyRxPort(const std::string &receiver,
 
     // remove the ones without a hostname
     rxHostnames.erase(std::remove_if(rxHostnames.begin(), rxHostnames.end(),
-                                     [](const auto& x) {
+                                     [](const std::pair<std::string, int> &x) {
                                          return (x.first == "none" ||
                                                  x.first.empty());
                                      }),
@@ -1602,13 +1602,13 @@ DetectorImpl::verifyRxPort(const std::vector<std::string> &names) const {
 
     // extract ports
     std::vector<std::pair<std::string, int>> rxHostnames;
-    for(const auto& name : names){
+    for (const auto &name : names) {
         rxHostnames.push_back(ParseHostPort(name));
     }
 
     // remove the ones without a hostname
     rxHostnames.erase(std::remove_if(rxHostnames.begin(), rxHostnames.end(),
-                                     [](const auto& x) {
+                                     [](const std::pair<std::string, int> &x) {
                                          return (x.first == "none" ||
                                                  x.first.empty());
                                      }),

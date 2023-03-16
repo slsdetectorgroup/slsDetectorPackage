@@ -1742,6 +1742,7 @@ int Feb_Control_WriteRegister_BitMask(uint32_t offset, uint32_t data,
 
 int Feb_Control_ReadRegister_BitMask(uint32_t offset, uint32_t *retval,
                                      uint32_t bitmask) {
+        
     uint32_t actualOffset = offset;
     char side[2][10] = {"right", "left"};
     unsigned int addr[2] = {Feb_Control_rightAddress, Feb_Control_leftAddress};
@@ -2204,6 +2205,21 @@ int Feb_Control_GetRightFPGATemp() {
         1000; // Static conversation, copied from xps sysmon standalone driver
     // division done in client to send int over network
     return (int)temperature;
+}
+
+int Feb_Control_GetFPGAHardwareVersion(int *retval) {
+    if (!Feb_Control_activated) {
+        return 0;
+    }
+    unsigned int value = 0;
+    if (!Feb_Control_ReadRegister_BitMask(FEB_REG_STATUS, &value,
+                                           FEB_REG_STATUS_FX30_MSK)) {
+        LOG(logERROR,
+            ("Trouble reading FEB_REG_STATUS reg to feb hardware version\n"));
+        return 0;
+    }
+    *retval = (value >> FEB_REG_STATUS_FX30_OFST);
+    return 1;
 }
 
 int64_t Feb_Control_GetFrontLeftFirmwareVersion() {

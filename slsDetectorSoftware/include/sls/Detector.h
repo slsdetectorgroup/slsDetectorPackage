@@ -85,7 +85,6 @@ class Detector {
 
     Result<std::string> getDetectorServerVersion(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Gotthard2][Myhten3][Gotthard][Ctb] */
     Result<std::string> getHardwareVersion(Positions pos = {}) const;
 
     Result<std::string> getKernelVersion(Positions pos = {}) const;

@@ -1132,7 +1132,7 @@ int Implementation::getUDPSocketBufferSize() const {
 
 void Implementation::setUDPSocketBufferSize(const int s) {
     size_t listSize = listener.size();
-    if ((generalData->detType == JUNGFRAU || generalData->detType == MOENCH || 
+    if ((generalData->detType == JUNGFRAU || generalData->detType == MOENCH ||
          generalData->detType == GOTTHARD2) &&
         (int)listSize != generalData->numUDPInterfaces) {
         throw RuntimeError("Number of Interfaces " +

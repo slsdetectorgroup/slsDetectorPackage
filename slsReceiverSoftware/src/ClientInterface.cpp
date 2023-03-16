@@ -402,7 +402,8 @@ int ClientInterface::setup_receiver(Interface &socket) {
             impl()->setDynamicRange(arg.dynamicRange);
         }
         impl()->setTimingMode(arg.timMode);
-        if (detType == EIGER || detType == CHIPTESTBOARD || detType == MYTHEN3) {
+        if (detType == EIGER || detType == CHIPTESTBOARD ||
+            detType == MYTHEN3) {
             impl()->setTenGigaEnable(arg.tenGiga);
         }
         if (detType == CHIPTESTBOARD) {

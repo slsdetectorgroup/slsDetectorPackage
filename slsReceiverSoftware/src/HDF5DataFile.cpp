@@ -14,14 +14,14 @@ HDF5DataFile::HDF5DataFile(int index, std::mutex *hdf5Lib)
         "frame number",
         "exp length or sub exposure time",
         "packets caught",
-        "bunch id",
+        "detector specific 1",
         "timestamp",
         "mod id",
         "row",
         "column",
-        "reserved",
-        "debug",
-        "round robin number",
+        "detector specific 2",
+        "detector specific 3",
+        "detector specific 4",
         "detector type",
         "detector header version",
         "packets caught bit mask",
@@ -317,7 +317,7 @@ void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
         dataSetPara[2]->write(&header.packetNumber, parameterDataTypes[2],
                               memspace, *dataSpacePara);
         i = 3;
-        dataSetPara[3]->write(&header.bunchId, parameterDataTypes[3], memspace,
+        dataSetPara[3]->write(&header.detSpec1, parameterDataTypes[3], memspace,
                               *dataSpacePara);
         i = 4;
         dataSetPara[4]->write(&header.timestamp, parameterDataTypes[4],
@@ -332,13 +332,13 @@ void HDF5DataFile::WriteParameterDatasets(const uint64_t currentFrameNumber,
         dataSetPara[7]->write(&header.column, parameterDataTypes[7], memspace,
                               *dataSpacePara);
         i = 8;
-        dataSetPara[8]->write(&header.reserved, parameterDataTypes[8], memspace,
+        dataSetPara[8]->write(&header.detSpec2, parameterDataTypes[8], memspace,
                               *dataSpacePara);
         i = 9;
-        dataSetPara[9]->write(&header.debug, parameterDataTypes[9], memspace,
+        dataSetPara[9]->write(&header.detSpec3, parameterDataTypes[9], memspace,
                               *dataSpacePara);
         i = 10;
-        dataSetPara[10]->write(&header.roundRNumber, parameterDataTypes[10],
+        dataSetPara[10]->write(&header.detSpec4, parameterDataTypes[10],
                                memspace, *dataSpacePara);
         i = 11;
         dataSetPara[11]->write(&header.detType, parameterDataTypes[11],

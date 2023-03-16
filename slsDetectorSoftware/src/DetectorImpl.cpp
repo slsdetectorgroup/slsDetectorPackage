@@ -1550,13 +1550,10 @@ DetectorImpl::verifyRxPort(const std::string &receiver,
         return make_pair(receiver, 0);
     }
     // extract port
-    int port = 0;
-    std::string host = receiver;
-    auto res = split(host, ':');
-    if (res.size() > 1) {
-        host = res[0];
-        port = std::stoi(res[1]);
-    }
+    // C++17 could be auto [host, port] = ParseHostPort(receiver);
+    auto res = ParseHostPort(receiver);
+    std::string host = res.first;
+    int port = res.second;
 
     // rx hostname and port for given positions
     if (positions.empty() || (positions.size() == 1 && positions[0] == -1)) {
@@ -1580,18 +1577,14 @@ DetectorImpl::verifyRxPort(const std::string &receiver,
 
     // remove the ones without a hostname
     rxHostnames.erase(std::remove_if(rxHostnames.begin(), rxHostnames.end(),
-                                     [](const std::pair<std::string, int> x) {
+                                     [](const auto& x) {
                                          return (x.first == "none" ||
                                                  x.first.empty());
                                      }),
                       rxHostnames.end());
 
     // verify no duplicates
-    std::sort(std::begin(rxHostnames), std::end(rxHostnames));
-    bool hasDuplicates =
-        std::unique(std::begin(rxHostnames), std::end(rxHostnames)) !=
-        std::end(rxHostnames);
-    if (hasDuplicates) {
+    if (hasDuplicates(rxHostnames)) {
         throw RuntimeError("Cannot set rx_hostname due to duplicate "
                            "hostname-port number pairs.");
     }
@@ -1608,33 +1601,20 @@ DetectorImpl::verifyRxPort(const std::vector<std::string> &names) const {
     }
 
     // extract ports
-    std::vector<std::pair<std::string, int>> rxHostnames(size());
-    for (int i = 0; i != size(); ++i) {
-        int port = 0;
-        std::string host = names[i];
-        auto res = split(host, ':');
-        if (res.size() > 1) {
-            host = res[0];
-            port = std::stoi(res[1]);
-        }
-        rxHostnames[i].first = host;
-        rxHostnames[i].second = port;
+    std::vector<std::pair<std::string, int>> rxHostnames;
+    for(const auto& name : names){
+        rxHostnames.push_back(ParseHostPort(name));
     }
 
     // remove the ones without a hostname
     rxHostnames.erase(std::remove_if(rxHostnames.begin(), rxHostnames.end(),
-                                     [](const std::pair<std::string, int> x) {
+                                     [](const auto& x) {
                                          return (x.first == "none" ||
                                                  x.first.empty());
                                      }),
                       rxHostnames.end());
 
-    // verify no duplicates
-    std::vector<std::pair<std::string, int>> hostCopy(rxHostnames);
-    std::sort(std::begin(hostCopy), std::end(hostCopy));
-    bool hasDuplicates = std::unique(std::begin(hostCopy),
-                                     std::end(hostCopy)) != std::end(hostCopy);
-    if (hasDuplicates) {
+    if (hasDuplicates(rxHostnames)) {
         throw RuntimeError("Cannot set rx_hostname due to duplicate "
                            "hostname-port number pairs.");
     }

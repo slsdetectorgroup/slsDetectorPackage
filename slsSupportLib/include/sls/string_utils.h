@@ -6,6 +6,8 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <utility>
+
 
 namespace sls {
 
@@ -58,5 +60,7 @@ bool is_int(const std::string &s);
 
 bool replace_first(std::string *s, const std::string &substr,
                    const std::string &repl);
+
+std::pair<std::string, int> ParseHostPort(const std::string& s);
 
 } // namespace sls

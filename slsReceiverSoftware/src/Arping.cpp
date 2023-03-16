@@ -7,6 +7,7 @@
 #include <signal.h>
 #include <thread>
 #include <unistd.h>
+#include<sys/wait.h>
 
 namespace sls {
 
@@ -15,6 +16,10 @@ namespace sls {
 #include <sys/syscall.h>
 #define gettid() syscall(SYS_gettid)
 #endif
+
+void func(int signum) {
+    wait(NULL);
+}
 
 Arping::Arping() {}
 
@@ -44,10 +49,11 @@ pid_t Arping::GetProcessId() const { return childPid; }
 bool Arping::IsRunning() const { return runningFlag; }
 
 void Arping::StartProcess() {
-    TestCommands();
-
     // to prevent zombies from child processes being killed
-    signal(SIGCHLD, SIG_IGN);
+    signal(SIGCHLD, func);
+
+    // test once to throw exception if arping failed
+    TestForErrors();
 
     // Needs to be a fork and udp socket deleted after Listening threads
     // done running to prevent udp socket cannot bind because of popen
@@ -90,7 +96,7 @@ void Arping::ProcessExecution() {
     }
 }
 
-void Arping::TestCommands() {
+void Arping::TestForErrors() {
     // atleast one interface must be set up
     if (commands[0].empty()) {
         throw RuntimeError(
@@ -116,7 +122,7 @@ std::string Arping::ExecuteCommands() {
         FILE *sysFile = popen(cmd.c_str(), "r");
         if (sysFile == NULL) {
             std::ostringstream os;
-            os << "Could not Arping [" << cmd << " ] : Popen fail";
+            os << "Could not Arping (" << cmd << " ) : Popen fail (" << strerror(errno) << ')';
             return os.str();
         }
 
@@ -128,7 +134,7 @@ std::string Arping::ExecuteCommands() {
         // check exit status of command
         if (pclose(sysFile)) {
             std::ostringstream os;
-            os << "Could not arping[" << cmd << "] : " << output;
+            os << "Could not arping (" << cmd << ") : " <<  strerror(errno);
             return os.str();
         } else {
             LOG(logDEBUG) << output;

@@ -635,7 +635,7 @@ void MasterAttributes::GetMoenchBinaryAttributes(
 }
 
 #ifdef HDF5C
-void MasterAttributes::WriteMoenchuHDF5Attributes(H5::H5File *fd,
+void MasterAttributes::WriteMoenchHDF5Attributes(H5::H5File *fd,
                                                   H5::Group *group) {
     MasterAttributes::WriteHDF5Exptime(fd, group);
     MasterAttributes::WriteHDF5Period(fd, group);

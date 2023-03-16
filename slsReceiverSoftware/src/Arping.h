@@ -28,7 +28,7 @@ class Arping {
     void StopProcess();
 
   private:
-    void TestCommands();
+    void TestForErrors();
     std::string ExecuteCommands();
     void ProcessExecution();
 

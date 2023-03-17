@@ -31,7 +31,7 @@ alpha_wait = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 alpha_wait_rect = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
 
 # Loop colors and line styles (6 needed from 0 to 5)
-colors_loop = ['tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:ping', 'tab:grey']
+colors_loop = ['tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:grey']
 linestyles_loop = ['-.', '-.', '-.', '-.', '-.', '-.']
 alpha_loop = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 alpha_loop_rect = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2]

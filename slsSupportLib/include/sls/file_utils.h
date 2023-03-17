@@ -50,6 +50,8 @@ ssize_t getFileSize(FILE *fd, const std::string &prependErrorString);
 
 std::string getFileNameFromFilePath(const std::string &fpath);
 
+std::vector<int> getChannelsFromStringList(const std::vector<std::string> list);
+
 /** File can have # for comments.
  * Channels can be separated by spaces, commas
  * and ranges provided using ':', eg. 23:29

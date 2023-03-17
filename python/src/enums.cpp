@@ -286,6 +286,11 @@ void init_enums(py::module &m) {
         .value("BOTTOM", slsDetectorDefs::portPosition::BOTTOM)
         .export_values();
 
+    py::enum_<slsDetectorDefs::fpgaPosition>(Defs, "fpgaPosition")
+        .value("FRONT_LEFT", slsDetectorDefs::fpgaPosition::FRONT_LEFT)
+        .value("FRONT_RIGHT", slsDetectorDefs::fpgaPosition::FRONT_RIGHT)
+        .export_values();
+
     py::enum_<slsDetectorDefs::streamingInterface>(Defs, "streamingInterface",
                                                    py::arithmetic())
         .value("NONE", slsDetectorDefs::streamingInterface::NONE)

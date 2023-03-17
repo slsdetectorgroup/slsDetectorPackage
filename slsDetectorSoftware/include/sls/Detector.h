@@ -78,9 +78,13 @@ class Detector {
 
     Result<int64_t> getFirmwareVersion(Positions pos = {}) const;
 
+    /** [Eiger] Options:  FRONT_LEFT, FRONT_RIGHT */
+    Result<int64_t>
+    getFrontEndFirmwareVersion(const defs::fpgaPosition fpgaPosition,
+                               Positions pos = {}) const;
+
     Result<std::string> getDetectorServerVersion(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench][Gotthard2][Myhten3][Gotthard][Ctb] */
     Result<std::string> getHardwareVersion(Positions pos = {}) const;
 
     Result<std::string> getKernelVersion(Positions pos = {}) const;
@@ -219,6 +223,17 @@ class Detector {
      * [Mythen3] Also does trimming
      */
     void setBadChannels(const std::string &fname, Positions pos = {});
+
+    /** [Gotthard2][Mythen3] */
+    Result<std::vector<int>> getBadChannels(Positions pos = {}) const;
+
+    /** [Gotthard2][Mythen3] Empty list resets bad channel list */
+    void setBadChannels(const std::vector<int> list, Positions pos = {});
+
+    /** [Gotthard2][Mythen3] Size of list should match number of modules. Each
+     * value is at module level and can start at 0. Empty vector resets bad
+     * channel list. */
+    void setBadChannels(const std::vector<std::vector<int>> list);
 
     Result<bool> isVirtualDetectorServer(Positions pos = {}) const;
     ///@}
@@ -932,9 +947,10 @@ class Detector {
     /** Client IP Address that last communicated with the receiver */
     Result<IpAddr> getRxLastClientIP(Positions pos = {}) const;
 
-    /** Get thread ids from the receiver in order of [parent, tcp, listener 0,
-     * processor 0, streamer 0, listener 1, processor 1, streamer 1, arping]. If
-     * no streamer yet or there is no second interface, it gives 0 in its place.
+    /** Get kernel thread ids from the receiver in order of [parent, tcp,
+     * listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1,
+     * arping]. If no streamer yet or there is no second interface, it gives 0
+     * in its place.
      */
     Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
     getRxThreadIds(Positions pos = {}) const;
@@ -1285,27 +1301,27 @@ class Detector {
      * disabled. It is only possible for chipv1.1.*/
     void setComparatorDisableTime(ns t, Positions pos = {});
 
-    /** [Jungfrau][Moench] Advanced TODO naming */
+    /** [Jungfrau] Advanced TODO naming */
     Result<int> getNumberOfAdditionalStorageCells(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Advanced \n
+    /** [Jungfrau] Advanced \n
      * Only for chipv1.0. Options: 0 - 15. Default: 0. \n
      * The #images = #frames x #triggers x (#storagecells + 1) */
     void setNumberOfAdditionalStorageCells(int value);
 
-    /** [Jungfrau][Moench] Advanced */
+    /** [Jungfrau] Advanced */
     Result<int> getStorageCellStart(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Advanced. Sets the storage cell storing the first
+    /** [Jungfrau] Advanced. Sets the storage cell storing the first
      * acquisition of the series. Options: 0-max. max is 15 (default) for
      * chipv1.0 and 3 (default) for chipv1.1.
      */
     void setStorageCellStart(int cell, Positions pos = {});
 
-    /** [Jungfrau][Moench] Advanced*/
+    /** [Jungfrau] Advanced*/
     Result<ns> getStorageCellDelay(Positions pos = {}) const;
 
-    /** [Jungfrau][Moench] Advanced \n Additional time delay between 2
+    /** [Jungfrau] Advanced \n Additional time delay between 2
      * consecutive exposures in burst mode. \n Options: (0-1638375 ns
      * (resolution of 25ns)\n Only applicable for chipv1.0.
      */
@@ -1464,8 +1480,9 @@ class Detector {
     Result<int> getADCConfiguration(const int chipIndex, const int adcIndex,
                                     Positions pos = {}) const;
 
-    /** [Gotthard2] configures one chip at a time for specific adc, chipIndex
-     * and adcIndex is -1 for all */
+    /** [Gotthard2] configures one chip at a time for specific adc, chipIndex.
+     * -1 for all. Setting specific chip index not implemented in hardware yet
+     */
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              const int value, Positions pos = {});
 

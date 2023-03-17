@@ -87,7 +87,7 @@ void basictests() {
 #endif
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
-               "Could not map to memory. Dangerous to continue.\n");
+               "Could not map to memory. Cannot proceed. Check Firmware.\n");
         LOG(logERROR, (initErrorMessage));
         initError = FAIL;
     }
@@ -97,7 +97,7 @@ void basictests() {
         ((checkType() == FAIL) || (testFpga() == FAIL) ||
          (testBus() == FAIL))) {
         strcpy(initErrorMessage, "Could not pass basic tests of FPGA and bus. "
-                                 "Dangerous to continue.\n");
+                                 "Cannot proceed. Check Firmware.\n");
         LOG(logERROR, ("%s\n\n", initErrorMessage));
         initError = FAIL;
         return;
@@ -381,7 +381,7 @@ void initStopServer() {
         if (mapCSP0() == FAIL) {
             initError = FAIL;
             strcpy(initErrorMessage,
-                   "Stop Server: Map Fail. Dangerous to continue. Goodbye!\n");
+                   "Stop Server: Map Fail. Cannot proceed. Check Firmware.\n");
             LOG(logERROR, (initErrorMessage));
             initCheckDone = 1;
             return;
@@ -1007,7 +1007,9 @@ int setDelayAfterTrigger(int64_t val) {
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
     val /= (1E-9 * CLK_FREQ);
-    val -= masterdefaultdelay;
+    if (master) {
+        val -= masterdefaultdelay;
+    }
     if (val != retval) {
         return FAIL;
     }

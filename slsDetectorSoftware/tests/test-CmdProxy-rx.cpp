@@ -145,7 +145,8 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
             REQUIRE(oss.str() != "rx_missingpackets [0, 0]\n");
         }
     }
-    {
+    auto det_type = det.getDetectorType().squash();
+    if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
         // 0 missing packets (takes into account that acquisition is stopped)
         det.startReceiver();
         det.startDetector();

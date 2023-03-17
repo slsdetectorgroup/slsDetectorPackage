@@ -108,15 +108,15 @@ TEST_CASE("replace --help") {
     REQUIRE(s == "list");
 }
 
-TEST_CASE("port host"){
+TEST_CASE("port host") {
     std::string hostport = "localhost:1954";
     auto res = ParseHostPort(hostport);
     REQUIRE(res.first == "localhost");
     REQUIRE(res.second == 1954);
 }
 
-TEST_CASE("port missing"){
-    //TODO! is this the intended result?
+TEST_CASE("port missing") {
+    // TODO! is this the intended result?
     std::string host = "localhost";
     auto res = ParseHostPort(host);
     REQUIRE(res.first == "localhost");

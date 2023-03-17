@@ -250,7 +250,7 @@ void getServerVersion(char *version) { strcpy(version, APIMYTHEN3); }
 
 u_int64_t getFirmwareVersion() {
 #ifdef VIRTUAL
-    return 0;
+    return REQRD_FRMWRE_VRSN;
 #endif
     return ((bus_r(FPGA_VERSION_REG) & FPGA_COMPILATION_DATE_MSK) >>
             FPGA_COMPILATION_DATE_OFST);

@@ -54,7 +54,7 @@ class Implementation : private virtual slsDetectorDefs {
     void setThreadIds(const pid_t parentTid, const pid_t tcpTid);
     std::array<pid_t, NUM_RX_THREAD_IDS> getThreadIds() const;
     bool getArping() const;
-    pid_t getArpingThreadId() const;
+    pid_t getArpingProcessId() const;
     void setArping(const bool i, const std::vector<std::string> ips);
     ROI getReceiverROI() const;
     void setReceiverROI(const ROI arg);
@@ -323,7 +323,7 @@ class Implementation : private virtual slsDetectorDefs {
 
     // acquisition
     std::atomic<runStatus> status{IDLE};
-    bool stoppedFlag{false};
+    std::atomic<bool> stoppedFlag{false};
     scanParameters scanParams{};
 
     // network configuration (UDP)

@@ -7,6 +7,7 @@
 #include "sls/ToString.h"
 #include "sls/bit_utils.h"
 #include "sls/container_utils.h"
+#include "sls/file_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
@@ -276,25 +277,34 @@ std::string CmdProxy::Versions(int action) {
         }
         bool eiger = (det->getDetectorType().squash() == defs::EIGER);
         auto t = det->getFirmwareVersion(std::vector<int>{det_id});
-        os << "\nType     : " << OutString(det->getDetectorType())
-           << "\nRelease  : " << det->getPackageVersion() << std::hex
-           << "\nClient   : " << det->getClientVersion();
-        os << "\nFirmware : ";
+        os << "\nType            : " << OutString(det->getDetectorType())
+           << "\nRelease         : " << det->getPackageVersion() << std::hex
+           << "\nClient          : " << det->getClientVersion();
+
         if (eiger) {
-            os << OutString(t);
+            os << "\nFirmware (Beb)  : "
+               << OutString(det->getFirmwareVersion(std::vector<int>{det_id}));
+            os << "\nFirmware (Febl) : "
+               << OutString(det->getFrontEndFirmwareVersion(
+                      defs::FRONT_LEFT, std::vector<int>{det_id}));
+            os << "\nFirmware (Febr) : "
+               << OutString(det->getFrontEndFirmwareVersion(
+                      defs::FRONT_RIGHT, std::vector<int>{det_id}));
         } else {
-            os << OutStringHex(t);
+            os << "\nFirmware        : "
+               << OutStringHex(
+                      det->getFirmwareVersion(std::vector<int>{det_id}));
         }
-        os << "\nServer   : "
-           << OutString(
-                  det->getDetectorServerVersion(std::vector<int>{det_id}));
-        if (!eiger)
-            os << "\nHardware : "
-               << OutString(det->getHardwareVersion(std::vector<int>{det_id}));
-        os << "\nKernel   : "
-           << OutString(det->getKernelVersion({std::vector<int>{det_id}}));
+
+        os << "\nServer          : "
+           << OutString(det->getDetectorServerVersion(std::vector<int>{det_id}))
+           << "\nKernel          : "
+           << OutString(det->getKernelVersion({std::vector<int>{det_id}}))
+           << "\nHardware        : "
+           << OutString(det->getHardwareVersion(std::vector<int>{det_id}));
+
         if (det->getUseReceiverFlag().squash(true)) {
-            os << "\nReceiver : "
+            os << "\nReceiver        : "
                << OutString(det->getReceiverVersion(std::vector<int>{det_id}));
         }
         os << std::dec << '\n';
@@ -549,9 +559,9 @@ std::string CmdProxy::BadChannels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Gotthard2][Mythen3] Sets the bad channels (from "
-              "file of bad channel numbers) to be masked out."
-              "\n\t[Mythen3] Also does trimming"
+        os << "[fname|none|0]\n\t[Gotthard2][Mythen3] Sets the bad channels "
+              "(from file of bad channel numbers) to be masked out. None or 0 "
+              "unsets all the badchannels.\n\t[Mythen3] Also does trimming"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
@@ -560,10 +570,25 @@ std::string CmdProxy::BadChannels(int action) {
         det->getBadChannels(args[0], std::vector<int>{det_id});
         os << "successfully retrieved" << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 1) {
+        bool parse = false;
+        if (args.size() == 0) {
             WrongNumberOfParameters(1);
+        } else if (args.size() == 1) {
+            if (args[0] == "none" || args[0] == "0") {
+                det->setBadChannels(std::vector<int>{},
+                                    std::vector<int>{det_id});
+            } else if (args[0].find(".") != std::string::npos) {
+                det->setBadChannels(args[0], std::vector<int>{det_id});
+            } else {
+                parse = true;
+            }
         }
-        det->setBadChannels(args[0], std::vector<int>{det_id});
+        // parse multi args or single one with range or single value
+        if (parse || args.size() > 1) {
+            // get channels
+            auto list = getChannelsFromStringList(args);
+            det->setBadChannels(list, std::vector<int>{det_id});
+        }
         os << "successfully loaded" << '\n';
     } else {
         throw RuntimeError("Unknown action");
@@ -1473,13 +1498,28 @@ std::string CmdProxy::Trigger(int action) {
 
 /* Network Configuration (Detector<->Receiver) */
 
-IpAddr CmdProxy::getIpFromAuto() {
+IpAddr CmdProxy::getDstIpFromAuto() {
     std::string rxHostname =
         det->getRxHostname(std::vector<int>{det_id}).squash("none");
     // Hostname could be ip try to decode otherwise look up the hostname
     auto val = IpAddr{rxHostname};
     if (val == 0) {
         val = HostnameToIp(rxHostname.c_str());
+    }
+    return val;
+}
+
+IpAddr CmdProxy::getSrcIpFromAuto() {
+    if (det->getDetectorType().squash() == defs::GOTTHARD) {
+        throw RuntimeError(
+            "Cannot use 'auto' for udp_srcip for GotthardI Detector.");
+    }
+    std::string hostname =
+        det->getHostname(std::vector<int>{det_id}).squash("none");
+    // Hostname could be ip try to decode otherwise look up the hostname
+    auto val = IpAddr{hostname};
+    if (val == 0) {
+        val = HostnameToIp(hostname.c_str());
     }
     return val;
 }
@@ -1494,7 +1534,7 @@ UdpDestination CmdProxy::getUdpEntry() {
         std::string value = it.substr(pos + 1);
         if (key == "ip") {
             if (value == "auto") {
-                auto val = getIpFromAuto();
+                auto val = getDstIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip of detector " << det_id
                              << " to " << val;
                 udpDestination.ip = val;
@@ -1503,7 +1543,7 @@ UdpDestination CmdProxy::getUdpEntry() {
             }
         } else if (key == "ip2") {
             if (value == "auto") {
-                auto val = getIpFromAuto();
+                auto val = getDstIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id
                              << " to " << val;
                 udpDestination.ip2 = val;
@@ -1578,8 +1618,9 @@ std::string CmdProxy::UDPSourceIP(int action) {
         os << "[x.x.x.x] or auto\n\tIp address of the detector (source) udp "
               "interface. Must be same subnet as destination udp "
               "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will replace "
-              "with its own DHCP IP address. If 'auto' used, then ip is set to "
-              "ip of rx_hostname."
+              "with its own DHCP IP address. \n\tOne can also set this to "
+              "'auto' for 1 GbE data and virtual detectors. It will set to IP "
+              "of detector. Not available for GotthardI"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getSourceUDPIP(std::vector<int>{det_id});
@@ -1593,7 +1634,7 @@ std::string CmdProxy::UDPSourceIP(int action) {
         }
         IpAddr val;
         if (args[0] == "auto") {
-            val = getIpFromAuto();
+            val = getSrcIpFromAuto();
             LOG(logINFO) << "Setting udp_srcip of detector " << det_id << " to "
                          << val;
         } else {
@@ -1616,8 +1657,9 @@ std::string CmdProxy::UDPSourceIP2(int action) {
               "of the "
               "detector (source) udp interface 2. Must be same subnet as "
               "destination udp ip2.\n\t [Jungfrau][Moench] top half or inner "
-              "interface\n\t [Gotthard2] veto debugging. If 'auto' used, then "
-              "ip is set to ip of rx_hostname."
+              "interface\n\t [Gotthard2] veto debugging. \n\tOne can also set "
+              "this to 'auto' for 1 GbE data and virtual detectors. It will "
+              "set to IP of detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getSourceUDPIP2(std::vector<int>{det_id});
@@ -1631,7 +1673,7 @@ std::string CmdProxy::UDPSourceIP2(int action) {
         }
         IpAddr val;
         if (args[0] == "auto") {
-            val = getIpFromAuto();
+            val = getSrcIpFromAuto();
             LOG(logINFO) << "Setting udp_srcip2 of detector " << det_id
                          << " to " << val;
         } else {
@@ -1665,7 +1707,7 @@ std::string CmdProxy::UDPDestinationIP(int action) {
             WrongNumberOfParameters(1);
         }
         if (args[0] == "auto") {
-            auto val = getIpFromAuto();
+            auto val = getDstIpFromAuto();
             LOG(logINFO) << "Setting udp_dstip of detector " << det_id << " to "
                          << val;
             det->setDestinationUDPIP(val, std::vector<int>{det_id});
@@ -1702,7 +1744,7 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
             WrongNumberOfParameters(1);
         }
         if (args[0] == "auto") {
-            auto val = getIpFromAuto();
+            auto val = getDstIpFromAuto();
             LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id
                          << " to " << val;
             det->setDestinationUDPIP2(val, std::vector<int>{det_id});
@@ -2373,7 +2415,7 @@ std::string CmdProxy::ConfigureADC(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[chip index 0-10, -1 for all] [adc index 0-31, -1 for all] [12 "
+        os << "[chip index 0-9, -1 for all] [adc index 0-31, -1 for all] [7 "
               "bit configuration value in hex]\n\t[Gotthard2] Sets "
               "configuration for specific chip and adc, but configures 1 chip "
               "(all adcs for that chip) at a time."
@@ -2852,6 +2894,8 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
         if (cmd != "patlimits") {
             GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
                                       nPutArgs);
+            if (cmd != "patloop0" && cmd != "patloop1" && cmd != "patloop2")
+                os << level << ' ';
         }
         if (action == defs::GET_ACTION) {
             auto t =
@@ -2891,6 +2935,8 @@ std::string CmdProxy::PatternLoopCycles(int action) {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
         GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
                                   nPutArgs);
+        if (cmd != "patnloop0" && cmd != "patnloop1" && cmd != "patnloop2")
+            os << level << ' ';
         if (action == defs::GET_ACTION) {
             auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
             os << OutString(t) << '\n';
@@ -2925,6 +2971,8 @@ std::string CmdProxy::PatternWaitAddress(int action) {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
         GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
                                   nPutArgs);
+        if (cmd != "patwait0" && cmd != "patwait1" && cmd != "patwait2")
+            os << level << ' ';
         if (action == defs::GET_ACTION) {
             auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
             os << OutStringHex(t, 4) << '\n';
@@ -2958,6 +3006,9 @@ std::string CmdProxy::PatternWaitTime(int action) {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
         GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                                   nPutArgs);
+        if (cmd != "patwaittime0" && cmd != "patwaittime1" &&
+            cmd != "patwaittime2")
+            os << level << ' ';
         if (action == defs::GET_ACTION) {
             auto t = det->getPatternWaitTime(level, std::vector<int>{det_id});
             os << OutString(t) << '\n';

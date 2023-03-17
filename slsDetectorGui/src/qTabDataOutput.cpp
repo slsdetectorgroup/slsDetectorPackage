@@ -180,8 +180,10 @@ void qTabDataOutput::BrowseOutputDir() {
     LOG(logDEBUG) << "Browsing output directory";
     QString directory = QFileDialog::getExistingDirectory(
         this, tr("Choose Output Directory "), dispOutputDir->text());
-    if (!directory.isEmpty())
+    if (!directory.isEmpty()) {
         dispOutputDir->setText(directory);
+        ForceSetOutputDir();
+    }
 }
 
 void qTabDataOutput::SetOutputDir(bool force) {

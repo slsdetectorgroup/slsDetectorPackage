@@ -1155,7 +1155,8 @@ class CmdProxy {
     std::string Scan(int action);
     std::string Trigger(int action);
     /* Network Configuration (Detector<->Receiver) */
-    IpAddr getIpFromAuto();
+    IpAddr getDstIpFromAuto();
+    IpAddr getSrcIpFromAuto();
     UdpDestination getUdpEntry();
     std::string UDPDestinationList(int action);
     std::string UDPSourceIP(int action);
@@ -1243,7 +1244,8 @@ class CmdProxy {
 
     GET_COMMAND(hardwareversion, getHardwareVersion,
                 "\n\t[Jungfrau][Gotthard2][Myhten3][Gotthard][Ctb][Moench] "
-                "Hardware version of detector.");
+                "Hardware version of detector. \n\t[Eiger] Hardware version of "
+                "front FPGA on detector.");
 
     GET_COMMAND(
         kernelversion, getKernelVersion,
@@ -1782,11 +1784,12 @@ class CmdProxy {
         rx_lastclient, getRxLastClientIP,
         "\n\tClient IP Address that last communicated with the receiver.");
 
-    GET_COMMAND(rx_threads, getRxThreadIds,
-                "\n\tGet thread ids from the receiver in order of [parent, "
-                "tcp, listener 0, processor 0, streamer 0, listener 1, "
-                "processor 1, streamer 1, arping]. If no streamer yet or there "
-                "is no second interface, it gives 0 in its place.");
+    GET_COMMAND(
+        rx_threads, getRxThreadIds,
+        "\n\tGet kernel thread ids from the receiver in order of [parent, "
+        "tcp, listener 0, processor 0, streamer 0, listener 1, "
+        "processor 1, streamer 1, arping]. If no streamer yet or there "
+        "is no second interface, it gives 0 in its place.");
 
     INTEGER_COMMAND_VEC_ID(rx_arping, getRxArping, setRxArping, StringTo<int>,
                            "[0, 1]\n\tStarts a thread in slsReceiver to arping "
@@ -2000,27 +2003,22 @@ class CmdProxy {
     INTEGER_COMMAND_SET_NOID_GET_ID(
         extrastoragecells, getNumberOfAdditionalStorageCells,
         setNumberOfAdditionalStorageCells, StringTo<int>,
-        "[0-15]\n\t[Jungfrau][Moench] Only for chipv1.0. Number of additional "
-        "storage "
-        "cells. Default is "
-        "0. For advanced users only. \n\tThe #images = #frames x #triggers x "
-        "(#extrastoragecells + 1).");
+        "[0-15]\n\t[Jungfrau] Only for chipv1.0. Number of additional storage "
+        "cells. Default is 0. For advanced users only. \n\tThe #images = "
+        "#frames x #triggers x (#extrastoragecells + 1).");
 
     INTEGER_COMMAND_VEC_ID(
         storagecell_start, getStorageCellStart, setStorageCellStart,
         StringTo<int>,
-        "[0-max]\n\t[Jungfrau][Moench] Storage cell that stores the first "
-        "acquisition "
+        "[0-max]\n\t[Jungfrau] Storage cell that stores the first acquisition "
         "of the series. max is 15 (default) for chipv1.0 and 3 (default) for "
         "chipv1.1. For advanced users only.");
 
-    TIME_COMMAND(
-        storagecell_delay, getStorageCellDelay, setStorageCellDelay,
-        "[duration (0-1638375 ns)] [(optional unit) "
-        "ns|us|ms|s]\n\t[Jungfrau][Moench] "
-        "Additional time delay between 2 consecutive exposures in burst mode "
-        "(resolution of 25ns). Only applicable for chipv1.0. For advanced "
-        "users only.");
+    TIME_COMMAND(storagecell_delay, getStorageCellDelay, setStorageCellDelay,
+                 "[duration (0-1638375 ns)] [(optional unit) "
+                 "ns|us|ms|s]\n\t[Jungfrau] Additional time delay between 2 "
+                 "consecutive exposures in burst mode (resolution of 25ns). "
+                 "Only applicable for chipv1.0. For advanced users only.");
 
     INTEGER_COMMAND_VEC_ID(
         gainmode, getGainMode, setGainMode, StringTo<slsDetectorDefs::gainMode>,

@@ -34,6 +34,7 @@ set( PYTHON_FILES
     slsdet/eiger.py
     slsdet/enums.py
     slsdet/errors.py
+    slsdet/gaincaps.py
     slsdet/gotthard.py
     slsdet/pattern.py
     slsdet/gotthard2.py

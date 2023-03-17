@@ -8,7 +8,7 @@ Testing functions from utils.py
 
 import pytest
 from slsdet.utils import *
-from slsdet import IpAddr, MacAddr
+from slsdet import IpAddr, MacAddr, DurationWrapper
 import datetime as dt
 import pathlib
 from pathlib import Path
@@ -22,7 +22,11 @@ def test_iterable():
 
 
 def test_reduce_time_to_single_value_from_list():
-    t = 3 * [dt.timedelta(seconds=1)]
+    t = [dt.timedelta(seconds=1) for i in range(3)]
+    assert reduce_time(t) == 1
+
+def test_reduce_time_to_single_value_from_list_DurationWrapper():
+    t = [DurationWrapper(1) for i in range(3)]
     assert reduce_time(t) == 1
 
 
@@ -82,6 +86,12 @@ def test_all_equal_str():
 def test_all_equal_str_fails():
     assert all_equal('aaab') == False
 
+
+def test_all_equal_DurationWrapper():
+    assert all_equal([DurationWrapper(1), DurationWrapper(1)])
+
+def test_all_equal_DurationWrapper_fail():
+    assert not all_equal([DurationWrapper(1), DurationWrapper(2)])
 
 def test_element_if_equal_int():
     assert element_if_equal([5, 5]) == 5
@@ -342,3 +352,32 @@ def test_merge_args_tuple():
 
 def test_merge_args_dict_with_tuple():
     assert merge_args({0: (1,2)}, 3) == ({0: (1,2,3)},)
+
+
+def test_hostname_to_list():
+    s = "localhost"
+    r = hostname_list(s)
+    assert r == [s]
+
+def test_hostname_to_list_passthrough():
+    args = ["localhost"]
+    ret = hostname_list(args)
+    assert ret == args
+
+    args = ("localhost",)
+    ret = hostname_list(args)
+    assert ret == args
+
+def test_splitting_hostname():
+    args = 'apple+banana+pear+'
+    ret = hostname_list(args)
+    assert ret == ['apple', 'banana', 'pear']
+
+    #not sensitive to trailing +
+    args = 'apple+banana+pear'
+    ret = hostname_list(args)
+    assert ret == ['apple', 'banana', 'pear']
+
+def test_hostame_throws_on_wrong_args():
+    with pytest.raises(Exception) as e:
+        hostname_list(5)

@@ -27,15 +27,18 @@ UdpRxSocket::UdpRxSocket(int port, ssize_t packet_size, const char *hostname,
     const std::string portname = std::to_string(port);
     if (getaddrinfo(hostname, portname.c_str(), &hints, &res)) {
         throw RuntimeError("Failed at getaddrinfo with " +
-                           std::string(hostname));
+                           std::string(hostname) + " [" +
+                           std::string(strerror(errno)) + ']');
     }
     sockfd_ = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (sockfd_ == -1) {
-        throw RuntimeError("Failed to create UDP RX socket");
+        throw RuntimeError("Failed to create UDP RX socket [" +
+                           std::string(strerror(errno)) + ']');
     }
     if (bind(sockfd_, res->ai_addr, res->ai_addrlen) == -1) {
         close(sockfd_);
-        throw RuntimeError("Failed to bind UDP RX socket");
+        throw RuntimeError("Failed to bind UDP RX socket [" +
+                           std::string(strerror(errno)) + ']');
     }
     freeaddrinfo(res);
 
@@ -74,13 +77,15 @@ int UdpRxSocket::getBufferSize() const {
     int ret = 0;
     socklen_t optlen = sizeof(ret);
     if (getsockopt(sockfd_, SOL_SOCKET, SO_RCVBUF, &ret, &optlen) == -1)
-        throw RuntimeError("Could not get socket buffer size");
+        throw RuntimeError("Could not get socket buffer size [" +
+                           std::string(strerror(errno)) + ']');
     return ret;
 }
 
 void UdpRxSocket::setBufferSize(int size) {
     if (setsockopt(sockfd_, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size)))
-        throw RuntimeError("Could not set socket buffer size");
+        throw RuntimeError("Could not set socket buffer size [" +
+                           std::string(strerror(errno)) + ']');
 }
 
 void UdpRxSocket::Shutdown() {

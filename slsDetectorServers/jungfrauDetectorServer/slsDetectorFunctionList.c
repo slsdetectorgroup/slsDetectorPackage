@@ -82,7 +82,7 @@ void basictests() {
 #endif
     if (mapCSP0() == FAIL) {
         strcpy(initErrorMessage,
-               "Could not map to memory. Dangerous to continue.\n");
+               "Could not map to memory. Cannot proceed. Check Firmware.\n");
         LOG(logERROR, (initErrorMessage));
         initError = FAIL;
     }
@@ -91,8 +91,10 @@ void basictests() {
     if ((!debugflag) && (!updateFlag) &&
         ((checkType() == FAIL) || (testFpga() == FAIL) ||
          (testBus() == FAIL))) {
-        strcpy(initErrorMessage, "Could not pass basic tests of FPGA and bus. "
-                                 "Dangerous to continue.\n");
+        sprintf(initErrorMessage,
+                "Could not pass basic tests of FPGA and bus. Cannot proceed. "
+                "Check Firmware. (Firmware version:0x%llx) \n",
+                getFirmwareVersion());
         LOG(logERROR, ("%s\n\n", initErrorMessage));
         initError = FAIL;
         return;
@@ -428,7 +430,7 @@ void initStopServer() {
         if (mapCSP0() == FAIL) {
             initError = FAIL;
             strcpy(initErrorMessage,
-                   "Stop Server: Map Fail. Dangerous to continue. Goodbye!\n");
+                   "Stop Server: Map Fail. Cannot proceed. Check Firmware.\n");
             LOG(logERROR, (initErrorMessage));
             initCheckDone = 1;
             return;
@@ -2798,6 +2800,7 @@ int softwareTrigger(int block) {
 
     LOG(logINFO, ("Sending Software Trigger\n"));
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_SOFTWARE_TRIGGER_MSK);
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_SOFTWARE_TRIGGER_MSK);
 
 #ifndef VIRTUAL
     // block till frame is sent out

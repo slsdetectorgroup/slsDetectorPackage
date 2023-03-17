@@ -61,6 +61,11 @@ void init_det(py::module &m) {
                        (Result<int64_t>(Detector::*)(sls::Positions) const) &
                            Detector::getFirmwareVersion,
                        py::arg() = Positions{});
+    CppDetectorApi.def("getFrontEndFirmwareVersion",
+                       (Result<int64_t>(Detector::*)(const defs::fpgaPosition,
+                                                     sls::Positions) const) &
+                           Detector::getFrontEndFirmwareVersion,
+                       py::arg(), py::arg() = Positions{});
     CppDetectorApi.def(
         "getDetectorServerVersion",
         (Result<std::string>(Detector::*)(sls::Positions) const) &
@@ -219,6 +224,21 @@ void init_det(py::module &m) {
         (void (Detector::*)(const std::string &, sls::Positions)) &
             Detector::setBadChannels,
         py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "getBadChannels",
+        (Result<std::vector<int>>(Detector::*)(sls::Positions) const) &
+            Detector::getBadChannels,
+        py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setBadChannels",
+        (void (Detector::*)(const std::vector<int>, sls::Positions)) &
+            Detector::setBadChannels,
+        py::arg(), py::arg() = Positions{});
+    CppDetectorApi.def(
+        "setBadChannels",
+        (void (Detector::*)(const std::vector<std::vector<int>>)) &
+            Detector::setBadChannels,
+        py::arg());
     CppDetectorApi.def("isVirtualDetectorServer",
                        (Result<bool>(Detector::*)(sls::Positions) const) &
                            Detector::isVirtualDetectorServer,

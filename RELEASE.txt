@@ -1,36 +1,43 @@
-SLS Detector Package Minor Release 7.0.0.rc1 released on 12.12.2021
-===================================================================
+SLS Detector Package Major Release 7.x.x released on xx.xx.2023
+===============================================================
 
-This document describes the differences between v7.0.0.rc1 and v6.1.2   
+This document describes the differences between v7.x.x and v7.0.0   
 
 
 
     CONTENTS
     --------
-    1.          New, Changed or Resolved Features
-        1.1.    Compilation
-        1.2.    Callback
-        1.3.    Python
-        1.4.    Client
-        1.5.    Detector Server
-        1.6.    Simulator
-        1.7.    Receiver
-    2.          On-board Detector Server Compatibility
-    3.          Firmware Requirements
-    4.          Kernel Requirements
-    5.          Download, Documentation & Support
+    1           New, Changed or Resolved Features
+        1.1     Compilation
+        1.2     Callback
+        1.3     Python
+        1.4     Client
+        1.5     Detector Server
+        1.6     Simulator
+        1.7     Receiver
+        1.8     Gui
+    2           On-board Detector Server Compatibility
+    3           Firmware Requirements
+    4           Kernel Requirements
+    5           Download, Documentation & Support
 
 
 
 
-1. New or Changed Features
-==========================
+1 New, Changed or Resolved Features
+=====================================
+
 
 - moench being made compatible with jungfrau 2.0 boards (jungfrau structure, away from ctb)
 - rx_hostname and port can be combo to one or to all, or vector or hostnames and ports. ignoring none or empty, then verifying no duplicates for the host port combo including from shared memory
+- eiger febl and febr in versions, ensure its the same as beb fw version
+- eiger hardware version fx30 and fx70 (versions command)
+- fixed rx_arping error
+- fix hdf5 compilation (detspec fields)
 
 
-2.  On-board Detector Server Compatibility
+
+2  On-board Detector Server Compatibility
 ==========================================
 
 
@@ -57,16 +64,16 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-3. Firmware Requirements
+3 Firmware Requirements
 ========================
 
 
-    Eiger       17.02.2022 (v30)
+    Eiger       20.02.2023 (v31)
     
     Jungfrau    04.11.2022 (v1.4, HW v1.0) 
                 03.11.2022 (v2.4, HW v2.0)
 
-    Mythen3     05.12.2022 (v1.4)
+    Mythen3     24.01.2023 (v1.4)
 
     Gotthard2   23.11.2022 (v0.3)
 
@@ -106,22 +113,22 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-4. Kernel Requirements
+4 Kernel Requirements
 ======================
 
     Blackfin 
-    ========
+    --------
     Latest version: Fri Oct 29 00:00:00 2021
     
     Older ones will work, but might have issues with programming firmware via
     the package.
 
     Nios
-    ====
+    -----
     Compatible version: Mon May 10 18:00:21 CEST 2021
 
     Kernel Upgrade
-    ==============
+    ---------------
     Eiger   via bit files
     Others  via command
 
@@ -134,7 +141,7 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
 
 
-5. Download, Documentation & Support
+5 Download, Documentation & Support
 ====================================
 
     Download
@@ -190,6 +197,9 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
         https://slsdetectorgroup.github.io/devdoc/udpheader.html
         https://slsdetectorgroup.github.io/devdoc/udpdetspec.html
 
+    slsReceiver Zmq Format:
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html#zmq-json-header-format
+
     TroubleShooting:
         https://slsdetectorgroup.github.io/devdoc/troubleshooting.html
         https://slsdetectorgroup.github.io/devdoc/troubleshooting.html#receiver-pc-tuning-options
@@ -206,4 +216,3 @@ This document describes the differences between v7.0.0.rc1 and v6.1.2
 
         dhanya.thattil@psi.ch
         erik.frojdh@psi.ch
-

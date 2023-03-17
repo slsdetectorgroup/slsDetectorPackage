@@ -1,0 +1,26 @@
+ROOTSYS=/opt/cern/v6/root
+#/afs/psi.ch/project/sls_det_sof/roottware/root_v5.34.23_sl6_64bit
+
+
+
+LIBZMQDIR = $(PWD)
+LIBZMQ =  -L$(LIBZMQDIR) -lzmq
+SHLIB_PATH=/opt/cern/v6/root/lib
+CMAKE_PREFIX_PATH=/opt/cern/v6/root
+DYLD_LIBRARY_PATH=/opt/cern/v6/root/lib
+
+
+INCDIR=   -I. -I../dataStructures ../tiffio/src/tiffIO.cpp -I../ -I../interpolations/ -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ -I../../libs/rapidjson/ -I../tiffio/include
+LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff   -O3  -std=c++11 -Wall -L../../build/bin/ -lSlsSupport
+#-L../../bin -lhdf5  -L.
+
+
+
+default: onlinedisp_zmq
+
+onlinedisp_zmq: onlinedisp_zmq.cpp onlinedisp_zmq.h 
+# flags from root-config --cflags --glibs
+	g++ -o onlinedisp_zmq onlinedisp_zmq.cpp  -I. -I$(ROOTSYS)/include -Wall -g -lm  -L. -lzmq -pthread -lrt -L$(ROOTSYS)/lib -lGui -lCore  -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix  -lPhysics -lMathCore -lThread -m64 $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) 
+
+#-lCint
+

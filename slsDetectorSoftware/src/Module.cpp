@@ -76,7 +76,7 @@ void Module::setHostname(const std::string &hostname,
         initialDetectorServerChecks();
         checkDetectorVersionCompatibility();
         LOG(logINFO) << "Module Version Compatibility - Success";
-    } catch (const DetectorError &e) {
+    } catch (const RuntimeError &e) {
         if (!initialChecks) {
             LOG(logWARNING) << "Bypassing Initial Checks at your own risk!";
         } else {
@@ -90,6 +90,12 @@ void Module::setHostname(const std::string &hostname,
 
 int64_t Module::getFirmwareVersion() const {
     return sendToDetector<int64_t>(F_GET_FIRMWARE_VERSION);
+}
+
+int64_t
+Module::getFrontEndFirmwareVersion(const fpgaPosition fpgaPosition) const {
+    return sendToDetector<int64_t>(F_GET_FRONTEND_FIRMWARE_VERSION,
+                                   fpgaPosition);
 }
 
 std::string Module::getControlServerLongVersion() const {
@@ -870,26 +876,25 @@ void Module::startReadout() {
 }
 
 void Module::stopAcquisition() {
-    // get status before stopping acquisition
-    runStatus s = ERROR, r = ERROR;
-    bool zmqstreaming = false;
+
+    // get det status before stopping acq
+    runStatus detStatus = ERROR;
     try {
-        if (shm()->useReceiverFlag && getReceiverStreaming()) {
-            zmqstreaming = true;
-            s = getRunStatus();
-            r = getReceiverStatus();
-        }
+        detStatus = getRunStatus();
     } catch (...) {
-        // if receiver crashed, stop detector in any case
-        zmqstreaming = false;
     }
 
     sendToDetectorStop(F_STOP_ACQUISITION);
     shm()->stoppedFlag = true;
 
-    // if rxr streaming and acquisition finished, restream dummy stop packet
-    if (zmqstreaming && (s == IDLE) && (r == IDLE)) {
-        restreamStopFromReceiver();
+    // restream dummy header, if rxr streaming and det idle before stop
+    try {
+        if (shm()->useReceiverFlag && getReceiverStreaming()) {
+            if (detStatus == IDLE && getReceiverStatus() == IDLE) {
+                restreamStopFromReceiver();
+            }
+        }
+    } catch (...) {
     }
 }
 

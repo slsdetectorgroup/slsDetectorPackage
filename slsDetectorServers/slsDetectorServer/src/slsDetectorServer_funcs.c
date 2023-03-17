@@ -471,6 +471,7 @@ void function_table() {
     flist[F_GET_SYNCHRONIZATION] = &get_synchronization;
     flist[F_SET_SYNCHRONIZATION] = &set_synchronization;
     flist[F_GET_HARDWARE_VERSION] = &get_hardware_version;
+    flist[F_GET_FRONTEND_FIRMWARE_VERSION] = &get_frontend_firmware_version;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -547,8 +548,8 @@ int M_nofunc(int file_des) {
     ret = FAIL;
     memset(mess, 0, sizeof(mess));
 
-    sprintf(mess, "Unrecognized Function enum %d. Please do not proceed.\n",
-            fnum);
+    sprintf(mess, "%s Function enum %d. Please do not proceed.\n",
+            UNRECOGNIZED_FNUM_ENUM, fnum);
     LOG(logERROR, (mess));
     return Server_SendResult(file_des, OTHER, NULL, 0);
 }
@@ -731,8 +732,14 @@ int get_firmware_version(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
     retval = getFirmwareVersion();
-    LOG(logDEBUG1,
-        ("firmware version retval: 0x%llx\n", (long long int)retval));
+    if (retval == 0) {
+        ret = FAIL;
+        strcpy(mess, "Could not get firmware version\n");
+        LOG(logERROR, (mess));
+    } else {
+        LOG(logDEBUG1,
+            ("firmware version retval: 0x%llx\n", (long long int)retval));
+    }
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -2158,7 +2165,7 @@ int get_num_additional_storage_cells(int file_des) {
     memset(mess, 0, sizeof(mess));
     int retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
@@ -2177,7 +2184,7 @@ int set_num_additional_storage_cells(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting number of addl. storage cells %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -2620,7 +2627,7 @@ int get_storage_cell_delay(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // get only
@@ -2647,7 +2654,7 @@ int set_storage_cell_delay(int file_des) {
     LOG(logDEBUG1,
         ("Setting storage cell delay %lld ns\n", (long long int)arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // only set
@@ -4015,7 +4022,7 @@ int storage_cell_start(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting Storage cell start to %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD)
     functionNotImplemented();
 #else
     // set & get
@@ -5086,11 +5093,20 @@ int set_source_udp_mac(int file_des) {
     if (Server_VerifyLock() == OK) {
         if (check_detector_idle("configure mac") == OK) {
             if (udpDetails[0].srcmac != arg) {
-                for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION;
-                     ++iRxEntry) {
-                    udpDetails[iRxEntry].srcmac = arg;
+                // multicast (LSB of first octet = 1)
+                if ((arg >> 40) & 0x1) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Cannot set source mac address. Must be a unicast "
+                            "address (LSB of first octet should be 0).");
+                    LOG(logERROR, (mess));
+                } else {
+                    for (int iRxEntry = 0; iRxEntry != MAX_UDP_DESTINATION;
+                         ++iRxEntry) {
+                        udpDetails[iRxEntry].srcmac = arg;
+                    }
+                    configure_mac();
                 }
-                configure_mac();
             }
         }
     }
@@ -5952,7 +5968,7 @@ int set_clock_divider(int file_des) {
 #endif
             modeNotImplemented("clock index (divider set)", args[0]);
         }
-
+        // TODO: if value between to set and num clocks, msg = "cannot set"
         enum CLKINDEX c = 0;
         int val = args[1];
         if (ret == OK) {
@@ -6958,7 +6974,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // additional storage cells
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
     i32 = getNumAdditionalStorageCells();
 #else
     i32 = 0;
@@ -10128,11 +10144,45 @@ int get_hardware_version(int file_des) {
     memset(mess, 0, sizeof(mess));
     char retvals[MAX_STR_LENGTH];
     memset(retvals, 0, MAX_STR_LENGTH);
-#ifdef EIGERD
-    functionNotImplemented();
-#else
     getHardwareVersion(retvals);
     LOG(logDEBUG1, ("hardware version retval: %s\n", retvals));
-#endif
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
+}
+
+int get_frontend_firmware_version(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    enum fpgaPosition arg = FRONT_LEFT;
+    int64_t retval = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Getting front end firmware version: %s\n",
+                    (arg == FRONT_LEFT ? "left" : "right")));
+
+#if !defined(EIGERD)
+    functionNotImplemented();
+#else
+    switch (arg) {
+    case FRONT_LEFT:
+    case FRONT_RIGHT:
+        break;
+    default:
+        modeNotImplemented("Fpga position Index", (int)arg);
+        break;
+    }
+    if (ret == OK) {
+        retval = getFrontEndFirmwareVersion(arg);
+        if (retval == 0) {
+            ret = FAIL;
+            strcpy(mess, "Could not get febl/r firmware version\n");
+            LOG(logERROR, (mess));
+        } else {
+            LOG(logDEBUG1, ("Front %s version retval: 0x%llx\n",
+                            (arg == FRONT_LEFT ? "left" : "right"),
+                            (long long int)retval));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }

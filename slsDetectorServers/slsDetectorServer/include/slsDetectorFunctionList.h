@@ -78,9 +78,14 @@ int getTestImageMode();
 // Ids
 void getServerVersion(char *version);
 u_int64_t getFirmwareVersion();
+#ifdef EIGERD
+uint64_t getFrontEndFirmwareVersion(enum fpgaPosition fpgaPosition);
+#endif
 u_int64_t getFirmwareAPIVersion();
-#ifndef EIGERD
 void getHardwareVersion(char *version);
+#ifdef EIGERD
+int getHardwareVersionNumber();
+#else
 u_int16_t getHardwareVersionNumber();
 #endif
 #if defined(JUNGFRAUD) || defined(MOENCHD) || defined(CHIPTESTBOARDD)
@@ -222,7 +227,7 @@ int getReadoutMode();
 #endif
 
 // parameters - timer
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
 int selectStoragecellStart(int pos);
 int getMaxStoragecellStart();
 #endif
@@ -266,7 +271,7 @@ int64_t getSubDeadTime();
 int64_t getMeasuredPeriod();
 int64_t getMeasuredSubPeriod();
 #endif
-#if defined(JUNGFRAUD) || defined(MOENCHD)
+#if defined(JUNGFRAUD)
 void setNumAdditionalStorageCells(int val);
 int getNumAdditionalStorageCells();
 int setStorageCellDelay(int64_t val);
@@ -513,7 +518,9 @@ void configureChip();
 int autoCompDisable(int on);
 int setComparatorDisableTime(int64_t val);
 int64_t getComparatorDisableTime();
+#ifndef MOENCHD
 void configureASICTimer();
+#endif
 int setReadoutSpeed(int val);
 int getReadoutSpeed(int *retval);
 int setPhase(enum CLKINDEX ind, int val, int degrees);

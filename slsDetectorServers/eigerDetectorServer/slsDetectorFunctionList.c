@@ -123,18 +123,18 @@ void basictests() {
     int64_t sw_fw_apiversion = getFirmwareAPIVersion();
 
     LOG(logINFOBLUE,
-        ("**************************************************\n"
-         "Detector IP Addr:\t\t 0x%x\n"
-         "Detector MAC Addr:\t\t 0x%llx\n"
+        ("\n********************************************************\n"
+         "Detector IP Addr         : 0x%x\n"
+         "Detector MAC Addr        : 0x%llx\n"
 
-         "Firmware Version:\t\t %lld\n"
-         "Software Version:\t\t %s\n"
-         "F/w-S/w API Version:\t\t %lld\n"
-         "Required Firmware Version:\t %d\n"
+         "Firmware (Beb) Version   : %lld\n"
+         "F/w-S/w API Version      : %lld\n"
+         "Required Firmware Version: %d\n"
+         "Software Version         : %s\n"
          "********************************************************\n",
          (unsigned int)ipadd, (long long unsigned int)macadd,
-         (long long int)fwversion, swversion, (long long int)sw_fw_apiversion,
-         REQUIRED_FIRMWARE_VERSION));
+         (long long int)fwversion, (long long int)sw_fw_apiversion,
+         REQUIRED_FIRMWARE_VERSION, swversion));
 
     // update default udpdstip and udpdstmac (1g is hardware ip and hardware
     // mac)
@@ -161,9 +161,9 @@ void basictests() {
     // check for API compatibility - old server
     if (sw_fw_apiversion > REQUIRED_FIRMWARE_VERSION) {
         sprintf(initErrorMessage,
-                "This firmware-software api version (0x%llx) is incompatible "
+                "This firmware-software api version (0x%lld) is incompatible "
                 "with the software's minimum required firmware version "
-                "(0x%llx).\nPlease update detector software to be compatible "
+                "(0x%lld).\nPlease update detector software to be compatible "
                 "with this firmware.\n",
                 (long long int)sw_fw_apiversion,
                 (long long int)REQUIRED_FIRMWARE_VERSION);
@@ -210,18 +210,68 @@ void getServerVersion(char *version) { strcpy(version, APIEIGER); }
 
 u_int64_t getFirmwareVersion() {
 #ifdef VIRTUAL
-    return 0;
+    return REQUIRED_FIRMWARE_VERSION;
 #else
     return Beb_GetFirmwareRevision();
 #endif
 }
 
+uint64_t getFrontEndFirmwareVersion(enum fpgaPosition fpgaPosition) {
+    uint64_t retval = 0;
+#ifdef VIRTUAL
+    return REQUIRED_FIRMWARE_VERSION;
+#else
+    sharedMemory_lockLocalLink();
+    switch (fpgaPosition) {
+    case FRONT_LEFT:
+        retval = Feb_Control_GetFrontLeftFirmwareVersion(fpgaPosition);
+        break;
+    case FRONT_RIGHT:
+        retval = Feb_Control_GetFrontRightFirmwareVersion(fpgaPosition);
+        break;
+    default:
+        LOG(logERROR,
+            ("unknown index for fpga position to read firmware version\n"));
+        retval = 0;
+    }
+    sharedMemory_unlockLocalLink();
+#endif
+    return retval;
+}
+
 u_int64_t getFirmwareAPIVersion() {
 #ifdef VIRTUAL
-    return 0;
+    return REQUIRED_FIRMWARE_VERSION;
 #else
-    return (u_int64_t)Beb_GetFirmwareSoftwareAPIVersion();
+    return Beb_GetFirmwareSoftwareAPIVersion();
 #endif
+}
+
+void getHardwareVersion(char *version) {
+    strcpy(version, "unknown");
+    int hwversion = getHardwareVersionNumber();
+    const int hwNumberList[] = HARDWARE_VERSION_NUMBERS;
+    const char *hwNamesList[] = HARDWARE_VERSION_NAMES;
+    for (int i = 0; i != NUM_HARDWARE_VERSIONS; ++i) {
+        LOG(logDEBUG, ("0x%x %d 0x%x %s\n", hwversion, i, hwNumberList[i],
+                       hwNamesList[i]));
+        if (hwNumberList[i] == hwversion) {
+            strcpy(version, hwNamesList[i]);
+            return;
+        }
+    }
+}
+
+int getHardwareVersionNumber() {
+    int retval = 0;
+#ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_GetFPGAHardwareVersion(&retval)) {
+        retval = -1;
+    }
+    sharedMemory_unlockLocalLink();
+#endif
+    return retval;
 }
 
 int getModuleId(int *ret, char *mess) {
@@ -355,6 +405,37 @@ void initControlServer() {
         Beb_SetTopVariable(top);
         Beb_Beb();
         LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
+
+        // Getting the feb versions after initialization
+        char hversion[MAX_STR_LENGTH] = {0};
+        memset(hversion, 0, MAX_STR_LENGTH);
+        getHardwareVersion(hversion);
+        int64_t fwversion = getFirmwareVersion();
+        int64_t feblfwversion = getFrontEndFirmwareVersion(FRONT_LEFT);
+        int64_t febrfwversion = getFrontEndFirmwareVersion(FRONT_RIGHT);
+        LOG(logINFOBLUE,
+            ("\n********************************************************\n"
+             "Feb Versions\n"
+             "Hardware Version         : %s\n"
+             "Firmware (Febl) Version  : %lld\n"
+             "Firmware (Febr) Version  : %lld\n"
+             "********************************************************\n",
+             hversion, (long long int)feblfwversion,
+             (long long int)febrfwversion));
+
+        // ensure febl, febr and beb fw versions are the same
+        if (fwversion != feblfwversion || fwversion != febrfwversion) {
+            sprintf(
+                initErrorMessage,
+                "Inconsistent firmware versions in feb and beb. [Beb: %lld, "
+                "Febl: %lld Febr: %lld]\n",
+                (long long int)fwversion, (long long int)feblfwversion,
+                (long long int)febrfwversion);
+            LOG(logERROR, (initErrorMessage));
+            initError = FAIL;
+            return;
+        }
+
 #endif
         // also reads config file and deactivates
         setupDetector();
@@ -861,12 +942,15 @@ int setDynamicRange(int dr) {
     LOG(logINFO, ("Setting dynamic range: %d\n", dr));
 #else
     sharedMemory_lockLocalLink();
-    if (Feb_Control_SetDynamicRange(dr)) {
-        if (!Beb_SetUpTransferParameters(dr)) {
-            LOG(logERROR, ("Could not set bit mode in the back end\n"));
-            sharedMemory_unlockLocalLink();
-            return eiger_dynamicrange;
-        }
+    if (!Feb_Control_SetDynamicRange(dr)) {
+        LOG(logERROR, ("Could not set dynamic range in feb\n"));
+        sharedMemory_unlockLocalLink();
+        return FAIL;
+    }
+    if (!Beb_SetUpTransferParameters(dr)) {
+        LOG(logERROR, ("Could not set bit mode in the back end\n"));
+        sharedMemory_unlockLocalLink();
+        return eiger_dynamicrange;
     }
     sharedMemory_unlockLocalLink();
 #endif
@@ -1449,6 +1533,12 @@ int setHighVoltage(int val) {
 
         // get
         sharedMemory_lockLocalLink();
+        if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
+            LOG(logERROR, ("Could not read high voltage\n"));
+            sharedMemory_unlockLocalLink();
+            return -3;
+        }
+        // need to read the file twice to get the proper value
         if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
             LOG(logERROR, ("Could not read high voltage\n"));
             sharedMemory_unlockLocalLink();
@@ -2664,6 +2754,10 @@ void *start_timer(void *arg) {
                 header->modId = eiger_virtual_module_id;
                 header->row = row;
                 header->column = colLeft;
+                if (eiger_virtual_quad_mode) {
+                    header->row = 1;    // left is next row
+                    header->column = 0; // left same first column
+                }
 
                 char packetData2[packetsize];
                 memset(packetData2, 0, packetsize);
@@ -2672,11 +2766,11 @@ void *start_timer(void *arg) {
                 header->version = SLS_DETECTOR_HEADER_VERSION;
                 header->frameNumber = frameNr + iframes;
                 header->packetNumber = i;
-                header->modId = eiger_virtual_module_id;
+                header->modId = eiger_virtual_module_id + 1;
                 header->row = row;
                 header->column = colRight;
                 if (eiger_virtual_quad_mode) {
-                    header->row = 1;    // right is next row
+                    header->row = 0;    // right is next row
                     header->column = 0; // right same first column
                 }
 

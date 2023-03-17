@@ -33,7 +33,7 @@ Usage: $0 [-b] [-c] [-d <HDF5 directory>] [e] [g] [-h] [i] [-j <Number of thread
  -c: Clean
  -d: HDF5 Custom Directory
  -e: Debug mode
- -g: Build/Rebuilds only gui
+ -g: Build/Rebuilds gui
  -h: Builds/Rebuilds Cmake files with HDF5 package
  -i: Builds tests
  -j: Number of threads to compile through

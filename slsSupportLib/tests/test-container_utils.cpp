@@ -154,4 +154,18 @@ TEST_CASE("check for duplicates in vector of pairs"){
 }
 
 
+TEST_CASE("remove duplicates from vector") {
+    std::vector<int> v{5, 6, 5, 3};
+    auto r = removeDuplicates(v);
+    CHECK(r == true); // did indeed remove elements
+    CHECK(v == std::vector<int>{3, 5, 6});
+}
+
+TEST_CASE("remove duplicated empty vector") {
+    std::vector<int> v;
+    auto r = removeDuplicates(v);
+    CHECK(r == false); // no elements to remove
+    CHECK(v == std::vector<int>{});
+}
+
 } // namespace sls

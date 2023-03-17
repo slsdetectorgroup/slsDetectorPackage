@@ -31,6 +31,11 @@ namespace sls {
 // #define ZMQ_DETAIL
 #define ROIVERBOSITY
 
+// high water mark for gui
+#define DEFFAULT_LOW_ZMQ_HWM           (25)
+#define DEFAULT_LOW_ZMQ_HWM_BUFFERSIZE (1024 * 1024) // 1MB
+#define DEFAULT_ZMQ_BUFFERSIZE         (-1)          // os default
+
 /** zmq header structure */
 struct zmqHeader {
     /** true if incoming data, false if end of acquisition */
@@ -108,14 +113,28 @@ class ZmqSocket {
     /** Returns high water mark for outbound messages */
     int GetSendHighWaterMark();
 
-    /** Sets high water mark for outbound messages. Default 1000 (zmqlib) */
+    /** Sets high water mark for outbound messages. Default 1000 (zmqlib). Also
+     * changes send buffer size depending on hwm. Must rebind.  */
     void SetSendHighWaterMark(int limit);
 
     /** Returns high water mark for inbound messages */
     int GetReceiveHighWaterMark();
 
-    /** Sets high water mark for inbound messages. Default 1000 (zmqlib) */
+    /** Sets high water mark for inbound messages. Default 1000 (zmqlib). Also
+     * changes receiver buffer size depending on hwm. Must reconnect */
     void SetReceiveHighWaterMark(int limit);
+
+    /** Gets kernel buffer for  outbound messages. Default 0 (os) */
+    int GetSendBuffer();
+
+    /** Sets kernel buffer for  outbound messages. Default 0 (os) */
+    void SetSendBuffer(int limit);
+
+    /** Gets kernel buffer for  inbound messages. Default 0 (os) */
+    int GetReceiveBuffer();
+
+    /** Sets kernel buffer for  inbound messages. Default 0 (os) */
+    void SetReceiveBuffer(int limit);
 
     /**
      * Returns Port Number
@@ -128,6 +147,9 @@ class ZmqSocket {
      * @returns Server Address
      */
     std::string GetZmqServerAddress() { return sockfd.serverAddress; }
+
+    /** unbinds and rebind, to apply changes of HWM  */
+    void Rebind();
 
     /**
      * Connect client socket to server socket

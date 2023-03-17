@@ -10,6 +10,8 @@
  *@short functions indices to call on server (detector/receiver)
  */
 
+#define UNRECOGNIZED_FNUM_ENUM "Unrecognized Function enum"
+
 enum detFuncs {
     F_EXEC_COMMAND = 0,
     F_GET_DETECTOR_TYPE,
@@ -274,6 +276,7 @@ enum detFuncs {
     F_GET_SYNCHRONIZATION,
     F_SET_SYNCHRONIZATION,
     F_GET_HARDWARE_VERSION,
+    F_GET_FRONTEND_FIRMWARE_VERSION,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 512, /**< detector function should not exceed this
@@ -653,6 +656,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_SYNCHRONIZATION:             return "F_GET_SYNCHRONIZATION";
     case F_SET_SYNCHRONIZATION:             return "F_SET_SYNCHRONIZATION";
     case F_GET_HARDWARE_VERSION:            return "F_GET_HARDWARE_VERSION";
+    case F_GET_FRONTEND_FIRMWARE_VERSION:   return "F_GET_FRONTEND_FIRMWARE_VERSION";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

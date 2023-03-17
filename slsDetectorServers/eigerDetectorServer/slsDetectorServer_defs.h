@@ -5,7 +5,12 @@
 
 #define LINKED_SERVER_NAME "eigerDetectorServer"
 
-#define REQUIRED_FIRMWARE_VERSION (30)
+#define NUM_HARDWARE_VERSIONS    (2)
+#define HARDWARE_VERSION_NUMBERS {0x0, 0x1};
+#define HARDWARE_VERSION_NAMES                                                 \
+    { "FX70T", "FX30T" }
+
+#define REQUIRED_FIRMWARE_VERSION (31)
 // virtual ones renamed for consistency
 // real ones keep previous name for compatibility (already in production)
 #ifdef VIRTUAL
@@ -137,6 +142,7 @@ enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
 #define UDP_HEADER_MAX_FRAME_VALUE (0xFFFFFFFFFFFF)
 
 #define BIT16_MASK (0xFFFF)
+#define BIT32_MSK  (0xFFFFFFFF)
 
 #define DAC_MIN_MV (0)
 #define DAC_MAX_MV (2048)

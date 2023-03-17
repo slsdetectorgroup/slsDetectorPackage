@@ -2,6 +2,7 @@
 // Copyright (C) 2021 Contributors to the SLS Detector Package
 #include "sls/file_utils.h"
 #include "sls/ToString.h"
+#include "sls/container_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_exceptions.h"
 
@@ -165,6 +166,63 @@ ssize_t getFileSize(FILE *fd, const std::string &prependErrorString) {
     return fileSize;
 }
 
+std::vector<int>
+getChannelsFromStringList(const std::vector<std::string> list) {
+    std::vector<int> channels;
+    for (auto line : list) {
+
+        // replace comma with space
+        std::replace_if(
+            begin(line), end(line), [](char c) { return (c == ','); }, ' ');
+
+        // split line (delim space)
+        std::vector<std::string> vec = split(line, ' ');
+
+        // for every channel separated by space
+        for (auto it : vec) {
+            // find range and replace with sequence of x to y
+            auto result = it.find(':');
+            if (result != std::string::npos) {
+                try {
+                    int istart = StringTo<int>(it.substr(0, result));
+                    int istop = StringTo<int>(
+                        it.substr(result + 1, it.length() - result - 1));
+                    LOG(logDEBUG1) << "istart:" << istart << " istop:" << istop;
+                    std::vector<int> range(istop - istart);
+                    std::generate(range.begin(), range.end(),
+                                  [n = istart]() mutable { return n++; });
+                    for (auto range_it : range) {
+                        channels.push_back(range_it);
+                    }
+                } catch (std::exception &e) {
+                    throw RuntimeError(
+                        "Could not load channels. Invalid channel range: " +
+                        it);
+                }
+            }
+
+            // else convert to int
+            else {
+                int ival = 0;
+                try {
+                    ival = StringTo<int>(it);
+                } catch (std::exception &e) {
+                    throw RuntimeError(
+                        "Could not load channels. Invalid channel number: " +
+                        it);
+                }
+                channels.push_back(ival);
+            }
+        }
+    }
+
+    if (removeDuplicates(channels)) {
+        LOG(logWARNING) << "Removed duplicates from channel file";
+    }
+    LOG(logDEBUG1) << "list:" << ToString(channels);
+    return channels;
+}
+
 std::vector<int> getChannelsFromFile(const std::string &fname) {
     // read bad channels file
     std::ifstream input_file(fname);
@@ -172,73 +230,19 @@ std::vector<int> getChannelsFromFile(const std::string &fname) {
         throw RuntimeError("Could not open bad channels file " + fname +
                            " for reading");
     }
-    std::vector<int> list;
+    std::vector<std::string> lines;
     for (std::string line; std::getline(input_file, line);) {
         // ignore comments
         if (line.find('#') != std::string::npos) {
             line.erase(line.find('#'));
         }
-
-        // replace comma with space
-        std::replace_if(
-            begin(line), end(line), [](char c) { return (c == ','); }, ' ');
-
-        // replace x:y with a sequence of x to y
-        auto result = line.find(':');
-        while (result != std::string::npos) {
-            auto start = line.rfind(' ', result);
-            if (start == std::string::npos) {
-                start = 0;
-            } else
-                ++start;
-            int istart = StringTo<int>(line.substr(start, result - start));
-
-            auto stop = line.find(' ', result);
-            if (stop == std::string::npos) {
-                stop = line.length();
-            }
-            int istop =
-                StringTo<int>(line.substr(result + 1, stop - result - 1));
-
-            std::vector<int> v(istop - istart);
-            std::generate(v.begin(), v.end(),
-                          [n = istart]() mutable { return n++; });
-            line.replace(start, stop - start, ToString(v));
-
-            LOG(logDEBUG1) << line;
-            result = line.find(':');
+        // ignore empty lines
+        if (line.empty()) {
+            continue;
         }
-
-        // remove punctuations including [ and ]
-        line.erase(std::remove_if(begin(line), end(line), ispunct), end(line));
-
-        LOG(logDEBUG) << "\nline: [" << line << ']';
-
-        // split line (delim space) and push to list
-        std::vector<std::string> vec = split(line, ' ');
-        for (auto it : vec) {
-            int ival = 0;
-            try {
-                ival = StringTo<int>(it);
-            } catch (std::exception &e) {
-                throw RuntimeError("Could not load channels from file. Invalid "
-                                   "channel number: " +
-                                   it);
-            }
-            list.push_back(ival);
-        }
+        lines.push_back(line);
     }
-
-    // remove duplicates from list
-    auto listSize = list.size();
-    std::sort(list.begin(), list.end());
-    list.erase(unique(list.begin(), list.end()), list.end());
-    if (list.size() != listSize) {
-        LOG(logWARNING) << "Removed duplicates from channel file";
-    }
-
-    LOG(logDEBUG1) << "list:" << ToString(list);
-    return list;
+    return getChannelsFromStringList(lines);
 }
 
 std::string getAbsolutePathFromCurrentProcess(const std::string &fname) {

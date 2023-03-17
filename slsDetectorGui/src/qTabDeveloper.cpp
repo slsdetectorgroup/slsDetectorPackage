@@ -111,6 +111,7 @@ void qTabDeveloper::SetupWidgetWindow() {
             break;
 
         case slsDetectorDefs::JUNGFRAU:
+        case slsDetectorDefs::MOENCH:
             dacWidgets.push_back(
                 new qDacWidget(this, det, true,
                                "v vb comp: ", getSLSIndex(detType, tempid++)));
@@ -137,72 +138,6 @@ void qTabDeveloper::SetupWidgetWindow() {
             adcWidgets.push_back(new qDacWidget(
                 this, det, false,
                 "Temperature ADC: ", getSLSIndex(detType, tempid++)));
-            break;
-
-        case slsDetectorDefs::MOENCH:
-            dacWidgets.push_back(
-                new qDacWidget(this, det, true,
-                               "vbp_colbuf: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vipre: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vin_cm: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vb_sda: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(
-                new qDacWidget(this, det, true,
-                               "vcasc_sfp: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vout_cm: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(
-                new qDacWidget(this, det, true,
-                               "vipre_cds: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(
-                new qDacWidget(this, det, true,
-                               "ibias_sfp: ", getSLSIndex(detType, tempid++)));
-            break;
-
-        case slsDetectorDefs::MYTHEN3:
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vcassh: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vth2: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vrshaper: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(
-                new qDacWidget(this, det, true,
-                               "vrshaper_n: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(
-                new qDacWidget(this, det, true,
-                               "vipre_out: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vth3: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vth1: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vicin: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vcas: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vrpreamp: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vcal_p: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vipre: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vishaper: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vcal_n: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vtrim: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(new qDacWidget(
-                this, det, true, "vdcsh: ", getSLSIndex(detType, tempid++)));
-            dacWidgets.push_back(
-                new qDacWidget(this, det, true,
-                               "vthreshold: ", getSLSIndex(detType, tempid++)));
-            adcWidgets.push_back(new qDacWidget(
-                this, det, false,
-                "Temperature FPGA: ", getSLSIndex(detType, tempid++)));
             break;
 
         case slsDetectorDefs::GOTTHARD2:
@@ -386,6 +321,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
         break;
 
     case slsDetectorDefs::JUNGFRAU:
+    case slsDetectorDefs::MOENCH:
         switch (index) {
         case 0:
             return slsDetectorDefs::VB_COMP;
@@ -405,30 +341,6 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
             return slsDetectorDefs::VREF_COMP;
         case 8:
             return slsDetectorDefs::TEMPERATURE_ADC;
-        default:
-            throw RuntimeError(std::string("Unknown dac/adc index") +
-                               std::to_string(index));
-        }
-        break;
-
-    case slsDetectorDefs::MOENCH:
-        switch (index) {
-        case 0:
-            return slsDetectorDefs::VBP_COLBUF;
-        case 1:
-            return slsDetectorDefs::VIPRE;
-        case 2:
-            return slsDetectorDefs::VIN_CM;
-        case 3:
-            return slsDetectorDefs::VB_SDA;
-        case 4:
-            return slsDetectorDefs::VCASC_SFP;
-        case 5:
-            return slsDetectorDefs::VOUT_CM;
-        case 6:
-            return slsDetectorDefs::VIPRE_CDS;
-        case 7:
-            return slsDetectorDefs::IBIAS_SFP;
         default:
             throw RuntimeError(std::string("Unknown dac/adc index") +
                                std::to_string(index));

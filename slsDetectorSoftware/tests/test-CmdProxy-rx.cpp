@@ -3,6 +3,7 @@
 #include "CmdProxy.h"
 #include "catch.hpp"
 #include "sls/Detector.h"
+#include "sls/Version.h"
 #include "sls/sls_detector_defs.h"
 #include <sstream>
 
@@ -26,15 +27,15 @@ TEST_CASE("rx_version", "[.cmd][.rx]") {
     CmdProxy proxy(&det);
     std::ostringstream oss;
     proxy.Call("rx_version", {}, -1, GET, oss);
+    sls::Version v(APIRECEIVER);
     std::ostringstream vs;
-    vs << "rx_version 0x" << std::hex << APIRECEIVER << '\n';
+    vs << "rx_version " << v.concise() << '\n';
     REQUIRE(oss.str() == vs.str());
 
     REQUIRE_THROWS(proxy.Call("rx_version", {"0"}, -1, PUT));
 }
 
 /* acquisition */
-
 TEST_CASE("rx_start", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -128,6 +129,9 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
     auto prev_val = det.getFileWrite();
     det.setFileWrite(false); // avoid writing or error on file creation
     CmdProxy proxy(&det);
+    auto prev_frames =
+        det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+    det.setNumberOfFrames(100);
     {
         // some missing packets
         det.startReceiver();
@@ -141,9 +145,11 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
             REQUIRE(oss.str() != "rx_missingpackets [0, 0]\n");
         }
     }
-    {
+    auto det_type = det.getDetectorType().squash();
+    if (det_type != defs::CHIPTESTBOARD && det_type != defs::MOENCH) {
         // 0 missing packets (takes into account that acquisition is stopped)
         det.startReceiver();
+        det.startDetector();
         det.stopDetector();
         det.stopReceiver();
         std::ostringstream oss;
@@ -158,6 +164,7 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
     for (int i = 0; i != det.size(); ++i) {
         det.setFileWrite(prev_val[i], {i});
     }
+    det.setNumberOfFrames(prev_frames);
 }
 
 TEST_CASE("rx_frameindex", "[.cmd][.rx]") {
@@ -445,7 +452,7 @@ TEST_CASE("rx_roi", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         REQUIRE_THROWS(proxy.Call("rx_roi", {"5", "10"}, -1, PUT));
     } else {
         auto prev_val = det.getRxROI();
@@ -488,9 +495,9 @@ TEST_CASE("rx_roi", "[.cmd]") {
                            -1, PUT, oss);
                 REQUIRE(oss.str() == std::string("rx_roi [1, ") +
                                          std::to_string(detsize.x - 5) +
-                                         std::string(", ") +
+                                         std::string(", 1, ") +
                                          std::to_string(detsize.y - 5) +
-                                         std::string(", 1]\n"));
+                                         std::string("]\n"));
             }
             REQUIRE_THROWS(
                 proxy.Call("rx_roi", {"-1", "-1", "-1", "-1"}, -1, PUT));
@@ -507,7 +514,7 @@ TEST_CASE("rx_clearroi", "[.cmd]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+    if (det_type == defs::CHIPTESTBOARD) {
         REQUIRE_THROWS(proxy.Call("rx_clearroi", {}, -1, PUT));
     } else {
         auto prev_val = det.getRxROI();
@@ -792,13 +799,14 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val_zmqport = det.getRxZmqPort();
-    auto prev_val_numinterfaces = det.getNumberofUDPInterfaces();
+    auto prev_val_numinterfaces = det.getNumberofUDPInterfaces().tsquash(
+        "inconsistent number of udp interfaces to test");
 
     int socketsperdetector = 1;
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER) {
         socketsperdetector *= 2;
-    } else if (det_type == defs::JUNGFRAU) {
+    } else if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         proxy.Call("numinterfaces", {"2"}, -1, PUT);
         socketsperdetector *= 2;
     }
@@ -822,9 +830,9 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
     }
     for (int i = 0; i != det.size(); ++i) {
         det.setRxZmqPort(prev_val_zmqport[i], i);
-        if (det_type == defs::JUNGFRAU) {
-            det.setNumberofUDPInterfaces(prev_val_numinterfaces[i], {i});
-        }
+    }
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
+        det.setNumberofUDPInterfaces(prev_val_numinterfaces);
     }
 }
 
@@ -940,8 +948,6 @@ TEST_CASE("rx_dbitoffset", "[.cmd][.rx]") {
         REQUIRE_THROWS(proxy.Call("rx_dbitoffset", {}, -1, GET));
     }
 }
-
-/* Moench */
 
 TEST_CASE("rx_jsonaddheader", "[.cmd][.rx]") {
     Detector det;

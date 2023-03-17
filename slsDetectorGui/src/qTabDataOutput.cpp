@@ -40,13 +40,11 @@ void qTabDataOutput::SetupWidgetWindow() {
         comboClkDivider->setEnabled(true);
         chkParallel->setEnabled(true);
         break;
-    case slsDetectorDefs::MOENCH:
-        chkTenGiga->setEnabled(true);
-        break;
     case slsDetectorDefs::MYTHEN3:
         chkParallel->setEnabled(true);
         break;
     case slsDetectorDefs::JUNGFRAU:
+    case slsDetectorDefs::MOENCH:
         lblClkDivider->setEnabled(true);
         comboClkDivider->setEnabled(true);
         break;
@@ -182,8 +180,10 @@ void qTabDataOutput::BrowseOutputDir() {
     LOG(logDEBUG) << "Browsing output directory";
     QString directory = QFileDialog::getExistingDirectory(
         this, tr("Choose Output Directory "), dispOutputDir->text());
-    if (!directory.isEmpty())
+    if (!directory.isEmpty()) {
         dispOutputDir->setText(directory);
+        ForceSetOutputDir();
+    }
 }
 
 void qTabDataOutput::SetOutputDir(bool force) {

@@ -16,6 +16,9 @@ void MasterAttributes::GetBinaryAttributes(
     case slsDetectorDefs::JUNGFRAU:
         GetJungfrauBinaryAttributes(w);
         break;
+    case slsDetectorDefs::MOENCH:
+        GetMoenchBinaryAttributes(w);
+        break;
     case slsDetectorDefs::EIGER:
         GetEigerBinaryAttributes(w);
         break;
@@ -24,9 +27,6 @@ void MasterAttributes::GetBinaryAttributes(
         break;
     case slsDetectorDefs::GOTTHARD2:
         GetGotthard2BinaryAttributes(w);
-        break;
-    case slsDetectorDefs::MOENCH:
-        GetMoenchBinaryAttributes(w);
         break;
     case slsDetectorDefs::CHIPTESTBOARD:
         GetCtbBinaryAttributes(w);
@@ -48,6 +48,9 @@ void MasterAttributes::WriteHDF5Attributes(H5::H5File *fd, H5::Group *group) {
     case slsDetectorDefs::JUNGFRAU:
         WriteJungfrauHDF5Attributes(fd, group);
         break;
+    case slsDetectorDefs::MOENCH:
+        WriteMoenchHDF5Attributes(fd, group);
+        break;
     case slsDetectorDefs::EIGER:
         WriteEigerHDF5Attributes(fd, group);
         break;
@@ -56,9 +59,6 @@ void MasterAttributes::WriteHDF5Attributes(H5::H5File *fd, H5::Group *group) {
         break;
     case slsDetectorDefs::GOTTHARD2:
         WriteGotthard2HDF5Attributes(fd, group);
-        break;
-    case slsDetectorDefs::MOENCH:
-        WriteMoenchHDF5Attributes(fd, group);
         break;
     case slsDetectorDefs::CHIPTESTBOARD:
         WriteCtbHDF5Attributes(fd, group);
@@ -622,6 +622,28 @@ void MasterAttributes::WriteJungfrauHDF5Attributes(H5::H5File *fd,
 }
 #endif
 
+void MasterAttributes::GetMoenchBinaryAttributes(
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
+    w->Key("Exptime");
+    w->String(ToString(exptime).c_str());
+    w->Key("Period");
+    w->String(ToString(period).c_str());
+    w->Key("Number of UDP Interfaces");
+    w->Uint(numUDPInterfaces);
+    w->Key("Number of rows");
+    w->Uint(readNRows);
+}
+
+#ifdef HDF5C
+void MasterAttributes::WriteMoenchHDF5Attributes(H5::H5File *fd,
+                                                 H5::Group *group) {
+    MasterAttributes::WriteHDF5Exptime(fd, group);
+    MasterAttributes::WriteHDF5Period(fd, group);
+    MasterAttributes::WriteHDF5NumUDPInterfaces(fd, group);
+    MasterAttributes::WriteHDF5ReadNRows(fd, group);
+}
+#endif
+
 void MasterAttributes::GetEigerBinaryAttributes(
     rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
     w->Key("Dynamic Range");
@@ -716,31 +738,6 @@ void MasterAttributes::WriteGotthard2HDF5Attributes(H5::H5File *fd,
     MasterAttributes::WriteHDF5Exptime(fd, group);
     MasterAttributes::WriteHDF5Period(fd, group);
     MasterAttributes::WriteHDF5BurstMode(fd, group);
-}
-#endif
-
-void MasterAttributes::GetMoenchBinaryAttributes(
-    rapidjson::PrettyWriter<rapidjson::StringBuffer> *w) {
-    w->Key("Exptime");
-    w->String(ToString(exptime).c_str());
-    w->Key("Period");
-    w->String(ToString(period).c_str());
-    w->Key("Ten Giga");
-    w->Uint(tenGiga);
-    w->Key("ADC Mask");
-    w->String(ToStringHex(adcmask).c_str());
-    w->Key("Analog Samples");
-    w->Uint(analogSamples);
-}
-
-#ifdef HDF5C
-void MasterAttributes::WriteMoenchHDF5Attributes(H5::H5File *fd,
-                                                 H5::Group *group) {
-    MasterAttributes::WriteHDF5Exptime(fd, group);
-    MasterAttributes::WriteHDF5Period(fd, group);
-    MasterAttributes::WriteHDF5TenGiga(fd, group);
-    MasterAttributes::WriteHDF5AdcMask(fd, group);
-    MasterAttributes::WriteHDF5AnalogSamples(fd, group);
 }
 #endif
 

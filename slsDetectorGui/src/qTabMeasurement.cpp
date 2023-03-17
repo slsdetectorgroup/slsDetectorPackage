@@ -35,7 +35,6 @@ void qTabMeasurement::SetupWidgetWindow() {
     // timer to update the progress bar
     progressTimer = new QTimer(this);
 
-    sampleImplemented = false;
     gateImplemented = false;
     delayImplemented = true;
     startingFnumImplemented = false;
@@ -47,18 +46,11 @@ void qTabMeasurement::SetupWidgetWindow() {
     // default is triggers and delay (not #bursts and burst period for gotthard2
     // in auto mode)
     ShowTriggerDelay();
-    // default is to show samples, mythen3, show gates
-    ShowGates();
 
     // enabling according to det type
     lblBurstMode->hide();
     comboBurstMode->hide();
     switch (det->getDetectorType().squash()) {
-    case slsDetectorDefs::MOENCH:
-        lblNumSamples->setEnabled(true);
-        spinNumSamples->setEnabled(true);
-        sampleImplemented = true;
-        break;
     case slsDetectorDefs::EIGER:
         delayImplemented = false;
         lblNextFrameNumber->setEnabled(true);
@@ -66,6 +58,7 @@ void qTabMeasurement::SetupWidgetWindow() {
         startingFnumImplemented = true;
         break;
     case slsDetectorDefs::JUNGFRAU:
+    case slsDetectorDefs::MOENCH:
         lblNextFrameNumber->setEnabled(true);
         spinNextFrameNumber->setEnabled(true);
         startingFnumImplemented = true;
@@ -111,10 +104,6 @@ void qTabMeasurement::Initialization() {
     if (spinNumBursts->isEnabled()) {
         connect(spinNumBursts, SIGNAL(valueChanged(int)), this,
                 SLOT(SetNumBursts(int)));
-    }
-    if (spinNumSamples->isEnabled()) {
-        connect(spinNumSamples, SIGNAL(valueChanged(int)), this,
-                SLOT(SetNumSamples(int)));
     }
     if (gateImplemented) {
         connect(spinNumGates, SIGNAL(valueChanged(int)), this,
@@ -195,16 +184,6 @@ void qTabMeasurement::ShowTriggerDelay() {
         stackedLblDelayBurstPeriod->setCurrentWidget(pageLblBurstPeriod);
         stackedSpinDelayBurstPeriod->setCurrentWidget(pageSpinBurstPeriod);
         stackedComboDelayBurstPeriod->setCurrentWidget(pageComboBurstPeriod);
-    }
-}
-
-void qTabMeasurement::ShowGates() {
-    if (det->getDetectorType().squash() == slsDetectorDefs::MYTHEN3) {
-        stackedLblSamplesGates->setCurrentWidget(pageLblGates);
-        stackedSpinSamplesGates->setCurrentWidget(pageSpinGates);
-    } else {
-        stackedLblSamplesGates->setCurrentWidget(pageLblSamples);
-        stackedSpinSamplesGates->setCurrentWidget(pageSpinSamples);
     }
 }
 
@@ -508,31 +487,6 @@ void qTabMeasurement::SetNumBursts(int val) {
     CATCH_HANDLE("Could not set number of bursts.",
                  "qTabMeasurement::SetNumBursts", this,
                  &qTabMeasurement::GetNumBursts)
-}
-
-void qTabMeasurement::GetNumSamples() {
-    LOG(logDEBUG) << "Getting number of samples";
-    disconnect(spinNumSamples, SIGNAL(valueChanged(int)), this,
-               SLOT(SetNumSamples(int)));
-    try {
-        auto retval = det->getNumberOfAnalogSamples().tsquash(
-            "Inconsistent number of analog samples for all detectors.");
-        spinNumSamples->setValue(retval);
-    }
-    CATCH_DISPLAY("Could not get number of samples.",
-                  "qTabMeasurement::GetNumSamples")
-    connect(spinNumSamples, SIGNAL(valueChanged(int)), this,
-            SLOT(SetNumSamples(int)));
-}
-
-void qTabMeasurement::SetNumSamples(int val) {
-    LOG(logINFO) << "Setting number of samples to " << val;
-    try {
-        det->setNumberOfAnalogSamples(val);
-    }
-    CATCH_HANDLE("Could not set number of samples.",
-                 "qTabMeasurement::SetNumSamples", this,
-                 &qTabMeasurement::GetNumSamples)
 }
 
 void qTabMeasurement::GetNumGates() {
@@ -1002,9 +956,6 @@ void qTabMeasurement::Refresh() {
         }
         if (spinBurstPeriod->isEnabled()) {
             GetBurstPeriod();
-        }
-        if (sampleImplemented) {
-            GetNumSamples();
         }
         if (gateImplemented) {
             GetNumGates();

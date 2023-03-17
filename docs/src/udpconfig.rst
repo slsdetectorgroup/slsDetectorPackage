@@ -6,6 +6,10 @@ Config file
 
 Commands to configure the UDP in the config file:
 
+.. note :: 
+
+    These command are recommended to be placed before "rx_hostname" if it is used.
+
 Source Port
 -----------
     Hardcoded in detector server, starting at 32410.

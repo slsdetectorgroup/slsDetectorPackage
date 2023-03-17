@@ -222,6 +222,7 @@ int main(int argc, char *argv[]) {
     multiThreadedCountingDetector *mt =
         new multiThreadedCountingDetector(filter, nthreads, fifosize);
     mt->setClusterSize(csize,csize);
+
 #ifndef ANALOG
     mt->setDetectorMode(ePhotonCounting);
     cout << "Counting!" << endl;

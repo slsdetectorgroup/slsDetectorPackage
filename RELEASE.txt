@@ -1,210 +1,133 @@
-SLS Detector Package Minor Release 7.0.0 released on 25.11.2021
+SLS Detector Package Major Release 7.x.x released on xx.xx.2023
 ===============================================================
 
-This document describes the differences between v7.0.0 and v6.x.x   
+This document describes the differences between v7.x.x and v7.0.0   
 
 
 
     CONTENTS
     --------
-    1.  New or Changed Features
-    2.  Resolved Issues
-    3.  Firmware Requirements
-    4.  Kernel Requirements
-    5.  Download, Documentation & Support
+    1           New, Changed or Resolved Features
+        1.1     Compilation
+        1.2     Callback
+        1.3     Python
+        1.4     Client
+        1.5     Detector Server
+        1.6     Simulator
+        1.7     Receiver
+        1.8     Gui
+    2           On-board Detector Server Compatibility
+    3           Firmware Requirements
+    4           Kernel Requirements
+    5           Download, Documentation & Support
 
 
 
 
-1. New or Changed Features
-==========================
-
-- Fixed minor warnings (will fix commandline print of excess packets for missing packets)
-- ctb slow adcs and any other adcs (other than temp) goes to the control Server
-- number of udp interfaces is 2 for Eiger (CHANGE IN API??)
-- added module id for virtual servers into the udp header
-- refactoring (rxr)
-- fixed patsetbit and patsetmask for moench
-- changed default vref of adc9257 to 2V for moench (from 1.33V)
-- moench and ctb - can set the starting frame number of next acquisition
-- mythen server kernel check incompatible (cet timezone)
-- rx_arping
-- rx_threadsids max is now 9 (breaking api)
-- fixed datastream disabling for eiger. Its only available in 10g mode.
-- m3 server crash (vthrehsold dac names were not provided)
-- allow vtrim to be interpolated for Eiger settings
-- m3 setThresholdEnergy and setAllThresholdEnergy was overwriting gaincaps with settings enum
-- can set localhost with virtual server with minimum configuration: (hostname localhost, rx_hostname localhost, udp_dstip auto)
-- increases the progress according to listened index. (not processed index)
-- current frame index points to listened frame index (not processed index)
-- when in discard partial frames or empty mode, the frame number doesnt increase by 1, it increases to that number (so its faster)
-- file write disabled by default
-- eiger 12 bit mode
-- start non blocking acquisition at modular level
-- connect master commands to api (allow set master for eiger)
---ignore-config command line
-- command line argument 'master' mainly for virtual servers (also master/top for real eiger), only one virtual server for eiger, use command lines for master/top
-- stop servers also check for errors at startup( in case it was running with an older version)
-- hostname cmd failed when connecting to servers in update mode (ctb, moench, jungfrau, eiger)
-- missingpackets signed (negative => extra packets)
-- framescaught and frameindex now returns a vector for each port
-- progress looks at activated or enabled ports, so progress does not stagnate
-- (eiger) disable datastreaming also for virtual servers only for 10g
-- missing packets also takes care of disabled ports
-- added geometry to metadata
-- 10g eiger nextframenumber get fixed.
-- stop, able to set nextframenumber to a consistent (max + 1) for all modules if different (eiger/ctb/jungfrau/moench)
-- ctb: can set names for all the dacs
-- fpga/kernel programming, checks if drive is a special file and not a normal file
-- gotthard 25 um image reconstructed in gui and virtual hdf5 (firmware updated for slave to reverse channels)
-- master binary file in json format now
-- fixed bug introduced in 6.0.0: hdf5 files created 1 file per frame after the initial file which had maxframesperfile
-- rx_roi
-- m3 polarity, interpolation (enables all counters when enabled), pump probe, analog pulsing, digital pulsing
-- updatedetectorserver - removes old server current binary pointing to for blackfin
-- removing copydetectorserver using tftp 
-- registerCallBackRawDataReady and registerCallBackRawDataModifyReady now gives a sls_receiver_header* instead of a char*, and uint32_t to size_t
-- registerCallBackStartAcquisition gave incorrect imagesize (+120 bytes). corrected.
-- registerCallBackStartAcquisition parameter is a const string reference
-- m3 (runnig config second time with tengiga 0, dr !=32, counters !=0x7) calculated incorrect image size expected
-- fixed row column indexing (mainly for multi module Jungfrau 2 interfaces )
-- eiger gui row indices not flipped anymore (fix in config)
-- m3 (settings dac check disabled temporarily?)
-- m3 virtual server sends the right pacets now
-- gap pixels in gui enabled by default
-- rxr src files and classes (detectordata, ZmqSocket, helpDacs) added to sls namespace, and macros (namely from logger (logINFO etc)), slsDetectorGui (make_unique in implemtnation requires sls nemspace (points to std otherwise) but not deectorImpl.cpp)
-- blackfin programing made seamless (nCE fixed which helps)
--save settings file for m3 and eiger
-- m3 threshold changes
-- g2 and m3 clkdiv 2 (system clock) change should affect time settings (g2: exptime, period, delayaftertrigger, burstperiod, m3: exptime, gatedelay, gateperiod, period, delayaftertrigger)
-- g2 system frequency is the same irrespective of timing source
-- (apparently) rxr doesnt get stuck anymore from 6.1.1
-- rxr mem size changed (fifo header size from 8 to 16) due to sls rxr header = 112.. 112+ 16=128 (reduces packet losss especially for g2)
--udp_srcip and udp_Srcip2: can set to auto (for virtual or 1g data networks)
-- set dataset name for all hdf5 files to "data" only
-- number of storage cells is not updated in teh receiver. done. and also allowing it to be modified in running status
-- refactored memory structure in receiver and listener code (maybe resolves stuck issue, need to check)
-- callback modified to have rx header and not rx header pointer
-- adapted for g2 hdi v2.0. able to set master from server command line, server config file, and client.
-- rx udp socket refactored (maybe resolves getting stuck?)remove check for eiger header and isntead checks for malformed packets for every detector
-- jungfrau sw trigger , blocking trigger
--help should not create a new object
-- jungfrau master
-- g2 parallel command
-- jungfrau sync
-- m3 bad channels (badchannel file also for g2 extended to include commas and colons, remove duplicates)
-- m3 fix for gain caps to invert where needed when loading from trimbit file (fix for feature might have been added only in developer branch)
-- pat loop and wait address default
-- ctb and moench Fw fixed (to work with pattern commdand) )addreess length
-- setting rx_hostname (or udp_dstip with rx_hostname not none) will always set udp_dstmac. solves problem of chaing udp_dstip and udp_dstmac stays the same
-- jungfrau reset core and usleep removed (fix for 6.1.1 is now fixed in firmware)
-- m3 clock update, m3 clk 4 and 5 cannot be set
-- g2 change clkdivs 2 3 4 to defaults for burst and cw mode.
-- ctb and moench: allowing 1g non blocking acquire to send data
-- m3 and g2 rr
-- m3 and g2 temp
-- gain plot zooming fixed (disabled, acc. to main plot)
-- ctb, moench, jungfrau (pll reset at start fixed, before no defines)
-- pybind built into package, no need to update submodule when previous release had different pybind version
-- adcvpp moved from dac.. and api added (ctb, moench)
-- qt4->qt5
-    - in built qt5 6.1.5 because rhel7 is not upto date with qt5, removed findqwt.cmake
-    - made a fix in qwt lib (qwt_plot_layout.h) to work with 5.15 and lower versions
-    - qt5 forms fixed, qt4 many hard coding forms switched to forms including qtabwidget, scrolls etc, fonts moved to forms
-    - docking option enabled by default, removed option to disable docking feature from "Mode"
-    - added qVersionResolve utility functions to handle compatibility before and after qt5.12
-    - qtplots (ian's code) takes in gain mode enable to set some settings within the class, with proper gain plot ticks
-    - ensure gain plots have no zooming of z axis in 2d and y axis in 1d
-- fixed some error messages in server side  that were empty for fail in funcs (mostly minor as if this error, major issues)
-- eiger (removed feb reset in stop acquisition as it caused processing bit to randomly not go high (leads to infinite loop waiting for it to go high). This is anyway done at prepare acquisition and set trimbits.
-    - left AND right registers monitored for processing bit done
-    - febProcessinginprogress returns STATUS_IDLE and not IDLE
-    - In feb stop acquisition, if processing bit is running forever, checks for 1 s, then if acq done bit is high, returns ok, else throws
-    - feb stop acquisition returns 1 if success and fucntion in list calling it compares properly instead of STATUS_IDLE (no effect, but incorrect logic)
-    - chipsignals to trimquad should only monitor right fpga (not both as it will throw)
-    - fixed error messages of readregister inconsistent values
-    - setmodule and read frame was returning fail without setting error messages (leading to broken tcp connection due to no error message)  ) 
-- gui nios temperature added
-- detector header change (bunchid, reserved, debug, roundRnumber) ->detSpec1 - 4
- -ctb and moench (allowing all clkdivs (totaldiv was a float instead of int))
- - txndelay_ ->txdelay_ (also for python), txdelay = delay for all with step
- - hardwareversion 
-- jungfrau connected moduleid to detid_jungfrau.txt on board
+1 New, Changed or Resolved Features
+=====================================
 
 
-2. Resolved Issues
-==================
-    - Reading back sub-microsecond exposure times from the Python API. 
+- moench being made compatible with jungfrau 2.0 boards (jungfrau structure, away from ctb)
+- eiger febl and febr in versions, ensure its the same as beb fw version
+- eiger hardware version fx30 and fx70 (versions command)
+- fixed rx_arping error
+- fix hdf5 compilation (detspec fields)
 
-3. Firmware Requirements
-========================
-        
-    Eiger
-    =====  
-    Compatible version : 08.10.2021 (v29)
+
+
+2  On-board Detector Server Compatibility
+==========================================
+
+
+    Eiger       7.0.0
+    Jungfrau    7.0.0
+    Mythen3     7.0.0
+    Gotthard2   7.0.0
+    Gotthard    7.0.0
+    Moench      7.0.0
+    Ctb         7.0.0
     
-    Jungfrau
-    ========       
-    Compatible version : 31.08.2021 (v1.2, PCB v1.0) 
-                       : 08.10.2021 (v2.2, PCB v2.0)
 
-    Gotthard
-    ========   
-    Compatible version : 08.02.2018 (50um and 25um Master)
-                       : 09.02.2018 (25 um Slave) 
+    On-board Detector Server Upgrade
+    --------------------------------
 
-    Mythen3
-    =======
-    Compatible version : 10.09.2021 (v1.1)
-
-    Gotthard2
-    =========
-    Compatible version : 27.05.2021 (v0.1)
-
-    Moench
-    ======
-    Compatible version : 05.10.2020 (v1.0)
-
-    Ctb
-    ===
-    Compatible version : 05.10.2020 (v1.0)
-
-    Detector Upgrade
-    ================
-    The following can be upgraded remotely:
-    Eiger      via bit files
-    Jungfrau   via command <.pof>
-    Mythen3    via command <.rbf>
-    Gotthard2  via command <.rbf> 
-    Moench     via command <.pof>
-    Ctb        via command <.pof>
-
-    The following cannot be upgraded remotely:
-    Gotthard   
+    From v6.1.0 (without tftp):
+        Using command 'updatedetectorserver'
+    From 5.0.0 (with tftp):
+        Using command 'copydetectorserver'
 
     Instructions available at
-        https://slsdetectorgroup.github.io/devdoc/firmware.html
-    and
         https://slsdetectorgroup.github.io/devdoc/serverupgrade.html
 
 
 
-4. Kernel Requirements
+
+3 Firmware Requirements
+========================
+
+
+    Eiger       20.02.2023 (v31)
+    
+    Jungfrau    04.11.2022 (v1.4, HW v1.0) 
+                03.11.2022 (v2.4, HW v2.0)
+
+    Mythen3     24.01.2023 (v1.4)
+
+    Gotthard2   23.11.2022 (v0.3)
+
+    Gotthard    08.02.2018 (50um and 25um Master)
+                09.02.2018 (25 um Slave) 
+
+    Moench      05.12.2022 (v0.3)
+
+    Ctb         05.12.2022 (v1.1)
+
+
+    Detector Upgrade
+    ----------------
+
+    The following can be upgraded remotely:
+
+    Eiger      via bit files
+    Jungfrau   via command <.pof>
+    Mythen3    via command <.rbf>
+    Gotthard2  via command <.rbf>
+    Moench     via command <.pof>
+    Ctb        via command <.pof>
+
+    Gotthard cannot be upgraded remotely  
+
+    Except Eiger, 
+        upgrade 
+            Using command 'programfpga' or
+
+        udpate both server and firmware simultaneously
+            Using command 'update'
+
+
+    Instructions available at
+        https://slsdetectorgroup.github.io/devdoc/firmware.html
+
+
+
+
+4 Kernel Requirements
 ======================
 
     Blackfin 
-    ========
+    --------
     Latest version: Fri Oct 29 00:00:00 2021
     
     Older ones will work, but might have issues with programming firmware via
     the package.
 
     Nios
-    ====
+    -----
     Compatible version: Mon May 10 18:00:21 CEST 2021
 
     Kernel Upgrade
-    ==============
+    ---------------
     Eiger   via bit files
     Others  via command
 
@@ -216,7 +139,8 @@ This document describes the differences between v7.0.0 and v6.x.x
 
 
 
-5. Download, Documentation & Support
+
+5 Download, Documentation & Support
 ====================================
 
     Download
@@ -229,7 +153,10 @@ This document describes the differences between v7.0.0 and v6.x.x
     -------------
     
     Installation:
-        https://slsdetectorgroup.github.io/devdoc/installation.html#
+        https://slsdetectorgroup.github.io/devdoc/installation.html
+
+    Quick Start Guide:
+        https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
         
     Firmware Upgrade:
         https://slsdetectorgroup.github.io/devdoc/firmware.html
@@ -249,9 +176,6 @@ This document describes the differences between v7.0.0 and v6.x.x
     Command Line Documentation:
         https://slsdetectorgroup.github.io/devdoc/commandline.html
 
-    Quick Start Guide:
-        https://slsdetectorgroup.github.io/devdoc/quick_start_guide.html
-        
     C++ API Documentation:
         https://slsdetectorgroup.github.io/devdoc/detector.html
        
@@ -268,8 +192,16 @@ This document describes the differences between v7.0.0 and v6.x.x
         https://slsdetectorgroup.github.io/devdoc/receivers.html
         https://slsdetectorgroup.github.io/devdoc/slsreceiver.html
 
+    Detector UDP Header:
+        https://slsdetectorgroup.github.io/devdoc/udpheader.html
+        https://slsdetectorgroup.github.io/devdoc/udpdetspec.html
+
+    slsReceiver Zmq Format:
+        https://slsdetectorgroup.github.io/devdoc/slsreceiver.html#zmq-json-header-format
+
     TroubleShooting:
         https://slsdetectorgroup.github.io/devdoc/troubleshooting.html
+        https://slsdetectorgroup.github.io/devdoc/troubleshooting.html#receiver-pc-tuning-options
         
     Further Documentation:
         https://www.psi.ch/en/detectors/documentation
@@ -283,4 +215,3 @@ This document describes the differences between v7.0.0 and v6.x.x
 
         dhanya.thattil@psi.ch
         erik.frojdh@psi.ch
-

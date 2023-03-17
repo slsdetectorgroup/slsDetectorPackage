@@ -66,11 +66,15 @@ For a Single Module
         # sets destination udp ports (not needed, default is 50001)
         udp_dstport 50012
 
+        # 1g data out
         # source udp ips must be same subnet at destintaion udp ips
-        udp_srcip 192.168.1.112
-
+        # udp_srcip 192.168.1.112
         # destination udp ip picked up from rx_hostname (if auto)
-        udp_dstip auto
+        # udp_dstip auto
+
+        # 10g data out
+        udp_srcip 10.30.20.200
+        udp_dstip 10.30.20.6
 
         # set file path
         fpath /tmp

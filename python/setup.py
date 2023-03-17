@@ -7,7 +7,7 @@ Build upon the pybind11 example found here: https://github.com/pybind/python_exa
 
 import os
 import sys
-sys.path.append('../libs/pybind11')
+sys.path.append('../libs/pybind')
 from setuptools import setup, find_packages
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 
@@ -22,19 +22,25 @@ def get_conda_path():
     return os.environ['CONDA_PREFIX']
 
 
-#TODO migrate to CMake build? 
+#TODO migrate to CMake build or fetch files from cmake? 
 ext_modules = [
     Pybind11Extension(
         '_slsdet',
         ['src/main.cpp',
-        'src/current.cpp',
         'src/enums.cpp',
+        'src/current.cpp',
         'src/detector.cpp',
         'src/network.cpp',
         'src/pattern.cpp',
-        'src/scan.cpp',],
+        'src/scan.cpp',
+        'src/duration.cpp',
+        'src/DurationWrapper.cpp',
+        ]
+        
+        
+        ,
         include_dirs=[
-            os.path.join('../libs/pybind11/include'),
+            os.path.join('../libs/pybind/include'),
             os.path.join(get_conda_path(), 'include'),
 
         ],

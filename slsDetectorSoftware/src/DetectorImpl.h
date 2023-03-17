@@ -306,6 +306,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     void getBadChannels(const std::string &fname, Positions pos) const;
     void setBadChannels(const std::string &fname, Positions pos);
+    void setBadChannels(const std::vector<int> list, Positions pos);
 
     std::vector<std::string> getCtbDacNames() const;
     std::string getCtbDacName(defs::dacIndex i) const;
@@ -348,8 +349,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     void updateDetectorSize();
 
-    int destroyReceivingDataSockets();
-    int createReceivingDataSockets();
+    void destroyReceivingDataSockets();
+    void createReceivingDataSockets();
 
     /**
      * Reads frames from receiver through a constant socket
@@ -357,7 +358,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     void readFrameFromReceiver();
 
-    /** [Eiger][Jungfrau]
+    /** [Eiger][Jungfrau][Moench]
      * add gap pixels to the imag
      * @param image pointer to image without gap pixels
      * @param gpImage poiner to image with gap pixels, if NULL, allocated

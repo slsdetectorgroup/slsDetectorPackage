@@ -148,6 +148,18 @@ Squash(const Container &c, typename Container::value_type default_value = {}) {
     return default_value;
 }
 
+template <typename T>
+typename std::enable_if<is_container<T>::value, bool>::type
+removeDuplicates(T &c) {
+    auto containerSize = c.size();
+    std::sort(c.begin(), c.end());
+    c.erase(std::unique(c.begin(), c.end()), c.end());
+    if (c.size() != containerSize) {
+        return true;
+    }
+    return false;
+}
+
 } // namespace sls
 
 #endif // CONTAINER_UTILS_H

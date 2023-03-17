@@ -1,14 +1,3 @@
-
-
-
-.. note :: 
-
-    The default branch of our git repository is developer. It contains the 
-    latest development version. It is expected to compile and work but 
-    features might be added or tweaked. In some cases the API might also change
-    without being communicated. If absolute stability of the API is needed please
-    use one of the release versions. 
-
 .. warning ::
     
     Before building from source make sure that you have the 
@@ -55,7 +44,13 @@ We have three different packages available:
 .. code-block:: bash
 
     #List available versions
+    # lib and binaries
+    conda search slsdetlib
+    # python
     conda search slsdet
+    # gui
+    conda search slsdetgui
+
 
 
 
@@ -71,12 +66,12 @@ Build from source
     git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git --branch 6.1.1
 
 
-| **Pybind**
+| **Pybind for Python**
 | v7.0.0+:
 |   pybind11 packaged into 'libs/pybind'. No longer a submodule. No need for "recursive" or "submodule update".
 | 
 | Older versions:
-|   pybind11 is a submodule> Must be cloned using "recursive" and updated when switching between versions using the following commands.
+|   pybind11 is a submodule. Must be cloned using "recursive" and updated when switching between versions using the following commands.
 
 .. code-block:: bash
     
@@ -133,14 +128,14 @@ Example cmake options               Comment
 ===============================     ===========================================
 -DSLS_USE_PYTHON=ON                 Python
 -DPython_FIND_VIRTUALENV=ONLY       Python from only the conda environment 
--DZeroMQ_HINT=/usr/lib64            System zmq instead of conda
+-DZeroMQ_HINT=/usr/lib64            Use system zmq instead
 -DSLS_USE_GUI=ON                    GUI
 ===============================     ===========================================
 
 
 
-Build using in-build cmk.sh script
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Build using in-built cmk.sh script
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 .. code-block:: bash
@@ -155,7 +150,7 @@ Build using in-build cmk.sh script
     -c: Clean
     -d: HDF5 Custom Directory
     -e: Debug mode
-    -g: Build/Rebuilds only gui
+    -g: Build/Rebuilds gui
     -h: Builds/Rebuilds Cmake files with HDF5 package
     -i: Builds tests
     -j: Number of threads to compile through
@@ -172,17 +167,18 @@ Build using in-build cmk.sh script
     -z: Moench zmq processor
 
     
-    # get all options
+    # display all options
     ./cmk.sh -?
 
-    # new build and compile in parallel:
-    ./cmk.sh -bj5
+    # new build and compile in parallel (recommended basic option):
+    ./cmk.sh -cbj5
 
     # new build, python and compile in parallel:
-    ./cmk.sh -bpj5
+    ./cmk.sh -cbpj5
 
-    #To use the system zmq (/usr/lib64) instead of conda
-    ./cmk.sh -bj5 -q /usr/lib64
+    #To use the system zmq (/usr/lib64) instead
+    ./cmk.sh -cbj5 -q /usr/lib64
+
 
 
 Build on old distributions
@@ -204,8 +200,57 @@ using this compiler
     make -j12
 
 
+
+Build slsDetectorGui (Qt5)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. Using pre-built binary on conda
+    .. code-block:: bash
+
+        conda create -n myenv slsdetgui=7.0.0
+        conda activate myenv
+
+
+2. Using system installation on RHEL7
+    .. code-block:: bash
+
+        yum install qt5-qtbase-devel.x86_64
+        yum install qt5-qtsvg-devel.x86_64 
+
+
+3. Using conda
+    .. code-block:: bash
+
+        #Add channels for dependencies and our library
+        conda config --add channels conda-forge
+        conda config --add channels slsdetectorgroup
+        conda config --set channel_priority strict
+
+        # create environment to compile
+        # on rhel7
+        conda create -n slsgui zeromq gxx_linux-64 gxx_linux-64 mesa-libgl-devel-cos6-x86_64 qt
+        # on fedora or newer systems
+        conda create -n slsgui zeromq qt
+
+        # when using conda compilers, would also need libgl, but no need for it on fedora unless maybe using it with ROOT
+
+        # activate environment
+        conda activate slsgui
+
+        # compile with cmake outside slsDetecorPackage folder
+        mkdir build && cd build
+        cmake ../slsDetectorPackage -DSLS_USE_GUI=ON
+        make -j12
+
+        # or compile with cmk.sh
+        cd slsDetectorPackage
+        ./cmk.sh -cbgj9
+
+
+
+
 Build this documentation
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 The documentation for the slsDetectorPackage is build using a combination 
 of Doxygen, Sphinx and Breathe. The easiest way to install the dependencies
@@ -213,11 +258,15 @@ is to use conda
 
 .. code-block:: bash
 
-    conda create -n myenv python sphinx sphinx_rtd_theme
+    conda create -n myenv python sphinx_rtd_theme breathe
 
-Then enable the option SLS_BUILD_DOCS to create the targets
 
 .. code-block:: bash
+
+    # using cmake or ccmake to enable DSLS_BUILD_DOCS
+    # outside slsDetecorPackage folder
+    mkdir build && cd build
+    cmake ../slsDetectorPackage -DSLS_BUILD_DOCS=ON
 
     make docs # generate API docs and build Sphinx RST
     make rst # rst only, saves time in case the API did not change

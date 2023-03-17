@@ -49,13 +49,13 @@ Jungfrau
    +----------+--------------------+-----+----------------------------------------+
    | 0        | High gain          |  1  | High Gain enabled                      |
    |          |                    +-----+----------------------------------------+
-   |          |                    | 0   | High Gain disabled                     |
+   |          |                    |  0  | High Gain disabled                     |
    +----------+--------------------+-----+----------------------------------------+
    | 1        | Fix gain stage 1   |  1  | Gain stage 1 fixed. The switch that    |
    |          |                    |     | selects the gains stage 1 is active all|
    |          |                    |     | the time.                              |
    |          |                    +-----+----------------------------------------+
-   |          |                    | 0   | Gain stage 1 unset. The switch that    |
+   |          |                    |  0  | Gain stage 1 unset. The switch that    |
    |          |                    |     | selects the gains stage 1 is inactive  |
    |          |                    |     | all the time.                          |
    +----------+--------------------+-----+----------------------------------------+
@@ -63,7 +63,7 @@ Jungfrau
    |          |                    |     | selects the gains stage 2 is active all|
    |          |                    |     | the time.                              |
    |          |                    +-----+----------------------------------------+
-   |          |                    | 0   | Gain stage 2 unset. The switch that    |
+   |          |                    |  0  | Gain stage 2 unset. The switch that    |
    |          |                    |     | selects the gains stage 2 is inactive  |
    |          |                    |     | all the time.                          |
    +----------+--------------------+-----+----------------------------------------+
@@ -71,7 +71,7 @@ Jungfrau
    |          |                    |     | Dynamic-gain switching is therefore    |
    |          |                    |     | disabled.                              |
    |          |                    +-----+----------------------------------------+
-   |          |                    | 0   | On-chip comparator active.             |
+   |          |                    |  0  | On-chip comparator active.             |
    +----------+--------------------+-----+-----+-----+----------------------------+
    | 7-5      | Jungfrau chip      |Bit 7|Bit 6|Bit 5| Description                |
    |          | version            +-----+-----+-----+----------------------------+
@@ -90,7 +90,7 @@ Jungfrau
    | 12       | Force switching    |  1  | Forced switching to gain stage 1 at the|
    |          | to gain stage 1    |     | start of the exposure period.          |
    |          |                    +-----+----------------------------------------+
-   |          |                    | 0   | Disabled forced gain switching to gain |
+   |          |                    |  0  | Disabled forced gain switching to gain |
    |          |                    |     | stage 1. Dynamic gain switching        |
    |          |                    |     | conditions apply.                      |
    +----------+--------------------+-----+----------------------------------------+
@@ -109,8 +109,8 @@ Jungfrau
    | 31       | External input flag|  1  | External input flag detected in the    |
    |          |                    |     | last exposure.                         |
    |          |                    +-----+----------------------------------------+
-   |          |                    | 0   | External input flag not detected in the|
-   |          |                    |     |  last exposure.                        |
+   |          |                    |  0  | External input flag not detected in the|
+   |          |                    |     | last exposure.                         |
    +----------+--------------------+-----+----------------------------------------+
 
 
@@ -124,6 +124,22 @@ Gotthard2
    | detSpec1 | Train Id [#]_                |
    +----------+------------------------------+
    | detSpec2 | Bunch Id [#]_                |
+   +----------+------------------------------+
+   | detSpec3 | 0                            |
+   +----------+------------------------------+
+   | detSpec4 | 0                            |
+   +----------+------------------------------+
+
+
+Mythen3
+----------
+
+.. table:: Detector Specific Field
+
+   +----------+------------------------------+
+   | detSpec1 | 0                            |
+   +----------+------------------------------+
+   | detSpec2 | 0                            |
    +----------+------------------------------+
    | detSpec3 | 0                            |
    +----------+------------------------------+

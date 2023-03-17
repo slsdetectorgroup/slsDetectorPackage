@@ -101,7 +101,8 @@ TEST_CASE("Move SharedMemory", "[detector]") {
     shm2 = std::move(shm); // shm is now a moved from object!
 
     CHECK(shm2()->x == 9);
-    CHECK(shm() == nullptr);
+    REQUIRE_THROWS(
+        shm()); // trying to access should throw instead of returning a nullptr
     CHECK(shm2.getName() == std::string("/slsDetectorPackage_detector_") +
                                 std::to_string(shm_id));
     shm2.removeSharedMemory();

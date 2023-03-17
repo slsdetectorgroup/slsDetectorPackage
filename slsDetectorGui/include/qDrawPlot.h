@@ -59,6 +59,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void ClonePlot();
     void SavePlot();
     void SetGapPixels(bool enable);
+    void UpdatePlot();
 
   protected:
     void resizeEvent(QResizeEvent *event);
@@ -67,7 +68,6 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void Zoom1DGainPlot(const QRectF &rect);
     void Zoom2DGainPlot(const QRectF &rect);
     void SetSaveFileName(QString val);
-    void UpdatePlot();
 
   signals:
     void AcquireFinishedSignal();

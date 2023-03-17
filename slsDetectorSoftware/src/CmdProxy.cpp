@@ -7,6 +7,7 @@
 #include "sls/ToString.h"
 #include "sls/bit_utils.h"
 #include "sls/container_utils.h"
+#include "sls/file_utils.h"
 #include "sls/logger.h"
 #include "sls/sls_detector_defs.h"
 
@@ -274,25 +275,36 @@ std::string CmdProxy::Versions(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
+        bool eiger = (det->getDetectorType().squash() == defs::EIGER);
         auto t = det->getFirmwareVersion(std::vector<int>{det_id});
-        os << "\nType     : " << OutString(det->getDetectorType())
-           << "\nRelease  : " << det->getPackageVersion() << std::hex
-           << "\nClient   : " << det->getClientVersion();
-        os << "\nFirmware : ";
-        if (det->getDetectorType().squash() == defs::EIGER) {
-            os << OutString(t);
+        os << "\nType            : " << OutString(det->getDetectorType())
+           << "\nRelease         : " << det->getPackageVersion() << std::hex
+           << "\nClient          : " << det->getClientVersion();
+
+        if (eiger) {
+            os << "\nFirmware (Beb)  : "
+               << OutString(det->getFirmwareVersion(std::vector<int>{det_id}));
+            os << "\nFirmware (Febl) : "
+               << OutString(det->getFrontEndFirmwareVersion(
+                      defs::FRONT_LEFT, std::vector<int>{det_id}));
+            os << "\nFirmware (Febr) : "
+               << OutString(det->getFrontEndFirmwareVersion(
+                      defs::FRONT_RIGHT, std::vector<int>{det_id}));
         } else {
-            os << OutStringHex(t);
+            os << "\nFirmware        : "
+               << OutStringHex(
+                      det->getFirmwareVersion(std::vector<int>{det_id}));
         }
-        os << "\nServer   : "
-           << OutString(
-                  det->getDetectorServerVersion(std::vector<int>{det_id}));
-        os << "\nHardware : "
+
+        os << "\nServer          : "
+           << OutString(det->getDetectorServerVersion(std::vector<int>{det_id}))
+           << "\nKernel          : "
+           << OutString(det->getKernelVersion({std::vector<int>{det_id}}))
+           << "\nHardware        : "
            << OutString(det->getHardwareVersion(std::vector<int>{det_id}));
-        os << "\nKernel   : "
-           << OutString(det->getKernelVersion({std::vector<int>{det_id}}));
+
         if (det->getUseReceiverFlag().squash(true)) {
-            os << "\nReceiver : "
+            os << "\nReceiver        : "
                << OutString(det->getReceiverVersion(std::vector<int>{det_id}));
         }
         os << std::dec << '\n';
@@ -514,7 +526,8 @@ std::string CmdProxy::GapPixels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[0, 1]\n\t[Eiger][Jungfrau] Include Gap pixels in client data "
+        os << "[0, 1]\n\t[Eiger][Jungfrau][Moench] Include Gap pixels in "
+              "client data "
               "call back in Detecor api. Will not be in detector streaming, "
               "receiver file or streaming. Default is 0. "
            << '\n';
@@ -546,9 +559,9 @@ std::string CmdProxy::BadChannels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Gotthard2][Mythen3] Sets the bad channels (from "
-              "file of bad channel numbers) to be masked out."
-              "\n\t[Mythen3] Also does trimming"
+        os << "[fname|none|0]\n\t[Gotthard2][Mythen3] Sets the bad channels "
+              "(from file of bad channel numbers) to be masked out. None or 0 "
+              "unsets all the badchannels.\n\t[Mythen3] Also does trimming"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
@@ -557,10 +570,25 @@ std::string CmdProxy::BadChannels(int action) {
         det->getBadChannels(args[0], std::vector<int>{det_id});
         os << "successfully retrieved" << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 1) {
+        bool parse = false;
+        if (args.size() == 0) {
             WrongNumberOfParameters(1);
+        } else if (args.size() == 1) {
+            if (args[0] == "none" || args[0] == "0") {
+                det->setBadChannels(std::vector<int>{},
+                                    std::vector<int>{det_id});
+            } else if (args[0].find(".") != std::string::npos) {
+                det->setBadChannels(args[0], std::vector<int>{det_id});
+            } else {
+                parse = true;
+            }
         }
-        det->setBadChannels(args[0], std::vector<int>{det_id});
+        // parse multi args or single one with range or single value
+        if (parse || args.size() > 1) {
+            // get channels
+            auto list = getChannelsFromStringList(args);
+            det->setBadChannels(list, std::vector<int>{det_id});
+        }
         os << "successfully loaded" << '\n';
     } else {
         throw RuntimeError("Unknown action");
@@ -589,8 +617,8 @@ std::string CmdProxy::Exptime(int action) {
     if (action == defs::HELP_ACTION) {
         if (cmd == "exptime") {
             os << "[duration] [(optional unit) "
-                  "ns|us|ms|s]\n\t[Eiger][Jungfrau][Gotthard][Gotthard2]["
-                  "Moench][Ctb] Exposure time"
+                  "ns|us|ms|s]\n\t[Eiger][Jungfrau][Moench][Gotthard]["
+                  "Gotthard2][Ctb] Exposure time"
                   "\n\t[Mythen3] Exposure time of all gate signals in auto and "
                   "trigger mode (internal gating). To specify gate index, use "
                   "exptime1, exptime2, exptime3."
@@ -674,9 +702,10 @@ std::string CmdProxy::ReadoutSpeed(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "\n\t[0 or full_speed|1 or half_speed|2 or "
-              "quarter_speed]\n\t\t[Eiger][Jungfrau] Readout "
+              "quarter_speed]\n\t\t[Eiger][Jungfrau][Moench] Readout "
               "speed of chip.\n\t\t[Eiger] Default speed is full_speed."
-              "\n\t\t[Jungfrau] Default speed is half_speed. full_speed "
+              "\n\t\t[Jungfrau][Moench] Default speed is half_speed. "
+              "full_speed "
               "option only available from v2.0 boards and is recommended to "
               "set "
               "number of interfaces to 2. Also overwrites "
@@ -685,7 +714,7 @@ std::string CmdProxy::ReadoutSpeed(int action) {
            << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash();
-        if (type == defs::CHIPTESTBOARD || type == defs::MOENCH) {
+        if (type == defs::CHIPTESTBOARD) {
             throw RuntimeError(
                 "ReadoutSpeed not implemented. Did you mean runclk?");
         }
@@ -714,10 +743,11 @@ std::string CmdProxy::Adcphase(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_value] "
-              "[(optional)deg]\n\t[Jungfrau][Ctb][Moench][Gotthard] "
-              "Phase shift of ADC clock. \n\t[Jungfrau] Absolute phase shift. "
+              "[(optional)deg]\n\t[Jungfrau][Moench][Ctb][Gotthard] "
+              "Phase shift of ADC clock. \n\t[Jungfrau][Moench] Absolute phase "
+              "shift. "
               "If deg used, then shift in degrees. Changing Speed also resets "
-              "adcphase to recommended defaults.\n\t[Ctb][Moench] Absolute "
+              "adcphase to recommended defaults.\n\t[Ctb] Absolute "
               "phase shift. If deg used, then shift in degrees. Changing "
               "adcclk also resets adcphase and sets it to previous "
               "values.\n\t[Gotthard] Relative phase shift. Cannot get"
@@ -770,7 +800,8 @@ std::string CmdProxy::Dbitphase(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_value] [(optional)deg]\n\t[Ctb][Jungfrau] Phase shift of "
+        os << "[n_value] [(optional)deg]\n\t[Ctb][Jungfrau][Moench] Phase "
+              "shift of "
               "clock to latch digital bits. Absolute phase shift. If deg used, "
               "then shift in degrees. \n\t[Ctb]Changing dbitclk also resets "
               "dbitphase and sets to previous values."
@@ -1007,7 +1038,8 @@ std::string CmdProxy::CurrentSource(int action) {
         os << "\n\t[0|1]\n\t\t[Gotthard2] Enable or disable current source. "
               "Default "
               "is disabled.\n\t[0|1] [fix|nofix] [select source] [(only for "
-              "chipv1.1)normal|low]\n\t\t[Jungfrau] Disable or enable current "
+              "chipv1.1)normal|low]\n\t\t[Jungfrau][Moench] Disable or enable "
+              "current "
               "source with some parameters. The select source is 0-63 for "
               "chipv1.0 and a 64 bit mask for chipv1.1. To disable, one needs "
               "only one argument '0'."
@@ -1256,7 +1288,7 @@ std::string CmdProxy::ResetDacs(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[(optional) hard] "
-              "\n\t[Eiger][Jungfrau][Gotthard][Moench][Gotthard2]["
+              "\n\t[Eiger][Jungfrau][Moench][Gotthard][Gotthard2]["
               "Mythen3]Reset dac values to the defaults. A 'hard' optional "
               "reset will reset the dacs to the hardcoded defaults in on-board "
               "detector server."
@@ -1287,7 +1319,8 @@ std::string CmdProxy::DefaultDac(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[dac name][value][(optional)setting]\n\tSets the default for "
-              "that dac to this value.\n\t[Jungfrau][Mythen3] When settings is "
+              "that dac to this value.\n\t[Jungfrau][Moench][Mythen3] When "
+              "settings is "
               "provided, it sets the default value only for that setting"
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -1430,10 +1463,12 @@ std::string CmdProxy::Trigger(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "trigger") {
-            os << "\n\t[Eiger][Mythen3][Jungfrau] Sends software trigger "
+            os << "\n\t[Eiger][Mythen3][Jungfrau][Moench] Sends software "
+                  "trigger "
                   "signal to detector";
         } else if (cmd == "blockingtrigger") {
-            os << "\n\t[Eiger][Jungfrau] Sends software trigger signal to "
+            os << "\n\t[Eiger][Jungfrau][Moench] Sends software trigger signal "
+                  "to "
                   "detector and blocks till the frames are sent out for that "
                   "trigger.";
         } else {
@@ -1463,13 +1498,28 @@ std::string CmdProxy::Trigger(int action) {
 
 /* Network Configuration (Detector<->Receiver) */
 
-IpAddr CmdProxy::getIpFromAuto() {
+IpAddr CmdProxy::getDstIpFromAuto() {
     std::string rxHostname =
         det->getRxHostname(std::vector<int>{det_id}).squash("none");
     // Hostname could be ip try to decode otherwise look up the hostname
     auto val = IpAddr{rxHostname};
     if (val == 0) {
         val = HostnameToIp(rxHostname.c_str());
+    }
+    return val;
+}
+
+IpAddr CmdProxy::getSrcIpFromAuto() {
+    if (det->getDetectorType().squash() == defs::GOTTHARD) {
+        throw RuntimeError(
+            "Cannot use 'auto' for udp_srcip for GotthardI Detector.");
+    }
+    std::string hostname =
+        det->getHostname(std::vector<int>{det_id}).squash("none");
+    // Hostname could be ip try to decode otherwise look up the hostname
+    auto val = IpAddr{hostname};
+    if (val == 0) {
+        val = HostnameToIp(hostname.c_str());
     }
     return val;
 }
@@ -1484,7 +1534,7 @@ UdpDestination CmdProxy::getUdpEntry() {
         std::string value = it.substr(pos + 1);
         if (key == "ip") {
             if (value == "auto") {
-                auto val = getIpFromAuto();
+                auto val = getDstIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip of detector " << det_id
                              << " to " << val;
                 udpDestination.ip = val;
@@ -1493,7 +1543,7 @@ UdpDestination CmdProxy::getUdpEntry() {
             }
         } else if (key == "ip2") {
             if (value == "auto") {
-                auto val = getIpFromAuto();
+                auto val = getDstIpFromAuto();
                 LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id
                              << " to " << val;
                 udpDestination.ip2 = val;
@@ -1522,7 +1572,8 @@ std::string CmdProxy::UDPDestinationList(int action) {
               "[(optional)mac2=xx:xx:xx:xx:xx:xx]\n\t[port=value] "
               "[(optional)port2=value\n\tThe order of ip, mac and port does "
               "not matter. entry_value can be >0 only for "
-              "[Eiger][Jungfrau][Mythen3][Gotthard2] where round robin is "
+              "[Eiger][Jungfrau][Moench][Mythen3][Gotthard2] where round robin "
+              "is "
               "implemented. If 'auto' used, then ip is set to ip of "
               "rx_hostname."
            << '\n';
@@ -1567,8 +1618,9 @@ std::string CmdProxy::UDPSourceIP(int action) {
         os << "[x.x.x.x] or auto\n\tIp address of the detector (source) udp "
               "interface. Must be same subnet as destination udp "
               "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will replace "
-              "with its own DHCP IP address. If 'auto' used, then ip is set to "
-              "ip of rx_hostname."
+              "with its own DHCP IP address. \n\tOne can also set this to "
+              "'auto' for 1 GbE data and virtual detectors. It will set to IP "
+              "of detector. Not available for GotthardI"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getSourceUDPIP(std::vector<int>{det_id});
@@ -1582,7 +1634,7 @@ std::string CmdProxy::UDPSourceIP(int action) {
         }
         IpAddr val;
         if (args[0] == "auto") {
-            val = getIpFromAuto();
+            val = getSrcIpFromAuto();
             LOG(logINFO) << "Setting udp_srcip of detector " << det_id << " to "
                          << val;
         } else {
@@ -1601,11 +1653,13 @@ std::string CmdProxy::UDPSourceIP2(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[x.x.x.x] or auto\n\t[Jungfrau][Gotthard2] Ip address of the "
+        os << "[x.x.x.x] or auto\n\t[Jungfrau][Moench][Gotthard2] Ip address "
+              "of the "
               "detector (source) udp interface 2. Must be same subnet as "
-              "destination udp ip2.\n\t [Jungfrau] top half or inner "
-              "interface\n\t [Gotthard2] veto debugging. If 'auto' used, then "
-              "ip is set to ip of rx_hostname."
+              "destination udp ip2.\n\t [Jungfrau][Moench] top half or inner "
+              "interface\n\t [Gotthard2] veto debugging. \n\tOne can also set "
+              "this to 'auto' for 1 GbE data and virtual detectors. It will "
+              "set to IP of detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getSourceUDPIP2(std::vector<int>{det_id});
@@ -1619,7 +1673,7 @@ std::string CmdProxy::UDPSourceIP2(int action) {
         }
         IpAddr val;
         if (args[0] == "auto") {
-            val = getIpFromAuto();
+            val = getSrcIpFromAuto();
             LOG(logINFO) << "Setting udp_srcip2 of detector " << det_id
                          << " to " << val;
         } else {
@@ -1653,7 +1707,7 @@ std::string CmdProxy::UDPDestinationIP(int action) {
             WrongNumberOfParameters(1);
         }
         if (args[0] == "auto") {
-            auto val = getIpFromAuto();
+            auto val = getDstIpFromAuto();
             LOG(logINFO) << "Setting udp_dstip of detector " << det_id << " to "
                          << val;
             det->setDestinationUDPIP(val, std::vector<int>{det_id});
@@ -1673,9 +1727,10 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[x.x.x.x] or auto\n\t[Jungfrau][Gotthard2] Ip address of the "
+        os << "[x.x.x.x] or auto\n\t[Jungfrau][Moench][Gotthard2] Ip address "
+              "of the "
               "receiver (destination) udp interface 2. If 'auto' used, then ip "
-              "is set to ip of rx_hostname.\n\t[Jungfrau] bottom half "
+              "is set to ip of rx_hostname.\n\t[Jungfrau][Moench] bottom half "
               "\n\t[Gotthard2] veto debugging. "
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -1689,7 +1744,7 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
             WrongNumberOfParameters(1);
         }
         if (args[0] == "auto") {
-            auto val = getIpFromAuto();
+            auto val = getDstIpFromAuto();
             LOG(logINFO) << "Setting udp_dstip2 of detector " << det_id
                          << " to " << val;
             det->setDestinationUDPIP2(val, std::vector<int>{det_id});
@@ -1709,12 +1764,13 @@ std::string CmdProxy::TransmissionDelay(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_delay]\n\t[Eiger][Jungfrau][Mythen3] Set transmission delay "
+        os << "[n_delay]\n\t[Eiger][Jungfrau][Moench][Mythen3] Set "
+              "transmission delay "
               "for all modules in the detector using the step size "
               "provided.Sets up \n\t\t[Eiger] txdelay_left to (2 * mod_index * "
               "n_delay), \n\t\t[Eiger] txdelay_right to ((2 * mod_index + 1) * "
               "n_delay) and \n\t\t[Eiger] txdelay_frame to (2 *num_modules * "
-              "n_delay)  \n\t\t[Jungfrau][Mythen3] txdelay_frame to "
+              "n_delay)  \n\t\t[Jungfrau][Moench][Mythen3] txdelay_frame to "
               "(num_modules * n_delay)  \nfor every module."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2056,7 +2112,8 @@ std::string CmdProxy::TemperatureEvent(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[0]\n\t[Jungfrau] 1, if a temperature event occured. To clear "
+        os << "[0]\n\t[Jungfrau][Moench] 1, if a temperature event occured. To "
+              "clear "
               "this event, set it to 0.\n\tIf temperature crosses threshold "
               "temperature and temperature control is enabled, power to chip "
               "will be switched off and temperature event occurs. To power on "
@@ -2358,7 +2415,7 @@ std::string CmdProxy::ConfigureADC(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[chip index 0-10, -1 for all] [adc index 0-31, -1 for all] [12 "
+        os << "[chip index 0-9, -1 for all] [adc index 0-31, -1 for all] [7 "
               "bit configuration value in hex]\n\t[Gotthard2] Sets "
               "configuration for specific chip and adc, but configures 1 chip "
               "(all adcs for that chip) at a time."
@@ -2550,14 +2607,14 @@ std::string CmdProxy::GainCaps(int action) {
     return os.str();
 }
 
-/* CTB / Moench Specific */
+/* CTB Specific */
 
 std::string CmdProxy::Samples(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_samples]\n\t[CTB] Number of samples (both analog and "
-              "digitial) expected.\n\t[Moench] Number of samples (analog only)"
+              "digitial) expected.\n"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -2599,7 +2656,7 @@ std::string CmdProxy::AdcVpp(int action) {
     os << cmd << ' ';
 
     if (action == defs::HELP_ACTION) {
-        os << "[dac or mV value][(optional unit) mV] \n\t[Ctb][Moench] Vpp of "
+        os << "[dac or mV value][(optional unit) mV] \n\t[Ctb] Vpp of "
               "ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> "
               "2V. \n\tAdvanced User function!\n"
            << '\n';
@@ -2741,7 +2798,7 @@ std::string CmdProxy::Pattern(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Mythen3][Moench][Ctb] Loads ASCII pattern file "
+        os << "[fname]\n\t[Mythen3][Ctb] Loads ASCII pattern file "
               "directly to server (instead of executing line by line)"
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2762,8 +2819,8 @@ std::string CmdProxy::PatternWord(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[step or address] [64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 "
-              "bit pattern at address of pattern memory.\n\t[Ctb][Moench] read "
+        os << "[step or address] [64 bit mask]\n\t[Ctb][Mythen3] 64 "
+              "bit pattern at address of pattern memory.\n\t[Ctb] read "
               "is same as executing pattern"
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2822,11 +2879,11 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patlimits") {
-            os << "[start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] Limits "
+            os << "[start addr] [stop addr] \n\t[Ctb][Mythen3] Limits "
                   "of complete pattern."
                << '\n';
         } else if (cmd == "patloop") {
-            os << "[0-6] [start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] "
+            os << "[0-6] [start addr] [stop addr] \n\t[Ctb][Mythen3] "
                   "Limits of the loop level provided."
                << "\n\t[Mythen3] Level options: 0-3 only." << '\n';
         } else {
@@ -2837,6 +2894,8 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
         if (cmd != "patlimits") {
             GetLevelAndUpdateArgIndex(action, "patloop", level, iArg, nGetArgs,
                                       nPutArgs);
+            if (cmd != "patloop0" && cmd != "patloop1" && cmd != "patloop2")
+                os << level << ' ';
         }
         if (action == defs::GET_ACTION) {
             auto t =
@@ -2865,7 +2924,7 @@ std::string CmdProxy::PatternLoopCycles(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patnloop") {
-            os << "[0-6] [n_cycles] \n\t[Ctb][Moench][Mythen3] Number of "
+            os << "[0-6] [n_cycles] \n\t[Ctb][Mythen3] Number of "
                   "cycles of "
                   "the loop level provided."
                << "\n\t[Mythen3] Level options: 0-3 only." << '\n';
@@ -2876,6 +2935,8 @@ std::string CmdProxy::PatternLoopCycles(int action) {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
         GetLevelAndUpdateArgIndex(action, "patnloop", level, iArg, nGetArgs,
                                   nPutArgs);
+        if (cmd != "patnloop0" && cmd != "patnloop1" && cmd != "patnloop2")
+            os << level << ' ';
         if (action == defs::GET_ACTION) {
             auto t = det->getPatternLoopCycles(level, std::vector<int>{det_id});
             os << OutString(t) << '\n';
@@ -2899,7 +2960,7 @@ std::string CmdProxy::PatternWaitAddress(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patwait") {
-            os << "[0-6] [addr] \n\t[Ctb][Moench][Mythen3] Wait address for "
+            os << "[0-6] [addr] \n\t[Ctb][Mythen3] Wait address for "
                   "loop level provided."
                << "\n\t[Mythen3] Level options: 0-3 only.";
         } else {
@@ -2910,6 +2971,8 @@ std::string CmdProxy::PatternWaitAddress(int action) {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
         GetLevelAndUpdateArgIndex(action, "patwait", level, iArg, nGetArgs,
                                   nPutArgs);
+        if (cmd != "patwait0" && cmd != "patwait1" && cmd != "patwait2")
+            os << level << ' ';
         if (action == defs::GET_ACTION) {
             auto t = det->getPatternWaitAddr(level, std::vector<int>{det_id});
             os << OutStringHex(t, 4) << '\n';
@@ -2933,7 +2996,7 @@ std::string CmdProxy::PatternWaitTime(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patwaittime") {
-            os << "[0-6] [n_clk] \n\t[Ctb][Moench][Mythen3] Wait time in clock "
+            os << "[0-6] [n_clk] \n\t[Ctb][Mythen3] Wait time in clock "
                   "cycles for the loop provided."
                << "\n\t[Mythen3] Level options: 0-3 only." << '\n';
         } else {
@@ -2943,6 +3006,9 @@ std::string CmdProxy::PatternWaitTime(int action) {
         int level = -1, iArg = 0, nGetArgs = 0, nPutArgs = 1;
         GetLevelAndUpdateArgIndex(action, "patwaittime", level, iArg, nGetArgs,
                                   nPutArgs);
+        if (cmd != "patwaittime0" && cmd != "patwaittime1" &&
+            cmd != "patwaittime2")
+            os << level << ' ';
         if (action == defs::GET_ACTION) {
             auto t = det->getPatternWaitTime(level, std::vector<int>{det_id});
             os << OutString(t) << '\n';
@@ -2956,8 +3022,6 @@ std::string CmdProxy::PatternWaitTime(int action) {
     }
     return os.str();
 }
-
-/* Moench */
 
 std::string CmdProxy::AdditionalJsonHeader(int action) {
     std::ostringstream os;
@@ -3041,8 +3105,9 @@ std::string CmdProxy::ProgramFpga(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[fname.pof | fname.rbf (full "
-              "path)][(opitonal)--force-delete-normal-file]\n\t[Jungfrau][Ctb]["
-              "Moench] Programs FPGA from pof file (full path). Then, detector "
+              "path)][(opitonal)--force-delete-normal-file]\n\t[Jungfrau]["
+              "Moench][Ctb] "
+              "Programs FPGA from pof file (full path). Then, detector "
               "controller is rebooted. \n\t\tUse --force-delete-normal-file "
               "argument, if normal file found in device tree, it must be "
               "deleted, a new device drive created and programming "
@@ -3076,11 +3141,11 @@ std::string CmdProxy::UpdateDetectorServer(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[server_name  with full "
-              "path]\n\t[Jungfrau][Eiger][Ctb][Moench][Mythen3][Gotthard2] "
+              "path]\n\t[Jungfrau][Moench][Eiger][Ctb][Mythen3][Gotthard2] "
               "Copies detector server via TCP (without tftp). Makes a symbolic "
               "link with a shorter name (without vx.x.x). Then, detector "
               "controller reboots (except "
-              "Eiger).\n\t[Jungfrau][Ctb][Moench]Also changes respawn server "
+              "Eiger).\n\t[Jungfrau][Moench][Ctb]Also changes respawn server "
               "to the link, which is effective after a reboot."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -3102,7 +3167,7 @@ std::string CmdProxy::UpdateKernel(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[kernel_name with full "
-              "path]\n\t[Jungfrau][Ctb][Moench][Mythen3][Gotthard2] Advanced "
+              "path]\n\t[Jungfrau][Moench][Ctb][Mythen3][Gotthard2] Advanced "
               "Command!! You could damage the detector. Please use with "
               "caution.\n\tUpdates the kernel image. Then, detector controller "
               "reboots with new kernel."
@@ -3127,7 +3192,7 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
     if (action == defs::HELP_ACTION) {
         os << "\n\tWithout tftp: [server_name (incl fullpath)] [fname.pof "
               "(incl full path)] This does not use "
-              "tftp.\n\t\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
+              "tftp.\n\t\t[Jungfrau][Moench][Gotthard][CTB] Updates the "
               "firmware, detector server, deletes old server, creates the "
               "symbolic link and then reboots detector controller. "
               "\n\t\t[Mythen3][Gotthard2] will require a script to start up "
@@ -3189,7 +3254,7 @@ std::string CmdProxy::AdcRegister(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[address] [value]\n\t[Jungfrau][Ctb][Moench][Gotthard] Writes "
+        os << "[address] [value]\n\t[Jungfrau][Moench][Ctb][Gotthard] Writes "
               "to an adc register in hex. Advanced user Function!"
            << '\n';
     } else if (action == defs::GET_ACTION) {

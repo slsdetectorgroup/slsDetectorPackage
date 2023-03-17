@@ -87,19 +87,18 @@ void DataStreamer::CreateZmqSockets(uint32_t port, const IpAddr ip, int hwm) {
     std::string sip = ip.str();
     try {
         zmqSocket = new ZmqSocket(portnum, (ip != 0 ? sip.c_str() : nullptr));
+
         // set if custom
         if (hwm >= 0) {
             zmqSocket->SetSendHighWaterMark(hwm);
-            if (zmqSocket->GetSendHighWaterMark() != hwm) {
-                throw RuntimeError(
-                    "Could not set zmq send high water mark to " +
-                    std::to_string(hwm));
-            }
+            // needed, or HWL is not taken
+            zmqSocket->Rebind();
         }
-    } catch (...) {
-        LOG(logERROR) << "Could not create Zmq socket on port " << portnum
-                      << " for Streamer " << index;
-        throw;
+    } catch (std::exception &e) {
+        std::ostringstream oss;
+        oss << "Could not create zmq pub socket on port " << portnum;
+        oss << " [" << e.what() << ']';
+        throw RuntimeError(oss.str());
     }
     LOG(logINFO) << index << " Streamer: Zmq Server started at "
                  << zmqSocket->GetZmqServerAddress()

@@ -23,7 +23,7 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         SECTION("vb_comp") { test_dac(defs::VB_COMP, "vb_comp", 1220); }
         SECTION("vdd_prot") { test_dac(defs::VDD_PROT, "vdd_prot", 3000); }
         SECTION("vin_com") { test_dac(defs::VIN_COM, "vin_com", 1053); }
@@ -98,44 +98,11 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("numinterfaces", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getNumberofUDPInterfaces().tsquash(
-            "inconsistent numinterfaces to test");
-        {
-            std::ostringstream oss;
-            proxy.Call("numinterfaces", {"2"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "numinterfaces 2\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("numinterfaces", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "numinterfaces 1\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("numinterfaces", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "numinterfaces 1\n");
-        }
-        det.setNumberofUDPInterfaces(prev_val);
-    } else {
-        std::ostringstream oss;
-        proxy.Call("numinterfaces", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "numinterfaces 1\n");
-        REQUIRE_THROWS(proxy.Call("numinterfaces", {"1"}, -1, PUT));
-    }
-    REQUIRE_THROWS(proxy.Call("numinterfaces", {"3"}, -1, PUT));
-    REQUIRE_THROWS(proxy.Call("numinterfaces", {"0"}, -1, PUT));
-}
-
 TEST_CASE("selinterface", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         auto prev_val = det.getSelectedUDPInterface().tsquash(
             "inconsistent selected interface to test");
         {
@@ -160,13 +127,13 @@ TEST_CASE("selinterface", "[.cmd]") {
     }
 }
 
-/* Jungfrau Specific */
+/* Jungfrau/moench Specific */
 
 TEST_CASE("temp_threshold", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         auto prev_val = det.getThresholdTemperature();
         {
             std::ostringstream oss;
@@ -196,7 +163,7 @@ TEST_CASE("chipversion", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         REQUIRE_NOTHROW(proxy.Call("chipversion", {}, -1, GET));
     } else {
         REQUIRE_THROWS(proxy.Call("chipversion", {}, -1, GET));
@@ -208,7 +175,7 @@ TEST_CASE("temp_control", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         auto prev_val = det.getTemperatureControl();
         {
             std::ostringstream oss;
@@ -238,7 +205,7 @@ TEST_CASE("temp_event", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         {
             std::ostringstream oss;
             proxy.Call("temp_event", {"0"}, -1, PUT, oss);
@@ -259,7 +226,7 @@ TEST_CASE("autocompdisable", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         auto prev_val = det.getAutoComparatorDisable();
         {
             std::ostringstream oss;
@@ -289,7 +256,7 @@ TEST_CASE("compdisabletime", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU &&
+    if ((det_type == defs::JUNGFRAU || det_type == defs::MOENCH) &&
         det.getChipVersion().squash() * 10 == 11) {
         auto prev_val = det.getComparatorDisableTime();
         {
@@ -449,7 +416,7 @@ TEST_CASE("gainmode", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         auto prev_val = det.getGainMode();
         {
             std::ostringstream oss;
@@ -498,7 +465,7 @@ TEST_CASE("filtercells", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         // chip version 1.1
         if (det.getChipVersion().squash() * 10 == 11) {
             auto prev_val = det.getNumberOfFilterCells();
@@ -543,7 +510,7 @@ TEST_CASE("sync", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MOENCH) {
         auto prev_val = det.getSynchronization().tsquash(
             "inconsistent synchronization to test");
         {

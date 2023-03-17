@@ -9,9 +9,9 @@ The UDP data format for the packets consist of a common header for all detectors
 Current Version
 ---------------------------
 
-**v3.0 (slsDetectorPackage v7.0.0+)**
+**v2.0 (slsDetectorPackage v7.0.0+)**
 
-.. table:: <---------------------------------------------------- 8 bytes ---------------------------------------------------->
+.. table:: <---------------------------------------------------- 8 bytes per row --------------------------------------------->
     :align: center
     :widths: 30,30,30,15,15
 
@@ -29,6 +29,18 @@ Current Version
     |          **detSpec3**         |  **detSpec4** |detType|version|
     +-------------------------------+---------------+-------+-------+
 
+
+.. note :: 
+
+    Since there is no difference in the format of the UDP header from the detector
+    from the previous version (v2.0), the version number stays the same.
+    
+    Only the struture member names have changed in sls_detector_defs.h
+
+
+
+Description
+------------
 
 * **Detector specific field** descriptions are found :ref:`here<detector specific fields>`.
 
@@ -48,6 +60,12 @@ Current Version
 
 * **detType**: detector type from enum of detectorType in the package.
 
+* **version**: current version of the detector header (0x2).
+
+
+Detector Enum
+--------------
+
     ================    ========
     Detector Type        Value
     ================    ========
@@ -61,7 +79,6 @@ Current Version
     GOTTHARD2           7    
     ================    ========
 
-* **version**: current version of the detector header. It is at 0x3.
 
 
 Previous Versions

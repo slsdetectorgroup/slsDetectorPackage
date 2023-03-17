@@ -103,9 +103,9 @@ std::string Module::getControlServerLongVersion() const {
         char retval[MAX_STR_LENGTH]{};
         sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);
         return retval;
-    } 
+    }
     // throw with old server version (sends 8 bytes)
-    catch (RuntimeError& e) {
+    catch (RuntimeError &e) {
         std::string emsg = std::string(e.what());
         if (emsg.find(F_GET_SERVER_VERSION) && emsg.find("8 bytes")) {
             throwDeprecatedServerVersion();
@@ -118,7 +118,8 @@ void Module::throwDeprecatedServerVersion() const {
     uint64_t res = sendToDetectorStop<int64_t>(F_GET_SERVER_VERSION);
     std::cout << std::endl;
     std::ostringstream os;
-    os << "Detector Server (Control) version (0x" << std::hex << res << ") is incompatible with this client. Please update detector server!";
+    os << "Detector Server (Control) version (0x" << std::hex << res
+       << ") is incompatible with this client. Please update detector server!";
     throw RuntimeError(os.str());
 }
 

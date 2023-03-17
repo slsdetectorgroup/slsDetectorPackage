@@ -1097,6 +1097,9 @@ template <class dataType> class analogDetector {
         return thr;
     };
 
+    virtual int setClusterSize(int n = -1) { 
+    };
+
     /**
        gets threshold value for conversion into number of photons
        \returns threshold value

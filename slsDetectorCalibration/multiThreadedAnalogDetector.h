@@ -69,6 +69,11 @@ class threadedAnalogDetector {
     };
     virtual double setThreshold(double th) { return det->setThreshold(th); };
 
+    virtual double setClusterSize(int csx, int csy) { 
+      //cout << "44" << endl; 
+      return det->setClusterSize(csx); 
+    };
+
     virtual void setROI(int xmin, int xmax, int ymin, int ymax) {
         det->setROI(xmin, xmax, ymin, ymax);
     };

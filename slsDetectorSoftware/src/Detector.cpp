@@ -1186,10 +1186,12 @@ void Detector::setRxPort(int port, int module_id) {
         for (auto &it : port_list) {
             it = port++;
         }
+        // no need to verify hostname-port combo as unique port(incremented)
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setReceiverPort, {idet}, port_list[idet]);
         }
     } else {
+        pimpl->verifyRxPort(module_id, port);
         pimpl->Parallel(&Module::setReceiverPort, {module_id}, port);
     }
 }

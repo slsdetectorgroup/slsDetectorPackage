@@ -301,6 +301,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos);
 
+    void verifyRxPort(const int moduleId, const int port);
+
     std::pair<std::string, int> verifyRxPort(const std::string &receiver,
                                              std::vector<int> positions) const;
     std::vector<std::pair<std::string, int>>
@@ -400,6 +402,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     defs::xy getPortGeometry() const;
     defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
+
+    void verifyUniqueHost(std::vector<std::pair<std::string, int>> &hostnamePort) const;
 
     const int detectorIndex{0};
     SharedMemory<sharedDetector> shm{0, -1};

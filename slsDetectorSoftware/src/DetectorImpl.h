@@ -304,9 +304,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void verifyUniqueDetHost(const int port, std::vector<int> positions) const;
     void verifyUniqueRxHost(const int port, const int moduleId) const;
 
-    std::pair<std::string, int>verifyUniqueDetHost(const std::string &name);
-    std::pair<std::string, int> verifyUniqueRxHost(const std::string &name,
-                                             std::vector<int> positions) const;
+    std::pair<std::string, int> verifyUniqueDetHost(const std::string &name);
+    std::pair<std::string, int>
+    verifyUniqueRxHost(const std::string &name,
+                       std::vector<int> positions) const;
     std::vector<std::pair<std::string, int>>
     verifyUniqueRxHost(const std::vector<std::string> &names) const;
 
@@ -406,7 +407,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
     defs::xy getPortGeometry() const;
     defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
 
-    void verifyUniqueHost(bool isDet, std::vector<std::pair<std::string, int>> &hosts) const;
+    void
+    verifyUniqueHost(bool isDet,
+                     std::vector<std::pair<std::string, int>> &hosts) const;
 
     const int detectorIndex{0};
     SharedMemory<sharedDetector> shm{0, -1};

@@ -280,7 +280,7 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
 }
 
 void DetectorImpl::addModule(const std::string &name) {
-    LOG(logINFO) << "Adding module " << name;   
+    LOG(logINFO) << "Adding module " << name;
     auto host = verifyUniqueDetHost(name);
     std::string hostname = host.first;
     int port = host.second;
@@ -1521,20 +1521,22 @@ defs::xy DetectorImpl::calculatePosition(int moduleIndex,
     return pos;
 }
 
-void DetectorImpl::verifyUniqueDetHost(const int port, std::vector<int> positions) const{
+void DetectorImpl::verifyUniqueDetHost(const int port,
+                                       std::vector<int> positions) const {
     // port for given positions
     if (positions.empty() || (positions.size() == 1 && positions[0] == -1)) {
         positions.resize(modules.size());
         std::iota(begin(positions), end(positions), 0);
     }
     std::vector<std::pair<std::string, int>> hosts(size());
-    for (auto it: positions) {
+    for (auto it : positions) {
         hosts[it].second = port;
     }
     verifyUniqueHost(true, hosts);
 }
 
-void DetectorImpl::verifyUniqueRxHost(const int port, const int moduleId) const {
+void DetectorImpl::verifyUniqueRxHost(const int port,
+                                      const int moduleId) const {
     std::vector<std::pair<std::string, int>> hosts(size());
     hosts[moduleId].second = port;
     verifyUniqueHost(false, hosts);
@@ -1553,7 +1555,7 @@ DetectorImpl::verifyUniqueDetHost(const std::string &name) {
 
     int detSize = size();
     // mod not yet added
-    std::vector<std::pair<std::string, int>> hosts (detSize + 1);
+    std::vector<std::pair<std::string, int>> hosts(detSize + 1);
     hosts[detSize].first = hostname;
     hosts[detSize].second = port;
 
@@ -1563,7 +1565,7 @@ DetectorImpl::verifyUniqueDetHost(const std::string &name) {
 
 std::pair<std::string, int>
 DetectorImpl::verifyUniqueRxHost(const std::string &name,
-                           std::vector<int> positions) const {
+                                 std::vector<int> positions) const {
     // no checks if setting to none
     if (name == "none" || name.empty()) {
         return make_pair(name, 0);
@@ -1578,7 +1580,7 @@ DetectorImpl::verifyUniqueRxHost(const std::string &name,
     if (positions.empty() || (positions.size() == 1 && positions[0] == -1)) {
         positions.resize(modules.size());
         std::iota(begin(positions), end(positions), 0);
-    } 
+    }
 
     std::vector<std::pair<std::string, int>> hosts(size());
     for (auto it : positions) {
@@ -1608,29 +1610,33 @@ DetectorImpl::verifyUniqueRxHost(const std::vector<std::string> &names) const {
     return hosts;
 }
 
-void DetectorImpl::verifyUniqueHost(bool isDet, std::vector<std::pair<std::string, int>> &hosts) const {
-    
+void DetectorImpl::verifyUniqueHost(
+    bool isDet, std::vector<std::pair<std::string, int>> &hosts) const {
+
     // fill from shm if not provided
     for (int i = 0; i != size(); ++i) {
         if (hosts[i].first.empty()) {
-            hosts[i].first = (isDet ? modules[i]->getHostname() : modules[i]->getReceiverHostname());
+            hosts[i].first = (isDet ? modules[i]->getHostname()
+                                    : modules[i]->getReceiverHostname());
         }
         if (hosts[i].second == 0) {
-            hosts[i].second = (isDet ? modules[i]->getControlPort() : modules[i]->getReceiverPort());
+            hosts[i].second = (isDet ? modules[i]->getControlPort()
+                                     : modules[i]->getReceiverPort());
         }
     }
 
     // remove the ones without a hostname
     hosts.erase(std::remove_if(hosts.begin(), hosts.end(),
-                                     [](const std::pair<std::string, int> &x) {
-                                         return (x.first == "none" ||
-                                                 x.first.empty());
-                                     }),
-                      hosts.end());
+                               [](const std::pair<std::string, int> &x) {
+                                   return (x.first == "none" ||
+                                           x.first.empty());
+                               }),
+                hosts.end());
 
     // must be unique
     if (hasDuplicates(hosts)) {
-        throw RuntimeError("Cannot set due to duplicate hostname-port number pairs.");
+        throw RuntimeError(
+            "Cannot set due to duplicate hostname-port number pairs.");
     }
 
     for (auto it : hosts) {

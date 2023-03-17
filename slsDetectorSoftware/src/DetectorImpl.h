@@ -301,12 +301,14 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setDefaultDac(defs::dacIndex index, int defaultValue,
                        defs::detectorSettings sett, Positions pos);
 
-    void verifyRxPort(const int moduleId, const int port);
+    void verifyUniqueDetHost(const int port, std::vector<int> positions) const;
+    void verifyUniqueRxHost(const int port, const int moduleId) const;
 
-    std::pair<std::string, int> verifyRxPort(const std::string &receiver,
+    std::pair<std::string, int>verifyUniqueDetHost(const std::string &name);
+    std::pair<std::string, int> verifyUniqueRxHost(const std::string &name,
                                              std::vector<int> positions) const;
     std::vector<std::pair<std::string, int>>
-    verifyRxPort(const std::vector<std::string> &names) const;
+    verifyUniqueRxHost(const std::vector<std::string> &names) const;
 
     defs::ROI getRxROI() const;
     void setRxROI(const defs::ROI arg);
@@ -403,7 +405,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     defs::xy getPortGeometry() const;
     defs::xy calculatePosition(int moduleIndex, defs::xy geometry) const;
 
-    void verifyUniqueHost(std::vector<std::pair<std::string, int>> &hostnamePort) const;
+    void verifyUniqueHost(bool isDet, std::vector<std::pair<std::string, int>> &hosts) const;
 
     const int detectorIndex{0};
     SharedMemory<sharedDetector> shm{0, -1};

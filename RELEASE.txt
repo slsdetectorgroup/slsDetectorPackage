@@ -30,6 +30,7 @@ This document describes the differences between v7.x.x and v7.0.0
 
 - moench being made compatible with jungfrau 2.0 boards (jungfrau structure, away from ctb)
 - rx_hostname and port can be combo to one or to all, or vector or hostnames and ports. ignoring none or empty, then verifying no duplicates for the host port combo including from shared memory
+- same for hostname and port combo (for virtual servers)
 - eiger febl and febr in versions, ensure its the same as beb fw version
 - eiger hardware version fx30 and fx70 (versions command)
 - fixed rx_arping error

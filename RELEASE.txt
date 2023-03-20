@@ -20,7 +20,7 @@ This document describes the differences between v7.0.1 and v7.0.0
 =================
 
 
-    Receiver:
+    Receiver
     --------
 
 
@@ -33,6 +33,19 @@ This document describes the differences between v7.0.1 and v7.0.0
         API: setRxArping/ getRxArping
         Even if arping was successful, it gave an error. Fixed.
 
+
+
+    Client
+    ------
+
+    
+    *   Detector Server Version from previous Releases
+        Unabled to get detector server version using 7.0.0 client if the on-board
+        detector server was from a previous release. The hostname command would 
+        hang as well as the API did not match.
+
+        Fixed that it will throw an exception about incompatible server with the
+        detector server version in the message.
 
 
 2  On-board Detector Server Compatibility

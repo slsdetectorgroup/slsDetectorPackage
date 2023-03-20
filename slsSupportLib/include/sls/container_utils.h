@@ -10,6 +10,7 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+// #include <utility> //support pair in vectors
 
 #include "sls/TypeTraits.h"
 
@@ -146,6 +147,12 @@ Squash(const Container &c, typename Container::value_type default_value = {}) {
                     }))
         return c.front();
     return default_value;
+}
+
+template <typename Container> bool hasDuplicates(Container c) {
+    std::sort(c.begin(), c.end());
+    auto pos = std::adjacent_find(c.begin(), c.end());
+    return pos != c.end(); // if we found something there are duplicates
 }
 
 template <typename T>

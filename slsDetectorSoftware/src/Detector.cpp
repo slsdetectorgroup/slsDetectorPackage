@@ -1182,7 +1182,8 @@ Result<std::string> Detector::getRxHostname(Positions pos) const {
 }
 
 void Detector::setRxHostname(const std::string &receiver, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverHostname, pos, receiver,
+    auto host = pimpl->verifyUniqueRxHost(receiver, pos);
+    pimpl->Parallel(&Module::setReceiverHostname, pos, host.first, host.second,
                     pimpl->getInitialChecks());
     updateRxRateCorrections();
 }
@@ -1190,17 +1191,15 @@ void Detector::setRxHostname(const std::string &receiver, Positions pos) {
 void Detector::setRxHostname(const std::vector<std::string> &name) {
     // set all to same rx_hostname
     if (name.size() == 1) {
-        pimpl->Parallel(&Module::setReceiverHostname, {}, name[0],
-                        pimpl->getInitialChecks());
+        auto host = pimpl->verifyUniqueRxHost(name[0], {});
+        pimpl->Parallel(&Module::setReceiverHostname, {}, host.first,
+                        host.second, pimpl->getInitialChecks());
     } else {
-        if ((int)name.size() != size()) {
-            throw RuntimeError(
-                "Receiver hostnames size " + std::to_string(name.size()) +
-                " does not match detector size " + std::to_string(size()));
-        }
+        auto hosts = pimpl->verifyUniqueRxHost(name);
         // set each rx_hostname
         for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet],
+            pimpl->Parallel(&Module::setReceiverHostname, {idet},
+                            hosts[idet].first, hosts[idet].second,
                             pimpl->getInitialChecks());
         }
     }
@@ -1217,10 +1216,12 @@ void Detector::setRxPort(int port, int module_id) {
         for (auto &it : port_list) {
             it = port++;
         }
+        // no need to verify hostname-port combo as unique port(incremented)
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel(&Module::setReceiverPort, {idet}, port_list[idet]);
         }
     } else {
+        pimpl->verifyUniqueRxHost(port, module_id);
         pimpl->Parallel(&Module::setReceiverPort, {module_id}, port);
     }
 }
@@ -2460,10 +2461,12 @@ Result<int> Detector::getControlPort(Positions pos) const {
 }
 
 void Detector::setControlPort(int value, Positions pos) {
+    pimpl->verifyUniqueDetHost(value, pos);
     pimpl->Parallel(&Module::setControlPort, pos, value);
 }
 
 Result<int> Detector::getStopPort(Positions pos) const {
+    // not verifying unique stop port (control port is sufficient)
     return pimpl->Parallel(&Module::getStopPort, pos);
 }
 

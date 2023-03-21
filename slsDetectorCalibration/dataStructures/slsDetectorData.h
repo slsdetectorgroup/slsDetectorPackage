@@ -12,8 +12,7 @@ template <class dataType> class slsDetectorData {
     const int nx;  /**< Number of pixels in the x direction */
     const int ny;  /**< Number of pixels in the y direction */
     int dataSize;  /**<size of the data constituting one frame */
-    int **dataMap; /**< Array of size nx*ny storing the pointers to the data in
-                      the dataset (as offset)*/
+ 
     dataType **dataMask; /**< Array of size nx*ny storing the polarity of the
                             data in the dataset (should be 0 if no inversion is
                             required, 0xffffffff is inversion is required) */
@@ -25,6 +24,9 @@ template <class dataType> class slsDetectorData {
     int isOrdered;
 
   public:
+
+    int **dataMap; /**< Array of size nx*ny storing the pointers to the data in
+                      the dataset (as offset)*/
     /**
     General slsDetectors data structure. Works for data acquired using the
     slsDetectorReceiver. Can be generalized to other detectors (many virtual

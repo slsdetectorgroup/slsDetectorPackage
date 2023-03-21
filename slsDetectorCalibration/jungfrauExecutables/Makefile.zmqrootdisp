@@ -18,7 +18,7 @@ LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff   -O3 
 
 default: onlinedisp_zmq
 
-onlinedisp_zmq: onlinedisp_zmq.cpp onlinedisp_zmq.h 
+onlinedisp_zmq: onlinedisp_zmq.cpp onlinedisp_zmq.h ../dataStructures/jungfrauLGADStrixelsData_new.h
 # flags from root-config --cflags --glibs
 	g++ -o onlinedisp_zmq onlinedisp_zmq.cpp  -I. -I$(ROOTSYS)/include -Wall -g -lm  -L. -lzmq -pthread -lrt -L$(ROOTSYS)/lib -lGui -lCore  -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix  -lPhysics -lMathCore -lThread -m64 $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) 
 

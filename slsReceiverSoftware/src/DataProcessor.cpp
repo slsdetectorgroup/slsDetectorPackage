@@ -350,13 +350,33 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
     } else {
         streamCurrentFrame = false;
     }
-
+    
+   
     if (receiverRoiEnabled) {
-        // copy the complete image to stream before cropping
+ 
+   
+      typedef struct {
+        uint16_t xmin;
+     	uint16_t xmax;
+     	uint16_t ymin;
+     	uint16_t ymax;
+      } receriverRoi_compact;   
+      receriverRoi_compact croi;
+      croi.xmin= short(receiverRoi.xmin);
+      croi.xmax= short(receiverRoi.xmax);
+      croi.ymin=short(receiverRoi.ymin);
+      croi.ymax=short(receiverRoi.ymax);
+      memcpy(&header.detHeader.detSpec1, &croi, 8);
+ //	header.detHeader.detSpec1 = uint64_t(croi); this is not allowed, memcpy used instead.
+      
+
+      // copy the complete image to stream before cropping
         if (streamCurrentFrame) {
             memcpy(&completeImageToStreamBeforeCropping[0], data,
                    generalData->imageSize);
         }
+
+	
         CropImage(size, data);
     }
 

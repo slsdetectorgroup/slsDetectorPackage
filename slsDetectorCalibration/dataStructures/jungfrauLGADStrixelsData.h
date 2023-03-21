@@ -49,13 +49,18 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
        1286 large etc.) \param c crosstalk parameter for the output buffer
 
     */
+
+    int groupmap[512*5][1024/5];
+
+ 
     jungfrauLGADStrixelsData()
         : slsDetectorData<uint16_t>(1024/5, 512*5,
                                     512 * 1024 * 2 + sizeof(header)) {
-      cout << "aaa" << endl;
+      //      cout << "aaa" << endl;
         for (int ix = 0; ix < 1024/5; ix++) {
             for (int iy = 0; iy < 512*5; iy++) {
 	      dataMap[iy][ix] = sizeof(header);//+ ( 1024 * 5 + 300) * 2; //somewhere on the guardring of the LGAD
+	      groupmap[iy][ix]=-1;
 #ifdef HIGHZ
                 dataMask[iy][ix] = 0x3fff;
 #endif
@@ -65,17 +70,17 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	int y0=10, y1=256-10;
 	int ix,iy;
 	int ox=0, oy=0, ooy=0;
-	ox=0;
+	ox=2;//0; //original value is 0
 	cout << "G0" << endl;
 
 	//chip1
 
 	for (int ipx=x0; ipx<x1; ipx++) {
 	  for (int ipy=y0; ipy<y0+54; ipy++) {
-	    ix=(ipx-x0+ox)/3;
 	    iy=(ipx-x0+ox)%3+(ipy-y0+oy)*3+ooy;
+	    ix=(ipx-x0+ox)/3;
 	    dataMap[iy][ix] = sizeof(header) + (1024 * ipy + ipx) * 2;
-	    
+	    groupmap[iy][ix]=0;
 	    //  cout << ipx << " " << ipy << " " << ix << " " << iy << endl;
 
 
@@ -84,12 +89,13 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	cout << "G1" << endl;
 	oy=-54;
 	ooy=54*3;
-	ox=3;
+	ox=2;//; //original value is 3
 	for (int ipx=x0; ipx<x1; ipx++) {
 	  for (int ipy=y0+54; ipy<y0+64+54; ipy++) {
 	    ix=(ipx-x0+ox)/5;
 	    iy=(ipx-x0+ox)%5+(ipy-y0+oy)*5+ooy;
 	    dataMap[iy][ix] = sizeof(header) + (1024 * ipy + ipx) * 2;
+	    groupmap[iy][ix]=1;
 	  }
 	}
 	
@@ -102,6 +108,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	    ix=(ipx-x0+ox)/4;
 	    iy=(ipx-x0+ox)%4+(ipy-y0+oy)*4+ooy;
 	    dataMap[iy][ix] = sizeof(header) + (1024 * ipy + ipx) * 2;
+	    groupmap[iy][ix]=2;
 	  }
 	}
 	
@@ -119,9 +126,8 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	    ix=(ipx-x0+ox)/4;
 	    iy=(ipx-x0+ox)%4+(ipy-y0+oy)*4+ooy;
 	    dataMap[iy][ix] = sizeof(header) + (1024 * ipy + ipx) * 2;
-	    if (ipx==x0)
-	      cout << ipx << " " << ipy << " " << ix << " " << iy << endl;
-
+	    //if (ipx==x0)    cout << ipx << " " << ipy << " " << ix << " " << iy << endl;
+	    groupmap[iy][ix]=2;
 
 	  }
 	}
@@ -134,6 +140,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	    ix=(ipx-x0+ox)/5;
 	    iy=(ipx-x0+ox)%5+(ipy-y0+oy)*5+ooy;
 	    dataMap[iy][ix] = sizeof(header) + (1024 * ipy + ipx) * 2;
+	    groupmap[iy][ix]=1;
 	  }
 	}
 	
@@ -146,6 +153,7 @@ class jungfrauLGADStrixelsData : public slsDetectorData<uint16_t> {
 	    ix=(ipx-x0+ox)/3;
 	    iy=(ipx-x0+ox)%3+(ipy-y0+oy)*3+ooy;
 	    dataMap[iy][ix] = sizeof(header) + (1024 * ipy + ipx) * 2;
+	    groupmap[iy][ix]=0;
 	  }
 	}
 	

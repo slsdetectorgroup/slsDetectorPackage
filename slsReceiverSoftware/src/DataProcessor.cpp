@@ -357,7 +357,6 @@ void DataProcessor::ProcessAnImage(sls_receiver_header &header, size_t &size,
             memcpy(&completeImageToStreamBeforeCropping[0], data,
                    generalData->imageSize);
         }
-
         CropImage(size, data);
     }
 

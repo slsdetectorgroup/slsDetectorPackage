@@ -3,6 +3,7 @@
 #ifndef JUNGFRAUMODULEDATA_H
 #define JUNGFRAUMODULEDATA_H
 #include "slsDetectorData.h"
+#include "sls/sls_detector_defs.h"
 
 //#define VERSION_V2
 /**
@@ -41,8 +42,15 @@ class jungfrauModuleData : public slsDetectorData<uint16_t> {
        1286 large etc.) \param c crosstalk parameter for the output buffer
 
    */
+   
+#ifdef ALDO //VH
+    using header = jf_header; //VH
+#else //VH
+    using header = sls::defs::sls_receiver_header;
+#endif //VH
+
 #ifndef ZMQ
-#define off sizeof(jf_header)
+#define off sizeof(header)
 #endif
 #ifdef ZMQ
 #define off 0
@@ -104,7 +112,7 @@ class jungfrauModuleData : public slsDetectorData<uint16_t> {
     /* }; */
 
     int getFrameNumber(char *buff) {
-        return ((jf_header *)buff)->bunchNumber;
+        return ((header *)buff)->bunchNumber;
     };
   
     /**
